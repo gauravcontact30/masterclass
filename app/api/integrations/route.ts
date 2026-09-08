@@ -1,0 +1,3 @@
+import { api,userId } from "@/lib/server/http";
+import { check,db } from "@/lib/server/db";
+export async function GET(){return api(async()=>{const owner=await userId();const connections=check(await db().from("integration_connections").select("provider,expires_at").eq("user_id",owner));return Response.json({connections,available:{figma:Boolean(process.env.FIGMA_CLIENT_ID&&process.env.FIGMA_CLIENT_SECRET&&process.env.INTEGRATION_ENCRYPTION_KEY&&process.env.APP_URL),canva:Boolean(process.env.CANVA_CLIENT_ID&&process.env.CANVA_CLIENT_SECRET&&process.env.INTEGRATION_ENCRYPTION_KEY&&process.env.APP_URL)}});});}

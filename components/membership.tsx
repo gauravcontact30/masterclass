@@ -1,0 +1,22 @@
+"use client";
+import { useEffect,useState } from "react";
+import { Check,ArrowUpRight } from "lucide-react";
+import { Tier } from "@/lib/domain";
+import { requestJson,errorKey } from "@/lib/client";
+import { openRazorpayCheckout } from "@/lib/razorpay-checkout";
+import { TranslationKey } from "@/lib/i18n";
+import { useLanguage } from "./language-provider";
+import { Button } from "./ui/button";
+export function Membership({enabled,data,onRefresh}:{enabled:boolean;data:{tier:Tier;used:number;limit:number;subscription:{current_period_end:string|null;status:string;cancel_at_cycle_end:boolean}|null;creditBalance:number}|null;onRefresh:()=>Promise<void>}){
+  const {t,language}=useLanguage();const [prices,setPrices]=useState({monthly:299,yearly:2999,freeLimit:3,proLimit:50,perDownload:49});const [busy,setBusy]=useState(false);const [error,setError]=useState<TranslationKey|null>(null);const [confirm,setConfirm]=useState(false);
+  useEffect(()=>{void requestJson<typeof prices>("/api/billing").then(setPrices).catch(()=>{});},[]);
+  async function action(action:"checkout"|"cancel"|"refresh"|"buyDownloadCredit",tier?:"monthly"|"yearly"){setBusy(true);setError(null);try{
+    const result=await requestJson<{url?:string;orderId?:string;amount?:number;currency?:string;keyId?:string}>("/api/billing",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,...(tier?{tier}:{})})});
+    if(action==="buyDownloadCredit"){if(!result.orderId||!result.keyId||!result.amount||!result.currency)throw new Error("service_error");await openRazorpayCheckout({key:result.keyId,amount:result.amount,currency:result.currency,order_id:result.orderId,name:"Masterclass",description:t("buyDownloadCredit")});return;}
+    if(result.url){const target=new URL(result.url);if(target.protocol!=="https:"||!(["rzp.io","razorpay.com"].some(host=>target.hostname===host||target.hostname.endsWith(`.${host}`))))throw new Error("service_error");window.location.assign(result.url);}else{await onRefresh();setConfirm(false);}
+  }catch(e){setError(errorKey(e));}finally{setBusy(false);}}
+  const money=(amount:number)=>new Intl.NumberFormat(language==="hi"?"hi-IN":"en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(amount);
+  return <section>{!enabled&&<p className="setup-banner">{t("provisional")}</p>}{error&&<p className="error-banner" role="alert">{t(error)}</p>}<div className="pricing-grid">{(["free","monthly","yearly"] as const).map(tier=><article key={tier} className={`panel pricing-card ${tier==="yearly"?"featured":""}`}><span className="eyebrow">{t(tier)}</span><h2>{money(tier==="free"?0:prices[tier])}</h2><p>{tier==="yearly"?t("perYear"):t("perMonth")}</p><ul><li><Check size={17}/>{tier==="free"?prices.freeLimit:prices.proLimit} {t("generations")}</li><li><Check size={17}/>PDF & PPTX</li><li><Check size={17}/>English & हिन्दी</li><li><Check size={17}/>{t("learn")}</li></ul><Button disabled={busy||!enabled||tier==="free"||data?.tier===tier} onClick={()=>tier!=="free"&&void action("checkout",tier)}>{data?.tier===tier?t("currentPlan"):t("subscribe")}<ArrowUpRight size={16}/></Button></article>)}
+    <article className="panel pricing-card"><span className="eyebrow">{t("perDownload")}</span><h2>{money(prices.perDownload)}</h2><p>{t("perFile")}</p><ul><li><Check size={17}/>1 {t("download")}</li><li><Check size={17}/>PDF & PPTX</li></ul><Button disabled={busy||!enabled} onClick={()=>void action("buyDownloadCredit")}>{t("buyDownloadCredit")}<ArrowUpRight size={16}/></Button></article>
+  </div><p className="preview-note">{t("usageReset")}</p>{!!data?.creditBalance&&<p className="preview-note">{data.creditBalance} {data.creditBalance===1?t("creditAvailable"):t("creditsAvailable")}</p>}{data?.subscription&&<section className="panel"><h2>{t("manage")}</h2><p>{t("paymentPending")}</p>{data.subscription.current_period_end&&<p>{t("renewal")}: {new Intl.DateTimeFormat(language==="hi"?"hi-IN":"en-IN",{dateStyle:"long"}).format(new Date(data.subscription.current_period_end))}</p>}<Button variant="outline" disabled={busy} onClick={()=>void action("refresh")}>{t("refresh")}</Button>{!data.subscription.cancel_at_cycle_end&&<Button variant="outline" disabled={busy} onClick={()=>setConfirm(true)}>{t("cancel")}</Button>}{confirm&&<div><p>{t("cancelHelp")}</p><Button disabled={busy} onClick={()=>void action("cancel")}>{t("cancelConfirm")}</Button><Button variant="ghost" onClick={()=>setConfirm(false)}>{t("close")}</Button></div>}</section>}</section>;
+}

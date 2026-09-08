@@ -1,9 +1,3 @@
-import { SignUp } from "@clerk/nextjs";
-
-export default function SignUpPage() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <SignUp />
-    </div>
-  );
-}
+﻿import { AuthPage } from "@/components/auth-page";
+import { authConfigured } from "@/lib/server/config";
+export default function Page(){return <AuthPage mode="signup" enabled={authConfigured()} />;}
