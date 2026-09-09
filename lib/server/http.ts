@@ -1,13 +1,13 @@
 import "server-only";
-import { auth } from "@clerk/nextjs/server";
 import { ZodError } from "zod";
 import { authConfigured } from "./config";
+import { supabaseServer } from "./auth";
 export class HttpError extends Error { constructor(public status: number, public code: string) { super(code); } }
 export async function userId() {
   if (!authConfigured()) throw new HttpError(503, "setup_required");
-  const { userId } = await auth();
-  if (!userId) throw new HttpError(401, "signin_required");
-  return userId;
+  const { data } = await (await supabaseServer()).auth.getUser();
+  if (!data.user) throw new HttpError(401, "signin_required");
+  return data.user.id;
 }
 export async function jsonBody(request: Request, max = 30000) {
   if (Number(request.headers.get("content-length")) > max) throw new HttpError(413, "request_too_large");

@@ -1,12 +1,12 @@
 import "server-only";
 import { check, db } from "./db";
-import { required } from "./config";
+import { chromiumPath, documentFontPath, required } from "./config";
 import { DocumentRecord, Topic } from "@/lib/domain";
 import { generateCurriculum } from "@/lib/generation/provider";
 import { renderDocuments } from "@/lib/generation/render";
 export async function processOne() {
   // Fail configuration checks before claiming jobs, so missing setup cannot burn retries.
-  const config = { executablePath:required("CHROMIUM_EXECUTABLE_PATH"),fontPath:required("DOCUMENT_FONT_PATH") };
+  const config = { executablePath:chromiumPath(),fontPath:documentFontPath() };
   required("ANTHROPIC_API_KEY");required("ANTHROPIC_MODEL");
   const items = check(await db().rpc("claim_document"));
   const job = items?.[0] as (DocumentRecord & { lease:string }) | undefined;

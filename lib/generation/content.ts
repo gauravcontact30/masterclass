@@ -1,5 +1,5 @@
 import { Curriculum, GenerationRequest } from "@/lib/domain";
-export type ContentPage = { title: string; body: string; kind: "cover" | "text" | "code"; lesson: number | null };
+export type ContentPage = { title: string; body: string; kind: "cover" | "divider" | "text" | "code"; lesson: number | null };
 export function splitText(text: string, max = 550): string[] {
   const chunks: string[] = [];
   let rest = text.trim();
@@ -15,7 +15,8 @@ export function splitText(text: string, max = 550): string[] {
 export function contentPages(deck: Curriculum, request: GenerationRequest, references: string[]): ContentPage[] {
   const hi = request.language === "hi";
   const level=hi ? {beginner:"शुरुआती",intermediate:"मध्यम",advanced:"उन्नत"}[request.level] : request.level;
-  const pages: ContentPage[] = [{ title: deck.title, body: `${level} · ${deck.minutes} ${hi ? "मिनट" : "minutes"}`, kind:"cover", lesson:null }];
+  const coverLevel = hi ? level : level.charAt(0).toUpperCase() + level.slice(1);
+  const pages: ContentPage[] = [{ title: deck.title, body: hi ? `${coverLevel} स्तर, ${deck.minutes} मिनट` : `${coverLevel} level, ${deck.minutes} minutes`, kind:"cover", lesson:null }];
   const add = (title: string, text: string, lesson: number | null = null, kind: ContentPage["kind"] = "text") => {
     splitText(text,kind === "code" ? 420 : request.format === "pdf" ? 1000 : 550).forEach((body,index) => pages.push({ title: title + (index ? ` (${index+1})` : ""), body, kind, lesson }));
   };
@@ -23,13 +24,14 @@ export function contentPages(deck: Curriculum, request: GenerationRequest, refer
   if(deck.prerequisites.length) add(hi ? "शुरू करने से पहले" : "Before you begin",deck.prerequisites.join("\n\n"));
   add(hi ? "सीखने का क्रम" : "Your learning roadmap",deck.lessons.map((s,i)=>`${i+1}. ${s.title}`).join("\n"));
   deck.lessons.forEach((lesson,i)=>{
-    if(request.format === "pdf") {
-      add(lesson.title,`${lesson.explanation}\n\n${hi?"उदाहरण":"WORKED EXAMPLE"}\n${lesson.example}`,i);
-      if(lesson.code)add(hi?"कोड को समझें":"Read the code",lesson.code,i,"code");
-      add(hi?"अभ्यास और समझ की जाँच":"Practice and reflection",`${hi?"अभ्यास":"EXERCISE"}\n${lesson.exercise}\n\n${hi?"अपनी समझ जाँचें":"CHECK YOUR UNDERSTANDING"}\n${lesson.checkpoint}\n\n${hi?"इस गलती से बचें":"COMMON MISTAKE"}\n${lesson.mistake}`,i);
-      return;
-    }
-    add(lesson.title,lesson.explanation,i);
+    // Each lesson opens on its own divider page, the way a chapter opener works
+    // in print. The pages that follow carry section labels instead of repeating
+    // the lesson title, so the reader's contents list stays scannable.
+    pages.push({ title:lesson.title,body:`${hi?"पाठ":"Lesson"} ${i+1}`,kind:"divider",lesson:i });
+    // One field, one page, in both formats — a page of dot-pointed bullets
+    // (see render.ts's bulletLines) reads far better than several fields
+    // merged under an inline sub-header, which used to only happen for PDF.
+    add(hi?"समझें":"The idea",lesson.explanation,i);
     add(hi ? "उदाहरण" : "A worked example",lesson.example,i);
     if(lesson.code) add(hi ? "कोड को समझें" : "Read the code",lesson.code,i,"code");
     add(hi ? "खुद अभ्यास करें" : "Try it yourself",lesson.exercise,i);

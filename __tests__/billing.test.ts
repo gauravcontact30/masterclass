@@ -1,10 +1,10 @@
 /** @jest-environment node */
 import { GET, POST } from "@/app/api/billing/route";
-import { auth } from "@clerk/nextjs/server";
+import { supabaseServer } from "@/lib/server/auth";
 import { db } from "@/lib/server/db";
 import { createDownloadOrder } from "@/lib/server/billing";
 
-jest.mock("@clerk/nextjs/server", () => ({ auth: jest.fn() }));
+jest.mock("@/lib/server/auth", () => ({ supabaseServer: jest.fn() }));
 jest.mock("@/lib/server/db", () => ({
   db: jest.fn(),
   check: ({ data, error }: { data: unknown; error: unknown }) => { if (error) throw error; return data; },
@@ -18,8 +18,8 @@ beforeEach(() => {
   delete process.env.PRO_MONTHLY_PRICE_INR;
   delete process.env.PRO_YEARLY_PRICE_INR;
   delete process.env.DOWNLOAD_CREDIT_PRICE_INR;
-  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "test";
-  process.env.CLERK_SECRET_KEY = "test";
+  process.env.NEXT_PUBLIC_SUPABASE_URL = "https://x.supabase.co";
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "anon";
   process.env.RAZORPAY_KEY_ID = "rzp_test_key";
 });
 
@@ -43,7 +43,7 @@ function makeRequest(body: unknown) {
 }
 
 test("buyDownloadCredit creates a one-time order without touching subscription state", async () => {
-  (auth as unknown as jest.Mock).mockResolvedValue({ userId: "u1" });
+  (supabaseServer as jest.Mock).mockResolvedValue({ auth: { getUser: async () => ({ data: { user: { id: "u1" } }, error: null }) } });
   const rpc = jest.fn().mockResolvedValue({ data: true, error: null });
   const profileTable = { upsert: jest.fn().mockResolvedValue({ data: null, error: null }), select: jest.fn().mockReturnThis(), eq: jest.fn().mockReturnThis(), single: jest.fn().mockResolvedValue({ data: { id: "u1" }, error: null }) };
   const subscriptionsSelect = jest.fn();

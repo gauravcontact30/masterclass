@@ -5,7 +5,7 @@ import { DocumentRecord, entitlementTier, monthKey, Progress, Tier } from "@/lib
 import { HttpError } from "./http";
 export async function profile(id: string) {
   check(await db().from("profiles").upsert({ id }, { onConflict: "id", ignoreDuplicates: true }));
-  return check(await db().from("profiles").select("id,language,credit_balance").eq("id", id).single());
+  return check(await db().from("profiles").select("id,name,language,credit_balance").eq("id", id).single());
 }
 export async function account(id: string) {
   const owner = await profile(id);
