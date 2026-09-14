@@ -97,8 +97,44 @@ test("offers the opposite route so visitors can switch between signing in and up
   expect(screen.getByRole("link", { name: /create an account/i })).toHaveAttribute("href", "/sign-up");
 });
 
+test("offers the sign-in route from the sign-up page", () => {
+  render(<AuthPage mode="signup" enabled />);
+  expect(screen.getByRole("link", { name: /already have an account/i })).toHaveAttribute("href", "/sign-in");
+});
+
 test("shows the setup notice instead of a form when auth is not configured", () => {
   render(<AuthPage mode="signin" enabled={false} />);
   expect(screen.queryByLabelText("Email")).not.toBeInTheDocument();
   expect(screen.getByText("Your learning space is almost ready")).toBeInTheDocument();
+});
+
+test.each([
+  ["signin", true],
+  ["signup", true],
+  ["signin", false],
+] as const)("links back to the home page (%s, auth enabled: %s)", (mode, enabled) => {
+  render(<AuthPage mode={mode} enabled={enabled} />);
+  expect(screen.getByRole("link", { name: "Back to home" })).toHaveAttribute("href", "/");
+});
+
+test.each(["signin", "signup"] as const)("the eye button reveals and hides the password without submitting (%s)", async mode => {
+  render(<AuthPage mode={mode} enabled />);
+  const user = userEvent.setup();
+  const input = screen.getByLabelText("Password");
+  expect(input).toHaveAttribute("type", "password");
+
+  const reveal = screen.getByRole("button", { name: "Show password" });
+  expect(reveal).toHaveAttribute("type", "button");
+  expect(reveal).toHaveAttribute("aria-pressed", "false");
+  await user.click(reveal);
+
+  expect(input).toHaveAttribute("type", "text");
+  const conceal = screen.getByRole("button", { name: "Hide password" });
+  expect(conceal).toHaveAttribute("aria-pressed", "true");
+  await user.click(conceal);
+
+  expect(input).toHaveAttribute("type", "password");
+  expect(screen.getByRole("button", { name: "Show password" })).toHaveAttribute("aria-pressed", "false");
+  expect(signInWithPassword).not.toHaveBeenCalled();
+  expect(signUp).not.toHaveBeenCalled();
 });

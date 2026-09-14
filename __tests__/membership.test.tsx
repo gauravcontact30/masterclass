@@ -2,35 +2,18 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Membership } from "@/components/membership";
 import { requestJson } from "@/lib/client";
-import { openRazorpayCheckout } from "@/lib/razorpay-checkout";
-
 jest.mock("@/lib/client", () => ({ requestJson: jest.fn(), errorKey: jest.requireActual("@/lib/client").errorKey }));
-jest.mock("@/lib/razorpay-checkout", () => ({ openRazorpayCheckout: jest.fn() }));
-
-const data = { tier: "free" as const, used: 0, limit: 3, subscription: null, creditBalance: 2 };
-
-beforeEach(() => {
-  (requestJson as jest.Mock).mockImplementation((url: string, init?: RequestInit) => {
-    if (url === "/api/billing" && !init) return Promise.resolve({ monthly: 299, yearly: 2999, freeLimit: 3, proLimit: 50, perDownload: 49 });
-    return Promise.resolve({ orderId: "order_1", amount: 4900, currency: "INR", keyId: "rzp_test" });
-  });
+beforeEach(() => { jest.clearAllMocks(); jest.mocked(requestJson).mockResolvedValue({ monthly: 299, yearly: 2999 }); });
+test("only a paid plan is offered and yearly checkout carries the selected preparation", async () => {
+  const user = userEvent.setup(); const refresh = jest.fn().mockResolvedValue(undefined);
+  render(<Membership enabled data={{ tier: "free", used: 0, limit: 0, subscription: null, creditBalance: 2 }} selections={["nda"]} onRefresh={refresh}/>);
+  await screen.findByText("₹299"); expect(screen.queryByText(/free|download credit|per download/i)).not.toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: /yearly/i })); await user.click(screen.getByRole("button", { name: "Choose plan" }));
+  await waitFor(() => expect(requestJson).toHaveBeenCalledWith("/api/billing", expect.objectContaining({ body: JSON.stringify({ action: "checkout", tier: "yearly", selections: ["nda"] }) })));
 });
-
-test("renders a per-download pricing card using the fetched price", async () => {
-  render(<Membership enabled data={data} onRefresh={jest.fn()} />);
-  await waitFor(() => expect(screen.getByText("₹49")).toBeInTheDocument());
-  expect(screen.getByText("Per Download")).toBeInTheDocument();
-});
-
-test("shows the available download credit balance", async () => {
-  render(<Membership enabled data={data} onRefresh={jest.fn()} />);
-  await waitFor(() => expect(screen.getByText(/credits available/i)).toBeInTheDocument());
-});
-
-test("buying a download opens Razorpay Checkout with the order the server created", async () => {
-  const user = userEvent.setup();
-  render(<Membership enabled data={data} onRefresh={jest.fn()} />);
-  await waitFor(() => expect(screen.getByText("₹49")).toBeInTheDocument());
-  await user.click(screen.getByRole("button", { name: /buy a download/i }));
-  await waitFor(() => expect(openRazorpayCheckout).toHaveBeenCalledWith(expect.objectContaining({ key: "rzp_test", amount: 4900, currency: "INR", order_id: "order_1" })));
+test("active members manage renewal without opening a duplicate checkout", async () => {
+  const user = userEvent.setup(); render(<Membership enabled selections={["nda"]} data={{ tier: "monthly", used: 0, limit: 50, creditBalance: 0, subscription: { status: "active", current_period_end: "2030-01-01", cancel_at_cycle_end: false } }} onRefresh={jest.fn()}/>);
+  expect(screen.getByRole("button", { name: "Current plan" })).toBeDisabled();
+  await user.click(screen.getByRole("button", { name: "Cancel at period end" })); await user.click(screen.getByRole("button", { name: "Confirm cancellation" }));
+  await waitFor(() => expect(requestJson).toHaveBeenCalledWith("/api/billing", expect.objectContaining({ body: JSON.stringify({ action: "cancel" }) })));
 });

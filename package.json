@@ -12,7 +12,8 @@
     "dev": "node scripts/dev.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "purge:legacy": "tsx --env-file=.env.local scripts/purge-legacy-documents.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
@@ -25,9 +26,6 @@
     "lucide-react": "^1.42.0",
     "next": "16.3.4",
     "next-themes": "^0.4.6",
-    "pdfjs-dist": "^6.3.289",
-    "pptxgenjs": "^4.0.1",
-    "puppeteer-core": "^25.10.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "server-only": "^0.0.1",

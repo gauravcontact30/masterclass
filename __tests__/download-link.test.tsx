@@ -1,0 +1,6 @@
+﻿import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { DownloadLink } from "@/components/download-link";
+beforeEach(()=>{jest.restoreAllMocks();});
+test("shows download errors without navigating away",async()=>{global.fetch=jest.fn().mockResolvedValue({ok:false,json:async()=>({error:"not_ready"})});render(<DownloadLink href="/api/documents/one/download" filename="guide.pdf"/>);await userEvent.click(screen.getByRole("link",{name:"Download"}));expect(await screen.findByRole("alert")).toBeInTheDocument();expect(screen.getByRole("link",{name:"Download"})).toHaveAttribute("aria-disabled","false");});
+test("downloads file bytes through a temporary blob URL",async()=>{const blob=new Blob(["%PDF-1.7"],{type:"application/pdf"});global.fetch=jest.fn().mockResolvedValue({ok:true,blob:async()=>blob});URL.createObjectURL=jest.fn().mockReturnValue("blob:test");URL.revokeObjectURL=jest.fn();const click=jest.spyOn(HTMLAnchorElement.prototype,"click").mockImplementation(()=>{});render(<DownloadLink href="/api/documents/one/download" filename="guide.pdf"/>);await userEvent.click(screen.getByRole("link",{name:"Download"}));await waitFor(()=>expect(click).toHaveBeenCalledTimes(1));expect(URL.createObjectURL).toHaveBeenCalledWith(blob);expect(screen.queryByRole("alert")).not.toBeInTheDocument();});

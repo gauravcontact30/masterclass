@@ -5,6 +5,8 @@ export default async function proxy(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL, key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   let response = NextResponse.next({ request });
   if (!url || !key) return response;
+  // Anonymous marketing requests need no network round trip to Supabase.
+  if (request.nextUrl.pathname === "/" && !request.cookies.getAll().some(({ name }) => /^sb-.+-auth-token(?:\.\d+)?$/.test(name))) return response;
   const supabase = createServerClient(url, key, {
     cookies: {
       getAll: () => request.cookies.getAll(),
@@ -18,7 +20,13 @@ export default async function proxy(request: NextRequest) {
   });
   const { data } = await supabase.auth.getUser();
   const target = redirectFor({ pathname: request.nextUrl.pathname, signedIn: Boolean(data.user) });
-  if (target) return NextResponse.redirect(new URL(target, request.url));
+  if (target) {
+    const redirected = NextResponse.redirect(new URL(target, request.url));
+    response.cookies.getAll().forEach(cookie => redirected.cookies.set(cookie));
+    redirected.headers.set("Cache-Control", "private, no-store");
+    return redirected;
+  }
+  response.headers.set("Cache-Control", "private, no-store");
   return response;
 }
-export const config={matcher:["/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)","/(api|trpc)(.*)"]};
+export const config = { matcher: ["/", "/dashboard/:path*", "/sign-in/:path*", "/sign-up/:path*"] };

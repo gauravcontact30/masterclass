@@ -1,0 +1,96 @@
+"use client";
+import { ExpandedText } from "@/components/expanded-text";
+
+
+import { useId, useState } from "react";
+import { Check, Code2, Copy, FileCode2, Folder, FolderOpen, Terminal } from "lucide-react";
+import type { ApiReference, CodeExample, ExampleFile } from "@/lib/domain";
+import styles from "./lesson-code-examples.module.css";
+
+/** React escapes every token; lesson text is never inserted as HTML. */
+function Highlight({ code, language }: { code: string; language: ExampleFile["language"] }) {
+  const plain = ["text", "markdown"].includes(language);
+  const tokens = plain ? [code] : code.split(/(\/\*[\s\S]*?\*\/|\/\/[^\n]*|#[^\n]*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|\b(?:import|from|export|default|async|await|function|return|const|let|var|if|else|for|of|in|class|interface|type|extends|implements|new|throw|try|catch|finally|def|with|as|yield|lambda|public|private|readonly|static|void|string|number|boolean|True|False|None|true|false|null|undefined)\b|\b\d+(?:\.\d+)?\b)/g);
+  const rendered: { text: string; tone: string }[][] = [[]];
+  for (const token of tokens) {
+    const tone = plain ? "" : /^(\/\/|\/\*|#)/.test(token) ? "comment" : /^["'`]/.test(token) ? "string" : /^\d/.test(token) ? "number" : /^\w+$/.test(token) ? "keyword" : "";
+    token.split("\n").forEach((text, index) => {
+      if (index) rendered.push([]);
+      rendered[rendered.length - 1].push({ text, tone });
+    });
+  }
+  return <pre className={styles.code}><code>{rendered.map((line, index) => <span className={styles.line} key={index}><span className={styles.lineNumber} aria-hidden="true">{index + 1}</span><span>{line.map((token, i) => <span key={i} data-token={token.tone || undefined}>{token.text}</span>)}{"\n"}</span></span>)}</code></pre>;
+}
+
+function FileTree({ files, active, onSelect, prefix = "" }: { files: ExampleFile[]; active: string; onSelect: (path: string) => void; prefix?: string }) {
+  const entries = [...new Set(files.filter(file => file.path.startsWith(prefix)).map(file => file.path.slice(prefix.length).split("/")[0]))];
+  return <ul className={styles.tree}>{entries.map(entry => {
+    const path = prefix + entry;
+    const file = files.find(item => item.path === path);
+    return <li key={path}>{file ? <button type="button" title={path} aria-label={path} aria-pressed={active === path} onClick={() => onSelect(path)}><FileCode2 size={14} aria-hidden="true" /><span><ExpandedText text={entry} /></span></button> : <details open><summary><Folder size={14} aria-hidden="true" /><span><ExpandedText text={entry} /></span></summary><FileTree files={files} active={active} onSelect={onSelect} prefix={`${path}/`} /></details>}</li>;
+  })}</ul>;
+}
+
+export function CodeApiReference({ references, hi }: { references: ApiReference[]; hi: boolean }) {
+  return <div className={styles.references}>{references.map((api, index) => <details key={`${api.name}-${index}`} open={index === 0}>
+    <summary><code>{api.name}</code><span><ExpandedText text={api.kind} /></span></summary>
+    <pre className={styles.signature}><code>{api.signature}</code></pre>
+    {api.params.length > 0 && <div className={styles.tableScroll}><table><caption><ExpandedText text={hi ? "पैरामीटर, आर्ग्युमेंट और प्रॉपर्टी" : "Parameters, arguments & properties"} /></caption><thead><tr><th><ExpandedText text={hi ? "नाम" : "Name"} /></th><th><ExpandedText text={hi ? "प्रकार" : "Type"} /></th><th><ExpandedText text={hi ? "उपयोग" : "How to use it"} /></th></tr></thead><tbody>{api.params.map(param => <tr key={param.name}><td><code>{param.name}</code></td><td><code>{param.type}</code></td><td><ExpandedText text={param.description} /></td></tr>)}</tbody></table></div>}
+    <p><strong><ExpandedText text={hi ? "रिटर्न प्रकार और मान" : "Return type & value"} />: </strong><ExpandedText text={api.returns} /></p>
+    {api.notes && <p><ExpandedText text={api.notes} /></p>}
+  </details>)}</div>;
+}
+
+function ExampleWorkspace({ example, hi, id }: { example: CodeExample; hi: boolean; id: string }) {
+  const [path, setPath] = useState(() => example.files.find(file => /^(src|hooks|stores|lib|components)\//.test(file.path))?.path ?? example.files[0].path);
+  const [copyStatus, setCopyStatus] = useState("");
+  const file = example.files.find(item => item.path === path) ?? example.files[0];
+  async function copy() {
+    try { await navigator.clipboard.writeText(file.code); setCopyStatus(hi ? "कॉपी हुआ" : "Copied"); }
+    catch { setCopyStatus(hi ? "कॉपी नहीं हुआ। कोड चुनकर कॉपी करें।" : "Copy failed. Select the code to copy it."); }
+  }
+  function selectFile(value: string) { setPath(value); setCopyStatus(""); }
+  return <div id={id}>
+    <div className={styles.intro}><h4><ExpandedText text={example.title} /></h4><p><ExpandedText text={example.description} /></p></div>
+    <div className={styles.editor}>
+      <div className={styles.chrome}><span className={styles.lights} aria-hidden="true"><i /><i /><i /></span><span><Code2 size={14} aria-hidden="true" /><ExpandedText text={hi ? "कोड कार्यक्षेत्र" : "Code workspace"} /></span><span>{example.files.length} <ExpandedText text={hi ? "फ़ाइलें" : "files"} /></span></div>
+      <div className={styles.workspace}>
+        <aside className={styles.explorer} aria-label={hi ? "प्रोजेक्ट फ़ाइलें" : "Project files"}><div className={styles.explorerTitle}><FolderOpen size={14} aria-hidden="true" /><ExpandedText text={hi ? "प्रोजेक्ट" : "PROJECT"} /></div><FileTree files={example.files} active={file.path} onSelect={selectFile} /></aside>
+        <div className={styles.source}>
+          <div className={styles.fileTabs} role="tablist" aria-label={hi ? "इस उदाहरण की फ़ाइलें" : "Files in this example"}>
+            {example.files.map(item => <button key={item.path} type="button" role="tab" aria-selected={item.path === file.path} title={`project/${item.path}`} onClick={() => selectFile(item.path)}>
+              <FileCode2 size={13} aria-hidden="true" /><span>{item.path.split("/").pop()}</span>
+            </button>)}
+          </div>
+          <div className={styles.fileBar}><span title={`project/${file.path}`} className={styles.filePath}><FileCode2 size={14} aria-hidden="true" />project/<ExpandedText text={file.path} /></span><button type="button" title={hi ? "फ़ाइल कॉपी करें" : "Copy file"} aria-label={hi ? "फ़ाइल कॉपी करें" : "Copy file"} onClick={() => void copy()}>{copyStatus === "Copied" || copyStatus === "कॉपी हुआ" ? <Check size={15} /> : <Copy size={15} />}</button></div>
+          <p className={styles.fileDescription}><ExpandedText text={file.description} /></p>
+          <div className={styles.codeScroll} tabIndex={0} role="region" aria-label={`${hi ? "कोड" : "Code"}: ${file.path}`}><Highlight code={file.code} language={file.language} /></div>
+          <div className={styles.statusBar}><span><ExpandedText text={file.language} /> · UTF-8</span><span role="status"><ExpandedText text={copyStatus} /></span><span>{file.code.split("\n").length} <ExpandedText text={hi ? "पंक्तियाँ" : "lines"} /></span></div>
+        </div>
+      </div>
+    </div>
+    {example.completeness === "snippet" && <p className={styles.excerptNote}><ExpandedText text={hi ? "पाठ का कोड अंश · आवश्यक सेटअप के लिए पाठ और API संदर्भ देखें।" : "Lesson excerpt · See the lesson and API reference for the surrounding setup."} /></p>}
+    {example.setup.length > 0 && <details className={styles.run} open><summary><Terminal size={15} aria-hidden="true" /><ExpandedText text={hi ? "सेटअप और चलाने के चरण" : "Set up & run"} /></summary><ol>{example.setup.map((step, index) => <li key={index}><ExpandedText text={step} /></li>)}</ol></details>}
+    {example.expectedOutput && <div className={styles.result}><span><Check size={14} aria-hidden="true" /><ExpandedText text={hi ? "अपेक्षित परिणाम" : "Expected result"} /></span><pre>{example.expectedOutput}</pre></div>}
+    {example.apiReference?.length ? <CodeApiReference references={example.apiReference} hi={hi} /> : null}
+  </div>;
+}
+
+export function LessonCodeExamples({ examples, hi }: { examples: CodeExample[]; hi: boolean }) {
+  const id = useId();
+  if (!examples.length) return null;
+  return <section className={styles.examples} aria-label={hi ? "कोड उदाहरण" : "Code examples"}>
+    <div className={styles.exampleHeading}><span><ExpandedText text={hi ? "कोड से सीखें" : "LEARN BY BUILDING"} /></span><span><ExpandedText text={String(examples.length).padStart(2, "0")} /> <ExpandedText text={hi ? "उदाहरण" : "examples"} /></span></div>
+    {examples.map((example, index) => <details className={styles.exampleAccordion} key={`${example.kind}-${index}`} open={index === 0}>
+      <summary>
+        <span className={styles.exampleIndex} aria-hidden="true"><ExpandedText text={String(index + 1).padStart(2, "0")} /></span>
+        <span className={styles.exampleSummary}>
+          <span className={styles.exampleKind}><ExpandedText text={example.kind === "concept" ? hi ? "मूल अवधारणा" : "Core concept" : hi ? "व्यावहारिक उदाहरण" : "Applied example"} /></span>
+          <span className={styles.exampleTitle}><ExpandedText text={example.title} /></span>
+        </span>
+        <span className={styles.exampleFiles} aria-hidden="true">{example.files.length} <ExpandedText text={hi ? "फ़ाइलें" : example.files.length === 1 ? "file" : "files"} /></span>
+      </summary>
+      <ExampleWorkspace example={example} hi={hi} id={`${id}-workspace-${index}`} />
+    </details>)}
+  </section>;
+}

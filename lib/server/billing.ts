@@ -36,5 +36,9 @@ export async function reconcileSubscription(ref:string,eventId:string) {
   if(!existing)throw new HttpError(400,"invalid_request");
   const tier=remote.plan_id===required("RAZORPAY_MONTHLY_PLAN_ID")?"monthly":remote.plan_id===required("RAZORPAY_YEARLY_PLAN_ID")?"yearly":null;
   if(!tier)throw new HttpError(400,"invalid_request");
+  const current=check(await db().from("subscriptions").select("provider_ref").eq("user_id",owner).maybeSingle());
+  // A delayed webhook for a finished subscription must not affect its replacement.
+  // apply_subscription also checks the reference atomically if a replacement races this read.
+  if(current&&current.provider_ref!==remote.id)return;
   check(await db().rpc("apply_subscription",{p_event:eventId,p_user:owner,p_ref:remote.id,p_tier:tier,p_status:remote.status,p_end:remote.current_end?new Date(remote.current_end*1000).toISOString():null,p_synced:syncedAt,p_cancel:local?.cancel_at_cycle_end??false}));
 }

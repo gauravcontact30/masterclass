@@ -1,0 +1,337 @@
+{
+  "amplifybackend": {
+    "summary": "Manage backend resources for applications built with AWS Amplify.",
+    "name": "AWS Amplify Backend"
+  },
+  "apigatewaymanagementapi": {
+    "summary": "Send data to and manage connections for API Gateway WebSocket clients.",
+    "name": "API Gateway WebSocket Management"
+  },
+  "apigatewayv2": {
+    "summary": "Create and configure API Gateway HTTP and WebSocket APIs.",
+    "name": "API Gateway HTTP & WebSocket APIs"
+  },
+  "bedrock-agentcore-control": {
+    "summary": "Configure infrastructure and resources used to run and govern AgentCore agents."
+  },
+  "bedrock-data-automation": {
+    "summary": "Configure automated extraction and transformation of information from multimodal content."
+  },
+  "bedrock-data-automation-runtime": {
+    "summary": "Run Bedrock Data Automation projects on submitted content and retrieve processing results."
+  },
+  "cloudcontrol": {
+    "summary": "Manage supported AWS resources through a consistent resource-management API.",
+    "name": "AWS Cloud Control API"
+  },
+  "cloudhsm": {
+    "summary": "Reference the original CloudHSM hardware-security-module management API.",
+    "name": "AWS CloudHSM Classic (legacy)"
+  },
+  "cloudhsmv2": {
+    "summary": "Manage CloudHSM clusters for hardware-backed cryptographic operations."
+  },
+  "drs": {
+    "summary": "Replicate servers and recover workloads using AWS Elastic Disaster Recovery.",
+    "name": "AWS Elastic Disaster Recovery"
+  },
+  "ecr-public": {
+    "summary": "Publish and distribute container images through Amazon ECR Public repositories."
+  },
+  "groundstation": {
+    "summary": "Schedule and manage communications with satellites through AWS ground stations."
+  },
+  "healthlake": {
+    "summary": "Store and query healthcare data using supported FHIR workflows."
+  },
+  "iotsitewise": {
+    "summary": "Collect, organize and analyze industrial equipment data."
+  },
+  "kafkaconnect": {
+    "summary": "Run managed Kafka Connect connectors with Amazon MSK Connect.",
+    "name": "Amazon MSK Connect"
+  },
+  "kinesis-video-archived-media": {
+    "summary": "Retrieve and play back media retained in Kinesis Video Streams."
+  },
+  "kinesis-video-media": {
+    "summary": "Read media payloads from a Kinesis video stream."
+  },
+  "kinesis-video-webrtc-storage": {
+    "summary": "Join WebRTC sessions that connect live video with Kinesis Video Streams storage."
+  },
+  "kinesisanalytics": {
+    "summary": "Reference the legacy SQL-based Kinesis streaming-analytics API.",
+    "name": "Kinesis Analytics SQL API (legacy)"
+  },
+  "kinesisvideo": {
+    "summary": "Create and manage streams for ingesting, retaining and accessing video data."
+  },
+  "lexv2-runtime": {
+    "summary": "Exchange text or audio with a deployed Lex V2 conversational bot."
+  },
+  "macie2": {
+    "summary": "Discover and evaluate sensitive data stored in Amazon S3."
+  },
+  "mediaconvert": {
+    "summary": "Transcode file-based video into formats suited to playback and distribution."
+  },
+  "medialive": {
+    "summary": "Encode live video into outputs for broadcast and streaming delivery."
+  },
+  "mediapackage": {
+    "summary": "Package live video streams for playback across supported devices and formats."
+  },
+  "mediapackage-vod": {
+    "summary": "Package stored video assets for on-demand streaming delivery."
+  },
+  "medical-imaging": {
+    "summary": "Store and access medical-imaging data through AWS HealthImaging."
+  },
+  "mgn": {
+    "summary": "Replicate and migrate servers to AWS using Application Migration Service.",
+    "name": "AWS Application Migration Service"
+  },
+  "migration-hub-refactor-spaces": {
+    "summary": "Create environments for incrementally routing applications to refactored services."
+  },
+  "migrationhuborchestrator": {
+    "summary": "Coordinate supported application-migration workflows and their steps."
+  },
+  "migrationhubstrategy": {
+    "summary": "Analyze application portfolios and obtain modernization strategy recommendations."
+  },
+  "mturk": {
+    "summary": "Create human-intelligence tasks and manage their results in Amazon Mechanical Turk."
+  },
+  "notificationscontacts": {
+    "summary": "Manage email contacts used by AWS User Notifications."
+  },
+  "personalize-runtime": {
+    "summary": "Request personalized recommendations and rankings from deployed Personalize resources."
+  },
+  "pinpoint": {
+    "summary": "Manage customer engagement through audiences, campaigns and messaging workflows."
+  },
+  "quicksight": {
+    "summary": "Create and manage business-intelligence datasets, analyses and dashboards."
+  },
+  "ram": {
+    "summary": "Share supported AWS resources with other accounts and organizational units.",
+    "name": "AWS Resource Access Manager"
+  },
+  "resourcegroupstaggingapi": {
+    "summary": "Discover and manage tags across supported AWS resources."
+  },
+  "route53-recovery-control-config": {
+    "summary": "Configure routing controls and safety rules for application recovery."
+  },
+  "route53-recovery-readiness": {
+    "summary": "Evaluate configured resource readiness for recovery scenarios."
+  },
+  "sagemaker-runtime": {
+    "summary": "Invoke deployed SageMaker model endpoints for inference."
+  },
+  "schemas": {
+    "summary": "Discover and manage event schemas used with Amazon EventBridge.",
+    "name": "Amazon EventBridge Schemas"
+  },
+  "security-ir": {
+    "summary": "Manage security incident response memberships, cases and communications."
+  },
+  "ssm-sap": {
+    "summary": "Manage supported SAP applications through AWS Systems Manager.",
+    "name": "Systems Manager for SAP"
+  },
+  "timestream-query": {
+    "summary": "Run analytical queries against data in Amazon Timestream."
+  },
+  "trustedadvisor": {
+    "summary": "Retrieve and manage AWS Trusted Advisor recommendations and their status.",
+    "name": "AWS Trusted Advisor"
+  },
+  "bcm-recommended-actions": {
+    "points": [
+      "Retrieve recommended cost-management actions.",
+      "Filter recommendations to the criteria relevant to the account.",
+      "Review the suggested action before changing resources or spending plans."
+    ],
+    "summary": "Retrieve account-specific recommended actions for AWS cost management."
+  },
+  "cloudtrail-data": {
+    "points": [
+      "Send supported application events to CloudTrail Lake.",
+      "Associate ingested events with the configured integration channel.",
+      "Check ingestion responses for individual event failures."
+    ],
+    "summary": "Ingest external application activity into configured CloudTrail Lake integrations."
+  },
+  "connect-contact-lens": {
+    "points": [
+      "Retrieve analysis segments for a supported voice-analysis session.",
+      "Use the returned segments to follow an ongoing customer interaction.",
+      "Account for the API's retention and pagination behavior."
+    ],
+    "summary": "Retrieve real-time conversation-analysis segments from supported Amazon Connect sessions."
+  },
+  "ec2-instance-connect": {
+    "points": [
+      "Send a short-lived SSH public key for an EC2 connection.",
+      "Specify the instance and operating-system user for the connection.",
+      "SSH connectivity and IAM permission are still required."
+    ]
+  },
+  "eks-auth": {
+    "points": [
+      "Exchange supported pod identity tokens for temporary AWS credentials.",
+      "Used by the EKS Pod Identity Agent on behalf of workloads.",
+      "Applications consume the resulting credentials through supported SDKs."
+    ],
+    "summary": "Provide temporary AWS credentials to workloads using EKS Pod Identity."
+  },
+  "inspector-scan": {
+    "points": [
+      "Submit a supported CycloneDX software bill of materials.",
+      "Receive vulnerability findings associated with its components.",
+      "Use available severity scores to prioritize dependency review."
+    ]
+  },
+  "marketplace-deployment": {
+    "points": [
+      "Create or update deployment parameters for Marketplace integrations.",
+      "Associate parameters with the relevant catalog and agreement.",
+      "Use the returned identifiers in the product deployment workflow."
+    ]
+  },
+  "marketplace-entitlement": {
+    "points": [
+      "Retrieve entitlement values for a Marketplace product.",
+      "Filter results by supported customer or entitlement dimensions.",
+      "Use entitlements when deciding which purchased features to enable."
+    ],
+    "summary": "Retrieve the product entitlements purchased by Marketplace customers."
+  },
+  "marketplacecommerceanalytics": {
+    "points": [
+      "Request supported Marketplace commerce datasets.",
+      "Export the requested dataset to a configured S3 destination.",
+      "Use the notification result to detect when the export is available."
+    ],
+    "summary": "Export supported AWS Marketplace commerce datasets for analysis."
+  },
+  "sagemaker-metrics": {
+    "points": [
+      "Ingest supported model-training metrics.",
+      "Retrieve recorded metrics for training analysis.",
+      "Associate measurements with the correct training context and time."
+    ],
+    "summary": "Record and retrieve metrics associated with SageMaker training workloads."
+  },
+  "signer-data": {
+    "points": [
+      "Check revocation status for a signed artifact.",
+      "Evaluates the relevant signing profile, job or certificate state.",
+      "Use the result when deciding whether to trust an artifact signature."
+    ],
+    "summary": "Check whether an artifact's signing credentials or signing job have been revoked."
+  },
+  "sms-voice": {
+    "name": "AWS End User Messaging Voice API"
+  },
+  "pinpoint-sms-voice": {
+    "name": "Amazon Pinpoint SMS Voice API (legacy)"
+  },
+  "acm-pca": {
+    "summary": "Issue and manage private digital certificates using AWS Private Certificate Authority."
+  },
+  "applicationcostprofiler": {
+    "summary": "Allocate shared application infrastructure costs to individual tenants."
+  },
+  "artifact": {
+    "summary": "Access supported AWS compliance reports and manage applicable agreements."
+  },
+  "autoscaling": {
+    "summary": "Maintain healthy EC2 capacity and adjust instance counts as demand changes."
+  },
+  "dsql": {
+    "summary": "Manage distributed SQL database clusters with Amazon Aurora DSQL."
+  },
+  "finspace-data": {
+    "summary": "Access and manage datasets within a configured Amazon FinSpace environment."
+  },
+  "iam-toolbox": {
+    "summary": "Investigate authorization failures using IAM access-denied request details."
+  },
+  "ivs": {
+    "summary": "Create and manage low-latency live-streaming channels with Amazon IVS."
+  },
+  "ivs-realtime": {
+    "summary": "Build real-time audio and video experiences using Amazon IVS stages."
+  },
+  "kafka": {
+    "summary": "Create and operate managed Apache Kafka clusters with Amazon MSK."
+  },
+  "mediapackagev2": {
+    "summary": "Configure live video channels, origins and packaging with MediaPackage V2."
+  },
+  "meteringmarketplace": {
+    "summary": "Report and validate metered usage for supported AWS Marketplace products."
+  },
+  "network-firewall": {
+    "summary": "Inspect and filter network traffic with a managed VPC firewall."
+  },
+  "partnercentral-selling": {
+    "summary": "Manage sales opportunities and collaboration through AWS Partner Central."
+  },
+  "proton": {
+    "summary": "Define reusable infrastructure templates and provision supported application environments."
+  },
+  "redshift-serverless": {
+    "summary": "Run data-warehouse analytics using Redshift-managed capacity."
+  },
+  "elb": {
+    "name": "Elastic Load Balancing Classic API"
+  },
+  "gamelift": {
+    "summary": "Manage hosted multiplayer game-server fleets.",
+    "points": [
+      "Create and configure fleets for supported hosting options.",
+      "Use game sessions and placement queues to allocate game capacity.",
+      "Monitor fleet capacity and session availability."
+    ]
+  },
+  "invoicing": {
+    "summary": "Manage supported AWS invoice configuration and invoice units.",
+    "points": [
+      "Create invoice units with defined rules and recipients.",
+      "Retrieve invoice-related configuration and documents.",
+      "Review proposed changes before applying billing configuration updates."
+    ]
+  },
+  "omics": {
+    "summary": "Store omics data and run supported bioinformatics workflows.",
+    "points": [
+      "Manage sequence stores and their associated read sets.",
+      "Create and run workflows against supported input data.",
+      "Review current availability before adopting legacy variant or annotation stores."
+    ]
+  },
+  "waf": {
+    "summary": "Reference the legacy AWS WAF Classic web-filtering API.",
+    "points": [
+      "Defines classic web access control lists and matching rules.",
+      "Kept for understanding and migrating legacy configurations.",
+      "Use the WAFv2 documentation when building current web protections."
+    ],
+    "name": "AWS WAF Classic API (legacy)"
+  },
+  "waf-regional": {
+    "summary": "Reference regional web-filtering resources in AWS WAF Classic.",
+    "points": [
+      "Manages classic regional web ACLs and matching conditions.",
+      "Used to understand older regional application-protection setups.",
+      "Use WAFv2 resources and migration guidance for current implementations."
+    ],
+    "name": "AWS WAF Classic Regional API (legacy)"
+  }
+}

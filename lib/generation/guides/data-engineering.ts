@@ -1,0 +1,71 @@
+import type { TechnologyGuide } from "./index";
+
+const guide: TechnologyGuide = {
+  id: "data-engineering", technologyId: "data-engineering", topicId: "modern-data-stack", level: "intermediate",
+  curriculum: {
+    title: "Modern data stack & data engineering", minutes: 180,
+    objectives: ["Trace data from ingestion to a trustworthy analytical product.", "Build repeatable transformations with explicit grain and quality checks.", "Distinguish orchestration, event streaming and lakehouse storage.", "Plan safe backfills, ownership and access boundaries."],
+    prerequisites: ["SQL SELECT, JOIN and GROUP BY.", "Basic Python and command-line skills."],
+    lessons: [
+      {
+        title: "Architecture: source, ingestion, storage and serving",
+        diagram: {"kind": "flow", "caption": "Source systems → Raw ingestion → Clean models → Business mart → Data product", "items": [{"label": "Source systems"}, {"label": "Raw ingestion"}, {"label": "Clean models"}, {"label": "Business mart"}, {"label": "Data product"}]},
+        explanation: "- Start with the business question and freshness requirement\n- Separate source extraction, raw storage, transformation and serving responsibilities\n- Batch suits periodic reports; streaming suits event-driven consumers with tighter freshness requirements\n- Preserve enough source history to replay a failed transformation\n- Define the grain: what exactly does one row represent?\n- Assign an owner and an access policy to every published dataset",
+        example: "A shop needs yesterday's revenue by region at 08:00. A daily orders extract and warehouse model are sufficient. A separate fraud consumer needs order events quickly; it should not wait for the daily report pipeline. Both agree on the meaning and uniqueness of order_id.",
+        code: "-- models/orders_daily.sql — one row per day and region\nSELECT CAST(ordered_at AS DATE) AS order_day, region,\n       SUM(amount_cents) AS revenue_cents\nFROM clean_orders\nWHERE status = 'paid'\nGROUP BY CAST(ordered_at AS DATE), region;\n",
+        keyPoints: [{ tone: "tip", title: "Try it yourself", text: "Use the worked example as a starting point, change one input, and compare the result with your prediction." }],
+        exercise: "Draw a pipeline for the shop. Label each boundary with owner, data format, freshness requirement and retry strategy. Decide how refunds affect the revenue definition.",
+        checkpoint: "Can two teams reproduce the same revenue number using your grain and business definition?",
+        mistake: "Choosing streaming infrastructure for every dataset before establishing the actual freshness requirement.",
+      },
+      {
+        title: "Transformations and quality with dbt",
+        diagram: {"kind": "flow", "caption": "Source → Staging model → Contract tests → Revenue mart", "items": [{"label": "Source"}, {"label": "Staging model"}, {"label": "Contract tests"}, {"label": "Revenue mart"}]},
+        explanation: "- dbt models describe transformations in a version-controlled project\n- Use ref to express dependencies between models\n- Keep source cleanup separate from business-facing marts\n- Add uniqueness, nullability and relationship tests where the data contract requires them\n- Review compiled SQL as well as source SQL when diagnosing unexpected results\n- A successful query can still produce incorrect business data; test the grain and meaning",
+        example: "Two copies of order 42 arrive after an upstream retry. A revenue query still runs successfully but doubles the total. A unique order_id test in the cleaned model identifies the duplicate before the daily mart is published.",
+        code: "-- models/marts/daily_revenue.sql\nSELECT order_day, SUM(amount_cents) AS revenue_cents\nFROM {{ ref('stg_orders') }}\nGROUP BY order_day;\n\n-- A diagnostic query: any output violates the unique order contract.\nSELECT order_id, COUNT(*) AS copies\nFROM clean_orders\nGROUP BY order_id\nHAVING COUNT(*) > 1;\n",
+        keyPoints: [{ tone: "tip", title: "Try it yourself", text: "Use the worked example as a starting point, change one input, and compare the result with your prediction." }],
+        exercise: "Add tests for duplicate order IDs, missing currency and invalid customer references. Create one bad fixture per rule and explain whether the pipeline should block publication or quarantine rows.",
+        checkpoint: "Why does a zero-error SQL execution not prove that the revenue mart is correct?",
+        mistake: "Combining amounts across currencies without a documented conversion rule and rate date.",
+      },
+      {
+        title: "Orchestration, retries and safe backfills",
+        diagram: {"kind": "flow", "caption": "Logical interval → Extract → Validate → Publish → Observe", "items": [{"label": "Logical interval"}, {"label": "Extract"}, {"label": "Validate"}, {"label": "Publish"}, {"label": "Observe"}]},
+        explanation: "- An orchestrator coordinates task dependencies and execution; a warehouse or processing engine performs the data work\n- In Airflow, express the workflow as a DAG and keep tasks focused\n- Retry transient failures with limits and actionable alerts\n- Process an explicit data interval so rerunning yesterday does not accidentally ingest today\n- Design idempotent outputs so retries do not create duplicate rows\n- Backfill a small interval first and compare totals before increasing the range",
+        example: "A network failure occurs after the export writes a file but before its task reports success. A retry writes to the same interval-specific staging location and validates a manifest. Publication happens only after validation, preventing the dashboard from reading half an export.",
+        code: "# jobs/partition.py — pure partition naming used by an orchestrated task\nfrom datetime import date\n\ndef output_key(day: date) -> str:\n    # Retries of the same logical date target the same partition.\n    return f'orders/day={day.isoformat()}/validated.json'\n\nassert output_key(date(2026, 9, 1)) == 'orders/day=2026-09-01/validated.json'\n",
+        keyPoints: [{ tone: "tip", title: "Try it yourself", text: "Use the worked example as a starting point, change one input, and compare the result with your prediction." }],
+        exercise: "Write a failure table covering extract failure, partial write, failed validation and publication failure. Identify which steps are retryable and what evidence proves the output is complete.",
+        checkpoint: "If a task runs twice for one interval, can you prove the final dataset is the same as after one successful run?",
+        mistake: "Using wall-clock now() throughout a backfill, making historical runs process the wrong interval.",
+      },
+      {
+        title: "Streaming, lakehouses and operational contracts",
+        diagram: {"kind": "flow", "caption": "Order events → Kafka partitions → Replay-safe sink → Analytical table", "items": [{"label": "Order events"}, {"label": "Kafka partitions"}, {"label": "Replay-safe sink"}, {"label": "Analytical table"}]},
+        explanation: "- Kafka retains events in partitioned logs so independent consumers can process them\n- Choose keys with ordering requirements in mind; do not assume a global ordering across partitions\n- Track consumer progress and design sinks for replayed events\n- Iceberg adds table metadata and snapshot-based table operations over analytical data files\n- Plan schema evolution and retention together with readers and owners\n- Monitor freshness, volume, schema drift and quality failures rather than only job success",
+        example: "An order event is delivered twice to an analytical sink. The sink uses an event identifier and an upsert rule to avoid counting it twice. A late correction is applied according to event version, with an audit record explaining why yesterday's total changed.",
+        code: "# contracts/order-event.json — example envelope for a replayable event\n{\n  \"event_id\": \"evt-42-v2\",\n  \"order_id\": 42,\n  \"version\": 2,\n  \"occurred_at\": \"2026-09-01T10:00:00Z\",\n  \"amount_cents\": 2400,\n  \"currency\": \"INR\"\n}\n",
+        keyPoints: [{ tone: "tip", title: "Try it yourself", text: "Use the worked example as a starting point, change one input, and compare the result with your prediction." }],
+        exercise: "Replay an event, then deliver an older version after a correction. Specify the sink's expected state. Add a new optional field and explain how older consumers continue to work.",
+        checkpoint: "What prevents a replay from duplicating revenue, and where is that guarantee implemented?",
+        mistake: "Assuming the broker alone guarantees exactly-once effects in an unrelated external database.",
+      },
+    ],
+    project: "Build a small orders pipeline from raw CSV to a daily revenue mart. Keep the raw input, validate keys and currency, produce a deterministic partition, and test a retry and a two-day backfill. Add a data dictionary, ownership record and freshness alert. Document how the design would change for late-arriving order events.",
+    summary: "A useful modern data stack is organized around data contracts and operating needs. Ingestion captures source changes, transformations establish business meaning, orchestration coordinates repeatable work, and streaming or lakehouse tools serve specific requirements. Quality, access and recovery belong in the design from the first dataset.",
+    glossary: [
+      { term: "Grain", definition: "The precise meaning of one row in a dataset." },
+      { term: "Idempotency", definition: "Repeating an operation produces the same intended final state." },
+      { term: "Backfill", definition: "Processing historical intervals to populate or repair data." },
+      { term: "Data contract", definition: "An agreement on schema, meaning, quality, ownership and expected availability." },
+    ],
+    sources: [
+      ["https://docs.getdbt.com/docs/introduction", "dbt introduction"],
+      ["https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/overview.html", "Apache Airflow architecture"],
+      ["https://kafka.apache.org/documentation/", "Apache Kafka documentation"],
+      ["https://iceberg.apache.org/docs/latest/", "Apache Iceberg documentation"],
+    ].map(([url, title]) => ({ url, title, retrievedAt: "2026-09-12T00:00:00.000Z" })),
+  },
+};
+export default guide;

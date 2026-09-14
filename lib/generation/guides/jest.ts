@@ -1,0 +1,343 @@
+import type { TechnologyGuide } from "./index";
+import { source } from "./shared";
+
+/** Jest 30, grounded in jestjs.io: getting started, expect, mock functions, timer mocks and the Jest 30 release notes. */
+const guide: TechnologyGuide = {
+  id: "jest",
+  technologyId: "jest",
+  topicId: "jest-30",
+  level: "beginner",
+  curriculum: {
+    title: "Jest 30: unit testing JavaScript and TypeScript",
+    minutes: 180,
+    objectives: [
+      "Install and configure Jest 30 for a JavaScript or TypeScript project.",
+      "Write clear tests with describe, test and the right matchers.",
+      "Isolate code with mock functions, spies and module mocks.",
+      "Test asynchronous code and timers deterministically.",
+      "Use snapshots, coverage and CI flags without making tests brittle.",
+    ],
+    prerequisites: [
+      "Node.js 18 or newer (Jest 30 drops Node 14, 16, 19 and 21).",
+      "JavaScript functions, promises and modules.",
+      "TypeScript 5.4+ if you test TypeScript.",
+    ],
+    lessons: [
+      {
+        title: "Setting up Jest 30",
+        diagram: {
+          kind: "flow",
+          caption: "What happens when you run npx jest: Jest finds test files, transforms them, runs each file in an isolated environment and reports the results.",
+          items: [
+            { label: "Read jest.config.ts", detail: "testEnvironment, transform, setup files" },
+            { label: "Find test files", detail: "*.test.ts, *.spec.ts or __tests__/ folders" },
+            { label: "Transform source", detail: "Babel or ts-jest for TypeScript/JSX" },
+            { label: "Run each file in isolation", detail: "node or jsdom environment, in parallel workers" },
+            { label: "Report", detail: "pass/fail, diffs, optional coverage" },
+          ],
+        },
+        explanation: "- Jest is a test runner, assertion library and mocking toolkit in one package\n- Install it as a dev dependency and add a test script to package.json\n- Test files end in .test.js or .spec.js, or live in __tests__ folders\n- testEnvironment 'node' is the default; use 'jsdom' (jest-environment-jsdom) for browser APIs\n- Jest 30 supports config files written in TypeScript, including .mts and .cts",
+        keyPoints: [
+          { tone: "key", title: "Jest 30 raises the floor", text: "Jest 30 requires Node.js 18 or newer, supports TypeScript 5.4+, ships jsdom 26 and bundles each package into a single file. Config files may be written in TypeScript, including .mts and .cts.", example: "npm install --save-dev jest@30" },
+          { tone: "tip", title: "Run exactly the tests you need", text: "Pass a path to run one file, -t to filter by test name, and --watch to rerun tests related to changed files. The path filter flag is now --testPathPatterns (plural).", example: "npx jest --testPathPatterns=cart -t 'applies coupon'" },
+          { tone: "warning", title: "Pick the environment deliberately", text: "The default testEnvironment is node. Use jsdom only for code that touches the DOM, since it is slower; configure it per project or per file with a docblock.", example: "/** @jest-environment jsdom */" },
+        ],
+        example: "- npm install --save-dev jest\n- \"scripts\": { \"test\": \"jest\" } in package.json\n- sum.test.js next to sum.js is picked up automatically\n- npx jest --watch reruns tests related to changed files",
+        code: "// sum.js\nexport function sum(a, b) {\n  return a + b;\n}\n\n// sum.test.js\nimport { sum } from './sum';\n\ntest('adds 1 + 2 to equal 3', () => {\n  expect(sum(1, 2)).toBe(3);\n});\n\n// jest.config.ts\nimport type { Config } from 'jest';\n\nconst config: Config = {\n  testEnvironment: 'jsdom',          // browser-like APIs\n  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],\n  clearMocks: true,                  // reset mock calls between tests\n  coverageProvider: 'v8',\n};\n\nexport default config;\n\n// Terminal\n// npx jest                         run everything\n// npx jest --watch                 rerun on change\n// npx jest --testPathPatterns=cart only files matching 'cart'",
+        apiReference: [
+          {
+            name: "jest CLI",
+            kind: "command",
+            signature: "npx jest [paths] [-t name] [--watch] [--coverage] [--ci] [--testPathPatterns=regex]",
+            params: [
+              { name: "-t, --testNamePattern", type: "regex", description: "Run only tests whose name matches." },
+              { name: "--watch", type: "flag", description: "Rerun tests related to changed files." },
+              { name: "--testPathPatterns", type: "regex", description: "Run only test files whose path matches (renamed in Jest 30)." },
+            ],
+            returns: "Exit code 0 when all tests pass, 1 otherwise.",
+          },
+        ],
+        exercise: "- Install Jest in a new project and write one passing and one failing test\n- Switch testEnvironment to jsdom and test a function that uses document\n- Run only tests whose name contains 'total'",
+        checkpoint: "- Which file names does Jest treat as tests?\n- When do you need the jsdom environment?\n- What was --testPathPattern renamed to in Jest 30?",
+        mistake: "- Do not rely on test order; each test should set up what it needs\n- Do not use the jsdom environment for pure Node code; it is slower\n- Do not commit focused tests (test.only) that silently skip the rest",
+      },
+      {
+        title: "Writing tests with matchers",
+        diagram: {
+          kind: "split",
+          caption: "Choosing an equality matcher: toBe checks identity, toEqual checks recursive value equality, and toStrictEqual also checks undefined properties, array sparseness and class types.",
+          headings: ["Identity and primitives", "Structures"],
+          items: [
+            { label: "toBe(value)", detail: "Object.is: numbers, strings, same reference", group: 0 },
+            { label: "toBeNull / toBeUndefined / toBeDefined", group: 0 },
+            { label: "toBeCloseTo(0.3)", detail: "floating-point comparisons", group: 0 },
+            { label: "toEqual(obj)", detail: "deep equality, ignores undefined props", group: 1 },
+            { label: "toStrictEqual(obj)", detail: "deep equality, stricter", group: 1 },
+            { label: "toMatchObject(subset)", detail: "only the listed properties", group: 1 },
+          ],
+        },
+        explanation: "- A test is a name plus a function; expect(value) returns matchers that assert on it\n- Group related tests with describe for readable output\n- Prefix any matcher with .not to invert it\n- Use asymmetric matchers inside objects: expect.any(Number), expect.stringContaining('ok')\n- Jest 30 adds expect.arrayOf to check every element of an array",
+        keyPoints: [
+          { tone: "key", title: "toBe for identity, toEqual for structure", text: "toBe uses Object.is, so it suits primitives and same-reference checks. toEqual compares objects and arrays recursively, and toStrictEqual additionally checks undefined properties and class types.", example: "expect({ a: 1 }).toEqual({ a: 1 })" },
+          { tone: "tip", title: "Asymmetric matchers keep tests focused", text: "expect.any, expect.stringContaining, expect.objectContaining and Jest 30's expect.arrayOf let you assert what matters and ignore incidental values such as generated ids or timestamps.", example: "expect(ids).toEqual(expect.arrayOf(expect.any(String)))" },
+          { tone: "warning", title: "Jest 30 removed matcher aliases", text: "Old aliases are gone: use toHaveBeenCalled instead of toBeCalled and toThrow instead of toThrowError. The eslint-plugin-jest no-alias-methods rule can fix a codebase automatically.", example: "expect(fn).toHaveBeenCalledTimes(1)" },
+        ],
+        example: "- expect(2 + 2).toBe(4)\n- expect({ a: 1, b: undefined }).toEqual({ a: 1 }) passes, toStrictEqual fails\n- expect(prices).toEqual(expect.arrayOf(expect.any(Number)))\n- expect(() => divide(1, 0)).toThrow('Cannot divide by zero')",
+        code: "import { cartTotal, parsePrice } from './cart';\n\ndescribe('cartTotal', () => {\n  test('sums line items', () => {\n    const items = [{ price: 100, qty: 2 }, { price: 50, qty: 1 }];\n    expect(cartTotal(items)).toBe(250);\n  });\n\n  test('returns 0 for an empty cart', () => {\n    expect(cartTotal([])).toBe(0);\n  });\n});\n\ndescribe('parsePrice', () => {\n  test('returns structured data', () => {\n    expect(parsePrice('₹1,299.50')).toEqual({\n      currency: 'INR',\n      amount: expect.any(Number),\n    });\n  });\n\n  test('rejects garbage', () => {\n    expect(() => parsePrice('abc')).toThrow(/invalid price/i);\n  });\n\n  test('every price is a number', () => {\n    const prices = ['₹10', '₹20'].map(p => parsePrice(p).amount);\n    expect(prices).toEqual(expect.arrayOf(expect.any(Number)));   // Jest 30\n  });\n});",
+        apiReference: [
+          {
+            name: "expect",
+            kind: "function",
+            signature: "expect(value).matcher(expected)\nexpect(value).not.matcher(expected)",
+            params: [{ name: "value", type: "any", description: "The actual value produced by the code under test." }],
+            returns: "A matcher object; a failed matcher throws with a readable diff.",
+            notes: "Common matchers: toBe, toEqual, toStrictEqual, toMatchObject, toContain, toHaveLength, toBeTruthy, toBeCloseTo, toThrow.",
+          },
+          {
+            name: "expect.arrayOf",
+            kind: "asymmetric matcher (Jest 30)",
+            signature: "expect.arrayOf(matcher)",
+            params: [{ name: "matcher", type: "asymmetric matcher | value", description: "Every element must match it." }],
+            returns: "A matcher usable inside toEqual.",
+          },
+        ],
+        exercise: "- Write tests that pass with toEqual but fail with toStrictEqual, and explain why\n- Assert that a function throws a specific message\n- Use expect.objectContaining to check part of an API response",
+        checkpoint: "- Why does toBe fail for two identical object literals?\n- Why must toThrow receive a function?\n- What replaces toBeCalled in Jest 30?",
+        mistake: "- Do not assert on too much at once; one behaviour per test\n- Do not use toBe for floats; use toBeCloseTo\n- Do not write test names like 'test 1'; describe the behaviour",
+        interview: [
+          {
+            question: "What is the difference between toBe, toEqual and toStrictEqual in Jest?",
+            definition: "toBe compares with Object.is; toEqual compares values recursively; toStrictEqual compares recursively with stricter rules.",
+            answer: "toBe passes only for the same primitive value or the same object reference. toEqual passes for different objects with equal content, ignoring properties that are undefined. toStrictEqual additionally checks undefined properties, sparse arrays and that class instances have the same type, so {a: undefined, b: 2} does not equal {b: 2}.",
+            code: "expect([1, 2]).toBe([1, 2]);            // ❌ different references\nexpect([1, 2]).toEqual([1, 2]);          // ✅\nexpect({ a: undefined, b: 2 }).toEqual({ b: 2 });        // ✅\nexpect({ a: undefined, b: 2 }).toStrictEqual({ b: 2 });  // ❌",
+            similar: [
+              { question: "What is an asymmetric matcher?", answer: "A matcher like expect.any(String) used inside another value to match loosely instead of exactly." },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Setup, teardown and table-driven tests",
+        diagram: {
+          kind: "flow",
+          caption: "The order of hooks around each test: top-level beforeAll once, then for every test the beforeEach hooks from outer to inner, the test, and afterEach from inner to outer.",
+          items: [
+            { label: "beforeAll", detail: "once per file or describe block" },
+            { label: "beforeEach (outer, then inner)", detail: "fresh state for every test" },
+            { label: "test body", detail: "arrange, act, assert" },
+            { label: "afterEach (inner, then outer)", detail: "clean up per test" },
+            { label: "afterAll", detail: "once at the end: close connections" },
+          ],
+        },
+        explanation: "- beforeEach and afterEach run around every test in their scope\n- beforeAll and afterAll run once per file or describe block\n- test.each runs one test body against a table of inputs\n- Jest 30 adds the %$ placeholder for the case number in test.each titles\n- test.skip and test.todo document work without failing the suite",
+        keyPoints: [
+          { tone: "key", title: "beforeEach gives every test fresh state", text: "Tests should not depend on each other or on order. Create state in beforeEach and clean it in afterEach; reserve beforeAll for expensive, read-only setup such as starting a test server.", example: "beforeEach(() => { cart = new Cart(); })" },
+          { tone: "tip", title: "Turn repetition into a table", text: "test.each runs one test body against many inputs, and Jest 30's %$ placeholder numbers each case in the output so a failure points straight at the row that broke.", example: "test.each(cases)('Case %$: $code gives $expected', ...)" },
+          { tone: "warning", title: "Never commit focused tests", text: "test.only and describe.only silently skip every other test in the file, so CI can pass while most tests never ran. Lint for them or run CI with --ci.", example: "test.only(...)  // remove before committing" },
+        ],
+        example: "- beforeEach(() => { cart = new Cart(); })\n- afterAll(async () => { await db.close(); })\n- test.each(cases)('Case %$ works as expected', ...) numbers each case\n- test.todo('handles coupons') lists planned tests",
+        code: "import { Cart } from './cart';\n\nlet cart: Cart;\n\nbeforeEach(() => {\n  cart = new Cart();          // fresh cart for every test\n});\n\ndescribe('discounts', () => {\n  beforeEach(() => {\n    cart.add({ id: 'book', price: 500 });\n  });\n\n  test.each([\n    { code: 'SAVE10', expected: 450 },\n    { code: 'SAVE50', expected: 250 },\n    { code: 'BOGUS', expected: 500 },\n  ])('Case %$: $code gives $expected', ({ code, expected }) => {\n    cart.applyCoupon(code);\n    expect(cart.total()).toBe(expected);\n  });\n\n  test.todo('stacks two coupons');\n});",
+        exercise: "- Refactor three near-identical tests into one test.each table\n- Add beforeEach to remove shared state that makes tests order-dependent\n- Use afterAll to close a fake server",
+        checkpoint: "- In what order do nested beforeEach hooks run?\n- When is beforeAll a bad choice?\n- What does %$ insert in a test.each title?",
+        mistake: "- Do not share mutable objects across tests without resetting them\n- Do not hide assertions inside hooks\n- Do not leave test.only in committed code",
+      },
+      {
+        title: "Mock functions and spies",
+        diagram: {
+          kind: "tree",
+          caption: "Three ways to fake behaviour, from the most isolated to the least: a standalone mock function, a spy on an existing method, and a whole mocked module.",
+          items: [
+            { label: "jest.fn()", detail: "a standalone fake, passed in as a callback or dependency" },
+            { label: "mockReturnValue / mockResolvedValue", depth: 1 },
+            { label: "mock.calls, mock.results", depth: 1 },
+            { label: "jest.spyOn(obj, 'method')", detail: "wrap a real method; restore it after" },
+            { label: "using spy = jest.spyOn(...)", detail: "Jest 30: restored automatically at scope end", depth: 1 },
+            { label: "Resetting", detail: "clear vs reset vs restore" },
+            { label: "mockClear", detail: "forget calls", depth: 1 },
+            { label: "mockReset", detail: "forget calls and implementation", depth: 1 },
+            { label: "mockRestore", detail: "put the original method back (spies)", depth: 1 },
+          ],
+        },
+        explanation: "- A mock function records every call and lets you choose what it returns\n- Pass mocks as callbacks or injected dependencies to isolate the unit under test\n- jest.spyOn wraps an existing method so you can observe or replace it\n- Jest 30 supports using spy = jest.spyOn(...), restoring the spy when the block ends\n- clearMocks, resetMocks and restoreMocks config options reset mocks between tests",
+        keyPoints: [
+          { tone: "key", title: "Assert on how mocks were called", text: "A jest.fn records every call. Check arguments and counts with toHaveBeenCalledWith and toHaveBeenCalledTimes rather than only 'was called', so the test proves the right data flowed through.", example: "expect(send).toHaveBeenCalledWith('a@x.in', expect.any(String))" },
+          { tone: "tip", title: "Let using restore spies for you", text: "Jest 30 supports explicit resource management: a spy declared with using is restored automatically at the end of the block, so global objects like console or Date never leak into other tests.", example: "using warn = jest.spyOn(console, 'warn')" },
+          { tone: "warning", title: "Mock boundaries, not your own logic", text: "Mocking everything tests the mocks. Replace only the edges you cannot control in a unit test: network, time, randomness and third-party services. Keep the code under test real.", example: "jest.spyOn(Math, 'random').mockReturnValue(0.5)" },
+        ],
+        example: "- const onSave = jest.fn(); form.submit(onSave); expect(onSave).toHaveBeenCalledWith({ name: 'Asha' })\n- jest.fn().mockReturnValueOnce(1).mockReturnValue(2)\n- const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})\n- using spy = jest.spyOn(Math, 'random').mockReturnValue(0.5)",
+        code: "import { notifyAll } from './notify';\n\ntest('calls send once per user with their email', () => {\n  const send = jest.fn().mockReturnValue(true);\n  const users = [{ email: 'a@x.in' }, { email: 'b@x.in' }];\n\n  notifyAll(users, send);\n\n  expect(send).toHaveBeenCalledTimes(2);\n  expect(send).toHaveBeenNthCalledWith(1, 'a@x.in', expect.any(String));\n  expect(send.mock.results[0].value).toBe(true);\n});\n\ntest('logs a warning for an empty list', () => {\n  using warn = jest.spyOn(console, 'warn').mockImplementation(() => {});  // Jest 30\n  notifyAll([], jest.fn());\n  expect(warn).toHaveBeenCalledWith('No users to notify');\n});   // warn is restored automatically here",
+        apiReference: [
+          {
+            name: "jest.fn",
+            kind: "function",
+            signature: "const mock = jest.fn(implementation?)",
+            params: [{ name: "implementation", type: "function", description: "Optional behaviour; otherwise returns undefined." }],
+            returns: "A mock function with .mock.calls, .mock.results and chainable mockReturnValue, mockResolvedValue, mockImplementation.",
+          },
+          {
+            name: "jest.spyOn",
+            kind: "function",
+            signature: "jest.spyOn(object, methodName, accessType?)",
+            params: [
+              { name: "object", type: "object", description: "The object that owns the method." },
+              { name: "methodName", type: "string", description: "The method to wrap." },
+            ],
+            returns: "A mock that calls the original unless you give it an implementation; restore with mockRestore or using.",
+          },
+        ],
+        exercise: "- Test a function that calls a callback twice with different arguments\n- Spy on Date.now to make a timestamp deterministic\n- Compare mockClear, mockReset and mockRestore in three tiny tests",
+        checkpoint: "- When would you use jest.spyOn instead of jest.fn?\n- What is the difference between mockReset and mockRestore?\n- What does the using keyword do with a spy in Jest 30?",
+        mistake: "- Do not forget to restore spies on global objects\n- Do not assert only that a mock was called; check the arguments\n- Do not mock the module you are trying to test",
+        interview: [
+          {
+            question: "What is the difference between mockClear, mockReset and mockRestore?",
+            definition: "They reset a mock to different degrees: history only, history and implementation, or the original function.",
+            answer: "mockClear empties mock.calls and mock.results but keeps the implementation. mockReset also removes any implementation or return values, so the mock returns undefined. mockRestore, for spies created with jest.spyOn, restores the original method. The config options clearMocks, resetMocks and restoreMocks apply them automatically before every test.",
+            similar: [
+              { question: "Why prefer dependency injection for testability?", answer: "Passing collaborators in lets tests supply jest.fn() fakes without module mocking." },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Mocking modules",
+        diagram: {
+          kind: "flow",
+          caption: "jest.mock calls are hoisted above imports, so the mocked module is in the registry before your test file imports the code that depends on it.",
+          items: [
+            { label: "jest.mock('./api') is hoisted", detail: "moved to the top of the file by Jest's transform" },
+            { label: "Module registry replaced", detail: "automock, factory or __mocks__/api.ts" },
+            { label: "Test imports the unit", detail: "it receives the mocked ./api" },
+            { label: "Test configures return values", detail: "jest.mocked(fetchUser).mockResolvedValue(...)" },
+          ],
+        },
+        explanation: "- jest.mock(path) replaces a module for the whole test file\n- A factory returns exactly what the mock module exports\n- jest.requireActual keeps some real exports while faking others\n- A __mocks__ folder next to a module provides a reusable manual mock\n- For native ESM, use jest.unstable_mockModule with dynamic import; Jest 30 adds jest.unstable_unmockModule",
+        keyPoints: [
+          { tone: "key", title: "jest.mock is hoisted above imports", text: "Jest moves jest.mock calls to the top of the file so the module registry is replaced before any import runs. Because of that, a factory can only use variables prefixed with mock or created inside it.", example: "jest.mock('./api', () => ({ fetchUser: jest.fn() }))" },
+          { tone: "tip", title: "Keep the real parts with requireActual", text: "Spread jest.requireActual into a factory to fake one export while keeping the rest of the module real, and use jest.mocked(fn) for correctly typed mock methods in TypeScript.", example: "({ ...jest.requireActual('./utils'), now: () => 0 })" },
+          { tone: "warning", title: "Module mocks apply to the whole file", text: "Every test in the file gets the mocked module. Reset return values in beforeEach, and put tests that need a different module setup in another file or jest.isolateModules.", example: "beforeEach(() => jest.mocked(fetchUser).mockReset())" },
+        ],
+        example: "- jest.mock('./api') auto-mocks every export\n- jest.mock('./api', () => ({ fetchUser: jest.fn() })) supplies a factory\n- jest.mock('./utils', () => ({ ...jest.requireActual('./utils'), now: () => 0 }))\n- jest.mocked(fetchUser).mockResolvedValue({ id: 1, name: 'Asha' })",
+        code: "// profile.ts\nimport { fetchUser } from './api';\nexport async function greeting(id: number) {\n  const user = await fetchUser(id);\n  return `Hello, ${user.name}!`;\n}\n\n// profile.test.ts\nimport { greeting } from './profile';\nimport { fetchUser } from './api';\n\njest.mock('./api', () => ({\n  fetchUser: jest.fn(),\n}));\n\nbeforeEach(() => {\n  jest.mocked(fetchUser).mockReset();\n});\n\ntest('greets the fetched user', async () => {\n  jest.mocked(fetchUser).mockResolvedValue({ id: 7, name: 'Asha' });\n  await expect(greeting(7)).resolves.toBe('Hello, Asha!');\n  expect(fetchUser).toHaveBeenCalledWith(7);\n});\n\ntest('propagates API errors', async () => {\n  jest.mocked(fetchUser).mockRejectedValue(new Error('404'));\n  await expect(greeting(1)).rejects.toThrow('404');\n});",
+        apiReference: [
+          {
+            name: "jest.mock",
+            kind: "function",
+            signature: "jest.mock(moduleName, factory?, options?)",
+            params: [
+              { name: "moduleName", type: "string", description: "Path or package name to replace." },
+              { name: "factory", type: "() => exports", description: "Returns the fake module; omit for automock or __mocks__." },
+              { name: "options.virtual", type: "boolean", description: "Mock a module that does not exist on disk." },
+            ],
+            returns: "undefined; the registry serves the mock to every import in the file.",
+          },
+        ],
+        exercise: "- Mock an API module and test both the success and error paths\n- Keep a module's real helpers with requireActual while faking one export\n- Create a __mocks__ manual mock and use it from two test files",
+        checkpoint: "- Why can a jest.mock factory not use normal outer variables?\n- What does jest.requireActual return?\n- How is ESM mocking different?",
+        mistake: "- Do not mock everything a module imports; mock the boundary only\n- Do not forget to reset mocked return values between tests\n- Do not reference outer variables in a hoisted factory unless prefixed with mock",
+      },
+      {
+        title: "Async code and fake timers",
+        diagram: {
+          kind: "split",
+          caption: "Asynchronous tests must wait for the work to finish; timer-based code is made instant and deterministic with fake timers.",
+          headings: ["Promises", "Timers"],
+          items: [
+            { label: "async test + await", detail: "the clearest style", group: 0 },
+            { label: ".resolves / .rejects", detail: "await expect(p).resolves.toBe(x)", group: 0 },
+            { label: "expect.assertions(n)", detail: "fail if an assertion never ran", group: 0 },
+            { label: "jest.useFakeTimers()", detail: "replace setTimeout, Date and friends", group: 1 },
+            { label: "jest.advanceTimersByTime(ms)", detail: "move the clock forward", group: 1 },
+            { label: "jest.runAllTimers() / useRealTimers()", detail: "flush or restore", group: 1 },
+          ],
+        },
+        explanation: "- Return or await a promise so Jest waits for it; otherwise the test finishes early\n- .resolves and .rejects unwrap a promise inside expect and must themselves be awaited\n- Jest 30 now correctly handles promises that are rejected first and caught later\n- Fake timers make setTimeout, setInterval and Date controllable\n- Advance time explicitly instead of waiting for real delays",
+        keyPoints: [
+          { tone: "key", title: "Always await async assertions", text: "If a test does not return or await its promise, Jest finishes the test before the assertion runs and reports a pass. Await the call, and await .resolves or .rejects matchers too.", example: "await expect(load('x')).rejects.toThrow('not found')" },
+          { tone: "tip", title: "Fake timers make time instant", text: "jest.useFakeTimers replaces setTimeout, setInterval and Date so debounce, retry and polling logic can be tested by advancing the clock instead of waiting for real delays.", example: "jest.advanceTimersByTime(300)" },
+          { tone: "warning", title: "Restore real timers afterwards", text: "Fake timers left active affect every later test in the file, including libraries that rely on real time. Pair useFakeTimers with useRealTimers in afterEach, or enable them in config.", example: "afterEach(() => jest.useRealTimers())" },
+        ],
+        example: "- test('loads', async () => { const data = await load(); expect(data).toHaveLength(3) })\n- await expect(fetchUser(-1)).rejects.toThrow('not found')\n- jest.useFakeTimers(); debounced('a'); jest.advanceTimersByTime(300)\n- jest.setSystemTime(new Date('2026-01-01')) fixes Date.now()",
+        code: "import { debounce } from './debounce';\nimport { loadOrders } from './orders';\n\ntest('loads orders', async () => {\n  const orders = await loadOrders('user-1');\n  expect(orders).toHaveLength(2);\n});\n\ntest('rejects unknown users', async () => {\n  expect.assertions(1);\n  await expect(loadOrders('nobody')).rejects.toThrow('User not found');\n});\n\ndescribe('debounce', () => {\n  beforeEach(() => jest.useFakeTimers());\n  afterEach(() => jest.useRealTimers());\n\n  test('calls once after the quiet period', () => {\n    const save = jest.fn();\n    const debounced = debounce(save, 300);\n\n    debounced('a');\n    debounced('ab');\n    debounced('abc');\n    expect(save).not.toHaveBeenCalled();\n\n    jest.advanceTimersByTime(300);\n    expect(save).toHaveBeenCalledTimes(1);\n    expect(save).toHaveBeenCalledWith('abc');\n  });\n});",
+        apiReference: [
+          {
+            name: "jest.useFakeTimers",
+            kind: "function",
+            signature: "jest.useFakeTimers({ now?, doNotFake?, advanceTimers? })",
+            params: [
+              { name: "now", type: "number | Date", description: "The initial system time." },
+              { name: "doNotFake", type: "string[]", description: "APIs to leave real, e.g. ['nextTick']." },
+            ],
+            returns: "undefined; timers and Date are faked until jest.useRealTimers().",
+          },
+        ],
+        exercise: "- Test a function that retries a failed fetch three times with fake timers\n- Write a test that wrongly forgets to await, see it pass, then fix it\n- Freeze Date with setSystemTime and test a 'posted 5 minutes ago' formatter",
+        checkpoint: "- What happens if an async test does not await its promise?\n- Why add expect.assertions in rejection tests?\n- When do you need the async timer-advance functions?",
+        mistake: "- Do not use real setTimeout delays in tests; they are slow and flaky\n- Do not mix done callbacks with async functions\n- Do not leave fake timers active for unrelated tests",
+      },
+      {
+        title: "Snapshots, coverage and CI",
+        diagram: {
+          kind: "flow",
+          caption: "The snapshot workflow: the first run writes a snapshot, later runs compare against it, and an intentional change is reviewed and accepted with -u.",
+          items: [
+            { label: "First run", detail: "serialises the value into __snapshots__/" },
+            { label: "Later runs", detail: "compare output with the stored snapshot" },
+            { label: "Mismatch", detail: "the test fails with a diff" },
+            { label: "Intentional change?", detail: "review, then npx jest -u to update" },
+          ],
+        },
+        explanation: "- toMatchSnapshot stores serialised output in a file; toMatchInlineSnapshot writes it into the test\n- Snapshots are code: review them in pull requests like any other change\n- --coverage reports which lines, branches and functions tests executed\n- coverageThreshold fails the run when coverage drops below your targets\n- In CI, --ci refuses to write new snapshots so missing ones fail instead of passing silently",
+        keyPoints: [
+          { tone: "key", title: "Snapshots are code to review", text: "A snapshot stores serialised output and fails on any difference. Keep snapshots small so reviewers can read them, and update them with -u only after checking that the change is intended.", example: "expect(receipt).toMatchInlineSnapshot()" },
+          { tone: "tip", title: "Enforce coverage thresholds in CI", text: "coverageThreshold fails the run when coverage drops below your targets, and --ci stops new snapshots being written silently, so missing snapshots fail instead of passing.", example: "jest --ci --coverage" },
+          { tone: "warning", title: "Coverage measures execution, not correctness", text: "100% coverage means every line ran, not that it was checked. Prefer meaningful assertions on behaviour to chasing a number, and avoid snapshots of large or random data.", example: "coverageThreshold: { global: { lines: 85 } }" },
+        ],
+        example: "- expect(formatInvoice(order)).toMatchInlineSnapshot()\n- npx jest -u updates snapshots after a deliberate change\n- npx jest --coverage --ci in the CI pipeline\n- coverageThreshold: { global: { branches: 80, lines: 85 } }",
+        code: "import { formatInvoice } from './invoice';\n\ntest('formats an invoice line', () => {\n  expect(formatInvoice({ id: 'INV-7', total: 1299.5 })).toMatchInlineSnapshot(\n    `\"INV-7 · ₹1,299.50\"`,\n  );\n});\n\n// jest.config.ts\nexport default {\n  collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.stories.tsx'],\n  coverageThreshold: {\n    global: { branches: 80, functions: 85, lines: 85, statements: 85 },\n  },\n};\n\n// package.json\n// \"test:ci\": \"jest --ci --coverage --maxWorkers=50%\"",
+        exercise: "- Add an inline snapshot, change the output, and update it with -u\n- Set a coverage threshold and make the run fail by deleting a test\n- Add a test:ci script to package.json",
+        checkpoint: "- Why is --ci important for snapshots?\n- What does a coverage threshold protect?\n- When is a snapshot test a poor choice?",
+        mistake: "- Do not update snapshots without reading the diff\n- Do not snapshot huge or random data (timestamps, IDs)\n- Do not chase 100% coverage at the expense of meaningful assertions",
+        interview: [
+          {
+            question: "When are snapshot tests useful, and when are they harmful?",
+            definition: "A snapshot test stores serialised output and fails when later output differs.",
+            answer: "They are useful for catching unintended changes in stable, compact output such as a formatted string, a small serialised object or an error message. They become harmful when snapshots are large, contain dynamic values, or are updated with -u without review, because they then assert nothing meaningful. Prefer explicit assertions for behaviour and inline snapshots for small outputs.",
+            similar: [
+              { question: "What does the --ci flag change?", answer: "New snapshots are not written automatically, so a missing snapshot fails the run." },
+            ],
+          },
+        ],
+      },
+    ],
+    project: "Test a small 'shopping cart' module end to end with Jest 30: matcher-based unit tests for totals and coupons (test.each with %$), a mocked payment API module covering success and failure, a debounced 'save cart' function tested with fake timers, a spy on console.warn using the using keyword, one inline snapshot for the receipt format, and a coverage threshold enforced by a test:ci script.",
+    summary: "- Jest 30 needs Node 18+, supports TS configs and renames --testPathPattern to --testPathPatterns\n- Use toBe for primitives, toEqual/toStrictEqual for structures, and expect.arrayOf for arrays\n- beforeEach gives fresh state; test.each turns tables into tests\n- jest.fn fakes dependencies; jest.spyOn observes real methods; using restores spies automatically\n- jest.mock replaces modules and is hoisted; jest.requireActual keeps real parts\n- Always await async assertions; control time with fake timers\n- Keep snapshots small and reviewed; enforce coverage thresholds in CI with --ci",
+    glossary: [
+      { term: "Test runner", definition: "A tool that finds, runs and reports on tests; Jest is runner, assertion library and mocker in one." },
+      { term: "Matcher", definition: "A method on expect(value), such as toEqual, that asserts something about the value." },
+      { term: "Asymmetric matcher", definition: "A loose matcher like expect.any(Number) used inside expected values." },
+      { term: "Mock function", definition: "A fake created with jest.fn that records calls and returns controlled values." },
+      { term: "Spy", definition: "A mock wrapped around an existing method with jest.spyOn, restorable to the original." },
+      { term: "Hoisting", definition: "Jest moving jest.mock calls above imports so mocks are registered first." },
+      { term: "Fake timers", definition: "Controllable replacements for setTimeout, setInterval and Date." },
+      { term: "Snapshot", definition: "Stored serialised output that later runs are compared against." },
+      { term: "Coverage threshold", definition: "Minimum coverage percentages that fail the run when not met." },
+      { term: "jsdom", definition: "A JavaScript implementation of browser DOM APIs used as a Jest test environment." },
+    ],
+    sources: [
+      source("https://jestjs.io/docs/getting-started", "Getting Started"),
+      source("https://jestjs.io/docs/using-matchers", "Using Matchers"),
+      source("https://jestjs.io/docs/expect", "Expect"),
+      source("https://jestjs.io/docs/setup-teardown", "Setup and Teardown"),
+      source("https://jestjs.io/docs/mock-functions", "Mock Functions"),
+      source("https://jestjs.io/docs/manual-mocks", "Manual Mocks"),
+      source("https://jestjs.io/docs/asynchronous", "Testing Asynchronous Code"),
+      source("https://jestjs.io/docs/timer-mocks", "Timer Mocks"),
+      source("https://jestjs.io/docs/snapshot-testing", "Snapshot Testing"),
+      source("https://jestjs.io/blog/2025/06/04/jest-30", "Jest 30: Faster, Leaner, Better"),
+      source("https://jestjs.io/docs/upgrading-to-jest30", "From v29 to v30"),
+    ],
+  },
+};
+
+export default guide;

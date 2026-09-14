@@ -1,0 +1,1485 @@
+{
+  "technologies": [
+    {
+      "id": "react",
+      "title": "React 19+",
+      "title_hi": "React 19+",
+      "category": "Web development"
+    },
+    {
+      "id": "nextjs",
+      "title": "Next.js 16+",
+      "title_hi": "Next.js 16+",
+      "category": "Web development"
+    },
+    {
+      "id": "tanstack-start",
+      "title": "TanStack Start",
+      "title_hi": "TanStack Start",
+      "category": "Web development"
+    },
+    {
+      "id": "zustand",
+      "title": "Zustand",
+      "title_hi": "Zustand",
+      "category": "Web development"
+    },
+    {
+      "id": "redux",
+      "title": "Redux",
+      "title_hi": "Redux",
+      "category": "web"
+    },
+    {
+      "id": "redux-toolkit",
+      "title": "Redux Toolkit",
+      "title_hi": "Redux Toolkit",
+      "category": "web"
+    },
+    {
+      "id": "node",
+      "title": "Node.js",
+      "title_hi": "Node.js",
+      "category": "Web development"
+    },
+    {
+      "id": "nestjs",
+      "title": "Nest JS",
+      "title_hi": "Nest JS",
+      "category": "Web development"
+    },
+    {
+      "id": "angular",
+      "title": "Angular",
+      "title_hi": "Angular",
+      "category": "Web development"
+    },
+    {
+      "id": "vue",
+      "title": "Vue.js",
+      "title_hi": "Vue.js",
+      "category": "Web development"
+    },
+    {
+      "id": "express",
+      "title": "Express.js",
+      "title_hi": "Express.js",
+      "category": "Web development"
+    },
+    {
+      "id": "javascript",
+      "title": "JavaScript",
+      "title_hi": "JavaScript",
+      "category": "Languages"
+    },
+    {
+      "id": "typescript",
+      "title": "TypeScript",
+      "title_hi": "TypeScript",
+      "category": "Languages"
+    },
+    {
+      "id": "python",
+      "title": "Python",
+      "title_hi": "Python",
+      "category": "Languages"
+    },
+    {
+      "id": "java",
+      "title": "Java",
+      "title_hi": "Java",
+      "category": "Languages"
+    },
+    {
+      "id": "flutter",
+      "title": "Flutter",
+      "title_hi": "Flutter",
+      "category": "Mobile"
+    },
+    {
+      "id": "graphql",
+      "title": "GraphQL",
+      "title_hi": "GraphQL",
+      "category": "Web development"
+    },
+    {
+      "id": "jest",
+      "title": "Jest",
+      "title_hi": "Jest",
+      "category": "Testing"
+    },
+    {
+      "id": "rtl",
+      "title": "React Testing Library",
+      "title_hi": "React Testing Library",
+      "category": "Testing"
+    },
+    {
+      "id": "vitest",
+      "title": "Vitest",
+      "title_hi": "Vitest",
+      "category": "Testing"
+    },
+    {
+      "id": "playwright",
+      "title": "Playwright",
+      "title_hi": "Playwright",
+      "category": "Testing"
+    },
+    {
+      "id": "claude",
+      "title": "Claude",
+      "title_hi": "Claude",
+      "category": "AI tools"
+    },
+    {
+      "id": "claude-code",
+      "title": "Claude Code",
+      "title_hi": "Claude Code",
+      "category": "AI tools"
+    },
+    {
+      "id": "prompting",
+      "title": "Prompt engineering",
+      "title_hi": "प्रॉम्प्ट इंजीनियरिंग",
+      "category": "AI tools"
+    },
+    {
+      "id": "ai",
+      "title": "AI fundamentals",
+      "title_hi": "AI की बुनियाद",
+      "category": "AI tools"
+    },
+    {
+      "id": "langchain",
+      "title": "LangChain",
+      "title_hi": "LangChain",
+      "category": "AI tools"
+    },
+    {
+      "id": "pytorch",
+      "title": "PyTorch",
+      "title_hi": "PyTorch",
+      "category": "AI tools"
+    },
+    {
+      "id": "tensorflow",
+      "title": "TensorFlow",
+      "title_hi": "TensorFlow",
+      "category": "AI tools"
+    },
+    {
+      "id": "redis",
+      "title": "Redis",
+      "title_hi": "Redis",
+      "category": "Data"
+    },
+    {
+      "id": "elasticsearch",
+      "title": "Elasticsearch",
+      "title_hi": "Elasticsearch",
+      "category": "Data"
+    },
+    {
+      "id": "supabase",
+      "title": "Supabase",
+      "title_hi": "Supabase",
+      "category": "Data"
+    },
+    {
+      "id": "git",
+      "title": "Git & GitHub",
+      "title_hi": "Git और GitHub",
+      "category": "Tooling"
+    },
+    {
+      "id": "docker",
+      "title": "Docker",
+      "title_hi": "Docker",
+      "category": "Tooling"
+    },
+    {
+      "id": "aws",
+      "title": "AWS fundamentals",
+      "title_hi": "AWS की बुनियाद",
+      "category": "Tooling"
+    },
+    {
+      "id": "devops",
+      "title": "DevOps services",
+      "title_hi": "DevOps सेवाएँ",
+      "category": "Tooling"
+    },
+    {
+      "id": "cypress",
+      "title": "Cypress",
+      "title_hi": "Cypress",
+      "category": "testing"
+    },
+    {
+      "id": "agentic-ai",
+      "title": "Agentic AI",
+      "title_hi": "Agentic AI",
+      "category": "ai"
+    },
+    {
+      "id": "platform-engineering",
+      "title": "Platform Engineering",
+      "title_hi": "Platform Engineering",
+      "category": "devops"
+    },
+    {
+      "id": "data-engineering",
+      "title": "Modern Data Stack & Data Engineering",
+      "title_hi": "Modern Data Stack और Data Engineering",
+      "category": "data"
+    },
+    {
+      "id": "cybersecurity",
+      "title": "Cybersecurity",
+      "title_hi": "साइबर सुरक्षा",
+      "category": "security"
+    }
+  ],
+  "topics": [
+    {
+      "id": "js-full",
+      "technology_id": "javascript",
+      "title": "Complete JavaScript path",
+      "title_hi": "पूरा JavaScript पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "js-functions",
+      "technology_id": "javascript",
+      "title": "Functions and scope",
+      "title_hi": "फ़ंक्शन और स्कोप",
+      "full_track": false
+    },
+    {
+      "id": "js-async",
+      "technology_id": "javascript",
+      "title": "Promises and async/await",
+      "title_hi": "Promises और async/await",
+      "full_track": false
+    },
+    {
+      "id": "python-full",
+      "technology_id": "python",
+      "title": "Complete Python path",
+      "title_hi": "पूरा Python पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "python-basics",
+      "technology_id": "python",
+      "title": "Variables and control flow",
+      "title_hi": "वेरिएबल और नियंत्रण प्रवाह",
+      "full_track": false
+    },
+    {
+      "id": "react-full",
+      "technology_id": "react",
+      "title": "Complete React 19 path",
+      "title_hi": "पूरा React 19 पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "react-state",
+      "technology_id": "react",
+      "title": "Components, props and state",
+      "title_hi": "कंपोनेंट, props और state",
+      "full_track": false
+    },
+    {
+      "id": "nextjs-full",
+      "technology_id": "nextjs",
+      "title": "Complete Next.js 16 path",
+      "title_hi": "पूरा Next.js 16 पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "nextjs-routing",
+      "technology_id": "nextjs",
+      "title": "Routing and layouts",
+      "title_hi": "राउटिंग और लेआउट",
+      "full_track": false
+    },
+    {
+      "id": "ai-full",
+      "technology_id": "ai",
+      "title": "AI foundations learning path",
+      "title_hi": "AI आधार पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "ai-evaluation",
+      "technology_id": "ai",
+      "title": "Evaluating model outputs",
+      "title_hi": "मॉडल के परिणामों का मूल्यांकन",
+      "full_track": false
+    },
+    {
+      "id": "claude-full",
+      "technology_id": "claude",
+      "title": "Learn Claude step by step",
+      "title_hi": "Claude चरण दर चरण सीखें",
+      "full_track": true
+    },
+    {
+      "id": "claude-prompts",
+      "technology_id": "claude",
+      "title": "Writing effective prompts",
+      "title_hi": "प्रभावी प्रॉम्प्ट लिखना",
+      "full_track": false
+    },
+    {
+      "id": "react-hooks",
+      "technology_id": "react",
+      "title": "Hooks in depth",
+      "title_hi": "Hooks विस्तार से",
+      "full_track": false
+    },
+    {
+      "id": "react-actions",
+      "technology_id": "react",
+      "title": "Actions and useActionState",
+      "title_hi": "Actions और useActionState",
+      "full_track": false
+    },
+    {
+      "id": "react-server",
+      "technology_id": "react",
+      "title": "Server Components and use()",
+      "title_hi": "Server Components और use()",
+      "full_track": false
+    },
+    {
+      "id": "react-perf",
+      "technology_id": "react",
+      "title": "Rendering performance",
+      "title_hi": "रेंडरिंग प्रदर्शन",
+      "full_track": false
+    },
+    {
+      "id": "nextjs-fetching",
+      "technology_id": "nextjs",
+      "title": "Data fetching and caching",
+      "title_hi": "डेटा फ़ेचिंग और कैशिंग",
+      "full_track": false
+    },
+    {
+      "id": "nextjs-actions",
+      "technology_id": "nextjs",
+      "title": "Server Actions and mutations",
+      "title_hi": "Server Actions और म्यूटेशन",
+      "full_track": false
+    },
+    {
+      "id": "nextjs-routes",
+      "technology_id": "nextjs",
+      "title": "Route Handlers and APIs",
+      "title_hi": "Route Handlers और API",
+      "full_track": false
+    },
+    {
+      "id": "nextjs-deploy",
+      "technology_id": "nextjs",
+      "title": "Rendering modes and deployment",
+      "title_hi": "रेंडरिंग मोड और डिप्लॉयमेंट",
+      "full_track": false
+    },
+    {
+      "id": "node-full",
+      "technology_id": "node",
+      "title": "Complete Node.js path",
+      "title_hi": "पूरा Node.js पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "node-modules",
+      "technology_id": "node",
+      "title": "Modules and the event loop",
+      "title_hi": "मॉड्यूल और इवेंट लूप",
+      "full_track": false
+    },
+    {
+      "id": "node-async",
+      "technology_id": "node",
+      "title": "Streams and async patterns",
+      "title_hi": "Streams और async पैटर्न",
+      "full_track": false
+    },
+    {
+      "id": "node-http",
+      "technology_id": "node",
+      "title": "Building HTTP servers",
+      "title_hi": "HTTP सर्वर बनाना",
+      "full_track": false
+    },
+    {
+      "id": "node-files",
+      "technology_id": "node",
+      "title": "Working with the file system",
+      "title_hi": "फ़ाइल सिस्टम के साथ काम",
+      "full_track": false
+    },
+    {
+      "id": "js-objects",
+      "technology_id": "javascript",
+      "title": "Objects, arrays and destructuring",
+      "title_hi": "ऑब्जेक्ट, ऐरे और डीस्ट्रक्चरिंग",
+      "full_track": false
+    },
+    {
+      "id": "js-dom",
+      "technology_id": "javascript",
+      "title": "The DOM and events",
+      "title_hi": "DOM और इवेंट",
+      "full_track": false
+    },
+    {
+      "id": "js-modules",
+      "technology_id": "javascript",
+      "title": "Modules and bundling",
+      "title_hi": "मॉड्यूल और बंडलिंग",
+      "full_track": false
+    },
+    {
+      "id": "ts-full",
+      "technology_id": "typescript",
+      "title": "Complete TypeScript path",
+      "title_hi": "पूरा TypeScript पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "ts-basics",
+      "technology_id": "typescript",
+      "title": "Types, interfaces and unions",
+      "title_hi": "टाइप, इंटरफ़ेस और यूनियन",
+      "full_track": false
+    },
+    {
+      "id": "ts-generics",
+      "technology_id": "typescript",
+      "title": "Generics and constraints",
+      "title_hi": "जेनेरिक और कंस्ट्रेंट",
+      "full_track": false
+    },
+    {
+      "id": "ts-narrowing",
+      "technology_id": "typescript",
+      "title": "Narrowing and type guards",
+      "title_hi": "नैरोइंग और टाइप गार्ड",
+      "full_track": false
+    },
+    {
+      "id": "ts-utility",
+      "technology_id": "typescript",
+      "title": "Utility and mapped types",
+      "title_hi": "यूटिलिटी और मैप्ड टाइप",
+      "full_track": false
+    },
+    {
+      "id": "python-data",
+      "technology_id": "python",
+      "title": "Lists, dicts and comprehensions",
+      "title_hi": "लिस्ट, dict और कॉम्प्रिहेंशन",
+      "full_track": false
+    },
+    {
+      "id": "python-functions",
+      "technology_id": "python",
+      "title": "Functions and modules",
+      "title_hi": "फ़ंक्शन और मॉड्यूल",
+      "full_track": false
+    },
+    {
+      "id": "python-oop",
+      "technology_id": "python",
+      "title": "Classes and objects",
+      "title_hi": "क्लास और ऑब्जेक्ट",
+      "full_track": false
+    },
+    {
+      "id": "python-errors",
+      "technology_id": "python",
+      "title": "Errors and exceptions",
+      "title_hi": "त्रुटियाँ और अपवाद",
+      "full_track": false
+    },
+    {
+      "id": "java-full",
+      "technology_id": "java",
+      "title": "Complete Java path",
+      "title_hi": "पूरा Java पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "java-basics",
+      "technology_id": "java",
+      "title": "Syntax, types and control flow",
+      "title_hi": "सिंटैक्स, टाइप और नियंत्रण प्रवाह",
+      "full_track": false
+    },
+    {
+      "id": "java-oop",
+      "technology_id": "java",
+      "title": "Classes, objects and inheritance",
+      "title_hi": "क्लास, ऑब्जेक्ट और इनहेरिटेंस",
+      "full_track": false
+    },
+    {
+      "id": "java-collections",
+      "technology_id": "java",
+      "title": "Collections and generics",
+      "title_hi": "कलेक्शन और जेनेरिक",
+      "full_track": false
+    },
+    {
+      "id": "java-streams",
+      "technology_id": "java",
+      "title": "Streams and lambdas",
+      "title_hi": "Streams और lambda",
+      "full_track": false
+    },
+    {
+      "id": "jest-full",
+      "technology_id": "jest",
+      "title": "Complete Jest path",
+      "title_hi": "पूरा Jest पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "jest-matchers",
+      "technology_id": "jest",
+      "title": "Matchers and assertions",
+      "title_hi": "Matchers और assertion",
+      "full_track": false
+    },
+    {
+      "id": "jest-mocks",
+      "technology_id": "jest",
+      "title": "Mocks, spies and modules",
+      "title_hi": "Mock, spy और मॉड्यूल",
+      "full_track": false
+    },
+    {
+      "id": "jest-async",
+      "technology_id": "jest",
+      "title": "Testing asynchronous code",
+      "title_hi": "एसिंक्रोनस कोड की टेस्टिंग",
+      "full_track": false
+    },
+    {
+      "id": "jest-coverage",
+      "technology_id": "jest",
+      "title": "Coverage and configuration",
+      "title_hi": "कवरेज और कॉन्फ़िगरेशन",
+      "full_track": false
+    },
+    {
+      "id": "rtl-full",
+      "technology_id": "rtl",
+      "title": "Complete React Testing Library path",
+      "title_hi": "पूरा React Testing Library पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "rtl-queries",
+      "technology_id": "rtl",
+      "title": "Queries and accessible roles",
+      "title_hi": "क्वेरी और सुलभ रोल",
+      "full_track": false
+    },
+    {
+      "id": "rtl-events",
+      "technology_id": "rtl",
+      "title": "User events and interaction",
+      "title_hi": "यूज़र इवेंट और इंटरैक्शन",
+      "full_track": false
+    },
+    {
+      "id": "rtl-async",
+      "technology_id": "rtl",
+      "title": "waitFor and findBy patterns",
+      "title_hi": "waitFor और findBy पैटर्न",
+      "full_track": false
+    },
+    {
+      "id": "rtl-practice",
+      "technology_id": "rtl",
+      "title": "Testing like a real user",
+      "title_hi": "असली यूज़र की तरह टेस्टिंग",
+      "full_track": false
+    },
+    {
+      "id": "playwright-full",
+      "technology_id": "playwright",
+      "title": "Complete Playwright path",
+      "title_hi": "पूरा Playwright पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "playwright-locators",
+      "technology_id": "playwright",
+      "title": "Locators and assertions",
+      "title_hi": "Locators और assertion",
+      "full_track": false
+    },
+    {
+      "id": "playwright-fixtures",
+      "technology_id": "playwright",
+      "title": "Fixtures and test isolation",
+      "title_hi": "Fixtures और टेस्ट आइसोलेशन",
+      "full_track": false
+    },
+    {
+      "id": "playwright-debug",
+      "technology_id": "playwright",
+      "title": "Tracing and debugging",
+      "title_hi": "ट्रेसिंग और डिबगिंग",
+      "full_track": false
+    },
+    {
+      "id": "claude-tools",
+      "technology_id": "claude",
+      "title": "Tool use and structured output",
+      "title_hi": "टूल उपयोग और संरचित आउटपुट",
+      "full_track": false
+    },
+    {
+      "id": "claude-context",
+      "technology_id": "claude",
+      "title": "Context windows and caching",
+      "title_hi": "कॉन्टेक्स्ट विंडो और कैशिंग",
+      "full_track": false
+    },
+    {
+      "id": "claude-vision",
+      "technology_id": "claude",
+      "title": "Working with images and files",
+      "title_hi": "छवियों और फ़ाइलों के साथ काम",
+      "full_track": false
+    },
+    {
+      "id": "claude-code-full",
+      "technology_id": "claude-code",
+      "title": "Complete Claude Code path",
+      "title_hi": "पूरा Claude Code पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "claude-code-start",
+      "technology_id": "claude-code",
+      "title": "Getting started in your terminal",
+      "title_hi": "अपने टर्मिनल में शुरुआत",
+      "full_track": false
+    },
+    {
+      "id": "claude-code-memory",
+      "technology_id": "claude-code",
+      "title": "CLAUDE.md and project memory",
+      "title_hi": "CLAUDE.md और प्रोजेक्ट मेमोरी",
+      "full_track": false
+    },
+    {
+      "id": "claude-code-skills",
+      "technology_id": "claude-code",
+      "title": "Skills and slash commands",
+      "title_hi": "Skills और slash कमांड",
+      "full_track": false
+    },
+    {
+      "id": "claude-code-hooks",
+      "technology_id": "claude-code",
+      "title": "Hooks and automation",
+      "title_hi": "Hooks और ऑटोमेशन",
+      "full_track": false
+    },
+    {
+      "id": "claude-code-mcp",
+      "technology_id": "claude-code",
+      "title": "MCP servers and integrations",
+      "title_hi": "MCP सर्वर और इंटीग्रेशन",
+      "full_track": false
+    },
+    {
+      "id": "prompting-full",
+      "technology_id": "prompting",
+      "title": "Complete prompt engineering path",
+      "title_hi": "पूरा प्रॉम्प्ट इंजीनियरिंग पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "prompting-clarity",
+      "technology_id": "prompting",
+      "title": "Being clear and direct",
+      "title_hi": "स्पष्ट और सीधा होना",
+      "full_track": false
+    },
+    {
+      "id": "prompting-examples",
+      "technology_id": "prompting",
+      "title": "Few-shot examples",
+      "title_hi": "कुछ-उदाहरण प्रॉम्प्टिंग",
+      "full_track": false
+    },
+    {
+      "id": "prompting-chain",
+      "technology_id": "prompting",
+      "title": "Chain of thought and reasoning",
+      "title_hi": "विचार-शृंखला और तर्क",
+      "full_track": false
+    },
+    {
+      "id": "ai-embeddings",
+      "technology_id": "ai",
+      "title": "Embeddings and vector search",
+      "title_hi": "एम्बेडिंग और वेक्टर खोज",
+      "full_track": false
+    },
+    {
+      "id": "ai-rag",
+      "technology_id": "ai",
+      "title": "Retrieval augmented generation",
+      "title_hi": "पुनर्प्राप्ति-संवर्धित जनरेशन",
+      "full_track": false
+    },
+    {
+      "id": "supabase-full",
+      "technology_id": "supabase",
+      "title": "Complete Supabase path",
+      "title_hi": "पूरा Supabase पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "supabase-auth",
+      "technology_id": "supabase",
+      "title": "Authentication and sessions",
+      "title_hi": "प्रमाणीकरण और सेशन",
+      "full_track": false
+    },
+    {
+      "id": "supabase-rls",
+      "technology_id": "supabase",
+      "title": "Row Level Security policies",
+      "title_hi": "Row Level Security नीतियाँ",
+      "full_track": false
+    },
+    {
+      "id": "supabase-storage",
+      "technology_id": "supabase",
+      "title": "Storage and file uploads",
+      "title_hi": "स्टोरेज और फ़ाइल अपलोड",
+      "full_track": false
+    },
+    {
+      "id": "supabase-realtime",
+      "technology_id": "supabase",
+      "title": "Realtime subscriptions",
+      "title_hi": "रीयलटाइम सब्सक्रिप्शन",
+      "full_track": false
+    },
+    {
+      "id": "git-full",
+      "technology_id": "git",
+      "title": "Complete Git & GitHub path",
+      "title_hi": "पूरा Git और GitHub पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "git-basics",
+      "technology_id": "git",
+      "title": "Commits, branches and merges",
+      "title_hi": "कमिट, ब्रांच और मर्ज",
+      "full_track": false
+    },
+    {
+      "id": "git-rebase",
+      "technology_id": "git",
+      "title": "Rebasing and history",
+      "title_hi": "Rebase और हिस्ट्री",
+      "full_track": false
+    },
+    {
+      "id": "git-collab",
+      "technology_id": "git",
+      "title": "Pull requests and code review",
+      "title_hi": "Pull request और कोड रिव्यू",
+      "full_track": false
+    },
+    {
+      "id": "docker-full",
+      "technology_id": "docker",
+      "title": "Complete Docker path",
+      "title_hi": "पूरा Docker पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "docker-images",
+      "technology_id": "docker",
+      "title": "Images and Dockerfiles",
+      "title_hi": "इमेज और Dockerfile",
+      "full_track": false
+    },
+    {
+      "id": "docker-compose",
+      "technology_id": "docker",
+      "title": "Compose and multi-container apps",
+      "title_hi": "Compose और मल्टी-कंटेनर ऐप",
+      "full_track": false
+    },
+    {
+      "id": "docker-volumes",
+      "technology_id": "docker",
+      "title": "Volumes and networking",
+      "title_hi": "वॉल्यूम और नेटवर्किंग",
+      "full_track": false
+    },
+    {
+      "id": "flutter-full",
+      "technology_id": "flutter",
+      "title": "Complete Flutter path",
+      "title_hi": "पूरा Flutter पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "flutter-widgets",
+      "technology_id": "flutter",
+      "title": "Widgets and layout",
+      "title_hi": "Widgets और layout",
+      "full_track": false
+    },
+    {
+      "id": "flutter-state",
+      "technology_id": "flutter",
+      "title": "State management",
+      "title_hi": "State management",
+      "full_track": false
+    },
+    {
+      "id": "flutter-navigation",
+      "technology_id": "flutter",
+      "title": "Navigation and routing",
+      "title_hi": "Navigation और routing",
+      "full_track": false
+    },
+    {
+      "id": "flutter-async",
+      "technology_id": "flutter",
+      "title": "Async and futures",
+      "title_hi": "Async और futures",
+      "full_track": false
+    },
+    {
+      "id": "vue-full",
+      "technology_id": "vue",
+      "title": "Complete Vue.js path",
+      "title_hi": "पूरा Vue.js पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "vue-reactivity",
+      "technology_id": "vue",
+      "title": "Reactivity fundamentals",
+      "title_hi": "Reactivity की बुनियाद",
+      "full_track": false
+    },
+    {
+      "id": "vue-components",
+      "technology_id": "vue",
+      "title": "Components and props",
+      "title_hi": "Components और props",
+      "full_track": false
+    },
+    {
+      "id": "vue-composition",
+      "technology_id": "vue",
+      "title": "Composition API",
+      "title_hi": "Composition API",
+      "full_track": false
+    },
+    {
+      "id": "vue-router",
+      "technology_id": "vue",
+      "title": "Routing with Vue Router",
+      "title_hi": "Vue Router से routing",
+      "full_track": false
+    },
+    {
+      "id": "graphql-full",
+      "technology_id": "graphql",
+      "title": "Complete GraphQL path",
+      "title_hi": "पूरा GraphQL पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "graphql-schema",
+      "technology_id": "graphql",
+      "title": "Schemas and types",
+      "title_hi": "Schemas और types",
+      "full_track": false
+    },
+    {
+      "id": "graphql-queries",
+      "technology_id": "graphql",
+      "title": "Queries and mutations",
+      "title_hi": "Queries और mutations",
+      "full_track": false
+    },
+    {
+      "id": "graphql-resolvers",
+      "technology_id": "graphql",
+      "title": "Resolvers",
+      "title_hi": "Resolvers",
+      "full_track": false
+    },
+    {
+      "id": "graphql-clients",
+      "technology_id": "graphql",
+      "title": "Client-side GraphQL",
+      "title_hi": "Client-side GraphQL",
+      "full_track": false
+    },
+    {
+      "id": "langchain-full",
+      "technology_id": "langchain",
+      "title": "Complete LangChain path",
+      "title_hi": "पूरा LangChain पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "langchain-chains",
+      "technology_id": "langchain",
+      "title": "Chains and runnables",
+      "title_hi": "Chains और runnables",
+      "full_track": false
+    },
+    {
+      "id": "langchain-rag",
+      "technology_id": "langchain",
+      "title": "Retrieval-augmented generation",
+      "title_hi": "Retrieval-augmented generation",
+      "full_track": false
+    },
+    {
+      "id": "langchain-agents",
+      "technology_id": "langchain",
+      "title": "Agents and tools",
+      "title_hi": "Agents और tools",
+      "full_track": false
+    },
+    {
+      "id": "langchain-memory",
+      "technology_id": "langchain",
+      "title": "Memory and state",
+      "title_hi": "Memory और state",
+      "full_track": false
+    },
+    {
+      "id": "react-forms",
+      "technology_id": "react",
+      "title": "Forms and controlled inputs",
+      "title_hi": "Forms और controlled inputs",
+      "full_track": false
+    },
+    {
+      "id": "react-effects",
+      "technology_id": "react",
+      "title": "Synchronizing with Effects",
+      "title_hi": "Effects से synchronize करना",
+      "full_track": false
+    },
+    {
+      "id": "react-context",
+      "technology_id": "react",
+      "title": "Passing data with Context",
+      "title_hi": "Context से data पास करना",
+      "full_track": false
+    },
+    {
+      "id": "react-refs",
+      "technology_id": "react",
+      "title": "Refs and the DOM",
+      "title_hi": "Refs और DOM",
+      "full_track": false
+    },
+    {
+      "id": "nextjs-images",
+      "technology_id": "nextjs",
+      "title": "Image and font optimization",
+      "title_hi": "Image और font optimization",
+      "full_track": false
+    },
+    {
+      "id": "nextjs-metadata",
+      "technology_id": "nextjs",
+      "title": "Metadata and SEO",
+      "title_hi": "Metadata और SEO",
+      "full_track": false
+    },
+    {
+      "id": "nextjs-middleware",
+      "technology_id": "nextjs",
+      "title": "Middleware",
+      "title_hi": "Middleware",
+      "full_track": false
+    },
+    {
+      "id": "nextjs-caching",
+      "technology_id": "nextjs",
+      "title": "Caching and revalidation",
+      "title_hi": "Caching और revalidation",
+      "full_track": false
+    },
+    {
+      "id": "angular-full",
+      "technology_id": "angular",
+      "title": "Complete Angular path",
+      "title_hi": "पूरा Angular पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "angular-components",
+      "technology_id": "angular",
+      "title": "Components and templates",
+      "title_hi": "Components और templates",
+      "full_track": false
+    },
+    {
+      "id": "angular-signals",
+      "technology_id": "angular",
+      "title": "Signals and reactivity",
+      "title_hi": "Signals और reactivity",
+      "full_track": false
+    },
+    {
+      "id": "angular-routing",
+      "technology_id": "angular",
+      "title": "Routing",
+      "title_hi": "Routing",
+      "full_track": false
+    },
+    {
+      "id": "angular-forms",
+      "technology_id": "angular",
+      "title": "Forms",
+      "title_hi": "Forms",
+      "full_track": false
+    },
+    {
+      "id": "express-full",
+      "technology_id": "express",
+      "title": "Complete Express.js path",
+      "title_hi": "पूरा Express.js पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "express-routing",
+      "technology_id": "express",
+      "title": "Routing and middleware",
+      "title_hi": "Routing और middleware",
+      "full_track": false
+    },
+    {
+      "id": "express-errors",
+      "technology_id": "express",
+      "title": "Error handling",
+      "title_hi": "त्रुटि प्रबंधन",
+      "full_track": false
+    },
+    {
+      "id": "express-rest",
+      "technology_id": "express",
+      "title": "Building REST APIs",
+      "title_hi": "REST API बनाना",
+      "full_track": false
+    },
+    {
+      "id": "express-security",
+      "technology_id": "express",
+      "title": "Security best practices",
+      "title_hi": "Security best practices",
+      "full_track": false
+    },
+    {
+      "id": "redis-full",
+      "technology_id": "redis",
+      "title": "Complete Redis path",
+      "title_hi": "पूरा Redis पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "redis-datatypes",
+      "technology_id": "redis",
+      "title": "Core data types",
+      "title_hi": "मुख्य data types",
+      "full_track": false
+    },
+    {
+      "id": "redis-caching",
+      "technology_id": "redis",
+      "title": "Caching patterns",
+      "title_hi": "Caching patterns",
+      "full_track": false
+    },
+    {
+      "id": "redis-pubsub",
+      "technology_id": "redis",
+      "title": "Pub/Sub messaging",
+      "title_hi": "Pub/Sub messaging",
+      "full_track": false
+    },
+    {
+      "id": "redis-persistence",
+      "technology_id": "redis",
+      "title": "Persistence and durability",
+      "title_hi": "Persistence और durability",
+      "full_track": false
+    },
+    {
+      "id": "pytorch-full",
+      "technology_id": "pytorch",
+      "title": "Complete PyTorch path",
+      "title_hi": "पूरा PyTorch पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "pytorch-tensors",
+      "technology_id": "pytorch",
+      "title": "Tensors and autograd",
+      "title_hi": "Tensors और autograd",
+      "full_track": false
+    },
+    {
+      "id": "pytorch-nn",
+      "technology_id": "pytorch",
+      "title": "Building neural networks",
+      "title_hi": "Neural networks बनाना",
+      "full_track": false
+    },
+    {
+      "id": "pytorch-training",
+      "technology_id": "pytorch",
+      "title": "Training loops and optimization",
+      "title_hi": "Training loops और optimization",
+      "full_track": false
+    },
+    {
+      "id": "pytorch-data",
+      "technology_id": "pytorch",
+      "title": "Datasets and dataloaders",
+      "title_hi": "Datasets और dataloaders",
+      "full_track": false
+    },
+    {
+      "id": "tensorflow-full",
+      "technology_id": "tensorflow",
+      "title": "Complete TensorFlow path",
+      "title_hi": "पूरा TensorFlow पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "tensorflow-keras",
+      "technology_id": "tensorflow",
+      "title": "Keras basics",
+      "title_hi": "Keras की बुनियाद",
+      "full_track": false
+    },
+    {
+      "id": "tensorflow-tensors",
+      "technology_id": "tensorflow",
+      "title": "Tensors and operations",
+      "title_hi": "Tensors और operations",
+      "full_track": false
+    },
+    {
+      "id": "tensorflow-training",
+      "technology_id": "tensorflow",
+      "title": "Training and evaluation",
+      "title_hi": "Training और evaluation",
+      "full_track": false
+    },
+    {
+      "id": "tensorflow-data",
+      "technology_id": "tensorflow",
+      "title": "tf.data pipelines",
+      "title_hi": "tf.data pipelines",
+      "full_track": false
+    },
+    {
+      "id": "aws-full",
+      "technology_id": "aws",
+      "title": "Complete AWS fundamentals path",
+      "title_hi": "पूरा AWS पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "aws-ec2",
+      "technology_id": "aws",
+      "title": "Compute with EC2",
+      "title_hi": "EC2 से compute",
+      "full_track": false
+    },
+    {
+      "id": "aws-s3",
+      "technology_id": "aws",
+      "title": "Storage with S3",
+      "title_hi": "S3 से storage",
+      "full_track": false
+    },
+    {
+      "id": "aws-lambda",
+      "technology_id": "aws",
+      "title": "Serverless with Lambda",
+      "title_hi": "Lambda से serverless",
+      "full_track": false
+    },
+    {
+      "id": "aws-iam",
+      "technology_id": "aws",
+      "title": "IAM and security basics",
+      "title_hi": "IAM और security की बुनियाद",
+      "full_track": false
+    },
+    {
+      "id": "elasticsearch-full",
+      "technology_id": "elasticsearch",
+      "title": "Complete Elasticsearch path",
+      "title_hi": "पूरा Elasticsearch पाठ्यक्रम",
+      "full_track": true
+    },
+    {
+      "id": "elasticsearch-indexing",
+      "technology_id": "elasticsearch",
+      "title": "Indexing documents",
+      "title_hi": "Documents को index करना",
+      "full_track": false
+    },
+    {
+      "id": "elasticsearch-queries",
+      "technology_id": "elasticsearch",
+      "title": "Query DSL",
+      "title_hi": "Query DSL",
+      "full_track": false
+    },
+    {
+      "id": "elasticsearch-aggregations",
+      "technology_id": "elasticsearch",
+      "title": "Aggregations",
+      "title_hi": "Aggregations",
+      "full_track": false
+    },
+    {
+      "id": "elasticsearch-mapping",
+      "technology_id": "elasticsearch",
+      "title": "Mapping and analyzers",
+      "title_hi": "Mapping और analyzers",
+      "full_track": false
+    },
+    {
+      "id": "js-classes",
+      "technology_id": "javascript",
+      "title": "Classes, properties and methods",
+      "title_hi": "क्लास, properties और methods",
+      "full_track": false
+    },
+    {
+      "id": "ts-classes",
+      "technology_id": "typescript",
+      "title": "Classes, properties and methods",
+      "title_hi": "क्लास, properties और methods",
+      "full_track": false
+    },
+    {
+      "id": "ts-interfaces",
+      "technology_id": "typescript",
+      "title": "Interfaces and type contracts",
+      "title_hi": "Interfaces और type contracts",
+      "full_track": false
+    },
+    {
+      "id": "java-interfaces",
+      "technology_id": "java",
+      "title": "Interfaces and abstract classes",
+      "title_hi": "Interfaces और abstract classes",
+      "full_track": false
+    },
+    {
+      "id": "python-notes",
+      "technology_id": "python",
+      "title": "Python: from first steps to Python 3.14",
+      "title_hi": "Python: पहले कदम से Python 3.14 तक",
+      "full_track": false
+    },
+    {
+      "id": "claude-skills-plugins-mcp",
+      "technology_id": "claude",
+      "title": "Claude Skills, Plugins and MCP",
+      "title_hi": "Claude Skills, Plugins और MCP",
+      "full_track": false
+    },
+    {
+      "id": "llm-context-loop-memory",
+      "technology_id": "ai",
+      "title": "LLMs, MCP, context, loop engineering and memory",
+      "title_hi": "LLM, MCP, कॉन्टेक्स्ट, लूप इंजीनियरिंग और मेमोरी",
+      "full_track": false
+    },
+    {
+      "id": "jest-30",
+      "technology_id": "jest",
+      "title": "Jest 30: unit testing JavaScript and TypeScript",
+      "title_hi": "Jest 30: JavaScript और TypeScript की यूनिट टेस्टिंग",
+      "full_track": false
+    },
+    {
+      "id": "rtl-queries-user-event",
+      "technology_id": "rtl",
+      "title": "Queries, user-event and async UI",
+      "title_hi": "क्वेरी, user-event और एसिंक UI",
+      "full_track": false
+    },
+    {
+      "id": "vitest-5",
+      "technology_id": "vitest",
+      "title": "Vitest 5: fast testing powered by Vite",
+      "title_hi": "Vitest 5: Vite पर आधारित तेज़ टेस्टिंग",
+      "full_track": true
+    },
+    {
+      "id": "playwright-automation",
+      "technology_id": "playwright",
+      "title": "Playwright and browser automation",
+      "title_hi": "Playwright और ब्राउज़र ऑटोमेशन",
+      "full_track": false
+    },
+    {
+      "id": "nextjs-hooks",
+      "technology_id": "nextjs",
+      "title": "Next.js 16+ Hooks",
+      "title_hi": "Next.js 16+ Hooks",
+      "full_track": false
+    },
+    {
+      "id": "react-19-hooks",
+      "technology_id": "react",
+      "title": "React 19+ Hooks, one by one",
+      "title_hi": "React 19+ Hooks, एक-एक करके",
+      "full_track": false
+    },
+    {
+      "id": "zustand-5",
+      "technology_id": "zustand",
+      "title": "Zustand 5: small, fast React state",
+      "title_hi": "Zustand 5: छोटा, तेज़ React स्टेट",
+      "full_track": true
+    },
+    {
+      "id": "es2026",
+      "technology_id": "javascript",
+      "title": "JavaScript ES2026: every new feature",
+      "title_hi": "JavaScript ES2026: हर नई सुविधा",
+      "full_track": false
+    },
+    {
+      "id": "typescript-7",
+      "technology_id": "typescript",
+      "title": "TypeScript 7: the native compiler and modern types",
+      "title_hi": "TypeScript 7: नेटिव कंपाइलर और आधुनिक टाइप",
+      "full_track": false
+    },
+    {
+      "id": "aws-popular-services",
+      "technology_id": "aws",
+      "title": "AWS: the popular services, explained",
+      "title_hi": "AWS: लोकप्रिय सेवाएँ, सरल भाषा में",
+      "full_track": false
+    },
+    {
+      "id": "devops-services",
+      "technology_id": "devops",
+      "title": "DevOps services: from commit to production",
+      "title_hi": "DevOps सेवाएँ: कमिट से प्रोडक्शन तक",
+      "full_track": true
+    },
+    {
+      "id": "tanstack-start",
+      "technology_id": "tanstack-start",
+      "title": "TanStack Start: full-stack React with TanStack Router",
+      "title_hi": "TanStack Start: TanStack Router के साथ फ़ुल-स्टैक React",
+      "full_track": true
+    },
+    {
+      "id": "javascript-puzzles",
+      "technology_id": "javascript",
+      "title": "JavaScript: predict the output",
+      "title_hi": "JavaScript: आउटपुट का अनुमान लगाएँ",
+      "full_track": false
+    },
+    {
+      "id": "cypress-testing",
+      "technology_id": "cypress",
+      "title": "Cypress testing",
+      "title_hi": "Cypress टेस्टिंग",
+      "full_track": true
+    },
+    {
+      "id": "agentic-ai-systems",
+      "technology_id": "agentic-ai",
+      "title": "Agentic AI systems",
+      "title_hi": "Agentic AI सिस्टम",
+      "full_track": true
+    },
+    {
+      "id": "platform-engineering-idp",
+      "technology_id": "platform-engineering",
+      "title": "Internal developer platforms",
+      "title_hi": "आंतरिक डेवलपर प्लेटफ़ॉर्म",
+      "full_track": true
+    },
+    {
+      "id": "modern-data-stack",
+      "technology_id": "data-engineering",
+      "title": "Modern data stack & data engineering",
+      "title_hi": "आधुनिक डेटा स्टैक और डेटा इंजीनियरिंग",
+      "full_track": true
+    },
+    {
+      "id": "secure-applications",
+      "technology_id": "cybersecurity",
+      "title": "Secure applications and operations",
+      "title_hi": "सुरक्षित ऐप और संचालन",
+      "full_track": true
+    },
+    {
+      "id": "aws-ai-services",
+      "technology_id": "aws",
+      "title": "AWS AI services: practical notes",
+      "title_hi": "AWS AI सेवाएँ: व्यावहारिक नोट्स",
+      "full_track": false
+    },
+    {
+      "id": "redux-full",
+      "technology_id": "redux",
+      "title": "Redux: state, actions, reducers and React",
+      "title_hi": "Redux: स्टेट, ऐक्शन, रिड्यूसर और React",
+      "full_track": true
+    },
+    {
+      "id": "redux-toolkit-full",
+      "technology_id": "redux-toolkit",
+      "title": "Redux Toolkit: slices, async workflows and RTK Query",
+      "title_hi": "Redux Toolkit: स्लाइस, एसिंक वर्कफ़्लो और RTK Query",
+      "full_track": true
+    },
+    {
+      "id": "nestjs-full",
+      "technology_id": "nestjs",
+      "title": "Complete Nest JS path",
+      "title_hi": "Complete Nest JS path",
+      "full_track": true
+    }
+  ]
+}

@@ -1,0 +1,295 @@
+import type { TechnologyGuide } from "./index";
+import { source } from "./shared";
+
+/** Playwright Test (1.63) for end-to-end testing and browser automation, grounded in playwright.dev. */
+const guide: TechnologyGuide = {
+  id: "playwright",
+  technologyId: "playwright",
+  topicId: "playwright-automation",
+  level: "intermediate",
+  curriculum: {
+    title: "Playwright and browser automation",
+    minutes: 190,
+    objectives: [
+      "Install Playwright Test and configure projects, a base URL and a local web server.",
+      "Find elements with resilient locators and rely on auto-waiting instead of sleeps.",
+      "Assert with web-first assertions, ARIA snapshots and visual comparisons.",
+      "Share setup with fixtures, reuse authentication and structure tests with page objects.",
+      "Mock the network, test APIs directly and automate browsers outside of tests.",
+      "Debug with the trace viewer and UI mode, and run fast, sharded suites in CI.",
+    ],
+    prerequisites: [
+      "JavaScript/TypeScript and async/await.",
+      "Node.js installed; a web app to test (or any public site).",
+    ],
+    lessons: [
+      {
+        title: "Installing Playwright and the first test",
+        diagram: {
+          kind: "tree",
+          caption: "What npm init playwright@latest scaffolds. Each project in the config runs the whole suite in one browser or device.",
+          items: [
+            { label: "playwright.config.ts", detail: "projects, baseURL, webServer, retries, reporter" },
+            { label: "projects", detail: "chromium, firefox, webkit, Mobile Safari...", depth: 1 },
+            { label: "use.trace: 'on-first-retry'", detail: "record traces when a test retries", depth: 1 },
+            { label: "webServer", detail: "starts your app before tests", depth: 1 },
+            { label: "tests/", detail: "*.spec.ts files" },
+            { label: "tests-examples/", detail: "a sample test to delete later" },
+            { label: ".github/workflows/playwright.yml", detail: "optional CI workflow" },
+          ],
+        },
+        explanation: "- Playwright Test is a test runner that drives Chromium, Firefox and WebKit with one API\n- npm init playwright@latest creates the config, an example test and installs browsers\n- Each test gets a fresh browser context: isolated cookies and storage, like a new incognito window\n- npx playwright test runs headless by default; --ui opens the interactive UI mode\n- npx playwright show-report opens the HTML report after a run",
+        keyPoints: [
+          { tone: "key", title: "Every test gets a fresh browser context", text: "A browser context is an isolated session with its own cookies and storage, like a new incognito window. Playwright creates one per test, which is what makes parallel runs safe and tests independent.", example: "test('checkout', async ({ page }) => { ... })" },
+          { tone: "tip", title: "Let the config start your app", text: "Set use.baseURL so tests navigate with short paths, and a webServer entry so Playwright starts the app, waits for it to respond and reuses an already-running server locally.", example: "webServer: { command: 'npm run dev', url: 'http://localhost:3000' }" },
+          { tone: "warning", title: "CI needs browsers and their dependencies", text: "Browsers are downloaded separately from the npm package. Install them with system dependencies in CI, or tests fail with missing-library errors before a single step runs.", example: "npx playwright install --with-deps" },
+        ],
+        example: "- npm init playwright@latest\n- npx playwright test --project=chromium\n- npx playwright test --ui for a time-travel debugging UI\n- npx playwright codegen http://localhost:3000 records actions into code",
+        code: "// playwright.config.ts\nimport { defineConfig, devices } from '@playwright/test';\n\nexport default defineConfig({\n  testDir: './tests',\n  fullyParallel: true,\n  retries: process.env.CI ? 2 : 0,\n  reporter: [['html'], ['list']],\n  use: {\n    baseURL: 'http://localhost:3000',\n    trace: 'on-first-retry',\n  },\n  projects: [\n    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },\n    { name: 'webkit', use: { ...devices['Desktop Safari'] } },\n    { name: 'mobile', use: { ...devices['Pixel 7'] } },\n  ],\n  webServer: {\n    command: 'npm run dev',\n    url: 'http://localhost:3000',\n    reuseExistingServer: !process.env.CI,\n  },\n});\n\n// tests/home.spec.ts\nimport { test, expect } from '@playwright/test';\n\ntest('home page has a sign-up link', async ({ page }) => {\n  await page.goto('/');\n  await expect(page).toHaveTitle(/MasterClass/);\n  await page.getByRole('link', { name: 'Start learning' }).click();\n  await expect(page).toHaveURL('/sign-up');\n});",
+        apiReference: [
+          {
+            name: "npx playwright test",
+            kind: "CLI",
+            signature: "npx playwright test [files] [--project=name] [--ui] [--headed] [--debug] [-g title] [--shard=1/4]",
+            params: [
+              { name: "--ui", type: "flag", description: "Interactive UI mode with watch and time-travel." },
+              { name: "--debug", type: "flag", description: "Run headed with the inspector, pausing on each action." },
+              { name: "--shard", type: "x/y", description: "Run one slice of the suite, for parallel CI machines." },
+            ],
+            returns: "Exit code 0 when all tests pass; results in the configured reporters.",
+          },
+        ],
+        exercise: "- Scaffold Playwright in a project and run the example test in all three browsers\n- Add a webServer entry so tests start your app\n- Record a login flow with codegen and clean up the generated code",
+        checkpoint: "- What does a browser context isolate?\n- Why set baseURL in the config?\n- What does trace: 'on-first-retry' do?",
+        mistake: "- Do not share state between tests through global variables\n- Do not hardcode full URLs in every test\n- Do not skip installing browser dependencies in CI",
+      },
+      {
+        title: "Locators and auto-waiting",
+        diagram: {
+          kind: "flow",
+          caption: "Before every action Playwright runs actionability checks and retries until they pass or the timeout expires, which is why well-written tests never need sleeps.",
+          items: [
+            { label: "Resolve the locator", detail: "strict: exactly one element must match" },
+            { label: "Attached and visible", detail: "in the DOM, with a non-empty box" },
+            { label: "Stable", detail: "not animating" },
+            { label: "Receives events", detail: "not covered by another element" },
+            { label: "Enabled / editable", detail: "then click, fill or check" },
+          ],
+        },
+        explanation: "- A locator describes how to find an element; it is resolved fresh each time it is used\n- Prefer user-facing locators: getByRole, getByLabel, getByText, getByPlaceholder, getByAltText, getByTitle\n- Use getByTestId when nothing user-visible identifies the element\n- Locators are strict: an action fails if more than one element matches\n- Chain and filter locators to narrow the search: list.getByRole('listitem').filter({ hasText: 'Milk' })",
+        keyPoints: [
+          { tone: "key", title: "Auto-waiting replaces sleeps", text: "Before acting, Playwright checks that the element is attached, visible, stable, able to receive events and enabled, retrying until the timeout. A fixed waitForTimeout in a test is almost always a bug.", example: "await page.getByRole('button', { name: 'Pay' }).click()" },
+          { tone: "tip", title: "Narrow with chaining and filter", text: "Scope a search to a region and filter by text or by a child locator to reach one element precisely, such as the Remove button inside the 'Milk' row. Playwright 1.63 adds locator.visible().", example: "items.filter({ hasText: 'Milk' }).getByRole('button', { name: 'Remove' })" },
+          { tone: "warning", title: "Locators are strict", text: "An action fails when a locator matches more than one element. Fix the locator instead of reaching for .first(), which hides ambiguity and breaks when the order changes.", example: "page.getByRole('link', { name: 'Home', exact: true })" },
+        ],
+        example: "- page.getByRole('button', { name: 'Add to cart' })\n- page.getByLabel('Email').fill('asha@example.in')\n- page.getByRole('listitem').filter({ hasText: 'Milk' }).getByRole('button', { name: 'Remove' })\n- page.getByTestId('checkout-total')",
+        code: "import { test, expect } from '@playwright/test';\n\ntest('adds and removes a todo', async ({ page }) => {\n  await page.goto('/todos');\n\n  const input = page.getByPlaceholder('What needs to be done?');\n  await input.fill('Buy milk');\n  await input.press('Enter');\n  await input.fill('Write notes');\n  await input.press('Enter');\n\n  const items = page.getByRole('listitem');\n  await expect(items).toHaveCount(2);\n\n  // narrow by content, then act inside that row\n  const milk = items.filter({ hasText: 'Buy milk' });\n  await milk.getByRole('checkbox').check();\n  await milk.getByRole('button', { name: 'Delete' }).click();\n\n  await expect(items).toHaveText(['Write notes']);\n});",
+        apiReference: [
+          {
+            name: "page.getByRole",
+            kind: "locator",
+            signature: "page.getByRole(role, { name?, exact?, checked?, disabled?, expanded?, level?, pressed?, selected? })",
+            params: [
+              { name: "role", type: "ARIA role", description: "button, link, heading, textbox, checkbox, listitem, dialog..." },
+              { name: "name", type: "string | RegExp", description: "Accessible name; substring match unless exact: true." },
+            ],
+            returns: "A Locator, resolved lazily when used.",
+          },
+          {
+            name: "locator.filter",
+            kind: "method",
+            signature: "locator.filter({ hasText?, hasNotText?, has?, hasNot?, visible? })",
+            params: [
+              { name: "hasText", type: "string | RegExp", description: "Keep elements containing this text." },
+              { name: "has", type: "Locator", description: "Keep elements containing a matching descendant." },
+            ],
+            returns: "A narrower Locator.",
+          },
+        ],
+        exercise: "- Rewrite CSS-selector tests with getByRole and getByLabel\n- Trigger a strictness error and fix it with filter\n- Remove every waitForTimeout from a flaky test",
+        checkpoint: "- What checks does Playwright run before clicking?\n- What does 'strict' mean for locators?\n- Why prefer role-based locators?",
+        mistake: "- Do not use page.waitForTimeout to 'fix' flakiness\n- Do not select by generated class names\n- Do not use .first() to hide an ambiguous locator",
+        interview: [
+          {
+            question: "Why do Playwright tests rarely need explicit waits?",
+            definition: "Playwright auto-waits: actions and web-first assertions retry until the page is in the required state.",
+            answer: "Before an action like click, Playwright checks that the target element is attached, visible, stable, able to receive events and enabled, retrying until the timeout. Assertions like expect(locator).toHaveText() also retry. Because locators are resolved fresh on each attempt, tests stay correct while the page re-renders, so fixed sleeps are unnecessary and harmful.",
+            similar: [
+              { question: "What is the difference between a locator and an element handle?", answer: "A locator is a lazy, re-resolvable query; an element handle points at one DOM node that can go stale." },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Web-first assertions and snapshots",
+        diagram: {
+          kind: "split",
+          caption: "Web-first assertions wait for the page to reach the expected state. Snapshot assertions compare structure (ARIA) or pixels (screenshots) against a stored baseline.",
+          headings: ["State assertions", "Snapshot assertions"],
+          items: [
+            { label: "toBeVisible / toBeHidden", group: 0 },
+            { label: "toHaveText / toContainText", group: 0 },
+            { label: "toHaveURL / toHaveTitle", group: 0 },
+            { label: "toHaveValue / toBeChecked / toHaveCount", group: 0 },
+            { label: "toMatchAriaSnapshot", detail: "the accessibility tree as YAML", group: 1 },
+            { label: "toHaveScreenshot", detail: "pixel comparison with a baseline", group: 1 },
+            { label: "expect.soft", detail: "record a failure and keep going", group: 1 },
+          ],
+        },
+        explanation: "- Web-first assertions take a locator or page and retry until the condition holds\n- Always await them: await expect(locator).toBeVisible()\n- expect.soft collects failures without stopping the test, useful for checking many fields\n- toMatchAriaSnapshot checks the accessibility tree structure in a readable YAML template\n- toHaveScreenshot compares pixels; update baselines deliberately with --update-snapshots",
+        keyPoints: [
+          { tone: "key", title: "Web-first assertions retry", text: "expect(locator).toHaveText() keeps checking until the page matches or the timeout passes. Reading textContent yourself and comparing it does not retry and is a common source of flakiness.", example: "await expect(page.getByRole('alert')).toHaveText('Saved')" },
+          { tone: "tip", title: "ARIA snapshots guard structure", text: "toMatchAriaSnapshot compares the accessibility tree against a readable YAML template. It ignores styling changes, making it more robust than screenshots for navigation and forms.", example: "await expect(nav).toMatchAriaSnapshot(`- link \"Home\"`)" },
+          { tone: "warning", title: "Screenshots depend on the environment", text: "Fonts, OS rendering and GPU settings change pixels. Generate screenshot baselines in the same environment as CI and review every diff before updating.", example: "npx playwright test --update-snapshots" },
+        ],
+        example: "- await expect(page.getByRole('alert')).toHaveText('Saved')\n- await expect(page).toHaveURL(/\\/dashboard/)\n- await expect.soft(page.getByLabel('Name')).toHaveValue('Asha')\n- await expect(page.getByRole('navigation')).toMatchAriaSnapshot(`- link \"Home\"`)",
+        code: "import { test, expect } from '@playwright/test';\n\ntest('profile page', async ({ page }) => {\n  await page.goto('/profile');\n\n  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Your profile');\n\n  // check several fields, report every mismatch\n  await expect.soft(page.getByLabel('Name')).toHaveValue('Asha Rao');\n  await expect.soft(page.getByLabel('City')).toHaveValue('Pune');\n\n  // structure of the navigation, independent of styling\n  await expect(page.getByRole('navigation')).toMatchAriaSnapshot(`\n    - link \"Dashboard\"\n    - link \"My library\"\n    - link \"Membership\"\n  `);\n\n  // pixels: first run writes the baseline\n  await expect(page.getByRole('main')).toHaveScreenshot('profile-main.png', { maxDiffPixelRatio: 0.01 });\n});",
+        exercise: "- Replace a textContent-based assertion with toHaveText and see it stop flaking\n- Add an ARIA snapshot for your site's main navigation\n- Create a screenshot baseline, change a colour, and read the diff",
+        checkpoint: "- Why must web-first assertions be awaited?\n- When would you choose an ARIA snapshot over a screenshot?\n- What does expect.soft change?",
+        mistake: "- Do not assert on values you read out manually; they do not retry\n- Do not update screenshot baselines without reviewing them\n- Do not overuse soft assertions for steps that the rest of the test depends on",
+      },
+      {
+        title: "Fixtures, authentication and page objects",
+        diagram: {
+          kind: "flow",
+          caption: "Log in once, reuse it everywhere: a setup project saves the signed-in storage state, and other projects start every test already authenticated.",
+          items: [
+            { label: "setup project: auth.setup.ts", detail: "signs in through the UI or an API" },
+            { label: "context.storageState({ path })", detail: "saves cookies and localStorage to a file" },
+            { label: "chromium project: dependencies ['setup']", detail: "runs after setup" },
+            { label: "use.storageState: 'playwright/.auth/user.json'", detail: "every test starts signed in" },
+          ],
+        },
+        explanation: "- Fixtures provide what a test needs ({ page, context, request }) and clean up afterwards\n- test.extend defines custom fixtures, such as a signed-in page or a seeded database\n- A setup project can log in once and save storageState for all other tests\n- The page object model wraps a page's locators and actions in a class\n- Fixtures compose: a fixture can depend on other fixtures",
+        keyPoints: [
+          { tone: "key", title: "Log in once with storage state", text: "A setup project signs in and saves cookies and localStorage to a file; other projects depend on it and start every test already authenticated, which is faster and less flaky than logging in per test.", example: "use: { storageState: 'playwright/.auth/user.json' }" },
+          { tone: "tip", title: "Custom fixtures replace boilerplate", text: "test.extend defines fixtures such as a seeded database or a page object. They run only for tests that request them, and code after await use() is automatic teardown.", example: "const test = base.extend<{ library: LibraryPage }>({ ... })" },
+          { tone: "warning", title: "Storage state files are secrets", text: "The saved state contains live session cookies. Add the auth folder to .gitignore, and use one account per worker when tests change shared data.", example: "playwright/.auth/  # in .gitignore" },
+        ],
+        example: "- test('shows orders', async ({ page }) => ...) receives an isolated page\n- const test = base.extend<{ todoPage: TodoPage }>({ todoPage: async ({ page }, use) => { ... } })\n- dependencies: ['setup'] makes a project wait for the auth setup\n- new TodoPage(page).addTodo('Buy milk')",
+        code: "// tests/auth.setup.ts\nimport { test as setup, expect } from '@playwright/test';\n\nsetup('sign in', async ({ page }) => {\n  await page.goto('/sign-in');\n  await page.getByLabel('Email').fill(process.env.E2E_EMAIL!);\n  await page.getByLabel('Password').fill(process.env.E2E_PASSWORD!);\n  await page.getByRole('button', { name: 'Sign in' }).click();\n  await expect(page).toHaveURL('/dashboard');\n  await page.context().storageState({ path: 'playwright/.auth/user.json' });\n});\n\n// tests/fixtures.ts\nimport { test as base, type Page } from '@playwright/test';\n\nexport class LibraryPage {\n  constructor(private page: Page) {}\n  search = (text: string) => this.page.getByRole('searchbox').fill(text);\n  card = (title: string) => this.page.getByRole('article', { name: title });\n}\n\nexport const test = base.extend<{ library: LibraryPage }>({\n  library: async ({ page }, use) => {\n    await page.goto('/dashboard?tab=library');\n    await use(new LibraryPage(page));\n  },\n});\n\n// playwright.config.ts (projects)\n// { name: 'setup', testMatch: /.*\\.setup\\.ts/ },\n// { name: 'chromium', dependencies: ['setup'],\n//   use: { ...devices['Desktop Chrome'], storageState: 'playwright/.auth/user.json' } }",
+        apiReference: [
+          {
+            name: "test.extend",
+            kind: "function",
+            signature: "const test = base.extend<Fixtures>({ name: async ({ ...deps }, use, testInfo) => { setup; await use(value); teardown } })",
+            params: [
+              { name: "deps", type: "fixtures", description: "Other fixtures this one needs, e.g. page." },
+              { name: "use", type: "(value) => Promise<void>", description: "Hands the value to the test; code after it is teardown." },
+            ],
+            returns: "A new test function whose tests can request the custom fixtures.",
+          },
+        ],
+        exercise: "- Save storage state in a setup project and remove login steps from other tests\n- Write a page object for a form and use it in two tests\n- Create a fixture that seeds data through the API and deletes it afterwards",
+        checkpoint: "- How does a fixture clean up after a test?\n- Why save storageState instead of logging in per test?\n- What should stay out of page objects?",
+        mistake: "- Do not commit storage state files\n- Do not put assertions deep inside page objects\n- Do not log in through the UI in every single test",
+      },
+      {
+        title: "Network mocking, API testing and automation",
+        diagram: {
+          kind: "tree",
+          caption: "Playwright is more than UI tests: it can intercept the network, call APIs directly and automate browsers from plain scripts.",
+          items: [
+            { label: "Network control" },
+            { label: "page.route(url, handler)", detail: "fulfil, modify or abort requests", depth: 1 },
+            { label: "tracing.startHar() / stopHar()", detail: "record traffic (1.60+)", depth: 1 },
+            { label: "API testing" },
+            { label: "request fixture", detail: "request.get/post with the same baseURL", depth: 1 },
+            { label: "Automation scripts" },
+            { label: "chromium.launch()", detail: "scrape, generate PDFs, fill forms", depth: 1 },
+            { label: "page.screencast (1.59+)", detail: "record video frames and annotations", depth: 1 },
+          ],
+        },
+        explanation: "- page.route intercepts requests so tests can return fixed data or simulate failures\n- The request fixture sends HTTP requests directly: fast API tests, or setup for UI tests\n- API and UI tests can share authentication and base URLs\n- The playwright library (without the test runner) automates browsers in ordinary scripts\n- Recent releases add HAR recording helpers, WebAuthn virtual authenticators and page.localStorage access",
+        keyPoints: [
+          { tone: "key", title: "Control the network with page.route", text: "A route handler can fulfil a request with fixed data, modify it or abort it, making error states and slow third-party services easy to test deterministically.", example: "await page.route('**/api/weather', r => r.fulfill({ status: 503 }))" },
+          { tone: "tip", title: "Seed with the API, verify through the UI", text: "The request fixture calls your API directly with the same baseURL. Creating test data that way is fast, while the UI check keeps the test realistic.", example: "await request.post('/api/todos', { data: { title: 'Read notes' } })" },
+          { tone: "warning", title: "Do not mock away what you are testing", text: "Mocking your own backend in an end-to-end test proves little. Mock third-party services and failure scenarios; keep your own stack real wherever possible.", example: "mock payments, keep your /api real" },
+        ],
+        example: "- await page.route('**/api/weather', r => r.fulfill({ json: { temp: 31 } }))\n- await page.route('**/*.{png,jpg}', r => r.abort()) speeds up tests\n- const res = await request.post('/api/todos', { data: { title: 'x' } }); expect(res.ok()).toBeTruthy()\n- const browser = await chromium.launch(); const page = await browser.newPage()",
+        code: "import { test, expect, chromium } from '@playwright/test';\n\ntest('shows a friendly error when the weather API fails', async ({ page }) => {\n  await page.route('**/api/weather*', route =>\n    route.fulfill({ status: 503, json: { error: 'unavailable' } }),\n  );\n  await page.goto('/');\n  await expect(page.getByRole('alert')).toHaveText('Weather is unavailable right now');\n});\n\ntest('creates a todo through the API', async ({ request }) => {\n  const created = await request.post('/api/todos', { data: { title: 'Read notes' } });\n  expect(created.ok()).toBeTruthy();\n  const todos = await (await request.get('/api/todos')).json();\n  expect(todos).toContainEqual(expect.objectContaining({ title: 'Read notes' }));\n});\n\n// A standalone automation script (node save-report.mjs)\n// const browser = await chromium.launch();\n// const page = await browser.newPage();\n// await page.goto('https://example.com/report');\n// await page.pdf({ path: 'report.pdf' });\n// await browser.close();",
+        apiReference: [
+          {
+            name: "page.route",
+            kind: "method",
+            signature: "await page.route(url: string | RegExp | (url) => boolean, handler: (route) => void)",
+            params: [
+              { name: "route.fulfill", type: "({ status, json, body, headers })", description: "Respond without hitting the network." },
+              { name: "route.continue", type: "({ headers, postData })", description: "Let the request through, optionally modified." },
+              { name: "route.abort", type: "(errorCode?)", description: "Fail the request." },
+            ],
+            returns: "A promise; the handler applies to matching requests from that page.",
+          },
+        ],
+        exercise: "- Mock an API to return an empty list and test the empty state\n- Write two API tests with the request fixture\n- Write a small script that screenshots three pages of a site you own",
+        checkpoint: "- What are the three things a route handler can do?\n- Why create data through the API in UI tests?\n- When would you use the library instead of the test runner?",
+        mistake: "- Do not mock your own backend so much that the test proves nothing\n- Do not leave routes active that other tests do not expect\n- Do not automate sites without permission",
+      },
+      {
+        title: "Debugging, CI and AI-assisted testing",
+        diagram: {
+          kind: "flow",
+          caption: "From a red CI run to a fix: download the trace, replay it step by step, reproduce locally in UI mode, and fix the test or the app.",
+          items: [
+            { label: "CI run fails", detail: "retries record a trace (on-first-retry)" },
+            { label: "Open the trace", detail: "npx playwright show-trace trace.zip" },
+            { label: "Inspect each step", detail: "DOM snapshot, console, network, source" },
+            { label: "Reproduce in --ui or --debug", detail: "locally, with watch mode" },
+            { label: "Fix and push", detail: "shard the suite to keep CI fast" },
+          ],
+        },
+        explanation: "- The trace viewer shows every action with DOM snapshots, network calls, console logs and source\n- UI mode (--ui) combines watch mode, time travel and a locator picker\n- Shard large suites across CI machines with --shard=1/4 and merge reports afterwards\n- Playwright's test agents (planner, generator, healer) plan, write and repair tests with an AI client\n- npx playwright init-agents --loop=claude (or vscode, codex, opencode) sets the agents up",
+        keyPoints: [
+          { tone: "key", title: "Traces explain CI-only failures", text: "With trace: 'on-first-retry', a failing test records every action with DOM snapshots, network requests and console logs. Open it with show-trace to see exactly what the browser saw.", example: "npx playwright show-trace trace.zip" },
+          { tone: "tip", title: "Shard large suites across machines", text: "--shard=1/4 runs a quarter of the suite; a CI matrix runs all four slices in parallel and merges the reports. Playwright 1.63's { lock: 'name' } serialises tests that share a resource.", example: "npx playwright test --shard=${{ matrix.shard }}" },
+          { tone: "warning", title: "Retries hide flakiness", text: "Retries keep CI green but mask real problems. Track flaky tests, fix their causes, and review every change the healer agent proposes before accepting it.", example: "npx playwright init-agents --loop=claude" },
+        ],
+        example: "- npx playwright show-report, then click a failed test's trace\n- npx playwright test --shard=2/4 on the second CI machine\n- npx playwright init-agents --loop=claude creates the agent definitions\n- The planner writes specs/checkout.md; the generator turns it into tests/checkout.spec.ts",
+        code: "# .github/workflows/playwright.yml\nname: Playwright\non: [push, pull_request]\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        shard: [1/4, 2/4, 3/4, 4/4]\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with: { node-version: 22 }\n      - run: npm ci\n      - run: npx playwright install --with-deps\n      - run: npx playwright test --shard=${{ matrix.shard }}\n      - uses: actions/upload-artifact@v4\n        if: always()\n        with:\n          name: playwright-report-${{ strategy.job-index }}\n          path: playwright-report/\n\n# Local debugging\n# npx playwright test --ui\n# npx playwright test tests/checkout.spec.ts --debug\n# npx playwright show-trace test-results/**/trace.zip",
+        exercise: "- Make a test fail in CI only, download its trace and find the cause\n- Split your suite into two shards locally and compare run times\n- Try the planner agent on one user flow and review the generated test",
+        checkpoint: "- What information does a trace contain?\n- How does sharding speed up CI?\n- What does each of the three test agents do?",
+        mistake: "- Do not rely on retries instead of fixing flaky tests\n- Do not accept AI-generated or healed tests without review\n- Do not skip uploading reports and traces as CI artifacts",
+        interview: [
+          {
+            question: "How do you debug a Playwright test that fails only in CI?",
+            definition: "By capturing traces, videos or screenshots in CI and replaying them locally.",
+            answer: "Enable trace: 'on-first-retry' (or 'retain-on-failure') so failing runs record a trace, upload the report as an artifact, and open it with npx playwright show-trace. The trace shows each action's DOM snapshot, network requests and console output, which usually reveals timing, data or environment differences. Then reproduce with --ui or --debug locally, matching CI's browser and viewport.",
+            similar: [
+              { question: "What causes most flaky end-to-end tests?", answer: "Fixed sleeps, shared test data, non-web-first assertions and dependence on test order or external services." },
+            ],
+          },
+        ],
+      },
+    ],
+    project: "Build an end-to-end suite for a small shop app: a config with chromium, webkit and mobile projects plus a webServer; an auth setup project saving storage state; page objects for the catalogue and cart; tests using role locators, web-first assertions and an ARIA snapshot of the header; a mocked payment provider via page.route; API tests that seed products with the request fixture; and a GitHub Actions workflow that shards the suite four ways and uploads traces.",
+    summary: "- Playwright Test drives Chromium, Firefox and WebKit with isolated browser contexts per test\n- Use role, label and text locators; auto-waiting makes sleeps unnecessary\n- Web-first assertions retry; ARIA snapshots and screenshots guard structure and pixels\n- Fixtures and setup projects share authentication; page objects share actions\n- page.route mocks the network; the request fixture tests APIs; the library automates browsers in scripts\n- Debug with traces and UI mode, shard in CI, and use test agents with human review",
+    glossary: [
+      { term: "Browser context", definition: "An isolated browser session with its own cookies and storage, created fresh for each test." },
+      { term: "Locator", definition: "A lazy, strict, auto-waiting description of how to find elements on a page." },
+      { term: "Actionability checks", definition: "Conditions Playwright verifies before an action: attached, visible, stable, receiving events, enabled." },
+      { term: "Web-first assertion", definition: "An assertion that retries until the page reaches the expected state." },
+      { term: "ARIA snapshot", definition: "A YAML description of the accessibility tree used with toMatchAriaSnapshot." },
+      { term: "Fixture", definition: "A value set up for a test on demand and torn down afterwards, such as page or request." },
+      { term: "Storage state", definition: "Saved cookies and localStorage used to start tests already signed in." },
+      { term: "Page object", definition: "A class that wraps a page's locators and actions for reuse across tests." },
+      { term: "Trace viewer", definition: "A tool that replays a recorded test step by step with DOM, network and console data." },
+      { term: "Sharding", definition: "Splitting a test suite across machines with --shard to run it in parallel." },
+    ],
+    sources: [
+      source("https://playwright.dev/docs/intro", "Installation"),
+      source("https://playwright.dev/docs/test-configuration", "Test configuration"),
+      source("https://playwright.dev/docs/locators", "Locators"),
+      source("https://playwright.dev/docs/actionability", "Auto-waiting"),
+      source("https://playwright.dev/docs/test-assertions", "Assertions"),
+      source("https://playwright.dev/docs/aria-snapshots", "Snapshot testing (ARIA)"),
+      source("https://playwright.dev/docs/test-fixtures", "Fixtures"),
+      source("https://playwright.dev/docs/auth", "Authentication"),
+      source("https://playwright.dev/docs/mock", "Mock APIs"),
+      source("https://playwright.dev/docs/trace-viewer", "Trace viewer"),
+      source("https://playwright.dev/docs/test-agents", "Test agents"),
+      source("https://playwright.dev/docs/release-notes", "Release notes"),
+    ],
+  },
+};
+
+export default guide;

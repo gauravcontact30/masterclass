@@ -1,195 +1,53 @@
 "use client";
+import { ExpandedText } from "@/components/expanded-text";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { Fraunces, Mukta } from "next/font/google";
-import { ArrowUpRight, Check } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BookOpen, Check, ChevronRight, GraduationCap, Globe2, Layers3, ListChecks, Menu, Sparkles, Timer, X } from "lucide-react";
 import { requestJson } from "@/lib/client";
-import { useLanguage } from "./language-provider";
-import { Carousel } from "./carousel";
+import { LandingHero, CourseMarquee } from "./landing-discovery";
+import { LandingFooter } from "./landing-footer";
+import { MembershipFaq } from "./membership-faq";
+import { StudentReviews } from "./student-reviews";
 import { Wordmark } from "./brand-mark";
-import { GuideStack } from "./guide-stack";
-import { HeroArt } from "./hero-art";
-import { SampleLessons } from "./sample-lessons";
-import { buttonVariants } from "./ui/button";
-
-// Fraunces carries the display voice; Mukta is the working face. Mukta is here
-// for a reason beyond taste: it covers Devanagari as well as Latin, so the page
-// keeps one typographic personality when a visitor switches to हिन्दी.
-const fraunces = Fraunces({ subsets: ["latin"], weight: ["400", "600"], style: ["normal", "italic"], variable: "--font-display" });
-const mukta = Mukta({ subsets: ["latin", "devanagari"], weight: ["300", "400", "600"], variable: "--font-body" });
-
-type Prices = { monthly: number; yearly: number; freeLimit: number; proLimit: number; perDownload: number };
-const DEFAULT_PRICES: Prices = { monthly: 299, yearly: 2999, freeLimit: 3, proLimit: 50, perDownload: 49 };
-
-// Full-bleed band under the header: four campus locations, one per scene.
-// These are drawn scenes (see hero-art.tsx), deliberately not photographs — to
-// swap in real photos later, replace HeroArt here with next/image and keep the
-// captions, which is the only place the slider knows about its artwork.
-const CAMPUS = [
-  { id: "library", scene: "library", caption: "landingCampus1" },
-  { id: "lawn", scene: "lawn", caption: "landingCampus2" },
-  { id: "lab", scene: "lab", caption: "landingCampus3" },
-  { id: "steps", scene: "steps", caption: "landingCampus4" },
-] as const;
-
-// Genuinely a sequence, which is what earns these the numbers. The campus band
-// above carries the imagery, so these stay typographic rather than repeating it.
-const STEPS = [
-  { id: "choose", title: "landingStep1Title", body: "landingStep1Body" },
-  { id: "write", title: "landingStep2Title", body: "landingStep2Body" },
-  { id: "read", title: "landingStep3Title", body: "landingStep3Body" },
-] as const;
-
-// Placeholder reviews: illustrated avatars and invented quotes. Do NOT pair
-// these quotes with photographs of real students — that would attribute words to
-// people who never said them. To use real reviews, replace the quote and name
-// keys together with the photo, and only for reviewers who gave their consent.
-const TESTIMONIALS = [
-  { quote: "landingTestimonial1", name: "landingTestimonialName1", avatar: "/images/avatar-1.webp" },
-  { quote: "landingTestimonial2", name: "landingTestimonialName2", avatar: "/images/avatar-2.webp" },
-  { quote: "landingTestimonial3", name: "landingTestimonialName3", avatar: "/images/avatar-3.webp" },
-  { quote: "landingTestimonial4", name: "landingTestimonialName4", initials: "KM" },
-  { quote: "landingTestimonial5", name: "landingTestimonialName5", initials: "MK" },
-  { quote: "landingTestimonial6", name: "landingTestimonialName6", initials: "DP" },
-] as const;
+import { useLanguage } from "./language-provider";
+import styles from "./learn-landing.module.css";
+import navigationStyles from "./navigation-link.module.css";
 
 export function LandingPage() {
-  const { t, language, setLanguage } = useLanguage();
-  const [prices, setPrices] = useState<Prices>(DEFAULT_PRICES);
-  useEffect(() => { void requestJson<Prices>("/api/billing").then(setPrices).catch(() => {}); }, []);
-  const money = (amount: number) => new Intl.NumberFormat(language === "hi" ? "hi-IN" : "en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
-
-  const campusSlides = CAMPUS.map(place => ({
-    id: place.id,
-    content: (
-      <figure className="campus-slide">
-        <HeroArt scene={place.scene} className="campus-image" />
-        <figcaption>{t(place.caption)}</figcaption>
-      </figure>
-    ),
-  }));
-  const testimonialSlides = TESTIMONIALS.map(item => ({
-    id: item.quote,
-    content: (
-      <div className="landing-testimonial-card">
-        {"avatar" in item ? (
-          <Image src={item.avatar} alt="" width={72} height={72} className="testimonial-avatar" />
-        ) : (
-          <span className="testimonial-avatar testimonial-initials">{item.initials}</span>
-        )}
-        <blockquote className="landing-testimonial">{t(item.quote)}</blockquote>
-        <p className="testimonial-name">{t(item.name)}</p>
-      </div>
-    ),
-  }));
-  const featureCards = [
-    { title: t("landingHeroTitle2"), body: t("landingHeroBody2") },
-    { title: t("landingHeroTitle3"), body: t("landingHeroBody3") },
-    { title: t("landingHeroTitle4"), body: t("landingHeroBody4") },
-    { title: t("landingFeatureLanguagesTitle"), body: t("landingFeatureLanguagesBody") },
-    { title: t("landingFeaturePricingTitle"), body: t("landingFeaturePricingBody") },
-  ];
-  const pricingCards = [
-    { tier: "free" as const, amount: 0, per: null, limit: prices.freeLimit, cta: false },
-    { tier: "monthly" as const, amount: prices.monthly, per: t("perMonth"), limit: prices.proLimit, cta: true },
-    { tier: "yearly" as const, amount: prices.yearly, per: t("perYear"), limit: prices.proLimit, cta: true },
-    { tier: "perDownload" as const, amount: prices.perDownload, per: t("perFile"), limit: 1, cta: true },
-  ];
-
-  return (
-    <div className={`landing-page ${fraunces.variable} ${mukta.variable}`}>
-      <header className="landing-nav">
-        <Link href="/" className="wordmark"><Wordmark /></Link>
-        <div className="landing-nav-actions">
-          <label className="language-control"><span className="sr-only">{t("language")}</span>
-            {/* persist=false: public visitors have no account row to write the preference to. */}
-            <select aria-label={t("language")} value={language} onChange={e => setLanguage(e.target.value as "en" | "hi", false)}>
-              <option value="en">English</option>
-              <option value="hi">हिन्दी</option>
-            </select>
-          </label>
-          <Link href="/sign-in" className="signin-link">{t("signin")}</Link>
-          <Link href="/sign-up" className={buttonVariants({ variant: "default" })}>{t("signup")}</Link>
-        </div>
-      </header>
-
-      <section className="landing-campus">
-        <Carousel slides={campusSlides} intervalMs={5000} ariaLabel={t("landingCampusAriaLabel")} className="landing-campus-carousel" />
-        <p className="landing-campus-note">{t("landingCampusNote")}</p>
-      </section>
-
-      <section className="landing-hero">
-        <div className="landing-hero-copy">
-          <h1>{t("landingHeroTitle")}</h1>
-          <p className="landing-hero-body">{t("landingHeroBody")}</p>
-          <div className="landing-hero-actions">
-            <Link href="/sign-up" className={buttonVariants({ variant: "default" })}>{t("signup")}<ArrowUpRight size={17} /></Link>
-            <a href="#sample" className="landing-hero-sample">{t("landingHeroSample")}</a>
-          </div>
-          <p className="landing-hero-note">{t("landingHeroNote")}</p>
-        </div>
-        <GuideStack label={t("landingGuideStackLabel")} />
-      </section>
-
-      <section className="landing-steps">
-        <h2>{t("landingStepsTitle")}</h2>
-        <ol className="landing-step-list">
-          {STEPS.map((step, index) => (
-            <li key={step.id} className="landing-step">
-              <span className="landing-step-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
-              <div className="landing-step-text">
-                <h3>{t(step.title)}</h3>
-                <p>{t(step.body)}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
-        <p className="landing-catalog-note">{t("landingCatalogNote")}</p>
-      </section>
-
-      <section className="landing-features">
-        <h2>{t("landingFeaturesTitle")}</h2>
-        <div className="landing-feature-grid">
-          {featureCards.map((card, i) => <article className={i === 0 ? "panel feature-lead" : "panel"} key={card.title}><h3>{card.title}</h3><p>{card.body}</p></article>)}
-        </div>
-      </section>
-
-      <section className="landing-sample" id="sample">
-        <div className="landing-sample-inner"><SampleLessons /></div>
-      </section>
-
-      <section className="landing-testimonials">
-        <h2>{t("landingTestimonialsTitle")}</h2>
-        <Carousel slides={testimonialSlides} intervalMs={6000} ariaLabel={t("landingTestimonialsAriaLabel")} className="landing-testimonials-carousel" />
-      </section>
-
-      <section className="landing-pricing">
-        <h2>{t("landingPricingTitle")}</h2>
-        <div className="pricing-grid">
-          {pricingCards.map(card => (
-            <article key={card.tier} className={`panel pricing-card ${card.tier === "yearly" ? "featured" : ""}`}>
-              <span className="pricing-tier">{t(card.tier)}</span>
-              <h3 className="pricing-amount">{money(card.amount)}</h3>
-              {card.per && <p className="pricing-per">{card.per}</p>}
-              <ul>
-                <li><Check size={17} />{card.limit} {card.tier === "perDownload" ? t("downloadWord") : t("generations")}</li>
-                <li><Check size={17} />PDF and PowerPoint</li>
-                <li><Check size={17} />English and हिन्दी</li>
-              </ul>
-              {card.cta && <Link href="/sign-up" className={buttonVariants({ variant: "default" })}>{t("subscribe")}</Link>}
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="landing-closing">
-        <h2>{t("landingClosingTitle")}</h2>
-        <p>{t("landingClosingBody")}</p>
-        <Link href="/sign-up" className={buttonVariants({ variant: "default" })}>{t("signup")}<ArrowUpRight size={17} /></Link>
-      </section>
-
-      <footer className="landing-footer"><span className="wordmark"><Wordmark /></span><span>{t("brandLine")}</span></footer>
-    </div>
-  );
+  const { language, setLanguage } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
+  const [menu, setMenu] = useState(false); const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
+  const [prices, setPrices] = useState({ monthly: 299, yearly: 2999, enabled: false }); const [priceState, setPriceState] = useState<"loading" | "ready" | "error">("loading");
+  const [sample, setSample] = useState<"maths" | "science" | "design">("maths"); const [answer, setAnswer] = useState<number | null>(null);
+  useEffect(() => { let active = true; requestJson<typeof prices>("/api/billing").then(data => { if (active) { setPrices(data); setPriceState("ready"); } }).catch(() => { if (active) setPriceState("error"); }); return () => { active = false; }; }, []);
+  const money = (value: number) => new Intl.NumberFormat(hi ? "hi-IN" : "en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
+  const savings = prices.monthly > 0 ? Math.max(0, Math.round((1 - prices.yearly / (prices.monthly * 12)) * 100)) : 0;
+  const demo = {
+    maths: { tag: text("CLASS 10 · MATHS", "कक्षा 10 · गणित"), title: text("A little clarity. A big difference.", "थोड़ी स्पष्टता। बड़ा बदलाव।"), concept: text("An arithmetic progression has a constant difference between consecutive terms.", "समांतर श्रेणी के लगातार पदों का अंतर समान होता है।"), rule: "aₙ = a + (n − 1)d", question: text("What is the 5th term of 3, 7, 11, 15, …?", "3, 7, 11, 15, … का पाँचवाँ पद क्या है?"), options: ["17", "19", "20", "23"], correct: 1, solution: text("a = 3, d = 4. So a₅ = 3 + (5 − 1) × 4 = 19. Count the four gaps, not five.", "a = 3, d = 4। इसलिए a₅ = 3 + (5 − 1) × 4 = 19। चार अंतर गिनें, पाँच नहीं।") },
+    science: { tag: text("NEET FOUNDATION · CHEMISTRY", "NEET आधार · रसायन विज्ञान"), title: text("Understand the idea behind the answer.", "उत्तर के पीछे का विचार समझें।"), concept: text("One mole contains the Avogadro number of specified elementary entities.", "एक मोल में निर्दिष्ट मूल इकाइयों की संख्या आवोगाद्रो संख्या होती है।"), rule: "n = mass / molar mass", question: text("How many moles are in 18 g of water? Use 18 g/mol.", "18 g पानी में कितने मोल हैं? मोलर द्रव्यमान 18 g/mol लें।"), options: ["0.5 mol", "18 mol", "1 mol", "36 mol"], correct: 2, solution: text("n = 18 g ÷ 18 g/mol = 1 mol. Check how the units cancel.", "n = 18 g ÷ 18 g/mol = 1 mol। इकाइयों का कटना जाँचें।") },
+    design: { tag: text("SYSTEM DESIGN · PAYMENTS", "सिस्टम डिज़ाइन · भुगतान"), title: text("Think beyond the happy path.", "सफलता के साथ विफलता भी समझें।"), concept: text("A payment timeout can leave the outcome unknown. Retrying must preserve the identity of the original attempt.", "भुगतान timeout में परिणाम अज्ञात हो सकता है। retry में मूल प्रयास की पहचान सुरक्षित रखें।"), rule: "request + idempotency key → one recorded attempt", question: text("A payment request times out. What should happen next?", "भुगतान अनुरोध timeout हो गया। अब क्या करें?"), options: [text("Charge again with a new key", "नई key से फिर charge"), text("Delete the attempt", "प्रयास मिटाएँ"), text("Assume the payment failed", "भुगतान विफल मानें"), text("Reconcile the original attempt", "मूल प्रयास का मिलान करें")], correct: 3, solution: text("Reuse the original provider key and reconcile its status. A timeout does not prove the charge failed.", "मूल provider key से स्थिति मिलाएँ। timeout, charge विफल होने का प्रमाण नहीं है।") },
+  }[sample];
+  const navigation = [["#paths", text("Learning paths", "अध्ययन पथ")], ["#school", text("School & boards", "स्कूल और बोर्ड")], ["#exams", text("Exams", "परीक्षाएँ")], ["#courses", text("Courses", "कोर्स")], ["#experience", text("How it works", "कैसे काम करता है")], ["#pricing", text("Membership", "सदस्यता")], ["#faq", text("FAQs", "सवाल")]];
+  return <div className={styles.page}><a className={styles.skip} href="#main-content"><ExpandedText text={text("Skip to content", "सामग्री पर जाएँ")} /></a>
+    <header className={styles.header}><Link href="/" aria-label="MasterClass"><Wordmark /></Link><nav className={`${styles.nav} ${menu ? styles.menuOpen : ""}`} aria-label={text("Main navigation", "मुख्य नेविगेशन")}>{navigation.map(([href, label]) => <a className={navigationStyles.link} href={href} key={href} onClick={() => setMenu(false)}><ExpandedText text={label} /></a>)}</nav><div className={styles.headerActions}><button className={styles.language} onClick={() => setLanguage(hi ? "en" : "hi")} aria-label={text("Switch to Hindi", "अंग्रेज़ी में बदलें")}><Globe2 size={15} /><ExpandedText text={hi ? "English" : "Hi"} /></button><Link className={`${styles.signin} ${navigationStyles.link}`} href="/sign-in"><ExpandedText text={text("Sign in", "साइन इन")} /></Link><Link className={styles.smallCta} href="/sign-up"><ExpandedText text={text("Start learning", "सीखना शुरू करें")} /><ArrowUpRight size={15} /></Link><button className={styles.menuButton} aria-expanded={menu} aria-label={text("Toggle navigation", "नेविगेशन खोलें")} onClick={() => setMenu(value => !value)}>{menu ? <X size={20} /> : <Menu size={20} />}</button></div></header>
+    <main id="main-content" tabIndex={-1}><LandingHero /><CourseMarquee />
+    <section className={styles.boardStrip}><span><ExpandedText text={text("YOUR SCHOOL. YOUR PATH.", "आपका स्कूल। आपका पथ।")} /></span>{["CBSE", "NCERT", "ICSE", "ISC"].map(board => <a key={board} href="#paths"><ExpandedText text={board} /></a>)}<small><ExpandedText text={text("Dedicated spaces inside your dashboard", "डैशबोर्ड में अलग अध्ययन पृष्ठ")} /></small></section>
+    <section id="paths" className={`${styles.section} ${styles.container}`}><div className={styles.sectionIntro}><div><span className={styles.kicker}><ExpandedText text={text("CHOOSE YOUR PREPARATION", "अपनी तैयारी चुनें")} /></span><h2><ExpandedText text={text("Different goals.", "अलग लक्ष्य।")} /><br /><em><ExpandedText text={text("The same thoughtful learning.", "उतनी ही व्यवस्थित पढ़ाई।")} /></em></h2></div><p><ExpandedText text={text("Choose an exam, a board and class, or a professional course. Your selected paths become your own learning space.", "परीक्षा, बोर्ड और कक्षा या व्यावसायिक कोर्स चुनें। चुने हुए पथ आपका निजी अध्ययन क्षेत्र बनेंगे।")} /></p></div><div className={styles.paths}>{[
+      { number: "01", icon: GraduationCap, title: text("School & board preparation", "स्कूल और बोर्ड तैयारी"), body: text("Classes 6–12. Maths, English, Physics and Chemistry foundations, with supplementary vocabulary and language practice.", "कक्षा 6–12। गणित, अंग्रेज़ी, भौतिक और रसायन के आधार, साथ में शब्दावली और भाषा अभ्यास।"), tags: ["CBSE", "NCERT", "ICSE", "ISC"] },
+      { number: "02", icon: ListChecks, title: text("Government & entrance exams", "सरकारी और प्रवेश परीक्षाएँ"), body: text("Build core concepts for SSC, civil services, defence, banking, railways, teaching, engineering and medical entrance preparation.", "SSC, सिविल सेवा, रक्षा, बैंकिंग, रेलवे, शिक्षण, इंजीनियरिंग और चिकित्सा प्रवेश की आधारभूत तैयारी।"), tags: ["SSC", "NDA", "JEE / IIT", "NEET"] },
+      { number: "03", icon: Layers3, title: text("Skills & system design", "कौशल और सिस्टम डिज़ाइन"), body: text("Explore software courses and detailed architecture case studies—from messaging and e-commerce to payment gateways and AI automation.", "सॉफ्टवेयर कोर्स और विस्तृत आर्किटेक्चर—मैसेजिंग और ई-कॉमर्स से पेमेंट गेटवे और AI ऑटोमेशन तक।"), tags: ["System Design", "Code", "Interviews", "IELTS"] },
+    ].map(path => <article id={{"01":"school","02":"exams","03":"courses"}[path.number]} key={path.number}><div className={styles.pathTop}><path.icon size={24} /><span><ExpandedText text={path.number} /></span></div><h3><ExpandedText text={path.title} /></h3><p><ExpandedText text={path.body} /></p><div className={styles.tags}>{path.tags.map(tag => <span key={tag}><ExpandedText text={tag} /></span>)}</div><Link href="/sign-up"><ExpandedText text={text("Choose this path", "यह पथ चुनें")} /><ArrowUpRight size={17} /></Link></article>)}</div><p className={styles.coverage}><ExpandedText text={text("School and exam resources currently cover foundation concepts and original practice. Check guide coverage before subscribing. NCERT is a resource organization, not an exam board; ICSE preparation runs through Class 10 and ISC covers Classes 11–12.", "स्कूल और परीक्षा संसाधन अभी आधारभूत अवधारणाएँ और मौलिक अभ्यास देते हैं। सदस्यता से पहले कवरेज देखें। NCERT संसाधन संस्था है, परीक्षा बोर्ड नहीं; ICSE कक्षा 10 तक और ISC कक्षा 11–12 के लिए है।")} /></p></section>
+    <section id="experience" className={styles.experience}><div className={styles.container}><div className={styles.centerIntro}><span className={styles.kicker}><ExpandedText text={text("LEARN. PRACTISE. MAKE PROGRESS.", "सीखें। अभ्यास करें। प्रगति करें।")} /></span><h2><ExpandedText text={text("Make understanding", "समझ को बनाएँ")} /> <em><ExpandedText text={text("a habit.", "एक आदत।")} /></em></h2><p><ExpandedText text={text("Everything you need for a focused study session, in one reader.", "एकाग्र अध्ययन के लिए ज़रूरी सुविधाएँ, एक ही रीडर में।")} /></p></div><div className={styles.features}>{[
+      { icon: BookOpen, title: text("Notes that explain", "समझाने वाले नोट्स"), body: text("Key points, rules, worked solutions and common mistakes, with room for your own revision notes.", "मुख्य बिंदु, नियम, हल, सामान्य गलतियाँ और अपने पुनरावृत्ति नोट्स।") },
+      { icon: ListChecks, title: text("Answers with reasoning", "तर्क सहित उत्तर"), body: text("Objective questions and subjective model answers help you check both recall and understanding.", "वस्तुनिष्ठ प्रश्न और विषयनिष्ठ आदर्श उत्तर याददाश्त तथा समझ दोनों जाँचते हैं।") },
+      { icon: Timer, title: text("Practice with feedback", "प्रतिक्रिया सहित अभ्यास"), body: text("Short timed papers, sample drills and answer reviews turn a lesson into something you can apply.", "छोटे समयबद्ध प्रश्न पत्र, नमूना अभ्यास और उत्तर समीक्षा से सीख को लागू करें।") },
+      { icon: Sparkles, title: text("A dashboard that fits", "आपके अनुसार डैशबोर्ड"), body: text("Your chosen exams and courses, organized into clear categories. Update your preparation as your goals change.", "चुनी परीक्षाएँ और कोर्स स्पष्ट श्रेणियों में। लक्ष्य बदलें तो तैयारी अपडेट करें।") },
+    ].map(feature => <article key={feature.title}><span><feature.icon size={22} /></span><h3><ExpandedText text={feature.title} /></h3><p><ExpandedText text={feature.body} /></p></article>)}</div></div></section>
+    <section id="practice" className={`${styles.section} ${styles.container}`}><div className={styles.practiceLayout}><div className={styles.practiceCopy}><span className={styles.kicker}><ExpandedText text={text("A SMALL TASTE OF CLARITY", "स्पष्टता का एक छोटा अनुभव")} /></span><h2><ExpandedText text={text("Don’t just read it.", "सिर्फ़ पढ़ें नहीं।")} /><br /><em><ExpandedText text={text("Try it yourself.", "खुद आज़माएँ।")} /></em></h2><p><ExpandedText text={text("Take one idea, see the rule and answer a question. This is original sample practice; no account is needed to try it here.", "एक विचार समझें, नियम देखें और प्रश्न हल करें। यह मौलिक नमूना अभ्यास है; यहाँ आज़माने के लिए खाते की जरूरत नहीं।")} /></p><div className={styles.sampleTabs} role="group" aria-label={text("Sample topic", "नमूना विषय")}>{(["maths", "science", "design"] as const).map(id => <button key={id} aria-pressed={sample === id} onClick={() => { setSample(id); setAnswer(null); }}><ExpandedText text={id === "maths" ? text("Maths", "गणित") : id === "science" ? text("Science", "विज्ञान") : text("System Design", "सिस्टम डिज़ाइन")} /><ChevronRight size={14} /></button>)}</div></div><article className={styles.sampleCard}><div className={styles.sampleTop}><BookOpen size={17} /><span><ExpandedText text={demo.tag} /></span><small>LEARN IN APP</small></div><div className={styles.sampleInner}><h3><ExpandedText text={demo.title} /></h3><p><ExpandedText text={demo.concept} /></p><div className={styles.formula}><ExpandedText text={demo.rule} /></div><h4><ExpandedText text={demo.question} /></h4><div className={styles.sampleAnswers}>{demo.options.map((option, index) => <button key={option} aria-pressed={answer === index} data-correct={answer !== null && index === demo.correct ? "true" : undefined} onClick={() => setAnswer(index)}><span><ExpandedText text={String.fromCharCode(65 + index)} /></span><ExpandedText text={option} />{answer !== null && index === demo.correct && <Check size={15} />}</button>)}</div>{answer !== null && <div className={styles.feedback} role="status"><strong><ExpandedText text={answer === demo.correct ? text("That’s right.", "सही उत्तर।") : text("Let’s work through it.", "आइए इसे समझें।")} /></strong><p><ExpandedText text={demo.solution} /></p></div>}</div></article></div></section>
+    <section id="pricing" className={styles.compactPricing}><div className={`${styles.container} ${styles.pricingLayout}`}><div className={styles.pricingCopy}><span className={styles.kicker}><ExpandedText text={text("INVEST IN YOUR NEXT CHAPTER","अपने अगले अध्याय में निवेश")} /></span><h2><ExpandedText text={text("Your goals.","आपके लक्ष्य।")} /><br/><em><ExpandedText text={text("One learning membership.","एक अध्ययन सदस्यता।")} /></em></h2><p><ExpandedText text={text("Choose your preparation. Get published notes, worked answers and practice in one focused space.","अपनी तैयारी चुनें। प्रकाशित नोट्स, हल सहित उत्तर और अभ्यास एक ही जगह पाएँ।")} /></p><div className={styles.billingToggle} role="group" aria-label={text("Billing period","भुगतान अवधि")}>{(["monthly","yearly"] as const).map(value=><button key={value} aria-pressed={cycle===value} onClick={()=>setCycle(value)}><ExpandedText text={value==="monthly"?text("Monthly","मासिक"):text("Yearly","वार्षिक")} />{value==="yearly"&&priceState==="ready"&&savings>0&&<span><ExpandedText text={text(`Save ${savings}%`,`${savings}% बचाएँ`)} /></span>}</button>)}</div><small><ExpandedText text={text("Choose your exams or courses before checkout.","भुगतान से पहले अपनी परीक्षाएँ या कोर्स चुनें।")} /></small></div><article className={styles.compactPlan}><div className={styles.planTop}><span><BookOpen size={17}/> LEARN IN APP</span><small><ExpandedText text={cycle==="monthly"?text("Monthly membership","मासिक सदस्यता"):text("Yearly membership","वार्षिक सदस्यता")} /></small></div><div className={styles.compactPrice}><ExpandedText text={priceState==="ready"?money(prices[cycle]):"—"} /><small><ExpandedText text={cycle==="monthly"?text("/ month","/ माह"):text("/ year","/ वर्ष")} /></small></div><p><ExpandedText text={priceState==="error"?text("Current pricing is temporarily unavailable.","वर्तमान मूल्य अभी उपलब्ध नहीं है।"):cycle==="yearly"&&priceState==="ready"?text(`${money(prices.yearly/12)}/month equivalent, billed yearly.`,`${money(prices.yearly/12)}/माह के बराबर, वार्षिक भुगतान।`):text("A steady rhythm for your learning.","आपकी पढ़ाई की नियमित गति।")} /></p><ul>{[text("Selected preparation","चुनी हुई तैयारी"),text("Published lessons","प्रकाशित पाठ"),text("Worked answers","हल सहित उत्तर"),text("Timed practice","समयबद्ध अभ्यास"),text("Revision & bookmarks","पुनरावृत्ति और बुकमार्क"),text("English / Hindi","अंग्रेज़ी / हिन्दी")].map(item=><li key={item}><Check size={14}/><ExpandedText text={item} /></li>)}</ul><Link className={styles.primary} href="/dashboard?tab=plans"><ExpandedText text={text("Choose preparation & plan","तैयारी और योजना चुनें")} /><ArrowRight size={16}/></Link>{priceState==="ready"&&!prices.enabled&&<small className={styles.billingUnavailable}><ExpandedText text={text("Checkout is not enabled yet.","भुगतान अभी सक्षम नहीं है।")} /></small>}</article><p className={styles.compactPlanNote}><ExpandedText text={text("Access starts after payment verification. Cancel renewal in Membership; access continues through your paid period. Guide coverage varies. Revision notes and bookmarks are saved in your browser.","भुगतान सत्यापन के बाद पहुँच शुरू होती है। सदस्यता में नवीनीकरण रद्द करें; भुगतान अवधि तक पहुँच जारी रहेगी। गाइड का कवरेज अलग हो सकता है। नोट्स और बुकमार्क ब्राउज़र में सहेजे जाते हैं।")} /></p></div></section>
+    <StudentReviews />
+    <MembershipFaq />
+    <section className={styles.finalCta}><span className={styles.kicker}><ExpandedText text={text("YOUR GOAL DESERVES A START", "आपका लक्ष्य शुरुआत चाहता है")} /></span><h2><ExpandedText text={text("Make today", "आज से बनाएँ")} /> <em><ExpandedText text={text("chapter one.", "पहला अध्याय।")} /></em></h2><Link className={styles.primary} href="/sign-up"><ExpandedText text={text("Build my learning space", "मेरा अध्ययन क्षेत्र बनाएँ")} /><ArrowRight size={17} /></Link></section></main>
+    <LandingFooter />
+  </div>;
 }

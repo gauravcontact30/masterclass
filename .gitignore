@@ -12,7 +12,6 @@
 
 # testing
 /coverage
-/public/pdf.worker.min.mjs
 
 # next.js
 /.next/

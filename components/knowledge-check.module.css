@@ -1,0 +1,27 @@
+.check { margin: 24px 0; padding: 24px; border: 1px solid #dce6d3; border-radius: 16px; background: #f9fbf5; color: #304838; }
+.eyebrow { display: block; margin-bottom: 14px; color: #70845e; letter-spacing: 1.5px; font-size: 10px; font-weight: 750; }
+.fieldset { min-width: 0; padding: 0; margin: 0; border: 0; }
+.fieldset legend { padding: 0; margin: 0 0 18px; font-size: 15px; line-height: 1.7; font-weight: 650; white-space: pre-wrap; }
+.options { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+.option { display: flex; align-items: flex-start; position: relative; gap: 10px; border: 1px solid #dce4d5; border-radius: 10px; padding: 14px; background: #fff; color: #52644c; font-size: 13px; line-height: 1.7; cursor: pointer; overflow-wrap: anywhere; }
+.option > span:nth-of-type(2) { flex: 1; white-space: pre-wrap; }
+.option input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.option:focus-within { outline: 3px solid #8bad75; outline-offset: 2px; }
+.option:hover { border-color: #9cb88a; background: #f7faf2; }
+.letter { flex: none; display: grid; place-items: center; width: 26px; height: 26px; background: #f0f4eb; border: 1px solid #dce5d3; border-radius: 7px; color: #506d43; font-size: 12px; font-weight: 700; }
+.option[data-selected="true"] { border-color: #739764; background: #edf5e5; }
+.option[data-result="correct"] { border-color: #82a977; background: #eaf5e6; }
+.option[data-result="incorrect"] { border-color: #c6a276; background: #fff5e7; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 18px; }
+.actions button { min-height: 40px; min-width: 132px; border-radius: 8px; }
+.actions > span { font-size: 12px; line-height: 1.7; color: #728068; }
+.answers { display: grid; gap: 12px; margin: 20px 0; }
+.answers section { padding: 18px 20px; border: 1px solid; border-radius: 12px; }
+.short { background: #edf6e7; border-color: #d4e6c9 !important; }
+.detail { background: #eef5fb; border-color: #d7e5f1 !important; }
+.answers h4 { display: flex; align-items: center; gap: 8px; margin: 0 0 9px; color: #3c5c40; font-size: 12px; font-weight: 750; }
+.answers h4 svg { flex: 0 0 15px; }
+.detail h4 { color: #42627b; }
+.answers p { margin: 0; color: #52664d; font-size: 14px; line-height: 1.9; white-space: pre-wrap; overflow-wrap: anywhere; }
+.detail p { color: #4e6577; }
+@media(max-width:650px) { .check { padding: 16px; } .options { grid-template-columns: 1fr; } .answers section { padding: 16px; } .fieldset legend { font-size: 14px; } }

@@ -1,0 +1,71 @@
+import type { TechnologyGuide } from "./index";
+
+const guide: TechnologyGuide = {
+  id: "cybersecurity", technologyId: "cybersecurity", topicId: "secure-applications", level: "intermediate",
+  curriculum: {
+    title: "Cybersecurity: secure applications and operations", minutes: 180,
+    objectives: ["Map assets and trust boundaries before choosing controls.", "Enforce authorization and safe data handling on the server.", "Use parameterized queries and constrain dangerous inputs.", "Prepare useful security logs and a practical incident response exercise."],
+    prerequisites: ["HTTP requests, sessions and a basic web application.", "SQL and JavaScript fundamentals."],
+    lessons: [
+      {
+        title: "Threat modeling an ordinary application",
+        diagram: {"kind": "flow", "caption": "Assets → Trust boundaries → Misuse cases → Controls → Verification", "items": [{"label": "Assets"}, {"label": "Trust boundaries"}, {"label": "Misuse cases"}, {"label": "Controls"}, {"label": "Verification"}]},
+        explanation: "- List the assets: accounts, private records, credentials and service availability\n- Draw where data crosses a trust boundary, including browsers, queues and third-party APIs\n- Describe a concrete misuse case for each sensitive action\n- Prioritize controls by impact and plausible exposure\n- Use the OWASP Top Ten as an awareness aid, then verify the specific risks in your application\n- Record the owner and a testable acceptance condition for each mitigation",
+        example: "A learning app lets a teacher upload a worksheet and a student read it. A useful threat model asks whether another student can guess the file URL, whether uploads can execute content, and whether download permissions remain valid after enrollment ends.",
+        code: "# security/worksheet-threats.yaml — review checklist\nasset: private_worksheet\ntrust_boundaries: [browser_to_api, api_to_storage]\nmisuse_cases:\n  - read_another_students_file\n  - upload_executable_content\ncontrols:\n  - authorize_each_download\n  - enforce_file_type_and_size\n  - store_uploads_outside_executable_paths\n",
+        keyPoints: [{ tone: "tip", title: "Try it yourself", text: "Use the worked example as a starting point, change one input, and compare the result with your prediction." }],
+        exercise: "Map the worksheet upload and download flow. Add a control, owner and test for each misuse case, including an expired enrollment and an oversized upload.",
+        checkpoint: "Can every high-impact threat be linked to a concrete control and a repeatable verification step?",
+        mistake: "Treating a security checklist as proof of safety without checking the application's actual data flow.",
+      },
+      {
+        title: "Authentication is only the start: authorize every resource",
+        diagram: {"kind": "flow", "caption": "Validated session → Resource lookup → Permission check → Allow or deny", "items": [{"label": "Validated session"}, {"label": "Resource lookup"}, {"label": "Permission check"}, {"label": "Allow or deny"}]},
+        explanation: "- Authentication identifies a caller; authorization decides what that caller may do\n- Deny access by default and grant only the required operations\n- Check authorization on every request, including reads and background actions\n- Derive caller identity from a validated server-side session\n- Include ownership or tenant boundaries in data access\n- Test both allowed and denied paths after changing permissions",
+        example: "A signed-in student changes /notes/41 to /notes/42. The endpoint must evaluate access to note 42. A hidden button or an unguessable identifier cannot replace that check. Tests should include another student's note and a revoked membership.",
+        code: "// security/can-read-note.ts — pure policy; caller identity comes from a validated session\nexport function canReadNote(\n  caller: { id: string; tenantId: string },\n  note: { ownerId: string; tenantId: string },\n): boolean {\n  return caller.tenantId === note.tenantId && caller.id === note.ownerId;\n}\n\n// The server must call this before returning the note or issuing a download URL.\n",
+        keyPoints: [{ tone: "tip", title: "Try it yourself", text: "Use the worked example as a starting point, change one input, and compare the result with your prediction." }],
+        exercise: "Test the policy with the owner, another student, a different tenant and a revoked session. Explain which component validates the session and which enforces resource ownership.",
+        checkpoint: "Would changing the resource ID in a request reveal another user's data? Show the test that answers this.",
+        mistake: "Trusting a user_id supplied by the browser as proof of the caller's identity.",
+      },
+      {
+        title: "Injection prevention and constrained inputs",
+        diagram: {"kind": "flow", "caption": "Request boundary → Input validation → Bound query parameters → Authorized results", "items": [{"label": "Request boundary"}, {"label": "Input validation"}, {"label": "Bound query parameters"}, {"label": "Authorized results"}]},
+        explanation: "- Bind data as parameters instead of concatenating it into SQL\n- Parameters represent values; choose identifiers such as sort columns from a fixed allowlist\n- Validate input shape, length and range near the boundary\n- Encode output for its rendering context and avoid interpreting untrusted strings as markup\n- Keep database permissions limited to the operations the application needs\n- Add regression tests for the exact vulnerable query or rendering path",
+        example: "A search endpoint accepts a search term and a sort choice. It binds the term as a value and maps the sort choice to a known column. A malicious-looking string is treated as text, while an unknown sort choice falls back to a documented default.",
+        code: "// data/search-notes.ts — node-postgres style parameter binding\nconst sortColumns = { newest: 'created_at', title: 'title' } as const;\ntype Sort = keyof typeof sortColumns;\nexport async function searchNotes(\n  db: { query: (sql: string, values: unknown[]) => Promise<unknown> },\n  ownerId: string, term: string, sort: Sort,\n) {\n  const column = sortColumns[sort] ?? sortColumns.newest;\n  return db.query(\n    `SELECT id, title FROM notes WHERE owner_id = $1 AND title ILIKE $2 ORDER BY ${column} LIMIT 50`,\n    [ownerId, `%${term}%`],\n  );\n}\n",
+        keyPoints: [{ tone: "tip", title: "Try it yourself", text: "Use the worked example as a starting point, change one input, and compare the result with your prediction." }],
+        exercise: "Check the SQL and bound values for a term containing quotes. Test an invalid sort parameter at the request boundary and verify the query still restricts results to the authenticated owner.",
+        checkpoint: "Which inputs can alter SQL structure, and how is each one constrained?",
+        mistake: "Escaping quotes manually and assuming that covers every SQL dialect, encoding and query context.",
+      },
+      {
+        title: "Detection, incident response and recovery",
+        diagram: {"kind": "flow", "caption": "Detect → Triage → Contain → Recover → Learn", "items": [{"label": "Detect"}, {"label": "Triage"}, {"label": "Contain"}, {"label": "Recover"}, {"label": "Learn"}]},
+        explanation: "- Log security-relevant outcomes such as denied access and configuration changes\n- Include a timestamp, event type and correlation identifier to reconstruct an incident\n- Exclude credentials, session tokens and unnecessary personal data\n- Normalize untrusted log fields so an input cannot forge extra log lines\n- Set alert ownership and an escalation path before an incident\n- Practice containment, credential rotation, recovery and a blameless follow-up with evidence preserved",
+        example: "An alert shows a burst of denied worksheet downloads. The responder correlates request IDs, identifies the affected account and checks whether any request succeeded. Access can be contained without publishing private worksheet contents into an incident channel.",
+        code: "// security/audit-event.ts — structured metadata only\nexport function deniedRead(requestId: string, resourceType: string) {\n  return JSON.stringify({\n    at: new Date().toISOString(),\n    event: 'authorization_denied',\n    requestId,\n    resourceType,\n    // Never include the session token or document contents.\n  });\n}\n",
+        keyPoints: [{ tone: "tip", title: "Try it yourself", text: "Use the worked example as a starting point, change one input, and compare the result with your prediction." }],
+        exercise: "Run a tabletop incident for a leaked application credential. Identify the responder, containment action, rotation dependencies, verification steps and evidence needed to decide whether private records were accessed.",
+        checkpoint: "Could another responder understand the incident from the logs without needing secret values or private document contents?",
+        mistake: "Collecting everything in logs and creating a second, poorly protected store of sensitive data.",
+      },
+    ],
+    project: "Review a private-notes application in a local environment. Produce a trust-boundary diagram, a permission matrix and tests for cross-user access. Replace a concatenated query with parameter binding, add safe audit events, and run a credential-exposure tabletop. Record remaining risks with owners and verification steps.",
+    summary: "Security becomes practical when each risk maps to an enforceable control and a test. Authenticate callers, authorize each resource, keep data separate from executable instructions, and collect useful evidence without leaking secrets. Rehearse recovery so an incident does not become the first test of the response plan.",
+    glossary: [
+      { term: "Trust boundary", definition: "A point where data crosses between components with different assumptions or privileges." },
+      { term: "Least privilege", definition: "Granting only the access required for a specific responsibility." },
+      { term: "Parameterized query", definition: "A query that binds input values separately from SQL structure." },
+      { term: "Containment", definition: "Actions that limit an incident's spread while preserving evidence for investigation." },
+    ],
+    sources: [
+      ["https://owasp.org/www-project-top-ten/", "OWASP Top Ten"],
+      ["https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html", "OWASP authorization guidance"],
+      ["https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html", "OWASP SQL injection prevention"],
+      ["https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html", "OWASP logging guidance"],
+    ].map(([url, title]) => ({ url, title, retrievedAt: "2026-09-12T00:00:00.000Z" })),
+  },
+};
+export default guide;

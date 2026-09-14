@@ -6,6 +6,9 @@ import { supabaseServer } from "@/lib/server/auth";
 jest.mock("@/lib/server/auth", () => ({ supabaseServer: jest.fn() }));
 
 describe("redirectFor", () => {
+  it("redirects signed-in homepage visitors before static rendering", () => {
+    expect(redirectFor({ pathname: "/", signedIn: true })).toBe("/dashboard");
+  });
   it("sends signed-out visitors from the dashboard to sign-in", () => {
     expect(redirectFor({ pathname: "/dashboard", signedIn: false })).toBe("/sign-in");
     expect(redirectFor({ pathname: "/dashboard/library", signedIn: false })).toBe("/sign-in");

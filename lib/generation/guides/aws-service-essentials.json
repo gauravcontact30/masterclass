@@ -1,0 +1,722 @@
+[
+  {
+    "name": "Amazon EC2",
+    "category": "Compute",
+    "summary": "Run virtual machines with control over the operating system and runtime.",
+    "points": [
+      "Use for custom software, specialized hardware or persistent processes.",
+      "Choose instance capacity to match CPU, memory and storage needs.",
+      "You manage operating-system patching and workload security."
+    ]
+  },
+  {
+    "name": "AWS Lambda",
+    "category": "Compute",
+    "summary": "Run event-triggered code without managing servers.",
+    "points": [
+      "Use for APIs, file processing and queue consumers.",
+      "Connect triggers such as S3, SQS and API Gateway.",
+      "Make handlers safe to retry; invocations have a maximum runtime."
+    ]
+  },
+  {
+    "name": "Amazon ECS",
+    "category": "Compute",
+    "summary": "Deploy and operate containerized applications on AWS.",
+    "points": [
+      "Task definitions describe container configuration and resource needs.",
+      "Services maintain the desired number of healthy tasks.",
+      "Run on Fargate or EC2; give applications scoped task roles."
+    ]
+  },
+  {
+    "name": "Amazon EKS",
+    "category": "Compute",
+    "summary": "Run Kubernetes with an AWS-managed control plane.",
+    "points": [
+      "Use when Kubernetes APIs, operators or tooling are required.",
+      "Deploy workloads using standard Kubernetes resources.",
+      "Plan workload security, upgrades and compute capacity explicitly."
+    ]
+  },
+  {
+    "name": "AWS Fargate",
+    "category": "Compute",
+    "summary": "Provide managed compute capacity for containers.",
+    "points": [
+      "Runs ECS tasks and supported EKS workloads.",
+      "Removes the need to provision and patch container hosts.",
+      "Choose requested CPU and memory carefully for each workload."
+    ]
+  },
+  {
+    "name": "AWS App Runner",
+    "category": "Compute",
+    "summary": "Deploy a web application or API as a managed HTTPS service.",
+    "points": [
+      "Accepts supported source repositories or container images.",
+      "Handles deployment, request routing and scaling.",
+      "Check runtime and networking requirements before choosing it."
+    ]
+  },
+  {
+    "name": "Amazon S3",
+    "category": "Storage",
+    "summary": "Store and retrieve objects such as files, media and datasets.",
+    "points": [
+      "Use buckets and object keys to organize content.",
+      "Versioning and lifecycle rules support recovery and retention.",
+      "Control access with IAM and bucket policies; avoid unintended public access."
+    ]
+  },
+  {
+    "name": "Amazon EBS",
+    "category": "Storage",
+    "summary": "Provide persistent block storage for EC2 workloads.",
+    "points": [
+      "Use for operating-system disks and application data volumes.",
+      "Select volume performance for the workload's I/O requirements.",
+      "Use snapshots for recovery; account for Availability Zone placement."
+    ]
+  },
+  {
+    "name": "Amazon EFS",
+    "category": "Storage",
+    "summary": "Provide a shared managed file system for Linux workloads.",
+    "points": [
+      "Multiple clients can access files over NFS.",
+      "Use for applications needing shared file paths.",
+      "Configure access points, network access and throughput for the workload."
+    ]
+  },
+  {
+    "name": "Amazon S3 Glacier",
+    "category": "Storage",
+    "summary": "Archive infrequently accessed objects in S3 storage classes.",
+    "points": [
+      "Choose a class according to retrieval speed and access frequency.",
+      "Lifecycle rules move eligible objects into archival storage.",
+      "Consider retrieval charges and minimum storage durations."
+    ]
+  },
+  {
+    "name": "Amazon RDS",
+    "category": "Databases",
+    "summary": "Operate a relational database with managed infrastructure tasks.",
+    "points": [
+      "Use SQL, relational schemas and transactions.",
+      "AWS handles supported backup and maintenance operations.",
+      "Plan availability, recovery and database access controls."
+    ]
+  },
+  {
+    "name": "Amazon Aurora",
+    "category": "Databases",
+    "summary": "Run an AWS-managed relational database compatible with MySQL or PostgreSQL.",
+    "points": [
+      "Use for relational applications needing managed replication and scaling.",
+      "Separate writer and reader workloads where appropriate.",
+      "Check engine compatibility and capacity requirements before migrating."
+    ]
+  },
+  {
+    "name": "Amazon DynamoDB",
+    "category": "Databases",
+    "summary": "Store key-value and document data with managed scaling.",
+    "points": [
+      "Design partition and sort keys around access patterns.",
+      "Use indexes for supported alternative queries.",
+      "Avoid hot keys and unbounded scans; design consistent update rules."
+    ]
+  },
+  {
+    "name": "Amazon ElastiCache",
+    "category": "Databases",
+    "summary": "Serve frequently accessed data from an in-memory cache.",
+    "points": [
+      "Use for sessions, cached queries and rate-limiting state.",
+      "Choose a supported engine and appropriate deployment mode.",
+      "Set expiration and invalidation rules to prevent stale results."
+    ]
+  },
+  {
+    "name": "Amazon VPC",
+    "category": "Networking & Content Delivery",
+    "summary": "Define an isolated network for AWS resources.",
+    "points": [
+      "Subnets and routes determine how traffic moves.",
+      "Security groups control allowed resource traffic.",
+      "Use appropriate gateways or endpoints for external and AWS service access."
+    ]
+  },
+  {
+    "name": "Amazon Route 53",
+    "category": "Networking & Content Delivery",
+    "summary": "Resolve domain names and route DNS traffic.",
+    "points": [
+      "Host public or private DNS zones.",
+      "Use routing policies and health checks for suitable failover designs.",
+      "Account for DNS caching when planning changes."
+    ]
+  },
+  {
+    "name": "Amazon CloudFront",
+    "category": "Networking & Content Delivery",
+    "summary": "Deliver content through a global edge network.",
+    "points": [
+      "Cache static assets and suitable application responses.",
+      "Configure cache keys so users receive the correct content variant.",
+      "Use Origin Access Control when serving private S3 origins."
+    ]
+  },
+  {
+    "name": "Elastic Load Balancing",
+    "category": "Networking & Content Delivery",
+    "summary": "Distribute incoming traffic across healthy application targets.",
+    "points": [
+      "Choose a load-balancer type for the required protocol.",
+      "Health checks determine which targets receive traffic.",
+      "Use routing and Availability Zone coverage appropriate to the application."
+    ]
+  },
+  {
+    "name": "AWS Direct Connect",
+    "category": "Networking & Content Delivery",
+    "summary": "Connect an on-premises network to AWS through dedicated connectivity.",
+    "points": [
+      "Use for predictable private network connectivity.",
+      "Virtual interfaces support different destination types.",
+      "Plan redundant connections and encryption requirements separately."
+    ]
+  },
+  {
+    "name": "Amazon API Gateway",
+    "category": "Networking & Content Delivery",
+    "summary": "Publish and manage application APIs.",
+    "points": [
+      "Route HTTP, REST or WebSocket requests to supported backends.",
+      "Configure authorization, throttling and request handling.",
+      "Monitor failures and latency at both gateway and backend."
+    ]
+  },
+  {
+    "name": "AWS IAM",
+    "category": "Security & Identity",
+    "summary": "Control who can access AWS resources and what they can do.",
+    "points": [
+      "Use roles and policies for workload permissions.",
+      "Prefer temporary credentials and least privilege.",
+      "Evaluate explicit denies and organization policies when troubleshooting access."
+    ]
+  },
+  {
+    "name": "AWS Secrets Manager",
+    "category": "Security & Identity",
+    "summary": "Store and retrieve application secrets securely.",
+    "points": [
+      "Use for database credentials and API secrets.",
+      "Supports rotation workflows for compatible integrations.",
+      "Restrict retrieval permissions and avoid writing secrets into logs."
+    ]
+  },
+  {
+    "name": "AWS KMS",
+    "category": "Security & Identity",
+    "summary": "Manage encryption keys and control their use.",
+    "points": [
+      "Integrates with encryption in many AWS services.",
+      "Key policies and IAM govern encryption and decryption access.",
+      "Plan key retention carefully so encrypted data remains recoverable."
+    ]
+  },
+  {
+    "name": "Amazon GuardDuty",
+    "category": "Security & Identity",
+    "summary": "Detect suspicious activity in supported AWS data sources.",
+    "points": [
+      "Produces findings for potentially malicious behavior.",
+      "Route findings into investigation and response workflows.",
+      "Review severity and context before deciding on remediation."
+    ]
+  },
+  {
+    "name": "AWS Shield",
+    "category": "Security & Identity",
+    "summary": "Protect supported AWS resources against distributed denial-of-service attacks.",
+    "points": [
+      "Standard and Advanced provide different protection capabilities.",
+      "Use alongside resilient networking and application design.",
+      "Application-layer request filtering is a separate WAF responsibility."
+    ]
+  },
+  {
+    "name": "AWS WAF",
+    "category": "Security & Identity",
+    "summary": "Filter web requests using application-layer rules.",
+    "points": [
+      "Use managed or custom rules for common attack patterns.",
+      "Rate-based rules help control abusive request volume.",
+      "Test rules in count mode before blocking legitimate users."
+    ]
+  },
+  {
+    "name": "Amazon Cognito",
+    "category": "Security & Identity",
+    "summary": "Add user sign-in and identity integration to applications.",
+    "points": [
+      "User pools manage application users and authentication flows.",
+      "Identity pools can provide temporary AWS credentials.",
+      "Resource authorization still belongs in the application and its policies."
+    ]
+  },
+  {
+    "name": "Amazon CloudWatch",
+    "category": "Monitoring & Operations",
+    "summary": "Observe application and infrastructure behavior.",
+    "points": [
+      "Collect metrics, logs and operational signals.",
+      "Alarms notify responders when configured conditions occur.",
+      "Build dashboards around user impact and actionable signals."
+    ]
+  },
+  {
+    "name": "AWS X-Ray",
+    "category": "Monitoring & Operations",
+    "summary": "Trace requests across distributed application components.",
+    "points": [
+      "Use traces to identify latency and downstream failures.",
+      "Instrument services and propagate trace context.",
+      "Apply sampling and avoid recording sensitive payloads."
+    ]
+  },
+  {
+    "name": "AWS CloudTrail",
+    "category": "Monitoring & Operations",
+    "summary": "Record AWS account activity for audit and investigation.",
+    "points": [
+      "Shows who performed supported API actions and when.",
+      "Configure additional event coverage where required.",
+      "Store audit records with appropriate retention and access restrictions."
+    ]
+  },
+  {
+    "name": "AWS Systems Manager",
+    "category": "Monitoring & Operations",
+    "summary": "Operate and configure managed compute resources.",
+    "points": [
+      "Supports session access, patching and automation workflows.",
+      "Parameter Store holds configuration and supported secure parameters.",
+      "Scope operator permissions and record operational changes."
+    ]
+  },
+  {
+    "name": "AWS CloudFormation",
+    "category": "Monitoring & Operations",
+    "summary": "Provision AWS infrastructure from declarative templates.",
+    "points": [
+      "Manage related resources as stacks.",
+      "Review change sets before applying infrastructure changes.",
+      "Track drift and protect stateful resources during updates."
+    ]
+  },
+  {
+    "name": "AWS CDK",
+    "category": "Monitoring & Operations",
+    "summary": "Define cloud infrastructure using programming languages.",
+    "points": [
+      "Constructs compose reusable infrastructure definitions.",
+      "Synthesizes templates for CloudFormation deployment.",
+      "Review generated changes and keep deployment roles restricted."
+    ]
+  },
+  {
+    "name": "AWS Config",
+    "category": "Monitoring & Operations",
+    "summary": "Track resource configuration and evaluate configured rules.",
+    "points": [
+      "Retains configuration history for supported resources.",
+      "Rules identify configuration drift from expected policy.",
+      "Remediation requires a defined action or automation workflow."
+    ]
+  },
+  {
+    "name": "AWS Organizations",
+    "category": "Monitoring & Operations",
+    "summary": "Manage multiple AWS accounts under one organization.",
+    "points": [
+      "Group accounts into organizational units.",
+      "Service control policies limit available permissions.",
+      "Policies set boundaries; they do not grant access themselves."
+    ]
+  },
+  {
+    "name": "AWS Budgets & Cost Explorer",
+    "category": "Monitoring & Operations",
+    "summary": "Plan cloud spending and understand cost patterns.",
+    "points": [
+      "Budgets alert on configured cost or usage thresholds.",
+      "Cost Explorer helps analyze historical spending.",
+      "Budget alerts do not automatically stop resource usage."
+    ]
+  },
+  {
+    "name": "Amazon Athena",
+    "category": "Analytics",
+    "summary": "Query supported data using SQL without managing query servers.",
+    "points": [
+      "Commonly queries datasets stored in S3.",
+      "Partitioning and columnar formats can reduce scanned data.",
+      "Maintain accurate table metadata and access controls."
+    ]
+  },
+  {
+    "name": "Amazon EMR",
+    "category": "Analytics",
+    "summary": "Run distributed data-processing frameworks on AWS.",
+    "points": [
+      "Supports workloads built with frameworks such as Spark.",
+      "Choose a deployment option for the workload's operational needs.",
+      "Tune job resources and inspect failed or skewed stages."
+    ]
+  },
+  {
+    "name": "Amazon Redshift",
+    "category": "Analytics",
+    "summary": "Analyze structured data in a managed data warehouse.",
+    "points": [
+      "Use SQL for reporting and analytical workloads.",
+      "Organize ingestion and models around business questions.",
+      "Monitor query performance, workload isolation and data freshness."
+    ]
+  },
+  {
+    "name": "Amazon Kinesis",
+    "category": "Analytics",
+    "summary": "Process streams of incoming records with Kinesis Data Streams.",
+    "points": [
+      "Producers write events; consumers process the stream.",
+      "Partition keys influence ordering and load distribution.",
+      "Plan retention and consumer recovery for delayed processing."
+    ]
+  },
+  {
+    "name": "AWS Glue",
+    "category": "Analytics",
+    "summary": "Discover, catalog and transform data for analytics.",
+    "points": [
+      "The Data Catalog stores dataset metadata.",
+      "ETL jobs prepare data for downstream analysis.",
+      "Validate schema changes and data quality before publication."
+    ]
+  },
+  {
+    "name": "Amazon OpenSearch Service",
+    "category": "Analytics",
+    "summary": "Provide managed search, log analytics and vector-search capabilities.",
+    "points": [
+      "Indexes data for low-latency retrieval.",
+      "Supports operational exploration and application search.",
+      "Plan mappings, access control, capacity and index retention."
+    ]
+  },
+  {
+    "name": "Amazon Bedrock",
+    "category": "AI & Machine Learning",
+    "summary": "Build generative AI applications using managed foundation models.",
+    "points": [
+      "Use for assistants, content generation and grounded answers.",
+      "Knowledge Bases support retrieval; Guardrails add configurable controls.",
+      "Check model availability, permissions and provider prerequisites."
+    ]
+  },
+  {
+    "name": "Amazon Bedrock AgentCore",
+    "category": "AI & Machine Learning",
+    "summary": "Deploy and operate AI agents with managed infrastructure.",
+    "points": [
+      "Runtime hosts agents; Memory supports retained context.",
+      "Gateway connects tools; Identity controls access.",
+      "Use policy and observability to govern and inspect agent actions."
+    ]
+  },
+  {
+    "name": "Amazon SageMaker AI",
+    "category": "AI & Machine Learning",
+    "summary": "Build, train and deploy machine-learning models.",
+    "points": [
+      "Use when custom training or model hosting is required.",
+      "Provides training jobs, deployment options and ML workflows.",
+      "Evaluate models before release and monitor production behavior."
+    ]
+  },
+  {
+    "name": "Amazon Q",
+    "category": "AI & Machine Learning",
+    "summary": "Assist users with AWS work and enterprise information.",
+    "points": [
+      "Q Business answers questions over configured enterprise sources.",
+      "Q Developer assists with AWS tasks in supported experiences.",
+      "Developer IDE plugins reach end of support on 30 April 2027; review the migration notice."
+    ]
+  },
+  {
+    "name": "Amazon Rekognition",
+    "category": "AI & Machine Learning",
+    "summary": "Analyze images and videos with managed computer vision.",
+    "points": [
+      "Detect labels, text and supported content categories.",
+      "Use for media organization and moderation workflows.",
+      "Review confidence thresholds and permission to process personal imagery."
+    ]
+  },
+  {
+    "name": "Amazon Textract",
+    "category": "AI & Machine Learning",
+    "summary": "Extract text and structured fields from documents.",
+    "points": [
+      "Recognizes supported forms, tables and document layouts.",
+      "Use for invoice, application and document-processing pipelines.",
+      "Validate extracted fields and route uncertain results to review."
+    ]
+  },
+  {
+    "name": "Amazon Transcribe",
+    "category": "AI & Machine Learning",
+    "summary": "Convert speech into text.",
+    "points": [
+      "Supports batch and streaming transcription workflows.",
+      "Custom vocabulary can improve recognition of domain terms.",
+      "Check supported languages and review accuracy on representative audio."
+    ]
+  },
+  {
+    "name": "Amazon Polly",
+    "category": "AI & Machine Learning",
+    "summary": "Convert written text into spoken audio.",
+    "points": [
+      "Use for read-aloud features and voice interfaces.",
+      "Supported voices and SSML control aspects of speech output.",
+      "Check voice, language and engine compatibility."
+    ]
+  },
+  {
+    "name": "Amazon Comprehend",
+    "category": "AI & Machine Learning",
+    "summary": "Identify useful information in text using natural-language processing.",
+    "points": [
+      "Extract supported entities, key phrases and sentiment.",
+      "Use for document tagging and text-analysis pipelines.",
+      "Evaluate language support and confidence for the intended task."
+    ]
+  },
+  {
+    "name": "Amazon Translate",
+    "category": "AI & Machine Learning",
+    "summary": "Translate text between supported languages.",
+    "points": [
+      "Use for multilingual content and application workflows.",
+      "Custom terminology helps preserve preferred domain terms.",
+      "Review important translations for meaning and context."
+    ]
+  },
+  {
+    "name": "Amazon Lex",
+    "category": "AI & Machine Learning",
+    "summary": "Build conversational interfaces using voice or text.",
+    "points": [
+      "Define intents, slots and fulfillment actions.",
+      "Use for structured tasks such as booking or support routing.",
+      "Handle unrecognized requests and missing information explicitly."
+    ]
+  },
+  {
+    "name": "Amazon Personalize",
+    "category": "AI & Machine Learning",
+    "summary": "Generate recommendations from user interaction data.",
+    "points": [
+      "Use for personalized item discovery and ranking.",
+      "Train on supported interaction, user and item datasets.",
+      "Evaluate recommendation quality and keep event data current."
+    ]
+  },
+  {
+    "name": "Amazon Forecast",
+    "category": "AI & Machine Learning",
+    "summary": "Generate forecasts from historical time-series data.",
+    "points": [
+      "Applies to supported demand and resource-planning use cases.",
+      "Closed to new customers since 29 July 2024.",
+      "New projects should evaluate supported alternatives such as SageMaker Canvas."
+    ]
+  },
+  {
+    "name": "Amazon Kendra",
+    "category": "AI & Machine Learning",
+    "summary": "Search enterprise content using natural-language queries.",
+    "points": [
+      "Connects and indexes supported repositories.",
+      "Use for internal knowledge discovery and document retrieval.",
+      "Configure identity and document permissions to protect restricted results."
+    ]
+  },
+  {
+    "name": "AWS CodePipeline",
+    "category": "DevOps & Delivery",
+    "summary": "Orchestrate software-release stages.",
+    "points": [
+      "Connect source, build, test and deployment actions.",
+      "Use approvals where a release decision requires review.",
+      "Promote a tested artifact and define a recovery path."
+    ]
+  },
+  {
+    "name": "AWS CodeBuild",
+    "category": "DevOps & Delivery",
+    "summary": "Run builds and tests in managed build environments.",
+    "points": [
+      "A buildspec defines commands and output artifacts.",
+      "Use for compilation, automated checks and image builds.",
+      "Protect secrets and restrict the build service role."
+    ]
+  },
+  {
+    "name": "AWS CodeDeploy",
+    "category": "DevOps & Delivery",
+    "summary": "Automate deployments to supported compute targets.",
+    "points": [
+      "Supports deployment strategies for EC2, Lambda and ECS.",
+      "Health checks and alarms can support rollback decisions.",
+      "Test deployment hooks and recovery before production releases."
+    ]
+  },
+  {
+    "name": "AWS CodeArtifact",
+    "category": "DevOps & Delivery",
+    "summary": "Store and distribute software packages.",
+    "points": [
+      "Use private repositories for supported package formats.",
+      "Configure upstream sources for dependency retrieval.",
+      "Control publishing permissions and dependency versions."
+    ]
+  },
+  {
+    "name": "AWS CodeCommit",
+    "category": "DevOps & Delivery",
+    "summary": "Host private Git repositories in AWS.",
+    "points": [
+      "Use Git workflows with AWS access controls.",
+      "Repositories can connect to supported delivery pipelines.",
+      "Check current account availability before adopting the service."
+    ]
+  },
+  {
+    "name": "Amazon ECR",
+    "category": "DevOps & Delivery",
+    "summary": "Store and distribute container images.",
+    "points": [
+      "Build systems push images; runtimes pull them.",
+      "Use image scanning and lifecycle policies.",
+      "Deploy immutable image digests for reproducible releases."
+    ]
+  },
+  {
+    "name": "AWS AppConfig",
+    "category": "DevOps & Delivery",
+    "summary": "Release application configuration and feature flags safely.",
+    "points": [
+      "Separate configuration rollout from code deployment.",
+      "Validate configuration before release.",
+      "Use gradual rollout and monitoring to detect harmful changes."
+    ]
+  },
+  {
+    "name": "AWS OpsWorks",
+    "category": "DevOps & Delivery",
+    "summary": "Understand legacy AWS configuration-management deployments.",
+    "points": [
+      "Historically managed infrastructure with Chef and Puppet workflows.",
+      "The OpsWorks offerings have reached end of life.",
+      "Use supported management tools when designing new infrastructure."
+    ]
+  },
+  {
+    "name": "Amazon DevOps Guru",
+    "category": "DevOps & Delivery",
+    "summary": "Detect operational anomalies using machine learning.",
+    "points": [
+      "Analyzes supported application and infrastructure signals.",
+      "Insights help prioritize investigation of abnormal behavior.",
+      "Validate findings against application context before changing resources."
+    ]
+  },
+  {
+    "name": "Amazon SQS",
+    "category": "Application Integration",
+    "summary": "Decouple producers and workers with a managed message queue.",
+    "points": [
+      "Use for asynchronous work and buffering traffic spikes.",
+      "Visibility timeouts protect messages while workers process them.",
+      "Design retry-safe consumers and a dead-letter-queue policy."
+    ]
+  },
+  {
+    "name": "Amazon SNS",
+    "category": "Application Integration",
+    "summary": "Distribute published messages to multiple subscribers.",
+    "points": [
+      "Use for notifications and event fan-out.",
+      "Supports several endpoint types, including SQS and Lambda.",
+      "Configure delivery, retry and subscription permissions."
+    ]
+  },
+  {
+    "name": "Amazon EventBridge",
+    "category": "Application Integration",
+    "summary": "Route events between applications and supported services.",
+    "points": [
+      "Rules match event patterns and forward to targets.",
+      "Use for loosely coupled application workflows.",
+      "Define event contracts and failure-handling destinations."
+    ]
+  },
+  {
+    "name": "AWS Step Functions",
+    "category": "Application Integration",
+    "summary": "Coordinate multi-step workflows with explicit state.",
+    "points": [
+      "Connect supported service tasks, branches and parallel work.",
+      "Configure retries, timeouts and error handling.",
+      "Choose the workflow type for execution and durability needs."
+    ]
+  },
+  {
+    "name": "Amazon Data Firehose",
+    "category": "Analytics",
+    "summary": "Deliver streaming data to supported destinations.",
+    "points": [
+      "Buffers incoming records before delivery.",
+      "Can transform or convert supported data before writing.",
+      "Monitor delivery failures and configure backup destinations."
+    ]
+  },
+  {
+    "name": "AWS Global Accelerator",
+    "category": "Networking & Content Delivery",
+    "summary": "Improve access to regional applications through the AWS global network.",
+    "points": [
+      "Provides static anycast IP addresses.",
+      "Routes traffic to configured healthy endpoints.",
+      "Use for network routing; CloudFront serves content-caching needs."
+    ]
+  },
+  {
+    "name": "AWS Batch",
+    "category": "Compute",
+    "summary": "Schedule and execute batch-computing jobs.",
+    "points": [
+      "Job queues organize work by priority and requirements.",
+      "Compute environments provide capacity for queued jobs.",
+      "Set resource requests, retry rules and execution limits."
+    ]
+  }
+]

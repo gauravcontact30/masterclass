@@ -1,0 +1,105 @@
+/*
+ * Notes thumbnail (see file-thumbnail.tsx): a spiral-bound, ruled notebook
+ * page. Every length is in em so a parent scales the whole object with
+ * --thumb-size; the technology accent arrives as --th-accent, set inline.
+ */
+.thumb {
+  --th-accent: #245d49;
+  position: relative;
+  display: grid;
+  place-items: center;
+  font-size: var(--thumb-size, 10px);
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+}
+
+.notebook {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 10.2em;
+  aspect-ratio: 4 / 5;
+  padding: 1.75em 0.9em 0.8em 2.05em;
+  border-radius: 0.3em 0.55em 0.55em 0.3em;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 1.2em, #d8e2d2 1.2em 1.28em) 0 1.55em / 100% calc(100% - 1.55em) no-repeat,
+    #fffcf3;
+  box-shadow: 0 0.1em 0.25em #3b331a14, 0 1.3em 2.2em -0.8em #4a3f1d55;
+}
+.rings {
+  position: absolute;
+  top: -0.45em;
+  left: 0.9em;
+  right: 0.9em;
+  display: flex;
+  justify-content: space-between;
+}
+.rings i {
+  width: 0.46em;
+  height: 1.05em;
+  border-radius: 0.3em;
+  background: linear-gradient(90deg, #6f7c70, #b5bfb3 45%, #6f7c70);
+  box-shadow: 0 0.08em 0.12em #1b2e2440;
+}
+.margin {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 1.5em;
+  width: 0.09em;
+  background: var(--th-accent);
+  opacity: 0.55;
+}
+/* The technology tab clipped to the page's right edge, like a divider tab. */
+.tab {
+  position: absolute;
+  right: -0.35em;
+  bottom: 0.9em;
+  max-width: 70%;
+  padding: 0.32em 0.55em;
+  border-radius: 0.25em 0 0 0.25em;
+  overflow: hidden;
+  background: var(--th-accent);
+  color: #fff;
+  font: 800 0.4em/1 system-ui, "Nirmala UI", sans-serif;
+  letter-spacing: 0.12em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 0.12em 0.3em #0000002e;
+}
+.noteTitle {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font: italic 700 0.88em/1.36 Georgia, "Nirmala UI", serif;
+  color: #24412e;
+  overflow-wrap: anywhere;
+}
+.noteRows {
+  display: grid;
+  gap: 0.72em;
+  margin-top: auto;
+  padding-bottom: 1.4em;
+}
+.noteRows > span {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+.noteRows i {
+  flex: none;
+  width: 0.38em;
+  height: 0.38em;
+  border-radius: 50%;
+  background: var(--th-accent);
+}
+.noteRows b {
+  display: block;
+  height: 0.22em;
+  border-radius: 0.2em;
+  background: #6d7f6f;
+  opacity: 0.4;
+}

@@ -1,0 +1,9 @@
+.topics { min-width: 0; margin: 20px 0 32px; }
+.intro, .status { color: #576852; font-size: 13px; line-height: 1.7; }
+.details { border-top: 1px solid #dce5d8; padding-top: 12px; color: #354c38; font-size: 13px; line-height: 1.7; }
+.details summary { cursor: pointer; font-weight: 650; }
+.details h5 { margin: 14px 0 5px; font-size: 13px; }
+.details ul { padding-left: 20px; list-style: disc; }
+.details pre { max-width: 100%; overflow-x: auto; padding: 14px; background: #20342b; color: #f3f7ed; border-radius: 10px; font-size: 12px; white-space: pre; }
+.source { display: inline-flex; align-items: center; gap: 6px; color: #48653e; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+.details summary:focus-visible, .source:focus-visible { outline: 2px solid #5c7a4f; outline-offset: 3px; }

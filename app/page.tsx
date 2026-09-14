@@ -1,9 +1,11 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 import { LandingPage } from "@/components/landing-page";
-import { currentUser } from "@/lib/server/auth";
-import { authConfigured } from "@/lib/server/config";
-export const dynamic = "force-dynamic";
-export default async function Home() {
-  if (authConfigured() && await currentUser()) redirect("/dashboard");
-  return <LandingPage />;
+import { siteDescription, siteTitle, websiteSchema } from "@/lib/seo";
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+  openGraph: { type: "website", url: "/", siteName: "MasterClass", title: siteTitle, description: siteDescription, locale: "en_IN", images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: siteTitle }] },
+  twitter: { card: "summary_large_image", title: siteTitle, description: siteDescription, images: ["/opengraph-image"] },
+};
+export default function Home() {
+  return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema()).replace(/</g, "\\u003c") }} /><LandingPage /></>;
 }

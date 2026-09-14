@@ -1,0 +1,357 @@
+import type { TechnologyGuide } from "./index";
+import { source } from "./shared";
+import { JAVASCRIPT_FUNDAMENTAL_LESSONS } from "./javascript-fundamentals";
+
+/**
+ * ECMAScript 2026, the 17th edition (approved 30 June 2026), grounded in the
+ * TC39 finished-proposals list, the proposal repositories and tc39.es — plus
+ * what is already finished for ES2027.
+ */
+const guide: TechnologyGuide = {
+  id: "es2026",
+  technologyId: "javascript",
+  topicId: "es2026",
+  level: "intermediate",
+  version: 2,
+  curriculum: {
+    title: "JavaScript ES2026",
+    minutes: 150 + JAVASCRIPT_FUNDAMENTAL_LESSONS.length * 8,
+    objectives: [
+      "Use modern ECMAScript features alongside closures, prototypes, this binding, execution contexts and memory management.",
+      "Build reliable asynchronous flows with promises, generators, cancellation and the event loop.",
+      "Apply classes, functional patterns, browser APIs, storage, workers and module tooling through worked JavaScript examples.",
+      "Explain how TC39 moves a proposal from stage 0 to a yearly ECMAScript edition.",
+      "Replace 'check then set' map code with Map/WeakMap getOrInsert and getOrInsertComputed.",
+      "Chain iterators with Iterator.concat on top of ES2025's iterator helpers.",
+      "Encode and decode binary data with Uint8Array's base64 and hex methods.",
+      "Use Math.sumPrecise, Error.isError, Array.fromAsync and JSON.parse source text access correctly.",
+      "Know what is already finished for ES2027: Temporal, using declarations, Iterator.zip and Atomics.pause.",
+    ],
+    prerequisites: [
+      "Basic programming familiarity; the expanded lessons explain JavaScript fundamentals, modules and asynchronous code.",
+      "A current browser or Node.js; check compatibility tables before shipping new APIs.",
+    ],
+    lessons: [
+      {
+        title: "How JavaScript evolves: TC39 and ES2026",
+        diagram: {
+          kind: "flow",
+          caption: "Every JavaScript feature passes through TC39's stages. A proposal reaching stage 4 by early each year is included in that June's ECMAScript edition.",
+          items: [
+            { label: "Stage 0-1: idea and problem", detail: "a champion explores the need" },
+            { label: "Stage 2: draft", detail: "the solution and spec text take shape" },
+            { label: "Stage 2.7: approved in principle", detail: "waiting on tests and validation" },
+            { label: "Stage 3: implementations", detail: "engines ship it, often behind flags" },
+            { label: "Stage 4: finished", detail: "two implementations + test262 tests" },
+            { label: "ECMAScript 20XX", detail: "Ecma approves the yearly edition in June" },
+          ],
+        },
+        explanation: "- ECMAScript is the standard behind JavaScript, published once a year by Ecma TC39\n- ES2026 is the 17th edition, approved on 30 June 2026\n- It adds seven features: Upsert, Iterator.concat, Uint8Array base64/hex, Math.sumPrecise, Error.isError, Array.fromAsync and JSON.parse source text access\n- ES2025 brought iterator helpers, new Set methods, RegExp.escape, Promise.try, Float16Array and JSON modules\n- Engines often ship features before the edition is published; always check support for your targets",
+        keyPoints: [
+          { tone: "key", text: "Stage 4 means 'finished': at least two compatible implementations and test262 conformance tests." },
+          { tone: "tip", text: "TypeScript 6 and 7 target and lib options follow editions: use lib es2025/esnext for the newest built-in types." },
+          { tone: "warning", text: "A feature in the spec is not automatically in every browser your users run; feature-detect or polyfill." },
+        ],
+        example: "- Promise.try(() => mayThrow()) (ES2025) turns sync throws into rejections\n- new Set([1, 2]).union(new Set([3])) (ES2025) returns Set {1, 2, 3}\n- RegExp.escape('1.5') (ES2025) returns an escaped pattern for exact matching\n- if (typeof Map.prototype.getOrInsert === 'function') feature-detects ES2026 Upsert",
+        code: "// ES2025 recap — the base ES2026 builds on\nconst primes = new Set([2, 3, 5]);\nconst odds = new Set([1, 3, 5]);\nprimes.intersection(odds);          // Set {3, 5}\nprimes.difference(odds);            // Set {2}\n\n// Iterator helpers (ES2025): lazy, chainable\nconst firstEvens = Iterator.from([1, 2, 3, 4, 5, 6])\n  .filter((n) => n % 2 === 0)\n  .map((n) => n * 10)\n  .take(2)\n  .toArray();                       // [20, 40]\n\n// Promise.try (ES2025)\nPromise.try(() => JSON.parse(input)).catch(() => null);\n\n// Feature detection before using ES2026 APIs\nconst hasUpsert = typeof Map.prototype.getOrInsert === 'function';",
+        exercise: "- Look up the TC39 stage of a proposal you are curious about\n- Rewrite a Set comparison with ES2025's union/intersection methods\n- Write a feature-detection check for each of the seven ES2026 features",
+        checkpoint: "- What does stage 4 require?\n- When is a new ECMAScript edition approved each year?\n- Name the seven ES2026 features.",
+        mistake: "- Do not assume 'in the spec' means 'supported everywhere'\n- Do not ship stage 2 or 3 syntax to production without a compiler\n- Do not confuse TypeScript features with ECMAScript features",
+        interview: [
+          {
+            question: "What does it mean for a JavaScript proposal to reach stage 4?",
+            definition: "Stage 4 is 'finished': the proposal is ready to be included in the next yearly ECMAScript edition.",
+            answer: "A proposal reaches stage 4 when it has complete spec text approved by the editors, test262 acceptance tests, and at least two compatible shipping implementations, usually in major JavaScript engines. Proposals that reach stage 4 before the edition's cut-off are included in that year's ECMAScript, published each June by Ecma International.",
+            similar: [
+              { question: "What is test262?", answer: "The official conformance test suite for ECMAScript that engines run to verify spec compliance." },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Upsert: Map.getOrInsert and getOrInsertComputed",
+        diagram: {
+          kind: "split",
+          caption: "The most common Map pattern — 'if the key is missing, add a default, then use the value' — becomes one call, with one lookup.",
+          headings: ["Before ES2026", "ES2026 Upsert"],
+          items: [
+            { label: "if (!map.has(key)) map.set(key, [])", group: 0 },
+            { label: "map.get(key).push(item)", group: 0 },
+            { label: "Two or three hash lookups", group: 0 },
+            { label: "map.getOrInsert(key, []).push(item)", group: 1 },
+            { label: "getOrInsertComputed(key, k => build(k))", detail: "default created lazily", group: 1 },
+            { label: "Also on WeakMap", group: 1 },
+          ],
+        },
+        explanation: "- map.getOrInsert(key, defaultValue) returns the existing value, or inserts the default and returns it\n- map.getOrInsertComputed(key, callback) calls callback(key) only when the key is missing\n- Both exist on Map and WeakMap\n- They replace has/get/set boilerplate and avoid extra lookups\n- Use the computed form when the default is expensive or must be unique per key",
+        keyPoints: [
+          { tone: "key", text: "getOrInsert evaluates its default argument every time; getOrInsertComputed builds it only when needed." },
+          { tone: "tip", text: "Grouping items into arrays and counting occurrences are the two classic use cases." },
+          { tone: "warning", text: "Passing a shared object as the default, e.g. a single array, would reuse it; create a fresh one per key." },
+        ],
+        example: "- counts.set(word, counts.getOrInsert(word, 0) + 1) counts words\n- groups.getOrInsert(order.status, []).push(order) groups orders\n- cache.getOrInsertComputed(url, (u) => fetch(u)) starts each fetch once\n- weakMeta.getOrInsertComputed(element, () => ({ clicks: 0 })).clicks++",
+        code: "const orders = [\n  { id: 1, status: 'paid' },\n  { id: 2, status: 'pending' },\n  { id: 3, status: 'paid' },\n];\n\n// Group by status\nconst byStatus = new Map();\nfor (const order of orders) {\n  byStatus.getOrInsert(order.status, []).push(order);\n}\n// Map { 'paid' => [1, 3], 'pending' => [2] }\n\n// Count words\nconst counts = new Map();\nfor (const word of 'to be or not to be'.split(' ')) {\n  counts.set(word, counts.getOrInsert(word, 0) + 1);\n}\n\n// Deduplicate expensive work: the callback runs only for new keys\nconst requests = new Map();\nfunction load(url) {\n  return requests.getOrInsertComputed(url, (key) => fetch(key).then((r) => r.json()));\n}\n\n// Per-object metadata without leaking memory\nconst meta = new WeakMap();\nfunction track(element) {\n  meta.getOrInsertComputed(element, () => ({ clicks: 0 })).clicks++;\n}",
+        apiReference: [
+          {
+            name: "Map.prototype.getOrInsert",
+            kind: "method (ES2026)",
+            signature: "map.getOrInsert(key, defaultValue)",
+            params: [
+              { name: "key", type: "any", description: "The key to look up (for WeakMap, an object or non-registered symbol)." },
+              { name: "defaultValue", type: "any", description: "Inserted and returned if the key is missing." },
+            ],
+            returns: "The existing value, or defaultValue after inserting it.",
+          },
+          {
+            name: "Map.prototype.getOrInsertComputed",
+            kind: "method (ES2026)",
+            signature: "map.getOrInsertComputed(key, callback)",
+            params: [{ name: "callback", type: "(key) => value", description: "Called only when the key is missing; its result is inserted." }],
+            returns: "The existing or newly computed value.",
+          },
+        ],
+        exercise: "- Rewrite a has/set/get grouping loop with getOrInsert\n- Build a memoised fetcher with getOrInsertComputed\n- Count characters in a string with getOrInsert",
+        checkpoint: "- When is getOrInsertComputed better than getOrInsert?\n- Which collections gain these methods?\n- Why can a shared default object be a bug?",
+        mistake: "- Do not pass an expensive expression to getOrInsert; use the computed form\n- Do not reuse one mutable default for every key\n- Do not forget WeakMap keys must be objects (or non-registered symbols)",
+      },
+      {
+        title: "Iterator.concat and iterator helpers",
+        diagram: {
+          kind: "flow",
+          caption: "Iterator.concat stitches several iterables into one lazy iterator, and the ES2025 helpers transform it without creating intermediate arrays.",
+          items: [
+            { label: "Several sources", detail: "arrays, Sets, generators, Map entries" },
+            { label: "Iterator.concat(a, b, c)", detail: "ES2026: one sequence, lazily" },
+            { label: ".filter / .map / .flatMap", detail: "ES2025 helpers, still lazy" },
+            { label: ".take(n) / .drop(n)", detail: "stop early without reading everything" },
+            { label: ".toArray() / for...of", detail: "values are produced only now" },
+          ],
+        },
+        explanation: "- Iterator.concat(...iterables) yields every value of the first iterable, then the second, and so on\n- It accepts any iterable: arrays, Sets, Maps, strings or generators\n- The result is an iterator, so ES2025 helpers (map, filter, take, drop, flatMap, reduce, some, every, find, toArray) work on it\n- Everything is lazy: nothing is read until you consume it, which makes infinite and huge sources practical\n- Iterator.from wraps any iterable or iterator-like object to give it the helpers",
+        keyPoints: [
+          { tone: "key", text: "Unlike [...a, ...b], Iterator.concat does not copy anything into a new array." },
+          { tone: "tip", text: "Combine with take(n) to read just the first matches from large or infinite generators." },
+          { tone: "warning", text: "An iterator can be consumed only once; create it again to iterate a second time." },
+        ],
+        example: "- Iterator.concat(localTodos, remoteTodos).filter(t => !t.done).toArray()\n- Iterator.concat([1, 2], new Set([3]), 'ab') yields 1, 2, 3, 'a', 'b'\n- Iterator.concat(page1(), page2()).take(10) reads only 10 items\n- Iterator.from(map.keys()).map(k => k.toUpperCase())",
+        code: "function* naturals(start = 1) {\n  for (let n = start; ; n++) yield n;   // infinite\n}\n\nconst pinned = ['Welcome', 'Rules'];\nconst recent = new Set(['Hello', 'Rules']);\n\n// One lazy sequence from three different sources\nconst feed = Iterator.concat(pinned, recent, ['Archive']);\nconsole.log(feed.toArray());\n// ['Welcome', 'Rules', 'Hello', 'Rules', 'Archive']\n\n// Safe with infinite sources thanks to laziness\nconst firstSquares = Iterator.concat([0], naturals())\n  .map((n) => n * n)\n  .filter((n) => n % 2 === 0)\n  .take(4)\n  .toArray();\nconsole.log(firstSquares); // [0, 4, 16, 36]\n\n// Consumed once\nconst once = Iterator.concat([1, 2]);\nconsole.log([...once], [...once]); // [1, 2] []",
+        apiReference: [
+          {
+            name: "Iterator.concat",
+            kind: "static method (ES2026)",
+            signature: "Iterator.concat(...iterables)",
+            params: [{ name: "iterables", type: "Iterable[]", description: "Each is iterated fully, in order." }],
+            returns: "An iterator with all iterator helper methods, yielding every value of every input.",
+          },
+          {
+            name: "Iterator helpers",
+            kind: "methods (ES2025)",
+            signature: "it.map(fn) .filter(fn) .flatMap(fn) .take(n) .drop(n) .reduce(fn, init) .some(fn) .every(fn) .find(fn) .forEach(fn) .toArray()",
+            params: [],
+            returns: "Lazy iterators (map, filter, flatMap, take, drop) or a final value.",
+          },
+        ],
+        exercise: "- Merge three arrays of messages with Iterator.concat and take the first 5 unread\n- Write a generator of Fibonacci numbers and take the first 10 even ones\n- Show that consuming an iterator twice gives nothing the second time",
+        checkpoint: "- How does Iterator.concat differ from array spreading?\n- Why can helpers work on infinite generators?\n- What does Iterator.from do?",
+        mistake: "- Do not call toArray on an infinite iterator without take\n- Do not reuse a consumed iterator\n- Do not use arrays when you only need the first few results",
+      },
+      {
+        title: "Binary data: Uint8Array base64 and hex",
+        diagram: {
+          kind: "split",
+          caption: "ES2026 gives typed arrays direct, standard conversions to and from text encodings, replacing btoa/atob string tricks and hand-written hex loops.",
+          headings: ["Bytes to text", "Text to bytes"],
+          items: [
+            { label: "bytes.toBase64({ alphabet, omitPadding })", group: 0 },
+            { label: "bytes.toHex()", detail: "lowercase, two characters per byte", group: 0 },
+            { label: "Uint8Array.fromBase64(str, options)", group: 1 },
+            { label: "Uint8Array.fromHex(str)", group: 1 },
+            { label: "target.setFromBase64 / setFromHex", detail: "write into an existing buffer: { read, written }", group: 1 },
+          ],
+        },
+        explanation: "- toBase64 and toHex encode a Uint8Array's bytes as text\n- Uint8Array.fromBase64 and fromHex decode text into a new Uint8Array\n- The alphabet option chooses 'base64' or URL-safe 'base64url'\n- setFromBase64 and setFromHex decode into an existing array and report { read, written }\n- Unlike btoa/atob, these work on real bytes, not on 'binary strings'",
+        keyPoints: [
+          { tone: "key", text: "Use { alphabet: 'base64url', omitPadding: true } for tokens and URL-safe identifiers." },
+          { tone: "tip", text: "Combine with TextEncoder/TextDecoder to go between strings and bytes." },
+          { tone: "warning", text: "Invalid input throws a SyntaxError; decode untrusted text inside try/catch." },
+        ],
+        example: "- new Uint8Array([72, 105]).toBase64() is 'SGk='\n- Uint8Array.fromBase64('SGk=') is Uint8Array [72, 105]\n- new Uint8Array([255, 1]).toHex() is 'ff01'\n- bytes.toBase64({ alphabet: 'base64url', omitPadding: true }) for JWT-style segments",
+        code: "const text = 'नमस्ते, ES2026!';\nconst bytes = new TextEncoder().encode(text);      // UTF-8 bytes\n\n// Encode\nconst b64 = bytes.toBase64();\nconst b64url = bytes.toBase64({ alphabet: 'base64url', omitPadding: true });\nconst hex = bytes.toHex();\n\n// Decode\nconst back = new TextDecoder().decode(Uint8Array.fromBase64(b64));\nconsole.log(back === text);                        // true\nconsole.log(Uint8Array.fromHex('ff01'));           // Uint8Array [255, 1]\n\n// Decode into an existing buffer (streaming, pooled memory)\nconst target = new Uint8Array(8);\nconst { read, written } = target.setFromHex('cafebabe');\nconsole.log(read, written);                        // 8 4\n\n// Hashing: show a SHA-256 digest as hex\nconst digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));\nconsole.log(digest.toHex());",
+        apiReference: [
+          {
+            name: "Uint8Array.prototype.toBase64",
+            kind: "method (ES2026)",
+            signature: "bytes.toBase64({ alphabet?: 'base64' | 'base64url', omitPadding?: boolean })",
+            params: [
+              { name: "alphabet", type: "string", description: "'base64' (default) or URL-safe 'base64url'." },
+              { name: "omitPadding", type: "boolean", description: "Drop trailing '=' characters." },
+            ],
+            returns: "A base64 string.",
+          },
+          {
+            name: "Uint8Array.fromBase64",
+            kind: "static method (ES2026)",
+            signature: "Uint8Array.fromBase64(string, { alphabet?, lastChunkHandling?: 'loose' | 'strict' | 'stop-before-partial' })",
+            params: [{ name: "lastChunkHandling", type: "string", description: "How to treat an incomplete final chunk." }],
+            returns: "A new Uint8Array; throws SyntaxError on invalid input.",
+          },
+        ],
+        exercise: "- Encode a UTF-8 string to base64url without padding and decode it back\n- Display a SHA-256 hash of a file as hex\n- Replace a btoa/atob helper in an old codebase with the new methods",
+        checkpoint: "- Why are btoa/atob awkward for non-ASCII text?\n- When would you use setFromBase64 instead of fromBase64?\n- What does the alphabet option change?",
+        mistake: "- Do not pass strings with non-Latin1 characters to btoa\n- Do not ignore SyntaxError from malformed input\n- Do not forget padding rules when interoperating with other systems",
+      },
+      {
+        title: "Math.sumPrecise, Error.isError and Array.fromAsync",
+        diagram: {
+          kind: "tree",
+          caption: "Three small additions that fix long-standing everyday problems: floating-point sums, reliable error detection, and collecting async data.",
+          items: [
+            { label: "Math.sumPrecise(iterable)" },
+            { label: "Adds without intermediate rounding", detail: "[1e20, 0.1, -1e20] -> 0.1", depth: 1 },
+            { label: "Error.isError(value)" },
+            { label: "true for real errors, even across realms", detail: "iframes, workers, vm contexts", depth: 1 },
+            { label: "false for objects faking Error.prototype", depth: 1 },
+            { label: "Array.fromAsync(source, mapFn?)" },
+            { label: "Collects async iterables into an array", detail: "awaits each value in order", depth: 1 },
+          ],
+        },
+        explanation: "- Math.sumPrecise returns the sum of an iterable of numbers as precisely as a double allows, avoiding error build-up\n- It throws a TypeError for non-number values, catching bad data early\n- Error.isError(value) reliably detects genuine Error objects, including ones from other realms where instanceof fails\n- Array.fromAsync is the async counterpart of Array.from: it awaits async iterables, iterables of promises, or array-likes\n- Array.fromAsync processes items sequentially and returns a promise",
+        keyPoints: [
+          { tone: "key", text: "[1e20, 0.1, -1e20].reduce((a, b) => a + b) is 0, but Math.sumPrecise gives 0.1." },
+          { tone: "tip", text: "Use Error.isError in catch blocks of libraries that may receive errors from iframes, workers or Node's vm module." },
+          { tone: "warning", text: "Array.fromAsync awaits one item at a time; use Promise.all when the items can run in parallel." },
+        ],
+        example: "- Math.sumPrecise([0.1, 0.2, 0.3]) sums with a single final rounding\n- Error.isError(new TypeError('x')) is true; Error.isError({ message: 'x' }) is false\n- await Array.fromAsync(paginate('/api/users')) gathers every page\n- await Array.fromAsync(ids, (id) => fetchUser(id)) maps sequentially",
+        code: "// Precise summation\nconst readings = [1e20, 0.1, -1e20];\nconsole.log(readings.reduce((a, b) => a + b, 0)); // 0   (0.1 lost)\nconsole.log(Math.sumPrecise(readings));           // 0.1\n\n// Reliable error detection\nfunction toMessage(value) {\n  return Error.isError(value) ? value.message : String(value);\n}\nconst fake = Object.create(Error.prototype);\nconsole.log(fake instanceof Error);   // true  (fooled)\nconsole.log(Error.isError(fake));     // false (not a real error)\n\n// Collect an async iterable\nasync function* paginate(url) {\n  let next = url;\n  while (next) {\n    const res = await fetch(next).then((r) => r.json());\n    yield* res.items;\n    next = res.nextPage;\n  }\n}\nconst allUsers = await Array.fromAsync(paginate('/api/users'));\nconst names = await Array.fromAsync(allUsers, async (u) => u.name.toUpperCase());",
+        apiReference: [
+          {
+            name: "Math.sumPrecise",
+            kind: "static method (ES2026)",
+            signature: "Math.sumPrecise(iterableOfNumbers)",
+            params: [{ name: "iterableOfNumbers", type: "Iterable<number>", description: "Throws TypeError if any value is not a number." }],
+            returns: "The sum, computed as if exactly and then rounded once.",
+          },
+          {
+            name: "Error.isError",
+            kind: "static method (ES2026)",
+            signature: "Error.isError(value)",
+            params: [{ name: "value", type: "any", description: "Anything, including values from another realm." }],
+            returns: "true only for genuine Error objects (including subclasses and DOMException).",
+          },
+          {
+            name: "Array.fromAsync",
+            kind: "static method (ES2026)",
+            signature: "Array.fromAsync(asyncIterable | iterable | arrayLike, mapFn?, thisArg?)",
+            params: [{ name: "mapFn", type: "(value, index) => any", description: "Optional mapper; its result is awaited too." }],
+            returns: "A Promise of an array, filled in order.",
+          },
+        ],
+        exercise: "- Show a case where reduce gives a wrong float sum and Math.sumPrecise fixes it\n- Write a safe toMessage(err) helper with Error.isError\n- Collect a paginated async generator into an array with Array.fromAsync",
+        checkpoint: "- Why can adding floats in order lose precision?\n- When does instanceof Error give the wrong answer?\n- Does Array.fromAsync run the mapper in parallel?",
+        mistake: "- Do not use Math.sumPrecise for money; use integer minor units or a decimal library\n- Do not rely on instanceof Error across realms\n- Do not use Array.fromAsync for work that should run concurrently",
+      },
+      {
+        title: "JSON.parse source text access, and what comes in ES2027",
+        diagram: {
+          kind: "split",
+          caption: "ES2026 finishes the language's JSON story for big numbers; ES2027 already has four finished proposals, headlined by Temporal and explicit resource management.",
+          headings: ["ES2026 (published)", "ES2027 (finished, stage 4)"],
+          items: [
+            { label: "JSON.parse reviver context.source", detail: "read the raw text of a value", group: 0 },
+            { label: "JSON.rawJSON(text)", detail: "stringify exact numbers", group: 0 },
+            { label: "JSON.isRawJSON(value)", group: 0 },
+            { label: "Temporal", detail: "modern dates and times", group: 1 },
+            { label: "using / await using", detail: "explicit resource management", group: 1 },
+            { label: "Iterator.zip (joint iteration), Atomics.pause", group: 1 },
+          ],
+        },
+        explanation: "- JSON.parse revivers now receive a third argument, context, whose source holds a primitive's original text\n- This lets you parse large IDs as BigInt without losing digits to double precision\n- JSON.rawJSON creates a value that JSON.stringify emits verbatim, for writing exact numbers back out\n- ES2027 will include Temporal (a complete date/time API), using declarations with Symbol.dispose, Iterator.zip and Atomics.pause\n- Some of these already ship in engines; check support before relying on them",
+        keyPoints: [
+          { tone: "key", text: "JSON numbers above 2^53 lose precision with plain JSON.parse; context.source keeps the exact digits." },
+          { tone: "tip", text: "using file = openFile() guarantees file[Symbol.dispose]() runs when the block exits, even on errors." },
+          { tone: "tip", text: "Temporal.PlainDate, ZonedDateTime and Duration replace most uses of Date and date libraries." },
+        ],
+        example: "- JSON.parse('{\"id\": 12345678901234567890}') loses the last digits\n- A reviver returning BigInt(context.source) keeps them exactly\n- JSON.stringify({ id: JSON.rawJSON('12345678901234567890') }) writes the exact number\n- Temporal.Now.plainDateISO().add({ days: 30 }) computes a due date (ES2027)",
+        code: "const text = '{\"id\": 12345678901234567890, \"price\": 10.5}';\n\nconsole.log(JSON.parse(text).id);  // 12345678901234567000 — precision lost\n\n// ES2026: the reviver's third argument exposes the source text\nconst data = JSON.parse(text, (key, value, context) =>\n  key === 'id' ? BigInt(context.source) : value,\n);\nconsole.log(data.id);              // 12345678901234567890n\n\n// Write exact numbers back out\nconst out = JSON.stringify({ id: JSON.rawJSON(data.id.toString()) });\nconsole.log(out);                  // {\"id\":12345678901234567890}\n\n// ES2027 preview (where supported): explicit resource management\n// {\n//   using conn = openConnection();   // conn[Symbol.dispose]() runs at block end\n//   await conn.query('select 1');\n// }\n// Temporal: Temporal.Now.plainDateISO().add({ days: 30 }).toString()",
+        apiReference: [
+          {
+            name: "JSON.parse reviver context",
+            kind: "API (ES2026)",
+            signature: "JSON.parse(text, (key, value, context) => any)",
+            params: [{ name: "context.source", type: "string", description: "The original JSON text of a primitive value (absent for objects and arrays)." }],
+            returns: "The parsed value with reviver results applied.",
+          },
+          {
+            name: "JSON.rawJSON",
+            kind: "static method (ES2026)",
+            signature: "JSON.rawJSON(jsonText)",
+            params: [{ name: "jsonText", type: "string", description: "Text of a JSON primitive, e.g. a long number." }],
+            returns: "A frozen raw-JSON object that JSON.stringify serialises verbatim; detect it with JSON.isRawJSON.",
+          },
+        ],
+        exercise: "- Parse an API response with 20-digit IDs as BigInt using context.source\n- Serialise BigInts back to exact JSON numbers with JSON.rawJSON\n- Try a using declaration with a small object that implements Symbol.dispose, where your runtime supports it",
+        checkpoint: "- Why do large JSON numbers lose precision?\n- What is context.source undefined for?\n- Name the four finished ES2027 proposals.",
+        mistake: "- Do not store large IDs as JSON numbers if you can use strings\n- Do not assume ES2027 features are available everywhere yet\n- Do not keep using hand-rolled dispose patterns once using is available",
+        interview: [
+          {
+            question: "How would you safely parse a JSON number larger than Number.MAX_SAFE_INTEGER?",
+            definition: "Numbers above 2^53 - 1 cannot be represented exactly as JavaScript doubles, so JSON.parse rounds them.",
+            answer: "With ES2026, pass a reviver to JSON.parse; its third argument context.source contains the original digits, so return BigInt(context.source) for the affected keys. To write them back without rounding, wrap them with JSON.rawJSON before JSON.stringify. Where you control the API, sending such IDs as strings avoids the problem entirely.",
+            code: "const obj = JSON.parse(body, (key, value, { source }) =>\n  key === 'id' ? BigInt(source) : value,\n);",
+            similar: [
+              { question: "What is Number.MAX_SAFE_INTEGER?", answer: "2^53 - 1 (9007199254740991), the largest integer a double can represent exactly along with its neighbours." },
+            ],
+          },
+        ],
+      },
+    ],
+    project: "Build a 'data inspector' web page using only ES2026 features: load a paginated API with an async generator and Array.fromAsync, merge it with cached local items using Iterator.concat and helpers, group records by category with Map.getOrInsert, total amounts with Math.sumPrecise, parse 20-digit IDs exactly with JSON.parse source text access, show a SHA-256 digest of the payload with Uint8Array.toHex, and report failures with a helper built on Error.isError. Feature-detect each API and show a notice where one is missing.",
+    summary: "- ES2026 (approved 30 June 2026) adds seven features on top of ES2025's iterator helpers and Set methods\n- getOrInsert and getOrInsertComputed replace has/get/set boilerplate on Map and WeakMap\n- Iterator.concat sequences iterables lazily and pairs with iterator helpers\n- Uint8Array gains toBase64/toHex and fromBase64/fromHex (plus setFrom* variants)\n- Math.sumPrecise sums floats accurately; Error.isError detects real errors across realms; Array.fromAsync collects async data\n- JSON.parse reviver context.source and JSON.rawJSON preserve exact numbers\n- ES2027 is already set to include Temporal, using declarations, Iterator.zip and Atomics.pause",
+    glossary: [
+      { term: "TC39", definition: "The Ecma committee that designs and standardises ECMAScript." },
+      { term: "Stage 4", definition: "The final TC39 stage: finished and included in the next yearly edition." },
+      { term: "Upsert", definition: "Update-or-insert; in ES2026 the Map/WeakMap getOrInsert methods." },
+      { term: "Iterator helpers", definition: "ES2025 methods such as map, filter and take that work lazily on iterators." },
+      { term: "Lazy evaluation", definition: "Producing values only when consumed, which enables infinite sequences." },
+      { term: "base64url", definition: "A URL-safe base64 alphabet using - and _ instead of + and /." },
+      { term: "Realm", definition: "A separate global environment, such as an iframe or worker, with its own built-in constructors." },
+      { term: "Reviver", definition: "A callback passed to JSON.parse that can transform each parsed value." },
+      { term: "Temporal", definition: "The modern date and time API finished for ES2027." },
+      { term: "Explicit resource management", definition: "The using and await using declarations that dispose resources automatically at block end." },
+    ],
+    sources: [
+      source("https://tc39.es/ecma262/multipage/indexed-collections.html", "ECMAScript: Indexed Collections"),
+      source("https://tc39.es/ecma262/multipage/control-abstraction-objects.html", "ECMAScript: Promises and Iterators"),
+      source("https://tc39.es/ecma262/multipage/ecmascript-language-functions-and-classes.html", "ECMAScript: Functions and Classes"),
+      source("https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set", "Set Methods"),
+      source("https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/groupBy", "Object.groupBy"),
+      source("https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap", "WeakMap and Symbol Keys"),
+      source("https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import/with", "Import Attributes"),
+      source("https://html.spec.whatwg.org/multipage/webappapis.html#event-loops", "HTML: Event Loops"),
+      source("https://html.spec.whatwg.org/multipage/structured-data.html", "HTML: Structured Clone"),
+      source("https://dom.spec.whatwg.org/", "DOM: Events, Mutation Observers and Abort Signals"),
+      source("https://w3c.github.io/IntersectionObserver/", "Intersection Observer"),
+      source("https://w3c.github.io/IndexedDB/", "IndexedDB"),
+      source("https://w3c.github.io/ServiceWorker/", "Service Workers"),
+      source("https://fetch.spec.whatwg.org/", "Fetch Standard"),
+      source("https://nodejs.org/api/events.html", "Node.js EventEmitter"),
+      source("https://webpack.js.org/guides/tree-shaking/", "webpack: Tree Shaking"),
+      source("https://tc39.es/process-document/", "The TC39 Process"),
+      source("https://github.com/tc39/proposals/blob/main/finished-proposals.md", "TC39 finished proposals"),
+      source("https://tc39.es/ecma262/", "ECMAScript Language Specification"),
+      source("https://github.com/tc39/proposal-upsert", "Proposal: Upsert (getOrInsert)"),
+      source("https://github.com/tc39/proposal-iterator-sequencing", "Proposal: Iterator Sequencing"),
+      source("https://github.com/tc39/proposal-arraybuffer-base64", "Proposal: Uint8Array to/from Base64"),
+      source("https://github.com/tc39/proposal-math-sum", "Proposal: Math.sumPrecise"),
+      source("https://github.com/tc39/proposal-is-error", "Proposal: Error.isError"),
+      source("https://github.com/tc39/proposal-array-from-async", "Proposal: Array.fromAsync"),
+      source("https://github.com/tc39/proposal-json-parse-with-source", "Proposal: JSON.parse source text access"),
+      source("https://tc39.es/proposal-temporal/docs/", "Temporal documentation"),
+    ],
+  },
+};
+
+export const JAVASCRIPT_CORE_LESSON_COUNT = guide.curriculum.lessons.length;
+guide.curriculum.lessons.push(...JAVASCRIPT_FUNDAMENTAL_LESSONS);
+
+export default guide;

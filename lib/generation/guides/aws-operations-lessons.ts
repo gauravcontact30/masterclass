@@ -1,0 +1,396 @@
+import type { Lesson } from "@/lib/domain";
+
+/**
+ * Operations half of the AWS guide: the monitoring stack (CloudWatch,
+ * Application Signals, X-Ray, ADOT, Managed Prometheus and Grafana, Synthetics,
+ * RUM, DevOps Guru), the delivery and infrastructure-as-code services
+ * (CodePipeline, CodeBuild, CodeDeploy, CodeArtifact, CloudFormation, CDK,
+ * Systems Manager, AppConfig), and the remaining estate services learners are
+ * asked about in interviews — EKS, Fargate, ELB, Direct Connect, the S3 Glacier
+ * tiers, EMR, Redshift and Shield.
+ *
+ * Grounded in docs.aws.amazon.com; the lessons are spread into ./aws.ts.
+ */
+export const AWS_OPERATIONS_LESSONS: Lesson[] = [
+  {
+    title: "Monitoring on AWS: CloudWatch, Application Signals and X-Ray",
+    diagram: {
+      kind: "tree",
+      caption: "The AWS observability stack, from raw signals to the question you actually want answered: is the service meeting its objective, and if not, which request path is responsible?",
+      items: [
+        { label: "Signals" },
+        { label: "CloudWatch metrics", detail: "numeric time series, 1-minute or high resolution", depth: 1 },
+        { label: "CloudWatch Logs", detail: "log groups, streams, retention, Logs Insights queries", depth: 1 },
+        { label: "AWS X-Ray traces", detail: "one trace per request across services", depth: 1 },
+        { label: "Collection" },
+        { label: "CloudWatch agent / ADOT", detail: "OpenTelemetry collector for metrics, logs, traces", depth: 1 },
+        { label: "Analysis" },
+        { label: "Application Signals", detail: "auto-instrumented service health, SLIs and SLOs", depth: 1 },
+        { label: "Alarms and composite alarms", detail: "thresholds, anomaly detection, SNS actions", depth: 1 },
+        { label: "Managed Prometheus + Managed Grafana", detail: "open-source query and dashboards", depth: 1 },
+      ],
+    },
+    explanation: "- CloudWatch is the default destination for metrics and logs from AWS services; most publish basic metrics automatically and detailed metrics on request\n- Metrics are namespaced time series with dimensions. Custom application metrics go in through the API, the CloudWatch agent, or the Embedded Metric Format, which extracts metrics from structured log lines\n- CloudWatch Logs groups have a retention setting that defaults to never expire — one of the most common sources of surprise cost. Set retention on every log group you create\n- Logs Insights is the query language for those logs: filter, parse, stats and sort over a time range, which is how you answer 'which customer ids saw this error in the last hour?'\n- Live Tail streams matching log events in near real time, which replaces the habit of re-running a query during an incident\n- Alarms evaluate a metric or a metric maths expression over evaluation periods and change state to ALARM, OK or INSUFFICIENT_DATA, then act through SNS, Auto Scaling or Systems Manager\n- Anomaly detection builds a band from a metric's history and alarms on departures from it, which suits metrics with daily or weekly shape better than a fixed threshold\n- CloudWatch Application Signals auto-instruments applications through the AWS Distro for OpenTelemetry and tracks the golden signals — latency, traffic, errors — as service level indicators, letting you declare an SLO and watch its error budget burn\n- AWS X-Ray collects end-to-end traces: a service map showing dependencies, and per-request segments and subsegments that identify which downstream call caused the latency\n- ADOT is AWS's supported OpenTelemetry distribution, so the same instrumentation can export to CloudWatch, Amazon Managed Service for Prometheus, or any OTLP backend without rewriting the application\n- Amazon Managed Service for Prometheus stores Prometheus metrics at scale with PromQL, and Amazon Managed Grafana provides the dashboards — the route most teams take when they already have open-source observability\n- CloudWatch Synthetics canaries run scripted browser or API checks from outside your system, so an endpoint that is down for users is detected even when every internal metric looks healthy, and CloudWatch RUM reports what real browsers experienced\n- Amazon DevOps Guru applies machine learning to operational data to surface anomalous behaviour and likely causes without hand-built thresholds",
+    keyPoints: [
+      { tone: "key", title: "Set log retention immediately", text: "CloudWatch log groups default to never expire. An unconfigured retention setting is a bill that grows forever, and it is the single most common CloudWatch cost surprise." },
+      { tone: "key", title: "SLOs, not dashboards, tell you whether to act", text: "Application Signals turns latency, traffic and errors into indicators you attach an objective to, so paging is driven by the objective rather than by a graph looking unusual." },
+      { tone: "key", title: "Traces answer 'where', metrics answer 'whether'", text: "A metric tells you p99 latency rose; an X-Ray trace tells you it rose inside one DynamoDB call in one code path. You need both." },
+      { tone: "key", title: "ADOT keeps instrumentation portable", text: "Instrument once with OpenTelemetry and choose the backend later — CloudWatch, Managed Prometheus, or a third party — without touching application code." },
+      { tone: "tip", title: "Embedded Metric Format is the cheap path to custom metrics", text: "Writing a structured log line that CloudWatch converts to a metric avoids a separate metrics API call on every request." },
+      { tone: "tip", title: "Alarm on burn rate, not on single breaches", text: "A short spike is noise; an error budget burning fast enough to exhaust the month is an incident. Composite alarms express that." },
+      { tone: "tip", title: "Canaries catch what internal metrics cannot", text: "Synthetics runs from outside, so DNS failures, expired certificates and broken CDN behaviour are visible even when every service reports healthy." },
+      { tone: "warning", title: "INSUFFICIENT_DATA is not OK", text: "An alarm on a metric that stops being published goes to INSUFFICIENT_DATA, not ALARM. Decide the treatment explicitly, or a dead service looks quiet." },
+      { tone: "warning", title: "High-cardinality dimensions are expensive", text: "A custom metric dimensioned by user id creates one time series per user. Keep cardinality in logs and traces, not in metrics." },
+    ],
+    example: "- A log group created for a Lambda function keeps logs forever until retention is set to 30 days\n- Logs Insights: `fields @timestamp, customerId | filter level = 'ERROR' | stats count() by customerId | sort by count desc`\n- Application Signals reports 99.4% availability against a 99.9% objective, with 71% of the month's error budget spent\n- An X-Ray service map shows the latency rise living entirely in one downstream call\n- A Synthetics canary fails on an expired TLS certificate an hour before any user reports it",
+    code: "// metrics.ts — custom metrics without an extra API call, via Embedded Metric Format.\n// CloudWatch parses this structured log line and extracts the metric from it.\nexport function recordCheckout(durationMs: number, ok: boolean) {\n  console.log(JSON.stringify({\n    _aws: {\n      Timestamp: Date.now(),\n      CloudWatchMetrics: [{\n        Namespace: 'Shop/Checkout',\n        Dimensions: [['Service', 'Stage']],          // low cardinality only\n        Metrics: [{ Name: 'CheckoutDuration', Unit: 'Milliseconds' }, { Name: 'CheckoutFailure', Unit: 'Count' }],\n      }],\n    },\n    Service: 'checkout', Stage: 'production',\n    CheckoutDuration: durationMs,\n    CheckoutFailure: ok ? 0 : 1,\n    orderId: 'o_8412',                                // high-cardinality context stays a log field\n  }));\n}\n\n# logs-insights.txt — the query you run during an incident.\nfields @timestamp, @message, customerId, orderId\n| filter level = \"ERROR\" and service = \"checkout\"\n| stats count() as failures by customerId\n| sort failures desc\n| limit 20\n\n# alarms.yaml — CloudFormation: an alarm that treats missing data as a failure.\nResources:\n  CheckoutFailureAlarm:\n    Type: AWS::CloudWatch::Alarm\n    Properties:\n      AlarmName: checkout-failure-rate\n      Namespace: Shop/Checkout\n      MetricName: CheckoutFailure\n      Dimensions: [{ Name: Service, Value: checkout }, { Name: Stage, Value: production }]\n      Statistic: Sum\n      Period: 60\n      EvaluationPeriods: 5\n      DatapointsToAlarm: 3          # 3 of 5 minutes, so one blip does not page\n      Threshold: 10\n      ComparisonOperator: GreaterThanThreshold\n      TreatMissingData: breaching   # a silent service is NOT healthy\n      AlarmActions: [!Ref OncallTopic]\n\n  LogRetention:\n    Type: AWS::Logs::LogGroup\n    Properties:\n      LogGroupName: /aws/lambda/checkout\n      RetentionInDays: 30           # never leave this unset\n\n# adot-collector.yaml — one instrumentation, two destinations.\nreceivers: { otlp: { protocols: { grpc: {}, http: {} } } }\nexporters:\n  awsemf: { namespace: Shop/Checkout, log_group_name: /metrics/checkout }\n  awsxray: {}\n  prometheusremotewrite: { endpoint: \"https://aps-workspaces.ap-south-1.amazonaws.com/workspaces/ws-123/api/v1/remote_write\", auth: { authenticator: sigv4auth } }\nservice:\n  pipelines:\n    metrics: { receivers: [otlp], exporters: [awsemf, prometheusremotewrite] }\n    traces: { receivers: [otlp], exporters: [awsxray] }",
+    apiReference: [
+      {
+        name: "CloudWatch alarm",
+        kind: "resource",
+        signature: "AWS::CloudWatch::Alarm { Namespace, MetricName, Dimensions, Statistic, Period, EvaluationPeriods, DatapointsToAlarm, Threshold, TreatMissingData, AlarmActions }",
+        params: [
+          { name: "EvaluationPeriods", type: "number", description: "How many periods are considered when deciding the alarm state." },
+          { name: "DatapointsToAlarm", type: "number", description: "How many of those periods must breach — the M-of-N rule that suppresses single blips." },
+          { name: "TreatMissingData", type: "enum", description: "missing, ignore, breaching or notBreaching; decides what silence means." },
+          { name: "AlarmActions", type: "ARN[]", description: "SNS topics, Auto Scaling policies or Systems Manager actions to trigger." },
+        ],
+        returns: "An alarm that transitions between OK, ALARM and INSUFFICIENT_DATA and acts on transitions.",
+        notes: "Composite alarms combine several alarms with AND/OR so a page fires only when a real condition holds.",
+      },
+      {
+        name: "Logs Insights query",
+        kind: "query language",
+        signature: "fields ... | filter ... | parse ... | stats <agg> by <field> | sort ... | limit n",
+        params: [
+          { name: "filter", type: "expression", description: "Boolean predicate over fields, including regex matching." },
+          { name: "parse", type: "pattern", description: "Extracts fields from unstructured message text." },
+          { name: "stats", type: "aggregation", description: "count, sum, avg, percentile and others, grouped by a field." },
+        ],
+        returns: "A result table over the selected log groups and time range.",
+        notes: "Queries are billed by the data scanned, so narrow the time range and the log groups first.",
+      },
+      {
+        name: "Application Signals",
+        kind: "capability",
+        signature: "auto-instrumentation via ADOT -> service-level indicators (latency, availability, errors) -> SLO with an error budget",
+        params: [
+          { name: "SLI", type: "indicator", description: "The measured signal: availability, latency, error rate or throughput." },
+          { name: "SLO", type: "objective", description: "The target, such as 99.9% availability over 30 days." },
+        ],
+        returns: "Service health, SLO attainment and error-budget burn, linked to X-Ray traces for drill-down.",
+      },
+    ],
+    vocabulary: [
+      { word: "Metric dimension", meaning: "A name/value pair that identifies one time series within a metric.", example: "Service=checkout, Stage=production", synonyms: ["metric label", "tag", "series key", "facet", "series attribute", "grouping key"], antonyms: ["log field", "trace attribute", "free-text context", "high-cardinality field", "log payload", "trace detail"] },
+      { word: "Error budget", meaning: "The amount of unreliability an SLO permits in a window, and the thing burn-rate alerts track.", example: "0.1% of requests over 30 days.", synonyms: ["reliability allowance", "failure allowance", "SLO headroom", "permitted failure", "reliability slack", "SLO allowance"], antonyms: ["hard uptime target", "zero-failure goal", "absolute uptime", "no tolerance", "perfection target"] },
+      { word: "Trace segment", meaning: "One unit of work in an X-Ray trace, with subsegments for downstream calls.", example: "A DynamoDB call inside an API request.", synonyms: ["span", "trace unit", "work unit", "request unit", "instrumented call", "subspan"], antonyms: ["aggregate metric", "summary statistic", "rolled-up metric", "single counter", "averaged value"] },
+      { word: "Embedded Metric Format", meaning: "A structured log format CloudWatch converts into metrics automatically.", example: "A JSON line with an _aws block.", synonyms: ["EMF", "log-derived metrics", "metrics-in-logs", "structured emission", "log-to-metric"], antonyms: ["PutMetricData call", "agent-scraped metric", "direct metric API", "scraped endpoint", "agent push"] },
+      { word: "Canary", meaning: "A scripted synthetic check run on a schedule from outside the system.", example: "A browser script asserting checkout loads every 5 minutes.", synonyms: ["synthetic monitor", "probe", "uptime check", "outside-in test", "scheduled check", "external probe"], antonyms: ["real user monitoring", "internal health check", "passive monitoring", "internal metric", "user report"] },
+      { word: "Cardinality", meaning: "How many distinct series a metric's dimensions produce.", example: "One series per user id — usually a mistake.", synonyms: ["series count", "dimensional breadth", "unique value count", "series explosion risk", "label breadth"], antonyms: ["low-cardinality metric", "aggregated series", "single series", "coarse grouping", "aggregate only"] },
+    ],
+    useCase: {
+      scenario: "A checkout service pages on-call whenever CPU exceeds 80%, which fires during every batch job and never fires during the outages customers actually notice. Log groups from three years of Lambda functions have never had retention set, and CloudWatch is the third-largest line on the bill.",
+      example: "Application Signals is enabled through ADOT, giving availability and latency indicators with a 99.9% objective; paging moves to error-budget burn rate and a composite alarm that requires both elevated errors and a failing Synthetics canary. Custom checkout metrics move to Embedded Metric Format with low-cardinality dimensions, order ids staying in log fields. Every log group gets a 30-day retention policy, and X-Ray is enabled so a latency alert links straight to the slow downstream call.",
+      usage: "Pages now correspond to customer-visible failure, the first click from an alert reaches the responsible call path, and CloudWatch cost falls by roughly two-thirds once retention is applied.",
+    },
+    exercise: "- Set a retention policy on every log group in one account and record the cost change\n- Publish one custom metric through Embedded Metric Format with at most two dimensions\n- Create an alarm with DatapointsToAlarm and TreatMissingData set deliberately, then test it by stopping the publisher\n- Enable Application Signals on one service, declare an SLO, and add a Synthetics canary for its public endpoint",
+    checkpoint: "- What happens to an alarm when its metric stops being published, and how do you control that?\n- When does a trace tell you something a metric cannot?\n- Why is a user id a bad metric dimension but a good log field?",
+    mistake: "- Do not leave log group retention unset; the default is to keep logs forever\n- Do not dimension metrics by high-cardinality values such as user or request ids\n- Do not page on raw resource metrics like CPU; page on the objective the user experiences",
+    interview: [
+      {
+        question: "How do metrics, logs and traces differ, and when do you reach for each?",
+        definition: "Metrics are aggregated numeric series, logs are discrete events with context, and traces follow one request across services.",
+        answer: "Metrics answer whether something is wrong, cheaply and continuously, which makes them the right basis for alarms and SLOs. Logs answer what happened to specific requests and carry the high-cardinality context — ids, parameters, messages — that metrics must not hold. Traces answer where time went, decomposing one request into segments so a latency increase can be attributed to a particular downstream call. On AWS that maps to CloudWatch metrics and alarms, CloudWatch Logs with Logs Insights, and X-Ray, with Application Signals sitting on top to turn the first into service-level objectives and link into the third.",
+        similar: [
+          { question: "What is Application Signals for?", answer: "Auto-instrumented service health with SLIs and SLOs, so you monitor the objective rather than assembling dashboards by hand." },
+          { question: "Why use ADOT rather than a proprietary agent?", answer: "OpenTelemetry instrumentation is portable: the same code can export to CloudWatch, Managed Prometheus or a third-party backend." },
+        ],
+      },
+      {
+        question: "How do you build an alarm that pages only for real problems?",
+        definition: "Alarm on a user-visible indicator, require several breaching periods, define what missing data means, and combine corroborating signals.",
+        answer: "Start from the objective — availability or latency as the user experiences it — rather than a resource metric such as CPU. Use EvaluationPeriods with DatapointsToAlarm so a single unlucky minute cannot page, and set TreatMissingData deliberately: a service that has stopped publishing is usually breaching, not healthy. For high-value paths, use a composite alarm requiring both an internal signal and an external Synthetics canary failure, which eliminates a large class of false alarms. Finally alarm on error-budget burn rate rather than raw breaches, so the page means the month's reliability target is genuinely at risk.",
+        similar: [
+          { question: "What are the alarm states?", answer: "OK, ALARM and INSUFFICIENT_DATA; the last is why TreatMissingData matters." },
+          { question: "When is anomaly detection better than a threshold?", answer: "For metrics with a daily or weekly shape, where one fixed threshold is either too noisy at peak or too loose at night." },
+        ],
+      },
+    ],
+    objectiveQuestions: [
+      {
+        question: "A CloudWatch alarm's metric stops being published because the service crashed. What state does the alarm enter by default?",
+        options: ["ALARM, because the service is down", "INSUFFICIENT_DATA, unless TreatMissingData says otherwise", "OK, because no breach was recorded", "It is deleted automatically"],
+        correct: 1,
+        shortAnswer: "INSUFFICIENT_DATA, unless TreatMissingData is set",
+        explanation: "Absent data is not a breach by default, so the alarm moves to INSUFFICIENT_DATA and nobody is paged — exactly the wrong outcome when the service has stopped entirely. Setting TreatMissingData to breaching makes silence an alarm condition, which is usually the correct treatment for a metric that should always be flowing.",
+      },
+      {
+        question: "Which practice most reliably reduces unexpected CloudWatch cost?",
+        options: ["Turning off detailed monitoring on EC2", "Setting a retention period on every log group", "Using fewer dashboards", "Reducing the number of alarms"],
+        correct: 1,
+        shortAnswer: "Set retention on every log group",
+        explanation: "Log groups default to retaining data indefinitely, so years of debug output accumulate and are billed for storage every month. Applying a retention policy is the single largest and most common saving; dashboards and alarms are comparatively cheap, and detailed monitoring affects only metric resolution.",
+      },
+      {
+        question: "p99 latency for an API has doubled. Which tool identifies which downstream dependency is responsible?",
+        options: ["CloudWatch Logs Insights", "AWS X-Ray traces and the service map", "CloudWatch anomaly detection", "AWS Config"],
+        correct: 1,
+        shortAnswer: "X-Ray traces and the service map",
+        explanation: "A trace decomposes one request into segments and subsegments, so the additional time can be attributed to a specific downstream call, and the service map shows which edge of the dependency graph degraded. Logs Insights can find affected requests, anomaly detection can flag that the metric moved, and Config tracks resource configuration — none of them localise the latency.",
+      },
+    ],
+  },
+  {
+    title: "Delivery and operations: CodePipeline, CloudFormation, CDK and Systems Manager",
+    diagram: {
+      kind: "flow",
+      caption: "A change reaching production on AWS: source, build, artefact, infrastructure and deployment strategy, with operational tooling to inspect and adjust what is running.",
+      items: [
+        { label: "Source", detail: "CodeCommit, GitHub or another provider" },
+        { label: "CodeBuild", detail: "buildspec.yml: test, build, scan, push image to ECR" },
+        { label: "CodeArtifact", detail: "private npm, pip, Maven and NuGet packages" },
+        { label: "CodePipeline", detail: "stages, approvals, cross-account deploy roles" },
+        { label: "CloudFormation / CDK", detail: "the infrastructure change as a reviewed template" },
+        { label: "CodeDeploy", detail: "blue-green or canary, with automatic rollback" },
+        { label: "AppConfig", detail: "flags and configuration changed without a deploy" },
+        { label: "Systems Manager", detail: "run commands, patch, Parameter Store, session access" },
+      ],
+    },
+    explanation: "- CodePipeline models delivery as stages containing actions: source, build, test, approve, deploy. Each stage passes artefacts to the next, and manual approval actions insert a human gate\n- CodeBuild runs the work defined in buildspec.yml — install, pre_build, build, post_build phases plus artefacts and caching — in a managed container\n- CodeArtifact hosts private packages for npm, pip, Maven, NuGet and others, and can proxy public registries so a build is reproducible even if an upstream package disappears\n- CodeDeploy performs the deployment itself with a strategy: in-place or blue-green for EC2, linear or canary traffic shifting for Lambda and ECS, with alarms that trigger automatic rollback\n- CloudFormation is AWS's declarative infrastructure service: a template describes resources, a stack is a deployed instance of it, and a change set previews exactly what will be created, modified or destroyed\n- Change sets are the habit that prevents accidents — review the diff before executing, and watch for Replacement on stateful resources, which means delete and recreate\n- Stack policies and deletion protection guard resources that must not be replaced or removed by an ordinary update\n- The AWS CDK lets you define that infrastructure in TypeScript, Python, Java, Go or C#, synthesising CloudFormation templates; constructs package a pattern — a load-balanced service, a queue with a dead-letter queue — as reusable code\n- Because CDK output is CloudFormation, drift detection, change sets and stack rollback all still apply; `cdk diff` shows the template difference before `cdk deploy`\n- Systems Manager is the operations toolbox: Parameter Store for configuration and secrets references, Run Command for fleet-wide commands, Patch Manager for OS patching, State Manager for desired configuration, Session Manager for shell access without SSH keys or open inbound ports, and OpsCenter for operational items\n- AWS AppConfig deploys configuration and feature flags separately from code, with validators and a gradual rollout that rolls back automatically if a CloudWatch alarm fires\n- Two service-status facts to know: Amazon CodeCatalyst stopped accepting new customers on 7 November 2025, and CodeGuru Reviewer entered maintenance mode on the same date, so new projects should not plan around them",
+    keyPoints: [
+      { tone: "key", title: "Change sets before execution", text: "A change set shows creations, modifications and — critically — Replacement on stateful resources before anything happens. Executing an update blind is how databases get recreated." },
+      { tone: "key", title: "Deployment strategy is where rollback lives", text: "CodeDeploy's canary and linear shifting with alarm-triggered rollback converts a bad release into a few minutes of partial impact instead of an outage." },
+      { tone: "key", title: "CDK is CloudFormation with a type system", text: "Constructs give reuse and compile-time checking, and the deployed artefact is still a template, so drift detection and stack rollback behave identically." },
+      { tone: "key", title: "Session Manager removes SSH from the perimeter", text: "Shell access through Systems Manager needs no bastion, no open port 22 and no key distribution, and every session is auditable in CloudTrail." },
+      { tone: "tip", title: "Separate configuration from deployment", text: "AppConfig changes a flag or a limit in minutes with automatic rollback on an alarm, without rebuilding or redeploying the application." },
+      { tone: "tip", title: "Proxy public registries through CodeArtifact", text: "It keeps builds reproducible when an upstream package is yanked, and gives one place to apply package policy." },
+      { tone: "tip", title: "Deploy across accounts with assumed roles", text: "A pipeline in a tooling account assuming a deploy role per environment keeps production credentials out of the build environment." },
+      { tone: "warning", title: "Beware Replacement on stateful resources", text: "Renaming a logical id, or changing an immutable property, deletes and recreates the resource. On an RDS instance that is data loss." },
+      { tone: "warning", title: "Do not hand-edit what a stack manages", text: "Console changes to stack-managed resources become drift, and the next update may revert or fail. Use drift detection to find them." },
+    ],
+    example: "- A change set shows `Replacement: True` on an RDS instance, and the update is stopped before it runs\n- CodeDeploy shifts 10% of ECS traffic, an alarm fires, and the deployment rolls back automatically\n- `cdk diff` shows one security group rule added; `cdk deploy` applies exactly that\n- Session Manager gives a shell on a private instance with no bastion and no inbound port open\n- An AppConfig flag rollout is halted automatically when the checkout error alarm goes off",
+    code: "// infrastructure/service-stack.ts — CDK: infrastructure as typed code, synthesised to CloudFormation.\nimport { Stack, StackProps, Duration, RemovalPolicy } from 'aws-cdk-lib';\nimport * as ecs from 'aws-cdk-lib/aws-ecs';\nimport * as ecsPatterns from 'aws-cdk-lib/aws-ecs-patterns';\nimport * as logs from 'aws-cdk-lib/aws-logs';\nimport { Construct } from 'constructs';\n\nexport class CheckoutStack extends Stack {\n  constructor(scope: Construct, id: string, props: StackProps) {\n    super(scope, id, props);\n\n    const service = new ecsPatterns.ApplicationLoadBalancedFargateService(this, 'Checkout', {\n      cpu: 512, memoryLimitMiB: 1024, desiredCount: 3,\n      taskImageOptions: {\n        image: ecs.ContainerImage.fromRegistry('123456789012.dkr.ecr.ap-south-1.amazonaws.com/checkout:1.8.0'),\n        logDriver: ecs.LogDrivers.awsLogs({ streamPrefix: 'checkout', logRetention: logs.RetentionDays.ONE_MONTH }),\n      },\n      circuitBreaker: { rollback: true },      // a failing deployment rolls itself back\n      healthCheckGracePeriod: Duration.seconds(60),\n    });\n    service.targetGroup.configureHealthCheck({ path: '/healthz', interval: Duration.seconds(15) });\n    service.service.autoScaleTaskCount({ minCapacity: 3, maxCapacity: 20 })\n      .scaleOnCpuUtilization('Cpu', { targetUtilizationPercent: 60 });\n  }\n}\n\n# buildspec.yml — what CodeBuild runs.\nversion: 0.2\nphases:\n  install:\n    runtime-versions: { nodejs: 22 }\n    commands: [\"npm ci\"]\n  pre_build:\n    commands:\n      - npm run lint && npm test -- --ci\n      - aws ecr get-login-password | docker login --username AWS --password-stdin $ECR_REGISTRY\n  build:\n    commands:\n      - docker build -t $ECR_REGISTRY/checkout:$CODEBUILD_RESOLVED_SOURCE_VERSION .\n      - docker push $ECR_REGISTRY/checkout:$CODEBUILD_RESOLVED_SOURCE_VERSION\nartifacts:\n  files: [\"imagedefinitions.json\"]\ncache:\n  paths: [\"/root/.npm/**/*\"]\n\n# appspec.yml — CodeDeploy: how the traffic moves, and when to give up.\nversion: 0.0\nResources:\n  - TargetService:\n      Type: AWS::ECS::Service\n      Properties:\n        TaskDefinition: <TASK_DEFINITION>\n        LoadBalancerInfo: { ContainerName: checkout, ContainerPort: 8080 }\n# Deployment config: ECSCanary10Percent5Minutes, with alarms wired to auto-rollback.\n\n# ops.sh — Systems Manager: no SSH, no bastion, full audit trail.\naws ssm start-session --target i-0abc123def4567890\naws ssm send-command --document-name \"AWS-RunShellScript\" \\\n  --targets 'Key=tag:Environment,Values=production' \\\n  --parameters 'commands=[\"systemctl status checkout\"]'\naws ssm get-parameter --name /checkout/production/db-endpoint --with-decryption",
+    apiReference: [
+      {
+        name: "CloudFormation change set",
+        kind: "operation",
+        signature: "aws cloudformation create-change-set --stack-name <n> --template-body file://t.yaml --change-set-name <c>  →  describe-change-set  →  execute-change-set",
+        params: [
+          { name: "Action", type: "Add | Modify | Remove", description: "What will happen to each resource." },
+          { name: "Replacement", type: "True | Conditional | False", description: "Whether the resource is destroyed and recreated — the field to check on stateful resources." },
+          { name: "ResourceChange.Details", type: "array", description: "Which property caused the change and whether it is immutable." },
+        ],
+        returns: "A reviewable plan you execute only after reading it.",
+        notes: "cdk diff provides the same preview for CDK applications.",
+      },
+      {
+        name: "CodeDeploy deployment configuration",
+        kind: "strategy",
+        signature: "AllAtOnce | Linear10PercentEvery1Minute | Canary10Percent5Minutes | blue-green with test traffic",
+        params: [
+          { name: "alarms", type: "CloudWatch alarms", description: "Any alarm entering ALARM during the deployment triggers rollback." },
+          { name: "auto rollback", type: "boolean", description: "Roll back on failure, on alarm, or on a stopped deployment." },
+        ],
+        returns: "Controlled traffic shifting with an automatic exit route.",
+      },
+      {
+        name: "Systems Manager",
+        kind: "service",
+        signature: "Parameter Store · Run Command · Patch Manager · State Manager · Session Manager · OpsCenter · Automation runbooks",
+        params: [
+          { name: "Parameter Store", type: "capability", description: "Hierarchical configuration, with SecureString parameters encrypted by KMS." },
+          { name: "Session Manager", type: "capability", description: "Browser or CLI shell access without SSH keys or inbound ports." },
+          { name: "Automation", type: "capability", description: "Runbooks that perform multi-step operational procedures." },
+        ],
+        returns: "Fleet operations without a bastion host or per-instance credentials.",
+      },
+    ],
+    vocabulary: [
+      { word: "Change set", meaning: "A preview of what a CloudFormation update will create, modify or destroy.", example: "Spotting Replacement: True on a database.", synonyms: ["execution plan", "diff preview", "dry run", "planned diff", "pending changes", "impact preview"], antonyms: ["blind update", "direct apply", "immediate apply", "unreviewed update", "live edit"] },
+      { word: "Construct", meaning: "A reusable CDK component encapsulating one or more resources.", example: "ApplicationLoadBalancedFargateService.", synonyms: ["CDK component", "pattern library", "building block", "reusable pattern", "typed resource wrapper", "infrastructure component"], antonyms: ["raw template", "copy-pasted YAML", "hand-written template", "duplicated config", "one-off resource"] },
+      { word: "Traffic shifting", meaning: "Moving a percentage of live traffic to a new version over time.", example: "Canary10Percent5Minutes on ECS.", synonyms: ["canary release", "progressive delivery", "phased rollout", "gradual rollout", "weighted routing", "staged cutover"], antonyms: ["all-at-once deploy", "big-bang release", "instant switch", "full replacement", "hard cutover"] },
+      { word: "Drift", meaning: "Divergence between a stack's template and the resources' real configuration.", example: "A security group rule added in the console.", synonyms: ["configuration drift", "out-of-band change", "manual change", "untracked edit", "state divergence"], antonyms: ["in-sync stack", "declared state", "managed state", "reconciled resource", "declared configuration"] },
+      { word: "Parameter Store", meaning: "Systems Manager's hierarchical store for configuration and encrypted secrets references.", example: "/checkout/production/db-endpoint", synonyms: ["config store", "parameter hierarchy", "SSM parameters", "managed configuration", "secure string store"], antonyms: ["hardcoded config", "environment file in the image", "baked-in constant", "committed config file", "inline secret"] },
+      { word: "Feature flag deployment", meaning: "Changing behaviour through configuration rather than a code release.", example: "An AppConfig flag rolled out over 20 minutes.", synonyms: ["dynamic configuration", "runtime toggle", "config rollout", "flag flip", "behaviour switch"], antonyms: ["code deploy", "rebuild and redeploy", "full release", "binary deploy", "code change"] },
+    ],
+    useCase: {
+      scenario: "Deployments are a person running scripts from a laptop with production credentials, infrastructure changes are made in the console, and rolling back means redeploying the previous container image by hand while customers wait.",
+      example: "Infrastructure moves to CDK, reviewed through cdk diff and deployed by a CodePipeline that assumes a per-environment deploy role, so no human holds production credentials. CodeBuild tests, builds and pushes the image; CodeDeploy shifts ECS traffic 10% at a time with the checkout error alarm wired to automatic rollback. Operational access moves to Session Manager, configuration to Parameter Store, and risky behaviour changes behind AppConfig flags.",
+      usage: "A bad release is reverted automatically within minutes of the alarm, infrastructure changes arrive as reviewed diffs, and nobody needs a production key or an open SSH port.",
+    },
+    exercise: "- Convert one hand-made resource into CDK, and inspect cdk diff before deploying\n- Create a change set for a stack update and find whether any resource shows Replacement\n- Configure a canary deployment with an alarm that triggers automatic rollback, then break it deliberately\n- Replace one SSH workflow with Session Manager and one hardcoded config value with Parameter Store",
+    checkpoint: "- What does Replacement mean in a change set, and why check it?\n- How does CodeDeploy decide to roll back automatically?\n- What does Session Manager remove from your network exposure?",
+    mistake: "- Do not execute a stack update without reading the change set\n- Do not change stack-managed resources in the console; that is drift\n- Do not ship configuration changes as code deploys when AppConfig can roll them back automatically",
+    interview: [
+      {
+        question: "How does the AWS CDK relate to CloudFormation, and when would you choose each?",
+        definition: "CDK is a typed programming model that synthesises CloudFormation templates; CloudFormation is the deployment engine underneath.",
+        answer: "CDK gives you loops, conditionals, types and constructs — reusable components that package a pattern such as a load-balanced Fargate service with sane defaults — which removes a lot of repetitive YAML and catches mistakes at compile time. Because the output is still a template, everything CloudFormation provides remains: change sets, stack rollback, drift detection and deletion protection. Plain templates are preferable when the infrastructure is small and stable, when the team does not want a build step, or when the template is shared with consumers who expect declarative input.",
+        similar: [
+          { question: "What is cdk diff?", answer: "It synthesises the template and shows the difference against the deployed stack, the CDK equivalent of reviewing a change set." },
+          { question: "Can CDK and Terraform coexist?", answer: "Yes; many teams use Terraform for accounts and networking and CDK or CloudFormation for application stacks." },
+        ],
+      },
+      {
+        question: "How would you design a deployment that fails safely on AWS?",
+        definition: "Shift traffic gradually, watch a user-visible alarm during the shift, and roll back automatically when it breaches.",
+        answer: "Use CodeDeploy with a canary or linear configuration so only a fraction of traffic meets the new version at first, and register the alarms that represent customer impact — error rate, latency, a Synthetics canary — as rollback triggers. Keep the previous version's task set or Lambda alias available so rollback is a traffic change rather than a rebuild. For infrastructure, review a change set before executing and use stack policies plus deletion protection on stateful resources. Separate behaviour changes from deployment with AppConfig flags, so risky behaviour can be turned off in seconds without shipping anything.",
+        similar: [
+          { question: "What is the ECS deployment circuit breaker?", answer: "It aborts and rolls back a service deployment automatically when tasks repeatedly fail to reach a healthy state." },
+          { question: "Why keep rollback as a traffic change?", answer: "Rebuilding under pressure is slow and error-prone; shifting traffic back to a running version takes seconds." },
+        ],
+      },
+    ],
+    objectiveQuestions: [
+      {
+        question: "A CloudFormation change set reports Replacement: True for an RDS instance. What does this mean?",
+        options: ["The instance will be restarted", "The instance will be deleted and a new one created, so data is at risk", "The instance's parameter group will be swapped", "Nothing; it is an informational flag"],
+        correct: 1,
+        shortAnswer: "The resource will be destroyed and recreated",
+        explanation: "Replacement means the update changes an immutable property (or the logical id), so CloudFormation creates a new resource and deletes the old one. For a database that is data loss unless a snapshot and restore path is planned, which is precisely why change sets are reviewed before execution rather than applied blind.",
+      },
+      {
+        question: "Which Systems Manager capability gives shell access to a private instance with no bastion and no inbound port?",
+        options: ["Run Command", "Session Manager", "Patch Manager", "Parameter Store"],
+        correct: 1,
+        shortAnswer: "Session Manager",
+        explanation: "Session Manager establishes an interactive session through the SSM agent's outbound connection, so no inbound SSH port, bastion host or key distribution is needed, and every session is logged and auditable. Run Command executes non-interactive commands, Patch Manager handles OS patching, and Parameter Store holds configuration.",
+      },
+      {
+        question: "Which AWS service changes application behaviour without deploying new code, and can roll the change back automatically on an alarm?",
+        options: ["AWS AppConfig", "AWS CodeDeploy", "AWS CloudFormation", "Amazon EventBridge"],
+        correct: 0,
+        shortAnswer: "AWS AppConfig",
+        explanation: "AppConfig deploys configuration and feature flags independently of the application artefact, validating them and rolling them out gradually with automatic rollback when a configured CloudWatch alarm fires. CodeDeploy deploys code, CloudFormation manages infrastructure, and EventBridge routes events.",
+      },
+    ],
+  },
+  {
+    title: "The rest of the estate: EKS, Fargate, ELB, Direct Connect, Glacier, EMR and Redshift",
+    diagram: {
+      kind: "split",
+      caption: "The services that complete a working AWS picture, grouped by the question they answer. Each has one job it is clearly the right answer to — and cases where a simpler service is better.",
+      headings: ["Run and connect it", "Store and analyse it"],
+      items: [
+        { label: "Amazon EKS", detail: "managed Kubernetes control plane", group: 0 },
+        { label: "AWS Fargate", detail: "serverless capacity for ECS and EKS pods", group: 0 },
+        { label: "Elastic Load Balancing", detail: "ALB (HTTP), NLB (TCP/UDP), GWLB (appliances)", group: 0 },
+        { label: "AWS Direct Connect", detail: "dedicated private link from your data centre", group: 0 },
+        { label: "AWS Shield", detail: "DDoS protection; Advanced adds response team", group: 0 },
+        { label: "S3 Glacier tiers", detail: "Instant, Flexible, Deep Archive", group: 1 },
+        { label: "Amazon EMR", detail: "managed Spark, Hive and Presto clusters", group: 1 },
+        { label: "Amazon Redshift", detail: "columnar data warehouse, Serverless option", group: 1 },
+      ],
+    },
+    explanation: "- Amazon EKS runs a managed Kubernetes control plane; you keep Kubernetes' API and ecosystem, and AWS operates the control plane's availability and upgrades\n- Choose EKS when you already have Kubernetes expertise or need its ecosystem; choose ECS when you want containers with less operational surface, and App Runner when you want a container URL with almost no configuration\n- AWS Fargate is a capacity type, not a separate orchestrator: ECS tasks and EKS pods run on Fargate without you managing EC2 instances, patching hosts or bin-packing\n- Fargate suits spiky and low-baseline workloads and anything where host management is unwanted; EC2 capacity is cheaper at sustained high utilisation and is required for GPU, specialised instances, and daemon-style workloads\n- Elastic Load Balancing comes in three forms: the Application Load Balancer for HTTP with path and host routing, the Network Load Balancer for TCP/UDP at very high throughput with static IPs, and the Gateway Load Balancer for inserting third-party network appliances\n- AWS Direct Connect provides a dedicated private connection between your network and AWS, giving consistent bandwidth and latency rather than the variability of the public internet; Site-to-Site VPN is the cheaper, quicker alternative and a common backup for it\n- S3 storage classes are a cost and retrieval-time trade: Standard, Standard-IA and One Zone-IA for infrequent access, Glacier Instant Retrieval for archives still needed in milliseconds, Glacier Flexible Retrieval for minutes-to-hours, and Glacier Deep Archive for the cheapest storage with hours-long retrieval\n- Intelligent-Tiering moves objects between tiers automatically based on access patterns, which is usually the right default when access is unpredictable\n- Amazon EMR runs the open-source big-data stack — Spark, Hive, Presto, HBase — on managed clusters, including EMR Serverless and EMR on EKS; it is where you go when the work is genuinely distributed processing rather than SQL over a warehouse\n- Amazon Redshift is a columnar, MPP data warehouse for analytical SQL over large tables, with Redshift Serverless removing cluster sizing and Redshift Spectrum querying data left in S3\n- Athena versus Redshift is the recurring decision: Athena for serverless, occasional SQL over S3 with no infrastructure, Redshift when you need consistent performance for concurrent BI workloads over curated tables\n- AWS Shield Standard protects every account against common network-layer DDoS at no cost; Shield Advanced adds higher-level protections, cost protection and access to the AWS Shield Response Team",
+    keyPoints: [
+      { tone: "key", title: "Fargate is capacity, not an orchestrator", text: "You still use ECS or EKS; Fargate only removes the EC2 instances you would otherwise patch, scale and bin-pack." },
+      { tone: "key", title: "Pick the load balancer by protocol", text: "ALB for HTTP routing and TLS termination, NLB for raw TCP/UDP, extreme throughput and static IPs, GWLB for inline appliances." },
+      { tone: "key", title: "Storage class is a retrieval-time decision", text: "Deep Archive is the cheapest storage and the slowest retrieval. Choose by how fast you must read it back, not by how big it is." },
+      { tone: "key", title: "Athena or Redshift is about access pattern", text: "Occasional serverless SQL over S3 favours Athena; concurrent, latency-sensitive BI over curated tables favours Redshift." },
+      { tone: "tip", title: "Intelligent-Tiering for unpredictable access", text: "When you cannot characterise access patterns, letting S3 move objects automatically usually beats a hand-written lifecycle policy." },
+      { tone: "tip", title: "Direct Connect wants a backup path", text: "A single circuit is a single point of failure; pair it with a VPN or a second circuit in another location." },
+      { tone: "tip", title: "EMR Serverless removes cluster sizing", text: "For intermittent Spark jobs it avoids both idle cluster cost and the delay of provisioning one per run." },
+      { tone: "warning", title: "EKS gives you Kubernetes, including its operations", text: "AWS manages the control plane; upgrades, add-ons, autoscaling and cluster policy remain yours. Do not adopt it for a handful of services." },
+      { tone: "warning", title: "Retrieval from archive tiers costs money and time", text: "Deep Archive restores are billed and take hours. An archive you must read weekly is in the wrong class." },
+    ],
+    example: "- An ECS service on Fargate scales from 3 to 20 tasks without an EC2 instance existing\n- An ALB routes /api to one target group and everything else to another\n- An NLB gives a static IP an external partner can allow-list in its firewall\n- Backups older than 90 days move to Glacier Deep Archive and cost a fraction of Standard\n- A quarterly report over S3 runs in Athena; the BI dashboards run on Redshift Serverless",
+    code: "# Storage class as a lifecycle decision, expressed once.\n# lifecycle.json — applied to the backups bucket.\n{\n  \"Rules\": [{\n    \"ID\": \"archive-backups\",\n    \"Status\": \"Enabled\",\n    \"Filter\": { \"Prefix\": \"backups/\" },\n    \"Transitions\": [\n      { \"Days\": 30,  \"StorageClass\": \"STANDARD_IA\" },\n      { \"Days\": 90,  \"StorageClass\": \"GLACIER_IR\" },   // milliseconds, cheaper than IA\n      { \"Days\": 365, \"StorageClass\": \"DEEP_ARCHIVE\" }   // hours to restore, cheapest to hold\n    ],\n    \"Expiration\": { \"Days\": 2555 }\n  }]\n}\n\n# ECS on Fargate: capacity you do not manage.\naws ecs create-service \\\n  --cluster shop --service-name checkout \\\n  --task-definition checkout:41 \\\n  --desired-count 3 --launch-type FARGATE \\\n  --network-configuration 'awsvpcConfiguration={subnets=[subnet-a,subnet-b],securityGroups=[sg-123],assignPublicIp=DISABLED}' \\\n  --load-balancers 'targetGroupArn=arn:aws:elasticloadbalancing:...,containerName=checkout,containerPort=8080'\n\n# eks-cluster.yaml — a managed Kubernetes control plane with a Fargate profile.\napiVersion: eksctl.io/v1alpha5\nkind: ClusterConfig\nmetadata: { name: shop, region: ap-south-1, version: \"1.31\" }\niam: { withOIDC: true }            # service accounts assume IAM roles, no node-wide keys\nfargateProfiles:\n  - name: apps\n    selectors: [{ namespace: checkout }]\nmanagedNodeGroups:\n  - name: workers\n    instanceType: m6g.large\n    minSize: 2\n    maxSize: 10\n\n-- Redshift: analytical SQL over curated tables, with Spectrum reading S3 in place.\nCREATE EXTERNAL SCHEMA lake\n  FROM DATA CATALOG DATABASE 'shop_lake'\n  IAM_ROLE 'arn:aws:iam::123456789012:role/RedshiftSpectrum';\n\nSELECT w.region, date_trunc('month', o.placed_at) AS month, sum(o.total) AS revenue\nFROM   orders o                      -- local columnar table, fast and concurrent\nJOIN   lake.warehouse_regions w ON w.id = o.warehouse_id   -- read straight from S3\nWHERE  o.placed_at >= dateadd(month, -12, current_date)\nGROUP  BY 1, 2\nORDER  BY 2;",
+    apiReference: [
+      {
+        name: "Elastic Load Balancing types",
+        kind: "service",
+        signature: "Application Load Balancer (L7 HTTP/HTTPS) · Network Load Balancer (L4 TCP/UDP/TLS) · Gateway Load Balancer (L3 appliances)",
+        params: [
+          { name: "ALB", type: "layer 7", description: "Host and path routing, header conditions, TLS termination, WebSocket, target groups." },
+          { name: "NLB", type: "layer 4", description: "Very high throughput, ultra-low latency, static IPs per Availability Zone, preserves source IP." },
+          { name: "GWLB", type: "layer 3", description: "Transparently inserts firewalls and inspection appliances into the traffic path." },
+        ],
+        returns: "A managed entry point with health checks and cross-zone distribution.",
+      },
+      {
+        name: "S3 storage classes",
+        kind: "taxonomy",
+        signature: "Standard · Intelligent-Tiering · Standard-IA · One Zone-IA · Glacier Instant Retrieval · Glacier Flexible Retrieval · Glacier Deep Archive",
+        params: [
+          { name: "Glacier Instant Retrieval", type: "class", description: "Archive pricing with millisecond access for rarely read data." },
+          { name: "Glacier Flexible Retrieval", type: "class", description: "Minutes to hours to restore; expedited, standard and bulk options." },
+          { name: "Glacier Deep Archive", type: "class", description: "Lowest storage cost, retrieval measured in hours." },
+        ],
+        returns: "A cost and retrieval-latency trade-off applied per object or by lifecycle rule.",
+        notes: "Transitions and restores are billed; frequent reads from archive classes can cost more than Standard.",
+      },
+      {
+        name: "Analytics service selection",
+        kind: "decision",
+        signature: "Athena (serverless SQL over S3) · EMR (Spark/Hive/Presto clusters) · Redshift (MPP warehouse) · Redshift Spectrum (warehouse querying S3)",
+        params: [
+          { name: "Athena", type: "service", description: "No infrastructure, pay per data scanned; ideal for occasional queries over a lake." },
+          { name: "EMR", type: "service", description: "Distributed processing frameworks, including EMR Serverless and EMR on EKS." },
+          { name: "Redshift", type: "service", description: "Columnar MPP storage for concurrent analytical SQL; Serverless removes sizing." },
+        ],
+        returns: "A choice driven by access pattern, concurrency and how curated the data already is.",
+      },
+    ],
+    vocabulary: [
+      { word: "Managed control plane", meaning: "The orchestrator's API and state operated by AWS rather than by you.", example: "EKS running the Kubernetes API servers.", synonyms: ["hosted control plane", "managed orchestration", "provider-run API", "managed Kubernetes", "operated orchestrator"], antonyms: ["self-managed cluster", "DIY control plane", "self-hosted masters", "hand-built cluster", "operator-run plane"] },
+      { word: "Capacity type", meaning: "How compute is supplied to a container orchestrator.", example: "Fargate versus EC2 capacity for ECS.", synonyms: ["launch type", "compute backing", "compute mode", "launch mode", "node provisioning"], antonyms: ["orchestrator", "scheduler", "container scheduler", "task placement", "orchestration layer"] },
+      { word: "Storage class", meaning: "The S3 tier that sets an object's cost and retrieval characteristics.", example: "GLACIER_IR for archives read in milliseconds.", synonyms: ["storage tier", "access tier", "object tier", "durability class", "cost tier"], antonyms: ["lifecycle rule", "bucket policy", "lifecycle transition", "access policy", "bucket setting"] },
+      { word: "Retrieval time", meaning: "How long before archived data can be read after a restore request.", example: "Hours for Deep Archive.", synonyms: ["restore latency", "access delay", "restore delay", "thaw time", "availability lag"], antonyms: ["instant access", "millisecond read", "immediate read", "hot access", "no wait"] },
+      { word: "MPP warehouse", meaning: "A massively parallel, columnar database for analytical queries.", example: "Redshift scanning a year of orders.", synonyms: ["columnar warehouse", "analytical database", "OLAP store", "parallel warehouse", "analytics cluster", "distributed SQL store"], antonyms: ["OLTP database", "row store", "transactional database", "single-node store", "row-based OLTP"] },
+      { word: "Dedicated connection", meaning: "A private physical link between a data centre and a cloud region.", example: "A 1 Gbps Direct Connect circuit.", synonyms: ["private circuit", "cross-connect", "leased line", "direct link", "private fibre"], antonyms: ["internet transit", "public path", "VPN over internet", "shared transit", "public endpoint"] },
+    ],
+    useCase: {
+      scenario: "A company runs containers on EC2 instances it patches by hand, keeps seven years of backups in S3 Standard, exposes a partner integration through a load balancer whose IP changes, and runs every analytical query against the production database.",
+      example: "Services move to ECS on Fargate so no instances are patched or bin-packed; the partner integration moves to a Network Load Balancer with static IPs the partner can allow-list. A lifecycle policy transitions backups to Standard-IA, then Glacier Instant Retrieval, then Deep Archive, with an expiry at seven years. Analytical queries move off the production database: ad-hoc exploration to Athena over the S3 lake, dashboards to Redshift Serverless.",
+      usage: "Host patching disappears, the partner's firewall rule stops breaking, backup storage cost drops by roughly an order of magnitude, and production latency stops depending on whether someone is running a report.",
+    },
+    exercise: "- Move one ECS service from EC2 capacity to Fargate and compare cost at your actual utilisation\n- Write a lifecycle policy transitioning one bucket's objects through IA and Glacier tiers with an expiry\n- Choose the right load balancer for a TCP service that needs a static IP, and explain why\n- Run the same analytical query in Athena and in Redshift, and compare cost and latency",
+    checkpoint: "- What exactly does Fargate remove, and what stays your responsibility?\n- How do you choose between an ALB and an NLB?\n- Which question decides between Athena and Redshift?",
+    mistake: "- Do not archive data to Deep Archive if you must read it weekly; restores cost time and money\n- Do not adopt EKS for a handful of services; its operational surface is only worth it with Kubernetes investment\n- Do not run analytical queries against a production OLTP database",
+    interview: [
+      {
+        question: "When would you choose EKS over ECS, and where does Fargate fit?",
+        definition: "EKS gives a managed Kubernetes control plane and its ecosystem; ECS is AWS's simpler orchestrator; Fargate is a capacity type usable with either.",
+        answer: "Choose EKS when you already have Kubernetes expertise, need its ecosystem — operators, Helm charts, admission policy, a service mesh — or run the same workloads across clouds. Choose ECS when you want containers with a much smaller operational surface and deep AWS integration. Fargate is orthogonal: it supplies capacity to either, removing EC2 instance management, patching and bin-packing. It suits spiky and low-baseline workloads, while EC2 capacity remains cheaper at sustained high utilisation and is required for GPUs and other specialised instances.",
+        similar: [
+          { question: "What does AWS manage in EKS?", answer: "The Kubernetes control plane's availability, scaling and patching; nodes, add-ons, upgrades and cluster policy remain yours." },
+          { question: "Where does App Runner fit?", answer: "It is the simplest option: give it a container or a repository and it provides a scaled HTTPS service with almost no configuration." },
+        ],
+      },
+      {
+        question: "How do you choose an S3 storage class for a dataset?",
+        definition: "By how often it will be read and how quickly it must come back, not by its size.",
+        answer: "Frequently read data stays in Standard. Data read occasionally but needed instantly fits Standard-IA, or Glacier Instant Retrieval when it is genuinely archival but must still return in milliseconds. Data needed within minutes to hours fits Glacier Flexible Retrieval, and compliance archives that may never be read belong in Deep Archive, where retrieval takes hours and is billed. When the access pattern is unknown or changing, Intelligent-Tiering moves objects automatically and usually beats a guessed lifecycle rule. The common mistake is optimising storage cost for data that is then restored regularly, where retrieval charges exceed the saving.",
+        similar: [
+          { question: "What does One Zone-IA trade away?", answer: "Multi-Availability-Zone durability: it is cheaper but the data is lost if that zone is lost." },
+          { question: "How are transitions applied?", answer: "Through lifecycle rules on a prefix or tag, so archiving is declared once rather than done per object." },
+        ],
+      },
+    ],
+    objectiveQuestions: [
+      {
+        question: "A partner must allow-list a fixed IP address for a TCP service. Which load balancer fits?",
+        options: ["Application Load Balancer", "Network Load Balancer", "Gateway Load Balancer", "Classic Load Balancer only"],
+        correct: 1,
+        shortAnswer: "Network Load Balancer",
+        explanation: "The NLB operates at layer 4, handles TCP and UDP at very high throughput, and provides a static IP per Availability Zone — which is exactly what an external firewall rule needs. An ALB is an HTTP router with changing addresses behind a DNS name, and a Gateway Load Balancer exists to insert inspection appliances into the traffic path.",
+      },
+      {
+        question: "Which statement about AWS Fargate is correct?",
+        options: ["It is an alternative container orchestrator to ECS and EKS", "It is a capacity type for ECS and EKS that removes EC2 instance management", "It only runs stateless web applications", "It replaces the need for a load balancer"],
+        correct: 1,
+        shortAnswer: "A capacity type for ECS and EKS",
+        explanation: "Fargate does not schedule containers; ECS or EKS still does that. What it removes is the fleet of EC2 instances you would otherwise provision, patch, scale and bin-pack. Networking, load balancing and application design are unchanged, which is why it can be adopted without rewriting a service.",
+      },
+      {
+        question: "Seven-year compliance archives are read perhaps once a year, and a restore taking several hours is acceptable. Which class is appropriate?",
+        options: ["S3 Standard", "S3 Standard-IA", "S3 Glacier Instant Retrieval", "S3 Glacier Deep Archive"],
+        correct: 3,
+        shortAnswer: "S3 Glacier Deep Archive",
+        explanation: "Deep Archive has the lowest storage cost and retrieval measured in hours, which matches data that is retained for compliance and almost never read. Standard and Standard-IA are far more expensive to hold for seven years, and Glacier Instant Retrieval pays for millisecond access that this workload does not require.",
+      },
+    ],
+  },
+];

@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit(/.claude/skills/artistic-notes-generator/**)",
+      "Bash(grep -n \"page\\\\b\\\\|Pagination\\\\|\\\\}\\\\s*$\" components/notes-modal.tsx)",
+      "Bash(grep -n \"</>}$\\\\|^    </>$\\\\|^    <>$\" components/notes-modal.tsx)",
+      "Bash(grep -n 'text\\\\\\\\\\\\\\\\/plain\\\\|text\\\\\\\\/plain' __tests__/notes-modal.test.tsx)",
+      "Bash(grep -v '^\\\\s*$')",
+      "Bash(node -e \"const fs=require\\('fs'\\);const p='app/api/documents/[id]/download/route.ts';fs.writeFileSync\\(p,fs.readFileSync\\(p,'utf8'\\).replace\\('\\\\uFEFF','\\\\\\\\\\\\\\\\uFEFF'\\)\\)\")",
+      "Bash(rm -f components/learn-modal.tsx components/pdf-page.tsx components/reader-pagination.tsx components/reader-pagination.module.css components/playground.tsx components/hero-art.tsx components/guide-stack.tsx lib/generation/render.ts lib/generation/content.ts lib/generation/sample-pages.ts lib/generation/theme.ts lib/generation/default-library-manifest.json lib/artistic-notes/pdf.ts lib/artistic-notes/pdf-template.ts lib/artistic-notes/pptx.ts scripts/generate-default-library.ts scripts/generate-samples.ts scripts/verify-documents.ts scripts/render-powerpoint.ps1 scripts/document-contact-sheets.mjs public/pdf.worker.min.mjs public/playground.html __tests__/learn-modal.test.tsx __tests__/content.test.ts __tests__/artistic-notes-pptx.test.ts)",
+      "Bash(rm -rf app/api/generate/pdf app/api/generate/pptx public/samples public/fonts .default-library)",
+      "Bash(node __TRACKED_VAR__/lp.js)",
+      "Bash(node __TRACKED_VAR__/ws2.js)",
+      "Bash(sed -i 's/ '\\\\''format'\\\\'','\\\\''theme'\\\\'',/ '\\\\''theme'\\\\'',/; s/'\\\\''guideHint'\\\\'','\\\\''remaining'\\\\'','\\\\''month'\\\\''/'\\\\''guideHint'\\\\'','\\\\''month'\\\\''/' __TRACKED_VAR__/i18n.js)",
+      "Bash(node __TRACKED_VAR__/i18n.js)",
+      "Bash(node -e ' *)",
+      "Bash(node __TRACKED_VAR__/ac.js)",
+      "Bash(node __TRACKED_VAR__/an.js)",
+      "Bash(grep -n 'ipynb\\)\\)' __TRACKED_VAR__/an.js)",
+      "Bash(node __TRACKED_VAR__/ne.js)"
+    ]
+  }
+}

@@ -1,0 +1,90 @@
+.examples { margin: 26px 0; min-width: 0; }
+.exampleHeading { display: flex; justify-content: space-between; margin-bottom: 10px; color: #64716e; font-size: 10px; letter-spacing: 1.5px; font-weight: 750; }
+.switcher { display: flex; gap: 4px; padding: 4px; width: fit-content; max-width: 100%; border: 1px solid #dce3df; border-radius: 11px; background: #eef2ef; }
+.switcher button { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 0; border-radius: 8px; color: #576862; font-family: inherit; font-size: 12px; font-weight: 600; line-height: 1.5; cursor: pointer; }
+.switcher button[aria-pressed="true"] { background: #fff; color: #234f40; box-shadow: 0 1px 5px #233c2314; }
+.intro h4 { margin: 18px 0 6px; color: #243f34; font-size: 17px; letter-spacing: -.3px; }
+.intro p { margin: 0 0 16px; color: #607069; font-size: 13px; line-height: 1.8; white-space: pre-line; }
+.editor { min-width: 0; border: 1px solid #d9dee4; border-radius: 13px; overflow: hidden; background: #fff; color: #344054; box-shadow: 0 8px 28px #233c2309, 0 1px 2px #233c2308; }
+.chrome { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 14px; background: linear-gradient(#fbfbfc, #eef0f3); border-bottom: 1px solid #dadee4; color: #68727e; font-size: 11px; }
+.chrome > span { display: flex; align-items: center; gap: 7px; }
+.lights i { width: 9px; height: 9px; border-radius: 50%; background: #ed7770; box-shadow: inset 0 0 0 1px #0000000e; }
+.lights i:nth-child(2) { background: #edc060; }
+.lights i:nth-child(3) { background: #79bd84; }
+.workspace { display: grid; grid-template-columns: 175px minmax(0, 1fr); }
+.explorer { background: #f5f6f8; border-right: 1px solid #e2e5eb; padding: 13px 7px; overflow: auto; }
+.explorerTitle { display: flex; align-items: center; gap: 7px; padding: 0 6px 10px; font-size: 9px; letter-spacing: 1.2px; color: #78818c; font-weight: 700; }
+.tree { list-style: none; padding: 0; margin: 0; font: 11px/1.6 "SFMono-Regular", Consolas, monospace; }
+.tree .tree { padding-left: 12px; border-left: 1px solid #e0e5eb; margin-left: 10px; }
+.tree button, .tree summary { display: flex; align-items: center; gap: 6px; padding: 6px; width: 100%; background: transparent; color: #637083; border: 0; border-radius: 5px; text-align: left; cursor: pointer; }
+.tree summary::before { content: "›"; }
+.tree details[open] > summary::before { transform: rotate(90deg); }
+.tree button span, .tree summary span { overflow-wrap: anywhere; }
+.tree svg { flex-shrink: 0; }
+.tree button[aria-pressed="true"] { background: #e3ebf8; color: #315c9a; }
+.tree button:hover { background: #e9edf3; }
+.source { min-width: 0; }
+.fileBar { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 41px; padding: 6px 12px; border-bottom: 1px solid #edf0f3; background: #fcfcfd; }
+.filePath { display: flex; align-items: center; gap: 7px; color: #707c8d; font: 11px/1.6 "SFMono-Regular", Consolas, monospace; overflow-wrap: anywhere; min-width: 0; }
+.filePath svg { flex-shrink: 0; }
+.fileBar button { display: grid; place-items: center; flex-shrink: 0; width: 30px; height: 30px; border: 1px solid #e1e5ea; background: #fff; color: #75808e; border-radius: 6px; cursor: pointer; }
+.fileDescription { margin: 0 !important; padding: 9px 14px; color: #76818e; background: #fafbfd; font-size: 11px; line-height: 1.6; border-bottom: 1px solid #f0f2f5; }
+.codeScroll { max-height: 460px; overflow: auto; }
+.code { margin: 0; padding: 14px 16px 14px 0; font: 12px/1.9 "SFMono-Regular", Menlo, Consolas, monospace; tab-size: 2; white-space: pre; color: #354357; }
+.line { display: flex; min-height: 22px; }
+.lineNumber { display: inline-block; flex: 0 0 42px; position: sticky; left: 0; padding-right: 12px; color: #a1a9b4; background: #fff; text-align: right; user-select: none; }
+.code [data-token="comment"] { color: #748775; font-style: italic; }
+.code [data-token="string"] { color: #a24b39; }
+.code [data-token="number"] { color: #3268a0; }
+.code [data-token="keyword"] { color: #93569d; }
+.statusBar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; padding: 6px 12px; color: #7c8591; font-size: 10px; background: #fafbfc; border-top: 1px solid #edf0f3; }
+.excerptNote { font-size: 11px; color: #7a827c; margin: 8px 0 !important; }
+.run { margin-top: 14px; border: 1px solid #dce4df; border-radius: 10px; padding: 12px 15px; background: #fafcf9; font-size: 12px; }
+.run summary { display: flex; align-items: center; gap: 8px; font-weight: 650; cursor: pointer; }
+.run ol { padding-left: 20px; margin: 10px 0 0; }
+.run li { margin: 5px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.result { margin-top: 12px; padding: 12px 15px; background: #f0f6f1; border-radius: 10px; border: 1px solid #dce8df; }
+.result > span { display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 700; color: #467253; }
+.result pre { margin: 7px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; font: 12px/1.8 "SFMono-Regular", Consolas, monospace; color: #496452; }
+.references { margin: 16px 0; display: grid; gap: 8px; min-width: 0; }
+.references details { border: 1px solid #e0e6e1; border-radius: 10px; padding: 12px 15px; background: #fff; }
+.references summary { cursor: pointer; font-size: 13px; font-weight: 650; color: #345646; }
+.references summary > span { display: inline-block; margin-left: 10px; font-size: 10px; font-weight: 500; color: #778679; }
+.signature { font: 12px/1.7 "SFMono-Regular", Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; background: #f5f7f6; padding: 12px; border-radius: 7px; margin: 12px 0; }
+.tableScroll { overflow-x: auto; }
+.references table { border-collapse: collapse; width: 100%; font-size: 11px; text-align: left; }
+.references caption { text-align: left; margin-bottom: 7px; color: #718175; }
+.references th, .references td { padding: 8px; border-bottom: 1px solid #e6ebe7; vertical-align: top; }
+.references th { background: #f8faf8; color: #617567; }
+.references p { font-size: 12px; margin: 10px 0 0; }
+.examples button:focus-visible, .examples summary:focus-visible, .codeScroll:focus-visible { outline: 2px solid #477cad; outline-offset: 2px; }
+@media (max-width: 1050px) { .workspace { grid-template-columns: 145px minmax(0, 1fr); } }
+@media (max-width: 620px) {
+  .workspace { grid-template-columns: minmax(0, 1fr); }
+  .explorer { max-height: 160px; border-right: 0; border-bottom: 1px solid #e2e5eb; }
+  .switcher { width: 100%; }
+  .switcher button { flex: 1; padding: 8px; font-size: 11px; }
+  .code { font-size: 11px; }
+}
+
+/* One accordion per worked example: collapsed rows stay scannable, and the
+   open one shows the whole workspace. */
+.exampleAccordion { border: 1px solid #dde4de; border-radius: 12px; background: #fff; margin-bottom: 10px; overflow: hidden; }
+.exampleAccordion[open] { box-shadow: 0 4px 18px #233c230a; }
+.exampleAccordion > summary { display: flex; align-items: center; gap: 11px; padding: 12px 14px; cursor: pointer; list-style: none; background: #f8faf7; border-bottom: 1px solid transparent; }
+.exampleAccordion[open] > summary { border-bottom-color: #e6ebe4; }
+.exampleAccordion > summary::-webkit-details-marker { display: none; }
+.exampleIndex { flex: none; display: grid; place-items: center; width: 25px; height: 25px; border-radius: 7px; background: #e7efe4; color: #3f6b4e; font: 700 10px/1 "SFMono-Regular", Consolas, monospace; }
+.exampleSummary { display: grid; gap: 1px; min-width: 0; flex: 1; }
+.exampleKind { font-size: 9.5px; font-weight: 750; letter-spacing: .09em; text-transform: uppercase; color: #86967f; }
+.exampleTitle { font-size: 13px; font-weight: 650; color: #243f34; line-height: 1.45; }
+.exampleFiles { flex: none; font-size: 10px; font-weight: 600; color: #7d8a78; background: #fff; border: 1px solid #e3e8df; border-radius: 999px; padding: 2px 8px; }
+.exampleAccordion > div { padding: 0 14px 14px; }
+
+/* File tabs across the top of the source pane, mirroring the project tree. */
+.fileTabs { display: flex; gap: 2px; overflow-x: auto; padding: 5px 6px 0; background: #f5f6f8; border-bottom: 1px solid #e6e9ee; }
+.fileTabs button { display: inline-flex; align-items: center; gap: 5px; flex: none; padding: 6px 11px; border: 1px solid transparent; border-bottom: 0; border-radius: 7px 7px 0 0; background: transparent; color: #6d7887; font: 11px/1.5 "SFMono-Regular", Consolas, monospace; cursor: pointer; }
+.fileTabs button:hover { background: #eaeef4; }
+.fileTabs button[aria-selected="true"] { background: #fff; border-color: #e0e4ea; color: #2f4a6d; font-weight: 650; }
+.fileTabs svg { flex-shrink: 0; }
+@media (max-width: 620px) { .exampleAccordion > div { padding: 0 8px 10px; } }
