@@ -1,4 +1,8 @@
 "use client";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { ExpandedText } from "@/components/expanded-text";
 
 
@@ -266,14 +270,14 @@ export function NotesExporter() {
           <div role="tabpanel" id={`${id}-panel-markup`} aria-labelledby={`${id}-tab-markup`} hidden={mode !== "markup"} className="flex flex-col gap-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <Field id={`${id}-title`} label="Title">
-                <input id={`${id}-title`} value={title} onChange={event => setTitle(event.target.value)} maxLength={120} required className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2.5 text-white placeholder:text-zinc-400 focus:border-white/40" placeholder="What is this about?" />
+                <Input id={`${id}-title`} value={title} onChange={event => setTitle(event.target.value)} maxLength={120} required className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2.5 text-white placeholder:text-zinc-400 focus:border-white/40" placeholder="What is this about?" />
               </Field>
               <Field id={`${id}-subtitle`} label="Subtitle" hint="optional">
-                <input id={`${id}-subtitle`} value={subtitle} onChange={event => setSubtitle(event.target.value)} maxLength={160} className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2.5 text-white placeholder:text-zinc-400 focus:border-white/40" placeholder="One line of context" />
+                <Input id={`${id}-subtitle`} value={subtitle} onChange={event => setSubtitle(event.target.value)} maxLength={160} className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2.5 text-white placeholder:text-zinc-400 focus:border-white/40" placeholder="One line of context" />
               </Field>
             </div>
             <Field id={`${id}-markup`} label="Raw notes" hint="quick markup" mono>
-              <textarea id={`${id}-markup`} value={markup} onChange={event => setMarkup(event.target.value)} rows={20} aria-describedby={`${id}-markup-help`} className="block min-h-72 w-full resize-y rounded-xl border border-white/10 bg-black/40 p-4 text-zinc-100 placeholder:text-zinc-400 focus:border-white/40" placeholder="# First concept&#10;Def: Term = meaning&#10;Key: The one thing to remember&#10;Q: A question&#10;A: Its answer" />
+              <Textarea id={`${id}-markup`} value={markup} onChange={event => setMarkup(event.target.value)} rows={20} aria-describedby={`${id}-markup-help`} className="block min-h-72 w-full resize-y rounded-xl border border-white/10 bg-black/40 p-4 text-zinc-100 placeholder:text-zinc-400 focus:border-white/40" placeholder="# First concept&#10;Def: Term = meaning&#10;Key: The one thing to remember&#10;Q: A question&#10;A: Its answer" />
             </Field>
             <p id={`${id}-markup-help`} className="-mt-2 text-xs leading-5 text-zinc-300"># starts a section; prefix lines with Def:, Key:, Warn:, Q: and A:. Full syntax in the cheat sheet below.</p>
             <div className="flex flex-wrap gap-2">
@@ -302,7 +306,7 @@ export function NotesExporter() {
 
           <div role="tabpanel" id={`${id}-panel-json`} aria-labelledby={`${id}-tab-json`} hidden={mode !== "json"} className="flex flex-col gap-3">
             <Field id={`${id}-json`} label="JSON bundle" hint="notebook" mono>
-              <textarea id={`${id}-json`} value={json} onChange={event => setJson(event.target.value)} rows={24} spellCheck={false} aria-describedby={`${id}-json-help`} aria-invalid={Boolean(derived.bundleError)} className="block min-h-80 w-full resize-y rounded-xl border border-white/10 bg-black/40 p-4 text-zinc-100 focus:border-white/40" />
+              <Textarea id={`${id}-json`} value={json} onChange={event => setJson(event.target.value)} rows={24} spellCheck={false} aria-describedby={`${id}-json-help`} aria-invalid={Boolean(derived.bundleError)} className="block min-h-80 w-full resize-y rounded-xl border border-white/10 bg-black/40 p-4 text-zinc-100 focus:border-white/40" />
             </Field>
             <p id={`${id}-json-help`} className="text-xs leading-5 text-zinc-300">Paste what the <code className="rounded bg-white/10 px-1 font-mono text-fuchsia-200">artistic-notes-generator</code> skill outputs. The theme picker overrides the payload&apos;s <code className="rounded bg-white/10 px-1 font-mono">theme</code>.</p>
             {derived.bundleError && <p role="alert" className="flex items-start gap-2 rounded-lg border border-amber-300/30 bg-amber-300/10 px-3 py-2 text-xs text-amber-100"><TriangleAlert className="mt-px size-3.5 shrink-0" aria-hidden /><ExpandedText text={derived.bundleError} /></p>}
@@ -314,12 +318,12 @@ export function NotesExporter() {
         <section aria-labelledby={`${id}-exports`} className="flex min-w-0 flex-col gap-6">
           <fieldset className="min-w-0">
             <legend><span className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-300">Theme</span></legend>
-            <div className="grid gap-2.5 sm:grid-cols-2">
+            <RadioGroup aria-label="Color theme" value={theme} onValueChange={value=>setTheme(value as typeof theme)} className="grid gap-2.5 sm:grid-cols-2">
               {themeNames.map(name => {
                 const option = artisticThemes[name];
                 return (
-                  <label key={name} className="relative cursor-pointer rounded-xl border border-white/10 bg-white/[0.03] p-3 transition hover:border-white/30 has-[:checked]:border-white has-[:checked]:bg-white/[0.08] has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-fuchsia-300">
-                    <input type="radio" name={`${id}-theme`} value={name} checked={theme === name} onChange={() => setTheme(name)} className="sr-only" />
+                  <Label key={name} className="relative cursor-pointer rounded-xl border border-white/10 bg-white/[0.03] p-3 transition hover:border-white/30 has-[:checked]:border-white has-[:checked]:bg-white/[0.08] has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-fuchsia-300">
+                    <RadioGroupItem value={name} className="sr-only" />
                     <span className="flex items-center gap-3">
                       <span aria-hidden className="flex h-10 w-14 shrink-0 flex-col justify-between overflow-hidden rounded-md p-1.5 ring-1 ring-white/15" style={{ background: `#${option.background}` }}>
                         <i className="block h-1 w-full rounded-full" style={{ background: `#${option.text}` }} />
@@ -331,10 +335,10 @@ export function NotesExporter() {
                       </span>
                       {theme === name && <Check className="ml-auto size-4 shrink-0 text-white" aria-hidden />}
                     </span>
-                  </label>
+                  </Label>
                 );
               })}
-            </div>
+            </RadioGroup>
           </fieldset>
 
           <div className="flex flex-col gap-4">
@@ -354,10 +358,10 @@ export default NotesExporter;
 function Field({ id, label, hint, mono = false, children }: { id: string; label: string; hint?: string; mono?: boolean; children: ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col gap-2">
-      <label htmlFor={id}>
+      <Label htmlFor={id}>
         <span className="text-xs font-semibold text-zinc-100"><ExpandedText text={label} /></span>
         {hint && <span className="ml-2 text-xs font-normal text-zinc-400"><ExpandedText text={hint} /></span>}
-      </label>
+      </Label>
       {/* Inputs inherit their font (globals.css sets font: inherit), so size it here. */}
       <div className={mono ? "font-mono text-[13px] leading-6" : "text-sm"}>{children}</div>
     </div>

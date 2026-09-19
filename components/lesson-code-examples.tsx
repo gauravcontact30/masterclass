@@ -2,24 +2,18 @@
 import { ExpandedText } from "@/components/expanded-text";
 
 
-import { useId, useState } from "react";
-import { Check, Code2, Copy, FileCode2, Folder, FolderOpen, Terminal } from "lucide-react";
+import { useEffect, useId, useRef, useState } from "react";
+import { Check, Code2, Copy, FileCode2, Folder, FolderOpen, Play, Square, Terminal } from "lucide-react";
 import type { ApiReference, CodeExample, ExampleFile } from "@/lib/domain";
+import { highlightLines } from "@/lib/code-highlight";
+import { CodeLab } from "./code-lab";
+import { runSupport } from "@/lib/code-run";
+import { runJavaScriptPuzzle, type PuzzleResult } from "@/lib/javascript-sandbox";
 import styles from "./lesson-code-examples.module.css";
 
 /** React escapes every token; lesson text is never inserted as HTML. */
 function Highlight({ code, language }: { code: string; language: ExampleFile["language"] }) {
-  const plain = ["text", "markdown"].includes(language);
-  const tokens = plain ? [code] : code.split(/(\/\*[\s\S]*?\*\/|\/\/[^\n]*|#[^\n]*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|\b(?:import|from|export|default|async|await|function|return|const|let|var|if|else|for|of|in|class|interface|type|extends|implements|new|throw|try|catch|finally|def|with|as|yield|lambda|public|private|readonly|static|void|string|number|boolean|True|False|None|true|false|null|undefined)\b|\b\d+(?:\.\d+)?\b)/g);
-  const rendered: { text: string; tone: string }[][] = [[]];
-  for (const token of tokens) {
-    const tone = plain ? "" : /^(\/\/|\/\*|#)/.test(token) ? "comment" : /^["'`]/.test(token) ? "string" : /^\d/.test(token) ? "number" : /^\w+$/.test(token) ? "keyword" : "";
-    token.split("\n").forEach((text, index) => {
-      if (index) rendered.push([]);
-      rendered[rendered.length - 1].push({ text, tone });
-    });
-  }
-  return <pre className={styles.code}><code>{rendered.map((line, index) => <span className={styles.line} key={index}><span className={styles.lineNumber} aria-hidden="true">{index + 1}</span><span>{line.map((token, i) => <span key={i} data-token={token.tone || undefined}>{token.text}</span>)}{"\n"}</span></span>)}</code></pre>;
+  return <pre className={styles.code}><code>{highlightLines(code, language).map((line, index) => <span className={styles.line} key={index}><span className={styles.lineNumber} aria-hidden="true">{index + 1}</span><span>{line.map((token, position) => <span key={position} data-token={token.tone || undefined}>{token.text}</span>)}{"\n"}</span></span>)}</code></pre>;
 }
 
 function FileTree({ files, active, onSelect, prefix = "" }: { files: ExampleFile[]; active: string; onSelect: (path: string) => void; prefix?: string }) {
@@ -34,11 +28,51 @@ function FileTree({ files, active, onSelect, prefix = "" }: { files: ExampleFile
 export function CodeApiReference({ references, hi }: { references: ApiReference[]; hi: boolean }) {
   return <div className={styles.references}>{references.map((api, index) => <details key={`${api.name}-${index}`} open={index === 0}>
     <summary><code>{api.name}</code><span><ExpandedText text={api.kind} /></span></summary>
-    <pre className={styles.signature}><code>{api.signature}</code></pre>
+    <CodeLab title={api.name} code={api.signature} explanation={api.returns} editable={false} />
     {api.params.length > 0 && <div className={styles.tableScroll}><table><caption><ExpandedText text={hi ? "पैरामीटर, आर्ग्युमेंट और प्रॉपर्टी" : "Parameters, arguments & properties"} /></caption><thead><tr><th><ExpandedText text={hi ? "नाम" : "Name"} /></th><th><ExpandedText text={hi ? "प्रकार" : "Type"} /></th><th><ExpandedText text={hi ? "उपयोग" : "How to use it"} /></th></tr></thead><tbody>{api.params.map(param => <tr key={param.name}><td><code>{param.name}</code></td><td><code>{param.type}</code></td><td><ExpandedText text={param.description} /></td></tr>)}</tbody></table></div>}
     <p><strong><ExpandedText text={hi ? "रिटर्न प्रकार और मान" : "Return type & value"} />: </strong><ExpandedText text={api.returns} /></p>
     {api.notes && <p><ExpandedText text={api.notes} /></p>}
   </details>)}</div>;
+}
+
+/**
+ * Most project files import a sibling, so they only run once the reader follows
+ * "Set up & run". A self-contained file can be executed here, and what appears
+ * below is then genuinely this file's output rather than an authored one.
+ */
+function RunPanel({ file, hi }: { file: ExampleFile; hi: boolean }) {
+  const [output, setOutput] = useState<string[]>([]);
+  const [result, setResult] = useState<PuzzleResult | null>(null);
+  const [running, setRunning] = useState(false);
+  const stop = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    stop.current?.();
+    setOutput([]);
+    setResult(null);
+  }, [file.path]);
+  useEffect(() => () => stop.current?.(), []);
+  if (!runSupport(file.code, file.language).runnable) return null;
+  const start = () => {
+    setOutput([]);
+    setResult(null);
+    setRunning(true);
+    stop.current = runJavaScriptPuzzle(file.code, line => setOutput(previous => [...previous, line]), finished => {
+      setResult(finished);
+      setOutput(finished.output);
+      setRunning(false);
+      stop.current = null;
+    });
+  };
+  return <div className={styles.runPanel}>
+    <div className={styles.runBar}>
+      <Terminal size={13} aria-hidden="true" />
+      <span>{hi ? "इस फ़ाइल को चलाएँ" : "RUN THIS FILE"}</span>
+      {running
+        ? <button type="button" onClick={() => stop.current?.()} aria-label={`Stop running ${file.path}`}><Square size={12} />{hi ? "रोकें" : "Stop"}</button>
+        : <button type="button" onClick={start} aria-label={`${result ? "Re-run" : "Run"} ${file.path}`}><Play size={12} />{result ? hi ? "फिर चलाएँ" : "Re-run" : hi ? "चलाएँ" : "Run"}</button>}
+    </div>
+    <pre role="status">{running ? "…" : output.join("\n") || (hi ? "चलाने पर वास्तविक आउटपुट यहाँ दिखेगा।" : "Press Run to execute this file and see its real output.")}</pre>
+  </div>;
 }
 
 function ExampleWorkspace({ example, hi, id }: { example: CodeExample; hi: boolean; id: string }) {
@@ -66,6 +100,7 @@ function ExampleWorkspace({ example, hi, id }: { example: CodeExample; hi: boole
           <p className={styles.fileDescription}><ExpandedText text={file.description} /></p>
           <div className={styles.codeScroll} tabIndex={0} role="region" aria-label={`${hi ? "कोड" : "Code"}: ${file.path}`}><Highlight code={file.code} language={file.language} /></div>
           <div className={styles.statusBar}><span><ExpandedText text={file.language} /> · UTF-8</span><span role="status"><ExpandedText text={copyStatus} /></span><span>{file.code.split("\n").length} <ExpandedText text={hi ? "पंक्तियाँ" : "lines"} /></span></div>
+          <RunPanel file={file} hi={hi} />
         </div>
       </div>
     </div>

@@ -4,7 +4,7 @@ import { ExpandedText } from "@/components/expanded-text";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, ChevronLeft, ChevronRight, Pause, Play, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Atom, BookA, Calculator, ChevronLeft, ChevronRight, FlaskConical, GraduationCap, Landmark, Languages, Network, Pause, Play, Sparkles, type LucideIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
 import { useLanguage } from "./language-provider";
 import styles from "./landing-discovery.module.css";
@@ -30,19 +30,19 @@ export function LandingHero() {
     </article>)}</div>
   </section>;
 }
-type Category = { name: string; hi: string; group: "school" | "exams" | "tech" | "design" | "language"; topics: string[] };
+type Category = { name: string; hi: string; group: "school" | "exams" | "tech" | "design" | "language"; topics: string[]; icon: LucideIcon | string };
 const categories: Category[] = [
-  { name: "Mathematics", hi: "गणित", group: "school", topics: ["Arithmetic", "Algebra", "Geometry", "Probability"] },
-  { name: "Physics", hi: "भौतिक विज्ञान", group: "school", topics: ["Motion", "Forces", "Energy", "Electricity"] },
-  { name: "Chemistry", hi: "रसायन विज्ञान", group: "school", topics: ["Atoms", "Moles", "Reactions", "Chemical bonding"] },
-  { name: "SSC & Government Exams", hi: "SSC और सरकारी परीक्षाएँ", group: "exams", topics: ["Quantitative aptitude", "Reasoning", "English", "General awareness"] },
-  { name: "JEE / IIT & NEET", hi: "JEE / IIT और NEET", group: "exams", topics: ["Mathematics", "Physics", "Chemistry", "Biology"] },
-  { name: "System Design", hi: "सिस्टम डिज़ाइन", group: "design", topics: ["WhatsApp", "Instagram", "E-commerce", "Payments", "AI automation"] },
-  { name: "React & Next.js", hi: "React और Next.js", group: "tech", topics: ["Components", "Hooks", "Routing", "Server rendering"] },
-  { name: "Python", hi: "Python", group: "tech", topics: ["Functions", "Types", "Classes", "Testing"] },
-  { name: "Cloud & DevOps", hi: "Cloud और DevOps", group: "tech", topics: ["AWS", "CI/CD", "Infrastructure", "Observability"] },
-  { name: "English & IELTS", hi: "अंग्रेज़ी और IELTS", group: "language", topics: ["Grammar", "Writing", "Reading", "Speaking"] },
-  { name: "Vocabulary", hi: "शब्दावली", group: "language", topics: ["Context", "Synonyms", "Antonyms", "Word families"] },
+  { name: "Mathematics", hi: "गणित", group: "school", topics: ["Arithmetic", "Algebra", "Geometry", "Probability"], icon: Calculator },
+  { name: "Physics", hi: "भौतिक विज्ञान", group: "school", topics: ["Motion", "Forces", "Energy", "Electricity"], icon: Atom },
+  { name: "Chemistry", hi: "रसायन विज्ञान", group: "school", topics: ["Atoms", "Moles", "Reactions", "Chemical bonding"], icon: FlaskConical },
+  { name: "SSC & Government Exams", hi: "SSC और सरकारी परीक्षाएँ", group: "exams", topics: ["Quantitative aptitude", "Reasoning", "English", "General awareness"], icon: Landmark },
+  { name: "JEE / IIT & NEET", hi: "JEE / IIT और NEET", group: "exams", topics: ["Mathematics", "Physics", "Chemistry", "Biology"], icon: GraduationCap },
+  { name: "System Design", hi: "सिस्टम डिज़ाइन", group: "design", topics: ["WhatsApp", "Instagram", "E-commerce", "Payments", "AI automation"], icon: Network },
+  { name: "React & Next.js", hi: "React और Next.js", group: "tech", topics: ["Components", "Hooks", "Routing", "Server rendering"], icon: "/images/tech/react.png" },
+  { name: "Python", hi: "Python", group: "tech", topics: ["Functions", "Types", "Classes", "Testing"], icon: "/images/tech/python.png" },
+  { name: "Cloud & DevOps", hi: "Cloud और DevOps", group: "tech", topics: ["AWS", "CI/CD", "Infrastructure", "Observability"], icon: "/images/tech/aws.png" },
+  { name: "English & IELTS", hi: "अंग्रेज़ी और IELTS", group: "language", topics: ["Grammar", "Writing", "Reading", "Speaking"], icon: Languages },
+  { name: "Vocabulary", hi: "शब्दावली", group: "language", topics: ["Context", "Synonyms", "Antonyms", "Word families"], icon: BookA },
 ];
 export function CourseMarquee() {
   const { language } = useLanguage(); const hi = language === "hi"; const [selected, setSelected] = useState<Category | null>(null); const [paused, setPaused] = useState(false);
@@ -54,7 +54,7 @@ export function CourseMarquee() {
     [hi ? "अपना अध्ययन क्षेत्र" : "Your focused dashboard", hi ? "सदस्यता लेते समय तैयारी चुनें; डैशबोर्ड में वही पथ दिखेंगे।" : "Select your preparation when subscribing; your dashboard shows those paths."],
     [hi ? "प्रकाशित कवरेज" : "Published coverage", hi ? "यह कोर्स परिचय है। स्कूल और परीक्षा गाइड अभी आधारभूत सामग्री देते हैं; पूरा पाठ्यक्रम अभी उपलब्ध नहीं है।" : "This is a course overview. School and exam guides currently provide foundations; complete syllabus coverage is not yet available."],
   ] : [];
-  return <><section className={styles.marquee} aria-label={hi ? "कोर्स श्रेणियाँ" : "Course categories"}><div className={styles.marqueeLabel}><Sparkles size={16}/><span><ExpandedText text={hi ? "अपना अगला विषय खोजें" : "Find your next subject"} /></span><button aria-label={paused ? hi ? "श्रेणियाँ चलाएँ" : "Play categories" : hi ? "श्रेणियाँ रोकें" : "Pause categories"} aria-pressed={paused} onClick={() => setPaused(value => !value)}>{paused ? <Play size={14}/> : <Pause size={14}/>}</button></div><div className={styles.marqueeWindow}><div className={styles.track} data-paused={paused || !!selected}>{[0, 1].map(copy => <div className={styles.categorySet} key={copy} aria-hidden={copy === 1 ? true : undefined}>{categories.map(item => <button key={item.name} tabIndex={copy ? -1 : 0} onClick={() => setSelected(item)}><ExpandedText text={hi ? item.hi : item.name} /><ArrowUpRight size={14}/></button>)}</div>)}</div></div></section>
+  return <><section className={styles.marquee} aria-label={hi ? "कोर्स श्रेणियाँ" : "Course categories"}><div className={styles.marqueeLabel}><Sparkles size={16}/><span><ExpandedText text={hi ? "अपना अगला विषय खोजें" : "Find your next subject"} /></span><button aria-label={paused ? hi ? "श्रेणियाँ चलाएँ" : "Play categories" : hi ? "श्रेणियाँ रोकें" : "Pause categories"} aria-pressed={paused} onClick={() => setPaused(value => !value)}>{paused ? <Play size={14}/> : <Pause size={14}/>}</button></div><div className={styles.marqueeWindow}><div className={styles.track} data-paused={paused || !!selected}>{[0, 1].map(copy => <div className={styles.categorySet} key={copy} aria-hidden={copy === 1 ? true : undefined}>{categories.map((item, index) => <button key={item.name} data-tone={index} tabIndex={copy ? -1 : 0} onClick={() => setSelected(item)}><span className={styles.categoryIcon} aria-hidden="true">{typeof item.icon === "string" ? <Image src={item.icon} alt="" width={16} height={16}/> : <item.icon size={15} strokeWidth={2}/>}</span><ExpandedText text={hi ? item.hi : item.name} /><ArrowUpRight className={styles.categoryArrow} size={13}/></button>)}</div>)}</div></div></section>
     <Dialog open={!!selected} onOpenChange={open => { if (!open) setSelected(null); }}><DialogContent className={styles.modal}><span className={styles.eyebrow}><ExpandedText text={hi ? "कोर्स परिचय · LEARN IN APP" : "COURSE OVERVIEW · LEARN IN APP"} /></span><DialogTitle>{hi ? selected?.hi : selected?.name}</DialogTitle><DialogDescription><ExpandedText text={hi ? "सदस्यता चुनने से पहले अध्ययन पथ समझें।" : "Explore this learning path before choosing your membership."} /></DialogDescription><h3><ExpandedText text={hi ? "मुख्य बिंदु" : "Key points"} /></h3><div className={`${styles.points} learning-key-points`}>{points.map(([title, body], i) => <article key={title}><span><ExpandedText text={String(i + 1).padStart(2, "0")} /></span><div><h4><ExpandedText text={title} /></h4><p><ExpandedText text={body} /></p></div></article>)}</div><Link className={styles.modalCta} href="/dashboard?tab=plans"><ExpandedText text={hi ? "मासिक / वार्षिक सदस्यता चुनें" : "Choose monthly / yearly membership"} /><ArrowRight size={17}/></Link></DialogContent></Dialog>
   </>;
 }

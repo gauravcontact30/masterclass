@@ -23,7 +23,7 @@ const rules: [LearningCategory["id"], RegExp][] = [
   ["frontend", /^(react|nextjs|next-js|zustand|tanstack|redux|vue|nuxt|angular|svelte|solid|frontend|html|css|tailwind)(-|$)/],
   ["cloud", /^(aws|amazon-web-services|devops|platform-engineering|docker|kubernetes|k8s|terraform|azure|gcp|cloud|linux|ci-cd|github-actions)(-|$)/],
   ["ai", /^(ai|agentic-ai|llm|claude|openai|langchain|machine-learning|deep-learning|tensorflow|pytorch|mcp)(-|$)/],
-  ["backend", /^(node|nodejs|express|nestjs|fastapi|django|spring|postgres|postgresql|mysql|sql|mongodb|redis|supabase|firebase|graphql|backend|database|system-design)(-|$)/],
+  ["backend", /^(node|nodejs|express|nestjs|fastapi|spring|postgres|postgresql|mysql|sql|mongodb|redis|supabase|firebase|graphql|backend|database|system-design)(-|$)/],
   ["languages", /^(python|java|go|golang|rust|ruby|php|swift|kotlin|csharp|cpp|c-plus-plus|c|dart)(-|$)/],
 ];
 

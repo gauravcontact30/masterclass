@@ -2,8 +2,30 @@ import { render,screen,within } from "@testing-library/react";
 import { Workspace } from "@/components/workspace";
 import userEvent from "@testing-library/user-event";
 import { STUDY_COURSES } from "@/lib/study/catalog";
-jest.mock("next/navigation",()=>({useRouter:()=>({replace:jest.fn(),refresh:jest.fn()})}));
+jest.mock("next/navigation",()=>({usePathname:()=>"/dashboard/techy",useRouter:()=>({replace:jest.fn(),refresh:jest.fn()})}));
 jest.mock("@/lib/client",()=>({requestJson:jest.fn(),errorKey:()=>"service_error"}));
+
+test.each([
+  ["garvcontact30@gmail.com", true, true],
+  ["garvcontact30@gmail.com", false, false],
+  ["student@example.test", true, false],
+  ["student@example.test", false, false],
+])("header super admin access for %s with verified access %s", (email, isSuperAdmin, visible) => {
+  render(<Workspace authEnabled configured={false} billingEnabled={false} userEmail={email} initialCategory="techy" notesContent={<div>Learning</div>} initialAccount={{profile:{language:"en"},account:{tier:"monthly",used:0,limit:50,creditBalance:0,subscription:null},preparations:{isSuperAdmin,selections:[]},documents:[],progress:[]}}/>);
+  const link = within(screen.getByRole("banner")).queryByRole("link", {name:"Super admin"});
+  if (visible) expect(link).toHaveAttribute("href", "/dashboard/super-admin");
+  else expect(link).not.toBeInTheDocument();
+});
+
+test("Techy has a separate professional section and renders its supplied deck", () => {
+  render(<Workspace authEnabled={false} configured={false} billingEnabled={false} initialCategory="techy" notesContent={<section aria-label="Techy deck">Practice</section>}/>);
+  const nav = within(screen.getByRole("navigation", { name: "Profissional Learn" }));
+  expect(nav.getByRole("link", { name: "Techy" })).toHaveAttribute("href", "/dashboard/techy");
+  expect(nav.getByRole("link", { name: "Techy" })).toHaveAttribute("aria-current", "page");
+  expect(nav.getByRole("link", { name: "API Docs" })).toHaveAttribute("href", "/dashboard/api-docs");
+  expect(screen.getByRole("region", { name: "Techy deck" })).toBeVisible();
+  expect(screen.queryByText("Your learning space is almost ready")).not.toBeInTheDocument();
+});
 
 test("My Library owns All technology notes and dashboard Notes only shows its topic content", () => {
   const account = { profile: { language: "en" as const }, account: { tier: "monthly" as const, used: 0, limit: 50, creditBalance: 0, subscription: null }, preparations: { isSuperAdmin: true, selections: [] }, documents: [], progress: [] };
@@ -36,4 +58,49 @@ test("dashboard combines shared search and filters and clears the query from its
   await user.click(panel.getByRole("button",{name:"Remove search"}));
   expect(search).toHaveValue("");
   expect(panel.getByRole("status")).toHaveTextContent("8 guides found");
+});
+
+describe("the sidebar Search item and its AI Mode switch", () => {
+  beforeEach(() => localStorage.clear());
+  const shell = (category = "search") =>
+    render(<Workspace authEnabled={false} configured={false} billingEnabled={false} initialCategory={category} notesContent={<div>Search</div>} />);
+
+  test("the switch sits inside the Search item without nesting a button in the link", () => {
+    shell();
+    const search = screen.getByRole("link", { name: "Search" });
+    const toggle = screen.getByRole("switch", { name: /AI Mode/ });
+
+    // Same row, so it reads as one control group...
+    const row = search.parentElement!;
+    expect(row).toContainElement(toggle);
+    // ...but the switch is a sibling, never a descendant of the link. A button
+    // inside an anchor is invalid and leaves neither control operable.
+    expect(search).not.toContainElement(toggle);
+    expect(toggle.closest("a")).toBeNull();
+
+    // The row carries the selected pill, which is what puts the switch on it.
+    expect(row).toHaveAttribute("data-active");
+  });
+
+  test("the pill is only worn on the search page", () => {
+    shell("notes");
+    expect(screen.getByRole("link", { name: "Search" }).parentElement).not.toHaveAttribute("data-active");
+  });
+
+  test("toggling flips AI Mode and records it for the search page to read", async () => {
+    shell();
+    const toggle = screen.getByRole("switch", { name: /AI Mode/ });
+    // On by default, so a question reaches a model unless it is turned off.
+    expect(toggle).toBeChecked();
+    expect(toggle).toHaveAccessibleName("AI Mode on");
+
+    await userEvent.click(toggle);
+    expect(toggle).not.toBeChecked();
+    expect(toggle).toHaveAccessibleName("AI Mode off");
+    expect(localStorage.getItem("masterclass:ai-search:ai-mode")).toBe("off");
+
+    await userEvent.click(toggle);
+    expect(toggle).toBeChecked();
+    expect(localStorage.getItem("masterclass:ai-search:ai-mode")).toBe("on");
+  });
 });

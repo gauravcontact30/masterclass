@@ -128,6 +128,7 @@ function courseCard(id: string, title: string, technology: string, guideId: stri
   return { ...note, learnInApp: true, readerTitle: title, contents: chapters.map(({ id, title, category }) => ({ id, title, category })) };
 }
 const frameworkCourses = [
+  courseCard("agentic-ai-course", "Agentic AI: building systems that act", "agentic-ai", "agentic-ai", [], "Learn autonomy, tool use, memory, self-correction and multi-agent collaboration; review key frameworks and follow a six-step roadmap from LLM foundations to deployment."),
   courseCard("node-course", "Node.js", "node", "node", [], "Explore Node.js architecture, core modules, packages, asynchronous flow, web frameworks, databases, validation, authentication, real-time communication, testing, developer tools and advanced performance."),
   courseCard("graphql-course", "GraphQL", "graphql", "graphql", [], "Explore GraphQL core concepts, operations and execution, schema and type system, advanced architecture patterns, security and optimization."),
   courseCard("nestjs-course", "Nest JS", "nestjs", "nestjs", [], "Explore Nest JS fundamentals, request lifecycle, persistence, authentication, advanced techniques, architectural styles, testing and production deployment."),
@@ -165,9 +166,9 @@ export const NOTES_TECHNOLOGIES: (NotesTechnology & { sources: { title: string; 
 
 /** Only compact summaries cross the initial client boundary. Full lessons load on demand. */
 export const NOTES_SUMMARIES: NotesSummary[] = STUDY_NOTES.map(note => {
-  const { id, technology, title, category, kinds, description, points } = note;
+  const { id, technology, title, category, kinds, description, points, readerTitle } = note;
   const text = [title, description, category, technology, ...kinds, ...points, ...(note.contents ?? []).map(item => `${item.title} ${item.category}`), ...note.sections.flatMap(section => [section.title, ...section.points, section.code ?? ""]), ...note.interview.flatMap(question => [question.question, ...question.points]), ...note.questions.flatMap(question => [question.question, ...question.options]), ...note.vocabulary.flatMap(word => [word.word, word.meaning, ...word.synonyms, ...word.antonyms])].join(" ").toLocaleLowerCase();
   // Unique tokens keep full-content search small, including API names and code symbols.
   const searchText = [...new Set(text.split(/\s+/))].join(" ");
-  return { id, technology, title, category, kinds, description, learnInApp: note.learnInApp, points: uniqueLearningPoints(points, [description]).slice(0, 3), searchText, priority: Math.max(3, ...note.interview.map(question => question.priority)) };
+  return { id, technology, title, category, kinds, description, learnInApp: note.learnInApp, readerTitle, points: uniqueLearningPoints(points, [description]).slice(0, 3), searchText, priority: Math.max(3, ...note.interview.map(question => question.priority)) };
 });

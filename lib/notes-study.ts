@@ -9,7 +9,7 @@ export type StudyNote = NoteCard & {
   description: string; examples: NoteSection[]; useCases: NoteSection[];
   interview: InterviewNote[]; questions: ObjectiveQuestion[]; vocabulary: VocabularyEntry[];
 };
-export type NotesSummary = Pick<StudyNote, "id" | "technology" | "title" | "category" | "kinds" | "description" | "points" | "learnInApp"> & { searchText: string; priority: number };
+export type NotesSummary = Pick<StudyNote, "id" | "technology" | "title" | "category" | "kinds" | "description" | "points" | "learnInApp" | "readerTitle"> & { searchText: string; priority: number };
 export type NotesTechnology = { id: string; title: string; category: string; reading: NoteSection[] };
 
 export const STUDY_FILTERS = ["All content", "Technology topics", "AWS services", "Methods", "Functions", "Interfaces", "Hooks", "Properties", "Classes", "Syntax", "Examples", "Interview questions", "Objective questions", "Vocabulary", "Synonyms", "Antonyms", "Glossary"];
@@ -18,6 +18,20 @@ export const NOTES_PAGE_SIZE = 4;
 export function searchStudyNotes(notes: NotesSummary[], query: string, kind: string, minimumPriority = 0) {
   const terms = query.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
   return notes.filter(note => (!kind || kind === "All content" || note.kinds.includes(kind)) && note.priority >= minimumPriority && terms.every(term => note.searchText.includes(term)));
+}
+
+/** Most-asked first: higher interview priority leads, original order breaks ties. */
+export function byInterviewPriority<T extends { priority: number }>(notes: T[]) {
+  return notes.map((note, index) => ({ note, index })).sort((a, b) => b.note.priority - a.note.priority || a.index - b.index).map(item => item.note);
+}
+
+/** A short, to-the-point definition: the first sentence, capped at a readable length. */
+export function shortDefinition(text: string, max = 220) {
+  const clean = text.replace(/\s+/g, " ").trim();
+  const sentence = clean.match(/^.+?[.!?](?=\s|$)/)?.[0] ?? clean;
+  if (sentence.length <= max) return sentence;
+  const cut = sentence.slice(0, max);
+  return `${cut.slice(0, cut.lastIndexOf(" ") > 80 ? cut.lastIndexOf(" ") : max).replace(/[,;:\s]+$/, "")}…`;
 }
 
 export function notesPage<T>(items: T[], requested: number, size = NOTES_PAGE_SIZE) {

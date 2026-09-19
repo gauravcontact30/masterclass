@@ -1,0 +1,39 @@
+/* Shared with the warm canvas, charcoal sidebar and terracotta accents of Workspace. */
+.page {
+  --ivory: #faf9f5;
+  --oat: #f5f4ed;
+  --cloud: #e8e6dc;
+  --line: #e8e6dc;
+  --line-strong: #d1cfc5;
+  --border: #e8e6dc;
+  --ink: #262624;
+  --read: #3d3d3a;
+  --muted: #73726c;
+  --faint: #87867f;
+  --clay: #c96442;
+  --clay-deep: #b65334;
+  --clay-soft: #f9ece6;
+  --primary: #c96442;
+  --accent: #c96442;
+  --soft: #f5f4ed;
+  --serif: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Consolas, monospace;
+  color: var(--ink);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  width: 100%; min-width: 0; max-width: 1240px;
+  margin: 0 auto; padding: 0 0 48px;
+}
+.header { display: flex; justify-content: space-between; align-items: center; gap: 28px; margin-bottom: 28px; padding: 4px 0 26px; border-bottom: 1px solid #e8e6dc; }
+.heading { min-width: 0; }
+.header .eyebrow { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; color: #73726c; font-size: 10px; line-height: 1.5; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
+.eyebrow > span { display: inline-flex; align-items: center; justify-content: center; color: #c96442; font-size: 15px; }
+.eyebrow svg { width: 15px; height: 15px; }
+.header h1 { margin: 0; font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif; font-size: clamp(27px, 2.8vw, 36px); font-weight: 550; line-height: 1.22; letter-spacing: -.045em; color: #262624; overflow-wrap: anywhere; }
+.header .description { margin: 12px 0 0; font-size: 14px; line-height: 1.75; font-weight: 400; color: #73726c; max-width: 72ch; }
+.actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-shrink: 0; min-width: 0; }
+.actions > label { min-width: 210px; }
+@media (max-width: 760px) {
+  .header { flex-direction: column; align-items: stretch; gap: 18px; padding-bottom: 22px; margin-bottom: 22px; }
+  .actions { justify-content: flex-start; flex-wrap: wrap; }
+  .actions > label { width: 100%; min-width: 0; }
+}

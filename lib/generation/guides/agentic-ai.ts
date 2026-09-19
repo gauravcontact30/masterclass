@@ -1,5 +1,6 @@
 import type { TechnologyGuide } from "./index";
 import { source } from "./shared";
+import { agenticAiEssentials } from "./agentic-ai-essentials";
 
 /**
  * Agentic AI: designing, evaluating and operating systems where a model decides
@@ -766,5 +767,8 @@ const guide: TechnologyGuide = {
     ],
   },
 };
+
+// Append to preserve existing lesson indexes and saved reader progress.
+guide.curriculum.lessons.push(agenticAiEssentials);
 
 export default guide;

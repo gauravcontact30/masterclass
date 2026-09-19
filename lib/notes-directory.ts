@@ -1,7 +1,8 @@
 import type { ApiReference, Curriculum } from "./domain";
 
 export const NOTE_KINDS = ["AWS services", "Technology topics", "Methods", "Functions", "Interfaces", "Hooks", "Properties", "Classes", "Syntax", "Examples", "Vocabulary", "Synonyms", "Antonyms", "Practice", "Interview questions", "Glossary"] as const;
-export type NoteSection = { title: string; points: string[]; code?: string };
+/** `output` is the authored result for `code`, shown when it cannot be executed here. */
+export type NoteSection = { title: string; points: string[]; code?: string; output?: string };
 export type NoteCard = { id: string; technology: string; title: string; category: string; kinds: string[]; points: string[]; sections: NoteSection[] };
 type Guide = { id: string; request: { technologyId: string }; curriculum: Curriculum };
 const lines = (text: string) => text.split("\n").map(line => line.trim().replace(/^[-•]\s*/, "")).filter(Boolean);
@@ -32,7 +33,7 @@ export function buildNotesDirectory(guides: Guide[]): NoteCard[] {
       lesson.apiReference?.forEach(addApi);
       for (const example of lesson.codeExamples ?? []) {
         sections.push({ title: example.title, points: [example.description, ...example.setup, `Expected result: ${example.expectedOutput}`] });
-        example.files.forEach(file => sections.push({ title: file.path, points: [file.description], code: file.code }));
+        example.files.forEach(file => sections.push({ title: file.path, points: [file.description], code: file.code, output: example.expectedOutput || undefined }));
         example.apiReference?.forEach(addApi);
       }
       for (const word of lesson.vocabulary ?? []) {
@@ -57,7 +58,7 @@ export function buildNotesDirectory(guides: Guide[]): NoteCard[] {
       cards.push({ ...base, id: `${guide.id}-project-${index}`, title: example.title, kinds,
         points: [example.description, ...example.setup, `Expected result: ${example.expectedOutput}`],
         sections: [
-          ...example.files.map(file => ({ title: file.path, points: [file.description], code: file.code })),
+          ...example.files.map(file => ({ title: file.path, points: [file.description], code: file.code, output: example.expectedOutput || undefined })),
           ...(example.apiReference ?? []).map(api => ({ title: `${api.name} · ${api.kind}`, code: api.signature, points: [...api.params.map(param => `${param.name} (${param.type}): ${param.description}`), `Returns: ${api.returns}`, ...(api.notes ? [api.notes] : [])] })),
         ],
       });

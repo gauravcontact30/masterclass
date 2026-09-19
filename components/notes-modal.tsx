@@ -1,4 +1,8 @@
 "use client";
+import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
+import { NativeSelectOption } from "@/components/ui/native-select";
+import { Textarea } from "@/components/ui/textarea";
 import { uniqueLearningPoints } from "@/lib/concise-learning";
 import { ExpandedText } from "@/components/expanded-text";
 import { compactAbbreviations } from "@/lib/abbreviations";
@@ -16,8 +20,11 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "./ui/dial
 import { DownloadLink } from "./download-link";
 import { Button } from "./ui/button";
 import { LessonCodeExamples } from "./lesson-code-examples";
+import { InterviewFocusToggle, useInterviewFocus } from "./interview-focus";
+import { showsSection } from "@/lib/interview-focus";
 import { ServiceCatalog } from "./service-catalog";
 import { AnswerPanels, KnowledgeCheck } from "./knowledge-check";
+import { BookmarkButton, BookmarkPoint, BookmarkScope } from "./bookmarks";
 import { LearningRegion, LearningTools } from "./learning-marks";
 import { learningContentKey } from "@/lib/learning-marks";
 import styles from "./notes-reader.module.css";
@@ -25,7 +32,7 @@ import styles from "./notes-reader.module.css";
 /** Render each unique learning point once, using a list for multi-line prose. */
 function Prose({ text }: { text: string }) {
   const points = uniqueLearningPoints([text]);
-  return points.length > 1 ? <ul className="notes-bullets">{points.map(line => <li key={line}><ExpandedText text={line} /></li>)}</ul> : points.length ? <p className="notes-prose"><ExpandedText text={points[0]} /></p> : null;
+  return points.length > 1 ? <ul className="notes-bullets">{points.map(line => <li key={line}><BookmarkPoint text={line}><ExpandedText text={line} /></BookmarkPoint></li>)}</ul> : points.length ? <p className="notes-prose"><BookmarkPoint text={points[0]}><ExpandedText text={points[0]} /></BookmarkPoint></p> : null;
 }
 
 type SectionRef = (index: number) => (node: HTMLElement | null) => void;
@@ -48,7 +55,7 @@ function KeyPoints({ points, hi }: { points: KeyPoint[]; hi: boolean }) {
           <span className={styles.kpIndex} aria-hidden="true"><ExpandedText text={String(index + 1).padStart(2, "0")} /></span>
         </div>
         {point.title && <p className={styles.kpTitle}><ExpandedText text={point.title} /></p>}
-        <p className={styles.kpText}><ExpandedText text={point.text} /></p>
+        <p className={styles.kpText}><BookmarkPoint text={[point.title, point.text, point.example].filter(Boolean).join(": ")}><ExpandedText text={point.text} /></BookmarkPoint></p>
         {point.example && <code className={styles.kpExample}>{point.example}</code>}
       </li>;
     })}
@@ -153,13 +160,15 @@ function VocabularyPage({ words, hi }: { words: VocabularyEntry[]; hi: boolean }
  * Sections are registered by index: 0 is the overview, 1..n the lessons and
  * n+1 the wrap-up, which is what the reader's contents list and progress use.
  */
-function StructuredNotes({ deck, title, language, technology, sectionRef, idPrefix }: { deck: Curriculum; title: string; language: "en" | "hi"; technology: string; sectionRef: SectionRef; idPrefix: string }) {
+function StructuredNotes({ deck, title, language, technology, sourceHref, sectionRef, idPrefix }: { deck: Curriculum; title: string; language: "en" | "hi"; technology: string; sourceHref: string; sectionRef: SectionRef; idPrefix: string }) {
   const hi = language === "hi";
   const count = deck.lessons.length;
-  return <div className="notes-doc">
+  const { focused } = useInterviewFocus();
+  return <BookmarkScope value={{ sourceKey: learningContentKey(technology, title, language), title, technology, href: sourceHref }}><div className="notes-doc">
+    <InterviewFocusToggle />
     <section ref={sectionRef(0)} id={`${idPrefix}-0`} tabIndex={-1} className={styles.anchor}>
       <LearningRegion contentKey={learningContentKey(technology, `${title}:overview`, language)}>
-      <h2 className="notes-doc-title"><ExpandedText text={title} /></h2>
+      <h2 className="notes-doc-title"><ExpandedText text={title} /></h2><BookmarkButton points={deck.objectives} />
       <span className="notes-doc-meta">{deck.minutes} <ExpandedText text={hi ? "मिनट" : "minutes"} /> · <ExpandedText text={fill(hi ? "{count} पाठ" : "{count} lessons", { count })} /></span>
       <div className="notes-section"><h3><ExpandedText text={hi ? "आप क्या सीखेंगे" : "What you'll learn"} /></h3><ul className="notes-bullets">{deck.objectives.map(o => <li key={o}><ExpandedText text={o} /></li>)}</ul></div>
       {deck.prerequisites.length > 0 && <div className="notes-section"><h3><ExpandedText text={hi ? "शुरू करने से पहले" : "Before you begin"} /></h3><ul className="notes-bullets">{deck.prerequisites.map(p => <li key={p}><ExpandedText text={p} /></li>)}</ul></div>}
@@ -167,21 +176,21 @@ function StructuredNotes({ deck, title, language, technology, sectionRef, idPref
       {deck.services?.length ? <div className="notes-section"><h3><ExpandedText text={hi ? "सेवाएँ, बिंदुवार" : "Services, explained pointwise"} /></h3><ServiceCatalog services={deck.services} hi={hi} /></div> : null}
     </LearningRegion></section>
     {deck.lessons.map((lesson, i) => <section ref={sectionRef(i + 1)} id={`${idPrefix}-${i + 1}`} tabIndex={-1} className={`notes-lesson ${styles.anchor}`} key={i}>
-      <LearningRegion contentKey={learningContentKey(technology, lesson.title, language)}>
+      <BookmarkScope value={{ sourceKey: learningContentKey(technology, lesson.title, language), title: lesson.title, technology, href: sourceHref }}><LearningRegion contentKey={learningContentKey(technology, lesson.title, language)}>
       <span className={styles.lessonEyebrow}><ExpandedText text={hi ? "पाठ" : "Lesson"} /> {i + 1} / {count}</span>
-      <h3><ExpandedText text={lesson.title} /></h3>
+      <h3><ExpandedText text={lesson.title} /></h3><BookmarkButton points={uniqueLearningPoints([lesson.explanation])} />
       {lesson.diagram && <><p className="notes-label"><ExpandedText text={hi ? "यह कैसे काम करता है" : "How it fits together"} /></p><figure className="notes-fig">{lesson.diagram.kind === "tree" ? <div className="notes-fig-tree">{lesson.diagram.items.map((item, n) => <div key={n} style={{ paddingLeft: `${(item.depth ?? 0) * 20}px` }}><span><ExpandedText text={item.label} /></span>{item.detail && <em><ExpandedText text={item.detail} /></em>}</div>)}</div> : lesson.diagram.kind === "split" ? <div className="notes-fig-split">{[0, 1].map(group => <div key={group} className="notes-fig-col"><span className="notes-fig-col-head"><ExpandedText text={lesson.diagram?.headings?.[group] ?? ""} /></span>{lesson.diagram?.items.filter(item => (item.group ?? 0) === group).map((item, n) => <div key={n} className="notes-fig-cell"><strong><ExpandedText text={item.label} /></strong>{item.detail && <span><ExpandedText text={item.detail} /></span>}</div>)}</div>)}</div> : <div className="notes-fig-flow">{lesson.diagram.items.map((item, index) => <div key={index} className="notes-fig-step"><span className="notes-fig-index">{index + 1}</span><div><strong><ExpandedText text={item.label} /></strong>{item.detail && <span><ExpandedText text={item.detail} /></span>}</div></div>)}</div>}<figcaption><ExpandedText text={lesson.diagram.caption} /></figcaption></figure></>}
       <p className="notes-label"><ExpandedText text={hi ? "समझें" : "The idea"} /></p><Prose text={lesson.explanation} />
       {lesson.keyPoints && lesson.keyPoints.length > 0 && <><p className="notes-label"><ExpandedText text={hi ? "मुख्य बातें" : "Key points"} /></p><KeyPoints points={lesson.keyPoints} hi={hi} /></>}
       {uniqueLearningPoints([lesson.example], [lesson.explanation]).length > 0 && <><p className="notes-label"><ExpandedText text={hi ? "उदाहरण" : "Example"} /></p><Prose text={uniqueLearningPoints([lesson.example], [lesson.explanation]).join("\n")} /></>}
-      {lesson.useCase && <><p className="notes-label"><ExpandedText text={hi ? "वास्तविक उपयोग" : "Real-world use case"} /></p><div className="notes-usecase">{([[hi ? "स्थिति" : "Scenario", lesson.useCase.scenario], [hi ? "उदाहरण" : "Worked example", lesson.useCase.example], [hi ? "व्यवहार में उपयोग" : "How it's used in practice", lesson.useCase.usage]] as const).filter(([, text], index, fields) => uniqueLearningPoints([text], [lesson.explanation, lesson.example, ...fields.slice(0, index).map(([, prior]) => prior)]).length > 0).map(([label, text]) => <div key={label}><span><ExpandedText text={label} /></span><p><ExpandedText text={text} /></p></div>)}</div></>}
+      {showsSection("useCases", focused) && lesson.useCase && <><p className="notes-label"><ExpandedText text={hi ? "वास्तविक उपयोग" : "Real-world use case"} /></p><div className="notes-usecase">{([[hi ? "स्थिति" : "Scenario", lesson.useCase.scenario], [hi ? "उदाहरण" : "Worked example", lesson.useCase.example], [hi ? "व्यवहार में उपयोग" : "How it's used in practice", lesson.useCase.usage]] as const).filter(([, text], index, fields) => uniqueLearningPoints([text], [lesson.explanation, lesson.example, ...fields.slice(0, index).map(([, prior]) => prior)]).length > 0).map(([label, text]) => <div key={label}><span><ExpandedText text={label} /></span><p><ExpandedText text={text} /></p></div>)}</div></>}
       <LessonCodeExamples examples={lessonCodeExamples(lesson, technology, language)} hi={hi} />
       {lesson.apiReference && lesson.apiReference.length > 0 && <><p className="notes-label"><ExpandedText text={hi ? "API संदर्भ" : "API reference"} /></p>{lesson.apiReference.map(api => <div className="notes-apiref" key={api.name}><div className="notes-apiref-head"><span className="notes-apiref-kind"><ExpandedText text={api.kind} /></span><span className="notes-apiref-name"><ExpandedText text={api.name} /></span></div><pre className="notes-code notes-apiref-sig"><code>{api.signature}</code></pre>{api.params.length > 0 && <table className="notes-apiref-params"><tbody>{api.params.map(param => <tr key={param.name}><td><ExpandedText text={param.name} /></td><td><ExpandedText text={param.type} /></td><td><ExpandedText text={param.description} /></td></tr>)}</tbody></table>}<p className="notes-apiref-returns"><strong><ExpandedText text={hi ? "रिटर्न" : "Returns"} />:</strong> <ExpandedText text={api.returns} /></p>{api.notes && <p className="notes-apiref-notes"><ExpandedText text={api.notes} /></p>}</div>)}</>}
       <div className={styles.practicePanel}><p className="notes-label"><ExpandedText text={hi ? "अभ्यास" : "Try it yourself"} /></p><Prose text={lesson.exercise} /></div>
       <p className="notes-label"><ExpandedText text={hi ? "समझ जाँचें" : "Check your understanding"} /></p><Prose text={lesson.checkpoint} />
       {lesson.objectiveQuestions?.map(question => <KnowledgeCheck key={question.question} question={question} hi={hi} />)}
       <p className="notes-label notes-label-warn"><ExpandedText text={hi ? "इस गलती से बचें" : "Avoid this mistake"} /></p><Prose text={lesson.mistake} />
-      {lesson.vocabulary && lesson.vocabulary.length > 0 && <><p className="notes-label"><ExpandedText text={hi ? "शब्दावली भवन" : "Vocabulary builder"} /></p><VocabularyBuilder words={lesson.vocabulary} hi={hi} /></>}
+      {showsSection("vocabulary", focused) && lesson.vocabulary && lesson.vocabulary.length > 0 && <><p className="notes-label"><ExpandedText text={hi ? "शब्दावली भवन" : "Vocabulary builder"} /></p><VocabularyBuilder words={lesson.vocabulary} hi={hi} /></>}
       {lesson.interview && lesson.interview.length > 0 && <><p className="notes-label"><ExpandedText text={hi ? "इंटरव्यू प्रश्न" : "Interview questions"} /></p>{lesson.interview.map((q, n) => <div className="notes-iv" key={q.question}>
         <p className="notes-iv-q"><span className="notes-iv-badge">Q{n + 1}</span><ExpandedText text={q.question} /></p>
         <AnswerPanels shortAnswer={q.definition} explanation={q.answer} hi={hi} />
@@ -189,14 +198,14 @@ function StructuredNotes({ deck, title, language, technology, sectionRef, idPref
         {q.code && <pre className="notes-code" aria-label={hi ? "कोड उदाहरण" : "Code example"}><code>{q.code}</code></pre>}
         {q.similar.length > 0 && <div className="notes-iv-similar"><span className="notes-iv-similar-label"><ExpandedText text={hi ? "मिलते-जुलते प्रश्न" : "Similar questions"} /></span>{q.similar.map(s => <details className="notes-iv-acc" key={s.question}><summary><ExpandedText text={s.question} /></summary><p><ExpandedText text={s.answer} /></p></details>)}</div>}
       </div>)}</>}
-    </LearningRegion></section>)}
+    </LearningRegion></BookmarkScope></section>)}
     <section ref={sectionRef(count + 1)} id={`${idPrefix}-${count + 1}`} tabIndex={-1} className={styles.anchor}>
       <LearningRegion contentKey={learningContentKey(technology, `${title}:summary`, language)}>
       <div className="notes-section"><h3><ExpandedText text={hi ? "मिनी प्रोजेक्ट" : "Put it together"} /></h3><Prose text={deck.project} /></div>
       <div className="notes-section"><h3><ExpandedText text={hi ? "सारांश" : "What to remember"} /></h3><Prose text={deck.summary} /></div>
       <div className="notes-section"><h3><ExpandedText text={hi ? "शब्दावली" : "Glossary"} /></h3><dl className="notes-glossary">{deck.glossary.map(g => <div key={g.term}><dt><ExpandedText text={g.term} /></dt><dd><ExpandedText text={g.definition} /></dd></div>)}</dl></div>
     </LearningRegion></section>
-  </div>;
+  </div></BookmarkScope>;
 }
 
 const emptyProgress = (id: string): Progress => ({ document_id: id, page: 1, completed: false, bookmarks: [], notes: "" });
@@ -335,7 +344,7 @@ export function NotesModal({ document: initial, initialProgress, onClose, sample
           <Button className={styles.iconButton} variant="ghost" size="sm" disabled={!deck || position <= 0} onClick={() => jump(position - 1)} title={t("previousLesson")} aria-label={t("previousLesson")}><ChevronLeft size={18} /></Button>
           <Button className={styles.iconButton} variant="ghost" size="sm" disabled={!deck || position >= count + 1} onClick={() => jump(position + 1)} title={t("nextLesson")} aria-label={t("nextLesson")}><ChevronRight size={18} /></Button>
         </div>
-        {deck && <label className={styles.jump}><ListTree size={14} aria-hidden="true" /><span className={styles.srOnly}><ExpandedText text={t("contents")} /></span><select value={position} onChange={event => jump(Number(event.target.value))}>{contents.map(item => <option key={item.index} value={item.index}>{item.prefix ? `${item.prefix}. ` : ""}{item.label}</option>)}</select></label>}
+        {deck && <Label className={styles.jump}><ListTree size={14} aria-hidden="true" /><span className={styles.srOnly}><ExpandedText text={t("contents")} /></span><NativeSelect value={position} onChange={event => jump(Number(event.target.value))}>{contents.map(item => <NativeSelectOption key={item.index} value={item.index}>{item.prefix ? `${item.prefix}. ` : ""}{item.label}</NativeSelectOption>)}</NativeSelect></Label>}
         <div className={styles.actions}>
           <Button className={styles.iconButton} variant={state.completed ? "default" : "ghost"} size="sm" disabled={!deck} title={state.completed ? t("completed") : t("markComplete")} aria-label={state.completed ? t("completed") : t("markComplete")} aria-pressed={state.completed} onClick={() => update({ completed: !state.completed }, 0)}><Check size={17} /></Button>
           <Button className={styles.iconButton} variant="ghost" size="sm" disabled={!notes} title={copied ? t("notesCopied") : t("copyNotes")} aria-label={t("copyNotes")} onClick={() => void copy()}>{copied ? <Check size={17} /> : <Copy size={17} />}</Button>
@@ -352,11 +361,11 @@ export function NotesModal({ document: initial, initialProgress, onClose, sample
           <ol>{contents.map(item => <li key={item.index}><button type="button" aria-current={item.index === position ? "location" : undefined} data-done={state.completed || (item.index >= 1 && item.index < lesson) ? "" : undefined} onClick={() => jump(item.index)}>{item.prefix ? <span className={styles.railIndex}>{item.prefix}</span> : <span className={styles.railIndex} aria-hidden="true">•</span>}<span className={styles.railLabel}>{compactAbbreviations(item.label)}</span></button></li>)}</ol>
           <details className={styles.myNotes} open={Boolean(state.notes)}>
             <summary><NotebookPen size={14} aria-hidden="true" /><ExpandedText text={t("notes")} /></summary>
-            <textarea aria-label={t("notes")} maxLength={20000} placeholder={t("notesHint")} value={state.notes} onChange={event => update({ notes: event.target.value }, 1500)} onBlur={() => void persist()} />
+            <Textarea aria-label={t("notes")} maxLength={20000} placeholder={t("notesHint")} value={state.notes} onChange={event => update({ notes: event.target.value }, 1500)} onBlur={() => void persist()} />
           </details>
         </nav>
         <div ref={scroller} className={`study-notes-content ${styles.content}`} tabIndex={0} aria-label={initial.title}>
-          <StructuredNotes deck={deck} title={document!.title} language={document!.request.language} technology={document!.request.technologyId} sectionRef={sectionRef} idPrefix={idPrefix} />
+          <StructuredNotes sourceHref={sample ? `/dashboard/notes?technology=${encodeURIComponent(initial.request.technologyId)}` : `/dashboard?tab=library&document=${encodeURIComponent(initial.id)}`} deck={deck} title={document!.title} language={document!.request.language} technology={document!.request.technologyId} sectionRef={sectionRef} idPrefix={idPrefix} />
           <div className={styles.finish}>
             {state.completed ? <p><Check size={16} aria-hidden="true" /><ExpandedText text={t("guideCompleted")} /></p> : <Button onClick={() => update({ completed: true, page: count }, 0)}><Check size={15} /><ExpandedText text={t("finishGuide")} /></Button>}
           </div>

@@ -18,7 +18,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const { id } = await context.params; const language = new URL(request.url).searchParams.get("language") ?? "en";
   if (language !== "en" && language !== "hi") throw new HttpError(400, "invalid_request");
   return Response.json({ pack: await packFor(id, language) });
-}); }
+}, request); }
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) { return api(async () => {
   sameOrigin(request); const { id } = await context.params;
   const input = attemptSchema.parse(await jsonBody(request)); const pack = await packFor(id, input.language);
@@ -26,4 +26,4 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!paper) throw new HttpError(404, "not_found");
   try { return Response.json({ result: gradePaper(paper, pack.questions, input.answers) }); }
   catch { throw new HttpError(400, "invalid_answers"); }
-}); }
+}, request); }

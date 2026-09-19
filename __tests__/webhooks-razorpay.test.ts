@@ -19,7 +19,7 @@ beforeEach(() => {
   process.env.RAZORPAY_WEBHOOK_SECRET = "whsec_test";
   (verifyHmac as jest.Mock).mockReturnValue(true);
   const maybeSingle = jest.fn().mockResolvedValue({ data: null, error: null });
-  (db as jest.Mock).mockReturnValue({ from: () => ({ select: () => ({ eq: () => ({ eq: () => ({ maybeSingle }) }) }) }) });
+  (db as jest.Mock).mockReturnValue({ from: () => ({ upsert: jest.fn().mockResolvedValue({data:null,error:null}), select: () => ({ eq: () => ({ eq: () => ({ maybeSingle }) }) }) }) });
 });
 
 test("rejects a request with an invalid signature", async () => {

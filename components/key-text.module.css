@@ -1,0 +1,17 @@
+/* Inline code chip: the Apple-light code palette, sized to sit inside prose
+   without changing the line height around it. */
+.chip {
+  font-family: var(--code-font);
+  font-size: .88em;
+  color: var(--code-type);
+  background: var(--code-chrome);
+  border: 1px solid var(--code-border);
+  border-radius: 5px;
+  padding: .05em .35em;
+  /* A chip now only ever holds an identifier, path or flag — the tokenizer
+     rejects anything longer or sentence-shaped. `max-width` does nothing on an
+     inline box, which is why a long run used to paint past the card and get
+     clipped by its `overflow-x`, so the guard that matters is `anywhere`: it
+     lets a 40-character identifier break mid-token rather than overflow. */
+  overflow-wrap: anywhere;
+}

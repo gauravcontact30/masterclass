@@ -8,7 +8,7 @@ import { razorpay,billingSubscription,reconcileSubscription } from "@/lib/server
 import { db,check } from "@/lib/server/db";
 import { savePreparations } from "@/lib/server/preparations";
 import { preparationSchema } from "@/lib/study/preparations";
-export async function GET(){return api(async()=>Response.json({enabled:billingConfigured(),currency:"INR",proLimit:quota("monthly"),monthly:Number(process.env.PRO_MONTHLY_PRICE_INR??299),yearly:Number(process.env.PRO_YEARLY_PRICE_INR??2999)}));}
+export async function GET(monitorRequest?: Request){return api(async()=>Response.json({enabled:billingConfigured(),currency:"INR",proLimit:quota("monthly"),monthly:Number(process.env.PRO_MONTHLY_PRICE_INR??299),yearly:Number(process.env.PRO_YEARLY_PRICE_INR??2999)}), monitorRequest);}
 export async function POST(request:Request){return api(async()=>{
   sameOrigin(request);const owner=await userId();await profile(owner);await rateLimit(`billing:${owner}`,3,60);
   const input=z.discriminatedUnion("action",[z.object({action:z.literal("checkout"),tier:z.enum(["monthly","yearly"]),selections:preparationSchema}).strict(),z.object({action:z.literal("cancel")}).strict(),z.object({action:z.literal("refresh")}).strict()]).parse(await jsonBody(request));
@@ -35,4 +35,4 @@ export async function POST(request:Request){return api(async()=>{
   if(inserted.error||!inserted.data){await razorpay(`subscriptions/${encodeURIComponent(remote.id)}/cancel`,{cancel_at_cycle_end:0});throw new HttpError(409,"invalid_request");}
   if(!remote.short_url)throw new HttpError(502,"service_error");
   return Response.json({url:remote.short_url});
-});}
+}, request);}

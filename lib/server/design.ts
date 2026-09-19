@@ -5,6 +5,7 @@ import { db,check } from "./db";
 import { required } from "./config";
 import { encrypt,decrypt } from "./secrets";
 import { HttpError } from "./http";
+import { recordEvent } from "./monitoring";
 export const providerSchema=z.enum(["figma","canva"]);
 export type DesignProvider=z.infer<typeof providerSchema>;
 const tokenSchema=z.object({access_token:z.string().min(1),refresh_token:z.string().optional(),expires_in:z.number().positive()});
@@ -48,9 +49,11 @@ async function accessToken(provider:DesignProvider,owner:string) {
   }catch(error){await db().from("integration_connections").update({refresh_lease_until:null}).eq("user_id",owner).eq("provider",provider).eq("credentials",connection.credentials);throw error;}
 }
 export async function designRequest(provider:DesignProvider,owner:string,path:string,body?:unknown) {
+  const started = performance.now();
   const token=await accessToken(provider,owner);
   const base=provider==="canva"?"https://api.canva.com/rest/v1/":"https://api.figma.com/";
   const response=await fetch(base+path,{method:body?"POST":"GET",headers:{Authorization:`Bearer ${token}`,"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined,redirect:"error",signal:AbortSignal.timeout(25000),cache:"no-store"});
+  await recordEvent({kind:path.includes("export")?"export":"integration",actor_id:owner,resource:provider,action:body?"POST":"GET",status:response.status,duration_ms:Math.round(performance.now()-started),details:{operation:path.split("?")[0].slice(0,200)}});
   if(!response.ok)throw new HttpError(response.status===429?429:502,response.status===429?"rate_limited":"integrationUnavailable");
   return response.json();
 }

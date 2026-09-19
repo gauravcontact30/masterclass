@@ -1,0 +1,346 @@
+/* Apple-light code block: Xcode "Default (Light)" ink on a macOS window shell.
+   Colours come from the shared --code-* tokens in globals.css. */
+
+.lab {
+  margin: 16px 0;
+  border: 1px solid var(--code-border);
+  border-radius: var(--code-radius);
+  background: var(--code-bg);
+  overflow: hidden;
+  box-shadow: 0 1px 2px #1f1e1d0d, 0 8px 24px #1f1e1d0a;
+}
+
+.explanation {
+  margin: 0;
+  padding: 12px 14px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--code-ink);
+  background: var(--code-chrome);
+  border-bottom: 1px solid var(--code-border);
+}
+
+/* Window chrome */
+.chrome {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: linear-gradient(var(--code-chrome), var(--code-chrome-2));
+  border-bottom: 1px solid var(--code-border);
+}
+.dots {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.dots i {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #febc2e;
+}
+.dots i:first-child { background: #ff5f57; }
+.dots i:last-child { background: #28c840; }
+
+.title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--code-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
+}
+.badge {
+  flex-shrink: 0;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  color: var(--code-property);
+  background: #ffffff;
+  border: 1px solid var(--code-border);
+  border-radius: 5px;
+  padding: 2px 6px;
+}
+
+.actions {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--code-ink);
+  background: #ffffff;
+  border: 1px solid var(--code-border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+.actions button:hover { background: var(--code-chrome); }
+.actions button:disabled { opacity: .5; cursor: not-allowed; }
+.actions .run { color: #fff; background: var(--code-accent); border-color: var(--code-accent); }
+.actions .run:hover { background: #0063c8; }
+.actions .stop { color: #fff; background: var(--code-error); border-color: var(--code-error); }
+
+/* Source */
+.body { background: var(--code-bg); }
+.code {
+  margin: 0;
+  padding: 12px 0;
+  overflow-x: auto;
+  font-family: var(--code-font);
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--code-ink);
+  tab-size: 2;
+}
+.code code { display: block; min-width: max-content; }
+.line { display: flex; }
+.line:hover { background: #0071e30a; }
+.gutter {
+  flex-shrink: 0;
+  width: 42px;
+  padding-right: 14px;
+  text-align: right;
+  color: var(--code-gutter);
+  user-select: none;
+  font-variant-numeric: tabular-nums;
+}
+.lineText { white-space: pre; padding-right: 16px; }
+
+.code [data-token="comment"] { color: var(--code-comment); font-style: italic; }
+.code [data-token="string"] { color: var(--code-string); }
+.code [data-token="number"] { color: var(--code-number); }
+.code [data-token="keyword"] { color: var(--code-keyword); }
+.code [data-token="type"] { color: var(--code-type); }
+.code [data-token="builtin"] { color: var(--code-builtin); }
+.code [data-token="property"] { color: var(--code-property); }
+
+.editor {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-left: 3px solid var(--code-accent);
+  outline: none;
+  resize: vertical;
+  padding: 12px 14px;
+  background: #f5f4ed;
+  color: var(--code-ink);
+  font-family: var(--code-font);
+  font-size: 12.5px;
+  line-height: 1.7;
+  tab-size: 2;
+}
+
+/* Console: real, executed output */
+.console { border-top: 1px solid var(--code-border); background: var(--code-console-bg); }
+.consoleBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .7px;
+  color: var(--code-gutter);
+  border-bottom: 1px solid var(--code-border);
+}
+.consoleStatus { margin-left: auto; letter-spacing: .2px; font-size: 10px; }
+.console[data-tone="ok"] .consoleStatus { color: var(--code-ok); }
+.console[data-tone="warn"] .consoleStatus { color: var(--code-warn); }
+.console[data-tone="error"] .consoleStatus { color: var(--code-error); }
+.consoleOut {
+  margin: 0;
+  padding: 10px 12px;
+  max-height: 200px;
+  overflow: auto;
+  font-family: var(--code-font);
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--code-console);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Expected result: authored, never presented as executed */
+.expected { border-top: 1px solid var(--code-border); background: #f5f4ed; }
+.expectedBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .7px;
+  color: var(--code-ok);
+  border-bottom: 1px solid #dedcd1;
+}
+.expectedOut {
+  margin: 0;
+  padding: 10px 12px;
+  font-family: var(--code-font);
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--code-ink);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 200px;
+  overflow: auto;
+}
+.expectedNote {
+  margin: 0;
+  padding: 8px 12px 10px;
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--code-comment);
+}
+
+@media (max-width: 540px) {
+  .chrome { gap: 7px; padding: 7px 8px; }
+  .title { flex-basis: 100%; order: -1; }
+  .badge { display: none; }
+  .actions button span { display: none; }
+  .actions button { padding: 5px 7px; }
+  .gutter { width: 32px; padding-right: 9px; }
+  .code, .editor { font-size: 11.5px; }
+}
+
+/* View tabs: Code · Explained · Reference · URL */
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 8px;
+  background: var(--code-chrome);
+  border-bottom: 1px solid var(--code-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--code-comment);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 7px 10px;
+  cursor: pointer;
+}
+.tabs button:hover { color: var(--code-ink); }
+.tabs button[aria-selected="true"] {
+  color: var(--code-accent);
+  border-bottom-color: var(--code-accent);
+}
+
+/* Explained: the source with a generated comment under each line. */
+.lineNote {
+  white-space: pre-wrap;
+  padding-right: 16px;
+  color: var(--code-comment);
+  font-style: italic;
+}
+
+/* Reference: the API surface the snippet touches. */
+.reference { padding: 12px 14px; }
+.reference section + section { margin-top: 14px; }
+.reference h5 {
+  margin: 0 0 6px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .7px;
+  text-transform: uppercase;
+  color: var(--code-gutter);
+}
+.reference dl { margin: 0; display: grid; gap: 6px; }
+.reference dl > div {
+  display: grid;
+  grid-template-columns: minmax(120px, auto) 1fr;
+  gap: 4px 14px;
+  align-items: baseline;
+}
+.reference dt { margin: 0; }
+.reference dt code {
+  font-family: var(--code-font);
+  font-size: 11.5px;
+  color: var(--code-type);
+  background: var(--code-chrome);
+  border: 1px solid var(--code-border);
+  border-radius: 5px;
+  padding: 1px 5px;
+  overflow-wrap: anywhere;
+}
+.reference dd {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--code-ink);
+}
+
+/* URL: how one request decomposes for this code. */
+.url { padding: 12px 14px; }
+.urlIntro {
+  margin: 0 0 10px;
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--code-comment);
+}
+.url dl { margin: 0; display: grid; gap: 7px; }
+.url dl > div {
+  display: grid;
+  grid-template-columns: 108px 1fr;
+  gap: 4px 14px;
+  align-items: baseline;
+}
+.url dt {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  color: var(--code-gutter);
+  text-transform: uppercase;
+}
+.url dd {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 8px;
+  align-items: baseline;
+  font-size: 12px;
+  color: var(--code-ink);
+}
+.url dd code {
+  font-family: var(--code-font);
+  font-size: 11.5px;
+  color: var(--code-string);
+  background: var(--code-chrome);
+  border: 1px solid var(--code-border);
+  border-radius: 5px;
+  padding: 1px 6px;
+  overflow-wrap: anywhere;
+}
+.url dd small {
+  font-family: var(--code-font);
+  font-size: 10px;
+  color: var(--code-property);
+}
+
+@media (max-width: 540px) {
+  .reference dl > div, .url dl > div { grid-template-columns: 1fr; }
+}
+
+/* In the explained view the generated comments wrap; only the source scrolls. */
+.explained code { min-width: 0; }
+.explained .lineNote { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 68ch; }

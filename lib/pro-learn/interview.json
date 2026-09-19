@@ -1,0 +1,366 @@
+{
+ "companies": [
+  "All",
+  "Google",
+  "Meta",
+  "Amazon",
+  "Microsoft",
+  "Apple",
+  "Netflix",
+  "Uber"
+ ],
+ "questions": [
+  {
+   "cat": "JavaScript",
+   "lvl": "Medium",
+   "co": [
+    "Google",
+    "Meta",
+    "Amazon"
+   ],
+   "q": "Explain event delegation and why it's useful.",
+   "a": "Event delegation attaches a single listener to a common ancestor and uses `event.target` to handle events from many children, leveraging event bubbling. It saves memory (one listener instead of hundreds) and automatically handles elements added to the DOM later.\n```js\nlist.addEventListener(\"click\", e => {\n  const li = e.target.closest(\"li\");\n  if (li) select(li.dataset.id);\n});\n```"
+  },
+  {
+   "cat": "JavaScript",
+   "lvl": "Easy",
+   "co": [
+    "Amazon",
+    "Microsoft"
+   ],
+   "q": "What is the difference between == and ===?",
+   "a": "`===` (strict) compares value **and** type with no coercion. `==` (loose) coerces operands to a common type first, which causes surprises like `0 == \"\"` and `null == undefined` being true. Prefer `===` unless you deliberately want coercion."
+  },
+  {
+   "cat": "JavaScript",
+   "lvl": "Medium",
+   "co": [
+    "Google",
+    "Meta"
+   ],
+   "q": "Explain closures with an example.",
+   "a": "A closure is a function that keeps access to variables from its lexical scope even after the outer function has returned. It's the basis for data privacy, factories and memoization.\n```js\nfunction counter(){ let n = 0; return () => ++n; }\nconst next = counter();\nnext(); next(); // 2\n```"
+  },
+  {
+   "cat": "JavaScript",
+   "lvl": "Hard",
+   "co": [
+    "Meta",
+    "Netflix"
+   ],
+   "q": "How does the JavaScript event loop work?",
+   "a": "The call stack runs synchronous code. Async callbacks are queued as **macrotasks** (timers, I/O, events) or **microtasks** (Promise `.then`, `queueMicrotask`). After each macrotask the engine drains *all* microtasks before rendering and before the next macrotask — which is why a resolved Promise runs before a `setTimeout(...,0)`."
+  },
+  {
+   "cat": "JavaScript",
+   "lvl": "Medium",
+   "co": [
+    "Amazon",
+    "Uber"
+   ],
+   "q": "Debounce vs throttle — when do you use each?",
+   "a": "**Debounce** waits until activity stops for N ms before firing once (search-as-you-type, resize end). **Throttle** fires at most once per N ms during continuous activity (scroll, mousemove). Both limit how often an expensive handler runs."
+  },
+  {
+   "cat": "JavaScript",
+   "lvl": "Medium",
+   "co": [
+    "Google",
+    "Apple"
+   ],
+   "q": "What is the difference between var, let and const?",
+   "a": "`var` is function-scoped and hoisted (initialised as `undefined`). `let` and `const` are block-scoped and live in the temporal dead zone until declared. `const` can't be reassigned (though objects it points to can still mutate). Default to `const`, use `let` when you must reassign, avoid `var`."
+  },
+  {
+   "cat": "React",
+   "lvl": "Easy",
+   "co": [
+    "Meta",
+    "Google"
+   ],
+   "q": "What problem do keys solve in React lists?",
+   "a": "Keys give list items a stable identity so React can match elements between renders and reorder/update them efficiently instead of destroying and recreating DOM. Use stable unique IDs — not the array index — for lists that can reorder, insert or delete, otherwise state can attach to the wrong row."
+  },
+  {
+   "cat": "React",
+   "lvl": "Medium",
+   "co": [
+    "Meta",
+    "Amazon"
+   ],
+   "q": "useMemo vs useCallback — what's the difference?",
+   "a": "`useMemo` memoises a **computed value**; `useCallback` memoises a **function reference** and is literally `useMemo(() => fn, deps)`. Use `useMemo` for expensive calculations and `useCallback` to keep a stable callback identity for memoised children or effect dependencies. Don't sprinkle them everywhere — they have their own cost."
+  },
+  {
+   "cat": "React",
+   "lvl": "Medium",
+   "co": [
+    "Meta"
+   ],
+   "q": "Explain the Virtual DOM and reconciliation.",
+   "a": "On render React builds a lightweight tree (the virtual DOM), diffs it against the previous tree, and applies the **minimal** set of real-DOM mutations. Element type and `key` drive the diff: same type → update props; different type → replace the subtree."
+  },
+  {
+   "cat": "React",
+   "lvl": "Hard",
+   "co": [
+    "Meta",
+    "Netflix"
+   ],
+   "q": "What are React Server Components and why do they matter?",
+   "a": "Server Components render on the server, never ship their JavaScript to the client, and can fetch data directly (DB, filesystem). They cut bundle size and let you interleave server and client trees; interactive parts opt in with `\"use client\"`. They complement, not replace, client components and are the foundation of the Next.js App Router."
+  },
+  {
+   "cat": "System Design",
+   "lvl": "Hard",
+   "co": [
+    "Amazon",
+    "Google",
+    "Meta"
+   ],
+   "q": "Design a URL shortener like bit.ly.",
+   "a": "Generate a short unique key — base62 of an auto-increment ID, or a hash with collision checks. Store `key → longURL` in a datastore with a cache (Redis) in front for hot reads, and redirect with 301/302. **Scale:** reads dominate, so cache aggressively and front with a CDN; shard the store by key; add analytics asynchronously. Support custom aliases and TTL/expiry."
+  },
+  {
+   "cat": "System Design",
+   "lvl": "Hard",
+   "co": [
+    "Amazon",
+    "Uber"
+   ],
+   "q": "How would you design a rate limiter?",
+   "a": "Pick an algorithm: **token bucket** (allows bursts, refills steadily), **leaky bucket** (smooths output), or **sliding-window counter** (accurate, cheap). Keep counters in Redis keyed by user/IP with a TTL and increment atomically (Lua / INCR). Enforce at the API gateway so every service is protected, and return `429` with a `Retry-After` header."
+  },
+  {
+   "cat": "System Design",
+   "lvl": "Hard",
+   "co": [
+    "Google",
+    "Amazon"
+   ],
+   "q": "Explain the CAP theorem.",
+   "a": "In a distributed system facing a network **P**artition you can guarantee only two of Consistency, Availability, Partition tolerance. Since partitions are unavoidable, the real trade-off is C vs A: **CP** systems reject some requests to stay consistent; **AP** systems stay available but may return stale data. Most real systems tune consistency per operation rather than picking one globally."
+  },
+  {
+   "cat": "System Design",
+   "lvl": "Medium",
+   "co": [
+    "Meta",
+    "Netflix"
+   ],
+   "q": "How do you scale a read-heavy service?",
+   "a": "Add **read replicas** and route reads to them; **cache** hot data (Redis, CDN, HTTP caching); denormalise and pre-compute; add the right **indexes**; and **shard/partition** by key when one node isn't enough. Accept eventual consistency on replicas and design for it."
+  },
+  {
+   "cat": "Algorithms",
+   "lvl": "Easy",
+   "co": [
+    "Amazon",
+    "Google",
+    "Meta"
+   ],
+   "q": "Two Sum: return indices of two numbers that add to a target.",
+   "a": "Use a hash map of value → index. For each number check whether `target - n` was already seen. **O(n)** time, **O(n)** space — better than the O(n²) brute force.\n```js\nfunction twoSum(nums, t){\n  const seen = new Map();\n  for (let i = 0; i < nums.length; i++){\n    if (seen.has(t - nums[i])) return [seen.get(t - nums[i]), i];\n    seen.set(nums[i], i);\n  }\n}\n```"
+  },
+  {
+   "cat": "Algorithms",
+   "lvl": "Medium",
+   "co": [
+    "Google",
+    "Amazon"
+   ],
+   "q": "BFS vs DFS — differences and when to use each?",
+   "a": "**BFS** explores level by level with a queue — use it for shortest paths in unweighted graphs. **DFS** goes deep first with a stack or recursion — use it for cycle detection, topological sort and exhaustive search. Both are **O(V+E)**; BFS uses more memory on wide graphs, DFS on deep ones."
+  },
+  {
+   "cat": "Algorithms",
+   "lvl": "Medium",
+   "co": [
+    "Meta",
+    "Amazon"
+   ],
+   "q": "Detect a cycle in a linked list.",
+   "a": "Floyd's tortoise-and-hare: move one pointer by 1 and another by 2; if they ever meet there's a cycle, if the fast pointer hits null there isn't. **O(n)** time, **O(1)** space — no extra set needed."
+  },
+  {
+   "cat": "Algorithms",
+   "lvl": "Easy",
+   "co": [
+    "Google",
+    "Amazon"
+   ],
+   "q": "Reverse a singly linked list.",
+   "a": "Walk the list re-pointing each node's `next` to the previous node, tracking prev/curr/next. **O(n)** time, **O(1)** space.\n```js\nfunction reverse(head){\n  let prev = null;\n  while (head){\n    const next = head.next;\n    head.next = prev;\n    prev = head;\n    head = next;\n  }\n  return prev;\n}\n```"
+  },
+  {
+   "cat": "Data Structures",
+   "lvl": "Easy",
+   "co": [
+    "Amazon",
+    "Microsoft"
+   ],
+   "q": "What's the time complexity of hash map operations?",
+   "a": "Average **O(1)** for insert, lookup and delete; worst case **O(n)** when many keys collide into one bucket (mitigated by good hashing and, in modern engines, treeifying buckets). Space is **O(n)**. Hash maps are unordered — use a tree map if you need sorted keys."
+  },
+  {
+   "cat": "Data Structures",
+   "lvl": "Medium",
+   "co": [
+    "Amazon",
+    "Google"
+   ],
+   "q": "Array vs Linked List — trade-offs?",
+   "a": "**Arrays**: O(1) random access and cache-friendly, but O(n) insert/delete in the middle and costly resizes. **Linked lists**: O(1) insert/delete given the node, but O(n) access and poor cache locality from pointer chasing. Pick arrays for indexing-heavy work, lists for frequent splicing."
+  },
+  {
+   "cat": "TypeScript",
+   "lvl": "Medium",
+   "co": [
+    "Microsoft",
+    "Google"
+   ],
+   "q": "interface vs type in TypeScript?",
+   "a": "Both describe shapes. `interface` is open — it supports declaration merging and is idiomatic for public object/class contracts you extend. `type` is more flexible: unions, intersections, tuples, mapped and conditional types. Rule of thumb: `interface` for objects you'll extend, `type` for unions and computed types."
+  },
+  {
+   "cat": "TypeScript",
+   "lvl": "Medium",
+   "co": [
+    "Microsoft"
+   ],
+   "q": "What does the satisfies operator do?",
+   "a": "`satisfies` checks that a value conforms to a type **without widening** its inferred type, so you keep the precise literal types while still validating the shape. Added in TS 4.9.\n```ts\nconst routes = {\n  home: \"/\", user: \"/u/:id\"\n} satisfies Record<string, string>;\n// routes.home is \"/\", not just string\n```"
+  },
+  {
+   "cat": "Node.js",
+   "lvl": "Medium",
+   "co": [
+    "Netflix",
+    "Uber"
+   ],
+   "q": "If Node.js is single-threaded, how does it handle concurrency?",
+   "a": "Your JavaScript runs on one thread, but Node offloads I/O to **libuv's** thread pool and the OS, then the **event loop** processes completed callbacks. So thousands of I/O-bound connections scale well, but **CPU-bound** work blocks the loop — move it to `worker_threads`, a child process, or a separate service."
+  },
+  {
+   "cat": "Node.js",
+   "lvl": "Easy",
+   "co": [
+    "Amazon"
+   ],
+   "q": "What is middleware in Express?",
+   "a": "Middleware is a function `(req, res, next)` that runs in order during a request. It can read or modify `req`/`res`, end the response, or call `next()` to pass control along. It's how Express composes auth, logging, body parsing, CORS and error handling as a pipeline."
+  },
+  {
+   "cat": "Behavioral",
+   "lvl": "Medium",
+   "co": [
+    "Amazon",
+    "Google",
+    "Meta"
+   ],
+   "q": "Tell me about a time you had a conflict with a teammate.",
+   "a": "Use **STAR** — Situation, Task, Action, Result. State the disagreement neutrally, then focus on *your* actions: listening, finding shared goals, backing the decision with data, and committing once aligned. End with the positive outcome and what you learned. Avoid blaming; show maturity and ownership."
+  },
+  {
+   "cat": "Behavioral",
+   "lvl": "Easy",
+   "co": [
+    "Google",
+    "Meta",
+    "Apple"
+   ],
+   "q": "Why do you want to work here?",
+   "a": "Tie your motivation to something specific and real — a product, mission, value, or technical problem at the company — and connect it to your own goals and strengths. Show you've researched them. Avoid generic praise like \"great culture\"; be concrete and authentic."
+  },
+  {
+   "cat": "Behavioral",
+   "lvl": "Medium",
+   "co": [
+    "Amazon"
+   ],
+   "q": "Amazon: tell me about a time you took ownership.",
+   "a": "Map this to the **Ownership** leadership principle. Pick a story where you acted beyond your job title, made a hard call, and delivered long-term value rather than a quick patch. Use STAR and **quantify** the result (latency cut, cost saved, incident avoided). Amazon also probes Dive Deep and Bias for Action — weave those in."
+  },
+  {
+   "cat": "Behavioral",
+   "lvl": "Easy",
+   "co": [
+    "Microsoft",
+    "Netflix"
+   ],
+   "q": "Describe a project you're most proud of.",
+   "a": "Choose something with measurable impact. Explain the problem and stakes, your **specific** contribution, the key technical decisions and trade-offs, and the result with metrics. Mention collaboration and one thing you'd do differently — reflection signals seniority."
+  },
+  {
+   "cat": "CSS",
+   "lvl": "Medium",
+   "co": [
+    "Meta",
+    "Google"
+   ],
+   "q": "Explain CSS specificity.",
+   "a": "Specificity ranks selectors as inline > IDs > classes/attributes/pseudo-classes > elements. The higher-specificity rule wins; equal specificity → the later rule wins. `!important` overrides normal rules (avoid it). Keep selectors low and flat for maintainability."
+  },
+  {
+   "cat": "CSS",
+   "lvl": "Easy",
+   "co": [
+    "Meta",
+    "Apple"
+   ],
+   "q": "Flexbox vs Grid — when to use which?",
+   "a": "**Flexbox** is one-dimensional — distribute items along a single row or column (navbars, toolbars, centering). **Grid** is two-dimensional — rows *and* columns at once (page and card layouts). They compose well: Grid for the macro layout, Flexbox inside cells."
+  },
+  {
+   "cat": "Web",
+   "lvl": "Hard",
+   "co": [
+    "Google",
+    "Amazon",
+    "Meta"
+   ],
+   "q": "What happens when you type a URL and press Enter?",
+   "a": "DNS resolves the domain to an IP; the browser opens a TCP connection and a **TLS** handshake for HTTPS; it sends an HTTP request; the server responds; the browser parses HTML, fetches subresources (CSS/JS/images), builds the DOM and CSSOM, runs JS, and paints. Caching, redirects, CDNs and keep-alive can shortcut several steps."
+  },
+  {
+   "cat": "Web",
+   "lvl": "Medium",
+   "co": [
+    "Google",
+    "Microsoft"
+   ],
+   "q": "Explain CORS.",
+   "a": "Cross-Origin Resource Sharing lets a server **opt in** to requests from other origins via `Access-Control-Allow-Origin` and related headers; the browser enforces it. Non-simple requests trigger a preflight `OPTIONS` first. It protects users in the browser — it is *not* server-side security, and it doesn't apply to non-browser clients."
+  },
+  {
+   "cat": "Web",
+   "lvl": "Medium",
+   "co": [
+    "Amazon",
+    "Apple"
+   ],
+   "q": "What is a TLS handshake?",
+   "a": "HTTPS is HTTP over TLS. The handshake negotiates the protocol version and cipher, **authenticates the server** via its certificate chain, and derives shared session keys (modern TLS uses ephemeral ECDHE for forward secrecy). After it completes, application data flows encrypted."
+  },
+  {
+   "cat": "Databases",
+   "lvl": "Medium",
+   "co": [
+    "Amazon",
+    "Netflix"
+   ],
+   "q": "SQL vs NoSQL — when would you choose each?",
+   "a": "**SQL/relational** for structured data, strong consistency, complex joins and multi-row transactions. **NoSQL** (document, key-value, wide-column, graph) for flexible schemas, horizontal scale and high write throughput, usually with eventual consistency. Choose by **access pattern**, not hype — many systems use both."
+  },
+  {
+   "cat": "Databases",
+   "lvl": "Medium",
+   "co": [
+    "Amazon",
+    "Microsoft"
+   ],
+   "q": "What is database indexing and what does it cost?",
+   "a": "An index (commonly a B-tree) lets the database find rows without a full scan, turning O(n) lookups into O(log n). The cost: extra storage and **slower writes**, since every insert/update must maintain the index. Index columns used in `WHERE`, `JOIN` and `ORDER BY`; avoid over-indexing and watch for unused indexes."
+  }
+ ]
+}

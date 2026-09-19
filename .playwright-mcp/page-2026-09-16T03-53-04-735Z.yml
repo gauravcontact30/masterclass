@@ -1,0 +1,8 @@
+- generic [active] [ref=f10e1]:
+  - main [ref=f10e2]:
+    - heading "Complete code workspace" [level=2] [ref=f10e3]
+    - status [ref=f10e4]: Loading code workspace…
+    - heading "Python workspace" [level=2] [ref=f10e5]
+    - status [ref=f10e6]: Loading Python workspace…
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f10e12] [cursor=pointer]

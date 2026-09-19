@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LandingPage } from "@/components/landing-page";
+import { landingProPreview } from "@/lib/landing-pro-preview";
 import { siteDescription, siteTitle, websiteSchema } from "@/lib/seo";
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -7,5 +8,5 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: siteTitle, description: siteDescription, images: ["/opengraph-image"] },
 };
 export default function Home() {
-  return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema()).replace(/</g, "\\u003c") }} /><LandingPage /></>;
+  return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema()).replace(/</g, "\\u003c") }} /><LandingPage pro={landingProPreview()} /></>;
 }

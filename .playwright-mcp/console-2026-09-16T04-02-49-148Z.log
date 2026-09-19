@@ -1,0 +1,203 @@
+[    1120ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[    1206ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[    1388ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[    2267ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3000/api/learning-marks:0
+[    2268ms] [LOG] [Fast Refresh] done in 1006ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[    2491ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3000/api/bookmarks?after=0:0
+[    2504ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3000/api/bookmarks?after=0:0
+[    2730ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[    3137ms] [LOG] [Fast Refresh] done in 513ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[    3934ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[    4170ms] [LOG] [Fast Refresh] done in 349ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   11681ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   11792ms] [LOG] [Fast Refresh] done in 221ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   15123ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   15361ms] [LOG] [Fast Refresh] done in 347ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   15733ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   15941ms] [LOG] [Fast Refresh] done in 319ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   19989ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   20068ms] [LOG] [Fast Refresh] done in 190ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   42963ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   43075ms] [LOG] [Fast Refresh] done in 220ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   62698ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   63310ms] [LOG] [Fast Refresh] done in 726ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   85582ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   85662ms] [LOG] [Fast Refresh] done in 189ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  111420ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  113228ms] ReferenceError: useState is not defined
+    at useProTrack (http://localhost:3000/_next/static/chunks/components_0z5a1ku._.js?id=%255Bproject%255D/components/pro-learn-shared.tsx+%255Bapp-client%255D+(ecmascript):74:33)
+    at ProMentor (http://localhost:3000/_next/static/chunks/components_0z5a1ku._.js:10335:187)
+    at Object.react_stack_bottom_frame (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:14894:24)
+    at renderWithHooks (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:4425:24)
+    at updateFunctionComponent (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:5892:21)
+    at beginWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:6493:540)
+    at runWithFiberInDEV (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:761:74)
+    at performUnitOfWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9385:97)
+    at workLoopSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9279:40)
+    at renderRootSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9263:13)
+    at performWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:8928:47)
+    at performSyncWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:10093:9)
+    at flushSyncWorkAcrossRoots_impl (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:10009:316)
+    at flushSyncWork$1 (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9060:86)
+    at Object.scheduleRefresh (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:82:13)
+    at http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_1amofcm._.js:589:33
+    at Set.forEach (<anonymous>)
+    at Object.performReactRefresh (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_1amofcm._.js:582:38)
+    at applyUpdate (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_1amofcm._.js:137:31)
+    at http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_1amofcm._.js:145:13
+[  114099ms] [LOG] [Fast Refresh] done in 2156ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  114696ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  114777ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  115735ms] ReferenceError: useState is not defined
+    at useProTrack (http://localhost:3000/_next/static/chunks/components_0z5a1ku._.js:8329:33)
+    at ProMentor (http://localhost:3000/_next/static/chunks/components_0z5a1ku._.js:10341:187)
+    at Object.react_stack_bottom_frame (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:14894:24)
+    at renderWithHooks (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:4425:24)
+    at updateFunctionComponent (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:5892:21)
+    at beginWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:6493:540)
+    at runWithFiberInDEV (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:761:74)
+    at performUnitOfWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9385:97)
+    at workLoopSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9279:40)
+    at renderRootSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9263:13)
+    at performWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:8928:47)
+    at performSyncWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:10093:9)
+    at flushSyncWorkAcrossRoots_impl (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:10009:316)
+    at flushPassiveEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9838:13)
+    at http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js:9554:13
+    at MessagePort.performWorkUntilDeadline (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_1amofcm._.js:2647:64)
+[  115727ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3000/api/learning-marks:0
+[  115770ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3000/api/bookmarks?after=0:0
+[  115879ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3000/api/bookmarks?after=0:0
+[  116984ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  117615ms] [LOG] [Fast Refresh] done in 739ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  126686ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  128797ms] [WARNING] [Fast Refresh] performing full reload because your application had an unrecoverable error @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  129319ms] [WARNING] [Fast Refresh] performing full reload because your application had an unrecoverable error @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  129323ms] [LOG] [Fast Refresh] done in 2742ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  129605ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  129716ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  130674ms] Error: Switched to client rendering because the server rendering errored:
+
+useState is not defined
+    at useProTrack (file:///D:/garv/garvhome/projs/nextjs/2026/masterclass/.next/dev/server/chunks/ssr/components_0s3ppsq._.js?id=%5Bproject%5D/components/pro-learn-shared.tsx+%5Bapp-ssr%5D+(ecmascript):68:33)
+    at ProMentor (file:///D:/garv/garvhome/projs/nextjs/2026/masterclass/.next/dev/server/chunks/ssr/components_0s3ppsq._.js?id=%5Bproject%5D/components/pro-mentor.tsx+%5Bapp-ssr%5D+(ecmascript):55:184)
+    at Object.react_stack_bottom_frame (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:318217)
+    at renderWithHooks (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:120350)
+    at renderElement (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:135019)
+    at renderElement (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:196947)
+    at retryNode (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:204118)
+    at renderNodeDestructive (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:203353)
+    at renderNode (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:215415)
+    at renderElement (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:192132)
+    at retryNode (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:204118)
+    at renderNodeDestructive (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:203353)
+    at renderNode (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:215415)
+    at renderChildrenArray (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:209878)
+    at retryNode (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:204591)
+    at renderNodeDestructive (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:203353)
+    at renderNode (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:215415)
+    at renderElement (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:183795)
+    at retryNode (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:204118)
+    at renderNodeDestructive (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:203353)
+    at renderNode (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:215415)
+    at renderChildrenArray (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:209878)
+    at retryNode (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:204591)
+    at renderNodeDestructive (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:203353)
+    at renderNode (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:215415)
+    at renderElement (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:183795)
+    at retryNode (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:204118)
+    at renderNodeDestructive (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:203353)
+    at renderNode (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:215415)
+    at renderChildrenArray (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:209878)
+    at retryNode (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:204591)
+    at renderNodeDestructive (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:203353)
+    at renderNode (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:215415)
+    at renderElement (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:183795)
+    at retryNode (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:204118)
+    at renderNodeDestructive (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:203353)
+    at finishFunctionComponent (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:121360)
+    at renderElement (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:136524)
+    at renderElement (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:196947)
+    at retryNode (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:204118)
+    at renderNodeDestructive (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:203353)
+    at renderNode (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:215415)
+    at renderChildrenArray (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:209878)
+    at retryNode (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:204591)
+    at renderNodeDestructive (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:203353)
+    at renderElement (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:184695)
+    at retryNode (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:204118)
+    at renderNodeDestructive (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:203353)
+    at finishFunctionComponent (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:121360)
+    at renderElement (D:\garv\garvhome\projs\nextjs\2026\masterclass\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:2:136524)
+[  130800ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3000/api/learning-marks:0
+[  130850ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3000/api/bookmarks?after=0:0
+[  130852ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3000/api/bookmarks?after=0:0
+[  148514ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  148724ms] [LOG] [Fast Refresh] done in 318ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  149782ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  149866ms] [LOG] [Fast Refresh] done in 193ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  150598ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  150662ms] [LOG] [Fast Refresh] done in 173ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  197460ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  197875ms] [LOG] [Fast Refresh] done in 528ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  198594ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  199048ms] [LOG] [Fast Refresh] done in 558ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  199842ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  200143ms] [LOG] [Fast Refresh] done in 411ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  200502ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  200838ms] [LOG] [Fast Refresh] done in 442ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  201793ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  201935ms] [LOG] [Fast Refresh] done in 253ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  206891ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  207145ms] [LOG] [Fast Refresh] done in 362ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  237513ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  237781ms] [LOG] [Fast Refresh] done in 380ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  238297ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  238455ms] [LOG] [Fast Refresh] done in 260ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  238765ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  239469ms] [LOG] [Fast Refresh] done in 810ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  252101ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  252305ms] [LOG] [Fast Refresh] done in 313ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  296255ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  296336ms] [LOG] [Fast Refresh] done in 188ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  333098ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  333274ms] [LOG] [Fast Refresh] done in 285ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  372508ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  372604ms] [LOG] [Fast Refresh] done in 201ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  547309ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  547389ms] [LOG] [Fast Refresh] done in 187ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  547953ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  547986ms] [LOG] [Fast Refresh] done in 144ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  552966ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  552967ms] [LOG] [Fast Refresh] done in 113ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  576453ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  578731ms] [LOG] [Fast Refresh] done in 2377ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  578850ms] [LOG] [Fast Refresh] done in 2377ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  579174ms] [LOG] [Fast Refresh] done in 2377ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  589101ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  591551ms] [LOG] [Fast Refresh] done in 2221ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  591719ms] [LOG] [Fast Refresh] done in 2221ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  591838ms] [LOG] [Fast Refresh] done in 2221ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  591911ms] [LOG] [Fast Refresh] done in 2221ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  592014ms] [LOG] [Fast Refresh] done in 2221ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  592069ms] [LOG] [Fast Refresh] done in 2221ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  592149ms] [LOG] [Fast Refresh] done in 2221ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  592210ms] [LOG] [Fast Refresh] done in 2221ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  592268ms] [LOG] [Fast Refresh] done in 2221ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  593295ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  594193ms] [LOG] [Fast Refresh] done in 1004ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  640801ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  640974ms] [LOG] [Fast Refresh] done in 283ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  870033ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  870113ms] [LOG] [Fast Refresh] done in 189ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  870898ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  871092ms] [LOG] [Fast Refresh] done in 303ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  882462ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  882809ms] [LOG] [Fast Refresh] done in 457ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  883951ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  884094ms] [LOG] [Fast Refresh] done in 250ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[ 1353776ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[ 1354009ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[ 1354009ms] [LOG] [Fast Refresh] done in 110ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[ 1365440ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[ 1365578ms] [LOG] [Fast Refresh] done in 239ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776

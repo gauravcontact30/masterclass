@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 import { toast } from "sonner";
-import { ArrowUpRight,BookOpen,ChevronRight,Compass,Layers,Library as LibraryIcon,Link2,LogOut,PanelLeftClose,PanelLeftOpen,Sun,RefreshCw } from "lucide-react";
+import { ArrowUpRight,Bookmark,BookOpen,BookOpenText,CircleHelp,Code2,ChevronRight,Compass,FileCode2,Layers,Library as LibraryIcon,Link2,LogOut,MessagesSquare,PanelLeftClose,PanelLeftOpen,Search,Sparkles,Sun,RefreshCw,Users } from "lucide-react";
 import { DocumentRecord,GenerationRequest,Language,Progress,Technology,Tier,Topic } from "@/lib/domain";
 import { curriculumNotes } from "@/lib/notes";
 import { uniqueLibraryDocuments } from "@/lib/library";
@@ -14,6 +14,7 @@ import { Library } from "./library";
 import { errorKey,requestJson } from "@/lib/client";
 import { TranslationKey } from "@/lib/i18n";
 import { useLanguage } from "./language-provider";
+import { useAiMode } from "@/lib/ai-mode";
 import { Wordmark } from "./brand-mark";
 import { NotesModal } from "./notes-modal";
 import { Membership } from "./membership";
@@ -21,6 +22,10 @@ import { StudyCatalog } from "./study-catalog";
 import { LearningSearch } from "./learning-filters";
 import { NotesLibrary } from "./notes-library";
 import { StudyNavigation } from "./study-navigation";
+import { LearningPresence } from "./learning-presence";
+import { ReportLearningContent } from "./report-learning-content";
+import { SidebarTooltips } from "./sidebar-tooltips";
+import { SidebarSearch } from "./sidebar-search";
 import { PreparationSetup } from "./preparation-setup";
 import type { StudyCourse } from "@/lib/study/types";
 import { CATEGORY_LABELS, PREPARATIONS, type PreparationAccess } from "@/lib/study/preparations";
@@ -30,7 +35,7 @@ import { Popover,PopoverContent,PopoverTrigger } from "./ui/popover";
 import { Dialog,DialogContent,DialogDescription,DialogFooter,DialogHeader,DialogTitle } from "./ui/dialog";
 type AccountData={preparations?:PreparationAccess;profile:{language:Language};account:{tier:Tier;used:number;limit:number;subscription:{current_period_end:string|null;status:string;cancel_at_cycle_end:boolean}|null;creditBalance:number};documents:DocumentRecord[];progress:Progress[]};
 const tabIcons={dashboard:Compass,library:LibraryIcon,plans:Layers,settings:Link2} as const;
-function Identity({email,onNavigate}:{email:string|null;onNavigate:(tab:WorkspaceTab)=>void}){const {t}=useLanguage();const router=useRouter();const [busy,setBusy]=useState(false);const [open,setOpen]=useState(false);
+function Identity({email,isSuperAdmin,onNavigate}:{email:string|null;isSuperAdmin:boolean;onNavigate:(tab:WorkspaceTab)=>void}){const {t}=useLanguage();const router=useRouter();const [busy,setBusy]=useState(false);const [open,setOpen]=useState(false);
   async function signOut(){setBusy(true);try{await supabaseBrowser().auth.signOut();router.replace("/");router.refresh();}finally{setBusy(false);}}
   if(!email)return <Link className="signin-link" href="/sign-in"><ExpandedText text={t("signin")} /><ArrowUpRight size={15}/></Link>;
   return <Popover open={open} onOpenChange={setOpen}>
@@ -39,14 +44,38 @@ function Identity({email,onNavigate}:{email:string|null;onNavigate:(tab:Workspac
       <span className="profile-menu-email"><ExpandedText text={email} /></span>
       <span className="profile-menu-sep" role="separator"/>
       {(["dashboard","library"] as const).map(id=>{const Icon=tabIcons[id];return <button type="button" key={id} className="profile-menu-item" onClick={()=>{setOpen(false);onNavigate(id);}}><Icon size={16}/><ExpandedText text={t(id)} /></button>;})}
+      {isSuperAdmin&&<Link className="profile-menu-item" href="/dashboard/super-admin"><Users size={16}/>Super admin</Link>}
       <span className="profile-menu-sep" role="separator"/>
       <button type="button" className="profile-menu-item profile-menu-item-destructive" disabled={busy} onClick={()=>void signOut()}><LogOut size={16}/><ExpandedText text={t("signout")} /></button>
     </PopoverContent>
   </Popover>;}
 export type WorkspaceTab="dashboard"|"library"|"plans"|"settings";
+// Professional learning sections render their own page content instead of the study catalog.
+const PRO_SECTIONS=[{id:"techy",label:"Techy",icon:Code2},{id:"api-docs",label:"API Docs",icon:FileCode2},{id:"lessons",label:"Lessons",icon:BookOpenText},{id:"quiz",label:"Quiz",icon:CircleHelp},{id:"interview",label:"Interview",icon:MessagesSquare},{id:"mentors",label:"Mentors",icon:Users}] as const;
+const isProSection=(category?:string)=>PRO_SECTIONS.some(section=>section.id===category);
+const AI_SEARCH_LABEL="Search";
+/**
+ * Search and its AI Mode switch share one row: the flag changes nothing
+ * anywhere else, so it belongs beside the destination it governs. On, a
+ * question is answered by a model; off, from the app's own notes. A switch
+ * cannot nest inside the link — a `button` inside an `a` is invalid and leaves
+ * neither control reliably operable — so the two stay siblings and the *row*
+ * carries the selected pill. That is what puts the switch inside the Search
+ * item visually while keeping the markup honest. The row stacks when the
+ * sidebar is collapsed. The flag lives in lib/ai-mode so the search page,
+ * which is a separate tree, reads the same value.
+ */
+function SearchNavRow({collapsed,active}:{collapsed:boolean;active:boolean}){const [enabled,setEnabled]=useAiMode();const label=`AI Mode ${enabled?"on":"off"}`;
+  return <div className="sidebar-search-row" data-active={active||undefined}>
+    <Link aria-label={AI_SEARCH_LABEL} className="sidebar-notes" href="/dashboard/search" aria-current={active?"page":undefined}><Search size={17}/>{!collapsed&&AI_SEARCH_LABEL}{collapsed&&<span className="sidebar-tooltip">{AI_SEARCH_LABEL}</span>}</Link>
+    <button type="button" role="switch" aria-checked={enabled} className="sidebar-ai-mode" aria-label={label} onClick={()=>setEnabled(!enabled)}>
+      {collapsed?<Sparkles size={16} data-on={enabled||undefined}/>:<><span className="sidebar-ai-tag" aria-hidden="true">AI</span><span className="sidebar-ai-switch" data-on={enabled||undefined} aria-hidden="true"><i/></span></>}
+      <span className="sidebar-tooltip">{label}</span>
+    </button>
+  </div>;}
 export function Workspace({authEnabled,configured,billingEnabled,userEmail=null,initialTab="dashboard",initialAccount=null,initialCategory,initialPreparation="",initialCourse,initialStudyCourses,notesContent}:{notesContent?:React.ReactNode;initialStudyCourses?:StudyCourse[];initialPreparation?:string;initialCourse?:string;initialCategory?:string;authEnabled:boolean;configured:boolean;billingEnabled:boolean;userEmail?:string|null;initialTab?:WorkspaceTab;initialAccount?:AccountData|null}) {
   const {t,language,setLanguage}=useLanguage();const [tab,setTab]=useState<WorkspaceTab>(initialTab);
-  const [learningQuery,setLearningQuery]=useState("");
+  const [learningQuery,setLearningQuery]=useState("");const [sidebarQuery,setSidebarQuery]=useState("");
   const [notesSelected,setNotesSelected]=useState<DocumentRecord|null>(null);const [refreshing,setRefreshing]=useState(false);
   const [collapsed,setCollapsed]=useState(false);const [category,setCategory]=useState(initialCategory);
   // eslint-disable-next-line react-hooks/set-state-in-effect -- Reads a client-only preference after mount; initial `false` must match SSR output.
@@ -64,26 +93,43 @@ export function Workspace({authEnabled,configured,billingEnabled,userEmail=null,
   async function deleteDocument(id:string){setBusy(true);setError(null);try{await requestJson(`/api/documents/${id}`,{method:"DELETE"});setConfirmId(null);await refresh();}catch(e){setError(errorKey(e));}finally{setBusy(false);}}
   async function copyNotes(item:DocumentRecord){setError(null);try{const {document}=await requestJson<{document:DocumentRecord}>(`/api/documents/${item.id}`);if(!document.curriculum)throw new Error("not_ready");await navigator.clipboard.writeText(curriculumNotes(document.curriculum,document.title,document.request.language));setCopiedId(item.id);setTimeout(()=>setCopiedId(id=>id===item.id?null:id),2500);}catch{setError("copyNotesFailed");}}
   const documents=useMemo(()=>uniqueLibraryDocuments(data?.documents??[]),[data?.documents]);const listed=new Set(documents.map(d=>d.id));const progress=(data?.progress??[]).filter(p=>listed.has(p.document_id));const continuing=progress.filter(p=>!p.completed).sort((a,b)=>(b.updated_at??"").localeCompare(a.updated_at??""))[0];const resumeDoc=documents.find(d=>d.id===continuing?.document_id&&d.status==="ready");
+  const openedDocument = useRef<string | null>(null);
+  useEffect(() => {
+    const target = new URLSearchParams(window.location.search).get("document");
+    if (!target || openedDocument.current === target) return;
+    const item = documents.find(document => document.id === target && document.status === "ready");
+    if (item) { openedDocument.current = target; queueMicrotask(() => setNotesSelected(item)); }
+  }, [documents]);
   const access=data?.preparations??{selections:[],isSuperAdmin:false};
+  const showSuperAdmin=authEnabled&&access.isSuperAdmin&&userEmail?.trim().toLowerCase()==="garvcontact30@gmail.com";
   const activePreparation=category?PREPARATIONS.find(option=>option.id===initialPreparation):undefined;
   const needsPreparation=!!data&&!access.isSuperAdmin&&!access.selections.length;
   const confirmDoc=documents.find(d=>d.id===confirmId);
   async function reload(){setRefreshing(true);try{const result=await requestJson<typeof catalog>("/api/catalog");setCatalog(result);await refresh();}catch(e){setError(errorKey(e));}finally{setRefreshing(false);}}
   // Dashboard and My Library share one search and filters panel (inside StudyCatalog); their libraries render beneath it.
   const libraries=<>{!category&&tab==="library"&&<NotesLibrary externalQuery={data?learningQuery:undefined} onQueryChange={data?setLearningQuery:undefined} documents={documents} technologies={catalog.technologies} topics={catalog.topics} progress={progress} loading={loading} busy={busy} copiedId={copiedId} onLearn={setNotesSelected} onCopyNotes={item=>void copyNotes(item)} onRetry={request=>void generate(request)} onDelete={item=>setConfirmId(item.id)}/>}{!learningQuery&&resumeDoc&&(!category||category==="technology")&&<button className="resume-strip" onClick={()=>setNotesSelected(resumeDoc)}><BookOpen size={20}/><span><small><ExpandedText text={t("resume")} /></small><strong><ExpandedText text={resumeDoc.title} /></strong></span><ArrowUpRight size={18}/></button>}{(!category&&tab!=="library"||category==="technology")&&(access.isSuperAdmin||access.selections.some(id=>id.startsWith("tech:")))&&<Library externalQuery={learningQuery} onQueryChange={setLearningQuery} documents={initialPreparation.startsWith("tech:")&&category==="technology"?documents.filter(doc=>doc.request.technologyId===initialPreparation.slice(5)):documents} technologies={catalog.technologies} topics={catalog.topics} progress={progress} loading={loading} busy={busy} copiedId={copiedId} onLearn={setNotesSelected} onCopyNotes={item=>void copyNotes(item)} onRetry={request=>void generate(request)} onDelete={item=>setConfirmId(item.id)}/>}</>;
-  const showCatalog=!!data&&category!=="technology"&&category!=="notes";
+  const pro=isProSection(category);
+  /**
+   * One refresh control, two homes. Every other page gives it a row of its own
+   * under the breadcrumb; Search does not, because that row would push the
+   * page's own "Search" heading down the screen for the sake of a button
+   * nobody came for. There it rides in the topbar instead, beside the other
+   * chrome-level actions.
+   */
+  const refreshButton=<Button size="sm" variant="outline" className="refresh-action" disabled={refreshing||!configured||!authEnabled} onClick={()=>void reload()}><RefreshCw size={14} className={refreshing?"spin":""}/><ExpandedText text={t("refresh")} /></Button>;
+  const showCatalog=!!data&&category!=="technology"&&category!=="notes"&&category!=="bookmark"&&!pro;
   const studyCatalog=<StudyCatalog beforeLibrary={libraries} initialCourses={initialStudyCourses} key={`${category??"all"}:${tab}`} category={category} initialPreparation={category?initialPreparation:""} initialCourse={category?initialCourse:undefined} searchQuery={learningQuery} onSearchChange={setLearningQuery} preparations={access} onPlans={()=>navigate("plans")}/>;
-  return <div className={`app-shell compact-workspace${collapsed?" sidebar-collapsed":""}`}><aside className="sidebar"><div className="sidebar-brand-row"><Link href="/" className="wordmark"><Wordmark /></Link><button type="button" className="sidebar-toggle" aria-expanded={!collapsed} aria-label={collapsed?t("expandSidebar"):t("collapseSidebar")} title={collapsed?t("expandSidebar"):t("collapseSidebar")} onClick={toggleCollapsed}>{collapsed?<PanelLeftOpen size={17}/>:<PanelLeftClose size={17}/>}</button></div><div className="sidebar-label">{t("introLabel")}</div><nav aria-label={t("dashboard")}>{([{id:"dashboard",icon:Compass},{id:"library",icon:LibraryIcon}] as const).map(({id,icon:Icon})=><button key={id} aria-current={!category&&tab===id?"page":undefined} className={!category&&tab===id?"active":""} onClick={()=>navigate(id)}><Icon size={19}/>{!collapsed&&<>{t(id)}{tab===id&&<ChevronRight size={15}/>}</>}{collapsed&&<span className="sidebar-tooltip">{t(id)}</span>}</button>)}<Link className="sidebar-notes" href="/dashboard/notes" aria-current={category==="notes"?"page":undefined}><BookOpen size={19}/>{!collapsed&&(language==="hi"?"नोट्स":"Notes")}{collapsed&&<span className="sidebar-tooltip">Notes</span>}</Link></nav><StudyNavigation access={access} collapsed={collapsed} category={category} preparation={initialPreparation} course={initialCourse}/></aside>
-    <div className="main-shell"><header className="topbar"><div className="breadcrumb"><ExpandedText text={t("dashboard")} /><ChevronRight size={14}/><span><ExpandedText text={category?CATEGORY_LABELS[category]?.[language]:t(tab)} /></span></div><div className="topbar-actions"><div className="language-toggle" role="group" aria-label={t("language")}><button type="button" aria-pressed={language==="en"} onClick={()=>setLanguage("en")}>EN</button><button type="button" aria-pressed={language==="hi"} onClick={()=>setLanguage("hi")}>Hi</button></div><span className="topbar-divider"/>{authEnabled?<Identity email={userEmail} onNavigate={navigate}/>:<Link href="/sign-in" className="signin-link"><ExpandedText text={t("signin")} /><ArrowUpRight size={15}/></Link>}</div></header>
-    <main className="workspace"><div className="page-intro"><div><p className="eyebrow"><Sun size={15}/><ExpandedText text={t("introLabel")} /></p><h1><ExpandedText text={category?(activePreparation?.label[language]??CATEGORY_LABELS[category]?.[language]):tab==="dashboard"?(language==="hi"?"आपकी तैयारी, आपका लक्ष्य":"Your preparation. Your next step."):t(tab)} /></h1><p><ExpandedText text={language==="hi"?"अपनी चुनी हुई तैयारी को ऐप में सीखें।":"A focused learning space for the preparation you choose."} /></p></div><div className="intro-mark" aria-hidden="true">✳</div></div>
-    <div className="workspace-quick-actions"><span><ExpandedText text={data?t(data.account.tier):t("free")} /> <ExpandedText text={"\u00b7"} /> <ExpandedText text={t("brandLine")} /></span><Button size="sm" variant="outline" disabled={refreshing||!configured||!authEnabled} onClick={()=>void reload()}><RefreshCw size={14} className={refreshing?"spin":""}/><ExpandedText text={t("refresh")} /></Button></div>
-    {(!configured||!authEnabled)&&<div className="setup-banner" role="status"><BookOpen size={20}/><div><strong><ExpandedText text={t("setupTitle")} /></strong><p><ExpandedText text={t("setupHelp")} /></p></div></div>}
+  return <div className={`app-shell compact-workspace${collapsed?" sidebar-collapsed":""}`}><aside className="sidebar"><SidebarTooltips collapsed={collapsed}/><div className="sidebar-brand-row"><Link href="/" className="wordmark" aria-label="MasterClass home"><Wordmark /></Link><button type="button" className="sidebar-toggle" aria-expanded={!collapsed} aria-label={collapsed?t("expandSidebar"):t("collapseSidebar")} title={collapsed?t("expandSidebar"):t("collapseSidebar")} onClick={toggleCollapsed}>{collapsed?<PanelLeftOpen size={17}/>:<PanelLeftClose size={17}/>}</button></div><SidebarSearch query={sidebarQuery} onQueryChange={setSidebarQuery} access={access} hi={language==="hi"} collapsed={collapsed} onExpand={toggleCollapsed} onNavigateTab={navigate}/><div className="sidebar-label">{t("introLabel")}</div><nav aria-label={t("dashboard")}>{([{id:"dashboard",icon:Compass},{id:"library",icon:LibraryIcon}] as const).flatMap(({id,icon:Icon})=>[<button key={id} aria-label={t(id)} aria-current={!category&&tab===id?"page":undefined} className={!category&&tab===id?"active":""} onClick={()=>navigate(id)}><Icon size={17}/>{!collapsed&&<>{t(id)}{tab===id&&<ChevronRight size={15}/>}</>}{collapsed&&<span className="sidebar-tooltip">{t(id)}</span>}</button>,...(id==="dashboard"?[<SearchNavRow key="ai-search" collapsed={collapsed} active={category==="search"}/>]:[])])}<Link aria-label={language==="hi"?"?????":"Notes"} className="sidebar-notes" href="/dashboard/notes" aria-current={category==="notes"?"page":undefined}><BookOpen size={17}/>{!collapsed&&(language==="hi"?"नोट्स":"Notes")}{collapsed&&<span className="sidebar-tooltip">Notes</span>}</Link><Link aria-label="Bookmark" className="sidebar-notes" href="/dashboard/bookmark" aria-current={category==="bookmark"?"page":undefined}><Bookmark size={17}/>{!collapsed&&"Bookmark"}{collapsed&&<span className="sidebar-tooltip">Bookmark</span>}</Link></nav><div className="sidebar-label">{!collapsed&&"Profissional Learn"}</div><nav aria-label="Profissional Learn" className="sidebar-pro-nav">{PRO_SECTIONS.map(({id,label,icon:Icon})=><Link key={id} href={`/dashboard/${id}`} aria-label={label} className="sidebar-notes" aria-current={category===id?"page":undefined}><Icon size={17}/>{!collapsed&&<>{label}<ChevronRight size={14}/></>}{collapsed&&<span className="sidebar-tooltip">{label}</span>}</Link>)}</nav><StudyNavigation access={access} collapsed={collapsed} category={category} preparation={initialPreparation} course={initialCourse} query={sidebarQuery}/></aside>
+    <div className="main-shell"><header className="topbar"><div className="breadcrumb"><ExpandedText text={t("dashboard")} /><ChevronRight size={14}/><span><ExpandedText text={PRO_SECTIONS.find(section=>section.id===category)?.label??(category==="search"?AI_SEARCH_LABEL:category==="bookmark"?"Bookmark":category?CATEGORY_LABELS[category]?.[language]:t(tab))} /></span></div><div className="topbar-actions">{category==="search"&&refreshButton}{showSuperAdmin&&<Link href="/dashboard/super-admin" className="super-admin-header-link"><Users size={16} aria-hidden="true"/><span>Super admin</span><ArrowUpRight size={14} aria-hidden="true"/></Link>}<div className="language-toggle" role="group" aria-label={t("language")}><button type="button" aria-pressed={language==="en"} onClick={()=>setLanguage("en")}>EN</button><button type="button" aria-pressed={language==="hi"} onClick={()=>setLanguage("hi")}>Hi</button></div><span className="topbar-divider"/>{authEnabled?<Identity email={userEmail} isSuperAdmin={!!showSuperAdmin} onNavigate={navigate}/>:<Link href="/sign-in" className="signin-link"><ExpandedText text={t("signin")} /><ArrowUpRight size={15}/></Link>}</div></header>
+    <LearningPresence enabled={authEnabled&&!!userEmail}/><main className="workspace">{category!=="bookmark"&&category!=="search"&&!pro&&<div className="page-intro"><div><p className="eyebrow"><Sun size={15}/><ExpandedText text={t("introLabel")} /></p><h1><ExpandedText text={category?(activePreparation?.label[language]??CATEGORY_LABELS[category]?.[language]):tab==="dashboard"?(language==="hi"?"आपकी तैयारी, आपका लक्ष्य":"Your preparation. Your next step."):t(tab)} /></h1><p><ExpandedText text={language==="hi"?"अपनी चुनी हुई तैयारी को ऐप में सीखें।":"A focused learning space for the preparation you choose."} /></p></div><div className="intro-mark" aria-hidden="true">✳</div></div>}
+    {!pro&&category!=="search"&&<div className="workspace-quick-actions"><span><ExpandedText text={data?t(data.account.tier):t("free")} /> <ExpandedText text={"\u00b7"} /> <ExpandedText text={t("brandLine")} /></span>{refreshButton}</div>}
+    {!pro&&(!configured||!authEnabled)&&<div className="setup-banner" role="status"><BookOpen size={20}/><div><strong><ExpandedText text={t("setupTitle")} /></strong><p><ExpandedText text={t("setupHelp")} /></p></div></div>}
     {error&&<div className="error-banner" role="alert"><ExpandedText text={t(error)} /> {error==="signin_required"?<Link href="/sign-in"><ExpandedText text={t("signin")} /></Link>:<button onClick={()=>void reload()}><ExpandedText text={t("refresh")} /></button>}{error==="quota_exceeded"&&<button onClick={()=>navigate("plans")}><ExpandedText text={t("upgrade")} /></button>}</div>}
-    {category==="notes"?notesContent??<Link href="/dashboard/notes">Open topic cards</Link>:tab==="plans"?<Membership key={access.selections.join(",")} selections={access.selections} enabled={billingEnabled} data={data?.account??null} onRefresh={refresh}/>:tab==="settings"?<Connections/>:needsPreparation?<PreparationSetup onSaved={refresh}/>:data?.account.tier==="free"&&!access.isSuperAdmin?<Membership key={access.selections.join(",")} selections={access.selections} enabled={billingEnabled} data={data.account} onRefresh={refresh}/>:<>
+    {category==="notes"||category==="bookmark"||category==="search"||pro?notesContent??<Link href="/dashboard/notes">Open topic cards</Link>:tab==="plans"?<Membership key={access.selections.join(",")} selections={access.selections} enabled={billingEnabled} data={data?.account??null} onRefresh={refresh}/>:tab==="settings"?<Connections/>:needsPreparation?<PreparationSetup onSaved={refresh}/>:data?.account.tier==="free"&&!access.isSuperAdmin?<Membership key={access.selections.join(",")} selections={access.selections} enabled={billingEnabled} data={data.account} onRefresh={refresh}/>:<>
     {category!=="notes"&&(!data||category==="technology")&&<LearningSearch value={learningQuery} onChange={setLearningQuery}/>}
     {showCatalog?studyCatalog:libraries}
     <footer className="workspace-footer"><span>✦ MasterClass</span><span><ExpandedText text={t("brandLine")} /></span></footer></>}
-    </main></div>{notesSelected&&<NotesModal key={notesSelected.id} document={notesSelected} initialProgress={progress.find(p=>p.document_id===notesSelected.id)} onClose={()=>{setNotesSelected(null);void refresh();}}/>}
+    {authEnabled&&userEmail&&category!=="search"&&<ReportLearningContent/>}</main></div>{notesSelected&&<NotesModal key={notesSelected.id} document={notesSelected} initialProgress={progress.find(p=>p.document_id===notesSelected.id)} onClose={()=>{setNotesSelected(null);void refresh();}}/>}
     <Dialog open={confirmId!==null} onOpenChange={open=>{if(!open)setConfirmId(null);}}><DialogContent><DialogHeader><DialogTitle><ExpandedText text={t("deleteConfirm")} /></DialogTitle><DialogDescription><ExpandedText text={confirmDoc?`“${confirmDoc.title}” — `:""} /><ExpandedText text={t("deleteConfirmHelp")} /></DialogDescription></DialogHeader><DialogFooter><Button variant="outline" onClick={()=>setConfirmId(null)}><ExpandedText text={t("close")} /></Button><Button variant="destructive" disabled={busy} onClick={()=>confirmId&&void deleteDocument(confirmId)}><ExpandedText text={t("deleteConfirm")} /></Button></DialogFooter></DialogContent></Dialog>
     </div>;
 }

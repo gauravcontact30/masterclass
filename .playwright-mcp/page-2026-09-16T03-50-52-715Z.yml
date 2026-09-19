@@ -1,0 +1,116 @@
+- generic [active] [ref=f8e1]:
+  - main [ref=f8e2]:
+    - heading "Complete code workspace" [level=2] [ref=f8e3]
+    - generic [ref=f8e17]:
+      - generic [ref=f8e18]:
+        - strong [ref=f8e23]: Array.prototype.map in practice
+        - button "Hide files" [expanded] [ref=f8e24] [cursor=pointer]
+        - button "Reset" [ref=f8e25] [cursor=pointer]
+        - button "Save" [disabled] [ref=f8e26]
+        - button "Run" [ref=f8e27] [cursor=pointer]
+        - button "Stop" [ref=f8e28] [cursor=pointer]
+      - generic [ref=f8e29]:
+        - generic [ref=f8e32]:
+          - generic [ref=f8e33]:
+            - button "Directory src" [ref=f8e34] [cursor=pointer]:
+              - img "Directory" [ref=f8e35]
+              - generic [ref=f8e38]: src
+            - generic [ref=f8e39]:
+              - button "File index.ts" [ref=f8e40] [cursor=pointer]:
+                - img "File" [ref=f8e41]
+                - generic [ref=f8e43]: index.ts
+              - button "File labels.ts" [ref=f8e44] [cursor=pointer]:
+                - img "File" [ref=f8e45]
+                - generic [ref=f8e47]: labels.ts
+          - button "File index.html" [ref=f8e48] [cursor=pointer]:
+            - img "File" [ref=f8e49]
+            - generic [ref=f8e51]: index.html
+          - button "File index.ts" [ref=f8e52] [cursor=pointer]:
+            - img "File" [ref=f8e53]
+            - generic [ref=f8e55]: index.ts
+          - button "File package.json" [ref=f8e56] [cursor=pointer]:
+            - img "File" [ref=f8e57]
+            - generic [ref=f8e59]: package.json
+          - button "File styles.css" [ref=f8e60] [cursor=pointer]:
+            - img "File" [ref=f8e61]
+            - generic [ref=f8e63]: styles.css
+          - button "File tsconfig.json" [ref=f8e64] [cursor=pointer]:
+            - img "File" [ref=f8e65]
+            - generic [ref=f8e67]: tsconfig.json
+        - generic [ref=f8e68]:
+          - tablist "Code files" [ref=f8e69]:
+            - tab "index.ts" [selected] [ref=f8e70] [cursor=pointer]
+            - tab "labels.ts" [ref=f8e71] [cursor=pointer]
+            - tab "index.html" [ref=f8e72] [cursor=pointer]
+          - tabpanel [ref=f8e74]:
+            - textbox "Code Editor for index.ts" [ref=f8e75]:
+              - generic [ref=f8e77]:
+                - generic [ref=f8e79]:
+                  - generic [ref=f8e80]: "1"
+                  - generic [ref=f8e81]: "2"
+                  - generic [ref=f8e82]: "3"
+                  - generic [ref=f8e83]: "4"
+                  - generic [ref=f8e84]: "5"
+                  - generic [ref=f8e85]: "6"
+                  - generic [ref=f8e86]: "7"
+                  - generic [ref=f8e87]: "8"
+                  - generic [ref=f8e88]: "9"
+                  - generic [ref=f8e89]: "10"
+                  - generic [ref=f8e90]: "11"
+                  - generic [ref=f8e91]: "12"
+                  - generic [ref=f8e92]: "13"
+                  - generic [ref=f8e93]: "14"
+                  - generic [ref=f8e166]: "15"
+                - textbox "Code Editor for index.ts" [ref=f8e94]:
+                  - generic [ref=f8e95]: "import { toLabels } from './labels';"
+                  - generic [ref=f8e97]: const prices = [12, 40, 7];
+                  - generic [ref=f8e167]: prices.push(999);
+                  - generic [ref=f8e98]: const labels = toLabels(prices);
+                  - generic [ref=f8e100]: console.log('labels', labels);
+                  - generic [ref=f8e102]: const list = document.getElementById('app')!;
+                  - generic [ref=f8e103]: "for (const label of labels) {"
+                  - generic [ref=f8e104]: const item = document.createElement('li');
+                  - generic [ref=f8e105]: item.textContent = label;
+                  - generic [ref=f8e106]: list.append(item);
+                  - generic [ref=f8e107]: "}"
+      - generic [ref=f8e109]:
+        - heading "Browser output" [level=3] [ref=f8e110]
+        - generic [ref=f8e112]:
+          - iframe [ref=f8e113]
+          - button "Refresh preview" [ref=f8e115] [cursor=pointer]:
+            - img "Refresh preview" [ref=f8e116]
+        - heading "Console output" [level=3] [ref=f8e129]
+        - generic [ref=f8e130]:
+          - generic [ref=f8e168]:
+            - code [ref=f8e171]: "\"labels\""
+            - code [ref=f8e174]: "[\"INR 12.00\", \"INR 40.00\", \"INR 7.00\"]"
+          - button "Clean" [ref=f8e132] [cursor=pointer]:
+            - img "Clean" [ref=f8e133]
+      - status [ref=f8e136]: Saved • the browser and console output below are running your latest code.
+      - list [ref=f8e137]:
+        - listitem [ref=f8e138]: Read src/labels.ts, then run the project.
+        - listitem [ref=f8e139]: Change the currency prefix and run it again.
+    - heading "Python workspace" [level=2] [ref=f8e5]
+    - generic [ref=f8e140]:
+      - generic [ref=f8e141]:
+        - strong [ref=f8e146]: Counting words with Python
+        - button "Hide files" [expanded] [ref=f8e147] [cursor=pointer]
+        - button "Reset" [ref=f8e148] [cursor=pointer]
+        - button "Run" [ref=f8e149] [cursor=pointer]
+      - generic [ref=f8e150]:
+        - navigation "Project files" [ref=f8e151]:
+          - button "main.py" [ref=f8e152] [cursor=pointer]
+        - generic [ref=f8e153]:
+          - tablist "Code files" [ref=f8e154]:
+            - tab "main.py" [selected] [ref=f8e155] [cursor=pointer]
+          - textbox "Edit /main.py" [ref=f8e156]: "text = 'the quick brown fox jumps over the lazy dog the end' counts = {} for word in text.split(): counts[word] = counts.get(word, 0) + 1 for word, total in sorted(counts.items(), key=lambda pair: -pair[1])[:3]: print(word, total)"
+      - generic [ref=f8e157]:
+        - heading "Console output" [level=3] [ref=f8e158]
+        - generic [ref=f8e159]: Click Run to execute the files in an isolated Python worker.
+      - paragraph [ref=f8e160]: Python runtime loads on first Run. Native server/GPU packages require local execution.
+      - list [ref=f8e161]:
+        - listitem [ref=f8e162]: Run the file.
+        - listitem [ref=f8e163]: Change the text and run it again.
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f8e12] [cursor=pointer]
+  - alert [ref=f8e164]

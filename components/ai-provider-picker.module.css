@@ -1,0 +1,173 @@
+.picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0 0 14px;
+  padding: 9px 13px;
+  border: 1px solid var(--code-border);
+  border-radius: 10px;
+  background: var(--code-chrome);
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--code-ink);
+}
+
+.options {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--code-ink);
+  background: #fff;
+  border: 1px solid var(--code-border);
+  border-radius: 8px;
+  padding: 5px 11px;
+  cursor: pointer;
+}
+.option:hover { background: var(--code-chrome); }
+.option[aria-checked="true"] {
+  background: var(--code-ink);
+  border-color: var(--code-ink);
+  color: #fff;
+}
+
+.grounded {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  opacity: 0.75;
+}
+
+.hint {
+  flex: 1 1 220px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--code-ink);
+  opacity: 0.75;
+}
+
+.provenance {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--code-ink);
+  opacity: 0.7;
+}
+
+@media (max-width: 520px) {
+  .picker { align-items: flex-start; flex-direction: column; }
+  .hint { flex-basis: auto; }
+}
+
+/* Sliding two-stop switch — the search page's in-field form of the picker.
+   It rides inside the search box, to the right of the query, so it is sized
+   against the box's 52px rather than against a row of its own: a hairline to
+   separate it, a small track, and each model's own mark ahead of its name. */
+.switchRow {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-width: 0;
+  padding-left: 9px;
+  margin-left: 2px;
+  border-left: 1px solid #e8e6dc;
+}
+
+.track {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--stops, 2), minmax(0, 1fr));
+  padding: 2px;
+  border: 1px solid #dedcd1;
+  border-radius: 999px;
+  background: #f0eee6;
+  isolation: isolate;
+}
+
+/* One thumb slides between stops instead of each stop painting its own fill. */
+.thumb {
+  position: absolute;
+  z-index: -1;
+  top: 2px;
+  bottom: 2px;
+  left: 2px;
+  width: calc((100% - 4px) / var(--stops, 2));
+  transform: translateX(calc(var(--active, 0) * 100%));
+  border-radius: 999px;
+  background: #262624;
+  box-shadow: 0 1px 3px #0000002e;
+  transition: transform 0.24s cubic-bezier(0.4, 0.9, 0.3, 1);
+}
+
+.stop {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+  padding: 5px 11px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: #73726c;
+  font-size: 11.5px;
+  font-weight: 620;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.stop:hover { color: #3d3d3a; }
+.stop[aria-checked="true"] { color: #fff; }
+.stop[aria-checked="true"]:hover { color: #fff; }
+
+/* The mark keeps its own brand colour while the stop is unpicked — that is what
+   makes it recognisable — and turns white once the thumb covers it. */
+.brandIcon { flex-shrink: 0; }
+.stop[data-provider="anthropic"] .brandIcon { color: #c6613f; }
+.stop[data-provider="perplexity"] .brandIcon { color: #20808d; }
+.stop[aria-checked="true"] .brandIcon { color: #fff; }
+
+.web { flex-shrink: 0; opacity: 0.55; }
+
+/* Below tablet width the field has no room for names, so the marks carry the
+   stops alone. The names are hidden from the eye, not from the accessible
+   name — a stop still announces itself as "Claude" or "Perplexity". */
+@media (max-width: 860px) {
+  .stopName {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .switchRow { padding-left: 7px; }
+  .stop { padding: 6px 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .thumb, .stop { transition: none; }
+}

@@ -8,7 +8,7 @@ import { spawn } from "node:child_process";
 // all static and repo-controlled, never user input, so shell:true is safe.
 const win = process.platform === "win32";
 const next = spawn("npx", ["next", "dev"], { stdio: "inherit", shell: win });
-const worker = spawn("npx", ["tsx", "--conditions=react-server", "--env-file=.env.local", "scripts/dev-worker-loop.ts"], { stdio: "inherit", shell: win });
+const worker = spawn("npx", ["tsx", "--conditions=react-server", "--env-file=.env", "scripts/dev-worker-loop.ts"], { stdio: "inherit", shell: win });
 
 let shuttingDown = false;
 function shutdown(code) {

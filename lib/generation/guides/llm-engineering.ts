@@ -345,7 +345,7 @@ const guide: TechnologyGuide = {
 export const LLM_CORE_LESSON_COUNT = guide.curriculum.lessons.length;
 export default {
   ...guide,
-  version: 2,
+  version: 3,
   curriculum: {
     ...guide.curriculum,
     minutes: guide.curriculum.minutes + FUNDAMENTAL_LESSONS.length * 5,

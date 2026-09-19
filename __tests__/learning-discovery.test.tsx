@@ -60,10 +60,11 @@ test("class and subject filters narrow published guides, clear restores them, an
   fireEvent.change(screen.getByRole("searchbox",{name:"Search notes"}),{target:{value:"Physics"}});expect(screen.getByRole("status")).toHaveTextContent("2 guides found");
 });
 test("sidebar search reveals direct selected-class and system-design links without unrelated preparation",async()=>{
-  const user=userEvent.setup();render(<StudyNavigation access={{isSuperAdmin:false,selections:["cbse-10","system-design"]}} collapsed={false}/>);
-  await user.type(screen.getByRole("searchbox",{name:"Search sidebar"}),"Class 10");
+  // The query now comes from the sidebar search above the learning space.
+  const access={isSuperAdmin:false,selections:["cbse-10","system-design"]};
+  const {rerender}=render(<StudyNavigation access={access} collapsed={false} query="Class 10"/>);
   expect(screen.getByRole("link",{name:"CBSE · Class 10"})).toHaveAttribute("href","/dashboard/cbse?preparation=cbse-10");
   expect(screen.queryByText("Banking")).not.toBeInTheDocument();
-  await user.clear(screen.getByRole("searchbox",{name:"Search sidebar"}));await user.type(screen.getByRole("searchbox",{name:"Search sidebar"}),"WhatsApp");
+  rerender(<StudyNavigation access={access} collapsed={false} query="WhatsApp"/>);
   await waitFor(()=>expect(screen.getByRole("link",{name:/WhatsApp/})).toHaveAttribute("href",expect.stringContaining("?course=design-")));
 });

@@ -1,0 +1,643 @@
+- generic [active] [ref=f13e1]:
+  - generic [ref=f13e2]:
+    - complementary [ref=f13e3]:
+      - generic [ref=f13e4]:
+        - link "MasterClass home" [ref=f13e5] [cursor=pointer]:
+          - /url: /
+          - generic [ref=f13e12]:
+            - text: Master
+            - generic [aria-hidden] [ref=f13e13]: ✦
+            - emphasis [ref=f13e14]: Class
+        - button "Collapse sidebar" [expanded] [ref=f13e15] [cursor=pointer]
+      - generic [ref=f13e19]:
+        - searchbox "Search sidebar" [ref=f13e24]
+        - group "Search filters" [ref=f13e25]:
+          - button "All results" [pressed] [ref=f13e26] [cursor=pointer]
+          - button "Pages" [ref=f13e32] [cursor=pointer]
+          - button "Professional learning" [ref=f13e35] [cursor=pointer]
+          - button "Exams and courses" [ref=f13e40] [cursor=pointer]
+          - button "Technology tracks" [ref=f13e44] [cursor=pointer]
+      - generic [ref=f13e49]: YOUR LEARNING SPACE
+      - navigation "Dashboard" [ref=f13e50]:
+        - button "Dashboard" [ref=f13e51] [cursor=pointer]
+        - button "My library" [ref=f13e57] [cursor=pointer]
+        - link "Notes" [ref=f13e60] [cursor=pointer]:
+          - /url: /dashboard/notes
+        - link "Bookmark" [ref=f13e63] [cursor=pointer]:
+          - /url: /dashboard/bookmark
+      - generic [ref=f13e66]: Profissional Learn
+      - navigation "Profissional Learn" [ref=f13e67]:
+        - link "Techy" [ref=f13e68] [cursor=pointer]:
+          - /url: /dashboard/techy
+        - link "API Docs" [ref=f13e75] [cursor=pointer]:
+          - /url: /dashboard/api-docs
+        - link "Lessons" [ref=f13e83] [cursor=pointer]:
+          - /url: /dashboard/lessons
+        - link "Quiz" [ref=f13e88] [cursor=pointer]:
+          - /url: /dashboard/quiz
+        - link "Interview" [ref=f13e94] [cursor=pointer]:
+          - /url: /dashboard/interview
+        - link "Mentors" [ref=f13e100] [cursor=pointer]:
+          - /url: /dashboard/mentors
+      - navigation "Preparation categories" [ref=f13e109]
+    - generic [ref=f13e110]:
+      - banner [ref=f13e111]:
+        - generic [ref=f13e112]:
+          - text: Dashboard
+          - generic [ref=f13e115]: Interview
+        - generic [ref=f13e116]:
+          - group "App language" [ref=f13e117]:
+            - button "EN" [pressed] [ref=f13e118] [cursor=pointer]
+            - button "Hi" [ref=f13e119] [cursor=pointer]
+          - link "Sign in" [ref=f13e121] [cursor=pointer]:
+            - /url: /sign-in
+      - main [ref=f13e125]:
+        - generic [ref=f13e126]:
+          - navigation "Your learning journey" [ref=f13e127]:
+            - link "01 Learn Read and understand" [ref=f13e128] [cursor=pointer]:
+              - /url: /dashboard/lessons
+              - generic [ref=f13e129]: "01"
+              - generic [ref=f13e132]:
+                - generic [ref=f13e133]: Learn
+                - generic [ref=f13e134]: Read and understand
+            - link "02 Recall Check what stuck" [ref=f13e137] [cursor=pointer]:
+              - /url: /dashboard/quiz
+              - generic [ref=f13e138]: "02"
+              - generic [ref=f13e147]:
+                - generic [ref=f13e148]: Recall
+                - generic [ref=f13e149]: Check what stuck
+            - link "03 Practise Answer under pressure" [ref=f13e152] [cursor=pointer]:
+              - /url: /dashboard/interview
+              - generic [ref=f13e153]: "03"
+              - generic [ref=f13e158]:
+                - generic [ref=f13e159]: Practise
+                - generic [ref=f13e160]: Answer under pressure
+            - link "04 Go deeper Ask what is unclear" [ref=f13e163] [cursor=pointer]:
+              - /url: /dashboard/mentors
+              - generic [ref=f13e164]: "04"
+              - generic [ref=f13e167]:
+                - generic [ref=f13e168]: Go deeper
+                - generic [ref=f13e169]: Ask what is unclear
+          - generic [ref=f13e173]:
+            - paragraph [ref=f13e174]: Interview prep · refreshes daily
+            - heading "Crack your next big-tech interview" [level=1] [ref=f13e175]
+            - paragraph [ref=f13e176]:
+              - text: A new question every day, the most-asked questions tagged by company, and an AI partner that drills you on any topic — for engineers and students aiming at Google, Meta, Amazon, Microsoft, Apple, Netflix and beyond.
+              - generic [ref=f13e177]:
+                - generic [ref=f13e178]: 35curated questions
+                - generic [ref=f13e179]: 7companies
+                - generic [ref=f13e180]: 11topics
+          - complementary [ref=f13e181]:
+            - generic [ref=f13e191]:
+              - text: THE PRACTICE METHOD
+              - heading "Think out loud. Make your reasoning visible." [level=3] [ref=f13e192]
+              - paragraph [ref=f13e193]: Clarify the problem, explain your approach, then discuss trade-offs. Try a two-minute answer before revealing the solution.
+          - region "Question of the day" [ref=f13e194]:
+            - generic [ref=f13e195]:
+              - generic [ref=f13e196]: Question of the day
+              - generic [ref=f13e199]: Behavioral
+              - generic [ref=f13e200]: Easy
+            - group [ref=f13e201]:
+              - generic "Describe a project you're most proud of. Reveal answer" [ref=f13e202] [cursor=pointer]:
+                - generic [ref=f13e203]: Describe a project you're most proud of.
+                - generic [ref=f13e204]: Reveal answer
+          - region "Interview drill flashcards" [ref=f13e205]:
+            - generic [ref=f13e206]:
+              - generic [ref=f13e207]: Rapid-fire drill
+              - heading "Answer before you read." [level=2] [ref=f13e211]
+              - paragraph [ref=f13e212]: 12 questions drawn from the full bank. Speak the answer, turn the card, and send back anything you could not explain cleanly.
+              - generic [ref=f13e213]:
+                - img "0 of 12 cards recalled" [ref=f13e214]:
+                  - generic [ref=f13e217]: "0"
+                - generic [ref=f13e218]:
+                  - generic [ref=f13e219]: 0 of 12 answered without help
+                  - generic [ref=f13e220]: Answer from memory first — checking too early is what makes it fade.
+              - generic [ref=f13e221]:
+                - generic [ref=f13e222]:
+                  - text: Recalled
+                  - generic [ref=f13e224]: "0"
+                - generic [ref=f13e225]:
+                  - text: Left
+                  - generic [ref=f13e227]: "12"
+                - generic [ref=f13e228]:
+                  - text: Repeated
+                  - generic [ref=f13e230]: "0"
+              - paragraph [ref=f13e231]:
+                - generic [ref=f13e232]:
+                  - generic [ref=f13e233]: Space
+                  - text: turn
+                - generic [ref=f13e234]:
+                  - generic [ref=f13e235]: "1"
+                  - text: practise
+                - generic [ref=f13e236]:
+                  - generic [ref=f13e237]: "2"
+                  - text: recalled
+                - generic [ref=f13e238]:
+                  - generic [ref=f13e239]: S
+                  - text: shuffle
+              - paragraph [ref=f13e240]: Change a filter below and the drill follows it.
+            - generic [ref=f13e241]:
+              - generic [ref=f13e244]:
+                - article [ref=f13e245]:
+                  - generic [ref=f13e246]:
+                    - generic [ref=f13e247]: INTERVIEW QUESTION
+                    - generic [ref=f13e248]: 1 / 12
+                  - generic [ref=f13e249]: JavaScript
+                  - heading "Explain event delegation and why it's useful." [level=3] [ref=f13e250]
+                  - paragraph [ref=f13e252]: "Give the two-minute version out loud: clarify, state your approach, then name the trade-off. Turn the card only after you have finished."
+                  - generic [ref=f13e253]:
+                    - generic [ref=f13e254]: Medium
+                    - generic [ref=f13e255]: Asked at Google, Meta
+                - article [aria-hidden] [ref=f13e256]:
+                  - generic [ref=f13e257]:
+                    - generic [ref=f13e258]: MODEL ANSWER
+                    - generic [ref=f13e259]: 1 / 12
+                  - heading [level=3] [ref=f13e260]: Explain event delegation and why it's useful.
+                  - generic [ref=f13e262]:
+                    - paragraph [ref=f13e263]:
+                      - text: Event delegation attaches a single listener to a common ancestor and uses
+                      - code [ref=f13e264]: event.target
+                      - text: to handle events from many children, leveraging event bubbling. It saves memory (one listener instead of hundreds) and automatically handles elements added to the DOM later.
+                    - code [ref=f13e266]:
+                      - generic [ref=f13e267]: "list.addEventListener(\"click\", e => {"
+                      - generic [ref=f13e268]: const li = e.target.closest("li");
+                      - generic [ref=f13e269]: if (li) select(li.dataset.id);
+                      - generic [ref=f13e270]: "});"
+                  - generic [ref=f13e271]:
+                    - generic [ref=f13e272]: Medium
+                    - generic [ref=f13e273]: Asked at Google, Meta
+              - generic [ref=f13e274]:
+                - button "Reveal the model answer" [ref=f13e275] [cursor=pointer]
+                - button "Shuffle the deck and start again" [ref=f13e276] [cursor=pointer]
+          - region [ref=f13e283]:
+            - heading "Practice with AI" [level=2] [ref=f13e285]
+            - paragraph [ref=f13e286]: Unlimited fresh questions with model answers, tuned to a topic, company and difficulty.
+            - generic [ref=f13e287]:
+              - generic [ref=f13e288]:
+                - generic [ref=f13e289]: Topic
+                - combobox "Topic" [ref=f13e291] [cursor=pointer]:
+                  - option "All" [selected]
+                  - option "JavaScript"
+                  - option "React"
+                  - option "System Design"
+                  - option "Algorithms"
+                  - option "Data Structures"
+                  - option "TypeScript"
+                  - option "Node.js"
+                  - option "Behavioral"
+                  - option "CSS"
+                  - option "Web"
+                  - option "Databases"
+              - generic [ref=f13e292]:
+                - generic [ref=f13e293]: Company
+                - combobox "Company" [ref=f13e295] [cursor=pointer]:
+                  - option "All" [selected]
+                  - option "Google"
+                  - option "Meta"
+                  - option "Amazon"
+                  - option "Microsoft"
+                  - option "Apple"
+                  - option "Netflix"
+                  - option "Uber"
+              - generic [ref=f13e296]:
+                - generic [ref=f13e297]: Level
+                - combobox "Level" [ref=f13e299] [cursor=pointer]:
+                  - option "All" [selected]
+                  - option "Easy"
+                  - option "Medium"
+                  - option "Hard"
+              - button "Generate a question" [ref=f13e300] [cursor=pointer]
+          - generic [ref=f13e304]:
+            - generic [ref=f13e305]:
+              - heading "Most-asked questions" [level=2] [ref=f13e306]
+              - paragraph [ref=f13e307]: Curated from real big-tech loops — filter by company, topic and difficulty.
+            - status [ref=f13e308]: 35 questions
+          - generic [ref=f13e309]:
+            - generic [ref=f13e310]:
+              - generic [ref=f13e311]: Company
+              - group "Filter by company" [ref=f13e312]:
+                - button "All" [pressed] [ref=f13e313] [cursor=pointer]
+                - button "Google" [ref=f13e314] [cursor=pointer]
+                - button "Meta" [ref=f13e315] [cursor=pointer]
+                - button "Amazon" [ref=f13e316] [cursor=pointer]
+                - button "Microsoft" [ref=f13e317] [cursor=pointer]
+                - button "Apple" [ref=f13e318] [cursor=pointer]
+                - button "Netflix" [ref=f13e319] [cursor=pointer]
+                - button "Uber" [ref=f13e320] [cursor=pointer]
+            - generic [ref=f13e321]:
+              - generic [ref=f13e322]: Topic
+              - group "Filter by topic" [ref=f13e323]:
+                - button "All" [pressed] [ref=f13e324] [cursor=pointer]
+                - button "JavaScript" [ref=f13e325] [cursor=pointer]
+                - button "React" [ref=f13e326] [cursor=pointer]
+                - button "System Design" [ref=f13e327] [cursor=pointer]
+                - button "Algorithms" [ref=f13e328] [cursor=pointer]
+                - button "Data Structures" [ref=f13e329] [cursor=pointer]
+                - button "TypeScript" [ref=f13e330] [cursor=pointer]
+                - button "Node.js" [ref=f13e331] [cursor=pointer]
+                - button "Behavioral" [ref=f13e332] [cursor=pointer]
+                - button "CSS" [ref=f13e333] [cursor=pointer]
+                - button "Web" [ref=f13e334] [cursor=pointer]
+                - button "Databases" [ref=f13e335] [cursor=pointer]
+            - generic [ref=f13e336]:
+              - generic [ref=f13e337]: Level
+              - generic [ref=f13e338]:
+                - group "Filter by level" [ref=f13e339]:
+                  - button "All" [pressed] [ref=f13e340] [cursor=pointer]
+                  - button "Easy" [ref=f13e341] [cursor=pointer]
+                  - button "Medium" [ref=f13e342] [cursor=pointer]
+                  - button "Hard" [ref=f13e343] [cursor=pointer]
+                - generic [ref=f13e344]:
+                  - generic [ref=f13e345]: Search questions
+                  - searchbox "Search questions" [ref=f13e349]
+          - region "Languages & the browser interview questions" [ref=f13e350]:
+            - generic [ref=f13e351]:
+              - generic [ref=f13e352]:
+                - heading "Languages & the browser" [level=3] [ref=f13e353]
+                - paragraph [ref=f13e354]: The everyday questions that open almost every front-end loop.
+              - generic [ref=f13e355]: 13 Q&A
+            - generic [ref=f13e356]:
+              - generic [ref=f13e357]:
+                - heading "JavaScript" [level=4] [ref=f13e358]
+                - generic [ref=f13e359]: 6 questions
+              - group [ref=f13e360]:
+                - generic "PRACTICE QUESTION Explain event delegation and why it's useful. JavaScript Medium Explore answer +" [ref=f13e361] [cursor=pointer]:
+                  - generic [ref=f13e362]:
+                    - generic [ref=f13e363]: PRACTICE QUESTION
+                    - text: Explain event delegation and why it's useful.
+                  - generic [ref=f13e364]:
+                    - generic [ref=f13e365]: JavaScript
+                    - generic [ref=f13e366]: Medium
+                    - generic [ref=f13e367]: Explore answer +
+              - group [ref=f13e368]:
+                - generic "PRACTICE QUESTION What is the difference between == and ===? JavaScript Easy Explore answer +" [ref=f13e369] [cursor=pointer]:
+                  - generic [ref=f13e370]:
+                    - generic [ref=f13e371]: PRACTICE QUESTION
+                    - text: What is the difference between == and ===?
+                  - generic [ref=f13e372]:
+                    - generic [ref=f13e373]: JavaScript
+                    - generic [ref=f13e374]: Easy
+                    - generic [ref=f13e375]: Explore answer +
+              - group [ref=f13e376]:
+                - generic "PRACTICE QUESTION Explain closures with an example. JavaScript Medium Explore answer +" [ref=f13e377] [cursor=pointer]:
+                  - generic [ref=f13e378]:
+                    - generic [ref=f13e379]: PRACTICE QUESTION
+                    - text: Explain closures with an example.
+                  - generic [ref=f13e380]:
+                    - generic [ref=f13e381]: JavaScript
+                    - generic [ref=f13e382]: Medium
+                    - generic [ref=f13e383]: Explore answer +
+              - group [ref=f13e384]:
+                - generic "PRACTICE QUESTION How does the JavaScript event loop work? JavaScript Hard Explore answer +" [ref=f13e385] [cursor=pointer]:
+                  - generic [ref=f13e386]:
+                    - generic [ref=f13e387]: PRACTICE QUESTION
+                    - text: How does the JavaScript event loop work?
+                  - generic [ref=f13e388]:
+                    - generic [ref=f13e389]: JavaScript
+                    - generic [ref=f13e390]: Hard
+                    - generic [ref=f13e391]: Explore answer +
+              - group [ref=f13e392]:
+                - generic "PRACTICE QUESTION Debounce vs throttle — when do you use each? JavaScript Medium Explore answer +" [ref=f13e393] [cursor=pointer]:
+                  - generic [ref=f13e394]:
+                    - generic [ref=f13e395]: PRACTICE QUESTION
+                    - text: Debounce vs throttle — when do you use each?
+                  - generic [ref=f13e396]:
+                    - generic [ref=f13e397]: JavaScript
+                    - generic [ref=f13e398]: Medium
+                    - generic [ref=f13e399]: Explore answer +
+              - group [ref=f13e400]:
+                - generic "PRACTICE QUESTION What is the difference between var, let and const? JavaScript Medium Explore answer +" [ref=f13e401] [cursor=pointer]:
+                  - generic [ref=f13e402]:
+                    - generic [ref=f13e403]: PRACTICE QUESTION
+                    - text: What is the difference between var, let and const?
+                  - generic [ref=f13e404]:
+                    - generic [ref=f13e405]: JavaScript
+                    - generic [ref=f13e406]: Medium
+                    - generic [ref=f13e407]: Explore answer +
+            - generic [ref=f13e408]:
+              - generic [ref=f13e409]:
+                - heading "TypeScript" [level=4] [ref=f13e410]
+                - generic [ref=f13e411]: 2 questions
+              - group [ref=f13e412]:
+                - generic "PRACTICE QUESTION interface vs type in TypeScript? TypeScript Medium Explore answer +" [ref=f13e413] [cursor=pointer]:
+                  - generic [ref=f13e414]:
+                    - generic [ref=f13e415]: PRACTICE QUESTION
+                    - text: interface vs type in TypeScript?
+                  - generic [ref=f13e416]:
+                    - generic [ref=f13e417]: TypeScript
+                    - generic [ref=f13e418]: Medium
+                    - generic [ref=f13e419]: Explore answer +
+              - group [ref=f13e420]:
+                - generic "PRACTICE QUESTION What does the satisfies operator do? TypeScript Medium Explore answer +" [ref=f13e421] [cursor=pointer]:
+                  - generic [ref=f13e422]:
+                    - generic [ref=f13e423]: PRACTICE QUESTION
+                    - text: What does the satisfies operator do?
+                  - generic [ref=f13e424]:
+                    - generic [ref=f13e425]: TypeScript
+                    - generic [ref=f13e426]: Medium
+                    - generic [ref=f13e427]: Explore answer +
+            - generic [ref=f13e428]:
+              - generic [ref=f13e429]:
+                - heading "CSS" [level=4] [ref=f13e430]
+                - generic [ref=f13e431]: 2 questions
+              - group [ref=f13e432]:
+                - generic "PRACTICE QUESTION Explain CSS specificity. CSS Medium Explore answer +" [ref=f13e433] [cursor=pointer]:
+                  - generic [ref=f13e434]:
+                    - generic [ref=f13e435]: PRACTICE QUESTION
+                    - text: Explain CSS specificity.
+                  - generic [ref=f13e436]:
+                    - generic [ref=f13e437]: CSS
+                    - generic [ref=f13e438]: Medium
+                    - generic [ref=f13e439]: Explore answer +
+              - group [ref=f13e440]:
+                - generic "PRACTICE QUESTION Flexbox vs Grid — when to use which? CSS Easy Explore answer +" [ref=f13e441] [cursor=pointer]:
+                  - generic [ref=f13e442]:
+                    - generic [ref=f13e443]: PRACTICE QUESTION
+                    - text: Flexbox vs Grid — when to use which?
+                  - generic [ref=f13e444]:
+                    - generic [ref=f13e445]: CSS
+                    - generic [ref=f13e446]: Easy
+                    - generic [ref=f13e447]: Explore answer +
+            - generic [ref=f13e448]:
+              - generic [ref=f13e449]:
+                - heading "Web" [level=4] [ref=f13e450]
+                - generic [ref=f13e451]: 3 questions
+              - group [ref=f13e452]:
+                - generic "PRACTICE QUESTION What happens when you type a URL and press Enter? Web Hard Explore answer +" [ref=f13e453] [cursor=pointer]:
+                  - generic [ref=f13e454]:
+                    - generic [ref=f13e455]: PRACTICE QUESTION
+                    - text: What happens when you type a URL and press Enter?
+                  - generic [ref=f13e456]:
+                    - generic [ref=f13e457]: Web
+                    - generic [ref=f13e458]: Hard
+                    - generic [ref=f13e459]: Explore answer +
+              - group [ref=f13e460]:
+                - generic "PRACTICE QUESTION Explain CORS. Web Medium Explore answer +" [ref=f13e461] [cursor=pointer]:
+                  - generic [ref=f13e462]:
+                    - generic [ref=f13e463]: PRACTICE QUESTION
+                    - text: Explain CORS.
+                  - generic [ref=f13e464]:
+                    - generic [ref=f13e465]: Web
+                    - generic [ref=f13e466]: Medium
+                    - generic [ref=f13e467]: Explore answer +
+              - group [ref=f13e468]:
+                - generic "PRACTICE QUESTION What is a TLS handshake? Web Medium Explore answer +" [ref=f13e469] [cursor=pointer]:
+                  - generic [ref=f13e470]:
+                    - generic [ref=f13e471]: PRACTICE QUESTION
+                    - text: What is a TLS handshake?
+                  - generic [ref=f13e472]:
+                    - generic [ref=f13e473]: Web
+                    - generic [ref=f13e474]: Medium
+                    - generic [ref=f13e475]: Explore answer +
+          - region "Frameworks & runtime interview questions" [ref=f13e476]:
+            - generic [ref=f13e477]:
+              - generic [ref=f13e478]:
+                - heading "Frameworks & runtime" [level=3] [ref=f13e479]
+                - paragraph [ref=f13e480]: How the tools you list on your CV actually behave under load.
+              - generic [ref=f13e481]: 6 Q&A
+            - generic [ref=f13e482]:
+              - generic [ref=f13e483]:
+                - heading "React" [level=4] [ref=f13e484]
+                - generic [ref=f13e485]: 4 questions
+              - group [ref=f13e486]:
+                - generic "PRACTICE QUESTION What problem do keys solve in React lists? React Easy Explore answer +" [ref=f13e487] [cursor=pointer]:
+                  - generic [ref=f13e488]:
+                    - generic [ref=f13e489]: PRACTICE QUESTION
+                    - text: What problem do keys solve in React lists?
+                  - generic [ref=f13e490]:
+                    - generic [ref=f13e491]: React
+                    - generic [ref=f13e492]: Easy
+                    - generic [ref=f13e493]: Explore answer +
+              - group [ref=f13e494]:
+                - generic "PRACTICE QUESTION useMemo vs useCallback — what's the difference? React Medium Explore answer +" [ref=f13e495] [cursor=pointer]:
+                  - generic [ref=f13e496]:
+                    - generic [ref=f13e497]: PRACTICE QUESTION
+                    - text: useMemo vs useCallback — what's the difference?
+                  - generic [ref=f13e498]:
+                    - generic [ref=f13e499]: React
+                    - generic [ref=f13e500]: Medium
+                    - generic [ref=f13e501]: Explore answer +
+              - group [ref=f13e502]:
+                - generic "PRACTICE QUESTION Explain the Virtual DOM and reconciliation. React Medium Explore answer +" [ref=f13e503] [cursor=pointer]:
+                  - generic [ref=f13e504]:
+                    - generic [ref=f13e505]: PRACTICE QUESTION
+                    - text: Explain the Virtual DOM and reconciliation.
+                  - generic [ref=f13e506]:
+                    - generic [ref=f13e507]: React
+                    - generic [ref=f13e508]: Medium
+                    - generic [ref=f13e509]: Explore answer +
+              - group [ref=f13e510]:
+                - generic "PRACTICE QUESTION What are React Server Components and why do they matter? React Hard Explore answer +" [ref=f13e511] [cursor=pointer]:
+                  - generic [ref=f13e512]:
+                    - generic [ref=f13e513]: PRACTICE QUESTION
+                    - text: What are React Server Components and why do they matter?
+                  - generic [ref=f13e514]:
+                    - generic [ref=f13e515]: React
+                    - generic [ref=f13e516]: Hard
+                    - generic [ref=f13e517]: Explore answer +
+            - generic [ref=f13e518]:
+              - generic [ref=f13e519]:
+                - heading "Node.js" [level=4] [ref=f13e520]
+                - generic [ref=f13e521]: 2 questions
+              - group [ref=f13e522]:
+                - generic "PRACTICE QUESTION If Node.js is single-threaded, how does it handle concurrency? Node.js Medium Explore answer +" [ref=f13e523] [cursor=pointer]:
+                  - generic [ref=f13e524]:
+                    - generic [ref=f13e525]: PRACTICE QUESTION
+                    - text: If Node.js is single-threaded, how does it handle concurrency?
+                  - generic [ref=f13e526]:
+                    - generic [ref=f13e527]: Node.js
+                    - generic [ref=f13e528]: Medium
+                    - generic [ref=f13e529]: Explore answer +
+              - group [ref=f13e530]:
+                - generic "PRACTICE QUESTION What is middleware in Express? Node.js Easy Explore answer +" [ref=f13e531] [cursor=pointer]:
+                  - generic [ref=f13e532]:
+                    - generic [ref=f13e533]: PRACTICE QUESTION
+                    - text: What is middleware in Express?
+                  - generic [ref=f13e534]:
+                    - generic [ref=f13e535]: Node.js
+                    - generic [ref=f13e536]: Easy
+                    - generic [ref=f13e537]: Explore answer +
+          - region "Computer science interview questions" [ref=f13e538]:
+            - generic [ref=f13e539]:
+              - generic [ref=f13e540]:
+                - heading "Computer science" [level=3] [ref=f13e541]
+                - paragraph [ref=f13e542]: Complexity, data structures and the reasoning behind your choice.
+              - generic [ref=f13e543]: 6 Q&A
+            - generic [ref=f13e544]:
+              - generic [ref=f13e545]:
+                - heading "Algorithms" [level=4] [ref=f13e546]
+                - generic [ref=f13e547]: 4 questions
+              - group [ref=f13e548]:
+                - 'generic "PRACTICE QUESTION Two Sum: return indices of two numbers that add to a target. Algorithms Easy Explore answer +" [ref=f13e549] [cursor=pointer]':
+                  - generic [ref=f13e550]:
+                    - generic [ref=f13e551]: PRACTICE QUESTION
+                    - text: "Two Sum: return indices of two numbers that add to a target."
+                  - generic [ref=f13e552]:
+                    - generic [ref=f13e553]: Algorithms
+                    - generic [ref=f13e554]: Easy
+                    - generic [ref=f13e555]: Explore answer +
+              - group [ref=f13e556]:
+                - generic "PRACTICE QUESTION BFS vs DFS — differences and when to use each? Algorithms Medium Explore answer +" [ref=f13e557] [cursor=pointer]:
+                  - generic [ref=f13e558]:
+                    - generic [ref=f13e559]: PRACTICE QUESTION
+                    - text: BFS vs DFS — differences and when to use each?
+                  - generic [ref=f13e560]:
+                    - generic [ref=f13e561]: Algorithms
+                    - generic [ref=f13e562]: Medium
+                    - generic [ref=f13e563]: Explore answer +
+              - group [ref=f13e564]:
+                - generic "PRACTICE QUESTION Detect a cycle in a linked list. Algorithms Medium Explore answer +" [ref=f13e565] [cursor=pointer]:
+                  - generic [ref=f13e566]:
+                    - generic [ref=f13e567]: PRACTICE QUESTION
+                    - text: Detect a cycle in a linked list.
+                  - generic [ref=f13e568]:
+                    - generic [ref=f13e569]: Algorithms
+                    - generic [ref=f13e570]: Medium
+                    - generic [ref=f13e571]: Explore answer +
+              - group [ref=f13e572]:
+                - generic "PRACTICE QUESTION Reverse a singly linked list. Algorithms Easy Explore answer +" [ref=f13e573] [cursor=pointer]:
+                  - generic [ref=f13e574]:
+                    - generic [ref=f13e575]: PRACTICE QUESTION
+                    - text: Reverse a singly linked list.
+                  - generic [ref=f13e576]:
+                    - generic [ref=f13e577]: Algorithms
+                    - generic [ref=f13e578]: Easy
+                    - generic [ref=f13e579]: Explore answer +
+            - generic [ref=f13e580]:
+              - generic [ref=f13e581]:
+                - heading "Data Structures" [level=4] [ref=f13e582]
+                - generic [ref=f13e583]: 2 questions
+              - group [ref=f13e584]:
+                - generic "PRACTICE QUESTION What's the time complexity of hash map operations? Data Structures Easy Explore answer +" [ref=f13e585] [cursor=pointer]:
+                  - generic [ref=f13e586]:
+                    - generic [ref=f13e587]: PRACTICE QUESTION
+                    - text: What's the time complexity of hash map operations?
+                  - generic [ref=f13e588]:
+                    - generic [ref=f13e589]: Data Structures
+                    - generic [ref=f13e590]: Easy
+                    - generic [ref=f13e591]: Explore answer +
+              - group [ref=f13e592]:
+                - generic "PRACTICE QUESTION Array vs Linked List — trade-offs? Data Structures Medium Explore answer +" [ref=f13e593] [cursor=pointer]:
+                  - generic [ref=f13e594]:
+                    - generic [ref=f13e595]: PRACTICE QUESTION
+                    - text: Array vs Linked List — trade-offs?
+                  - generic [ref=f13e596]:
+                    - generic [ref=f13e597]: Data Structures
+                    - generic [ref=f13e598]: Medium
+                    - generic [ref=f13e599]: Explore answer +
+          - region "Systems & data interview questions" [ref=f13e600]:
+            - generic [ref=f13e601]:
+              - generic [ref=f13e602]:
+                - heading "Systems & data" [level=3] [ref=f13e603]
+                - paragraph [ref=f13e604]: Designing for scale, and the storage decisions underneath it.
+              - generic [ref=f13e605]: 6 Q&A
+            - generic [ref=f13e606]:
+              - generic [ref=f13e607]:
+                - heading "System Design" [level=4] [ref=f13e608]
+                - generic [ref=f13e609]: 4 questions
+              - group [ref=f13e610]:
+                - generic "PRACTICE QUESTION Design a URL shortener like bit.ly. System Design Hard Explore answer +" [ref=f13e611] [cursor=pointer]:
+                  - generic [ref=f13e612]:
+                    - generic [ref=f13e613]: PRACTICE QUESTION
+                    - text: Design a URL shortener like bit.ly.
+                  - generic [ref=f13e614]:
+                    - generic [ref=f13e615]: System Design
+                    - generic [ref=f13e616]: Hard
+                    - generic [ref=f13e617]: Explore answer +
+              - group [ref=f13e618]:
+                - generic "PRACTICE QUESTION How would you design a rate limiter? System Design Hard Explore answer +" [ref=f13e619] [cursor=pointer]:
+                  - generic [ref=f13e620]:
+                    - generic [ref=f13e621]: PRACTICE QUESTION
+                    - text: How would you design a rate limiter?
+                  - generic [ref=f13e622]:
+                    - generic [ref=f13e623]: System Design
+                    - generic [ref=f13e624]: Hard
+                    - generic [ref=f13e625]: Explore answer +
+              - group [ref=f13e626]:
+                - generic "PRACTICE QUESTION Explain the CAP theorem. System Design Hard Explore answer +" [ref=f13e627] [cursor=pointer]:
+                  - generic [ref=f13e628]:
+                    - generic [ref=f13e629]: PRACTICE QUESTION
+                    - text: Explain the CAP theorem.
+                  - generic [ref=f13e630]:
+                    - generic [ref=f13e631]: System Design
+                    - generic [ref=f13e632]: Hard
+                    - generic [ref=f13e633]: Explore answer +
+              - group [ref=f13e634]:
+                - generic "PRACTICE QUESTION How do you scale a read-heavy service? System Design Medium Explore answer +" [ref=f13e635] [cursor=pointer]:
+                  - generic [ref=f13e636]:
+                    - generic [ref=f13e637]: PRACTICE QUESTION
+                    - text: How do you scale a read-heavy service?
+                  - generic [ref=f13e638]:
+                    - generic [ref=f13e639]: System Design
+                    - generic [ref=f13e640]: Medium
+                    - generic [ref=f13e641]: Explore answer +
+            - generic [ref=f13e642]:
+              - generic [ref=f13e643]:
+                - heading "Databases" [level=4] [ref=f13e644]
+                - generic [ref=f13e645]: 2 questions
+              - group [ref=f13e646]:
+                - generic "PRACTICE QUESTION SQL vs NoSQL — when would you choose each? Databases Medium Explore answer +" [ref=f13e647] [cursor=pointer]:
+                  - generic [ref=f13e648]:
+                    - generic [ref=f13e649]: PRACTICE QUESTION
+                    - text: SQL vs NoSQL — when would you choose each?
+                  - generic [ref=f13e650]:
+                    - generic [ref=f13e651]: Databases
+                    - generic [ref=f13e652]: Medium
+                    - generic [ref=f13e653]: Explore answer +
+              - group [ref=f13e654]:
+                - generic "PRACTICE QUESTION What is database indexing and what does it cost? Databases Medium Explore answer +" [ref=f13e655] [cursor=pointer]:
+                  - generic [ref=f13e656]:
+                    - generic [ref=f13e657]: PRACTICE QUESTION
+                    - text: What is database indexing and what does it cost?
+                  - generic [ref=f13e658]:
+                    - generic [ref=f13e659]: Databases
+                    - generic [ref=f13e660]: Medium
+                    - generic [ref=f13e661]: Explore answer +
+          - region "Behaviour & experience interview questions" [ref=f13e662]:
+            - generic [ref=f13e663]:
+              - generic [ref=f13e664]:
+                - heading "Behaviour & experience" [level=3] [ref=f13e665]
+                - paragraph [ref=f13e666]: Your judgement, your trade-offs and the way you tell the story.
+              - generic [ref=f13e667]: 4 Q&A
+            - generic [ref=f13e668]:
+              - generic [ref=f13e669]:
+                - heading "Behavioral" [level=4] [ref=f13e670]
+                - generic [ref=f13e671]: 4 questions
+              - group [ref=f13e672]:
+                - generic "PRACTICE QUESTION Tell me about a time you had a conflict with a teammate. Behavioral Medium Explore answer +" [ref=f13e673] [cursor=pointer]:
+                  - generic [ref=f13e674]:
+                    - generic [ref=f13e675]: PRACTICE QUESTION
+                    - text: Tell me about a time you had a conflict with a teammate.
+                  - generic [ref=f13e676]:
+                    - generic [ref=f13e677]: Behavioral
+                    - generic [ref=f13e678]: Medium
+                    - generic [ref=f13e679]: Explore answer +
+              - group [ref=f13e680]:
+                - generic "PRACTICE QUESTION Why do you want to work here? Behavioral Easy Explore answer +" [ref=f13e681] [cursor=pointer]:
+                  - generic [ref=f13e682]:
+                    - generic [ref=f13e683]: PRACTICE QUESTION
+                    - text: Why do you want to work here?
+                  - generic [ref=f13e684]:
+                    - generic [ref=f13e685]: Behavioral
+                    - generic [ref=f13e686]: Easy
+                    - generic [ref=f13e687]: Explore answer +
+              - group [ref=f13e688]:
+                - 'generic "PRACTICE QUESTION Amazon: tell me about a time you took ownership. Behavioral Medium Explore answer +" [ref=f13e689] [cursor=pointer]':
+                  - generic [ref=f13e690]:
+                    - generic [ref=f13e691]: PRACTICE QUESTION
+                    - text: "Amazon: tell me about a time you took ownership."
+                  - generic [ref=f13e692]:
+                    - generic [ref=f13e693]: Behavioral
+                    - generic [ref=f13e694]: Medium
+                    - generic [ref=f13e695]: Explore answer +
+              - group [ref=f13e696]:
+                - generic "PRACTICE QUESTION Describe a project you're most proud of. Behavioral Easy Explore answer +" [ref=f13e697] [cursor=pointer]:
+                  - generic [ref=f13e698]:
+                    - generic [ref=f13e699]: PRACTICE QUESTION
+                    - text: Describe a project you're most proud of.
+                  - generic [ref=f13e700]:
+                    - generic [ref=f13e701]: Behavioral
+                    - generic [ref=f13e702]: Easy
+                    - generic [ref=f13e703]: Explore answer +
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f13e709] [cursor=pointer]

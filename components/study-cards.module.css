@@ -1,0 +1,96 @@
+/* Professional study cards: a flip deck with session recall tracking, shared by Lessons, Quiz and Interview. */
+.deck {
+  --accent: var(--clay, #c96442); --accent-deep: var(--clay-deep, #b65334); --accent-soft: var(--clay-soft, #f9ece6); --accent-line: #f1d6c8;
+  display: grid; grid-template-columns: minmax(0, .78fr) minmax(0, 1.22fr); gap: 34px; align-items: start;
+  margin-top: 24px; padding: 30px; border: 1px solid var(--line, #e8e6dc); border-radius: 18px;
+  background: linear-gradient(152deg, var(--oat, #f5f4ed) 0%, var(--ivory, #faf9f5) 58%);
+}
+.deck[data-accent="olive"] { --accent: #5c7a3f; --accent-deep: #4c6733; --accent-soft: #eef3e6; --accent-line: #d5e1c3; }
+.deck[data-accent="amber"] { --accent: #8a6512; --accent-deep: #74540f; --accent-soft: #fbf3df; --accent-line: #eedfb2; }
+
+/* Left rail: what this deck is for, and how the session is going. */
+.intro { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 16px; }
+.introEyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent-deep); }
+.intro h2 { margin: 0; font-family: var(--serif, Georgia, serif); font-weight: 500; font-size: clamp(24px, 2.4vw, 32px); line-height: 1.15; letter-spacing: -.03em; color: var(--ink, #262624); }
+.intro p { margin: 0; max-width: 36ch; font-size: 13px; line-height: 1.8; color: var(--muted, #73726c); }
+.gauge { display: flex; align-items: center; gap: 14px; padding: 14px; border: 1px solid var(--line, #e8e6dc); border-radius: 14px; background: #fff; }
+.gaugeText { display: grid; gap: 3px; min-width: 0; }
+.gaugeText b { font-size: 13px; font-weight: 600; color: var(--ink, #262624); }
+.gaugeText span { font-size: 11px; line-height: 1.6; color: var(--muted, #73726c); }
+.ring { flex: none; width: 58px; height: 58px; }
+.ringTrack { fill: none; stroke: var(--cloud, #e8e6dc); stroke-width: 6; }
+.ringValue { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset .45s cubic-bezier(.2, .8, .2, 1); }
+.ringLabel { font-size: 17px; font-weight: 600; fill: var(--ink, #262624); }
+.tally { display: flex; flex-wrap: wrap; gap: 8px; }
+.tally span { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line, #e8e6dc); background: #fff; font-size: 11px; color: var(--muted, #73726c); }
+.tally b { font-weight: 600; color: var(--ink, #262624); }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.dot[data-kind="review"] { background: #d8a13c; }
+.dot[data-kind="left"] { background: var(--line-strong, #d1cfc5); }
+.keys { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 11px; color: var(--faint, #87867f); }
+.keys kbd { display: inline-block; min-width: 18px; padding: 1px 5px; margin-right: 5px; border: 1px solid var(--line-strong, #d1cfc5); border-bottom-width: 2px; border-radius: 5px; background: #fff; font-family: var(--mono, monospace); font-size: 10px; line-height: 1.6; color: var(--read, #3d3d3a); }
+
+/* Right rail: the card itself, sitting on a visible stack of the cards still to come. */
+.stage { min-width: 0; }
+.cardWrap { position: relative; }
+.cardWrap::before, .cardWrap::after { content: ""; position: absolute; left: 14px; right: 14px; border: 1px solid var(--line-strong, #d1cfc5); border-radius: 14px; background: #fff; }
+.cardWrap::before { bottom: -7px; height: 20px; opacity: .75; }
+.cardWrap::after { bottom: -13px; left: 26px; right: 26px; height: 20px; opacity: .45; }
+.cardWrap[data-stack="0"]::before, .cardWrap[data-stack="0"]::after, .cardWrap[data-stack="1"]::after { display: none; }
+.scene { position: relative; z-index: 1; perspective: 1600px; }
+.card { display: grid; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.2, .8, .2, 1); }
+.card[data-flipped="true"] { transform: rotateY(180deg); }
+.face { grid-area: 1 / 1; display: flex; flex-direction: column; gap: 14px; min-height: 250px; padding: 24px; border: 1px solid var(--line-strong, #d1cfc5); border-radius: 14px; background: #fff; box-shadow: 0 10px 26px rgba(38, 38, 36, .05); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.face[data-side="back"] { transform: rotateY(180deg); border-color: var(--accent-line); background: linear-gradient(170deg, var(--accent-soft) 0%, #fff 42%); }
+.faceTop { display: flex; align-items: center; justify-content: space-between; gap: 14px; font-family: var(--mono, monospace); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent-deep); }
+.counter { color: var(--faint, #87867f); letter-spacing: .06em; }
+.cardEyebrow { font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted, #73726c); }
+.face h3 { margin: 0; font-family: var(--serif, Georgia, serif); font-weight: 550; font-size: 21px; line-height: 1.4; letter-spacing: -.025em; color: var(--ink, #262624); }
+.body { flex: 1; min-height: 72px; max-height: 340px; overflow-y: auto; font-size: 13.5px; line-height: 1.8; color: var(--read, #3d3d3a); overscroll-behavior: contain; }
+/* Tailwind's preflight drops list markers, and a takeaway list needs them back. */
+.body ul, .body ol { margin: 0; padding-left: 20px; display: grid; gap: 7px; list-style-position: outside; }
+.body ul { list-style-type: disc; }
+.body ol { list-style-type: decimal; }
+.body li::marker { color: var(--accent); }
+.body p { margin: 0 0 8px; }
+.prompt { margin: 0; font-size: 13.5px; line-height: 1.8; color: var(--muted, #73726c); }
+.metaRow { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 14px; border-top: 1px solid var(--line, #e8e6dc); }
+.metaRow span { padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line, #e8e6dc); background: var(--oat, #f5f4ed); font-size: 11.5px; color: var(--read, #3d3d3a); }
+
+/* Controls sit outside the flipping surface so focus never rotates out of view. */
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 26px; }
+.spacer { flex: 1; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; padding: 8px 15px; border: 1px solid transparent; border-radius: 9px; font-size: 13px; font-weight: 550; line-height: 1.2; cursor: pointer; transition: background .15s, border-color .15s, color .15s; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.solid { background: var(--accent); border-color: var(--accent); color: #fff; }
+.solid:hover:not(:disabled) { background: var(--accent-deep); border-color: var(--accent-deep); }
+.quiet { background: #fff; border-color: var(--line-strong, #d1cfc5); color: var(--read, #3d3d3a); }
+.quiet:hover:not(:disabled) { border-color: var(--accent); color: var(--accent-deep); }
+.icon { min-width: 38px; padding: 8px 10px; }
+
+/* End of a pass through the deck. */
+.summary { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 12px; min-height: 250px; padding: 28px; border: 1px solid var(--accent-line); border-radius: 14px; background: linear-gradient(170deg, var(--accent-soft), #fff 55%); }
+.summary h3 { margin: 0; font-family: var(--serif, Georgia, serif); font-weight: 500; font-size: 26px; letter-spacing: -.03em; color: var(--ink, #262624); }
+.summary p { margin: 0; max-width: 46ch; font-size: 13.5px; line-height: 1.8; color: var(--muted, #73726c); }
+.summaryActions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (max-width: 900px) {
+  .deck { grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 24px; }
+  .intro { position: static; }
+  .intro p { max-width: none; }
+}
+@media (max-width: 520px) {
+  .deck { padding: 18px; }
+  .face { min-height: 220px; padding: 18px; }
+  .controls .btn { flex: 1 1 auto; }
+  .spacer { display: none; }
+  .keys { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card { transition: none; }
+  .card[data-flipped="true"] { transform: none; }
+  .face[data-side="back"] { transform: none; }
+  .ringValue { transition: none; }
+}

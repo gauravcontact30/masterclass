@@ -8,6 +8,7 @@ import type { DocumentRecord, Topic } from "@/lib/domain";
 import { requestJson } from "@/lib/client";
 import { noteLines, technologyTopicNotes, type TopicNote } from "@/lib/technology-topics";
 import { ServiceCatalog } from "./service-catalog";
+import { CodeLab } from "./code-lab";
 import { useLanguage } from "./language-provider";
 import { Button } from "./ui/button";
 import styles from "./technology-topics.module.css";
@@ -55,7 +56,7 @@ export function TechnologyTopics({ documents, topics, onLearn }: { documents: Do
         {note.lesson && <details className={styles.details}>
           <summary>{hi ? "उदाहरण और अभ्यास" : "Examples & practice"}</summary>
           <h5>{hi ? "उदाहरण" : "Example"}</h5><ul>{noteLines(note.lesson.example).map((line, index) => <li key={index}>{line}</li>)}</ul>
-          {note.lesson.code && <pre><code>{note.lesson.code}</code></pre>}
+          {note.lesson.code && <CodeLab title={note.lesson.title} code={note.lesson.code} />}
           <h5>{hi ? "अभ्यास" : "Practice"}</h5><ul>{noteLines(note.lesson.exercise).map((line, index) => <li key={index}>{line}</li>)}</ul>
           <h5>{hi ? "अपनी समझ जाँचें" : "Check your understanding"}</h5><ul>{noteLines(note.lesson.checkpoint).map((line, index) => <li key={index}>{line}</li>)}</ul>
           <h5>{hi ? "सामान्य गलतियाँ" : "Common mistakes"}</h5><ul>{noteLines(note.lesson.mistake).map((line, index) => <li key={index}>{line}</li>)}</ul>

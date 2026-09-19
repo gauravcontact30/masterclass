@@ -2,19 +2,24 @@ import { render, screen } from "@testing-library/react";
 import { ExpandedText } from "@/components/expanded-text";
 import { compactAbbreviations, expandAbbreviations } from "@/lib/abbreviations";
 
-test("AWS and technology names show pastel pills without parentheses and semantic abbreviations", () => {
+test("known terms become abbreviations whose full form stays in the title, not in the sentence", () => {
   const { container } = render(<p><ExpandedText text="Use AWS EC2, S3 and a JWT API." /></p>);
-  expect(screen.getByText("Elastic Compute Cloud")).toBeInTheDocument();
-  expect(screen.getByText("Simple Storage Service")).toBeInTheDocument();
-  expect(screen.getByText("JSON Web Token")).toBeInTheDocument();
-  const pills = [...container.querySelectorAll("span[data-tone]")];
-  expect(pills.every(pill => !/[()]/.test(pill.textContent ?? ""))).toBe(true);
-  expect(new Set(pills.map(pill => pill.getAttribute("data-tone"))).size).toBeGreaterThan(1);
+  // The sentence reads as written: no expansion is spelled out inline.
+  expect(container.textContent).toBe("Use AWS EC2, S3 and a JWT API.");
+  for (const full of ["Elastic Compute Cloud", "Simple Storage Service", "JSON Web Token"]) {
+    expect(screen.queryByText(full)).not.toBeInTheDocument();
+  }
+  // Each one is still retrievable from the markup.
   expect(container.querySelector('abbr[title="Application Programming Interface"]')).toHaveTextContent("API");
+  // "AWS EC2" is one term, not two, so four marks cover the five names.
+  expect(container.querySelector('abbr[title="Elastic Compute Cloud"]')).toHaveTextContent("AWS EC2");
+  expect(container.querySelectorAll("abbr")).toHaveLength(4);
 });
-test("existing full forms render once; code, URLs, unknown and ambiguous terms remain intact", () => {
-  render(<ExpandedText text="EC2 (Elastic Compute Cloud). API at https://host.test/API and `AWS S3`. npm V8 UNKNOWN." />);
-  expect(screen.getAllByText("Elastic Compute Cloud")).toHaveLength(1);
+test("an author's own parenthetical is absorbed into the title; code, URLs, unknown and ambiguous terms remain intact", () => {
+  const { container } = render(<ExpandedText text="EC2 (Elastic Compute Cloud). API at https://host.test/API and `AWS S3`. npm V8 UNKNOWN." />);
+  // The spelled-out form moves into the mark rather than being repeated beside it.
+  expect(container.textContent).toBe("EC2. API at https://host.test/API and `AWS S3`. npm V8 UNKNOWN.");
+  expect(container.querySelector('abbr[title="Elastic Compute Cloud"]')).toHaveTextContent("EC2");
   const parts = expandAbbreviations("https://host.test/API `AWS S3` npm V8 UNKNOWN");
   expect(parts.filter(part => part.fullForm)).toHaveLength(0);
   expect(parts.map(part => part.text).join("")).toBe("https://host.test/API `AWS S3` npm V8 UNKNOWN");

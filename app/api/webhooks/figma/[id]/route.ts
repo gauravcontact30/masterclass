@@ -19,4 +19,4 @@ export async function POST(request:Request,context:{params:Promise<{id:string}>}
   check(await db().from("design_assets").update({metadata:{...asset.metadata,needs_sync:true},updated_at:new Date().toISOString()}).eq("id",id));
   check(await db().from("webhook_events").upsert({provider:"figma",event_id:eventId,user_id:asset.user_id},{onConflict:"provider,event_id",ignoreDuplicates:true}));
   return Response.json({ok:true});
-});}
+}, request);}

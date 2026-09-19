@@ -7,17 +7,18 @@
     "prebuild": "node scripts/prepare-assets.mjs",
     "test": "jest --runInBand",
     "test:db": "node scripts/test-database.mjs",
-    "worker": "tsx --conditions=react-server --env-file=.env.local scripts/process-queue.ts",
+    "worker": "tsx --conditions=react-server --env-file=.env scripts/process-queue.ts",
     "typecheck": "next typegen && tsc --noEmit",
     "dev": "node scripts/dev.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "purge:legacy": "tsx --env-file=.env.local scripts/purge-legacy-documents.ts"
+    "purge:legacy": "tsx --env-file=.env scripts/purge-legacy-documents.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
     "@base-ui/react": "^1.8.0",
+    "@codesandbox/sandpack-react": "^2.20.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.116.0",
     "class-variance-authority": "^0.7.1",

@@ -28,7 +28,7 @@
 .link:hover,
 .link:focus-visible {
   transform: translateY(-2px);
-  background-color: var(--nav-hover, #edf3e6);
+  background-color: var(--nav-hover, #f0eee6);
 }
 
 .link:hover::after,

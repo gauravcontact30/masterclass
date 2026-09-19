@@ -11,7 +11,7 @@
 .contents ol { display: grid; gap: 4px; list-style: none; margin: 10px 0; padding: 0; }
 .contents li button { display: grid; gap: 4px; width: 100%; padding: 9px; text-align: left; border: 1px solid transparent; border-radius: 9px; cursor: pointer; }
 .contents li button:hover { background: var(--sage); }
-.contents li button[aria-current] { background: #eaf3e5; border-color: #cbdcc4; }
+.contents li button[aria-current] { background: #f0eee6; border-color: #d1cfc5; }
 .contents li span { font-size: 11px; line-height: 1.5; font-weight: 600; }
 .contents li small { font-size: 9px; color: var(--muted-ink); }
 .pagination { display: flex; justify-content: space-between; align-items: center; padding-top: 9px; border-top: 1px solid var(--line); font-size: 10px; }

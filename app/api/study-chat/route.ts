@@ -9,5 +9,5 @@ export async function POST(request: Request) {
     const input = studyChatSchema.parse(await jsonBody(request, 100000));
     await limitStudyChat(request);
     return Response.json(await answerStudyQuestion(input, request.signal));
-  });
+  }, request);
 }

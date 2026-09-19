@@ -1,0 +1,9 @@
+[
+  "django",
+  "flask",
+  "matplotlib",
+  "beautifulsoup",
+  "rich",
+  "tqdm",
+  "loguru"
+]

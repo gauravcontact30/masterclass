@@ -1,4 +1,6 @@
 "use client";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { ExpandedText } from "@/components/expanded-text";
 
 import { useState } from "react";
@@ -90,22 +92,22 @@ export function AuthPage({ mode, enabled }: { mode: "signin" | "signup"; enabled
                   // The hint sits outside the label so it describes the field
                   // without becoming part of its accessible name.
                   <div className={styles.field}>
-                    <label className={styles.label} htmlFor="auth-name"><ExpandedText text={t("fullName")} /></label>
-                    <input className={styles.input} id="auth-name" type="text" autoComplete="name" required maxLength={80} aria-describedby="auth-name-hint" value={name} onChange={e => setName(e.target.value)} />
+                    <Label className={styles.label} htmlFor="auth-name"><ExpandedText text={t("fullName")} /></Label>
+                    <Input className={styles.input} id="auth-name" type="text" autoComplete="name" required maxLength={80} aria-describedby="auth-name-hint" value={name} onChange={e => setName(e.target.value)} />
                     <small className={styles.hint} id="auth-name-hint"><ExpandedText text={t("fullNameHint")} /></small>
                   </div>
                 )}
                 <div className={styles.field}>
-                  <label className={styles.label} htmlFor="auth-email"><ExpandedText text={t("email")} /></label>
-                  <input className={styles.input} id="auth-email" type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} />
+                  <Label className={styles.label} htmlFor="auth-email"><ExpandedText text={t("email")} /></Label>
+                  <Input className={styles.input} id="auth-email" type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} />
                 </div>
                 <div className={styles.field}>
-                  <label className={styles.label} htmlFor="auth-password"><ExpandedText text={t("password")} /></label>
+                  <Label className={styles.label} htmlFor="auth-password"><ExpandedText text={t("password")} /></Label>
                   <div className={styles.passwordBox}>
-                    <input className={styles.input} id="auth-password" type={showPassword ? "text" : "password"} autoComplete={mode === "signin" ? "current-password" : "new-password"} required minLength={6} aria-describedby={mode === "signup" ? "auth-password-hint" : undefined} value={password} onChange={e => setPassword(e.target.value)} />
-                    <button className={styles.eye} type="button" aria-controls="auth-password" aria-pressed={showPassword} aria-label={showPassword ? t("hidePassword") : t("showPassword")} onClick={() => setShowPassword(value => !value)}>
+                    <Input className={styles.input} id="auth-password" type={showPassword ? "text" : "password"} autoComplete={mode === "signin" ? "current-password" : "new-password"} required minLength={6} aria-describedby={mode === "signup" ? "auth-password-hint" : undefined} value={password} onChange={e => setPassword(e.target.value)} />
+                    <Button className={styles.eye} type="button" aria-controls="auth-password" aria-pressed={showPassword} aria-label={showPassword ? t("hidePassword") : t("showPassword")} onClick={() => setShowPassword(value => !value)}>
                       {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
-                    </button>
+                    </Button>
                   </div>
                   {mode === "signup" && <small className={styles.hint} id="auth-password-hint"><ExpandedText text={t("authPasswordHint")} /></small>}
                 </div>

@@ -6,6 +6,7 @@ export type FundamentalSeed = {
   id: string; title: string; category: string; facts: string; example: string; workflow: string;
   quiz: [question: string, answer: string, distractor1: string, distractor2: string, distractor3: string];
   sources: string[];
+  vocabulary?: VocabularyEntry[];
 };
 export const lesson = (id: string, title: string, category: string, facts: string, example: string, workflow: string, quiz: FundamentalSeed["quiz"], ...sources: string[]): FundamentalSeed => ({ id, title, category, facts, example, workflow, quiz, sources });
 export const CLAUDE_COLLECTION = { id: "claude-fundamentals", title: "Claude Fundamentals", category: "Artificial intelligence" };
@@ -40,7 +41,7 @@ export function buildFundamentals(seeds: FundamentalSeed[], technology: string):
       useCases: [{ title: "Apply it in practice", points: [seed.example, `Decision to check: ${question}`, answer] }],
       interview: [{ question, points: [answer, ...points.slice(1)], priority: seed.category === "20 AI Concepts" ? 5 : 4, rationale: "Editorial study priority for explaining the concept and its tradeoffs; not measured interview frequency." }],
       questions: [{ question, options, correct, shortAnswer: answer, explanation: `${points.join(" ")} ${seed.example}` }],
-      vocabulary: matchingWords.length ? matchingWords.slice(0, 2) : [{ ...words[0], example: `An explicit explanation makes ${seed.title} easier to apply.` }],
+      vocabulary: seed.vocabulary ?? (matchingWords.length ? matchingWords.slice(0, 2) : [{ ...words[0], example: `An explicit explanation makes ${seed.title} easier to apply.` }]),
     };
   });
 }

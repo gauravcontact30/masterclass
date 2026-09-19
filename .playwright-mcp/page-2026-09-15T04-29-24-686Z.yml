@@ -1,0 +1,366 @@
+- generic [active] [ref=f9e1]:
+  - generic [ref=f9e2]:
+    - complementary [ref=f9e3]:
+      - generic [ref=f9e4]:
+        - link [ref=f9e5] [cursor=pointer]:
+          - /url: /
+          - generic [ref=f9e12]:
+            - text: Master
+            - generic [aria-hidden] [ref=f9e13]: ✦
+            - emphasis [ref=f9e14]: Class
+        - button "Collapse sidebar" [expanded] [ref=f9e15] [cursor=pointer]
+      - generic [ref=f9e19]:
+        - searchbox "Search sidebar" [ref=f9e24]
+        - group "Search filters" [ref=f9e25]:
+          - button "All results" [pressed] [ref=f9e26] [cursor=pointer]
+          - button "Pages" [ref=f9e32] [cursor=pointer]
+          - button "Professional learning" [ref=f9e35] [cursor=pointer]
+          - button "Exams and courses" [ref=f9e40] [cursor=pointer]
+          - button "Technology tracks" [ref=f9e44] [cursor=pointer]
+      - generic [ref=f9e49]: YOUR LEARNING SPACE
+      - navigation "Dashboard" [ref=f9e50]:
+        - button "Dashboard" [ref=f9e51] [cursor=pointer]
+        - button "My library" [ref=f9e57] [cursor=pointer]
+        - link "Notes" [ref=f9e60] [cursor=pointer]:
+          - /url: /dashboard/notes
+        - link "Bookmark" [ref=f9e63] [cursor=pointer]:
+          - /url: /dashboard/bookmark
+      - generic [ref=f9e66]: Profissional Learn
+      - navigation "Profissional Learn" [ref=f9e67]:
+        - link "Techy" [ref=f9e68] [cursor=pointer]:
+          - /url: /dashboard/techy
+        - link "API Docs" [ref=f9e75] [cursor=pointer]:
+          - /url: /dashboard/api-docs
+        - link "Lessons" [ref=f9e83] [cursor=pointer]:
+          - /url: /dashboard/lessons
+        - link "Quiz" [ref=f9e88] [cursor=pointer]:
+          - /url: /dashboard/quiz
+        - link "Interview" [ref=f9e94] [cursor=pointer]:
+          - /url: /dashboard/interview
+        - link "Mentors" [ref=f9e100] [cursor=pointer]:
+          - /url: /dashboard/mentors
+      - navigation "Preparation categories" [ref=f9e109]
+    - generic [ref=f9e110]:
+      - banner [ref=f9e111]:
+        - generic [ref=f9e112]:
+          - text: Dashboard
+          - generic [ref=f9e115]: Interview
+        - generic [ref=f9e116]:
+          - group "App language" [ref=f9e117]:
+            - button "EN" [pressed] [ref=f9e118] [cursor=pointer]
+            - button "Hi" [ref=f9e119] [cursor=pointer]
+          - link "Sign in" [ref=f9e121] [cursor=pointer]:
+            - /url: /sign-in
+      - main [ref=f9e125]:
+        - generic [ref=f9e126]:
+          - generic [ref=f9e128]:
+            - paragraph [ref=f9e129]: Interview prep · refreshes daily
+            - heading "Crack your next big-tech interview" [level=1] [ref=f9e130]
+            - paragraph [ref=f9e131]:
+              - text: A new question every day, the most-asked questions tagged by company, and an AI partner that drills you on any topic — for engineers and students aiming at Google, Meta, Amazon, Microsoft, Apple, Netflix and beyond.
+              - generic [ref=f9e132]:
+                - generic [ref=f9e133]: 35curated questions
+                - generic [ref=f9e134]: 7companies
+                - generic [ref=f9e135]: 11topics
+          - region "Question of the day" [ref=f9e136]:
+            - generic [ref=f9e137]:
+              - generic [ref=f9e138]: Question of the day
+              - generic [ref=f9e141]: Behavioral
+              - generic [ref=f9e142]: Medium
+            - group [ref=f9e143]:
+              - 'generic "Amazon: tell me about a time you took ownership. Reveal answer" [ref=f9e144] [cursor=pointer]':
+                - generic [ref=f9e145]: "Amazon: tell me about a time you took ownership."
+                - generic [ref=f9e146]: Reveal answer
+          - region [ref=f9e147]:
+            - heading "Practice with AI" [level=2] [ref=f9e149]
+            - paragraph [ref=f9e150]: Unlimited fresh questions with model answers, tuned to a topic, company and difficulty.
+            - generic [ref=f9e151]:
+              - generic [ref=f9e152]:
+                - generic [ref=f9e153]: Topic
+                - combobox "Topic" [ref=f9e155] [cursor=pointer]:
+                  - option "All" [selected]
+                  - option "JavaScript"
+                  - option "React"
+                  - option "System Design"
+                  - option "Algorithms"
+                  - option "Data Structures"
+                  - option "TypeScript"
+                  - option "Node.js"
+                  - option "Behavioral"
+                  - option "CSS"
+                  - option "Web"
+                  - option "Databases"
+              - generic [ref=f9e156]:
+                - generic [ref=f9e157]: Company
+                - combobox "Company" [ref=f9e159] [cursor=pointer]:
+                  - option "All" [selected]
+                  - option "Google"
+                  - option "Meta"
+                  - option "Amazon"
+                  - option "Microsoft"
+                  - option "Apple"
+                  - option "Netflix"
+                  - option "Uber"
+              - generic [ref=f9e160]:
+                - generic [ref=f9e161]: Level
+                - combobox "Level" [ref=f9e163] [cursor=pointer]:
+                  - option "All" [selected]
+                  - option "Easy"
+                  - option "Medium"
+                  - option "Hard"
+              - button "Generate a question" [ref=f9e164] [cursor=pointer]
+          - generic [ref=f9e168]:
+            - generic [ref=f9e169]:
+              - heading "Most-asked questions" [level=2] [ref=f9e170]
+              - paragraph [ref=f9e171]: Curated from real big-tech loops — filter by company, topic and difficulty.
+            - status [ref=f9e172]: 35 questions
+          - generic [ref=f9e173]:
+            - generic [ref=f9e174]:
+              - generic [ref=f9e175]: Company
+              - group "Filter by company" [ref=f9e176]:
+                - button "All" [pressed] [ref=f9e177] [cursor=pointer]
+                - button "Google" [ref=f9e178] [cursor=pointer]
+                - button "Meta" [ref=f9e179] [cursor=pointer]
+                - button "Amazon" [ref=f9e180] [cursor=pointer]
+                - button "Microsoft" [ref=f9e181] [cursor=pointer]
+                - button "Apple" [ref=f9e182] [cursor=pointer]
+                - button "Netflix" [ref=f9e183] [cursor=pointer]
+                - button "Uber" [ref=f9e184] [cursor=pointer]
+            - generic [ref=f9e185]:
+              - generic [ref=f9e186]: Topic
+              - group "Filter by topic" [ref=f9e187]:
+                - button "All" [pressed] [ref=f9e188] [cursor=pointer]
+                - button "JavaScript" [ref=f9e189] [cursor=pointer]
+                - button "React" [ref=f9e190] [cursor=pointer]
+                - button "System Design" [ref=f9e191] [cursor=pointer]
+                - button "Algorithms" [ref=f9e192] [cursor=pointer]
+                - button "Data Structures" [ref=f9e193] [cursor=pointer]
+                - button "TypeScript" [ref=f9e194] [cursor=pointer]
+                - button "Node.js" [ref=f9e195] [cursor=pointer]
+                - button "Behavioral" [ref=f9e196] [cursor=pointer]
+                - button "CSS" [ref=f9e197] [cursor=pointer]
+                - button "Web" [ref=f9e198] [cursor=pointer]
+                - button "Databases" [ref=f9e199] [cursor=pointer]
+            - generic [ref=f9e200]:
+              - generic [ref=f9e201]: Level
+              - generic [ref=f9e202]:
+                - group "Filter by level" [ref=f9e203]:
+                  - button "All" [pressed] [ref=f9e204] [cursor=pointer]
+                  - button "Easy" [ref=f9e205] [cursor=pointer]
+                  - button "Medium" [ref=f9e206] [cursor=pointer]
+                  - button "Hard" [ref=f9e207] [cursor=pointer]
+                - generic [ref=f9e208]:
+                  - generic [ref=f9e209]: Search questions
+                  - searchbox "Search questions" [ref=f9e213]
+          - group [ref=f9e214]:
+            - generic "Explain event delegation and why it's useful. JavaScript Medium" [ref=f9e215] [cursor=pointer]:
+              - generic [ref=f9e216]: Explain event delegation and why it's useful.
+              - generic [ref=f9e217]:
+                - generic [ref=f9e218]: JavaScript
+                - generic [ref=f9e219]: Medium
+          - group [ref=f9e220]:
+            - generic "What is the difference between == and ===? JavaScript Easy" [ref=f9e221] [cursor=pointer]:
+              - generic [ref=f9e222]: What is the difference between == and ===?
+              - generic [ref=f9e223]:
+                - generic [ref=f9e224]: JavaScript
+                - generic [ref=f9e225]: Easy
+          - group [ref=f9e226]:
+            - generic "Explain closures with an example. JavaScript Medium" [ref=f9e227] [cursor=pointer]:
+              - generic [ref=f9e228]: Explain closures with an example.
+              - generic [ref=f9e229]:
+                - generic [ref=f9e230]: JavaScript
+                - generic [ref=f9e231]: Medium
+          - group [ref=f9e232]:
+            - generic "How does the JavaScript event loop work? JavaScript Hard" [ref=f9e233] [cursor=pointer]:
+              - generic [ref=f9e234]: How does the JavaScript event loop work?
+              - generic [ref=f9e235]:
+                - generic [ref=f9e236]: JavaScript
+                - generic [ref=f9e237]: Hard
+          - group [ref=f9e238]:
+            - generic "Debounce vs throttle — when do you use each? JavaScript Medium" [ref=f9e239] [cursor=pointer]:
+              - generic [ref=f9e240]: Debounce vs throttle — when do you use each?
+              - generic [ref=f9e241]:
+                - generic [ref=f9e242]: JavaScript
+                - generic [ref=f9e243]: Medium
+          - group [ref=f9e244]:
+            - generic "What is the difference between var, let and const? JavaScript Medium" [ref=f9e245] [cursor=pointer]:
+              - generic [ref=f9e246]: What is the difference between var, let and const?
+              - generic [ref=f9e247]:
+                - generic [ref=f9e248]: JavaScript
+                - generic [ref=f9e249]: Medium
+          - group [ref=f9e250]:
+            - generic "What problem do keys solve in React lists? React Easy" [ref=f9e251] [cursor=pointer]:
+              - generic [ref=f9e252]: What problem do keys solve in React lists?
+              - generic [ref=f9e253]:
+                - generic [ref=f9e254]: React
+                - generic [ref=f9e255]: Easy
+          - group [ref=f9e256]:
+            - generic "useMemo vs useCallback — what's the difference? React Medium" [ref=f9e257] [cursor=pointer]:
+              - generic [ref=f9e258]: useMemo vs useCallback — what's the difference?
+              - generic [ref=f9e259]:
+                - generic [ref=f9e260]: React
+                - generic [ref=f9e261]: Medium
+          - group [ref=f9e262]:
+            - generic "Explain the Virtual DOM and reconciliation. React Medium" [ref=f9e263] [cursor=pointer]:
+              - generic [ref=f9e264]: Explain the Virtual DOM and reconciliation.
+              - generic [ref=f9e265]:
+                - generic [ref=f9e266]: React
+                - generic [ref=f9e267]: Medium
+          - group [ref=f9e268]:
+            - generic "What are React Server Components and why do they matter? React Hard" [ref=f9e269] [cursor=pointer]:
+              - generic [ref=f9e270]: What are React Server Components and why do they matter?
+              - generic [ref=f9e271]:
+                - generic [ref=f9e272]: React
+                - generic [ref=f9e273]: Hard
+          - group [ref=f9e274]:
+            - generic "Design a URL shortener like bit.ly. System Design Hard" [ref=f9e275] [cursor=pointer]:
+              - generic [ref=f9e276]: Design a URL shortener like bit.ly.
+              - generic [ref=f9e277]:
+                - generic [ref=f9e278]: System Design
+                - generic [ref=f9e279]: Hard
+          - group [ref=f9e280]:
+            - generic "How would you design a rate limiter? System Design Hard" [ref=f9e281] [cursor=pointer]:
+              - generic [ref=f9e282]: How would you design a rate limiter?
+              - generic [ref=f9e283]:
+                - generic [ref=f9e284]: System Design
+                - generic [ref=f9e285]: Hard
+          - group [ref=f9e286]:
+            - generic "Explain the CAP theorem. System Design Hard" [ref=f9e287] [cursor=pointer]:
+              - generic [ref=f9e288]: Explain the CAP theorem.
+              - generic [ref=f9e289]:
+                - generic [ref=f9e290]: System Design
+                - generic [ref=f9e291]: Hard
+          - group [ref=f9e292]:
+            - generic "How do you scale a read-heavy service? System Design Medium" [ref=f9e293] [cursor=pointer]:
+              - generic [ref=f9e294]: How do you scale a read-heavy service?
+              - generic [ref=f9e295]:
+                - generic [ref=f9e296]: System Design
+                - generic [ref=f9e297]: Medium
+          - group [ref=f9e298]:
+            - 'generic "Two Sum: return indices of two numbers that add to a target. Algorithms Easy" [ref=f9e299] [cursor=pointer]':
+              - generic [ref=f9e300]: "Two Sum: return indices of two numbers that add to a target."
+              - generic [ref=f9e301]:
+                - generic [ref=f9e302]: Algorithms
+                - generic [ref=f9e303]: Easy
+          - group [ref=f9e304]:
+            - generic "BFS vs DFS — differences and when to use each? Algorithms Medium" [ref=f9e305] [cursor=pointer]:
+              - generic [ref=f9e306]: BFS vs DFS — differences and when to use each?
+              - generic [ref=f9e307]:
+                - generic [ref=f9e308]: Algorithms
+                - generic [ref=f9e309]: Medium
+          - group [ref=f9e310]:
+            - generic "Detect a cycle in a linked list. Algorithms Medium" [ref=f9e311] [cursor=pointer]:
+              - generic [ref=f9e312]: Detect a cycle in a linked list.
+              - generic [ref=f9e313]:
+                - generic [ref=f9e314]: Algorithms
+                - generic [ref=f9e315]: Medium
+          - group [ref=f9e316]:
+            - generic "Reverse a singly linked list. Algorithms Easy" [ref=f9e317] [cursor=pointer]:
+              - generic [ref=f9e318]: Reverse a singly linked list.
+              - generic [ref=f9e319]:
+                - generic [ref=f9e320]: Algorithms
+                - generic [ref=f9e321]: Easy
+          - group [ref=f9e322]:
+            - generic "What's the time complexity of hash map operations? Data Structures Easy" [ref=f9e323] [cursor=pointer]:
+              - generic [ref=f9e324]: What's the time complexity of hash map operations?
+              - generic [ref=f9e325]:
+                - generic [ref=f9e326]: Data Structures
+                - generic [ref=f9e327]: Easy
+          - group [ref=f9e328]:
+            - generic "Array vs Linked List — trade-offs? Data Structures Medium" [ref=f9e329] [cursor=pointer]:
+              - generic [ref=f9e330]: Array vs Linked List — trade-offs?
+              - generic [ref=f9e331]:
+                - generic [ref=f9e332]: Data Structures
+                - generic [ref=f9e333]: Medium
+          - group [ref=f9e334]:
+            - generic "interface vs type in TypeScript? TypeScript Medium" [ref=f9e335] [cursor=pointer]:
+              - generic [ref=f9e336]: interface vs type in TypeScript?
+              - generic [ref=f9e337]:
+                - generic [ref=f9e338]: TypeScript
+                - generic [ref=f9e339]: Medium
+          - group [ref=f9e340]:
+            - generic "What does the satisfies operator do? TypeScript Medium" [ref=f9e341] [cursor=pointer]:
+              - generic [ref=f9e342]: What does the satisfies operator do?
+              - generic [ref=f9e343]:
+                - generic [ref=f9e344]: TypeScript
+                - generic [ref=f9e345]: Medium
+          - group [ref=f9e346]:
+            - generic "If Node.js is single-threaded, how does it handle concurrency? Node.js Medium" [ref=f9e347] [cursor=pointer]:
+              - generic [ref=f9e348]: If Node.js is single-threaded, how does it handle concurrency?
+              - generic [ref=f9e349]:
+                - generic [ref=f9e350]: Node.js
+                - generic [ref=f9e351]: Medium
+          - group [ref=f9e352]:
+            - generic "What is middleware in Express? Node.js Easy" [ref=f9e353] [cursor=pointer]:
+              - generic [ref=f9e354]: What is middleware in Express?
+              - generic [ref=f9e355]:
+                - generic [ref=f9e356]: Node.js
+                - generic [ref=f9e357]: Easy
+          - group [ref=f9e358]:
+            - generic "Tell me about a time you had a conflict with a teammate. Behavioral Medium" [ref=f9e359] [cursor=pointer]:
+              - generic [ref=f9e360]: Tell me about a time you had a conflict with a teammate.
+              - generic [ref=f9e361]:
+                - generic [ref=f9e362]: Behavioral
+                - generic [ref=f9e363]: Medium
+          - group [ref=f9e364]:
+            - generic "Why do you want to work here? Behavioral Easy" [ref=f9e365] [cursor=pointer]:
+              - generic [ref=f9e366]: Why do you want to work here?
+              - generic [ref=f9e367]:
+                - generic [ref=f9e368]: Behavioral
+                - generic [ref=f9e369]: Easy
+          - group [ref=f9e370]:
+            - 'generic "Amazon: tell me about a time you took ownership. Behavioral Medium" [ref=f9e371] [cursor=pointer]':
+              - generic [ref=f9e372]: "Amazon: tell me about a time you took ownership."
+              - generic [ref=f9e373]:
+                - generic [ref=f9e374]: Behavioral
+                - generic [ref=f9e375]: Medium
+          - group [ref=f9e376]:
+            - generic "Describe a project you're most proud of. Behavioral Easy" [ref=f9e377] [cursor=pointer]:
+              - generic [ref=f9e378]: Describe a project you're most proud of.
+              - generic [ref=f9e379]:
+                - generic [ref=f9e380]: Behavioral
+                - generic [ref=f9e381]: Easy
+          - group [ref=f9e382]:
+            - generic "Explain CSS specificity. CSS Medium" [ref=f9e383] [cursor=pointer]:
+              - generic [ref=f9e384]: Explain CSS specificity.
+              - generic [ref=f9e385]:
+                - generic [ref=f9e386]: CSS
+                - generic [ref=f9e387]: Medium
+          - group [ref=f9e388]:
+            - generic "Flexbox vs Grid — when to use which? CSS Easy" [ref=f9e389] [cursor=pointer]:
+              - generic [ref=f9e390]: Flexbox vs Grid — when to use which?
+              - generic [ref=f9e391]:
+                - generic [ref=f9e392]: CSS
+                - generic [ref=f9e393]: Easy
+          - group [ref=f9e394]:
+            - generic "What happens when you type a URL and press Enter? Web Hard" [ref=f9e395] [cursor=pointer]:
+              - generic [ref=f9e396]: What happens when you type a URL and press Enter?
+              - generic [ref=f9e397]:
+                - generic [ref=f9e398]: Web
+                - generic [ref=f9e399]: Hard
+          - group [ref=f9e400]:
+            - generic "Explain CORS. Web Medium" [ref=f9e401] [cursor=pointer]:
+              - generic [ref=f9e402]: Explain CORS.
+              - generic [ref=f9e403]:
+                - generic [ref=f9e404]: Web
+                - generic [ref=f9e405]: Medium
+          - group [ref=f9e406]:
+            - generic "What is a TLS handshake? Web Medium" [ref=f9e407] [cursor=pointer]:
+              - generic [ref=f9e408]: What is a TLS handshake?
+              - generic [ref=f9e409]:
+                - generic [ref=f9e410]: Web
+                - generic [ref=f9e411]: Medium
+          - group [ref=f9e412]:
+            - generic "SQL vs NoSQL — when would you choose each? Databases Medium" [ref=f9e413] [cursor=pointer]:
+              - generic [ref=f9e414]: SQL vs NoSQL — when would you choose each?
+              - generic [ref=f9e415]:
+                - generic [ref=f9e416]: Databases
+                - generic [ref=f9e417]: Medium
+          - group [ref=f9e418]:
+            - generic "What is database indexing and what does it cost? Databases Medium" [ref=f9e419] [cursor=pointer]:
+              - generic [ref=f9e420]: What is database indexing and what does it cost?
+              - generic [ref=f9e421]:
+                - generic [ref=f9e422]: Databases
+                - generic [ref=f9e423]: Medium
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f9e429] [cursor=pointer]

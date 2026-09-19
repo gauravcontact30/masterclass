@@ -1,0 +1,208 @@
+- generic [active] [ref=f2e1]:
+  - generic [ref=f2e2]:
+    - complementary [ref=f2e3]:
+      - generic [ref=f2e4]:
+        - link "MasterClass home" [ref=f2e5] [cursor=pointer]:
+          - /url: /
+          - generic [ref=f2e12]:
+            - text: Master
+            - generic [aria-hidden] [ref=f2e13]: ✦
+            - emphasis [ref=f2e14]: Class
+        - button "साइडबार सिकोड़ें" [expanded] [ref=f2e15] [cursor=pointer]
+      - generic [ref=f2e19]:
+        - searchbox "साइडबार में खोजें" [ref=f2e24]
+        - group "खोज फ़िल्टर" [ref=f2e25]:
+          - button "सभी परिणाम" [pressed] [ref=f2e26] [cursor=pointer]
+          - button "पेज" [ref=f2e32] [cursor=pointer]
+          - button "प्रोफ़ेशनल लर्निंग" [ref=f2e35] [cursor=pointer]
+          - button "परीक्षाएँ और कोर्स" [ref=f2e40] [cursor=pointer]
+          - button "टेक्नोलॉजी ट्रैक" [ref=f2e44] [cursor=pointer]
+      - generic [ref=f2e49]: आपकी सीखने की जगह
+      - navigation "डैशबोर्ड" [ref=f2e50]:
+        - button "डैशबोर्ड" [ref=f2e51] [cursor=pointer]
+        - button "मेरी लाइब्रेरी" [ref=f2e57] [cursor=pointer]
+        - link "?????" [ref=f2e60] [cursor=pointer]:
+          - /url: /dashboard/notes
+          - text: नोट्स
+        - link "Bookmark" [ref=f2e63] [cursor=pointer]:
+          - /url: /dashboard/bookmark
+      - generic [ref=f2e66]: Profissional Learn
+      - navigation "Profissional Learn" [ref=f2e67]:
+        - link "Techy" [ref=f2e68] [cursor=pointer]:
+          - /url: /dashboard/techy
+        - link "API Docs" [ref=f2e75] [cursor=pointer]:
+          - /url: /dashboard/api-docs
+        - link "Lessons" [ref=f2e83] [cursor=pointer]:
+          - /url: /dashboard/lessons
+        - link "Quiz" [ref=f2e88] [cursor=pointer]:
+          - /url: /dashboard/quiz
+        - link "Interview" [ref=f2e94] [cursor=pointer]:
+          - /url: /dashboard/interview
+        - link "Mentors" [ref=f2e100] [cursor=pointer]:
+          - /url: /dashboard/mentors
+      - navigation "तैयारी की श्रेणियाँ" [ref=f2e109]
+    - generic [ref=f2e110]:
+      - banner [ref=f2e111]:
+        - generic [ref=f2e112]:
+          - text: डैशबोर्ड
+          - generic [ref=f2e115]: Quiz
+        - generic [ref=f2e116]:
+          - group "ऐप की भाषा" [ref=f2e117]:
+            - button "EN" [ref=f2e118] [cursor=pointer]
+            - button "Hi" [pressed] [ref=f2e119] [cursor=pointer]
+          - link "साइन इन" [ref=f2e121] [cursor=pointer]:
+            - /url: /sign-in
+      - main [ref=f2e125]:
+        - generic [ref=f2e126]:
+          - navigation "Your learning journey" [ref=f2e127]:
+            - link "01 Learn Read and understand" [ref=f2e128] [cursor=pointer]:
+              - /url: /dashboard/lessons
+              - generic [ref=f2e129]: "01"
+              - generic [ref=f2e132]:
+                - generic [ref=f2e133]: Learn
+                - generic [ref=f2e134]: Read and understand
+            - link "02 Recall Check what stuck" [ref=f2e137] [cursor=pointer]:
+              - /url: /dashboard/quiz
+              - generic [ref=f2e138]: "02"
+              - generic [ref=f2e147]:
+                - generic [ref=f2e148]: Recall
+                - generic [ref=f2e149]: Check what stuck
+            - link "03 Practise Answer under pressure" [ref=f2e152] [cursor=pointer]:
+              - /url: /dashboard/interview
+              - generic [ref=f2e153]: "03"
+              - generic [ref=f2e158]:
+                - generic [ref=f2e159]: Practise
+                - generic [ref=f2e160]: Answer under pressure
+            - link "04 Go deeper Ask what is unclear" [ref=f2e163] [cursor=pointer]:
+              - /url: /dashboard/mentors
+              - generic [ref=f2e164]: "04"
+              - generic [ref=f2e167]:
+                - generic [ref=f2e168]: Go deeper
+                - generic [ref=f2e169]: Ask what is unclear
+          - generic [ref=f2e173]:
+            - paragraph [ref=f2e174]: Professional learning / Quiz
+            - heading "Test what you know" [level=1] [ref=f2e179]
+            - paragraph [ref=f2e180]: Pick a technology, a length and a difficulty, then answer one question at a time with instant explanations and the words worth knowing.
+          - generic [ref=f2e181]:
+            - generic [ref=f2e182]:
+              - heading "Find your practice rhythm" [level=2] [ref=f2e183]
+              - paragraph [ref=f2e184]: Choose a session, then tailor it to your learning goals.
+            - generic [ref=f2e185]: No timer. Just progress.
+          - group "Practice mode" [ref=f2e186]:
+            - button "Quick warm-up 01 A little, every day Three questions to reconnect with what you know. 3 questions ≈ 2 min" [ref=f2e187] [cursor=pointer]:
+              - generic [ref=f2e188]:
+                - generic [ref=f2e189]: Quick warm-up
+                - generic [ref=f2e190]: "01"
+              - heading "A little, every day" [level=3] [ref=f2e191]
+              - paragraph [ref=f2e192]: Three questions to reconnect with what you know.
+              - generic [ref=f2e193]:
+                - text: 3 questions
+                - generic [ref=f2e194]: ≈ 2 min
+            - button "Focused practice 02 Find your knowledge gaps Five questions with explanations that make it click. 5 questions ≈ 5 min" [pressed] [ref=f2e197] [cursor=pointer]:
+              - generic [ref=f2e198]:
+                - generic [ref=f2e199]: Focused practice
+                - generic [ref=f2e200]: "02"
+              - heading "Find your knowledge gaps" [level=3] [ref=f2e201]
+              - paragraph [ref=f2e202]: Five questions with explanations that make it click.
+              - generic [ref=f2e203]:
+                - text: 5 questions
+                - generic [ref=f2e204]: ≈ 5 min
+            - button "Deep dive 03 Put yourself to the test Fifteen questions for a more thorough practice session. 15 questions ≈ 15 min" [ref=f2e207] [cursor=pointer]:
+              - generic [ref=f2e208]:
+                - generic [ref=f2e209]: Deep dive
+                - generic [ref=f2e210]: "03"
+              - heading "Put yourself to the test" [level=3] [ref=f2e211]
+              - paragraph [ref=f2e212]: Fifteen questions for a more thorough practice session.
+              - generic [ref=f2e213]:
+                - text: 15 questions
+                - generic [ref=f2e214]: ≈ 15 min
+          - region "Quiz setup" [ref=f2e217]:
+            - generic [ref=f2e218]:
+              - text: YOUR SESSION
+              - heading "Make this practice yours" [level=2] [ref=f2e219]
+            - generic [ref=f2e220]:
+              - generic [ref=f2e221]:
+                - generic [ref=f2e222]: Technology
+                - combobox "Technology" [ref=f2e224] [cursor=pointer]:
+                  - option "🧠 AI & ML"
+                  - option "🛠️ AI Tools"
+                  - option "🤖 AI Agents"
+                  - option "▲ Next.js 16+"
+                  - option "⚛️ React 19+" [selected]
+                  - option "🔷 TypeScript"
+                  - option "🟨 JavaScript"
+                  - option "🧩 JS Puzzles"
+                  - option "🟢 Node.js"
+                  - option "🚂 Express.js"
+                  - option "🐍 Python"
+                  - option "🔢 NumPy"
+                  - option "🐼 Pandas"
+                  - option "🐻 Polars"
+                  - option "🧮 SciPy"
+                  - option "📈 Scikit-Learn"
+                  - option "🔶 TensorFlow"
+                  - option "🔥 PyTorch"
+                  - option "🎛️ Keras"
+                  - option "🚀 FastAPI"
+                  - option "📉 Seaborn"
+                  - option "🔵 Plotly"
+                  - option "🌐 Requests"
+                  - option "🔌 HTTPX"
+                  - option "🕷️ Scrapy"
+                  - option "🧾 Pydantic"
+                  - option "🔺 GraphQL"
+                  - option "🪺 TanStack"
+                  - option "🐻 Zustand"
+                  - option "🟣 Redux Toolkit"
+                  - option "✅ Zod"
+                  - option "📝 Conform"
+                  - option "🔑 Auth.js"
+                  - option "🔐 Clerk"
+                  - option "🗝️ Kinde"
+                  - option "🛡️ Better Auth"
+                  - option "🍃 Mongoose"
+                  - option "💧 Drizzle ORM"
+                  - option "🔼 Prisma"
+                  - option "🟩 Neon"
+                  - option "🟥 Redis"
+                  - option "⚡ Upstash"
+                  - option "🔁 Inngest"
+                  - option "🛑 Arcjet"
+                  - option "🃏 Jest"
+                  - option "🅥 Vitest"
+                  - option "🐙 React Testing Library"
+                  - option "🎭 Playwright"
+                  - option "🌲 Cypress"
+                  - option "🔻 T3 Stack"
+                  - option "🅰️ Angular"
+                  - option "🧱 System Design"
+                  - option "☁️ AWS Services"
+                  - option "⚙️ DevOps"
+              - generic [ref=f2e225]:
+                - generic [ref=f2e226]: Questions
+                - combobox "Questions" [ref=f2e228] [cursor=pointer]:
+                  - option "3"
+                  - option "5" [selected]
+                  - option "10"
+                  - option "15"
+                  - option "20"
+              - generic [ref=f2e229]:
+                - generic [ref=f2e230]: Difficulty
+                - combobox "Difficulty" [ref=f2e232] [cursor=pointer]:
+                  - option "Beginner"
+                  - option "Intermediate" [selected]
+                  - option "Advanced"
+              - generic [ref=f2e233]:
+                - generic [ref=f2e234]: Focus topic (optional)
+                - textbox "Focus topic (optional)" [ref=f2e235]:
+                  - /placeholder: e.g. The use() hook
+            - button "Start quiz" [ref=f2e237] [cursor=pointer]
+            - alert [ref=f2e271]: The quiz could not be prepared. Please try again.
+          - complementary [ref=f2e241]:
+            - generic [ref=f2e251]:
+              - text: LEARN WITH INTENTION
+              - heading "An incorrect answer is a useful discovery." [level=3] [ref=f2e252]
+              - paragraph [ref=f2e253]: Try recalling the answer before choosing an option. Read the explanation, then connect it to something you have built.
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f2e272] [cursor=pointer]
+  - alert [ref=f2e267]

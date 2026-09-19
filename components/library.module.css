@@ -5,15 +5,15 @@
  * it (the sidebar can collapse) rather than to the viewport.
  */
 .library {
-  --ink: #1f3a2f;
-  --ink-soft: #43574a;
-  --muted: #6b786f;
-  --line: #dfe5d8;
-  --line-soft: #e9ede4;
-  --paper: #fffdf8;
-  --sage: #eef2e8;
-  --forest: #203f33;
-  --gold: #bf9952;
+  --ink: #262624;
+  --ink-soft: #4d4c48;
+  --muted: #73726c;
+  --line: #dedcd1;
+  --line-soft: #e8e6dc;
+  --paper: #faf9f5;
+  --sage: #f0eee6;
+  --forest: #141413;
+  --gold: #d97757;
   container: library / inline-size;
   margin-top: 28px;
   min-width: 0;
@@ -56,8 +56,8 @@
   height: 22px;
   padding: 0 7px;
   border-radius: 999px;
-  background: #e5ecdc;
-  color: #4f6a52;
+  background: #e8e6dc;
+  color: #5e5d59;
   font: 700 11px/1 Arial, "Nirmala UI", sans-serif;
   letter-spacing: 0;
   font-variant-numeric: tabular-nums;
@@ -72,31 +72,31 @@
   left: 13px;
   top: 50%;
   transform: translateY(-50%);
-  color: #7b8a7c;
+  color: #87867f;
   pointer-events: none;
 }
 .searchInput {
   width: 100%;
   height: 40px;
   padding: 0 40px 0 38px;
-  border: 1px solid #d8e0d2;
+  border: 1px solid #dedcd1;
   border-radius: 11px;
   background: #fff;
   color: var(--ink);
   font-size: 13px;
-  box-shadow: inset 0 1px 1px #1b2e2408;
+  box-shadow: inset 0 1px 1px #26262408;
   transition: border-color 0.15s, box-shadow 0.15s;
   appearance: none;
 }
 .searchInput::placeholder {
-  color: #8b978d;
+  color: #9a988f;
 }
 .searchInput:hover {
-  border-color: #c3cfbc;
+  border-color: #d1cfc5;
 }
 .searchInput:focus {
-  border-color: #86a386;
-  box-shadow: 0 0 0 4px #6e98721f;
+  border-color: #d97757;
+  box-shadow: 0 0 0 4px #d977571f;
 }
 .searchInput::-webkit-search-cancel-button,
 .searchInput::-webkit-search-decoration {
@@ -115,11 +115,11 @@
   padding: 0;
   border: 0;
   border-radius: 8px;
-  background: #eef2e8;
-  color: #4d6152;
+  background: #f0eee6;
+  color: #5e5d59;
 }
 .clear:hover {
-  background: #e0e8d8;
+  background: #dedcd1;
   color: var(--ink);
 }
 
@@ -183,15 +183,15 @@
 }
 .card:hover {
   transform: translateY(-2px);
-  border-color: #c8d4bf;
-  box-shadow: 0 16px 32px -16px #1d3a2e40, 0 2px 6px #1d3a2e0d;
+  border-color: #d1cfc5;
+  box-shadow: 0 16px 32px -16px #14141340, 0 2px 6px #1414130d;
 }
 .card:focus-within {
-  border-color: #a9bb9d;
+  border-color: #d97757;
 }
 
 .stage {
-  --stage: #f3efe3;
+  --stage: #e8e6dc;
   --thumb-size: 10.5px;
   position: relative;
   display: grid;
@@ -199,7 +199,7 @@
   height: 178px;
   overflow: hidden;
   border-bottom: 1px solid var(--line-soft);
-  background: radial-gradient(130% 100% at 50% 0%, #f7f9f3 0%, var(--stage) 72%);
+  background: radial-gradient(130% 100% at 50% 0%, #f5f4ed 0%, var(--stage) 72%);
 }
 .thumbWrap {
   display: grid;
@@ -220,15 +220,15 @@
   padding: 0 8px;
   border-radius: 999px;
   background: #ffffffe0;
-  box-shadow: 0 1px 2px #1b2e2414;
-  color: #2b4638;
+  box-shadow: 0 1px 2px #26262414;
+  color: #3d3d3a;
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.02em;
   backdrop-filter: blur(6px);
 }
 .chip svg {
-  color: #a8842f;
+  color: #c6613f;
 }
 
 /* Generating / queued: a soft sheen over a quieted thumbnail. */
@@ -261,7 +261,7 @@
   padding: 5px 10px;
   border-radius: 999px;
   background: #ffffffeb;
-  box-shadow: 0 2px 8px #1b2e241a;
+  box-shadow: 0 2px 8px #2626241a;
   color: #7a5d25;
   font-size: 11px;
   font-weight: 650;
@@ -306,15 +306,15 @@
   background: currentColor;
 }
 .status[data-status="ready"] {
-  background: #e4efdf;
-  color: #2a6444;
+  background: #e8e6dc;
+  color: #4d4c48;
 }
 .status[data-status="completed"] {
   background: var(--forest);
   color: #f3e7c8;
 }
 .status[data-status="failed"] {
-  background: #fbe9e7;
+  background: #f0eee6;
   color: #a3392f;
 }
 .status[data-status="queued"]::before,
@@ -328,7 +328,7 @@
   padding: 0 7px;
   border: 1px solid var(--line);
   border-radius: 6px;
-  color: #56675a;
+  color: #5e5d59;
   font-size: 10.5px;
   font-weight: 600;
 }
@@ -375,7 +375,7 @@
 .sub > :not(:last-child)::after {
   content: "·";
   margin: 0 6px;
-  color: #aab5a9;
+  color: #b0aea5;
 }
 /* Reading progress: how far into the guide the learner got in the notes reader. */
 .progress {
@@ -389,13 +389,13 @@
   height: 5px;
   overflow: hidden;
   border-radius: 999px;
-  background: #e7ece1;
+  background: #e8e6dc;
 }
 .progressBar i {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #6e9872, var(--forest));
+  background: linear-gradient(90deg, #d97757, var(--forest));
 }
 .progress[data-complete] .progressBar i {
   background: var(--gold);
@@ -408,7 +408,7 @@
   font-variant-numeric: tabular-nums;
 }
 .date {
-  color: #879488;
+  color: #87867f;
   font-size: 11px;
   font-variant-numeric: tabular-nums;
 }
@@ -425,7 +425,7 @@
   gap: 6px;
   margin-top: auto;
   padding-top: 12px;
-  border-top: 1px solid #edf0e8;
+  border-top: 1px solid #f0eee6;
 }
 .learn {
   min-height: 40px;
@@ -444,7 +444,7 @@
   line-height: 1.4;
 }
 .learn:hover {
-  background: #2c5444;
+  background: #262624;
 }
 .secondary {
   min-height: 40px;
@@ -464,7 +464,7 @@
   min-height: 40px;
   padding: 0 9px;
   border-radius: 9px;
-  color: #245d49;
+  color: #4d4c48;
   font-weight: 600;
   text-decoration: none;
 }
@@ -480,10 +480,10 @@
   height: 30px;
   margin: -5px -6px -5px auto;
   border-radius: 9px;
-  color: #7f8c82;
+  color: #87867f;
 }
 .delete:hover:not(:disabled) {
-  background: #fbe9e7;
+  background: #f0eee6;
   color: #a3392f;
 }
 
@@ -493,7 +493,7 @@
   justify-items: center;
   gap: 8px;
   padding: 40px 20px;
-  border: 1px dashed #cfdac4;
+  border: 1px dashed #d1cfc5;
   border-radius: 16px;
   background: var(--paper);
   text-align: center;
@@ -520,7 +520,7 @@
   height: 58px;
   border-radius: 50%;
   background: var(--sage);
-  color: #58765b;
+  color: #73726c;
 }
 .emptyArt svg + svg {
   margin-left: -8px;
@@ -552,7 +552,7 @@
   height: 12px;
   margin: 0 16px;
   border-radius: 6px;
-  background: linear-gradient(100deg, #edf1e7 30%, #f7f9f3 50%, #edf1e7 70%);
+  background: linear-gradient(100deg, #f0eee6 30%, #f5f4ed 50%, #f0eee6 70%);
   background-size: 250% 100%;
   animation: sheen 1.6s linear infinite;
 }
@@ -599,7 +599,7 @@
   font-variant-numeric: tabular-nums;
 }
 .pageButton:hover:not(:disabled):not([aria-current="page"]) {
-  background: #e7ede1;
+  background: #e8e6dc;
   color: var(--ink);
 }
 .pageButton[aria-current="page"] {
@@ -608,12 +608,12 @@
   cursor: default;
 }
 .pageStep {
-  border-color: #d8e0d2;
+  border-color: #dedcd1;
   background: #fff;
 }
 .pageGap {
   min-width: 18px;
-  color: #97a396;
+  color: #9a988f;
   text-align: center;
 }
 .pageOf {

@@ -1,0 +1,112 @@
+- generic [ref=f6e1]:
+  - main [ref=f6e2]:
+    - heading "Complete code workspace" [level=2] [ref=f6e3]
+    - generic [ref=f6e18]:
+      - generic [ref=f6e19]:
+        - strong [ref=f6e24]: Array.prototype.map in practice
+        - button "Hide files" [expanded] [ref=f6e25] [cursor=pointer]
+        - button "Reset" [ref=f6e26] [cursor=pointer]
+        - button "Save" [disabled] [ref=f6e27]
+        - button "Run" [active] [ref=f6e28] [cursor=pointer]
+        - button "Stop" [ref=f6e29] [cursor=pointer]
+      - generic [ref=f6e30]:
+        - generic [ref=f6e33]:
+          - generic [ref=f6e34]:
+            - button "Directory src" [ref=f6e35] [cursor=pointer]:
+              - img "Directory" [ref=f6e36]
+              - generic [ref=f6e39]: src
+            - generic [ref=f6e40]:
+              - button "File index.ts" [ref=f6e41] [cursor=pointer]:
+                - img "File" [ref=f6e42]
+                - generic [ref=f6e44]: index.ts
+              - button "File labels.ts" [ref=f6e45] [cursor=pointer]:
+                - img "File" [ref=f6e46]
+                - generic [ref=f6e48]: labels.ts
+          - button "File index.html" [ref=f6e49] [cursor=pointer]:
+            - img "File" [ref=f6e50]
+            - generic [ref=f6e52]: index.html
+          - button "File index.ts" [ref=f6e53] [cursor=pointer]:
+            - img "File" [ref=f6e54]
+            - generic [ref=f6e56]: index.ts
+          - button "File package.json" [ref=f6e57] [cursor=pointer]:
+            - img "File" [ref=f6e58]
+            - generic [ref=f6e60]: package.json
+          - button "File styles.css" [ref=f6e61] [cursor=pointer]:
+            - img "File" [ref=f6e62]
+            - generic [ref=f6e64]: styles.css
+          - button "File tsconfig.json" [ref=f6e65] [cursor=pointer]:
+            - img "File" [ref=f6e66]
+            - generic [ref=f6e68]: tsconfig.json
+        - generic [ref=f6e69]:
+          - tablist "Code files" [ref=f6e70]:
+            - tab "index.ts" [selected] [ref=f6e71] [cursor=pointer]
+            - tab "labels.ts" [ref=f6e72] [cursor=pointer]
+            - tab "index.html" [ref=f6e73] [cursor=pointer]
+          - tabpanel [ref=f6e75]:
+            - textbox "Code Editor for index.ts" [ref=f6e76]:
+              - generic [ref=f6e78]:
+                - generic [ref=f6e80]:
+                  - generic [ref=f6e81]: "1"
+                  - generic [ref=f6e82]: "2"
+                  - generic [ref=f6e83]: "3"
+                  - generic [ref=f6e84]: "4"
+                  - generic [ref=f6e85]: "5"
+                  - generic [ref=f6e86]: "6"
+                  - generic [ref=f6e87]: "7"
+                  - generic [ref=f6e88]: "8"
+                  - generic [ref=f6e89]: "9"
+                  - generic [ref=f6e90]: "10"
+                  - generic [ref=f6e91]: "11"
+                  - generic [ref=f6e92]: "12"
+                  - generic [ref=f6e93]: "13"
+                  - generic [ref=f6e94]: "14"
+                - textbox "Code Editor for index.ts" [ref=f6e95]:
+                  - generic [ref=f6e96]: "import { toLabels } from './labels';"
+                  - generic [ref=f6e98]: const prices = [12, 40, 7];
+                  - generic [ref=f6e99]: const labels = toLabels(prices);
+                  - generic [ref=f6e101]: console.log('labels', labels);
+                  - generic [ref=f6e103]: const list = document.getElementById('app')!;
+                  - generic [ref=f6e104]: "for (const label of labels) {"
+                  - generic [ref=f6e105]: const item = document.createElement('li');
+                  - generic [ref=f6e106]: item.textContent = label;
+                  - generic [ref=f6e107]: list.append(item);
+                  - generic [ref=f6e108]: "}"
+      - generic [ref=f6e110]:
+        - heading "Browser output" [level=3] [ref=f6e111]
+        - generic [ref=f6e113]:
+          - iframe [ref=f6e114]
+          - button "Refresh preview" [ref=f6e116] [cursor=pointer]:
+            - img "Refresh preview" [ref=f6e117]
+          - generic "Open in CodeSandbox" [ref=f6e120]
+          - paragraph [ref=f6e129]: "[3/3] Starting"
+        - heading "Console output" [level=3] [ref=f6e130]
+        - button "Clean" [ref=f6e133] [cursor=pointer]:
+          - img "Clean" [ref=f6e134]
+      - status [ref=f6e137]: Live runtime • edit a file, then Save to rebuild. Stop closes the preview.
+      - list [ref=f6e138]:
+        - listitem [ref=f6e139]: Read src/labels.ts, then run the project.
+        - listitem [ref=f6e140]: Change the currency prefix and run it again.
+    - heading "Python workspace" [level=2] [ref=f6e5]
+    - generic [ref=f6e141]:
+      - generic [ref=f6e142]:
+        - strong [ref=f6e147]: Counting words with Python
+        - button "Hide files" [expanded] [ref=f6e148] [cursor=pointer]
+        - button "Reset" [ref=f6e149] [cursor=pointer]
+        - button "Run" [ref=f6e150] [cursor=pointer]
+      - generic [ref=f6e151]:
+        - navigation "Project files" [ref=f6e152]:
+          - button "main.py" [ref=f6e153] [cursor=pointer]
+        - generic [ref=f6e154]:
+          - tablist "Code files" [ref=f6e155]:
+            - tab "main.py" [selected] [ref=f6e156] [cursor=pointer]
+          - textbox "Edit /main.py" [ref=f6e157]: "text = 'the quick brown fox jumps over the lazy dog the end' counts = {} for word in text.split(): counts[word] = counts.get(word, 0) + 1 for word, total in sorted(counts.items(), key=lambda pair: -pair[1])[:3]: print(word, total)"
+      - generic [ref=f6e158]:
+        - heading "Console output" [level=3] [ref=f6e159]
+        - generic [ref=f6e160]: Click Run to execute the files in an isolated Python worker.
+      - paragraph [ref=f6e161]: Python runtime loads on first Run. Native server/GPU packages require local execution.
+      - list [ref=f6e162]:
+        - listitem [ref=f6e163]: Run the file.
+        - listitem [ref=f6e164]: Change the text and run it again.
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f6e12] [cursor=pointer]
+  - alert [ref=f6e16]

@@ -1,0 +1,866 @@
+[
+ {
+  "id": "ai",
+  "name": "AI & ML",
+  "icon": "🧠",
+  "focus": "AI / machine-learning engineering",
+  "syllabus": [
+   "Embeddings & vector search",
+   "Prompt engineering",
+   "RAG pipelines",
+   "Fine-tuning vs RAG",
+   "Function & tool calling",
+   "Streaming responses",
+   "Evals & guardrails",
+   "Cost & token optimisation"
+  ]
+ },
+ {
+  "id": "aitools",
+  "name": "AI Tools",
+  "icon": "🛠️",
+  "focus": "modern AI developer tools and the Vercel AI SDK",
+  "syllabus": [
+   "Vercel AI SDK basics",
+   "Streaming UI with useChat",
+   "Structured output with Zod",
+   "Tool calling",
+   "Multi-step agents",
+   "Provider routing",
+   "Caching AI responses",
+   "Generative UI"
+  ]
+ },
+ {
+  "id": "agents",
+  "name": "AI Agents",
+  "icon": "🤖",
+  "focus": "AI agents, planning and tool use",
+  "syllabus": [
+   "What is an agent",
+   "The ReAct loop",
+   "Tool / function calling",
+   "Planning & memory",
+   "Multi-agent systems",
+   "LangGraph state machines",
+   "Guardrails & retries",
+   "Model Context Protocol (MCP)"
+  ]
+ },
+ {
+  "id": "nextjs",
+  "name": "Next.js 16+",
+  "icon": "▲",
+  "focus": "Next.js App Router and full-stack patterns",
+  "syllabus": [
+   "App Router routing",
+   "Server vs Client Components",
+   "Server Actions",
+   "Caching & revalidation",
+   "Route Handlers",
+   "Middleware",
+   "Streaming & Suspense",
+   "Metadata & SEO"
+  ]
+ },
+ {
+  "id": "react",
+  "name": "React 19+",
+  "icon": "⚛️",
+  "focus": "advanced React 19 patterns and performance",
+  "syllabus": [
+   "The use() hook",
+   "Actions & useActionState",
+   "useOptimistic",
+   "Server Components",
+   "Suspense & transitions",
+   "Memoisation done right",
+   "Refs & imperative handle",
+   "Concurrent rendering"
+  ]
+ },
+ {
+  "id": "typescript",
+  "name": "TypeScript",
+  "icon": "🔷",
+  "focus": "advanced TypeScript for large codebases",
+  "syllabus": [
+   "Generics",
+   "Discriminated unions",
+   "Conditional types",
+   "Mapped types",
+   "Template literal types",
+   "The satisfies operator",
+   "Type narrowing",
+   "Utility types"
+  ]
+ },
+ {
+  "id": "javascript",
+  "name": "JavaScript",
+  "icon": "🟨",
+  "focus": "modern JavaScript (ES2024+)",
+  "syllabus": [
+   "Closures",
+   "Event loop & microtasks",
+   "Promises & async/await",
+   "Prototypes & classes",
+   "ES modules",
+   "Iterators & generators",
+   "Proxy & Reflect",
+   "Memory & GC"
+  ]
+ },
+ {
+  "id": "jspuzzles",
+  "name": "JS Puzzles",
+  "icon": "🧩",
+  "focus": "tricky JavaScript puzzles and gotchas",
+  "syllabus": [
+   "Hoisting traps",
+   "this binding puzzles",
+   "Type coercion quirks",
+   "Closures in loops",
+   "Array holes & sort",
+   "NaN & equality",
+   "Floating-point math",
+   "Async ordering"
+  ]
+ },
+ {
+  "id": "node",
+  "name": "Node.js",
+  "icon": "🟢",
+  "focus": "Node.js, APIs and backend architecture",
+  "syllabus": [
+   "Event loop",
+   "Streams & backpressure",
+   "Worker threads",
+   "Clustering",
+   "Error handling",
+   "EventEmitter",
+   "Buffers",
+   "Native test runner"
+  ]
+ },
+ {
+  "id": "express",
+  "name": "Express.js",
+  "icon": "🚂",
+  "focus": "Express.js APIs and middleware",
+  "syllabus": [
+   "Routing",
+   "Middleware chain",
+   "Error middleware",
+   "Request validation",
+   "Auth middleware",
+   "File uploads",
+   "Rate limiting",
+   "Structuring large apps"
+  ]
+ },
+ {
+  "id": "python",
+  "name": "Python",
+  "icon": "🐍",
+  "focus": "modern Python for backend and scripting",
+  "syllabus": [
+   "Comprehensions",
+   "Decorators",
+   "Generators & yield",
+   "Type hints",
+   "async / await",
+   "Dataclasses",
+   "Context managers",
+   "Packaging & venv"
+  ]
+ },
+ {
+  "id": "numpy",
+  "name": "NumPy",
+  "icon": "🔢",
+  "focus": "NumPy numerical computing with ndarrays",
+  "syllabus": [
+   "ndarray basics",
+   "Array creation",
+   "Indexing & slicing",
+   "Broadcasting",
+   "Vectorised math",
+   "Linear algebra",
+   "Random sampling",
+   "Reshaping & stacking"
+  ]
+ },
+ {
+  "id": "pandas",
+  "name": "Pandas",
+  "icon": "🐼",
+  "focus": "Pandas DataFrames and data manipulation",
+  "syllabus": [
+   "Series & DataFrame",
+   "Reading data",
+   "Selection (loc/iloc)",
+   "Filtering",
+   "GroupBy",
+   "Merging & joining",
+   "Missing data",
+   "Pivot & reshape"
+  ]
+ },
+ {
+  "id": "polars",
+  "name": "Polars",
+  "icon": "🐻",
+  "focus": "Polars fast multi-threaded DataFrames",
+  "syllabus": [
+   "DataFrame & LazyFrame",
+   "Expressions",
+   "Selecting & filtering",
+   "group_by",
+   "with_columns",
+   "Joins",
+   "Lazy evaluation",
+   "Streaming"
+  ]
+ },
+ {
+  "id": "scipy",
+  "name": "SciPy",
+  "icon": "🧮",
+  "focus": "SciPy scientific & numerical computing",
+  "syllabus": [
+   "Optimization",
+   "Integration",
+   "Statistics",
+   "Linear algebra",
+   "Signal processing",
+   "Sparse matrices",
+   "Interpolation",
+   "FFT"
+  ]
+ },
+ {
+  "id": "sklearn",
+  "name": "Scikit-Learn",
+  "icon": "📈",
+  "focus": "scikit-learn machine learning",
+  "syllabus": [
+   "Estimator API",
+   "Train/test split",
+   "Preprocessing",
+   "Pipelines",
+   "Classification",
+   "Regression",
+   "Clustering",
+   "Model selection"
+  ]
+ },
+ {
+  "id": "tensorflow",
+  "name": "TensorFlow",
+  "icon": "🔶",
+  "focus": "TensorFlow deep learning",
+  "syllabus": [
+   "Tensors",
+   "Variables & autodiff",
+   "tf.data",
+   "Keras layers",
+   "Training loops",
+   "Models",
+   "Saving & loading",
+   "tf.function"
+  ]
+ },
+ {
+  "id": "pytorch",
+  "name": "PyTorch",
+  "icon": "🔥",
+  "focus": "PyTorch deep learning",
+  "syllabus": [
+   "Tensors",
+   "Autograd",
+   "nn.Module",
+   "Optimizers",
+   "DataLoader",
+   "Training loop",
+   "GPU / CUDA",
+   "Saving models"
+  ]
+ },
+ {
+  "id": "keras",
+  "name": "Keras",
+  "icon": "🎛️",
+  "focus": "Keras high-level deep learning API",
+  "syllabus": [
+   "Sequential API",
+   "Functional API",
+   "Layers",
+   "compile & fit",
+   "Callbacks",
+   "Optimizers & losses",
+   "Saving models",
+   "Custom layers"
+  ]
+ },
+ {
+  "id": "fastapi",
+  "name": "FastAPI",
+  "icon": "🚀",
+  "focus": "FastAPI async API framework",
+  "syllabus": [
+   "Path operations",
+   "Pydantic models",
+   "Dependencies",
+   "Query & path params",
+   "Request body",
+   "Auth",
+   "Background tasks",
+   "Async"
+  ]
+ },
+ {
+  "id": "seaborn",
+  "name": "Seaborn",
+  "icon": "📉",
+  "focus": "Seaborn statistical visualization",
+  "syllabus": [
+   "Relational plots",
+   "Distribution plots",
+   "Categorical plots",
+   "Heatmaps",
+   "Pair plots",
+   "FacetGrid",
+   "Themes",
+   "Palettes"
+  ]
+ },
+ {
+  "id": "plotly",
+  "name": "Plotly",
+  "icon": "🔵",
+  "focus": "Plotly interactive charts",
+  "syllabus": [
+   "Plotly Express",
+   "Graph Objects",
+   "Figures & traces",
+   "Layout",
+   "Subplots",
+   "Interactivity",
+   "Dashboards",
+   "Exporting"
+  ]
+ },
+ {
+  "id": "requests",
+  "name": "Requests",
+  "icon": "🌐",
+  "focus": "Requests HTTP for humans",
+  "syllabus": [
+   "GET & POST",
+   "Query params",
+   "Headers",
+   "JSON",
+   "Sessions",
+   "Auth",
+   "Timeouts",
+   "Error handling"
+  ]
+ },
+ {
+  "id": "httpx",
+  "name": "HTTPX",
+  "icon": "🔌",
+  "focus": "HTTPX async HTTP client",
+  "syllabus": [
+   "Client & AsyncClient",
+   "Requests",
+   "Async requests",
+   "Streaming",
+   "Timeouts & limits",
+   "Auth",
+   "Proxies",
+   "Testing"
+  ]
+ },
+ {
+  "id": "scrapy",
+  "name": "Scrapy",
+  "icon": "🕷️",
+  "focus": "Scrapy web crawling framework",
+  "syllabus": [
+   "Spiders",
+   "Requests & responses",
+   "Selectors",
+   "Items",
+   "Item pipelines",
+   "Settings",
+   "Middlewares",
+   "Crawling at scale"
+  ]
+ },
+ {
+  "id": "pydantic",
+  "name": "Pydantic",
+  "icon": "🧾",
+  "focus": "Pydantic data validation",
+  "syllabus": [
+   "BaseModel",
+   "Fields",
+   "Validators",
+   "Settings",
+   "Serialization",
+   "Type adapters",
+   "Custom types",
+   "V2 features"
+  ]
+ },
+ {
+  "id": "graphql",
+  "name": "GraphQL",
+  "icon": "🔺",
+  "focus": "GraphQL API design and clients",
+  "syllabus": [
+   "Schema & types",
+   "Queries & mutations",
+   "Resolvers",
+   "N+1 & DataLoader",
+   "Fragments",
+   "Subscriptions",
+   "Caching",
+   "Federation"
+  ]
+ },
+ {
+  "id": "tanstack",
+  "name": "TanStack",
+  "icon": "🪺",
+  "focus": "TanStack Query, Router and Table",
+  "syllabus": [
+   "Query basics",
+   "Caching & staleTime",
+   "Mutations",
+   "Invalidation",
+   "Infinite queries",
+   "Optimistic updates",
+   "TanStack Router",
+   "TanStack Table"
+  ]
+ },
+ {
+  "id": "zustand",
+  "name": "Zustand",
+  "icon": "🐻",
+  "focus": "Zustand state management",
+  "syllabus": [
+   "Creating a store",
+   "Selectors",
+   "Slices pattern",
+   "persist middleware",
+   "Immer integration",
+   "Async actions",
+   "Avoiding re-renders",
+   "Testing stores"
+  ]
+ },
+ {
+  "id": "redux",
+  "name": "Redux Toolkit",
+  "icon": "🟣",
+  "focus": "Redux Toolkit state management",
+  "syllabus": [
+   "createSlice",
+   "configureStore",
+   "RTK Query",
+   "Async thunks",
+   "Selectors & reselect",
+   "Normalised state",
+   "Immer updates",
+   "DevTools"
+  ]
+ },
+ {
+  "id": "zod",
+  "name": "Zod",
+  "icon": "✅",
+  "focus": "Zod schema validation",
+  "syllabus": [
+   "Basic schemas",
+   "Objects & arrays",
+   "Refinements",
+   "Transforms",
+   "Infer types",
+   "Discriminated unions",
+   "Error handling",
+   "Coercion"
+  ]
+ },
+ {
+  "id": "conform",
+  "name": "Conform",
+  "icon": "📝",
+  "focus": "Conform form validation",
+  "syllabus": [
+   "Progressive enhancement",
+   "useForm & useField",
+   "Zod integration",
+   "Server validation",
+   "Nested fields",
+   "Field arrays",
+   "Accessibility",
+   "Next.js integration"
+  ]
+ },
+ {
+  "id": "authjs",
+  "name": "Auth.js",
+  "icon": "🔑",
+  "focus": "Auth.js (NextAuth) authentication",
+  "syllabus": [
+   "Provider setup",
+   "JWT vs DB sessions",
+   "Callbacks",
+   "Middleware protection",
+   "Database adapters",
+   "Credentials provider",
+   "Role-based access",
+   "CSRF & security"
+  ]
+ },
+ {
+  "id": "clerk",
+  "name": "Clerk",
+  "icon": "🔐",
+  "focus": "Clerk authentication and user management",
+  "syllabus": [
+   "ClerkProvider setup",
+   "SignIn / SignUp",
+   "Protecting routes",
+   "Organizations",
+   "Webhooks",
+   "Session management",
+   "Customising UI",
+   "Backend verification"
+  ]
+ },
+ {
+  "id": "kinde",
+  "name": "Kinde",
+  "icon": "🗝️",
+  "focus": "Kinde auth and access control",
+  "syllabus": [
+   "Setup",
+   "Login flows",
+   "Permissions & roles",
+   "Feature flags",
+   "Organizations",
+   "Tokens",
+   "Webhooks",
+   "Next.js SDK"
+  ]
+ },
+ {
+  "id": "betterauth",
+  "name": "Better Auth",
+  "icon": "🛡️",
+  "focus": "Better Auth authentication",
+  "syllabus": [
+   "Setup",
+   "Email & password",
+   "Social providers",
+   "Sessions",
+   "Plugins",
+   "Two-factor auth",
+   "Organizations",
+   "Database adapters"
+  ]
+ },
+ {
+  "id": "mongoose",
+  "name": "Mongoose",
+  "icon": "🍃",
+  "focus": "Mongoose ODM for MongoDB",
+  "syllabus": [
+   "Schemas & models",
+   "Queries",
+   "Population",
+   "Validation",
+   "Middleware hooks",
+   "Indexes",
+   "Aggregation",
+   "Transactions"
+  ]
+ },
+ {
+  "id": "drizzle",
+  "name": "Drizzle ORM",
+  "icon": "💧",
+  "focus": "Drizzle ORM and type-safe SQL",
+  "syllabus": [
+   "Schema definition",
+   "Queries",
+   "Relations",
+   "Migrations",
+   "Joins",
+   "Prepared statements",
+   "Transactions",
+   "Drizzle Kit"
+  ]
+ },
+ {
+  "id": "prisma",
+  "name": "Prisma",
+  "icon": "🔼",
+  "focus": "Prisma ORM, schema and Client",
+  "syllabus": [
+   "Schema & models",
+   "Prisma Client",
+   "Migrations",
+   "Relations",
+   "Filtering & pagination",
+   "Transactions",
+   "Prisma Studio",
+   "Connection pooling"
+  ]
+ },
+ {
+  "id": "neon",
+  "name": "Neon",
+  "icon": "🟩",
+  "focus": "Neon serverless Postgres",
+  "syllabus": [
+   "Serverless Postgres",
+   "HTTP/serverless driver",
+   "Connection pooling",
+   "Database branching",
+   "Neon + Drizzle",
+   "Neon + Prisma",
+   "Autoscaling",
+   "Read replicas"
+  ]
+ },
+ {
+  "id": "redis",
+  "name": "Redis",
+  "icon": "🟥",
+  "focus": "Redis caching and data structures",
+  "syllabus": [
+   "Strings & TTL",
+   "Hashes & lists",
+   "Sets & sorted sets",
+   "Pub/Sub",
+   "Caching patterns",
+   "Rate limiting",
+   "Streams",
+   "Persistence"
+  ]
+ },
+ {
+  "id": "upstash",
+  "name": "Upstash",
+  "icon": "⚡",
+  "focus": "Upstash serverless Redis, queues and vector",
+  "syllabus": [
+   "Serverless Redis",
+   "REST API",
+   "Ratelimit SDK",
+   "QStash queues",
+   "Vector DB",
+   "Edge caching",
+   "Workflow",
+   "Kafka"
+  ]
+ },
+ {
+  "id": "inngest",
+  "name": "Inngest",
+  "icon": "🔁",
+  "focus": "Inngest background jobs and workflows",
+  "syllabus": [
+   "Functions & events",
+   "Steps",
+   "Retries",
+   "Cron schedules",
+   "Concurrency & throttling",
+   "Fan-out",
+   "Flow control",
+   "Local dev server"
+  ]
+ },
+ {
+  "id": "arcjet",
+  "name": "Arcjet",
+  "icon": "🛑",
+  "focus": "Arcjet security: rate limit, bot, WAF",
+  "syllabus": [
+   "Setup",
+   "Rate limiting",
+   "Bot detection",
+   "Email validation",
+   "Shield (WAF)",
+   "Next.js integration",
+   "Node & Bun",
+   "Testing rules"
+  ]
+ },
+ {
+  "id": "jest",
+  "name": "Jest",
+  "icon": "🃏",
+  "focus": "Jest unit testing",
+  "syllabus": [
+   "Matchers",
+   "Mocks & spies",
+   "Module mocks",
+   "Async tests",
+   "Setup / teardown",
+   "Snapshot testing",
+   "Coverage",
+   "Fake timers"
+  ]
+ },
+ {
+  "id": "vitest",
+  "name": "Vitest",
+  "icon": "🅥",
+  "focus": "Vitest testing for Vite projects",
+  "syllabus": [
+   "Setup with Vite",
+   "Matchers",
+   "Mocking with vi",
+   "Component testing",
+   "Coverage",
+   "In-source testing",
+   "Snapshots",
+   "Benchmarking"
+  ]
+ },
+ {
+  "id": "rtl",
+  "name": "React Testing Library",
+  "icon": "🐙",
+  "focus": "React Testing Library",
+  "syllabus": [
+   "getBy / findBy queries",
+   "user-event",
+   "Async UI testing",
+   "Mocking fetch",
+   "Testing hooks",
+   "Accessibility queries",
+   "Testing forms",
+   "Best practices"
+  ]
+ },
+ {
+  "id": "playwright",
+  "name": "Playwright",
+  "icon": "🎭",
+  "focus": "Playwright end-to-end testing",
+  "syllabus": [
+   "Locators",
+   "Auto-waiting",
+   "Fixtures",
+   "Network mocking",
+   "Auth state reuse",
+   "Visual testing",
+   "Parallelism",
+   "CI setup"
+  ]
+ },
+ {
+  "id": "cypress",
+  "name": "Cypress",
+  "icon": "🌲",
+  "focus": "Cypress end-to-end testing",
+  "syllabus": [
+   "Commands & chaining",
+   "Selectors",
+   "Network stubbing",
+   "Fixtures",
+   "Custom commands",
+   "Component testing",
+   "Retries",
+   "CI"
+  ]
+ },
+ {
+  "id": "t3",
+  "name": "T3 Stack",
+  "icon": "🔻",
+  "focus": "the T3 stack: Next.js, tRPC, Tailwind, Prisma",
+  "syllabus": [
+   "create-t3-app",
+   "tRPC routers",
+   "End-to-end types",
+   "Prisma setup",
+   "Auth.js integration",
+   "Tailwind",
+   "Env validation",
+   "Deployment"
+  ]
+ },
+ {
+  "id": "angular",
+  "name": "Angular",
+  "icon": "🅰️",
+  "focus": "Angular framework and APIs",
+  "syllabus": [
+   "Components & signals",
+   "Dependency injection",
+   "Directives",
+   "Services & RxJS",
+   "Routing",
+   "Reactive forms",
+   "HttpClient",
+   "Standalone components"
+  ]
+ },
+ {
+  "id": "systemdesign",
+  "name": "System Design",
+  "icon": "🧱",
+  "focus": "scalable system design",
+  "syllabus": [
+   "Caching",
+   "Load balancing",
+   "Database scaling",
+   "Message queues",
+   "Consistent hashing",
+   "Rate limiting",
+   "CAP theorem",
+   "CDNs"
+  ]
+ },
+ {
+  "id": "aws",
+  "name": "AWS Services",
+  "icon": "☁️",
+  "focus": "AWS cloud services and architecture",
+  "syllabus": [
+   "EC2 & Lambda",
+   "S3",
+   "RDS & DynamoDB",
+   "VPC",
+   "IAM",
+   "CloudFront",
+   "SQS & SNS",
+   "CloudWatch"
+  ]
+ },
+ {
+  "id": "devops",
+  "name": "DevOps",
+  "icon": "⚙️",
+  "focus": "DevOps, CI/CD, Docker and Kubernetes",
+  "syllabus": [
+   "Docker images",
+   "Docker Compose",
+   "Kubernetes pods",
+   "CI/CD pipelines",
+   "Terraform (IaC)",
+   "Monitoring",
+   "Blue-green deploys",
+   "GitOps"
+  ]
+ }
+]

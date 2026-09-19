@@ -1,0 +1,52 @@
+- generic [active] [ref=f8e1]:
+  - generic [ref=f8e263]:
+    - main [ref=f8e264]:
+      - generic [ref=f8e265]:
+        - link "होम पर वापस जाएँ" [ref=f8e266] [cursor=pointer]:
+          - /url: /
+        - group "ऐप की भाषा" [ref=f8e269]:
+          - button "EN" [ref=f8e270] [cursor=pointer]
+          - button "Hi" [pressed] [ref=f8e271] [cursor=pointer]
+      - generic [ref=f8e272]:
+        - generic [ref=f8e280]:
+          - text: Master
+          - generic [aria-hidden] [ref=f8e281]: ✦
+          - emphasis [ref=f8e282]: Class
+        - generic [ref=f8e283]:
+          - heading "वापस स्वागत है" [level=1] [ref=f8e284]
+          - paragraph [ref=f8e285]: जहाँ छोड़ा था वहीं से जारी रखने के लिए साइन इन करें।
+          - generic [ref=f8e286]:
+            - generic [ref=f8e287]:
+              - generic [ref=f8e288]: ईमेल
+              - textbox "ईमेल" [ref=f8e289]
+            - generic [ref=f8e290]:
+              - generic [ref=f8e291]: पासवर्ड
+              - generic [ref=f8e292]:
+                - textbox "पासवर्ड" [ref=f8e293]
+                - button "पासवर्ड दिखाएँ" [ref=f8e294] [cursor=pointer]
+            - button "साइन इन" [ref=f8e298] [cursor=pointer]
+          - paragraph [ref=f8e299]:
+            - link "नए हैं? खाता बनाएँ" [ref=f8e300] [cursor=pointer]:
+              - /url: /sign-up
+    - complementary [ref=f8e301]:
+      - paragraph [ref=f8e302]:
+        - generic [aria-hidden] [ref=f8e303]: ✦
+        - text: हर दिन थोड़ा सीखें। आगे बढ़ते रहें।
+      - region "MasterClass में आपको क्या मिलता है" [ref=f8e304]:
+        - generic [ref=f8e305]:
+          - button "स्लाइड शो रोकें" [ref=f8e306] [cursor=pointer]
+          - generic [ref=f8e310]:
+            - button "स्लाइड 1 पर जाएँ" [ref=f8e311] [cursor=pointer]
+            - button "स्लाइड 2 पर जाएँ" [ref=f8e313] [cursor=pointer]
+            - button "स्लाइड 3 पर जाएँ" [ref=f8e314] [cursor=pointer]
+            - button "स्लाइड 4 पर जाएँ" [ref=f8e315] [cursor=pointer]
+        - group "4 में से 1" [ref=f8e317]:
+          - generic [ref=f8e321]:
+            - strong [ref=f8e326]: Next.js 16
+            - generic [ref=f8e327]: शुरुआती
+          - heading "लक्ष्य चुनें। नियमित प्रगति करें।" [level=2] [ref=f8e348]
+          - paragraph [ref=f8e349]: स्कूल के आधार, प्रतियोगी परीक्षा की तैयारी, तकनीकी कोर्स और सिस्टम डिज़ाइन अध्ययन पाएँ।
+      - paragraph [ref=f8e350]: आपकी चुनी हुई परीक्षाएँ और कोर्स, एक ही अध्ययन क्षेत्र में।
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f8e226] [cursor=pointer]
+  - alert [ref=f8e262]: Sign in | MasterClass

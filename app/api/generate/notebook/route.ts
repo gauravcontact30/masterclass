@@ -5,6 +5,7 @@ import { rateLimit } from "@/lib/server/rate-limit";
 import { attachment } from "@/lib/artistic-notes/download";
 import { buildNotebook, serializeNotebook } from "@/lib/artistic-notes/notebook";
 import { notebookRequestSchema, requestLimits } from "@/lib/artistic-notes/schema";
+import { recordEvent } from "@/lib/server/monitoring";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -17,6 +18,8 @@ export async function POST(request: Request) {
     if (!(await preparationAccess(owner)).isSuperAdmin && (await account(owner)).tier === "free") throw new HttpError(402, "subscription_required");
     await rateLimit(`artistic-notes:notebook:${owner}`, 20);
     const input = notebookRequestSchema.parse(await jsonBody(request, requestLimits.notebook));
-    return attachment(serializeNotebook(buildNotebook(input)), input.title, "notebook");
-  });
+    const content = serializeNotebook(buildNotebook(input));
+    await recordEvent({kind:"export",action:"download_notebook",actor_id:owner,bytes:Buffer.byteLength(content)});
+    return attachment(content, input.title, "notebook");
+  }, request);
 }

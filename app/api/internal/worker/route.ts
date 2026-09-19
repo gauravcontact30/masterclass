@@ -7,4 +7,4 @@ export const maxDuration=300;
 export async function POST(request:Request) {return api(async()=>{
   if(!equalSecret(request.headers.get("authorization") ?? "",`Bearer ${required("WORKER_SECRET")}`)) throw new HttpError(401,"unauthorized");
   return Response.json(await processOne());
-});}
+}, request);}

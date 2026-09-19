@@ -126,7 +126,7 @@ test.each(["node-course", "graphql-course", "nestjs-course", "claude-skills-plug
   await screen.findByRole("heading", { name: course.readerTitle!, level: 2 });
   expect(await screen.findByLabelText("Search course lessons")).toBeInTheDocument();
   expect(screen.queryByRole("link", { name: "Official reference" })).not.toBeInTheDocument();
-  fireEvent.click(screen.getByText("Back to notes", { exact: false, selector: "button" }));
+  fireEvent.click(screen.getByRole("button", { name: "Close" }));
   await waitFor(() => expect(screen.queryByLabelText("Search course lessons")).not.toBeInTheDocument());
   expect(screen.getByRole("button", { name: "Learn in App" })).toBeInTheDocument();
 });

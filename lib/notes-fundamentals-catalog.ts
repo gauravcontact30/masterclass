@@ -2,12 +2,14 @@ import type { Lesson } from "./domain";
 import type { StudyNote } from "./notes-study";
 import { NEXTJS16_FUNDAMENTALS } from "./notes-nextjs-fundamentals";
 import { AI_CONCEPTS } from "./notes-ai-concepts";
+import { AI_VOCABULARY_SEEDS } from "./notes-ai-vocabulary";
 import { AI_FUNDAMENTALS } from "./notes-ai-fundamentals";
 import { CLAUDE_FUNDAMENTALS } from "./notes-claude-fundamentals";
 import { AI_COLLECTION, CLAUDE_COLLECTION, buildFundamentals } from "./notes-fundamentals";
 
 export const FUNDAMENTAL_STUDY_NOTES = [
   ...buildFundamentals(CLAUDE_FUNDAMENTALS, CLAUDE_COLLECTION.id),
+  ...buildFundamentals(AI_VOCABULARY_SEEDS, AI_COLLECTION.id),
   ...buildFundamentals(AI_CONCEPTS, AI_COLLECTION.id),
   ...buildFundamentals(AI_FUNDAMENTALS, AI_COLLECTION.id),
 ];
@@ -31,5 +33,5 @@ export const NEXTJS16_LESSONS = studyNotesToLessons(NEXTJS16_STUDY_NOTES);
 
 export const FUNDAMENTAL_COLLECTIONS = [
   { ...CLAUDE_COLLECTION, seeds: CLAUDE_FUNDAMENTALS },
-  { ...AI_COLLECTION, seeds: [...AI_CONCEPTS, ...AI_FUNDAMENTALS] },
+  { ...AI_COLLECTION, seeds: [...AI_VOCABULARY_SEEDS, ...AI_CONCEPTS, ...AI_FUNDAMENTALS] },
 ];

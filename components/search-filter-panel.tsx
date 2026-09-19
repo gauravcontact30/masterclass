@@ -1,4 +1,5 @@
 "use client";
+import { Label } from "@/components/ui/label";
 import { ExpandedText } from "@/components/expanded-text";
 
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
@@ -57,7 +58,7 @@ function FilterPicker({ filter, text }: { filter: PanelFilter; text: PanelText }
   const groups = [...new Set(options.map(option => option.group ?? "Options"))];
   const hint = text.pickerHint ?? ["↑ ↓ Navigate", "↵ Select", "Esc Close"];
   return <div className={styles.field}>
-    <label htmlFor={id}><ExpandedText text={label} /></label>
+    <Label htmlFor={id}><ExpandedText text={label} /></Label>
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger render={<Button variant="outline" />} id={id} role="combobox" aria-label={label} aria-expanded={open} aria-haspopup="listbox" aria-controls={`${id}-list`} className={styles.trigger} data-active={value !== (filter.defaultValue ?? "")}>
         <span className={styles.fieldIcon}><Icon size={17} aria-hidden="true" /></span><span className={styles.selectedLabel}><ExpandedText text={selected?.label ?? ""} /></span>{selected?.count !== undefined && <small>{selected.count}</small>}<ChevronDown size={14} aria-hidden="true" />

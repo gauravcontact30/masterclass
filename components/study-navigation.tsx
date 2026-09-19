@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronRight, GraduationCap, Landmark, Rocket, Languages, Code2, Search, X, BookOpen, PanelTopOpen, PanelTopClose } from "lucide-react";
+import { ChevronRight, GraduationCap, Landmark, Rocket, Languages, Code2, BookOpen, PanelTopOpen, PanelTopClose } from "lucide-react";
 import { PREPARATION_GROUPS, PREPARATIONS, CATEGORY_LABELS, type PreparationAccess } from "@/lib/study/preparations";
 import { SYSTEM_DESIGN_COURSES } from "@/lib/study/system-design-catalog";
 import { useLanguage } from "./language-provider";
 
-export function StudyNavigation({ access, collapsed, category, preparation, course }: { access: PreparationAccess; collapsed: boolean; category?: string; preparation?: string; course?: string }) {
+/** Preparation groups, filtered by the query typed into the sidebar search. */
+export function StudyNavigation({ access, collapsed, category, preparation, course, query = "" }: { access: PreparationAccess; collapsed: boolean; category?: string; preparation?: string; course?: string; query?: string }) {
   const { language } = useLanguage(); const hi = language === "hi";
-  const [query, setQuery] = useState(""); const [mobile, setMobile] = useState(false);
+  const [mobile, setMobile] = useState(false);
   const [groupChoice, setGroupChoice] = useState<{ query: string; id: string | null }>({ query: "", id: null });
   const [childChoice, setChildChoice] = useState<{ query: string; id: string | null }>({ query: "", id: null });
   const normalized = query.trim().toLocaleLowerCase();
@@ -29,7 +30,7 @@ export function StudyNavigation({ access, collapsed, category, preparation, cour
   return <div className="study-nav-shell">
     <button className="study-mobile-toggle" aria-expanded={mobile} aria-controls="preparation-navigation" onClick={() => setMobile(value => !value)}>{mobile ? <PanelTopClose size={17}/> : <PanelTopOpen size={17}/>} {hi ? "तैयारी खोजें" : "Browse preparation"}<ChevronRight size={14}/></button>
     <nav id="preparation-navigation" className={`study-navigation ${mobile ? "study-mobile-open" : ""}`} aria-label={hi ? "तैयारी की श्रेणियाँ" : "Preparation categories"}>
-      {!collapsed && <div className="study-nav-search"><Search size={14}/><input type="search" aria-label={hi ? "साइडबार में खोजें" : "Search sidebar"} placeholder={hi ? "कक्षा, परीक्षा, कोर्स…" : "Class, exam, course…"} value={query} onChange={event => setQuery(event.target.value)}/>{query && <button aria-label={hi ? "साइडबार खोज साफ़ करें" : "Clear sidebar search"} onClick={() => setQuery("")}><X size={13}/></button>}</div>}
+      
       {visibleGroups.map(group => {
         const GroupIcon = ({ government: Landmark, entrance: Rocket, boards: GraduationCap, languages: Languages, technology: Code2 })[group.id];
         const groupOpen = openGroup === group.id;

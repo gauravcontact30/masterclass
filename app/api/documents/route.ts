@@ -18,4 +18,4 @@ export async function POST(request: Request) { return api(async () => {
   const result = await db().rpc("reserve_document", { p_user: owner, p_key: documentKey(input,topic.version), p_title: input.language === "hi" ? topic.title_hi : topic.title, p_request: input, p_limit: access.limit });
   if (result.error?.message.includes("quota_exceeded")) throw new HttpError(403,"quota_exceeded");
   return Response.json({ document: check(result) }, { status: 202 });
-}); }
+}, request); }

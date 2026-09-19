@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     const owner = await userId();
     const offset = z.coerce.number().int().min(0).max(10000000).parse(new URL(request.url).searchParams.get("after") ?? 0);
     return Response.json({ userId: owner, ...await listLearningMarks(owner, offset) });
-  });
+  }, request);
 }
 export async function PUT(request: Request) {
   return api(async () => {
@@ -29,7 +29,7 @@ export async function PUT(request: Request) {
     const value = markSchema.parse(await jsonBody(request, 80000));
     if (value.expectedUserId !== owner) throw new HttpError(409, "account_changed");
     return Response.json({ userId: owner, mark: await saveLearningMark(owner, draft(value)) });
-  });
+  }, request);
 }
 export async function DELETE(request: Request) {
   return api(async () => {
@@ -39,7 +39,7 @@ export async function DELETE(request: Request) {
     if (value.expectedUserId !== owner) throw new HttpError(409, "account_changed");
     await removeLearningMark(owner, value.id);
     return Response.json({ userId: owner, id: value.id });
-  });
+  }, request);
 }
 export async function POST(request: Request) {
   return api(async () => {
@@ -57,5 +57,5 @@ export async function POST(request: Request) {
       }
     }
     return Response.json({ userId: owner, marks: saved, failedIds });
-  });
+  }, request);
 }

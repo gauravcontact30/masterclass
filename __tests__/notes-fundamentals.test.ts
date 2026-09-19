@@ -7,15 +7,16 @@ import pythonGuide, { PYTHON_CORE_LESSON_COUNT } from "@/lib/generation/guides/p
 import { CLAUDE_FUNDAMENTALS } from "@/lib/notes-claude-fundamentals";
 import { AI_FUNDAMENTALS } from "@/lib/notes-ai-fundamentals";
 import { AI_CONCEPTS } from "@/lib/notes-ai-concepts";
+import { AI_VOCABULARY } from "@/lib/ai-vocabulary";
 import guide, { LLM_CORE_LESSON_COUNT } from "@/lib/generation/guides/llm-engineering";
 import { DEFAULT_GUIDES, NEXTJS_16_CORE_LESSON_COUNT } from "@/lib/generation/default-library";
 import { getStudyNote, NOTES_SUMMARIES } from "@/lib/server/notes-study-catalog";
 
-test("all 118 requested lessons have unique stable IDs and complete valid study content", () => {
+test("all 139 requested lessons have unique stable IDs and complete valid study content", () => {
   expect(CLAUDE_FUNDAMENTALS).toHaveLength(20);
   expect(AI_FUNDAMENTALS).toHaveLength(78);
   expect(AI_CONCEPTS).toHaveLength(20);
-  expect(new Set(FUNDAMENTAL_STUDY_NOTES.map(note => note.id)).size).toBe(118);
+  expect(new Set(FUNDAMENTAL_STUDY_NOTES.map(note => note.id)).size).toBe(139);
   for (const seed of [...CLAUDE_FUNDAMENTALS, ...AI_FUNDAMENTALS, ...AI_CONCEPTS]) {
     expect(seed.sources.length).toBeGreaterThan(0);
     expect(seed.sources.every(url => new URL(url).protocol === "https:")).toBe(true);
@@ -28,6 +29,25 @@ test("all 118 requested lessons have unique stable IDs and complete valid study 
     expect(note.vocabulary.length).toBeGreaterThan(0);
     expect(note.sections[0].code).toBeTruthy();
     expect(getStudyNote(note.id)?.title).toBe(note.title);
+  }
+});
+
+test('all 21 AI terms share concise definitions across notes, vocabulary and cards',()=>{
+  expect(AI_VOCABULARY.map(entry=>entry.word)).toEqual(['LLM','Prompting','Temperature','Hallucination','Context Engineering','Tokens','Vectors (Embeddings)','Context Window','Parameters','Attention','Transformer','Training','Fine-Tuning','RLHF','RAG','MCP','AI Agents','Multimodal','Reasoning Models','Small Language Models (SLMs)','AGI vs. ASI']);
+  const notes=FUNDAMENTAL_STUDY_NOTES.filter(note=>note.category==='AI terms & vocabulary');
+  expect(notes).toHaveLength(21);
+  for(const entry of AI_VOCABULARY){
+    const note=notes.find(note=>note.title===entry.word)!;
+    expect(note.description).toBe(entry.meaning);
+    expect(note.points).toHaveLength(5);
+    expect(note.points.every(point => typeof point === 'string' && point.length > 0)).toBe(true);
+    const card = NOTES_SUMMARIES.find(card => card.id === note.id)!;
+    expect(card.points).toEqual(expect.arrayContaining(note.points.slice(1, 4)));
+    const libraryLesson = FUNDAMENTAL_LESSONS.find(lesson => lesson.title === entry.word)!;
+    expect(libraryLesson.keyPoints?.map(point => point.text)).toEqual(note.points.slice(1));
+    expect(note.vocabulary[0]).toEqual(entry);
+    expect(NOTES_SUMMARIES.some(card=>card.id===note.id)).toBe(true);
+    expect(getStudyNote('claude-ai-concepts')?.contents?.some(item=>item.id===note.id)).toBe(true);
   }
 });
 
@@ -75,7 +95,7 @@ test("the Python path preserves the original lessons and includes the expanded c
 });
 
 test("the existing guide retains its core order, appends all lessons and validates after enrichment", () => {
-  expect(guide.version).toBe(2);
+  expect(guide.version).toBe(3);
   expect(guide.curriculum.lessons[0].title).toBe("How LLMs work: tokens, context and generation");
   expect(guide.curriculum.lessons.slice(LLM_CORE_LESSON_COUNT)).toEqual(FUNDAMENTAL_LESSONS);
   const seeded = DEFAULT_GUIDES.find(item => item.id === "llm-context-loop-memory")!;
@@ -88,7 +108,7 @@ test("the combined card indexes every new lesson and the original engineering ch
   const combined = getStudyNote("claude-ai-concepts")!;
   expect(combined.title).toBe("Claude & AI Concepts");
   expect(combined.readerTitle).toBe("LLMs, MCP, Context, Loop Engineering and Memory");
-  expect(combined.contents).toHaveLength(118 + LLM_CORE_LESSON_COUNT);
+  expect(combined.contents).toHaveLength(FUNDAMENTAL_STUDY_NOTES.length + LLM_CORE_LESSON_COUNT);
   expect(new Set(combined.contents!.map(item => item.id)).size).toBe(combined.contents!.length);
   for (const item of combined.contents!) expect(getStudyNote(item.id)).toBeDefined();
   expect(NOTES_SUMMARIES.filter(note => note.title === "Artifacts")).toHaveLength(1);

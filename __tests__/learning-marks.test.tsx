@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { LearningMarksProvider, LearningRegion } from "@/components/learning-marks";
+import { LearningMarksProvider, LearningRegion, LearningTools } from "@/components/learning-marks";
 import { anchorText, learningContentKey, locateAnchor, type LearningMark } from "@/lib/learning-marks";
 import { renderPersonalText, restorePersonalText, selectionAnchor, textModel } from "@/lib/learning-text-dom";
 
@@ -33,6 +33,7 @@ beforeEach(() => {
 });
 afterEach(() => { global.fetch = originalFetch; window.getSelection()?.removeAllRanges(); });
 function Fixture() { return <LearningMarksProvider><LearningRegion contentKey={key} toolbar><p data-testid="prose">The event loop runs callbacks.</p></LearningRegion></LearningMarksProvider>; }
+function CompactFixture() { return <LearningMarksProvider><LearningTools compact /><LearningRegion contentKey={key}><p data-testid="prose">The event loop runs callbacks.</p></LearningRegion></LearningMarksProvider>; }
 function select(from = 4, to = 14) {
   const node = screen.getByTestId("prose").firstChild!;
   const range = document.createRange(); range.setStart(node, from); range.setEnd(node, to);
@@ -277,4 +278,19 @@ test("deleting a line with an abbreviation pill still collapses the line", () =>
   expect(root.querySelector("#aws")!.hasAttribute("data-learning-emptied")).toBe(true);
   expect(root.querySelector("ul")!.hasAttribute("data-learning-emptied")).toBe(false);
   restorePersonalText(root); root.remove();
+});
+
+test("the compact toolbar keeps every marker reachable by name but shows no labels and no idle hint", async () => {
+  render(<CompactFixture />); await act(async () => {});
+  for (const name of ["Highlight selected text", "Unhighlight selected text", "Delete selected text"]) {
+    const button = screen.getByRole("button", { name });
+    expect(button).toBeVisible();
+    // Icon only: the accessible name comes from aria-label, not from text.
+    expect(button.textContent).toBe("");
+  }
+  // The idle hint is what made the dialog header tall; it is gone when compact.
+  expect(screen.queryByText(/Select text to highlight, unhighlight or delete/)).not.toBeInTheDocument();
+  // A real message still appears, so nothing actionable is hidden.
+  fireEvent.click(screen.getByRole("button", { name: "Unhighlight selected text" }));
+  expect(await screen.findByText(/Unhighlight on: hold left mouse button and drag/)).toBeVisible();
 });

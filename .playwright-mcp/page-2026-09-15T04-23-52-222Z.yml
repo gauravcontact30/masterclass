@@ -1,0 +1,188 @@
+- generic [active] [ref=f8e1]:
+  - generic [ref=f8e2]:
+    - complementary [ref=f8e3]:
+      - generic [ref=f8e4]:
+        - link [ref=f8e5] [cursor=pointer]:
+          - /url: /
+          - generic [ref=f8e12]:
+            - text: Master
+            - generic [aria-hidden] [ref=f8e13]: ✦
+            - emphasis [ref=f8e14]: Class
+        - button "Collapse sidebar" [expanded] [ref=f8e15] [cursor=pointer]
+      - generic [ref=f8e19]:
+        - searchbox "Search sidebar" [ref=f8e24]
+        - group "Search filters" [ref=f8e25]:
+          - button "All results" [pressed] [ref=f8e26] [cursor=pointer]
+          - button "Pages" [ref=f8e32] [cursor=pointer]
+          - button "Professional learning" [ref=f8e35] [cursor=pointer]
+          - button "Exams and courses" [ref=f8e40] [cursor=pointer]
+          - button "Technology tracks" [ref=f8e44] [cursor=pointer]
+      - generic [ref=f8e49]: YOUR LEARNING SPACE
+      - navigation "Dashboard" [ref=f8e50]:
+        - button "Dashboard" [ref=f8e51] [cursor=pointer]
+        - button "My library" [ref=f8e57] [cursor=pointer]
+        - link "Notes" [ref=f8e60] [cursor=pointer]:
+          - /url: /dashboard/notes
+        - link "Bookmark" [ref=f8e63] [cursor=pointer]:
+          - /url: /dashboard/bookmark
+      - generic [ref=f8e66]: Profissional Learn
+      - navigation "Profissional Learn" [ref=f8e67]:
+        - link "Techy" [ref=f8e68] [cursor=pointer]:
+          - /url: /dashboard/techy
+        - link "API Docs" [ref=f8e75] [cursor=pointer]:
+          - /url: /dashboard/api-docs
+        - link "Lessons" [ref=f8e83] [cursor=pointer]:
+          - /url: /dashboard/lessons
+        - link "Quiz" [ref=f8e88] [cursor=pointer]:
+          - /url: /dashboard/quiz
+        - link "Interview" [ref=f8e94] [cursor=pointer]:
+          - /url: /dashboard/interview
+        - link "Mentors" [ref=f8e100] [cursor=pointer]:
+          - /url: /dashboard/mentors
+      - navigation "Preparation categories" [ref=f8e109]
+    - generic [ref=f8e110]:
+      - banner [ref=f8e111]:
+        - generic [ref=f8e112]:
+          - text: Dashboard
+          - generic [ref=f8e115]: Lessons
+        - generic [ref=f8e116]:
+          - group "App language" [ref=f8e117]:
+            - button "EN" [pressed] [ref=f8e118] [cursor=pointer]
+            - button "Hi" [ref=f8e119] [cursor=pointer]
+          - link "Sign in" [ref=f8e121] [cursor=pointer]:
+            - /url: /sign-in
+      - main [ref=f8e125]:
+        - generic [ref=f8e126]:
+          - generic [ref=f8e127]:
+            - generic [aria-hidden] [ref=f8e128]: ⚛️
+            - generic [ref=f8e129]:
+              - paragraph [ref=f8e130]: Lessons
+              - heading "React 19+" [level=1] [ref=f8e131]
+              - paragraph [ref=f8e132]: Hand-written lessons on advanced React 19 patterns and performance, plus fresh lessons generated on any syllabus topic — all read right here.
+            - generic [ref=f8e134]:
+              - generic [ref=f8e135]: Technology
+              - combobox "Technology" [ref=f8e137] [cursor=pointer]:
+                - option "🧠 AI & ML"
+                - option "🛠️ AI Tools"
+                - option "🤖 AI Agents"
+                - option "▲ Next.js 16+"
+                - option "⚛️ React 19+" [selected]
+                - option "🔷 TypeScript"
+                - option "🟨 JavaScript"
+                - option "🧩 JS Puzzles"
+                - option "🟢 Node.js"
+                - option "🚂 Express.js"
+                - option "🐍 Python"
+                - option "🔢 NumPy"
+                - option "🐼 Pandas"
+                - option "🐻 Polars"
+                - option "🧮 SciPy"
+                - option "📈 Scikit-Learn"
+                - option "🔶 TensorFlow"
+                - option "🔥 PyTorch"
+                - option "🎛️ Keras"
+                - option "🎸 Django"
+                - option "🍶 Flask"
+                - option "🚀 FastAPI"
+                - option "📊 Matplotlib"
+                - option "📉 Seaborn"
+                - option "🔵 Plotly"
+                - option "🌐 Requests"
+                - option "🔌 HTTPX"
+                - option "🍲 BeautifulSoup"
+                - option "🕷️ Scrapy"
+                - option "🧾 Pydantic"
+                - option "🌈 Rich"
+                - option "📶 tqdm"
+                - option "🪵 Loguru"
+                - option "🔺 GraphQL"
+                - option "🪺 TanStack"
+                - option "🐻 Zustand"
+                - option "🟣 Redux Toolkit"
+                - option "✅ Zod"
+                - option "📝 Conform"
+                - option "🔑 Auth.js"
+                - option "🔐 Clerk"
+                - option "🗝️ Kinde"
+                - option "🛡️ Better Auth"
+                - option "🍃 Mongoose"
+                - option "💧 Drizzle ORM"
+                - option "🔼 Prisma"
+                - option "🟩 Neon"
+                - option "🟥 Redis"
+                - option "⚡ Upstash"
+                - option "🔁 Inngest"
+                - option "🛑 Arcjet"
+                - option "🃏 Jest"
+                - option "🅥 Vitest"
+                - option "🐙 React Testing Library"
+                - option "🎭 Playwright"
+                - option "🌲 Cypress"
+                - option "🔻 T3 Stack"
+                - option "🅰️ Angular"
+                - option "🧱 System Design"
+                - option "☁️ AWS Services"
+                - option "⚙️ DevOps"
+          - region "Featured lesson" [ref=f8e138]:
+            - paragraph [ref=f8e139]: ⚛️ React 19+ · Featured today
+            - heading "useEffect and the rules of hooks" [level=2] [ref=f8e140]
+            - paragraph [ref=f8e141]: Why hooks must follow two rules, and why useEffect is the one most often misused.
+            - generic [ref=f8e142]:
+              - generic [ref=f8e143]: Core
+              - generic [ref=f8e144]: Intermediate
+              - generic [ref=f8e145]: 7 min read
+            - generic [ref=f8e146]:
+              - button "Start reading" [ref=f8e147] [cursor=pointer]
+              - 'button "Generate: Concurrent rendering" [ref=f8e150] [cursor=pointer]'
+          - generic [ref=f8e155]:
+            - heading "React 19+ syllabus" [level=2] [ref=f8e156]
+            - paragraph [ref=f8e157]: Choose any topic to generate a full lesson. A new topic is highlighted each day.
+          - generic [ref=f8e158]:
+            - button "The use() hook" [ref=f8e159] [cursor=pointer]
+            - button "Actions & useActionState" [ref=f8e160] [cursor=pointer]
+            - button "useOptimistic" [ref=f8e161] [cursor=pointer]
+            - button "Server Components" [ref=f8e162] [cursor=pointer]
+            - button "Suspense & transitions" [ref=f8e163] [cursor=pointer]
+            - button "Memoisation done right" [ref=f8e164] [cursor=pointer]
+            - button "Refs & imperative handle" [ref=f8e165] [cursor=pointer]
+            - button "Concurrent rendering" [ref=f8e166] [cursor=pointer]
+          - generic [ref=f8e167]:
+            - generic [ref=f8e168]:
+              - heading "In-depth React 19+ lessons" [level=2] [ref=f8e169]
+              - paragraph [ref=f8e170]: 0 of 4 completed
+            - group "Filter by level" [ref=f8e171]:
+              - button "All" [pressed] [ref=f8e172] [cursor=pointer]
+              - button "Beginner" [ref=f8e173] [cursor=pointer]
+              - button "Intermediate" [ref=f8e174] [cursor=pointer]
+              - button "Advanced" [ref=f8e175] [cursor=pointer]
+          - generic [ref=f8e176]:
+            - button "How React rendering really works" [ref=f8e177] [cursor=pointer]:
+              - generic [ref=f8e181]: Mental model
+              - heading "How React rendering really works" [level=3] [ref=f8e182]
+              - paragraph [ref=f8e183]: Render, commit and re-render — the cycle that explains most React performance questions.
+              - generic [ref=f8e184]:
+                - generic [ref=f8e185]: Intermediate
+                - text: 6 min
+            - button "useMemo, useCallback and the cost of re-renders" [ref=f8e188] [cursor=pointer]:
+              - generic [ref=f8e192]: Performance
+              - heading "useMemo, useCallback and the cost of re-renders" [level=3] [ref=f8e193]
+              - paragraph [ref=f8e194]: When memoisation genuinely helps, when it's noise, and how to tell the difference.
+              - generic [ref=f8e195]:
+                - generic [ref=f8e196]: Advanced
+                - text: 6 min
+            - button "Server state with TanStack Query" [ref=f8e199] [cursor=pointer]:
+              - generic [ref=f8e203]: Data fetching
+              - heading "Server state with TanStack Query" [level=3] [ref=f8e204]
+              - paragraph [ref=f8e205]: Why server data deserves its own tool instead of useState plus useEffect.
+              - generic [ref=f8e206]:
+                - generic [ref=f8e207]: Intermediate
+                - text: 6 min
+            - button "useEffect and the rules of hooks" [ref=f8e210] [cursor=pointer]:
+              - generic [ref=f8e214]: Core
+              - heading "useEffect and the rules of hooks" [level=3] [ref=f8e215]
+              - paragraph [ref=f8e216]: Why hooks must follow two rules, and why useEffect is the one most often misused.
+              - generic [ref=f8e217]:
+                - generic [ref=f8e218]: Intermediate
+                - text: 7 min
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f8e226] [cursor=pointer]

@@ -1,0 +1,477 @@
+/* Search: one answer read as a document, every earlier answer kept as an index
+   entry. The two get deliberately different treatments — reading width and
+   quiet rules for the document, a uniform grid of equal cards for the index —
+   so the page never reads as one undifferentiated deck of cards. The index
+   comes first, then the sticky search box, then the answer. */
+
+.page {
+  --ink: #3d3d3a;
+  --muted: #73726c;
+  --faint: #9a988f;
+  --line: #dedcd1;
+  --hair: #e8e6dc;
+  --accent: #c6613f;
+  --warn: #a8631c;
+  --surface: #fff;
+  --sage: #f5f4ed;
+  --keypoint: #8a4b2f;
+  --heading: #2f4b5c;
+  --lift: 0 1px 2px #1f1e1d0a, 0 10px 30px -18px #1f1e1d40;
+  max-width: 940px;
+  width: 100%;
+  min-width: 0;
+  margin: 0 auto;
+  /* No top gutter: the workspace already pads above this, and the heading is
+     the first thing on the page now that the refresh row has moved. */
+  padding: 0 0 72px;
+  color: var(--ink);
+}
+
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* Page head */
+.head { margin-bottom: 18px; }
+.head h1 { margin: 0 0 7px; font-size: clamp(26px, 3.4vw, 34px); line-height: 1.12; letter-spacing: -.035em; font-weight: 640; }
+.head p { margin: 0; font-size: 13.5px; line-height: 1.65; color: var(--muted); }
+
+/* Search panel — stays with the reader as the answer scrolls under it. */
+.panel {
+  position: sticky; top: 0; z-index: 3;
+  min-width: 0;
+  padding: 12px 0 14px;
+  background: linear-gradient(var(--sage) 76%, #f5f4ed00);
+}
+.modeOff {
+  display: flex; align-items: center; gap: 7px;
+  margin: 11px 0 0;
+  font-size: 12px; line-height: 1.55; color: var(--muted);
+}
+.modeOff svg { flex-shrink: 0; color: var(--faint); }
+
+.searchRow { display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap; }
+/* The field holds the query and, behind a hairline, the model switch. */
+.field {
+  display: flex; align-items: center; gap: 10px;
+  flex: 1 1 380px; min-width: 0;
+  padding: 0 8px 0 15px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--faint);
+  transition: border-color .18s, box-shadow .18s;
+}
+.field:focus-within { border-color: color-mix(in srgb, var(--accent) 55%, white); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent); }
+.field:focus-within svg { color: var(--accent); }
+.field input { flex: 1; min-width: 0; height: 52px; border: 0; background: transparent; box-shadow: none; font-size: 14.5px; color: var(--ink); }
+.field input:focus-visible { outline: none; }
+/* type=search draws a clear button of its own in Chrome, Edge and Safari, which
+   would sit next to ours. Ours stays, because it also resets the page state. */
+.field input::-webkit-search-cancel-button,
+.field input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
+.field input::-ms-clear { display: none; width: 0; height: 0; }
+.clear { display: grid; place-items: center; width: 26px; height: 26px; border: 0; border-radius: 8px; background: var(--sage); color: var(--muted); cursor: pointer; }
+.clear:hover { color: var(--accent); }
+
+.submit {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 0 22px; min-height: 52px;
+  border: 1px solid #262624; border-radius: 14px;
+  background: #262624; color: #fff;
+  font-size: 13.5px; font-weight: 600; cursor: pointer;
+  transition: background .18s, transform .12s;
+}
+.submit:hover:not(:disabled) { background: #3d3d3a; }
+.submit:active:not(:disabled) { transform: translateY(1px); }
+.submit:disabled { opacity: .4; cursor: not-allowed; }
+
+/* Empty state: an invitation, not a placeholder screen. */
+.empty {
+  margin: 44px 0;
+  padding: 30px 0;
+  border-top: 1px solid var(--hair);
+  font-size: 13.5px; line-height: 1.7; color: var(--faint);
+}
+
+/* ---- The answer, as a document ---- */
+.answerWrap { min-width: 0; }
+.answer {
+  min-width: 0;
+  overflow-x: clip;
+  overflow-wrap: break-word;
+  margin-top: 8px;
+  padding: 26px 30px 30px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--lift);
+  /* The one orchestrated moment on this page: the document settles into place
+     and a rule draws itself under the question. Everything else is a response
+     to a click, never ambient. */
+  animation: settle .42s cubic-bezier(.22, .8, .3, 1) both;
+}
+@keyframes settle { from { opacity: 0; transform: translateY(10px) scale(.994); } to { opacity: 1; transform: none; } }
+
+.answerHead { position: relative; display: flex; align-items: flex-start; gap: 12px; padding-bottom: 15px; }
+.answerHead::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+  height: 1px; background: var(--line);
+  transform-origin: left;
+  animation: draw .5s .12s cubic-bezier(.22, .8, .3, 1) both;
+}
+@keyframes draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+.asked {
+  margin: 0; min-width: 0;
+  font-size: 13px; line-height: 1.55; font-weight: 600; color: var(--muted);
+  overflow-wrap: break-word;
+}
+.forget {
+  display: grid; place-items: center; flex-shrink: 0; margin-left: auto;
+  width: 28px; height: 28px;
+  border: 1px solid var(--hair); border-radius: 9px;
+  background: var(--surface); color: var(--faint); cursor: pointer;
+  transition: color .16s, border-color .16s;
+}
+.forget:hover { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 40%, white); }
+
+.body { min-width: 0; margin-top: 22px; }
+.headline {
+  overflow-wrap: break-word;
+  margin: 0 0 14px;
+  font-size: clamp(17px, 1.9vw, 21px); line-height: 1.32; letter-spacing: -.02em; font-weight: 640;
+  color: var(--heading);
+}
+/* A headline is a statement, not a snippet. A term inside it keeps the weight
+   that marks it as a name but loses the box and the monospace face: three
+   boxed names in one sentence turn the line into fenceposts and cost it every
+   bit of its authority. The body keeps its chips, where they earn their keep. */
+.headline code {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 700;
+  color: var(--heading);
+  background: none;
+  border: 0;
+  padding: 0;
+}
+/* Ragged right, not justified.
+   Justification needs a hyphenation engine and a column wide enough to absorb
+   the slack. This column is neither: it is full of identifiers that cannot
+   break, so every line the browser stretches opens visible rivers between
+   words — which is what made the body read as uneven. Left-aligned prose with
+   a consistent word space is the professional default on screen. */
+.definition, .summary, .steps p, .alternatives p, .useCases p, .points li, .noModel p, .error p {
+  text-align: left;
+  overflow-wrap: break-word;
+}
+
+/* The definition is the one pull-quote on the page, so it gets the accent rule. */
+.definition {
+  overflow-wrap: break-word;
+  margin: 0 0 18px; padding: 2px 0 2px 16px;
+  border-left: 2px solid var(--accent);
+  font-size: 14.5px; line-height: 1.7; color: var(--ink);
+}
+.summary { margin: 0 0 30px; font-size: 14px; line-height: 1.8; color: var(--muted); }
+
+/* Section headings read as headings; the hairline and the icon carry the structure. */
+.block { min-width: 0; margin: 30px 0; }
+.blockTitle {
+  display: flex; align-items: center; gap: 9px;
+  margin: 0 0 14px;
+  font-size: 13px; font-weight: 640; letter-spacing: -.005em; color: var(--heading);
+}
+.blockTitle::after { content: ""; flex: 1; height: 1px; background: var(--hair); }
+.fold > summary.blockTitle { margin-bottom: 0; }
+.blockIcon { display: grid; place-items: center; flex-shrink: 0; width: 26px; height: 26px; border-radius: 8px; background: var(--sage); color: var(--accent); }
+.block[data-tone="warn"] .blockIcon { background: color-mix(in srgb, var(--warn) 10%, white); color: var(--warn); }
+
+.blockCount {
+  margin-left: 2px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--sage);
+  font-size: 11px; font-weight: 600; color: var(--muted);
+}
+
+/* A folded section. The title is the control, so it takes the pointer and the
+   marker; the built-in triangle is replaced by one that turns. */
+.fold > summary { cursor: pointer; list-style: none; }
+.fold > summary::-webkit-details-marker { display: none; }
+.fold > summary:hover { color: var(--accent); }
+.fold > summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+.foldMark { flex-shrink: 0; color: var(--faint); transition: transform .2s; }
+.fold[open] > summary .foldMark { transform: rotate(180deg); }
+.fold[open] > summary { margin-bottom: 14px; }
+.foldBody { animation: unfold .26s cubic-bezier(.22, .8, .3, 1) both; }
+@keyframes unfold { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+/* Steps are a real sequence, so they are the one thing that gets numbered. */
+.steps { min-width: 0; }
+.steps ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.steps li {
+  display: flex; gap: 15px; align-items: flex-start;
+  padding: 17px 19px;
+  background: var(--sage); border: 1px solid var(--hair); border-radius: 14px;
+}
+.steps li > div { min-width: 0; flex: 1; }
+.stepNumber {
+  display: grid; place-items: center; flex-shrink: 0;
+  width: 30px; height: 30px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 9px;
+  color: var(--accent); font: 640 11px/1 var(--code-font, ui-monospace, monospace);
+}
+.steps h4 { overflow-wrap: break-word; margin: 6px 0 5px; font-size: 13.5px; font-weight: 640; line-height: 1.4; color: var(--heading); }
+.steps p { margin: 0; font-size: 13px; line-height: 1.75; color: var(--muted); }
+
+.alternatives { list-style: none; margin: 0; padding: 0; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 9px; }
+.alternatives li { min-width: 0; padding: 15px 17px; background: var(--sage); border: 1px solid var(--hair); border-radius: 13px; }
+.alternatives strong { display: block; font-size: 13px; font-weight: 640; color: var(--heading); }
+.alternatives p { margin: 6px 0 0; font-size: 12.5px; line-height: 1.7; color: var(--muted); }
+.when { display: block; margin-top: 9px; font-size: 12px; line-height: 1.6; color: var(--accent); }
+
+.useCases { list-style: none; margin: 0; padding: 0; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 11px; }
+.useCases li { min-width: 0; padding: 16px 18px; background: var(--sage); border: 1px solid var(--hair); border-radius: 14px; }
+.useCases strong { display: block; font-size: 13px; font-weight: 640; color: var(--heading); }
+.useCases p { margin: 7px 0 10px; font-size: 12.5px; line-height: 1.75; color: var(--muted); }
+
+/* ---- One section per named thing ----
+   A question like "explain S3, EC2 and Lambda" gets one panel per service
+   rather than three merged paragraphs. Each panel carries its own light wash
+   and matching rule so the eye can tell where one service ends and the next
+   begins while scrolling; the name sits on the wash, and the key points inside
+   keep the per-point ink cycle used elsewhere on the page. Every wash is pale
+   enough that body ink stays above 8:1 on it. */
+.subjectsBlock { min-width: 0; }
+.subjects { list-style: none; margin: 0; padding: 0; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+
+.subject {
+  min-width: 0;
+  padding: 18px 20px 16px;
+  border: 1px solid var(--wash-line, var(--hair));
+  border-left: 3px solid var(--wash-edge, var(--accent));
+  border-radius: 12px;
+  background: var(--wash, var(--sage));
+}
+/* Six washes, cycling, so no two services next to each other share a colour. */
+.subjects > li:nth-child(6n + 1) { --wash: #fdf4ef; --wash-line: #f2ddd0; --wash-edge: #d98a63; }
+.subjects > li:nth-child(6n + 2) { --wash: #eef7f1; --wash-line: #d4e8da; --wash-edge: #6faa84; }
+.subjects > li:nth-child(6n + 3) { --wash: #eef4fb; --wash-line: #d4e3f2; --wash-edge: #6f9bc9; }
+.subjects > li:nth-child(6n + 4) { --wash: #f4f0fc; --wash-line: #ded6f2; --wash-edge: #9b86cd; }
+.subjects > li:nth-child(6n + 5) { --wash: #fdf8e8; --wash-line: #eee2bd; --wash-edge: #c9a949; }
+.subjects > li:nth-child(6n + 6) { --wash: #fdeff4; --wash-line: #f0d4de; --wash-edge: #cf8aa1; }
+
+.subjectName {
+  margin: 0 0 8px;
+  font-size: 14.5px; font-weight: 650; letter-spacing: -.015em;
+  color: var(--heading);
+  overflow-wrap: anywhere;
+}
+.subjectSummary { margin: 0; font-size: 13px; line-height: 1.75; color: var(--ink); }
+
+.subjectDetails { list-style: none; margin: 11px 0 0; padding: 0; min-width: 0; display: grid; gap: 7px; }
+.subjectDetails li {
+  position: relative; padding-left: 16px;
+  font-size: 12.5px; line-height: 1.7; color: var(--muted);
+}
+.subjectDetails li::before {
+  content: ""; position: absolute; left: 3px; top: .62em;
+  width: 4px; height: 4px; border-radius: 50%; background: var(--wash-edge, var(--accent));
+}
+
+/* The key points sit on white inside the wash, so the coloured ink reads
+   against a neutral ground rather than against the panel's own tint. */
+.subjectPoints {
+  margin-top: 13px; padding: 12px 14px 11px;
+  border: 1px solid var(--wash-line, var(--hair)); border-radius: 9px;
+  background: #ffffffc4;
+}
+.subjectPoints h5 {
+  margin: 0 0 9px;
+  font-size: 9.5px; font-weight: 750; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--faint);
+}
+.subjectPoints .points { gap: 9px; }
+.subjectPoints .points li { font-size: 12.5px; line-height: 1.7; padding-left: 22px; }
+.subjectPoints .points li::before { font-size: 15px; left: 4px; }
+
+.points { list-style: none; margin: 0; padding: 0; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+/* Each point is a paragraph in its own right, so it gets paragraph spacing and
+   a bullet rather than being packed into a row. */
+.points li {
+  position: relative;
+  padding: 0 0 0 26px;
+  color: var(--keypoint);
+  font-size: 13.5px; line-height: 1.8;
+}
+.points li::before {
+  content: "•";
+  position: absolute; left: 6px; top: 0;
+  color: currentColor; font-size: 17px; line-height: 1.55;
+}
+/* Each point gets its own ink, cycling through six deep hues, so a list of
+   things worth remembering reads as separate facts rather than one paragraph
+   broken by bullets. The bullet takes the point's colour too, so each line is
+   one object. Every hue clears 5.9:1 on the card, and the warn list below
+   overrides `color` outright — a caution is one voice, not six. */
+.points li:nth-child(6n + 1) { --keypoint: #8a4b2f; }
+.points li:nth-child(6n + 2) { --keypoint: #2f6b4f; }
+.points li:nth-child(6n + 3) { --keypoint: #2f4b5c; }
+.points li:nth-child(6n + 4) { --keypoint: #5c3f7a; }
+.points li:nth-child(6n + 5) { --keypoint: #8a5a12; }
+.points li:nth-child(6n + 6) { --keypoint: #8a2f4b; }
+.block[data-tone="warn"] .points li { color: var(--warn); }
+.block[data-tone="warn"] .points li::before { content: "▸"; font-size: 13px; line-height: 1.85; color: var(--warn); }
+
+.provenance {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  overflow-wrap: anywhere;
+  margin: 26px 0 0; padding-top: 16px;
+  border-top: 1px solid var(--hair);
+  font-size: 11.5px; line-height: 1.6; color: var(--faint);
+}
+.hosts { display: inline-flex; flex-wrap: wrap; gap: 5px; }
+.hosts span { padding: 2px 9px; border: 1px solid var(--hair); border-radius: 999px; background: var(--sage); font-size: 10.5px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips button {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  padding: 9px 15px;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--surface); color: var(--ink);
+  font-size: 12.5px; line-height: 1.4; text-align: left; cursor: pointer;
+  transition: border-color .16s, color .16s;
+}
+.chips button:hover { border-color: color-mix(in srgb, var(--accent) 45%, white); color: var(--accent); }
+
+.matches { list-style: none; margin: 0; padding: 0; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 7px; }
+.matches a {
+  min-width: 0;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 13px 16px;
+  background: var(--sage); border: 1px solid var(--hair); border-radius: 12px;
+  color: var(--ink); text-decoration: none; font-size: 13px;
+  transition: border-color .16s;
+}
+.matches a:hover { border-color: color-mix(in srgb, var(--accent) 45%, white); }
+.matches strong { min-width: 0; font-weight: 620; overflow-wrap: anywhere; }
+.matchTechnology { padding: 2px 8px; border-radius: 999px; background: var(--surface); border: 1px solid var(--hair); font-size: 10px; font-weight: 650; color: var(--muted); }
+.matchCategory { margin-left: auto; font-size: 11px; color: var(--faint); }
+.noMatch { margin: 0; font-size: 13px; color: var(--faint); }
+
+/* Loading and failure */
+.skeleton { margin-top: 22px; display: grid; gap: 11px; }
+.skeletonHeadline, .skeletonLine, .skeletonStep {
+  border-radius: 10px;
+  background: linear-gradient(90deg, #efede5 25%, #f7f6f1 50%, #efede5 75%) 0 0 / 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+.skeletonHeadline { height: 30px; width: 68%; }
+.skeletonLine { height: 13px; width: 100%; }
+.skeletonLine:last-of-type { width: 82%; }
+.skeletonStep { height: 72px; }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+.error, .noModel {
+  padding: 17px 19px; margin-top: 20px;
+  background: var(--sage); border: 1px solid var(--hair); border-radius: 13px;
+  font-size: 13px; line-height: 1.7;
+}
+.error p, .noModel p { margin: 0 0 9px; }
+.noModel p:last-child { margin: 0; color: var(--muted); }
+.error button {
+  padding: 8px 15px; border: 1px solid var(--line); border-radius: 9px;
+  background: var(--surface); color: var(--ink); font-size: 12.5px; font-weight: 600; cursor: pointer;
+}
+.error button:hover { border-color: color-mix(in srgb, var(--accent) 45%, white); color: var(--accent); }
+
+/* ---- Earlier searches, as an index ----
+   Sits above the search box, so what you already asked is visible before you
+   ask again. The sticky panel below it slides up over these cards on scroll. */
+.history { margin: 2px 0 8px; min-width: 0; }
+.historyHead { display: flex; align-items: baseline; gap: 12px; margin-bottom: 15px; }
+.historyHead h2 { margin: 0; font-size: 15px; font-weight: 620; letter-spacing: -.012em; }
+.historyCount { margin-left: auto; font-size: 11.5px; color: var(--faint); }
+
+/* One row of three, and the rest behind the pager: above the search box the
+   index has to stay a strip you scan, not a wall you scroll. */
+.grid {
+  list-style: none; margin: 0; padding: 0; min-width: 0;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;
+}
+/* Turning the page is the reader's action, so the new page is allowed to
+   announce itself — briefly, as one wave across the three. */
+.grid > li { animation: deal .32s cubic-bezier(.22, .8, .3, 1) both; animation-delay: calc(var(--slot, 0) * 34ms); }
+.grid > li:nth-child(1) { --slot: 0; }
+.grid > li:nth-child(2) { --slot: 1; }
+.grid > li:nth-child(3) { --slot: 2; }
+@keyframes deal { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+
+.entry {
+  position: relative; min-width: 0;
+  overflow-x: clip;
+  border: 1px solid var(--tint-line, var(--line)); border-radius: 14px;
+  background: var(--tint, var(--surface));
+  transition: border-color .18s, box-shadow .18s, transform .18s;
+}
+.entry:hover { border-color: var(--tint-edge, var(--accent)); box-shadow: var(--lift); transform: translateY(-1px); }
+.entry:focus-within { border-color: var(--tint-edge, var(--accent)); }
+
+/* Three light tints for the three places in the row, so no two cards on screen
+   share a colour. Each is a pale wash, a slightly deeper rule, and an edge
+   colour for hover — all light enough that the heading ink stays above 8:1. */
+.grid > li:nth-child(1) { --tint: #fdf1ea; --tint-line: #f3dccd; --tint-edge: #e0a383; }
+.grid > li:nth-child(2) { --tint: #edf6ef; --tint-line: #d3e7d8; --tint-edge: #8cbf9a; }
+.grid > li:nth-child(3) { --tint: #ecf3fa; --tint-line: #d2e2f1; --tint-edge: #86acd3; }
+
+.entryOpen {
+  display: flex; flex-direction: column; gap: 8px;
+  width: 100%; min-width: 0; height: 100%;
+  padding: 15px 38px 14px 16px;
+  border: 0; border-radius: 14px; background: none;
+  text-align: left; cursor: pointer;
+}
+.entryQuestion {
+  overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  font-size: 12.5px; font-weight: 640; line-height: 1.45; color: var(--heading);
+  overflow-wrap: anywhere;
+}
+.entryAnswer {
+  overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;
+  font-size: 12px; line-height: 1.6; color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.entryFoot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: auto; padding-top: 4px; font-size: 10.5px; color: var(--faint); }
+.entryWhen { flex-shrink: 0; }
+.entryCounts { display: inline-flex; gap: 5px; margin-left: auto; }
+.entryCounts span { padding: 2px 7px; border-radius: 999px; background: #ffffffb8; border: 1px solid var(--tint-line, var(--hair)); color: var(--muted); }
+
+.entryForget {
+  position: absolute; top: 10px; right: 10px;
+  display: grid; place-items: center; width: 24px; height: 24px;
+  border: 0; border-radius: 7px; background: none; color: var(--faint);
+  cursor: pointer; opacity: 0;
+  transition: opacity .16s, color .16s;
+}
+.entry:hover .entryForget, .entryForget:focus-visible { opacity: 1; }
+.entryForget:hover { color: var(--accent); background: #ffffffb8; }
+
+@media (max-width: 620px) {
+  .page { padding-bottom: 48px; }
+  .panel { position: static; padding-top: 0; }
+  .submit { flex: 1 1 100%; justify-content: center; }
+  .answer { padding: 18px 16px 22px; border-radius: 14px; }
+  .steps li { padding: 14px; gap: 12px; }
+  .grid { grid-template-columns: minmax(0, 1fr); }
+  .entryForget { opacity: 1; }
+  .matchCategory { margin-left: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .answer, .answerHead::after, .grid > li, .foldBody { animation: none; }
+  .foldMark { transition: none; }
+  .skeletonHeadline, .skeletonLine, .skeletonStep { animation: none; }
+  .entry:hover { transform: none; }
+  .field, .submit, .entry, .chips button, .matches a, .forget, .entryForget { transition: none; }
+}

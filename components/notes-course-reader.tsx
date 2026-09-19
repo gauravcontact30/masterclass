@@ -1,4 +1,8 @@
 "use client";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
+import { NativeSelectOption } from "@/components/ui/native-select";
 import { ExpandedText } from "@/components/expanded-text";
 import { compactAbbreviations } from "@/lib/abbreviations";
 
@@ -45,8 +49,8 @@ export function NotesCourseReader({ contents, renderLesson }: { contents: NonNul
   return <div className={styles.reader}>
     <aside className={styles.contents} aria-label="Course contents">
       <div className={styles.contentsHeader}><BookOpen size={17} /><h3>Course contents</h3><span>{contents.length} lessons</span></div>
-      <label className={styles.search}><Search size={15} /><input type="search" aria-label="Search course lessons" placeholder="Find a concept…" value={query} onChange={event => { setQuery(event.target.value); setRequestedPage(1); }} /></label>
-      <select aria-label="Filter course category" value={category} onChange={event => { setCategory(event.target.value); setRequestedPage(1); }}><option value="">All subjects</option>{[...new Set(contents.map(item => item.category))].map(item => <option key={item}>{item}</option>)}</select>
+      <Label className={styles.search}><Search size={15} /><Input type="search" aria-label="Search course lessons" placeholder="Find a concept…" value={query} onChange={event => { setQuery(event.target.value); setRequestedPage(1); }} /></Label>
+      <NativeSelect aria-label="Filter course category" value={category} onChange={event => { setCategory(event.target.value); setRequestedPage(1); }}><NativeSelectOption value="">All subjects</NativeSelectOption>{[...new Set(contents.map(item => item.category))].map(item => <NativeSelectOption key={item}>{item}</NativeSelectOption>)}</NativeSelect>
       {(query || category) && <button className={styles.clear} onClick={clear}><X size={13} />Clear search &amp; filters</button>}
       <nav aria-label="Choose a course lesson"><ol>{page.items.map(item => <li key={item.id}><button aria-current={selected === item.id ? "step" : undefined} onClick={() => choose(item.id)} aria-label={`Read ${item.title}`}><span>{compactAbbreviations(item.title)}</span><small>{compactAbbreviations(item.category)}</small></button></li>)}</ol></nav>
       {!filtered.length && <p role="status">No lessons match. Try another term or clear the filters.</p>}

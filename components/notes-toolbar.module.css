@@ -1,15 +1,15 @@
 /* Shared by Notes, Dashboard and My Library (components/search-filter-panel.tsx). */
-:global(.dark) .panel { --ink: #e0eee4; --muted-ink: #a8b9ac; --green: #a5d2b6; --line: #3a5143; --surface: #1b2922; --sage: #22352a; --mint: #273d2d; }
+:global(.dark) .panel { --ink: #e8e6dc; --muted-ink: #b0aea5; --green: #d97757; --line: #4d4c48; --surface: #262624; --sage: #262624; --mint: #3d3d3a; }
 /* Every page keeps the same gap between the panel and the content below it. */
 .panel.panel + * { margin-top: 0; }
-.panel { --ink: #243e35; --muted-ink: #607169; --green: #2d614d; --line: #dce7dc; --surface: #fff; --sage: #f2f7f2; --mint: #edf5ee; background: var(--surface, #fff); border: 1px solid var(--line, #dce7dc); border-radius: 20px; padding: 24px; color: var(--ink, #243e35); box-shadow: 0 3px 8px #21442e04, 0 12px 38px #21442e07; margin-bottom: 25px; }
+.panel { --ink: #3d3d3a; --muted-ink: #73726c; --green: #262624; --line: #dedcd1; --surface: #fff; --sage: #f5f4ed; --mint: #f0eee6; background: var(--surface, #fff); border: 1px solid var(--line, #dedcd1); border-radius: 20px; padding: 24px; color: var(--ink, #3d3d3a); box-shadow: 0 3px 8px #14141304, 0 12px 38px #14141307; margin-bottom: 25px; }
 .header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 22px; }
 .header > div { display: flex; align-items: center; gap: 11px; }
 .headerIcon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; border: 1px solid var(--line); background: var(--sage); color: var(--green); }
 .header h2 { font-size: 15px; font-weight: 650; letter-spacing: -.02em; margin: 0 0 3px; }
 .header p { color: var(--muted-ink); font-size: 11px; margin: 0; }
 .librarySize { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; padding: 6px 10px; color: var(--muted-ink); background: var(--sage); border: 1px solid var(--line); border-radius: 20px; white-space: nowrap; }
-.panel .searchGroup { min-height: 54px; padding: 0 9px; border: 1px solid var(--line); border-radius: 12px; background: color-mix(in srgb, var(--sage) 65%, var(--surface)); box-shadow: inset 0 1px 2px #17372003; }
+.panel .searchGroup { min-height: 54px; padding: 0 9px; border: 1px solid var(--line); border-radius: 12px; background: color-mix(in srgb, var(--sage) 65%, var(--surface)); box-shadow: inset 0 1px 2px #14141303; }
 .searchGroup input { font-size: 14px; color: var(--ink); background: transparent; }
 .searchGroup input::placeholder { color: var(--muted-ink); opacity: .85; }
 .searchGroup input::-webkit-search-cancel-button { display: none; }
@@ -20,14 +20,14 @@
 .fields[data-count="4"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .field { display: grid; gap: 8px; min-width: 0; }
 .field label { color: var(--muted-ink); font-size: 10px; text-transform: uppercase; letter-spacing: .07em; font-weight: 650; }
-.panel .trigger { width: 100%; min-height: 47px; height: auto; padding: 8px 12px 8px 9px; gap: 9px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); color: var(--ink); justify-content: start; font-size: 12px; box-shadow: 0 1px 3px #25433304; }
+.panel .trigger { width: 100%; min-height: 47px; height: auto; padding: 8px 12px 8px 9px; gap: 9px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); color: var(--ink); justify-content: start; font-size: 12px; box-shadow: 0 1px 3px #14141304; }
 .panel .trigger:hover, .panel .trigger[aria-expanded="true"] { border-color: var(--green); background: var(--sage); }
 .panel .trigger[data-active="true"] { background: var(--sage); border-color: color-mix(in srgb, var(--green) 40%, var(--line)); }
 .fieldIcon { display: grid; place-items: center; width: 27px; height: 27px; border-radius: 7px; color: var(--green); background: var(--mint); flex-shrink: 0; }
 .selectedLabel { text-align: left; flex: 1; min-width: 0; text-overflow: ellipsis; overflow: hidden; }
 .trigger > small { color: var(--muted-ink); font-size: 10px; padding: 2px 5px; border-radius: 4px; background: var(--mint); }
 .trigger > svg:last-child { color: var(--muted-ink); flex-shrink: 0; }
-.pickerPopup { width: max(var(--anchor-width, 280px), 280px); max-width: calc(100vw - 32px); border-radius: 13px; padding: 7px; border: 1px solid var(--border); box-shadow: 0 12px 40px #1230201c; }
+.pickerPopup { width: max(var(--anchor-width, 280px), 280px); max-width: calc(100vw - 32px); border-radius: 13px; padding: 7px; border: 1px solid var(--border); box-shadow: 0 12px 40px #1414131c; }
 .pickerPopup [data-slot="command-list"] { max-height: 280px; }
 .pickerPopup .option { border-radius: 7px; cursor: pointer; padding: 10px; }
 .option > span { display: grid; gap: 4px; flex: 1; min-width: 0; }

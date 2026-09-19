@@ -5,7 +5,7 @@ import { providerSchema,designRequest } from "@/lib/server/design";
 import { check,db } from "@/lib/server/db";
 import { required } from "@/lib/server/config";
 import { rateLimit } from "@/lib/server/rate-limit";
-export async function DELETE(request:Request,context:{params:Promise<{provider:string}>}){return api(async()=>{sameOrigin(request);const owner=await userId();const provider=providerSchema.parse((await context.params).provider);check(await db().from("integration_connections").delete().eq("user_id",owner).eq("provider",provider));check(await db().from("oauth_states").delete().eq("user_id",owner).eq("provider",provider));return Response.json({ok:true});});}
+export async function DELETE(request:Request,context:{params:Promise<{provider:string}>}){return api(async()=>{sameOrigin(request);const owner=await userId();const provider=providerSchema.parse((await context.params).provider);check(await db().from("integration_connections").delete().eq("user_id",owner).eq("provider",provider));check(await db().from("oauth_states").delete().eq("user_id",owner).eq("provider",provider));return Response.json({ok:true});}, request);}
 export async function POST(request:Request,context:{params:Promise<{provider:string}>}){return api(async()=>{
   sameOrigin(request);const owner=await userId();const provider=providerSchema.parse((await context.params).provider);await rateLimit(`design:${owner}`,15);
   const input=z.object({action:z.enum(["browse","export","status","subscribe"]),id:z.string().regex(/^[a-zA-Z0-9_-]+$/).max(150).optional(),nodeId:z.string().regex(/^[a-zA-Z0-9:_-]+$/).max(100).optional(),format:z.enum(["pdf","pptx","png"]).optional()}).strict().parse(await jsonBody(request));
@@ -36,4 +36,4 @@ export async function POST(request:Request,context:{params:Promise<{provider:str
     }
   }
   throw new HttpError(400,"invalid_request");
-});}
+}, request);}

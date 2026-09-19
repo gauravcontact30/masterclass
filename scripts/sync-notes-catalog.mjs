@@ -11,7 +11,7 @@ const topics = [...sql.matchAll(/\('((?:[^']|'')*)','((?:[^']|'')*)','((?:[^']|'
 if (technologies.length !== 5 || topics.length !== 7) throw new Error("Unexpected catalog migration shape; review before applying.");
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-if (!url || !key) throw new Error("Database configuration missing. Run with --env-file=.env.local.");
+if (!url || !key) throw new Error("Database configuration missing. Run with --env-file=.env.");
 const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 for (const [table, rows] of [["technologies", technologies], ["topics", topics]]) {
   const result = await db.from(table).select("id").in("id", rows.map(row => row.id));

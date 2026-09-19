@@ -14,4 +14,4 @@ export async function GET(request: Request) { return api(async () => {
   }
   const [technologies, topics] = await Promise.all([catalogTechnologies(), catalogTopics()]);
   return Response.json({ technologies: access ? technologies.filter(item => canReadTechnology(access, item.id)) : technologies, topics: access ? topics.filter(item => canReadTechnology(access, item.technology_id)) : topics });
-}); }
+}, request); }

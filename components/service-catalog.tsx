@@ -1,10 +1,14 @@
 "use client";
+import { Input } from "@/components/ui/input";
+import { BookmarkButton, BookmarkPoint, BookmarkSection } from "./bookmarks";
 import { ExpandedText } from "@/components/expanded-text";
 
 
 import { useDeferredValue, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight, Layers, Search, X, ExternalLink } from "lucide-react";
 import type { ServiceEntry } from "@/lib/domain";
+import { serviceDepth } from "@/lib/generation/guides/aws-service-depth";
+import { KnowledgeCheck } from "./knowledge-check";
 import styles from "./service-catalog.module.css";
 
 /** Two cards per row, two rows per page — the rest is paged. */
@@ -93,7 +97,7 @@ export function ServiceCatalog({ services, hi, grouped = false, topics = false, 
     <div className={styles.searchRow} ref={boxRef}>
       <div className={styles.searchBox}>
         <Search size={15} aria-hidden="true" />
-        <input
+        <Input
           ref={inputRef}
           type="search"
           role="combobox"
@@ -145,6 +149,27 @@ export function ServiceCatalog({ services, hi, grouped = false, topics = false, 
   </section>;
 }
 
+/**
+ * Interview depth for the services that have it. Nothing is rendered for a
+ * service without authored content, rather than an empty or invented section.
+ */
+function ServiceDepthSections({ name, hi }: { name: string; hi: boolean }) {
+  const depth = serviceDepth(name);
+  if (!depth) return null;
+  return <>
+    <div className={styles.block}><span className={styles.blockLabel}><ExpandedText text={hi ? "मुख्य अवधारणाएँ" : "Concepts"} /></span>
+      <ul className={styles.points}>{depth.concepts.map((concept, index) => <li key={index}><ExpandedText text={concept} /></li>)}</ul>
+    </div>
+    <div className={styles.useCase}><span className={styles.blockLabel}><ExpandedText text={hi ? "उपयोग" : "Use case"} /></span><p><ExpandedText text={depth.useCase} /></p></div>
+    <details className={styles.qa}><summary><ExpandedText text={hi ? "इंटरव्यू प्रश्न (विषयनिष्ठ)" : "Interview questions · subjective"} /> <small>{depth.subjective.length}</small></summary>
+      {depth.subjective.map((item, index) => <section key={index}><h5>{index + 1}. <ExpandedText text={item.question} /></h5><p><ExpandedText text={item.answer} /></p></section>)}
+    </details>
+    <details className={styles.qa}><summary><ExpandedText text={hi ? "वस्तुनिष्ठ प्रश्न" : "Objective questions"} /> <small>{depth.objective.length}</small></summary>
+      {depth.objective.map((item, index) => <KnowledgeCheck key={index} question={{ ...item, shortAnswer: item.options[item.correct] }} />)}
+    </details>
+  </>;
+}
+
 function ServicePage({ services, hi, title, topics, showReferences, renderDetails }: { services: ServiceEntry[]; hi: boolean; title?: string; topics?: boolean; showReferences?: boolean; renderDetails?: (entry: ServiceEntry) => ReactNode }) {
   const [page, setPage] = useState(0);
   const id = useId();
@@ -156,13 +181,16 @@ function ServicePage({ services, hi, title, topics, showReferences, renderDetail
   return <section ref={section} className={title ? styles.categorySection : undefined} aria-labelledby={title ? id : undefined}>
     {title && <header className={styles.categoryHeading}><div><span><ExpandedText text={hi ? "अध्ययन श्रेणी" : "EXPLORE CATEGORY"} /></span><h3 id={id}><ExpandedText text={title} /></h3></div><small>{services.length} <ExpandedText text={topics ? (hi ? "विषय" : "topics") : hi ? "संदर्भ" : "references"} /></small></header>}
     <div className={styles.grid}>
-      {shown.map(service => <article key={service.awsId ?? service.name} aria-label={service.name} className={styles.card} data-tint={services.indexOf(service) % TINTS}>
+      {shown.map(service => <BookmarkSection key={service.awsId ?? service.name} title={service.name}><article aria-label={service.name} className={styles.card} data-tint={services.indexOf(service) % TINTS}>
         <header><h4><ExpandedText text={service.name} /></h4><span className={styles.badge}><ExpandedText text={topics ? (hi ? "विषय" : "Topic") : service.kind === "capability" ? (hi ? "क्षमता" : "Capability") : (title ? (hi ? "सेवा" : "Service") : service.category)} /></span></header>
         <div className={styles.purpose}><span><ExpandedText text={topics ? (hi ? "मुख्य विचार" : "Key idea") : hi ? "मुख्य उद्देश्य" : "Core purpose"} /></span><p className={styles.summary}><ExpandedText text={service.summary} /></p></div>
-        <ul className={`${styles.points} learning-key-points pointwise`}>{service.points.map((point, index) => <li key={index}><ExpandedText text={point} /></li>)}</ul>
+        <div className={styles.block}><span className={styles.blockLabel}><ExpandedText text={hi ? "मुख्य विशेषताएँ" : "Key features"} /></span>
+          <BookmarkButton points={[service.summary, ...service.points]} /><ul className={`${styles.points} learning-key-points pointwise`}>{service.points.map((point, index) => <li key={index}><BookmarkPoint text={point}><ExpandedText text={point} /></BookmarkPoint></li>)}</ul>
+        </div>
+        <ServiceDepthSections name={service.name} hi={hi} />
         {showReferences && service.sourceUrl && <a className={styles.source} href={service.sourceUrl} target="_blank" rel="noreferrer"><ExpandedText text={hi ? "आधिकारिक संदर्भ" : "Official reference"} /><ExternalLink size={12} aria-hidden="true" /></a>}
         {renderDetails?.(service)}
-      </article>)}
+      </article></BookmarkSection>)}
     </div>
     {pages > 1 && <nav className={styles.pager} aria-label={title ? `${title} pages` : topics ? (hi ? "विषय पृष्ठ" : "Topic pages") : hi ? "सेवा पृष्ठ" : "Service pages"}>
       <button type="button" onClick={() => changePage(current - 1)} disabled={current === 0}><ChevronLeft size={14} aria-hidden="true" /><ExpandedText text={hi ? "पिछला" : "Previous"} /></button>

@@ -1,4 +1,5 @@
 "use client";
+import { Input } from "@/components/ui/input";
 import { ExpandedText } from "@/components/expanded-text";
 
 import { useId, useMemo, useRef, useState } from "react";
@@ -69,7 +70,7 @@ export function Library({ externalQuery, onQueryChange, documents: sourceDocumen
         <LearningLibraryHeading id={headingId} total={documents.length} />
         {externalQuery===undefined&&<div className={styles.search} role="search">
           <Search size={16} className={styles.searchIcon} aria-hidden="true" />
-          <input
+          <Input
             ref={inputRef}
             type="search"
             className={styles.searchInput}

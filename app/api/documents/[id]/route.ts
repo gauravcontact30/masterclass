@@ -6,7 +6,7 @@ import { check, db } from "@/lib/server/db";
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) { return api(async () => {
   const owner = await userId(); const { id } = await context.params;
   return Response.json({ document: await ownedDocument(id,owner) });
-}); }
+}, _request); }
 export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) { return api(async () => {
   sameOrigin(request); const owner = await userId(); const { id } = await context.params;
   const item = await ownedDocument(id,owner,false);
@@ -19,4 +19,4 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
   if (paths.length) await db().storage.from("generated-docs").remove(paths);
   check(await db().from("documents").delete().eq("id",id).eq("user_id",owner));
   return Response.json({ ok: true });
-}); }
+}, request); }

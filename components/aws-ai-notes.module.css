@@ -1,14 +1,14 @@
-.notes { border: 1px solid #dce5d8; border-radius: 24px; padding: clamp(18px, 3vw, 32px); background: #fff; margin: 20px 0; min-width: 0; }
-.intro { display: flex; gap: 18px; align-items: flex-start; padding-bottom: 20px; border-bottom: 1px solid #e5eadf; }
-.icon { display: grid; place-items: center; width: 54px; height: 54px; flex: none; background: #eaf2e3; border-radius: 16px; color: #4c6943; }
-.eyebrow { display: inline-flex; gap: 6px; align-items: center; font-size: 11px; font-weight: 700; letter-spacing: .1em; color: #607253; }
-.intro h2 { margin: 8px 0; font-size: clamp(23px, 2.4vw, 32px); color: #283f30; }
-.intro p { margin: 0; color: #65715f; line-height: 1.7; }
+.notes { border: 1px solid #dedcd1; border-radius: 24px; padding: clamp(18px, 3vw, 32px); background: #fff; margin: 20px 0; min-width: 0; }
+.intro { display: flex; gap: 18px; align-items: flex-start; padding-bottom: 20px; border-bottom: 1px solid #e8e6dc; }
+.icon { display: grid; place-items: center; width: 54px; height: 54px; flex: none; background: #e8e6dc; border-radius: 16px; color: #c6613f; }
+.eyebrow { display: inline-flex; gap: 6px; align-items: center; font-size: 11px; font-weight: 700; letter-spacing: .1em; color: #c6613f; }
+.intro h2 { margin: 8px 0; font-size: clamp(23px, 2.4vw, 32px); color: #3d3d3a; }
+.intro p { margin: 0; color: #73726c; line-height: 1.7; }
 .notes article { padding: 22px; border-radius: 18px; }
 .notes article h4 { font-size: 19px; }
 .notes article p, .notes article li { font-size: 14px; line-height: 1.75; }
 .notes input { min-height: 32px; font-size: 14px; }
-.sources { margin-top: 28px; border-top: 1px solid #e5eadf; padding-top: 18px; font-size: 13px; color: #607253; }
+.sources { margin-top: 28px; border-top: 1px solid #e8e6dc; padding-top: 18px; font-size: 13px; color: #5e5d59; }
 .sources summary { cursor: pointer; font-weight: 650; }
 .sources ul { display: flex; flex-wrap: wrap; list-style: none; gap: 10px 24px; padding: 12px 0 0; }
 .sources a { display: inline-flex; gap: 5px; align-items: center; text-decoration: underline; text-underline-offset: 3px; }

@@ -1,0 +1,40 @@
+/* Sectioned technology browser shared by Lessons, Quiz and Mentors. */
+.browser { display: grid; gap: 10px; }
+
+.family { border: 1px solid var(--line, #e8e6dc); border-radius: 14px; background: #fff; overflow: hidden; }
+.family[open] { border-color: var(--line-strong, #d1cfc5); }
+.family > summary { display: flex; align-items: center; gap: 14px; padding: 16px 18px; cursor: pointer; list-style: none; }
+.family > summary::-webkit-details-marker { display: none; }
+.family > summary:hover { background: var(--ivory, #faf9f5); }
+.family > summary:focus-visible { outline: 2px solid var(--clay, #c96442); outline-offset: -2px; }
+.familyIcon { flex: none; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; background: var(--oat, #f5f4ed); border: 1px solid var(--line, #e8e6dc); font-size: 17px; }
+.family[data-active="true"] .familyIcon { background: var(--clay-soft, #f9ece6); border-color: #f1d6c8; }
+.familyText { flex: 1; min-width: 0; display: grid; gap: 3px; }
+.familyText b { font-size: 14px; font-weight: 600; letter-spacing: -.01em; color: var(--ink, #262624); }
+.familyText small { font-size: 12px; line-height: 1.5; color: var(--muted, #73726c); }
+.familyCount { flex: none; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line, #e8e6dc); background: var(--oat, #f5f4ed); font-size: 11px; color: var(--muted, #73726c); white-space: nowrap; }
+.family[data-active="true"] .familyCount { background: var(--clay-soft, #f9ece6); border-color: #f1d6c8; color: var(--clay-deep, #b65334); }
+.chevron { flex: none; color: var(--faint, #87867f); transition: transform .18s ease; }
+.family[open] .chevron { transform: rotate(90deg); }
+
+.tracks { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; padding: 4px 18px 18px; }
+.track { display: grid; gap: 6px; padding: 14px; text-align: left; cursor: pointer; border: 1px solid var(--line, #e8e6dc); border-radius: 12px; background: var(--ivory, #faf9f5); transition: border-color .15s, background .15s, transform .15s; }
+.track:hover { border-color: var(--clay, #c96442); background: #fff; transform: translateY(-2px); }
+.track[aria-pressed="true"] { border-color: var(--clay, #c96442); background: var(--clay-soft, #f9ece6); box-shadow: inset 0 2px 0 var(--clay, #c96442); }
+.trackTop { display: flex; align-items: center; gap: 9px; }
+.trackTop span:first-child { font-size: 16px; line-height: 1; }
+.trackTop b { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 600; letter-spacing: -.01em; color: var(--ink, #262624); overflow-wrap: anywhere; }
+.track p { margin: 0; font-size: 12px; line-height: 1.6; color: var(--muted, #73726c); }
+.trackCount { display: inline-flex; align-self: flex-start; margin-top: 2px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line, #e8e6dc); background: #fff; font-size: 11px; color: var(--read, #3d3d3a); }
+.track[aria-pressed="true"] .trackCount { border-color: #f1d6c8; color: var(--clay-deep, #b65334); }
+.trackCount[data-empty="true"] { color: var(--faint, #87867f); }
+
+@media (max-width: 520px) {
+  .tracks { grid-template-columns: minmax(0, 1fr); padding: 4px 14px 14px; }
+  .family > summary { padding: 14px; gap: 10px; }
+  .familyText small { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .track, .chevron { transition: none; }
+  .track:hover { transform: none; }
+}

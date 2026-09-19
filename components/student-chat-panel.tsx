@@ -1,5 +1,8 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { ArrowUp, BookOpen, Code2, GraduationCap, Play, RotateCcw, Square, X } from "lucide-react";
@@ -115,17 +118,17 @@ export default function StudentChatPanel({ open, onOpenChange }: { open: boolean
         {mode === "javascript" && <section className={styles.lab} aria-label="JavaScript puzzle lab">
           <div className={styles.labHeading}><Code2 size={17} /><h3>JavaScript puzzle lab</h3></div>
           <p>Standalone JavaScript, promises and timers. No DOM, network or Node modules. Runs stop after 3 seconds.</p>
-          <label htmlFor="study-puzzle-code">Your code</label>
-          <textarea id="study-puzzle-code" value={code} onChange={event => setCode(event.target.value)} maxLength={12000} rows={7} spellCheck={false} disabled={running} />
+          <Label htmlFor="study-puzzle-code">Your code</Label>
+          <Textarea id="study-puzzle-code" value={code} onChange={event => setCode(event.target.value)} maxLength={12000} rows={7} spellCheck={false} disabled={running} />
           <div className={styles.labActions}><button onClick={run} disabled={running || !code.trim()}><Play size={14} />Run JavaScript</button>{running && <button onClick={() => stopRun.current?.()}><Square size={14} />Stop run</button>}</div>
           <div className={styles.output} aria-label="JavaScript console output"><span role="status">{running ? "Running…" : result ? ({ complete: "Run complete", error: "Run failed", timeout: "Stopped: 3-second time limit", stopped: "Run stopped" })[result.status] : "Console output"}</span><pre>{output.join("\n") || (result ? "No console output. Use console.log() to inspect a value." : "Your results will appear here.")}</pre></div>
           {result && <button className={styles.explain} disabled={busy} onClick={() => void ask(`Explain this JavaScript puzzle and its observed sandbox output. The run status was ${result.status}. ${code.length > 4000 ? "Code excerpt (truncated):" : "Code:"}\n\`\`\`javascript\n${code.slice(0, 4000)}\n\`\`\`\nObserved output (possibly truncated):\n${output.join("\n").slice(0, 1200) || "No output"}`, "javascript")}>Help me understand this result</button>}
         </section>}
       </div>
       <form className={styles.composer} onSubmit={submit}>
-        <label className={styles.composerLabel} htmlFor="study-chat-question">Ask a study question</label>
-        <div className={styles.inputRow}><textarea id="study-chat-question" ref={composer} placeholder={mode === "interview" ? "Ask an interview question…" : "Ask about a topic, an assignment or a puzzle…"} value={draft} onChange={event => setDraft(event.target.value)} maxLength={6000} rows={2} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); void ask(draft); } }} />
-          {busy ? <button type="button" aria-label="Stop reply" onClick={() => requestRef.current?.abort()}><Square size={18} /></button> : <button type="submit" aria-label="Send question" disabled={!draft.trim()}><ArrowUp size={20} /></button>}
+        <Label className={styles.composerLabel} htmlFor="study-chat-question">Ask a study question</Label>
+        <div className={styles.inputRow}><Textarea id="study-chat-question" ref={composer} placeholder={mode === "interview" ? "Ask an interview question…" : "Ask about a topic, an assignment or a puzzle…"} value={draft} onChange={event => setDraft(event.target.value)} maxLength={6000} rows={2} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); void ask(draft); } }} />
+          {busy ? <Button type="button" aria-label="Stop reply" onClick={() => requestRef.current?.abort()}><Square size={18} /></Button> : <Button type="submit" aria-label="Send question" disabled={!draft.trim()}><ArrowUp size={20} /></Button>}
         </div>
         <p>AI answers can be mistaken. Check important details. Don’t share private information.</p>
       </form>

@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { NotesExplorer, SyntaxEditor, TopicCard } from "@/components/notes-explorer";
+import { NotesExplorer, TopicCard } from "@/components/notes-explorer";
+import { CodeLab } from "@/components/code-lab";
 import { NOTES_SUMMARIES, NOTES_TECHNOLOGIES, STUDY_NOTES } from "@/lib/server/notes-study-catalog";
 import { notesPage, type NotesSummary } from "@/lib/notes-study";
 import { objectiveQuestionSchema } from "@/lib/domain";
@@ -9,14 +10,14 @@ const technologies = NOTES_TECHNOLOGIES.filter(item => ["react", "node"].include
 // Keep the inline-card regression fixture stable as modal courses are added.
 const notes = [...NOTES_SUMMARIES.filter(note => note.technology === "react" && !note.learnInApp).slice(0, 6), ...NOTES_SUMMARIES.filter(note => note.technology === "node" && !note.learnInApp).slice(0, 1)];
 
-test("the light editor copies exact code without line numbers", async () => {
+test("the code lab copies exact code without line numbers", async () => {
   const writeText = jest.fn().mockResolvedValue(undefined);
   const original = Object.getOwnPropertyDescriptor(navigator, "clipboard");
   Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
   try {
-    render(<SyntaxEditor title="Example" code={'const value = 1;\nconsole.log(value);'} />);
+    render(<CodeLab title="Example" code={'const value = 1;\nconsole.log(value);'} />);
     fireEvent.click(screen.getByRole("button", { name: "Copy Example code" }));
-    await screen.findByText("Code copied to clipboard");
+    await screen.findByText("Copied");
     expect(writeText).toHaveBeenCalledWith('const value = 1;\nconsole.log(value);');
   } finally {
     if (original) Object.defineProperty(navigator, "clipboard", original);
@@ -133,4 +134,34 @@ test("failed detail requests offer a working retry", async () => {
     await screen.findByText("Syntax, meaning & examples");
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   } finally { global.fetch = originalFetch; }
+});
+
+test("the Learn in App dialog opens on a compact header: short title, one meta row and no footer", async () => {
+  // A card whose reader title is deliberately shorter than its card title.
+  const full = STUDY_NOTES.find(note => note.readerTitle && note.readerTitle !== note.title)!;
+  const summary = NOTES_SUMMARIES.find(note => note.id === full.id)!;
+  global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ note: full }) }) as jest.Mock;
+  render(<TopicCard note={summary} />);
+
+  // The card keeps its own name; only the reader uses the short one.
+  expect(screen.getByRole("heading", { name: summary.title })).toBeVisible();
+  expect(summary.readerTitle).toBe(full.readerTitle);
+
+  fireEvent.click(screen.getByRole("button", { name: "Learn in App" }));
+  const dialog = within(screen.getByRole("dialog"));
+  expect(dialog.getByRole("heading", { name: full.readerTitle! })).toBeVisible();
+
+  // One meta row: technology label and category, without the old "LEARN IN APP ·" prefix.
+  expect(dialog.getByText(summary.category)).toBeVisible();
+  expect(dialog.queryByText(/LEARN IN APP/i)).not.toBeInTheDocument();
+
+  // The compact marker toolbar itself is covered in learning-marks.test.tsx,
+  // which supplies the provider LearningTools needs to render at all.
+
+  // No footer: the dialog's own Close button is the way back.
+  expect(dialog.queryByText(/Read · Explore · Practise/)).not.toBeInTheDocument();
+  expect(dialog.queryByText(/Back to notes/)).not.toBeInTheDocument();
+  fireEvent.click(dialog.getByRole("button", { name: "Close" }));
+  await screen.findByRole("button", { name: "Learn in App" });
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 });

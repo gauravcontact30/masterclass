@@ -2,6 +2,8 @@ import "server-only";
 import { ZodError } from "zod";
 import { authConfigured } from "./config";
 import { supabaseServer } from "./auth";
+import { after } from "next/server";
+import { recordEvent } from "./monitoring";
 export class HttpError extends Error { constructor(public status: number, public code: string) { super(code); } }
 export async function userId() {
   if (!authConfigured()) throw new HttpError(503, "setup_required");
@@ -22,12 +24,27 @@ export function sameOrigin(request: Request) {
   const origin = request.headers.get("origin");
   if (origin && origin !== new URL(request.url).origin) throw new HttpError(403, "invalid_origin");
 }
-export async function api(action: () => Promise<Response>) {
-  try { const response = await action(); response.headers.set("Cache-Control", "private, no-store"); return response; }
+export async function api(action: () => Promise<Response>, request?: Request) {
+  const started = performance.now();
+  function monitor(response: Response) {
+    if (request && !new URL(request.url).pathname.startsWith("/api/super-admin")) {
+      const event = { kind: "request", action: request.method, resource: new URL(request.url).pathname, status: response.status, duration_ms: Math.round(performance.now() - started) };
+      // Never log query strings, cookies, request bodies or authorization headers.
+      try { after(() => recordEvent(event)); } catch { /* No request context in direct unit tests. */ }
+    }
+    return response;
+  }
+  try { const response = await action(); response.headers.set("Cache-Control", "private, no-store"); return monitor(response); }
   catch (error) {
     const status = error instanceof HttpError ? error.status : error instanceof ZodError ? 400 : error instanceof Error && error.message.startsWith("CONFIG:") ? 503 : 500;
     const code = error instanceof HttpError ? error.code : error instanceof ZodError ? "invalid_request" : status === 503 ? "setup_required" : "service_error";
-    if (status >= 500) console.error(JSON.stringify({ event: "api_error", code, errorType: error instanceof Error ? error.name : "unknown" }));
-    return Response.json({ error: code }, { status, headers: { "Cache-Control": "no-store" } });
+    // A 500 with no route and no message is not diagnosable. The pathname and
+    // the error's own message are safe to log; the rule above still holds, so
+    // no query string, cookie, body or authorization header goes near this.
+    if (status >= 500) console.error(JSON.stringify({ event: "api_error", code,
+      route: request ? new URL(request.url).pathname : undefined,
+      errorType: error instanceof Error ? error.name : "unknown",
+      message: error instanceof Error ? error.message : undefined }));
+    return monitor(Response.json({ error: code }, { status, headers: { "Cache-Control": "no-store" } }));
   }
 }

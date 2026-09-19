@@ -5,6 +5,10 @@ import "@testing-library/jest-dom";
 // on `Element` too: server-logic suites run under the "node" test
 // environment (no DOM at all), so this file must be a no-op there.
 if (typeof Element !== "undefined") {
+  // Base UI dispatches pointer clicks; jsdom only provides mouse events.
+  if (typeof window.PointerEvent === "undefined") {
+    window.PointerEvent = MouseEvent as typeof PointerEvent;
+  }
   if (typeof globalThis.ResizeObserver === "undefined") {
     class ResizeObserverStub {
       observe() {}

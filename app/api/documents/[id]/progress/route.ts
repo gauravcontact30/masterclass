@@ -11,4 +11,4 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   if(item.status !== "ready" || data.page > pages || data.bookmarks.some(page => page > pages)) throw new HttpError(400,"invalid_request");
   check(await db().from("learning_progress").upsert({ ...data, user_id: owner, document_id:id, updated_at: new Date().toISOString() },{ onConflict:"user_id,document_id" }));
   return Response.json({ ok:true });
-}); }
+}, request); }

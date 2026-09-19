@@ -1,4 +1,6 @@
 "use client";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { uniqueLearningPoints } from "@/lib/concise-learning";
 import { ExpandedText } from "@/components/expanded-text";
 
@@ -27,11 +29,11 @@ export function KnowledgeCheck({ question, hi = false }: { question: ObjectiveQu
   return <div className={styles.check}>
     <span className={styles.eyebrow}><ExpandedText text={hi ? "रुकें और सोचें" : "PAUSE & PRACTISE"} /></span>
     <fieldset className={styles.fieldset}><legend><ExpandedText text={question.question} /></legend>
-      <div className={styles.options}>{question.options.map((option, index) => <label key={index} className={styles.option} data-selected={choice === index} data-result={checked ? index === question.correct ? "correct" : index === choice ? "incorrect" : undefined : undefined}>
-        <input type="radio" name={id} checked={choice === index} disabled={checked} onChange={() => setChoice(index)} />
+      <RadioGroup name={id} aria-label={question.question} disabled={checked} value={choice===null?null:String(choice)} onValueChange={value=>setChoice(Number(value))} className={styles.options}>{question.options.map((option, index) => <Label key={index} className={styles.option} data-selected={choice === index} data-result={checked ? index === question.correct ? "correct" : index === choice ? "incorrect" : undefined : undefined}>
+        <RadioGroupItem value={String(index)} />
         <span className={styles.letter}><ExpandedText text={optionLetter(index)} /></span><span><ExpandedText text={option} /></span>
         {checked && index === question.correct && <Check size={16} aria-label={hi ? "सही विकल्प" : "Correct option"} />}
-      </label>)}</div>
+      </Label>)}</RadioGroup>
     </fieldset>
     <div className={styles.actions}>
       {!checked ? <Button disabled={choice === null} onClick={() => setChecked(true)}><ExpandedText text={hi ? "उत्तर जाँचें" : "Check answer"} /></Button> : <Button variant="outline" onClick={() => { setChecked(false); setChoice(null); }}><RotateCcw size={14} aria-hidden="true" /><ExpandedText text={hi ? "फिर कोशिश करें" : "Try again"} /></Button>}

@@ -1,0 +1,854 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - link "Skip to content" [ref=e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - banner [ref=e4]:
+      - link "MasterClass" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e12]:
+          - text: Master
+          - generic [aria-hidden] [ref=e13]: ✦
+          - emphasis [ref=e14]: Class
+      - navigation "Main navigation" [ref=e15]:
+        - link "Learning paths" [ref=e16] [cursor=pointer]:
+          - /url: "#paths"
+        - link "School & boards" [ref=e17] [cursor=pointer]:
+          - /url: "#school"
+        - link "Exams" [ref=e18] [cursor=pointer]:
+          - /url: "#exams"
+        - link "Courses" [ref=e19] [cursor=pointer]:
+          - /url: "#courses"
+        - link "Techy" [ref=e20] [cursor=pointer]:
+          - /url: "#techy"
+        - link "API Docs" [ref=e21] [cursor=pointer]:
+          - /url: "#api-docs"
+          - text: API
+          - generic [aria-hidden] [ref=e22]: Application Programming Interface
+          - text: Docs
+        - link "How it works" [ref=e23] [cursor=pointer]:
+          - /url: "#experience"
+        - link "Membership" [ref=e24] [cursor=pointer]:
+          - /url: "#pricing"
+        - link "FAQs" [ref=e25] [cursor=pointer]:
+          - /url: "#faq"
+      - generic [ref=e26]:
+        - button "Switch to Hindi" [ref=e27] [cursor=pointer]: Hi
+        - link "Sign in" [ref=e33] [cursor=pointer]:
+          - /url: /sign-in
+        - link "Start learning" [ref=e34] [cursor=pointer]:
+          - /url: /sign-up
+    - main [ref=e38]:
+      - region "Learning paths slideshow" [ref=e39]:
+        - generic [ref=e40]:
+          - button "Previous slide" [ref=e41] [cursor=pointer]
+          - button "Go to slide 1" [ref=e44] [cursor=pointer]
+          - button "Go to slide 2" [ref=e45] [cursor=pointer]
+          - button "Go to slide 3" [ref=e46] [cursor=pointer]
+          - button "Go to slide 4" [ref=e47] [cursor=pointer]
+          - button "Next slide" [ref=e48] [cursor=pointer]
+          - button "Pause slideshow" [ref=e51] [cursor=pointer]
+        - group "1 / 4" [ref=e56]:
+          - img "Two students learning together with a tablet and notebooks in a library" [ref=e57]
+          - generic [ref=e59]:
+            - text: SCHOOL & BOARD PREPARATION
+            - heading "Small steps. Strong foundations." [level=1] [ref=e60]
+            - paragraph [ref=e61]: Build understanding with school notes, worked answers and practice for your chosen board and class.
+            - generic [ref=e62]:
+              - link "Choose preparation & membership" [ref=e63] [cursor=pointer]:
+                - /url: /dashboard?tab=plans
+              - link "Explore learning paths" [ref=e66] [cursor=pointer]:
+                - /url: "#paths"
+            - generic [ref=e70]: CBSE · NCERT · ICSE · ISC
+            - generic [ref=e71]: Monthly / yearly membership · Learn in App
+      - region "Course categories" [ref=e72]:
+        - generic [ref=e73]:
+          - generic [ref=e77]: Find your next subject
+          - button "Pause categories" [ref=e78] [cursor=pointer]
+        - generic [ref=e83]:
+          - generic [ref=e84]:
+            - button "Mathematics" [ref=e85] [cursor=pointer]
+            - button "Physics" [ref=e89] [cursor=pointer]
+            - button "Chemistry" [ref=e93] [cursor=pointer]
+            - button "SSC & Government Exams" [ref=e97] [cursor=pointer]
+            - button "JEE / IIT & NEET" [ref=e101] [cursor=pointer]
+            - button "System Design" [ref=e105] [cursor=pointer]
+            - button "React & Next.js" [ref=e109] [cursor=pointer]
+            - button "Python" [ref=e113] [cursor=pointer]
+            - button "Cloud & DevOps" [ref=e117] [cursor=pointer]
+            - button "English & IELTS" [ref=e121] [cursor=pointer]
+            - button "Vocabulary" [ref=e125] [cursor=pointer]
+          - generic [aria-hidden] [ref=e129]:
+            - button [ref=e130] [cursor=pointer]: Mathematics
+            - button [ref=e134] [cursor=pointer]: Physics
+            - button [ref=e138] [cursor=pointer]: Chemistry
+            - button [ref=e142] [cursor=pointer]: SSC & Government Exams
+            - button [ref=e146] [cursor=pointer]: JEE / IIT & NEET
+            - button [ref=e150] [cursor=pointer]: System Design
+            - button [ref=e154] [cursor=pointer]: React & Next.js
+            - button [ref=e158] [cursor=pointer]: Python
+            - button [ref=e162] [cursor=pointer]: Cloud & DevOps
+            - button [ref=e166] [cursor=pointer]: English & IELTS
+            - button [ref=e170] [cursor=pointer]: Vocabulary
+      - generic [ref=e174]:
+        - generic [ref=e175]: YOUR SCHOOL. YOUR PATH.
+        - link "CBSE" [ref=e176] [cursor=pointer]:
+          - /url: "#paths"
+        - link "NCERT" [ref=e177] [cursor=pointer]:
+          - /url: "#paths"
+        - link "ICSE" [ref=e178] [cursor=pointer]:
+          - /url: "#paths"
+        - link "ISC" [ref=e179] [cursor=pointer]:
+          - /url: "#paths"
+        - generic [ref=e180]: Dedicated spaces inside your dashboard
+      - generic [ref=e181]:
+        - generic [ref=e182]:
+          - generic [ref=e183]:
+            - text: CHOOSE YOUR PREPARATION
+            - heading [level=2] [ref=e184]:
+              - text: Different goals.
+              - emphasis [ref=e185]: The same thoughtful learning.
+          - paragraph [ref=e186]: Choose an exam, a board and class, or a professional course. Your selected paths become your own learning space.
+        - generic [ref=e187]:
+          - article [ref=e188]:
+            - generic [ref=e189]: "01"
+            - heading "School & board preparation" [level=3] [ref=e194]
+            - paragraph [ref=e195]: Classes 6–12. Maths, English, Physics and Chemistry foundations, with supplementary vocabulary and language practice.
+            - generic [ref=e196]:
+              - generic [ref=e197]: CBSE
+              - generic [ref=e198]: NCERT
+              - generic [ref=e199]: ICSE
+              - generic [ref=e200]: ISC
+            - link "Choose this path" [ref=e201] [cursor=pointer]:
+              - /url: /sign-up
+          - article [ref=e205]:
+            - generic [ref=e206]: "02"
+            - heading "Government & entrance exams" [level=3] [ref=e211]
+            - paragraph [ref=e212]: Build core concepts for SSC, civil services, defence, banking, railways, teaching, engineering and medical entrance preparation.
+            - generic [ref=e213]:
+              - generic [ref=e214]: SSC
+              - generic [ref=e215]: NDA
+              - generic [ref=e216]: JEE / IIT
+              - generic [ref=e217]: NEET
+            - link "Choose this path" [ref=e218] [cursor=pointer]:
+              - /url: /sign-up
+          - article [ref=e222]:
+            - generic [ref=e223]: "03"
+            - heading "Skills & system design" [level=3] [ref=e229]
+            - paragraph [ref=e230]:
+              - text: Explore software courses and detailed architecture case studies—from messaging and e-commerce to payment gateways and AI
+              - generic [aria-hidden] [ref=e231]: Artificial Intelligence
+              - text: automation.
+            - generic [ref=e232]:
+              - generic [ref=e233]: System Design
+              - generic [ref=e234]: Code
+              - generic [ref=e235]: Interviews
+              - generic [ref=e236]: IELTS
+            - link "Choose this path" [ref=e237] [cursor=pointer]:
+              - /url: /sign-up
+        - paragraph [ref=e241]: School and exam resources currently cover foundation concepts and original practice. Check guide coverage before subscribing. NCERT is a resource organization, not an exam board; ICSE preparation runs through Class 10 and ISC covers Classes 11–12.
+      - region [ref=e242]:
+        - generic [ref=e243]:
+          - generic [ref=e244]:
+            - generic [ref=e245]:
+              - generic [ref=e246]: TECHY · FOR TECH PROFESSIONALS
+              - heading [level=2] [ref=e248]:
+                - text: Walk into the interview
+                - emphasis [ref=e249]: already fluent.
+            - generic [ref=e250]:
+              - paragraph [ref=e251]: "A curated library for engineers who ship: the frameworks, cloud services and testing tools teams actually hire for—explained, questioned and coded."
+              - generic [ref=e252]:
+                - generic [ref=e253]:
+                  - term [ref=e254]: Topics
+                  - definition [ref=e255]: "15"
+                - generic [ref=e256]:
+                  - term [ref=e257]: Practice questions
+                  - definition [ref=e258]: "300"
+                - generic [ref=e259]:
+                  - term [ref=e260]: Learning modes
+                  - definition [ref=e261]: "6"
+          - generic [ref=e262]:
+            - list [ref=e263]:
+              - listitem [ref=e264]:
+                - generic [ref=e268]:
+                  - heading "Key features" [level=3] [ref=e269]
+                  - paragraph [ref=e270]: Four crisp ideas per topic before you go deeper.
+              - listitem [ref=e271]:
+                - generic [ref=e275]:
+                  - heading "Subjective test" [level=3] [ref=e276]
+                  - paragraph [ref=e277]: Answer out loud, then compare with a short model answer.
+              - listitem [ref=e278]:
+                - generic [ref=e283]:
+                  - heading "Objective quiz" [level=3] [ref=e284]
+                  - paragraph [ref=e285]: The same concepts as multiple choice, with explanations.
+              - listitem [ref=e286]:
+                - generic [ref=e292]:
+                  - heading "Code examples" [level=3] [ref=e293]
+                  - paragraph [ref=e294]: Connected multi-file projects in an editor-style reader.
+              - listitem [ref=e295]:
+                - generic [ref=e299]:
+                  - heading "Code puzzles" [level=3] [ref=e300]
+                  - paragraph [ref=e301]: 8 predict-the-output challenges to sharpen your reading.
+              - listitem [ref=e302]:
+                - generic [ref=e308]:
+                  - heading "Corporate English" [level=3] [ref=e309]
+                  - paragraph [ref=e310]: 20 workplace words with synonyms and real sentences.
+            - article "Techy topic preview" [ref=e311]:
+              - generic [ref=e312]:
+                - generic [ref=e317]: techy / aws
+                - generic [ref=e318]: Preview
+              - group "Choose a topic" [ref=e319]:
+                - button "AWS Services" [pressed] [ref=e320] [cursor=pointer]
+                - button "Agentic AI" [ref=e321] [cursor=pointer]
+                - button "Next.js 16+" [ref=e322] [cursor=pointer]
+                - button "TanStack" [ref=e323] [cursor=pointer]
+                - button "Zustand" [ref=e324] [cursor=pointer]
+                - button "Vitest" [ref=e325] [cursor=pointer]
+                - button "Playwright Automation" [ref=e326] [cursor=pointer]
+                - button "React 19+" [ref=e327] [cursor=pointer]
+                - button "TypeScript" [ref=e328] [cursor=pointer]
+                - button "Docker & CI/CD" [ref=e329] [cursor=pointer]
+                - button "Python" [ref=e330] [cursor=pointer]
+                - button "JavaScript & Code Puzzles" [ref=e331] [cursor=pointer]
+                - button "AWS AI Services" [ref=e332] [cursor=pointer]
+                - button "AWS Almost All Services" [ref=e333] [cursor=pointer]
+                - button "AWS DevOps Services" [ref=e334] [cursor=pointer]
+              - generic [ref=e335]:
+                - paragraph [ref=e336]: Cloud · 20 questions
+                - heading "AWS Services" [level=3] [ref=e337]
+                - paragraph [ref=e338]: Choose the right compute, storage, database and security building blocks.
+                - paragraph [ref=e339]:
+                  - generic "Elastic Compute Cloud" [ref=e343]: EC2
+                  - generic [aria-hidden] [ref=e344]: Elastic Compute Cloud
+                  - text: for virtual machines;
+                  - generic "AWS Lambda" [ref=e345]: Lambda
+                  - generic [aria-hidden] [ref=e346]: AWS Lambda
+                  - text: for event-driven functions.
+                - generic [ref=e347]:
+                  - text: INTERVIEW QUESTION 01
+                  - heading "Which service stores objects such as images and backups?" [level=4] [ref=e348]
+                  - button "Reveal model answer" [ref=e349] [cursor=pointer]
+          - generic [ref=e353]:
+            - link "Open Techy" [ref=e354] [cursor=pointer]:
+              - /url: /dashboard/techy
+            - generic [ref=e357]: Included with your account · sign in to start practising
+      - region [ref=e358]:
+        - generic [ref=e359]:
+          - generic [ref=e360]:
+            - generic [ref=e361]:
+              - generic [ref=e362]: API DOCS · DEVELOPER REFERENCE
+              - heading [level=2] [ref=e364]:
+                - text: Every identifier,
+                - emphasis [ref=e365]: one calm reference.
+            - generic [ref=e366]:
+              - paragraph [ref=e367]: Hooks, classes, functions and CLI commands from AI tooling to databases, testing and cloud—organised so you find the right API in seconds.
+              - generic [ref=e368]:
+                - generic [ref=e369]:
+                  - term [ref=e370]: Technologies
+                  - definition [ref=e371]: "61"
+                - generic [ref=e372]:
+                  - term [ref=e373]: Identifiers
+                  - definition [ref=e374]: 5,485
+                - generic [ref=e375]:
+                  - term [ref=e376]: Identifier types
+                  - definition [ref=e377]: "14"
+          - generic [ref=e378]:
+            - article "API reference preview" [ref=e379]:
+              - generic [ref=e380]:
+                - generic [ref=e385]: api-docs / nextjs
+                - generic [ref=e386]: Preview
+              - generic [ref=e387]:
+                - generic [ref=e388]:
+                  - searchbox "Filter technologies" [ref=e393]
+                  - group "Technologies" [ref=e394]:
+                    - button "AI & ML 112" [ref=e395] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e396]: 🧠
+                      - text: AI & ML
+                      - generic [ref=e397]: "112"
+                    - button "AI Tools 113" [ref=e398] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e399]: 🛠️
+                      - text: AI Tools
+                      - generic [ref=e400]: "113"
+                    - button "AI Agents 119" [ref=e401] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e402]: 🤖
+                      - text: AI Agents
+                      - generic [ref=e403]: "119"
+                    - button "Next.js 16+ 118" [pressed] [ref=e404] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e405]: ▲
+                      - text: Next.js 16+
+                      - generic [ref=e406]: "118"
+                    - button "React 19+ 101" [ref=e407] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e408]: ⚛️
+                      - text: React 19+
+                      - generic [ref=e409]: "101"
+                    - button "TypeScript 110" [ref=e410] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e411]: 🔷
+                      - text: TypeScript
+                      - generic [ref=e412]: "110"
+                    - button "JavaScript 100" [ref=e413] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e414]: 🟨
+                      - text: JavaScript
+                      - generic [ref=e415]: "100"
+                    - button "JS Puzzles 100" [ref=e416] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e417]: 🧩
+                      - text: JS Puzzles
+                      - generic [ref=e418]: "100"
+                    - button "Node.js 108" [ref=e419] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e420]: 🟢
+                      - text: Node.js
+                      - generic [ref=e421]: "108"
+                    - button "Express.js 116" [ref=e422] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e423]: 🚂
+                      - text: Express.js
+                      - generic [ref=e424]: "116"
+                    - button "Python 163" [ref=e425] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e426]: 🐍
+                      - text: Python
+                      - generic [ref=e427]: "163"
+                    - button "NumPy 113" [ref=e428] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e429]: 🔢
+                      - text: NumPy
+                      - generic [ref=e430]: "113"
+                    - button "Pandas 129" [ref=e431] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e432]: 🐼
+                      - text: Pandas
+                      - generic [ref=e433]: "129"
+                    - button "Polars 102" [ref=e434] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e435]: 🐻
+                      - text: Polars
+                      - generic [ref=e436]: "102"
+                    - button "SciPy 114" [ref=e437] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e438]: 🧮
+                      - text: SciPy
+                      - generic [ref=e439]: "114"
+                    - button "Scikit-Learn 134" [ref=e440] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e441]: 📈
+                      - text: Scikit-Learn
+                      - generic [ref=e442]: "134"
+                    - button "TensorFlow 111" [ref=e443] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e444]: 🔶
+                      - text: TensorFlow
+                      - generic [ref=e445]: "111"
+                    - button "PyTorch 126" [ref=e446] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e447]: 🔥
+                      - text: PyTorch
+                      - generic [ref=e448]: "126"
+                    - button "Keras 106" [ref=e449] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e450]: 🎛️
+                      - text: Keras
+                      - generic [ref=e451]: "106"
+                    - button "Django 15" [ref=e452] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e453]: 🎸
+                      - text: Django
+                      - generic [ref=e454]: "15"
+                    - button "Flask 14" [ref=e455] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e456]: 🍶
+                      - text: Flask
+                      - generic [ref=e457]: "14"
+                    - button "FastAPI 16" [ref=e458] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e459]: 🚀
+                      - text: FastAPI
+                      - generic [ref=e460]: "16"
+                    - button "Matplotlib 14" [ref=e461] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e462]: 📊
+                      - text: Matplotlib
+                      - generic [ref=e463]: "14"
+                    - button "Seaborn 12" [ref=e464] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e465]: 📉
+                      - text: Seaborn
+                      - generic [ref=e466]: "12"
+                    - button "Plotly 108" [ref=e467] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e468]: 🔵
+                      - text: Plotly
+                      - generic [ref=e469]: "108"
+                    - button "Requests 12" [ref=e470] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e471]: 🌐
+                      - text: Requests
+                      - generic [ref=e472]: "12"
+                    - button "HTTPX 12" [ref=e473] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e474]: 🔌
+                      - text: HTTPX
+                      - generic [ref=e475]: "12"
+                    - button "BeautifulSoup 12" [ref=e476] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e477]: 🍲
+                      - text: BeautifulSoup
+                      - generic [ref=e478]: "12"
+                    - button "Scrapy 12" [ref=e479] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e480]: 🕷️
+                      - text: Scrapy
+                      - generic [ref=e481]: "12"
+                    - button "Pydantic 107" [ref=e482] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e483]: 🧾
+                      - text: Pydantic
+                      - generic [ref=e484]: "107"
+                    - button "Rich 12" [ref=e485] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e486]: 🌈
+                      - text: Rich
+                      - generic [ref=e487]: "12"
+                    - button "tqdm 8" [ref=e488] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e489]: 📶
+                      - text: tqdm
+                      - generic [ref=e490]: "8"
+                    - button "Loguru 8" [ref=e491] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e492]: 🪵
+                      - text: Loguru
+                      - generic [ref=e493]: "8"
+                    - button "GraphQL 116" [ref=e494] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e495]: 🔺
+                      - text: GraphQL
+                      - generic [ref=e496]: "116"
+                    - button "TanStack 111" [ref=e497] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e498]: 🪺
+                      - text: TanStack
+                      - generic [ref=e499]: "111"
+                    - button "Zustand 108" [ref=e500] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e501]: 🐻
+                      - text: Zustand
+                      - generic [ref=e502]: "108"
+                    - button "Redux Toolkit 105" [ref=e503] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e504]: 🟣
+                      - text: Redux Toolkit
+                      - generic [ref=e505]: "105"
+                    - button "Zod 123" [ref=e506] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e507]: ✅
+                      - text: Zod
+                      - generic [ref=e508]: "123"
+                    - button "Conform 103" [ref=e509] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e510]: 📝
+                      - text: Conform
+                      - generic [ref=e511]: "103"
+                    - button "Auth.js 124" [ref=e512] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e513]: 🔑
+                      - text: Auth.js
+                      - generic [ref=e514]: "124"
+                    - button "Clerk 108" [ref=e515] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e516]: 🔐
+                      - text: Clerk
+                      - generic [ref=e517]: "108"
+                    - button "Kinde 103" [ref=e518] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e519]: 🗝️
+                      - text: Kinde
+                      - generic [ref=e520]: "103"
+                    - button "Better Auth 103" [ref=e521] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e522]: 🛡️
+                      - text: Better Auth
+                      - generic [ref=e523]: "103"
+                    - button "Mongoose 104" [ref=e524] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e525]: 🍃
+                      - text: Mongoose
+                      - generic [ref=e526]: "104"
+                    - button "Drizzle ORM 102" [ref=e527] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e528]: 💧
+                      - text: Drizzle ORM
+                      - generic [ref=e529]: "102"
+                    - button "Prisma 105" [ref=e530] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e531]: 🔼
+                      - text: Prisma
+                      - generic [ref=e532]: "105"
+                    - button "Neon 109" [ref=e533] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e534]: 🟩
+                      - text: Neon
+                      - generic [ref=e535]: "109"
+                    - button "Redis 141" [ref=e536] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e537]: 🟥
+                      - text: Redis
+                      - generic [ref=e538]: "141"
+                    - button "Upstash 106" [ref=e539] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e540]: ⚡
+                      - text: Upstash
+                      - generic [ref=e541]: "106"
+                    - button "Inngest 102" [ref=e542] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e543]: 🔁
+                      - text: Inngest
+                      - generic [ref=e544]: "102"
+                    - button "Arcjet 104" [ref=e545] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e546]: 🛑
+                      - text: Arcjet
+                      - generic [ref=e547]: "104"
+                    - button "Jest 104" [ref=e548] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e549]: 🃏
+                      - text: Jest
+                      - generic [ref=e550]: "104"
+                    - button "Vitest 103" [ref=e551] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e552]: 🅥
+                      - text: Vitest
+                      - generic [ref=e553]: "103"
+                    - button "React Testing Library 104" [ref=e554] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e555]: 🐙
+                      - text: React Testing Library
+                      - generic [ref=e556]: "104"
+                    - button "Playwright 103" [ref=e557] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e558]: 🎭
+                      - text: Playwright
+                      - generic [ref=e559]: "103"
+                    - button "Cypress 101" [ref=e560] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e561]: 🌲
+                      - text: Cypress
+                      - generic [ref=e562]: "101"
+                    - button "T3 Stack 103" [ref=e563] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e564]: 🔻
+                      - text: T3 Stack
+                      - generic [ref=e565]: "103"
+                    - button "Angular 16" [ref=e566] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e567]: 🅰️
+                      - text: Angular
+                      - generic [ref=e568]: "16"
+                    - button "System Design 105" [ref=e569] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e570]: 🧱
+                      - text: System Design
+                      - generic [ref=e571]: "105"
+                    - button "AWS Services 107" [ref=e572] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e573]: ☁️
+                      - text: AWS Services
+                      - generic [ref=e574]: "107"
+                    - button "DevOps 105" [ref=e575] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e576]: ⚙️
+                      - text: DevOps
+                      - generic [ref=e577]: "105"
+                - generic [ref=e578]:
+                  - generic [ref=e579]:
+                    - heading "Next.js 16+" [level=3] [ref=e580]:
+                      - generic [aria-hidden] [ref=e581]: ▲
+                      - text: Next.js 16+
+                    - status [ref=e582]: 118 identifiers
+                  - list [ref=e583]:
+                    - listitem [ref=e584]:
+                      - generic "Hook" [ref=e585]: H
+                      - code [ref=e586]: useRouter
+                      - generic [ref=e587]: Hook
+                    - listitem [ref=e588]:
+                      - generic "Hook" [ref=e589]: H
+                      - code [ref=e590]: usePathname
+                      - generic [ref=e591]: Hook
+                    - listitem [ref=e592]:
+                      - generic "Hook" [ref=e593]: H
+                      - code [ref=e594]: useSearchParams
+                      - generic [ref=e595]: Hook
+                    - listitem [ref=e596]:
+                      - generic "Function" [ref=e597]: F
+                      - code [ref=e598]: redirect
+                      - generic [ref=e599]: Function
+                    - listitem [ref=e600]:
+                      - generic "Function" [ref=e601]: F
+                      - code [ref=e602]: notFound
+                      - generic [ref=e603]: Function
+                    - listitem [ref=e604]:
+                      - generic "Function" [ref=e605]: F
+                      - code [ref=e606]: revalidatePath
+                      - generic [ref=e607]: Function
+                    - listitem [ref=e608]:
+                      - generic "Function" [ref=e609]: F
+                      - code [ref=e610]: revalidateTag
+                      - generic [ref=e611]: Function
+                    - listitem [ref=e612]:
+                      - generic "Function" [ref=e613]: F
+                      - code [ref=e614]: cookies
+                      - generic [ref=e615]: Function
+                    - listitem [ref=e616]:
+                      - generic "Function" [ref=e617]: F
+                      - code [ref=e618]: headers
+                      - generic [ref=e619]: Function
+                    - listitem [ref=e620]:
+                      - generic "Class" [ref=e621]: C
+                      - code [ref=e622]: NextRequest
+                      - generic [ref=e623]: Class
+                    - listitem [ref=e624]:
+                      - generic "Class" [ref=e625]: C
+                      - code [ref=e626]: NextResponse
+                      - generic [ref=e627]: Class
+                    - listitem [ref=e628]:
+                      - generic "Interface" [ref=e629]: I
+                      - code [ref=e630]: Metadata
+                      - generic [ref=e631]: Interface
+                  - generic [ref=e632]:
+                    - generic [ref=e633]: Class
+                    - generic [ref=e635]: Function
+                    - generic [ref=e637]: Hook
+                    - generic [ref=e639]: Interface
+            - list [ref=e641]:
+              - listitem [ref=e642]:
+                - generic [ref=e647]:
+                  - heading "Search across every stack" [level=3] [ref=e648]
+                  - paragraph [ref=e649]: Filter by package, identifier type and status in one place.
+              - listitem [ref=e650]:
+                - generic [ref=e655]:
+                  - heading "Signatures you can read" [level=3] [ref=e656]
+                  - paragraph [ref=e657]: Parameters, return values, key points and focused usage code.
+              - listitem [ref=e658]:
+                - generic [ref=e663]:
+                  - heading "Linked to the source" [level=3] [ref=e664]
+                  - paragraph [ref=e665]: Every entry points to official docs for version-specific detail.
+              - listitem [ref=e666]:
+                - link "Browse the API reference" [ref=e667] [cursor=pointer]:
+                  - /url: /dashboard/api-docs
+                - generic [ref=e671]: "4 status labels: stable, preview, experimental and deprecated"
+      - generic [ref=e673]:
+        - generic [ref=e674]:
+          - text: LEARN. PRACTISE. MAKE PROGRESS.
+          - heading [level=2] [ref=e675]:
+            - text: Make understanding
+            - emphasis [ref=e676]: a habit.
+          - paragraph [ref=e677]: Everything you need for a focused study session, in one reader.
+        - generic [ref=e678]:
+          - article [ref=e679]:
+            - heading "Notes that explain" [level=3] [ref=e683]
+            - paragraph [ref=e684]: Key points, rules, worked solutions and common mistakes, with room for your own revision notes.
+          - article [ref=e685]:
+            - heading "Answers with reasoning" [level=3] [ref=e690]
+            - paragraph [ref=e691]: Objective questions and subjective model answers help you check both recall and understanding.
+          - article [ref=e692]:
+            - heading "Practice with feedback" [level=3] [ref=e697]
+            - paragraph [ref=e698]: Short timed papers, sample drills and answer reviews turn a lesson into something you can apply.
+          - article [ref=e699]:
+            - heading "A dashboard that fits" [level=3] [ref=e704]
+            - paragraph [ref=e705]: Your chosen exams and courses, organized into clear categories. Update your preparation as your goals change.
+      - generic [ref=e707]:
+        - generic [ref=e708]:
+          - text: A SMALL TASTE OF CLARITY
+          - heading [level=2] [ref=e709]:
+            - text: Don’t just read it.
+            - emphasis [ref=e710]: Try it yourself.
+          - paragraph [ref=e711]: Take one idea, see the rule and answer a question. This is original sample practice; no account is needed to try it here.
+          - group "Sample topic" [ref=e712]:
+            - button "Maths" [pressed] [ref=e713] [cursor=pointer]
+            - button "Science" [ref=e716] [cursor=pointer]
+            - button "System Design" [ref=e719] [cursor=pointer]
+        - article [ref=e722]:
+          - generic [ref=e723]:
+            - generic [ref=e726]: CLASS 10 · MATHS
+            - generic [ref=e727]: LEARN IN APP
+          - generic [ref=e728]:
+            - heading "A little clarity. A big difference." [level=3] [ref=e729]
+            - paragraph [ref=e730]: An arithmetic progression has a constant difference between consecutive terms.
+            - generic [ref=e731]: aₙ = a + (n − 1)d
+            - heading "What is the 5th term of 3, 7, 11, 15, …?" [level=4] [ref=e732]
+            - generic [ref=e733]:
+              - button "A 17" [ref=e734] [cursor=pointer]:
+                - generic [ref=e735]: A
+                - text: "17"
+              - button "B 19" [ref=e736] [cursor=pointer]:
+                - generic [ref=e737]: B
+                - text: "19"
+              - button "C 20" [ref=e738] [cursor=pointer]:
+                - generic [ref=e739]: C
+                - text: "20"
+              - button "D 23" [ref=e740] [cursor=pointer]:
+                - generic [ref=e741]: D
+                - text: "23"
+      - generic [ref=e743]:
+        - generic [ref=e744]:
+          - text: INVEST IN YOUR NEXT CHAPTER
+          - heading [level=2] [ref=e745]:
+            - text: Your goals.
+            - emphasis [ref=e746]: One learning membership.
+          - paragraph [ref=e747]: Choose your preparation. Get published notes, worked answers and practice in one focused space.
+          - group "Billing period" [ref=e748]:
+            - button "Monthly" [pressed] [ref=e749] [cursor=pointer]
+            - button "Yearly" [ref=e750] [cursor=pointer]
+          - text: Choose your exams or courses before checkout.
+        - article [ref=e751]:
+          - generic [ref=e752]:
+            - generic [ref=e753]: LEARN IN APP
+            - generic [ref=e756]: Monthly membership
+          - generic [ref=e757]: —/ month
+          - paragraph [ref=e758]: A steady rhythm for your learning.
+          - list [ref=e759]:
+            - listitem [ref=e760]: Selected preparation
+            - listitem [ref=e763]: Published lessons
+            - listitem [ref=e766]: Worked answers
+            - listitem [ref=e769]: Timed practice
+            - listitem [ref=e772]: Revision & bookmarks
+            - listitem [ref=e775]: English / Hindi
+          - link "Choose preparation & plan" [ref=e778] [cursor=pointer]:
+            - /url: /dashboard?tab=plans
+        - paragraph [ref=e781]: Access starts after payment verification. Cancel renewal in Membership; access continues through your paid period. Guide coverage varies. Revision notes and bookmarks are saved in your browser.
+      - region "Sample student reviews" [ref=e782]:
+        - generic [ref=e783]:
+          - text: STUDENT STORIES · SAMPLE REVIEWS
+          - heading [level=2] [ref=e784]:
+            - text: Small steps.
+            - emphasis [ref=e785]: Growing confidence.
+          - paragraph [ref=e786]: From school subjects to your next career goal, every learning journey has its own story.
+          - generic [ref=e787]: Your pace. Your next chapter.
+          - generic [ref=e791]:
+            - button "Previous review" [ref=e792] [cursor=pointer]
+            - generic [ref=e795]:
+              - text: "01"
+              - generic [ref=e796]: / 05
+            - button "Next review" [ref=e797] [cursor=pointer]
+            - button "Pause reviews" [ref=e800] [cursor=pointer]
+        - generic [ref=e804]:
+          - group "Sample review 1 of 5" [ref=e806]:
+            - img "Sample rating 5 out of 5" [ref=e811]
+            - blockquote [ref=e822]: The worked examples help me understand how to reach an answer. I can revisit a tricky topic and practise until it starts to feel familiar.
+            - generic [ref=e823]:
+              - generic [aria-hidden] [ref=e824]: AS
+              - generic [ref=e825]:
+                - strong [ref=e826]: Aditi S.
+                - generic [ref=e827]: Class 10 · School preparation
+              - generic [aria-hidden] [ref=e828]: "01"
+          - group "Choose a review" [ref=e829]:
+            - button "Read sample review by Aditi S." [pressed] [ref=e830] [cursor=pointer]:
+              - generic [ref=e831]: AS
+              - generic [ref=e832]: Aditi
+            - button "Read sample review by Rohan M." [ref=e833] [cursor=pointer]:
+              - generic [ref=e834]: RM
+              - generic [ref=e835]: Rohan
+            - button "Read sample review by Meera K." [ref=e836] [cursor=pointer]:
+              - generic [ref=e837]: MK
+              - generic [ref=e838]: Meera
+            - button "Read sample review by Arjun P." [ref=e839] [cursor=pointer]:
+              - generic [ref=e840]: AP
+              - generic [ref=e841]: Arjun
+            - button "Read sample review by Sana R." [ref=e842] [cursor=pointer]:
+              - generic [ref=e843]: SR
+              - generic [ref=e844]: Sana
+      - region [ref=e845]:
+        - generic [ref=e846]:
+          - generic [ref=e847]:
+            - generic [ref=e848]: MEMBERSHIP, MADE CLEAR
+            - heading [level=2] [ref=e852]:
+              - text: Your membership questions,
+              - emphasis [ref=e853]: answered.
+            - paragraph [ref=e854]: From your first lesson to your next learning goal. Find the details you need to get started with confidence.
+          - generic [ref=e855]:
+            - complementary [ref=e856]:
+              - paragraph [ref=e857]: EXPLORE BY TOPIC
+              - group "Question topics" [ref=e858]:
+                - button "Getting started" [pressed] [ref=e859] [cursor=pointer]
+                - button "Learning & coverage" [ref=e867] [cursor=pointer]
+                - button "Membership" [ref=e874] [cursor=pointer]
+              - generic [ref=e881]:
+                - heading "Your next chapter starts here." [level=3] [ref=e885]
+                - paragraph [ref=e886]: Choose the preparation and plan that fit your goals.
+                - link "Explore membership" [ref=e887] [cursor=pointer]:
+                  - /url: /dashboard?tab=plans
+            - generic [ref=e890]:
+              - generic [ref=e891]:
+                - generic [ref=e892]:
+                  - heading "Getting started" [level=3] [ref=e893]
+                  - paragraph [ref=e894]: Find your path and feel at home.
+                - generic [ref=e895]: 2 questions
+              - generic [ref=e896]:
+                - article [ref=e897]:
+                  - heading [level=4] [ref=e898]:
+                    - button "How do I choose my learning path?" [expanded] [ref=e899] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e900]: "01"
+                  - region "How do I choose my learning path?" [ref=e906]:
+                    - paragraph [ref=e907]: Choose your exams, school board and class, or technology courses during setup. Your dashboard and learning library will show those selections. You can update your preparation in Membership as your goals change.
+                - article [ref=e908]:
+                  - heading [level=4] [ref=e909]:
+                    - button "Can I learn in Hindi?" [ref=e910] [cursor=pointer]:
+                      - generic [aria-hidden] [ref=e911]: "02"
+              - paragraph [ref=e918]: A little clarity now. More time for learning later.
+          - generic [ref=e919]:
+            - paragraph [ref=e920]:
+              - strong [ref=e921]: See the learning experience for yourself.
+              - generic [ref=e922]: Try a sample question before you choose a plan.
+            - link "Try a sample lesson" [ref=e923] [cursor=pointer]:
+              - /url: "#practice"
+      - generic [ref=e926]:
+        - text: YOUR GOAL DESERVES A START
+        - heading [level=2] [ref=e927]:
+          - text: Make today
+          - emphasis [ref=e928]: chapter one.
+        - link "Build my learning space" [ref=e929] [cursor=pointer]:
+          - /url: /sign-up
+    - contentinfo [ref=e932]:
+      - generic [ref=e933]:
+        - generic [ref=e934]:
+          - generic [ref=e935]:
+            - link "MasterClass home" [ref=e936] [cursor=pointer]:
+              - /url: /
+              - generic [ref=e943]:
+                - text: Master
+                - generic [aria-hidden] [ref=e944]: ✦
+                - emphasis [ref=e945]: Class
+            - paragraph [ref=e946]: A clear path from your next lesson to your next goal.
+          - link "Make room for learning Choose your preparation and membership" [ref=e947] [cursor=pointer]:
+            - /url: /dashboard?tab=plans
+            - generic [ref=e950]:
+              - strong [ref=e951]: Make room for learning
+              - generic [ref=e952]: Choose your preparation and membership
+        - generic [ref=e956]:
+          - navigation "School & boards" [ref=e957]:
+            - heading "School & boards" [level=3] [ref=e958]
+            - list [ref=e959]:
+              - listitem [ref=e960]:
+                - link "CBSE" [ref=e961] [cursor=pointer]:
+                  - /url: /dashboard/cbse
+              - listitem [ref=e962]:
+                - link "NCERT" [ref=e963] [cursor=pointer]:
+                  - /url: /dashboard/ncert
+              - listitem [ref=e964]:
+                - link "ICSE" [ref=e965] [cursor=pointer]:
+                  - /url: /dashboard/icse
+              - listitem [ref=e966]:
+                - link "ISC" [ref=e967] [cursor=pointer]:
+                  - /url: /dashboard/isc
+              - listitem [ref=e968]:
+                - link "Classes 6–12" [ref=e969] [cursor=pointer]:
+                  - /url: "#school"
+          - navigation "Exam preparation" [ref=e970]:
+            - heading "Exam preparation" [level=3] [ref=e971]
+            - list [ref=e972]:
+              - listitem [ref=e973]:
+                - link "SSC" [ref=e974] [cursor=pointer]:
+                  - /url: /dashboard/ssc
+              - listitem [ref=e975]:
+                - link "NDA & defence" [ref=e976] [cursor=pointer]:
+                  - /url: /dashboard/defence
+              - listitem [ref=e977]:
+                - link "Banking & railways" [ref=e978] [cursor=pointer]:
+                  - /url: "#exams"
+              - listitem [ref=e979]:
+                - link "JEE / IIT" [ref=e980] [cursor=pointer]:
+                  - /url: /dashboard/engineering
+              - listitem [ref=e981]:
+                - link "NEET" [ref=e982] [cursor=pointer]:
+                  - /url: /dashboard/medical
+          - navigation "Courses & skills" [ref=e983]:
+            - heading "Courses & skills" [level=3] [ref=e984]
+            - list [ref=e985]:
+              - listitem [ref=e986]:
+                - link "System Design" [ref=e987] [cursor=pointer]:
+                  - /url: /dashboard/system-design
+              - listitem [ref=e988]:
+                - link "Technology courses" [ref=e989] [cursor=pointer]:
+                  - /url: /dashboard/technology
+              - listitem [ref=e990]:
+                - link "English & IELTS" [ref=e991] [cursor=pointer]:
+                  - /url: /dashboard/languages
+              - listitem [ref=e992]:
+                - link "How it works" [ref=e993] [cursor=pointer]:
+                  - /url: "#experience"
+              - listitem [ref=e994]:
+                - link "Course overview" [ref=e995] [cursor=pointer]:
+                  - /url: "#paths"
+          - navigation "Your learning space" [ref=e996]:
+            - heading "Your learning space" [level=3] [ref=e997]
+            - list [ref=e998]:
+              - listitem [ref=e999]:
+                - link "Dashboard" [ref=e1000] [cursor=pointer]:
+                  - /url: /dashboard
+              - listitem [ref=e1001]:
+                - link "My Library" [ref=e1002] [cursor=pointer]:
+                  - /url: /dashboard?tab=library
+              - listitem [ref=e1003]:
+                - link "Monthly / yearly plans" [ref=e1004] [cursor=pointer]:
+                  - /url: "#pricing"
+              - listitem [ref=e1005]:
+                - link "Sign in" [ref=e1006] [cursor=pointer]:
+                  - /url: /sign-in
+              - listitem [ref=e1007]:
+                - link "Help & FAQs" [ref=e1008] [cursor=pointer]:
+                  - /url: "#faq"
+        - generic [ref=e1009]:
+          - generic [ref=e1010]: © 2026 MasterClass. All rights reserved.
+          - generic [ref=e1011]: English / हिन्दी Learn in App
+          - button "Move to top" [ref=e1018] [cursor=pointer]
+  - button "Open Study Buddy" [ref=e1021] [cursor=pointer]:
+    - generic [ref=e1025]:
+      - text: Study Buddy
+      - generic [ref=e1026]: Ask. Understand. Practice.
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e1034] [cursor=pointer]

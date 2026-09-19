@@ -1,0 +1,310 @@
+- generic [active] [ref=f18e1]:
+  - generic [ref=f18e2]:
+    - complementary [ref=f18e3]:
+      - generic [ref=f18e4]:
+        - link "MasterClass home" [ref=f18e5] [cursor=pointer]:
+          - /url: /
+          - generic [ref=f18e12]:
+            - text: Master
+            - generic [aria-hidden] [ref=f18e13]: ✦
+            - emphasis [ref=f18e14]: Class
+        - button "Collapse sidebar" [expanded] [ref=f18e15] [cursor=pointer]
+      - generic [ref=f18e19]:
+        - searchbox "Search sidebar" [ref=f18e24]
+        - group "Search filters" [ref=f18e25]:
+          - button "All results" [pressed] [ref=f18e26] [cursor=pointer]
+          - button "Pages" [ref=f18e32] [cursor=pointer]
+          - button "Professional learning" [ref=f18e35] [cursor=pointer]
+          - button "Exams and courses" [ref=f18e40] [cursor=pointer]
+          - button "Technology tracks" [ref=f18e44] [cursor=pointer]
+      - generic [ref=f18e49]: YOUR LEARNING SPACE
+      - navigation "Dashboard" [ref=f18e50]:
+        - button "Dashboard" [ref=f18e51] [cursor=pointer]
+        - button "My library" [ref=f18e57] [cursor=pointer]
+        - link "Notes" [ref=f18e60] [cursor=pointer]:
+          - /url: /dashboard/notes
+        - link "Bookmark" [ref=f18e63] [cursor=pointer]:
+          - /url: /dashboard/bookmark
+      - generic [ref=f18e66]: Profissional Learn
+      - navigation "Profissional Learn" [ref=f18e67]:
+        - link "Techy" [ref=f18e68] [cursor=pointer]:
+          - /url: /dashboard/techy
+        - link "API Docs" [ref=f18e75] [cursor=pointer]:
+          - /url: /dashboard/api-docs
+        - link "Lessons" [ref=f18e83] [cursor=pointer]:
+          - /url: /dashboard/lessons
+        - link "Quiz" [ref=f18e88] [cursor=pointer]:
+          - /url: /dashboard/quiz
+        - link "Interview" [ref=f18e94] [cursor=pointer]:
+          - /url: /dashboard/interview
+        - link "Mentors" [ref=f18e100] [cursor=pointer]:
+          - /url: /dashboard/mentors
+      - navigation "Preparation categories" [ref=f18e109]
+    - generic [ref=f18e110]:
+      - banner [ref=f18e111]:
+        - generic [ref=f18e112]:
+          - text: Dashboard
+          - generic [ref=f18e115]: Mentors
+        - generic [ref=f18e116]:
+          - group "App language" [ref=f18e117]:
+            - button "EN" [pressed] [ref=f18e118] [cursor=pointer]
+            - button "Hi" [ref=f18e119] [cursor=pointer]
+          - link "Sign in" [ref=f18e121] [cursor=pointer]:
+            - /url: /sign-in
+      - main [ref=f18e125]:
+        - generic [ref=f18e126]:
+          - navigation "Your learning journey" [ref=f18e127]:
+            - link "01 Learn Read and understand" [ref=f18e128] [cursor=pointer]:
+              - /url: /dashboard/lessons
+              - generic [ref=f18e129]: "01"
+              - generic [ref=f18e132]:
+                - generic [ref=f18e133]: Learn
+                - generic [ref=f18e134]: Read and understand
+            - link "02 Recall Check what stuck" [ref=f18e137] [cursor=pointer]:
+              - /url: /dashboard/quiz
+              - generic [ref=f18e138]: "02"
+              - generic [ref=f18e147]:
+                - generic [ref=f18e148]: Recall
+                - generic [ref=f18e149]: Check what stuck
+            - link "03 Practise Answer under pressure" [ref=f18e152] [cursor=pointer]:
+              - /url: /dashboard/interview
+              - generic [ref=f18e153]: "03"
+              - generic [ref=f18e158]:
+                - generic [ref=f18e159]: Practise
+                - generic [ref=f18e160]: Answer under pressure
+            - link "04 Go deeper Ask what is unclear" [ref=f18e163] [cursor=pointer]:
+              - /url: /dashboard/mentors
+              - generic [ref=f18e164]: "04"
+              - generic [ref=f18e167]:
+                - generic [ref=f18e168]: Go deeper
+                - generic [ref=f18e169]: Ask what is unclear
+          - generic [ref=f18e172]:
+            - generic [ref=f18e173]:
+              - paragraph [ref=f18e174]: Professional learning / Mentors
+              - heading "A little guidance. A big breakthrough." [level=1] [ref=f18e178]
+              - paragraph [ref=f18e179]: Ask anything about advanced React 19 patterns and performance. Answers are tuned to your track and level.
+            - generic [ref=f18e181]:
+              - generic [ref=f18e182]: Technology
+              - combobox "Technology" [ref=f18e184] [cursor=pointer]:
+                - option "🧠 AI & ML"
+                - option "🛠️ AI Tools"
+                - option "🤖 AI Agents"
+                - option "▲ Next.js 16+"
+                - option "⚛️ React 19+" [selected]
+                - option "🔷 TypeScript"
+                - option "🟨 JavaScript"
+                - option "🧩 JS Puzzles"
+                - option "🟢 Node.js"
+                - option "🚂 Express.js"
+                - option "🐍 Python"
+                - option "🔢 NumPy"
+                - option "🐼 Pandas"
+                - option "🐻 Polars"
+                - option "🧮 SciPy"
+                - option "📈 Scikit-Learn"
+                - option "🔶 TensorFlow"
+                - option "🔥 PyTorch"
+                - option "🎛️ Keras"
+                - option "🚀 FastAPI"
+                - option "📉 Seaborn"
+                - option "🔵 Plotly"
+                - option "🌐 Requests"
+                - option "🔌 HTTPX"
+                - option "🕷️ Scrapy"
+                - option "🧾 Pydantic"
+                - option "🔺 GraphQL"
+                - option "🪺 TanStack"
+                - option "🐻 Zustand"
+                - option "🟣 Redux Toolkit"
+                - option "✅ Zod"
+                - option "📝 Conform"
+                - option "🔑 Auth.js"
+                - option "🔐 Clerk"
+                - option "🗝️ Kinde"
+                - option "🛡️ Better Auth"
+                - option "🍃 Mongoose"
+                - option "💧 Drizzle ORM"
+                - option "🔼 Prisma"
+                - option "🟩 Neon"
+                - option "🟥 Redis"
+                - option "⚡ Upstash"
+                - option "🔁 Inngest"
+                - option "🛑 Arcjet"
+                - option "🃏 Jest"
+                - option "🅥 Vitest"
+                - option "🐙 React Testing Library"
+                - option "🎭 Playwright"
+                - option "🌲 Cypress"
+                - option "🔻 T3 Stack"
+                - option "🅰️ Angular"
+                - option "🧱 System Design"
+                - option "☁️ AWS Services"
+                - option "⚙️ DevOps"
+          - generic [ref=f18e185]:
+            - generic [ref=f18e186]:
+              - heading "How would you like to grow?" [level=2] [ref=f18e187]
+              - paragraph [ref=f18e188]: Your React 19+ learning companion. Choose a starting point.
+            - generic [ref=f18e189]: AI mentor
+          - group "Conversation starters" [ref=f18e190]:
+            - button "01 Explain like a senior engineer Build intuition with a clear, practical example. You leave with a mental model Start a conversation" [ref=f18e191] [cursor=pointer]:
+              - generic [ref=f18e192]: "01"
+              - heading "Explain like a senior engineer" [level=3] [ref=f18e197]
+              - paragraph [ref=f18e198]: Build intuition with a clear, practical example.
+              - generic [ref=f18e199]: You leave with a mental model
+              - generic [ref=f18e200]: Start a conversation
+            - button "02 Review my code Find bugs and make your implementation stronger. You leave with concrete fixes Start a conversation" [ref=f18e203] [cursor=pointer]:
+              - generic [ref=f18e204]: "02"
+              - heading "Review my code" [level=3] [ref=f18e211]
+              - paragraph [ref=f18e212]: Find bugs and make your implementation stronger.
+              - generic [ref=f18e213]: You leave with concrete fixes
+              - generic [ref=f18e214]: Start a conversation
+            - button "03 Project idea Turn your skills into something worth shipping. You leave with a build plan Start a conversation" [ref=f18e217] [cursor=pointer]:
+              - generic [ref=f18e218]: "03"
+              - heading "Project idea" [level=3] [ref=f18e223]
+              - paragraph [ref=f18e224]: Turn your skills into something worth shipping.
+              - generic [ref=f18e225]: You leave with a build plan
+              - generic [ref=f18e226]: Start a conversation
+            - button "04 Quiz me (5 Q) Strengthen recall, one question at a time. You leave knowing your gaps Start a conversation" [ref=f18e229] [cursor=pointer]:
+              - generic [ref=f18e230]: "04"
+              - heading "Quiz me (5 Q)" [level=3] [ref=f18e241]
+              - paragraph [ref=f18e242]: Strengthen recall, one question at a time.
+              - generic [ref=f18e243]: You leave knowing your gaps
+              - generic [ref=f18e244]: Start a conversation
+            - button "05 Interview drill Practise explaining your thinking with confidence. You leave sounding clearer Start a conversation" [ref=f18e247] [cursor=pointer]:
+              - generic [ref=f18e248]: "05"
+              - heading "Interview drill" [level=3] [ref=f18e255]
+              - paragraph [ref=f18e256]: Practise explaining your thinking with confidence.
+              - generic [ref=f18e257]: You leave sounding clearer
+              - generic [ref=f18e258]: Start a conversation
+          - generic [ref=f18e261]:
+            - generic [ref=f18e262]:
+              - heading "Change the mentor's specialism" [level=2] [ref=f18e263]
+              - paragraph [ref=f18e264]: Every track has its own mentor. Pick the one closest to what you are building.
+            - generic [ref=f18e265]: 54 specialisms
+          - generic [ref=f18e266]:
+            - group [ref=f18e267]:
+              - generic "AI & agents Models, tool use and the systems built around them. 3 tracks" [ref=f18e268] [cursor=pointer]:
+                - generic [aria-hidden] [ref=f18e269]: 🧠
+                - generic [ref=f18e270]:
+                  - generic [ref=f18e271]: AI & agents
+                  - generic [ref=f18e272]: Models, tool use and the systems built around them.
+                - generic [ref=f18e273]: 3 tracks
+            - group [ref=f18e276]:
+              - generic "Frontend frameworks Rendering, routing and the shape of a modern app. 4 tracks" [ref=f18e277] [cursor=pointer]:
+                - generic [aria-hidden] [ref=f18e278]: ▲
+                - generic [ref=f18e279]:
+                  - generic [ref=f18e280]: Frontend frameworks
+                  - generic [ref=f18e281]: Rendering, routing and the shape of a modern app.
+                - generic [ref=f18e282]: 4 tracks
+              - generic [ref=f18e285]:
+                - button "Next.js 16+ Next.js App Router and full-stack patterns" [ref=f18e286] [cursor=pointer]:
+                  - generic [ref=f18e287]:
+                    - generic [aria-hidden] [ref=f18e288]: ▲
+                    - generic [ref=f18e289]: Next.js 16+
+                  - paragraph [ref=f18e290]: Next.js App Router and full-stack patterns
+                - button "React 19+ advanced React 19 patterns and performance" [pressed] [ref=f18e291] [cursor=pointer]:
+                  - generic [ref=f18e292]:
+                    - generic [aria-hidden] [ref=f18e293]: ⚛️
+                    - generic [ref=f18e294]: React 19+
+                  - paragraph [ref=f18e295]: advanced React 19 patterns and performance
+                - button "Angular Angular framework and APIs" [ref=f18e296] [cursor=pointer]:
+                  - generic [ref=f18e297]:
+                    - generic [aria-hidden] [ref=f18e298]: 🅰️
+                    - generic [ref=f18e299]: Angular
+                  - paragraph [ref=f18e300]: Angular framework and APIs
+                - 'button "T3 Stack the T3 stack: Next.js, tRPC, Tailwind, Prisma" [ref=f18e301] [cursor=pointer]':
+                  - generic [ref=f18e302]:
+                    - generic [aria-hidden] [ref=f18e303]: 🔻
+                    - generic [ref=f18e304]: T3 Stack
+                  - paragraph [ref=f18e305]: "the T3 stack: Next.js, tRPC, Tailwind, Prisma"
+            - group [ref=f18e306]:
+              - generic "Languages & fundamentals The syntax and semantics everything else is built on. 4 tracks" [ref=f18e307] [cursor=pointer]:
+                - generic [aria-hidden] [ref=f18e308]: ⌨️
+                - generic [ref=f18e309]:
+                  - generic [ref=f18e310]: Languages & fundamentals
+                  - generic [ref=f18e311]: The syntax and semantics everything else is built on.
+                - generic [ref=f18e312]: 4 tracks
+            - group [ref=f18e315]:
+              - generic "State & data on the client Where state lives and how the server reaches the UI. 3 tracks" [ref=f18e316] [cursor=pointer]:
+                - generic [aria-hidden] [ref=f18e317]: 🔄
+                - generic [ref=f18e318]:
+                  - generic [ref=f18e319]: State & data on the client
+                  - generic [ref=f18e320]: Where state lives and how the server reaches the UI.
+                - generic [ref=f18e321]: 3 tracks
+            - group [ref=f18e324]:
+              - generic "Backend & APIs Servers, contracts and the work behind a response. 4 tracks" [ref=f18e325] [cursor=pointer]:
+                - generic [aria-hidden] [ref=f18e326]: 🔌
+                - generic [ref=f18e327]:
+                  - generic [ref=f18e328]: Backend & APIs
+                  - generic [ref=f18e329]: Servers, contracts and the work behind a response.
+                - generic [ref=f18e330]: 4 tracks
+            - group [ref=f18e333]:
+              - generic "Validation & forms Trusting input before it reaches your business logic. 3 tracks" [ref=f18e334] [cursor=pointer]:
+                - generic [aria-hidden] [ref=f18e335]: ✅
+                - generic [ref=f18e336]:
+                  - generic [ref=f18e337]: Validation & forms
+                  - generic [ref=f18e338]: Trusting input before it reaches your business logic.
+                - generic [ref=f18e339]: 3 tracks
+            - group [ref=f18e342]:
+              - generic "Authentication Sessions, providers and who is allowed to do what. 4 tracks" [ref=f18e343] [cursor=pointer]:
+                - generic [aria-hidden] [ref=f18e344]: 🔐
+                - generic [ref=f18e345]:
+                  - generic [ref=f18e346]: Authentication
+                  - generic [ref=f18e347]: Sessions, providers and who is allowed to do what.
+                - generic [ref=f18e348]: 4 tracks
+            - group [ref=f18e351]:
+              - generic "Databases & storage Schemas, queries, caching and serverless data. 6 tracks" [ref=f18e352] [cursor=pointer]:
+                - generic [aria-hidden] [ref=f18e353]: 🗄️
+                - generic [ref=f18e354]:
+                  - generic [ref=f18e355]: Databases & storage
+                  - generic [ref=f18e356]: Schemas, queries, caching and serverless data.
+                - generic [ref=f18e357]: 6 tracks
+            - group [ref=f18e360]:
+              - generic "Python data & ML Arrays, dataframes, models and the charts that explain them. 10 tracks" [ref=f18e361] [cursor=pointer]:
+                - generic [aria-hidden] [ref=f18e362]: 📊
+                - generic [ref=f18e363]:
+                  - generic [ref=f18e364]: Python data & ML
+                  - generic [ref=f18e365]: Arrays, dataframes, models and the charts that explain them.
+                - generic [ref=f18e366]: 10 tracks
+            - group [ref=f18e369]:
+              - generic "HTTP & scraping Talking to other people's services, politely and reliably. 3 tracks" [ref=f18e370] [cursor=pointer]:
+                - generic [aria-hidden] [ref=f18e371]: 🌐
+                - generic [ref=f18e372]:
+                  - generic [ref=f18e373]: HTTP & scraping
+                  - generic [ref=f18e374]: Talking to other people's services, politely and reliably.
+                - generic [ref=f18e375]: 3 tracks
+            - group [ref=f18e378]:
+              - generic "Testing & quality Proving it works before someone else finds out it doesn't. 5 tracks" [ref=f18e379] [cursor=pointer]:
+                - generic [aria-hidden] [ref=f18e380]: 🧪
+                - generic [ref=f18e381]:
+                  - generic [ref=f18e382]: Testing & quality
+                  - generic [ref=f18e383]: Proving it works before someone else finds out it doesn't.
+                - generic [ref=f18e384]: 5 tracks
+            - group [ref=f18e387]:
+              - generic "Cloud, ops & architecture Shipping it, scaling it and keeping it standing up. 5 tracks" [ref=f18e388] [cursor=pointer]:
+                - generic [aria-hidden] [ref=f18e389]: ☁️
+                - generic [ref=f18e390]:
+                  - generic [ref=f18e391]: Cloud, ops & architecture
+                  - generic [ref=f18e392]: Shipping it, scaling it and keeping it standing up.
+                - generic [ref=f18e393]: 5 tracks
+          - region "Mentor conversation" [ref=f18e396]:
+            - generic [ref=f18e401]:
+              - heading "Your learning space" [level=2] [ref=f18e402]
+              - paragraph [ref=f18e403]: React 19+ · Intermediate · AI-guided conversation
+            - log [ref=f18e404]:
+              - generic [ref=f18e405]:
+                - heading "Great questions lead to breakthroughs." [level=3] [ref=f18e409]
+                - paragraph [ref=f18e410]: Bring a tricky concept, a piece of code, or an idea.We will work through it, one step at a time.
+            - generic [ref=f18e411]:
+              - generic [ref=f18e412]: Message the mentor
+              - textbox "Message the mentor" [ref=f18e413]:
+                - /placeholder: Ask anything… (Enter to send, Shift+Enter for a new line)
+              - button "Send message" [disabled]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f18e419] [cursor=pointer]:
+    - generic [ref=f18e422]:
+      - text: Compiling
+      - generic [ref=f18e423]:
+        - generic [ref=f18e424]: .
+        - generic [ref=f18e425]: .
+        - generic [ref=f18e426]: .
