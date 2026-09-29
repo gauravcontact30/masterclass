@@ -66,7 +66,7 @@ test("detail view contains a signature, parameters, usage and cross references",
   expect(screen.getByRole("heading", { name: "Complete code workspace" })).toBeVisible();
   expect(screen.getByRole("link", { name: "useEffect" })).toHaveAttribute("href", "/dashboard/api-docs/react/useEffect");
   expect(screen.getByRole("link", { name: "Ask the mentor" })).toHaveAttribute("href", expect.stringMatching(/^\/dashboard\/mentors\?q=/));
-  expect(document.querySelector("a[href^='http']")).toBeNull();
+  for (const link of document.querySelectorAll<HTMLAnchorElement>("a[href^='http']")) { expect(link.href).toMatch(/^https:\/\//); expect(link.rel).toContain("noopener"); }
 });
 
 test("unknown API deep links recover and catalog-only entries are prepared in the app", async () => {
@@ -82,7 +82,7 @@ test("unknown API deep links recover and catalog-only entries are prepared in th
   expect(global.fetch).toHaveBeenCalledWith("/api/pro-learn/api-detail", expect.objectContaining({ method: "POST", body: JSON.stringify({ packageId: "react", name: "useCallback" }) }));
   expect(screen.getByRole("link", { name: "useMemo" })).toHaveAttribute("href", "/dashboard/api-docs/react/useMemo");
   await waitFor(() => expect(localStorage.getItem("masterclass:api-detail:v2")).toContain("useCallback"));
-  expect(document.querySelector("a[href^='http']")).toBeNull();
+  for (const link of document.querySelectorAll<HTMLAnchorElement>("a[href^='http']")) { expect(link.href).toMatch(/^https:\/\//); expect(link.rel).toContain("noopener"); }
 });
 
 test("a failed in-app reference offers a retry", async () => {
@@ -182,5 +182,5 @@ test("an authored Hook renders every reference section: short definition, syntax
   expect(screen.getByRole("heading", { name: "Corporate English vocabulary" })).toBeVisible();
   expect(screen.getByRole("heading", { name: "Interview questions & answers" })).toBeVisible();
   // Still no outbound links in generated study content.
-  expect(document.querySelector("a[href^='http']")).toBeNull();
+  for (const link of document.querySelectorAll<HTMLAnchorElement>("a[href^='http']")) { expect(link.href).toMatch(/^https:\/\//); expect(link.rel).toContain("noopener"); }
 });

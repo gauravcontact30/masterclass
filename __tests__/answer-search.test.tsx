@@ -65,9 +65,31 @@ function respondPerQuestion(providers: unknown = { providers: [], default: null 
     return reply({ answer: { ...answer, headline: `Answer for ${question}` }, provider: "perplexity", sources: [], matches: [] });
   });
 }
+/**
+ * The answer reads in a modal, so the page behind it is inert while one is
+ * open: asking the next question means closing the last answer first, exactly
+ * as a reader would.
+ */
+function closeAnswer() {
+  const close = screen.queryByRole("button", { name: "Close" });
+  if (close) fireEvent.click(close);
+}
 function ask(question: string) {
+  closeAnswer();
   fireEvent.change(screen.getByRole("searchbox", { name: "Ask a question" }), { target: { value: question } });
   fireEvent.click(screen.getByRole("button", { name: /Ask/ }));
+}
+/**
+ * The catalogues are tabbed, so reaching one means opening its tab. Queries are
+ * scoped to the section strip: each catalogue draws its own category tabs, and
+ * an unscoped "tab" role would collect both sets.
+ */
+const sectionStrip = () => screen.getByRole("tablist", { name: "Browse a catalogue" });
+const sectionTabs = () => within(sectionStrip()).getAllByRole("tab").map(tab => tab.textContent);
+function openSection(name: string) {
+  closeAnswer();
+  fireEvent.click(within(sectionStrip()).getByRole("tab", { name }));
+  return screen.getByRole("region", { name });
 }
 const openAnswer = () => screen.getByRole("article");
 /** Folded sections open by their title, the way a reader would open them. */
@@ -145,19 +167,23 @@ test("one answer stays open and the earlier ones become index entries below it",
 
   ask("Question one");
   await screen.findByRole("article", { name: "Question one" });
-  // Only one answer is ever open, so there is no history yet.
-  expect(screen.queryByRole("region", { name: "Earlier searches" })).not.toBeInTheDocument();
+  // Closed, the one answer sits in the index rather than vanishing.
+  closeAnswer();
+  expect(entries()).toHaveLength(1);
 
   ask("Question two");
   await screen.findByRole("article", { name: "Question two" });
   expect(screen.getAllByRole("article")).toHaveLength(1);
+  closeAnswer();
 
-  // The first question moved down into the index, carrying its answer's headline.
+  // Both sit in the index once the modal is closed, newest first, each carrying
+  // its own answer's headline.
   const list = entries();
-  expect(list).toHaveLength(1);
-  expect(list[0].textContent).toContain("Question one");
-  expect(list[0].textContent).toContain("Answer for Question one");
-  expect(screen.getByText("1 saved")).toBeVisible();
+  expect(list).toHaveLength(2);
+  expect(list[0].textContent).toContain("Question two");
+  expect(list[1].textContent).toContain("Question one");
+  expect(list[1].textContent).toContain("Answer for Question one");
+  expect(screen.getByText("2 saved")).toBeVisible();
 });
 
 test("reopening an entry swaps it into the document without asking the model again", async () => {
@@ -169,12 +195,13 @@ test("reopening an entry swaps it into the document without asking the model aga
   await screen.findByRole("article", { name: "Question two" });
   expect(answerCalls()).toHaveLength(2);
 
-  fireEvent.click(within(entries()[0]).getByRole("button", { name: "Open Question one" }));
+  closeAnswer();
+  fireEvent.click(within(entries()[1]).getByRole("button", { name: "Open Question one" }));
   await waitFor(() => expect(openAnswer()).toHaveAccessibleName("Question one"));
   // No third request, and the two simply trade places.
   expect(answerCalls()).toHaveLength(2);
+  closeAnswer();
   expect(entries()[0].textContent).toContain("Question two");
-  expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
 });
 
 test("re-asking a question already answered reopens it instead of spending another request", async () => {
@@ -193,23 +220,24 @@ test("re-asking a question already answered reopens it instead of spending anoth
 test("earlier searches show one row of three, the rest behind the pager", async () => {
   respondPerQuestion();
   render(<AnswerSearch />);
-  // Eight answers: one stays open, seven become index entries over three pages.
+  // Eight answers: with the modal closed all eight are index entries, three to
+  // a page.
   for (let index = 1; index <= 8; index++) {
     ask(`Question ${index}`);
     await screen.findByRole("article", { name: `Question ${index}` });
   }
 
-  expect(screen.getByText("7 saved")).toBeVisible();
+  closeAnswer();
+  expect(screen.getByText("8 saved")).toBeVisible();
   expect(entries()).toHaveLength(3);
 
-  // The index comes before the search box, which comes before the open answer:
-  // a question already asked is one glance away, not one scroll past a document.
-  const order = [screen.getByRole("region", { name: "Earlier searches" }), screen.getByRole("search"), openAnswer()];
-  expect(order[0].compareDocumentPosition(order[1]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-  expect(order[1].compareDocumentPosition(order[2]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-  // Newest first: question 8 is open, so the row starts at 7.
+  // The index comes before the search box: a question already asked is one
+  // glance away rather than one scroll past a document.
+  const index = screen.getByRole("region", { name: "Earlier searches" });
+  expect(index.compareDocumentPosition(screen.getByRole("search")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  // Newest first.
   expect(entries().map(entry => entry.textContent)).toEqual([
-    expect.stringContaining("Question 7"), expect.stringContaining("Question 6"), expect.stringContaining("Question 5"),
+    expect.stringContaining("Question 8"), expect.stringContaining("Question 7"), expect.stringContaining("Question 6"),
   ]);
 
   const pager = screen.getByRole("navigation", { name: "Earlier searches pages" });
@@ -218,12 +246,12 @@ test("earlier searches show one row of three, the rest behind the pager", async 
 
   fireEvent.click(within(pager).getByRole("button", { name: "Next page" }));
   expect(entries()).toHaveLength(3);
-  expect(entries()[0].textContent).toContain("Question 4");
+  expect(entries()[0].textContent).toContain("Question 5");
 
   // The last page carries the remainder and stops there.
   fireEvent.click(within(pager).getByRole("button", { name: "Page 3" }));
-  expect(entries()).toHaveLength(1);
-  expect(entries()[0].textContent).toContain("Question 1");
+  expect(entries()).toHaveLength(2);
+  expect(entries()[0].textContent).toContain("Question 2");
   expect(within(pager).getByRole("button", { name: "Next page" })).toBeDisabled();
   expect(within(pager).getByRole("button", { name: "Page 3" })).toHaveAttribute("aria-current", "page");
 });
@@ -236,13 +264,16 @@ test("an entry can be forgotten on its own, and answers survive a reload", async
   ask("Question two");
   await screen.findByRole("article", { name: "Question two" });
 
-  fireEvent.click(within(entries()[0]).getByRole("button", { name: "Forget Question one" }));
-  await waitFor(() => expect(screen.queryByRole("region", { name: "Earlier searches" })).not.toBeInTheDocument());
+  closeAnswer();
+  fireEvent.click(within(entries()[1]).getByRole("button", { name: "Forget Question one" }));
+  await waitFor(() => expect(entries()).toHaveLength(1));
   expect(JSON.parse(localStorage.getItem("masterclass:ai-search:cards")!)).toHaveLength(1);
 
-  // A reload reopens the most recent answer from storage.
+  // A reload keeps the answer, in the index rather than in an unasked-for modal.
   unmount();
   render(<AnswerSearch />);
+  const restored = await within(await screen.findByRole("region", { name: "Earlier searches" })).findByRole("button", { name: "Open Question two" });
+  fireEvent.click(restored);
   expect(await screen.findByRole("article", { name: "Question two" })).toBeVisible();
 });
 
@@ -253,8 +284,9 @@ test("a follow-up asks a new question and takes over the document", async () => 
 
   fireEvent.click(screen.getByRole("button", { name: "What changed in next/image in v16?" }));
   await waitFor(() => expect(answerCalls()).toHaveLength(2));
-  expect(screen.getByRole("searchbox", { name: "Ask a question" })).toHaveValue("What changed in next/image in v16?");
   await waitFor(() => expect(openAnswer()).toHaveAccessibleName("What changed in next/image in v16?"));
+  closeAnswer();
+  expect(screen.getByRole("searchbox", { name: "Ask a question" })).toHaveValue("What changed in next/image in v16?");
 });
 
 test("the model choice is one sliding switch between Claude and Perplexity", async () => {
@@ -362,7 +394,10 @@ test("a question naming several services gets one section per service, each with
   const region = await screen.findByRole("region", { name: "Each one explained" });
   // One section per service, in the order asked, each named.
   const names = within(region).getAllByRole("heading", { level: 4 });
-  expect(names.map(heading => heading.textContent)).toEqual(["Amazon S3", "Amazon EC2", "AWS Lambda"]);
+  expect(names).toHaveLength(3);
+  expect(names[0]).toHaveTextContent(/Amazon S3.*Simple Storage Service/);
+  expect(names[1]).toHaveTextContent(/Amazon EC2.*Elastic Compute Cloud/);
+  expect(names[2]).toHaveTextContent(/AWS.*Amazon Web Services.*Lambda/);
   const sections = names.map(heading => heading.closest("li") as HTMLElement);
 
   // Each section carries its own detail list and its own key points, not a shared one.
@@ -394,6 +429,7 @@ test("an answer stored before the schema grew a field still opens", async () => 
   respond({ answer, provider: "perplexity", sources: [], matches: [] });
   render(<AnswerSearch />);
 
+  fireEvent.click(await screen.findByRole("button", { name: "Open What is S3" }));
   expect(await screen.findByRole("article", { name: "What is S3" })).toBeVisible();
   expect(screen.getByRole("heading", { level: 2, name: /Run next upgrade/ })).toBeVisible();
   expect(screen.queryByRole("region", { name: "Each one explained" })).not.toBeInTheDocument();
@@ -429,9 +465,11 @@ test("popular AWS services are offered as cards, and picking one asks about it",
   expect(cards[0]).toHaveTextContent("Amazon S3");
   expect(cards[0]).toHaveTextContent(/Object storage built to store/);
 
-  fireEvent.click(within(cards[2]).getByRole("button"));
-  await screen.findByRole("article", { name: /What is AWS Lambda/ });
-  expect(JSON.parse(answerCalls()[0][1].body).question).toBe("What is AWS Lambda, what is it for, and when should I use it?");
+  // A card opens the prepared answer in the modal rather than spending a
+  // request on a topic the catalogue already explains.
+  fireEvent.click(within(cards[2]).getByRole("button", { name: "Explain this: AWS Lambda" }));
+  await screen.findByRole("article", { name: "AWS Lambda · Compute" });
+  expect(answerCalls()).toHaveLength(0);
 });
 
 test("with no services supplied the section is absent", () => {
@@ -557,18 +595,18 @@ test("each card carries a mark before the service name", () => {
   // A recognised service gets its own mark rather than its category's, so two
   // services in one category do not draw the same glyph.
   const [s3, ec2] = serviceCards();
-  expect(s3.querySelector("svg")!.outerHTML).not.toBe(ec2.querySelector("svg")!.outerHTML);
+  expect(s3.querySelector(".cardIcon svg")!.outerHTML).not.toBe(ec2.querySelector(".cardIcon svg")!.outerHTML);
 });
 
-test("the category strip pages five at a time and keeps All pinned", () => {
+test("the category strip pages four at a time and keeps All pinned", () => {
   const cats = ["Security & Identity", "AI & Machine Learning", "Analytics & Data Engineering", "Management & Governance",
     "Networking & Edge", "Databases", "Storage & Backup", "DevOps & CI/CD"].map((name, index) => ({ name, count: index + 1 }));
   render(<AnswerSearch awsServices={AWS} awsCategories={cats} />);
   const region = serviceRegion();
   const names = () => within(region).getAllByRole("tab").map(tab => tab.textContent);
 
-  // All plus the first five categories; eight categories means two pages.
-  expect(names()).toHaveLength(6);
+  // All plus the first four categories; eight categories means two pages.
+  expect(names()).toHaveLength(5);
   expect(names()[0]).toContain("All");
   expect(names()[1]).toContain("Security & Identity");
   expect(within(region).getByText("1/2")).toBeVisible();
@@ -577,8 +615,8 @@ test("the category strip pages five at a time and keeps All pinned", () => {
   fireEvent.click(within(region).getByRole("button", { name: "More categories" }));
   // All survives the page turn; the categories behind it change.
   expect(names()[0]).toContain("All");
-  expect(names()[1]).toContain("Databases");
-  expect(names()).toHaveLength(4);
+  expect(names()[1]).toContain("Networking & Edge");
+  expect(names()).toHaveLength(5);
   expect(within(region).getByRole("button", { name: "More categories" })).toBeDisabled();
 
   // Clearing filters brings the strip home too.
@@ -597,33 +635,38 @@ test("each category tab carries its own mark", () => {
   expect(tabs[1].querySelector("svg")!.outerHTML).not.toBe(tabs[2].querySelector("svg")!.outerHTML);
 });
 
-test("the AI glossary is its own browser below the services, with the same controls", () => {
+test("the AI glossary is its own browser beside the services, with the same controls", () => {
   render(<AnswerSearch awsServices={AWS} awsCategories={CATS}
     aiGlossary={AI_TERMS} aiGlossaryCategories={[{ name: "Retrieval & memory", count: 1 }, { name: "Model foundations", count: 1 }]} />);
 
+  // The strip is alphabetical, so the glossary is the tab that opens; the
+  // services are the tab beside it, not a second browser stacked underneath.
+  expect(sectionTabs()).toEqual(["AI terms worth knowing", "Popular AWS services"]);
   const glossary = screen.getByRole("region", { name: "AI terms worth knowing" });
   expect(within(glossary).getAllByRole("listitem")).toHaveLength(2);
   expect(within(glossary).getByText("2 terms")).toBeVisible();
 
-  // It sits below the services section, not above it.
-  const services = serviceRegion();
-  expect(services.compareDocumentPosition(glossary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-
-  // Each browser owns its own search box, tabs and state.
-  expect(screen.getByRole("searchbox", { name: "Search Popular AWS services" })).toBeVisible();
+  // Opening one closes the other: a tab strip, not a stack.
+  expect(screen.queryByRole("region", { name: "Popular AWS services" })).not.toBeInTheDocument();
   expect(within(glossary).getByRole("searchbox", { name: "Search AI terms worth knowing" })).toBeVisible();
+  // The catalogue keeps its own category tabs inside the section tab.
   expect(within(glossary).getAllByRole("tab").map(tab => tab.textContent)).toEqual(["All2", "Retrieval & memory1", "Model foundations1"]);
+
+  // And the services are one click away, with the controls they always had.
+  expect(within(openSection("Popular AWS services")).getByRole("searchbox", { name: "Search Popular AWS services" })).toBeVisible();
 });
 
 test("filtering one catalogue leaves the other alone", () => {
   render(<AnswerSearch awsServices={AWS} awsCategories={CATS}
     aiGlossary={AI_TERMS} aiGlossaryCategories={[{ name: "Retrieval & memory", count: 1 }]} />);
-  const glossary = screen.getByRole("region", { name: "AI terms worth knowing" });
 
+  const glossary = openSection("AI terms worth knowing");
   fireEvent.change(within(glossary).getByRole("searchbox", { name: "Search AI terms worth knowing" }), { target: { value: "passages" } });
   expect(within(glossary).getAllByRole("listitem")).toHaveLength(1);
   expect(within(glossary).getAllByRole("listitem")[0]).toHaveTextContent("RAG");
-  // The services grid is untouched: two browsers, two independent states.
+
+  // Going back leaves the services grid as it was: each catalogue filters itself.
+  openSection("Popular AWS services");
   expect(serviceCards()).toHaveLength(3);
 });
 
@@ -632,17 +675,16 @@ test("picking a term asks about it in the glossary's own words", async () => {
   render(<AnswerSearch aiGlossary={AI_TERMS} aiGlossaryCategories={[{ name: "Retrieval & memory", count: 1 }]} />);
   const glossary = screen.getByRole("region", { name: "AI terms worth knowing" });
 
-  fireEvent.click(within(within(glossary).getAllByRole("listitem")[0]).getByRole("button"));
-  await screen.findByRole("article", { name: /Explain RAG/ });
-  expect(JSON.parse(answerCalls()[0][1].body).question)
-    .toBe("Explain RAG in the context of building with AI: what it means, why it matters, and how it is used in practice.");
+  fireEvent.click(within(within(glossary).getAllByRole("listitem")[0]).getByRole("button", { name: "Explain this: RAG" }));
+  await screen.findByRole("article", { name: "RAG · Retrieval & memory" });
+  expect(answerCalls()).toHaveLength(0);
 });
 
 test("each glossary card carries its own mark", () => {
   render(<AnswerSearch aiGlossary={AI_TERMS} aiGlossaryCategories={[{ name: "Retrieval & memory", count: 1 }]} />);
   const cards = within(screen.getByRole("region", { name: "AI terms worth knowing" })).getAllByRole("listitem");
-  for (const card of cards) expect(card.querySelector("svg")).toBeInTheDocument();
-  expect(cards[0].querySelector("svg")!.outerHTML).not.toBe(cards[1].querySelector("svg")!.outerHTML);
+  for (const card of cards) expect(card.querySelector(".cardIcon svg")).toBeInTheDocument();
+  expect(cards[0].querySelector(".cardIcon svg")!.outerHTML).not.toBe(cards[1].querySelector(".cardIcon svg")!.outerHTML);
 });
 
 test("with no glossary supplied the section is absent", () => {
@@ -661,24 +703,24 @@ test("the Python handbook is a third browser below the glossary", async () => {
     aiGlossary={AI_TERMS} aiGlossaryCategories={[{ name: "Retrieval & memory", count: 1 }]}
     pythonHandbook={PY} pythonCategories={[{ name: "Functions", count: 1 }, { name: "Collections", count: 1 }]} />);
 
-  const python = screen.getByRole("region", { name: "Python handbook" });
-  const glossary = screen.getByRole("region", { name: "AI terms worth knowing" });
-  // Services, then glossary, then Python.
-  expect(glossary.compareDocumentPosition(python) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  // Alphabetical, so a reader looking for one knows where to look for it.
+  expect(sectionTabs()).toEqual(["AI terms worth knowing", "Popular AWS services", "Python handbook"]);
+
+  const python = openSection("Python handbook");
   expect(within(python).getByText("2 topics")).toBeVisible();
   expect(within(python).getAllByRole("listitem")).toHaveLength(2);
 
   // Its own search box and tabs, independent of the other two.
   fireEvent.change(within(python).getByRole("searchbox", { name: "Search Python handbook" }), { target: { value: "wraps" } });
   expect(within(python).getAllByRole("listitem")).toHaveLength(1);
-  expect(serviceCards()).toHaveLength(3);
-  expect(within(glossary).getAllByRole("listitem")).toHaveLength(2);
+  expect(within(openSection("Popular AWS services")).getAllByRole("listitem")).toHaveLength(3);
+  expect(within(openSection("AI terms worth knowing")).getAllByRole("listitem")).toHaveLength(2);
 
   // A card asks a Python-shaped question, not the glossary's or the services'.
-  fireEvent.click(within(within(python).getAllByRole("listitem")[0]).getByRole("button"));
-  await screen.findByRole("article", { name: /Explain Decorators in Python/ });
-  expect(JSON.parse(answerCalls()[0][1].body).question)
-    .toBe("Explain Decorators in Python: what it is, how it works, a short runnable example, and the mistakes people make with it.");
+  const reopened = openSection("Python handbook");
+  fireEvent.click(within(within(reopened).getAllByRole("listitem")[0]).getByRole("button", { name: /^Explain this: / }));
+  await screen.findByRole("article", { name: /^Decorators/ });
+  expect(answerCalls()).toHaveLength(0);
 });
 
 test("with no handbook supplied the section is absent", () => {

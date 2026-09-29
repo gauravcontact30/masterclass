@@ -8,6 +8,7 @@ import { ArrowRight, BookA, CircleHelp, RotateCcw, Sparkles, Target } from "luci
 import { PRO_LEVELS, PRO_TRACKS, trackById, type ContentSource, type QuizQuestion } from "@/lib/pro-learn/types";
 import { ProHero, readList, Select, SourceBadge, TrackSelect, useProLevel, useProTrack, writeList } from "./pro-learn-shared";
 import styles from "./pro-learn.module.css";
+import { BrandOrGlyph } from "./topic-media";
 import { LearningPath, StatStrip, StudyNote } from "./learning-studio";
 import { FlashcardDeck, type StudyCard } from "./study-cards";
 import { TechnologySections } from "./technology-sections";
@@ -81,7 +82,7 @@ export function ProQuiz({ aiReady, libraryTracks }: { aiReady: boolean; libraryT
       };
     });
     return <div className={styles.root}>
-      <ProHero eyebrow="Quiz complete" title={`${sessionTrack.name} quiz`} icon={sessionTrack.icon}>
+      <ProHero eyebrow="Quiz complete" title={`${sessionTrack.name} quiz`} icon={<BrandOrGlyph label={sessionTrack.name} glyph={sessionTrack.icon} size={20}/>}>
         {session.topic ? `Focused on ${session.topic}. ` : ""}{missed.length ? "The questions you missed are the fastest place to improve — review them below." : "A clean run. Review the set once more to lock it in."}
       </ProHero>
       <section className={`${styles.card} ${styles.scoreCard}`} aria-label="Your score">
@@ -112,7 +113,7 @@ export function ProQuiz({ aiReady, libraryTracks }: { aiReady: boolean; libraryT
     const last = session.index === session.questions.length - 1;
     return <div className={styles.root}>
       <div className={styles.sectionHead} style={{ marginTop: 0 }}>
-        <div><h2>{sessionTrack.icon} {sessionTrack.name} quiz</h2><p>Question {session.index + 1} of {session.questions.length} · {session.level}{session.topic ? ` · ${session.topic}` : ""}</p></div>
+        <div><h2><BrandOrGlyph label={sessionTrack.name} glyph={sessionTrack.icon} size={18}/> {sessionTrack.name} quiz</h2><p>Question {session.index + 1} of {session.questions.length} · {session.level}{session.topic ? ` · ${session.topic}` : ""}</p></div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}><SourceBadge source={session.source}/><button className={`${styles.btn} ${styles.outline} ${styles.small}`} onClick={() => setSession(null)}>Exit</button></div>
       </div>
       <div className={styles.progress} role="progressbar" aria-label="Quiz progress" aria-valuemin={0} aria-valuemax={session.questions.length} aria-valuenow={session.index}><i style={{ width: `${Math.round(session.index / session.questions.length * 100)}%` }}/></div>

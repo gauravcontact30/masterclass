@@ -1,0 +1,8 @@
+.figure { margin: 20px 0; padding: 22px; border: 1px solid #dde5ee; border-radius: 20px; background: linear-gradient(135deg, #f5f9ff, #faf8ff); color: #283547; }
+.figure figcaption > span { color: #51657e; font-size: 11px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; }
+.figure h3 { margin: 5px 0 16px; font-size: 18px; letter-spacing: -.025em; }
+.canvas { overflow-x: auto; border-radius: 12px; background: #ffffffc9; }
+.canvas svg { display: block; width: 100%; max-width: 800px; min-width: 480px; margin: auto; height: auto; }
+.figure p { margin: 14px 0 0; font-size: 14px; line-height: 1.65; overflow-wrap: anywhere; }
+.figure .takeaway { padding: 12px 16px; border-radius: 12px; background: #eaf1fb; color: #284d78; font-weight: 550; }
+@media (max-width: 600px) { .figure { padding: 14px; border-radius: 16px; } }

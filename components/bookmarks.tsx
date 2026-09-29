@@ -1,10 +1,15 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import { Bookmark, BookmarkCheck } from "lucide-react";
+import { Bookmark, BookmarkCheck, BookA } from "lucide-react";
 import { toast } from "sonner";
-import { bookmarkDraftSchema, bookmarkIdentity, bookmarkSchema, type BookmarkDraft, type BookmarkSource, type SavedBookmark } from "@/lib/bookmarks";
-import { supabaseBrowser } from "@/lib/supabase-browser";
+import type { BookmarkDraft, BookmarkSource, SavedBookmark } from "@/lib/bookmarks";
+import { bookmarkIdentity } from "@/lib/bookmark-identity";
+import { onAuthChange } from "@/lib/auth-listener";
+import { triggerWordLookup } from "./vocabulary-lookup-provider";
+// The zod schemas load on first use: this provider sits in the root layout, so a
+// static import would put zod in every page's first-load JavaScript.
+const schemas = () => import("@/lib/bookmarks");
 import styles from "./bookmarks.module.css";
 
 type State = { items: SavedBookmark[]; owner: string | null; status: "loading" | "ready" | "error" | "signin" };
@@ -43,10 +48,11 @@ export function BookmarksProvider({ children }: { children: ReactNode }) {
         const result: { userId: string; bookmarks: SavedBookmark[]; nextCursor: number | null } = await response.json();
         if (owner && owner !== result.userId) throw new Error("Account changed");
         owner = result.userId;
+        const { bookmarkSchema } = await schemas();
         items.push(...bookmarkSchema.array().parse(result.bookmarks));
         after = result.nextCursor;
       }
-      if (owner === "demo") items.push(...bookmarkSchema.array().parse(JSON.parse(localStorage.getItem(localKey) ?? "[]")));
+      if (owner === "demo") items.push(...(await schemas()).bookmarkSchema.array().parse(JSON.parse(localStorage.getItem(localKey) ?? "[]")));
       if (generation === epoch.current) setState({ items, owner, status: "ready" });
     } catch { if (generation === epoch.current) setState({ items: [], owner: null, status: "error" }); }
   }, []);
@@ -55,10 +61,14 @@ export function BookmarksProvider({ children }: { children: ReactNode }) {
     const onFocus = () => { void refresh(); };
     window.addEventListener("focus", onFocus);
     window.addEventListener("storage", onFocus);
-    const auth = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? supabaseBrowser().auth.onAuthStateChange(event => {
+    const unsubscribe = onAuthChange(event => {
       if (event === "SIGNED_OUT" || event === "SIGNED_IN") { ++epoch.current; setState({ items: [], owner: null, status: "loading" }); setTimeout(() => void refresh(), 0); }
-    }) : null;
-    return () => { ++epoch.current; window.removeEventListener("focus", onFocus); window.removeEventListener("storage", onFocus); auth?.data.subscription.unsubscribe(); };
+    });
+    // Bumping the live ref on teardown is the point: it invalidates the
+    // in-flight refresh. A copy taken when the Effect ran would invalidate a
+    // generation that has already passed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => { ++epoch.current; window.removeEventListener("focus", onFocus); window.removeEventListener("storage", onFocus); unsubscribe(); };
   }, [refresh]);
   async function mutate(draft: BookmarkDraft, removed?: SavedBookmark) {
     const snapshot = current.current;
@@ -66,6 +76,7 @@ export function BookmarksProvider({ children }: { children: ReactNode }) {
     const generation = epoch.current;
     lock.current = true; setBusy(true);
     try {
+      const { bookmarkDraftSchema, bookmarkSchema } = await schemas();
       draft = bookmarkDraftSchema.parse(draft);
       let saved: SavedBookmark | undefined;
       if (snapshot.owner === "demo") {
@@ -110,5 +121,26 @@ export function BookmarkButton({ source, points, compact = false }: { source?: B
 }
 
 export function BookmarkPoint({ text, children }: { text: string; children: ReactNode }) {
-  return <span className={styles.point}><span>{children}</span><BookmarkButton points={[text]} compact /></span>;
+  const colonIndex = text.indexOf(":");
+  const candidateTerm = colonIndex > 0 && colonIndex < 40 ? text.slice(0, colonIndex).trim() : null;
+
+  return (
+    <span className={styles.point}>
+      <span>{children}</span>
+      <span className={styles.pointActions}>
+        {candidateTerm && (
+          <button
+            type="button"
+            className={styles.vocabPointButton}
+            aria-label={`Look up “${candidateTerm}” in Vocabulary`}
+            title={`Check “${candidateTerm}” meaning, Hindi, synonyms & antonyms`}
+            onClick={() => triggerWordLookup(candidateTerm)}
+          >
+            <BookA size={14} aria-hidden="true" />
+          </button>
+        )}
+        <BookmarkButton points={[text]} compact />
+      </span>
+    </span>
+  );
 }

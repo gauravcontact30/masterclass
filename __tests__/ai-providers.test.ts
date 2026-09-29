@@ -12,7 +12,7 @@ beforeEach(() => {
 afterAll(() => { process.env = ENV; });
 
 test("both providers are offered once configured, and placeholder keys do not count", () => {
-  expect(AI_PROVIDERS).toEqual(["anthropic", "perplexity"]);
+  expect(AI_PROVIDERS).toEqual(["anthropic", "perplexity", "openrouter", "gateway", "portkey", "openai", "gemini", "groq", "mistral", "deepseek"]);
   expect(availableProviders()).toEqual(["anthropic", "perplexity"]);
   expect(defaultProvider()).toBe("anthropic");
 

@@ -6,7 +6,7 @@ import { ExpandedText } from "@/components/expanded-text";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowUpRight, Eye, EyeOff, MailCheck, Settings2 } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Eye, EyeOff, Languages, MailCheck, Settings2 } from "lucide-react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 import { en, TranslationKey } from "@/lib/i18n";
 import { useLanguage } from "./language-provider";
@@ -62,6 +62,7 @@ export function AuthPage({ mode, enabled }: { mode: "signin" | "signup"; enabled
           <Link className={styles.back} href="/"><ArrowLeft size={15} aria-hidden="true" /><ExpandedText text={t("authBackHome")} /></Link>
           {/* Signed-out visitors have no account to save the choice to, so it stays local (persist=false). */}
           <div className={styles.langToggle} role="group" aria-label={t("language")}>
+            <Languages size={14} className={styles.langIcon} aria-hidden="true" />
             <button type="button" aria-pressed={language === "en"} onClick={() => setLanguage("en", false)}>EN</button>
             <button type="button" lang="hi" aria-pressed={language === "hi"} onClick={() => setLanguage("hi", false)}>Hi</button>
           </div>
@@ -114,6 +115,9 @@ export function AuthPage({ mode, enabled }: { mode: "signin" | "signup"; enabled
                 <Button className={styles.submit} type="submit" disabled={busy}><ExpandedText text={busy ? t("loading") : t(mode === "signin" ? "signin" : "signup")} /></Button>
               </form>
               <p className={styles.switchRow}><Link className={styles.switchLink} href={mode === "signin" ? "/sign-up" : "/sign-in"}><ExpandedText text={t(mode === "signin" ? "noAccount" : "haveAccount")} /></Link></p>
+              {mode === "signup" && <p className={styles.hint}>{language === "hi"
+                ? <>खाता बनाकर आप हमारी <Link href="/terms">सेवा की शर्तें</Link> और <Link href="/privacy">गोपनीयता नीति</Link> स्वीकार करते हैं।</>
+                : <>By creating an account you agree to our <Link href="/terms">Terms of service</Link> and <Link href="/privacy">Privacy policy</Link>.</>}</p>}
             </section>
           )}
         </div>

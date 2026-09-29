@@ -1,6 +1,7 @@
 import type { TechnologyGuide } from "./index";
 import { source } from "./shared";
 import { agenticAiEssentials } from "./agentic-ai-essentials";
+import { agenticAiLearningPaths } from "./agentic-ai-learning-paths";
 
 /**
  * Agentic AI: designing, evaluating and operating systems where a model decides
@@ -770,5 +771,17 @@ const guide: TechnologyGuide = {
 
 // Append to preserve existing lesson indexes and saved reader progress.
 guide.curriculum.lessons.push(agenticAiEssentials);
+guide.curriculum.lessons.push(...agenticAiLearningPaths);
+guide.curriculum.minutes += 160;
+guide.curriculum.sources?.push(...[
+  ["https://docs.langchain.com/oss/python/langchain/overview", "LangChain overview"],
+  ["https://docs.langchain.com/oss/python/langgraph/graph-api", "LangGraph Graph API"],
+  ["https://docs.langchain.com/oss/python/deepagents/retrieval", "Retrieval"],
+  ["https://docs.langchain.com/oss/python/deepagents/overview", "Deep Agents overview"],
+  ["https://docs.langchain.com/oss/python/langchain/guardrails", "Guardrails"],
+  ["https://docs.langchain.com/langsmith/evaluation-concepts", "LangSmith evaluation concepts"],
+  ["https://www.elastic.co/docs/solutions/search/full-text", "Full-text retrieval"],
+  ["https://docs.litellm.ai/docs/simple_proxy", "LLM Gateway"],
+].map(([url, title]) => ({ url, title, retrievedAt: "2026-09-20T00:00:00.000Z" })));
 
 export default guide;

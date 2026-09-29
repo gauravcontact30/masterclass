@@ -42,7 +42,7 @@ test("every project file reaches Sandpack by absolute path, with the project's o
   expect(Object.keys(props.files)).toEqual(["/src/index.ts", "/index.html", "/README.md"]);
   expect(props.customSetup.entry).toBe("/src/index.ts");
   expect(props.options.activeFile).toBe("/src/index.ts");
-  expect(props.options.visibleFiles).toEqual(["/src/index.ts", "/index.html"]);
+  expect(props.options.visibleFiles).toEqual(["/src/index.ts", "/index.html", "/README.md"]);
   // Auto-reload would apply edits before the learner saves them.
   expect(props.options.autorun).toBe(false);
   expect(props.options.autoReload).toBe(false);

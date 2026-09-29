@@ -639,6 +639,22 @@ export const PYTHON_PACKAGES: PackageTopic[] = [
 ];
 
 export const GRAPHQL_PACKAGES: PackageTopic[] = [
+  // Client hooks
+  t("useQuery", "Client hooks", "Apollo's read hook: variables, loading, error and a normalized-cache-backed result."),
+  t("useLazyQuery", "Client hooks", "Apollo query triggered from an event rather than on render."),
+  t("useMutation", "Client hooks", "Apollo write hook returning a trigger and the request state, with cache update options."),
+  t("useSubscription", "Client hooks", "Apollo hook for a long-lived stream, wired to the link that carries it."),
+  t("useSuspenseQuery", "Client hooks", "Apollo read hook that suspends instead of exposing a loading flag."),
+  t("useBackgroundQuery / useReadQuery", "Client hooks", "Start a query high in the tree and read it lower down, without blocking the parent."),
+  t("useFragment", "Client hooks", "Subscribe a component to one fragment of cached data instead of a whole query result."),
+  t("useApolloClient", "Client hooks", "Reach the client for imperative reads, writes and cache eviction."),
+  t("urql useQuery", "Client hooks", "urql's read hook, with a document cache by default and graphcache when configured."),
+  t("urql useMutation", "Client hooks", "urql write hook whose result shape mirrors its query hook."),
+  t("urql useSubscription", "Client hooks", "urql streaming hook, with a handler that folds each event into state."),
+  t("useLazyLoadQuery", "Client hooks", "Relay hook that fetches on render, for screens without a preloaded query."),
+  t("usePreloadedQuery", "Client hooks", "Relay hook that reads a query started before the component rendered."),
+  t("usePaginationFragment", "Client hooks", "Relay hook that pages a connection while keeping the fragment's data consistent."),
+  t("Relay useFragment", "Client hooks", "Declare exactly the fields a component reads, and let the compiler enforce it."),
   // Schema language
   t("type", "Schema language", "An object type with fields — the nodes of the graph and the bulk of any schema."),
   t("Query", "Schema language", "The root type for reads. Every query begins at one of its fields."),

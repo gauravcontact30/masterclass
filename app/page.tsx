@@ -1,12 +1,13 @@
-import type { Metadata } from "next";
 import { LandingPage } from "@/components/landing-page";
+import { JsonLd } from "@/components/json-ld";
+import { landingLibrary } from "@/lib/landing-library";
 import { landingProPreview } from "@/lib/landing-pro-preview";
-import { siteDescription, siteTitle, websiteSchema } from "@/lib/seo";
-export const metadata: Metadata = {
-  alternates: { canonical: "/" },
-  openGraph: { type: "website", url: "/", siteName: "MasterClass", title: siteTitle, description: siteDescription, locale: "en_IN", images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: siteTitle }] },
-  twitter: { card: "summary_large_image", title: siteTitle, description: siteDescription, images: ["/opengraph-image"] },
-};
+import { billingConfigured } from "@/lib/server/config";
+import { organizationSchema, pageMetadata, websiteSchema } from "@/lib/seo";
+export const metadata = pageMetadata("/");
 export default function Home() {
-  return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema()).replace(/</g, "\\u003c") }} /><LandingPage pro={landingProPreview()} /></>;
+  const pro = landingProPreview();
+  // The same values /api/billing returns, rendered into the page instead of fetched after hydration.
+  const prices = { monthly: Number(process.env.PRO_MONTHLY_PRICE_INR ?? 299), yearly: Number(process.env.PRO_YEARLY_PRICE_INR ?? 2999), enabled: billingConfigured() };
+  return <><JsonLd data={[websiteSchema(), organizationSchema()]} /><LandingPage pro={pro} library={landingLibrary(pro)} prices={prices} /></>;
 }

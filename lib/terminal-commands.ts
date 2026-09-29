@@ -14,6 +14,10 @@ const PROGRAMS = new Set([
   "eslint", "prettier", "jest", "vitest", "playwright", "cypress", "sonar-scanner",
   "git", "gh", "cd", "ls", "dir", "mkdir", "rmdir", "rm", "cp", "mv", "touch", "cat", "echo", "pwd", "chmod", "chown", "sudo",
   "curl", "wget", "ssh", "scp", "tar", "unzip", "code", "open", "start",
+  // The text tools a shell walkthrough reaches for between commands. `export`
+  // and `source` are deliberately absent: both open a line of JavaScript far
+  // more often than a line of shell.
+  "printf", "grep", "egrep", "fgrep", "awk", "sed", "xargs", "wc", "uniq", "tee", "jq", "make", "diff", "du", "df",
   "docker", "docker-compose", "kubectl", "helm", "terraform", "aws", "az", "gcloud",
   "python", "python3", "py", "pip", "pip3", "pipx", "poetry", "uv", "conda",
   "brew", "apt", "apt-get", "winget", "choco", "go", "cargo", "rustup", "dotnet", "mvn", "gradle", "java",

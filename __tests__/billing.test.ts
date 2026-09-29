@@ -9,14 +9,14 @@ jest.mock("@/lib/server/repository", () => ({ profile: jest.fn() }));
 jest.mock("@/lib/server/rate-limit", () => ({ rateLimit: jest.fn() }));
 jest.mock("@/lib/server/preparations", () => ({ savePreparations: jest.fn() }));
 jest.mock("@/lib/server/db", () => ({ db: jest.fn(), check: ({ data, error }: { data: unknown; error: unknown }) => { if (error) throw error; return data; } }));
-jest.mock("@/lib/server/billing", () => ({ ...jest.requireActual("@/lib/server/billing"), razorpay: jest.fn(), reconcileSubscription: jest.fn() }));
+jest.mock("@/lib/server/billing", () => ({ ...jest.requireActual("@/lib/server/billing"), razorpay: jest.fn(), reconcileSubscription: jest.fn(), validateSubscriptionPlan: jest.fn().mockResolvedValue("plan_monthly") }));
 function request(body: unknown) { return new Request("http://localhost/api/billing", { method: "POST", headers: { origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify(body) }); }
 const checkout = { action: "checkout", tier: "monthly", selections: ["nda"] };
 function table(existing: unknown = null, conflict = false) {
   const query = { select: jest.fn().mockReturnThis(), eq: jest.fn().mockReturnThis(), maybeSingle: jest.fn().mockResolvedValue({ data: existing }), single: jest.fn().mockResolvedValue({ data: { provider_ref: "sub_new" } }), insert: jest.fn().mockReturnThis(), update: jest.fn().mockImplementation(() => { query.maybeSingle.mockResolvedValue({ data: conflict ? null : { provider_ref: "sub_new" } }); return query; }) };
   jest.mocked(db).mockReturnValue({ from: () => query } as unknown as ReturnType<typeof db>); return query;
 }
-beforeEach(() => { jest.clearAllMocks(); jest.mocked(savePreparations).mockResolvedValue(undefined); process.env.RAZORPAY_MONTHLY_PLAN_ID = "plan_monthly"; process.env.RAZORPAY_YEARLY_PLAN_ID = "plan_yearly"; delete process.env.PRO_MONTHLY_PRICE_INR; delete process.env.PRO_YEARLY_PRICE_INR; table(); });
+beforeEach(() => { jest.clearAllMocks(); Object.assign(process.env,{RAZORPAY_KEY_ID:"rzp_test_key",RAZORPAY_KEY_SECRET:"secret",RAZORPAY_WEBHOOK_SECRET:"webhook",BILLING_ENABLED:"true"}); jest.mocked(savePreparations).mockResolvedValue(undefined); process.env.RAZORPAY_MONTHLY_PLAN_ID = "plan_monthly"; process.env.RAZORPAY_YEARLY_PLAN_ID = "plan_yearly"; delete process.env.PRO_MONTHLY_PRICE_INR; delete process.env.PRO_YEARLY_PRICE_INR; table(); });
 test("public pricing offers only monthly and yearly; inactive accounts have zero allowance", async () => {
   process.env.FREE_MONTHLY_GENERATIONS = "100";
   const data = await (await GET()).json(); expect(data).toMatchObject({ monthly: 299, yearly: 2999 });

@@ -1,0 +1,74 @@
+/* "One dashboard" overview in the Claude Code colours: the statement on
+   plain paper; tiles in paper, clay orange and a clay tint, and learner
+   photographs on clay. Layout follows the
+   user's reference: statement left, three staggered columns of tall tiles.
+   Tiles 14px (sheets), the action 10px. */
+.overview {
+  --ov-paper: #faf9f5;
+  --ov-rule: #f0eee6;
+  --ov-graphite: #141413;
+  --ov-text: #3d3d3a;
+  --ov-ink: #b5522f;
+  --ov-orange: #f3dccd;
+  --ov-navy: #8f3f23;
+  --ov-kraft: #c6613f;
+  --ov-highlight: #d97757;
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  position: relative; overflow: hidden;
+  color: var(--ov-graphite); background: var(--ov-paper);
+}
+
+.inner { position: relative; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(40px, 6vw, 110px); width: min(1240px, calc(100% - 64px)); margin-inline: auto; padding-block: clamp(72px, 8vw, 120px); }
+
+/* ---------- Statement ---------- */
+.copy { display: flex; flex-direction: column; min-width: 0; padding-top: 6px; }
+.overview .copy h2 { position: relative; margin: 0; font-weight: 700; font-variation-settings: "wdth" 112; font-size: clamp(40px, 4.4vw, 68px); line-height: 1.02; letter-spacing: -0.025em; color: var(--ov-graphite); }
+.overview .copy h2 span { display: block; }
+.overview .copy p { max-width: 30ch; margin: clamp(28px, 3.5vw, 48px) 0 0; font-size: clamp(18px, 1.6vw, 23px); line-height: 1.4; color: var(--ov-text); text-wrap: pretty; }
+.overview a.cta { display: inline-flex; align-items: center; align-self: flex-start; margin-top: auto; height: 56px; padding: 0 30px; border-radius: 10px; background: #bb5834; color: #fff; font-size: 17px; font-weight: 600; text-decoration: none; box-shadow: 0 14px 28px -18px rgba(143, 63, 35, .6); transition: background-color .2s ease, transform .2s var(--ease-out); }
+.overview a.cta:hover { background: #a64c2c; }
+.overview a.cta:active { transform: scale(.98); }
+
+/* ---------- Tiles ---------- */
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(14px, 1.6vw, 24px); align-items: start; }
+.column { display: grid; gap: clamp(14px, 1.6vw, 24px); }
+
+.card { position: relative; display: flex; flex-direction: column; aspect-ratio: 365 / 515; padding: clamp(20px, 2.1vw, 32px); overflow: hidden; border-radius: 14px; }
+.card[data-tone="sage"] { background: #f0eee6; color: var(--ov-graphite); box-shadow: inset 0 0 0 1px #dedcd1; }
+.card[data-tone="highlight"] { background: var(--ov-highlight); color: var(--ov-graphite); }
+.card[data-tone="blush"] { background: #f3dccd; color: var(--ov-graphite); box-shadow: inset 0 0 0 1px #eecab6; }
+.overview .card h3 { position: relative; margin: auto 0 0; font-weight: 700; font-variation-settings: "wdth" 100; font-size: clamp(20px, 1.9vw, 28px); overflow-wrap: anywhere; line-height: 1.1; letter-spacing: -0.015em; }
+.overview .card p { position: relative; margin: clamp(18px, 2.4vw, 36px) 0 0; font-size: clamp(15px, 1.2vw, 17.5px); line-height: 1.42; text-wrap: pretty; }
+
+.photo { position: relative; aspect-ratio: 365 / 388; overflow: hidden; border-radius: 14px; }
+.photo[data-tone="navy"] { background: var(--ov-navy); --tone: 143, 63, 35; }
+.photo[data-tone="kraft"] { background: var(--ov-kraft); --tone: 181, 82, 47; }
+.photo img { object-fit: cover; transition: transform .9s var(--ease-out); }
+/* The tile's own colour rises from the bottom edge, so each photograph sits on its ground. */
+.photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(var(--tone), .8) 0%, rgba(var(--tone), .2) 32%, rgba(var(--tone), 0) 56%); pointer-events: none; }
+.photo:hover img { transform: scale(1.04); }
+
+/* ---------- Entrance: tiles rise in, column by column ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .overview[data-reveal="wait"] .card, .overview[data-reveal="wait"] .photo, .overview[data-reveal="wait"] .copy { opacity: 0; transform: translateY(26px); }
+  .overview[data-reveal="in"] .copy { animation: rise .9s var(--ease-out) both; }
+  .overview[data-reveal="in"] .card, .overview[data-reveal="in"] .photo { animation: rise .9s var(--ease-out) calc(120ms + var(--i) * 70ms) both; }
+}
+@keyframes rise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1080px) {
+  .inner { grid-template-columns: minmax(0, 1fr); }
+  .overview .copy p { max-width: 40ch; }
+  .overview a.cta { margin-top: 36px; }
+}
+@media (max-width: 640px) {
+  .inner { width: calc(100% - 32px); }
+  /* Columns dissolve into a two-up checkerboard: text, photo / photo, text / text, photo. */
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: stretch; }
+  .column { display: contents; }
+  .card, .photo { aspect-ratio: auto; min-height: 236px; border-radius: 12px; }
+  .card { padding: 16px; }
+  .overview .card h3 { font-size: 22px; }
+  .overview .card p { margin-top: 12px; font-size: 14px; }
+}

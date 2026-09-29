@@ -1,127 +1,52 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { Workspace } from "@/components/workspace";
 import { requestJson } from "@/lib/client";
+import type { DocumentRecord } from "@/lib/domain";
 
-jest.mock("@/lib/client", () => ({ requestJson: jest.fn(), errorKey: jest.requireActual("@/lib/client").errorKey }));
-jest.mock("@/lib/supabase-browser", () => ({ supabaseBrowser: () => ({ auth: { signOut: jest.fn() } }) }));
-jest.mock("next/navigation", () => ({ useRouter: () => ({ replace: jest.fn(), refresh: jest.fn() }) }));
-jest.mock("@/components/generation-form", () => ({ GenerationForm: () => null }));
-jest.mock("@/components/learn-modal", () => ({ LearnModal: () => null }));
-jest.mock("@/components/membership", () => ({ Membership: () => null }));
-jest.mock("@/components/connections", () => ({ Connections: () => null }));
-jest.mock("@/components/sample-lessons", () => ({ SampleLessons: () => null }));
+jest.mock("@/lib/client",()=>({requestJson:jest.fn(),errorKey:()=>"service_error"}));
+jest.mock("@/lib/supabase-browser",()=>({supabaseBrowser:()=>({auth:{signOut:jest.fn()}})}));
+jest.mock("next/navigation",()=>({useRouter:()=>({replace:jest.fn(),refresh:jest.fn()})}));
+jest.mock("@/components/learning-presence",()=>({LearningPresence:()=>null}));
+jest.mock("@/components/membership",()=>({Membership:()=> <h2>Membership settings</h2>}));
+jest.mock("@/components/study-catalog",()=>({StudyCatalog:({beforeLibrary}:{beforeLibrary:React.ReactNode})=><>{beforeLibrary}</>}));
+function mockLibrary({documents,onLearn,onCopyNotes,onDelete,onRetry}:{documents:DocumentRecord[];onLearn:(d:DocumentRecord)=>void;onCopyNotes:(d:DocumentRecord)=>void;onDelete:(d:DocumentRecord)=>void;onRetry:(r:DocumentRecord["request"])=>void}){
+ return <section aria-label="Saved notes">{documents.map(d=><article key={d.id}><h2>{d.title}</h2><button onClick={()=>onLearn(d)}>Read</button><button onClick={()=>onCopyNotes(d)}>Copy notes</button><button onClick={()=>onDelete(d)}>Delete</button><button onClick={()=>onRetry(d.request)}>Retry</button></article>)}</section>;
+}
+jest.mock("@/components/library",()=>({Library:mockLibrary}));
+jest.mock("@/components/notes-library",()=>({NotesLibrary:mockLibrary}));
+jest.mock("@/components/notes-modal",()=>({NotesModal:({document,onClose}:{document:DocumentRecord;onClose:()=>void})=><div role="dialog" aria-label="Notes reader">{document.title}<button onClick={onClose}>Close reader</button></div>}));
+const document:DocumentRecord={id:"notes-1",user_id:"user-1",title:"React basics",request:{technologyId:"react",topicId:"react-state",format:"notes",language:"en",level:"beginner"},status:"ready",created_at:"2026-01-01",error_code:null,page_titles:[],storage_path:null,preview_paths:[],curriculum:{title:"React basics",minutes:20,objectives:["Learn state"],prerequisites:[],lessons:[],project:"Build a component",summary:"State drives rendering.",glossary:[]}};
+const account={profile:{language:"en" as const},account:{tier:"monthly" as const,used:1,limit:50,subscription:null,creditBalance:0},preparations:{selections:["tech:react"],isSuperAdmin:false},documents:[document],progress:[]};
+beforeEach(()=>{localStorage.clear();window.history.replaceState(null,"","/dashboard");jest.mocked(requestJson).mockImplementation(async(url)=>url==="/api/account"?account:url==="/api/catalog"?{technologies:[],topics:[]}:{document});});
+const renderWorkspace=(tab:"dashboard"|"library"="dashboard")=>render(<Workspace authEnabled configured billingEnabled initialTab={tab} initialAccount={account} userEmail="learner@example.com"/>);
 
-const accountData = {
-  profile: { language: "en" },
-  account: { tier: "free", used: 1, limit: 3, subscription: null, creditBalance: 2 },
-  documents: [],
-  progress: [],
-};
-
-beforeEach(() => {
-  (requestJson as jest.Mock).mockImplementation((url: string) => {
-    if (url === "/api/catalog") return Promise.resolve({ technologies: [], topics: [] });
-    if (url === "/api/account") return Promise.resolve(accountData);
-    return Promise.resolve({});
-  });
+test("loads the current account and exposes its saved notes",async()=>{
+ renderWorkspace();expect(await screen.findByRole("heading",{name:"React basics"})).toBeVisible();
+ expect(requestJson).toHaveBeenCalledWith("/api/account");expect(requestJson).toHaveBeenCalledWith("/api/catalog");
 });
-
-test("shows the purchased download-credit balance as a dashboard stat", async () => {
-  render(<Workspace authEnabled configured billingEnabled />);
-  await waitFor(() => expect(screen.getByText("Download credits").closest(".stat")!.textContent).toContain("2"));
+test("My library exposes the same saved note actions",async()=>{
+ renderWorkspace("library");expect(await screen.findByRole("region",{name:"Saved notes"})).toHaveTextContent("React basics");
+ fireEvent.click(screen.getByRole("button",{name:"Read",exact:true}));expect(await screen.findByRole("dialog",{name:"Notes reader"})).toHaveTextContent("React basics");
+ fireEvent.click(screen.getByRole("button",{name:"Close reader"}));expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 });
-
-const baseRequest = { technologyId: "react", topicId: "react-state", format: "pdf" as const, language: "en" as const, level: "beginner" as const, theme: "minimal" as const };
-const readyPdf = { id: "doc-pdf", user_id: "u1", title: "React basics", request: baseRequest, status: "ready" as const, created_at: "2026-01-01T00:00:00Z", error_code: null, curriculum: null, page_titles: ["Cover"], storage_path: "path", preview_paths: [] };
-const readyPptx = { ...readyPdf, id: "doc-pptx", title: "React deck", request: { ...baseRequest, format: "pptx" as const } };
-const readyNotes = { ...readyPdf, id: "doc-notes", storage_path: null, request: { ...baseRequest, format: "notes" as const } };
-const curriculum = {
-  title: "React basics", objectives: ["Learn state", "Learn props"], prerequisites: [], minutes: 20,
-  lessons: [{ title: "Lesson one", explanation: "- A point about state\n- A second point", example: "- A worked example point", code: "", exercise: "- Try it yourself", checkpoint: "- Check your understanding", mistake: "- Avoid this mistake" }],
-  project: "Build a small component.", summary: "State drives what renders.", glossary: [{ term: "State", definition: "Data a component owns." }],
-};
-
-test("filters the library by PDF, PowerPoint and notes", async () => {
-  (requestJson as jest.Mock).mockImplementation((url: string) => {
-    if (url === "/api/catalog") return Promise.resolve({ technologies: [], topics: [] });
-    if (url === "/api/account") return Promise.resolve({ ...accountData, documents: [readyPdf, readyPptx] });
-    return Promise.resolve({});
-  });
-  const user = userEvent.setup();
-  render(<Workspace authEnabled configured billingEnabled />);
-  await waitFor(() => expect(screen.getByRole("heading", { name: "React basics" })).toBeInTheDocument());
-
-  const tabs = screen.getByRole("tablist", { name: "Filter by document type" });
-  expect(within(tabs).getByRole("tab", { name: /All/ })).toHaveAttribute("aria-selected", "true");
-  // Only Notebook Notes documents count: a PDF or PPTX is never listed again as notes.
-  expect(within(tabs).getByRole("tab", { name: /Notebook Notes/ })).toHaveTextContent("0");
-  expect(screen.getByRole("heading", { name: "React deck" })).toBeInTheDocument();
-
-  await user.click(within(tabs).getByRole("tab", { name: /PDF/ }));
-  const panel = screen.getByRole("tabpanel");
-  expect(within(panel).getByRole("heading", { name: "React basics" })).toBeInTheDocument();
-  expect(within(panel).queryByRole("heading", { name: "React deck" })).not.toBeInTheDocument();
-
-  await user.click(within(tabs).getByRole("tab", { name: /PPTX/ }));
-  expect(screen.getByRole("heading", { name: "React deck" })).toBeInTheDocument();
-  expect(screen.queryByRole("heading", { name: "React basics" })).not.toBeInTheDocument();
-
-  await user.click(within(tabs).getByRole("tab", { name: /Notebook Notes/ }));
-  expect(screen.queryByRole("heading", { name: "React basics" })).not.toBeInTheDocument();
-  expect(screen.queryByRole("heading", { name: "React deck" })).not.toBeInTheDocument();
-  expect(screen.getByText("Generate a guide to get notes here.")).toBeInTheDocument();
+test("deletion requires confirmation before the request",async()=>{
+ renderWorkspace();fireEvent.click(await screen.findByRole("button",{name:"Delete",exact:true}));
+ const dialog=await screen.findByRole("dialog");expect(requestJson).not.toHaveBeenCalledWith("/api/documents/notes-1",{method:"DELETE"});
+ fireEvent.click(within(dialog).getByRole("button",{name:"Delete for good?"}));
+ await waitFor(()=>expect(requestJson).toHaveBeenCalledWith("/api/documents/notes-1",{method:"DELETE"}));
 });
-
-test("shows the same library list on the My library tab", async () => {
-  (requestJson as jest.Mock).mockImplementation((url: string) => {
-    if (url === "/api/catalog") return Promise.resolve({ technologies: [], topics: [] });
-    if (url === "/api/account") return Promise.resolve({ ...accountData, documents: [readyPdf, readyPptx] });
-    return Promise.resolve({});
-  });
-  render(<Workspace authEnabled configured billingEnabled initialTab="library" />);
-  await waitFor(() => expect(screen.getByRole("heading", { name: "React basics" })).toBeInTheDocument());
-  expect(screen.getByRole("searchbox", { name: "Search your library" })).toBeInTheDocument();
-  expect(screen.getByRole("tablist", { name: "Filter by document type" })).toBeInTheDocument();
+test("copies the loaded curriculum as notes",async()=>{
+ const writeText=jest.fn().mockResolvedValue(undefined);Object.defineProperty(navigator,"clipboard",{configurable:true,value:{writeText}});
+ renderWorkspace();fireEvent.click(await screen.findByRole("button",{name:"Copy notes"}));
+ await waitFor(()=>expect(writeText).toHaveBeenCalledWith(expect.stringContaining("State drives rendering.")));
 });
-
-test("deletes a document only after the user confirms", async () => {
-  (requestJson as jest.Mock).mockImplementation((url: string) => {
-    if (url === "/api/catalog") return Promise.resolve({ technologies: [], topics: [] });
-    if (url === "/api/account") return Promise.resolve({ ...accountData, documents: [readyPdf] });
-    return Promise.resolve({ ok: true });
-  });
-  render(<Workspace authEnabled configured billingEnabled />);
-  await waitFor(() => expect(screen.getAllByText("React basics").length).toBeGreaterThan(0));
-
-  const user = userEvent.setup();
-  await user.click(screen.getByRole("button", { name: "Delete" }));
-  expect(screen.getByRole("heading", { name: "Delete for good?" })).toBeInTheDocument();
-  expect(requestJson).not.toHaveBeenCalledWith("/api/documents/doc-pdf", expect.anything());
-
-  await user.click(screen.getByRole("button", { name: "Delete for good?" }));
-  await waitFor(() => expect(requestJson).toHaveBeenCalledWith("/api/documents/doc-pdf", { method: "DELETE" }));
+test("failed copy is reported and does not write empty notes",async()=>{
+ jest.mocked(requestJson).mockImplementation(async(url)=>url==="/api/account"?account:url==="/api/catalog"?{technologies:[],topics:[]}:{document:{...document,curriculum:null}});
+ renderWorkspace();fireEvent.click(await screen.findByRole("button",{name:"Copy notes"}));
+ expect(await screen.findByRole("alert")).toHaveTextContent(/copy/i);
 });
-
-test("copies point-wise notes to the clipboard", async () => {
-  const writeText = jest.fn().mockResolvedValue(undefined);
-  (requestJson as jest.Mock).mockImplementation((url: string) => {
-    if (url === "/api/catalog") return Promise.resolve({ technologies: [], topics: [] });
-    if (url === "/api/account") return Promise.resolve({ ...accountData, documents: [readyPdf, readyNotes] });
-    if (url === "/api/documents/doc-notes") return Promise.resolve({ document: { ...readyNotes, curriculum } });
-    return Promise.resolve({});
-  });
-  const user = userEvent.setup();
-  // userEvent.setup() installs its own clipboard stub, so ours must be defined after
-  // it, overriding that stub, or userEvent silently wins and this mock never fires.
-  Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
-  render(<Workspace authEnabled configured billingEnabled />);
-  await waitFor(() => expect(screen.getAllByRole("heading", { name: "React basics" })).toHaveLength(2));
-
-  await user.click(screen.getByRole("tab", { name: /Notebook Notes/ }));
-  await user.click(screen.getByRole("button", { name: /Copy notes/ }));
-
-  await waitFor(() => expect(writeText).toHaveBeenCalledWith(expect.stringContaining("A point about state")));
-  expect(writeText.mock.calls[0][0]).toContain("React basics");
-  expect(await screen.findByRole("button", { name: /Copied/ })).toBeInTheDocument();
+test("retry sends the note request and opens a completed result",async()=>{
+ renderWorkspace();fireEvent.click(await screen.findByRole("button",{name:"Retry",exact:true}));
+ expect(await screen.findByRole("dialog",{name:"Notes reader"})).toHaveTextContent("React basics");
+ expect(requestJson).toHaveBeenCalledWith("/api/documents",expect.objectContaining({method:"POST",body:JSON.stringify(document.request)}));
 });

@@ -1,4 +1,5 @@
 /** @jest-environment node */
+import { conciseStudyNote } from "@/lib/concise-learning";
 import { curriculumSchema, objectiveQuestionSchema } from "@/lib/domain";
 import { DEFAULT_GUIDES } from "@/lib/generation/default-library";
 import { NOTES_SUMMARIES, NOTES_TECHNOLOGIES, getStudyNote } from "@/lib/server/notes-study-catalog";
@@ -29,7 +30,8 @@ test.each([
   }
   for (const note of notes) {
     expect(course.contents!.some(item => item.id === note.id)).toBe(true);
-    expect(getStudyNote(note.id)).toEqual(note);
+    // The catalogue serves the concise form: exact duplicates of the description are dropped.
+    expect(getStudyNote(note.id)).toEqual(conciseStudyNote(note));
     expect(note.sections[0].code).toBeTruthy();
     expect(note.points).toHaveLength(3);
     expect(note.examples[0].points[0]).toBeTruthy();

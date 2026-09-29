@@ -1,0 +1,8 @@
+.tone { --tab-bg: #edf4ff; --tab-ink: #315c92; }
+.tone:nth-child(8n + 2) { --tab-bg: #edf7ef; --tab-ink: #386846; }
+.tone:nth-child(8n + 3) { --tab-bg: #fff3df; --tab-ink: #856020; }
+.tone:nth-child(8n + 4) { --tab-bg: #f3edfc; --tab-ink: #6c4a8d; }
+.tone:nth-child(8n + 5) { --tab-bg: #fceef2; --tab-ink: #924760; }
+.tone:nth-child(8n + 6) { --tab-bg: #e8f6f5; --tab-ink: #306f6b; }
+.tone:nth-child(8n + 7) { --tab-bg: #fff0e8; --tab-ink: #925332; }
+.tone:nth-child(8n + 8) { --tab-bg: #f3f5df; --tab-ink: #636b2b; }

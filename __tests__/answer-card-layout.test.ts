@@ -47,23 +47,22 @@ test("the page fills its column but never exceeds it", () => {
 test("earlier searches sit three to a row, and reflow rather than overflow", () => {
   const grid = rule(".grid");
   expect(grid).toMatch(/grid-template-columns:\s*repeat\(3, minmax\(0, 1fr\)\)/);
-  // Two columns on a tablet, one on a phone.
-  expect(css).toMatch(/@media \(max-width: 900px\)[\s\S]*?repeat\(2, minmax\(0, 1fr\)\)/);
+  // Three columns collapse to one on phones.
   expect(css).toMatch(/@media \(max-width: 620px\)[\s\S]*?\.grid \{ grid-template-columns: minmax\(0, 1fr\); \}/);
 });
 
-test("body prose runs the full width of the card, justified and hyphenated", () => {
+test("body prose runs the full width of the card with readable left alignment", () => {
   // No reading-width cap survives inside the answer: the card is the measure.
   for (const selector of [".headline", ".definition", ".summary", ".steps p", ".alternatives p", ".useCases p"]) {
     expect(rule(selector)).not.toMatch(/max-width:\s*\d+ch/);
   }
   const prose = rule(".definition, .summary, .steps p, .alternatives p, .useCases p, .points li, .noModel p, .error p");
-  expect(prose).toMatch(/text-align:\s*justify/);
+  expect(prose).toMatch(/text-align:\s*left/);
   // Justification without hyphenation tears rivers through a narrow column.
-  expect(prose).toMatch(/hyphens:\s*auto/);
+  expect(prose).toMatch(/overflow-wrap:\s*break-word/);
   // Headings are never justified.
-  expect(rule(".headline")).not.toMatch(/text-align:\s*justify/);
-  expect(rule(".blockTitle")).not.toMatch(/text-align:\s*justify/);
+  expect(rule(".headline")).not.toMatch(/text-align:\s*left/);
+  expect(rule(".blockTitle")).not.toMatch(/text-align:\s*left/);
 });
 
 test("key points read as separate paragraphs, bulleted and in their own colour", () => {
@@ -85,7 +84,7 @@ test("nothing inside an answer can scroll the page sideways", () => {
   // horizontal scrollbar: nowrap made it unbreakable, so it painted past the card.
   const chip = read("components/key-text.module.css").replace(/\/\*[\s\S]*?\*\//g, "");
   expect(chip).not.toMatch(/white-space:\s*nowrap/);
-  expect(chip).toMatch(/overflow-wrap:\s*break-word/);
+  expect(chip).toMatch(/overflow-wrap:\s*anywhere/);
   // And as a backstop, the answer and each entry clip on the x axis only.
   expect(rule(".answer")).toMatch(/overflow-x:\s*clip/);
   expect(rule(".entry")).toMatch(/overflow-x:\s*clip/);
@@ -147,13 +146,72 @@ test("card headings are smaller and wear their own colour, not black", () => {
 });
 
 test("each card on a page of earlier searches gets its own light tint", () => {
-  const tints = [1, 2, 3, 4, 5, 6].map(slot => rule(`.grid > li:nth-child(6n + ${slot})`).match(/--tint:\s*(#[0-9a-f]{6})/)![1]);
-  // Six places on a page, six different colours.
-  expect(new Set(tints).size).toBe(6);
+  const tints = [1, 2, 3].map(slot => rule(`.grid > li:nth-child(${slot})`).match(/--tint:\s*(#[0-9a-f]{6})/)![1]);
+  // Three places on a page, three different colours.
+  expect(new Set(tints).size).toBe(3);
   // All pale: every channel high enough that dark heading ink stays readable.
   for (const tint of tints) {
     const channels = [1, 3, 5].map(at => parseInt(tint.slice(at, at + 2), 16));
     expect(Math.min(...channels)).toBeGreaterThanOrEqual(0xdd);
   }
   expect(rule(".entry")).toMatch(/background:\s*var\(--tint, var\(--surface\)\)/);
+});
+
+/**
+ * A catalogue card is a header strip above a body, and nothing may escape it.
+ *
+ * The strip was added after the body was written, and the body still claimed
+ * the card's whole height — so the row anchored to its bottom edge, the
+ * "Explain this" reveal and the Hindi controls beneath it, hung past the
+ * rounded border. jsdom cannot see that, so this pins the geometry instead.
+ */
+const catalog = read("components/catalog-browser.module.css").replace(/\/\*[\s\S]*?\*\//g, "");
+
+function catalogRule(selector: string): string {
+  for (const block of catalog.split("}")) {
+    const [head, body] = block.split("{");
+    if (head && body && head.trim() === selector) return body;
+  }
+  throw new Error(`no rule for ${selector}`);
+}
+
+test("the card lays out its own children, so the header and body stack", () => {
+  const body = catalogRule(".card");
+  expect(body).toContain("display: flex");
+  expect(body).toMatch(/flex-direction:\s*column/);
+});
+
+test("the card body fills what the header leaves rather than claiming the whole card", () => {
+  const body = catalogRule(".open");
+  // A hard 100% here is the bug: it ignores the header above it.
+  expect(body).not.toMatch(/height:\s*100%/);
+  expect(body).toMatch(/flex:\s*1 1 auto/);
+  expect(body).toMatch(/min-height:\s*0/);
+});
+
+test("the reveal stays anchored inside the body", () => {
+  // `margin-top: auto` is what pins the reveal to the bottom of the body; it
+  // only lands inside the card while the body is flex-sized, not 100% tall.
+  expect(catalogRule(".go")).toMatch(/margin-top:\s*auto/);
+});
+
+test("a rule separates the card's header strip from its body", () => {
+  expect(catalogRule(".cardHead")).toMatch(/border-bottom:\s*1px solid/);
+});
+
+test("the meaning box is a fixed height, so no language toggle can reflow the grid", () => {
+  const body = catalogRule(".cardSummary");
+  // Fixed rather than min-height: a short English meaning and three lines of
+  // Devanagari have to occupy exactly the same space, or switching one card
+  // grows its row and drags every card beside it.
+  expect(body).toMatch(/height:\s*calc\(/);
+  expect(body).toMatch(/--summary-lines:\s*3/);
+  expect(body).toMatch(/-webkit-line-clamp:\s*var\(--summary-lines\)/);
+});
+
+test("the gloss no longer has a block of its own to expand into", () => {
+  // The appended panel and its toggle were what grew the card; the header's
+  // En/Hi switch replaces the meaning in place instead.
+  expect(catalog).not.toContain(".hindiToggle");
+  expect(catalog).not.toMatch(/^\.hindi\s*\{/m);
 });

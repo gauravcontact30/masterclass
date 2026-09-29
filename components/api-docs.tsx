@@ -4,16 +4,20 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { NativeSelectOption } from "@/components/ui/native-select";
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { vocabularyIcon } from "@/lib/vocabulary-icons";
+import { BrandMark, BrandOrGlyph } from "./topic-media";
+import { LearningResources } from "./learning-resources";
 import { usePathname, useSearchParams } from "next/navigation";
 import { BookOpen, BriefcaseBusiness, Quote, ArrowLeft, ArrowUpRight, Check, ChevronDown, Copy, FileCode2, GraduationCap, MessageCircle, RefreshCw, Search, Sparkles, X } from "lucide-react";
 import { API_PACKAGES, API_STATUSES, API_TYPES, filterApiPackages, javascriptGroup, type ApiEntry, type ApiPackage } from "@/lib/api-docs";
 import { API_DETAILS } from "@/lib/api-docs-details";
 import { apiDetailSchema, type ContentSource, type GeneratedApiDetail } from "@/lib/pro-learn/types";
 import { highlightLines, type CodeLanguage } from "@/lib/code-highlight";
+import { codeLineNotes } from "@/lib/code-line-notes";
+import { CodeLineComment } from "./code-line-comment";
 import styles from "./api-docs.module.css";
 import projectStyles from "./api-project.module.css";
 import { apiCodeLanguage, enrichApiLearning } from "@/lib/api-learning";
@@ -32,8 +36,9 @@ function Badge({ kind }: { kind: string }) {
 
 function ApiCode({ code, language }: { code: string; language: CodeLanguage }) {
   const [copied, setCopied] = useState("");
+  const notes = useMemo(() => codeLineNotes(code, "", language), [code, language]);
   async function copy() { try { await navigator.clipboard.writeText(code); setCopied("Copied"); } catch { setCopied("Select the code to copy manually."); } }
-  return <div className={styles.ide}><div className={styles.ideBar}><span className={styles.dots} aria-hidden="true"><i/><i/><i/></span><span>{language}</span><button onClick={() => void copy()} aria-label="Copy code">{copied === "Copied" ? <Check size={14}/> : <Copy size={14}/>} {copied === "Copied" ? "Copied" : "Copy"}</button></div><pre tabIndex={0}><code>{highlightLines(code, language).map((line, index) => <span key={index}><span className={styles.gutter} aria-hidden="true">{index + 1}</span>{line.map((token, part) => <span key={part} className={styles[token.tone]}>{token.text}</span>)}{"\n"}</span>)}</code></pre><span className={styles.copyStatus} role="status">{copied}</span></div>;
+  return <div className={styles.ide}><div className={styles.ideBar}><span className={styles.dots} aria-hidden="true"><i/><i/><i/></span><span>{language}</span><button onClick={() => void copy()} aria-label="Copy code">{copied === "Copied" ? <Check size={14}/> : <Copy size={14}/>} {copied === "Copied" ? "Copied" : "Copy"}</button></div><pre tabIndex={0}><code>{highlightLines(code, language).map((line, index) => <span key={index}><span className={styles.gutter} aria-hidden="true">{index + 1}</span>{line.map((token, part) => <span key={part} className={styles[token.tone]}>{token.text}</span>)}{"\n"}<CodeLineComment note={notes[index]} /></span>)}</code></pre><span className={styles.copyStatus} role="status">{copied}</span></div>;
 }
 
 type GeneratedResult = { detail: GeneratedApiDetail; source: ContentSource; reason?: string; provider?: string; sources?: string[] };
@@ -96,7 +101,7 @@ export function ApiDetail({ pkg, entry, pathname }: { pkg: ApiPackage; entry: Ap
   return <div>
     <div className={styles.detailTop}><Link href={pathname}><ArrowLeft size={16}/>API Reference</Link><div className={styles.learnLinks}><Link href={mentorHref}><MessageCircle size={15}/>Ask the mentor</Link><Link href={quizHref}><GraduationCap size={15}/>Quiz me on this</Link></div></div>
     <div className={styles.detailLayout}><article className={styles.detail}>
-      <p className={styles.packageName}>{detail?.packageName || pkg.name}</p><h1>{entry.name}<span className={styles.kind}>{kind}</span><span className={styles.statusBadge} data-status={entry.status}>{status}</span>{detail?.since && <span className={styles.kind}>{detail.since}</span>}</h1>
+      <p className={styles.packageName}><BrandMark label={pkg.name} size={14}/>{detail?.packageName || pkg.name}</p><h1>{entry.name}<span className={styles.kind}>{kind}</span><span className={styles.statusBadge} data-status={entry.status}>{status}</span>{detail?.since && <span className={styles.kind}>{detail.since}</span>}</h1>
       {!curated && <AiProviderPicker providers={providers} provider={provider} onChoose={choose}/>}
       {!detail && generated.status === "loading" && <div className={styles.generating} role="status"><Sparkles size={16}/><span>Preparing the {entry.name} reference…</span><i/><i/><i/></div>}
       {!detail && generated.status === "error" && <div className={styles.referenceCard} role="alert"><p>{referenceErrorMessage(generated.error)}</p>{generated.error==='signin_required'?<Link href="/sign-in">Sign in again<ArrowUpRight size={14}/></Link>:<button className={styles.retry} onClick={generated.retry}><RefreshCw size={14}/>Try again</button>}</div>}
@@ -117,12 +122,25 @@ export function ApiDetail({ pkg, entry, pathname }: { pkg: ApiPackage; entry: Ap
         <section id="api-topics"><h2>Learn {pkg.name} in the app</h2><div className={styles.topicChips}>{pkg.topics.map(topic => <Link key={topic} href={`/dashboard/lessons?track=${encodeURIComponent(pkg.id)}&topic=${encodeURIComponent(topic)}`}><BookOpen size={15} aria-hidden="true"/><span>{topic}</span><ArrowUpRight size={13} aria-hidden="true"/></Link>)}</div></section>
       </>}
       {!!seeAlso.length && <section id="api-related"><h2>See also</h2><ul className={styles.related}>{seeAlso.map(item => <li key={item.name}><Link href={apiTopicHref(pathname,pkg.id,item.name)}><FileCode2 size={15} aria-hidden="true"/><span>{item.name}</span><ArrowUpRight size={13} aria-hidden="true"/></Link></li>)}</ul></section>}
+      <LearningResources key={pkg.id} technology={pkg.name} />
       <p className={styles.provenance}>{curated ? "Hand-authored reference prepared for study in MasterClass." : "Prepared inside MasterClass for study."} Behaviour can differ between versions; verify against the version installed in your project.</p>
-    </article><nav className={styles.onPage} aria-label="On this page"><strong>On this page</strong>{[["api-definition","Definition"],["api-signature","Syntax"],["api-example","Example"],["api-key-points","Key features"],["api-use-cases","Real use cases"],["api-project","Code workspace"],["api-vocabulary","Vocabulary"],["api-interview","Interview Q&A"],["api-related","Related topics"]].map(([id,label])=><a key={id} href={`#${id}`}>{label}</a>)}</nav></div>
+    </article></div>
   </div>;
 }
 
 export function apiTopicHref(pathname:string,packageId:string,name:string) { return `${pathname}/${encodeURIComponent(packageId)}/${encodeURIComponent(name)}`; }
+
+/**
+ * The mark beside a package name: its real logo, else the catalog's emoji.
+ *
+ * Roughly half the 54 packages are products with a mark in simple-icons; the
+ * rest are themes ("System Design", "AI Agents") or young libraries with no
+ * icon published. Those keep the emoji they already had, so this is an upgrade
+ * where one is available and a no-op everywhere else.
+ */
+function packageMark(pkg: ApiPackage) {
+  return <BrandOrGlyph label={pkg.name} glyph={pkg.icon} size={16}/>;
+}
 
 export function ApiDocs() {
   const pathname = usePathname();
@@ -155,7 +173,7 @@ export function ApiDocs() {
         const isOpen = !!query.trim() || open === pkg.id;
         const entries = expanded.includes(pkg.id) ? pkg.entries : pkg.entries.slice(0, 60);
         const jsGroups = [...new Set(entries.map(entry => javascriptGroup(entry.name)))];
-        return <section key={pkg.id} className={styles.group} style={{ "--accent": pkg.accent } as CSSProperties}><header className={styles.groupHead}><h2><button aria-label={`Toggle ${pkg.name}`} aria-expanded={isOpen} aria-controls={`api-group-${pkg.id}`} onClick={() => setOpen(isOpen ? null : pkg.id)}><ChevronDown size={16} className={isOpen ? "" : styles.closed}/><span className={styles.groupIcon} aria-hidden="true">{pkg.icon}</span>{pkg.name}<small>{pkg.entries.length}</small></button></h2><span className={styles.groupMeta}>{pkg.description}</span></header><div id={`api-group-${pkg.id}`} hidden={!isOpen}>{isOpen && <>{pkg.id === "javascript" ? jsGroups.map(group => <div className={styles.subgroup} key={group}><h3>{group}</h3><div className={styles.items}>{entries.filter(entry => javascriptGroup(entry.name) === group).map(entry => entryLink(pkg, entry))}</div></div>) : <div className={styles.items}>{entries.map(entry => entryLink(pkg, entry))}</div>}{entries.length < pkg.entries.length && <button className={styles.showAll} onClick={() => setExpanded(previous => [...previous, pkg.id])}>Show all {pkg.entries.length} identifiers</button>}</>}</div></section>;
+        return <section key={pkg.id} className={styles.group} style={{ "--accent": pkg.accent } as CSSProperties}><header className={styles.groupHead}><h2><button aria-label={`Toggle ${pkg.name}`} aria-expanded={isOpen} aria-controls={`api-group-${pkg.id}`} onClick={() => setOpen(isOpen ? null : pkg.id)}><ChevronDown size={16} className={isOpen ? "" : styles.closed}/><span className={styles.groupIcon} aria-hidden="true">{packageMark(pkg)}</span>{pkg.name}<small>{pkg.entries.length}</small></button></h2><span className={styles.groupMeta}>{pkg.description}</span></header><div id={`api-group-${pkg.id}`} hidden={!isOpen}>{isOpen && <>{pkg.id === "javascript" ? jsGroups.map(group => <div className={styles.subgroup} key={group}><h3>{group}</h3><div className={styles.items}>{entries.filter(entry => javascriptGroup(entry.name) === group).map(entry => entryLink(pkg, entry))}</div></div>) : <div className={styles.items}>{entries.map(entry => entryLink(pkg, entry))}</div>}{entries.length < pkg.entries.length && <button className={styles.showAll} onClick={() => setExpanded(previous => [...previous, pkg.id])}>Show all {pkg.entries.length} identifiers</button>}</>}</div></section>;
       })}</div><p className={styles.provenance}>Every reference opens inside MasterClass. Status labels describe the catalog snapshot; verify behaviour against the version installed in your project.</p>
     </>}
   </div>;

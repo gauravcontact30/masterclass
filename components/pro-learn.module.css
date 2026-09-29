@@ -312,3 +312,6 @@
 @media(max-width:720px) { .scoreCard { grid-template-columns:minmax(0,1fr); gap:20px; }.scoreTrail { max-width:none; }.modeGrid { grid-template-columns:1fr; }.modeCard h3 { margin-top:12px; }.learningPath { gap:2px; }.learningPath a { flex-direction:column; gap:6px; padding:10px 4px; font-size:10px; }.learningPath a>svg:last-child { display:none; }.pathText { justify-items:center; }.pathText b { font-size:11px; }.mentorGrid { grid-template-columns:repeat(2,minmax(0,1fr)); }.featured::after { display:none; }.ivTags { flex:1; }.studyNote { padding:18px; }.revealLabel { margin-left:0; } }
 @media(max-width:420px) { .mentorGrid { grid-template-columns:1fr; }.studyNote .noteIcon { display:none; } }
 @media(prefers-reduced-motion:reduce) { .modeCard,.mentorCard,.lessonCard { transition:none; transform:none!important; }.chat { scroll-behavior:auto; } }
+
+/* Consistent separation between dashboard cards. */
+:global(.workspace) .grid { gap: var(--dashboard-card-gap, 24px); }

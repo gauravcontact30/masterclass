@@ -38,7 +38,7 @@
 .panel {
   position: sticky; top: 0; z-index: 3;
   min-width: 0;
-  padding: 12px 0 14px;
+  padding: 6px 0 10px;
   background: linear-gradient(var(--sage) 76%, #f5f4ed00);
 }
 .modeOff {
@@ -48,21 +48,21 @@
 }
 .modeOff svg { flex-shrink: 0; color: var(--faint); }
 
-.searchRow { display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap; }
+.searchRow { display: flex; gap: 8px; align-items: stretch; flex-wrap: wrap; padding: 5px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: var(--lift); }
 /* The field holds the query and, behind a hairline, the model switch. */
 .field {
   display: flex; align-items: center; gap: 10px;
   flex: 1 1 380px; min-width: 0;
   padding: 0 8px 0 15px;
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 1px solid transparent;
   border-radius: 14px;
   color: var(--faint);
   transition: border-color .18s, box-shadow .18s;
 }
 .field:focus-within { border-color: color-mix(in srgb, var(--accent) 55%, white); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent); }
 .field:focus-within svg { color: var(--accent); }
-.field input { flex: 1; min-width: 0; height: 52px; border: 0; background: transparent; box-shadow: none; font-size: 14.5px; color: var(--ink); }
+.field input { flex: 1; min-width: 0; height: 44px; border: 0; background: transparent; box-shadow: none; font-size: 14px; color: var(--ink); }
 .field input:focus-visible { outline: none; }
 /* type=search draws a clear button of its own in Chrome, Edge and Safari, which
    would sit next to ours. Ours stays, because it also resets the page state. */
@@ -74,7 +74,7 @@
 
 .submit {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 0 22px; min-height: 52px;
+  padding: 0 20px; min-height: 44px;
   border: 1px solid #262624; border-radius: 14px;
   background: #262624; color: #fff;
   font-size: 13.5px; font-weight: 600; cursor: pointer;
@@ -86,9 +86,8 @@
 
 /* Empty state: an invitation, not a placeholder screen. */
 .empty {
-  margin: 44px 0;
-  padding: 30px 0;
-  border-top: 1px solid var(--hair);
+  margin: 0 0 10px;
+  padding: 0 4px;
   font-size: 13.5px; line-height: 1.7; color: var(--faint);
 }
 
@@ -111,7 +110,7 @@
 }
 @keyframes settle { from { opacity: 0; transform: translateY(10px) scale(.994); } to { opacity: 1; transform: none; } }
 
-.answerHead { position: relative; display: flex; align-items: flex-start; gap: 12px; padding-bottom: 15px; }
+.answerHead { position: relative; display: flex; align-items: flex-start; gap: 12px; padding-bottom: 15px; padding-right: 8px; }
 .answerHead::after {
   content: ""; position: absolute; left: 0; right: 0; bottom: 0;
   height: 1px; background: var(--line);
@@ -120,6 +119,21 @@
 }
 @keyframes draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
+/* The header's own three parts: the mark, the title block, the close button. The
+   title block takes the free space so the title always starts at the same place,
+   left of everything, whatever it is about. */
+.answerMark {
+  display: grid; place-items: center; flex-shrink: 0;
+  width: 34px; height: 34px;
+  border: 1px solid var(--hair); border-radius: 10px;
+  background: var(--sage); color: var(--heading);
+}
+.answerTitles { display: flex; flex-direction: column; gap: 3px; flex: 1 1 auto; min-width: 0; }
+.answerTitle {
+  margin: 0; min-width: 0;
+  font-size: 17px; line-height: 1.35; font-weight: 650; letter-spacing: -.02em; color: var(--heading);
+  text-align: left; overflow-wrap: break-word;
+}
 .asked {
   margin: 0; min-width: 0;
   font-size: 13px; line-height: 1.55; font-weight: 600; color: var(--muted);
@@ -257,8 +271,8 @@
 .subjects > li:nth-child(6n + 1) { --wash: #fdf4ef; --wash-line: #f2ddd0; --wash-edge: #d98a63; }
 .subjects > li:nth-child(6n + 2) { --wash: #eef7f1; --wash-line: #d4e8da; --wash-edge: #6faa84; }
 .subjects > li:nth-child(6n + 3) { --wash: #eef4fb; --wash-line: #d4e3f2; --wash-edge: #6f9bc9; }
-.subjects > li:nth-child(6n + 4) { --wash: #f4f0fc; --wash-line: #ded6f2; --wash-edge: #9b86cd; }
-.subjects > li:nth-child(6n + 5) { --wash: #fdf8e8; --wash-line: #eee2bd; --wash-edge: #c9a949; }
+.subjects > li:nth-child(6n + 4) { --wash: #f4f0fc; --wash-line: #f0eee6; --wash-edge: #9b86cd; }
+.subjects > li:nth-child(6n + 5) { --wash: #f5f4ed; --wash-line: #eee2bd; --wash-edge: #c9a949; }
 .subjects > li:nth-child(6n + 6) { --wash: #fdeff4; --wash-line: #f0d4de; --wash-edge: #cf8aa1; }
 
 .subjectName {
@@ -309,6 +323,9 @@
   position: absolute; left: 6px; top: 0;
   color: currentColor; font-size: 17px; line-height: 1.55;
 }
+.points li.keyPoint { display: flex; align-items: flex-start; gap: 9px; padding-left: 0; }
+.points li.keyPoint::before { display: none; }
+.keyPointIcon { display: grid; place-items: center; flex: 0 0 22px; height: 22px; margin-top: 2px; border-radius: 7px; background: color-mix(in srgb, var(--keypoint) 12%, white); color: var(--keypoint); }
 /* Each point gets its own ink, cycling through six deep hues, so a list of
    things worth remembering reads as separate facts rather than one paragraph
    broken by bullets. The bullet takes the point's colour too, so each line is
@@ -475,3 +492,169 @@
   .entry:hover { transform: none; }
   .field, .submit, .entry, .chips button, .matches a, .forget, .entryForget { transition: none; }
 }
+
+/* ---- The answer as a full-width modal ----
+   The document keeps every rule it had; only the frame around it changes, so
+   the reading treatment below (.answer and everything under it) still applies
+   verbatim inside the dialog. */
+.answerModal {
+  --ink: #3d3d3a;
+  --muted: #73726c;
+  --faint: #9a988f;
+  --line: #dedcd1;
+  --hair: #e8e6dc;
+  --accent: #c6613f;
+  --warn: #a8631c;
+  --surface: #fff;
+  --sage: #f5f4ed;
+  --keypoint: #8a4b2f;
+  --heading: #2f4b5c;
+  --lift: 0 1px 2px #1f1e1d0a, 0 10px 30px -18px #1f1e1d40;
+  width: calc(100vw - 40px);
+  max-width: none !important;
+  height: calc(100dvh - 52px);
+  padding: 26px 30px 30px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  color: var(--ink);
+}
+/* The document inside the modal is free of the page's reading-width clamp: the
+   modal is the full-width surface the reader asked for, and the blocks inside
+   already set their own measure. */
+.answerModal .answer { max-width: none; }
+
+/* Light learning surfaces keep equations legible independently of app theme. */
+.formulaBlock, .workedBlock { padding: 22px; border: 1px solid #dfe6ef; border-radius: 20px; background: #f7f9fc; color: #303b4c; box-shadow: 0 4px 20px #223b5c05; }
+.formulas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 14px; list-style: none; padding: 0; margin: 0; }
+.formulas > li { min-width: 0; padding: 18px; border: 1px solid #e2e8f0; border-radius: 14px; background: #fff; }
+.formulaName { margin: 0 0 12px; font-size: 13px; font-weight: 600; }
+.expression { margin: 12px 0; padding: 16px 18px; border-radius: 12px; background: #edf3fc; color: #284f7c; font-family: "Cambria Math", "STIX Two Math", Georgia, serif; font-size: clamp(18px, 2.3vw, 25px); line-height: 1.65; letter-spacing: .025em; overflow-wrap: anywhere; white-space: pre-wrap; }
+.formulaMeaning { margin: 10px 0 0; color: #516174; font-size: 13px; line-height: 1.7; }
+.workedExample { min-width: 0; padding: 20px 0; }
+.workedExample + .workedExample { border-top: 1px solid #dfe6ef; }
+.workedExample h4 { margin: 0 0 8px; color: #516174; font-size: 12px; font-weight: 650; }
+.workedQuestion { margin: 0 0 18px; font-size: 16px; font-weight: 550; line-height: 1.7; }
+.workedExample ol { margin: 0; padding-left: 25px; }
+.workedExample li { padding-left: 8px; margin-bottom: 16px; font-size: 14px; line-height: 1.7; }
+.workedExample li::marker { color: #516f9a; font-weight: 650; }
+.workedAnswer { padding: 15px 18px; border: 1px solid #cfe5da; border-radius: 14px; background: #eef8f2; }
+.workedAnswer > span { font-size: 12px; font-weight: 650; color: #286346; }
+.workedAnswer .expression { margin: 4px 0 0; padding: 0; color: #245d42; background: transparent; }
+@media (max-width: 600px) { .formulaBlock, .workedBlock { padding: 14px; } }
+
+@media (max-width: 720px) {
+  .answerModal { width: calc(100vw - 16px); height: calc(100dvh - 24px); padding: 20px 16px 24px; }
+}
+
+/* ---- Catalogue sections, one tab each ---- */
+.sections { margin-top: 6px; gap: 12px; padding: 14px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: 0 2px 8px #1f1e1d04; }
+/* Keep paging in the toolbar so tabs retain the full available width. */
+.sectionsRow { display: flex; flex-direction: column; align-items: stretch; gap: 9px; min-width: 0; }
+.sectionsToolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.browseLabel { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 650; letter-spacing: .025em; color: var(--muted); }
+.browseLabel svg { color: var(--accent); }
+/* A tab keeps the width of its own label, and the strip wraps onto another line
+   rather than scrolling sideways or shortening the name: a sideways scroll hid
+   the tabs past the edge from anyone who did not think to drag it, and the
+   pager already says how many pages there are. `min-width: 0` keeps a long row
+   from pushing that pager off the end of the row. */
+.sectionsList {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  width: 100%; min-width: 0;
+  padding: 0;
+  border: 0; border-radius: 0;
+  background: transparent;
+}
+.sectionTab {
+  display: inline-flex; align-items: center; gap: 7px;
+  flex: 0 0 auto; max-width: 100%;
+  padding: 8px 12px;
+  /* A light border in the tab's own colour: `currentColor` is set per tab by
+     the washes below, so each one is outlined in a paler version of itself
+     rather than in one grey that fights every wash. */
+  border: 1px solid color-mix(in srgb, currentColor 22%, white); border-radius: 9px;
+  background: none;
+  font-size: 10.5px; font-weight: 600; color: var(--muted);
+  white-space: nowrap; cursor: pointer;
+  transition: background .16s, color .16s, border-color .16s;
+}
+.sectionTab svg { flex-shrink: 0; transition: color .16s; }
+.sectionTab:hover { background: #ffffff8a; }
+/* Each catalogue gets its own quiet wash, so the strip reads as a set of
+   labelled places rather than a row of identical buttons. The icon carries the
+   colour; the washes repeat past the fifth because the strip only ever shows
+   four at a time. */
+.sectionTab:nth-child(1) { background: #fdf4ef; color: #a95f38; }
+.sectionTab:nth-child(2) { background: #eef7f1; color: #4c8962; }
+.sectionTab:nth-child(3) { background: #eef4fb; color: #507daf; }
+.sectionTab:nth-child(4) { background: #f4f0fc; color: #765faa; }
+.sectionTab:nth-child(5) { background: #f5f4ed; color: #94781e; }
+.sectionTab svg { color: currentColor; opacity: .82; }
+.sectionTab[aria-selected="true"] {
+  background: #2f4b5c; border-color: #2f4b5c;
+  color: #fff;
+  box-shadow: 0 2px 5px #2f4b5c25;
+}
+.sectionTab[aria-selected="true"] svg { color: #c8e5e2; opacity: 1; }
+.sectionName { min-width: 0; }
+
+.sectionsNav { display: flex; align-items: center; justify-content: center; gap: 3px; align-self: center; flex-shrink: 0; }
+.sectionsStep {
+  display: grid; place-items: center;
+  width: 30px; height: 30px;
+  border: 1px solid var(--line); border-radius: 9px;
+  background: var(--surface); color: var(--muted); cursor: pointer;
+  transition: border-color .16s, color .16s;
+}
+.sectionsStep:hover:not(:disabled) { border-color: color-mix(in srgb, var(--accent) 45%, white); color: var(--accent); }
+.sectionsStep:disabled { opacity: .35; cursor: not-allowed; }
+.sectionsOf { min-width: 28px; text-align: center; font-size: 10.5px; font-weight: 600; color: var(--faint); font-variant-numeric: tabular-nums; }
+
+.sectionPanel { min-width: 0; }
+.sectionPanel > div > section { margin-top: 0; }
+.sectionTab:focus-visible, .sectionsStep:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (max-width: 560px) { .sections { padding: 10px; border-radius: 14px; } .searchRow { gap: 5px; } }
+
+/* On a narrow screen the strip is already wrapping, so a label needs no clamp;
+   only a single very long name is held inside the tab's own width. */
+@media (max-width: 720px) {
+  .sectionName { overflow: hidden; text-overflow: ellipsis; }
+}
+.preparedCode { max-width: 100%; overflow: auto; padding: 18px; border: 1px solid #dfe6ef; border-radius: 12px; background: #f4f7fb; color: #273951; font: 13px/1.7 ui-monospace, monospace; white-space: pre; }
+/* The neighbours of the open topic: a name a reader can act on, and the line
+   that says what it is. Two columns where there is room, because these are
+   short and a single column of forty makes the answer look like a menu. */
+.related {
+  list-style: none; margin: 0; padding: 0; min-width: 0;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 14px 22px;
+}
+.related > li { min-width: 0; }
+.related strong { display: block; color: var(--heading); font-size: 13px; font-weight: 640; line-height: 1.45; overflow-wrap: break-word; }
+.related p { margin: 3px 0 0; color: var(--muted); font-size: 12.5px; line-height: 1.7; overflow-wrap: break-word; }
+.relatedOpen {
+  display: inline-flex; align-items: center; gap: 6px;
+  max-width: 100%; padding: 0; border: 0; background: none;
+  color: var(--heading); text-align: left; cursor: pointer;
+}
+.relatedOpen svg { flex: none; color: var(--faint); transition: color .16s, transform .16s; }
+.relatedOpen:hover strong { color: var(--accent); }
+.relatedOpen:hover svg { color: var(--accent); transform: translateX(2px); }
+
+.references { display: flex; flex-wrap: wrap; gap: 10px 18px; padding: 16px 0; font-size: 12px; }
+.references > span { width: 100%; font-weight: 600; }
+.references a { color: #315f96; text-decoration: underline; text-underline-offset: 3px; }
+.headline > svg { display: inline-block; margin-right: 10px; vertical-align: middle; color: #54759c; }
+
+/* Who has the problem, and what it costs them. The sector leads in the accent
+   so the list can be skimmed for the one that matches the reader's own work. */
+.industries { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.industries li { padding-left: 12px; border-left: 2px solid var(--accent); }
+.industries strong {
+  display: block; margin-bottom: 3px;
+  font-size: 11.5px; font-weight: 700; letter-spacing: .01em; color: var(--accent);
+}
+.industries p { font-size: 12.5px; line-height: 1.75; color: var(--muted); }
+
+
+/* Consistent separation between dashboard cards. */
+:global(.workspace) .grid { gap: var(--dashboard-card-gap, 24px); }

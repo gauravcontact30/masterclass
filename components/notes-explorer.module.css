@@ -157,3 +157,6 @@
 .purpose h4 { color: #c6613f; }
 .purpose p { font-size: 14px; line-height: 1.7; }
 @media (max-width: 650px) { .lessonDialog { width: 100vw !important; height: 100dvh; max-height: 100dvh; border-radius: 0 !important; } }
+
+/* Consistent separation between dashboard cards. */
+:global(.workspace) .grid { gap: var(--dashboard-card-gap, 24px); }

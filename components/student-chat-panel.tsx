@@ -108,7 +108,7 @@ export default function StudentChatPanel({ open, onOpenChange }: { open: boolean
         </section>}
         <div role="log" aria-label="Study conversation" aria-live="polite" aria-relevant="additions" className={styles.messages}>
           {messages.map((message, index) => <article key={index} className={message.role === "user" ? styles.userMessage : styles.answer} aria-label={message.role === "user" ? "Your question" : "Study Buddy answer"}>
-            <span className={styles.messageLabel}>{message.role === "user" ? "You" : message.reply?.mode === "notes" ? "Study Buddy · From app notes" : "Study Buddy · AI answer"}</span>
+            <span className={styles.messageLabel}>{message.role === "user" ? "You" : "Study Buddy"}</span>
             <Answer text={message.content} loadCode={snippet => { setMode("javascript"); setCode(snippet.slice(0, 12000)); setOutput([]); setResult(null); }} />
             {message.reply?.sources.length ? <div className={styles.sources}><span>Related app notes</span>{message.reply.sources.map(source => <Link key={source.href} href={source.href} onClick={() => onOpenChange(false)}>{source.title}</Link>)}</div> : null}
           </article>)}
@@ -130,7 +130,6 @@ export default function StudentChatPanel({ open, onOpenChange }: { open: boolean
         <div className={styles.inputRow}><Textarea id="study-chat-question" ref={composer} placeholder={mode === "interview" ? "Ask an interview question…" : "Ask about a topic, an assignment or a puzzle…"} value={draft} onChange={event => setDraft(event.target.value)} maxLength={6000} rows={2} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); void ask(draft); } }} />
           {busy ? <Button type="button" aria-label="Stop reply" onClick={() => requestRef.current?.abort()}><Square size={18} /></Button> : <Button type="submit" aria-label="Send question" disabled={!draft.trim()}><ArrowUp size={20} /></Button>}
         </div>
-        <p>AI answers can be mistaken. Check important details. Don’t share private information.</p>
       </form>
     </DialogContent>
   </Dialog>;

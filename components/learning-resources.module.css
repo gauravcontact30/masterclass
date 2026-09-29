@@ -1,0 +1,27 @@
+.resources { margin-top: 14px; padding: 12px; border: 1px solid #dfe6e3; border-radius: 14px; background: linear-gradient(110deg, #f3f7f5, #f8f7f2); min-width: 0; }
+.header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 9px; }
+.header h3 { display: flex; align-items: center; gap: 7px; margin: 0; font-size: 12px; color: #2f4b5c; }
+.header > span { font-size: 10px; color: #73726c; background: #fff; padding: 2px 7px; border-radius: 999px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 9px; }
+.card { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 11px; padding: 8px; min-width: 0; overflow: hidden; border: 1px solid #e1e7e2; border-radius: 11px; background: #fff; transition: border-color .16s, box-shadow .16s; }
+.card:hover { border-color: #a9c4b9; box-shadow: 0 3px 10px #355f4d0b; }
+.preview { position: relative; display: grid; place-items: center; align-self: stretch; width: 100%; min-height: 82px; padding: 0; overflow: hidden; border: 1px solid #e8e6dc; border-radius: 8px; background: #f1f4f4; cursor: zoom-in; }
+.preview img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top left; }
+.preview > span { position: absolute; right: 4px; bottom: 4px; display: flex; align-items: center; gap: 4px; padding: 3px 5px; border-radius: 5px; background: #fffffff2; color: #2f4b5c; box-shadow: 0 1px 4px #0002; font-size: 9px; }
+.preview:focus-visible { outline: 3px solid #c6613f; outline-offset: -3px; }
+.caption { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; min-width: 0; gap: 5px; padding: 2px 0; }
+.caption small { font-size: 10px; font-weight: 650; color: #347365; background: #eef6f2; border-radius: 5px; padding: 3px 6px; }
+.caption h4 { margin: 0; font-size: 12px; line-height: 1.4; color: #2f4b5c; overflow-wrap: anywhere; }
+.caption p { margin: 0; font-size: 12px; line-height: 1.6; color: #666961; }
+.caption a, .dialog > a { display: inline-flex; align-items: center; gap: 5px; color: #315f96; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+.date { font-size: 10px; color: #73726c; }
+@media (max-width: 560px) { .resources { padding: 10px; } .card { grid-template-columns: 88px minmax(0, 1fr); gap: 9px; } .caption a { font-size: 10px; } }
+.dialog { width: min(1100px, 95vw); max-width: 95vw; max-height: 90dvh; overflow-y: auto; }
+.large { width: 100%; height: auto; max-height: 55dvh; object-fit: contain; border: 1px solid #dedcd1; border-radius: 8px; background: #f5f7f6; }
+.preview { cursor: pointer; }
+.brandPreview img { object-fit: contain; object-position: center; padding: 9px; max-height: 110px; }
+.enlarge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 0; border: 0; background: transparent; color: #315f96; font: inherit; font-size: 10px; cursor: pointer; }
+.enlarge:focus-visible, .caption a:focus-visible { outline: 2px solid #c6613f; outline-offset: 3px; }
+
+/* Consistent separation between dashboard cards. */
+:global(.workspace) .grid { gap: var(--dashboard-card-gap, 24px); }

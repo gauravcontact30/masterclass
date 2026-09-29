@@ -27,10 +27,10 @@ test("Techy has a separate professional section and renders its supplied deck", 
   expect(screen.queryByText("Your learning space is almost ready")).not.toBeInTheDocument();
 });
 
-test("My Library owns All technology notes and dashboard Notes only shows its topic content", () => {
+test("My Library owns All technology notes and dashboard Notes only shows its topic content", async () => {
   const account = { profile: { language: "en" as const }, account: { tier: "monthly" as const, used: 0, limit: 50, creditBalance: 0, subscription: null }, preparations: { isSuperAdmin: true, selections: [] }, documents: [], progress: [] };
   const { unmount } = render(<Workspace authEnabled={false} configured={false} billingEnabled={false} initialTab="library" initialStudyCourses={[]} initialAccount={account} />);
-  expect(screen.getByRole("heading", { name: /All technology notes/ })).toBeVisible();
+  expect(await screen.findByRole("heading", { name: /All technology notes/ })).toBeVisible();
   unmount();
   render(<Workspace authEnabled={false} configured={false} billingEnabled={false} initialCategory="notes" initialAccount={account} notesContent={<section aria-label="Topic cards">Study topics</section>} />);
   expect(screen.getByRole("region", { name: "Topic cards" })).toBeVisible();
@@ -40,7 +40,10 @@ test("My Library owns All technology notes and dashboard Notes only shows its to
 test("sidebar has learning navigation only and keeps account access in the header",()=>{
   localStorage.clear();render(<Workspace authEnabled configured={false} billingEnabled={false} userEmail="student@example.test" initialStudyCourses={[]} initialAccount={{profile:{language:"en"},account:{tier:"monthly",used:0,limit:50,creditBalance:0,subscription:null},preparations:{isSuperAdmin:false,selections:["nda"]},documents:[],progress:[]}}/>);
   const sidebar=within(screen.getByRole("complementary"));expect(sidebar.queryByRole("button",{name:"Membership"})).not.toBeInTheDocument();expect(sidebar.queryByRole("button",{name:"Connections"})).not.toBeInTheDocument();
-  expect(sidebar.getByRole("button",{name:"Govt. Exams"})).toHaveAttribute("aria-expanded","false");
+  // The five preparation groups and Mentors were removed from the sidebar; Class Room took their place.
+  for(const gone of ["Govt. Exams","Entrance Exams","Board Exams","Language Preparation","Courses & Interviews"]) expect(sidebar.queryByRole("button",{name:gone})).not.toBeInTheDocument();
+  expect(sidebar.queryByRole("link",{name:"Mentors"})).not.toBeInTheDocument();
+  expect(sidebar.getByRole("link",{name:"Class Room"})).toHaveAttribute("href","/dashboard/classroom");
   expect(sidebar.getByRole("button",{name:"Collapse sidebar"}).closest(".sidebar-brand-row")).not.toBeNull();
   expect(screen.getByRole("button",{name:"Your account"}).closest(".topbar")).not.toBeNull();
 });

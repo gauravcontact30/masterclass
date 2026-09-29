@@ -5,10 +5,18 @@
    the document above it. The wash carries the identity, the rule carries the
    edge, and only hover lifts anything. */
 .catalog { margin-top: 40px; min-width: 0; }
-.head { margin-bottom: 13px; }
+.head { margin-bottom: 12px; padding: 14px; border: 1px solid var(--hair); border-radius: 12px; background: linear-gradient(110deg, #f1f6f5, #f8f7f2); }
+/* A fixed icon column keeps the source disclosure from widening the gap
+   between the mark and the heading. */
+.head[data-has-cover] { display: grid; grid-template-columns: 52px minmax(0, 1fr); align-items: start; column-gap: 12px; }
+.head[data-has-cover] .titleRow, .head[data-has-cover] > p { grid-column: 2; }
+.cover { grid-row: 1 / span 2; display: flex; align-items: center; justify-content: center; width: 52px; min-height: 52px; padding: 8px; border: 1px solid #dce7e3; border-radius: 14px; background: #fff; color: var(--heading, #2f4b5c); box-shadow: 0 2px 4px #2f4b5c08; }
+.cover img, .cover svg { max-width: 34px; max-height: 34px; }
+.head[data-has-cover] > .sources { grid-column: 2; min-width: 0; margin-top: 8px; }
+@media (max-width: 560px) { .head { padding: 11px; } .head[data-has-cover] { grid-template-columns: 42px minmax(0, 1fr); column-gap: 10px; } .cover { width: 42px; min-height: 42px; padding: 6px; border-radius: 11px; } .titleRow { flex-wrap: wrap; gap: 5px; } .head[data-has-cover] > p, .head[data-has-cover] > .sources { grid-column: 1 / -1; margin-top: 8px; } }
 .titleRow { display: flex; align-items: baseline; gap: 12px; margin-bottom: 5px; }
-.titleRow h2 { margin: 0; font-size: 15px; font-weight: 620; letter-spacing: -.012em; }
-.count { margin-left: auto; flex-shrink: 0; font-size: 11.5px; color: var(--faint); }
+.titleRow h2 { margin: 0; min-width: 0; font-size: 16px; font-weight: 650; letter-spacing: -.02em; color: var(--heading, #2f4b5c); overflow-wrap: anywhere; }
+.count { margin-left: auto; flex-shrink: 0; padding: 3px 8px; border: 1px solid #dce7e3; border-radius: 999px; background: #ffffffb3; font-size: 10.5px; font-weight: 600; color: #526b68; }
 .head p { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--muted); }
 
 /* Filter row. The field is the page's search box at two-thirds scale, so the
@@ -33,26 +41,36 @@
 .clear:hover { border-color: color-mix(in srgb, var(--accent) 45%, white); color: var(--accent); }
 
 /* ---- Category tabs ----
-   Twenty-one categories, paged five at a time. A side-scrolling strip hid how
+   Twenty-one categories, paged four at a time. A side-scrolling strip hid how
    much was left behind a native scrollbar and could not be driven from the
    keyboard; a pager states the extent and is reachable. "All" is pinned
    outside the paged group, so the way back is always one click. */
 .tabs { margin-bottom: 4px; }
-.tabsRow { display: flex; align-items: center; gap: 8px; min-width: 0; margin-bottom: 15px; }
+/* The strip takes the full width and the pager sits under it, centred: a
+   pager beside the strip was competing with it for the same line, and every
+   tab it pushed out was a category the reader could not see. */
+.tabsRow { display: flex; flex-direction: column; align-items: stretch; gap: 10px; min-width: 0; margin-bottom: 15px; }
+/* A tab keeps the width of its own label, and the strip wraps onto another line
+   rather than scrolling sideways or shortening the name: a sideways scroll hid
+   the categories past the edge behind a native scrollbar. `min-width: 0` keeps
+   a long row from pushing the pager off the end of the row. */
 .tabsList {
-  display: flex; align-items: center; gap: 3px;
-  flex: 1; min-width: 0;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 3px;
+  width: 100%; min-width: 0;
   padding: 4px;
   border: 1px solid var(--hair); border-radius: 12px;
   background: var(--sage);
 }
 .tab {
   display: inline-flex; align-items: center; gap: 7px;
-  min-width: 0;
+  flex: 0 0 auto; max-width: 100%;
   padding: 7px 11px;
-  border: 1px solid transparent; border-radius: 9px;
+  /* A light border in the tab's own colour: `currentColor` is set per tab by
+     the washes below, so each one is outlined in a paler version of itself
+     rather than in one grey that fights every wash. */
+  border: 1px solid color-mix(in srgb, currentColor 22%, white); border-radius: 9px;
   background: none;
-  font-size: 11.5px; font-weight: 600; color: var(--muted);
+  font-size: 10.5px; font-weight: 600; color: var(--muted);
   white-space: nowrap; cursor: pointer;
   transition: background .16s, color .16s, border-color .16s;
 }
@@ -71,7 +89,7 @@
 .tab:nth-child(3) { background: #eef7f1; color: #4c8962; }
 .tab:nth-child(4) { background: #eef4fb; color: #507daf; }
 .tab:nth-child(5) { background: #f4f0fc; color: #765faa; }
-.tab:nth-child(6) { background: #fdf8e8; color: #94781e; }
+.tab:nth-child(6) { background: #f5f4ed; color: #94781e; }
 .tab:nth-child(7) { background: #fdeff4; color: #a85a77; }
 .tab:nth-child(8) { background: #edf7f7; color: #4b8b8b; }
 .tab:nth-child(9) { background: #f2f0eb; color: #777064; }
@@ -81,7 +99,7 @@
 .tab[aria-selected="true"] { background: var(--surface); color: var(--ink); }
 /* The pinned tab keeps its place while the rest page past it. */
 .tabAll { flex-shrink: 0; }
-.tabName { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.tabName { min-width: 0; }
 .tabCount {
   flex-shrink: 0;
   padding: 1px 6px; border-radius: 999px;
@@ -90,7 +108,7 @@
 }
 .tab[aria-selected="true"] .tabCount { background: var(--sage); color: var(--muted); }
 
-.tabsNav { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+.tabsNav { display: flex; align-items: center; justify-content: center; gap: 3px; align-self: center; flex-shrink: 0; }
 .tabsStep {
   display: grid; place-items: center;
   width: 30px; height: 30px;
@@ -105,8 +123,7 @@
 .panel { min-width: 0; }
 
 @media (max-width: 720px) {
-  .tabsList { overflow: hidden; }
-  .tabName { max-width: 96px; }
+  .tabName { overflow: hidden; text-overflow: ellipsis; }
 }
 
 .none {
@@ -118,15 +135,23 @@
 .grid {
   list-style: none; margin: 0; padding: 0; min-width: 0;
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;
+  align-items: start;
 }
 
 .card {
+  display: flex; flex-direction: column;
   min-width: 0;
   border: 1px solid var(--card-line, var(--hair));
   border-radius: 13px;
   background: var(--card, var(--surface));
   transition: border-color .18s, transform .18s, box-shadow .18s;
 }
+.grid[data-walkthrough] { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+.grid[data-walkthrough] .cardAction { flex: initial; }
+.grid[data-walkthrough] .cardSummary,
+.grid[data-walkthrough] .point,
+.grid[data-walkthrough] .useItem,
+.grid[data-walkthrough] .industryProblem { text-align: justify; text-justify: inter-word; hyphens: auto; }
 .card:hover { border-color: var(--card-edge, var(--accent)); transform: translateY(-1px); box-shadow: var(--lift); }
 .card:focus-within { border-color: var(--card-edge, var(--accent)); }
 
@@ -134,14 +159,15 @@
 .grid > li:nth-child(6n + 1) { --card: #fdf4ef; --card-line: #f2ddd0; --card-edge: #d98a63; }
 .grid > li:nth-child(6n + 2) { --card: #eef7f1; --card-line: #d4e8da; --card-edge: #6faa84; }
 .grid > li:nth-child(6n + 3) { --card: #eef4fb; --card-line: #d4e3f2; --card-edge: #6f9bc9; }
-.grid > li:nth-child(6n + 4) { --card: #f4f0fc; --card-line: #ded6f2; --card-edge: #9b86cd; }
-.grid > li:nth-child(6n + 5) { --card: #fdf8e8; --card-line: #eee2bd; --card-edge: #c9a949; }
+.grid > li:nth-child(6n + 4) { --card: #f4f0fc; --card-line: #f0eee6; --card-edge: #9b86cd; }
+.grid > li:nth-child(6n + 5) { --card: #f5f4ed; --card-line: #eee2bd; --card-edge: #c9a949; }
 .grid > li:nth-child(6n + 6) { --card: #fdeff4; --card-line: #f0d4de; --card-edge: #cf8aa1; }
 
 .open {
   position: relative;
   display: flex; flex-direction: column; gap: 6px;
-  width: 100%; min-width: 0; height: 100%;
+  flex: 1 1 auto;
+  width: 100%; min-width: 0; min-height: 0;
   padding: 20px 20px 18px;
   border: 0; border-radius: 13px; background: none;
   text-align: left; cursor: pointer;
@@ -151,7 +177,7 @@
   width: 100%; padding: 0; border: 0; background: none;
   text-align: left; cursor: pointer;
 }
-.cardTop { display: flex; align-items: center; gap: 9px; min-width: 0; padding-right: 34px; }
+.cardTop { display: flex; align-items: center; gap: 9px; min-width: 0; }
 /* The mark sits on white inside the card's wash so it reads as a token rather
    than as ink floating on the tint. */
 .cardIcon {
@@ -176,7 +202,7 @@
   display: grid; place-items: center; flex: 0 0 auto;
   width: 30px; height: 30px; margin-left: auto;
   border: 1px solid var(--card-line, var(--hair)); border-radius: 50%;
-  background: #fffdf8; color: var(--card-edge, var(--accent)); cursor: pointer;
+  background: #faf9f5; color: var(--card-edge, var(--accent)); cursor: pointer;
   transition: background .16s, transform .16s;
 }
 .audio:hover, .cardAudio:hover { background: #fff; transform: scale(1.06); }
@@ -185,7 +211,7 @@
 }
 /* Pinned to the card rather than sitting in the title row, so a long word
    wrapping onto a second line cannot push it out of reach. */
-.cardAudio { position: absolute; top: 17px; right: 17px; margin: 0; }
+
 /* The card carries the word and its counts; everything else is a click away. */
 .cardMeta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
 .cardMeta span {
@@ -196,29 +222,6 @@
 .cardMeta span[data-tone="synonyms"] { color: #347b61; }
 .cardMeta span[data-tone="antonyms"] { color: #a45d35; }
 
-/* Reads as a quiet link rather than a second call to action: the card's own
-   "Open word" is the primary move, and this only adds a line to what is here. */
-.hindiToggle {
-  display: inline-flex; align-items: center; gap: 5px; align-self: flex-start;
-  margin-top: 8px; padding: 4px 9px;
-  border: 1px solid #ffffffc4; border-radius: 999px; background: #ffffff8f;
-  font: inherit; font-size: 9.5px; font-weight: 700; letter-spacing: .02em;
-  color: var(--card-edge, var(--accent)); cursor: pointer;
-  transition: background .16s, border-color .16s;
-}
-.hindiToggle:hover { background: #fff; border-color: var(--card-edge, var(--accent)); }
-.hindiToggle:focus-visible { outline: 2px solid var(--card-edge, var(--accent)); outline-offset: 2px; }
-/* Devanagari carries more above and below the baseline than Latin does, so the
-   line gets its own generous leading rather than the card's default. */
-.hindi {
-  margin: 7px 0 0;
-  padding: 8px 10px;
-  border-left: 2px solid var(--card-edge, var(--accent));
-  border-radius: 0 7px 7px 0;
-  background: #ffffff8f;
-  font-size: 12.5px; line-height: 1.75; color: #45433e;
-}
-.hindi[hidden] { display: none; }
 
 /* The respelling rides beside the word, quieter than it but never wrapped away. */
 .respell {
@@ -234,10 +237,91 @@
   color: var(--muted);
 }
 .cardSummary {
-  overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;
-  font-size: 11.5px; line-height: 1.65; color: var(--muted);
+  --summary-size: 11.5px;
+  --summary-leading: 1.75;
+  --summary-lines: 3;
+  overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--summary-lines);
+  /* Fixed, not minimum: the box holds three lines whether the meaning is one
+     line of English or three of Devanagari, so no toggle can reflow the grid.
+     The leading suits Devanagari, which carries more above and below the
+     baseline than Latin does, and English simply sits a little more openly. */
+  height: calc(var(--summary-size) * var(--summary-leading) * var(--summary-lines));
+  font-size: var(--summary-size); line-height: var(--summary-leading); color: var(--muted);
   overflow-wrap: anywhere;
 }
+/* A topic card carries three blocks — what it is, what is worth knowing, where
+   it is used — and each is given its own treatment so a reader can find the
+   one they want without reading the card twice. The rest of the answer stays
+   behind Explain this. */
+/* The definition keeps a fixed three-line box so every card's first block
+   starts at the same height; the blocks below it grow with their content. */
+.cardSummary[data-lines="2"] { --summary-lines: 3; -webkit-line-clamp: 3; }
+.cardBlock { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.blockLabel {
+  font-size: 8.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--card-edge, var(--accent)); opacity: .85;
+}
+/* The command's form, set the way a terminal would set it: monospace on a pale
+   slab, so the eye finds it without reading. Held to one line — a form that
+   wraps is a form the answer should be showing instead. */
+.syntaxBlock { gap: 5px; }
+.syntax {
+  display: block; min-width: 0;
+  padding: 7px 9px;
+  border: 1px solid var(--card-line, var(--hair)); border-radius: 7px;
+  background: #ffffffd9;
+  font-family: var(--font-geist-mono, ui-monospace, monospace);
+  font-size: 10.5px; line-height: 1.5; color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.syntaxMore { font-size: 9.5px; font-weight: 600; color: var(--muted); }
+
+/* Key points read as a checklist on its own ground: a panel inside the card's
+   wash, with a square marker that no other list on the page uses. */
+.pointsBlock {
+  gap: 6px; padding: 9px 10px; border: 1px solid var(--card-line, var(--hair));
+  border-radius: 9px; background: #ffffffa8;
+}
+/* Each point is shown whole: a key point cut mid-sentence is worse than a
+   taller card, and the grid rows size themselves to their own content. */
+.point {
+  position: relative; padding-left: 13px;
+  font-size: 11px; line-height: 1.55; color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.point::before {
+  content: ""; position: absolute; left: 0; top: 6px;
+  width: 5px; height: 5px; border-radius: 1.5px; background: var(--card-edge, var(--accent));
+}
+/* Real uses are a list on a rail: the same pointwise shape as the features
+   above, but on the card's ground rather than in a panel, so the two blocks
+   are told apart at a glance instead of read to find the boundary. */
+.useBlock { gap: 6px; padding-left: 9px; border-left: 2px solid var(--card-edge, var(--accent)); }
+.useItem {
+  position: relative; padding-left: 13px;
+  font-size: 11px; line-height: 1.6; color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.useItem::before {
+  content: ""; position: absolute; left: 0; top: 6px;
+  width: 5px; height: 5px; border-radius: 50%;
+  border: 1.5px solid var(--card-edge, var(--accent));
+}
+/* The industries block is the widest claim on the card, so it sits last and
+   quietest: a hairline above it, the sector in the card's own colour, and the
+   problem beneath in body tone. */
+.industryBlock { gap: 7px; padding-top: 9px; border-top: 1px dashed var(--card-line, var(--hair)); }
+.industry { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.industryName {
+  font-size: 10px; font-weight: 700; letter-spacing: .01em;
+  color: var(--card-edge, var(--accent));
+  overflow-wrap: anywhere;
+}
+.industryProblem { font-size: 10.5px; line-height: 1.55; color: var(--muted); overflow-wrap: anywhere; }
+.card[data-studied] .point,
+.card[data-studied] .useItem,
+.card[data-studied] .industry { opacity: .62; }
+
 /* The affordance only resolves on hover, so a resting grid stays quiet. */
 .go {
   display: inline-flex; align-items: center; gap: 5px;
@@ -249,7 +333,7 @@
 
 @media (max-width: 860px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 620px) {
-  .grid { grid-template-columns: minmax(0, 1fr); }
+  .grid, .grid[data-walkthrough] { grid-template-columns: minmax(0, 1fr); }
   .go { opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -286,7 +370,7 @@
   position: relative;
   display: grid; gap: 9px;
   padding: 26px 30px 22px;
-  border-bottom: 1px solid var(--hair);
+  border-bottom: 1px solid var(--line);
   background: linear-gradient(158deg, #fdf3ec 0%, #f8f3e9 62%, #f5f4ed 100%);
 }
 .wordCategory {
@@ -297,7 +381,7 @@
   display: grid; place-items: center; flex: 0 0 auto; align-self: center;
   width: 38px; height: 38px;
   border: 1px solid #ecd9cb; border-radius: 12px;
-  background: #fffdf8; color: var(--accent);
+  background: #faf9f5; color: var(--accent);
 }
 .wordTitleRow { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px 12px; min-width: 0; padding-right: 34px; }
 .wordTitle {
@@ -310,16 +394,16 @@
 .wordRespell {
   padding: 4px 11px;
   border: 1px solid #ecd9cb; border-radius: 999px;
-  background: #fffdf8;
+  background: #faf9f5;
   font-size: 12px; font-weight: 640; font-variant-numeric: tabular-nums; letter-spacing: .015em;
   color: var(--accent);
   white-space: nowrap;
 }
 .wordSpeak {
-  display: inline-flex; align-items: center; gap: 7px; justify-self: start;
-  padding: 8px 15px;
+  display: inline-flex; align-items: center; gap: 7px; flex-shrink: 0;
+  padding: 6px 13px;
   border: 1px solid #eddbcd; border-radius: 999px;
-  background: #fffdf8; color: var(--accent);
+  background: #faf9f5; color: var(--accent);
   font-size: 12px; font-weight: 660; cursor: pointer;
   transition: background .16s, border-color .16s, transform .16s;
 }
@@ -401,3 +485,110 @@
   .wordSpeak, .wordPill { transition: none; }
   .wordSpeak:hover { transform: none; }
 }
+
+/* The studied tick. Empty until pressed, so an unchecked card carries an
+   outline rather than a grey tick that reads as already done. */
+.studied {
+  flex-shrink: 0;
+  display: grid; place-items: center;
+  width: 22px; height: 22px;
+  padding: 0;
+  border: 1px solid var(--card-line, var(--hair)); border-radius: 7px;
+  background: #ffffffbf; color: transparent;
+  cursor: pointer;
+  transition: background .16s, border-color .16s, color .16s;
+}
+.studied:hover { border-color: var(--card-edge, var(--accent)); color: var(--card-edge, var(--accent)); }
+.studied[aria-checked="true"] {
+  background: var(--card-edge, var(--accent)); border-color: var(--card-edge, var(--accent));
+  color: #fff;
+}
+/* A finished card steps back without becoming unreadable: the reader still
+   needs to find it again, so this is a fade, not a hide. */
+.card[data-studied] .cardName,
+.card[data-studied] .cardSummary { opacity: .62; }
+
+/* Language switch, in each card's own header strip. */
+.langToggle {
+  display: inline-flex; align-items: center; gap: 2px;
+  flex-shrink: 0;
+  padding: 2px;
+  border: 1px solid var(--card-line, var(--hair)); border-radius: 999px;
+  background: #ffffff8f;
+}
+.langOption {
+  padding: 2px 9px;
+  border: 1px solid transparent; border-radius: 999px;
+  background: none;
+  font: inherit; font-size: 10.5px; font-weight: 700; color: var(--muted);
+  cursor: pointer;
+  transition: background .16s, color .16s, border-color .16s;
+}
+.langOption:hover { color: var(--ink); }
+.langOption[aria-pressed="true"] {
+  background: var(--card-edge, var(--accent)); border-color: transparent; color: #fff;
+}
+
+/* The card's own header: the title on the left, the controls after it. The strip
+   is a sibling of the card's button rather than inside it, because a button
+   nested in a button is invalid and never receives its click.
+
+   Every card has this strip, so a title always sits in the same place, and the
+   grid reads as a column of titles rather than as titles that start wherever
+   the controls above them happened to end. */
+.cardHead {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 13px 10px 20px;
+  border-bottom: 1px solid var(--card-line, var(--hair));
+}
+/* The title takes the free space and pushes every control to the right edge. */
+.cardHead .cardTop { flex: 1 1 auto; margin-right: 2px; }
+/* A long name wraps rather than being cut, but stops at two lines so one card's
+   header cannot stand much taller than its neighbours' in the same row. */
+.cardHead .cardName {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+/* Pushes the tick to the far right whether or not the switch is present. */
+.cardHead .studied { margin-left: auto; }
+.headAudio { flex-shrink: 0; margin: 0; }
+/* The word starts just under the rule instead of below its own top padding. */
+.cardHead + .open { padding-top: 13px; }
+
+/* The category and the language switch share the header's first row. The right
+   gutter clears the dialog's own close button, which floats over this corner. */
+.wordTopRow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding-right: 34px; }
+/* The category labels the row; the two controls sit together at its end. */
+.wordTopRow .wordSpeak { margin-left: auto; }
+
+/* The dialog's own language switch, beside the category. */
+.wordLang {
+  display: inline-flex; align-items: center; gap: 2px;
+  flex-shrink: 0; padding: 2px;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--sage);
+}
+.wordLang .langOption { color: var(--muted); }
+.wordLang .langOption[aria-pressed="true"] { background: var(--accent); color: #fff; }
+
+/* Each related-word list carries its own switch, on its heading rule. */
+.pairLang {
+  display: inline-flex; align-items: center; gap: 2px;
+  margin-left: 8px; padding: 2px;
+  border: 1px solid var(--hair); border-radius: 999px;
+  background: #ffffffa8;
+}
+.pairLang .langOption { padding: 1px 7px; font-size: 9.5px; color: var(--faint); }
+.pairLang .langOption[aria-pressed="true"] { background: currentColor; color: #fff; }
+/* The heading's own tone drives the pressed pill, so the synonym and antonym
+   switches stay visually attached to the lists they control. */
+.wordGroup[data-tone="synonyms"] .pairLang .langOption[aria-pressed="true"] { background: #347b61; color: #fff; }
+.wordGroup[data-tone="antonyms"] .pairLang .langOption[aria-pressed="true"] { background: #a45d35; color: #fff; }
+.sources { margin-top: 12px; font-size: 12px; color: #52647a; }
+.sources summary { width: fit-content; cursor: pointer; font-weight: 600; }
+.sources ul { display: flex; flex-wrap: wrap; gap: 8px 18px; padding: 0; margin: 12px 0; list-style: none; }
+.sources a { color: #315f96; text-decoration: underline; text-underline-offset: 3px; }
+.sources small { color: #657386; }
+
+/* Consistent separation between dashboard cards. */
+:global(.workspace) .grid { gap: var(--dashboard-card-gap, 24px); }

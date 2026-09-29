@@ -1,6 +1,20 @@
 import type { AwsCategory, AwsHighlight } from "./aws-highlights";
+import { WORKED_EXAMPLES } from "./worked-examples";
+import { ROW_DETAILS } from "./row-details";
 import { ENGLISH_EXAM_VOCABULARY } from "./english-exam-vocabulary";
+import { AUTOMATION_HANDBOOKS } from "./automation-handbooks";
 import { NODE_PACKAGES, NEST_PACKAGES, NEXT_PACKAGES, PYTHON_PACKAGES, GRAPHQL_PACKAGES, PLAYWRIGHT_PACKAGES } from "./package-handbooks";
+import { MODERN_STACK_HANDBOOK } from "./modern-stack-handbook";
+import { DATA_TOOL_HANDBOOKS } from "./platform-handbooks/data-tools";
+import { STATE_HANDBOOKS } from "./platform-handbooks/state";
+import { TANSTACK_HANDBOOKS } from "./platform-handbooks/tanstack";
+import { DATA_LAYER_HANDBOOKS } from "./platform-handbooks/data-layer";
+import { AUTH_HANDBOOKS } from "./platform-handbooks/auth";
+import { INFRASTRUCTURE_HANDBOOKS } from "./platform-handbooks/infrastructure";
+import { SERVICE_HANDBOOKS } from "./platform-handbooks/services";
+import { APP_FOUNDATION_HANDBOOKS } from "./platform-handbooks/app-foundations";
+import { SYSTEM_DESIGN_HANDBOOKS } from "./platform-handbooks/system-design";
+import { GIT_HANDBOOK } from "./git-handbook";
 
 export type TechnologyHandbook = {
   title: string;
@@ -8,10 +22,19 @@ export type TechnologyHandbook = {
   questionPrefix: string;
   topics: AwsHighlight[];
   categories: AwsCategory[];
+  sources?: { title: string; url: string; reviewedAt: string }[];
 };
 
-const handbook = (title: string, description: string, questionPrefix: string, topics: AwsHighlight[]): TechnologyHandbook => {
+const handbook = (title: string, description: string, questionPrefix: string, rows: AwsHighlight[]): TechnologyHandbook => {
   const counts = new Map<string, number>();
+  // A row's worked example lives in the examples registry rather than inline,
+  // so a fifty-row handbook still reads as a list of rows.
+  const authored = ROW_DETAILS[title] ?? {};
+  const topics = rows.map(row => {
+    const detail = authored[row.name];
+    const code = row.code ?? WORKED_EXAMPLES[row.name];
+    return detail || code ? { ...row, ...detail, ...(code ? { code } : {}) } : row;
+  });
   for (const topic of topics) counts.set(topic.category, (counts.get(topic.category) ?? 0) + 1);
   return { title, description, questionPrefix, topics, categories: [...counts].map(([name, count]) => ({ name, count })) };
 };
@@ -19,11 +42,25 @@ const handbook = (title: string, description: string, questionPrefix: string, to
 const englishVocabularyTopics: AwsHighlight[] = ENGLISH_EXAM_VOCABULARY.map(entry => ({
   name: entry.word,
   category: entry.category,
-  summary: `${entry.meaning} Study this advanced word in a workplace and professional context.`,
+  summary: entry.meaning,
   vocabulary: entry,
 }));
 
 export const TECHNOLOGY_HANDBOOKS = [
+  // Git carries its own prepared answers rather than going through `handbook`:
+  // every row is a command with an authored walkthrough, which no generated
+  // explanation can stand in for.
+  GIT_HANDBOOK,
+  handbook(MODERN_STACK_HANDBOOK.title, MODERN_STACK_HANDBOOK.description, MODERN_STACK_HANDBOOK.questionPrefix, MODERN_STACK_HANDBOOK.topics),
+  ...DATA_TOOL_HANDBOOKS,
+  ...STATE_HANDBOOKS,
+  ...TANSTACK_HANDBOOKS,
+  ...DATA_LAYER_HANDBOOKS,
+  ...AUTH_HANDBOOKS,
+  ...INFRASTRUCTURE_HANDBOOKS,
+  ...SERVICE_HANDBOOKS,
+  ...APP_FOUNDATION_HANDBOOKS,
+  ...SYSTEM_DESIGN_HANDBOOKS,
   handbook("React 19+ — Components, Actions & Server UI", "Components, state, Actions, Server Components and the React Compiler — the modern React path in the order you meet it.", "React 19+", [
     { name: "Components & JSX", category: "Foundations", summary: "Build pure components from props and JSX, then compose them into a UI tree." },
     { name: "Props and composition", category: "Foundations", summary: "Design explicit component APIs and compose small pieces instead of duplicating UI logic." },
@@ -127,6 +164,16 @@ export const TECHNOLOGY_HANDBOOKS = [
     { name: "useOffline fallback UI", category: "Connectivity hooks", summary: "Offer retry, cached content and disabled-submit feedback when the browser loses connectivity." },
     { name: "Next.js hook migration from Pages Router", category: "Rules and boundaries", summary: "Replace next/router APIs with next/navigation hooks when moving screens into the App Router." },
     { name: "Hook composition in layouts", category: "Rules and boundaries", summary: "Keep client hook consumers small while passing server-fetched data through stable layout boundaries." },
+    { name: "useServerInsertedHTML", category: "Hook patterns", summary: "Inject a CSS-in-JS library's collected styles into the server-rendered HTML from a client provider." },
+    { name: "useRouter in event handlers", category: "Hook patterns", summary: "Call the Hook at the top level and navigate from the handler, never the other way round." },
+    { name: "Active links from usePathname", category: "Hook patterns", summary: "Mark the current link in a shared layout without making the whole layout request-dependent." },
+    { name: "Typed useParams", category: "Hook patterns", summary: "Read dynamic segments through the generated route types instead of casting the returned record." },
+    { name: "Search params are read-only", category: "Hook patterns", summary: "The object useSearchParams returns cannot be mutated: build a new query string and navigate." },
+    { name: "Updating the query without a reload", category: "Hook patterns", summary: "Pair a rebuilt query string with router.replace to keep scroll position and client state." },
+    { name: "Segment hooks at the root", category: "Hook patterns", summary: "Know what useSelectedLayoutSegment returns above the first matched segment, and plan the fallback." },
+    { name: "useReportWebVitals placement", category: "Hook patterns", summary: "Mount it once in a small client component near the root, not in every page that wants metrics." },
+    { name: "Pending UI thresholds", category: "Hook patterns", summary: "Reveal useLinkStatus pending state after a short delay so a fast navigation does not flash." },
+    { name: "Hooks versus server props", category: "Hook patterns", summary: "A Server Component awaits params and searchParams as props; there is no hook to reach for." },
   ]),
   handbook("React 19+ Hooks — State, Effects & Actions", "A complete React 19+ Hooks reference covering state, Effects, refs, context, Actions, concurrency, external stores and custom Hook design.", "React 19+ Hooks", [
     { name: "Rules of Hooks", category: "Rules and foundations", summary: "Call Hooks only at the top level of React functions and keep their order stable across renders." },
@@ -182,70 +229,357 @@ export const TECHNOLOGY_HANDBOOKS = [
     { name: "useMemo cache semantics", category: "Performance hooks", summary: "Treat memoization as a performance optimization, never as storage for required application state." },
     { name: "useCallback and memo", category: "Performance hooks", summary: "Use callback identity with memoized children only when it prevents measured work." },
     { name: "useInsertionEffect ordering", category: "Effect hooks", summary: "Understand its early ordering and reserve it for style injection integrations." },
+    { name: "Hooks and StrictMode", category: "Hook patterns", summary: "Development mounts, unmounts and remounts a component to surface impure renders and missing cleanup." },
+    { name: "eslint-plugin-react-hooks", category: "Hook patterns", summary: "Let the lint rules enforce call order and dependency completeness instead of reviewing both by eye." },
+    { name: "renderHook in tests", category: "Hook patterns", summary: "Exercise a hook through a test renderer rather than through a component written only for the test." },
+    { name: "AbortController in useEffect", category: "Hook patterns", summary: "Cancel an in-flight request from the cleanup function so a superseded response cannot win." },
+    { name: "Effect race conditions", category: "Hook patterns", summary: "Ignore a resolved response whose Effect has already been cleaned up, using a captured flag or a signal." },
+    { name: "Callback refs", category: "Hook patterns", summary: "Attach and detach behaviour as a node mounts by passing a function ref instead of writing an Effect." },
+    { name: "useContext default values", category: "Hook patterns", summary: "Know what a consumer receives with no provider above it, and whether that default should throw instead." },
+    { name: "Custom Hook naming", category: "Hook patterns", summary: "The use prefix is what makes the lint rules, the compiler and the runtime treat a function as a Hook." },
+    { name: "Hooks and the React Compiler", category: "Hook patterns", summary: "Code that follows the rules is memoized for you; code that breaks them silently opts out of that." },
+    { name: "Selector Hooks over external stores", category: "Hook patterns", summary: "Pair useSyncExternalStore with a selector so a component subscribes to one slice, not the whole store." },
+    { name: "Deriving instead of storing", category: "Hook patterns", summary: "A value computable from props and state needs no Hook: an extra state copy is a second source of truth." },
+    { name: "Passing Hook results down", category: "Hook patterns", summary: "Prefer handing a child the value a Hook returned over calling the same Hook again inside it." },
   ]),
   handbook("JavaScript (ECMAScript 2026) — Language & Runtime", "Modern JavaScript from language fundamentals through the seven additions in ECMAScript 2026.", "JavaScript (ECMAScript 2026)", [
-    { name: "Modules and execution", category: "Foundations", summary: "Organize code with ES modules and understand bindings, scope and execution contexts." },
-    { name: "Variables and closures", category: "Foundations", summary: "Use lexical scope and closures to preserve state without leaking mutable globals." },
-    { name: "Destructuring and spread", category: "Foundations", summary: "Extract values and compose arrays or objects with readable, non-mutating syntax." },
-    { name: "Objects and prototypes", category: "Language core", summary: "Model values with objects, prototypes and classes without losing track of identity." },
-    { name: "Arrays and collection methods", category: "Language core", summary: "Transform and search data with map, filter, reduce, find and the newer non-mutating methods." },
-    { name: "Errors and resource cleanup", category: "Language core", summary: "Create useful errors and release resources predictably with modern cleanup patterns." },
-    { name: "Promises and async", category: "Async JavaScript", summary: "Compose asynchronous work with promises, async functions, cancellation and the event loop." },
-    { name: "Web workers", category: "Async JavaScript", summary: "Move CPU-heavy work off the main thread and communicate with structured messages." },
-    { name: "Map and WeakMap upsert", category: "ES2026 additions", summary: "Use getOrInsert and getOrInsertComputed to replace has/get/set boilerplate." },
-    { name: "Iterator.concat", category: "ES2026 additions", summary: "Join iterators lazily without materializing intermediate arrays." },
-    { name: "Uint8Array base64 and hex", category: "ES2026 additions", summary: "Encode and decode binary data directly with the new typed-array methods." },
-    { name: "Math.sumPrecise", category: "ES2026 additions", summary: "Sum floating-point values with a numerically stable algorithm." },
-    { name: "Array.fromAsync", category: "ES2026 additions", summary: "Collect async iterables and promise values into an array in input order." },
-    { name: "JSON.parse source text", category: "ES2026 additions", summary: "Inspect source text for selected JSON values while parsing large or precise data." },
-    { name: "Error.isError", category: "ES2026 additions", summary: "Recognize error values across realms without relying on instanceof alone." },
-    { name: "Feature detection", category: "Shipping JavaScript", summary: "Check runtime support before shipping new language and built-in APIs." },
-    { name: "TC39 proposal stages", category: "Shipping JavaScript", summary: "Read proposal stages correctly and distinguish shipped features from experiments." },
-    { name: "Modules in browsers and Node", category: "Shipping JavaScript", summary: "Choose ESM boundaries, package exports and runtime-compatible import paths." },
-    { name: "Primitive values and coercion", category: "Language core", summary: "Distinguish value types, equality rules and explicit conversion from surprising coercion." },
-    { name: "this and binding", category: "Language core", summary: "Predict this from the call site and choose bind, call, apply or arrow functions deliberately." },
-    { name: "Classes and private fields", category: "Language core", summary: "Define class behavior, inheritance and truly private state with modern syntax." },
-    { name: "Regular expressions", category: "Language core", summary: "Match structured text with readable patterns, named groups and safe escaping." },
-    { name: "Iterables and generators", category: "Async JavaScript", summary: "Build lazy synchronous or asynchronous data pipelines with iterable protocols and yield." },
-    { name: "Promise combinators", category: "Async JavaScript", summary: "Choose all, allSettled, race or any according to failure and completion semantics." },
-    { name: "AbortController", category: "Async JavaScript", summary: "Cancel fetches and cooperative asynchronous work with a shared abort signal." },
-    { name: "Typed arrays and DataView", category: "Language core", summary: "Read and write binary data with explicit widths, endianness and shared buffers." },
-    { name: "Set methods", category: "ES2026 additions", summary: "Use union, intersection, difference and symmetricDifference for clear set operations." },
-    { name: "RegExp.escape", category: "ES2026 additions", summary: "Escape arbitrary text before embedding it in a regular expression safely." },
-    { name: "Promise.try", category: "ES2026 additions", summary: "Normalize synchronous throws and returned promises into one rejection-aware flow." },
+    { name: "Modules and execution", category: "Foundations", summary: "Organize code with ES modules and understand bindings, scope and execution contexts.", points: [
+      "Imports expose live bindings rather than copied variable values.",
+      "Modules have their own scope and execute in strict mode.",
+      "Avoid circular dependencies that read bindings before initialization.",
+    ] },
+    { name: "Variables and closures", category: "Foundations", summary: "Use lexical scope and closures to preserve state without leaking mutable globals.", points: [
+      "let and const follow lexical block scope.",
+      "Closures retain access to their surrounding bindings.",
+      "A const binding does not make its referenced object immutable.",
+    ] },
+    { name: "Destructuring and spread", category: "Foundations", summary: "Extract values and compose arrays or objects with readable, non-mutating syntax.", points: [
+      "Destructuring defaults apply to undefined rather than every falsy value.",
+      "Object and array spread make shallow copies.",
+      "Rest syntax collects remaining properties or arguments.",
+    ] },
+    { name: "Objects and prototypes", category: "Language core", summary: "Model values with objects, prototypes and classes without losing track of identity.", points: [
+      "Property lookup can continue along the prototype chain.",
+      "Object equality compares identity rather than matching fields.",
+      "Use own-property checks when inherited properties are inappropriate.",
+    ] },
+    { name: "Arrays and collection methods", category: "Language core", summary: "Transform and search data with map, filter, reduce, find and the newer non-mutating methods.", points: [
+      "Use map for transformation and filter for selection.",
+      "Supply a deliberate initial accumulator to reduce.",
+      "Prefer copying sort or reverse methods when callers share the array.",
+    ] },
+    { name: "Errors and resource cleanup", category: "Language core", summary: "Create useful errors and release resources predictably with modern cleanup patterns.", points: [
+      "Throw Error objects with actionable messages and useful causes.",
+      "Use finally for cleanup that must run after success or failure.",
+      "Avoid returning from finally because it can override earlier outcomes.",
+    ] },
+    { name: "Promises and async", category: "Async JavaScript", summary: "Compose asynchronous work with promises, async functions, cancellation and the event loop.", points: [
+      "An async function always returns a promise.",
+      "Await pauses that function without blocking the whole thread.",
+      "Handle rejections and cancellation at the owning operation boundary.",
+    ] },
+    { name: "Web workers", category: "Async JavaScript", summary: "Move CPU-heavy work off the main thread and communicate with structured messages.", points: [
+      "Workers run in a separate execution context from the page.",
+      "Send structured-cloneable messages or transferable buffers.",
+      "Account for messaging overhead before moving small tasks off-thread.",
+    ] },
+    { name: "Map and WeakMap upsert", category: "ES2026 additions", summary: "Use getOrInsert and getOrInsertComputed to replace has/get/set boilerplate.", points: [
+      "getOrInsert keeps an existing value or inserts a default.",
+      "getOrInsertComputed calls its initializer only when the key is absent.",
+      "Check runtime support and retain valid WeakMap key types.",
+    ] },
+    { name: "Iterator.concat", category: "ES2026 additions", summary: "Join iterators lazily without materializing intermediate arrays.", points: [
+      "Consume input iterables sequentially through one lazy iterator.",
+      "Values are produced on demand instead of copied into a combined array.",
+      "An unbounded first input prevents later inputs from being reached.",
+    ] },
+    { name: "Uint8Array base64 and hex", category: "ES2026 additions", summary: "Encode and decode binary data directly with the new typed-array methods.", points: [
+      "Use fromBase64 or fromHex to decode supported text formats.",
+      "Use toBase64 or toHex to encode a byte array.",
+      "Validate input format and handle decoding errors at the boundary.",
+    ] },
+    { name: "Math.sumPrecise", category: "ES2026 additions", summary: "Sum floating-point values with a numerically stable algorithm.", points: [
+      "Accumulate numeric values with less intermediate rounding error.",
+      "Do not treat precise summation as exact decimal arithmetic.",
+      "Define handling for non-finite inputs in the application.",
+    ] },
+    { name: "Array.fromAsync", category: "ES2026 additions", summary: "Collect async iterables and promise values into an array in input order.", points: [
+      "Consume asynchronous iterables through a promise-returning array constructor.",
+      "Await yielded values and any asynchronous mapping operation.",
+      "Remember the completed array still retains all collected values in memory.",
+    ] },
+    { name: "JSON.parse source text", category: "ES2026 additions", summary: "Inspect source text for selected JSON values while parsing large or precise data.", points: [
+      "Use the reviver context's source for supported primitive values.",
+      "Recover precise numeric text before converting it into a domain type.",
+      "Do not assume an already-rounded Number preserves the original digits.",
+    ] },
+    { name: "Error.isError", category: "ES2026 additions", summary: "Recognize error values across realms without relying on instanceof alone.", points: [
+      "Use the built-in error brand check where supported.",
+      "Recognize genuine Error instances created in another realm.",
+      "Keep validation for non-Error thrown values at catch boundaries.",
+    ] },
+    { name: "Feature detection", category: "Shipping JavaScript", summary: "Check runtime support before shipping new language and built-in APIs.", points: [
+      "Check for the actual property or capability before calling it.",
+      "Distinguish available type declarations from runtime implementation.",
+      "Provide a compatible fallback or require a supported runtime.",
+    ] },
+    { name: "TC39 proposal stages", category: "Shipping JavaScript", summary: "Read proposal stages correctly and distinguish shipped features from experiments.", points: [
+      "A proposal's stage describes specification progress, not universal availability.",
+      "Verify current proposal status before relying on experimental syntax.",
+      "Check target engines separately from standard inclusion.",
+    ] },
+    { name: "Modules in browsers and Node", category: "Shipping JavaScript", summary: "Choose ESM boundaries, package exports and runtime-compatible import paths.", points: [
+      "Use package exports to describe supported entry points.",
+      "Match browser import URLs and Node package-resolution rules.",
+      "Test ESM and CommonJS boundaries instead of assuming interoperation.",
+    ] },
+    { name: "Primitive values and coercion", category: "Language core", summary: "Distinguish value types, equality rules and explicit conversion from surprising coercion.", points: [
+      "Prefer explicit conversion where input types are uncertain.",
+      "Understand that strict equality still has NaN and signed-zero subtleties.",
+      "Use Object.is when its equality semantics match the task.",
+    ] },
+    { name: "this and binding", category: "Language core", summary: "Predict this from the call site and choose bind, call, apply or arrow functions deliberately.", points: [
+      "Ordinary function this depends on how the function is called.",
+      "Arrow functions capture this from their surrounding scope.",
+      "bind creates a callable with a chosen receiver and optional leading arguments.",
+    ] },
+    { name: "Classes and private fields", category: "Language core", summary: "Define class behavior, inheritance and truly private state with modern syntax.", points: [
+      "Private fields enforce class-scoped access at runtime.",
+      "Static members belong to the constructor rather than its instances.",
+      "Call super before using this in a derived constructor.",
+    ] },
+    { name: "Regular expressions", category: "Language core", summary: "Match structured text with readable patterns, named groups and safe escaping.", points: [
+      "Use named capture groups to make extraction easier to interpret.",
+      "Escape dynamic literal text before constructing a pattern.",
+      "Avoid catastrophic backtracking on untrusted large inputs.",
+    ] },
+    { name: "Iterables and generators", category: "Async JavaScript", summary: "Build lazy synchronous or asynchronous data pipelines with iterable protocols and yield.", points: [
+      "An iterable supplies an iterator through the appropriate symbol method.",
+      "Generators suspend at yield and resume on the next request.",
+      "Close iterators when exiting a resource-owning sequence early.",
+    ] },
+    { name: "Promise combinators", category: "Async JavaScript", summary: "Choose all, allSettled, race or any according to failure and completion semantics.", points: [
+      "all requires every input to fulfill and rejects on a failure.",
+      "allSettled reports each outcome without failing for an input rejection.",
+      "race takes the first settlement while any takes the first fulfillment.",
+    ] },
+    { name: "AbortController", category: "Async JavaScript", summary: "Cancel fetches and cooperative asynchronous work with a shared abort signal.", points: [
+      "Pass the controller's signal to APIs that support cancellation.",
+      "Calling abort does not automatically stop unrelated promises.",
+      "Check cancellation before committing a late asynchronous result.",
+    ] },
+    { name: "Typed arrays and DataView", category: "Language core", summary: "Read and write binary data with explicit widths, endianness and shared buffers.", points: [
+      "Typed arrays view an ArrayBuffer with a fixed element format.",
+      "DataView allows explicit byte order for mixed-width binary fields.",
+      "Respect view offsets and lengths when sharing a buffer.",
+    ] },
+    { name: "Set methods", category: "ES2026 additions", summary: "Use union, intersection, difference and symmetricDifference for clear set operations.", points: [
+      "Use union and intersection to combine or retain memberships.",
+      "Use difference and symmetricDifference for exclusion and mismatches.",
+      "These operations produce new sets without editing the original membership.",
+    ] },
+    { name: "RegExp.escape", category: "ES2026 additions", summary: "Escape arbitrary text before embedding it in a regular expression safely.", points: [
+      "Use RegExp.escape for literal text inserted into a regex.",
+      "Keep intended regex operators outside the escaped fragment.",
+      "Verify runtime support rather than writing an incomplete escaping pattern.",
+    ] },
+    { name: "Promise.try", category: "ES2026 additions", summary: "Normalize synchronous throws and returned promises into one rejection-aware flow.", points: [
+      "Invoke a callback and convert synchronous throws into rejections.",
+      "Adopt a returned promise so callers get one async error path.",
+      "Await or catch the resulting promise instead of ignoring failures.",
+    ] },
+    // Method-level rows: an interview asks about `reduce` or `Object.freeze`
+    // by name, so each one is its own card carrying the points a candidate is
+    // expected to know and the job the method actually does in an application.
+    { name: "Array.prototype.map", category: "Array methods", summary: "Build a new array by transforming every element with a callback.", points: ["Returns a new array of the same length and never mutates the source.", "The callback receives (element, index, array), so an index is available without a counter.", "Returning nothing yields undefined entries — use filter or flatMap when some elements should be dropped."], useCase: { title: "Rendering a list from data", scenario: "Turn an array of API records into view models or elements, one per row, without touching the fetched data." } },
+    { name: "Array.prototype.filter", category: "Array methods", summary: "Build a new array of the elements a predicate keeps.", points: ["Keeps every element whose callback returns a truthy value, in their original order.", "Always returns an array — an empty one when nothing matches, never undefined.", "Filtering before mapping avoids transforming elements that are about to be discarded."], useCase: { title: "Applying a search or status filter", scenario: "Narrow a loaded collection to the rows matching a query or a status before paging it, leaving the original list intact." } },
+    { name: "Array.prototype.reduce", category: "Array methods", summary: "Fold an array into a single value by accumulating one element at a time.", points: ["Takes (accumulator, element, index, array) and an optional initial value.", "Omitting the initial value uses the first element and throws on an empty array — pass one.", "Any array method can be written as a reduce, but a map or filter states the intent more plainly."], useCase: { title: "Totals and groupings", scenario: "Sum an invoice, count occurrences, or group records by a key into an object in a single pass." } },
+    { name: "Array.prototype.find and findLast", category: "Array methods", summary: "Return the first or last element matching a predicate, or undefined.", points: ["find scans from the start and findLast from the end; both stop at the first match.", "They return the element itself, unlike findIndex and findLastIndex which return its position.", "undefined is also a legal element value, so use findIndex when absence must be distinguished."], useCase: { title: "Looking up one record by id", scenario: "Pull a single item out of a loaded collection — the selected row, the default address — without a second request." } },
+    { name: "Array.prototype.flat and flatMap", category: "Array methods", summary: "Flatten nested arrays by one level, or map and flatten in one pass.", points: ["flat() flattens one level; flat(Infinity) flattens completely.", "flatMap(fn) is map followed by flat(1), and is how a callback returns zero or many items per element.", "Both skip empty slots in sparse arrays."], useCase: { title: "Expanding one row into many", scenario: "Turn each order into its line items, or drop an element by returning an empty array from the callback." } },
+    { name: "Array.prototype.sort and toSorted", category: "Array methods", summary: "Order an array in place, or get an ordered copy.", points: ["sort mutates and returns the same array; toSorted returns a new one and leaves the source alone.", "Without a comparator, elements are compared as strings, so 10 sorts before 9.", "The comparator must return a negative number, zero or a positive number, consistently for every pair."], useCase: { title: "Sorting a table column", scenario: "Order rows by date, price or name when a header is clicked, using toSorted so the fetched data keeps its original order." } },
+    { name: "Array.prototype.slice and splice", category: "Array methods", summary: "Copy a section of an array, or insert and remove elements in place.", points: ["slice(start, end) returns a copy and leaves the source untouched; end is exclusive.", "splice(start, count, ...items) mutates the array and returns the removed elements.", "Negative indexes count from the end, and toSpliced gives splice's result without mutating."], useCase: { title: "Paging and editing a list", scenario: "Take one page out of a result set with slice, and remove or insert a row in a draft list with toSpliced." } },
+    { name: "Array.prototype.includes and indexOf", category: "Array methods", summary: "Test membership, or find the position of a value.", points: ["includes returns a boolean and matches NaN; indexOf returns -1 for absence and never matches NaN.", "Both compare with strict equality, so two equal-looking objects do not match.", "indexOf accepts a starting position, which is how repeated values are found."], useCase: { title: "Checking a selection", scenario: "Test whether an id is already selected before adding it, or find where it sits so it can be removed." } },
+    { name: "Array.prototype.some and every", category: "Array methods", summary: "Test whether any, or all, elements satisfy a predicate.", points: ["Both short-circuit: some stops at the first true, every at the first false.", "every returns true for an empty array and some returns false — the vacuous cases interviews ask about.", "Both return a boolean, so pair them with find when the matching element itself is needed."], useCase: { title: "Form and permission checks", scenario: "Enable submit because every field is valid, or warn because some item in a cart is out of stock." } },
+    { name: "Array.prototype.at", category: "Array methods", summary: "Read an element by index, counting from the end with a negative one.", points: ["at(-1) is the last element, which bracket notation cannot express directly.", "Returns undefined for an out-of-range index rather than throwing.", "Works on strings and typed arrays as well as arrays."], useCase: { title: "Reading the latest entry", scenario: "Take the most recent message in a conversation or the final segment of a path without writing list[list.length - 1]." } },
+    { name: "Array.from and Array.of", category: "Array methods", summary: "Build an array from an iterable or array-like value, or from its arguments.", points: ["Array.from takes an optional map function, so from(x, fn) avoids a second pass.", "Array.from({ length: n }, (_, i) => i) is the idiomatic range.", "Array.of(7) is [7] while Array(7) is seven empty slots — the reason Array.of exists."], useCase: { title: "Converting DOM and Set results", scenario: "Turn a NodeList, a Set or a Map's entries into a real array so every array method becomes available." } },
+    { name: "Array.prototype.join", category: "Array methods", summary: "Join elements into a string with a separator.", points: ["null and undefined join as empty strings, not as the text \"null\".", "The default separator is a comma, which is what toString and string coercion use.", "Joining is clearer and usually faster than repeated concatenation in a loop."], useCase: { title: "Rendering a list inline", scenario: "Print tags, authors or active filters as a comma-separated line, or build a path from segments." } },
+    { name: "String.prototype.split", category: "String methods", summary: "Cut a string into an array on a separator or pattern.", points: ["Accepts a string or a regular expression, plus a limit for how many pieces to keep.", "Splitting on \"\" splits by UTF-16 code unit and breaks emoji — use Intl.Segmenter for characters.", "A capturing group in the pattern keeps the separators in the result."], useCase: { title: "Parsing structured text", scenario: "Split a CSV line, a path or a comma-separated tag input into parts before validating each one." } },
+    { name: "String.prototype.replace and replaceAll", category: "String methods", summary: "Replace the first match, or every match, with text or a function's result.", points: ["replace with a string pattern replaces only the first occurrence; replaceAll replaces all of them.", "$& and $1 in the replacement refer to the match and its capture groups; $$ is a literal dollar sign.", "A replacer function receives the match and its groups, so each replacement can be computed."], useCase: { title: "Templating and escaping", scenario: "Substitute placeholders in a message, or escape characters before putting user text into a URL or a pattern." } },
+    { name: "String.prototype.slice and substring", category: "String methods", summary: "Take part of a string by position.", points: ["slice accepts negative indexes; substring clamps them to zero and swaps reversed arguments.", "Neither mutates — strings are immutable, so both return a new string.", "at(-1) reads the last character, which slice(-1) also returns as a one-character string."], useCase: { title: "Truncating and excerpting", scenario: "Cut a summary to a card's length, take a filename's extension, or read a fixed-width field from a record." } },
+    { name: "String.prototype.trim, padStart and padEnd", category: "String methods", summary: "Remove surrounding whitespace, or pad a string to a fixed width.", points: ["trimStart and trimEnd trim one side only; all three return a new string.", "padStart is how numbers are zero-padded: String(n).padStart(2, \"0\").", "Padding stops once the target length is reached, so a longer string comes back unchanged."], useCase: { title: "Cleaning input and aligning output", scenario: "Trim a pasted email before validating it, and pad minutes and seconds so durations line up in a column." } },
+    { name: "String.prototype.startsWith, endsWith and includes", category: "String methods", summary: "Test where, or whether, a substring appears.", points: ["All three take an optional position and return a boolean rather than an index.", "They are case-sensitive, so normalize both sides before comparing user input.", "includes cannot take a regular expression — use test or match for a pattern."], useCase: { title: "Routing and type-ahead filtering", scenario: "Decide whether a path belongs to a section, or filter a list as someone types into a search box." } },
+    { name: "String.prototype.matchAll", category: "String methods", summary: "Read every match of a pattern, with its capture groups and positions.", points: ["Requires the global flag and returns an iterator of full match objects.", "Named groups are read from match.groups, which is clearer than numbered indexes.", "match with /g returns matched text only and drops the groups and indexes."], useCase: { title: "Extracting every occurrence", scenario: "Pull all mentions, links or template placeholders out of a block of text along with where each one starts." } },
+    { name: "String.prototype.localeCompare", category: "String methods", summary: "Compare strings the way a reader's language orders them.", points: ["Returns a negative number, zero or a positive number, so it drops straight into sort.", "Options set sensitivity and numeric ordering, so \"item10\" can sort after \"item9\".", "Intl.Collator reuses one comparator and is faster when sorting a long list."], useCase: { title: "Sorting names for people", scenario: "Order a directory or product list so accented and case-different names fall where a reader of that language expects." } },
+    { name: "String.prototype.normalize", category: "String methods", summary: "Put equivalent Unicode sequences into one canonical form before comparing.", points: ["An accented letter can be one code point or a base letter plus a combining mark; the two are not === until normalized.", "NFC is the usual choice for storage and comparison; NFD separates the base and the marks.", "Normalizing then stripping combining marks is how accent-insensitive search is built."], useCase: { title: "Matching user-entered text", scenario: "Compare a pasted name against a stored one so two identical-looking strings do not fail to match." } },
+    { name: "Object.keys, values and entries", category: "Object & JSON", summary: "Read an object's own enumerable keys, values or key-value pairs as an array.", points: ["Only own enumerable string-keyed properties are returned; inherited and symbol keys are skipped.", "Integer-like keys come first in ascending order, then string keys in insertion order.", "Object.entries pairs with Object.fromEntries to map or filter an object through array methods."], useCase: { title: "Iterating a record", scenario: "Render a settings object as rows, or count how many fields of a form object have been filled in." } },
+    { name: "Object.assign and object spread", category: "Object & JSON", summary: "Copy own enumerable properties from one or more sources onto a target.", points: ["Both copy one level deep, so nested objects stay shared with the source.", "Object.assign mutates its target and returns it; spread always builds a new object.", "Spread copies values while assign triggers setters on the target — the reason the two can differ."], useCase: { title: "Merging defaults with overrides", scenario: "Build a config from defaults plus user options, or produce the next state object without mutating the previous one." } },
+    { name: "Object.freeze and Object.seal", category: "Object & JSON", summary: "Make an object's properties unwritable, or its shape fixed.", points: ["freeze is shallow — nested objects stay mutable unless frozen too.", "Writes fail silently in sloppy mode and throw a TypeError in strict mode and in modules.", "seal is the weaker form: existing properties stay writable, but none can be added or removed."], useCase: { title: "Protecting shared constants", scenario: "Keep a shared configuration or lookup table from being edited by accident somewhere else in the app." } },
+    { name: "Object.fromEntries", category: "Object & JSON", summary: "Build an object from key-value pairs.", points: ["Accepts any iterable of pairs, including a Map and URLSearchParams.", "Later duplicate keys overwrite earlier ones.", "Object.entries → array method → Object.fromEntries is the standard way to map or filter an object."], useCase: { title: "Reading query parameters", scenario: "Turn a URL's search parameters or a form's entries into a plain object to validate and pass around." } },
+    { name: "Object.create and prototypes", category: "Object & JSON", summary: "Create an object with an explicit prototype, or with none at all.", points: ["Object.create(null) has no prototype, so there is no inherited toString or __proto__ to collide with.", "A second argument takes property descriptors, which an object literal cannot express.", "getPrototypeOf reads the link; setPrototypeOf changes it and is slow enough to avoid in hot paths."], useCase: { title: "Safe dictionaries", scenario: "Hold user-supplied keys — headers, counts by word — without a key such as \"constructor\" hitting an inherited property." } },
+    { name: "Object.defineProperty and descriptors", category: "Object & JSON", summary: "Define a property together with its writability, enumerability and accessors.", points: ["Properties defined this way default to non-writable, non-enumerable and non-configurable.", "A descriptor holds either value and writable, or get and set — never both pairs.", "getOwnPropertyDescriptor reads one back, which is how an accessor is copied faithfully."], useCase: { title: "Computed and hidden fields", scenario: "Expose a derived value as a getter, or keep an internal field out of JSON.stringify and for-in loops." } },
+    { name: "JSON.stringify", category: "Object & JSON", summary: "Serialize a value to JSON, with optional filtering and indentation.", points: ["undefined, functions and symbols are dropped from objects and become null inside arrays.", "A toJSON method decides a value's own serialized form — how Date becomes a string.", "The replacer chooses which keys to keep; the third argument sets indentation for readable output."], useCase: { title: "Sending and storing state", scenario: "Put a request body on the wire or a draft into localStorage, leaving out fields the server must not receive." } },
+    { name: "JSON.parse and the reviver", category: "Object & JSON", summary: "Turn JSON text back into values, transforming entries as they are read.", points: ["Throws a SyntaxError on malformed input, so parsing untrusted text belongs in a try/catch.", "The reviver runs for every key from the innermost outward, and returning undefined drops a key.", "Dates arrive as strings — a reviver or a schema parser is what turns them back into Date objects."], useCase: { title: "Reading stored or fetched data", scenario: "Restore a saved draft from localStorage, rejecting corrupted data instead of letting it break the page." } },
+    { name: "structuredClone", category: "Object & JSON", summary: "Deep-clone a value, including Map, Set, Date and typed arrays.", points: ["Handles cycles, which a JSON round-trip cannot.", "Functions, DOM nodes and class identity are not cloned — a function throws a DataCloneError.", "Available in browsers and Node without a library, and is the algorithm postMessage already uses."], useCase: { title: "Snapshotting state", scenario: "Take a true copy of a nested draft before an edit so cancelling restores it exactly." } },
+    { name: "Promise.all and Promise.allSettled", category: "Promise API", summary: "Run promises concurrently and wait for all of them.", points: ["all rejects as soon as any input rejects, and the other work keeps running unless it is aborted.", "allSettled never rejects: each result is {status, value} or {status, reason}.", "Both preserve input order in the results, whichever finished first."], useCase: { title: "Loading a page's data at once", scenario: "Fetch the user, their permissions and their notifications together, still rendering partial content with allSettled when one call fails." } },
+    { name: "Promise.race and Promise.any", category: "Promise API", summary: "Settle on the first promise to finish, or on the first to succeed.", points: ["race settles with the first result, rejection included; any ignores rejections until one fulfils.", "any rejects with an AggregateError only when every input rejects.", "race against a timer is the timeout idiom — pair it with AbortController so the loser is actually cancelled."], useCase: { title: "Timeouts and mirrors", scenario: "Give a request a deadline, or take whichever of several mirrors or caches answers first." } },
+    { name: "Promise.resolve, reject and chaining", category: "Promise API", summary: "Make a settled promise, and know what then returns.", points: ["then always returns a new promise, so a value returned inside it becomes the next resolution.", "Returning a promise inside then adopts it rather than nesting it.", "catch(fn) is then(undefined, fn), and finally passes the result through untouched."], useCase: { title: "Normalizing sync and async", scenario: "Wrap a cached value or a callback API so every caller gets a promise and one error path." } },
   ]),
   handbook("TypeScript 7 — Types, Compiler & Migration", "The type system and the native TypeScript 7 compiler, with a practical path from modelling values to faster builds.", "TypeScript 7", [
-    { name: "What TypeScript 7 is", category: "Compiler", summary: "Move to the native compiler while keeping the familiar tsc workflow and type-checking model." },
-    { name: "tsc and project references", category: "Compiler", summary: "Split large repositories into buildable projects and let the compiler reuse work safely." },
-    { name: "Compiler API compatibility", category: "Compiler", summary: "Identify tools that still need the TypeScript 6 API while the TypeScript 7 compiler matures." },
-    { name: "Unions and narrowing", category: "Type system", summary: "Represent alternatives and let control flow refine a value to the safe branch." },
-    { name: "Generics", category: "Type system", summary: "Preserve relationships between inputs and outputs instead of falling back to any." },
-    { name: "Intersection types", category: "Type system", summary: "Compose capabilities from several object types while understanding conflicting properties." },
-    { name: "Type guards", category: "Type system", summary: "Teach the checker how runtime predicates establish a narrower static type." },
-    { name: "Utility types", category: "Type manipulation", summary: "Transform existing types with Partial, Pick, Omit, Record, ReturnType and Awaited." },
-    { name: "satisfies and as const", category: "Type manipulation", summary: "Validate configuration while retaining precise literal types." },
-    { name: "Template literal types", category: "Type manipulation", summary: "Generate string unions from naming rules and validate event or route keys." },
-    { name: "Conditional and mapped types", category: "Type manipulation", summary: "Build reusable type transformations that inspect and remap the shape of another type." },
-    { name: "Strict compiler checks", category: "Configuration", summary: "Use strict mode and modern defaults to make invalid states visible at compile time." },
-    { name: "Modules and resolution", category: "Configuration", summary: "Configure Node.js and bundler modules, including TypeScript 7's modern resolution rules." },
-    { name: "tsconfig migration", category: "Configuration", summary: "Replace removed or deprecated options and make the compiler target explicit." },
-    { name: "Decorators and classes", category: "JavaScript interop", summary: "Type object-oriented code and standard decorators without weakening the public API." },
-    { name: "Declaration files", category: "JavaScript interop", summary: "Describe untyped JavaScript packages and publish accurate public types for consumers." },
-    { name: "Parallel builds", category: "Compiler", summary: "Tune TypeScript 7's native parallelism for faster checks in large repositories." },
-    { name: "Migration from TypeScript 6", category: "Migration", summary: "Clear deprecations first, then switch compiler versions and verify API-dependent tools." },
-    { name: "Migrating from any", category: "Migration", summary: "Replace unchecked escape hatches with unknown, validation and precise domain types." },
-    { name: "Literal and primitive types", category: "Type system", summary: "Model exact strings, numbers, booleans and object shapes instead of broad primitives." },
-    { name: "Enums and alternatives", category: "Type system", summary: "Choose unions or enums based on runtime needs, serialization and API ownership." },
-    { name: "Function overloads", category: "Type system", summary: "Describe several supported call signatures while keeping one checked implementation." },
-    { name: "Indexed access types", category: "Type manipulation", summary: "Derive property and array element types directly from an existing model." },
-    { name: "Infer in conditional types", category: "Type manipulation", summary: "Extract related types inside reusable conditional transformations." },
-    { name: "Variance and assignability", category: "Type system", summary: "Understand when function parameters and generic containers can safely substitute for one another." },
-    { name: "Module augmentation", category: "JavaScript interop", summary: "Extend third-party declarations locally when a package's public types need an application-specific addition." },
-    { name: "JSDoc checking", category: "JavaScript interop", summary: "Add useful static checking to JavaScript projects without converting every file to TypeScript." },
-    { name: "noUncheckedIndexedAccess", category: "Configuration", summary: "Make indexed lookups acknowledge that a key may not exist at runtime." },
-    { name: "exactOptionalPropertyTypes", category: "Configuration", summary: "Distinguish an omitted optional property from one explicitly assigned undefined." },
-    { name: "Build mode and incremental checks", category: "Compiler", summary: "Use project build mode and incremental state to shorten repeated checks in monorepos." },
-    { name: "TypeScript language service", category: "Compiler", summary: "Understand editor diagnostics, navigation and tooling versions when adopting the native compiler." },
+    { name: "What TypeScript 7 is", category: "Compiler", summary: "Move to the native compiler while keeping the familiar tsc workflow and type-checking model.", points: [
+      "The native compiler changes implementation rather than JavaScript runtime behavior.",
+      "Validate diagnostics and emitted output against the previous toolchain.",
+      "Check build and editor integration support before migration.",
+    ] },
+    { name: "tsc and project references", category: "Compiler", summary: "Split large repositories into buildable projects and let the compiler reuse work safely.", points: [
+      "Declare project references to express build dependencies.",
+      "Use build mode to check referenced projects in dependency order.",
+      "Keep generated outputs and source boundaries explicit.",
+    ] },
+    { name: "Compiler API compatibility", category: "Compiler", summary: "Identify tools that still need the TypeScript 6 API while the TypeScript 7 compiler matures.", points: [
+      "A native compiler is not a drop-in JavaScript Compiler API object.",
+      "Inventory tools that import the typescript package at runtime.",
+      "Keep a compatible toolchain for integrations awaiting native support.",
+    ] },
+    { name: "Unions and narrowing", category: "Type system", summary: "Represent alternatives and let control flow refine a value to the safe branch.", points: [
+      "Use a union to represent several possible value shapes.",
+      "Narrow with discriminants, typeof or runtime checks.",
+      "Handle every branch before accessing variant-specific fields.",
+    ] },
+    { name: "Generics", category: "Type system", summary: "Preserve relationships between inputs and outputs instead of falling back to any.", points: [
+      "Introduce type parameters where inputs and outputs are related.",
+      "Add constraints only for capabilities the implementation needs.",
+      "Prefer inference over unnecessary explicit type arguments.",
+    ] },
+    { name: "Intersection types", category: "Type system", summary: "Compose capabilities from several object types while understanding conflicting properties.", points: [
+      "An intersection requires a value to satisfy every constituent.",
+      "Conflicting property types can produce unusable never fields.",
+      "Inspect the combined shape before composing public contracts.",
+    ] },
+    { name: "Type guards", category: "Type system", summary: "Teach the checker how runtime predicates establish a narrower static type.", points: [
+      "A type predicate connects a runtime check to static narrowing.",
+      "Validate the complete condition claimed by the predicate.",
+      "Unsound guards can make incorrect code appear type-safe.",
+    ] },
+    { name: "Utility types", category: "Type manipulation", summary: "Transform existing types with Partial, Pick, Omit, Record, ReturnType and Awaited.", points: [
+      "Use Pick and Omit to select object properties.",
+      "Use Partial or Required to change optionality deliberately.",
+      "Derive function and promise results with ReturnType and Awaited.",
+    ] },
+    { name: "satisfies and as const", category: "Type manipulation", summary: "Validate configuration while retaining precise literal types.", points: [
+      "satisfies checks compatibility without discarding useful inferred detail.",
+      "as const preserves literal values and readonly tuple or object shapes.",
+      "Neither construct freezes or validates incoming runtime data.",
+    ] },
+    { name: "Template literal types", category: "Type manipulation", summary: "Generate string unions from naming rules and validate event or route keys.", points: [
+      "Combine literal unions to describe valid string patterns.",
+      "Use key remapping to create related event or accessor names.",
+      "Avoid enormous cross-product unions that slow checking.",
+    ] },
+    { name: "Conditional and mapped types", category: "Type manipulation", summary: "Build reusable type transformations that inspect and remap the shape of another type.", points: [
+      "Conditional types choose results based on assignability.",
+      "Mapped types transform keys and modifiers of existing shapes.",
+      "Control distributivity when transforming a union as a whole.",
+    ] },
+    { name: "Strict compiler checks", category: "Configuration", summary: "Use strict mode and modern defaults to make invalid states visible at compile time.", points: [
+      "Enable strictness deliberately and fix meaningful diagnostics.",
+      "Model null and undefined at actual data boundaries.",
+      "Avoid suppressing errors through broad assertions or any.",
+    ] },
+    { name: "Modules and resolution", category: "Configuration", summary: "Configure Node.js and bundler modules, including TypeScript 7's modern resolution rules.", points: [
+      "Match module and moduleResolution to the execution environment.",
+      "Verify package exports and ESM/CommonJS interoperability.",
+      "Remember compiler path mappings do not rewrite runtime imports.",
+    ] },
+    { name: "tsconfig migration", category: "Configuration", summary: "Replace removed or deprecated options and make the compiler target explicit.", points: [
+      "Audit configuration for deprecated or removed options.",
+      "Set target, module and type libraries for the actual runtime.",
+      "Compare effective configuration before and after the upgrade.",
+    ] },
+    { name: "Decorators and classes", category: "JavaScript interop", summary: "Type object-oriented code and standard decorators without weakening the public API.", points: [
+      "Distinguish standard decorators from legacy decorator semantics.",
+      "Type constructor, instance and decorator context contracts explicitly.",
+      "Verify required metadata integrations before switching modes.",
+    ] },
+    { name: "Declaration files", category: "JavaScript interop", summary: "Describe untyped JavaScript packages and publish accurate public types for consumers.", points: [
+      "Describe runtime exports accurately in .d.ts files.",
+      "Keep ambient declarations separate from implementation code.",
+      "Test published types against a small consuming project.",
+    ] },
+    { name: "Parallel builds", category: "Compiler", summary: "Tune TypeScript 7's native parallelism for faster checks in large repositories.", points: [
+      "Benchmark native compiler performance on representative repositories.",
+      "Track memory and wall time under the available CPU budget.",
+      "Check reproducibility before tuning parallel execution settings.",
+    ] },
+    { name: "Migration from TypeScript 6", category: "Migration", summary: "Clear deprecations first, then switch compiler versions and verify API-dependent tools.", points: [
+      "Resolve TypeScript 6 deprecations before adopting the native compiler.",
+      "Verify dependencies that rely on compiler or language-service APIs.",
+      "Compare CI diagnostics and emitted artifacts during the transition.",
+    ] },
+    { name: "Migrating from any", category: "Migration", summary: "Replace unchecked escape hatches with unknown, validation and precise domain types.", points: [
+      "Use unknown for data whose shape is not yet established.",
+      "Validate at the boundary before assigning a domain type.",
+      "Remove unsafe any flows incrementally with focused checking.",
+    ] },
+    { name: "Literal and primitive types", category: "Type system", summary: "Model exact strings, numbers, booleans and object shapes instead of broad primitives.", points: [
+      "Use literal unions for a finite set of valid values.",
+      "Distinguish wrapper objects from primitive string and number types.",
+      "Preserve specific values where later narrowing depends on them.",
+    ] },
+    { name: "Enums and alternatives", category: "Type system", summary: "Choose unions or enums based on runtime needs, serialization and API ownership.", points: [
+      "String unions can model alternatives without generated enum objects.",
+      "Enums provide named runtime values with their own emit behavior.",
+      "Consider serialization and library boundaries before choosing.",
+    ] },
+    { name: "Function overloads", category: "Type system", summary: "Describe several supported call signatures while keeping one checked implementation.", points: [
+      "Expose overload signatures for genuinely different supported calls.",
+      "Make the implementation compatible with every public signature.",
+      "Prefer a union parameter when overloads add no useful relationship.",
+    ] },
+    { name: "Indexed access types", category: "Type manipulation", summary: "Derive property and array element types directly from an existing model.", points: [
+      "Read a property's type with Model['property'].",
+      "Use an array's number index to obtain its element type.",
+      "Constrain dynamic keys with keyof the source model.",
+    ] },
+    { name: "Infer in conditional types", category: "Type manipulation", summary: "Extract related types inside reusable conditional transformations.", points: [
+      "Use infer to capture a matched type inside a conditional branch.",
+      "Extract function parameters, return values or nested element types.",
+      "Define what should happen when the source shape does not match.",
+    ] },
+    { name: "Variance and assignability", category: "Type system", summary: "Understand when function parameters and generic containers can safely substitute for one another.", points: [
+      "Assignability depends on how a generic parameter is consumed or produced.",
+      "Callback parameter safety differs from simple return-value compatibility.",
+      "Test public generic APIs under strict function checking.",
+    ] },
+    { name: "Module augmentation", category: "JavaScript interop", summary: "Extend third-party declarations locally when a package's public types need an application-specific addition.", points: [
+      "Augment the exact module name exported by the package.",
+      "Add compatible declarations rather than replacing implementation behavior.",
+      "Ensure the augmentation file is included by the consumer's compiler.",
+    ] },
+    { name: "JSDoc checking", category: "JavaScript interop", summary: "Add useful static checking to JavaScript projects without converting every file to TypeScript.", points: [
+      "Enable checkJs for JavaScript that should receive diagnostics.",
+      "Annotate parameters and reusable types with supported JSDoc tags.",
+      "Migrate files gradually while retaining runnable JavaScript.",
+    ] },
+    { name: "noUncheckedIndexedAccess", category: "Configuration", summary: "Make indexed lookups acknowledge that a key may not exist at runtime.", points: [
+      "Indexed reads can include undefined when a key may be absent.",
+      "Check lookup results before accessing their properties.",
+      "Use explicit required properties where existence is guaranteed.",
+    ] },
+    { name: "exactOptionalPropertyTypes", category: "Configuration", summary: "Distinguish an omitted optional property from one explicitly assigned undefined.", points: [
+      "An absent optional key differs from a present undefined value.",
+      "Include undefined explicitly when assigning it is intentional.",
+      "Test object spreading and patch payloads at API boundaries.",
+    ] },
+    { name: "Build mode and incremental checks", category: "Compiler", summary: "Use project build mode and incremental state to shorten repeated checks in monorepos.", points: [
+      "Build mode coordinates referenced project outputs.",
+      "Incremental metadata lets compatible builds reuse previous work.",
+      "Invalidate or rebuild when configuration and dependencies change.",
+    ] },
+    { name: "TypeScript language service", category: "Compiler", summary: "Understand editor diagnostics, navigation and tooling versions when adopting the native compiler.", points: [
+      "Align the editor's TypeScript tooling with the project version.",
+      "Verify completion, navigation and refactoring during compiler upgrades.",
+      "Keep editor integration compatibility separate from command-line success.",
+    ] },
   ]),
   handbook("Playwright Automation — Browser Testing & Debugging", "Reliable browser automation with locators, auto-waiting, projects, fixtures and trace debugging.", "Playwright Automation", [
     { name: "Locators", category: "Browser basics", summary: "Find elements by accessible role, label and text so tests follow the user-facing contract." },
@@ -268,61 +602,317 @@ export const TECHNOLOGY_HANDBOOKS = [
     { name: "Visual comparisons", category: "Test design", summary: "Lock important visual regions with controlled screenshots and reviewable diffs." },
     { name: "Trace viewer", category: "Debugging", summary: "Replay actions, DOM snapshots, network calls and console output from a failed run." },
     { name: "Playwright Test configuration", category: "Configuration", summary: "Set projects, reporters, timeouts, web servers and device profiles in one config." },
+    { name: "test.beforeEach", category: "Test hooks", summary: "Arrange per-test state, with the page fixture already created for that test." },
+    { name: "test.afterEach", category: "Test hooks", summary: "Undo what the test created, and attach diagnostics from the test's own result." },
+    { name: "test.beforeAll and afterAll", category: "Test hooks", summary: "Share worker-level setup, remembering it outlives the isolated contexts inside it." },
+    { name: "Hook scope in describe blocks", category: "Test hooks", summary: "A hook declared inside describe applies to that group only, in declaration order." },
+    { name: "Automatic fixtures over hooks", category: "Test hooks", summary: "An auto fixture carries its own teardown, so setup travels with the thing it provides." },
+    { name: "test.step", category: "Test hooks", summary: "Name a phase of a long test so the trace and the report read as steps rather than one block." },
+    { name: "globalSetup and globalTeardown", category: "Test hooks", summary: "Run once per test run: seed a database, start a service, then tear it down." },
+    { name: "Authentication in a setup project", category: "Test hooks", summary: "Sign in once in a setup project and reuse storageState instead of a beforeEach per test." },
+    { name: "test.use for overrides", category: "Test hooks", summary: "Change options for a file or a describe block rather than reconfiguring inside a hook." },
+    { name: "test.fail and test.fixme", category: "Test hooks", summary: "Mark expected failures declaratively instead of branching inside a hook." },
   ]),
   handbook("Jest — Unit Testing, Mocks & Coverage", "Unit testing with Jest’s assertions, mocks, timers, isolation and coverage workflows.", "Jest", [
-    { name: "Test structure", category: "Test foundations", summary: "Organize behavior with describe, test, expect and focused lifecycle hooks." },
-    { name: "Matchers", category: "Assertions", summary: "Choose identity, structural, partial and exception matchers that express the behavior under test." },
-    { name: "Mock functions", category: "Test doubles", summary: "Track calls and control return values without replacing the contract with implementation trivia." },
-    { name: "Module mocking", category: "Test doubles", summary: "Replace a dependency at the module boundary and restore isolation between tests." },
-    { name: "Fake timers", category: "Async testing", summary: "Advance time deterministically when code uses timers, intervals or scheduled retries." },
-    { name: "Coverage", category: "Quality", summary: "Use branch and statement coverage to find gaps, not as a substitute for meaningful assertions." },
-    { name: "Setup and teardown", category: "Test foundations", summary: "Create predictable per-test and per-suite setup without leaking state across cases." },
-    { name: "Async tests", category: "Async testing", summary: "Return or await promises so Jest waits for the behavior being asserted." },
-    { name: "Snapshot testing", category: "Assertions", summary: "Use focused snapshots for stable serialized output and review changes deliberately." },
-    { name: "Spies and implementations", category: "Test doubles", summary: "Observe a real method or replace it temporarily while preserving restoration discipline." },
-    { name: "Manual mocks", category: "Test doubles", summary: "Provide deterministic module behavior from a __mocks__ boundary when appropriate." },
-    { name: "Mock timers and dates", category: "Async testing", summary: "Control scheduled work and clock-dependent logic without waiting in real time." },
-    { name: "Testing rejected promises", category: "Async testing", summary: "Assert asynchronous failures explicitly so a passing test cannot hide an unhandled rejection." },
-    { name: "Test isolation", category: "Quality", summary: "Reset modules, mocks and shared state so order and parallel execution do not change results." },
-    { name: "Jest configuration", category: "Quality", summary: "Configure transforms, environments, roots, reporters and coverage for the repository." },
-    { name: "Custom matchers", category: "Assertions", summary: "Express domain-specific expectations with readable failure messages." },
+    { name: "Test structure", category: "Test foundations", summary: "Organize behavior with describe, test, expect and focused lifecycle hooks.", points: [
+      "Name each test after an observable behavior.",
+      "Arrange inputs, execute the operation and assert its outcome.",
+      "Use describe groups to organize related scenarios without hidden state.",
+    ] },
+    { name: "Matchers", category: "Assertions", summary: "Choose identity, structural, partial and exception matchers that express the behavior under test.", points: [
+      "Use toBe for identity and toEqual for structural comparison.",
+      "Match only relevant fields when extra output is legitimate.",
+      "Assert thrown errors through a function passed to expect.",
+    ] },
+    { name: "Mock functions", category: "Test doubles", summary: "Track calls and control return values without replacing the contract with implementation trivia.", points: [
+      "Use jest.fn to record calls and provide controlled results.",
+      "Configure one-time results for meaningful successive behaviors.",
+      "Assert calls only when the dependency interaction is part of the contract.",
+    ] },
+    { name: "Module mocking", category: "Test doubles", summary: "Replace a dependency at the module boundary and restore isolation between tests.", points: [
+      "Mock a stable dependency boundary rather than internal helpers.",
+      "Account for the difference between CommonJS and ESM mocking.",
+      "Restore module isolation when singleton state affects another test.",
+    ] },
+    { name: "Fake timers", category: "Async testing", summary: "Advance time deterministically when code uses timers, intervals or scheduled retries.", points: [
+      "Enable fake timers before the code schedules its work.",
+      "Advance the relevant timer interval instead of sleeping.",
+      "Restore real timers after pending work is handled.",
+    ] },
+    { name: "Coverage", category: "Quality", summary: "Use branch and statement coverage to find gaps, not as a substitute for meaningful assertions.", points: [
+      "Inspect branches as well as executed statements.",
+      "Include untested source files in coverage collection deliberately.",
+      "Treat uncovered behavior as a test-design question, not just a percentage.",
+    ] },
+    { name: "Setup and teardown", category: "Test foundations", summary: "Create predictable per-test and per-suite setup without leaking state across cases.", points: [
+      "Use beforeEach for state that each test must receive freshly.",
+      "Return or await asynchronous setup and teardown.",
+      "Release resources even when an assertion fails.",
+    ] },
+    { name: "Async tests", category: "Async testing", summary: "Return or await promises so Jest waits for the behavior being asserted.", points: [
+      "Return or await the operation whose completion is asserted.",
+      "Use resolves or rejects for promise outcomes.",
+      "Do not combine a done callback with a returned promise.",
+    ] },
+    { name: "Snapshot testing", category: "Assertions", summary: "Use focused snapshots for stable serialized output and review changes deliberately.", points: [
+      "Snapshot small, stable representations with useful review value.",
+      "Remove timestamps and other irrelevant nondeterministic fields.",
+      "Review changed snapshots before accepting updated baselines.",
+    ] },
+    { name: "Spies and implementations", category: "Test doubles", summary: "Observe a real method or replace it temporarily while preserving restoration discipline.", points: [
+      "jest.spyOn observes the original method unless its implementation is replaced.",
+      "Configure a temporary return or implementation when needed.",
+      "Restore the spy so later tests call the real method.",
+    ] },
+    { name: "Manual mocks", category: "Test doubles", summary: "Provide deterministic module behavior from a __mocks__ boundary when appropriate.", points: [
+      "Place reusable module doubles in the supported __mocks__ location.",
+      "Keep the mock's public contract aligned with the actual dependency.",
+      "Avoid using a manual mock to hide important integration behavior.",
+    ] },
+    { name: "Mock timers and dates", category: "Async testing", summary: "Control scheduled work and clock-dependent logic without waiting in real time.", points: [
+      "Set a controlled system time for date-dependent behavior.",
+      "Advancing timers and changing the system clock are separate operations.",
+      "Exercise boundary times without waiting for real time to pass.",
+    ] },
+    { name: "Testing rejected promises", category: "Async testing", summary: "Assert asynchronous failures explicitly so a passing test cannot hide an unhandled rejection.", points: [
+      "Await expect(promise).rejects with the expected failure shape.",
+      "Confirm the failure path actually ran when using try/catch.",
+      "Avoid a test that passes because an unawaited promise rejects later.",
+    ] },
+    { name: "Test isolation", category: "Quality", summary: "Reset modules, mocks and shared state so order and parallel execution do not change results.", points: [
+      "Create fresh input state for independent scenarios.",
+      "Distinguish clearing call history from resetting implementations and restoring spies.",
+      "Close handles so test order and worker reuse do not affect results.",
+    ] },
+    { name: "Jest configuration", category: "Quality", summary: "Configure transforms, environments, roots, reporters and coverage for the repository.", points: [
+      "Choose node or jsdom according to the code's environment.",
+      "Configure transforms and module aliases to match the project.",
+      "Keep test discovery and coverage patterns intentional.",
+    ] },
+    { name: "Custom matchers", category: "Assertions", summary: "Express domain-specific expectations with readable failure messages.", points: [
+      "Register a matcher with expect.extend.",
+      "Return a clear pass result and diagnostic message.",
+      "Add typings so test authors get checked matcher arguments.",
+    ] },
   ]),
   handbook("React Testing Library — User-Centered UI Tests", "User-centered React tests built around accessible queries, interactions and observable outcomes.", "React Testing Library", [
-    { name: "Queries by role", category: "Queries", summary: "Find buttons, headings, links and fields the way assistive technology finds them." },
-    { name: "Labels and accessible names", category: "Queries", summary: "Use labels and names to make form tests both robust and accessibility-aware." },
-    { name: "userEvent interactions", category: "Interactions", summary: "Model realistic typing, clicking, tabbing and keyboard behavior instead of firing internals." },
-    { name: "Async UI", category: "Async behavior", summary: "Wait for loading, success and error states with findBy and waitFor when the UI changes over time." },
-    { name: "Testing forms", category: "Interactions", summary: "Assert validation and submitted outcomes from the user’s perspective." },
-    { name: "Avoiding implementation details", category: "Test design", summary: "Prefer visible behavior and accessible contracts over component state and private methods." },
-    { name: "getByLabelText", category: "Queries", summary: "Find form controls through their accessible labels and catch missing label regressions." },
-    { name: "getByText and getByTestId", category: "Queries", summary: "Use visible text first and reserve test IDs for stable semantic gaps." },
-    { name: "within", category: "Queries", summary: "Scope a query to a card, dialog or repeated region before finding its controls." },
-    { name: "findBy and waitFor", category: "Async behavior", summary: "Wait for asynchronous UI changes with the correct retrying query or assertion." },
-    { name: "waitForElementToBeRemoved", category: "Async behavior", summary: "Verify that a loading or temporary element disappears after work completes." },
-    { name: "userEvent keyboard flows", category: "Interactions", summary: "Test typing, tab order, focus, keyboard shortcuts and selection like a real user." },
-    { name: "Dialogs and portals", category: "Interactions", summary: "Test modal semantics and portal-rendered content through accessible roles." },
-    { name: "Form validation", category: "Interactions", summary: "Assert field errors, submit state and successful outcomes from observable behavior." },
-    { name: "MSW and network boundaries", category: "Async behavior", summary: "Mock HTTP at the network boundary so components exercise realistic loading and error paths." },
-    { name: "Accessibility assertions", category: "Test design", summary: "Check roles, names, states and keyboard behavior as part of normal component tests." },
-    { name: "Cleanup and isolation", category: "Test design", summary: "Reset the DOM and mocks between tests so one render cannot affect another." },
+    { name: "Queries by role", category: "Queries", summary: "Find buttons, headings, links and fields the way assistive technology finds them.", points: [
+      "Query by the element's semantic role and accessible name.",
+      "Use role options to distinguish state such as checked or selected.",
+      "Treat missing semantics as a possible accessibility defect.",
+    ] },
+    { name: "Labels and accessible names", category: "Queries", summary: "Use labels and names to make form tests both robust and accessibility-aware.", points: [
+      "Associate form labels with their controls.",
+      "Distinguish visible text from the computed accessible name.",
+      "Test named controls instead of placeholder-only identification.",
+    ] },
+    { name: "userEvent interactions", category: "Interactions", summary: "Model realistic typing, clicking, tabbing and keyboard behavior instead of firing internals.", points: [
+      "Create a userEvent session with setup.",
+      "Await interactions that dispatch asynchronous user-event sequences.",
+      "Assert the resulting UI rather than manually firing internal handlers.",
+    ] },
+    { name: "Async UI", category: "Async behavior", summary: "Wait for loading, success and error states with findBy and waitFor when the UI changes over time.", points: [
+      "Use findBy when an element should appear asynchronously.",
+      "Check loading, successful and failed outcomes explicitly.",
+      "Prefer observable state changes over arbitrary time delays.",
+    ] },
+    { name: "Testing forms", category: "Interactions", summary: "Assert validation and submitted outcomes from the user’s perspective.", points: [
+      "Find inputs by label and submit through the form's visible control.",
+      "Exercise valid input and a meaningful invalid case.",
+      "Assert displayed errors or the submitted domain payload.",
+    ] },
+    { name: "Avoiding implementation details", category: "Test design", summary: "Prefer visible behavior and accessible contracts over component state and private methods.", points: [
+      "Test behavior that a user or external caller can observe.",
+      "Avoid reading private hook state or component instances.",
+      "Keep tests valid when implementation changes preserve behavior.",
+    ] },
+    { name: "getByLabelText", category: "Queries", summary: "Find form controls through their accessible labels and catch missing label regressions.", points: [
+      "Query the control through its associated label text.",
+      "Use precise matching when several labels are similar.",
+      "Check that the returned element is the intended editable control.",
+    ] },
+    { name: "getByText and getByTestId", category: "Queries", summary: "Use visible text first and reserve test IDs for stable semantic gaps.", points: [
+      "Use getByText for visible non-interactive content.",
+      "Prefer semantic queries when a control has a role and name.",
+      "Reserve test IDs for elements without a useful semantic contract.",
+    ] },
+    { name: "within", category: "Queries", summary: "Scope a query to a card, dialog or repeated region before finding its controls.", points: [
+      "Select the containing card, region or dialog first.",
+      "Use within(container) for its repeated labels and controls.",
+      "Avoid positional selectors when semantic scoping identifies the target.",
+    ] },
+    { name: "findBy and waitFor", category: "Async behavior", summary: "Wait for asynchronous UI changes with the correct retrying query or assertion.", points: [
+      "findBy combines an element query with asynchronous retries.",
+      "Put a throwing assertion inside waitFor.",
+      "Keep side effects outside waitFor because its callback can repeat.",
+    ] },
+    { name: "waitForElementToBeRemoved", category: "Async behavior", summary: "Verify that a loading or temporary element disappears after work completes.", points: [
+      "Verify the element exists before waiting for its removal.",
+      "Pass the element or a callback that finds it.",
+      "Distinguish actual removal from content that merely becomes hidden.",
+    ] },
+    { name: "userEvent keyboard flows", category: "Interactions", summary: "Test typing, tab order, focus, keyboard shortcuts and selection like a real user.", points: [
+      "Tab through controls and check the resulting focus.",
+      "Exercise Enter, Space or Escape where the interaction requires them.",
+      "Test keyboard behavior without relying solely on pointer clicks.",
+    ] },
+    { name: "Dialogs and portals", category: "Interactions", summary: "Test modal semantics and portal-rendered content through accessible roles.", points: [
+      "Find modal content through its dialog role and accessible name.",
+      "Query the document when portal content is outside the render container.",
+      "Verify dismissal and focus restoration after closing.",
+    ] },
+    { name: "Form validation", category: "Interactions", summary: "Assert field errors, submit state and successful outcomes from observable behavior.", points: [
+      "Check when validation appears and how it is associated with fields.",
+      "Verify disabled or pending submission states.",
+      "Correct invalid values and assert the successful recovery path.",
+    ] },
+    { name: "MSW and network boundaries", category: "Async behavior", summary: "Mock HTTP at the network boundary so components exercise realistic loading and error paths.", points: [
+      "Intercept HTTP responses instead of replacing component internals.",
+      "Simulate pending, successful and failed network outcomes.",
+      "Reset handlers between scenarios to prevent response leakage.",
+    ] },
+    { name: "Accessibility assertions", category: "Test design", summary: "Check roles, names, states and keyboard behavior as part of normal component tests.", points: [
+      "Assert accessible names, descriptions and exposed states.",
+      "Include focus and keyboard behavior in interactive flows.",
+      "Combine automated checks with review of meaningful semantics.",
+    ] },
+    { name: "Cleanup and isolation", category: "Test design", summary: "Reset the DOM and mocks between tests so one render cannot affect another.", points: [
+      "Unmount rendered trees and clear test-specific mocks.",
+      "Reset timers and external stores used by the component.",
+      "Wait for owned asynchronous work instead of leaking it into another test.",
+    ] },
   ]),
   handbook("Vitest — Fast Unit Testing & Mocks", "Fast Vite-aware unit testing with mocks, timers, snapshots, coverage and watch mode.", "Vitest", [
-    { name: "Test and describe", category: "Test foundations", summary: "Define isolated cases and group related setup with a readable test structure." },
-    { name: "Assertions", category: "Assertions", summary: "Use toBe for identity and primitives, toEqual for structural values, and precise matchers for errors." },
-    { name: "vi.fn and spies", category: "Test doubles", summary: "Record calls and observe or replace existing methods with controlled test doubles." },
-    { name: "vi.mock", category: "Test doubles", summary: "Mock modules at the import boundary while keeping factories and hoisting behavior explicit." },
-    { name: "Fake timers", category: "Async testing", summary: "Control timeout and interval-driven code without waiting in real time." },
-    { name: "Watch mode and coverage", category: "Quality", summary: "Shorten feedback loops locally and use coverage to guide missing behavioral cases." },
-    { name: "vi.stubGlobal", category: "Test doubles", summary: "Replace browser or runtime globals with controlled values and restore them after the test." },
-    { name: "Mocked modules", category: "Test doubles", summary: "Mock imports at the module boundary while respecting Vitest's hoisting rules." },
-    { name: "Mock factories", category: "Test doubles", summary: "Create reusable fake implementations that keep test intent visible and deterministic." },
-    { name: "expect assertions", category: "Assertions", summary: "Require an expected assertion count when testing callbacks or asynchronous branches." },
-    { name: "Snapshot serializers", category: "Assertions", summary: "Normalize complex output before snapshotting so diffs show meaningful changes." },
-    { name: "Testing promises", category: "Async testing", summary: "Await asynchronous assertions and control rejection paths without flaky timing." },
-    { name: "Concurrent tests", category: "Async testing", summary: "Use concurrent execution only when tests have no shared mutable state." },
-    { name: "Environment and globals", category: "Configuration", summary: "Select Node or jsdom environments and provide only the globals a test needs." },
-    { name: "Coverage providers", category: "Quality", summary: "Choose a coverage provider and enforce meaningful thresholds in CI." },
-    { name: "Test projects", category: "Configuration", summary: "Separate unit, browser and integration configurations while sharing common setup." },
+    { name: "Test and describe", category: "Test foundations", summary: "Define isolated cases and group related setup with a readable test structure.", points: [
+      "One test asserts one behaviour and reads as a sentence in the report.",
+      "describe groups related cases and scopes the hooks they share.",
+      "Skip and only mark intent in the file, which review can see and CI can reject.",
+    ] },
+    { name: "Assertions", category: "Assertions", summary: "Use toBe for identity and primitives, toEqual for structural values, and precise matchers for errors.", points: [
+      "toBe compares by reference, so two equal objects fail it.",
+      "toEqual walks the structure and ignores undefined properties by design.",
+      "Assert a thrown error by message or type rather than catching it by hand.",
+    ] },
+    { name: "vi.fn and spies", category: "Test doubles", summary: "Record calls and observe or replace existing methods with controlled test doubles.", points: [
+      "A mock function records every call, its arguments and what it returned.",
+      "A spy wraps a real method so behaviour continues while calls are observed.",
+      "Restore a spied method afterwards or the next file inherits the replacement.",
+    ] },
+    { name: "vi.mock", category: "Test doubles", summary: "Mock modules at the import boundary while keeping factories and hoisting behavior explicit.", points: [
+      "The call is hoisted above the imports, so the factory cannot close over later variables.",
+      "The whole module is replaced, including the parts the test does not care about.",
+      "Import the actual module inside the factory when only one export should change.",
+    ] },
+    { name: "Fake timers", category: "Async testing", summary: "Control timeout and interval-driven code without waiting in real time.", points: [
+      "Timer control turns a five-second wait into an instant, deterministic test.",
+      "Advancing time runs the callbacks due in that window, in order.",
+      "Restore real timers afterwards or an unrelated async test hangs.",
+    ] },
+    { name: "Watch mode and coverage", category: "Quality", summary: "Shorten feedback loops locally and use coverage to guide missing behavioral cases.", points: [
+      "Watch mode reruns only the files affected by the last edit.",
+      "Coverage shows which branches never ran, not whether the assertions were useful.",
+      "Chase an uncovered branch to its missing case rather than to a higher number.",
+    ] },
+    { name: "vi.stubGlobal", category: "Test doubles", summary: "Replace browser or runtime globals with controlled values and restore them after the test.", points: [
+      "Stubbing replaces a global such as fetch or matchMedia for one test.",
+      "The original is restored on unstub, which config can do automatically.",
+      "A leaked global stub shows up as a failure in a file that never touched it.",
+    ] },
+    { name: "Mocked modules", category: "Test doubles", summary: "Mock imports at the module boundary while respecting Vitest's hoisting rules.", points: [
+      "Mocking at the import boundary leaves the module under test untouched.",
+      "The mocked module must be imported after mocking for the replacement to apply.",
+      "A partial mock keeps the real exports and overrides only the named ones.",
+    ] },
+    { name: "Mock factories", category: "Test doubles", summary: "Create reusable fake implementations that keep test intent visible and deterministic.", points: [
+      "A shared factory keeps a fake in one place instead of per file.",
+      "Give the fake the same shape as the real thing, so a signature change breaks it.",
+      "Return fresh state per call, or tests share mutation through the fake.",
+    ] },
+    { name: "expect assertions", category: "Assertions", summary: "Require an expected assertion count when testing callbacks or asynchronous branches.", points: [
+      "Declaring an expected count catches a callback that never ran.",
+      "A test asserting inside a promise passes silently when the promise is not awaited.",
+      "Pair it with a rejection path so the catch block is proven to execute.",
+    ] },
+    { name: "Snapshot serializers", category: "Assertions", summary: "Normalize complex output before snapshotting so diffs show meaningful changes.", points: [
+      "A serializer strips ids, timestamps and paths that change on every run.",
+      "Without it a snapshot fails for reasons unrelated to the change under review.",
+      "Keep the snapshot small enough that a reviewer can read the diff.",
+    ] },
+    { name: "Testing promises", category: "Async testing", summary: "Await asynchronous assertions and control rejection paths without flaky timing.", points: [
+      "Await the assertion itself; an un-awaited rejection passes and then warns.",
+      "Assert rejection with a matcher rather than a try block that may never run.",
+      "Never mix a done callback with an async function in the same test.",
+    ] },
+    { name: "Concurrent tests", category: "Async testing", summary: "Use concurrent execution only when tests have no shared mutable state.", points: [
+      "Concurrent cases in one file share the module scope and any global state.",
+      "A shared spy or a mutated fixture is what makes concurrency flaky.",
+      "Use the scoped expect so a failure reports against the right case.",
+    ] },
+    { name: "Environment and globals", category: "Configuration", summary: "Select Node or jsdom environments and provide only the globals a test needs.", points: [
+      "Choose jsdom for component work and node for everything that never touches the DOM.",
+      "A node environment runs faster and catches accidental browser dependencies.",
+      "Per-file environment comments let one project hold both kinds of test.",
+    ] },
+    { name: "Coverage providers", category: "Quality", summary: "Choose a coverage provider and enforce meaningful thresholds in CI.", points: [
+      "The V8 provider is fast; the instrumented provider maps source more precisely.",
+      "Thresholds fail the run, which is what turns a report into a gate.",
+      "Exclude generated files, or their untested lines set the number for everyone.",
+    ] },
+    { name: "Test projects", category: "Configuration", summary: "Separate unit, browser and integration configurations while sharing common setup.", points: [
+      "Projects let unit, browser and integration suites keep separate configuration.",
+      "One command runs them all and reports each project separately.",
+      "Shared setup stays in one place instead of being copied per configuration.",
+    ] },
+    { name: "beforeEach and afterEach", category: "Test hooks", summary: "Run setup and teardown around every test in scope, innermost hooks last on the way in.", points: [
+      "Fresh state per test is what makes a failure reproducible in isolation.",
+      "Inner before hooks run after outer ones, and after hooks unwind in reverse.",
+      "An after hook still runs when the test fails, so cleanup is not skipped.",
+    ] },
+    { name: "beforeAll and afterAll", category: "Test hooks", summary: "Share expensive setup across a file, accepting that state now crosses test boundaries.", points: [
+      "Setup runs once per file, so an expensive server starts a single time.",
+      "Anything mutated in one test is visible to the next, by construction.",
+      "Reserve it for genuinely read-only or externally reset resources.",
+    ] },
+    { name: "Hook execution order", category: "Test hooks", summary: "Nested describe blocks run outer before hooks first and outer after hooks last.", points: [
+      "Outer setup completes before inner setup, mirroring the describe nesting.",
+      "Teardown unwinds inward first, so a resource is released before its owner.",
+      "Knowing the order explains a fixture that is unexpectedly already gone.",
+    ] },
+    { name: "Cleanup by return value", category: "Test hooks", summary: "Return a function from a before hook and Vitest runs it as that hook's teardown.", points: [
+      "Returning a function keeps setup and its teardown in one place.",
+      "The returned cleanup runs even when the test throws.",
+      "It removes the matching after hook that was easy to forget.",
+    ] },
+    { name: "onTestFinished", category: "Test hooks", summary: "Register cleanup from inside the running test, next to the thing it has to undo.", points: [
+      "Cleanup registered inside the test sits next to what it undoes.",
+      "It runs whether the test passed or failed, in reverse registration order.",
+      "This suits a resource created halfway through a single case.",
+    ] },
+    { name: "onTestFailed", category: "Test hooks", summary: "Capture extra diagnostics only when the test actually failed.", points: [
+      "The callback runs only on failure, so diagnostics cost nothing when green.",
+      "Dump the request, the rendered markup or the server log at that moment.",
+      "It makes a rare CI failure debuggable without rerunning the suite locally.",
+    ] },
+    { name: "Setup files", category: "Test hooks", summary: "Move cross-file setup into setupFiles so every project shares one arrangement.", points: [
+      "Setup files run before every test file in the project.",
+      "Matcher extensions and global test doubles belong here, not repeated per file.",
+      "Keep them small; work done here is paid once per file, not once per run.",
+    ] },
+    { name: "Global setup", category: "Test hooks", summary: "Start and stop a real dependency once per run in globalSetup, outside the test environment.", points: [
+      "Global setup runs once per run, outside the test environment.",
+      "Start a database or a container here and tear it down in the returned function.",
+      "It cannot register matchers, because it does not share the test runtime.",
+    ] },
+    { name: "Hook timeouts", category: "Test hooks", summary: "Give a slow hook its own timeout instead of raising the limit for every test.", points: [
+      "A slow hook has its own limit, separate from the test timeout.",
+      "Raising the global timeout to fix one hook hides real hangs everywhere else.",
+      "A hook that needs minutes is usually global setup in the wrong place.",
+    ] },
+    { name: "Mock restoration between tests", category: "Test hooks", summary: "Prefer restoreMocks and clearMocks in config over remembering a hook in every file.", points: [
+      "Configuring restoration applies it to every file with no per-file hook.",
+      "Clearing wipes recorded calls; restoring puts the original implementation back.",
+      "A forgotten restore is the classic cause of a test that passes only in isolation.",
+    ] },
   ]),
   handbook("Cypress — End-to-End Testing & Network Control", "End-to-end web testing with commands, network control, retries, fixtures and time-travel debugging.", "Cypress", [
     { name: "Commands and chaining", category: "Browser basics", summary: "Compose retryable commands to query, interact with and inspect the application." },
@@ -396,4 +986,5 @@ export const TECHNOLOGY_HANDBOOKS = [
   handbook("GraphQL — Schema, Servers, Clients & Tooling", `${GRAPHQL_PACKAGES.length} entries across the GraphQL surface: the schema language, execution, federation, the server and client libraries, and the security controls a public graph needs.`, "GraphQL", GRAPHQL_PACKAGES),
   handbook("Playwright — API, Locators, Fixtures & Tooling", `${PLAYWRIGHT_PACKAGES.length} entries covering the Playwright API: locators, actions, web-first assertions, fixtures, network mocking, configuration and the tracing tools.`, "Playwright automation", PLAYWRIGHT_PACKAGES),
   handbook("English Corporate & Speaking Words — Workplace Vocabulary", `${ENGLISH_EXAM_VOCABULARY.length} advanced English words for the workplace and for competitive exams, each with a plain-English meaning, a spoken pronunciation, a contextual sentence, and at least three direct synonyms and three direct antonyms.`, "English Corporate/Speaking words, synonyms and antonyms", englishVocabularyTopics),
+  ...AUTOMATION_HANDBOOKS,
 ] as const;

@@ -13,7 +13,8 @@
 .categorySet button[data-tone="9"]{--tone-bg:#f9ecf1;--tone-line:#ecd0dc;--tone-ink:#8c3f5e}
 .categorySet button[data-tone="10"]{--tone-bg:#eaf5ec;--tone-line:#c9e4cf;--tone-ink:#33704a}
 .categoryIcon{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#fff;box-shadow:0 0 0 1px var(--tone-line);flex:none;transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
-.categoryIcon img{width:16px;height:16px;object-fit:contain}
+.categoryIcon img{display:block;width:16px;height:16px;object-fit:contain}
+.categorySet button{display:inline-flex;align-items:center;line-height:1}
 .categoryArrow{opacity:.55;transition:transform .25s ease,opacity .25s ease}
 .categorySet button:hover,.categorySet button:focus-visible{transform:translateY(-3px);background:var(--tone-bg);border-color:var(--tone-ink);box-shadow:0 10px 22px -12px var(--tone-ink)}
 .categorySet button:hover .categoryIcon,.categorySet button:focus-visible .categoryIcon{transform:rotate(-10deg) scale(1.15)}

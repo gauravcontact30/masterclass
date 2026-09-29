@@ -1,335 +1,197 @@
-import { useState } from "react";
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Library, LibraryProps } from "@/components/library";
-import type { DocumentRecord, GenerationRequest, Technology, Topic } from "@/lib/domain";
-import { libraryCounts, LibraryFilter, pageItems, paginate, searchDocuments, sortLibrary } from "@/lib/library";
+import { Library, readingState, type LibraryProps } from "@/components/library";
+import { LanguageProvider } from "@/components/language-provider";
+import type { DocumentRecord, Technology, Topic } from "@/lib/domain";
+import { fill, LIBRARY_PAGE_SIZE, pageItems, paginate, searchDocuments, sortLibrary, uniqueLibraryDocuments } from "@/lib/library";
 
-const baseRequest: GenerationRequest = { technologyId: "react", topicId: "react-state", format: "pdf", language: "en", level: "beginner", theme: "minimal" };
-function makeDoc(id: string, overrides: Partial<DocumentRecord> = {}, request: Partial<GenerationRequest> = {}): DocumentRecord {
-  return { id, user_id: "u1", title: `Guide ${id}`, request: { ...baseRequest, ...request }, status: "ready", created_at: "2026-01-01T00:00:00Z", error_code: null, curriculum: null, page_titles: [], storage_path: null, preview_paths: [], ...overrides };
+let seq = 0;
+function doc(over: Partial<DocumentRecord> & { technologyId?: string; topicId?: string; language?: "en" | "hi" } = {}): DocumentRecord {
+  const { technologyId = "react", topicId = "react-hooks", language = "en", ...rest } = over;
+  seq++;
+  return {
+    id: `d${seq}`, user_id: "u1", title: `Guide ${seq}`, status: "ready", created_at: `2026-01-${String(10 + (seq % 18)).padStart(2, "0")}T00:00:00Z`,
+    curriculum: null, error_code: null, storage_path: null, preview_paths: [], page_titles: ["One", "Two", "Three", "Four"],
+    request: { technologyId, topicId, format: "notes", language, level: "beginner" },
+    ...rest,
+  } as DocumentRecord;
 }
+const technologies: Technology[] = [{ id: "react", title: "React", title_hi: "रिएक्ट", category: "frontend" }, { id: "python", title: "Python", title_hi: "", category: "languages" }];
+const topics: Topic[] = [{ id: "react-hooks", technology_id: "react", title: "State management", title_hi: "स्टेट", full_track: false, version: 1, references: [] }];
 
-const technologies: Technology[] = [
-  { id: "react", title: "React", title_hi: "रिएक्ट", category: "web" },
-  { id: "python", title: "Python", title_hi: "पाइथन", category: "language" },
-];
-const topics: Topic[] = [
-  { id: "react-state", technology_id: "react", title: "State management", title_hi: "स्टेट प्रबंधन", full_track: false, version: 1, references: [] },
-  { id: "py-basics", technology_id: "python", title: "Basics", title_hi: "मूल बातें", full_track: false, version: 1, references: [] },
-];
+/** The polite live region that announces the result count. */
+const announced = () => screen.getAllByRole("status").map(node => node.textContent).join(" | ");
 
-const pdf = makeDoc("pdf", { title: "Hooks in depth" });
-const pptx = makeDoc("pptx", { title: "Component deck" }, { format: "pptx" });
-const notes = makeDoc("notes", { title: "Python cheat sheet" }, { format: "notes", technologyId: "python", topicId: "py-basics" });
-const generatingPdf = makeDoc("gen", { title: "Server components", status: "generating" });
-
-function Harness({ initialFilter = "all", ...props }: Partial<LibraryProps> & { documents: DocumentRecord[]; initialFilter?: LibraryFilter }) {
-  const [filter, setFilter] = useState<LibraryFilter>(initialFilter);
-  return (
-    <Library
-      technologies={technologies}
-      topics={topics}
-      filter={filter}
-      onFilterChange={setFilter}
-      onLearn={jest.fn()}
-      onOpenNotes={jest.fn()}
-      onCopyNotes={jest.fn()}
-      onRetry={jest.fn()}
-      onDelete={jest.fn()}
-      {...props}
-    />
-  );
+function setup(props: Partial<LibraryProps> = {}) {
+  const handlers = { onLearn: jest.fn(), onCopyNotes: jest.fn(), onRetry: jest.fn(), onDelete: jest.fn() };
+  const view = render(<LanguageProvider><Library documents={[]} technologies={technologies} topics={topics} {...handlers} {...props} /></LanguageProvider>);
+  return { ...handlers, ...view };
 }
-
-const titles = () => screen.queryAllByRole("heading", { level: 3 }).map(node => node.textContent);
-
-describe("search", () => {
-  test("matches titles and shows a live result count", async () => {
-    const user = userEvent.setup();
-    render(<Harness documents={[pdf, pptx, notes]} />);
-    expect(screen.getByRole("status")).toHaveTextContent("3 materials");
-
-    await user.type(screen.getByRole("searchbox", { name: "Search your library" }), "hooks");
-    expect(titles()).toEqual(["Hooks in depth"]);
-    expect(screen.getByRole("status")).toHaveTextContent("1 result for “hooks”");
-  });
-
-  test("matches the technology and topic names, not just the title", async () => {
-    const user = userEvent.setup();
-    render(<Harness documents={[pdf, pptx, notes]} />);
-    const search = screen.getByRole("searchbox");
-
-    await user.type(search, "python");
-    expect(titles()).toEqual(["Python cheat sheet"]);
-
-    await user.clear(search);
-    await user.type(search, "state management");
-    expect(titles()).toEqual(["Hooks in depth", "Component deck"]);
-  });
-
-  test("clears with the x button, returning focus to the input", async () => {
-    const user = userEvent.setup();
-    render(<Harness documents={[pdf, pptx, notes]} />);
-    const search = screen.getByRole("searchbox");
-    expect(screen.queryByRole("button", { name: "Clear search" })).not.toBeInTheDocument();
-
-    await user.type(search, "deck");
-    expect(titles()).toEqual(["Component deck"]);
-    await user.click(screen.getByRole("button", { name: "Clear search" }));
-
-    expect(search).toHaveValue("");
-    expect(search).toHaveFocus();
-    expect(titles()).toHaveLength(3);
-    expect(screen.queryByRole("button", { name: "Clear search" })).not.toBeInTheDocument();
-  });
-
-  test("clears with the Escape key", async () => {
-    const user = userEvent.setup();
-    render(<Harness documents={[pdf, pptx, notes]} />);
-    const search = screen.getByRole("searchbox");
-    await user.type(search, "deck");
-    await user.keyboard("{Escape}");
-    expect(search).toHaveValue("");
-    expect(titles()).toHaveLength(3);
-  });
-
-  test("shows an empty state with a Clear search action when nothing matches", async () => {
-    const user = userEvent.setup();
-    render(<Harness documents={[pdf, pptx, notes]} />);
-    await user.type(screen.getByRole("searchbox"), "kubernetes");
-
-    expect(titles()).toEqual(["Nothing matches “kubernetes”"]);
-    const actions = screen.getAllByRole("button", { name: "Clear search" });
-    // One in the input, one in the empty state.
-    expect(actions).toHaveLength(2);
-    await user.click(actions[1]);
-    expect(screen.getByRole("searchbox")).toHaveValue("");
-    expect(titles()).toHaveLength(3);
-  });
-
-  test("offers to search all formats when only the current filter has no match", async () => {
-    const user = userEvent.setup();
-    render(<Harness documents={[pdf, pptx, notes]} initialFilter="pptx" />);
-    await user.type(screen.getByRole("searchbox"), "hooks");
-    await user.click(screen.getByRole("button", { name: "Search all formats" }));
-    expect(screen.getByRole("tab", { name: /All/ })).toHaveAttribute("aria-selected", "true");
-    expect(titles()).toEqual(["Hooks in depth"]);
-  });
-});
-
-describe("type filter", () => {
-  test("counts and filters PDF, PPTX and notes", async () => {
-    const user = userEvent.setup();
-    render(<Harness documents={[pdf, pptx, notes, generatingPdf]} />);
-    const tablist = screen.getByRole("tablist", { name: "Filter by document type" });
-    const tab = (name: RegExp) => within(tablist).getByRole("tab", { name });
-
-    expect(tab(/All/)).toHaveTextContent("4");
-    expect(tab(/PDF/)).toHaveTextContent("2");
-    expect(tab(/PPTX/)).toHaveTextContent("1");
-    // Only real Notebook Notes documents; a PDF or PPTX is never listed again as notes.
-    expect(tab(/Notebook Notes/)).toHaveTextContent("1");
-
-    await user.click(tab(/PDF/));
-    expect(tab(/PDF/)).toHaveAttribute("aria-selected", "true");
-    expect(titles()).toEqual(["Hooks in depth", "Server components"]);
-
-    await user.click(tab(/PPTX/));
-    expect(titles()).toEqual(["Component deck"]);
-
-    await user.click(tab(/Notebook Notes/));
-    expect(titles()).toEqual(["Python cheat sheet"]);
-  });
-
-  test("filter counts follow the search", async () => {
-    const user = userEvent.setup();
-    render(<Harness documents={[pdf, pptx, notes]} />);
-    await user.type(screen.getByRole("searchbox"), "react");
-    expect(screen.getByRole("tab", { name: /All/ })).toHaveTextContent("2");
-    expect(screen.getByRole("tab", { name: /PDF/ })).toHaveTextContent("1");
-    expect(screen.getByRole("tab", { name: /Notebook Notes/ })).toHaveTextContent("0");
-  });
-
-  test("supports arrow-key navigation between tabs", async () => {
-    const user = userEvent.setup();
-    render(<Harness documents={[pdf, pptx, notes]} />);
-    const all = screen.getByRole("tab", { name: /All/ });
-    expect(all).toHaveAttribute("tabindex", "0");
-    expect(screen.getByRole("tab", { name: /PDF/ })).toHaveAttribute("tabindex", "-1");
-
-    all.focus();
-    await user.keyboard("{ArrowRight}");
-    expect(screen.getByRole("tab", { name: /PDF/ })).toHaveFocus();
-    expect(screen.getByRole("tab", { name: /PDF/ })).toHaveAttribute("aria-selected", "true");
-    await user.keyboard("{End}");
-    expect(screen.getByRole("tab", { name: /Notebook Notes/ })).toHaveAttribute("aria-selected", "true");
-    await user.keyboard("{ArrowRight}");
-    expect(screen.getByRole("tab", { name: /All/ })).toHaveFocus();
-  });
-
-  test("shows the per-format empty message when a format has no documents", async () => {
-    const user = userEvent.setup();
-    render(<Harness documents={[pdf]} />);
-    await user.click(screen.getByRole("tab", { name: /PPTX/ }));
-    expect(screen.getByText("No PowerPoint decks yet.")).toBeInTheDocument();
-  });
-});
-
-describe("pagination", () => {
-  const many = Array.from({ length: 14 }, (_, i) => makeDoc(String(i + 1).padStart(2, "0"), { title: `Lesson ${String(i + 1).padStart(2, "0")}` }));
-
-  test("shows six per page with Previous / Next and page numbers", async () => {
-    const user = userEvent.setup();
-    render(<Harness documents={many} />);
-    const pager = screen.getByRole("navigation", { name: "Library pages" });
-    expect(titles()).toHaveLength(6);
-    expect(titles()[0]).toBe("Lesson 01");
-    expect(screen.getByRole("status")).toHaveTextContent("Showing 1–6 of 14");
-    expect(within(pager).getByRole("button", { name: "Page 1" })).toHaveAttribute("aria-current", "page");
-    expect(within(pager).getByRole("button", { name: /Previous/ })).toBeDisabled();
-
-    await user.click(within(pager).getByRole("button", { name: /Next/ }));
-    expect(titles()[0]).toBe("Lesson 07");
-    expect(within(pager).getByRole("button", { name: "Page 2" })).toHaveAttribute("aria-current", "page");
-    expect(within(pager).getByRole("button", { name: "Page 1" })).not.toHaveAttribute("aria-current");
-
-    await user.click(within(pager).getByRole("button", { name: "Page 3" }));
-    expect(titles()).toEqual(["Lesson 13", "Lesson 14"]);
-    expect(screen.getByRole("status")).toHaveTextContent("Showing 13–14 of 14");
-    expect(within(pager).getByRole("button", { name: /Next/ })).toBeDisabled();
-
-    await user.click(within(pager).getByRole("button", { name: /Previous/ }));
-    expect(titles()[0]).toBe("Lesson 07");
-  });
-
-  test("returns to page 1 when the search changes", async () => {
-    const user = userEvent.setup();
-    render(<Harness documents={many} />);
-    await user.click(screen.getByRole("button", { name: "Page 3" }));
-    await user.type(screen.getByRole("searchbox"), "lesson");
-    expect(titles()[0]).toBe("Lesson 01");
-    expect(screen.getByRole("button", { name: "Page 1" })).toHaveAttribute("aria-current", "page");
-  });
-
-  test("returns to page 1 when the filter changes", async () => {
-    const user = userEvent.setup();
-    render(<Harness documents={many} />);
-    await user.click(screen.getByRole("button", { name: "Page 2" }));
-    await user.click(screen.getByRole("tab", { name: /PDF/ }));
-    expect(titles()[0]).toBe("Lesson 01");
-    expect(screen.getByRole("button", { name: "Page 1" })).toHaveAttribute("aria-current", "page");
-  });
-
-  test("hides the pager when everything fits on one page", () => {
-    render(<Harness documents={many.slice(0, 6)} />);
-    expect(screen.queryByRole("navigation", { name: "Library pages" })).not.toBeInTheDocument();
-  });
-});
-
-describe("row actions", () => {
-  test("routes Learn, notes, retry and delete to the right handlers", async () => {
-    const user = userEvent.setup();
-    const onLearn = jest.fn(), onOpenNotes = jest.fn(), onDelete = jest.fn(), onRetry = jest.fn();
-    const failed = makeDoc("failed", { title: "Broken guide", status: "failed" });
-    render(<Harness documents={[pdf, notes, failed]} onLearn={onLearn} onOpenNotes={onOpenNotes} onDelete={onDelete} onRetry={onRetry} />);
-
-    const card = (title: string) => screen.getByRole("article", { name: title });
-    await user.click(within(card("Hooks in depth")).getByRole("button", { name: /Learn in App/ }));
-    expect(onLearn).toHaveBeenCalledWith(pdf);
-    expect(within(card("Hooks in depth")).getByRole("link", { name: "Download" })).toHaveAttribute("href", "/api/documents/pdf/download");
-
-    await user.click(within(card("Python cheat sheet")).getByRole("button", { name: /Learn in App/ }));
-    expect(onOpenNotes).toHaveBeenCalledWith(notes);
-    expect(within(card("Python cheat sheet")).getByRole("link", { name: "Download" })).toHaveAttribute("href", "/api/documents/notes/download?format=notes");
-
-    expect(within(card("Broken guide")).getByText(/Generation failed/)).toBeInTheDocument();
-    await user.click(within(card("Broken guide")).getByRole("button", { name: "Try again" }));
-    expect(onRetry).toHaveBeenCalledWith(failed.request);
-
-    await user.click(within(card("Hooks in depth")).getByRole("button", { name: "Delete" }));
-    expect(onDelete).toHaveBeenCalledWith(pdf);
-  });
-
-  test("the Notebook Notes tab lists only notebook documents, each deletable", async () => {
-    const user = userEvent.setup();
-    render(<Harness documents={[pdf, notes]} />);
-    await user.click(screen.getByRole("tab", { name: /Notebook Notes/ }));
-    expect(screen.queryByRole("article", { name: "Hooks in depth" })).not.toBeInTheDocument();
-    expect(within(screen.getByRole("article", { name: "Python cheat sheet" })).getByRole("button", { name: "Delete" })).toBeInTheDocument();
-  });
-
-  test("disables delete while a document is still generating", () => {
-    render(<Harness documents={[generatingPdf]} />);
-    const card = screen.getByRole("article", { name: "Server components" });
-    expect(within(card).getByRole("button", { name: "Delete" })).toBeDisabled();
-    expect(within(card).getAllByText("Generating").length).toBeGreaterThan(0);
-  });
-
-  test("shows the first-run empty state when the library has no documents", () => {
-    render(<Harness documents={[]} />);
-    expect(screen.getByRole("heading", { name: "Your learning library starts here" })).toBeInTheDocument();
-  });
-});
 
 describe("library helpers", () => {
-  test("removes repeated course formats before counting and paginating", () => {
-    const older = { ...pdf, id: "old-pdf", created_at: "2025-01-01T00:00:00Z" };
-    const failed = { ...pdf, id: "failed-pdf", status: "failed" as const, created_at: "2026-09-01T00:00:00Z" };
-    render(<Harness documents={[notes, failed, pptx, older, pdf, notes]} />);
-    expect(titles()).toEqual([pdf.title, pptx.title, notes.title]);
-    expect(screen.getByRole("heading", { name: "Your learning library 3" })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "PDF 1" })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "PPTX 1" })).toBeInTheDocument();
-    const card = screen.getByRole("article", { name: pdf.title });
-    expect(within(card).getByRole("link", { name: "Download" })).toHaveAttribute("href", "/api/documents/pdf/download");
+  test("uniqueLibraryDocuments keeps the best copy of each course", () => {
+    const failed = doc({ title: "Hooks", status: "failed", created_at: "2026-02-01T00:00:00Z" });
+    const oldReady = doc({ title: "hooks ", created_at: "2026-01-01T00:00:00Z" });
+    const newReady = doc({ title: "Hooks", created_at: "2026-01-05T00:00:00Z" });
+    const other = doc({ title: "Hooks", language: "hi" });
+    expect(uniqueLibraryDocuments([failed, oldReady, newReady, other]).map(item => item.id)).toEqual([newReady.id, other.id]);
   });
 
-  test("shows one notebook per guide while keeping all download formats", async () => {
-    const user = userEvent.setup();
-    const guidePdf = makeDoc("react-pdf", { title: "Complete React 19 path" });
-    const guidePptx = makeDoc("react-pptx", { title: guidePdf.title }, { format: "pptx" });
-    const guideNotes = makeDoc("react-notes", { title: guidePdf.title }, { format: "notes" });
-    render(<Harness documents={[guidePptx, guideNotes, guidePdf]} />);
-    expect(screen.getAllByRole("article").map(node => node.getAttribute("data-kind"))).toEqual(["pdf", "pptx", "notes"]);
-    expect(libraryCounts([guidePdf, guidePptx, guideNotes])).toEqual({ all: 3, pdf: 1, pptx: 1, notes: 1 });
-    await user.click(screen.getByRole("tab", { name: /^Notebook Notes/ }));
-    expect(screen.getAllByRole("article")).toHaveLength(1);
-    expect(screen.getByRole("link", { name: "Download" })).toHaveAttribute("href", "/api/documents/react-notes/download?format=notes");
+  test("uniqueLibraryDocuments breaks equal-status ties by the newer copy only", () => {
+    const newer = doc({ title: "Same", created_at: "2026-01-09T00:00:00Z" });
+    const older = doc({ title: "Same", created_at: "2026-01-02T00:00:00Z" });
+    expect(uniqueLibraryDocuments([newer, older])).toEqual([newer]);
   });
 
-  test("libraryCounts counts each document once, under its own type", () => {
-    expect(libraryCounts([pdf, pptx, notes, generatingPdf])).toEqual({ all: 4, pdf: 2, pptx: 1, notes: 1 });
+  test("sortLibrary is newest first with a stable id tiebreak and tolerates bad dates", () => {
+    const a = doc({ id: "a", created_at: "2026-01-01T00:00:00Z" }), b = doc({ id: "b", created_at: "2026-01-01T00:00:00Z" }), c = doc({ id: "c", created_at: "2026-03-01T00:00:00Z" }), bad = doc({ id: "z", created_at: "not a date" });
+    expect(sortLibrary([bad, b, a, c]).map(item => item.id)).toEqual(["c", "a", "b", "z"]);
+    expect(sortLibrary([c, a, bad]).map(item => item.id)).toEqual(["c", "a", "z"]);
   });
 
-  test("sortLibrary lists every PDF, then every PPTX, then every Notebook Notes, newest guide first", () => {
-    const guide = (id: string, title: string, created: string) => [
-      makeDoc(`${id}-notes`, { title, created_at: created }, { format: "notes" }),
-      makeDoc(`${id}-pptx`, { title, created_at: created }, { format: "pptx" }),
-      makeDoc(`${id}-pdf`, { title, created_at: created }, { format: "pdf" }),
-    ];
-    const sorted = sortLibrary([...guide("next", "Next.js path", "2026-09-10T00:00:00Z"), ...guide("react", "React path", "2026-09-11T00:00:00Z")]);
-    expect(sorted.map(doc => doc.id)).toEqual(["react-pdf", "next-pdf", "react-pptx", "next-pptx", "react-notes", "next-notes"]);
+  test("searchDocuments needs every term somewhere in title, ids or catalogue names", () => {
+    const hooks = doc({ title: "Hooks in depth" }), py = doc({ title: "Basics", technologyId: "python", topicId: "py_basics" });
+    expect(searchDocuments([hooks, py], "  ")).toHaveLength(2);
+    expect(searchDocuments([hooks, py], "react state", { technologies, topics })).toEqual([hooks]);
+    expect(searchDocuments([hooks, py], "py basics")).toEqual([py]);
+    expect(searchDocuments([hooks, py], "रिएक्ट", { technologies, topics })).toEqual([hooks]);
+    expect(searchDocuments([hooks, py], "react missing")).toEqual([]);
   });
 
-  test("searchDocuments requires every term and ignores case and extra spaces", () => {
-    const catalog = { technologies, topics };
-    expect(searchDocuments([pdf, pptx, notes], "  HOOKS   react ", catalog)).toEqual([pdf]);
-    expect(searchDocuments([pdf, pptx, notes], "पाइथन", catalog)).toEqual([notes]);
-    expect(searchDocuments([pdf, pptx, notes], "", catalog)).toHaveLength(3);
-  });
-
-  test("paginate clamps out-of-range pages", () => {
+  test("paginate clamps the page and reports the visible range", () => {
     const items = Array.from({ length: 13 }, (_, i) => i);
-    expect(paginate(items, 1)).toMatchObject({ items: [0, 1, 2, 3, 4, 5], page: 1, pages: 3, from: 1, to: 6, total: 13 });
-    expect(paginate(items, 9)).toMatchObject({ items: [12], page: 3, from: 13, to: 13 });
-    expect(paginate([], 4)).toMatchObject({ items: [], page: 1, pages: 1, from: 0, to: 0 });
+    expect(paginate(items, 3)).toEqual({ items: [12], page: 3, pages: 3, from: 13, to: 13, total: 13 });
+    expect(paginate(items, 99).page).toBe(3);
+    expect(paginate(items, Number.NaN).page).toBe(1);
+    expect(paginate([], 1)).toEqual({ items: [], page: 1, pages: 1, from: 0, to: 0, total: 0 });
+    expect(paginate(items, 2, 5).items).toEqual([5, 6, 7, 8, 9]);
+    expect(paginate(items, 1).items).toHaveLength(LIBRARY_PAGE_SIZE);
   });
 
-  test("pageItems elides long runs of pages", () => {
+  test("pageItems elides long ranges around the current page", () => {
     expect(pageItems(1, 5)).toEqual([1, 2, 3, 4, 5]);
-    expect(pageItems(2, 12)).toEqual([1, 2, 3, 4, 5, "gap", 12]);
-    expect(pageItems(6, 12)).toEqual([1, "gap", 5, 6, 7, "gap", 12]);
-    expect(pageItems(11, 12)).toEqual([1, "gap", 8, 9, 10, 11, 12]);
+    expect(pageItems(2, 10)).toEqual([1, 2, 3, 4, 5, "gap", 10]);
+    expect(pageItems(9, 10)).toEqual([1, "gap", 6, 7, 8, 9, 10]);
+    expect(pageItems(5, 10)).toEqual([1, "gap", 4, 5, 6, "gap", 10]);
+  });
+
+  test("fill replaces known placeholders and leaves unknown ones", () => {
+    expect(fill("{total} of {missing}", { total: 3 })).toBe("3 of {missing}");
+  });
+
+  test("readingState reports the saved lesson and completion", () => {
+    expect(readingState(undefined, 4)).toEqual({ lesson: 0, percent: 0, completed: false });
+    expect(readingState({ document_id: "x", page: 2, completed: false, bookmarks: [], notes: "" } as never, 4)).toEqual({ lesson: 2, percent: 50, completed: false });
+    expect(readingState({ document_id: "x", page: 0, completed: false } as never, 1)).toEqual({ lesson: 1, percent: 0, completed: false });
+    expect(readingState({ document_id: "x", page: 9, completed: true } as never, 4)).toEqual({ lesson: 4, percent: 100, completed: true });
+  });
+});
+
+describe("Library", () => {
+  test("shows skeletons while loading and an empty state with no documents", () => {
+    const { rerender } = setup({ loading: true });
+    expect(screen.getByText("Loading…")).toBeInTheDocument();
+    rerender(<LanguageProvider><Library documents={[]} onLearn={jest.fn()} onCopyNotes={jest.fn()} onRetry={jest.fn()} onDelete={jest.fn()} /></LanguageProvider>);
+    expect(screen.getByRole("heading", { name: "Your learning library starts here" })).toBeInTheDocument();
+  });
+
+  test("groups guides by category and counts them", () => {
+    setup({ documents: [doc({ title: "Hooks" }), doc({ title: "Loops", technologyId: "python", topicId: "py-loops" })] });
+    expect(announced()).toContain("2 guides");
+    expect(screen.getByRole("heading", { name: "Hooks" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Loops" })).toBeInTheDocument();
+  });
+
+  test("searching filters, announces results, clears with the button or Escape, and shows a no-match state", async () => {
+    setup({ documents: [doc({ title: "Hooks" }), doc({ title: "Loops", technologyId: "python", topicId: "py-loops" })] });
+    const input = screen.getByRole("searchbox", { name: "Search your library" });
+    await userEvent.type(input, "hooks");
+    expect(announced()).toContain("1 result for “hooks”");
+    expect(screen.queryByRole("heading", { name: "Loops" })).toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: "Clear search" }));
+    expect(input).toHaveValue("");
+    expect(input).toHaveFocus();
+    await userEvent.type(input, "o");
+    expect(announced()).toContain("2 results for “o”");
+    fireEvent.keyDown(input, { key: "Escape" });
+    expect(input).toHaveValue("");
+    fireEvent.keyDown(input, { key: "Escape" });
+    await userEvent.type(input, "zzz");
+    expect(screen.getByRole("heading", { name: "Nothing matches “zzz”" })).toBeInTheDocument();
+    await userEvent.click(screen.getAllByRole("button", { name: "Clear search" }).at(-1)!);
+    expect(input).toHaveValue("");
+  });
+
+  test("an external query hides the search box and clears through the parent", async () => {
+    const onQueryChange = jest.fn();
+    setup({ documents: [doc({ title: "Hooks" })], externalQuery: "nothing", onQueryChange });
+    expect(screen.queryByRole("searchbox")).toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: "Clear search" }));
+    expect(onQueryChange).toHaveBeenCalledWith("");
+  });
+
+  test("a ready guide offers learn, copy, download and delete; progress switches Learn to Continue", async () => {
+    const ready = doc({ title: "Hooks" });
+    const { onLearn, onCopyNotes, onDelete } = setup({ documents: [ready], progress: [{ document_id: ready.id, page: 2, completed: false, bookmarks: [], notes: "" } as never] });
+    const card = screen.getByRole("heading", { name: "Hooks" }).closest("li")!;
+    expect(within(card).getByText("Lesson 2 of 4")).toBeInTheDocument();
+    expect(within(card).getByText("4 lessons")).toBeInTheDocument();
+    await userEvent.click(within(card).getByRole("button", { name: /Continue learning/ }));
+    expect(onLearn).toHaveBeenCalledWith(ready);
+    await userEvent.click(within(card).getByRole("button", { name: /Copy notes/ }));
+    expect(onCopyNotes).toHaveBeenCalledWith(ready);
+    await userEvent.click(within(card).getByRole("button", { name: "Delete" }));
+    expect(onDelete).toHaveBeenCalledWith(ready);
+    expect(within(card).getByRole("link")).toHaveAttribute("href", `/api/documents/${ready.id}/download`);
+  });
+
+  test("a completed guide and a copied guide show their states, in Hindi too", () => {
+    const done = doc({ title: "Done", language: "hi", page_titles: ["Only"] });
+    setup({ documents: [done], copiedId: done.id, progress: [{ document_id: done.id, page: 1, completed: true } as never] });
+    const card = screen.getByRole("heading", { name: "Done" }).closest("li")!;
+    expect(within(card).getAllByText("Completed").length).toBeGreaterThan(0);
+    expect(within(card).getByText("Copied")).toBeInTheDocument();
+    expect(within(card).getByText("हिन्दी")).toBeInTheDocument();
+    expect(within(card).getByRole("button", { name: /Learn in App/ })).toBeInTheDocument();
+  });
+
+  test("failed guides can be retried and pending guides cannot be deleted", async () => {
+    const failed = doc({ title: "Broken", status: "failed", technologyId: "unknown-tech" });
+    const pending = doc({ title: "Brewing", status: "generating", technologyId: "unknown-tech" });
+    const { onRetry } = setup({ documents: [failed, pending] });
+    const failedCard = screen.getByRole("heading", { name: "Broken" }).closest("li")!;
+    expect(within(failedCard).getByText(/Generation failed/)).toBeInTheDocument();
+    expect(within(failedCard).getAllByText("Unknown tech").length).toBeGreaterThan(0);
+    await userEvent.click(within(failedCard).getByRole("button", { name: "Try again" }));
+    expect(onRetry).toHaveBeenCalledWith(failed.request);
+    const pendingCard = screen.getByRole("heading", { name: "Brewing" }).closest("li")!;
+    expect(within(pendingCard).getByRole("button", { name: "Delete" })).toBeDisabled();
+    expect(within(pendingCard).queryByRole("button", { name: "Try again" })).toBeNull();
+  });
+
+  test("busy disables retry and delete", () => {
+    setup({ busy: true, documents: [doc({ title: "Broken", status: "failed" })] });
+    expect(screen.getByRole("button", { name: "Try again" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Delete" })).toBeDisabled();
+  });
+
+  test("a category pages six guides at a time", async () => {
+    setup({ documents: Array.from({ length: 8 }, (_, i) => doc({ title: `React ${i}`, created_at: `2026-01-${String(i + 1).padStart(2, "0")}T00:00:00Z` })) });
+    expect(screen.getAllByRole("heading", { level: 4 })).toHaveLength(6);
+    await userEvent.click(screen.getByRole("button", { name: /Next/ }));
+    expect(screen.getAllByRole("heading", { level: 4 })).toHaveLength(2);
+  });
+
+  test("renders Hindi technology names and dates when the language is Hindi", () => {
+    localStorage.setItem("masterclass:language", "hi");
+    try {
+      setup({ documents: [doc({ title: "Hooks", page_titles: undefined as never }), doc({ title: "Odd", technologyId: "--" }), doc({ title: "Loops", technologyId: "python", topicId: "py-loops" })] });
+      expect(screen.getAllByText("रिएक्ट").length).toBeGreaterThan(0);
+      // No Hindi title: the English one is used.
+      expect(within(screen.getByRole("heading", { name: "Loops" }).closest("li")!).getAllByText("Python").length).toBeGreaterThan(0);
+      const odd = screen.getByRole("heading", { name: "Odd" }).closest("li")!;
+      expect(within(odd).getAllByText("--").length).toBeGreaterThan(0);
+      expect(screen.getByRole("heading", { name: "Hooks" }).closest("li")!.textContent).not.toMatch(/lessons|पाठ/);
+    } finally { localStorage.removeItem("masterclass:language"); }
   });
 });

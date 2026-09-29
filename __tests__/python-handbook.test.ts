@@ -8,7 +8,9 @@ test("every topic has a category and a definition, and none repeats", () => {
   expect(new Set(names).size).toBe(names.length);
 
   for (const topic of topics) {
-    expect(Object.keys(topic).sort()).toEqual(["category", "name", "summary"]);
+    // `points` is optional: a short bullet list shown under the summary when present.
+    expect(Object.keys(topic).filter(key => key !== "points").sort()).toEqual(["category", "name", "summary"]);
+    for (const point of (topic as { points?: string[] }).points ?? []) expect(point.trim()).not.toBe("");
     expect(topic.summary.length).toBeGreaterThan(40);
     expect(topic.summary.length).toBeLessThanOrEqual(190);
   }

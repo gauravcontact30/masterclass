@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { SuperAdminDashboard } from "@/components/super-admin-dashboard";
+jest.mock("next/navigation", () => ({ useRouter: () => ({ replace: jest.fn(), refresh: jest.fn() }) }));
 const snapshot = {
   generatedAt:"2026-09-15T12:00:00Z", counts:{users:7,documents:10,activeSubscriptions:2,failedDocuments:0},
   users:[{id:"one",email:"learner@example.com",role:"viewer",created_at:"2026-09-01",email_confirmed_at:"2026-09-01",last_sign_in_at:"2026-09-15"}],

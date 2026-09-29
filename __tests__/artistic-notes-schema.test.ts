@@ -1,17 +1,7 @@
 /** @jest-environment node */
-import { exportBundleSchema, notebookRequestSchema, pdfRequestSchema, pptxRequestSchema } from "@/lib/artistic-notes/schema";
+import { exportBundleSchema, notebookRequestSchema } from "@/lib/artistic-notes/schema";
 import { latexToText, markupToPayloads, parseMarkup, SAMPLE_MARKUP } from "@/lib/artistic-notes/markup";
 
-const pdf = () => ({
-  title: "Sorting",
-  theme: "warm-academic",
-  summary: ["Merge sort is O(n log n)"],
-  sections: [{ heading: "Merge sort", blocks: [{ type: "takeaway", text: "Split, sort, merge." }] }],
-});
-const pptx = () => ({
-  title: "Sorting",
-  slides: [{ concept: "Merge sort", headline: "Split, sort, **merge**.", points: ["Divide in half", "Recurse", "Merge in linear time"] }],
-});
 const notebook = () => ({
   title: "Sorting",
   summary: ["Merge sort is O(n log n)"],
@@ -26,79 +16,51 @@ function issuePaths(result: { success: boolean; error?: { issues: { path: Proper
 
 describe("valid requests", () => {
   test("accept minimal payloads and fill defaults", () => {
-    expect(pdfRequestSchema.parse(pdf()).theme).toBe("warm-academic");
-    const deck = pptxRequestSchema.parse(pptx());
-    expect(deck.theme).toBe("high-contrast-light");
-    expect(deck.recap).toEqual([]);
     const nb = notebookRequestSchema.parse(notebook());
+    expect(nb.theme).toBe("high-contrast-light");
     expect(nb.sections[0]).toMatchObject({ takeaways: [], formulas: [], code: [], recall: [] });
   });
 
   test("normalise text: trims fields, unifies newlines, keeps code indentation", () => {
-    const input = pdf();
-    input.title = "  Sorting  ";
-    input.sections[0].blocks = [
-      { type: "text", text: "line one\r\nline two" } as never,
-      { type: "code", code: "\n\n    indented()\n    more()   \n\n" } as never,
-    ];
-    const parsed = pdfRequestSchema.parse(input);
+    const parsed = notebookRequestSchema.parse({
+      ...notebook(),
+      title: "  Sorting  ",
+      setup: "\n\n    import math\n    more()   \n\n",
+      sections: [{ heading: "Merge sort", markdown: "line one\r\nline two\u2028three" }],
+    });
     expect(parsed.title).toBe("Sorting");
-    expect(parsed.sections[0].blocks[0]).toEqual({ type: "text", text: "line one\nline two" });
-    expect(parsed.sections[0].blocks[1]).toEqual({ type: "code", language: "python", code: "    indented()\n    more()" });
+    expect(parsed.sections[0].markdown).toBe("line one\nline two\nthree");
+    expect(parsed.setup).toBe("    import math\n    more()");
   });
 });
 
-describe("validation errors (the routes answer these with 400)", () => {
+describe("validation errors (the route answers these with 400)", () => {
   test("reject unknown keys at every level, since objects are strict", () => {
-    expect(issuePaths(pdfRequestSchema.safeParse({ ...pdf(), author: "x" }))).toContain("");
-    const nested = pdf();
-    (nested.sections[0].blocks[0] as Record<string, unknown>).colour = "red";
-    expect(issuePaths(pdfRequestSchema.safeParse(nested))).toContain("sections.0.blocks.0");
+    expect(issuePaths(notebookRequestSchema.safeParse({ ...notebook(), author: "x" }))).toContain("");
+    expect(issuePaths(notebookRequestSchema.safeParse({ ...notebook(), sections: [{ ...notebook().sections[0], colour: "red" }] }))).toContain("sections.0");
   });
 
   test("reject missing required fields and empty collections", () => {
-    const noSummary: Partial<ReturnType<typeof pdf>> = pdf();
-    delete noSummary.summary;
-    expect(issuePaths(pdfRequestSchema.safeParse(noSummary))).toContain("summary");
-    expect(issuePaths(pdfRequestSchema.safeParse({ ...pdf(), sections: [] }))).toContain("sections");
-    expect(issuePaths(pptxRequestSchema.safeParse({ ...pptx(), slides: [] }))).toContain("slides");
+    const { summary: _summary, ...noSummary } = notebook(); void _summary;
+    expect(issuePaths(notebookRequestSchema.safeParse(noSummary))).toContain("summary");
+    expect(issuePaths(notebookRequestSchema.safeParse({ ...notebook(), sections: [] }))).toContain("sections");
     expect(issuePaths(notebookRequestSchema.safeParse({ ...notebook(), title: "   " }))).toContain("title");
   });
 
-  test("reject an unknown block type and an unknown theme", () => {
-    const input = pdf();
-    input.sections[0].blocks = [{ type: "video", url: "x" } as never];
-    expect(issuePaths(pdfRequestSchema.safeParse(input))).toContain("sections.0.blocks.0.type");
-    expect(issuePaths(pdfRequestSchema.safeParse({ ...pdf(), theme: "comic-sans" }))).toContain("theme");
-  });
-
-  test("enforce one concept per slide: at most three points, no repeated concept", () => {
-    const tooMany = pptx();
-    tooMany.slides[0].points.push("A fourth point");
-    const result = pptxRequestSchema.safeParse(tooMany);
-    expect(issuePaths(result)).toContain("slides.0.points");
-    expect(result.error!.issues[0].message).toMatch(/One concept per slide/);
-
-    const repeated = pptx();
-    repeated.slides.push({ ...repeated.slides[0], concept: "  merge SORT " });
-    const duplicate = pptxRequestSchema.safeParse(repeated);
-    expect(issuePaths(duplicate)).toEqual(["slides.1.concept"]);
-    expect(duplicate.error!.issues[0].message).toMatch(/repeats slide 1/);
+  test("reject an unknown theme", () => {
+    expect(issuePaths(notebookRequestSchema.safeParse({ ...notebook(), theme: "comic-sans" }))).toContain("theme");
   });
 
   test("enforce length caps and single-line fields", () => {
-    expect(issuePaths(pptxRequestSchema.safeParse({ ...pptx(), title: "x".repeat(91) }))).toContain("title");
-    const multiline = pptx();
-    multiline.slides[0].headline = "two\nlines";
-    expect(issuePaths(pptxRequestSchema.safeParse(multiline))).toContain("slides.0.headline");
-    expect(issuePaths(pptxRequestSchema.safeParse({ ...pptx(), slides: [{ ...pptx().slides[0], anchor: "123456789" }] }))).toContain("slides.0.anchor");
+    expect(issuePaths(notebookRequestSchema.safeParse({ ...notebook(), title: "x".repeat(121) }))).toContain("title");
+    expect(issuePaths(notebookRequestSchema.safeParse({ ...notebook(), subtitle: "two\nlines" }))).toContain("subtitle");
+    expect(issuePaths(notebookRequestSchema.safeParse({ ...notebook(), setup: "x".repeat(2001) }))).toContain("setup");
   });
 
-  test("reject control characters that would corrupt the generated files", () => {
-    expect(issuePaths(pdfRequestSchema.safeParse({ ...pdf(), title: "bad\u0007bell" }))).toContain("title");
-    const input = notebook();
-    input.sections[0].markdown = "null\u0000byte";
-    expect(issuePaths(notebookRequestSchema.safeParse(input))).toContain("sections.0.markdown");
+  test("reject control characters that would corrupt the generated file", () => {
+    expect(issuePaths(notebookRequestSchema.safeParse({ ...notebook(), title: "bad\u0007bell" }))).toContain("title");
+    expect(issuePaths(notebookRequestSchema.safeParse({ ...notebook(), sections: [{ ...notebook().sections[0], markdown: "null\u0000byte" }] }))).toContain("sections.0.markdown");
+    expect(issuePaths(notebookRequestSchema.safeParse({ ...notebook(), setup: "x\u0001" }))).toContain("setup");
   });
 
   test("reject LaTeX that would break the notebook's $$ delimiters", () => {
@@ -108,28 +70,24 @@ describe("validation errors (the routes answer these with 400)", () => {
     expect(issuePaths(blankLine)).toContain("sections.0.formulas.0.latex");
   });
 
-  test("a bundle needs at least one format and validates each one", () => {
+  test("a bundle needs the notebook and validates it", () => {
     expect(exportBundleSchema.safeParse({}).success).toBe(false);
     expect(exportBundleSchema.safeParse({ notebook: notebook() }).success).toBe(true);
-    expect(issuePaths(exportBundleSchema.safeParse({ pdf: { ...pdf(), summary: [] } }))).toContain("pdf.summary");
+    expect(issuePaths(exportBundleSchema.safeParse({ notebook: { ...notebook(), summary: [] } }))).toContain("notebook.summary");
+    expect(issuePaths(exportBundleSchema.safeParse({ notebook: notebook(), pdf: {} }))).toContain("");
   });
 });
 
 describe("quick markup", () => {
-  test("the sample document produces three valid payloads", () => {
+  test("the sample document produces a valid notebook payload", () => {
     const payloads = markupToPayloads(SAMPLE_MARKUP, { title: "Gradient descent", theme: "retro-cyberpunk" });
-    expect(pdfRequestSchema.safeParse(payloads.pdf).success).toBe(true);
-    expect(pptxRequestSchema.safeParse(payloads.pptx).success).toBe(true);
-    expect(notebookRequestSchema.safeParse(payloads.notebook).success).toBe(true);
-    const deck = pptxRequestSchema.parse(payloads.pptx);
-    expect(deck.slides.map(slide => slide.concept)).toEqual(["The loss landscape", "The gradient", "The update rule"]);
-    for (const slide of deck.slides) expect(slide.points.length).toBeLessThanOrEqual(3);
+    expect(Object.keys(payloads)).toEqual(["notebook"]);
     const nb = notebookRequestSchema.parse(payloads.notebook);
-    expect(nb.sections[2].code[0].source).toContain("def gradient_descent");
-    expect(nb.sections[0].formulas[0].latex).toContain("\\frac{1}{n}");
+    expect(nb.sections.some(section => section.code.some(cell => cell.source.includes("def gradient_descent")))).toBe(true);
+    expect(nb.sections.some(section => section.formulas.some(formula => formula.latex.includes("\\frac{1}{n}")))).toBe(true);
   });
 
-  test("parses every directive into the matching block", () => {
+  test("parses every directive into the matching item", () => {
     const doc = parseMarkup(["TL;DR: remember me", "# Topic", "Def: Term = the meaning", "e.g. an example", "Key: key idea", "Warn: a trap", "Q: why?", "A: because", "Formula: E = mc²", "- one", "- two", "plain", "text"].join("\n"));
     expect(doc.summary).toEqual(["remember me"]);
     expect(doc.sections[0].items.map(item => item.kind)).toEqual(["definition", "takeaway", "warning", "recall", "formula", "bullets", "text"]);
@@ -137,7 +95,7 @@ describe("quick markup", () => {
     expect(doc.sections[0].items[6]).toEqual({ kind: "text", text: "plain text" });
   });
 
-  test("renders simple LaTeX as readable Unicode for the PDF and deck", () => {
+  test("renders simple LaTeX as readable Unicode", () => {
     expect(latexToText("\\theta \\leftarrow \\theta - \\eta \\nabla L(\\theta)")).toBe("θ ← θ − η ∇ L(θ)");
     expect(latexToText("\\sum_{i=1}^{n} x_i^2")).toBe("Σᵢ₌₁ⁿ xᵢ²");
     expect(latexToText("\\frac{a+b}{2}")).toBe("(a+b)/2");

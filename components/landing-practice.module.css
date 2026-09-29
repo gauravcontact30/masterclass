@@ -1,0 +1,128 @@
+/* Practice workbench (taste-skill, redesign-preserve): the page's Claude tokens
+   are kept (cream ground, white paper, serif display, clay as the one accent).
+   Green and the clay "wrong" state are semantic answer feedback only.
+   Shape rule: cards 20px, inner controls 12px, buttons full pill. */
+.practice {
+  --cc-ground: #faf9f5;
+  --cc-paper: #ffffff;
+  --cc-ink: #141413;
+  --cc-ink-2: #3d3d3a;
+  --cc-muted: #5e5d59;
+  --cc-line: #e8e6dc;
+  --cc-line-2: #dedcd1;
+  --cc-clay: #b5522f;
+  --cc-clay-hover: #8f3f23;
+  --cc-wash: #f5f4ed;
+  --cc-right: #5f6f45;
+  /* Subject inks, from the dashboard kind inks: API blue, techy amber, word purple.
+     Green stays reserved for the correct answer, clay for a wrong one. */
+  --sub-maths: #2f5f82;
+  --sub-science: #7a5d10;
+  --sub-design: #5e4a8f;
+  --cc-serif: var(--font-anek), "Anek Devanagari", system-ui, sans-serif;
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  color: var(--cc-ink);
+  background: var(--cc-ground);
+  border-top: 1px solid var(--cc-line);
+}
+.inner { width: min(1240px, calc(100% - 64px)); margin-inline: auto; padding-block: clamp(72px, 8vw, 120px); display: grid; gap: clamp(32px, 4vw, 48px); }
+
+.head { display: grid; gap: 14px; max-width: 62ch; }
+.head h2 { margin: 0; font-family: var(--cc-serif); font-weight: 400; font-size: clamp(34px, 4vw, 56px); line-height: 1.08; letter-spacing: -0.032em; text-wrap: balance; }
+.accent { color: var(--cc-clay); }
+.head p { margin: 0; font-size: 16.5px; line-height: 1.65; color: var(--cc-ink-2); text-wrap: pretty; }
+
+.bench { display: grid; gap: 0; background: var(--cc-paper); border: 1px solid var(--cc-line); border-radius: 20px; overflow: hidden; box-shadow: 0 1px 0 rgba(20, 20, 19, .03), 0 30px 60px -40px rgba(20, 20, 19, .38); }
+
+/* Each subject carries its own ink through the tab, the idea pane, the rule card and the answer tiles. */
+.bench[data-subject="maths"], .switcher [data-subject="maths"] { --tone: var(--sub-maths); }
+.bench[data-subject="science"], .switcher [data-subject="science"] { --tone: var(--sub-science); }
+.bench[data-subject="design"], .switcher [data-subject="design"] { --tone: var(--sub-design); }
+
+/* Subject tabs: a light, colour-washed strip; each tab a pill in its own ink, the pressed one filled. */
+.switcher {
+  display: flex; flex-wrap: wrap; gap: 10px; padding: 18px;
+  background:
+    radial-gradient(45% 140% at 0% 0%, #e9f1fa 0%, transparent 65%),
+    radial-gradient(45% 140% at 50% 0%, #fbf3dc 0%, transparent 65%),
+    radial-gradient(45% 140% at 100% 0%, #f0ebfa 0%, transparent 65%),
+    var(--cc-paper);
+  border-bottom: 1px solid var(--cc-line);
+}
+.switcher button { display: inline-flex; align-items: center; gap: 12px; min-height: 58px; padding: 8px 20px 8px 8px; border: 1px solid color-mix(in srgb, var(--tone) 22%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--tone) 6%, var(--cc-paper)); color: var(--cc-ink); font: inherit; text-align: left; cursor: pointer; transition: background-color .25s ease, border-color .25s ease, box-shadow .25s ease, color .25s ease, transform .15s ease; }
+.switcher button:hover { background: color-mix(in srgb, var(--tone) 12%, var(--cc-paper)); border-color: color-mix(in srgb, var(--tone) 40%, transparent); }
+.switcher button:active { transform: scale(.97); }
+.switcher button[aria-pressed="true"] { background: var(--tone); border-color: var(--tone); color: #fff; box-shadow: 0 12px 24px -16px var(--tone); }
+.subjectIcon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 999px; background: color-mix(in srgb, var(--tone) 14%, var(--cc-paper)); color: var(--tone); transition: background-color .25s ease, color .25s ease; }
+.switcher button[aria-pressed="true"] .subjectIcon { background: rgba(255, 255, 255, .2); color: #fff; }
+.subjectText { display: grid; gap: 1px; font-size: 15px; font-weight: 600; line-height: 1.2; }
+.subjectText small { font-size: 12px; font-weight: 500; color: color-mix(in srgb, var(--tone) 75%, var(--cc-ink)); }
+.switcher button[aria-pressed="true"] .subjectText small { color: rgba(255, 255, 255, .8); }
+
+.panes { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 0; }
+
+.idea { display: grid; align-content: start; gap: 14px; padding: clamp(24px, 3vw, 40px); background: linear-gradient(160deg, color-mix(in srgb, var(--tone) 9%, var(--cc-paper)), color-mix(in srgb, var(--tone) 3%, var(--cc-paper)) 70%); border-right: 1px solid color-mix(in srgb, var(--tone) 14%, var(--cc-line)); }
+.tag { justify-self: start; margin: 0; padding: 5px 12px; border-radius: 999px; background: color-mix(in srgb, var(--tone) 12%, var(--cc-paper)); font-size: 12.5px; font-weight: 600; color: var(--tone); }
+.idea h3 { margin: 0; font-family: var(--cc-serif); font-weight: 400; font-size: clamp(26px, 2.4vw, 34px); line-height: 1.12; letter-spacing: -0.02em; text-wrap: pretty; }
+.concept { margin: 0; font-size: 15.5px; line-height: 1.65; color: var(--cc-ink-2); }
+.rule { display: grid; gap: 8px; margin-top: 8px; padding: 16px 18px; border-radius: 12px; background: var(--cc-paper); border: 1px solid color-mix(in srgb, var(--tone) 22%, var(--cc-line)); box-shadow: 0 10px 24px -20px var(--tone); }
+.rule small { font-size: 12px; font-weight: 600; color: var(--tone); }
+.rule code { font-family: var(--cc-serif); font-size: clamp(19px, 1.8vw, 23px); line-height: 1.4; color: var(--cc-ink); overflow-wrap: anywhere; }
+
+.task { display: grid; align-content: start; gap: 18px; padding: clamp(24px, 3vw, 40px); }
+.task h4 { margin: 0; font-size: clamp(18px, 1.6vw, 21px); font-weight: 600; line-height: 1.4; letter-spacing: -0.01em; color: var(--cc-ink); text-wrap: pretty; }
+.options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.option { display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 12px 16px 12px 12px; border: 1px solid var(--cc-line-2); border-radius: 12px; background: var(--cc-paper); color: var(--cc-ink); font: inherit; font-size: 15px; text-align: left; cursor: pointer; transition: border-color .18s ease, background-color .18s ease, transform .18s var(--ease-out), box-shadow .18s ease; }
+.option:hover:not(:disabled) { border-color: var(--tone); background: color-mix(in srgb, var(--tone) 4%, var(--cc-paper)); box-shadow: 0 8px 20px -14px var(--tone); transform: translateY(-1px); }
+.option:active:not(:disabled) { transform: scale(.98); }
+.option:disabled { cursor: default; color: var(--cc-ink); opacity: 1; }
+.letter { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 999px; background: color-mix(in srgb, var(--tone) 11%, var(--cc-paper)); color: var(--tone); font-size: 13px; font-weight: 600; transition: background-color .2s ease, color .2s ease; }
+.option[data-state="correct"] { border-color: var(--cc-right); background: color-mix(in srgb, var(--cc-right) 7%, var(--cc-paper)); }
+.option[data-state="correct"] .letter { background: var(--cc-right); color: #fff; }
+.option[data-state="wrong"] { border-color: var(--cc-clay); background: color-mix(in srgb, var(--cc-clay) 6%, var(--cc-paper)); }
+.option[data-state="wrong"] .letter { background: var(--cc-clay); color: #fff; }
+.option[data-state="idle"] { opacity: .55; }
+
+.feedback { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; padding: 16px 18px; border-radius: 12px; background: color-mix(in srgb, var(--cc-clay) 7%, var(--cc-paper)); border: 1px solid color-mix(in srgb, var(--cc-clay) 22%, transparent); }
+.feedback[data-right] { background: color-mix(in srgb, var(--cc-right) 7%, var(--cc-paper)); border-color: color-mix(in srgb, var(--cc-right) 24%, transparent); }
+.feedbackIcon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 999px; background: var(--cc-clay); color: #fff; }
+.feedback[data-right] .feedbackIcon { background: var(--cc-right); }
+.feedback strong { display: block; font-size: 15px; color: var(--cc-ink); }
+.feedback p { margin: 4px 0 0; font-size: 14.5px; line-height: 1.6; color: var(--cc-ink-2); }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.ghost, .next { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: background-color .2s ease, border-color .2s ease, transform .2s var(--ease-out); }
+.ghost { border: 1px solid var(--cc-line-2); background: var(--cc-paper); color: var(--cc-ink); }
+.ghost:hover { border-color: var(--cc-ink-2); }
+.next { border: 0; background: var(--tone); color: #fff; box-shadow: 0 10px 22px -14px var(--tone); }
+.next:hover { background: color-mix(in srgb, var(--tone) 86%, #000); }
+.next svg { transition: transform .2s var(--ease-out); }
+.next:hover svg { transform: translateX(3px); }
+.ghost:active, .next:active { transform: scale(.98); }
+
+.practice :focus-visible { outline: 3px solid #b5522f; outline-offset: 2px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .panes { animation: panesIn .55s var(--ease-out); }
+  .feedback, .actions { animation: panesIn .45s var(--ease-out); }
+  .practice[data-reveal] .inner > * { transition: opacity .8s var(--ease-out), transform .8s var(--ease-out); }
+  .practice[data-reveal] .inner > * + * { transition-delay: .12s; }
+  .practice[data-reveal="wait"] .inner > * { opacity: 0; transform: translateY(26px); }
+}
+@keyframes panesIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .switcher button, .subjectIcon, .option, .letter, .next svg { transition: none; }
+}
+
+@media (max-width: 900px) {
+  .panes { grid-template-columns: minmax(0, 1fr); }
+  .idea { border-right: 0; border-bottom: 1px solid var(--cc-line); }
+}
+@media (max-width: 640px) {
+  .inner { width: calc(100% - 32px); }
+  .switcher { gap: 8px; padding: 12px; }
+  .switcher button { min-height: 50px; padding-right: 16px; }
+  .subjectIcon { width: 34px; height: 34px; }
+  .options { grid-template-columns: minmax(0, 1fr); }
+  .idea, .task { padding: 20px; }
+}

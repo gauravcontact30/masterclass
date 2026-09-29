@@ -1,0 +1,1 @@
+.comment { display: block; max-width: 72ch; padding: 3px 0 9px; color: var(--code-comment, #536c59); font: italic 12px/1.65 var(--code-font, monospace); white-space: pre-wrap; overflow-wrap: anywhere; }

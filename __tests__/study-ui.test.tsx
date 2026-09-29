@@ -66,11 +66,11 @@ test("membership requires preparation before checkout and provides monthly/yearl
 });
 test("landing sample gives worked feedback and pricing follows the billing toggle", async () => {
   const user = userEvent.setup(); render(<LandingPage />);
-  await user.click(screen.getByRole("button", { name: "B 19" }));
+  await user.click(screen.getByRole("button", { name: /B.*19/ }));
   expect(screen.getByRole("status")).toHaveTextContent("Count the four gaps");
-  await user.click(within(screen.getByRole("group", { name: "Sample topic" })).getByRole("button", { name: "System Design" }));
+  await user.click(within(screen.getByRole("group", { name: "Sample topic" })).getByRole("button", { name: /System Design/ }));
   expect(screen.queryByRole("status")).not.toBeInTheDocument();
-  await user.click(screen.getByRole("button", { name: "D Reconcile the original attempt" }));
+  await user.click(screen.getByRole("button", { name: /D.*Reconcile the original attempt/ }));
   expect(screen.getByRole("status")).toHaveTextContent("timeout does not prove");
   await user.click(screen.getByRole("button", { name: /yearly/i }));
   expect(screen.getByText("₹2,999")).toBeInTheDocument();

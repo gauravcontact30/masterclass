@@ -1,4 +1,5 @@
 "use client";
+import { isCodeExampleTab } from "@/lib/code-example-tabs";
 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +12,8 @@ const TechyServices = dynamic(() => import("./techy-services").then(module => mo
 import { ArrowLeft, ArrowRight, Check, Code2, Copy, FileCode2, Folder, Layers, RotateCcw, Search } from "lucide-react";
 import { TECHY_TOPICS, TECHY_VOCABULARY, TECHY_EXAMPLES, type TechyTopic } from "@/lib/techy-content";
 import { highlightLines } from "@/lib/code-highlight";
+import { codeLineNotes } from "@/lib/code-line-notes";
+import { CodeLineComment } from "./code-line-comment";
 import type { TechyExample } from "@/lib/techy-examples";
 import styles from "./techy.module.css";
 import { DashboardPageHeader } from "./dashboard-page-header";
@@ -22,6 +25,7 @@ function CodeEditor({ example }: { example: TechyExample }) {
   const [path, setPath] = useState(example.files[0].path);
   const [copyStatus, setCopyStatus] = useState("");
   const file = example.files.find(item => item.path === path) ?? example.files[0];
+  const notes = codeLineNotes(file.code, file.path, file.language);
   const directories = [...new Set(example.files.map(item => item.path.includes("/") ? item.path.slice(0, item.path.lastIndexOf("/")) : "Project root"))];
   function select(next: string) { setPath(next); setCopyStatus(""); }
   async function copy() {
@@ -33,9 +37,9 @@ function CodeEditor({ example }: { example: TechyExample }) {
     <div className={styles.editorBody}>
       <nav className={styles.files} aria-label="Codebase files"><small>EXPLORER</small>{directories.map(directory => <div key={directory}><strong><Folder size={13}/>{directory}</strong>{example.files.filter(item => (item.path.includes("/") ? item.path.slice(0, item.path.lastIndexOf("/")) : "Project root") === directory).map(item => <button key={item.path} aria-current={path === item.path ? "true" : undefined} onClick={() => select(item.path)} title={item.path}><FileCode2 size={13}/>{item.path.split("/").pop()}</button>)}</div>)}</nav>
       <div className={styles.codeArea}>
-        <div className={styles.fileTabs} aria-label="Open files">{example.files.map(item => <button key={item.path} aria-pressed={path === item.path} onClick={() => select(item.path)} title={item.path}><FileCode2 size={13}/>{item.path.split("/").pop()}</button>)}</div>
+        <div className={styles.fileTabs} aria-label="Open files">{example.files.filter(item => isCodeExampleTab(item.path)).map(item => <button key={item.path} aria-pressed={path === item.path} onClick={() => select(item.path)} title={item.path}><FileCode2 size={13}/>{item.path.split("/").pop()}</button>)}</div>
         <div className={styles.codeMeta}><span>{file.path}</span><button onClick={() => void copy()} aria-label="Copy current file">{copyStatus === "Copied" ? <Check size={14}/> : <Copy size={14}/>} {copyStatus === "Copied" ? "Copied" : "Copy"}</button></div>
-        <pre className={styles.code} aria-label={`Source code for ${file.path}`} tabIndex={0}><code>{highlightLines(file.code, file.language).map((line, index) => <span className={styles.codeLine} key={index}><span className={styles.lineNumber} aria-hidden="true">{index + 1}</span><span>{line.map((token, part) => <span key={part} className={token.tone ? styles[token.tone] : undefined}>{token.text}</span>) || " "}</span>{"\n"}</span>)}</code></pre>
+        <pre className={styles.code} aria-label={`Source code for ${file.path}`} tabIndex={0}><code>{highlightLines(file.code, file.language).map((line, index) => <span className={styles.codeLine} key={index}><span className={styles.lineNumber} aria-hidden="true">{index + 1}</span><span>{line.map((token, part) => <span key={part} className={token.tone ? styles[token.tone] : undefined}>{token.text}</span>) || " "}{"\n"}<CodeLineComment note={notes[index]} /></span></span>)}</code></pre>
       </div>
     </div>
     <div className={styles.editorFooter}><span>{file.language} · UTF-8</span><span role="status">{copyStatus || `${example.files.length} connected files`}</span></div>

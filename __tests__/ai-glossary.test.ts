@@ -7,7 +7,9 @@ test("every requested term is present exactly once, with a category and a defini
   expect(new Set(names).size).toBe(names.length);
 
   for (const term of terms) {
-    expect(Object.keys(term).sort()).toEqual(["category", "name", "summary"]);
+    // `points` is optional: a short bullet list shown under the summary when present.
+    expect(Object.keys(term).filter(key => key !== "points").sort()).toEqual(["category", "name", "summary"]);
+    for (const point of (term as { points?: string[] }).points ?? []) expect(point.trim()).not.toBe("");
     expect(term.category).toBeTruthy();
     // Long enough to actually define the term, short enough for a card.
     expect(term.summary.length).toBeGreaterThan(40);

@@ -6,14 +6,18 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Check, Code2, Copy, FileCode2, Folder, FolderOpen, Play, Square, Terminal } from "lucide-react";
 import type { ApiReference, CodeExample, ExampleFile } from "@/lib/domain";
 import { highlightLines } from "@/lib/code-highlight";
+import { codeLineNotes } from "@/lib/code-line-notes";
+import { CodeLineComment } from "./code-line-comment";
 import { CodeLab } from "./code-lab";
 import { runSupport } from "@/lib/code-run";
+import { isCodeExampleTab } from "@/lib/code-example-tabs";
 import { runJavaScriptPuzzle, type PuzzleResult } from "@/lib/javascript-sandbox";
 import styles from "./lesson-code-examples.module.css";
 
 /** React escapes every token; lesson text is never inserted as HTML. */
-function Highlight({ code, language }: { code: string; language: ExampleFile["language"] }) {
-  return <pre className={styles.code}><code>{highlightLines(code, language).map((line, index) => <span className={styles.line} key={index}><span className={styles.lineNumber} aria-hidden="true">{index + 1}</span><span>{line.map((token, position) => <span key={position} data-token={token.tone || undefined}>{token.text}</span>)}{"\n"}</span></span>)}</code></pre>;
+function Highlight({ code, language, path }: { code: string; language: ExampleFile["language"]; path: string }) {
+  const notes = codeLineNotes(code, path, language);
+  return <pre className={styles.code}><code>{highlightLines(code, language).map((line, index) => <span className={styles.line} key={index}><span className={styles.lineNumber} aria-hidden="true">{index + 1}</span><span>{line.map((token, position) => <span key={position} data-token={token.tone || undefined}>{token.text}</span>)}{"\n"}<CodeLineComment note={notes[index]} /></span></span>)}</code></pre>;
 }
 
 function FileTree({ files, active, onSelect, prefix = "" }: { files: ExampleFile[]; active: string; onSelect: (path: string) => void; prefix?: string }) {
@@ -45,11 +49,6 @@ function RunPanel({ file, hi }: { file: ExampleFile; hi: boolean }) {
   const [result, setResult] = useState<PuzzleResult | null>(null);
   const [running, setRunning] = useState(false);
   const stop = useRef<(() => void) | null>(null);
-  useEffect(() => {
-    stop.current?.();
-    setOutput([]);
-    setResult(null);
-  }, [file.path]);
   useEffect(() => () => stop.current?.(), []);
   if (!runSupport(file.code, file.language).runnable) return null;
   const start = () => {
@@ -92,15 +91,18 @@ function ExampleWorkspace({ example, hi, id }: { example: CodeExample; hi: boole
         <aside className={styles.explorer} aria-label={hi ? "प्रोजेक्ट फ़ाइलें" : "Project files"}><div className={styles.explorerTitle}><FolderOpen size={14} aria-hidden="true" /><ExpandedText text={hi ? "प्रोजेक्ट" : "PROJECT"} /></div><FileTree files={example.files} active={file.path} onSelect={selectFile} /></aside>
         <div className={styles.source}>
           <div className={styles.fileTabs} role="tablist" aria-label={hi ? "इस उदाहरण की फ़ाइलें" : "Files in this example"}>
-            {example.files.map(item => <button key={item.path} type="button" role="tab" aria-selected={item.path === file.path} title={`project/${item.path}`} onClick={() => selectFile(item.path)}>
+            {example.files.filter(item => isCodeExampleTab(item.path)).map(item => <button key={item.path} type="button" role="tab" aria-selected={item.path === file.path} title={`project/${item.path}`} onClick={() => selectFile(item.path)}>
               <FileCode2 size={13} aria-hidden="true" /><span>{item.path.split("/").pop()}</span>
             </button>)}
           </div>
           <div className={styles.fileBar}><span title={`project/${file.path}`} className={styles.filePath}><FileCode2 size={14} aria-hidden="true" />project/<ExpandedText text={file.path} /></span><button type="button" title={hi ? "फ़ाइल कॉपी करें" : "Copy file"} aria-label={hi ? "फ़ाइल कॉपी करें" : "Copy file"} onClick={() => void copy()}>{copyStatus === "Copied" || copyStatus === "कॉपी हुआ" ? <Check size={15} /> : <Copy size={15} />}</button></div>
           <p className={styles.fileDescription}><ExpandedText text={file.description} /></p>
-          <div className={styles.codeScroll} tabIndex={0} role="region" aria-label={`${hi ? "कोड" : "Code"}: ${file.path}`}><Highlight code={file.code} language={file.language} /></div>
+          <div className={styles.codeScroll} tabIndex={0} role="region" aria-label={`${hi ? "कोड" : "Code"}: ${file.path}`}><Highlight code={file.code} language={file.language} path={file.path} /></div>
           <div className={styles.statusBar}><span><ExpandedText text={file.language} /> · UTF-8</span><span role="status"><ExpandedText text={copyStatus} /></span><span>{file.code.split("\n").length} <ExpandedText text={hi ? "पंक्तियाँ" : "lines"} /></span></div>
-          <RunPanel file={file} hi={hi} />
+          {/* Keyed on the file: the output below belongs to the file that
+              produced it, so opening another one starts a fresh panel rather
+              than clearing the last one after it has already rendered. */}
+          <RunPanel key={file.path} file={file} hi={hi} />
         </div>
       </div>
     </div>

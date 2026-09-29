@@ -1,0 +1,762 @@
+[
+  {
+    "name": "React 19",
+    "url": "https://react.dev",
+    "aliases": [
+      "react"
+    ],
+    "thumbnail": "/images/brands/react.svg"
+  },
+  {
+    "name": "Next.js 16+",
+    "url": "https://nextjs.org",
+    "aliases": [
+      "nextjs"
+    ],
+    "thumbnail": "/images/brands/nextjs.svg"
+  },
+  {
+    "name": "TypeScript",
+    "url": "https://www.typescriptlang.org",
+    "aliases": [
+      "typescript"
+    ],
+    "thumbnail": "/images/brands/typescript.svg"
+  },
+  {
+    "name": "Python 3.12+",
+    "url": "https://python.org",
+    "aliases": [
+      "python"
+    ],
+    "thumbnail": "/images/brands/python.svg"
+  },
+  {
+    "name": "Docker & Containers",
+    "url": "https://www.docker.com",
+    "aliases": [
+      "docker"
+    ],
+    "thumbnail": "/images/brands/docker.svg"
+  },
+  {
+    "name": "Amazon Web Services (AWS)",
+    "url": "https://aws.amazon.com",
+    "aliases": [
+      "aws"
+    ],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Agentic AI & Claude",
+    "url": "https://docs.anthropic.com",
+    "aliases": [
+      "agentic-ai"
+    ],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Modern JavaScript",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
+    "aliases": [
+      "javascript"
+    ],
+    "thumbnail": "/images/brands/javascript.svg"
+  },
+  {
+    "name": "Tailwind CSS",
+    "url": "https://tailwindcss.com",
+    "aliases": [
+      "tailwind"
+    ],
+    "thumbnail": "/images/brands/tailwind.svg"
+  },
+  {
+    "name": "Node.js",
+    "url": "https://nodejs.org",
+    "aliases": [
+      "nodejs"
+    ],
+    "thumbnail": "/images/brands/nodejs.svg"
+  },
+  {
+    "name": "PostgreSQL",
+    "url": "https://www.postgresql.org",
+    "aliases": [
+      "postgresql"
+    ],
+    "thumbnail": "/images/brands/postgresql.svg"
+  },
+  {
+    "name": "Zustand",
+    "url": "https://zustand.docs.pmnd.rs/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "TanStack Query",
+    "url": "https://tanstack.com/query/latest/docs/framework/react/overview",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Vitest",
+    "url": "https://vitest.dev",
+    "aliases": [
+      "vitest"
+    ],
+    "thumbnail": "/images/brands/vitest.svg"
+  },
+  {
+    "name": "Playwright",
+    "url": "https://playwright.dev",
+    "aliases": [
+      "playwright"
+    ],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "GraphQL",
+    "url": "https://graphql.org",
+    "aliases": [
+      "graphql"
+    ],
+    "thumbnail": "/images/brands/graphql.svg"
+  },
+  {
+    "name": "Redis",
+    "url": "https://redis.io/docs/latest/",
+    "aliases": [],
+    "thumbnail": "/images/brands/redis.svg"
+  },
+  {
+    "name": "Git & Version Control",
+    "url": "https://git-scm.com",
+    "aliases": [
+      "git"
+    ],
+    "thumbnail": "/images/brands/git.svg"
+  },
+  {
+    "name": "Kubernetes (K8s)",
+    "url": "https://kubernetes.io",
+    "aliases": [
+      "kubernetes"
+    ],
+    "thumbnail": "/images/brands/kubernetes.svg"
+  },
+  {
+    "name": "FastAPI",
+    "url": "https://fastapi.tiangolo.com",
+    "aliases": [
+      "fastapi"
+    ],
+    "thumbnail": "/images/brands/fastapi.svg"
+  },
+  {
+    "name": "MongoDB",
+    "url": "https://www.mongodb.com",
+    "aliases": [
+      "mongodb"
+    ],
+    "thumbnail": "/images/brands/mongodb.svg"
+  },
+  {
+    "name": "Supabase",
+    "url": "https://supabase.com",
+    "aliases": [
+      "supabase"
+    ],
+    "thumbnail": "/images/brands/supabase.svg"
+  },
+  {
+    "name": "Rust",
+    "url": "https://www.rust-lang.org",
+    "aliases": [
+      "rust"
+    ],
+    "thumbnail": "/images/brands/rust.svg"
+  },
+  {
+    "name": "Go (Golang)",
+    "url": "https://go.dev",
+    "aliases": [
+      "go"
+    ],
+    "thumbnail": "/images/brands/go.svg"
+  },
+  {
+    "name": "Linux & Shell",
+    "url": "https://www.kernel.org",
+    "aliases": [
+      "linux"
+    ],
+    "thumbnail": "/images/brands/linux.svg"
+  },
+  {
+    "name": "Angular 18+",
+    "url": "https://angular.dev",
+    "aliases": [
+      "angular"
+    ],
+    "thumbnail": "/images/brands/angular.svg"
+  },
+  {
+    "name": "Vue.js 3",
+    "url": "https://vuejs.org",
+    "aliases": [
+      "vue"
+    ],
+    "thumbnail": "/images/brands/vue.svg"
+  },
+  {
+    "name": "Flutter & Dart",
+    "url": "https://flutter.dev",
+    "aliases": [
+      "flutter"
+    ],
+    "thumbnail": "/images/brands/flutter.svg"
+  },
+  {
+    "name": "Django",
+    "url": "https://www.djangoproject.com",
+    "aliases": [
+      "django"
+    ],
+    "thumbnail": "/images/brands/django.svg"
+  },
+  {
+    "name": "Express.js",
+    "url": "https://expressjs.com",
+    "aliases": [
+      "express"
+    ],
+    "thumbnail": "/images/brands/express.svg"
+  },
+  {
+    "name": "NestJS",
+    "url": "https://docs.nestjs.com/",
+    "aliases": [
+      "Nest.js",
+      "Nest JS"
+    ],
+    "thumbnail": "/images/brands/nestjs.svg"
+  },
+  {
+    "name": "Conform - Validation libraries",
+    "url": "https://conform.guide/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "T3 environment",
+    "url": "https://env.t3.gg/docs/introduction",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Authentication with Auth.js & Kinde Auth",
+    "url": "https://authjs.dev/getting-started",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "BetterAuth",
+    "url": "https://www.better-auth.com/docs/introduction",
+    "aliases": [],
+    "thumbnail": "/images/brands/betterauth.svg"
+  },
+  {
+    "name": "Clerk user management",
+    "url": "https://clerk.com/docs",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Prisma",
+    "url": "https://www.prisma.io/docs",
+    "aliases": [],
+    "thumbnail": "/images/brands/prisma.svg"
+  },
+  {
+    "name": "Drizzle ORM",
+    "url": "https://orm.drizzle.team/docs/overview",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Neon",
+    "url": "https://neon.com/docs/introduction",
+    "aliases": [],
+    "thumbnail": "/images/brands/neon.svg"
+  },
+  {
+    "name": "Upstash",
+    "url": "https://upstash.com/docs",
+    "aliases": [],
+    "thumbnail": "/images/brands/upstash.svg"
+  },
+  {
+    "name": "uv package manager",
+    "url": "https://docs.astral.sh/uv/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Redis caching solutions",
+    "url": "https://redis.io/docs/latest/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Zod validation libraries",
+    "url": "https://zod.dev/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Terraform",
+    "url": "https://developer.hashicorp.com/terraform/docs",
+    "aliases": [],
+    "thumbnail": "/images/brands/terraform.svg"
+  },
+  {
+    "name": "Kubernetes",
+    "url": "https://kubernetes.io/docs/home/",
+    "aliases": [],
+    "thumbnail": "/images/brands/kubernetes.svg"
+  },
+  {
+    "name": "GitHub Actions",
+    "url": "https://docs.github.com/en/actions",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Webhook",
+    "url": "https://www.rfc-editor.org/rfc/rfc9421.html",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Inngest services",
+    "url": "https://www.inngest.com/docs",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Arcjet",
+    "url": "https://docs.arcjet.com/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Payment gateway integration",
+    "url": "https://docs.stripe.com/payments",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Redux",
+    "url": "https://redux.js.org/",
+    "aliases": [],
+    "thumbnail": "/images/brands/redux.svg"
+  },
+  {
+    "name": "Redux Toolkit",
+    "url": "https://redux-toolkit.js.org/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "System Design",
+    "url": "https://aws.amazon.com/builders-library/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "TanStack Form",
+    "url": "https://tanstack.com/form/latest/docs/overview",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "TanStack Table",
+    "url": "https://tanstack.com/table/latest/docs/introduction",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "TanStack Router",
+    "url": "https://tanstack.com/router/latest/docs/framework/react/overview",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "TanStack Start",
+    "url": "https://tanstack.com/start/latest/docs/framework/react/overview",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "TanStack Virtual",
+    "url": "https://tanstack.com/virtual/latest/docs/introduction",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "React",
+    "url": "https://react.dev/learn",
+    "aliases": [
+      "React 19"
+    ],
+    "thumbnail": "/images/brands/react.svg"
+  },
+  {
+    "name": "Next.js",
+    "url": "https://nextjs.org/docs",
+    "aliases": [
+      "nextjs"
+    ],
+    "thumbnail": "/images/brands/nextjs.svg"
+  },
+  {
+    "name": "Python",
+    "url": "https://docs.python.org/3/tutorial/",
+    "aliases": [],
+    "thumbnail": "/images/brands/python.svg"
+  },
+  {
+    "name": "JavaScript",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
+    "aliases": [
+      "Modern JavaScript",
+      "JS Puzzles"
+    ],
+    "thumbnail": "/images/brands/javascript.svg"
+  },
+  {
+    "name": "Vue.js",
+    "url": "https://vuejs.org/guide/",
+    "aliases": [
+      "vue"
+    ],
+    "thumbnail": "/images/brands/vue.svg"
+  },
+  {
+    "name": "Angular",
+    "url": "https://angular.dev/tutorials",
+    "aliases": [],
+    "thumbnail": "/images/brands/angular.svg"
+  },
+  {
+    "name": "Flutter",
+    "url": "https://docs.flutter.dev/",
+    "aliases": [],
+    "thumbnail": "/images/brands/flutter.svg"
+  },
+  {
+    "name": "Java",
+    "url": "https://dev.java/learn/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "AWS",
+    "url": "https://docs.aws.amazon.com/",
+    "aliases": [
+      "Popular AWS services",
+      "Amazon Web Services"
+    ],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "DevOps",
+    "url": "https://aws.amazon.com/devops/",
+    "aliases": [
+      "DevOps with AWS CI/CD"
+    ],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Git",
+    "url": "https://git-scm.com/doc",
+    "aliases": [
+      "Git & GitHub"
+    ],
+    "thumbnail": "/images/brands/git.svg"
+  },
+  {
+    "name": "Docker",
+    "url": "https://docs.docker.com/get-started/",
+    "aliases": [],
+    "thumbnail": "/images/brands/docker.svg"
+  },
+  {
+    "name": "Jest",
+    "url": "https://jestjs.io/docs/getting-started",
+    "aliases": [],
+    "thumbnail": "/images/brands/jest.svg"
+  },
+  {
+    "name": "React Testing Library",
+    "url": "https://testing-library.com/docs/react-testing-library/intro/",
+    "aliases": [
+      "rtl"
+    ],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Cypress",
+    "url": "https://docs.cypress.io/",
+    "aliases": [],
+    "thumbnail": "/images/brands/cypress.svg"
+  },
+  {
+    "name": "Claude",
+    "url": "https://platform.claude.com/docs/",
+    "aliases": [],
+    "thumbnail": "/images/brands/claude.svg"
+  },
+  {
+    "name": "Claude Code",
+    "url": "https://code.claude.com/docs/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Prompt engineering",
+    "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "AI fundamentals",
+    "url": "https://huggingface.co/learn",
+    "aliases": [
+      "AI terms",
+      "AI & ML",
+      "AI Tools"
+    ],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Agentic AI",
+    "url": "https://docs.langchain.com/oss/python/langchain/agents",
+    "aliases": [
+      "AI Agents",
+      "Agentic AI & Claude"
+    ],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "LangChain",
+    "url": "https://docs.langchain.com/oss/python/langchain/overview",
+    "aliases": [],
+    "thumbnail": "/images/brands/langchain.svg"
+  },
+  {
+    "name": "LangGraph",
+    "url": "https://docs.langchain.com/oss/python/langgraph/overview",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "LangSmith",
+    "url": "https://docs.langchain.com/langsmith/observability",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "n8n",
+    "url": "https://docs.n8n.io/",
+    "aliases": [],
+    "thumbnail": "/images/brands/n8n.svg"
+  },
+  {
+    "name": "PyTorch",
+    "url": "https://pytorch.org/tutorials/",
+    "aliases": [],
+    "thumbnail": "/images/brands/pytorch.svg"
+  },
+  {
+    "name": "TensorFlow",
+    "url": "https://www.tensorflow.org/learn",
+    "aliases": [],
+    "thumbnail": "/images/brands/tensorflow.svg"
+  },
+  {
+    "name": "Elasticsearch",
+    "url": "https://www.elastic.co/docs/reference/elasticsearch",
+    "aliases": [],
+    "thumbnail": "/images/brands/elasticsearch.svg"
+  },
+  {
+    "name": "Platform Engineering",
+    "url": "https://www.cncf.io/projects/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Modern Data Stack & Data Engineering",
+    "url": "https://spark.apache.org/docs/latest/",
+    "aliases": [
+      "Data Engineering"
+    ],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Cybersecurity",
+    "url": "https://owasp.org/www-project-top-ten/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Modern Full-Stack Technologies",
+    "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Conform",
+    "url": "https://conform.guide/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Zod",
+    "url": "https://zod.dev/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Better Auth",
+    "url": "https://www.better-auth.com/docs",
+    "aliases": [
+      "BetterAuth"
+    ],
+    "thumbnail": "/images/brands/betterauth.svg"
+  },
+  {
+    "name": "Auth.js",
+    "url": "https://authjs.dev/getting-started",
+    "aliases": [
+      "Authentication with Auth.js & Kinde Auth"
+    ],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Kinde",
+    "url": "https://docs.kinde.com/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Clerk",
+    "url": "https://clerk.com/docs",
+    "aliases": [],
+    "thumbnail": "/images/brands/clerk.svg"
+  },
+  {
+    "name": "uv",
+    "url": "https://docs.astral.sh/uv/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Inngest",
+    "url": "https://www.inngest.com/docs",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "T3 Stack",
+    "url": "https://create.t3.gg/en/introduction",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "TanStack",
+    "url": "https://tanstack.com/",
+    "aliases": [],
+    "thumbnail": "/images/brands/tanstack.svg"
+  },
+  {
+    "name": "NumPy",
+    "url": "https://numpy.org/doc/",
+    "aliases": [],
+    "thumbnail": "/images/brands/numpy.svg"
+  },
+  {
+    "name": "Pandas",
+    "url": "https://pandas.pydata.org/docs/",
+    "aliases": [],
+    "thumbnail": "/images/brands/pandas.svg"
+  },
+  {
+    "name": "Polars",
+    "url": "https://docs.pola.rs/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "SciPy",
+    "url": "https://docs.scipy.org/doc/scipy/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Scikit-Learn",
+    "url": "https://scikit-learn.org/stable/user_guide.html",
+    "aliases": [],
+    "thumbnail": "/images/brands/scikit-learn.svg"
+  },
+  {
+    "name": "Keras",
+    "url": "https://keras.io/guides/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Seaborn",
+    "url": "https://seaborn.pydata.org/tutorial.html",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Plotly",
+    "url": "https://plotly.com/python/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Requests",
+    "url": "https://requests.readthedocs.io/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "HTTPX",
+    "url": "https://www.python-httpx.org/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Scrapy",
+    "url": "https://docs.scrapy.org/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Pydantic",
+    "url": "https://docs.pydantic.dev/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Mongoose",
+    "url": "https://mongoosejs.com/docs/",
+    "aliases": [],
+    "thumbnail": "/images/learning/official-resource.svg"
+  }
+]

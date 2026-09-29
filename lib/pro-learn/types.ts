@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { learningDiagramSchema } from "./learning-diagram";
 import tracksData from "./tracks.json";
 import interviewData from "./interview.json";
 import { learningProjectSchema, subjectiveQuestionSchema, objectiveQuestionSchema } from "@/lib/api-learning-schema";
@@ -63,6 +64,7 @@ export const answerFileSchema = z.object({
  * of failing validation; the card simply omits the sections it has nothing for.
  */
 export const searchAnswerSchema = z.object({
+  diagrams: z.array(learningDiagramSchema).max(3).optional(),
   headline: z.string().min(5).max(180),
   definition: z.string().max(500).default(""),
   summary: z.string().min(20).max(900),
@@ -82,6 +84,20 @@ export const searchAnswerSchema = z.object({
     example: z.string().max(1200).default(""),
   })).max(5).default([]),
   /**
+   * The problems this topic's technology removes, named by the sector that has
+   * them.
+   *
+   * These belong to the whole technology rather than to one topic, so they are
+   * shown here and never on a catalogue card — a sentence that is true of every
+   * row in a category teaches nothing repeated down a grid of six, and reads
+   * well when one topic is open. Defaulted rather than required: answers stored
+   * before this field existed still parse.
+   */
+  industries: z.array(z.object({
+    industry: z.string().min(2).max(80),
+    problem: z.string().max(400),
+  })).max(5).default([]),
+  /**
    * One entry per named thing when the question asks about several at once
    * ("explain S3, EC2 and Lambda"). A single-subject question leaves this
    * empty and the answer reads as one document, as before.
@@ -92,8 +108,41 @@ export const searchAnswerSchema = z.object({
     details: z.array(z.string().max(400)).max(6).default([]),
     keyPoints: z.array(z.string().max(300)).max(5).default([]),
   })).max(8).default([]),
+  /**
+   * The equations a Maths, Physics or Chemistry answer turns on.
+   *
+   * Kept as structured rows rather than left inside the prose so the page can
+   * set them apart and a reader can find the formula without reading the
+   * paragraph around it. `expression` is plain text, not LaTeX: it is rendered
+   * as-is, and a half-parsed macro reads worse than a plain equation.
+   */
+  formulas: z.array(z.object({
+    name: z.string().min(1).max(120),
+    expression: z.string().min(1).max(220),
+    meaning: z.string().max(300).default(""),
+  })).max(6).default([]),
+  /**
+   * One exam-style question taken all the way to its answer.
+   *
+   * The steps list is the working, one line at a time: `detail` says what is
+   * being done and `expression` is the line of algebra it produces, so a reader
+   * can follow the reasoning and the arithmetic separately.
+   */
+  worked: z.array(z.object({
+    question: z.string().min(3).max(300),
+    steps: z.array(z.object({
+      detail: z.string().max(300),
+      expression: z.string().max(220).default(""),
+    })).max(8).default([]),
+    answer: z.string().max(220).default(""),
+  })).max(3).default([]),
   files: z.array(answerFileSchema).max(8).default([]),
-  keyPoints: z.array(z.string().max(300)).max(6).default([]),
+  /**
+   * Raised from six: a prepared answer carries the topic's own points plus the
+   * technology's authored essentials, and the searched answers read in the same
+   * modal should not stop at half that.
+   */
+  keyPoints: z.array(z.string().max(300)).max(12).default([]),
   caveats: z.array(z.union([
     z.string().max(300),
     z.object({ text: z.string().max(300), code: z.string().max(1400).default("") }),

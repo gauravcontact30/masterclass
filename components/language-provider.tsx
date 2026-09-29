@@ -1,6 +1,6 @@
 "use client";
 import { createContext,useContext,useSyncExternalStore,useEffect,useCallback } from "react";
-import { Language } from "@/lib/domain";
+import type { Language } from "@/lib/domain";
 import { en,hi,TranslationKey } from "@/lib/i18n";
 const Context=createContext<{language:Language;setLanguage:(value:Language,persist?:boolean)=>void;t:(key:TranslationKey)=>string}>({language:"en",setLanguage:()=>{},t:key=>en[key]});
 let memoryLanguage:Language="en";

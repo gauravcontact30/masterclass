@@ -5,7 +5,9 @@ import { memo, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Check, Copy, Link2, ListTree, MessageSquareCode, Pencil, Play, RotateCcw, Square, Terminal, X } from "lucide-react";
 import { highlightLines, type CodeLanguage } from "@/lib/code-highlight";
 import { inferLanguage, languageLabel, runSupport } from "@/lib/code-run";
-import { explainLines, extractSymbols, urlAnatomy, type CodeSymbol, type SymbolKind } from "@/lib/code-explain";
+import { extractSymbols, urlAnatomy, type CodeSymbol, type SymbolKind } from "@/lib/code-explain";
+import { codeLineNotes } from "@/lib/code-line-notes";
+import { CodeLineComment } from "./code-line-comment";
 import { runJavaScriptPuzzle, type PuzzleResult } from "@/lib/javascript-sandbox";
 import { ExpandedText } from "./expanded-text";
 import styles from "./code-lab.module.css";
@@ -72,21 +74,13 @@ function CodeLabView({ code, language, title, expectedOutput, explanation, edita
   const [copied, setCopied] = useState(false);
   const stopRun = useRef<(() => void) | null>(null);
 
-  // A new `code` prop means a different snippet, so drop the previous session.
-  useEffect(() => {
-    setDraft(original);
-    setEditing(false);
-    setTab("code");
-    setOutput([]);
-    setResult(null);
-  }, [original]);
   useEffect(() => () => stopRun.current?.(), []);
 
   const resolved = language ?? inferLanguage(original);
   const support = runSupport(draft, resolved);
   const dirty = draft.trim() !== original;
   const lines = highlightLines(draft, resolved);
-  const notes = useMemo(() => explainLines(draft, resolved), [draft, resolved]);
+  const notes = useMemo(() => codeLineNotes(draft, "", resolved), [draft, resolved]);
   const symbols = useMemo(() => extractSymbols(draft, resolved), [draft, resolved]);
   const anatomy = useMemo(() => urlAnatomy(draft), [draft]);
 
@@ -249,6 +243,7 @@ function CodeLabView({ code, language, title, expectedOutput, explanation, edita
                       </span>
                     ))}
                     {"\n"}
+                    <CodeLineComment note={notes[index]} />
                   </span>
                 </span>
               ))}
@@ -368,6 +363,7 @@ function CodeLabView({ code, language, title, expectedOutput, explanation, edita
         )}
       </div>
 
+      {!support.runnable && <p className={styles.explanation}>{support.reason}</p>}
       {support.runnable ? (
         <div className={styles.console} data-tone={result ? STATUS[result.status].tone : undefined}>
           <span className={styles.consoleBar}>
@@ -398,5 +394,12 @@ function CodeLabView({ code, language, title, expectedOutput, explanation, edita
 }
 
 /** Props are plain strings, so a parent re-render need not re-tokenise the source. */
-export const CodeLab = memo(CodeLabView);
+/**
+ * A new `code` prop is a different snippet, so the lab starts over: the draft,
+ * the open tab and the last run all belong to the snippet that produced them.
+ * Keying on the snippet says that in one line, where an Effect that reset five
+ * pieces of state would run after the wrong ones had already rendered.
+ */
+const KeyedCodeLab = (props: Props) => <CodeLabView key={props.code.trim()} {...props} />;
+export const CodeLab = memo(KeyedCodeLab);
 export type { CodeSymbol };

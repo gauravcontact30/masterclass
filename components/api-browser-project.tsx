@@ -2,11 +2,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { SandpackProvider, SandpackLayout, SandpackFileExplorer, SandpackCodeEditor, SandpackPreview, SandpackConsole, useSandpack } from '@codesandbox/sandpack-react';
 import type { LearningProject } from '@/lib/api-learning-schema';
+import { isCodeExampleTab } from '@/lib/code-example-tabs';
 import styles from './api-project.module.css';
 
 /** Sandpack addresses every file by absolute path; a relative key silently fails to override the template. */
 const absolute = (path: string) => '/' + path.replace(/^\/+/, '');
-const hidden = (path: string) => /(?:^|\/)(?:styles\.css|README\.md)$/i.test(path);
+const hidden = (path: string) => !isCodeExampleTab(path);
 const snapshot = (files: Record<string, { code: string }>) => Object.fromEntries(Object.entries(files).map(([path, file]) => [path, file.code]));
 const sameCode = (a: Record<string, string>, b: Record<string, string>) => {
   const keys = new Set([...Object.keys(a), ...Object.keys(b)]);

@@ -1,0 +1,196 @@
+.history {
+  width: 100%;
+  margin-bottom: 32px;
+}
+.historyHead { align-items: center; flex-wrap: wrap; }
+.toolbar { display: flex; align-items: center; gap: 8px; margin: 0 0 16px; width: 100%; }
+.search { flex: 1; min-width: 0; }
+.searchField { height: 36px; border-color: var(--line, #dedcd1); background: var(--surface, #fff); color: var(--muted, #73726c); }
+.searchField input { font-size: 12px; color: var(--ink, #3d3d3a); }
+.searchField input::-webkit-search-cancel-button { display: none; }
+.filterTrigger { position: relative; width: 36px; height: 36px; flex-shrink: 0; border-color: var(--line, #dedcd1); background: #fff; color: var(--muted, #73726c); }
+.filterTrigger[aria-expanded="true"] { background: #f5eee7; border-color: #c6613f; color: #a44c30; }
+.filterBadge { position: absolute; top: -5px; right: -5px; display: grid; place-items: center; min-width: 15px; height: 15px; border-radius: 8px; background: #c6613f; color: #fff; font-size: 9px; border: 2px solid #f5f4ed; }
+.filterPanel { width: 280px; max-width: calc(100vw - 32px); padding: 14px; gap: 12px; border: 1px solid #dedcd1; border-radius: 14px; background: #fff; color: #3d3d3a; box-shadow: 0 12px 36px #26262420; }
+.filterPanelHead { display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+.filter { min-width: 0; display: flex; flex-direction: column; gap: 5px; font-size: 11px; font-weight: 550; color: #73726c; }
+.filterPanel .filter select { font-size: 11.5px; border-color: #dedcd1; color: #3d3d3a; background-color: #fff; appearance: none; height: 34px; margin-top: 0; padding: 6px 34px 6px 10px; line-height: 20px; }
+.filterPanelActions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; border-top: 1px solid #e8e6dc; padding-top: 10px; }
+.clearFilters { margin-right: auto; color: #73726c; font-size: 11px; }
+.empty { display: flex; align-items: center; gap: 12px; padding: 24px; border: 1px dashed var(--line, #dedcd1); border-radius: 14px; color: var(--muted, #73726c); width: 100%; box-sizing: border-box; }
+.empty svg { flex-shrink: 0; color: var(--accent, #c6613f); }
+.empty p { margin: 0; font-size: 12.5px; line-height: 1.7; }
+
+/* Exactly 2 cards per page covering the full width of the section. */
+.cardGrid {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: stretch;
+}
+
+.cardGrid > li {
+  animation: deal .32s cubic-bezier(.22, .8, .3, 1) both;
+}
+.cardGrid > li:nth-child(1) { --slot: 0; }
+.cardGrid > li:nth-child(2) { --slot: 1; }
+
+@keyframes deal {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 680px) {
+  .cardGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* Each of the three cards on a page carries its own hue, and the marked state
+   has to carry it too — a tick that is the same green on all three says nothing
+   about which card it belongs to.
+   `--tint-edge`, set by the shared grid, is a pale hover border and cannot hold
+   a white tick. So each position names its own pair here rather than borrowing
+   one from another stylesheet: `--mark` is the filled colour, `--mark-ink` what
+   sits on it. Declared on the same `li` the grid tints, so they cascade into the
+   card, its header and its tick together. */
+.cardGrid > li:nth-child(1) { --tint: #fef7f2; --tint-line: #f3ded3; --tint-edge: #c6613f; --mark: #a85731; --mark-ink: #fff; --subcard-bg: #ffffff; }
+.cardGrid > li:nth-child(2) { --tint: #f2f8f3; --tint-line: #d5e9dc; --tint-edge: #3e7b52; --mark: #3f6b4c; --mark-ink: #fff; --subcard-bg: #ffffff; }
+.cardGrid > li:nth-child(3) { --tint: #f1f6fc; --tint-line: #d2e4f7; --tint-edge: #32679e; --mark: #37608a; --mark-ink: #fff; --subcard-bg: #ffffff; }
+.cardGrid > li:nth-child(4) { --tint: #f7f3fb; --tint-line: #e6daf5; --tint-edge: #7351a8; --mark: #634394; --mark-ink: #fff; --subcard-bg: #ffffff; }
+.cardGrid > li:nth-child(5) { --tint: #fdfbf1; --tint-line: #f4eacc; --tint-edge: #9c7b23; --mark: #8a6a16; --mark-ink: #fff; --subcard-bg: #ffffff; }
+.cardGrid > li:nth-child(6) { --tint: #fdf3f5; --tint-line: #f7d6de; --tint-edge: #b84362; --mark: #9e334f; --mark-ink: #fff; --subcard-bg: #ffffff; }
+
+/* On a dark ground the deep fills go muddy, so each hue is taken up instead of
+   down and the tick turns to ink. Every pair clears 7:1 either way. */
+:global(.dark) .cardGrid > li:nth-child(1) { --mark: #e39a6d; --mark-ink: #2a1b12; }
+:global(.dark) .cardGrid > li:nth-child(2) { --mark: #86c49a; --mark-ink: #14241a; }
+:global(.dark) .cardGrid > li:nth-child(3) { --mark: #85b4e0; --mark-ink: #10202e; }
+:global(.dark) .cardGrid > li:nth-child(4) { --mark: #bba4df; --mark-ink: #1e132e; }
+:global(.dark) .cardGrid > li:nth-child(5) { --mark: #e5cd86; --mark-ink: #29210c; }
+:global(.dark) .cardGrid > li:nth-child(6) { --mark: #e899b0; --mark-ink: #2b1119; }
+
+/* The card's own surfaces in dark mode. */
+:global(.dark) .cardGrid > li {
+  --ink: #e8e6dc; --muted: #b0aea5; --heading: #f2f0e8; --surface: #2a2926; --subcard-bg: #201f1d;
+}
+:global(.dark) .cardGrid > li:nth-child(1) { --tint: #2a211c; --tint-line: #4a392c; --tint-edge: #e39a6d; }
+:global(.dark) .cardGrid > li:nth-child(2) { --tint: #1d2621; --tint-line: #35483b; --tint-edge: #86c49a; }
+:global(.dark) .cardGrid > li:nth-child(3) { --tint: #1c2530; --tint-line: #31445a; --tint-edge: #85b4e0; }
+:global(.dark) .cardGrid > li:nth-child(4) { --tint: #251e2f; --tint-line: #3f3152; --tint-edge: #bba4df; }
+:global(.dark) .cardGrid > li:nth-child(5) { --tint: #2a261a; --tint-line: #494026; --tint-edge: #e5cd86; }
+:global(.dark) .cardGrid > li:nth-child(6) { --tint: #2c1b21; --tint-line: #4e2b36; --tint-edge: #e899b0; }
+
+:global(.dark) .wordCard { background: var(--tint, #2a211c); }
+:global(.dark) .languageSwitch,
+:global(.dark) .headerCheckbox:not([data-checked]),
+:global(.dark) .cardSection h4 > span { background: #ffffff0a; }
+:global(.dark) .headerCheckbox:not([data-checked]) { border-color: #6d675e; }
+/* The related-word pills keep their sense colours but on a dark ground. */
+:global(.dark) .relatedWords[data-kind="synonyms"] li { border-color: #3c5643; background: #1e2a22; color: #a8d4b4; }
+:global(.dark) .relatedWords[data-kind="antonyms"] li { border-color: #5c4335; background: #2b201a; color: #e3b394; }
+.cardShell {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  height: 620px;
+  min-height: 0;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--tint-line, #dedcd1);
+  background: var(--tint, #fef7f2);
+  transition: border-color .18s, box-shadow .18s, transform .18s;
+  box-sizing: border-box;
+  overflow-x: clip;
+}
+.cardShell:hover {
+  border-color: var(--tint-edge, #c6613f);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+.cardShell:focus-within {
+  border-color: var(--tint-edge, #c6613f);
+}
+.wordCard { position: relative; display: grid; grid-template-rows: 44px minmax(0, 1fr) 78px; gap: 12px; height: 100%; min-height: 0; min-width: 0; padding: 16px; box-sizing: border-box; color: var(--ink, #3d3d3a); border-radius: 16px; overflow-wrap: anywhere; background: var(--tint, #fef7f2); }
+.wordCard::before { content: ""; position: absolute; top: 0; left: 16px; right: 16px; height: 3px; border-radius: 0 0 4px 4px; background: var(--tint-edge, #c6613f); opacity: .85; }
+.wordCard[data-selected] { box-shadow: inset 0 0 0 1px var(--tint-edge, #c6613f); }
+.wordCard[data-learned]::before { background: var(--mark, #4a7d5a); opacity: 1; }
+.wordHeader { display: flex; flex-wrap: nowrap; align-items: center; gap: 5px; min-width: 0; border-bottom: 1px solid var(--tint-line, #dedcd1); padding-bottom: 10px; transition: border-color .18s; }
+/* A finished card says so across its whole header: the rule takes the card's
+   own deep tint, matching the bar above it and the tick at its end. */
+.wordCard[data-learned] .wordHeader { border-bottom-color: var(--mark, #4a7d5a); }
+.wordCard[data-learned] .wordHeader h3 { color: var(--mark, #4a7d5a); }
+.wordHeader h3 { flex: 1 1 auto; min-width: 35px; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; line-height: 1.4; font-weight: 650; letter-spacing: -.02em; color: var(--heading, #2f4b5c); }
+.headerHindiBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #ffffffb0;
+  border: 1px solid var(--tint-line, #dedcd1);
+  color: var(--mark, #4a7d5a);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+:global(.dark) .headerHindiBadge {
+  background: #ffffff14;
+  color: var(--mark-ink, #86c49a);
+}
+.cardControls { display: flex; align-items: center; flex: 0 0 auto; gap: 2px; }
+.cardControls button { font-size: 10px; }
+.languageSwitch { padding: 1px; gap: 1px; height: auto; background: #ffffff80; border-color: var(--tint-line, #dedcd1); }
+.languageSwitch span { padding: 3px; border-radius: 4px; color: var(--muted, #73726c); }
+.languageSwitch [data-active] { background: var(--surface, #fff); color: var(--ink, #3d3d3a); box-shadow: 0 1px 3px #00000014; }
+.pronunciation { flex: 0 1 76px; min-width: 30px; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; line-height: 1.6; color: var(--muted, #73726c); }
+.headerCheckbox { flex-shrink: 0; margin-left: auto; border-color: #a99d8e; background: #ffffff80; transition: background-color .16s, border-color .16s; }
+.headerCheckbox:hover { border-color: var(--mark, #4a7d5a); }
+/* Checked, the tick fills with this card's own mark colour. The selector is
+   written twice over to outrank the component's own `data-checked:bg-primary`
+   utility, which otherwise paints every tick the same theme colour. */
+.headerCheckbox[data-checked],
+.wordCard .headerCheckbox[data-checked] {
+  border-color: var(--mark, #4a7d5a);
+  background: var(--mark, #4a7d5a);
+  color: var(--mark-ink, #fff);
+}
+.headerCheckbox[data-checked] svg { color: var(--mark-ink, #fff); }
+.cardBody { display: flex; flex-direction: column; gap: 16px; min-height: 0; min-width: 0; overflow-y: auto; overscroll-behavior-y: contain; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: var(--tint-edge, #c6613f) transparent; padding: 2px 5px 8px 0; border-radius: 4px; }
+.cardBody:focus-visible { outline: 2px solid var(--tint-edge, #c6613f); outline-offset: 2px; }
+.cardSection { flex-shrink: 0; background: var(--subcard-bg, #ffffff); border: 1px solid var(--tint-line, #dedcd1); border-radius: 12px; padding: 12px 14px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02); }
+.cardSection:first-child { border-top: 1px solid var(--tint-line, #dedcd1); }
+.cardSection h4 { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; font-size: 11.5px; font-weight: 650; color: var(--heading, #2f4b5c); }
+.cardSection h4 svg { flex-shrink: 0; color: var(--muted, #73726c); }
+.cardSection h4 > span { margin-left: auto; display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 6px; background: #ffffff90; border: 1px solid var(--tint-line, #dedcd1); font-size: 10px; font-weight: 400; color: var(--muted, #73726c); }
+.cardSection p { margin: 0; font-size: 12px; line-height: 1.8; color: var(--muted, #73726c); }
+.hindiSubMeaning { margin-top: 6px !important; font-size: 12.5px !important; color: #386b45 !important; font-weight: 550 !important; line-height: 1.6 !important; }
+.hindiSubSentence { margin-top: 5px !important; font-size: 12px !important; color: #855818 !important; font-style: normal !important; line-height: 1.6 !important; }
+:global(.dark) .hindiSubMeaning { color: #86c49a !important; }
+:global(.dark) .hindiSubSentence { color: #e5cd86 !important; }
+.sentence { border: 1px solid var(--tint-line, #dedcd1); border-radius: 12px; padding: 12px 14px; background: var(--subcard-bg, #ffffff); }
+.sentence p { font-style: italic; }
+.relatedWords ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 7px; }
+.relatedWords li { display: flex; flex-direction: column; gap: 3px; max-width: 100%; border: 1px solid var(--tint-line, #dedcd1); border-radius: 8px; padding: 5px 8px; font-size: 11px; line-height: 1.7; }
+.relatedWords strong { font-weight: 550; }
+.relatedWords li span { color: var(--muted, #73726c); }
+.relatedWords[data-kind="synonyms"] li { border-color: #cfdfd1; background: #f3f9f2; color: #385e43; }
+.relatedWords[data-kind="antonyms"] li { border-color: #e6d4c8; background: #fff7f0; color: #80553c; }
+.cardFooter { min-width: 0; padding-top: 12px; border-top: 1px solid var(--tint-line, #dedcd1); display: flex; flex-direction: column; gap: 10px; font-size: 10px; }
+.cardMeta, .cardActions { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.learningStatus { display: inline-flex; align-items: center; gap: 5px; color: var(--muted, #73726c); font-size: 10px; }
+.learningStatus[data-learned] { color: var(--mark, #3e714a); }
+.cardActions { padding-top: 8px; border-top: 1px solid var(--tint-line, #dedcd1); }
+.cardActions button { font-size: 11px; }
+.deleteCard { color: #986052; }
+.deleteCard:hover { background: #f6e4df; color: #a33825; }
+.audioStatus { flex-shrink: 0; margin: 0; font-size: 11px; line-height: 1.6; color: var(--warn, #a8631c); }
+@media (max-width: 620px) { .historyHead { gap: 8px; } .historyHead > span { margin-left: 0; } }
+@media (prefers-reduced-motion: reduce) { .cardShell { transition: none; } }
+
+:global(.workspace) .cardGrid { gap: var(--dashboard-card-gap, 24px); }

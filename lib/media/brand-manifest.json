@@ -1,0 +1,1152 @@
+{
+  "react": {
+    "src": "/images/brands/react.svg",
+    "width": 24,
+    "height": 24,
+    "title": "React",
+    "sourceUrl": "https://simpleicons.org/?q=react",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "nextjs": {
+    "src": "/images/brands/nextjs.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Next.js",
+    "sourceUrl": "https://simpleicons.org/?q=nextdotjs",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "typescript": {
+    "src": "/images/brands/typescript.svg",
+    "width": 24,
+    "height": 24,
+    "title": "TypeScript",
+    "sourceUrl": "https://simpleicons.org/?q=typescript",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "javascript": {
+    "src": "/images/brands/javascript.svg",
+    "width": 24,
+    "height": 24,
+    "title": "JavaScript",
+    "sourceUrl": "https://simpleicons.org/?q=javascript",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "nodejs": {
+    "src": "/images/brands/nodejs.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Node.js",
+    "sourceUrl": "https://simpleicons.org/?q=nodedotjs",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "nestjs": {
+    "src": "/images/brands/nestjs.svg",
+    "width": 24,
+    "height": 24,
+    "title": "NestJS",
+    "sourceUrl": "https://simpleicons.org/?q=nestjs",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "graphql": {
+    "src": "/images/brands/graphql.svg",
+    "width": 24,
+    "height": 24,
+    "title": "GraphQL",
+    "sourceUrl": "https://simpleicons.org/?q=graphql",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "python": {
+    "src": "/images/brands/python.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Python",
+    "sourceUrl": "https://simpleicons.org/?q=python",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "cypress": {
+    "src": "/images/brands/cypress.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Cypress",
+    "sourceUrl": "https://simpleicons.org/?q=cypress",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "jest": {
+    "src": "/images/brands/jest.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Jest",
+    "sourceUrl": "https://simpleicons.org/?q=jest",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "vitest": {
+    "src": "/images/brands/vitest.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Vitest",
+    "sourceUrl": "https://simpleicons.org/?q=vitest",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "testing-library": {
+    "src": "/images/brands/testing-library.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Testing Library",
+    "sourceUrl": "https://simpleicons.org/?q=testinglibrary",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "docker": {
+    "src": "/images/brands/docker.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Docker",
+    "sourceUrl": "https://simpleicons.org/?q=docker",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "kubernetes": {
+    "src": "/images/brands/kubernetes.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Kubernetes",
+    "sourceUrl": "https://simpleicons.org/?q=kubernetes",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "terraform": {
+    "src": "/images/brands/terraform.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Terraform",
+    "sourceUrl": "https://simpleicons.org/?q=terraform",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "github-actions": {
+    "src": "/images/brands/github-actions.svg",
+    "width": 24,
+    "height": 24,
+    "title": "GitHub Actions",
+    "sourceUrl": "https://simpleicons.org/?q=githubactions",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "langchain": {
+    "src": "/images/brands/langchain.svg",
+    "width": 24,
+    "height": 24,
+    "title": "LangChain",
+    "sourceUrl": "https://simpleicons.org/?q=langchain",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "n8n": {
+    "src": "/images/brands/n8n.svg",
+    "width": 24,
+    "height": 24,
+    "title": "n8n",
+    "sourceUrl": "https://simpleicons.org/?q=n8n",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "anthropic": {
+    "src": "/images/brands/anthropic.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Anthropic",
+    "sourceUrl": "https://simpleicons.org/?q=anthropic",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "claude": {
+    "src": "/images/brands/claude.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Claude",
+    "sourceUrl": "https://simpleicons.org/?q=claude",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "react-query": {
+    "src": "/images/brands/react-query.svg",
+    "width": 24,
+    "height": 24,
+    "title": "React Query",
+    "sourceUrl": "https://simpleicons.org/?q=reactquery",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "redux": {
+    "src": "/images/brands/redux.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Redux",
+    "sourceUrl": "https://simpleicons.org/?q=redux",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "postgresql": {
+    "src": "/images/brands/postgresql.svg",
+    "width": 24,
+    "height": 24,
+    "title": "PostgreSQL",
+    "sourceUrl": "https://simpleicons.org/?q=postgresql",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "redis": {
+    "src": "/images/brands/redis.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Redis",
+    "sourceUrl": "https://simpleicons.org/?q=redis",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "mongodb": {
+    "src": "/images/brands/mongodb.svg",
+    "width": 24,
+    "height": 24,
+    "title": "MongoDB",
+    "sourceUrl": "https://simpleicons.org/?q=mongodb",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "mysql": {
+    "src": "/images/brands/mysql.svg",
+    "width": 24,
+    "height": 24,
+    "title": "MySQL",
+    "sourceUrl": "https://simpleicons.org/?q=mysql",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "sqlite": {
+    "src": "/images/brands/sqlite.svg",
+    "width": 24,
+    "height": 24,
+    "title": "SQLite",
+    "sourceUrl": "https://simpleicons.org/?q=sqlite",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "elasticsearch": {
+    "src": "/images/brands/elasticsearch.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Elasticsearch",
+    "sourceUrl": "https://simpleicons.org/?q=elasticsearch",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "kafka": {
+    "src": "/images/brands/kafka.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Apache Kafka",
+    "sourceUrl": "https://simpleicons.org/?q=apachekafka",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "rabbitmq": {
+    "src": "/images/brands/rabbitmq.svg",
+    "width": 24,
+    "height": 24,
+    "title": "RabbitMQ",
+    "sourceUrl": "https://simpleicons.org/?q=rabbitmq",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "spark": {
+    "src": "/images/brands/spark.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Apache Spark",
+    "sourceUrl": "https://simpleicons.org/?q=apachespark",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "supabase": {
+    "src": "/images/brands/supabase.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Supabase",
+    "sourceUrl": "https://simpleicons.org/?q=supabase",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "vercel": {
+    "src": "/images/brands/vercel.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Vercel",
+    "sourceUrl": "https://simpleicons.org/?q=vercel",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "prisma": {
+    "src": "/images/brands/prisma.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Prisma",
+    "sourceUrl": "https://simpleicons.org/?q=prisma",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "drizzle": {
+    "src": "/images/brands/drizzle.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Drizzle",
+    "sourceUrl": "https://simpleicons.org/?q=drizzle",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "trpc": {
+    "src": "/images/brands/trpc.svg",
+    "width": 24,
+    "height": 24,
+    "title": "tRPC",
+    "sourceUrl": "https://simpleicons.org/?q=trpc",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "tailwind": {
+    "src": "/images/brands/tailwind.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Tailwind CSS",
+    "sourceUrl": "https://simpleicons.org/?q=tailwindcss",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "sass": {
+    "src": "/images/brands/sass.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Sass",
+    "sourceUrl": "https://simpleicons.org/?q=sass",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "bootstrap": {
+    "src": "/images/brands/bootstrap.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Bootstrap",
+    "sourceUrl": "https://simpleicons.org/?q=bootstrap",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "mui": {
+    "src": "/images/brands/mui.svg",
+    "width": 24,
+    "height": 24,
+    "title": "MUI",
+    "sourceUrl": "https://simpleicons.org/?q=mui",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "figma": {
+    "src": "/images/brands/figma.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Figma",
+    "sourceUrl": "https://simpleicons.org/?q=figma",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "git": {
+    "src": "/images/brands/git.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Git",
+    "sourceUrl": "https://simpleicons.org/?q=git",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "github": {
+    "src": "/images/brands/github.svg",
+    "width": 24,
+    "height": 24,
+    "title": "GitHub",
+    "sourceUrl": "https://simpleicons.org/?q=github",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "gitlab": {
+    "src": "/images/brands/gitlab.svg",
+    "width": 24,
+    "height": 24,
+    "title": "GitLab",
+    "sourceUrl": "https://simpleicons.org/?q=gitlab",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "linux": {
+    "src": "/images/brands/linux.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Linux",
+    "sourceUrl": "https://simpleicons.org/?q=linux",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "nginx": {
+    "src": "/images/brands/nginx.svg",
+    "width": 24,
+    "height": 24,
+    "title": "NGINX",
+    "sourceUrl": "https://simpleicons.org/?q=nginx",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "grafana": {
+    "src": "/images/brands/grafana.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Grafana",
+    "sourceUrl": "https://simpleicons.org/?q=grafana",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "prometheus": {
+    "src": "/images/brands/prometheus.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Prometheus",
+    "sourceUrl": "https://simpleicons.org/?q=prometheus",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "sentry": {
+    "src": "/images/brands/sentry.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Sentry",
+    "sourceUrl": "https://simpleicons.org/?q=sentry",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "jenkins": {
+    "src": "/images/brands/jenkins.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Jenkins",
+    "sourceUrl": "https://simpleicons.org/?q=jenkins",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "jira": {
+    "src": "/images/brands/jira.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Jira",
+    "sourceUrl": "https://simpleicons.org/?q=jira",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "notion": {
+    "src": "/images/brands/notion.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Notion",
+    "sourceUrl": "https://simpleicons.org/?q=notion",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "storybook": {
+    "src": "/images/brands/storybook.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Storybook",
+    "sourceUrl": "https://simpleicons.org/?q=storybook",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "webpack": {
+    "src": "/images/brands/webpack.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Webpack",
+    "sourceUrl": "https://simpleicons.org/?q=webpack",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "vite": {
+    "src": "/images/brands/vite.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Vite",
+    "sourceUrl": "https://simpleicons.org/?q=vite",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "babel": {
+    "src": "/images/brands/babel.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Babel",
+    "sourceUrl": "https://simpleicons.org/?q=babel",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "esbuild": {
+    "src": "/images/brands/esbuild.svg",
+    "width": 24,
+    "height": 24,
+    "title": "esbuild",
+    "sourceUrl": "https://simpleicons.org/?q=esbuild",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "swc": {
+    "src": "/images/brands/swc.svg",
+    "width": 24,
+    "height": 24,
+    "title": "SWC",
+    "sourceUrl": "https://simpleicons.org/?q=swc",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "eslint": {
+    "src": "/images/brands/eslint.svg",
+    "width": 24,
+    "height": 24,
+    "title": "ESLint",
+    "sourceUrl": "https://simpleicons.org/?q=eslint",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "prettier": {
+    "src": "/images/brands/prettier.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Prettier",
+    "sourceUrl": "https://simpleicons.org/?q=prettier",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "biome": {
+    "src": "/images/brands/biome.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Biome",
+    "sourceUrl": "https://simpleicons.org/?q=biome",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "turborepo": {
+    "src": "/images/brands/turborepo.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Turborepo",
+    "sourceUrl": "https://simpleicons.org/?q=turborepo",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "nx": {
+    "src": "/images/brands/nx.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Nx",
+    "sourceUrl": "https://simpleicons.org/?q=nx",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "npm": {
+    "src": "/images/brands/npm.svg",
+    "width": 24,
+    "height": 24,
+    "title": "npm",
+    "sourceUrl": "https://simpleicons.org/?q=npm",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "pnpm": {
+    "src": "/images/brands/pnpm.svg",
+    "width": 24,
+    "height": 24,
+    "title": "pnpm",
+    "sourceUrl": "https://simpleicons.org/?q=pnpm",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "yarn": {
+    "src": "/images/brands/yarn.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Yarn",
+    "sourceUrl": "https://simpleicons.org/?q=yarn",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "bun": {
+    "src": "/images/brands/bun.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Bun",
+    "sourceUrl": "https://simpleicons.org/?q=bun",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "deno": {
+    "src": "/images/brands/deno.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Deno",
+    "sourceUrl": "https://simpleicons.org/?q=deno",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "html": {
+    "src": "/images/brands/html.svg",
+    "width": 24,
+    "height": 24,
+    "title": "HTML5",
+    "sourceUrl": "https://simpleicons.org/?q=html5",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "css": {
+    "src": "/images/brands/css.svg",
+    "width": 24,
+    "height": 24,
+    "title": "CSS",
+    "sourceUrl": "https://simpleicons.org/?q=css",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "go": {
+    "src": "/images/brands/go.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Go",
+    "sourceUrl": "https://simpleicons.org/?q=go",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "rust": {
+    "src": "/images/brands/rust.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Rust",
+    "sourceUrl": "https://simpleicons.org/?q=rust",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "php": {
+    "src": "/images/brands/php.svg",
+    "width": 24,
+    "height": 24,
+    "title": "PHP",
+    "sourceUrl": "https://simpleicons.org/?q=php",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "kotlin": {
+    "src": "/images/brands/kotlin.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Kotlin",
+    "sourceUrl": "https://simpleicons.org/?q=kotlin",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "swift": {
+    "src": "/images/brands/swift.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Swift",
+    "sourceUrl": "https://simpleicons.org/?q=swift",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "spring": {
+    "src": "/images/brands/spring.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Spring",
+    "sourceUrl": "https://simpleicons.org/?q=spring",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "django": {
+    "src": "/images/brands/django.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Django",
+    "sourceUrl": "https://simpleicons.org/?q=django",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "flask": {
+    "src": "/images/brands/flask.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Flask",
+    "sourceUrl": "https://simpleicons.org/?q=flask",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "fastapi": {
+    "src": "/images/brands/fastapi.svg",
+    "width": 24,
+    "height": 24,
+    "title": "FastAPI",
+    "sourceUrl": "https://simpleicons.org/?q=fastapi",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "express": {
+    "src": "/images/brands/express.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Express",
+    "sourceUrl": "https://simpleicons.org/?q=express",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "pandas": {
+    "src": "/images/brands/pandas.svg",
+    "width": 24,
+    "height": 24,
+    "title": "pandas",
+    "sourceUrl": "https://simpleicons.org/?q=pandas",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "numpy": {
+    "src": "/images/brands/numpy.svg",
+    "width": 24,
+    "height": 24,
+    "title": "NumPy",
+    "sourceUrl": "https://simpleicons.org/?q=numpy",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "scikit-learn": {
+    "src": "/images/brands/scikit-learn.svg",
+    "width": 24,
+    "height": 24,
+    "title": "scikit-learn",
+    "sourceUrl": "https://simpleicons.org/?q=scikitlearn",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "pytorch": {
+    "src": "/images/brands/pytorch.svg",
+    "width": 24,
+    "height": 24,
+    "title": "PyTorch",
+    "sourceUrl": "https://simpleicons.org/?q=pytorch",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "tensorflow": {
+    "src": "/images/brands/tensorflow.svg",
+    "width": 24,
+    "height": 24,
+    "title": "TensorFlow",
+    "sourceUrl": "https://simpleicons.org/?q=tensorflow",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "jupyter": {
+    "src": "/images/brands/jupyter.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Jupyter",
+    "sourceUrl": "https://simpleicons.org/?q=jupyter",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "huggingface": {
+    "src": "/images/brands/huggingface.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Hugging Face",
+    "sourceUrl": "https://simpleicons.org/?q=huggingface",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "google-cloud": {
+    "src": "/images/brands/google-cloud.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Google Cloud",
+    "sourceUrl": "https://simpleicons.org/?q=googlecloud",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "cloudflare": {
+    "src": "/images/brands/cloudflare.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Cloudflare",
+    "sourceUrl": "https://simpleicons.org/?q=cloudflare",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "stripe": {
+    "src": "/images/brands/stripe.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Stripe",
+    "sourceUrl": "https://simpleicons.org/?q=stripe",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "razorpay": {
+    "src": "/images/brands/razorpay.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Razorpay",
+    "sourceUrl": "https://simpleicons.org/?q=razorpay",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "clerk": {
+    "src": "/images/brands/clerk.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Clerk",
+    "sourceUrl": "https://simpleicons.org/?q=clerk",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "auth0": {
+    "src": "/images/brands/auth0.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Auth0",
+    "sourceUrl": "https://simpleicons.org/?q=auth0",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "puppeteer": {
+    "src": "/images/brands/puppeteer.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Puppeteer",
+    "sourceUrl": "https://simpleicons.org/?q=puppeteer",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "selenium": {
+    "src": "/images/brands/selenium.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Selenium",
+    "sourceUrl": "https://simpleicons.org/?q=selenium",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "mocha": {
+    "src": "/images/brands/mocha.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Mocha",
+    "sourceUrl": "https://simpleicons.org/?q=mocha",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "cucumber": {
+    "src": "/images/brands/cucumber.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Cucumber",
+    "sourceUrl": "https://simpleicons.org/?q=cucumber",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "k6": {
+    "src": "/images/brands/k6.svg",
+    "width": 24,
+    "height": 24,
+    "title": "k6",
+    "sourceUrl": "https://simpleicons.org/?q=k6",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "postman": {
+    "src": "/images/brands/postman.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Postman",
+    "sourceUrl": "https://simpleicons.org/?q=postman",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "swagger": {
+    "src": "/images/brands/swagger.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Swagger",
+    "sourceUrl": "https://simpleicons.org/?q=swagger",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "astro": {
+    "src": "/images/brands/astro.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Astro",
+    "sourceUrl": "https://simpleicons.org/?q=astro",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "svelte": {
+    "src": "/images/brands/svelte.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Svelte",
+    "sourceUrl": "https://simpleicons.org/?q=svelte",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "vue": {
+    "src": "/images/brands/vue.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Vue.js",
+    "sourceUrl": "https://simpleicons.org/?q=vuedotjs",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "angular": {
+    "src": "/images/brands/angular.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Angular",
+    "sourceUrl": "https://simpleicons.org/?q=angular",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "remix": {
+    "src": "/images/brands/remix.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Remix",
+    "sourceUrl": "https://simpleicons.org/?q=remix",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "electron": {
+    "src": "/images/brands/electron.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Electron",
+    "sourceUrl": "https://simpleicons.org/?q=electron",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "expo": {
+    "src": "/images/brands/expo.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Expo",
+    "sourceUrl": "https://simpleicons.org/?q=expo",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "flutter": {
+    "src": "/images/brands/flutter.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Flutter",
+    "sourceUrl": "https://simpleicons.org/?q=flutter",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "dart": {
+    "src": "/images/brands/dart.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Dart",
+    "sourceUrl": "https://simpleicons.org/?q=dart",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "threejs": {
+    "src": "/images/brands/threejs.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Three.js",
+    "sourceUrl": "https://simpleicons.org/?q=threedotjs",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "socketio": {
+    "src": "/images/brands/socketio.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Socket.io",
+    "sourceUrl": "https://simpleicons.org/?q=socketdotio",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "tanstack": {
+    "src": "/images/brands/tanstack.svg",
+    "width": 24,
+    "height": 24,
+    "title": "TanStack",
+    "sourceUrl": "https://simpleicons.org/?q=tanstack",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "neon": {
+    "src": "/images/brands/neon.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Neon",
+    "sourceUrl": "https://simpleicons.org/?q=neon",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "upstash": {
+    "src": "/images/brands/upstash.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Upstash",
+    "sourceUrl": "https://simpleicons.org/?q=upstash",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "betterauth": {
+    "src": "/images/brands/betterauth.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Better Auth",
+    "sourceUrl": "https://simpleicons.org/?q=betterauth",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  }
+}

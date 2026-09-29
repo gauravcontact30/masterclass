@@ -26,10 +26,11 @@ function browser(onAsk = jest.fn()) {
 
 test("a vocabulary card opens the word dialog instead of asking the question", async () => {
   const onAsk = browser();
-  await userEvent.click(screen.getByRole("button", { name: /4 synonyms/ }));
+  await userEvent.click(screen.getByRole("button", { name: "Open word: Verbose" }));
 
   const dialog = await screen.findByRole("dialog");
   expect(onAsk).not.toHaveBeenCalled();
+  expect(within(dialog).getByRole("searchbox", { name: "Search an English word or phrase" })).toBeInTheDocument();
   expect(within(dialog).getByText("vur-BOHSS")).toBeInTheDocument();
   expect(within(dialog).getByText(/one decision inside four paragraphs/)).toBeInTheDocument();
   // The lists are shown in full in the dialog, not truncated as on the card.
@@ -48,7 +49,7 @@ test("every synonym and antonym carries its own working pronounce button", async
   });
 
   browser();
-  await userEvent.click(screen.getByRole("button", { name: /4 synonyms/ }));
+  await userEvent.click(screen.getByRole("button", { name: "Open word: Verbose" }));
   const dialog = await screen.findByRole("dialog");
 
   for (const word of [...WORD.vocabulary.synonyms, ...WORD.vocabulary.antonyms]) {

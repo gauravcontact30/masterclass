@@ -43,7 +43,7 @@ export function LandingTechy({ data }: { data: LandingProPreview["techy"] }) {
   return <section id="techy" className={styles.techy} aria-labelledby="landing-techy-title">
     <div className={styles.container}>
       <div className={styles.intro}>
-        <div><span className={styles.eyebrow}><span className={styles.spark} aria-hidden="true"/>{text("TECHY · FOR TECH PROFESSIONALS", "TECHY · टेक प्रोफ़ेशनल्स के लिए")}</span><h2 id="landing-techy-title">{text("Walk into the interview", "इंटरव्यू में जाएँ")} <em>{text("already fluent.", "पूरी तैयारी के साथ।")}</em></h2></div>
+        <div><h2 id="landing-techy-title">{text("Walk into the interview", "इंटरव्यू में जाएँ")} <em>{text("already fluent.", "पूरी तैयारी के साथ।")}</em></h2></div>
         <div className={styles.introAside}><p><ExpandedText text={text("A curated library for engineers who ship: the frameworks, cloud services and testing tools teams actually hire for—explained, questioned and coded.", "काम करने वाले इंजीनियरों के लिए चुनी हुई लाइब्रेरी: वे फ़्रेमवर्क, क्लाउड सेवाएँ और टेस्टिंग टूल जिनके लिए टीमें भर्ती करती हैं—समझाए, पूछे और कोड किए गए।")} /></p>
           <dl className={styles.stats}><div><dt>{text("Topics", "विषय")}</dt><dd>{count(data.topics.length)}</dd></div><div><dt>{text("Practice questions", "अभ्यास प्रश्न")}</dt><dd>{count(data.questionCount)}</dd></div><div><dt>{text("Learning modes", "सीखने के तरीके")}</dt><dd>{count(modes.length)}</dd></div></dl>
         </div>
@@ -54,7 +54,7 @@ export function LandingTechy({ data }: { data: LandingProPreview["techy"] }) {
           <header className={styles.previewBar}><span className={styles.dots} aria-hidden="true"><i/><i/><i/></span><span>techy / {topic.id}</span><small>{text("Preview", "पूर्वावलोकन")}</small></header>
           <div className={styles.chips} role="group" aria-label={text("Choose a topic", "विषय चुनें")}>
             {/* Two identical sets translate by half the track for a seamless loop; the copy is hidden from assistive tech and the tab order. */}
-            <div className={styles.chipTrack}>{[0, 1].map(copy => <div className={styles.chipSet} key={copy} aria-hidden={copy === 1 || undefined}>{data.topics.map((item, index) => <button key={item.id} data-tone={index % 15} tabIndex={copy === 1 ? -1 : undefined} aria-pressed={item.id === topic.id} onClick={() => { setTopicId(item.id); setRevealed(false); }} title={item.title} aria-label={item.title}>{TECH_PILLS[item.id] && <Image src={`/images/tech/${TECH_PILLS[item.id].icon}.png`} alt="" width={14} height={14} />}{TECH_PILLS[item.id]?.label ?? item.title}</button>)}</div>)}</div>
+            <div className={styles.chipTrack}>{[0, 1].map(copy => <div className={styles.chipSet} key={copy} aria-hidden={copy === 1 || undefined}>{data.topics.map((item, index) => <button key={item.id} data-tone={index % 15} tabIndex={copy === 1 ? -1 : undefined} aria-pressed={item.id === topic.id} onClick={() => { setTopicId(item.id); setRevealed(false); }} title={item.title} aria-label={item.title}>{TECH_PILLS[item.id] && <span className={styles.chipIcon} aria-hidden="true"><Image src={`/images/tech/${TECH_PILLS[item.id].icon}.png`} alt="" width={14} height={14} /></span>}<span className={styles.chipLabel}>{TECH_PILLS[item.id]?.label ?? item.title}</span></button>)}</div>)}</div>
           </div>
           <div className={styles.previewBody}>
             <p className={styles.category}>{topic.category} · {text(`${count(topic.questionCount)} questions`, `${count(topic.questionCount)} प्रश्न`)}</p>
@@ -93,7 +93,7 @@ export function LandingApiDocs({ data }: { data: LandingProPreview["api"] }) {
   return <section id="api-docs" className={styles.api} aria-labelledby="landing-api-title">
     <div className={styles.container}>
       <div className={styles.intro}>
-        <div><span className={styles.eyebrow}><span className={styles.spark} aria-hidden="true"/>{text("API DOCS · DEVELOPER REFERENCE", "API DOCS · डेवलपर संदर्भ")}</span><h2 id="landing-api-title">{text("Every identifier,", "हर पहचानकर्ता,")} <em>{text("one calm reference.", "एक शांत संदर्भ में।")}</em></h2></div>
+        <div><h2 id="landing-api-title">{text("Every identifier,", "हर पहचानकर्ता,")} <em>{text("one calm reference.", "एक शांत संदर्भ में।")}</em></h2></div>
         <div className={styles.introAside}><p>{text("Hooks, classes, functions and CLI commands from AI tooling to databases, testing and cloud—organised so you find the right API in seconds.", "AI टूलिंग से डेटाबेस, टेस्टिंग और क्लाउड तक hooks, classes, functions और CLI कमांड—व्यवस्थित, ताकि सही API सेकंडों में मिले।")}</p>
           <dl className={styles.stats}><div><dt>{text("Technologies", "तकनीकें")}</dt><dd>{count(data.packages.length)}</dd></div><div><dt>{text("Identifiers", "पहचानकर्ता")}</dt><dd>{count(data.identifierCount)}</dd></div><div><dt>{text("Identifier types", "प्रकार")}</dt><dd>{count(data.types.length)}</dd></div></dl>
         </div>

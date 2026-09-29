@@ -1,0 +1,612 @@
+/* Vocabulary Word Modal - Claude Paper / Warm Clean Design System */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(20, 20, 19, 0.68);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 860px;
+  max-height: min(92vh, 840px);
+  display: flex;
+  flex-direction: column;
+  background: #faf9f5;
+  color: #141413;
+  border: 1px solid rgba(40, 22, 12, 0.16);
+  border-radius: 20px;
+  box-shadow: 0 28px 72px -16px rgba(20, 20, 19, 0.45), 0 4px 16px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  animation: scaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  font-family: inherit;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Modal Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 26px;
+  background: #f5f4ed;
+  border-bottom: 1px solid rgba(40, 22, 12, 0.1);
+  flex-shrink: 0;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.iconCircle {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #b5522f;
+  border: 1px solid rgba(40, 22, 12, 0.12);
+  box-shadow: 0 2px 6px rgba(40, 22, 12, 0.05);
+  flex-shrink: 0;
+}
+
+.titleArea {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+.title {
+  margin: 0;
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #141413;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.hindiBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #eef3e6;
+  border: 1px solid #d5e1c3;
+  color: #4f6536;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.titleHearButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #fdf6f3;
+  border: 1px solid #f1c7b8;
+  color: #b5522f;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.titleHearButton:hover {
+  background: #b5522f;
+  border-color: #b5522f;
+  color: #ffffff;
+}
+
+.hearButtonLabel {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.subMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #5e5d59;
+}
+
+.pronunciationText {
+  font-family: var(--font-mono, monospace);
+  font-size: 11.5px;
+  color: #73726c;
+}
+
+.closeButton {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(40, 22, 12, 0.1);
+  background: #ffffff;
+  color: #5e5d59;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.closeButton:hover {
+  background: #f0eee6;
+  color: #141413;
+  border-color: rgba(40, 22, 12, 0.25);
+  transform: translateY(-1px);
+}
+
+.closeButton:focus-visible {
+  outline: 2px solid #b5522f;
+  outline-offset: 2px;
+}
+
+/* Modal Body */
+.body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(40, 22, 12, 0.2) transparent;
+}
+
+.loadingBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 24px;
+  color: #5e5d59;
+  font-size: 14px;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  color: #b5522f;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.errorBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 36px 20px;
+  text-align: center;
+  color: #a33825;
+}
+
+.errorBox p {
+  margin: 0;
+  font-size: 13.5px;
+}
+
+/* Meaning Box */
+.meaningCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid rgba(40, 22, 12, 0.1);
+  box-shadow: 0 1px 3px rgba(40, 22, 12, 0.04);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: nowrap;
+}
+
+.cardHeadTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5e5d59;
+  white-space: nowrap;
+}
+
+.hearButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #f5f4ed;
+  border: 1px solid rgba(40, 22, 12, 0.12);
+  color: #3d3d3a;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.hearButton:hover {
+  background: #e8e6dc;
+  color: #141413;
+}
+
+.meaningEnglish {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #141413;
+}
+
+.meaningHindi {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #4a7565;
+  font-weight: 500;
+}
+
+/* Sentence Block */
+.sentenceCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: #fbf9f2;
+  border: 1px solid #ebdcc6;
+}
+
+.sentenceEnglish {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: #2b2a27;
+  font-style: italic;
+}
+
+.sentenceHindi {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #6e6122;
+}
+
+/* Synonyms & Antonyms Grid */
+.pairsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.relationCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid rgba(40, 22, 12, 0.08);
+}
+
+.relationCard[data-kind="synonyms"] {
+  border-color: #d5e1c3;
+  background: #fafcf8;
+}
+
+.relationCard[data-kind="antonyms"] {
+  border-color: #efd1ca;
+  background: #fdfaf9;
+}
+
+.relationTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.relationCard[data-kind="synonyms"] .relationTitle {
+  color: #4f6536;
+}
+
+.relationCard[data-kind="antonyms"] .relationTitle {
+  color: #93473b;
+}
+
+.pillsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  align-items: center;
+}
+
+.pillGroup {
+  display: inline-flex;
+  align-items: stretch;
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.relationCard[data-kind="synonyms"] .pillGroup {
+  background: #eef3e6;
+  border: 1px solid #d5e1c3;
+}
+
+.relationCard[data-kind="antonyms"] .pillGroup {
+  background: #fff7f0;
+  border: 1px solid #e6d4c8;
+}
+
+.pillItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 12px;
+  background: transparent;
+  border: none;
+  font-size: 12.5px;
+  line-height: 1.35;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.relationCard[data-kind="synonyms"] .pillItem {
+  color: #385e43;
+}
+
+.relationCard[data-kind="antonyms"] .pillItem {
+  color: #80553c;
+}
+
+.pillItem:hover {
+  text-decoration: underline;
+}
+
+.pillAudioButton {
+  display: inline-grid;
+  place-items: center;
+  padding: 0 9px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.relationCard[data-kind="synonyms"] .pillAudioButton {
+  color: #4f6536;
+  border-left: 1px solid rgba(79, 101, 54, 0.22);
+}
+
+.relationCard[data-kind="synonyms"] .pillAudioButton:hover {
+  background: #4f6536;
+  color: #ffffff;
+}
+
+.relationCard[data-kind="antonyms"] .pillAudioButton {
+  color: #93473b;
+  border-left: 1px solid rgba(147, 71, 59, 0.22);
+}
+
+.relationCard[data-kind="antonyms"] .pillAudioButton:hover {
+  background: #93473b;
+  color: #ffffff;
+}
+
+.pillItem strong {
+  font-weight: 600;
+}
+
+.pillItem span {
+  opacity: 0.8;
+  font-size: 11px;
+}
+
+.emptyText {
+  margin: 0;
+  font-size: 12px;
+  color: #87867f;
+  font-style: italic;
+}
+
+/* Modal Footer */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 26px;
+  background: #f5f4ed;
+  border-top: 1px solid rgba(40, 22, 12, 0.1);
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+}
+
+.footerActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bookmarkButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1px solid rgba(181, 82, 47, 0.3);
+  background: #ffffff;
+  color: #b5522f;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bookmarkButton:hover {
+  background: rgba(181, 82, 47, 0.08);
+  border-color: #b5522f;
+}
+
+.bookmarkButton[data-bookmarked="true"] {
+  background: #3e714a;
+  border-color: #3e714a;
+  color: #ffffff;
+}
+
+.bookmarkButton[data-bookmarked="true"]:hover {
+  background: #335d3d;
+}
+
+.vocabPageLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(40, 22, 12, 0.16);
+  background: #ffffff;
+  color: #3d3d3a;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.vocabPageLink:hover {
+  background: #f0eee6;
+  color: #141413;
+}
+
+.closeSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #5e5d59;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.closeSecondary:hover {
+  background: rgba(40, 22, 12, 0.06);
+  color: #141413;
+}
+
+@media (max-width: 680px) {
+  .modal {
+    max-height: 94vh;
+    border-radius: 16px;
+  }
+
+  .header {
+    padding: 14px 16px;
+  }
+
+  .body {
+    padding: 16px;
+  }
+
+  .titleRow {
+    flex-wrap: wrap;
+  }
+
+  .pairsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .footerActions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

@@ -26,6 +26,7 @@ export function sidebarSuggestions(access: PreparationAccess, hi: boolean): Side
     { id: "page:dashboard", label: hi ? "डैशबोर्ड" : "Dashboard", hint: hi ? "पेज" : "Page", scope: "pages", tab: "dashboard", keywords: "dashboard home डैशबोर्ड" },
     { id: "page:library", label: hi ? "मेरी लाइब्रेरी" : "My library", hint: hi ? "पेज" : "Page", scope: "pages", tab: "library", keywords: "library documents guides लाइब्रेरी" },
     { id: "page:notes", label: hi ? "नोट्स" : "Notes", hint: hi ? "पेज" : "Page", scope: "pages", href: "/dashboard/notes", keywords: "notes topic cards नोट्स" },
+    { id: "page:vocabulary", label: "Vocabulary", hint: "English word finder", scope: "pages", href: "/dashboard/vocabulary", keywords: "vocabulary dictionary english hindi words phrases idioms meaning synonyms antonyms pronunciation" },
     { id: "page:bookmark", label: "Bookmark", hint: hi ? "पेज" : "Page", scope: "pages", href: "/dashboard/bookmark", keywords: "bookmarks saved" },
   ];
   const professional: SidebarSuggestion[] = [

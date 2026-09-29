@@ -20,7 +20,10 @@ if (!dir) throw new Error("usage: build-vocabulary-hindi.mjs <scratch-dir>");
 const SOURCE = "lib/pro-learn/english-exam-vocabulary.ts";
 const TARGET = "lib/pro-learn/english-vocabulary-hindi.ts";
 
-const words = [...readFileSync(SOURCE, "utf8").matchAll(/^ {4}\["([a-z-]+)",/gm)].map(match => match[1]);
+// Rows are not all single lower-case words: the imported business glossary
+// carries acronyms ("KPI") and phrases ("market share"), and a pattern that
+// missed those would drop them from the table without failing.
+const words = [...readFileSync(SOURCE, "utf8").matchAll(/^ {4}\["([A-Za-z0-9][A-Za-z0-9 '’-]*)",/gm)].map(match => match[1]);
 
 const glosses = new Map();
 for (const file of readdirSync(dir).filter(name => /^hindi-\d+\.txt$/.test(name)).sort()) {

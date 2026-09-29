@@ -11,9 +11,7 @@ export const bookmarkSchema = bookmarkDraftSchema.extend({ id: z.string().regex(
 export type BookmarkDraft = z.infer<typeof bookmarkDraftSchema>;
 export type SavedBookmark = z.infer<typeof bookmarkSchema>;
 export type BookmarkSource = Omit<BookmarkDraft, "points">;
-export function bookmarkIdentity(value: BookmarkDraft) {
-  return JSON.stringify([value.sourceKey, value.technology, value.points.map(point => point.trim())]);
-}
+export { bookmarkIdentity } from "./bookmark-identity";
 export function bookmarkText(items: SavedBookmark[]) {
   return items.map(item => `${item.title}\n${item.technology}\n${item.points.map(point => `- ${point}`).join("\n")}\nSource: ${item.href}`).join("\n\n");
 }

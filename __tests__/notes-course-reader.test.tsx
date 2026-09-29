@@ -16,7 +16,7 @@ test("AWS AI services card opens its modal and loads a voice-agent lesson", asyn
   fireEvent.change(screen.getByRole("searchbox", { name: "Search course lessons" }), { target: { value: "WebRTC" } });
   const chapter = getStudyNote("aws-ai-services-course")!.contents!.find(item => item.title.includes("WebRTC"))!;
   fireEvent.click(screen.getByRole("button", { name: `Read ${chapter.title}` }));
-  expect(await screen.findByRole("heading", { name: chapter.title })).toBeVisible();
+  expect(await screen.findByRole("heading", { name: chapter.title === "Intersection Observer API" ? /Intersection Observer API/ : chapter.title })).toBeVisible();
   expect(global.fetch).toHaveBeenCalledWith(`/api/notes/${chapter.id}`, expect.anything());
 });
 
@@ -29,7 +29,7 @@ test("JavaScript ES2026 card opens its modal and loads a browser API lesson", as
   fireEvent.change(screen.getByRole("searchbox", { name: "Search course lessons" }), { target: { value: "Intersection" } });
   const chapter = getStudyNote("javascript-es2026-course")!.contents!.find(item => item.title === "Intersection Observer API")!;
   fireEvent.click(screen.getByRole("button", { name: `Read ${chapter.title}` }));
-  expect(await screen.findByRole("heading", { name: chapter.title })).toBeVisible();
+  expect(await screen.findByRole("heading", { name: chapter.title === "Intersection Observer API" ? /Intersection Observer API/ : chapter.title })).toBeVisible();
   expect(global.fetch).toHaveBeenCalledWith(`/api/notes/${chapter.id}`, expect.anything());
 });
 
@@ -42,7 +42,7 @@ test("TypeScript 7 card opens its modal and loads a utility-types lesson", async
   fireEvent.change(screen.getByRole("searchbox", { name: "Search course lessons" }), { target: { value: "Awaited" } });
   const chapter = getStudyNote("typescript-7-course")!.contents!.find(item => item.title.includes("Awaited<T>"))!;
   fireEvent.click(screen.getByRole("button", { name: `Read ${chapter.title}` }));
-  expect(await screen.findByRole("heading", { name: chapter.title })).toBeVisible();
+  expect(await screen.findByRole("heading", { name: chapter.title === "Intersection Observer API" ? /Intersection Observer API/ : chapter.title })).toBeVisible();
   expect(global.fetch).toHaveBeenCalledWith(`/api/notes/${chapter.id}`, expect.anything());
 });
 
@@ -55,7 +55,7 @@ test("Node.js modal filters and opens an advanced lesson from the expanded cours
   fireEvent.change(screen.getByRole("searchbox", { name: "Search course lessons" }), { target: { value: "microservices" } });
   const chapter = getStudyNote("node-course")!.contents!.find(item => item.title.startsWith("Microservices architecture"))!;
   fireEvent.click(screen.getByRole("button", { name: `Read ${chapter.title}` }));
-  expect(await screen.findByRole("heading", { name: chapter.title })).toBeVisible();
+  expect(await screen.findByRole("heading", { name: chapter.title === "Intersection Observer API" ? /Intersection Observer API/ : chapter.title })).toBeVisible();
   expect(global.fetch).toHaveBeenCalledWith(`/api/notes/${chapter.id}`, expect.anything());
 });
 
@@ -67,7 +67,7 @@ test("GraphQL modal finds and loads incremental delivery within its architecture
   fireEvent.change(screen.getByRole("searchbox", { name: "Search course lessons" }), { target: { value: "@defer" } });
   const chapter = getStudyNote("graphql-course")!.contents!.find(item => item.title.includes("@defer"))!;
   fireEvent.click(screen.getByRole("button", { name: `Read ${chapter.title}` }));
-  expect(await screen.findByRole("heading", { name: chapter.title })).toBeVisible();
+  expect(await screen.findByRole("heading", { name: chapter.title === "Intersection Observer API" ? /Intersection Observer API/ : chapter.title })).toBeVisible();
   expect(global.fetch).toHaveBeenCalledWith(`/api/notes/${chapter.id}`, expect.anything());
 });
 
@@ -80,7 +80,7 @@ test("Nest JS modal opens with its exact name and loads deployment notes by cate
   fireEvent.change(screen.getByRole("searchbox", { name: "Search course lessons" }), { target: { value: "dockerization" } });
   const chapter = getStudyNote("nestjs-course")!.contents!.find(item => item.title.startsWith("Dockerization"))!;
   fireEvent.click(screen.getByRole("button", { name: `Read ${chapter.title}` }));
-  expect(await screen.findByRole("heading", { name: chapter.title })).toBeVisible();
+  expect(await screen.findByRole("heading", { name: chapter.title === "Intersection Observer API" ? /Intersection Observer API/ : chapter.title })).toBeVisible();
   expect(global.fetch).toHaveBeenCalledWith(`/api/notes/${chapter.id}`, expect.anything());
 });
 

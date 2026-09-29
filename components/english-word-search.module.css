@@ -1,0 +1,96 @@
+.panel { margin: 12px 0; padding: 20px 0 0; min-width: 0; border-top: 1px solid var(--line, #dedcd1); color: var(--ink, #3d3d3a); }
+.header { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.header h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 14px; font-weight: 650; }
+.header > span { padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line, #dedcd1); font-size: 10px; background: #fff; }
+.intro { margin: 6px 0 12px; font-size: 12px; color: var(--muted, #73726c); }
+.form { display: flex; align-items: stretch; gap: 8px; flex-wrap: wrap; padding: 5px; border: 1px solid var(--line, #dedcd1); border-radius: 18px; background: var(--surface, #fff); box-shadow: var(--lift, 0 1px 2px #1f1e1d0a); }
+.field { flex: 1 1 280px; min-width: 0; height: 44px; border: 1px solid transparent; border-radius: 14px; background: var(--surface, #fff); box-shadow: none; color: var(--faint, #9a988f); }
+.field input { min-width: 0; height: 44px; font-size: 14px; color: var(--ink, #3d3d3a); }
+.field input::-webkit-search-cancel-button { display: none; }
+.field:focus-within { border-color: color-mix(in srgb, var(--accent, #c6613f) 55%, white); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #c6613f) 12%, transparent); }
+.search { min-height: 44px; padding: 0 20px; border-radius: 14px; background: #262624; color: #fff; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.search:hover:not(:disabled) { background: #3d3d3a; }
+.search:disabled { opacity: .4; }
+.search:focus-visible, .hear:focus-visible { outline: 2px solid var(--accent, #c6613f); outline-offset: 3px; }
+
+/* The result reads as one entry, not a stack of boxes: a headword plate on top,
+   then the reading column, then the two related-word panels. Nested panels stay
+   flat (hairline, no shadow) so only the card itself lifts off the page. */
+.result { position: relative; overflow: hidden; border: 1px solid var(--line, #dedcd1); border-radius: 18px; background: var(--surface, #fff); margin-top: 20px; box-shadow: var(--lift, 0 1px 2px #1f1e1d0a); }
+.result::before { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: linear-gradient(90deg, var(--accent, #c6613f), #cba679 55%, transparent); }
+
+.wordHead { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 22px 24px 18px; border-bottom: 1px solid var(--hair, #e8e6dc); background: linear-gradient(180deg, #fff, var(--sage, #f5f4ed)); }
+.headText { min-width: 0; }
+.wordHead h3 { margin: 0; color: var(--heading, #2f4b5c); letter-spacing: -.03em; font-size: 30px; line-height: 1.15; font-weight: 650; overflow-wrap: anywhere; }
+.phonetic { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 9px 0 0; }
+.phonetic > span:first-child { font-size: 9.5px; font-weight: 650; letter-spacing: .09em; text-transform: uppercase; color: var(--faint, #9a988f); }
+.phonetic > span + span { padding: 3px 10px; border: 1px solid var(--hair, #e8e6dc); border-radius: 999px; background: #fff; color: var(--ink, #3d3d3a); font-size: 12.5px; }
+.hear { flex: none; display: inline-flex; align-items: center; gap: 6px; height: auto; padding: 8px 14px; border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--accent, #c6613f); background: color-mix(in srgb, var(--accent, #c6613f) 8%, #fff); border: 1px solid color-mix(in srgb, var(--accent, #c6613f) 28%, #fff); transition: background .15s ease, color .15s ease; }
+.hear:hover { background: var(--accent, #c6613f); color: #fff; border-color: var(--accent, #c6613f); }
+
+.body { display: grid; gap: 16px; padding: 20px 24px 22px; }
+.result h4 { margin: 0 0 7px; font-size: 10px; font-weight: 650; letter-spacing: .09em; text-transform: uppercase; color: var(--faint, #9a988f); }
+.meaning p { margin: 0; }
+.meaning p:first-of-type { font-size: 15px; line-height: 1.6; color: var(--ink, #3d3d3a); }
+.meaning p[lang] { margin-top: 8px; padding-left: 12px; border-left: 2px solid var(--hair, #e8e6dc); font-size: 13.5px; line-height: 1.7; color: var(--muted, #73726c); }
+
+/* The example carries a quote mark instead of a heavy rule — it reads as a
+   specimen of the word, set apart without shouting. */
+.sentence { position: relative; padding: 14px 16px 14px 44px; border: 1px solid #f0e4d2; border-radius: 13px; background: #fdfaf4; }
+.sentence::before { content: "\201C"; position: absolute; left: 14px; top: 12px; color: #cba679; font-size: 34px; line-height: 1; font-family: Georgia, "Times New Roman", serif; }
+.sentence h4 { color: #a8894f; }
+.sentence p { margin: 0; font-size: 13.5px; line-height: 1.65; color: var(--ink, #3d3d3a); }
+
+.pairs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.related { min-width: 0; padding: 14px; border: 1px solid var(--hair, #e8e6dc); border-radius: 14px; background: #fff; }
+.related h4 { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; padding-bottom: 9px; border-bottom: 1px solid var(--hair, #e8e6dc); }
+.related h4::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--tint-dot); }
+.related h4 span { text-transform: none; letter-spacing: 0; font-size: 11px; font-weight: 400; color: var(--faint, #9a988f); }
+.related h4 span:last-child { margin-left: auto; min-width: 19px; padding: 1px 6px; border-radius: 999px; background: var(--tint-bg); color: var(--tint-dot); font-size: 10px; font-weight: 650; text-align: center; }
+.related[data-kind="synonyms"] { --tint-bg: #edf6ef; --tint-line: #d7e8db; --tint-dot: #4f7f5f; }
+.related[data-kind="antonyms"] { --tint-bg: #fdf1ea; --tint-line: #f3dccd; --tint-dot: #c6613f; }
+/* Chips wrap into as many columns as the width allows, so a long list stays
+   two or three rows tall instead of one long ladder. */
+.related ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 8px; padding: 0; margin: 0; list-style: none; }
+.related li { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border: 1px solid var(--chip-line); border-radius: 10px; background: var(--chip-bg); font-size: 12px; overflow-wrap: anywhere; }
+/* Each chip takes its own light tint so a list of five words reads as five
+   distinct items at a glance. The two families stay recognisable: synonyms
+   cycle through cool greens and blues, antonyms through warm clays. */
+.related[data-kind="synonyms"] li:nth-child(6n+1) { --chip-bg: #edf6ef; --chip-line: #d4e7d9; }
+.related[data-kind="synonyms"] li:nth-child(6n+2) { --chip-bg: #eaf3f7; --chip-line: #d2e4ec; }
+.related[data-kind="synonyms"] li:nth-child(6n+3) { --chip-bg: #f1f4e9; --chip-line: #dfe6cf; }
+.related[data-kind="synonyms"] li:nth-child(6n+4) { --chip-bg: #e9f4f2; --chip-line: #d0e6e1; }
+.related[data-kind="synonyms"] li:nth-child(6n+5) { --chip-bg: #f0f0f8; --chip-line: #dedeee; }
+.related[data-kind="synonyms"] li:nth-child(6n+6) { --chip-bg: #f4f6ea; --chip-line: #e3e8d2; }
+.related[data-kind="antonyms"] li:nth-child(6n+1) { --chip-bg: #fdf1ea; --chip-line: #f3dccd; }
+.related[data-kind="antonyms"] li:nth-child(6n+2) { --chip-bg: #fbf1f2; --chip-line: #f0dcdf; }
+.related[data-kind="antonyms"] li:nth-child(6n+3) { --chip-bg: #fdf5e7; --chip-line: #f2e4c9; }
+.related[data-kind="antonyms"] li:nth-child(6n+4) { --chip-bg: #faf0f6; --chip-line: #eedbe7; }
+.related[data-kind="antonyms"] li:nth-child(6n+5) { --chip-bg: #fbf3ec; --chip-line: #efe0d2; }
+.related[data-kind="antonyms"] li:nth-child(6n+6) { --chip-bg: #fdf0f0; --chip-line: #f3d9d9; }
+.related li strong { font-weight: 600; color: var(--ink, #3d3d3a); }
+.related li span { color: var(--muted, #73726c); font-size: 11.5px; line-height: 1.55; }
+.related > p { margin: 0; }
+
+.related > p, .status { font-size: 11px; line-height: 1.6; color: var(--muted, #73726c); }
+.error { margin: 10px 0 0; font-size: 12px; color: #a03f2e; }
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.spinner { animation: turn 1s linear infinite; }
+@keyframes turn { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } .hear { transition: none; } }
+@media (max-width: 620px) {
+  .wordHead { flex-wrap: wrap; padding: 18px 16px 15px; }
+  .wordHead h3 { font-size: 25px; }
+  .body { padding: 16px; }
+  .pairs { grid-template-columns: 1fr; }
+  .search { flex: 1 1 100%; }
+}
+
+/* A phrase card says so under its heading: the reader asked about several words
+   and needs to know the meaning below is of all of them together, not of the
+   last one. Quiet enough that a single-word card loses nothing by not having it. */
+.phraseNote {
+  margin: 2px 0 0;
+  font-size: 11px; font-weight: 600; letter-spacing: .02em;
+  color: var(--muted);
+}

@@ -22,6 +22,21 @@ test("every reference handbook is registered on the search page", () => {
   }
 });
 
+test("modern full-stack catalogue covers the requested technologies and TanStack variants", () => {
+  const handbook = TECHNOLOGY_HANDBOOKS.find(item => item.title.startsWith("Modern Full-Stack Technologies"));
+  expect(handbook).toBeDefined();
+  const names = new Set(handbook!.topics.map(topic => topic.name));
+  for (const name of [
+    "uv package manager", "Redis caching solutions", "Zod", "n8n Automation", "System Design",
+    "TanStack Query", "TanStack Form", "TanStack Table", "TanStack Router", "TanStack Start", "TanStack Virtual",
+    "Zustand", "Redux Toolkit", "Redux", "GitHub Actions", "Webhook", "Terraform", "Kubernetes",
+    "Authentication with Auth.js & Kinde Auth", "Payment gateway integration", "Prisma", "Neon", "Drizzle ORM",
+    "Conform - Validation libraries", "Zod validation libraries", "Arcjet", "Inngest services", "Upstash",
+    "BetterAuth", "T3 environment", "Clerk user management",
+  ]) expect(names.has(name)).toBe(true);
+  expect(handbook!.topics.every(topic => topic.summary.length >= 30)).toBe(true);
+});
+
 test("no handbook repeats a name, and every topic carries a real summary", () => {
   for (const [label, topics] of Object.entries(SETS)) {
     const names = topics.map(topic => topic.name);

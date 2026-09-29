@@ -1,0 +1,3537 @@
+[
+  {
+    "name": "Amazon Bedrock",
+    "category": "AI & Machine Learning",
+    "summary": "Build generative AI applications using managed foundation models.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon Bedrock AgentCore",
+    "category": "AI & Machine Learning",
+    "summary": "Deploy and operate AI agents with managed infrastructure.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-agentcore.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon Comprehend",
+    "category": "AI & Machine Learning",
+    "summary": "Identify useful information in text using natural-language processing.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/comprehend.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon Forecast",
+    "category": "AI & Machine Learning",
+    "summary": "Generate forecasts from historical time-series data.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/forecast.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon Kendra",
+    "category": "AI & Machine Learning",
+    "summary": "Search enterprise content using natural-language queries.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kendra.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon Lex",
+    "category": "AI & Machine Learning",
+    "summary": "Build conversational interfaces using voice or text.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/lexv2-models.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon Personalize",
+    "category": "AI & Machine Learning",
+    "summary": "Generate recommendations from user interaction data.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/personalize.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon Polly",
+    "category": "AI & Machine Learning",
+    "summary": "Convert written text into spoken audio.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/polly.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon Q Developer",
+    "category": "AI & Machine Learning",
+    "summary": "Developer assistance for understanding, building, and operating applications.",
+    "url": "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/what-is.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon Rekognition",
+    "category": "AI & Machine Learning",
+    "summary": "Analyze images and videos with managed computer vision.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/rekognition.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon SageMaker AI",
+    "category": "AI & Machine Learning",
+    "summary": "Build, train and deploy machine-learning models.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon Textract",
+    "category": "AI & Machine Learning",
+    "summary": "Extract text and structured fields from documents.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/textract.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon Transcribe",
+    "category": "AI & Machine Learning",
+    "summary": "Convert speech into text.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/transcribe.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon Translate",
+    "category": "AI & Machine Learning",
+    "summary": "Translate text between supported languages.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/translate.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS Glue",
+    "category": "Analytics & Data Engineering",
+    "summary": "Discover, catalog and transform data for analytics.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glue.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon Athena",
+    "category": "Analytics & Data Engineering",
+    "summary": "Query supported data using SQL without managing query servers.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/athena.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon Data Firehose",
+    "category": "Analytics & Data Engineering",
+    "summary": "Deliver streaming data to supported destinations.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/firehose.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon EMR",
+    "category": "Analytics & Data Engineering",
+    "summary": "Run distributed data-processing frameworks on AWS.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/emr.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon Kinesis",
+    "category": "Analytics & Data Engineering",
+    "summary": "Process streams of incoming records with Kinesis Data Streams.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kinesis.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon OpenSearch Service",
+    "category": "Analytics & Data Engineering",
+    "summary": "Provide managed search, log analytics and vector-search capabilities.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/opensearch.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon Redshift",
+    "category": "Analytics & Data Engineering",
+    "summary": "Analyze structured data in a managed data warehouse.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/redshift.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS App Runner",
+    "category": "Containers",
+    "summary": "Deploy a web application or API as a managed HTTPS service.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/apprunner.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS Fargate",
+    "category": "Containers",
+    "summary": "Provide managed compute capacity for containers.",
+    "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon ECR",
+    "category": "Containers",
+    "summary": "Store and distribute container images.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecr.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon ECS",
+    "category": "Containers",
+    "summary": "Deploy and operate containerized applications on AWS.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecs.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon EKS",
+    "category": "Containers",
+    "summary": "Run Kubernetes with an AWS-managed control plane.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/eks.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS Batch",
+    "category": "Core AWS Services",
+    "summary": "Schedule and execute batch-computing jobs.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/batch.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS Lambda",
+    "category": "Core AWS Services",
+    "summary": "Run event-triggered code without managing servers.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/lambda.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon EC2",
+    "category": "Core AWS Services",
+    "summary": "Run virtual machines with control over the operating system and runtime.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS Budgets & Cost Explorer",
+    "category": "Cost & Billing",
+    "summary": "Plan cloud spending and understand cost patterns.",
+    "url": "https://docs.aws.amazon.com/cost-management/latest/userguide/what-is-costmanagement.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon Aurora",
+    "category": "Databases",
+    "summary": "Run an AWS-managed relational database compatible with MySQL or PostgreSQL.",
+    "url": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_AuroraOverview.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon DynamoDB",
+    "category": "Databases",
+    "summary": "Store key-value and document data with managed scaling.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon ElastiCache",
+    "category": "Databases",
+    "summary": "Serve frequently accessed data from an in-memory cache.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/elasticache.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon RDS",
+    "category": "Databases",
+    "summary": "Operate a relational database with managed infrastructure tasks.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/rds.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS AppConfig",
+    "category": "DevOps & CI/CD",
+    "summary": "Release application configuration and feature flags safely.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/appconfig.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS CDK",
+    "category": "DevOps & CI/CD",
+    "summary": "Define cloud infrastructure using programming languages.",
+    "url": "https://docs.aws.amazon.com/cdk/v2/guide/home.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS CloudFormation",
+    "category": "DevOps & CI/CD",
+    "summary": "Provision AWS infrastructure from declarative templates.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudformation.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS CodeArtifact",
+    "category": "DevOps & CI/CD",
+    "summary": "Store and distribute software packages.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/codeartifact.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS CodeBuild",
+    "category": "DevOps & CI/CD",
+    "summary": "Run builds and tests in managed build environments.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/codebuild.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS CodeCommit",
+    "category": "DevOps & CI/CD",
+    "summary": "Host private Git repositories in AWS.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/codecommit.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS CodeDeploy",
+    "category": "DevOps & CI/CD",
+    "summary": "Automate deployments to supported compute targets.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/codedeploy.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS CodePipeline",
+    "category": "DevOps & CI/CD",
+    "summary": "Orchestrate software-release stages.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/codepipeline.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS OpsWorks Stacks (retired)",
+    "category": "DevOps & CI/CD",
+    "summary": "Legacy migration reference. OpsWorks Stacks reached end of life on 26 May 2024.",
+    "url": "https://aws.amazon.com/blogs/mt/seamlessly-off-board-from-aws-opsworks-stacks-by-detaching-resources/",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon DevOps Guru",
+    "category": "DevOps & CI/CD",
+    "summary": "Detect operational anomalies using machine learning.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/devops-guru.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS CloudTrail",
+    "category": "Management & Governance",
+    "summary": "Record AWS account activity for audit and investigation.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudtrail.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS Config",
+    "category": "Management & Governance",
+    "summary": "Track resource configuration and evaluate configured rules.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/config.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS Organizations",
+    "category": "Management & Governance",
+    "summary": "Manage multiple AWS accounts under one organization.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/organizations.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS Systems Manager",
+    "category": "Management & Governance",
+    "summary": "Operate and configure managed compute resources.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS Step Functions",
+    "category": "Messaging & Integration",
+    "summary": "Coordinate multi-step workflows with explicit state.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/stepfunctions.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon EventBridge",
+    "category": "Messaging & Integration",
+    "summary": "Route events between applications and supported services.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/events.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon SNS",
+    "category": "Messaging & Integration",
+    "summary": "Distribute published messages to multiple subscribers.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sns.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon SQS",
+    "category": "Messaging & Integration",
+    "summary": "Decouple producers and workers with a managed message queue.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sqs.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS X-Ray",
+    "category": "Monitoring & Reliability",
+    "summary": "Trace requests across distributed application components.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/xray.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon CloudWatch",
+    "category": "Monitoring & Reliability",
+    "summary": "Observe application and infrastructure behavior.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudwatch.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS Direct Connect",
+    "category": "Networking & Edge",
+    "summary": "Connect an on-premises network to AWS through dedicated connectivity.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/directconnect.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS Global Accelerator",
+    "category": "Networking & Edge",
+    "summary": "Improve access to regional applications through the AWS global network.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/globalaccelerator.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon API Gateway",
+    "category": "Networking & Edge",
+    "summary": "Publish and manage application APIs.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/apigateway.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon CloudFront",
+    "category": "Networking & Edge",
+    "summary": "Deliver content through a global edge network.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudfront.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon Route 53",
+    "category": "Networking & Edge",
+    "summary": "Resolve domain names and route DNS traffic.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/route53.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon VPC",
+    "category": "Networking & Edge",
+    "summary": "Define an isolated network for AWS resources.",
+    "url": "https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Elastic Load Balancing",
+    "category": "Networking & Edge",
+    "summary": "Distribute incoming traffic across healthy application targets.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/elbv2.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS IAM",
+    "category": "Security & Identity",
+    "summary": "Control who can access AWS resources and what they can do.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS KMS",
+    "category": "Security & Identity",
+    "summary": "Manage encryption keys and control their use.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS Secrets Manager",
+    "category": "Security & Identity",
+    "summary": "Store and retrieve application secrets securely.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/secretsmanager.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS Shield",
+    "category": "Security & Identity",
+    "summary": "Protect supported AWS resources against distributed denial-of-service attacks.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/shield.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS WAF",
+    "category": "Security & Identity",
+    "summary": "Filter web requests using application-layer rules.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/wafv2.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon Cognito",
+    "category": "Security & Identity",
+    "summary": "Add user sign-in and identity integration to applications.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cognito-idp.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon GuardDuty",
+    "category": "Security & Identity",
+    "summary": "Detect suspicious activity in supported AWS data sources.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/guardduty.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon EBS",
+    "category": "Storage & Backup",
+    "summary": "Provide persistent block storage for EC2 workloads.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ebs.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon EFS",
+    "category": "Storage & Backup",
+    "summary": "Provide a shared managed file system for Linux workloads.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/efs.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon S3",
+    "category": "Storage & Backup",
+    "summary": "Store and retrieve objects such as files, media and datasets.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "Amazon S3 Glacier",
+    "category": "Storage & Backup",
+    "summary": "Archive infrequently accessed objects in S3 storage classes.",
+    "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glacier.html",
+    "kind": "Service guide"
+  },
+  {
+    "name": "AWS Clean Rooms ML",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for CleanRoomsML.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/cleanroomsml.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Agent Registry",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for AgentRegistry.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/agent-registry.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Agent Registry Control",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for AgentRegistryControl.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/agent-registry-control.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Agents for Amazon Bedrock",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for AgentsforBedrock.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/bedrock-agent.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Agents for Amazon Bedrock Runtime",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for AgentsforBedrockRuntime.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/bedrock-agent-runtime.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Augmented AI Runtime",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for AugmentedAIRuntime.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/sagemaker-a2i-runtime.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Bedrock",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for Bedrock.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/bedrock.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Bedrock AgentCore",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for BedrockAgentCore.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/bedrock-agentcore.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Bedrock AgentCore Control",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for BedrockAgentCoreControl.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/bedrock-agentcore-control.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Bedrock Runtime",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for BedrockRuntime.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/bedrock-runtime.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Comprehend",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for Comprehend.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/comprehend.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Forecast",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for ForecastService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/forecast.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Forecast Query Service",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for ForecastQueryService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/forecastquery.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Fraud Detector",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for FraudDetector.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/frauddetector.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Kendra",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for kendra.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/kendra.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Lex",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for LexModelsV2.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/lexv2-models.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Lex Model Building Service",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for LexModelBuildingService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/lex-models.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Lex Runtime Service",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for LexRuntimeService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/lex-runtime.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Machine Learning",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for MachineLearning.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/machinelearning.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Personalize",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for Personalize.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/personalize.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Personalize Events",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for PersonalizeEvents.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/personalize-events.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Personalize Runtime",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for PersonalizeRuntime.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/personalize-runtime.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Polly",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for Polly.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/polly.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Rekognition",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for Rekognition.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/rekognition.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon SageMaker AI",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for SageMaker.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/sagemaker.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon SageMaker Feature Store Runtime",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for SageMakerFeatureStoreRuntime.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/sagemaker-featurestore-runtime.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon SageMaker Runtime",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for SageMakerRuntime.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/sagemaker-runtime.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon SageMaker geospatial capabilities",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for SageMakergeospatialcapabilities.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/sagemaker-geospatial.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Sagemaker Edge Manager",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for SagemakerEdgeManager.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/sagemaker-edge.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Textract",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for Textract.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/textract.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Transcribe",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for TranscribeService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/transcribe.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Translate",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for Translate.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/translate.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "ComprehendMedical",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for ComprehendMedical.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/comprehendmedical.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Data Automation for Amazon Bedrock",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for DataAutomationforBedrock.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/bedrock-data-automation.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Kendra Ranking",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for KendraRanking.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/kendra-ranking.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Lex Runtime V2",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for LexRuntimeV2.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/lexv2-runtime.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "LookoutEquipment",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for LookoutEquipment.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/lookoutequipment.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Nova Act Service",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for NovaActService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/nova-act.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "QApps",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for QApps.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/qapps.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "QBusiness",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for QBusiness.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/qbusiness.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Runtime for Amazon Bedrock Data Automation",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for RuntimeforBedrockDataAutomation.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/bedrock-data-automation-runtime.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "SageMaker Metrics",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for SageMakerMetrics.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/sagemaker-metrics.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Sagemaker Job Runtime Service",
+    "category": "AI & Machine Learning",
+    "summary": "SDK operations, request parameters, and responses for SagemakerJobRuntimeService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/sagemakerjobruntime.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Clean Rooms Service",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for CleanRoomsService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/cleanrooms.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Data Exchange",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for DataExchange.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/dataexchange.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Data Pipeline",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for DataPipeline.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/datapipeline.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Glue",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for Glue.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/glue.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Glue DataBrew",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for GlueDataBrew.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/databrew.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Lake Formation",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for LakeFormation.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/lakeformation.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWSEntityResolution",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for EntityResolution.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/entityresolution.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Athena",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for Athena.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/athena.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon CloudSearch",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for CloudSearch.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/cloudsearch.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon CloudSearch Domain",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for CloudSearchDomain.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/cloudsearchdomain.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Data Firehose",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for Firehose.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/firehose.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon DataZone",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for DataZone.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/datazone.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon EMR",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for EMR.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/emr.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon EMR Containers",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for EMRContainers.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/emr-containers.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Elasticsearch Service",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for ElasticsearchService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/es.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Kinesis",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for Kinesis.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/kinesis.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon MSK Connect",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for KafkaConnect.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/kafkaconnect.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon OpenSearch Ingestion",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for OpenSearchIngestion.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/osis.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon OpenSearch Service",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for OpenSearchService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/opensearch.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon QuickSight",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for QuickSight.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/quicksight.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Redshift",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for Redshift.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/redshift.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "EMR Serverless",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for EMRServerless.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/emr-serverless.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "FinSpace Data",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for FinSpaceData.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/finspace-data.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Kafka",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for Kafka.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/kafka.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Kinesis Analytics SQL API (legacy)",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for KinesisAnalytics.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/kinesisanalytics.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Kinesis Analytics V2",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for KinesisAnalyticsV2.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/kinesisanalyticsv2.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "OpenSearch Service Serverless",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for OpenSearchServiceServerless.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/opensearchserverless.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Redshift Data API Service",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for RedshiftDataAPIService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/redshift-data.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Redshift Serverless",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for RedshiftServerless.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/redshift-serverless.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "finspace",
+    "category": "Analytics & Data Engineering",
+    "summary": "SDK operations, request parameters, and responses for finspace.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/finspace.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Chatbot",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for Chatbot.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/chatbot.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Supply Chain",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for SupplyChain.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/supplychain.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS User Experience Customization",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for UserExperienceCustomization.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/uxc.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Wickr Admin API",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for WickrAdminAPI.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/wickr.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS re:Post Private",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for rePostPrivate.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/repostspace.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Chime",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for Chime.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/chime.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Chime SDK Identity",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for ChimeSDKIdentity.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/chime-sdk-identity.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Chime SDK Media Pipelines",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for ChimeSDKMediaPipelines.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/chime-sdk-media-pipelines.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Chime SDK Meetings",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for ChimeSDKMeetings.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/chime-sdk-meetings.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Chime SDK Messaging",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for ChimeSDKMessaging.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/chime-sdk-messaging.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Chime SDK Voice",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for ChimeSDKVoice.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/chime-sdk-voice.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Connect",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for Connect.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/connect.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Connect Contact Lens",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for ConnectContactLens.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/connect-contact-lens.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Connect Participant",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for ConnectParticipant.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/connectparticipant.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Connect Wisdom Service",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for ConnectWisdomService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/wisdom.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Q Connect",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for QConnect.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/qconnect.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Voice ID",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for VoiceID.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/voice-id.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon WorkDocs",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for WorkDocs.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/workdocs.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon WorkMail",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for WorkMail.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/workmail.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon WorkMail Message Flow",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for WorkMailMessageFlow.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/workmailmessageflow.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AmazonConnectCampaignService",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for ConnectCampaignService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/connectcampaigns.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AmazonConnectCampaignServiceV2",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for ConnectCampaignServiceV2.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/connectcampaignsv2.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AppFabric",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for AppFabric.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/appfabric.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Connect Health",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for ConnectHealth.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/connecthealth.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "ConnectCases",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for ConnectCases.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/connectcases.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Customer Profiles",
+    "category": "Business Applications",
+    "summary": "SDK operations, request parameters, and responses for CustomerProfiles.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/customer-profiles.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS App Runner",
+    "category": "Containers",
+    "summary": "SDK operations, request parameters, and responses for AppRunner.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/apprunner.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon ECR",
+    "category": "Containers",
+    "summary": "SDK operations, request parameters, and responses for ECR.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/ecr.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon ECR Public",
+    "category": "Containers",
+    "summary": "SDK operations, request parameters, and responses for ECRPublic.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/ecr-public.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon ECS",
+    "category": "Containers",
+    "summary": "SDK operations, request parameters, and responses for ECS.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/ecs.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon EKS",
+    "category": "Containers",
+    "summary": "SDK operations, request parameters, and responses for EKS.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/eks.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon EKS Auth",
+    "category": "Containers",
+    "summary": "SDK operations, request parameters, and responses for EKSAuth.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/eks-auth.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Auto Scaling Plans",
+    "category": "Core AWS Services",
+    "summary": "SDK operations, request parameters, and responses for AutoScalingPlans.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/autoscaling-plans.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Batch",
+    "category": "Core AWS Services",
+    "summary": "SDK operations, request parameters, and responses for Batch.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/batch.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Compute Optimizer",
+    "category": "Core AWS Services",
+    "summary": "SDK operations, request parameters, and responses for ComputeOptimizer.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/compute-optimizer.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Lambda",
+    "category": "Core AWS Services",
+    "summary": "SDK operations, request parameters, and responses for Lambda.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/lambda.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Lambda Core",
+    "category": "Core AWS Services",
+    "summary": "SDK operations, request parameters, and responses for LambdaCore.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/lambda-core.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Parallel Computing Service",
+    "category": "Core AWS Services",
+    "summary": "SDK operations, request parameters, and responses for ParallelComputingService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/pcs.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon EC2",
+    "category": "Core AWS Services",
+    "summary": "SDK operations, request parameters, and responses for EC2.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/ec2.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Lightsail",
+    "category": "Core AWS Services",
+    "summary": "SDK operations, request parameters, and responses for Lightsail.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/lightsail.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Application Auto Scaling",
+    "category": "Core AWS Services",
+    "summary": "SDK operations, request parameters, and responses for ApplicationAutoScaling.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/application-autoscaling.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Auto Scaling",
+    "category": "Core AWS Services",
+    "summary": "SDK operations, request parameters, and responses for AutoScaling.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/autoscaling.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Compute Optimizer Automation",
+    "category": "Core AWS Services",
+    "summary": "SDK operations, request parameters, and responses for ComputeOptimizerAutomation.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/compute-optimizer-automation.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "EVS",
+    "category": "Core AWS Services",
+    "summary": "SDK operations, request parameters, and responses for EVS.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/evs.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Elastic Beanstalk",
+    "category": "Core AWS Services",
+    "summary": "SDK operations, request parameters, and responses for ElasticBeanstalk.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/elasticbeanstalk.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Lambda MicroVMs",
+    "category": "Core AWS Services",
+    "summary": "SDK operations, request parameters, and responses for LambdaMicroVMs.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/lambda-microvms.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Outposts",
+    "category": "Core AWS Services",
+    "summary": "SDK operations, request parameters, and responses for Outposts.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/outposts.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "imagebuilder",
+    "category": "Core AWS Services",
+    "summary": "SDK operations, request parameters, and responses for imagebuilder.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/imagebuilder.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Application Cost Profiler",
+    "category": "Cost & Billing",
+    "summary": "SDK operations, request parameters, and responses for ApplicationCostProfiler.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/applicationcostprofiler.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Billing",
+    "category": "Cost & Billing",
+    "summary": "SDK operations, request parameters, and responses for Billing.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/billing.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Billing and Cost Management Dashboards",
+    "category": "Cost & Billing",
+    "summary": "SDK operations, request parameters, and responses for BillingandCostManagementDashboards.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/bcm-dashboards.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Billing and Cost Management Data Exports",
+    "category": "Cost & Billing",
+    "summary": "SDK operations, request parameters, and responses for BillingandCostManagementDataExports.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/bcm-data-exports.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Billing and Cost Management Pricing Calculator",
+    "category": "Cost & Billing",
+    "summary": "SDK operations, request parameters, and responses for BillingandCostManagementPricingCalculator.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/bcm-pricing-calculator.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Billing and Cost Management Recommended Actions",
+    "category": "Cost & Billing",
+    "summary": "SDK operations, request parameters, and responses for BillingandCostManagementRecommendedActions.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/bcm-recommended-actions.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Cost Explorer",
+    "category": "Cost & Billing",
+    "summary": "SDK operations, request parameters, and responses for CostExplorer.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/ce.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Cost and Usage Report Service",
+    "category": "Cost & Billing",
+    "summary": "SDK operations, request parameters, and responses for CostandUsageReportService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/cur.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Free Tier",
+    "category": "Cost & Billing",
+    "summary": "SDK operations, request parameters, and responses for FreeTier.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/freetier.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Invoicing",
+    "category": "Cost & Billing",
+    "summary": "SDK operations, request parameters, and responses for Invoicing.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/invoicing.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Pricing",
+    "category": "Cost & Billing",
+    "summary": "SDK operations, request parameters, and responses for Pricing.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/pricing.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Sustainability",
+    "category": "Cost & Billing",
+    "summary": "SDK operations, request parameters, and responses for Sustainability.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/sustainability.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWSBillingConductor",
+    "category": "Cost & Billing",
+    "summary": "SDK operations, request parameters, and responses for BillingConductor.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/billingconductor.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWSBudgets",
+    "category": "Cost & Billing",
+    "summary": "SDK operations, request parameters, and responses for Budgets.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/budgets.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWSSavingsPlans",
+    "category": "Cost & Billing",
+    "summary": "SDK operations, request parameters, and responses for SavingsPlans.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/savingsplans.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Cost Optimization Hub",
+    "category": "Cost & Billing",
+    "summary": "SDK operations, request parameters, and responses for CostOptimizationHub.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/cost-optimization-hub.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "PricingPlanManager",
+    "category": "Cost & Billing",
+    "summary": "SDK operations, request parameters, and responses for PricingPlanManager.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/pricing-plan-manager.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Tax Settings",
+    "category": "Cost & Billing",
+    "summary": "SDK operations, request parameters, and responses for TaxSettings.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/taxsettings.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS RDS DataService",
+    "category": "Databases",
+    "summary": "SDK operations, request parameters, and responses for RDSDataService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/rds-data.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Aurora DSQL",
+    "category": "Databases",
+    "summary": "SDK operations, request parameters, and responses for AuroraDSQL.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/dsql.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon DAX",
+    "category": "Databases",
+    "summary": "SDK operations, request parameters, and responses for DAX.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/dax.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon DocDB",
+    "category": "Databases",
+    "summary": "SDK operations, request parameters, and responses for DocDB.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/docdb.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon DynamoDB",
+    "category": "Databases",
+    "summary": "SDK operations, request parameters, and responses for DynamoDB.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/dynamodb.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon DynamoDB Streams",
+    "category": "Databases",
+    "summary": "SDK operations, request parameters, and responses for DynamoDBStreams.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/dynamodbstreams.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon ElastiCache",
+    "category": "Databases",
+    "summary": "SDK operations, request parameters, and responses for ElastiCache.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/elasticache.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Keyspaces",
+    "category": "Databases",
+    "summary": "SDK operations, request parameters, and responses for Keyspaces.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/keyspaces.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Keyspaces Streams",
+    "category": "Databases",
+    "summary": "SDK operations, request parameters, and responses for KeyspacesStreams.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/keyspacesstreams.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon MemoryDB",
+    "category": "Databases",
+    "summary": "SDK operations, request parameters, and responses for MemoryDB.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/memorydb.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Neptune",
+    "category": "Databases",
+    "summary": "SDK operations, request parameters, and responses for Neptune.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/neptune.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon NeptuneData",
+    "category": "Databases",
+    "summary": "SDK operations, request parameters, and responses for NeptuneData.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/neptunedata.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon RDS",
+    "category": "Databases",
+    "summary": "SDK operations, request parameters, and responses for RDS.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/rds.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon SimpleDB",
+    "category": "Databases",
+    "summary": "SDK operations, request parameters, and responses for SimpleDB.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/sdb.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon SimpleDB v2",
+    "category": "Databases",
+    "summary": "SDK operations, request parameters, and responses for SimpleDBv2.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/simpledbv2.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "DocDB Elastic",
+    "category": "Databases",
+    "summary": "SDK operations, request parameters, and responses for DocDBElastic.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/docdb-elastic.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Neptune Graph",
+    "category": "Databases",
+    "summary": "SDK operations, request parameters, and responses for NeptuneGraph.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/neptune-graph.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Timestream InfluxDB",
+    "category": "Databases",
+    "summary": "SDK operations, request parameters, and responses for TimestreamInfluxDB.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/timestream-influxdb.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Timestream Query",
+    "category": "Databases",
+    "summary": "SDK operations, request parameters, and responses for TimestreamQuery.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/timestream-query.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Timestream Write",
+    "category": "Databases",
+    "summary": "SDK operations, request parameters, and responses for TimestreamWrite.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/timestream-write.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "odb",
+    "category": "Databases",
+    "summary": "SDK operations, request parameters, and responses for odb.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/odb.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS AppConfig",
+    "category": "DevOps & CI/CD",
+    "summary": "SDK operations, request parameters, and responses for AppConfig.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/appconfig.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS AppConfig Data",
+    "category": "DevOps & CI/CD",
+    "summary": "SDK operations, request parameters, and responses for AppConfigData.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/appconfigdata.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Cloud Control API",
+    "category": "DevOps & CI/CD",
+    "summary": "SDK operations, request parameters, and responses for CloudControlApi.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/cloudcontrol.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS CloudFormation",
+    "category": "DevOps & CI/CD",
+    "summary": "SDK operations, request parameters, and responses for CloudFormation.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/cloudformation.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS CodeArtifact",
+    "category": "DevOps & CI/CD",
+    "summary": "SDK operations, request parameters, and responses for CodeArtifact.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/codeartifact.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS CodeBuild",
+    "category": "DevOps & CI/CD",
+    "summary": "SDK operations, request parameters, and responses for CodeBuild.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/codebuild.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS CodeCommit",
+    "category": "DevOps & CI/CD",
+    "summary": "SDK operations, request parameters, and responses for CodeCommit.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/codecommit.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS CodeConnections",
+    "category": "DevOps & CI/CD",
+    "summary": "SDK operations, request parameters, and responses for CodeConnections.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/codeconnections.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS CodeDeploy",
+    "category": "DevOps & CI/CD",
+    "summary": "SDK operations, request parameters, and responses for CodeDeploy.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/codedeploy.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS CodePipeline",
+    "category": "DevOps & CI/CD",
+    "summary": "SDK operations, request parameters, and responses for CodePipeline.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/codepipeline.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS CodeStar Notifications",
+    "category": "DevOps & CI/CD",
+    "summary": "SDK operations, request parameters, and responses for CodeStarNotifications.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/codestar-notifications.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS CodeStar connections",
+    "category": "DevOps & CI/CD",
+    "summary": "SDK operations, request parameters, and responses for CodeStarconnections.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/codestar-connections.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS DevOps Agent Service",
+    "category": "DevOps & CI/CD",
+    "summary": "SDK operations, request parameters, and responses for DevOpsAgentService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/devops-agent.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Proton",
+    "category": "DevOps & CI/CD",
+    "summary": "SDK operations, request parameters, and responses for Proton.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/proton.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Signer Data Plane",
+    "category": "DevOps & CI/CD",
+    "summary": "SDK operations, request parameters, and responses for SignerDataPlane.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/signer-data.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon CodeCatalyst",
+    "category": "DevOps & CI/CD",
+    "summary": "SDK operations, request parameters, and responses for CodeCatalyst.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/codecatalyst.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon DevOps Guru",
+    "category": "DevOps & CI/CD",
+    "summary": "SDK operations, request parameters, and responses for DevOpsGuru.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/devops-guru.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "signer",
+    "category": "DevOps & CI/CD",
+    "summary": "SDK operations, request parameters, and responses for signer.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/signer.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Amplify Backend",
+    "category": "Developer Tools",
+    "summary": "SDK operations, request parameters, and responses for AmplifyBackend.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/amplifybackend.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Amplify UI Builder",
+    "category": "Developer Tools",
+    "summary": "SDK operations, request parameters, and responses for AmplifyUIBuilder.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/amplifyuibuilder.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Cloud9",
+    "category": "Developer Tools",
+    "summary": "SDK operations, request parameters, and responses for Cloud9.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/cloud9.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Device Farm",
+    "category": "Developer Tools",
+    "summary": "SDK operations, request parameters, and responses for DeviceFarm.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/devicefarm.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWSAppSync",
+    "category": "Developer Tools",
+    "summary": "SDK operations, request parameters, and responses for AppSync.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/appsync.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWSServerlessApplicationRepository",
+    "category": "Developer Tools",
+    "summary": "SDK operations, request parameters, and responses for ServerlessApplicationRepository.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/serverlessrepo.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon CodeGuru Profiler",
+    "category": "Developer Tools",
+    "summary": "SDK operations, request parameters, and responses for CodeGuruProfiler.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/codeguruprofiler.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon CodeGuru Security",
+    "category": "Developer Tools",
+    "summary": "SDK operations, request parameters, and responses for CodeGuruSecurity.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/codeguru-security.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AmazonMWAA",
+    "category": "Developer Tools",
+    "summary": "SDK operations, request parameters, and responses for MWAA.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/mwaa.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AmazonMWAAServerless",
+    "category": "Developer Tools",
+    "summary": "SDK operations, request parameters, and responses for MWAAServerless.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/mwaa-serverless.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amplify",
+    "category": "Developer Tools",
+    "summary": "SDK operations, request parameters, and responses for Amplify.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/amplify.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "CodeGuruReviewer",
+    "category": "Developer Tools",
+    "summary": "SDK operations, request parameters, and responses for CodeGuruReviewer.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/codeguru-reviewer.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "EC2 Instance Connect",
+    "category": "Developer Tools",
+    "summary": "SDK operations, request parameters, and responses for EC2InstanceConnect.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/ec2-instance-connect.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon AppStream",
+    "category": "End-User Computing",
+    "summary": "SDK operations, request parameters, and responses for AppStream.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/appstream.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon WorkSpaces",
+    "category": "End-User Computing",
+    "summary": "SDK operations, request parameters, and responses for WorkSpaces.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/workspaces.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon WorkSpaces Thin Client",
+    "category": "End-User Computing",
+    "summary": "SDK operations, request parameters, and responses for WorkSpacesThinClient.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/workspaces-thin-client.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon WorkSpaces Web",
+    "category": "End-User Computing",
+    "summary": "SDK operations, request parameters, and responses for WorkSpacesWeb.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/workspaces-web.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Workspaces Instances",
+    "category": "End-User Computing",
+    "summary": "SDK operations, request parameters, and responses for WorkspacesInstances.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/workspaces-instances.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Ground Station",
+    "category": "Industry & Emerging Services",
+    "summary": "SDK operations, request parameters, and responses for GroundStation.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/groundstation.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Health Imaging",
+    "category": "Industry & Emerging Services",
+    "summary": "SDK operations, request parameters, and responses for HealthImaging.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/medical-imaging.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Telco Network Builder",
+    "category": "Industry & Emerging Services",
+    "summary": "SDK operations, request parameters, and responses for TelcoNetworkBuilder.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/tnb.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon GameLift",
+    "category": "Industry & Emerging Services",
+    "summary": "SDK operations, request parameters, and responses for GameLift.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/gamelift.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon GameLift Streams",
+    "category": "Industry & Emerging Services",
+    "summary": "SDK operations, request parameters, and responses for GameLiftStreams.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/gameliftstreams.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Location Service",
+    "category": "Industry & Emerging Services",
+    "summary": "SDK operations, request parameters, and responses for LocationService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/location.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Location Service Maps V2",
+    "category": "Industry & Emerging Services",
+    "summary": "SDK operations, request parameters, and responses for LocationServiceMapsV2.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/geo-maps.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Location Service Places V2",
+    "category": "Industry & Emerging Services",
+    "summary": "SDK operations, request parameters, and responses for LocationServicePlacesV2.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/geo-places.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Location Service Routes V2",
+    "category": "Industry & Emerging Services",
+    "summary": "SDK operations, request parameters, and responses for LocationServiceRoutesV2.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/geo-routes.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon MTurk",
+    "category": "Industry & Emerging Services",
+    "summary": "SDK operations, request parameters, and responses for MTurk.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/mturk.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Managed Blockchain Query",
+    "category": "Industry & Emerging Services",
+    "summary": "SDK operations, request parameters, and responses for ManagedBlockchainQuery.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/managedblockchain-query.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Omics",
+    "category": "Industry & Emerging Services",
+    "summary": "SDK operations, request parameters, and responses for Omics.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/omics.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Braket",
+    "category": "Industry & Emerging Services",
+    "summary": "SDK operations, request parameters, and responses for Braket.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/braket.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "HealthLake",
+    "category": "Industry & Emerging Services",
+    "summary": "SDK operations, request parameters, and responses for HealthLake.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/healthlake.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "ManagedBlockchain",
+    "category": "Industry & Emerging Services",
+    "summary": "SDK operations, request parameters, and responses for ManagedBlockchain.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/managedblockchain.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "RTBFabric",
+    "category": "Industry & Emerging Services",
+    "summary": "SDK operations, request parameters, and responses for RTBFabric.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/rtbfabric.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Greengrass",
+    "category": "IoT & Edge Devices",
+    "summary": "SDK operations, request parameters, and responses for Greengrass.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/greengrass.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS GreengrassV2",
+    "category": "IoT & Edge Devices",
+    "summary": "SDK operations, request parameters, and responses for GreengrassV2.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/greengrassv2.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS IoT",
+    "category": "IoT & Edge Devices",
+    "summary": "SDK operations, request parameters, and responses for IoT.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/iot.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS IoT Data Plane",
+    "category": "IoT & Edge Devices",
+    "summary": "SDK operations, request parameters, and responses for IoTDataPlane.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/iot-data.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS IoT FleetWise",
+    "category": "IoT & Edge Devices",
+    "summary": "SDK operations, request parameters, and responses for IoTFleetWise.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/iotfleetwise.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS IoT Jobs Data Plane",
+    "category": "IoT & Edge Devices",
+    "summary": "SDK operations, request parameters, and responses for IoTJobsDataPlane.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/iot-jobs-data.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS IoT Secure Tunneling",
+    "category": "IoT & Edge Devices",
+    "summary": "SDK operations, request parameters, and responses for IoTSecureTunneling.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/iotsecuretunneling.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS IoT SiteWise",
+    "category": "IoT & Edge Devices",
+    "summary": "SDK operations, request parameters, and responses for IoTSiteWise.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/iotsitewise.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS IoT Things Graph",
+    "category": "IoT & Edge Devices",
+    "summary": "SDK operations, request parameters, and responses for IoTThingsGraph.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/iotthingsgraph.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS IoT TwinMaker",
+    "category": "IoT & Edge Devices",
+    "summary": "SDK operations, request parameters, and responses for IoTTwinMaker.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/iottwinmaker.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS IoT Wireless",
+    "category": "IoT & Edge Devices",
+    "summary": "SDK operations, request parameters, and responses for IoTWireless.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/iotwireless.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWSIoTDeviceAdvisor",
+    "category": "IoT & Edge Devices",
+    "summary": "SDK operations, request parameters, and responses for IoTDeviceAdvisor.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/iotdeviceadvisor.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Managed integrations for AWS IoT Device Management",
+    "category": "IoT & Edge Devices",
+    "summary": "SDK operations, request parameters, and responses for ManagedintegrationsforIoTDeviceManagement.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/iot-managed-integrations.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Account",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for Account.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/account.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS CloudTrail",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for CloudTrail.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/cloudtrail.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS CloudTrail Data Service",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for CloudTrailDataService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/cloudtrail-data.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Config",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for ConfigService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/config.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Control Catalog",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for ControlCatalog.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/controlcatalog.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Control Tower",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for ControlTower.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/controltower.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Launch Wizard",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for LaunchWizard.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/launch-wizard.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS License Manager",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for LicenseManager.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/license-manager.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS License Manager Linux Subscriptions",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for LicenseManagerLinuxSubscriptions.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/license-manager-linux-subscriptions.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS License Manager User Subscriptions",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for LicenseManagerUserSubscriptions.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/license-manager-user-subscriptions.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Organizations",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for Organizations.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/organizations.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Resource Access Manager",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for RAM.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/ram.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Resource Explorer",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for ResourceExplorer.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/resource-explorer-2.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Resource Groups Tagging API",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for ResourceGroupsTaggingAPI.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/resourcegroupstaggingapi.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS SSM-GUIConnect",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for SSMGUIConnect.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/ssm-guiconnect.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Service Catalog",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for ServiceCatalog.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/servicecatalog.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Support",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for Support.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/support.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Systems Manager",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for SSM.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/ssm.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Systems Manager QuickSetup",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for SystemsManagerQuickSetup.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/ssm-quicksetup.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Trusted Advisor",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for TrustedAdvisorPublicAPI.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/trustedadvisor.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AppRegistry",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for AppRegistry.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/servicecatalog-appregistry.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Resource Groups",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for ResourceGroups.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/resource-groups.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "SSM Contacts",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for SSMContacts.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/ssm-contacts.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "SSM Incidents",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for SSMIncidents.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/ssm-incidents.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Service Quotas",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for ServiceQuotas.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/service-quotas.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "SupportApp",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for SupportApp.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/support-app.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "SupportAuthZ",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for SupportAuthZ.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/supportauthz.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Systems Manager for SAP",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for SsmSap.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/ssm-sap.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Well-Architected",
+    "category": "Management & Governance",
+    "summary": "SDK operations, request parameters, and responses for WellArchitected.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/wellarchitected.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Marketplace Catalog",
+    "category": "Marketplace & Partners",
+    "summary": "SDK operations, request parameters, and responses for MarketplaceCatalog.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/marketplace-catalog.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Marketplace Commerce Analytics",
+    "category": "Marketplace & Partners",
+    "summary": "SDK operations, request parameters, and responses for MarketplaceCommerceAnalytics.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/marketplacecommerceanalytics.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Marketplace Deployment Service",
+    "category": "Marketplace & Partners",
+    "summary": "SDK operations, request parameters, and responses for MarketplaceDeploymentService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/marketplace-deployment.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Marketplace Entitlement Service",
+    "category": "Marketplace & Partners",
+    "summary": "SDK operations, request parameters, and responses for MarketplaceEntitlementService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/marketplace-entitlement.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Marketplace Reporting Service",
+    "category": "Marketplace & Partners",
+    "summary": "SDK operations, request parameters, and responses for MarketplaceReportingService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/marketplace-reporting.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWSMarketplace Metering",
+    "category": "Marketplace & Partners",
+    "summary": "SDK operations, request parameters, and responses for MarketplaceMetering.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/meteringmarketplace.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Agreement Service",
+    "category": "Marketplace & Partners",
+    "summary": "SDK operations, request parameters, and responses for AgreementService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/marketplace-agreement.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Marketplace Discovery",
+    "category": "Marketplace & Partners",
+    "summary": "SDK operations, request parameters, and responses for MarketplaceDiscovery.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/marketplace-discovery.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Partner Central Account API",
+    "category": "Marketplace & Partners",
+    "summary": "SDK operations, request parameters, and responses for PartnerCentralAccountAPI.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/partnercentral-account.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Partner Central Channel API",
+    "category": "Marketplace & Partners",
+    "summary": "SDK operations, request parameters, and responses for PartnerCentralChannelAPI.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/partnercentral-channel.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Partner Central Revenue Measurement API",
+    "category": "Marketplace & Partners",
+    "summary": "SDK operations, request parameters, and responses for PartnerCentralRevenueMeasurementAPI.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/partnercentral-revenue-measurement.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Partner Central Selling API",
+    "category": "Marketplace & Partners",
+    "summary": "SDK operations, request parameters, and responses for PartnerCentralSellingAPI.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/partnercentral-selling.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "PartnerCentral Benefits",
+    "category": "Marketplace & Partners",
+    "summary": "SDK operations, request parameters, and responses for PartnerCentralBenefits.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/partnercentral-benefits.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Elemental Inference",
+    "category": "Media & Streaming",
+    "summary": "SDK operations, request parameters, and responses for ElementalInference.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/elementalinference.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS MediaConnect",
+    "category": "Media & Streaming",
+    "summary": "SDK operations, request parameters, and responses for MediaConnect.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/mediaconnect.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWSDeadlineCloud",
+    "category": "Media & Streaming",
+    "summary": "SDK operations, request parameters, and responses for DeadlineCloud.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/deadline.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon IVS",
+    "category": "Media & Streaming",
+    "summary": "SDK operations, request parameters, and responses for IVS.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/ivs.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Kinesis Video Signaling Channels",
+    "category": "Media & Streaming",
+    "summary": "SDK operations, request parameters, and responses for KinesisVideoSignalingChannels.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/kinesis-video-signaling.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Kinesis Video WebRTC Storage",
+    "category": "Media & Streaming",
+    "summary": "SDK operations, request parameters, and responses for KinesisVideoWebRTCStorage.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/kinesis-video-webrtc-storage.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Kinesis Video",
+    "category": "Media & Streaming",
+    "summary": "SDK operations, request parameters, and responses for KinesisVideo.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/kinesisvideo.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Kinesis Video Archived Media",
+    "category": "Media & Streaming",
+    "summary": "SDK operations, request parameters, and responses for KinesisVideoArchivedMedia.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/kinesis-video-archived-media.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Kinesis Video Media",
+    "category": "Media & Streaming",
+    "summary": "SDK operations, request parameters, and responses for KinesisVideoMedia.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/kinesis-video-media.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "MediaConvert",
+    "category": "Media & Streaming",
+    "summary": "SDK operations, request parameters, and responses for MediaConvert.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/mediaconvert.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "MediaLive",
+    "category": "Media & Streaming",
+    "summary": "SDK operations, request parameters, and responses for MediaLive.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/medialive.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "MediaPackage",
+    "category": "Media & Streaming",
+    "summary": "SDK operations, request parameters, and responses for MediaPackage.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/mediapackage.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "MediaPackage Vod",
+    "category": "Media & Streaming",
+    "summary": "SDK operations, request parameters, and responses for MediaPackageVod.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/mediapackage-vod.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "MediaStore",
+    "category": "Media & Streaming",
+    "summary": "SDK operations, request parameters, and responses for MediaStore.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/mediastore.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "MediaStore Data",
+    "category": "Media & Streaming",
+    "summary": "SDK operations, request parameters, and responses for MediaStoreData.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/mediastore-data.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "MediaTailor",
+    "category": "Media & Streaming",
+    "summary": "SDK operations, request parameters, and responses for MediaTailor.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/mediatailor.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "ivschat",
+    "category": "Media & Streaming",
+    "summary": "SDK operations, request parameters, and responses for ivschat.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/ivschat.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "ivsrealtime",
+    "category": "Media & Streaming",
+    "summary": "SDK operations, request parameters, and responses for ivsrealtime.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/ivs-realtime.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "mediapackagev2",
+    "category": "Media & Streaming",
+    "summary": "SDK operations, request parameters, and responses for mediapackagev2.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/mediapackagev2.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS B2BI",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for B2BI.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/b2bi.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS End User Messaging Social",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for EndUserMessagingSocial.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/socialmessaging.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Step Functions",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for SFN.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/stepfunctions.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS User Notifications",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for UserNotifications.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/notifications.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS User Notifications Contacts",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for UserNotificationsContacts.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/notificationscontacts.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon AppIntegrations Service",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for AppIntegrationsService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/appintegrations.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Appflow",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for Appflow.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/appflow.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon EventBridge",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for EventBridge.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/events.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon EventBridge Pipes",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for EventBridgePipes.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/pipes.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon EventBridge Scheduler",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for EventBridgeScheduler.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/scheduler.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon EventBridge Schemas",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for Schemas.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/schemas.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Pinpoint",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for Pinpoint.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/pinpoint.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Pinpoint SMS Voice API (legacy)",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for PinpointSMSVoice.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/pinpoint-sms-voice.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Pinpoint SMS Voice V2",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for PinpointSMSVoiceV2.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/pinpoint-sms-voice-v2.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon SES",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for SES.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/ses.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon SES V2",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for SESV2.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/sesv2.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon SNS",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for SNS.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/sns.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon SQS",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for SQS.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/sqs.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon SWF",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for SWF.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/swf.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AmazonMQ",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for MQ.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/mq.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "EventBridgeV2",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for EventBridgeV2.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/eventbridgev2.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "MailManager",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for MailManager.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/mailmanager.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Pinpoint Email",
+    "category": "Messaging & Integration",
+    "summary": "SDK operations, request parameters, and responses for PinpointEmail.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/pinpoint-email.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Application Discovery Service",
+    "category": "Migration & Modernization",
+    "summary": "SDK operations, request parameters, and responses for ApplicationDiscoveryService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/discovery.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Application Migration Service",
+    "category": "Migration & Modernization",
+    "summary": "SDK operations, request parameters, and responses for mgn.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/mgn.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Database Migration Service",
+    "category": "Migration & Modernization",
+    "summary": "SDK operations, request parameters, and responses for DatabaseMigrationService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/dms.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Elastic Disaster Recovery",
+    "category": "Migration & Modernization",
+    "summary": "SDK operations, request parameters, and responses for drs.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/drs.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Migration Hub",
+    "category": "Migration & Modernization",
+    "summary": "SDK operations, request parameters, and responses for MigrationHub.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/mgh.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Migration Hub Config",
+    "category": "Migration & Modernization",
+    "summary": "SDK operations, request parameters, and responses for MigrationHubConfig.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/migrationhub-config.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Migration Hub Orchestrator",
+    "category": "Migration & Modernization",
+    "summary": "SDK operations, request parameters, and responses for MigrationHubOrchestrator.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/migrationhuborchestrator.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Migration Hub Refactor Spaces",
+    "category": "Migration & Modernization",
+    "summary": "SDK operations, request parameters, and responses for MigrationHubRefactorSpaces.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/migration-hub-refactor-spaces.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Transfer",
+    "category": "Migration & Modernization",
+    "summary": "SDK operations, request parameters, and responses for Transfer.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/transfer.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWSMainframeModernization",
+    "category": "Migration & Modernization",
+    "summary": "SDK operations, request parameters, and responses for MainframeModernization.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/m2.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "DataSync",
+    "category": "Migration & Modernization",
+    "summary": "SDK operations, request parameters, and responses for DataSync.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/datasync.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Migration Hub Strategy Recommendations",
+    "category": "Migration & Modernization",
+    "summary": "SDK operations, request parameters, and responses for MigrationHubStrategyRecommendations.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/migrationhubstrategy.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS AI Ops",
+    "category": "Monitoring & Reliability",
+    "summary": "SDK operations, request parameters, and responses for AIOps.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/aiops.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS PI",
+    "category": "Monitoring & Reliability",
+    "summary": "SDK operations, request parameters, and responses for PI.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/pi.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Resilience Hub",
+    "category": "Monitoring & Reliability",
+    "summary": "SDK operations, request parameters, and responses for ResilienceHub.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/resiliencehub.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Resilience Hub V2",
+    "category": "Monitoring & Reliability",
+    "summary": "SDK operations, request parameters, and responses for ResilienceHubV2.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/resiliencehubv2.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS X-Ray",
+    "category": "Monitoring & Reliability",
+    "summary": "SDK operations, request parameters, and responses for XRay.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/xray.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWSHealth",
+    "category": "Monitoring & Reliability",
+    "summary": "SDK operations, request parameters, and responses for Health.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/health.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon CloudWatch",
+    "category": "Monitoring & Reliability",
+    "summary": "SDK operations, request parameters, and responses for CloudWatch.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/cloudwatch.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon CloudWatch Application Signals",
+    "category": "Monitoring & Reliability",
+    "summary": "SDK operations, request parameters, and responses for CloudWatchApplicationSignals.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/application-signals.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon CloudWatch Logs",
+    "category": "Monitoring & Reliability",
+    "summary": "SDK operations, request parameters, and responses for CloudWatchLogs.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/logs.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Managed Grafana",
+    "category": "Monitoring & Reliability",
+    "summary": "SDK operations, request parameters, and responses for ManagedGrafana.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/grafana.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Prometheus Service",
+    "category": "Monitoring & Reliability",
+    "summary": "SDK operations, request parameters, and responses for PrometheusService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/amp.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Application Insights",
+    "category": "Monitoring & Reliability",
+    "summary": "SDK operations, request parameters, and responses for ApplicationInsights.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/application-insights.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "CloudWatch Observability Access Manager",
+    "category": "Monitoring & Reliability",
+    "summary": "SDK operations, request parameters, and responses for CloudWatchObservabilityAccessManager.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/oam.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "CloudWatch Observability Admin Service",
+    "category": "Monitoring & Reliability",
+    "summary": "SDK operations, request parameters, and responses for CloudWatchObservabilityAdminService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/observabilityadmin.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "CloudWatch RUM",
+    "category": "Monitoring & Reliability",
+    "summary": "SDK operations, request parameters, and responses for CloudWatchRUM.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/rum.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "CloudWatchOmni",
+    "category": "Monitoring & Reliability",
+    "summary": "SDK operations, request parameters, and responses for CloudWatchOmni.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/cloudwatchomni.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "FIS",
+    "category": "Monitoring & Reliability",
+    "summary": "SDK operations, request parameters, and responses for FIS.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/fis.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Synthetics",
+    "category": "Monitoring & Reliability",
+    "summary": "SDK operations, request parameters, and responses for Synthetics.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/synthetics.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "API Gateway HTTP & WebSocket APIs",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for ApiGatewayV2.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/apigatewayv2.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "API Gateway WebSocket Management",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for ApiGatewayManagementApi.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/apigatewaymanagementapi.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "ARC - Region switch",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for ARCRegionswitch.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/arc-region-switch.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS ARC - Zonal Shift",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for ARCZonalShift.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/arc-zonal-shift.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS App Mesh",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for AppMesh.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/appmesh.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Direct Connect",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for DirectConnect.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/directconnect.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Global Accelerator",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for GlobalAccelerator.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/globalaccelerator.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Route53 Recovery Control Config",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for Route53RecoveryControlConfig.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/route53-recovery-control-config.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Route53 Recovery Readiness",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for Route53RecoveryReadiness.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/route53-recovery-readiness.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon API Gateway",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for APIGateway.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/apigateway.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon CloudFront",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for CloudFront.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/cloudfront.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon CloudFront KeyValueStore",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for CloudFrontKeyValueStore.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/cloudfront-keyvaluestore.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon CloudWatch Internet Monitor",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for CloudWatchInternetMonitor.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/internetmonitor.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon CloudWatch Network Monitor",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for CloudWatchNetworkMonitor.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/networkmonitor.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Route 53",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for Route53.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/route53.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Route 53 Domains",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for Route53Domains.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/route53domains.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Route 53 Global Resolver",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for Route53GlobalResolver.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/route53globalresolver.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon VPC Lattice",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for VPCLattice.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/vpc-lattice.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Elastic Load Balancing",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for ElasticLoadBalancingv2.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/elbv2.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Elastic Load Balancing Classic API",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for ElasticLoadBalancing.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/elb.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Interconnect",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for Interconnect.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/interconnect.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Network Flow Monitor",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for NetworkFlowMonitor.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/networkflowmonitor.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "NetworkManager",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for NetworkManager.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/networkmanager.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Route 53 Profiles",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for Route53Profiles.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/route53profiles.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Route53 Recovery Cluster",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for Route53RecoveryCluster.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/route53-recovery-cluster.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Route53Resolver",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for Route53Resolver.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/route53resolver.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "ServiceDiscovery",
+    "category": "Networking & Edge",
+    "summary": "SDK operations, request parameters, and responses for ServiceDiscovery.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/servicediscovery.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "ACM",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for ACM.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/acm.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "ACM-PCA",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for ACMPCA.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/acm-pca.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Artifact",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for Artifact.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/artifact.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Audit Manager",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for AuditManager.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/auditmanager.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS CloudHSM Classic (legacy)",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for CloudHSM.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/cloudhsm.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Directory Service Data",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for DirectoryServiceData.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/ds-data.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS IAM",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for IAM.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/iam.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS KMS",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for KMS.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/kms.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Multi-party Approval",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for MultipartyApproval.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/mpa.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS STS",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for STS.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/sts.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Secrets Manager",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for SecretsManager.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/secretsmanager.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Security Agent",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for SecurityAgent.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/securityagent.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS SecurityHub",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for SecurityHub.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/securityhub.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Shield",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for Shield.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/shield.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Sign-In Service",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for SignInService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/signin.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS WAF",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for WAFV2.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/wafv2.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS WAF Classic API (legacy)",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for WAF.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/waf.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS WAF Classic Regional API (legacy)",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for WAFRegional.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/waf-regional.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Access Analyzer",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for AccessAnalyzer.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/accessanalyzer.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Account Access",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for AccountAccess.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/account-access.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon CloudDirectory",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for CloudDirectory.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/clouddirectory.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Cognito",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for CognitoIdentityProvider.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/cognito-idp.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Cognito Identity",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for CognitoIdentity.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/cognito-identity.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Cognito Sync",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for CognitoSync.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/cognito-sync.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Detective",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for Detective.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/detective.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon GuardDuty",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for GuardDuty.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/guardduty.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Inspector",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for Inspector.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/inspector.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Macie 2",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for Macie2.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/macie2.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Security Lake",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for SecurityLake.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/securitylake.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Verified Permissions",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for VerifiedPermissions.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/verifiedpermissions.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "CloudHSM V2",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for CloudHSMV2.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/cloudhsmv2.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Directory Service",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for DirectoryService.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/ds.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "FMS",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for FMS.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/fms.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "IAM Roles Anywhere",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for IAMRolesAnywhere.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/rolesanywhere.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "IAM Toolbox (Preview)",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for IAMToolboxPreview.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/iam-toolbox.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "IdentityStore",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for IdentityStore.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/identitystore.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Inspector2",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for Inspector2.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/inspector2.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Network Firewall",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for NetworkFirewall.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/network-firewall.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "NetworkSecurityManagerCustomerAPI",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for NetworkSecurityManagerCustomerAPI.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/network-security-manager.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Payment Cryptography Control Plane",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for PaymentCryptographyControlPlane.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/payment-cryptography.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Payment Cryptography Data Plane",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for PaymentCryptographyDataPlane.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/payment-cryptography-data.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "PcaConnectorAd",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for PcaConnectorAd.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/pca-connector-ad.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Private CA Connector for SCEP",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for PrivateCAConnectorforSCEP.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/pca-connector-scep.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "SSO",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for SSO.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/sso.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "SSO Admin",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for SSOAdmin.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/sso-admin.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "SSO OIDC",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for SSOOIDC.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/sso-oidc.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Security Incident Response",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for SecurityIncidentResponse.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/security-ir.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "inspector-scan",
+    "category": "Security & Identity",
+    "summary": "SDK operations, request parameters, and responses for inspectorscan.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/inspector-scan.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Backup",
+    "category": "Storage & Backup",
+    "summary": "SDK operations, request parameters, and responses for Backup.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/backup.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Backup Gateway",
+    "category": "Storage & Backup",
+    "summary": "SDK operations, request parameters, and responses for BackupGateway.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/backup-gateway.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Backup Search",
+    "category": "Storage & Backup",
+    "summary": "SDK operations, request parameters, and responses for BackupSearch.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/backupsearch.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Import/Export",
+    "category": "Storage & Backup",
+    "summary": "SDK operations, request parameters, and responses for ImportExport.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/importexport.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS S3 Control",
+    "category": "Storage & Backup",
+    "summary": "SDK operations, request parameters, and responses for S3Control.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/s3control.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Snow Device Management",
+    "category": "Storage & Backup",
+    "summary": "SDK operations, request parameters, and responses for SnowDeviceManagement.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/snow-device-management.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "AWS Storage Gateway",
+    "category": "Storage & Backup",
+    "summary": "SDK operations, request parameters, and responses for StorageGateway.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/storagegateway.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon DLM",
+    "category": "Storage & Backup",
+    "summary": "SDK operations, request parameters, and responses for DLM.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/dlm.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon EBS",
+    "category": "Storage & Backup",
+    "summary": "SDK operations, request parameters, and responses for EBS.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/ebs.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon EFS",
+    "category": "Storage & Backup",
+    "summary": "SDK operations, request parameters, and responses for EFS.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/efs.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon FSx",
+    "category": "Storage & Backup",
+    "summary": "SDK operations, request parameters, and responses for FSx.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/fsx.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Recycle Bin",
+    "category": "Storage & Backup",
+    "summary": "SDK operations, request parameters, and responses for RecycleBin.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/rbin.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon S3",
+    "category": "Storage & Backup",
+    "summary": "SDK operations, request parameters, and responses for S3.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/s3.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon S3 Files",
+    "category": "Storage & Backup",
+    "summary": "SDK operations, request parameters, and responses for S3Files.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/s3files.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon S3 Glacier",
+    "category": "Storage & Backup",
+    "summary": "SDK operations, request parameters, and responses for Glacier.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/glacier.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon S3 Outposts",
+    "category": "Storage & Backup",
+    "summary": "SDK operations, request parameters, and responses for S3Outposts.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/s3outposts.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon S3 Tables",
+    "category": "Storage & Backup",
+    "summary": "SDK operations, request parameters, and responses for S3Tables.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/s3tables.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon S3 Vectors",
+    "category": "Storage & Backup",
+    "summary": "SDK operations, request parameters, and responses for S3Vectors.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/s3vectors.html",
+    "kind": "API reference"
+  },
+  {
+    "name": "Amazon Snowball",
+    "category": "Storage & Backup",
+    "summary": "SDK operations, request parameters, and responses for Snowball.",
+    "url": "https://docs.aws.amazon.com/boto3/latest/reference/services/snowball.html",
+    "kind": "API reference"
+  }
+]

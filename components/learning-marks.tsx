@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useId, useMemo, useR
 import { Highlighter, Eraser, Trash2 } from "lucide-react";
 import { MARKER_COLORS, anchorText, locateAnchor, type LearningMark, type MarkerColor, type TextAnchor } from "@/lib/learning-marks";
 import { renderPersonalText, restorePersonalText, selectionAnchor, textModel, wordAtPoint } from "@/lib/learning-text-dom";
-import { supabaseBrowser } from "@/lib/supabase-browser";
+import { onAuthChange } from "@/lib/auth-listener";
 import styles from "./learning-marks.module.css";
 
 type SelectionTarget = { regionId: string; contentKey: string; anchor: TextAnchor };
@@ -121,8 +121,7 @@ export function LearningMarksProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     void load();
     let knownUser: string | null | undefined;
-    const auth = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? supabaseBrowser().auth : null;
-    const subscription = auth?.onAuthStateChange((_event, session) => {
+    const unsubscribe = onAuthChange((_event, session) => {
       const nextUser = session?.user.id ?? null;
       if (knownUser === nextUser) return;
       knownUser = nextUser;
@@ -140,7 +139,7 @@ export function LearningMarksProvider({ children }: { children: ReactNode }) {
       channel.current.onmessage = event => { if (event.data?.userId === stateRef.current.userId) void load(); };
     }
     const generationRef = epoch;
-    return () => { generationRef.current++; loading.current?.abort(); if (brushTimer.current) clearTimeout(brushTimer.current); subscription?.data.subscription.unsubscribe(); window.removeEventListener("focus", focus); document.removeEventListener("visibilitychange", focus); channel.current?.close(); };
+    return () => { generationRef.current++; loading.current?.abort(); if (brushTimer.current) clearTimeout(brushTimer.current); unsubscribe(); window.removeEventListener("focus", focus); document.removeEventListener("visibilitychange", focus); channel.current?.close(); };
   }, [load]);
   useEffect(() => {
     if (!brush) return;

@@ -14,8 +14,9 @@
 .topBar{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .back{display:inline-flex;align-items:center;gap:6px;min-height:36px;margin-left:-8px;padding:6px 12px 6px 8px;border-radius:8px;font-size:13px;font-weight:600;color:var(--ink-soft);text-decoration:none}
 .back:hover{background:#f0eee6;color:var(--ink)}
-.langToggle{display:inline-flex;padding:3px;border:1px solid var(--line);border-radius:999px;background:#f0eee6}
-.langToggle button{min-height:28px;padding:4px 12px;border:0;border-radius:999px;background:transparent;font:inherit;font-size:12px;font-weight:600;color:#5e5d59;cursor:pointer;white-space:nowrap}
+.langToggle{display:inline-flex;align-items:center;gap:3px;padding:3px 3px 3px 8px;border:1px solid var(--line);border-radius:999px;background:#f0eee6}
+.langIcon{flex-shrink:0;opacity:.6}
+.langToggle button{min-height:28px;padding:4px 12px;border:0;border-radius:999px;background:transparent;font:inherit;font-size:12px;font-weight:600;color:#5e5d59;cursor:pointer;white-space:nowrap;transition:background .15s ease,color .15s ease}
 .langToggle button:hover{color:var(--ink)}
 .langToggle button[aria-pressed=true]{background:var(--ink);color:var(--paper)}
 

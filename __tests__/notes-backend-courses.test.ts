@@ -28,7 +28,8 @@ test.each([
     const note = getStudyNote(chapter.id)!;
     expect(note.technology).toBe(id);
     expect(note.title).toBe(guide.curriculum.lessons[index].title);
-    expect(note.sections.some(section => section.code)).toBe(true);
+    // conciseStudyNote keeps code on the worked example and drops the copy from later sections.
+    expect([...note.examples, ...note.sections].some(section => section.code)).toBe(true);
     expect(note.interview.length).toBeGreaterThan(0);
     const question = note.questions[0];
     expect(new Set(question.options).size).toBe(4);

@@ -1,5 +1,6 @@
 "use client";
 
+import learningCard from "./learning-card.module.css";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -8,6 +9,8 @@ import { PRO_LEVELS, PRO_TRACKS, type GeneratedLesson, type LessonSection, type 
 import { CodeBlock } from "./pro-markdown";
 import { dayIndex, ProHero, readList, TrackSelect, useProLevel, useProTrack, writeList } from "./pro-learn-shared";
 import styles from "./pro-learn.module.css";
+import { BrandOrGlyph } from "./topic-media";
+import { LearningResources } from "./learning-resources";
 import { LearningPath, RecallDeck, StatStrip } from "./learning-studio";
 import { TechnologySections } from "./technology-sections";
 import { AiProviderPicker, useAiProvider } from "./ai-provider-picker";
@@ -44,11 +47,12 @@ function Reader({ lesson, track, siblings, done, onToggleDone, onBack, onOpen }:
       {onToggleDone && <button className={`${styles.btn} ${done ? styles.outline : styles.primary} ${styles.small}`} aria-pressed={done} onClick={onToggleDone}><Check size={15}/>{done ? "Completed" : "Mark complete"}</button>}
     </div>
     <article className={styles.article}>
-      <p className={styles.eyebrow}>{track.icon} {track.name} · {lesson.tag}</p>
+      <p className={styles.eyebrow}><BrandOrGlyph label={track.name} glyph={track.icon} size={14}/> {track.name} · {lesson.tag}</p>
       <h1>{lesson.title}</h1>
       <div className={styles.articleMeta}><span className={styles.level} data-level={lesson.level}>{lesson.level}</span><span className={styles.cat}>{lesson.minutes} min read</span></div>
       <p className={styles.lead}>{lesson.lead || lesson.summary}</p>
       {lesson.sections.map(section => <Section key={section.h} section={section}/>)}
+      <LearningResources key={track.id} technology={track.name} />
       {!!lesson.takeaways.length && <div className={styles.takeaways}><h3>Key takeaways</h3><ul>{lesson.takeaways.map(item => <li key={item}>{item}</li>)}</ul></div>}
       <div className={styles.articleFoot}>
         <Link className={`${styles.btn} ${styles.outline} ${styles.small}`} href={`/dashboard/mentors?track=${track.id}&q=${encodeURIComponent(`Go deeper on: ${lesson.title}`)}`}><MessageCircle size={15}/>Ask the mentor</Link>
@@ -93,7 +97,7 @@ export function ProLessons({ lessons, aiReady }: { lessons: ProLesson[]; aiReady
   function openLesson(lesson: ProLesson) { setOpen(lesson); window.scrollTo({ top: 0, behavior: "smooth" }); }
   function lessonCard(lesson: ProLesson) {
     const isDone = done.has(`${track.id}:${lesson.id}`);
-    return <button key={lesson.id} className={styles.lessonCard} data-done={isDone} onClick={() => openLesson(lesson)} aria-label={`${lesson.title}${isDone ? ", completed" : ""}`}>
+    return <button key={lesson.id} className={`${styles.lessonCard} ${learningCard.card}`} data-done={isDone} onClick={() => openLesson(lesson)} aria-label={`${lesson.title}${isDone ? ", completed" : ""}`}>
       <span className={styles.cardNumber}>LESSON {String(trackLessons.indexOf(lesson) + 1).padStart(2, "0")}</span>
       <span className={styles.doneMark} aria-hidden="true"><Check size={13}/></span>
       <span className={styles.lessonTag}>{lesson.tag}</span><h3>{lesson.title}</h3><p>{lesson.summary}</p>
@@ -128,7 +132,7 @@ export function ProLessons({ lessons, aiReady }: { lessons: ProLesson[]; aiReady
   const remaining = trackLessons.filter(lesson => !done.has(`${track.id}:${lesson.id}`)).reduce((total, lesson) => total + lesson.minutes, 0);
   return <div className={styles.root}>
     <LearningPath active="lessons"/>
-    <ProHero eyebrow="Professional learning / Lessons" title={track.name} icon={track.icon} aside={<TrackSelect value={track.id} onChange={id => { setTrack(id); setFilter("All"); setGeneration(null); }}/>}>
+    <ProHero eyebrow="Professional learning / Lessons" title={track.name} icon={<BrandOrGlyph label={track.name} glyph={track.icon} size={20}/>} aside={<TrackSelect value={track.id} onChange={id => { setTrack(id); setFilter("All"); setGeneration(null); }}/>}>
       Hand-written lessons on {track.focus}, plus fresh lessons generated on any syllabus topic — all read right here.
     </ProHero>
 
@@ -147,13 +151,13 @@ export function ProLessons({ lessons, aiReady }: { lessons: ProLesson[]; aiReady
     {requestedTopic && !generation && <div className={styles.notice} role="status" style={{ marginBottom: 16 }}>Want a lesson on <b>{requestedTopic}</b>? <button className={`${styles.btn} ${styles.primary} ${styles.small}`} style={{ marginLeft: 8 }} onClick={() => void generate(requestedTopic)} disabled={!aiReady}><Sparkles size={14}/>Generate it</button>{!aiReady && " Generation is not available right now."}</div>}
 
     {featured ? <section className={styles.featured} aria-label="Featured lesson">
-      <p className={styles.eyebrow}>{track.icon} {track.name} · Featured today</p>
+      <p className={styles.eyebrow}><BrandOrGlyph label={track.name} glyph={track.icon} size={14}/> {track.name} · Featured today</p>
       <h2>{featured.title}</h2>
       <p>{featured.summary}</p>
       <div className={styles.pills}><span className={styles.pill}>{featured.tag}</span><span className={styles.pill}>{featured.level}</span><span className={styles.pill}>{featured.minutes} min read</span></div>
       <div className={styles.featuredActions}><button className={`${styles.btn} ${styles.light}`} onClick={() => openLesson(featured)}><BookOpen size={16}/>Start reading</button>{aiReady && <button className={`${styles.btn} ${styles.ghost}`} onClick={() => void generate(topicOfDay)}><Sparkles size={16}/>Generate: {topicOfDay}</button>}</div>
     </section> : <section className={styles.featured} aria-label="Topic of the day">
-      <p className={styles.eyebrow}>{track.icon} {track.name} · Topic of the day</p><h2>{topicOfDay}</h2>
+      <p className={styles.eyebrow}><BrandOrGlyph label={track.name} glyph={track.icon} size={14}/> {track.name} · Topic of the day</p><h2>{topicOfDay}</h2>
       <p>Generate a structured lesson on today&apos;s topic, or pick another from the syllabus below.</p>
       <div className={styles.featuredActions}><button className={`${styles.btn} ${styles.light}`} disabled={!aiReady} onClick={() => void generate(topicOfDay)}><Sparkles size={16}/>Generate today&apos;s lesson</button></div>
     </section>}
@@ -172,7 +176,7 @@ export function ProLessons({ lessons, aiReady }: { lessons: ProLesson[]; aiReady
 
     {!!savedForTrack.length && <>
       <div className={styles.sectionHead}><div><h2>Your generated lessons</h2><p>Saved in this browser.</p></div></div>
-      <div className={styles.grid}>{savedForTrack.map(lesson => <button key={lesson.id} className={styles.lessonCard} onClick={() => openLesson(lesson)}><span className={styles.lessonTag}>{lesson.tag}</span><h3>{lesson.title}</h3><p>{lesson.summary}</p><span className={styles.lessonMeta}><span className={styles.level} data-level={lesson.level}>{lesson.level}</span>{lesson.minutes} min</span></button>)}</div>
+      <div className={styles.grid}>{savedForTrack.map(lesson => <button key={lesson.id} className={`${styles.lessonCard} ${learningCard.card}`} onClick={() => openLesson(lesson)}><span className={styles.lessonTag}>{lesson.tag}</span><h3>{lesson.title}</h3><p>{lesson.summary}</p><span className={styles.lessonMeta}><span className={styles.level} data-level={lesson.level}>{lesson.level}</span>{lesson.minutes} min</span></button>)}</div>
     </>}
 
     {!!trackLessons.length && <>

@@ -3,7 +3,7 @@ import { Workspace } from "@/components/workspace";
 import { NotesExplorer } from "@/components/notes-explorer";
 import { NOTES_SUMMARIES, NOTES_TECHNOLOGIES, getStudyNote } from "@/lib/server/notes-study-catalog";
 import { STUDY_FILTERS } from "@/lib/notes-study";
-import { currentUser } from "@/lib/server/auth";
+import { requireLearningUser as currentUser } from "@/lib/server/subscription-access";
 import { authConfigured, databaseConfigured, billingConfigured } from "@/lib/server/config";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +13,7 @@ const scalar = (value: string | string[] | undefined) => typeof value === "strin
 
 export default async function NotesPage({ searchParams }: { searchParams: Promise<Filters> }) {
   const params = await searchParams;
-  const user = authConfigured() ? await currentUser() : null;
+  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser() : null;
   if (authConfigured() && !user) redirect("/sign-in");
   const selected = getStudyNote(scalar(params.note));
   const technology = selected?.technology ?? (NOTES_TECHNOLOGIES.some(item => item.id === scalar(params.technology)) ? scalar(params.technology) : "");

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { Workspace } from "@/components/workspace";
-import { currentUser } from "@/lib/server/auth";
+import { requireLearningUser as currentUser } from "@/lib/server/subscription-access";
 import { authConfigured, databaseConfigured, billingConfigured } from "@/lib/server/config";
 import { proSectionContent } from "@/lib/server/pro-learn-pages";
 
@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Quiz · Profissional Learn" };
 
 export default async function Page() {
-  const user = authConfigured() ? await currentUser() : null;
+  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser() : null;
   if (authConfigured() && !user) redirect("/sign-in");
   return <Workspace initialCategory="quiz" authEnabled={authConfigured()} configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null} notesContent={proSectionContent("quiz")}/>;
 }

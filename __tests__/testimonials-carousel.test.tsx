@@ -1,137 +1,58 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
-import { LandingPage } from "@/components/landing-page";
+import { StudentReviews } from "@/components/student-reviews";
 import { LanguageProvider } from "@/components/language-provider";
 import { testimonials, testimonialAvatarGradient, testimonialInitials } from "@/lib/testimonials";
+const INTERVAL=5500;
+const advance=(ms:number)=>act(()=>{jest.advanceTimersByTime(ms);});
+const current=()=>screen.getByRole("group",{name:/Sample review \d of 5/});
+beforeEach(()=>{localStorage.clear();jest.useFakeTimers();window.matchMedia=jest.fn().mockReturnValue({matches:false,addEventListener:jest.fn(),removeEventListener:jest.fn()});});
+afterEach(()=>jest.useRealTimers());
 
-const INTERVAL = 5000;
-
-function mockMatchMedia(matches: (query: string) => boolean) {
-  window.matchMedia = jest.fn((query: string) => ({
-    matches: matches(query), media: query, onchange: null,
-    addEventListener: jest.fn(), removeEventListener: jest.fn(), addListener: jest.fn(), removeListener: jest.fn(), dispatchEvent: jest.fn(),
-  })) as unknown as typeof window.matchMedia;
-}
-
-beforeEach(() => {
-  localStorage.clear();
-  // Pricing/catalog requests never settle, so nothing but the carousel changes state during these tests.
-  global.fetch = jest.fn(() => new Promise(() => {})) as unknown as typeof fetch;
-  jest.useFakeTimers();
+test("labels fictional reviews as samples with slide semantics",()=>{
+ render(<StudentReviews/>);
+ expect(screen.getByRole("region",{name:"Sample student reviews"})).toHaveAttribute("aria-roledescription","carousel");
+ expect(screen.getByText("STUDENT STORIES \u00b7 SAMPLE REVIEWS")).toBeVisible();
+ expect(current()).toHaveTextContent("Aditi S.");
+ expect(current()).toHaveAttribute("aria-roledescription","slide");
+ expect(within(current()).getByRole("img",{name:"Sample rating 5 out of 5"})).toBeInTheDocument();
 });
-
-afterEach(() => {
-  jest.useRealTimers();
-  // @ts-expect-error jsdom has no matchMedia; remove the stub a test installed
-  delete window.matchMedia;
+test("autoplays through all five reviews and wraps",()=>{
+ render(<StudentReviews/>);
+ for(let i=1;i<=5;i++){expect(current()).toHaveAttribute("aria-label",`Sample review ${i} of 5`);advance(INTERVAL);}
+ expect(current()).toHaveAttribute("aria-label","Sample review 1 of 5");
 });
-
-const carousel = () => within(screen.getByRole("region", { name: "Student reviews" }));
-/** Names of the slides currently in view (off-screen slides are aria-hidden). */
-const visibleSlides = () => carousel().getAllByRole("group", { name: /^Review \d of 6$/ }).map(slide => slide.getAttribute("aria-label"));
-const advance = (ms: number) => act(() => { jest.advanceTimersByTime(ms); });
-
-test("keeps the section heading and presents the carousel with slide semantics", () => {
-  render(<LandingPage />);
-  const region = screen.getByRole("region", { name: "Student reviews" });
-  expect(region).toHaveAttribute("aria-roledescription", "carousel");
-  expect(within(region).getByText("LOVED BY LEARNERS")).toBeInTheDocument();
-  expect(within(region).getByRole("heading", { name: "Students are already learning with Masterclass" })).toBeInTheDocument();
-  const first = carousel().getByRole("group", { name: "Review 1 of 6" });
-  expect(first).toHaveAttribute("aria-roledescription", "slide");
-  expect(first).toHaveTextContent("Aisha R.");
-  expect(first).toHaveTextContent("B.Tech CSE");
-  expect(within(first).getByRole("img", { name: "Rated 5 out of 5" })).toBeInTheDocument();
+test("hover pauses rotation and leaving starts a fresh interval",()=>{
+ render(<StudentReviews/>);advance(2000);fireEvent.mouseEnter(current());advance(18000);
+ expect(current()).toHaveTextContent("Aditi S.");fireEvent.mouseLeave(current());advance(INTERVAL-1);
+ expect(current()).toHaveTextContent("Aditi S.");advance(1);expect(current()).toHaveTextContent("Rohan M.");
 });
-
-test("auto-advances one review every five seconds and wraps back to the first", () => {
-  render(<LandingPage />);
-  expect(visibleSlides()).toEqual(["Review 1 of 6"]);
-  advance(INTERVAL - 1);
-  expect(visibleSlides()).toEqual(["Review 1 of 6"]);
-  advance(1);
-  expect(visibleSlides()).toEqual(["Review 2 of 6"]);
-  // Each slide schedules the next timer after it renders, so step one interval at a time.
-  for (let step = 0; step < 4; step++) advance(INTERVAL);
-  expect(visibleSlides()).toEqual(["Review 6 of 6"]);
-  advance(INTERVAL);
-  expect(visibleSlides()).toEqual(["Review 1 of 6"]);
+test("focus pauses rotation including on the pause control",()=>{
+ render(<StudentReviews/>);const next=screen.getByRole("button",{name:"Next review"});act(()=>next.focus());advance(18000);
+ expect(current()).toHaveTextContent("Aditi S.");act(()=>next.blur());advance(INTERVAL);expect(current()).toHaveTextContent("Rohan M.");
+ act(()=>screen.getByRole("button",{name:"Pause reviews"}).focus());advance(INTERVAL);expect(current()).toHaveTextContent("Rohan M.");
 });
-
-test("pauses while the reviews are hovered and resumes with the remaining time", () => {
-  render(<LandingPage />);
-  advance(2000);
-  const card = carousel().getByRole("group", { name: "Review 1 of 6" });
-  fireEvent.mouseEnter(card);
-  advance(INTERVAL * 3);
-  expect(visibleSlides()).toEqual(["Review 1 of 6"]);
-  fireEvent.mouseLeave(card);
-  advance(2999);
-  expect(visibleSlides()).toEqual(["Review 1 of 6"]);
-  advance(1);
-  expect(visibleSlides()).toEqual(["Review 2 of 6"]);
+test("pause and play control rotation",()=>{
+ render(<StudentReviews/>);fireEvent.click(screen.getByRole("button",{name:"Pause reviews"}));advance(18000);
+ expect(current()).toHaveTextContent("Aditi S.");fireEvent.click(screen.getByRole("button",{name:"Play reviews"}));advance(INTERVAL);expect(current()).toHaveTextContent("Rohan M.");
 });
-
-test("pauses while a carousel control has focus, but not while the pause button does", () => {
-  render(<LandingPage />);
-  const next = carousel().getByRole("button", { name: "Next review" });
-  act(() => next.focus());
-  advance(INTERVAL * 3);
-  expect(visibleSlides()).toEqual(["Review 1 of 6"]);
-  act(() => next.blur());
-  advance(INTERVAL);
-  expect(visibleSlides()).toEqual(["Review 2 of 6"]);
-  act(() => carousel().getByRole("button", { name: "Pause automatic rotation" }).focus());
-  advance(INTERVAL);
-  expect(visibleSlides()).toEqual(["Review 3 of 6"]);
+test("reduced motion prevents autoplay but keeps manual navigation",()=>{
+ window.matchMedia=jest.fn().mockReturnValue({matches:true,addEventListener:jest.fn(),removeEventListener:jest.fn()});
+ render(<StudentReviews/>);advance(18000);expect(current()).toHaveTextContent("Aditi S.");
+ fireEvent.click(screen.getByRole("button",{name:"Next review"}));expect(current()).toHaveTextContent("Rohan M.");
+ advance(18000);expect(current()).toHaveTextContent("Rohan M.");
 });
-
-test("the pause button stops rotation until visitors start it again", () => {
-  render(<LandingPage />);
-  fireEvent.click(carousel().getByRole("button", { name: "Pause automatic rotation" }));
-  advance(INTERVAL * 3);
-  expect(visibleSlides()).toEqual(["Review 1 of 6"]);
-  fireEvent.click(carousel().getByRole("button", { name: "Start automatic rotation" }));
-  advance(INTERVAL);
-  expect(visibleSlides()).toEqual(["Review 2 of 6"]);
+test("each selector opens its review and arrows wrap",()=>{
+ render(<StudentReviews/>);const buttons=within(screen.getByRole("group",{name:"Choose a review"})).getAllByRole("button");
+ expect(buttons).toHaveLength(5);fireEvent.click(buttons[4]);expect(current()).toHaveTextContent("Sana R.");
+ fireEvent.click(screen.getByRole("button",{name:"Next review"}));expect(current()).toHaveTextContent("Aditi S.");
+ fireEvent.click(screen.getByRole("button",{name:"Previous review"}));expect(current()).toHaveTextContent("Sana R.");
+ expect(buttons[4]).toHaveAttribute("aria-pressed","true");
 });
-
-test("does not autoplay under prefers-reduced-motion unless the visitor opts in", () => {
-  mockMatchMedia(query => query.includes("prefers-reduced-motion"));
-  render(<LandingPage />);
-  expect(carousel().getByRole("button", { name: "Start automatic rotation" })).toBeInTheDocument();
-  advance(INTERVAL * 4);
-  expect(visibleSlides()).toEqual(["Review 1 of 6"]);
-  fireEvent.click(carousel().getByRole("button", { name: "Next review" }));
-  expect(visibleSlides()).toEqual(["Review 2 of 6"]);
-  fireEvent.click(carousel().getByRole("button", { name: "Start automatic rotation" }));
-  advance(INTERVAL);
-  expect(visibleSlides()).toEqual(["Review 3 of 6"]);
-});
-
-test("shows three reviews at a time on wide screens with one dot per position", () => {
-  mockMatchMedia(query => query.startsWith("(min-width"));
-  render(<LandingPage />);
-  expect(visibleSlides()).toEqual(["Review 1 of 6", "Review 2 of 6", "Review 3 of 6"]);
-  const dots = within(carousel().getByRole("group", { name: "Choose reviews" })).getAllByRole("button");
-  expect(dots).toHaveLength(4);
-  expect(dots[0]).toHaveAttribute("aria-current", "true");
-  fireEvent.click(dots[3]);
-  expect(visibleSlides()).toEqual(["Review 4 of 6", "Review 5 of 6", "Review 6 of 6"]);
-  fireEvent.click(carousel().getByRole("button", { name: "Next review" }));
-  expect(visibleSlides()).toEqual(["Review 1 of 6", "Review 2 of 6", "Review 3 of 6"]);
-  fireEvent.click(carousel().getByRole("button", { name: "Previous review" }));
-  expect(visibleSlides()).toEqual(["Review 4 of 6", "Review 5 of 6", "Review 6 of 6"]);
-});
-
-test("renders the reviews and controls in Hindi", () => {
-  localStorage.setItem("masterclass:language", "hi");
-  render(<LanguageProvider><LandingPage /></LanguageProvider>);
-  const region = screen.getByRole("region", { name: "छात्रों की समीक्षाएँ" });
-  expect(within(region).getByText("सीखने वालों की पसंद")).toBeInTheDocument();
-  const first = within(region).getByRole("group", { name: "6 में से समीक्षा 1" });
-  expect(first).toHaveTextContent("आयशा आर.");
-  expect(first).toHaveTextContent("बी.टेक सीएसई");
-  expect(within(region).getByRole("button", { name: "अगली समीक्षा" })).toBeInTheDocument();
+test("Hindi preference renders translated review controls",()=>{
+ localStorage.setItem("masterclass:language","hi");render(<LanguageProvider><StudentReviews/></LanguageProvider>);
+ expect(screen.queryByRole("region",{name:"Sample student reviews"})).not.toBeInTheDocument();
+ expect(screen.getByRole("region")).toHaveAttribute("aria-roledescription","carousel");
+ expect(screen.getByRole("group",{name:/1 \/ 5/})).toHaveTextContent("Aditi S.");
 });
 
 describe("testimonial data", () => {

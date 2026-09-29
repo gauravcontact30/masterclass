@@ -13,12 +13,13 @@ test("Agentic AI course card opens every guide lesson and includes the concise r
   expect(course.contents?.map(chapter => chapter.title)).toEqual(guide.curriculum.lessons.map(lesson => lesson.title));
   expect(NOTES_SUMMARIES.find(note => note.id === course.id)?.learnInApp).toBe(true);
   for (const chapter of course.contents!) expect(getStudyNote(chapter.id)).toBeDefined();
-  const recap = guide.curriculum.lessons.at(-1)!;
+  const recapIndex = guide.curriculum.lessons.findIndex(lesson => lesson.title.startsWith("Agentic AI essentials"));
+  const recap = guide.curriculum.lessons[recapIndex];
   expect(recap.keyPoints?.filter(point => point.title?.startsWith("Feature:"))).toHaveLength(5);
   expect(recap.keyPoints?.filter(point => point.title?.startsWith("Topic:"))).toHaveLength(5);
   expect(recap.keyPoints?.filter(point => point.title?.startsWith("Step "))).toHaveLength(6);
   const exported = curriculumNotes(guide.curriculum, guide.curriculum.title, "en");
   for (const point of recap.keyPoints!) expect(exported).toContain(point.text);
-  const note = getStudyNote(course.contents!.at(-1)!.id)!;
+  const note = getStudyNote(course.contents![recapIndex].id)!;
   for (const point of recap.keyPoints!) expect(note.points.join("\n")).toContain(point.text);
 });

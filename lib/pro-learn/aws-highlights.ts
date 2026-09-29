@@ -1,5 +1,6 @@
 import { AWS_SERVICE_CATALOG } from "@/lib/generation/guides/aws-service-catalog";
 import { AWS_POPULARITY, popularityRank } from "@/lib/generation/guides/aws-popularity";
+import type { PreparedExplanation } from "./prepared-explanation";
 
 export type VocabularyWord = {
   word: string;
@@ -18,7 +19,29 @@ export type AwsHighlight = {
   name: string;
   category: string;
   summary: string;
+  /**
+   * What is worth knowing about this row beyond its one-line summary.
+   *
+   * A card shows the first few as its key points and the answer carries them
+   * all, so a catalogue can be authored a row at a time without writing a whole
+   * prepared explanation for each one. Rows without them fall back to the
+   * sentences of their own summary.
+   */
+  points?: string[];
+  /** Where the row is used in practice, and what it is for: "Title — scenario". */
+  useCase?: { title: string; scenario: string };
+  /**
+   * The general form of the command this row is about, for rows that are one.
+   *
+   * A catalogue of commands owes the reader the shape of every invocation, not
+   * just the one the walkthrough happened to use — so the card leads with this
+   * and the answer opens on it.
+   */
+  syntax?: readonly string[];
+  /** A worked example for this row, one entry per file of the editor. */
+  code?: { path: string; code: string; note?: string }[];
   vocabulary?: VocabularyWord;
+  prepared?: PreparedExplanation;
 };
 /** A tab: the category and how many services sit under it. */
 export type AwsCategory = { name: string; count: number };
@@ -44,15 +67,28 @@ function oneLine(summary: string) {
  * of the twenty-one categories have no ranked service at all, so a popularity
  * cut would leave those tabs empty.
  */
+/**
+ * The ordered rows, derived once.
+ *
+ * Held rather than rebuilt because the server's prepared-catalog cache keys off
+ * row identity: returning freshly allocated objects on every call meant that
+ * cache never hit, and all 438 explanations were re-derived on each request to
+ * the search page. Callers still get their own array — only the rows inside it
+ * are shared, and nothing mutates them.
+ */
+let ordered: AwsHighlight[] | undefined;
+
 export function awsHighlights(limit = Number.MAX_SAFE_INTEGER): AwsHighlight[] {
-  const ranked = new Set(AWS_POPULARITY);
-  return [...AWS_SERVICE_CATALOG]
-    .sort((a, b) =>
-      popularityRank(a.name) - popularityRank(b.name)
-      || Number(ranked.has(b.name)) - Number(ranked.has(a.name))
-      || a.name.localeCompare(b.name))
-    .slice(0, limit)
-    .map(service => ({ name: service.name, category: service.category, summary: oneLine(service.summary) }));
+  if (!ordered) {
+    const ranked = new Set(AWS_POPULARITY);
+    ordered = [...AWS_SERVICE_CATALOG]
+      .sort((a, b) =>
+        popularityRank(a.name) - popularityRank(b.name)
+        || Number(ranked.has(b.name)) - Number(ranked.has(a.name))
+        || a.name.localeCompare(b.name))
+      .map(service => ({ name: service.name, category: service.category, summary: oneLine(service.summary) }));
+  }
+  return ordered.slice(0, limit);
 }
 
 /**

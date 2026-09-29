@@ -6,6 +6,7 @@ try {
   await db.exec(`create role anon;create role authenticated;create role service_role bypassrls;create schema auth;create function auth.jwt() returns jsonb language sql stable as $$select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb$$;create schema storage;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint);`);
   await db.exec(await readFile("supabase/migrations/0001_masterclass.sql","utf8"));
   await db.exec(await readFile("supabase/migrations/0002_download_credits.sql","utf8"));
+  await db.exec(await readFile("supabase/migrations/0021_subscription_reconciliation.sql","utf8"));
   await db.exec(await readFile("supabase/seed.sql","utf8"));
   await db.exec("insert into profiles(id) values('alice'),('bob'),('carol');");
   async function reserve(owner,key,limit=3){return (await db.query("select (reserve_document($1,$2,'Test','{}'::jsonb,$3)).*",[owner,key,limit])).rows[0];}
@@ -52,5 +53,17 @@ try {
   assert.equal((await db.query(apply,args)).rows[0].applied,false,"duplicate billing event ignored");
   await db.query(apply,["event-old","alice","sub_test","monthly","created",null,"2026-09-07T00:00:00Z",false]);
   assert.equal((await db.query("select status from subscriptions where user_id='alice'")).rows[0].status,"active","out-of-order event cannot roll back membership");
+  await db.query("update subscriptions set cancel_at_cycle_end=true where user_id='alice'");
+  await db.query(apply,["refresh-race","alice","sub_test","monthly","active","2027-01-01T00:00:00Z","2026-09-09T00:00:00Z",false]);
+  assert.equal((await db.query("select cancel_at_cycle_end from subscriptions where user_id='alice'")).rows[0].cancel_at_cycle_end,true,"in-flight refresh cannot undo cancellation");
+  await db.query(apply,["cancelled","alice","sub_test","monthly","cancelled",null,"2026-09-10T00:00:00Z",true]);
+  assert.equal(new Date((await db.query("select current_period_end from subscriptions where user_id='alice'")).rows[0].current_period_end).toISOString(),"2027-01-01T00:00:00.000Z","nullable terminal events retain paid access");
+  await db.query(apply,["old-subscription","alice","sub_replaced","monthly","active","2028-01-01T00:00:00Z","2026-09-11T00:00:00Z",false]);
+  assert.equal((await db.query("select provider_ref from subscriptions where user_id='alice'")).rows[0].provider_ref,"sub_test","late event cannot replace the current subscription");
+  await db.query(apply,["renewal-failed","bob","sub_bob","yearly","active","2027-01-01T00:00:00Z","2026-09-08T00:00:00Z",false]);
+  await db.query(apply,["pending","bob","sub_bob","yearly","pending",null,"2026-09-09T00:00:00Z",false]);
+  const grace=(await db.query("select grace_until from subscriptions where user_id='bob'")).rows[0].grace_until;
+  await db.query(apply,["pending-retry","bob","sub_bob","yearly","pending",null,"2026-09-10T00:00:00Z",false]);
+  assert.equal(String((await db.query("select grace_until from subscriptions where user_id='bob'")).rows[0].grace_until),String(grace),"retry events do not extend the grace period");
   console.log("PASS: migrations, catalog seed, quota reservations, reuse, refunds, expired leases, stale workers, owner RLS, RPC permissions, duplicate and out-of-order billing events, pay-per-download credits.");
 }finally{await db.close();}

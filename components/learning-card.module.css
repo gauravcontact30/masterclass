@@ -1,0 +1,14 @@
+/* Shared pastel surfaces for reference, topic, and lesson card collections. */
+.card.card {
+  background: var(--learning-card-surface, #eaf3fb);
+  border-color: var(--learning-card-border, #cbddeb);
+}
+.card:nth-child(9n+1) { --learning-card-surface: #eaf3fb; --learning-card-border: #cbddeb; }
+.card:nth-child(9n+2) { --learning-card-surface: #edf5e8; --learning-card-border: #d1e2c8; }
+.card:nth-child(9n+3) { --learning-card-surface: #fff3e3; --learning-card-border: #edd9bb; }
+.card:nth-child(9n+4) { --learning-card-surface: #f2ecfa; --learning-card-border: #ded0ed; }
+.card:nth-child(9n+5) { --learning-card-surface: #e7f5f1; --learning-card-border: #c4e1d8; }
+.card:nth-child(9n+6) { --learning-card-surface: #fcecf0; --learning-card-border: #edcdd7; }
+.card:nth-child(9n+7) { --learning-card-surface: #f8f5df; --learning-card-border: #e6dfb5; }
+.card:nth-child(9n+8) { --learning-card-surface: #edeffc; --learning-card-border: #d1d7ef; }
+.card:nth-child(9n+9) { --learning-card-surface: #faeee6; --learning-card-border: #ead4c4; }

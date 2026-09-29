@@ -1,0 +1,5 @@
+.mark { flex: none; object-fit: contain; }
+.cover { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.coverMark { width: 44px; height: 44px; object-fit: contain; }
+.coverArt { display: block; width: 100%; max-width: 160px; height: auto; }
+.credit { color: #5d6b80; font-size: 10px; line-height: 1.4; text-align: center; overflow-wrap: anywhere; }

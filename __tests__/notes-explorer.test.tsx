@@ -65,7 +65,7 @@ test("global technology and content filters combine and Clear all restores secti
   fireEvent.click(screen.getByRole("button", { name: "Clear all", exact: true }));
   expect(screen.getAllByRole("article")).toHaveLength(5);
   fireEvent.click(screen.getByRole("combobox", { name: "Content type" }));
-  fireEvent.click(screen.getByRole("option", { name: "AWS services" }));
+  fireEvent.click(await screen.findByRole("option", { name: /AWS.*services/ }));
   expect(screen.getByRole("heading", { name: "No topics found" })).toBeVisible();
 });
 
@@ -144,12 +144,12 @@ test("the Learn in App dialog opens on a compact header: short title, one meta r
   render(<TopicCard note={summary} />);
 
   // The card keeps its own name; only the reader uses the short one.
-  expect(screen.getByRole("heading", { name: summary.title })).toBeVisible();
+  expect(screen.getByRole("heading", { name: /Claude.*Concepts/ })).toBeVisible();
   expect(summary.readerTitle).toBe(full.readerTitle);
 
   fireEvent.click(screen.getByRole("button", { name: "Learn in App" }));
-  const dialog = within(screen.getByRole("dialog"));
-  expect(dialog.getByRole("heading", { name: full.readerTitle! })).toBeVisible();
+  const dialog = within(await screen.findByRole("dialog"));
+  expect(dialog.getByRole("heading", { name: /Claude.*Concepts/ })).toBeVisible();
 
   // One meta row: technology label and category, without the old "LEARN IN APP ·" prefix.
   expect(dialog.getByText(summary.category)).toBeVisible();

@@ -12,6 +12,8 @@ import { LearningPath, StudyNote } from "./learning-studio";
 import { FlashcardDeck, type StudyCard } from "./study-cards";
 import { groupQuestionsByArea } from "@/lib/pro-learn/families";
 
+import { BrandMark } from "./topic-media";
+
 const CATEGORIES = ["All", ...new Set(INTERVIEW_BANK.map(item => item.cat))];
 /** A drill stays short enough to finish in one sitting, so it draws from the top of the filtered bank. */
 const DRILL_SIZE = 12;
@@ -104,7 +106,7 @@ export function ProInterview({ aiReady }: { aiReady: boolean }) {
     <div className={styles.sectionHead} id="interview-bank"><div><h2>Most-asked questions</h2><p>Curated from real big-tech loops — filter by company, topic and difficulty.</p></div><span className={styles.cat} role="status">{matches.length} question{matches.length === 1 ? "" : "s"}</span></div>
     <div className={styles.card} style={{ marginBottom: 14 }}>
       <div className={styles.filterRow}><span>Company</span><div className={styles.chips} role="group" aria-label="Filter by company">{INTERVIEW_COMPANIES.map(company => <button key={company} className={styles.chip} aria-pressed={filters.company === company} onClick={() => setFilters(value => ({ ...value, company }))}>{company}</button>)}</div></div>
-      <div className={styles.filterRow}><span>Topic</span><div className={styles.chips} role="group" aria-label="Filter by topic">{CATEGORIES.map(category => <button key={category} className={styles.chip} aria-pressed={filters.category === category} onClick={() => setFilters(value => ({ ...value, category }))}>{category}</button>)}</div></div>
+      <div className={styles.filterRow}><span>Topic</span><div className={styles.chips} role="group" aria-label="Filter by topic">{CATEGORIES.map(category => <button key={category} className={styles.chip} aria-pressed={filters.category === category} onClick={() => setFilters(value => ({ ...value, category }))}><BrandMark label={category} size={13}/>{category}</button>)}</div></div>
       <div className={styles.filterRow} style={{ marginBottom: 0 }}><span>Level</span><div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
         <div className={styles.seg} role="group" aria-label="Filter by level">{INTERVIEW_LEVELS.map(level => <button key={level} aria-pressed={filters.level === level} onClick={() => setFilters(value => ({ ...value, level }))}>{level}</button>)}</div>
         <Label style={{ position: "relative", flex: "1 1 220px" }}><span className={styles.srOnly}>Search questions</span><Search size={15} style={{ position: "absolute", left: 11, top: 12, color: "var(--faint)" }}/><Input type="search" className={styles.input} style={{ paddingLeft: 34 }} placeholder="Search questions…" value={filters.query} onChange={event => setFilters(value => ({ ...value, query: event.target.value }))}/>{filters.query && <button aria-label="Clear question search" onClick={() => setFilters(value => ({ ...value, query: "" }))} style={{ position: "absolute", right: 8, top: 9, border: 0, background: "none", cursor: "pointer", color: "var(--muted)" }}><X size={15}/></button>}</Label>

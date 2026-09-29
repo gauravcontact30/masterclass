@@ -13,7 +13,8 @@ describe("CodeLab", () => {
     const block = screen.getByLabelText("Example code");
     expect(block.textContent).toContain('console.log(doubled.join(","));');
     // Gutter numbers are decoration, so they must not be part of the copied text.
-    expect(screen.getByLabelText("Example code").querySelectorAll("span[aria-hidden='true']")).toHaveLength(2);
+    expect(block.querySelectorAll(".gutter[aria-hidden='true']")).toHaveLength(2);
+    expect(block.querySelectorAll("[data-code-comment]")).toHaveLength(2);
   });
 
   it("offers Run for self-contained JavaScript", () => {

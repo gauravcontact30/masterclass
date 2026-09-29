@@ -47,6 +47,23 @@
 .saveButton[data-compact=true]:is(:hover,:focus-visible,[aria-pressed=true]) { opacity:1; }
 @media (prefers-reduced-motion:reduce) { .saveButton { transition:none; } }
 .point { display:flex; align-items:flex-start; justify-content:space-between; gap:6px; width:100%; }
-.point>span { min-width:0; flex:1; }
-.page :is(a,button,select):focus-visible,.saveButton:focus-visible { outline:2px solid currentColor; outline-offset:3px; }
+.point>span:first-child { min-width:0; flex:1; }
+.pointActions { display:inline-flex; align-items:center; gap:2px; flex-shrink:0; }
+.vocabPointButton {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:28px; height:28px; padding:0;
+  border:1px solid transparent; border-radius:7px;
+  background:transparent; color:var(--bm-muted);
+  cursor:pointer; opacity:0.65; transition:all 0.15s ease;
+}
+.vocabPointButton:hover {
+  opacity:1; background:rgba(181, 82, 47, 0.12); color:#b5522f;
+  border-color:rgba(181, 82, 47, 0.25); transform:scale(1.05);
+}
+:global(.dark) .vocabPointButton:hover {
+  background:rgba(217, 119, 87, 0.18); color:#d97757;
+}
+.page :is(a,button,select):focus-visible,.saveButton:focus-visible,.vocabPointButton:focus-visible { outline:2px solid currentColor; outline-offset:3px; }
 @media(max-width:700px) { .hero { align-items:flex-start; flex-direction:column; gap:12px; } .stats { gap:8px; } .stats>div { padding:12px; grid-template-columns:1fr; } .stats svg { display:none; } .stats span { line-height:1.5; } .toolbar { flex-wrap:wrap; } .search { flex-basis:100%; } .toolbar select { flex:1; min-width:0; } .group>header,.entry { padding:16px; } .entry footer { gap:10px; } }
+
+:global(.workspace) .groups, :global(.workspace) .stats { gap: var(--dashboard-card-gap, 24px); }

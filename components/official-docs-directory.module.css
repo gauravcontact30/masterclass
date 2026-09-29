@@ -1,0 +1,26 @@
+.directory { border-top: 1px solid #e8e6dc; padding: 28px 0; min-width: 0; }
+.directory h3 { font-size: 18px; font-weight: 600; margin: 0 0 12px; }
+.directory header p { color: #69665e; font-size: 13px; line-height: 1.7; }
+.directory header > a { color: #9c4d32; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
+.filters { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 14px; margin-top: 22px; }
+.filters label { min-width: 0; display: grid; gap: 6px; font-size: 12px; font-weight: 600; }
+.filters input, .filters select { min-width: 0; width: 100%; box-sizing: border-box; border: 1px solid #d8d4cb; border-radius: 7px; background: white; color: #302e29; padding: 10px; font-size: 13px; }
+.directory .count { font-size: 12px; color: #726f67; }
+.entries { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; list-style: none; padding: 0; margin: 16px 0; }
+.entries > li { min-width: 0; padding: 16px; border: 1px solid #e5e1d8; border-radius: 8px; background: #fcfbf8; overflow-wrap: anywhere; }
+.directory .orderNote { margin: 18px 0 0; color: #454139; font-size: 12px; font-weight: 600; }
+.orderNote span { color: #69665e; font-weight: 400; }
+.category { font-size: 10px; color: #706c62; }
+.entries h4 { margin: 9px 0 6px; font-size: 14px; font-weight: 600; }
+.entries h4 a:hover { text-decoration: underline; }
+.entries h4 span { color: #9c4d32; }
+.entries p, .entries details { margin: 0; font-size: 12px; line-height: 1.65; color: #625f57; }
+.entries summary { cursor: pointer; margin-top: 10px; font-weight: 600; }
+.entries details ul { list-style: disc; padding-left: 16px; margin-top: 10px; }
+.entries details li + li { margin-top: 8px; }
+.pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; font-size: 12px; }
+.pagination button { padding: 8px 12px; border: 1px solid #d8d4cb; border-radius: 6px; background: white; cursor: pointer; }
+.pagination button:disabled { opacity: .45; cursor: default; }
+.directory :focus-visible { outline: 2px solid #9c4d32; outline-offset: 3px; }
+@media (max-width: 1050px) { .entries { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .entries, .filters { grid-template-columns: minmax(0, 1fr); } }

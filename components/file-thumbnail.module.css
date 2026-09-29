@@ -1,5 +1,5 @@
 /*
- * Notes thumbnail (see file-thumbnail.tsx): a spiral-bound, ruled notebook
+ * Notes thumbnail (see file-thumbnail.tsx): a spiral-bound notebook
  * page. Every length is in em so a parent scales the whole object with
  * --thumb-size; the technology accent arrives as --th-accent, set inline.
  */
@@ -22,9 +22,7 @@
   aspect-ratio: 4 / 5;
   padding: 1.75em 0.9em 0.8em 2.05em;
   border-radius: 0.3em 0.55em 0.55em 0.3em;
-  background:
-    repeating-linear-gradient(180deg, transparent 0 1.2em, #dedcd1 1.2em 1.28em) 0 1.55em / 100% calc(100% - 1.55em) no-repeat,
-    #f5f4ed;
+  background: #f5f4ed;
   box-shadow: 0 0.1em 0.25em #3b331a14, 0 1.3em 2.2em -0.8em #4a3f1d55;
 }
 .rings {

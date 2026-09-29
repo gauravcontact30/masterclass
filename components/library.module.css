@@ -742,3 +742,6 @@
     animation: none;
   }
 }
+
+/* Consistent separation between dashboard cards. */
+:global(.workspace) .grid { gap: var(--dashboard-card-gap, 24px); }

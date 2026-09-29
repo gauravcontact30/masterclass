@@ -1,0 +1,52 @@
+/* Real screenshots from official documentation, shown inside an answer.
+
+   The frame is deliberately plain: a hairline, a pale ground and no shadow, so
+   the picture reads as evidence quoted from somewhere else rather than as part
+   of this app's own interface. Custom properties inherit from the answer card,
+   with fallbacks for use outside it. */
+
+.screens {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 22px;
+}
+.screens > li { min-width: 0; }
+
+.figure { margin: 0; display: flex; flex-direction: column; gap: 12px; height: 100%; }
+
+.frame {
+  display: block; overflow: hidden;
+  border: 1px solid var(--line, #dedcd1); border-radius: 14px;
+  background: var(--sage, #f5f4ed);
+  /* A screenshot is wider than tall; reserving the box keeps the answer from
+     jumping as each picture arrives over the network. */
+  aspect-ratio: 16 / 10;
+}
+.frame img {
+  display: block; width: 100%; height: 100%;
+  object-fit: contain; object-position: top center;
+}
+/* Until the image loads there is nothing to see, so the ground quietly pulses
+   rather than showing an empty box that looks broken. */
+.figure[data-state="loading"] .frame { animation: breathe 1.6s ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+@media (prefers-reduced-motion: reduce) { .figure[data-state="loading"] .frame { animation: none; } }
+
+/* A dead URL is an expected outcome for a hotlinked picture, so it says so in
+   words and hands the reader the official page instead. */
+.gone {
+  display: flex; align-items: flex-start; gap: 8px;
+  margin: 0; padding: 14px 16px;
+  border: 1px dashed var(--line, #dedcd1); border-radius: 14px;
+  background: var(--sage, #f5f4ed);
+  color: var(--muted, #73726c); font-size: 12px; line-height: 1.6;
+}
+.gone svg { flex: none; margin-top: 2px; }
+
+.figure figcaption { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.figure figcaption strong { color: var(--heading, #2f4b5c); font-size: 13px; font-weight: 640; line-height: 1.5; }
+.figure figcaption > span { color: var(--muted, #73726c); font-size: 12.5px; line-height: 1.75; overflow-wrap: break-word; }
+.figure figcaption > a {
+  display: inline-flex; align-items: center; gap: 5px; align-self: flex-start;
+  color: #315f96; font-size: 11.5px; text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere;
+}
+.figure figcaption > a:hover { color: var(--accent, #c6613f); }

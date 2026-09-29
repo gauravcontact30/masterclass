@@ -23,33 +23,38 @@ function renderCards(words: string[]) {
     question={row => row.name} onAsk={() => {}} />);
 }
 
-test("a card's Hindi meaning is hidden until that card's toggle is pressed", async () => {
+test("a card's Hindi meaning replaces its English one when the card is switched", async () => {
   const user = userEvent.setup();
   const succinct = item("succinct");
   renderCards(["succinct"]);
 
-  // The line is always in the DOM so the toggle's aria-controls has a target;
-  // `hidden` is what closes it, for the eye and for a screen reader alike.
-  expect(screen.getByText(succinct.vocabulary.hindi!)).not.toBeVisible();
-  await user.click(screen.getByRole("button", { name: /Hindi meaning/ }));
-  expect(screen.getByText(succinct.vocabulary.hindi!)).toBeVisible();
+  // The gloss is swapped in, not revealed below: an appended panel grew the
+  // card and, through the grid's equal-height rows, every card beside it.
+  expect(screen.queryByText(succinct.vocabulary.hindi!)).not.toBeInTheDocument();
+  expect(screen.getByText(succinct.vocabulary.meaning)).toBeVisible();
 
-  // The same button puts it away again.
-  await user.click(screen.getByRole("button", { name: /Hide Hindi meaning/ }));
-  expect(screen.getByText(succinct.vocabulary.hindi!)).not.toBeVisible();
+  await user.click(screen.getByRole("button", { name: "Hi" }));
+  expect(screen.getByText(succinct.vocabulary.hindi!)).toBeVisible();
+  expect(screen.queryByText(succinct.vocabulary.meaning)).not.toBeInTheDocument();
+
+  // The same switch puts it back.
+  await user.click(screen.getByRole("button", { name: "En" }));
+  expect(screen.getByText(succinct.vocabulary.meaning)).toBeVisible();
 });
 
-test("each card toggles only its own Hindi meaning", async () => {
+test("each card switches only its own language", async () => {
   const user = userEvent.setup();
   const [first, second] = [item("succinct"), item("candid")];
   renderCards(["succinct", "candid"]);
 
-  const toggles = screen.getAllByRole("button", { name: "Hindi meaning" });
-  expect(toggles).toHaveLength(2);
-  await user.click(toggles[0]);
+  const switches = screen.getAllByRole("button", { name: "Hi" });
+  expect(switches).toHaveLength(2);
+  await user.click(switches[0]);
 
   expect(screen.getByText(first.vocabulary.hindi!)).toBeVisible();
-  expect(screen.getByText(second.vocabulary.hindi!)).not.toBeVisible();
+  // Its neighbour is untouched, still showing the English meaning.
+  expect(screen.queryByText(second.vocabulary.hindi!)).not.toBeInTheDocument();
+  expect(screen.getByText(second.vocabulary.meaning)).toBeVisible();
 });
 
 test("a vocabulary card shows its word with a capital first letter", () => {

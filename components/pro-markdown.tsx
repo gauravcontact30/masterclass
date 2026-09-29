@@ -1,5 +1,7 @@
 import { Fragment, type ReactNode } from "react";
 import { highlightLines, type CodeLanguage } from "@/lib/code-highlight";
+import { codeLineNotes } from "@/lib/code-line-notes";
+import { CodeLineComment } from "./code-line-comment";
 import styles from "./pro-learn.module.css";
 
 const LANGUAGES: Record<string, CodeLanguage> = { js: "javascript", javascript: "javascript", jsx: "jsx", ts: "typescript", typescript: "typescript", tsx: "tsx", py: "python", python: "python", json: "json", yaml: "yaml", yml: "yaml", bash: "bash", sh: "bash", shell: "bash", css: "css", html: "html", dockerfile: "dockerfile", hcl: "hcl" };
@@ -16,7 +18,8 @@ function inline(text: string, keyPrefix: string): ReactNode[] {
 }
 
 export function CodeBlock({ code, language = "text" }: { code: string; language?: CodeLanguage }) {
-  return <pre className={styles.code} tabIndex={0}><code>{highlightLines(code, language).map((line, index) => <span key={index}>{line.map((token, part) => <span key={part} className={token.tone ? styles[token.tone] : undefined}>{token.text}</span>)}{"\n"}</span>)}</code></pre>;
+  const notes = codeLineNotes(code, "", language);
+  return <pre className={styles.code} tabIndex={0}><code>{highlightLines(code, language).map((line, index) => <span key={index}>{line.map((token, part) => <span key={part} className={token.tone ? styles[token.tone] : undefined}>{token.text}</span>)}{"\n"}<CodeLineComment note={notes[index]} /></span>)}</code></pre>;
 }
 
 /** Renders the limited Markdown produced by the mentor and interview answers. */

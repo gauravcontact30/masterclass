@@ -163,10 +163,12 @@ export function extractSymbols(code: string, language: CodeLanguage = "javascrip
 
   if (language === "python") {
     for (const match of code.matchAll(/^\s*(?:from\s+([\w.]+)\s+import\s+(.+)|import\s+([\w.]+))/gm)) {
-      const module = match[1] ?? match[3];
-      add({ name: module, kind: "module", detail: "Imported module." });
+      // Not named `module`: that identifier is CommonJS's own, and assigning
+      // to it is an error under the Next.js rules even inside a block.
+      const imported = match[1] ?? match[3];
+      add({ name: imported, kind: "module", detail: "Imported module." });
       for (const name of (match[2] ?? "").split(",").map(n => n.trim()).filter(Boolean)) {
-        add({ name, kind: "function", detail: `Imported from ${module}.` });
+        add({ name, kind: "function", detail: `Imported from ${imported}.` });
       }
     }
     for (const match of code.matchAll(/^\s*def\s+(\w+)/gm)) add({ name: match[1], kind: "function", detail: "Defined in this file." });

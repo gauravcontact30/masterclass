@@ -1,0 +1,1101 @@
+[
+  {
+    "name": "git add",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-add",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git am",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-am",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git annotate",
+    "category": "Inspection & diagnostics",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-annotate",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git apply",
+    "category": "Low-level changes",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-apply",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git archimport",
+    "category": "Other version-control systems",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-archimport",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git archive",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-archive",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git backfill",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-backfill",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git bisect",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-bisect",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git blame",
+    "category": "Inspection & diagnostics",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-blame",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git branch",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-branch",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git bugreport",
+    "category": "Inspection & diagnostics",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-bugreport",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git bundle",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-bundle",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git cat-file",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-cat-file",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git check-attr",
+    "category": "Internal helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-check-attr",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git check-ignore",
+    "category": "Internal helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-check-ignore",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git check-mailmap",
+    "category": "Internal helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-check-mailmap",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git check-ref-format",
+    "category": "Internal helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-check-ref-format",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git checkout",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-checkout",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git checkout-index",
+    "category": "Low-level changes",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-checkout-index",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git cherry",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-cherry",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git cherry-pick",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-cherry-pick",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git citool",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-citool",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git clean",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-clean",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git clone",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-clone",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git column",
+    "category": "Internal helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-column",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git commit",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-commit",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git commit-graph",
+    "category": "Low-level changes",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-commit-graph",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git commit-tree",
+    "category": "Low-level changes",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-commit-tree",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git config",
+    "category": "Repository maintenance",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-config",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git count-objects",
+    "category": "Inspection & diagnostics",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-count-objects",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git credential",
+    "category": "Internal helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-credential",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git credential-cache",
+    "category": "Internal helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-credential-cache",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git credential-store",
+    "category": "Internal helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-credential-store",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git cvsexportcommit",
+    "category": "Other version-control systems",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-cvsexportcommit",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git cvsimport",
+    "category": "Other version-control systems",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-cvsimport",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git cvsserver",
+    "category": "Other version-control systems",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-cvsserver",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git daemon",
+    "category": "Repository synchronization",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-daemon",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git describe",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-describe",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git diagnose",
+    "category": "Inspection & diagnostics",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-diagnose",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git diff",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-diff",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git diff-files",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-diff-files",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git diff-index",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-diff-index",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git diff-pairs",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-diff-pairs",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git diff-tree",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-diff-tree",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git difftool",
+    "category": "Inspection & diagnostics",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-difftool",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git fast-export",
+    "category": "Repository maintenance",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-fast-export",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git fast-import",
+    "category": "Repository maintenance",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-fast-import",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git fetch",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-fetch",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git fetch-pack",
+    "category": "Repository synchronization",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-fetch-pack",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git filter-branch",
+    "category": "Repository maintenance",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-filter-branch",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git fmt-merge-msg",
+    "category": "Internal helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-fmt-merge-msg",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git for-each-ref",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-for-each-ref",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git for-each-repo",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-for-each-repo",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git format-patch",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-format-patch",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git format-rev",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-format-rev",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git fsck",
+    "category": "Inspection & diagnostics",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-fsck",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git gc",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-gc",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git get-tar-commit-id",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-get-tar-commit-id",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git grep",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-grep",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git gui",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-gui",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git hash-object",
+    "category": "Low-level changes",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-hash-object",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git help",
+    "category": "Inspection & diagnostics",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-help",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git history",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-history",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git hook",
+    "category": "Internal helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-hook",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git http-backend",
+    "category": "Repository synchronization",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-http-backend",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git http-fetch",
+    "category": "Synchronization helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-http-fetch",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git http-push",
+    "category": "Synchronization helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-http-push",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git imap-send",
+    "category": "Other version-control systems",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-imap-send",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git index-pack",
+    "category": "Low-level changes",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-index-pack",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git init",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-init",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git instaweb",
+    "category": "Inspection & diagnostics",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-instaweb",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git interpret-trailers",
+    "category": "Internal helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-interpret-trailers",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git last-modified",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-last-modified",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git log",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-log",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git ls-files",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-ls-files",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git ls-remote",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-ls-remote",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git ls-tree",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-ls-tree",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git mailinfo",
+    "category": "Internal helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-mailinfo",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git mailsplit",
+    "category": "Internal helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-mailsplit",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git maintenance",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-maintenance",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git merge",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-merge",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git merge-base",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-merge-base",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git merge-file",
+    "category": "Low-level changes",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-merge-file",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git merge-index",
+    "category": "Low-level changes",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-merge-index",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git merge-one-file",
+    "category": "Internal helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-merge-one-file",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git merge-tree",
+    "category": "Inspection & diagnostics",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-merge-tree",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git mergetool",
+    "category": "Repository maintenance",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-mergetool",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git mktag",
+    "category": "Low-level changes",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-mktag",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git mktree",
+    "category": "Low-level changes",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-mktree",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git multi-pack-index",
+    "category": "Low-level changes",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-multi-pack-index",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git mv",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-mv",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git name-rev",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-name-rev",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git notes",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-notes",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git p4",
+    "category": "Other version-control systems",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-p4",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git pack-objects",
+    "category": "Low-level changes",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-pack-objects",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git pack-redundant",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-pack-redundant",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git pack-refs",
+    "category": "Repository maintenance",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-pack-refs",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git patch-id",
+    "category": "Internal helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-patch-id",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git prune",
+    "category": "Repository maintenance",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-prune",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git prune-packed",
+    "category": "Low-level changes",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-prune-packed",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git pull",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-pull",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git push",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-push",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git quiltimport",
+    "category": "Other version-control systems",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-quiltimport",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git range-diff",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-range-diff",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git read-tree",
+    "category": "Low-level changes",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-read-tree",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git rebase",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-rebase",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git receive-pack",
+    "category": "Synchronization helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-receive-pack",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git reflog",
+    "category": "Repository maintenance",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-reflog",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git refs",
+    "category": "Repository maintenance",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-refs",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git remote",
+    "category": "Repository maintenance",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-remote",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git repack",
+    "category": "Repository maintenance",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-repack",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git replace",
+    "category": "Repository maintenance",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-replace",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git replay",
+    "category": "Low-level changes",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-replay",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git repo",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-repo",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git request-pull",
+    "category": "Other version-control systems",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-request-pull",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git rerere",
+    "category": "Inspection & diagnostics",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-rerere",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git reset",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-reset",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git restore",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-restore",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git rev-list",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-rev-list",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git rev-parse",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-rev-parse",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git revert",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-revert",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git rm",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-rm",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git send-email",
+    "category": "Other version-control systems",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-send-email",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git send-pack",
+    "category": "Repository synchronization",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-send-pack",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git sh-i18n",
+    "category": "Internal helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-sh-i18n",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git sh-setup",
+    "category": "Internal helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-sh-setup",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git shell",
+    "category": "Synchronization helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-shell",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git shortlog",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-shortlog",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git show",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-show",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git show-branch",
+    "category": "Inspection & diagnostics",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-show-branch",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git show-index",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-show-index",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git show-ref",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-show-ref",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git sparse-checkout",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-sparse-checkout",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git stash",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-stash",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git status",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-status",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git stripspace",
+    "category": "Internal helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-stripspace",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git submodule",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-submodule",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git svn",
+    "category": "Other version-control systems",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-svn",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git switch",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-switch",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git symbolic-ref",
+    "category": "Low-level changes",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-symbolic-ref",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git tag",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-tag",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git unpack-file",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-unpack-file",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git unpack-objects",
+    "category": "Low-level changes",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-unpack-objects",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git update-index",
+    "category": "Low-level changes",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-update-index",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git update-ref",
+    "category": "Low-level changes",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-update-ref",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git update-server-info",
+    "category": "Repository synchronization",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-update-server-info",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git upload-archive",
+    "category": "Synchronization helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-upload-archive",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git upload-pack",
+    "category": "Synchronization helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-upload-pack",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git url-parse",
+    "category": "Internal helpers",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-url-parse",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git var",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-var",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git verify-commit",
+    "category": "Inspection & diagnostics",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-verify-commit",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git verify-pack",
+    "category": "Low-level inspection",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-verify-pack",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git verify-tag",
+    "category": "Inspection & diagnostics",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-verify-tag",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git version",
+    "category": "Inspection & diagnostics",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-version",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git whatchanged",
+    "category": "Inspection & diagnostics",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-whatchanged",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git worktree",
+    "category": "Everyday commands",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-worktree",
+    "kind": "Command reference"
+  },
+  {
+    "name": "git write-tree",
+    "category": "Low-level changes",
+    "summary": "Read the official synopsis, options, examples, and related commands.",
+    "url": "https://git-scm.com/docs/git-write-tree",
+    "kind": "Command reference"
+  }
+]
