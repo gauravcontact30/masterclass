@@ -190,6 +190,91 @@
   border-color: #d97757;
 }
 
+.card[data-dragging="true"] {
+  opacity: 0.35;
+  transform: scale(0.97);
+  border-style: dashed;
+}
+.card[data-dragover="true"] {
+  outline: 2px dashed #d97757;
+  outline-offset: 3px;
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px -12px rgba(20, 20, 19, 0.25);
+}
+.card[data-checked="true"] {
+  border-color: #d97757;
+  box-shadow: 0 0 0 2px rgba(217, 119, 87, 0.35), 0 8px 24px rgba(20, 20, 19, 0.08);
+}
+
+.cardDragHandle {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(250, 249, 245, 0.92);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  cursor: grab;
+  transition: all 0.16s ease;
+  opacity: 0.88;
+}
+.cardDragHandle:hover {
+  opacity: 1;
+  background: #ffffff;
+  color: var(--ink);
+  transform: scale(1.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.cardDragHandle:active {
+  cursor: grabbing;
+}
+
+.cardCheckbox {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 8px;
+  background: rgba(250, 249, 245, 0.92);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--line);
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+.cardCheckbox:hover {
+  background: #ffffff;
+  border-color: #d97757;
+  transform: scale(1.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.cardCheckbox[aria-checked="true"] {
+  background: #d97757;
+  border-color: #d97757;
+  color: #ffffff;
+}
+
+.cardCheckboxInner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+}
+
 .stage {
   --stage: #e8e6dc;
   --thumb-size: 10.5px;
@@ -434,7 +519,7 @@
   max-width: 100%;
   padding: 10px 14px;
   border-radius: 9px;
-  background: var(--forest);
+  background: var(--gold, #d97757);
   color: #fff;
   font-size: 12px;
   font-weight: 600;
@@ -444,7 +529,8 @@
   line-height: 1.4;
 }
 .learn:hover {
-  background: #262624;
+  background: #c6613f;
+  color: #fff;
 }
 .secondary {
   min-height: 40px;

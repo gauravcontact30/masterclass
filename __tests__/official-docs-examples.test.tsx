@@ -7,10 +7,10 @@ import { getDocsCodeExamples } from "@/lib/official-docs-examples";
 import { COMPLEX_DOCS_PROJECTS } from "@/lib/official-docs-complex";
 import { OfficialDocs } from "@/components/official-docs";
 
-test("every topic has populated examples and requested topics include complete Complex projects", () => {
+test("every topic has all four difficulty levels with complete Complex projects", () => {
   for (const doc of OFFICIAL_DOCS) {
     const examples = getDocsCodeExamples(doc);
-    expect(examples.map(example => example.level)).toEqual(COMPLEX_DOCS_PROJECTS[doc.id] ? ["Simple", "Medium", "Hard", "Complex"] : ["Simple", "Medium", "Hard"]);
+    expect(examples.map(example => example.level)).toEqual(["Simple", "Medium", "Hard", "Complex"]);
     for (const example of examples) {
       expect(example.title.trim()).not.toBe("");
       expect(example.summary.trim()).not.toBe("");
@@ -39,15 +39,15 @@ test("Complex codebase switches tabs, copies source, and includes separate run i
   expect(await navigator.clipboard.readText()).toBe("npm test");
 });
 
-test("the Complex collection exposes the ten requested topics across pages and accepts spaced aliases", async () => {
+test("the Complex collection includes every topic across pages and accepts spaced aliases", async () => {
   const user = userEvent.setup();
   render(<OfficialDocs />);
   const catalog = screen.getByRole("region", { name: "Search and filter documentation" });
   await user.click(within(catalog).getByRole("button", { name: /Complex projects/ }));
-  expect(within(catalog).getByRole("status")).toHaveTextContent("of 10 technologies");
-  expect(screen.getByRole("heading", { name: "Node.js", exact: true })).toBeVisible();
+  expect(within(catalog).getByRole("status")).toHaveTextContent(`of ${OFFICIAL_DOCS.length} technologies`);
+  expect(screen.getByRole("heading", { name: "Next.js 16+", exact: true })).toBeVisible();
   await user.click(screen.getByRole("button", { name: "Next page", exact: true }));
-  expect(screen.getByRole("heading", { name: "Nest.js", exact: true })).toBeVisible();
+  expect(within(catalog).getByRole("status")).toHaveTextContent("Showing 7–12");
   const search = within(catalog).getByRole("textbox", { name: "Search technologies" });
   for (const [query, title] of [["Type Script", "TypeScript (5.x+)"], ["Java Script Puzzles", "JavaScript Puzzles"], ["AWS All Services", "AWS Cloud Services"]]) {
     await user.clear(search);
@@ -67,12 +67,12 @@ test("topic selection replaces all difficulty cards and copies the selected star
   expect(screen.getByRole("figure", { name: "React 19+ simple example" })).toBeVisible();
   await user.selectOptions(screen.getByRole("combobox", { name: "Technology" }), "python");
   const section = screen.getByRole("region", { name: "Code example" });
-  for (const level of ["Simple", "Medium", "Hard"]) {
+  for (const level of ["Simple", "Medium", "Hard", "Complex"]) {
     expect(within(section).getByRole("region", { name: new RegExp(`^${level}:`) })).toHaveAttribute("data-level", level);
   }
   expect(screen.queryByRole("figure", { name: "React 19+ simple example" })).not.toBeInTheDocument();
-  expect(within(section).getAllByRole("figure")).toHaveLength(3);
+  expect(within(section).getAllByRole("figure")).toHaveLength(4);
   const simple = within(section).getByRole("region", { name: /^Simple:/ });
-  await user.click(within(simple).getByRole("button", { name: "Copy lessons.py" }));
-  expect(await navigator.clipboard.readText()).toContain("short_lessons = [value for value in minutes if value <= 20]");
+  await user.click(within(simple).getByRole("button", { name: "Copy backlog.py" }));
+  expect(await navigator.clipboard.readText()).toContain("def backlog(tickets):");
 });

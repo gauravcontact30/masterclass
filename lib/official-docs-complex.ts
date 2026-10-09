@@ -2,6 +2,8 @@ import type { DocsProject } from "./official-docs-projects";
 import type { AnswerFile } from "./pro-learn/types";
 import { COMPLEX_AI_PROJECTS } from "./official-docs-complex-ai";
 import { COMPLEX_AWS_PROJECT } from "./official-docs-complex-aws";
+import { DOCS_PROJECTS } from "./official-docs-projects";
+import { createAcceptanceProjects } from "./official-docs-acceptance";
 
 const file = (path: string, code: string): AnswerFile => ({ path, code: code.trim() + "\n", note: "" });
 const json = (path: string, value: unknown) => file(path, JSON.stringify(value, null, 2));
@@ -507,3 +509,5 @@ for (const [id, project] of Object.entries(COMPLEX_DOCS_PROJECTS)) {
     file("README.md", `# ${project.title}\n\n${project.summary}\n\n## Prerequisites\n${project.prerequisites.map(text => "- " + text).join("\n")}\n\n## Run\nSave all files in a new folder, retaining the shown paths.\n\n${project.commands.map(item => item.description + "\n\n\`\`\`sh\n" + item.command + "\n\`\`\`").join("\n\n")}\n\n## Verify\n${project.verify.map(text => "- " + text).join("\n")}\n\n## Design notes\n${project.points.map(text => "- " + text).join("\n")}\n\nTopic: ${id}. Local educational project; see the official reference linked from the guide.`),
   ];
 }
+
+Object.assign(COMPLEX_DOCS_PROJECTS, createAcceptanceProjects(DOCS_PROJECTS, COMPLEX_DOCS_PROJECTS));

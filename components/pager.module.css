@@ -12,8 +12,8 @@
 .pagerGap { display: grid; place-items: center; width: 18px; height: 32px; color: var(--faint); font-size: 12.5px; user-select: none; }
 .pagerStep:hover:not(:disabled), .pagerPage:hover { border-color: color-mix(in srgb, var(--accent) 45%, white); color: var(--accent); }
 .pagerStep:disabled { opacity: .35; cursor: not-allowed; }
-.pagerPage[aria-current="page"] { background: #262624; border-color: #262624; color: #fff; }
-.pagerPage[aria-current="page"]:hover { background: #262624; color: #fff; }
+.pagerPage[aria-current="page"] { background: #d97757; border-color: #d97757; color: #fff; }
+.pagerPage[aria-current="page"]:hover { background: #c6613f; border-color: #c6613f; color: #fff; }
 
 
 @media (prefers-reduced-motion: reduce) {

@@ -37,7 +37,7 @@ export function DashboardLearningHighlights({
     try {
       const saved = localStorage.getItem(STORE_KEY);
       if (saved !== null) {
-        setExpanded(saved === "true");
+        queueMicrotask(() => setExpanded(saved === "true"));
       }
     } catch {
       // localStorage unavailable in sandboxed environments

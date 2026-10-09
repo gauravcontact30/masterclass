@@ -13,8 +13,8 @@ jest.mock("next/navigation", () => ({ usePathname: () => "/dashboard/api-docs", 
 beforeEach(() => { mockSearchParams = new URLSearchParams(); });
 
 test("reference catalog has unique identifiers, supported types and HTTPS documentation", () => {
-  expect(API_PACKAGES).toHaveLength(54);
-  expect(API_PACKAGES.reduce((sum, pkg) => sum + pkg.entries.length, 0)).toBe(5402);
+  expect(API_PACKAGES).toHaveLength(59);
+  expect(API_PACKAGES.reduce((sum, pkg) => sum + pkg.entries.length, 0)).toBe(5593);
   const kinds = API_TYPES.map(type => type.k);
   for (const pkg of API_PACKAGES) {
     expect(pkg.docs).toMatch(/^https:\/\//);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { z } from "zod";
 import { englishWordSchema, type WordLookup } from "@/lib/english-word";
 import { Search, X, SlidersHorizontal } from "lucide-react";
@@ -54,6 +54,41 @@ export function VocabularyHistory({ cards, selectedWord, onOpen, onUpdate, onDel
   const [sort, setSort] = useState("recent");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [page, setPage] = useState(0);
+  const [customOrder, setCustomOrder] = useState<string[]>([]);
+  const [draggedWord, setDraggedWord] = useState<string | null>(null);
+  const [dragOverWord, setDragOverWord] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("masterclass:vocabulary-order");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          queueMicrotask(() => setCustomOrder(parsed));
+        }
+      }
+    } catch {
+      // Storage may be unavailable.
+    }
+  }, []);
+
+  const moveWord = (sourceWord: string, targetWord: string) => {
+    if (sourceWord.toLowerCase() === targetWord.toLowerCase()) return;
+    const currentList = Array.from(new Set([...customOrder, ...cards.map(c => c.entry.word)]));
+    const fromIndex = currentList.findIndex(w => w.toLowerCase() === sourceWord.toLowerCase());
+    const toIndex = currentList.findIndex(w => w.toLowerCase() === targetWord.toLowerCase());
+    if (fromIndex === -1 || toIndex === -1) return;
+    const updated = [...currentList];
+    const [moved] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, moved);
+    setCustomOrder(updated);
+    try {
+      localStorage.setItem("masterclass:vocabulary-order", JSON.stringify(updated));
+    } catch {
+      // Storage may be unavailable.
+    }
+  };
+
   const needle = query.trim().toLowerCase();
   const found = cards.filter(card => {
     const entry = card.entry;
@@ -61,6 +96,19 @@ export function VocabularyHistory({ cards, selectedWord, onOpen, onUpdate, onDel
     return text.includes(needle)
       && (details === "all" || (details === "hindi" ? !!entry.hindi : details === "synonyms" ? entry.synonyms.length > 0 : entry.antonyms.length > 0));
   }).sort((a, b) => sort === "az" ? a.entry.word.localeCompare(b.entry.word) : sort === "oldest" ? a.at - b.at : b.at - a.at);
+
+  const orderedFound = useMemo(() => {
+    if (sort !== "recent" || !customOrder.length) return found;
+    const orderMap = new Map(customOrder.map((w, idx) => [w.toLowerCase(), idx]));
+    return [...found].sort((a, b) => {
+      const aIdx = orderMap.get(a.entry.word.toLowerCase());
+      const bIdx = orderMap.get(b.entry.word.toLowerCase());
+      if (aIdx !== undefined && bIdx !== undefined) return aIdx - bIdx;
+      if (aIdx !== undefined) return -1;
+      if (bIdx !== undefined) return 1;
+      return 0;
+    });
+  }, [found, customOrder, sort]);
   const CARDS_PER_PAGE = 2;
   const pages = Math.max(1, Math.ceil(found.length / CARDS_PER_PAGE));
   const current = Math.min(page, pages - 1);
@@ -91,9 +139,61 @@ export function VocabularyHistory({ cards, selectedWord, onOpen, onUpdate, onDel
         </PopoverContent>
       </Popover>
     </div>
-    {found.length ? <ul className={styles.cardGrid} key={current}>{found.slice(current * CARDS_PER_PAGE, current * CARDS_PER_PAGE + CARDS_PER_PAGE).map(card => <li className={styles.cardShell} key={card.entry.word.toLowerCase()}>
-      <VocabularyWordCard card={card} selected={selectedWord?.toLowerCase() === card.entry.word.toLowerCase()} onOpen={() => onOpen(card)} onUpdate={changes => onUpdate(card.entry.word, changes)} onDelete={() => onDelete(card.entry.word)} />
-    </li>)}</ul> : <div className={styles.empty} role="status"><Search size={20} aria-hidden="true" /><p>{cards.length ? "No words match these filters. Try another search or clear the filters." : "Look up your first word below to start your vocabulary collection."}</p></div>}
+    {orderedFound.length ? <ul className={styles.cardGrid} key={current}>{orderedFound.slice(current * CARDS_PER_PAGE, current * CARDS_PER_PAGE + CARDS_PER_PAGE).map(card => {
+      const wordKey = card.entry.word.toLowerCase();
+      const isDragging = draggedWord?.toLowerCase() === wordKey;
+      const isDragOver = dragOverWord?.toLowerCase() === wordKey;
+      return (
+        <li
+          className={styles.cardShell}
+          key={wordKey}
+          data-dragging={isDragging ? "true" : undefined}
+          data-dragover={isDragOver ? "true" : undefined}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+            if (dragOverWord?.toLowerCase() !== wordKey) {
+              setDragOverWord(card.entry.word);
+            }
+          }}
+          onDragLeave={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+              setDragOverWord(null);
+            }
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            const source = e.dataTransfer.getData("text/plain") || draggedWord;
+            if (source) {
+              moveWord(source, card.entry.word);
+            }
+            setDraggedWord(null);
+            setDragOverWord(null);
+          }}
+          onDragEnd={() => {
+            setDraggedWord(null);
+            setDragOverWord(null);
+          }}
+        >
+          <VocabularyWordCard
+            card={card}
+            selected={selectedWord?.toLowerCase() === wordKey}
+            onOpen={() => onOpen(card)}
+            onUpdate={changes => onUpdate(card.entry.word, changes)}
+            onDelete={() => onDelete(card.entry.word)}
+            dragProps={{
+              draggable: true,
+              onDragStart: (e) => {
+                e.stopPropagation();
+                e.dataTransfer.setData("text/plain", card.entry.word);
+                e.dataTransfer.effectAllowed = "move";
+                setDraggedWord(card.entry.word);
+              }
+            }}
+          />
+        </li>
+      );
+    })}</ul> : <div className={styles.empty} role="status"><Search size={20} aria-hidden="true" /><p>{cards.length ? "No words match these filters. Try another search or clear the filters." : "Look up your first word below to start your vocabulary collection."}</p></div>}
     {pages > 1 && <Pager page={current} pages={pages} onPage={setPage} label="Vocabulary history pages" />}
   </section>;
 }

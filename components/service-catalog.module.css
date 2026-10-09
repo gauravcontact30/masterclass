@@ -27,7 +27,8 @@
 .filters { display: flex; flex-wrap: wrap; gap: 5px; margin: 11px 0 12px; }
 .filters button { border: 1px solid #dedcd1; background: #f5f4ed; color: #73726c; border-radius: 999px; padding: 4px 11px; font: inherit; font-size: 10.5px; font-weight: 650; cursor: pointer; }
 .filters button:hover { background: #f0eee6; }
-.filters button[aria-pressed="true"] { background: #262624; border-color: #262624; color: #fff; }
+.filters button[aria-pressed="true"] { background: #d97757; border-color: #d97757; color: #fff; }
+.filters button[aria-pressed="true"]:hover { background: #c6613f; border-color: #c6613f; color: #fff; }
 
 /* Two cards per row; one on a narrow reader. */
 .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }

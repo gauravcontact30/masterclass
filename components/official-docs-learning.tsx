@@ -27,8 +27,8 @@ function Difficulty({ level }: { level: 1 | 2 | 3 }) {
 export function OfficialDocsLearning({ doc, idPrefix }: { doc: OfficialTechnologyDoc; idPrefix?: string }) {
   const prefix = idPrefix ?? `learning-${doc.id}`;
   const concepts = doc.keyFeatures.slice(0, 3);
-  const project = DOCS_PROJECTS[doc.id];
   const examples = getDocsCodeExamples(doc);
+  const project = examples.find(example => example.level === "Hard")?.runbook ?? DOCS_PROJECTS[doc.id];
   const normalize = (text: string) => text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
   const usedPoints = new Set([
     ...doc.keyPoints.slice(0, 3),
@@ -88,19 +88,20 @@ export function OfficialDocsLearning({ doc, idPrefix }: { doc: OfficialTechnolog
 
       <section id={`${prefix}-code`} className={`${styles.section} ${styles.codeSection}`} aria-labelledby={`${prefix}-code-title`}>
         <h3 id={`${prefix}-code-title`}>Code example</h3>
-        <p className={styles.sectionNote}>Practice {doc.title} through {examples.map(example => example.level).join(", ")} examples. Copy the files to explore each project.</p>
+        <p className={styles.sectionNote}>Practice {doc.title} through Simple, Medium, Hard, and Complex examples. Start with a focused problem, then explore the complete codebase and verification workflow.</p>
         <div className={styles.exampleCards}>
           {examples.map(example => <section key={`${doc.id}-${example.level}`} className={styles.exampleCard} data-level={example.level} aria-labelledby={`${prefix}-example-${example.level}`}>
             <span className={styles.exampleLevel}>{example.level}</span>
             <h4 id={`${prefix}-example-${example.level}`}>{example.level}: {example.title}</h4>
             <p className={styles.sectionNote}>{example.summary}</p>
             {example.level === "Hard" && <p className={styles.sectionNote}>Each tab contains the complete file. Use the Terminal commands below to set up and run this project.</p>}
+            {example.level === "Complex" && <p className={styles.sectionNote}>Complete codebase: save every file in a separate project folder, including configuration and tests. Follow this card’s setup and verification steps.</p>}
             <CodeFiles files={example.files} label={example.level === "Hard" ? `${doc.title} codebase` : example.level === "Complex" ? `${doc.title} complex codebase` : `${doc.title} ${example.level.toLowerCase()} example`} lineComments includeConfigTabs explainFormatting={false} className={styles.projectEditor} />
-            {example.runbook && <div className={styles.complexRunbook}>
+            {example.runbook && example.level !== "Hard" && <div className={styles.complexRunbook}>
               <h5>Before you start</h5>
               <ul className={styles.points}>{example.runbook.prerequisites.map(point => <li key={point}>{point}</li>)}</ul>
               <h5>Run the complete project</h5>
-              <OfficialDocsTerminal project={example.runbook} commandLabel="Complex command" />
+              <OfficialDocsTerminal project={example.runbook} commandLabel={`${example.level} command`} />
               <h5>Check the result</h5>
               <ul className={styles.points}>{example.runbook.verify.map(point => <li key={point}>{point}</li>)}</ul>
             </div>}

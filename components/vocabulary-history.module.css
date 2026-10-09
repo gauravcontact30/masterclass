@@ -98,7 +98,7 @@
   position: relative;
   width: 100%;
   min-width: 0;
-  height: 620px;
+  height: 640px;
   min-height: 0;
   border-radius: 16px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
@@ -116,40 +116,272 @@
 .cardShell:focus-within {
   border-color: var(--tint-edge, #c6613f);
 }
-.wordCard { position: relative; display: grid; grid-template-rows: 44px minmax(0, 1fr) 78px; gap: 12px; height: 100%; min-height: 0; min-width: 0; padding: 16px; box-sizing: border-box; color: var(--ink, #3d3d3a); border-radius: 16px; overflow-wrap: anywhere; background: var(--tint, #fef7f2); }
+.cardShell[data-dragging="true"] {
+  opacity: 0.45;
+  border-style: dashed;
+  transform: scale(0.98);
+}
+.cardShell[data-dragover="true"] {
+  outline: 2px dashed var(--tint-edge, #c6613f);
+  outline-offset: 3px;
+  transform: translateY(-2px);
+}
+.cardDragHandle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  color: var(--muted, #73726c);
+  cursor: grab;
+  flex-shrink: 0;
+  transition: all .15s ease;
+}
+.cardDragHandle:hover {
+  color: var(--ink, #3d3d3a);
+  background: rgba(0, 0, 0, 0.06);
+}
+.cardDragHandle:active {
+  cursor: grabbing;
+}
+.wordCard {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  padding: 16px;
+  box-sizing: border-box;
+  color: var(--ink, #3d3d3a);
+  border-radius: 16px;
+  overflow-wrap: anywhere;
+  background: var(--tint, #fef7f2);
+}
 .wordCard::before { content: ""; position: absolute; top: 0; left: 16px; right: 16px; height: 3px; border-radius: 0 0 4px 4px; background: var(--tint-edge, #c6613f); opacity: .85; }
-.wordCard[data-selected] { box-shadow: inset 0 0 0 1px var(--tint-edge, #c6613f); }
+.wordCard[data-selected] { box-shadow: inset 0 0 0 1.5px var(--tint-edge, #c6613f); }
 .wordCard[data-learned]::before { background: var(--mark, #4a7d5a); opacity: 1; }
-.wordHeader { display: flex; flex-wrap: nowrap; align-items: center; gap: 5px; min-width: 0; border-bottom: 1px solid var(--tint-line, #dedcd1); padding-bottom: 10px; transition: border-color .18s; }
+
+.wordHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  border-bottom: 1px solid var(--tint-line, #dedcd1);
+  padding-bottom: 12px;
+  transition: border-color .18s;
+}
 /* A finished card says so across its whole header: the rule takes the card's
    own deep tint, matching the bar above it and the tick at its end. */
 .wordCard[data-learned] .wordHeader { border-bottom-color: var(--mark, #4a7d5a); }
 .wordCard[data-learned] .wordHeader h3 { color: var(--mark, #4a7d5a); }
-.wordHeader h3 { flex: 1 1 auto; min-width: 35px; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; line-height: 1.4; font-weight: 650; letter-spacing: -.02em; color: var(--heading, #2f4b5c); }
+
+/* Row 1: Vocabulary above */
+.wordTitleRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.vocabEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--tint-edge, #c6613f);
+}
+.vocabEyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.wordCard[data-learned] .vocabEyebrow {
+  color: var(--mark, #4a7d5a);
+}
+:global(.dark) .vocabEyebrow {
+  color: var(--tint-edge, #e39a6d);
+}
+:global(.dark) .wordCard[data-learned] .vocabEyebrow {
+  color: var(--mark-ink, #86c49a);
+}
+.wordTitle {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 19px;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  color: var(--heading, #2f4b5c);
+}
+
+/* Row 2: Meaning below the word */
+.meaningRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
 .headerHindiBadge {
   display: inline-flex;
   align-items: center;
-  padding: 1px 7px;
+  padding: 2px 9px;
   border-radius: 999px;
-  background: #ffffffb0;
+  background: #ffffffcc;
   border: 1px solid var(--tint-line, #dedcd1);
   color: var(--mark, #4a7d5a);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
   flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 :global(.dark) .headerHindiBadge {
   background: #ffffff14;
   color: var(--mark-ink, #86c49a);
 }
-.cardControls { display: flex; align-items: center; flex: 0 0 auto; gap: 2px; }
-.cardControls button { font-size: 10px; }
-.languageSwitch { padding: 1px; gap: 1px; height: auto; background: #ffffff80; border-color: var(--tint-line, #dedcd1); }
-.languageSwitch span { padding: 3px; border-radius: 4px; color: var(--muted, #73726c); }
-.languageSwitch [data-active] { background: var(--surface, #fff); color: var(--ink, #3d3d3a); box-shadow: 0 1px 3px #00000014; }
-.pronunciation { flex: 0 1 76px; min-width: 30px; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; line-height: 1.6; color: var(--muted, #73726c); }
-.headerCheckbox { flex-shrink: 0; margin-left: auto; border-color: #a99d8e; background: #ffffff80; transition: background-color .16s, border-color .16s; }
+.pronunciation {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted, #73726c);
+}
+.pronunciationText {
+  display: inline-block;
+  padding: 1.5px 7px;
+  border-radius: 6px;
+  background: #ffffff90;
+  border: 1px solid var(--tint-line, #dedcd1);
+  font-size: 11px;
+  color: var(--muted, #73726c);
+}
+:global(.dark) .pronunciationText {
+  background: #ffffff0a;
+}
+
+/* Row 3: All icon buttons on next line */
+.cardControlsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  padding-top: 2px;
+}
+.cardControls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.hearButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 9px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--tint-edge, #c6613f);
+  border-color: var(--tint-line, #dedcd1);
+  background: #ffffffc0;
+  transition: all .16s ease;
+  cursor: pointer;
+}
+.hearButton:hover {
+  background: var(--tint-edge, #c6613f);
+  color: #fff;
+  border-color: var(--tint-edge, #c6613f);
+}
+:global(.dark) .hearButton {
+  background: #ffffff10;
+  color: var(--tint-edge, #e39a6d);
+  border-color: var(--tint-line, #4a392c);
+}
+:global(.dark) .hearButton:hover {
+  background: var(--tint-edge, #e39a6d);
+  color: #1e132e;
+}
+.languageSwitch {
+  height: 26px;
+  padding: 2px;
+  gap: 2px;
+  border-radius: 7px;
+  background: #ffffffc0;
+  border-color: var(--tint-line, #dedcd1);
+  font-size: 10px;
+  font-weight: 600;
+}
+.languageSwitch span {
+  padding: 2px 6px;
+  border-radius: 5px;
+  color: var(--muted, #73726c);
+  transition: all .14s ease;
+}
+.languageSwitch [data-active] {
+  background: var(--surface, #fff);
+  color: var(--heading, #2f4b5c);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-weight: 700;
+}
+:global(.dark) .languageSwitch {
+  background: #ffffff10;
+  border-color: var(--tint-line, #4a392c);
+}
+:global(.dark) .languageSwitch [data-active] {
+  background: #ffffff20;
+  color: #fff;
+}
+.learnedToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  margin-left: auto;
+  padding: 2px 4px;
+  border-radius: 6px;
+  transition: background .14s;
+}
+.learnedToggle:hover {
+  background: #ffffff70;
+}
+:global(.dark) .learnedToggle:hover {
+  background: #ffffff10;
+}
+.learnedLabelText {
+  font-size: 11px;
+  font-weight: 550;
+  color: var(--muted, #73726c);
+  transition: color .15s;
+}
+.wordCard[data-learned] .learnedLabelText {
+  color: var(--mark, #4a7d5a);
+  font-weight: 600;
+}
+:global(.dark) .wordCard[data-learned] .learnedLabelText {
+  color: var(--mark-ink, #86c49a);
+}
+
+.headerCheckbox {
+  flex-shrink: 0;
+  border-color: #a99d8e;
+  background: #ffffff80;
+  transition: background-color .16s, border-color .16s;
+}
 .headerCheckbox:hover { border-color: var(--mark, #4a7d5a); }
 /* Checked, the tick fills with this card's own mark colour. The selector is
    written twice over to outrank the component's own `data-checked:bg-primary`

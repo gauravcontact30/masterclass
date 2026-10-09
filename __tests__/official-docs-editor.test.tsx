@@ -5,6 +5,7 @@ import { DOCS_PROJECTS } from "@/lib/official-docs-projects";
 import { OfficialDocsLearning } from "@/components/official-docs-learning";
 import { OFFICIAL_DOCS } from "@/lib/official-docs-data";
 import { codeLineNotes } from "@/lib/code-line-notes";
+import { getDocsCodeExamples } from "@/lib/official-docs-examples";
 
 test("every supplied project file is selectable and displayed without truncation", async () => {
   const user = userEvent.setup();
@@ -58,24 +59,24 @@ test("Official Docs comments explain logic, exclude HTML and CSS, and preserve o
   const user = userEvent.setup();
   const doc = OFFICIAL_DOCS.find(doc => doc.id === "react")!;
   render(<OfficialDocsLearning doc={doc} />);
+  const project = getDocsCodeExamples(doc).find(example => example.level === "Hard")!;
   const editor = screen.getByRole("figure", { name: "React 19+ codebase" });
   const tabs = within(editor).getByRole("tablist");
   expect(within(tabs).queryByRole("tab", { name: ".gitignore" })).not.toBeInTheDocument();
   expect(within(tabs).queryByRole("tab", { name: "README.md" })).not.toBeInTheDocument();
   await user.click(within(tabs).getByRole("tab", { name: "App.jsx" }));
   await user.keyboard("{ArrowRight}");
-  expect(within(tabs).getByRole("tab", { name: "Counter.jsx" })).toHaveFocus();
-  const file = DOCS_PROJECTS.react.files.find(file => file.path === "src/Counter.jsx")!;
-  const source = within(editor).getByLabelText("src/Counter.jsx source");
+  expect(within(tabs).getByRole("tab", { name: "inventory.js" })).toHaveFocus();
+  const file = project.files.find(file => file.path === "src/inventory.js")!;
+  const source = within(editor).getByLabelText("src/inventory.js source");
   expect(source.querySelectorAll("[data-line-comment]").length).toBeGreaterThan(0);
-  for (let line = 3; line <= 8; line++) expect(source.querySelector(`[data-line-comment="${line}"]`)).toBeNull();
   expect(source.querySelector('[data-line-comment="1"]')).not.toBeNull();
   expect(source).not.toHaveTextContent("Close the current block, collection, or function call.");
   expect(source).not.toHaveTextContent("Blank line separates related steps for readability.");
-  await user.click(within(editor).getByRole("button", { name: "Copy src/Counter.jsx" }));
+  await user.click(within(editor).getByRole("button", { name: "Copy src/inventory.js" }));
   expect(await navigator.clipboard.readText()).toBe(file.code);
   await user.click(within(tabs).getByRole("tab", { name: "package.json" }));
-  const config = DOCS_PROJECTS.react.files.find(file => file.path === "package.json")!;
+  const config = project.files.find(file => file.path === "package.json")!;
   expect(editor.querySelectorAll("[data-line-comment]")).toHaveLength(config.code.split("\n").filter(line => line.trim() && !/^[}\])]+[,;]?$/.test(line.trim())).length);
   expect(editor).not.toHaveTextContent("Close the current block, collection, or function call.");
   expect(editor).not.toHaveTextContent("Blank line separates related steps for readability.");

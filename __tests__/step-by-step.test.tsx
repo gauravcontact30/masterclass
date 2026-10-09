@@ -362,6 +362,46 @@ describe("StepByStep page", () => {
     await user.click(screen.getByRole("button", { name: "Get steps" }));
     expect(await screen.findByRole("alert", {}, { timeout: 4000 })).toHaveTextContent("No AI provider is configured");
   });
+
+  test("each card provides Edit question and Regenerate answer options to update and regenerate", async () => {
+    const user = userEvent.setup();
+    const fetchMock = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ guide: STEP_GUIDES[0], source: "library" }),
+    });
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    render(<StepByStep technologies={TECHNOLOGIES} />);
+    const firstCard = cardsIn()[0];
+    expect(firstCard).toBeInTheDocument();
+
+    const editButton = within(firstCard).getByRole("button", { name: "Edit question" });
+    const regenerateButton = within(firstCard).getByRole("button", { name: "Regenerate answer" });
+    expect(editButton).toBeVisible();
+    expect(regenerateButton).toBeVisible();
+
+    // Clicking Edit question enables inline question editing
+    await user.click(editButton);
+    const editTextarea = within(firstCard).getByRole("textbox", { name: "Edit question" });
+    expect(editTextarea).toBeVisible();
+    expect(within(firstCard).getByRole("button", { name: "Cancel" })).toBeVisible();
+
+    // Modifying the question and regenerating
+    await user.clear(editTextarea);
+    await user.paste("How do I configure role based routes in Next.js?");
+    const saveRegenerateBtn = within(firstCard).getByRole("button", { name: "Regenerate answer" });
+    await user.click(saveRegenerateBtn);
+
+    expect(fetchMock).toHaveBeenCalled();
+    const lastCallBody = JSON.parse(fetchMock.mock.calls[fetchMock.mock.calls.length - 1][1].body);
+    expect(lastCallBody.question).toBe("How do I configure role based routes in Next.js?");
+
+    // Clicking direct Regenerate answer on a card triggers answer generation for that card
+    fetchMock.mockClear();
+    const directRegenerate = screen.getAllByRole("button", { name: "Regenerate answer" })[0];
+    await user.click(directRegenerate);
+    expect(fetchMock).toHaveBeenCalled();
+  });
 });
 
 test("the dashboard sidebar links to On The Go", () => {

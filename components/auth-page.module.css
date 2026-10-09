@@ -46,6 +46,14 @@
 .submit{width:100%;height:44px;margin-top:6px;border-radius:8px;background:var(--green);color:#fff;font-size:14px;font-weight:600}
 .submit:hover{background:var(--green-2)}
 
+.devDivider{display:flex;align-items:center;margin:16px 0;text-align:center;color:var(--muted);font-size:12px;font-weight:500}
+.devDivider::before,.devDivider::after{content:"";flex:1;border-bottom:1px solid var(--line)}
+.devDivider:not(:empty)::before{margin-right:12px}
+.devDivider:not(:empty)::after{margin-left:12px}
+
+.devLoginButton{width:100%;height:44px;border:1px solid var(--line);border-radius:8px;background:#f0eee6;color:var(--ink-soft);font-size:14px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:background .15s ease,border-color .15s ease}
+.devLoginButton:hover{background:#e4e2d8;border-color:var(--field);color:var(--ink)}
+
 .switchRow{margin-top:22px;padding-top:18px;border-top:1px solid var(--line);text-align:center}
 .switchLink{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#4d4c48;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:3px;transition:text-decoration-color .15s}
 .switchLink:hover{text-decoration-color:currentColor}

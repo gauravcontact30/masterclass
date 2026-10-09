@@ -14,6 +14,12 @@ const documentationHosts = new Set([
   "modelcontextprotocol.io", "www.anthropic.com", "claude.com", "vitest.dev", "zustand.docs.pmnd.rs", "tanstack.com",
   "tc39.es", "devblogs.microsoft.com", "aws.amazon.com", "dora.dev", "developer.hashicorp.com",
   "opentelemetry.io", "prometheus.io",
+  "docs.nestjs.com", "docs.smith.langchain.com", "fastapi.tiangolo.com", "javascript.info",
+  "js.langchain.com", "langchain-ai.github.io", "mongoosejs.com", "orm.drizzle.team",
+  "redux-toolkit.js.org", "redux.js.org", "sre.google", "www.prisma.io",
+  "authjs.dev", "clerk.com", "conform.guide", "create.t3.gg", "docs.arcjet.com",
+  "docs.astral.sh", "docs.cypress.io", "docs.kinde.com", "neon.com", "neon.tech",
+  "upstash.com", "www.inngest.com", "inngest.com", "zod.dev",
 ]);
 export type DocumentationSource = { url: string; title: string; retrievedAt: string; text: string };
 export function documentationUrl(value: string): URL {
@@ -44,7 +50,7 @@ async function fetchSource(value: string): Promise<DocumentationSource> {
   let url = documentationUrl(value);
   const signal = AbortSignal.timeout(20000);
   for (let hop = 0; hop < 5; hop++) {
-    const response = await fetch(url, { signal, redirect: "manual", headers: { Accept: "text/html, text/plain, text/markdown", "User-Agent": "MasterClassDocumentationReader/1.0" } });
+    const response = await fetch(url, { signal, cache: "no-store", redirect: "manual", headers: { Accept: "text/html, text/plain, text/markdown", "User-Agent": "MasterClassDocumentationReader/1.0" } });
     if ([301,302,303,307,308].includes(response.status)) {
       await response.body?.cancel();
       const location = response.headers.get("location");

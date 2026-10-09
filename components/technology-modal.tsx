@@ -117,7 +117,7 @@ export function TechnologyModal({
         <div className={styles.body}>
           {/* Tagline */}
           <blockquote className={styles.tagline}>
-            "{hi ? tech.tagline.hi : tech.tagline.en}"
+            &ldquo;{hi ? tech.tagline.hi : tech.tagline.en}&rdquo;
           </blockquote>
 
           {/* Summary */}

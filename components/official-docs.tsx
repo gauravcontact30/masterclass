@@ -1,11 +1,14 @@
 "use client";
 
+import { ImportedDocumentation } from "./documentation-refresh";
 import learningCard from "./learning-card.module.css";
-import { useState, useMemo, useCallback, type CSSProperties } from "react";
+import { useState, useMemo, useCallback, useEffect, type CSSProperties } from "react";
 import {
   BookOpen,
+  Check,
   CheckCircle2,
   ChevronDown,
+  GripVertical,
   ChevronLeft,
   ChevronRight,
   ChevronUp,
@@ -260,6 +263,62 @@ export function OfficialDocs() {
   const [requireComplex, setRequireComplex] = useState(false);
   const [requireBestPractices, setRequireBestPractices] = useState<boolean>(false);
   const [selectedModalDoc, setSelectedModalDoc] = useState<OfficialTechnologyDoc | null>(null);
+  const [selectedCards, setSelectedCards] = useState<Set<string>>(new Set());
+  const [customDocOrder, setCustomDocOrder] = useState<string[]>([]);
+  const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
+  const [dragOverCardId, setDragOverCardId] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("masterclass:official-docs-order");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          queueMicrotask(() => setCustomDocOrder(parsed));
+        }
+      }
+    } catch {}
+  }, []);
+
+  const toggleCardSelection = useCallback((id: string) => {
+    setSelectedCards((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const moveDoc = useCallback((sourceId: string, targetId: string) => {
+    if (!sourceId || !targetId || sourceId === targetId) return;
+    setCustomDocOrder((prevOrder) => {
+      const defaultIds = OFFICIAL_DOCS.map((d) => d.id);
+      const base = prevOrder.length > 0 ? [...prevOrder] : defaultIds;
+      // Ensure all IDs are in list
+      for (const id of defaultIds) {
+        if (!base.includes(id)) base.push(id);
+      }
+      const sourceIndex = base.indexOf(sourceId);
+      const targetIndex = base.indexOf(targetId);
+      if (sourceIndex === -1 || targetIndex === -1) return prevOrder;
+
+      const updated = [...base];
+      const [moved] = updated.splice(sourceIndex, 1);
+      updated.splice(targetIndex, 0, moved);
+
+      try {
+        localStorage.setItem("masterclass:official-docs-order", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  }, []);
+
+  const resetCardOrder = useCallback(() => {
+    setCustomDocOrder([]);
+    try {
+      localStorage.removeItem("masterclass:official-docs-order");
+    } catch {}
+  }, []);
 
   // Compute live count per category
   const categoryCounts = useMemo(() => {
@@ -300,9 +359,16 @@ export function OfficialDocs() {
       list = [...list].sort((a, b) => b.keyFeatures.length - a.keyFeatures.length);
     } else if (sortBy === "commands") {
       list = [...list].sort((a, b) => b.cliCommands.length - a.cliCommands.length);
+    } else if (customDocOrder.length > 0) {
+      const orderMap = new Map(customDocOrder.map((id, index) => [id, index]));
+      list = [...list].sort((a, b) => {
+        const idxA = orderMap.has(a.id) ? orderMap.get(a.id)! : 999999;
+        const idxB = orderMap.has(b.id) ? orderMap.get(b.id)! : 999999;
+        return idxA - idxB;
+      });
     }
     return list;
-  }, [selectedCategory, searchQuery, sortBy, requireCli, requireCode, requireComplex, requireBestPractices]);
+  }, [selectedCategory, searchQuery, sortBy, requireCli, requireCode, requireComplex, requireBestPractices, customDocOrder]);
 
   // Categories list excluding 'All' for pagination
   const nonAllCategories = useMemo(
@@ -376,6 +442,7 @@ export function OfficialDocs() {
         </div>
       </header>
 
+      <ImportedDocumentation technologyId={websiteId} />
       <OfficialDocsReader selectedId={websiteId} onSelect={setWebsiteId} />
 
       {/* Sticky Search & Filter Toolbar with Advance Search & Clear Search */}
@@ -659,19 +726,113 @@ export function OfficialDocs() {
       </section>
 
       {/* Cards Grid */}
+      {(selectedCards.size > 0 || customDocOrder.length > 0) && (
+        <div className={styles.selectionBar}>
+          {selectedCards.size > 0 && (
+            <span className={styles.selectedCount}>
+              <Check size={13} aria-hidden="true" />
+              {selectedCards.size} card{selectedCards.size === 1 ? "" : "s"} selected
+            </span>
+          )}
+          {selectedCards.size > 0 && (
+            <Button size="xs" variant="outline" onClick={() => setSelectedCards(new Set())}>
+              Clear selection
+            </Button>
+          )}
+          {customDocOrder.length > 0 && (
+            <Button size="xs" variant="ghost" onClick={resetCardOrder} title="Reset cards to default order">
+              <RotateCcw size={12} aria-hidden="true" />
+              Reset card order
+            </Button>
+          )}
+        </div>
+      )}
       {displayedDocs.length > 0 ? (
         <div className={styles.grid}>
           {displayedDocs.map((doc, idx) => {
             const globalIdx = startIndex + idx;
+            const isChecked = selectedCards.has(doc.id);
+            const isDragging = draggedCardId === doc.id;
+            const isDragOver = dragOverCardId === doc.id && draggedCardId !== doc.id;
             return (
               <Card
                 key={doc.id}
                 role="article"
+                draggable
                 className={`${styles.card} ${learningCard.card}`}
                 style={toneStyle(globalIdx)}
+                data-dragging={isDragging ? "true" : undefined}
+                data-dragover={isDragOver ? "true" : undefined}
+                data-checked={isChecked ? "true" : undefined}
                 aria-label={`${doc.title} official documentation`}
                 onClick={() => setSelectedModalDoc(doc)}
+                onDragStart={(e) => {
+                  e.dataTransfer.setData("text/plain", doc.id);
+                  e.dataTransfer.effectAllowed = "move";
+                  setDraggedCardId(doc.id);
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = "move";
+                  if (dragOverCardId !== doc.id) {
+                    setDragOverCardId(doc.id);
+                  }
+                }}
+                onDragLeave={() => {
+                  if (dragOverCardId === doc.id) {
+                    setDragOverCardId(null);
+                  }
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const sourceId = e.dataTransfer.getData("text/plain") || draggedCardId;
+                  if (sourceId && sourceId !== doc.id) {
+                    moveDoc(sourceId, doc.id);
+                  }
+                  setDraggedCardId(null);
+                  setDragOverCardId(null);
+                }}
+                onDragEnd={() => {
+                  setDraggedCardId(null);
+                  setDragOverCardId(null);
+                }}
               >
+                {/* Drag & Drop handler icon on top left corner */}
+                <div
+                  className={styles.cardDragHandle}
+                  title="Drag & drop to reposition card"
+                  aria-label="Drag & drop to reposition card"
+                  draggable
+                  onDragStart={(e) => {
+                    e.stopPropagation();
+                    e.dataTransfer.setData("text/plain", doc.id);
+                    e.dataTransfer.effectAllowed = "move";
+                    setDraggedCardId(doc.id);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <GripVertical size={16} aria-hidden="true" />
+                </div>
+
+                {/* Clickable checkbox on top right corner */}
+                <button
+                  type="button"
+                  role="checkbox"
+                  aria-checked={isChecked}
+                  className={styles.cardCheckbox}
+                  title={isChecked ? "Deselect card" : "Select card"}
+                  aria-label={`Select ${doc.title}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleCardSelection(doc.id);
+                  }}
+                >
+                  <span className={styles.cardCheckboxInner}>
+                    {isChecked && <Check size={13} strokeWidth={3} aria-hidden="true" />}
+                  </span>
+                </button>
+
                 <CardHeader className={styles.cardHead}>
                   <div className={styles.cardTop}>
                     <Badge className={styles.toneBadge}>{doc.category}</Badge>

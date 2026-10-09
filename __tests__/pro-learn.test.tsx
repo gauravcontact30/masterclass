@@ -70,6 +70,33 @@ test("quiz shows a readable error when generation fails", async () => {
   expect(await screen.findByRole("alert")).toHaveTextContent("need AI generation");
 });
 
+test("quiz supports lifelines, hints, and question flagging", async () => {
+  const user = userEvent.setup();
+  global.fetch = jest.fn().mockResolvedValue(json({ source: "library", questions: [{ q: "Which hook stores component state?", options: ["useRef", "useState", "useId", "useMemo"], answer: 1, explain: "useState returns a value and a setter.", vocab: [] }] })) as jest.Mock;
+  render(<ProQuiz aiReady={false} libraryTracks={["react"]}/>);
+  await user.click(screen.getByRole("button", { name: "Start quiz" }));
+  expect(await screen.findByRole("heading", { name: "Which hook stores component state?" })).toBeVisible();
+
+  // Test Hint lifeline
+  await user.click(screen.getByRole("button", { name: /Need a Hint/ }));
+  expect(screen.getByText("Conceptual Clue:")).toBeVisible();
+
+  // Test 50:50 Lifeline
+  await user.click(screen.getByRole("button", { name: /50:50 Lifeline/ }));
+  expect(screen.getByRole("button", { name: /50:50 Lifeline/ })).toBeDisabled();
+
+  // Test Flag
+  await user.click(screen.getByRole("button", { name: "Flag" }));
+  expect(screen.getByRole("button", { name: "Flagged" })).toBeVisible();
+
+  // Pick answer and complete
+  await user.click(screen.getByRole("button", { name: /useState/ }));
+  await user.click(screen.getByRole("button", { name: "See results" }));
+  expect(screen.getByRole("region", { name: "Your score" })).toHaveTextContent("1 / 1");
+  expect(screen.getByText("1 🔖")).toBeVisible();
+});
+
+
 test("interview bank filters by company, level and search", async () => {
   const user = userEvent.setup();
   render(<ProInterview aiReady={false}/>);

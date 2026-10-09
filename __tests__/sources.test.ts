@@ -1,6 +1,13 @@
 /** @jest-environment node */
 import { documentationText, documentationUrl, fetchDocumentation } from "@/lib/generation/sources";
+import { OFFICIAL_DOCS } from "@/lib/official-docs-data";
 const realFetch = global.fetch;
+test("every catalog technology has a supported official source", () => {
+  for (const doc of OFFICIAL_DOCS) {
+    expect(doc.id).toMatch(/^[a-z0-9][a-z0-9-]{0,79}$/);
+    expect(() => documentationUrl(doc.officialUrl)).not.toThrow();
+  }
+});
 afterEach(() => { global.fetch = realFetch; });
 test("extracts article text and code without navigation or scripts", () => {
   const result = documentationText('<title>Functions &amp; scope</title><nav>Menu</nav><main><h1>Functions</h1><script>secret()</script><pre>const x = 1 &lt; 2;</pre><p>A named task.</p></main>');
@@ -17,6 +24,7 @@ test("fetches documentation text and records provenance", async () => {
   expect(source.text).toContain("Components compose UI.");
   expect(source.url).toBe("https://react.dev/learn");
   expect(Number.isNaN(Date.parse(source.retrievedAt))).toBe(false);
+  expect(global.fetch).toHaveBeenCalledWith(expect.any(URL), expect.objectContaining({cache:"no-store",redirect:"manual"}));
 });
 test("rejects redirects to non-documentation hosts before fetching them", async () => {
   global.fetch = jest.fn().mockResolvedValue(new Response(null, {status:302,headers:{Location:"http://127.0.0.1/admin"}}));

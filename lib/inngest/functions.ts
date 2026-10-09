@@ -1,6 +1,31 @@
 import { inngest } from "./client";
 import { cacheSet, cacheDelete } from "@/lib/redis";
 
+interface CurriculumEventData {
+  documentId: string;
+  topic: string;
+  category: string;
+  language: string;
+  userEmail?: string;
+}
+
+interface AuditEventData {
+  action: string;
+  userEmail?: string;
+  category?: string;
+  timestamp?: number;
+  metadata?: Record<string, unknown>;
+}
+
+interface CacheWarmEventData {
+  category?: string;
+}
+
+interface InngestStepTool {
+  run: <T>(name: string, fn: () => Promise<T>) => Promise<T>;
+  sendEvent: (name: string, payload: { name: string; data: Record<string, unknown> }) => Promise<unknown>;
+}
+
 /**
  * Inngest Multi-Step Function: Asynchronous Curriculum Generation & Caching
  */
@@ -10,7 +35,7 @@ export const generateCurriculumFunction = inngest.createFunction(
     name: "Generate Curriculum Document",
     triggers: [{ event: "masterclass/curriculum.generate" }],
   },
-  async ({ event, step }: { event: any; step: any }) => {
+  async ({ event, step }: { event: { data: CurriculumEventData }; step: InngestStepTool }) => {
     const { documentId, topic, category, language, userEmail } = event.data;
 
     // Step 1: Validate payload and reserve generation lock in cache
@@ -65,7 +90,7 @@ export const recordAuditLogFunction = inngest.createFunction(
     name: "Record User Audit Log",
     triggers: [{ event: "masterclass/user.audit" }],
   },
-  async ({ event, step }: { event: any; step: any }) => {
+  async ({ event, step }: { event: { data: AuditEventData }; step: InngestStepTool }) => {
     const { action, userEmail, category, timestamp, metadata } = event.data;
 
     await step.run("persist-audit-log", async () => {
@@ -88,7 +113,7 @@ export const warmCacheFunction = inngest.createFunction(
     name: "Warm Category Syllabus Cache",
     triggers: [{ event: "masterclass/cache.warm" }],
   },
-  async ({ event, step }: { event: any; step: any }) => {
+  async ({ event, step }: { event: { data: CacheWarmEventData }; step: InngestStepTool }) => {
     const { category } = event.data;
 
     await step.run("pre-warm-category-data", async () => {

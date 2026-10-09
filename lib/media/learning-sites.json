@@ -550,21 +550,44 @@
     "thumbnail": "/images/learning/official-resource.svg"
   },
   {
+    "name": "Deep Agents",
+    "url": "https://reference.langchain.com/python/deepagents",
+    "aliases": [
+      "deepagents"
+    ],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
     "name": "LangChain",
     "url": "https://docs.langchain.com/oss/python/langchain/overview",
-    "aliases": [],
+    "aliases": [
+      "langchain"
+    ],
     "thumbnail": "/images/brands/langchain.svg"
   },
   {
     "name": "LangGraph",
     "url": "https://docs.langchain.com/oss/python/langgraph/overview",
-    "aliases": [],
+    "aliases": [
+      "langgraph"
+    ],
+    "thumbnail": "/images/learning/official-resource.svg"
+  },
+  {
+    "name": "Integrations",
+    "url": "https://reference.langchain.com/python/integrations/overview",
+    "aliases": [
+      "integrations",
+      "langchain-integrations"
+    ],
     "thumbnail": "/images/learning/official-resource.svg"
   },
   {
     "name": "LangSmith",
     "url": "https://docs.langchain.com/langsmith/observability",
-    "aliases": [],
+    "aliases": [
+      "langsmith"
+    ],
     "thumbnail": "/images/learning/official-resource.svg"
   },
   {

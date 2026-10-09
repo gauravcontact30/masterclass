@@ -8,8 +8,8 @@
 .field input { min-width: 0; height: 44px; font-size: 14px; color: var(--ink, #3d3d3a); }
 .field input::-webkit-search-cancel-button { display: none; }
 .field:focus-within { border-color: color-mix(in srgb, var(--accent, #c6613f) 55%, white); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #c6613f) 12%, transparent); }
-.search { min-height: 44px; padding: 0 20px; border-radius: 14px; background: #262624; color: #fff; font-size: 13.5px; font-weight: 600; cursor: pointer; }
-.search:hover:not(:disabled) { background: #3d3d3a; }
+.search { min-height: 44px; padding: 0 20px; border-radius: 14px; background: #c6613f; color: #fff; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.search:hover:not(:disabled) { background: #b5522f; color: #fff; }
 .search:disabled { opacity: .4; }
 .search:focus-visible, .hear:focus-visible { outline: 2px solid var(--accent, #c6613f); outline-offset: 3px; }
 

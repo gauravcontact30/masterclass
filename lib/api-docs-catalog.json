@@ -28161,6 +28161,1061 @@
           "status": "s"
         }
       ]
+    },
+    {
+      "id": "deepagents",
+      "name": "Deep Agents",
+      "icon": "🧠",
+      "description": "deep research and autonomous coding agent harness with sandboxing, subagents, and discipline middleware",
+      "docs": "https://reference.langchain.com/python/deepagents",
+      "accent": "#2563EB",
+      "topics": [
+        "DeepAgentState",
+        "Subagent delegation",
+        "Sandboxed execution",
+        "Filesystem tools",
+        "Tool discipline middleware",
+        "Nemotron tool call shim",
+        "Rate limit backoff",
+        "Harness profiles"
+      ],
+      "entries": [
+        {
+          "name": "create_deep_agent",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "DeepAgentState",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "GeneralPurposeSubagentProfile",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "HarnessProfile",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "HarnessProfileConfig",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ProviderProfile",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "NemotronToolCallShim",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ReadFileContinuationNoticeMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ModelRateLimitRetryMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ChatNVIDIAMessageCompatibilityMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "FollowupDisciplineMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "EntityResolutionGuardMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "FinalAnswerGuardMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "read_file",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "write_file",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "edit_file",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "delete_file",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "ls",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "glob",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "grep",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "SandboxEnvironment",
+          "kind": "I",
+          "status": "s"
+        },
+        {
+          "name": "AgentCheckpointer",
+          "kind": "I",
+          "status": "s"
+        },
+        {
+          "name": "ToolDisciplinePolicy",
+          "kind": "I",
+          "status": "s"
+        },
+        {
+          "name": "execute_bash",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "find_by_name",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "view_file_outline",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "verify_solution",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "SubagentConfig",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "SubagentResult",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "PlanMilestone",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "ExecutionBudget",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "DockerSandbox",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "LocalFilesystemSandbox",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "SubagentDelegateMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ContextWindowGuardMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ToolOutputTruncationMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "MemoryScratchpad",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "BudgetExceededError",
+          "kind": "C",
+          "status": "s"
+        }
+      ]
+    },
+    {
+      "id": "langchain",
+      "name": "LangChain",
+      "icon": "🦜",
+      "description": "framework for context-aware reasoning applications, pre-built agents, and LLM orchestration",
+      "docs": "https://reference.langchain.com/python/langchain",
+      "accent": "#10B981",
+      "topics": [
+        "create_agent",
+        "AgentState",
+        "Chat models",
+        "Prompt templates",
+        "Tool calling",
+        "Structured outputs",
+        "Embeddings",
+        "MCP adapters"
+      ],
+      "entries": [
+        {
+          "name": "create_agent",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "AgentState",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "AgentExecutor",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "init_chat_model",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "BaseChatModel",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "AIMessage",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "HumanMessage",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "SystemMessage",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ToolMessage",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "tool",
+          "kind": "@",
+          "status": "s"
+        },
+        {
+          "name": "BaseTool",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "StructuredTool",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "init_embeddings",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "Embeddings",
+          "kind": "I",
+          "status": "s"
+        },
+        {
+          "name": "HumanInTheLoopMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ModelCallLimitMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ToolCallLimitMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ClearToolUsesEdit",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "MCPAdapter",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "MCPElicitationRequest",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "MCPElicitationInterrupt",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "MCPElicitationAccept",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "MCPToolArtifact",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Runnable",
+          "kind": "I",
+          "status": "s"
+        },
+        {
+          "name": "BaseRetriever",
+          "kind": "I",
+          "status": "s"
+        },
+        {
+          "name": "BaseOutputParser",
+          "kind": "I",
+          "status": "s"
+        },
+        {
+          "name": "BaseChatMessageHistory",
+          "kind": "I",
+          "status": "s"
+        },
+        {
+          "name": "VectorStore",
+          "kind": "I",
+          "status": "s"
+        },
+        {
+          "name": "RunnableConfig",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "trim_messages",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "filter_messages",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "merge_message_runs",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "ChatPromptTemplate",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "PromptTemplate",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "RunnableSequence",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "RunnableParallel",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "RunnableLambda",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "RunnablePassthrough",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Document",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "RecursiveCharacterTextSplitter",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "StrOutputParser",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "JsonOutputParser",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "PydanticOutputParser",
+          "kind": "C",
+          "status": "s"
+        }
+      ]
+    },
+    {
+      "id": "langgraph",
+      "name": "LangGraph",
+      "icon": "🕸️",
+      "description": "cyclical orchestration framework for stateful, multi-actor agents with streaming and human-in-the-loop",
+      "docs": "https://reference.langchain.com/python/langgraph",
+      "accent": "#EC4899",
+      "topics": [
+        "StateGraph",
+        "Functional entrypoints",
+        "Checkpointers",
+        "Cross-thread memory store",
+        "Human-in-the-loop interrupt",
+        "Command branching",
+        "Subgraphs",
+        "Pregel runtime"
+      ],
+      "entries": [
+        {
+          "name": "StateGraph",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Graph",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "CompiledStateGraph",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "MessageGraph",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "entrypoint",
+          "kind": "@",
+          "status": "s"
+        },
+        {
+          "name": "task",
+          "kind": "@",
+          "status": "s"
+        },
+        {
+          "name": "Pregel",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "MemorySaver",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "BaseCheckpointSaver",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "AsyncSqliteSaver",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "InMemoryStore",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "BaseStore",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Command",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Send",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "interrupt",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "create_react_agent",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "StateSnapshot",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Channel",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "BinaryOperatorAggregate",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "START",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "END",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "PregelExecutable",
+          "kind": "I",
+          "status": "s"
+        },
+        {
+          "name": "BaseCheckpointSerializer",
+          "kind": "I",
+          "status": "s"
+        },
+        {
+          "name": "add_messages",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "get_state",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "update_state",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "MessagesState",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "Checkpoint",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "CheckpointMetadata",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "CheckpointTuple",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "Item",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "SearchItem",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "ResubmitConfig",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "PregelTask",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "SqliteSaver",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "PostgresSaver",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "AsyncPostgresSaver",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "LastValue",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Topic",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "EphemeralValue",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "RemainingSteps",
+          "kind": "C",
+          "status": "s"
+        }
+      ]
+    },
+    {
+      "id": "integrations",
+      "name": "Integrations",
+      "icon": "🔌",
+      "description": "partner packages connecting LangChain and LangGraph to leading LLMs, vector stores, and MCP tools",
+      "docs": "https://reference.langchain.com/python/integrations/overview",
+      "accent": "#8B5CF6",
+      "topics": [
+        "langchain-openai",
+        "langchain-anthropic",
+        "langchain-google-genai",
+        "langchain-aws",
+        "langchain-groq",
+        "langchain-ollama",
+        "langchain-mcp-adapters",
+        "Vector stores"
+      ],
+      "entries": [
+        {
+          "name": "ChatOpenAI",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "OpenAIEmbeddings",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ChatAnthropic",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ChatGoogleGenerativeAI",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "GoogleGenerativeAIEmbeddings",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ChatBedrock",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "BedrockEmbeddings",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "HuggingFaceEmbeddings",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ChatGroq",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ChatOllama",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "OllamaEmbeddings",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "MultiServerMCPClient",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "PineconeVectorStore",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Chroma",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "PGVector",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "BaseMCPClient",
+          "kind": "I",
+          "status": "s"
+        },
+        {
+          "name": "VectorStoreRetriever",
+          "kind": "I",
+          "status": "s"
+        },
+        {
+          "name": "ChatMistralAI",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "MistralAIEmbeddings",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ChatCohere",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "CohereEmbeddings",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "CohereRerank",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ChatVertexAI",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "VertexAIEmbeddings",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ChatTogether",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ChatFireworks",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "QdrantVectorStore",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "FAISS",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Milvus",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "WeaviateVectorStore",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "TavilySearchResults",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "DuckDuckGoSearchRun",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "WikipediaQueryRun",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ArxivQueryRun",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "StdioServerTransport",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "SseServerTransport",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "StreamlitCallbackHandler",
+          "kind": "C",
+          "status": "s"
+        }
+      ]
+    },
+    {
+      "id": "langsmith",
+      "name": "LangSmith",
+      "icon": "🛠️",
+      "description": "observability, evaluation, tracing, and prompt engineering platform for production LLM applications",
+      "docs": "https://reference.langchain.com/python/langsmith",
+      "accent": "#F59E0B",
+      "topics": [
+        "Client",
+        "traceable decorator",
+        "wrap_openai",
+        "RunTree spans",
+        "Evaluation datasets",
+        "expect assertions",
+        "Online evaluators",
+        "Pytest plugin"
+      ],
+      "entries": [
+        {
+          "name": "Client",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "AsyncClient",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "traceable",
+          "kind": "@",
+          "status": "s"
+        },
+        {
+          "name": "wrap_openai",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "RunTree",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "evaluate",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "expect",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "EvaluationResult",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "RunEvaluator",
+          "kind": "I",
+          "status": "s"
+        },
+        {
+          "name": "tracing_context",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "ApiKeyAuth",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Run",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "Dataset",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "Feedback",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "pytest-plugin",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "StringEvaluator",
+          "kind": "I",
+          "status": "s"
+        },
+        {
+          "name": "DynamicRunEvaluator",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ExactMatchEvaluator",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "CriteriaEvaluator",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "EmbeddingDistanceEvaluator",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "unit",
+          "kind": "@",
+          "status": "s"
+        },
+        {
+          "name": "as_run_evaluator",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "aevaluate",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "get_current_run_tree",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "create_presigned_url",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "run_on_dataset",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "Example",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "Trace",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "FeedbackSource",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "FeedbackCategory",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "ScoreType",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "RunType",
+          "kind": "E",
+          "status": "s"
+        }
+      ]
     }
   ]
 }

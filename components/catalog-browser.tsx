@@ -2,7 +2,7 @@
 
 import learningCard from "./learning-card.module.css";
 import { useCallback, useDeferredValue, useEffect, useMemo, useState, type ReactNode } from "react";
-import { ArrowRight, Check, ChevronLeft, ChevronRight, Layers, ListFilter, Search, Volume2, X } from "lucide-react";
+import { ArrowRight, Check, ChevronLeft, ChevronRight, GripVertical, Layers, ListFilter, Search, Volume2, X } from "lucide-react";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { Tabs, TabsList, TabsTab, TabsPanel } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -531,9 +531,55 @@ export function CatalogBrowser({
   const shared = useMemo(() => sharedLines(items, technology), [items, technology]);
   const isGit = items.some(item => item.prepared?.walkthrough === "git");
   const perPage = isGit ? 2 : PER_PAGE;
-  const pages = Math.max(1, Math.ceil(found.length / perPage));
+  const [customOrder, setCustomOrder] = useState<string[]>([]);
+  const [draggedName, setDraggedName] = useState<string | null>(null);
+  const [dragOverName, setDragOverName] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const storageKey = `masterclass:catalog-order:${id}`;
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          queueMicrotask(() => setCustomOrder(parsed));
+        }
+      }
+    } catch {}
+  }, [id]);
+
+  const moveItem = (sourceName: string, targetName: string) => {
+    if (!sourceName || !targetName || sourceName === targetName) return;
+    const currentNames = found.map(item => item.name);
+    const base = customOrder.length > 0 ? [...customOrder] : currentNames;
+    for (const name of currentNames) {
+      if (!base.includes(name)) base.push(name);
+    }
+    const sourceIndex = base.indexOf(sourceName);
+    const targetIndex = base.indexOf(targetName);
+    if (sourceIndex === -1 || targetIndex === -1) return;
+    const nextOrder = [...base];
+    const [moved] = nextOrder.splice(sourceIndex, 1);
+    nextOrder.splice(targetIndex, 0, moved);
+    setCustomOrder(nextOrder);
+    try {
+      localStorage.setItem(`masterclass:catalog-order:${id}`, JSON.stringify(nextOrder));
+    } catch {}
+  };
+
+  const orderedFound = useMemo(() => {
+    if (!customOrder.length) return found;
+    const map = new Map(customOrder.map((name, idx) => [name, idx]));
+    return [...found].sort((a, b) => {
+      const idxA = map.has(a.name) ? map.get(a.name)! : 999999;
+      const idxB = map.has(b.name) ? map.get(b.name)! : 999999;
+      return idxA - idxB;
+    });
+  }, [found, customOrder]);
+
+  const pages = Math.max(1, Math.ceil(orderedFound.length / perPage));
   const current = Math.min(page, pages - 1);
-  const visible = found.slice(current * perPage, current * perPage + perPage);
+  const visible = orderedFound.slice(current * perPage, current * perPage + perPage);
   const filtering = deferredQuery.trim().length > 0;
   const narrowed = filtering || tab !== ALL;
 
@@ -610,35 +656,80 @@ export function CatalogBrowser({
         </p>}
 
         <ul className={styles.grid} data-walkthrough={isGit || undefined} key={`${tab}:${deferredQuery}:${current}`}>
-          {visible.map(item => <li key={item.name} className={`${styles.card} ${learningCard.card}`} data-studied={studied.has(item.name) || undefined}>
-            {/* The speaker sits outside the card's own button: a button inside a
-                button is not valid, and the browser will not deliver its click. */}
-            {/* A header strip above the card's body, outside its own button —
-                a button inside a button is not valid and its click never
-                arrives. It carries the title, left-aligned and always in the
-                same place on every card, then the per-card controls after it. */}
-            <div className={styles.cardHead}>
-              <span className={styles.cardTop}>
-                <span className={styles.cardIcon}>{itemIcon(item)}</span>
-                {/* Only vocabulary words are stored lower-case; a service or
-                    a glossary term already carries its own capitalisation. */}
-                <span className={styles.cardName}>{item.vocabulary ? asHeadword(item.name) : item.name}</span>
-              </span>
-              {item.vocabulary?.hindi && <div className={styles.langToggle} role="group" aria-label={`Language for ${item.name}`}>
-                {(["en", "hi"] as const).map(choice => <button key={choice} type="button" className={styles.langOption}
-                  aria-pressed={choice === "hi" ? inHindi.has(item.name) : !inHindi.has(item.name)}
-                  onClick={() => { if ((choice === "hi") !== inHindi.has(item.name)) toggleLang(item.name); }}>
-                  {choice === "en" ? "En" : "Hi"}
-                </button>)}
-              </div>}
-              {item.vocabulary && <PronounceButton word={item.name} className={styles.headAudio} />}
-              <button type="button" className={styles.studied} role="checkbox" aria-checked={studied.has(item.name)}
-                aria-label={`${studied.has(item.name) ? label(item, "done") : label(item, "studied")}: ${item.name}`}
-                title={studied.has(item.name) ? label(item, "done") : label(item, "studied")}
-                onClick={() => toggleStudied(item.name)}>
-                <Check size={12} aria-hidden="true" />
-              </button>
-            </div>
+          {visible.map(item => {
+            const isDragging = draggedName === item.name;
+            const isDragOver = dragOverName === item.name && draggedName !== item.name;
+            const isChecked = studied.has(item.name);
+            return <li
+              key={item.name}
+              className={`${styles.card} ${learningCard.card}`}
+              data-studied={isChecked || undefined}
+              data-dragging={isDragging || undefined}
+              data-dragover={isDragOver || undefined}
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.setData("text/plain", item.name);
+                e.dataTransfer.effectAllowed = "move";
+                setDraggedName(item.name);
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                if (dragOverName !== item.name) setDragOverName(item.name);
+              }}
+              onDragLeave={() => {
+                if (dragOverName === item.name) setDragOverName(null);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const sourceName = e.dataTransfer.getData("text/plain") || draggedName;
+                if (sourceName && sourceName !== item.name) {
+                  moveItem(sourceName, item.name);
+                }
+                setDraggedName(null);
+                setDragOverName(null);
+              }}
+              onDragEnd={() => {
+                setDraggedName(null);
+                setDragOverName(null);
+              }}
+            >
+              <div className={styles.cardHead}>
+                <div
+                  className={styles.cardDragHandle}
+                  title="Drag to reposition card"
+                  aria-label="Drag to reposition card"
+                  draggable
+                  onDragStart={(e) => {
+                    e.stopPropagation();
+                    e.dataTransfer.setData("text/plain", item.name);
+                    e.dataTransfer.effectAllowed = "move";
+                    setDraggedName(item.name);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <GripVertical size={14} aria-hidden="true" />
+                </div>
+                <span className={styles.cardTop}>
+                  <span className={styles.cardIcon}>{itemIcon(item)}</span>
+                  <span className={styles.cardName}>{item.vocabulary ? asHeadword(item.name) : item.name}</span>
+                </span>
+                {item.vocabulary?.hindi && <div className={styles.langToggle} role="group" aria-label={`Language for ${item.name}`}>
+                  {(["en", "hi"] as const).map(choice => <button key={choice} type="button" className={styles.langOption}
+                    aria-pressed={choice === "hi" ? inHindi.has(item.name) : !inHindi.has(item.name)}
+                    onClick={() => { if ((choice === "hi") !== inHindi.has(item.name)) toggleLang(item.name); }}>
+                    {choice === "en" ? "En" : "Hi"}
+                  </button>)}
+                </div>}
+                {item.vocabulary && <PronounceButton word={item.name} className={styles.headAudio} />}
+                <button type="button" className={styles.cardCheckbox} role="checkbox" aria-checked={isChecked}
+                  aria-label={`${isChecked ? label(item, "done") : label(item, "studied")}: ${item.name}`}
+                  title={isChecked ? label(item, "done") : label(item, "studied")}
+                  onClick={() => toggleStudied(item.name)}>
+                  <Check size={12} aria-hidden="true" />
+                </button>
+              </div>
             <div className={styles.open}>
               {/* The title sits in the header strip above, outside this button,
                   so the button has to name itself: without the label its
@@ -710,7 +801,8 @@ export function CatalogBrowser({
               </button>
               {item.prepared?.walkthrough === "git" && <GitWalkthrough answer={item.prepared.answer} embedded />}
             </div>
-          </li>)}
+            </li>;
+          })}
         </ul>
         {pages > 1 && <Pager page={current} pages={pages} onPage={setPage} label={`${title} pages`} />}
       </TabsPanel>

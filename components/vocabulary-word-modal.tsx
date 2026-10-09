@@ -59,21 +59,25 @@ export function VocabularyWordModal({
   // Sync internal state when prop changes
   useEffect(() => {
     if (word && word !== currentWord) {
-      setCurrentWord(word);
-      const cached = initialLookup ?? getCachedWordLookup(word);
-      if (cached) {
-        setLookup(cached);
-        setLoading(false);
-        setError(null);
-      }
+      queueMicrotask(() => {
+        setCurrentWord(word);
+        const cached = initialLookup ?? getCachedWordLookup(word);
+        if (cached) {
+          setLookup(cached);
+          setLoading(false);
+          setError(null);
+        }
+      });
     }
   }, [word, currentWord, initialLookup]);
 
   useEffect(() => {
     if (initialLookup) {
-      setLookup(initialLookup);
-      setLoading(false);
-      setError(null);
+      queueMicrotask(() => {
+        setLookup(initialLookup);
+        setLoading(false);
+        setError(null);
+      });
     }
   }, [initialLookup]);
 
@@ -97,7 +101,7 @@ export function VocabularyWordModal({
 
   useEffect(() => {
     if (currentWord) {
-      checkSaved(currentWord);
+      queueMicrotask(() => checkSaved(currentWord));
     }
 
     function handleVocabChange() {
@@ -162,12 +166,16 @@ export function VocabularyWordModal({
 
   useEffect(() => {
     if (isOpen && currentWord) {
-      loadWord(currentWord);
+      queueMicrotask(() => {
+        loadWord(currentWord);
+      });
     } else if (!isOpen) {
       abortControllerRef.current?.abort();
-      setLoading(false);
-      setError(null);
-      setAudioMessage("");
+      queueMicrotask(() => {
+        setLoading(false);
+        setError(null);
+        setAudioMessage("");
+      });
       if (speakingRef.current && "speechSynthesis" in window) {
         window.speechSynthesis.cancel();
         speakingRef.current = false;

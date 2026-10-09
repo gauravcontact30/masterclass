@@ -54,7 +54,7 @@ test("keeps an external fallback and can retry a failed frame", async () => {
   await user.click(screen.getByRole("button", { name: "Browse official website" }));
   expect(screen.getByText(/Some publishers block viewing/)).toBeVisible();
   await user.click(screen.getByRole("button", { name: "Website not loading?" }));
-  expect(screen.getByRole("status")).toHaveTextContent("This website could not be displayed here.");
+  expect(within(screen.getByRole("region", { name: "Official website reader" })).getByRole("status")).toHaveTextContent("This website could not be displayed here.");
   expect(screen.getByRole("link", { name: "Open in new tab" })).toHaveAttribute("rel", "noopener noreferrer");
   await user.click(screen.getByRole("button", { name: "Reload React 19+ website" }));
   expect(screen.getByTitle("React 19+ official website")).toBeInTheDocument();
@@ -65,7 +65,7 @@ test("explains publisher restrictions without displaying a broken frame", async 
   render(<OfficialDocs />);
   await user.selectOptions(screen.getByRole("combobox", { name: "Technology" }), "nextjs");
   await user.click(screen.getByRole("button", { name: "Browse official website" }));
-  expect(screen.getByRole("status")).toHaveTextContent("Next.js 16+ restricts embedded viewing");
+  expect(within(screen.getByRole("region", { name: "Official website reader" })).getByRole("status")).toHaveTextContent("Next.js 16+ restricts embedded viewing");
   expect(screen.queryByTitle("Next.js 16+ official website")).not.toBeInTheDocument();
   expect(screen.getByRole("link", { name: "Open in new tab" })).toHaveAttribute("href", "https://nextjs.org/docs");
   await user.click(screen.getByRole("button", { name: "Try embedded view" }));

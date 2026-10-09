@@ -116,9 +116,92 @@
 .code [data-token="builtin"] { color: var(--code-builtin); }
 .code [data-token="property"] { color: var(--code-property); }
 
+.lineHoverable {
+  position: relative;
+  cursor: default;
+  transition: background-color 0.12s ease;
+  border-radius: 4px;
+}
+.lineHoverable:hover {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.lineFloatingTooltip {
+  position: absolute;
+  left: 48px;
+  bottom: calc(100% + 4px);
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 520px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #0f172a;
+  color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 11.5px;
+  line-height: 1.45;
+  font-style: normal;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+  pointer-events: none;
+  white-space: normal;
+  animation: fadeInTooltip 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.lineFloatingTooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 20px;
+  border-width: 4px;
+  border-style: solid;
+  border-color: #0f172a transparent transparent transparent;
+}
+
+@keyframes fadeInTooltip {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hoverInspectorBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: var(--code-chrome);
+  border-top: 1px solid var(--code-border);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 12px;
+  color: var(--code-ink);
+}
+.inspectorTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(37, 99, 235, 0.12);
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.inspectorText {
+  color: var(--code-gutter);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-style: italic;
+}
+.inspectorTextActive {
+  color: var(--code-ink);
+  font-style: normal;
+}
+
 @media (max-width: 640px) {
   .body { grid-template-columns: 1fr; }
   .tree { border-right: 0; border-bottom: 1px solid var(--code-border); max-height: 160px; overflow-y: auto; }
   .code { font-size: 11.5px; }
 }
 @media (prefers-reduced-motion: reduce) { .disclose svg { transition: none; } }
+

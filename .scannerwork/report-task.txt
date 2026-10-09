@@ -1,6 +1,0 @@
-projectKey=masterclass
-serverUrl=http://localhost:9000
-serverVersion=26.9.0.129388
-dashboardUrl=http://localhost:9000/dashboard?id=masterclass
-ceTaskId=47754d07-3c96-4a85-af93-50bb041e5784
-ceTaskUrl=http://localhost:9000/api/ce/task?id=47754d07-3c96-4a85-af93-50bb041e5784

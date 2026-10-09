@@ -110,7 +110,82 @@
 .cardMeta { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 12px; font-weight: 600; color: var(--tone-ink); }
 .cardStatus { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 13px; color: var(--cc-muted); }
 .cardError { margin: 0; font-size: 13px; line-height: 1.5; color: #a33a2a; }
-.cardFoot { gap: 8px; margin-top: auto; padding: 12px 18px 0; border-top: 1px solid color-mix(in srgb, var(--tone-ink) 14%, transparent); background: transparent; }
+.cardFoot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: auto; padding: 12px 18px 0; border-top: 1px solid color-mix(in srgb, var(--tone-ink) 14%, transparent); background: transparent; }
+.cardActionBtn {
+  border-radius: 999px;
+  background: #ffffffcc;
+  color: var(--tone-ink);
+  border: 1px solid color-mix(in srgb, var(--tone-ink) 30%, transparent);
+  font-size: 12px;
+  height: 28px;
+  padding-inline: 10px;
+  gap: 5px;
+  transition: background .16s, color .16s, border-color .16s;
+}
+.cardActionBtn:hover:not(:disabled) {
+  background: #ffffff;
+  color: var(--cc-clay);
+  border-color: var(--cc-clay);
+}
+.cardEditContainer {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+}
+.cardEditLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tone-ink);
+}
+.cardEditGroup {
+  border-radius: 12px;
+  border-color: color-mix(in srgb, var(--tone-ink) 30%, transparent);
+  background: #ffffffd9;
+}
+.cardEditGroup:focus-within {
+  border-color: var(--cc-clay);
+  box-shadow: 0 0 0 2px #d9775733;
+}
+.cardEditTextarea {
+  min-height: 60px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--cc-ink);
+}
+.cardEditTextarea:focus-visible {
+  outline: none !important;
+}
+.cardEditActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.cardSaveBtn {
+  border-radius: 999px;
+  gap: 5px;
+  font-size: 12px;
+}
+.cardSaveBtn:hover:not(:disabled) {
+  background: var(--cc-clay-hover);
+}
+.detailActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.detailEditBox {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #ffffffd9;
+  border: 1px solid color-mix(in srgb, var(--tone-ink) 25%, transparent);
+  margin-top: 8px;
+}
 .viewButton { border-radius: 999px; }
 .viewButton[aria-pressed="false"] { background: #ffffffcc; color: var(--tone-ink); border-color: color-mix(in srgb, var(--tone-ink) 30%, transparent); }
 .viewButton[aria-pressed="true"] { background: var(--tone-ink); }

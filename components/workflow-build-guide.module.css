@@ -1,0 +1,316 @@
+.guide {
+  display: grid;
+  gap: 12px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.toolbar p {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #5e5d59;
+}
+
+.toggleAll {
+  padding: 6px 12px;
+  border: 1px solid #dedcd1;
+  border-radius: 8px;
+  background: #faf9f5;
+  color: #3d3d3a;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.toggleAll:hover {
+  border-color: #c96442;
+  color: #a84f36;
+}
+
+.toggleAll:focus-visible,
+.stepHeader:focus-visible,
+.copy:focus-visible {
+  outline: 2px solid #d97757;
+  outline-offset: 2px;
+}
+
+.steps {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+
+.step {
+  min-width: 0;
+  border: 1px solid #e5e2d8;
+  border-left: 3px solid #dedcd1;
+  border-radius: 12px;
+  background: #fff;
+  transition: border-color 0.15s ease;
+}
+
+.step[data-open] {
+  border-left-color: #c96442;
+}
+
+.stepHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.stepHeader:hover {
+  background: #faf9f5;
+}
+
+.number {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: #f0eee6;
+  color: #3d3d3a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.step[data-open] .number {
+  background: #c96442;
+  color: #fff;
+}
+
+.titles {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+
+.stepTitle {
+  font-size: 14px;
+  font-weight: 650;
+  color: #262624;
+}
+
+.goal {
+  font-size: 12.5px;
+  color: #5e5d59;
+}
+
+.layer {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border: 1px solid #e5e2d8;
+  border-radius: 6px;
+  background: #f0eee6;
+  color: #5e5d59;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.layer[data-layer="LangChain"] {
+  border-color: #f0ddd0;
+  background: #fbeee6;
+  color: #9a4a2c;
+}
+
+.layer[data-layer="LangGraph"] {
+  border-color: #d4e8da;
+  background: #eaf5ed;
+  color: #2f6f47;
+}
+
+.layer[data-layer="LangSmith"] {
+  border-color: #d4e3f2;
+  background: #e6f0fa;
+  color: #2b5680;
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: #87867f;
+  transition: transform 0.15s ease;
+}
+
+.step[data-open] .chevron {
+  transform: rotate(180deg);
+}
+
+.body {
+  display: grid;
+  gap: 12px;
+  padding: 0 16px 16px 56px;
+}
+
+.explanation {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #3d3d3a;
+}
+
+.codeBlock {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #262624;
+  border-radius: 10px;
+  background: #1b1b1a;
+}
+
+.codeBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px 8px 12px;
+  border-bottom: 1px solid #30302e;
+  color: #b0aea5;
+  font-size: 12px;
+}
+
+.codeBar > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.codeBlock pre {
+  max-height: 460px;
+  margin: 0;
+  padding: 14px 16px;
+  overflow: auto;
+  color: #f0eee6;
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.codeBlock pre:focus-visible {
+  outline: 2px solid #d97757;
+  outline-offset: -2px;
+}
+
+.copy {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border: 1px solid #3d3d3a;
+  border-radius: 6px;
+  background: #262624;
+  color: #dedcd1;
+  font-size: 11.5px;
+  cursor: pointer;
+}
+
+.copy:hover {
+  border-color: #d97757;
+  color: #fff;
+}
+
+.run {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #dedcd1;
+  border-radius: 10px;
+  background: #faf9f5;
+}
+
+.run code {
+  flex: 1;
+  min-width: 0;
+  color: #262624;
+  font-size: 12.5px;
+  overflow-wrap: anywhere;
+}
+
+.run .copy {
+  border-color: #dedcd1;
+  background: #fff;
+  color: #3d3d3a;
+}
+
+.run .copy:hover {
+  border-color: #c96442;
+  color: #a84f36;
+}
+
+.runLabel {
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: #262624;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.checkpoint {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid #d4e8da;
+  border-radius: 10px;
+  background: #f1f8f3;
+  color: #24553a;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.checkpoint svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+@media (max-width: 640px) {
+  .stepHeader {
+    flex-wrap: wrap;
+    padding: 12px;
+  }
+
+  .titles {
+    flex-basis: calc(100% - 80px);
+  }
+
+  .layer {
+    margin-left: 40px;
+  }
+
+  .body {
+    padding: 0 12px 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step,
+  .chevron {
+    transition: none;
+  }
+}

@@ -14,7 +14,7 @@ export function LearningPresence({enabled}:{enabled:boolean}) {
       try {
         const entry=performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming|undefined;
         const response=await fetch('/api/monitoring/presence',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId,path,view:first,...(first&&entry?.loadEventEnd&&new URL(entry.name).pathname===path?{loadMs:Math.min(120000,Math.round(entry.loadEventEnd-entry.startTime))}:{})}),signal:controller.signal});
-        if(response.ok)first=false;
+        if(response.ok){const result=await response.json();if(result.enabled===false)disabled=true;else first=false;}
         else if([401,403,500,503].includes(response.status))disabled=true;
       }catch{}finally{sending=false;}
     }

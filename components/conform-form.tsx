@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { useForm, getFormProps, getInputProps } from "@conform-to/react";
+import { useForm, getFormProps, getInputProps, getSelectProps } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod/v4";
 import { z } from "zod";
 import { Search, Send, Sparkles, AlertCircle, CheckCircle2 } from "lucide-react";
@@ -120,7 +120,6 @@ export function ConformStudyGoalForm({ defaultCategory = "technology" }: { defau
             <Search size={15} className={styles.fieldIcon} aria-hidden="true" />
             <input
               {...getInputProps(fields.topicName, { type: "text" })}
-              key={fields.topicName.key}
               placeholder={hi ? "उदा. Next.js App Router, न्यूटन के गति नियम" : "e.g. Next.js App Router, Docker Microservices"}
               className={styles.textInput}
             />
@@ -139,8 +138,7 @@ export function ConformStudyGoalForm({ defaultCategory = "technology" }: { defau
               {hi ? "श्रेणी" : "Category"}
             </label>
             <select
-              {...getInputProps(fields.targetCategory, { type: "text" })}
-              key={fields.targetCategory.key}
+              {...getSelectProps(fields.targetCategory)}
               className={styles.selectInput}
             >
               <option value="technology">{hi ? "तकनीक एवं इंजीनियरिंग" : "Technology & Engineering"}</option>
@@ -166,7 +164,6 @@ export function ConformStudyGoalForm({ defaultCategory = "technology" }: { defau
             </label>
             <input
               {...getInputProps(fields.dailyMinutes, { type: "number" })}
-              key={fields.dailyMinutes.key}
               min={15}
               max={480}
               step={15}

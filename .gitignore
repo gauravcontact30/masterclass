@@ -29,6 +29,14 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.log
+*.stackdump
+*-typecheck.txt
+*-lint.txt
+.scannerwork/
+.playwright-mcp/
+artifacts/*.log
+artifacts/*.json
 
 # env files - .env is this project's single environment file and stays local
 .env*

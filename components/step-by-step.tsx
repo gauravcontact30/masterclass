@@ -2,7 +2,7 @@
 
 import learningCard from "./learning-card.module.css";
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
-import { BookMarked, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Copy, FileCode2, ListOrdered, Loader2, RotateCcw, Search, SlidersHorizontal, Sparkles, Terminal, Trash2, X } from "lucide-react";
+import { BookMarked, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Copy, FileCode2, ListOrdered, Loader2, Pencil, RotateCcw, Search, SlidersHorizontal, Sparkles, Terminal, Trash2, X } from "lucide-react";
 import { useAiMode } from "@/lib/ai-mode";
 import { highlightLines } from "@/lib/code-highlight";
 import { inferLanguage } from "@/lib/code-run";
@@ -285,8 +285,11 @@ function UseCaseCard({ useCase, index, tone }: { useCase: GuideUseCase; index: n
   </Card>;
 }
 
-function GuideDetail({ card, tone, onClose }: { card: StepCard; tone: number; onClose: () => void }) {
+function GuideDetail({ card, tone, onClose, onRegenerate, onEditAndRegenerate }: { card: StepCard; tone: number; onClose: () => void; onRegenerate: () => void; onEditAndRegenerate: (newQuestion: string) => void }) {
   const guide = card.guide!;
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedQuestion, setEditedQuestion] = useState(guide.question);
+
   // Sections are numbered by what this answer actually contains.
   const order = ["definition", ...(guide.features.length ? ["features"] : []), "steps", ...(guide.files.length ? ["code"] : []), ...(guide.useCases.length ? ["cases"] : []), ...(guide.comparison ? ["differences"] : []), "key"];
   const number = (section: string) => order.indexOf(section) + 1;
@@ -298,6 +301,88 @@ function GuideDetail({ card, tone, onClose }: { card: StepCard; tone: number; on
         <Badge variant="outline" className={styles.softBadge}>{card.origin === "built-in" ? "Built-in guide" : card.source === "ai" ? "AI answer" : "From library"}</Badge>
       </div>
       <h2>{guide.question}</h2>
+      {isEditing ? (
+        <div className={styles.detailEditBox}>
+          <Label htmlFor={`detail-edit-${card.id}`} className={styles.cardEditLabel}>Edit question</Label>
+          <InputGroup className={styles.cardEditGroup}>
+            <InputGroupTextarea
+              id={`detail-edit-${card.id}`}
+              rows={2}
+              value={editedQuestion}
+              onChange={event => setEditedQuestion(event.target.value)}
+              className={styles.cardEditTextarea}
+              placeholder="Edit your question requirements..."
+              aria-label="Edit question in guide"
+              onKeyDown={event => {
+                if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+                  event.preventDefault();
+                  if (editedQuestion.trim().length >= 3) {
+                    setIsEditing(false);
+                    onEditAndRegenerate(editedQuestion.trim());
+                  }
+                } else if (event.key === "Escape") {
+                  event.preventDefault();
+                  setIsEditing(false);
+                  setEditedQuestion(guide.question);
+                }
+              }}
+            />
+          </InputGroup>
+          <div className={styles.cardEditActions}>
+            <Button
+              type="button"
+              size="sm"
+              className={styles.cardSaveBtn}
+              disabled={editedQuestion.trim().length < 3}
+              onClick={() => {
+                setIsEditing(false);
+                onEditAndRegenerate(editedQuestion.trim());
+              }}
+            >
+              <Sparkles size={12} aria-hidden="true" />
+              Regenerate answer
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setIsEditing(false);
+                setEditedQuestion(guide.question);
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className={styles.detailActions}>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className={styles.cardActionBtn}
+            onClick={() => {
+              setEditedQuestion(guide.question);
+              setIsEditing(true);
+            }}
+          >
+            <Pencil size={12} aria-hidden="true" />
+            Edit question
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className={styles.cardActionBtn}
+            disabled={card.status === "loading"}
+            onClick={onRegenerate}
+          >
+            <RotateCcw size={12} className={card.status === "loading" ? styles.spin : undefined} aria-hidden="true" />
+            Regenerate answer
+          </Button>
+        </div>
+      )}
       <Button type="button" variant="ghost" size="icon" className={styles.close} onClick={onClose} aria-label="Close answer"><X aria-hidden="true" /></Button>
     </CardHeader>
     <CardContent className={styles.detailBody}>
@@ -353,8 +438,29 @@ function GuideDetail({ card, tone, onClose }: { card: StepCard; tone: number; on
   </Card>;
 }
 
-function ResultCard({ card, tone, selected, onOpen, onRetry, onForget }: { card: StepCard; tone: number; selected: boolean; onOpen: () => void; onRetry: () => void; onForget: () => void }) {
+function ResultCard({
+  card,
+  tone,
+  selected,
+  onOpen,
+  onRetry,
+  onForget,
+  onRegenerate,
+  onEditAndRegenerate,
+}: {
+  card: StepCard;
+  tone: number;
+  selected: boolean;
+  onOpen: () => void;
+  onRetry: () => void;
+  onForget: () => void;
+  onRegenerate: () => void;
+  onEditAndRegenerate: (newQuestion: string) => void;
+}) {
   const guide = card.guide;
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedQuestion, setEditedQuestion] = useState(card.question);
+
   return <Card role="article" className={`${styles.card} ${learningCard.card}`} style={toneStyle(tone)} data-status={card.status} aria-current={selected || undefined} aria-label={card.question}>
     <CardHeader className={styles.cardHead}>
       <div className={styles.cardTop}>
@@ -362,7 +468,63 @@ function ResultCard({ card, tone, selected, onOpen, onRetry, onForget }: { card:
         {guide && <Badge variant="outline" className={styles.softBadge}>{capitalise(guide.level)}</Badge>}
         <span className={styles.origin}>{card.origin === "asked" ? <><Sparkles size={11} aria-hidden="true" />Asked</> : <><BookMarked size={11} aria-hidden="true" />Built-in</>}</span>
       </div>
-      <h3 className={styles.cardTitle}>{card.question}</h3>
+      {isEditing ? (
+        <div className={styles.cardEditContainer}>
+          <Label htmlFor={`edit-${card.id}`} className={styles.cardEditLabel}>Edit question</Label>
+          <InputGroup className={styles.cardEditGroup}>
+            <InputGroupTextarea
+              id={`edit-${card.id}`}
+              rows={2}
+              value={editedQuestion}
+              onChange={event => setEditedQuestion(event.target.value)}
+              className={styles.cardEditTextarea}
+              placeholder="Edit your question requirements..."
+              aria-label="Edit question"
+              onKeyDown={event => {
+                if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+                  event.preventDefault();
+                  if (editedQuestion.trim().length >= 3) {
+                    setIsEditing(false);
+                    onEditAndRegenerate(editedQuestion.trim());
+                  }
+                } else if (event.key === "Escape") {
+                  event.preventDefault();
+                  setIsEditing(false);
+                  setEditedQuestion(card.question);
+                }
+              }}
+            />
+          </InputGroup>
+          <div className={styles.cardEditActions}>
+            <Button
+              type="button"
+              size="sm"
+              className={styles.cardSaveBtn}
+              disabled={editedQuestion.trim().length < 3}
+              onClick={() => {
+                setIsEditing(false);
+                onEditAndRegenerate(editedQuestion.trim());
+              }}
+            >
+              <Sparkles size={12} aria-hidden="true" />
+              Regenerate answer
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setIsEditing(false);
+                setEditedQuestion(card.question);
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <h3 className={styles.cardTitle}>{card.question}</h3>
+      )}
     </CardHeader>
     <CardContent className={styles.cardBody}>
       {card.status === "loading" && <p className={styles.cardStatus} role="status"><Loader2 size={14} className={styles.spin} aria-hidden="true" />Preparing the step-by-step answer…</p>}
@@ -374,6 +536,34 @@ function ResultCard({ card, tone, selected, onOpen, onRetry, onForget }: { card:
     </CardContent>
     <CardFooter className={styles.cardFoot}>
       {guide && <Button type="button" size="sm" variant={selected ? "default" : "outline"} className={styles.viewButton} aria-pressed={selected} onClick={onOpen}>{selected ? "Viewing steps" : "View steps"}</Button>}
+      {!isEditing && (
+        <>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className={styles.cardActionBtn}
+            onClick={() => {
+              setEditedQuestion(card.question);
+              setIsEditing(true);
+            }}
+          >
+            <Pencil size={12} aria-hidden="true" />
+            Edit question
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className={styles.cardActionBtn}
+            disabled={card.status === "loading"}
+            onClick={onRegenerate}
+          >
+            <RotateCcw size={12} className={card.status === "loading" ? styles.spin : undefined} aria-hidden="true" />
+            Regenerate answer
+          </Button>
+        </>
+      )}
       {card.status === "error" && <Button type="button" size="sm" variant="outline" onClick={onRetry}><RotateCcw aria-hidden="true" />Retry</Button>}
       {card.origin === "asked" && <Button type="button" size="icon-sm" variant="ghost" className={styles.forget} onClick={onForget} aria-label={`Remove ${card.question}`}><Trash2 aria-hidden="true" /></Button>}
     </CardFooter>
@@ -513,6 +703,21 @@ export function StepByStep({ initialQuestion = "", technologies = [] }: { initia
     if (selected?.id === id) setSelected(null);
   }
 
+  const handleRegenerate = useCallback((card: StepCard) => {
+    void ask(card.question, askOptions);
+  }, [ask, askOptions]);
+
+  const handleEditAndRegenerate = useCallback((card: StepCard, newQuestion: string) => {
+    const trimmed = newQuestion.trim();
+    if (trimmed.length < 3) return;
+    if (card.origin === "asked" && card.id !== `asked:${trimmed.toLowerCase()}`) {
+      pending.current.get(card.id)?.abort();
+      pending.current.delete(card.id);
+      update(cards => cards.filter(c => c.id !== card.id));
+    }
+    void ask(trimmed, askOptions);
+  }, [ask, askOptions, update]);
+
   return <div className={styles.page}>
     {/* Cards first: what has been learned leads, the question box follows. */}
     <section className={styles.cardsPanel} aria-labelledby={`${ids}-title`}>
@@ -546,7 +751,11 @@ export function StepByStep({ initialQuestion = "", technologies = [] }: { initia
 
       {shown.length
         ? <div className={styles.grid}>{shown.map((card, index) => <ResultCard key={card.id} card={card} tone={first + index} selected={card.id === open?.id}
-            onOpen={() => setSelected(card.id === open?.id ? null : { id: card.id, tone: first + index })} onRetry={() => void ask(card.question, askOptions)} onForget={() => forget(card.id)} />)}</div>
+            onOpen={() => setSelected(card.id === open?.id ? null : { id: card.id, tone: first + index })}
+            onRetry={() => void ask(card.question, askOptions)}
+            onForget={() => forget(card.id)}
+            onRegenerate={() => handleRegenerate(card)}
+            onEditAndRegenerate={newQ => handleEditAndRegenerate(card, newQ)} />)}</div>
         : <div className={styles.empty}>
             <p>{filters.technology && !filters.text && filters.level === "all" && filters.origin === "all"
               ? <>No step-by-step cards for <strong>{shortName(filters.technology)}</strong> yet.</>
@@ -569,7 +778,7 @@ export function StepByStep({ initialQuestion = "", technologies = [] }: { initia
       <form role="search" aria-label="Step by step search" className={styles.form} onSubmit={event => { event.preventDefault(); void ask(query, askOptions); }}>
         <Label htmlFor={`${ids}-question`} className={styles.fieldLabel}>Your question</Label>
         <InputGroup className={styles.composer}>
-          <InputGroupTextarea id={`${ids}-question`} ref={inputRef} rows={3} value={query} maxLength={400} className={styles.composerInput}
+          <InputGroupTextarea id={`${ids}-question`} ref={inputRef} rows={3} value={query} className={styles.composerInput}
             placeholder="e.g. How do I add JWT authentication to an Express API?" aria-describedby={`${ids}-hint`}
             onChange={event => setQuery(event.target.value)}
             onKeyDown={event => {
@@ -591,7 +800,7 @@ export function StepByStep({ initialQuestion = "", technologies = [] }: { initia
             </span>
           </InputGroupAddon>
         </InputGroup>
-        <p id={`${ids}-hint`} className={styles.hint}>Press Enter to get steps, Shift + Enter for a new line. {query.length}/400</p>
+        <p id={`${ids}-hint`} className={styles.hint}>Press Enter to get steps, Shift + Enter for a new line.{query.length > 0 ? ` (${query.length} characters)` : ""}</p>
         {advanced && <fieldset id={`${ids}-advanced`} className={styles.advanced}>
           <legend className={styles.legend}>Advanced search</legend>
           <div className={styles.field}>
@@ -623,6 +832,17 @@ export function StepByStep({ initialQuestion = "", technologies = [] }: { initia
       </form>
     </section>
 
-    <div ref={detailRef} className={styles.detailAnchor}>{open && <GuideDetail card={open} tone={selected?.tone ?? 0} onClose={() => setSelected(null)} />}</div>
+    <div ref={detailRef} className={styles.detailAnchor}>
+      {open && (
+        <GuideDetail
+          key={open.id}
+          card={open}
+          tone={selected?.tone ?? 0}
+          onClose={() => setSelected(null)}
+          onRegenerate={() => handleRegenerate(open)}
+          onEditAndRegenerate={newQ => handleEditAndRegenerate(open, newQ)}
+        />
+      )}
+    </div>
   </div>;
 }

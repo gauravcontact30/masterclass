@@ -1,17 +1,21 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { ArrowUpRight, Volume2, Trash2, BookOpen, Quote, Plus, Minus, Check } from "lucide-react";
+import { ArrowUpRight, Volume2, Trash2, BookOpen, Quote, Plus, Minus, Check, GripVertical } from "lucide-react";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
 import type { WordHistoryCard } from "./vocabulary-history";
 import styles from "./vocabulary-history.module.css";
 import searchStyles from "./answer-search.module.css";
 
-export function VocabularyWordCard({ card, selected, onOpen, onUpdate, onDelete }: {
+export function VocabularyWordCard({ card, selected, onOpen, onUpdate, onDelete, dragProps }: {
   card: WordHistoryCard; selected: boolean; onOpen: () => void;
   onUpdate: (changes: { checked?: boolean; language?: "en" | "hi" }) => void;
   onDelete: () => void;
+  dragProps?: {
+    draggable?: boolean;
+    onDragStart?: (e: React.DragEvent) => void;
+  };
 }) {
   const id = useId();
   const { entry } = card;
@@ -44,18 +48,38 @@ export function VocabularyWordCard({ card, selected, onOpen, onUpdate, onDelete 
 
   return <article className={styles.wordCard} data-selected={selected || undefined} data-learned={card.checked || undefined} aria-labelledby={`${id}-word`}>
     <header className={styles.wordHeader}>
-      <h3 id={`${id}-word`} title={title}>{title}</h3>
-      {entry.hindi && <span className={styles.headerHindiBadge} lang="hi">{entry.hindi}</span>}
-      <p className={styles.pronunciation} title={`${hindi ? "उच्चारण" : "Pronunciation"}: ${entry.pronunciation || "Unavailable"}`}>
-        <span className={searchStyles.srOnly}>{hindi ? "उच्चारण" : "Pronunciation"}: </span><span lang="en">{entry.pronunciation || "Unavailable"}</span>
-      </p>
-      <div className={styles.cardControls}>
-        <Button type="button" variant="ghost" size="icon-xs" onClick={hear} aria-label={`Hear it: ${entry.word}`} title="Hear it"><Volume2 size={14} aria-hidden="true" /></Button>
-        <Button type="button" variant="outline" size="xs" role="switch" aria-checked={hindi} aria-label={`Hindi for ${entry.word}`} onClick={() => onUpdate({ language: hindi ? "en" : "hi" })} className={styles.languageSwitch}>
-          <span data-active={!hindi || undefined}>EN</span><span data-active={hindi || undefined}>HI</span>
-        </Button>
+      <div className={styles.wordTitleRow}>
+        <div
+          className={styles.cardDragHandle}
+          title="Drag to reposition card"
+          aria-label="Drag to reposition card"
+          draggable
+          onDragStart={dragProps?.onDragStart}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <GripVertical size={14} aria-hidden="true" />
+        </div>
+        <span className={styles.vocabEyebrow}>Vocabulary</span>
+        <h3 id={`${id}-word`} title={title} className={styles.wordTitle}>{title}</h3>
       </div>
-      <Checkbox className={styles.headerCheckbox} checked={card.checked ?? false} onCheckedChange={checked => onUpdate({ checked })} aria-label={`Mark ${entry.word} as learned`} title={hindi ? "सीख लिया" : "Learned"} />
+      <div className={styles.meaningRow}>
+        {entry.hindi && <span className={styles.headerHindiBadge} lang="hi" title={hindi ? "हिन्दी अर्थ" : "Hindi meaning"}>{entry.hindi}</span>}
+        <p className={styles.pronunciation} title={`${hindi ? "उच्चारण" : "Pronunciation"}: ${entry.pronunciation || "Unavailable"}`}>
+          <span className={searchStyles.srOnly}>{hindi ? "उच्चारण" : "Pronunciation"}: </span><span lang="en" className={styles.pronunciationText}>{entry.pronunciation || "Unavailable"}</span>
+        </p>
+      </div>
+      <div className={styles.cardControlsRow}>
+        <div className={styles.cardControls}>
+          <Button type="button" variant="outline" size="xs" onClick={hear} aria-label={`Hear it: ${entry.word}`} title="Hear it" className={styles.hearButton}><Volume2 size={13} aria-hidden="true" /><span>Hear it</span></Button>
+          <Button type="button" variant="outline" size="xs" role="switch" aria-checked={hindi} aria-label={`Hindi for ${entry.word}`} onClick={() => onUpdate({ language: hindi ? "en" : "hi" })} className={styles.languageSwitch} title={hindi ? "अंग्रेज़ी में देखें" : "Switch to Hindi"}>
+            <span data-active={!hindi || undefined}>EN</span><span data-active={hindi || undefined}>HI</span>
+          </Button>
+        </div>
+        <label className={styles.learnedToggle} title={hindi ? "सीख लिया" : "Learned"}>
+          <Checkbox className={styles.headerCheckbox} id={`${id}-checkbox`} checked={card.checked ?? false} onCheckedChange={checked => onUpdate({ checked })} aria-label={`Mark ${entry.word} as learned`} />
+          <span className={styles.learnedLabelText}>{card.checked ? (hindi ? "सीख लिया" : "Learned") : (hindi ? "सीखें" : "Learned")}</span>
+        </label>
+      </div>
     </header>
     <div className={styles.cardBody} tabIndex={0} role="region" aria-label={`Details for ${entry.word}`}>
     {audioMessage && <p className={styles.audioStatus} role="status">{audioMessage}</p>}

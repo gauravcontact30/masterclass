@@ -1,0 +1,1312 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 8px 4px 60px;
+}
+
+.heroHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 32px 36px;
+  border-radius: 18px;
+  background: radial-gradient(120% 120% at 50% 0%, rgba(99, 102, 241, 0.12) 0%, rgba(139, 92, 246, 0.04) 50%, transparent 100%),
+              var(--card, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  box-shadow: 0 4px 24px -6px rgba(15, 23, 42, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.heroTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.heroBadgeWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sparkleBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+  color: #ffffff;
+}
+
+.heroTitle {
+  font-size: clamp(24px, 3.2vw, 36px);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  margin: 0;
+  color: var(--foreground, #0f172a);
+}
+
+.heroSubtitle {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted-foreground, #64748b);
+  max-width: 860px;
+  margin: 0;
+}
+
+.techPills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.techPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid;
+  transition: transform 0.15s ease;
+}
+
+.techPill:hover {
+  transform: translateY(-1px);
+}
+
+.modeSwitchContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 8px 12px;
+  background: var(--muted, #f1f5f9);
+  border-radius: 14px;
+  border: 1px solid var(--border, #e2e8f0);
+}
+
+.modeToggleGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.modeButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--muted-foreground, #64748b);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.modeButtonActive {
+  background: var(--card, #ffffff);
+  color: var(--foreground, #0f172a);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.modeDescription {
+  font-size: 13px;
+  color: var(--muted-foreground, #64748b);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.architectureDiagramCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  background: var(--card, #ffffff);
+  border-radius: 16px;
+  border: 1px solid var(--border, #e2e8f0);
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+}
+
+.diagramTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.diagramTitle {
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--foreground, #0f172a);
+  margin: 0;
+}
+
+.flowContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 16px 8px;
+}
+
+.flowNode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  min-width: 140px;
+  padding: 14px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border, #e2e8f0);
+  background: var(--background, #f8fafc);
+  transition: all 0.2s ease;
+}
+
+.flowNodeActive {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.06);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.12);
+}
+
+.flowNodeIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+.flowNodeLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--foreground, #0f172a);
+}
+
+.flowNodeTech {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--muted, #e2e8f0);
+  color: var(--muted-foreground, #475569);
+}
+
+.flowArrow {
+  display: flex;
+  align-items: center;
+  color: var(--muted-foreground, #94a3b8);
+  flex-shrink: 0;
+}
+
+.stepperContainer {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .stepperContainer {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stepNavList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stepNavButton {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border, #e2e8f0);
+  background: var(--card, #ffffff);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.stepNavButton:hover {
+  background: var(--muted, #f8fafc);
+  border-color: #cbd5e1;
+}
+
+.stepNavButtonActive {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.05);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+}
+
+.stepNavIndex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--muted, #e2e8f0);
+  color: var(--foreground, #0f172a);
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.stepNavButtonActive .stepNavIndex {
+  background: #6366f1;
+  color: #ffffff;
+}
+
+.stepNavContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stepNavTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--foreground, #0f172a);
+}
+
+.stepNavSub {
+  font-size: 12px;
+  color: var(--muted-foreground, #64748b);
+}
+
+.stepDetailCard {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px;
+  background: var(--card, #ffffff);
+  border-radius: 16px;
+  border: 1px solid var(--border, #e2e8f0);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+}
+
+.stepHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+  padding-bottom: 18px;
+}
+
+.stepBadgeAndTitle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stepNumberBadge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: #6366f1;
+  color: #ffffff;
+  letter-spacing: 0.05em;
+}
+
+.stepMainTitle {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin: 0;
+  color: var(--foreground, #0f172a);
+}
+
+.frameworkBadgesRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.stepExplanation {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--foreground, #334155);
+  margin: 0;
+}
+
+.keyComponentsBox {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--muted, #f8fafc);
+  border: 1px solid var(--border, #e2e8f0);
+}
+
+.keyComponentsTitle {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground, #64748b);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.keyComponentsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.keyComponentItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.componentSymbol {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4f46e5;
+}
+
+.componentRole {
+  font-size: 12px;
+  color: var(--muted-foreground, #64748b);
+}
+
+.codePanel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  border: 1px solid #1e293b;
+  background: #0f172a;
+  overflow: hidden;
+}
+
+.codePanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+  color: #94a3b8;
+  font-size: 12px;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.codePanelTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.copyCodeButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #cbd5e1;
+  background: #334155;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.copyCodeButton:hover {
+  background: #475569;
+  color: #ffffff;
+}
+
+.codeBlock {
+  margin: 0;
+  padding: 18px 20px;
+  font-family: var(--font-geist-mono), Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.65;
+  color: #e2e8f0;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.stepNavFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border, #e2e8f0);
+}
+
+.stepNavBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.quickCtaCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 22px 28px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 14px;
+}
+
+.quickCtaText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.quickCtaTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--foreground, #0f172a);
+  margin: 0;
+}
+
+.quickCtaSub {
+  font-size: 13px;
+  color: var(--muted-foreground, #64748b);
+  margin: 0;
+}
+
+.quickCtaButtons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ==========================================================================
+   Apple Light Theme - Multi-File Usecase Studio & Codebase
+   Designed with Cupertino precision: SF Pro typography, refined glass surfaces,
+   delicate 1px borders, subtle drop shadows, and clean light syntax colors.
+   ========================================================================== */
+
+.appleSection {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  margin-top: 14px;
+}
+
+.appleSectionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 28px 32px;
+  background: #ffffff;
+  border: 1px solid #e5e5ea;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.04);
+}
+
+.appleHeaderTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.applePillBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #f2f2f7;
+  color: #0071e3;
+  border: 1px solid #d1d1d6;
+}
+
+.appleSectionTitle {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+  font-size: clamp(22px, 2.5vw, 28px);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #1d1d1f;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.appleSectionSubtitle {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: #6e6e73;
+  margin: 0;
+  max-width: 920px;
+}
+
+.appleFilterGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 4px;
+  background: #f2f2f7;
+  border-radius: 12px;
+  border: 1px solid #e5e5ea;
+}
+
+.appleFilterBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: #6e6e73;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.appleFilterBtn:hover {
+  color: #1d1d1f;
+}
+
+.appleFilterBtnActive {
+  background: #ffffff;
+  color: #1d1d1f;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.appleUsecaseCardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 16px;
+}
+
+.appleCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e5e5ea;
+  border-radius: 16px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.appleCard:hover {
+  transform: translateY(-2px);
+  border-color: #0071e3;
+  box-shadow: 0 6px 18px rgba(0, 113, 227, 0.09);
+}
+
+.appleCardActive {
+  border: 2px solid #0071e3;
+  box-shadow: 0 6px 20px rgba(0, 113, 227, 0.12);
+  background: #fbfbfd;
+}
+
+.appleCardTop {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.appleCardBadgeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.appleCardTypeBadge {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.appleCardTypeSingle {
+  background: #e8f3ff;
+  color: #0071e3;
+}
+
+.appleCardTypeMulti {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+.appleCardFileCount {
+  font-size: 11.5px;
+  color: #86868b;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.appleCardTitle {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.appleCardSubtitle {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #6e6e73;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.appleCardTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.appleCardTag {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: #f2f2f7;
+  color: #48484a;
+}
+
+/* ==========================================================================
+   Apple Studio Viewport (Multi-File Tabs & Codebase Viewer)
+   ========================================================================== */
+
+.appleStudioCard {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #e5e5ea;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.06);
+}
+
+.appleStudioTopBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 18px 24px;
+  background: #f9f9fb;
+  border-bottom: 1px solid #e5e5ea;
+}
+
+.appleStudioTitleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.appleStudioTitle {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.appleStudioDescription {
+  font-size: 13px;
+  color: #6e6e73;
+  margin: 0;
+  max-width: 780px;
+  line-height: 1.5;
+}
+
+.appleStudioActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.appleCommandChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #f2f2f7;
+  border: 1px solid #d1d1d6;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  color: #1d1d1f;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.appleCommandChip:hover {
+  background: #e5e5ea;
+  border-color: #0071e3;
+}
+
+.appleActionButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid #d1d1d6;
+  background: #ffffff;
+  color: #1d1d1f;
+}
+
+.appleActionButton:hover {
+  background: #f2f2f7;
+  border-color: #0071e3;
+}
+
+.appleActionButtonPrimary {
+  background: #0071e3;
+  color: #ffffff !important;
+  border-color: #0071e3;
+}
+
+.appleActionButtonPrimary:hover {
+  background: #0062c4;
+}
+
+/* macOS / Xcode Style Multi-File Tabs Bar */
+.appleTabsBar {
+  display: flex;
+  align-items: center;
+  background: #f2f2f7;
+  border-bottom: 1px solid #e5e5ea;
+  padding: 6px 12px 0;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.appleFileTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: 8px 8px 0 0;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12.5px;
+  font-weight: 550;
+  color: #6e6e73;
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.appleFileTab:hover {
+  color: #1d1d1f;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.appleFileTabActive {
+  background: #ffffff;
+  color: #1d1d1f;
+  border-color: #e5e5ea;
+  border-top: 2px solid #0071e3;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.appleFileTabBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #e5e5ea;
+  color: #48484a;
+}
+
+.appleFileMetaBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 10px 24px;
+  background: #fbfbfd;
+  border-bottom: 1px solid #f2f2f7;
+  font-size: 12.5px;
+  color: #6e6e73;
+}
+
+.appleFileMetaDesc {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.appleFileMetaTag {
+  font-family: var(--font-geist-mono), monospace;
+  font-weight: 600;
+  color: #0071e3;
+  background: #e8f3ff;
+  padding: 2px 7px;
+  border-radius: 5px;
+}
+
+/* Light Apple Editor Code Viewer */
+.appleCodeViewer {
+  position: relative;
+  background: #fbfbfd;
+  margin: 0;
+  padding: 22px 24px;
+  font-family: var(--font-geist-mono), "SF Mono", Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #1d1d1f;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.appleCodeViewer code {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* Architecture Blueprint Card inside Studio */
+.appleBlueprintCard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  padding: 20px 24px;
+  background: #f9f9fb;
+  border-top: 1px solid #e5e5ea;
+}
+
+@media (max-width: 860px) {
+  .appleBlueprintCard {
+    grid-template-columns: 1fr;
+  }
+}
+
+.appleBlueprintColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.appleBlueprintTitle {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.appleBlueprintFlow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #ffffff;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid #e5e5ea;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 11.5px;
+  color: #48484a;
+  line-height: 1.6;
+}
+
+.appleBlueprintList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #48484a;
+}
+
+.appleTechStackGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.appleTechStackItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 1px solid #e5e5ea;
+  border-radius: 10px;
+}
+
+.appleTechStackName {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1d1d1f;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.appleTechStackRole {
+  font-size: 11px;
+  color: #86868b;
+  line-height: 1.4;
+}
+
+
+
+/* ==========================================================================
+   Agent Type Tabs (Single Agent vs Multi Agents)
+   ========================================================================== */
+.agentTypeSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.agentTypeTabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f4f3ed;
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid #dedcd1;
+  width: fit-content;
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+
+.agentTypeTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: #5d5c56;
+  font-size: 13px;
+  font-weight: 550;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.agentTypeTab:hover {
+  color: #1d1d1f;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.agentTypeTabActive {
+  background: #ffffff !important;
+  color: #1d1d1f !important;
+  font-weight: 650 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.agentTypeCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #eae8dd;
+  font-size: 11px;
+  font-weight: 700;
+  color: #484742;
+}
+
+.agentTypeTabActive .agentTypeCount {
+  background: #23221f;
+  color: #ffffff;
+}
+
+.readerTopologySelect {
+  width: 100% !important;
+  height: 40px !important;
+  padding: 0 12px 0 36px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: var(--foreground, #0f172a) !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.readerTopologySelect:focus-visible,
+.readerTopologySelect:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* ==========================================================================
+   Framework Key Learning Contents (LangChain, LangGraph, LangSmith)
+   ========================================================================== */
+.frameworkLearningsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+@media (min-width: 900px) {
+  .frameworkLearningsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.frameworkLearningCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--card-border, #e5e3d8);
+  background: var(--card-bg, #ffffff);
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.frameworkLearningCard:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.frameworkLearningCard[data-framework="langchain"] {
+  --card-bg: #fffbf8;
+  --card-border: #f0ddd0;
+  --accent-ink: #9a4a2c;
+  --accent-badge-bg: #fbeee6;
+}
+
+.frameworkLearningCard[data-framework="langgraph"] {
+  --card-bg: #f8fbf9;
+  --card-border: #d4e8da;
+  --accent-ink: #2f6f47;
+  --accent-badge-bg: #eaf5ed;
+}
+
+.frameworkLearningCard[data-framework="langsmith"] {
+  --card-bg: #f8fafe;
+  --card-border: #d4e3f2;
+  --accent-ink: #2b5680;
+  --accent-badge-bg: #e6f0fa;
+}
+
+.frameworkHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--card-border) 70%, transparent);
+}
+
+.frameworkBadge {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 750;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: var(--accent-badge-bg);
+  color: var(--accent-ink);
+  letter-spacing: -0.01em;
+}
+
+.frameworkRole {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #484742;
+  font-weight: 500;
+}
+
+.frameworkPrimitives {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.frameworkPrimitivePill {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--accent-badge-bg) 65%, white);
+  color: var(--accent-ink);
+  border: 1px solid color-mix(in srgb, var(--card-border) 60%, transparent);
+}
+
+.frameworkTakeawayBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.frameworkTakeawayLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--accent-ink);
+}
+
+.frameworkTakeawayText {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #383733;
+  margin: 0;
+}
+
+.frameworkCallout {
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.frameworkBestPractice {
+  background: color-mix(in srgb, #2f6f47 8%, white);
+  border-left: 3px solid #2f6f47;
+  color: #204730;
+}
+
+.frameworkWatchOut {
+  background: color-mix(in srgb, #c2410c 8%, white);
+  border-left: 3px solid #c2410c;
+  color: #7c2d12;
+}
+
+.tabsNav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.tabsStep {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line, #dedcd1);
+  border-radius: 8px;
+  background: var(--surface, #ffffff);
+  color: var(--muted, #64748b);
+  cursor: pointer;
+  transition: border-color 0.16s, color 0.16s;
+}
+
+.tabsStep:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--accent, #d97757) 45%, white);
+  color: var(--accent, #d97757);
+}
+
+.tabsStep:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.tabsOf {
+  min-width: 28px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--faint, #8f8d85);
+  font-variant-numeric: tabular-nums;
+}
+
+

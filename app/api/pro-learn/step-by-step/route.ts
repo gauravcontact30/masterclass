@@ -7,7 +7,7 @@ import { stepSearchOptionsSchema } from "@/lib/step-by-step/types";
 export const runtime = "nodejs";
 export const maxDuration = 180;
 export const POST = proLearnRoute("step-by-step", z.object({
-  question: z.string().trim().min(3).max(400),
+  question: z.string().trim().min(3),
   options: stepSearchOptionsSchema.default({}),
   provider: z.enum(AI_PROVIDERS).optional(),
   aiMode: z.boolean().optional(),

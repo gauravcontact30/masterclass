@@ -3,6 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
+  reactStrictMode: true,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false,
+  },
   serverExternalPackages: ["@electric-sql/pglite"],
   // AVIF first (smallest), WebP as the fallback, for every next/image.
   images: { formats: ["image/avif", "image/webp"], minimumCacheTTL: 60 * 60 * 24 * 30 },
@@ -16,6 +20,10 @@ const nextConfig: NextConfig = {
       "@conform-to/react",
       "@conform-to/zod",
       "zod",
+      "sonner",
+      "class-variance-authority",
+      "@base-ui/react",
+      "simple-icons",
     ],
     staleTimes: {
       dynamic: 30,

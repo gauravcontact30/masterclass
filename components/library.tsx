@@ -113,7 +113,7 @@ export function Library({ externalQuery, onQueryChange, documents: sourceDocumen
             </div>
           </div>
         ) : (
-          groups.map(group => <LearningCategorySection key={`${group.category.id}:${query.trim()}:${language}`} category={group.category} documents={group.documents} renderDocument={item => {
+          groups.map(group => <LearningCategorySection key={`${group.category.id}:${query.trim()}:${language}`} category={group.category} documents={group.documents} renderDocument={(item, dragProps) => {
               const titleId = `${base}-${item.id}-title`;
               const pending = item.status === "queued" || item.status === "generating";
               const technology = technologyNames.get(item.request.technologyId) ?? prettify(item.request.technologyId);
@@ -122,7 +122,7 @@ export function Library({ externalQuery, onQueryChange, documents: sourceDocumen
               const reading = item.status === "ready" ? readingState(saved, lessons) : null;
               return (
                 <li key={item.id} className={styles.item}>
-                  <LearningCard title={item.title} titleId={titleId} accentId={item.request.technologyId} label={technology} status={item.status}
+                  <LearningCard title={item.title} titleId={titleId} accentId={item.request.technologyId} label={technology} status={item.status} {...dragProps}
                     overlay={pending && <span className={styles.pending} aria-hidden="true"><LoaderCircle size={13} className={styles.spinner} />{t(item.status)}…</span>}>
                       <div className={styles.meta}>
                         <span className={styles.status} data-status={reading?.completed ? "completed" : item.status}>{reading?.completed ? t("completed") : t(item.status)}</span>

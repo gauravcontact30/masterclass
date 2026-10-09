@@ -13,7 +13,7 @@ const glossary = [
 export function authoredProject(pkg: ApiPackage, entry: ApiEntry, detail: ApiDetail): LearningProject | null {
   if (!detail.code) return null;
   const readme = `# ${entry.name} lab\n\n${detail.description}\n\n${detail.notes.map(note=>`- ${note}`).join("\n")}\n`;
-  if (pkg.id === "python") return { title: `${entry.name} in practice`, template:"python", entry:"/main.py", dependencies:{}, files:[{path:"/main.py",code:"from example import run_example\n\nif __name__ == '__main__':\n    run_example()\n"},{path:"/example.py",code:`def run_example():\n${detail.code.split("\n").map(line=>"    "+line).join("\n")}\n`},{path:"/README.md",code:readme}], instructions:["Click Run to execute Python in an isolated browser worker.","To run locally, save all project files and run python main.py."] };
+  if (pkg.id === "python" || PYTHON_PACKAGES.has(pkg.id)) return { title: `${entry.name} in practice`, template:"python", entry:"/main.py", dependencies:{}, files:[{path:"/main.py",code:"from example import run_example\n\nif __name__ == '__main__':\n    run_example()\n"},{path:"/example.py",code:`def run_example():\n${detail.code.split("\n").map(line=>"    "+line).join("\n")}\n`},{path:"/README.md",code:readme}], instructions:["Click Run to execute Python in an isolated browser worker.","To run locally, save all project files and run python main.py."] };
   if (pkg.id === "javascript") return { title:`${entry.name} data transformation`,template:"vanilla-ts",entry:"/index.ts",dependencies:{},files:[
     {path:"/index.ts",code:'import { runExample } from "./src/example";\nconst output = document.querySelector("#output")!;\nconst original = console.log;\nconsole.log = (...values) => { original(...values); output.textContent += values.map(value => typeof value === "string" ? value : JSON.stringify(value)).join(" ") + "\\n"; };\nrunExample();'},
     {path:"/src/example.ts",code:`export function runExample() {\n${detail.code}\n}\n`},
@@ -38,7 +38,7 @@ export function authoredProject(pkg: ApiPackage, entry: ApiEntry, detail: ApiDet
 }
 
 // Python-ecosystem packages render their examples as Python; everything else as TypeScript.
-const PYTHON_PACKAGES = new Set(["python", "numpy", "pandas", "polars", "scipy", "sklearn", "tensorflow", "pytorch", "keras", "fastapi", "seaborn", "plotly", "requests", "httpx", "scrapy", "pydantic"]);
+const PYTHON_PACKAGES = new Set(["python", "numpy", "pandas", "polars", "scipy", "sklearn", "tensorflow", "pytorch", "keras", "fastapi", "seaborn", "plotly", "requests", "httpx", "scrapy", "pydantic", "deepagents", "langchain", "langgraph", "integrations", "langsmith"]);
 export const apiCodeLanguage = (packageId: string): CodeLanguage => PYTHON_PACKAGES.has(packageId) ? "python" : "typescript";
 
 /**

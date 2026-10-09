@@ -24,3 +24,16 @@ test("only the verified super admin bypasses a subscription",async()=>{
   await expect(requirePaidAccess("admin")).resolves.toMatchObject({id:"admin"});
   expect(account).not.toHaveBeenCalled();
 });
+test("the direct-access student opens learning pages instead of bouncing to membership",async()=>{
+  for (const provider of ["direct","dev"]) {
+    jest.mocked(currentUser).mockResolvedValue({id:"student-user-001",email:"student@masterclass.dev",app_metadata:{provider}} as never);
+    await expect(requireLearningUser()).resolves.toMatchObject({id:"student-user-001"});
+    await expect(requirePaidAccess("student-user-001")).resolves.toMatchObject({id:"student-user-001"});
+  }
+  expect(redirect).not.toHaveBeenCalledWith("/dashboard?tab=plans");
+  expect(account).not.toHaveBeenCalled();
+});
+test("a signed-in Supabase account is still gated by its subscription",async()=>{
+  jest.mocked(currentUser).mockResolvedValue({id:"learner",email:"student@example.com",app_metadata:{provider:"email"}} as never);
+  await expect(requireLearningUser()).rejects.toThrow("/dashboard?tab=plans");
+});

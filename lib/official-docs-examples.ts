@@ -3,6 +3,8 @@ import { DOCS_PROJECTS } from "./official-docs-projects";
 import type { DocsProject } from "./official-docs-projects";
 import { COMPLEX_DOCS_PROJECTS } from "./official-docs-complex";
 import type { AnswerFile } from "./pro-learn/types";
+import { PRACTICAL_SIMPLE, PRACTICAL_MEDIUM } from "./official-docs-practical";
+import { inventoryProject } from "./official-docs-inventory";
 
 type Starter = [title: string, path: string, code: string, summary: string];
 
@@ -294,16 +296,20 @@ export type DocsCodeExample = {
 
 export function getDocsCodeExamples(doc: OfficialTechnologyDoc): DocsCodeExample[] {
   const [title, path, code, summary] = starters[doc.id];
-  const project = DOCS_PROJECTS[doc.id];
+  const project = ["react", "react-hooks", "nextjs", "nextjs-hooks"].includes(doc.id) ? inventoryProject(doc.id, DOCS_PROJECTS[doc.id], false) : DOCS_PROJECTS[doc.id];
   const complex = COMPLEX_DOCS_PROJECTS[doc.id];
+  const simple = PRACTICAL_SIMPLE[doc.id];
+  const medium = PRACTICAL_MEDIUM[doc.id];
   const examples: DocsCodeExample[] = [
-    { level: "Simple", title, summary, files: [{ path, code: code + "\n", note: "" }] },
-    {
+    simple
+      ? { level: "Simple", title: simple.title, summary: simple.summary, files: simple.files, runbook: simple }
+      : { level: "Simple", title, summary, files: [{ path, code: code + "\n", note: "" }] },
+    medium ? { level: "Medium", title: medium.title, summary: medium.summary, files: medium.files, runbook: medium } : {
       level: "Medium", title: `${doc.title}: worked example`,
       summary: `${doc.codeExample.explanation} This focused example assumes the relevant runtime and dependencies are configured; use the complete project below for setup.`,
       files: [{ path: doc.codeExample.filename, code: doc.codeExample.code, note: "" }],
     },
-    { level: "Hard", title: project.title, summary: project.summary, files: project.files },
+    { level: "Hard", title: project.title, summary: project.summary, files: project.files, runbook: project },
   ];
   if (complex) examples.push({ level: "Complex", title: complex.title, summary: complex.summary, files: complex.files, runbook: complex });
   return examples.map(example => ({ ...example, files: example.files.filter(file => !/(^|\/)(\.gitignore|README\.md)$/i.test(file.path)) }));
