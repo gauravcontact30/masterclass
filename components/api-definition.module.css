@@ -1,0 +1,332 @@
+/* Definition cards on an API page: light tinted cards around light, macOS-style code panes.
+   Tints reuse the dashboard's kind inks; code colours follow Xcode's default light theme. */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.card {
+  --card-bg: #f6f3fb;
+  --card-line: #e2daf1;
+  --card-ink: #5e4a8f;
+  --card-well: #ebe4f6;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px 18px 18px;
+  border: 1px solid var(--card-line);
+  border-radius: 14px;
+  background: var(--card-bg);
+}
+
+.card[data-tone="blue"] {
+  --card-bg: #f3f7fb;
+  --card-line: #d9e5f0;
+  --card-ink: #2f5f82;
+  --card-well: #e3edf6;
+}
+
+.card[data-tone="sky"] {
+  --card-bg: #f2f6fd;
+  --card-line: #d6e2f6;
+  --card-ink: #2c5aa0;
+  --card-well: #e0eafa;
+}
+
+.card[data-tone="sage"] {
+  --card-bg: #f2f7ef;
+  --card-line: #d8e6d0;
+  --card-ink: #3f6b35;
+  --card-well: #e2eedb;
+}
+
+.card[data-tone="cream"] {
+  --card-bg: #fbf7ec;
+  --card-line: #eee1bd;
+  --card-ink: #7a5d10;
+  --card-well: #f4ead0;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.cardTitle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  color: var(--ink, #262624);
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.cardIcon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--card-well);
+  color: var(--card-ink);
+}
+
+.cardText {
+  max-width: 72ch;
+  color: var(--read, #3d3d3a);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.cardText code,
+.kindLine code {
+  padding: 1px 6px;
+  border: 1px solid var(--card-line);
+  border-radius: 5px;
+  background: #fff;
+  color: var(--card-ink);
+  font: 600 12.5px ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.kindLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--read, #3d3d3a);
+  font-size: 13.5px;
+}
+
+.kindPill {
+  padding: 3px 11px;
+  border-radius: 999px;
+  background: var(--card-ink);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--card-line);
+}
+
+.facts > div {
+  display: flex;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.facts dt {
+  color: var(--muted, #73726c);
+}
+
+.facts dd {
+  margin: 0;
+  color: var(--ink, #262624);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.parameters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 8px;
+}
+
+.parameter {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--card-line);
+  border-radius: 10px;
+  background: #ffffffb3;
+}
+
+.parameter p {
+  margin: 0;
+  color: var(--read, #3d3d3a);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.parameter b {
+  color: var(--ink, #262624);
+  font: 650 13px ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.parameter code {
+  color: var(--card-ink);
+  font: 500 12px ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* Code pane */
+
+.code {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #dcdce0;
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 1px 2px #0000000a, 0 8px 22px -14px #1d1d1f33;
+}
+
+.codeBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 34px;
+  padding: 0 8px 0 12px;
+  border-bottom: 1px solid #e3e3e8;
+  background: #f5f5f7;
+}
+
+.lights {
+  display: flex;
+  gap: 6px;
+}
+
+.lights i {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #ff5f57;
+  box-shadow: inset 0 0 0 0.5px #00000026;
+}
+
+.lights i:nth-child(2) {
+  background: #febc2e;
+}
+
+.lights i:nth-child(3) {
+  background: #28c840;
+}
+
+.codeLabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: #1d1d1f;
+  font: 600 12px -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: #6e6e73;
+  font: 500 12px -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.copy:hover {
+  border-color: #e3e3e8;
+  background: #fff;
+  color: #1d1d1f;
+}
+
+.copy:focus-visible,
+.code pre:focus-visible {
+  outline: 2px solid #0a59c9;
+  outline-offset: -2px;
+}
+
+.code pre {
+  margin: 0;
+  padding: 10px 0 12px;
+  overflow-x: auto;
+  background: #fff;
+  color: #1d1d1f;
+  font: 12.75px/1.7 ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  tab-size: 4;
+}
+
+.code code {
+  display: block;
+  min-width: max-content;
+  font: inherit;
+}
+
+.line {
+  display: flex;
+}
+
+.line:hover {
+  background: #f4f8fe;
+}
+
+.gutter {
+  flex-shrink: 0;
+  width: 42px;
+  padding-right: 14px;
+  color: #a1a1a6;
+  font-size: 11.5px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+.text {
+  padding-right: 18px;
+  white-space: pre;
+}
+
+.keyword {
+  color: #ad3da4;
+  font-weight: 600;
+}
+
+.string {
+  color: #c41a16;
+}
+
+.number {
+  color: #1c00cf;
+}
+
+.comment {
+  color: #5d7a3a;
+  font-style: italic;
+}
+
+.type {
+  color: #703daa;
+}
+
+.builtin {
+  color: #3e8087;
+}
+
+.property {
+  color: #4b21b0;
+}
+
+.code pre ::selection {
+  background: #b4d5fe;
+}
+
+@media (max-width: 760px) {
+  .cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .card {
+    padding: 14px;
+  }
+}

@@ -36,7 +36,7 @@ import { Dialog,DialogContent,DialogDescription,DialogFooter,DialogHeader,Dialog
 type AccountData={preparations?:PreparationAccess;profile:{language:Language};account:{tier:Tier;used:number;limit:number;subscription:{current_period_end:string|null;status:string;cancel_at_cycle_end:boolean}|null;creditBalance:number};documents:DocumentRecord[];progress:Progress[]};
 const tabIcons={dashboard:Compass,library:LibraryIcon,plans:Layers,settings:Link2} as const;
 function Identity({email,isSuperAdmin,onNavigate}:{email:string|null;isSuperAdmin:boolean;onNavigate:(tab:WorkspaceTab)=>void}){const {t}=useLanguage();const router=useRouter();const [busy,setBusy]=useState(false);const [open,setOpen]=useState(false);
-  async function signOut(){setBusy(true);try{await supabaseBrowser().auth.signOut().catch(()=>{});document.cookie="mc_dev_session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT";router.replace("/");router.refresh();}finally{setBusy(false);}}
+  async function signOut(){setBusy(true);try{const {error}=await supabaseBrowser().auth.signOut();if(error)toast.error(error.message);router.replace("/");router.refresh();}finally{setBusy(false);}}
   if(!email)return <Link className="signin-link" href="/sign-in"><ExpandedText text={t("signin")} /><ArrowUpRight size={15}/></Link>;
   return <Popover open={open} onOpenChange={setOpen}>
     <PopoverTrigger className="profile-trigger" aria-label={t("account")}><span className="profile-avatar" aria-hidden="true"><ExpandedText text={email.charAt(0).toUpperCase()} /></span></PopoverTrigger>

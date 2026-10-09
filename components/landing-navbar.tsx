@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
-import { BookOpen, CodeXml, Crown, Languages, Library, LogIn, Menu, MessageCircle, Route, Terminal, X, type LucideIcon } from "lucide-react";
+import { ArrowRight, BookOpen, CodeXml, Crown, Languages, Library, LogIn, Menu, MessageCircle, Route, Terminal, X, type LucideIcon } from "lucide-react";
 import { Wordmark } from "./brand-mark";
 import { useLanguage } from "./language-provider";
 import styles from "./landing-home.module.css";
@@ -10,6 +10,8 @@ import styles from "./landing-home.module.css";
 type Indicator = { left: number; right: number; visible: boolean; href: string | null };
 /** Each link's own light pill colour, in link order (repeats if there are more links). */
 const PILL_TINTS = ["#f3dccd", "#dbe7e2", "#e3e2ee", "#f3ead6", "#dce8f3", "#e4e9d6"];
+/** The matching deeper ink for each tint: icon colour, and the well fill when a link is active. */
+const PILL_INKS = ["#a84f36", "#3f6b55", "#5b5689", "#8a6212", "#2f5f82", "#5d6a14"];
 const NAV_ICONS: Record<string, LucideIcon> = {
   "#paths": Route,
   "#library": Library,
@@ -74,15 +76,17 @@ export function LandingNavbar({ links }: { links: [string, string][] }) {
       <Link href="/" aria-label="MasterClass" className={styles.brand}><Wordmark /></Link>
       <nav ref={navRef} className={styles.navLinks} data-open={menu || undefined} aria-label={text("Main navigation", "मुख्य नेविगेशन")} onMouseLeave={() => moveTo(active)}>
         <span className={styles.navIndicator} aria-hidden="true" data-visible={indicator.visible || undefined} style={{ clipPath: `inset(0 ${indicator.right}px 0 ${indicator.left}px round 999px)`, backgroundColor: PILL_TINTS[Math.max(0, links.findIndex(([href]) => href === indicator.href)) % PILL_TINTS.length] }} />
-        {links.map(([href, label]) => {
+        {links.map(([href, label], index) => {
           const Icon = NAV_ICONS[href] ?? BookOpen;
-          return <a key={href} href={href} aria-current={active === href ? "location" : undefined} data-on={(indicator.visible && indicator.href === href) || undefined}
+          const tone = { "--tint": PILL_TINTS[index % PILL_TINTS.length], "--tint-ink": PILL_INKS[index % PILL_INKS.length] } as CSSProperties;
+          return <a key={href} href={href} style={tone} aria-current={active === href ? "location" : undefined} data-on={(indicator.visible && indicator.href === href) || undefined}
             onMouseEnter={() => moveTo(href)} onFocus={() => moveTo(href)} onClick={() => setMenu(false)}>
-            <Icon size={14} strokeWidth={1.75} className={styles.navIcon} aria-hidden="true" />
+            <span className={styles.navIconWell} aria-hidden="true"><Icon size={13} strokeWidth={2} className={styles.navIcon} /></span>
             <span>{label}</span>
           </a>;
         })}
-        <Link className={styles.navMobileCta} href="/sign-up" onClick={() => setMenu(false)}>{text("Start learning", "सीखना शुरू करें")}</Link>
+        {menu && <Link className={styles.navMobileSignin} href="/sign-in" onClick={() => setMenu(false)}><LogIn size={17} strokeWidth={1.9} aria-hidden="true" />{text("Sign in", "साइन इन")}</Link>}
+        <Link className={styles.navMobileCta} href="/sign-up" onClick={() => setMenu(false)}>{text("Start learning", "सीखना शुरू करें")}<ArrowRight size={17} aria-hidden="true" /></Link>
       </nav>
       <div className={styles.navActions}>
         <div className={styles.langSwitch} role="group" aria-label={text("Language", "भाषा")}>
@@ -90,8 +94,8 @@ export function LandingNavbar({ links }: { links: [string, string][] }) {
           <button type="button" aria-pressed={!hi} onClick={() => setLanguage("en", false)}>EN</button>
           <button type="button" aria-pressed={hi} onClick={() => setLanguage("hi", false)}>HI</button>
         </div>
-        <Link className={styles.navSignin} href="/sign-in" aria-label={text("Sign in", "साइन इन")} title={text("Sign in", "साइन इन")}><LogIn size={16} strokeWidth={1.75} aria-hidden="true" /></Link>
-        <Link className={styles.navCta} href="/sign-up">{text("Start learning", "सीखना शुरू करें")}</Link>
+        <Link className={styles.navSignin} href="/sign-in"><LogIn size={15} strokeWidth={1.9} aria-hidden="true" /><span>{text("Sign in", "साइन इन")}</span></Link>
+        <Link className={styles.navCta} href="/sign-up">{text("Start learning", "सीखना शुरू करें")}<ArrowRight size={15} strokeWidth={2.1} aria-hidden="true" className={styles.navCtaArrow} /></Link>
         <button type="button" className={styles.navMenu} aria-expanded={menu} aria-label={text("Toggle navigation", "नेविगेशन खोलें")} onClick={() => setMenu(value => !value)}>{menu ? <X size={19} aria-hidden="true" /> : <Menu size={19} aria-hidden="true" />}</button>
       </div>
     </div>

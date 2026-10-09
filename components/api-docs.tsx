@@ -1,7 +1,5 @@
 "use client";
 
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from "@/components/ui/native-select";
 import { Button } from "@/components/ui/button";
 import { Badge as UiBadge } from "@/components/ui/badge";
@@ -14,28 +12,21 @@ import { LearningResources } from "./learning-resources";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   BookOpen,
+  Boxes,
   BriefcaseBusiness,
   Quote,
   ArrowLeft,
-  ArrowRight,
   ArrowUpRight,
-  Bot,
-  Check,
   ChevronDown,
-  ChevronUp,
-  Copy,
   FileCode2,
-  Filter,
   GraduationCap,
-  Layers,
   MessageCircle,
   RefreshCw,
   RotateCcw,
   Search,
+  ShieldCheck,
   SlidersHorizontal,
   Sparkles,
-  Users,
-  Workflow,
   X,
 } from "lucide-react";
 import {
@@ -43,22 +34,25 @@ import {
   API_STATUSES,
   API_TYPES,
   filterApiPackages,
+  groupByCategory,
   javascriptGroup,
   type ApiEntry,
   type ApiPackage,
 } from "@/lib/api-docs";
 import { API_DETAILS } from "@/lib/api-docs-details";
 import { apiDetailSchema, type ContentSource, type GeneratedApiDetail } from "@/lib/pro-learn/types";
-import { highlightLines, type CodeLanguage } from "@/lib/code-highlight";
-import { codeLineNotes } from "@/lib/code-line-notes";
-import { CodeLineComment } from "./code-line-comment";
+import { type CodeLanguage } from "@/lib/code-highlight";
 import styles from "./api-docs.module.css";
+import ref from "./api-reference.module.css";
 import projectStyles from "./api-project.module.css";
 import { apiCodeLanguage, enrichApiLearning } from "@/lib/api-learning";
 import { ApiProjectWorkspace } from "./api-project-workspace";
 import { ApiInterviewPractice } from "./api-interview-practice";
 import { referenceErrorMessage } from "@/lib/api-reference-errors";
 import { DashboardPageHeader } from "./dashboard-page-header";
+import { ApiPackageIndex } from "./api-package-index";
+import { AgentBlueprint } from "./agent-blueprint";
+import { ApiDefinitionCards } from "./api-definition";
 import { AiProvenance, AiProviderPicker, useAiProvider } from "./ai-provider-picker";
 import { KeyText } from "./key-text";
 import { shortDefinition } from "@/lib/notes-study";
@@ -82,56 +76,6 @@ function Badge({ kind }: { kind: string }) {
     >
       {kind}
     </span>
-  );
-}
-
-function ApiCode({ code, language }: { code: string; language: CodeLanguage }) {
-  const [copied, setCopied] = useState("");
-  const notes = useMemo(() => codeLineNotes(code, "", language), [code, language]);
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopied("Copied");
-    } catch {
-      setCopied("Select the code to copy manually.");
-    }
-  }
-  return (
-    <div className={styles.ide}>
-      <div className={styles.ideBar}>
-        <span className={styles.dots} aria-hidden="true">
-          <i />
-          <i />
-          <i />
-        </span>
-        <span>{language}</span>
-        <button onClick={() => void copy()} aria-label="Copy code">
-          {copied === "Copied" ? <Check size={14} /> : <Copy size={14} />}{" "}
-          {copied === "Copied" ? "Copied" : "Copy"}
-        </button>
-      </div>
-      <pre tabIndex={0}>
-        <code>
-          {highlightLines(code, language).map((line, index) => (
-            <span key={index}>
-              <span className={styles.gutter} aria-hidden="true">
-                {index + 1}
-              </span>
-              {line.map((token, part) => (
-                <span key={part} className={styles[token.tone]}>
-                  {token.text}
-                </span>
-              ))}
-              {"\n"}
-              <CodeLineComment note={notes[index]} />
-            </span>
-          ))}
-        </code>
-      </pre>
-      <span className={styles.copyStatus} role="status">
-        {copied}
-      </span>
-    </div>
   );
 }
 
@@ -395,53 +339,27 @@ export function ApiDetail({
                       : " Prepare the full learning page for signatures, a worked example and a runnable project."}
                   </p>
                 )}
-                <section id="api-signature" className={styles.syntaxBlock}>
-                  <h3 className={styles.coloredSubtitle} data-tone="blue">
-                    <FileCode2 size={18} aria-hidden="true" />
-                    Syntax
-                  </h3>
-                  {detail.signature ? (
-                    <ApiCode code={detail.signature} language={language} />
-                  ) : (
-                    <p>
-                      {fromLibrary
-                        ? `The catalog summary does not carry a signature for ${entry.name}. Prepare the full learning page below, or read the official documentation linked in the key features.`
-                        : "This concept has no standalone syntax."}
-                    </p>
-                  )}
-                  <div className={styles.memberBody}>
-                    {detail.parameters.map((parameter) => (
-                      <div className={styles.parameter} key={parameter.name}>
-                        <p>
-                          <b>{parameter.name}</b> <code>{parameter.type}</code>
-                        </p>
-                        <p>
-                          <KeyText text={parameter.description} />
-                        </p>
-                      </div>
-                    ))}
-                    {detail.returns && (
-                      <p>
-                        <strong>Returns:</strong> <KeyText text={detail.returns} />
-                      </p>
-                    )}
-                  </div>
-                </section>
-                <section id="api-example" className={styles.exampleBlock}>
-                  <h3 className={styles.coloredSubtitle} data-tone="sage">
-                    <FileCode2 size={18} aria-hidden="true" />
-                    Example
-                  </h3>
-                  {detail.code ? (
-                    <ApiCode code={detail.code} language={language} />
-                  ) : (
-                    <p>
-                      {fromLibrary
-                        ? "No example is invented for a catalog summary. Prepare the full learning page below to generate a runnable one."
-                        : "Explore the complete code workspace below for a practical example."}
-                    </p>
-                  )}
-                </section>
+                <ApiDefinitionCards
+                  name={entry.name}
+                  kindLabel={kind}
+                  status={status}
+                  packageName={detail.packageName || pkg.name}
+                  signature={detail.signature}
+                  parameters={detail.parameters}
+                  returns={detail.returns}
+                  code={detail.code}
+                  language={language}
+                  missingSignature={
+                    fromLibrary
+                      ? `The catalog summary does not carry a signature for ${entry.name}. Prepare the full learning page below, or read the official documentation linked in the key features.`
+                      : "This concept has no standalone syntax."
+                  }
+                  missingExample={
+                    fromLibrary
+                      ? "No example is invented for a catalog summary. Prepare the full learning page below to generate a runnable one."
+                      : "Explore the complete code workspace below for a practical example."
+                  }
+                />
               </section>
               <section id="api-key-points">
                 <h2 className={styles.coloredTitle} data-tone="violet">
@@ -614,271 +532,94 @@ export function apiTopicHref(pathname: string, packageId: string, name: string) 
 /**
  * The mark beside a package name: its real logo, else the catalog's emoji.
  */
-function AgenticWorkflowArchitect() {
-  const [activeMode, setActiveMode] = useState<"single" | "multi">("single");
-  const [expandedStep, setExpandedStep] = useState<number>(0);
-  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+const SEARCH_SCOPES = [
+  { id: "all", label: "Name or package" },
+  { id: "name", label: "Name only" },
+  { id: "exact", label: "Exact name" },
+] as const;
+type SearchScope = (typeof SEARCH_SCOPES)[number]["id"];
 
-  const singleSteps = [
-    {
-      num: 1,
-      tech: "LangSmith",
-      title: "Observability & Telemetry Setup",
-      desc: "Configure project tracing, credentials, and custom function spans using @traceable so every step, model call, and tool execution is recorded automatically.",
-      apis: [
-        { name: "Client", pkg: "langsmith" },
-        { name: "traceable", pkg: "langsmith" },
-        { name: "RunTree", pkg: "langsmith" },
-      ],
-      code: `import os\nfrom langsmith import Client, traceable\n\nos.environ["LANGCHAIN_TRACING_V2"] = "true"\nos.environ["LANGCHAIN_PROJECT"] = "single-agent-production"\nclient = Client()\n\n@traceable(name="sanitize_input", run_type="tool")\ndef sanitize(text: str) -> str:\n    return text.strip()`,
-    },
-    {
-      num: 2,
-      tech: "LangChain + Integrations",
-      title: "Model Initialization & Schema-Validated Tools",
-      desc: "Initialize chat models using init_chat_model or ChatOpenAI and define typed tools with @tool. Bind tools to the model with JSON Schema validation.",
-      apis: [
-        { name: "tool", pkg: "langchain" },
-        { name: "init_chat_model", pkg: "langchain" },
-        { name: "ChatOpenAI", pkg: "integrations" },
-        { name: "TavilySearchResults", pkg: "integrations" },
-      ],
-      code: `from langchain.chat_models import init_chat_model\nfrom langchain_core.tools import tool\nfrom langchain_community.tools.tavily_search import TavilySearchResults\n\n@tool\ndef calculate_roi(investment: float, gain: float) -> float:\n    \"\"\"Calculate return on investment percentage.\"\"\"\n    return round(((gain - investment) / investment) * 100, 2)\n\ntools = [calculate_roi, TavilySearchResults(max_results=3)]\nmodel = init_chat_model("gpt-4o", model_provider="openai", temperature=0)\nmodel_with_tools = model.bind_tools(tools)`,
-    },
-    {
-      num: 3,
-      tech: "LangGraph",
-      title: "Cyclic StateGraph & Session Memory",
-      desc: "Construct the ReAct cyclic state machine. MessagesState with add_messages ensures immutable state reduction. ToolNode handles tool calls, cycling back to the agent.",
-      apis: [
-        { name: "StateGraph", pkg: "langgraph" },
-        { name: "MessagesState", pkg: "langgraph" },
-        { name: "add_messages", pkg: "langgraph" },
-        { name: "MemorySaver", pkg: "langgraph" },
-      ],
-      code: `from langgraph.graph import StateGraph, MessagesState, START, END\nfrom langgraph.prebuilt import ToolNode, tools_condition\nfrom langgraph.checkpoint.memory import MemorySaver\n\ndef call_model(state: MessagesState):\n    return {"messages": [model_with_tools.invoke(state["messages"])]}\n\nbuilder = StateGraph(MessagesState)\nbuilder.add_node("agent", call_model)\nbuilder.add_node("tools", ToolNode(tools))\n\nbuilder.add_edge(START, "agent")\nbuilder.add_conditional_edges("agent", tools_condition)\nbuilder.add_edge("tools", "agent")\n\nagent_graph = builder.compile(checkpointer=MemorySaver())`,
-    },
-    {
-      num: 4,
-      tech: "Deep Agents",
-      title: "Sandboxed Filesystem & Discipline",
-      desc: "For autonomous coding agents, attach sandboxed execution primitives (execute_bash, read_file) and discipline middleware preventing infinite loops.",
-      apis: [
-        { name: "execute_bash", pkg: "deepagents" },
-        { name: "read_file", pkg: "deepagents" },
-        { name: "SandboxEnvironment", pkg: "deepagents" },
-        { name: "ContextWindowGuardMiddleware", pkg: "deepagents" },
-      ],
-      code: `from deepagents.tools import execute_bash, read_file, write_file\nfrom deepagents.middleware import ModelRateLimitRetryMiddleware, FollowupDisciplineMiddleware\n\nsandbox_tools = [execute_bash, read_file, write_file]\nmiddleware = [\n    FollowupDisciplineMiddleware(max_consecutive_tool_calls=5),\n    ModelRateLimitRetryMiddleware(max_retries=3, backoff_factor=1.5),\n]`,
-    },
-    {
-      num: 5,
-      tech: "LangGraph + LangSmith",
-      title: "Streaming, Human Approval & Automated Evals",
-      desc: "Stream token deltas to clients with thread isolation. Interrupt execution with interrupt() for approval on sensitive operations, and benchmark accuracy with evaluate().",
-      apis: [
-        { name: "interrupt", pkg: "langgraph" },
-        { name: "evaluate", pkg: "langsmith" },
-        { name: "ExactMatchEvaluator", pkg: "langsmith" },
-      ],
-      code: `config = {"configurable": {"thread_id": "thread-42"}}\ninputs = {"messages": [("user", "Analyze Q4 revenue and search market consensus.")]}\n\nfor chunk, meta in agent_graph.stream(inputs, config=config, stream_mode="messages"):\n    if chunk.content:\n        print(chunk.content, end="", flush=True)`,
-    },
-  ];
+const STATUS_HINTS: Record<string, string> = {
+  s: "Safe to rely on in production code.",
+  p: "Usable, but the API may still change before it is stable.",
+  x: "Early API that can change or disappear between releases.",
+  d: "Still documented, but replaced by a newer API.",
+};
 
-  const multiSteps = [
-    {
-      num: 1,
-      tech: "LangGraph",
-      title: "Multi-Agent Shared State Schema",
-      desc: "Declare a centralized TypedDict schema containing conversational messages, task milestone checklists, and dynamic worker delegation fields.",
-      apis: [
-        { name: "StateGraph", pkg: "langgraph" },
-        { name: "add_messages", pkg: "langgraph" },
-        { name: "DeepAgentState", pkg: "deepagents" },
-      ],
-      code: `from typing import TypedDict, Annotated, Literal\nfrom langchain_core.messages import AnyMessage\nfrom langgraph.graph.message import add_messages\n\nclass SupervisorState(TypedDict):\n    messages: Annotated[list[AnyMessage], add_messages]\n    next_worker: Literal["researcher", "coder", "FINISH"]\n    task_plan: list[str]\n    completed_milestones: list[str]`,
-    },
-    {
-      num: 2,
-      tech: "LangChain + Deep Agents + Integrations",
-      title: "Specialized Worker Subagents",
-      desc: "Construct dedicated subagents. Researcher is armed with Tavily web search. Coder is armed with Deep Agents containerized bash and filesystem tools.",
-      apis: [
-        { name: "create_agent", pkg: "langchain" },
-        { name: "TavilySearchResults", pkg: "integrations" },
-        { name: "execute_bash", pkg: "deepagents" },
-      ],
-      code: `from langchain_openai import ChatOpenAI\nfrom langchain_community.tools.tavily_search import TavilySearchResults\nfrom deepagents.tools import execute_bash, read_file\n\nmodel = ChatOpenAI(model="gpt-4o", temperature=0)\n# Researcher Worker\nresearcher = model.bind_tools([TavilySearchResults(max_results=3)])\n# Coder Worker\ncoder = model.bind_tools([execute_bash, read_file])`,
-    },
-    {
-      num: 3,
-      tech: "LangGraph + LangChain",
-      title: "Supervisor Routing Node",
-      desc: "The central supervisor evaluates current milestone completion, selecting the next worker using with_structured_output(RouterDecision) or returning FINISH.",
-      apis: [
-        { name: "with_structured_output", pkg: "langchain" },
-        { name: "Command", pkg: "langgraph" },
-        { name: "ChatPromptTemplate", pkg: "langchain" },
-      ],
-      code: `from pydantic import BaseModel, Field\nfrom typing import Literal\n\nclass RouterDecision(BaseModel):\n    next_worker: Literal["researcher", "coder", "FINISH"] = Field(\n        description="Next worker to delegate to, or FINISH when objective is achieved."\n    )\n\nsupervisor_chain = model.with_structured_output(RouterDecision)\ndef supervisor_node(state: SupervisorState):\n    decision = supervisor_chain.invoke(state["messages"])\n    return {"next_worker": decision.next_worker}`,
-    },
-    {
-      num: 4,
-      tech: "LangGraph",
-      title: "Dynamic Graph Routing, SqliteSaver & Interrupts",
-      desc: "Connect supervisor and worker nodes. Persist execution across threads with SqliteSaver, and pause execution with interrupt() before critical code actions.",
-      apis: [
-        { name: "SqliteSaver", pkg: "langgraph" },
-        { name: "interrupt", pkg: "langgraph" },
-        { name: "START", pkg: "langgraph" },
-        { name: "END", pkg: "langgraph" },
-      ],
-      code: `from langgraph.graph import StateGraph, START, END\nfrom langgraph.checkpoint.sqlite import SqliteSaver\nimport sqlite3\n\nbuilder = StateGraph(SupervisorState)\nbuilder.add_node("supervisor", supervisor_node)\nbuilder.add_node("researcher", lambda s: {"messages": [researcher.invoke(s["messages"])]})\nbuilder.add_node("coder", lambda s: {"messages": [coder.invoke(s["messages"])]})\n\nbuilder.add_edge(START, "supervisor")\nbuilder.add_conditional_edges("supervisor", lambda s: s["next_worker"], {\n    "researcher": "researcher",\n    "coder": "coder",\n    "FINISH": END,\n})\nbuilder.add_edge("researcher", "supervisor")\nbuilder.add_edge("coder", "supervisor")\n\nwith sqlite3.connect("workflow.db", check_same_thread=False) as conn:\n    multi_agent = builder.compile(checkpointer=SqliteSaver(conn))`,
-    },
-    {
-      num: 5,
-      tech: "LangSmith",
-      title: "Hierarchical Multi-Agent Tracing & CI/CD Testing",
-      desc: "LangSmith organizes executions into nested span trees: supervisor orchestration at the root, with drill-down observability into worker tool outputs and token costs.",
-      apis: [
-        { name: "traceable", pkg: "langsmith" },
-        { name: "CriteriaEvaluator", pkg: "langsmith" },
-        { name: "unit", pkg: "langsmith" },
-      ],
-      code: `from langsmith import Client, evaluate\n\nclient = Client()\nthread_config = {"configurable": {"thread_id": "security-patch-101"}}\n\nfor step in multi_agent.stream({\n    "messages": [("user", "Investigate CVE-2026-8812 and generate regression tests.")],\n    "task_plan": ["1. Research CVE", "2. Author patch", "3. Test in sandbox"],\n    "completed_milestones": [],\n}, config=thread_config):\n    print("Step:", step)`,
-    },
-  ];
+const TRY_QUERIES = ["StateGraph", "useState", "create_agent", "DataFrame"];
 
-  const currentSteps = activeMode === "single" ? singleSteps : multiSteps;
+function kindLabel(kind: string) {
+  return API_TYPES.find((type) => type.k === kind)?.label ?? kind;
+}
 
-  async function copyCode(code: string, index: number) {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopiedIndex(index);
-      setTimeout(() => setCopiedIndex(null), 2000);
-    } catch {}
-  }
+function pluralKind(kind: string, count: number) {
+  const label = kindLabel(kind).toLowerCase();
+  if (count === 1) return label;
+  return /(s|ss|x)$/.test(label) ? `${label}es` : `${label}s`;
+}
 
+function statusLabel(status: string) {
+  return API_STATUSES.find((item) => item.id === status)?.label ?? status;
+}
+
+/** Everything the catalog knows about a package, summarised under its name. */
+function PackageFacts({ pkg }: { pkg: ApiPackage }) {
+  const kinds = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const entry of pkg.entries) counts.set(entry.kind, (counts.get(entry.kind) ?? 0) + 1);
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  }, [pkg]);
+  const unstable = API_STATUSES.filter((item) => item.id !== "s")
+    .map((item) => ({ ...item, count: pkg.entries.filter((entry) => entry.status === item.id).length }))
+    .filter((item) => item.count > 0);
+  const guides = pkg.entries.filter((entry) => API_DETAILS[`${pkg.id}:${entry.name}`]).length;
   return (
-    <section className={styles.agenticWorkflowSection} aria-label="Agentic AI Workflow Architecture">
-      <div className={styles.agenticWorkflowHeader}>
-        <div>
-          <div className={styles.agenticWorkflowTitleWrap}>
-            <span className={styles.agenticSparkleBadge} aria-hidden="true">
-              <Workflow size={15} />
+    <dl className={ref.packageFacts}>
+      <div>
+        <dt>Types</dt>
+        <dd>
+          {kinds.slice(0, 5).map(([kind, count]) => (
+            <span key={kind} className={ref.factChip}>
+              <Badge kind={kind} />
+              {count} {pluralKind(kind, count)}
             </span>
-            <h2 className={styles.agenticWorkflowTitle}>
-              Agentic AI Workflow Architect
-              <UiBadge variant="secondary" className={styles.agenticBadge}>
-                Step-by-Step Blueprint
-              </UiBadge>
-            </h2>
-          </div>
-          <p className={styles.agenticWorkflowSubtitle}>
-            Step-by-step process for building stateful <strong>Single Agent</strong> and <strong>Multi-Agent</strong> systems using{" "}
-            <strong>LangChain</strong>, <strong>LangGraph</strong>, <strong>LangSmith</strong>, <strong>Deep Agents</strong>, and <strong>Integrations</strong>.
-          </p>
-        </div>
-
-        <div className={styles.agenticWorkflowActions}>
-          <div className={styles.agenticModePills} role="tablist">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeMode === "single"}
-              className={`${styles.agenticModeBtn} ${activeMode === "single" ? styles.agenticModeBtnActive : ""}`}
-              onClick={() => {
-                setActiveMode("single");
-                setExpandedStep(0);
-              }}
-            >
-              <Bot size={14} />
-              Single-Agent Workflow
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeMode === "multi"}
-              className={`${styles.agenticModeBtn} ${activeMode === "multi" ? styles.agenticModeBtnActive : ""}`}
-              onClick={() => {
-                setActiveMode("multi");
-                setExpandedStep(0);
-              }}
-            >
-              <Users size={14} />
-              Multi-Agent Workflow
-            </button>
-          </div>
-          <Link href="/dashboard/workflow" className={styles.agenticWorkflowStudioLink}>
-            Open Dedicated Workflow Studio
-            <ArrowRight size={14} />
-          </Link>
-        </div>
+          ))}
+          {kinds.length > 5 && <span className={ref.factMore}>+{kinds.length - 5} more types</span>}
+        </dd>
       </div>
-
-      <div className={styles.workflowStepsAccordion}>
-        {currentSteps.map((step, idx) => {
-          const isExpanded = expandedStep === idx;
-          return (
-            <article
-              key={step.num}
-              className={`${styles.workflowStepItem} ${isExpanded ? styles.workflowStepItemActive : ""}`}
-            >
-              <button
-                type="button"
-                className={styles.workflowStepHeaderBtn}
-                onClick={() => setExpandedStep(isExpanded ? -1 : idx)}
-                aria-expanded={isExpanded}
-              >
-                <div className={styles.workflowStepTitleWrap}>
-                  <span className={styles.workflowStepNum}>{step.num}</span>
-                  <span className={styles.workflowStepHeading}>{step.title}</span>
-                  <span className={styles.workflowStepTechBadge}>{step.tech}</span>
-                </div>
-                {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              </button>
-
-              {isExpanded && (
-                <div className={styles.workflowStepBody}>
-                  <p className={styles.workflowStepDesc}>{step.desc}</p>
-
-                  <div className={styles.workflowStepApis}>
-                    <span style={{ fontWeight: 600, color: "#64748b" }}>Core APIs:</span>
-                    {step.apis.map((api) => (
-                      <Link
-                        key={api.name}
-                        href={`/dashboard/api-docs/${api.pkg}/${api.name}`}
-                        className={styles.workflowStepApiLink}
-                      >
-                        {api.name}
-                        <ArrowUpRight size={11} />
-                      </Link>
-                    ))}
-                  </div>
-
-                  <div className={styles.workflowStepCodeBox}>
-                    <div className={styles.workflowStepCodeHeader}>
-                      <span>Python Implementation (Step {step.num})</span>
-                      <button
-                        type="button"
-                        className={styles.copyCodeButton}
-                        onClick={() => copyCode(step.code, idx)}
-                      >
-                        {copiedIndex === idx ? <Check size={12} /> : <Copy size={12} />}
-                        {copiedIndex === idx ? "Copied" : "Copy Code"}
-                      </button>
-                    </div>
-                    <pre className={styles.workflowStepCodeContent}>
-                      <code>{step.code}</code>
-                    </pre>
-                  </div>
-                </div>
-              )}
-            </article>
-          );
-        })}
+      <div>
+        <dt>Stability</dt>
+        <dd>
+          {unstable.length ? (
+            unstable.map((item) => (
+              <span key={item.id} className={ref.factChip}>
+                <span className={ref.statusDot} data-status={item.id} aria-hidden="true" />
+                {item.count} {item.label.toLowerCase()}
+              </span>
+            ))
+          ) : (
+            <span className={ref.factChip}>
+              <span className={ref.statusDot} data-status="s" aria-hidden="true" />
+              All stable
+            </span>
+          )}
+        </dd>
       </div>
-    </section>
+      {pkg.topics.length > 0 && (
+        <div>
+          <dt>Topics</dt>
+          <dd className={ref.topics}>{pkg.topics.slice(0, 6).join(" · ")}</dd>
+        </div>
+      )}
+      {guides > 0 && (
+        <div>
+          <dt>Guides</dt>
+          <dd>
+            {guides} hand-written {guides === 1 ? "page" : "pages"}
+          </dd>
+        </div>
+      )}
+    </dl>
   );
 }
 
@@ -892,12 +633,11 @@ export function ApiDocs() {
   const [open, setOpen] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string[]>([]);
   const [expandAll, setExpandAll] = useState(false);
+  const [showTypes, setShowTypes] = useState(false);
+  const [searchScope, setSearchScope] = useState<SearchScope>("all");
+  const [indexRail, setIndexRail] = useState(false);
 
-  // Advance search and toggle filters panel states
-  const [showFilters, setShowFilters] = useState(true);
-  const [searchScope, setSearchScope] = useState<"all" | "name" | "exact">("all");
-
-  // Keyboard shortcut: Cmd/Ctrl + K to focus API search
+  // Cmd/Ctrl + K focuses the reference search.
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -912,65 +652,61 @@ export function ApiDocs() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const agenticPackages = useMemo(() => {
-    return AGENTIC_FRAMEWORK_ORDER
-      .map((id) => API_PACKAGES.find((pkg) => pkg.id === id))
-      .filter((pkg): pkg is ApiPackage => Boolean(pkg));
+  const catalogFacts = useMemo(() => {
+    const identifiers = API_PACKAGES.reduce((sum, pkg) => sum + pkg.entries.length, 0);
+    return {
+      packages: API_PACKAGES.length,
+      identifiers,
+      guides: Object.keys(API_DETAILS).length,
+      categories: groupByCategory(API_PACKAGES),
+    };
   }, []);
 
-  const otherPackages = useMemo(() => {
-    return API_PACKAGES.filter((pkg) => !AGENTIC_FRAMEWORK_IDS.has(pkg.id));
-  }, []);
-
-  // Filter with Advance Search support
   const groups = useMemo(() => {
     const rawGroups = filterApiPackages(query, packageId, types, statuses);
     if (!query.trim() || searchScope === "all") return rawGroups;
-
     const normalized = query.trim().toLowerCase();
     return rawGroups
       .map((pkg) => ({
         ...pkg,
-        entries: pkg.entries.filter((entry) => {
-          if (searchScope === "name") {
-            return entry.name.toLowerCase().includes(normalized);
-          }
-          if (searchScope === "exact") {
-            return entry.name.toLowerCase() === normalized;
-          }
-          return true;
-        }),
+        entries: pkg.entries.filter((entry) =>
+          searchScope === "name" ? entry.name.toLowerCase().includes(normalized) : entry.name.toLowerCase() === normalized
+        ),
       }))
       .filter((pkg) => pkg.entries.length > 0);
   }, [query, packageId, types, statuses, searchScope]);
 
+  const categories = useMemo(() => groupByCategory(groups), [groups]);
+  // Counts per status for the current search, package and types, ignoring the status filter itself.
+  const statusCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const pkg of filterApiPackages(query, packageId, types, API_STATUSES.map((item) => item.id))) {
+      for (const entry of pkg.entries) counts[entry.status] = (counts[entry.status] ?? 0) + 1;
+    }
+    return counts;
+  }, [query, packageId, types]);
+  const selectedFilterPackage = API_PACKAGES.find((pkg) => pkg.id === packageId);
   const total = groups.reduce((sum, pkg) => sum + pkg.entries.length, 0);
   const selectedPackage = API_PACKAGES.find((pkg) => pkg.id === params.get("package"));
   const selectedEntry = selectedPackage?.entries.find((entry) => entry.name === params.get("api"));
   const detailRequested = params.has("api");
+  const searching = query.trim() !== "";
 
   const isFiltered =
-    query.trim() !== "" ||
-    packageId !== "all" ||
-    types.length > 0 ||
-    statuses.length !== API_STATUSES.length ||
-    searchScope !== "all";
-
-  // Count active filter constraints for badge indicator
-  const activeFilterCount = useMemo(() => {
-    let count = 0;
-    if (query.trim()) count++;
-    if (packageId !== "all") count++;
-    if (types.length > 0) count += types.length;
-    if (statuses.length < API_STATUSES.length) count += API_STATUSES.length - statuses.length;
-    if (searchScope !== "all") count++;
-    return count;
-  }, [query, packageId, types, statuses, searchScope]);
+    searching || packageId !== "all" || types.length > 0 || statuses.length !== API_STATUSES.length || searchScope !== "all";
 
   function toggleType(kind: string) {
-    setTypes((previous) =>
-      previous.includes(kind) ? previous.filter((item) => item !== kind) : [...previous, kind]
-    );
+    setTypes((previous) => (previous.includes(kind) ? previous.filter((item) => item !== kind) : [...previous, kind]));
+  }
+
+  function toggleStatus(id: string) {
+    setStatuses((previous) => (previous.includes(id) ? previous.filter((value) => value !== id) : [...previous, id]));
+  }
+
+  function choosePackage(id: string) {
+    setPackageId(id);
+    setOpen(id === "all" ? null : id);
+    document.getElementById("api-reference-results")?.scrollIntoView({ block: "start" });
   }
 
   function reset() {
@@ -984,520 +720,443 @@ export function ApiDocs() {
     setExpandAll(false);
   }
 
-  function entryLink(pkg: ApiPackage, entry: ApiEntry) {
+  function entryRow(pkg: ApiPackage, entry: ApiEntry) {
+    const guide = API_DETAILS[`${pkg.id}:${entry.name}`];
     return (
-      <Link
-        className={styles.apiItem}
-        key={entry.name}
-        href={apiTopicHref(pathname, pkg.id, entry.name)}
-        title={`${entry.name} · ${
-          API_TYPES.find((type) => type.k === entry.kind)?.label || entry.kind
-        }`}
-      >
+      <li className={ref.entry} key={entry.name} data-guide={guide ? "" : undefined}>
         <Badge kind={entry.kind} />
-        <span>{entry.name}</span>
-        {entry.status !== "s" && (
-          <small data-status={entry.status}>
-            {API_STATUSES.find((item) => item.id === entry.status)?.label}
-          </small>
-        )}
-      </Link>
+        <div className={ref.entryText}>
+          <Link className={ref.entryLink} href={apiTopicHref(pathname, pkg.id, entry.name)}>
+            {entry.name}
+          </Link>
+          {guide && <p className={ref.entrySummary}>{guide.description}</p>}
+        </div>
+        <span className={ref.entryMeta}>
+          {guide && <span className={ref.guideTag}>Guide</span>}
+          {entry.status !== "s" && (
+            <span className={ref.statusTag} data-status={entry.status}>
+              {statusLabel(entry.status)}
+            </span>
+          )}
+          <span className={ref.kindLabel}>{kindLabel(entry.kind)}</span>
+        </span>
+      </li>
     );
   }
 
-  return (
-    <div className={styles.root}>
-      {detailRequested ? (
-        selectedPackage && selectedEntry ? (
-          <ApiDetail
-            key={`${selectedPackage.id}:${selectedEntry.name}`}
-            pkg={selectedPackage}
-            entry={selectedEntry}
-            pathname={pathname}
-          />
+  if (detailRequested) {
+    return (
+      <div className={styles.root}>
+        {selectedPackage && selectedEntry ? (
+          <ApiDetail key={`${selectedPackage.id}:${selectedEntry.name}`} pkg={selectedPackage} entry={selectedEntry} pathname={pathname} />
         ) : (
           <div className={styles.empty}>
             <h1>API entry not found</h1>
             <p>This identifier is not in the reference catalog.</p>
             <Link href={pathname}>Back to API Reference</Link>
           </div>
-        )
-      ) : (
-        <>
-          <DashboardPageHeader
-            eyebrow="Professional learning / API Docs"
-            title="API Reference"
-            icon={<FileCode2 />}
-            description="Browse key identifiers across every technology and Agentic AI framework, filter by type or status, and study each API in depth with runnable code and workplace vocabulary."
-            actions={
-              <span className={styles.packageCount}>{API_PACKAGES.length} technologies</span>
-            }
-          />
+        )}
+      </div>
+    );
+  }
 
-          {/* Featured Agentic AI Frameworks Showcase */}
-          <section className={styles.agenticShowcase} aria-label="Agentic AI Frameworks">
-            <div className={styles.agenticShowcaseHeader}>
-              <div className={styles.agenticTitleWrap}>
-                <span className={styles.agenticSparkleBadge} aria-hidden="true">
-                  <Sparkles size={15} />
+  return (
+    <div className={styles.root}>
+      <DashboardPageHeader
+        eyebrow="Professional learning / API Docs"
+        title="API Reference"
+        icon={<FileCode2 />}
+        description="Look up any identifier across the stacks you study, see its type and stability at a glance, and open it for a full learning page with syntax, runnable code and practice."
+      />
+
+      <dl className={ref.facts} aria-label="Catalog at a glance">
+        <div>
+          <dt>Technologies</dt>
+          <dd>{catalogFacts.packages}</dd>
+        </div>
+        <div>
+          <dt>Identifiers</dt>
+          <dd>{catalogFacts.identifiers.toLocaleString("en-US")}</dd>
+        </div>
+        <div>
+          <dt>Categories</dt>
+          <dd>{catalogFacts.categories.length}</dd>
+        </div>
+        <div>
+          <dt>Hand-written guides</dt>
+          <dd>{catalogFacts.guides}</dd>
+        </div>
+      </dl>
+
+      <div className={ref.layout} data-rail={indexRail || undefined}>
+        <ApiPackageIndex
+          categories={catalogFacts.categories}
+          packageId={packageId}
+          total={catalogFacts.identifiers}
+          rail={indexRail}
+          onRailChange={setIndexRail}
+          onChoose={choosePackage}
+          renderMark={packageMark}
+        />
+
+        <div className={ref.main}>
+          <section className={ref.toolbar} aria-label="API reference filters">
+            <div className={ref.filterCard} data-tone="search">
+              <div className={ref.cardHead}>
+                <span className={ref.cardIcon} aria-hidden="true">
+                  <Search size={14} />
                 </span>
-                <h2 className={styles.agenticTitle}>Agentic AI Frameworks</h2>
-                <UiBadge variant="secondary" className={styles.agenticBadge}>
-                  Complete Documentation
-                </UiBadge>
+                <h2 className={ref.cardTitle}>Search</h2>
+                <kbd className={ref.shortcut} aria-hidden="true">
+                  Ctrl K
+                </kbd>
               </div>
-              <p className={styles.agenticSubtitle}>
-                Reference specifications, state schemas, and runnable execution patterns for multi-agent workflows.
+              <label className={ref.search} htmlFor="api-filter-search">
+                <Search size={16} aria-hidden="true" />
+                <input
+                  id="api-filter-search"
+                  type="search"
+                  aria-label="Filter APIs"
+                  placeholder="Identifier or package, e.g. StateGraph"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                />
+                {query && (
+                  <button type="button" aria-label="Clear API search" onClick={() => setQuery("")} className={ref.clearSearch}>
+                    <X size={14} aria-hidden="true" />
+                  </button>
+                )}
+              </label>
+              <div className={ref.segmented} role="group" aria-label="Match search against">
+                {SEARCH_SCOPES.map((scope) => (
+                  <button
+                    key={scope.id}
+                    type="button"
+                    aria-pressed={searchScope === scope.id}
+                    onClick={() => setSearchScope(scope.id)}
+                  >
+                    {scope.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className={ref.filterCard} data-tone="package">
+              <div className={ref.cardHead}>
+                <span className={ref.cardIcon} aria-hidden="true">
+                  <Boxes size={14} />
+                </span>
+                <h2 className={ref.cardTitle}>Package</h2>
+              </div>
+              <NativeSelect
+                aria-label="API package"
+                value={packageId}
+                onChange={(event) => {
+                  setPackageId(event.target.value);
+                  setOpen(event.target.value === "all" ? null : event.target.value);
+                }}
+                className={ref.select}
+              >
+                <NativeSelectOption value="all">All packages ({API_PACKAGES.length})</NativeSelectOption>
+                {catalogFacts.categories.map((category) => (
+                  <NativeSelectOptGroup label={category.label} key={category.id}>
+                    {category.packages.map((pkg) => (
+                      <NativeSelectOption value={pkg.id} key={pkg.id}>
+                        {pkg.name} ({pkg.entries.length})
+                      </NativeSelectOption>
+                    ))}
+                  </NativeSelectOptGroup>
+                ))}
+              </NativeSelect>
+              <p className={ref.cardHint}>
+                {selectedFilterPackage
+                  ? `${selectedFilterPackage.entries.length} identifiers · ${selectedFilterPackage.description}`
+                  : `${API_PACKAGES.length} technologies across ${catalogFacts.categories.length} categories`}
               </p>
             </div>
-            <div className={styles.agenticGrid}>
-              {agenticPackages.map((pkg) => {
-                const isSelected = packageId === pkg.id;
-                return (
+
+            <div className={ref.filterCard} data-tone="status">
+              <div className={ref.cardHead}>
+                <span className={ref.cardIcon} aria-hidden="true">
+                  <ShieldCheck size={14} />
+                </span>
+                <h2 className={ref.cardTitle}>Stability</h2>
+                <span className={ref.cardMeta}>
+                  {statuses.length} of {API_STATUSES.length} shown
+                </span>
+              </div>
+              <div className={ref.statuses} role="group" aria-label="API status filters">
+                {API_STATUSES.map((item) => (
                   <button
-                    key={pkg.id}
+                    key={item.id}
                     type="button"
-                    className={`${styles.agenticCard} ${
-                      isSelected ? styles.agenticCardActive : ""
-                    }`}
-                    onClick={() => {
-                      if (isSelected) {
-                        setPackageId("all");
-                        setOpen(null);
-                      } else {
-                        setPackageId(pkg.id);
-                        setOpen(pkg.id);
-                      }
-                    }}
-                    aria-pressed={isSelected}
-                    title={`Filter to ${pkg.name} (${pkg.entries.length} APIs)`}
+                    aria-pressed={statuses.includes(item.id)}
+                    className={ref.statusToggle}
+                    data-status={item.id}
+                    title={STATUS_HINTS[item.id]}
+                    onClick={() => toggleStatus(item.id)}
                   >
-                    <span className={styles.agenticCardIcon} aria-hidden="true">
-                      {packageMark(pkg)}
+                    <span className={ref.statusDot} aria-hidden="true" />
+                    {item.label}
+                    <span className={ref.statusCount} aria-hidden="true">
+                      {(statusCounts[item.id] ?? 0).toLocaleString("en-US")}
                     </span>
-                    <div className={styles.agenticCardBody}>
-                      <span className={styles.agenticCardName}>{pkg.name}</span>
-                      <span className={styles.agenticCardCount}>{pkg.entries.length} APIs</span>
-                    </div>
-                    {isSelected ? (
-                      <span className={styles.agenticCardCheck} aria-hidden="true">
-                        <Check size={14} />
-                      </span>
-                    ) : (
-                      <span className={styles.agenticCardArrow} aria-hidden="true">
-                        <ChevronDown size={13} />
-                      </span>
-                    )}
                   </button>
-                );
-              })}
-            </div>
-          </section>
-
-          {/* Interactive Agentic AI Workflow Architect (Step-by-Step Single/Multi-Agent Blueprint) */}
-          <AgenticWorkflowArchitect />
-
-          {/* Filters Card with Shadcn Form Controls, Advance Search, Toggle Filters Panel, and Clear Filter */}
-          <section className={styles.filterPanel} aria-label="API reference filters">
-            <div className={styles.toolbar}>
-              <div className={styles.toolbarPrimaryRow}>
-                {/* Search Input Box */}
-                <div className={styles.searchBlock}>
-                  <Label className={styles.search} htmlFor="api-filter-search">
-                    <Search size={16} className={styles.searchIcon} aria-hidden="true" />
-                    <Input
-                      id="api-filter-search"
-                      type="search"
-                      aria-label="Filter APIs"
-                      placeholder="Filter APIs across all technologies by identifier, package, or description…"
-                      value={query}
-                      onChange={(event) => setQuery(event.target.value)}
-                      className={styles.searchInput}
-                    />
-                    {query ? (
-                      <button
-                        type="button"
-                        aria-label="Clear API search"
-                        onClick={() => setQuery("")}
-                        className={styles.clearSearchBtn}
-                        title="Clear search"
-                      >
-                        <X size={14} aria-hidden="true" />
-                      </button>
-                    ) : (
-                      <span className={styles.searchShortcut} aria-hidden="true" title="Press ⌘K or Ctrl+K to search">
-                        <kbd>⌘K</kbd>
-                      </span>
-                    )}
-                  </Label>
-                </div>
-
-                {/* Package / Framework Dropdown */}
-                <div className={styles.selectWrapper}>
-                  <Layers size={15} className={styles.selectLeftIcon} aria-hidden="true" />
-                  <NativeSelect
-                    aria-label="API package"
-                    value={packageId}
-                    onChange={(event) => {
-                      setPackageId(event.target.value);
-                      setOpen(event.target.value === "all" ? null : event.target.value);
-                    }}
-                    className={styles.packageSelect}
-                  >
-                    <NativeSelectOption value="all">
-                      All Packages ({API_PACKAGES.length} technologies)
-                    </NativeSelectOption>
-                    <NativeSelectOptGroup label="Agentic AI Frameworks">
-                      {agenticPackages.map((pkg) => (
-                        <NativeSelectOption value={pkg.id} key={pkg.id}>
-                          {pkg.name} ({pkg.entries.length} APIs)
-                        </NativeSelectOption>
-                      ))}
-                    </NativeSelectOptGroup>
-                    <NativeSelectOptGroup label="Technologies & Ecosystems">
-                      {otherPackages.map((pkg) => (
-                        <NativeSelectOption value={pkg.id} key={pkg.id}>
-                          {pkg.name} ({pkg.entries.length} APIs)
-                        </NativeSelectOption>
-                      ))}
-                    </NativeSelectOptGroup>
-                  </NativeSelect>
-                  <ChevronDown size={15} className={styles.selectChevron} aria-hidden="true" />
-                </div>
-
-                {/* Filter Icon Button to Toggle Filters Panel */}
-                <Button
-                  type="button"
-                  variant={showFilters ? "secondary" : "outline"}
-                  onClick={() => setShowFilters((prev) => !prev)}
-                  className={styles.filterToggleBtn}
-                  aria-expanded={showFilters}
-                  aria-controls="api-collapsible-filters"
-                  title={showFilters ? "Hide filter panel" : "Show filter panel"}
-                >
-                  <SlidersHorizontal size={15} aria-hidden="true" />
-                  <span>Filters</span>
-                  {activeFilterCount > 0 && (
-                    <UiBadge variant="default" className={styles.filterBadgeCount}>
-                      {activeFilterCount}
-                    </UiBadge>
-                  )}
-                  {showFilters ? (
-                    <ChevronUp size={14} className={styles.toggleChevron} aria-hidden="true" />
-                  ) : (
-                    <ChevronDown size={14} className={styles.toggleChevron} aria-hidden="true" />
-                  )}
-                </Button>
-
-                {/* Dedicated Clear Filter Button */}
-                {isFiltered && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={reset}
-                    className={styles.toolbarClearBtn}
-                    title="Clear all active filters"
-                  >
-                    <RotateCcw size={13} aria-hidden="true" />
-                    <span>Clear filters</span>
-                  </Button>
-                )}
-              </div>
-
-              {/* Advance Search Mode Pills */}
-              <div className={styles.toolbarSecondaryRow}>
-                <div className={styles.advanceSearchRow} role="group" aria-label="Advance search options">
-                  <span className={styles.advanceSearchLabel}>Search in:</span>
-                  <button
-                    type="button"
-                    className={`${styles.advanceSearchPill} ${
-                      searchScope === "all" ? styles.advanceSearchPillActive : ""
-                    }`}
-                    onClick={() => setSearchScope("all")}
-                  >
-                    All fields
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.advanceSearchPill} ${
-                      searchScope === "name" ? styles.advanceSearchPillActive : ""
-                    }`}
-                    onClick={() => setSearchScope("name")}
-                  >
-                    Identifier only
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.advanceSearchPill} ${
-                      searchScope === "exact" ? styles.advanceSearchPillActive : ""
-                    }`}
-                    onClick={() => setSearchScope((curr) => (curr === "exact" ? "all" : "exact"))}
-                  >
-                    Exact match
-                  </button>
-                </div>
+                ))}
               </div>
             </div>
 
-            {/* Collapsible Filters Panel */}
-            <div
-              id="api-collapsible-filters"
-              className={`${styles.collapsibleFilters} ${
-                showFilters ? styles.filtersExpanded : styles.filtersCollapsed
-              }`}
-              hidden={!showFilters}
-            >
-              <div className={styles.statusSection}>
-                <span className={styles.filterSectionLabel}>Status</span>
-                <div className={styles.statuses} role="group" aria-label="API status filters">
-                  {API_STATUSES.map((item) => {
-                    const isActive = statuses.includes(item.id);
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        aria-pressed={isActive}
-                        className={`${styles.statusPill} ${
-                          isActive ? styles.statusPillActive : ""
-                        }`}
-                        onClick={() =>
-                          setStatuses((previous) =>
-                            previous.includes(item.id)
-                              ? previous.filter((value) => value !== item.id)
-                              : [...previous, item.id]
-                          )
-                        }
-                      >
-                        <span
-                          className={styles.statusIndicator}
-                          data-status={item.id}
-                          aria-hidden="true"
-                        />
-                        {isActive && <Check size={13} aria-hidden="true" />}
-                        <span>{item.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+            <div className={ref.filterCard} data-tone="types">
+              <div className={ref.cardHead}>
+                <span className={ref.cardIcon} aria-hidden="true">
+                  <SlidersHorizontal size={14} />
+                </span>
+                <h2 className={ref.cardTitle}>Identifier types</h2>
               </div>
-
-              <div className={styles.typeSection}>
-                <div className={styles.typeHeader}>
-                  <h2 className={styles.legend}>Filter by identifier type</h2>
-                  {types.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setTypes([])}
-                      className={styles.clearTypesBtn}
-                    >
-                      Clear types ({types.length})
-                    </button>
-                  )}
-                </div>
-                <div className={styles.types} role="group" aria-label="Identifier types">
-                  {API_TYPES.map((type) => {
-                    const isActive = types.includes(type.k);
-                    return (
-                      <button
-                        key={type.k}
-                        type="button"
-                        aria-pressed={isActive}
-                        className={`${styles.typePill} ${
-                          isActive ? styles.typePillActive : ""
-                        }`}
-                        onClick={() => toggleType(type.k)}
-                      >
-                        <Badge kind={type.k} />
-                        <span className={styles.typeText}>{type.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Results summary bar with quick controls */}
-          <div className={styles.results}>
-            <div className={styles.resultsInfo}>
-              <span role="status" className={styles.resultsCount}>
-                <strong>{total.toLocaleString("en-US")}</strong> identifiers ·{" "}
-                <strong>{groups.length}</strong> packages
-              </span>
-              {isFiltered && (
-                <UiBadge variant="outline" className={styles.activeFilterBadge}>
-                  {activeFilterCount} active {activeFilterCount === 1 ? "filter" : "filters"}
-                </UiBadge>
-              )}
-            </div>
-            <div className={styles.resultsActions}>
               <button
                 type="button"
-                className={styles.actionBtn}
-                onClick={() => {
-                  setExpandAll((prev) => !prev);
-                  setOpen(null);
-                }}
+                className={ref.typesToggle}
+                aria-expanded={showTypes}
+                aria-controls="api-type-filters"
+                onClick={() => setShowTypes((previous) => !previous)}
               >
-                {expandAll ? "Collapse all" : "Expand all"}
+                <span>{types.length ? `${types.length} of ${API_TYPES.length} selected` : `All ${API_TYPES.length} types`}</span>
+                <ChevronDown size={14} aria-hidden="true" className={showTypes ? ref.flipped : undefined} />
               </button>
-              <button type="button" className={styles.actionBtn} onClick={reset}>
-                Reset filters
-              </button>
+              <p className={ref.cardHint}>Classes, hooks, functions, components and more.</p>
+            </div>
+
+            <div id="api-type-filters" className={ref.typePanel} hidden={!showTypes}>
+              <div className={ref.typePanelHead}>
+                <h2>Choose identifier types</h2>
+                {types.length > 0 && (
+                  <button type="button" className={ref.textButton} onClick={() => setTypes([])}>
+                    Clear types
+                  </button>
+                )}
+              </div>
+              <div className={ref.types} role="group" aria-label="Identifier types">
+                {API_TYPES.map((type) => (
+                  <button
+                    key={type.k}
+                    type="button"
+                    aria-pressed={types.includes(type.k)}
+                    className={ref.typeToggle}
+                    onClick={() => toggleType(type.k)}
+                  >
+                    <Badge kind={type.k} />
+                    {type.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <div id="api-reference-results" className={ref.resultsBar}>
+            <p role="status">
+              <strong>{total.toLocaleString("en-US")}</strong> {total === 1 ? "identifier" : "identifiers"} in{" "}
+              <strong>{groups.length}</strong> {groups.length === 1 ? "package" : "packages"}
+            </p>
+            {isFiltered && (
+              <ul className={ref.activeFilters} aria-label="Active filters">
+                {searching && (
+                  <li>
+                    <button type="button" onClick={() => setQuery("")} aria-label={`Remove search ${query.trim()}`}>
+                      “{query.trim()}” <X size={12} aria-hidden="true" />
+                    </button>
+                  </li>
+                )}
+                {packageId !== "all" && (
+                  <li>
+                    <button type="button" onClick={() => choosePackage("all")} aria-label="Show all packages">
+                      {API_PACKAGES.find((pkg) => pkg.id === packageId)?.name} <X size={12} aria-hidden="true" />
+                    </button>
+                  </li>
+                )}
+                {types.map((kind) => (
+                  <li key={kind}>
+                    <button type="button" onClick={() => toggleType(kind)} aria-label={`Remove type ${kindLabel(kind)}`}>
+                      {kindLabel(kind)} <X size={12} aria-hidden="true" />
+                    </button>
+                  </li>
+                ))}
+                {API_STATUSES.filter((item) => !statuses.includes(item.id)).map((item) => (
+                  <li key={item.id}>
+                    <button type="button" onClick={() => toggleStatus(item.id)} aria-label={`Show ${item.label} again`}>
+                      Hiding {item.label} <X size={12} aria-hidden="true" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className={ref.resultsActions}>
+              {groups.length > 0 && !searching && (
+                <button
+                  type="button"
+                  className={ref.textButton}
+                  onClick={() => {
+                    setExpandAll((previous) => !previous);
+                    setOpen(null);
+                  }}
+                >
+                  {expandAll ? "Collapse all" : "Expand all"}
+                </button>
+              )}
+              {isFiltered && (
+                <button type="button" className={ref.textButton} onClick={reset}>
+                  <RotateCcw size={13} aria-hidden="true" /> Reset
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Empty State */}
           {!groups.length && (
-            <div className={styles.empty}>
-              <Search size={30} className={styles.emptyIcon} aria-hidden="true" />
+            <div className={ref.empty}>
               <h2>No APIs match your filters.</h2>
-              <p>Try a different identifier, package, type or status.</p>
-              <div className={styles.emptySuggestions}>
-                <span className={styles.suggestionTitle}>Try searching:</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuery("create_deep_agent");
-                    setPackageId("all");
-                  }}
-                >
-                  create_deep_agent
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuery("StateGraph");
-                    setPackageId("all");
-                  }}
-                >
-                  StateGraph
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuery("init_chat_model");
-                    setPackageId("all");
-                  }}
-                >
-                  init_chat_model
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuery("useState");
-                    setPackageId("all");
-                  }}
-                >
-                  useState
-                </button>
+              <p>
+                {searching
+                  ? `Nothing named “${query.trim()}” fits the package, types and statuses you chose.`
+                  : "The package, types and statuses you chose leave nothing to show."}{" "}
+                Widen the filters or try one of these.
+              </p>
+              <div className={ref.tryRow}>
+                {TRY_QUERIES.map((term) => (
+                  <button
+                    key={term}
+                    type="button"
+                    onClick={() => {
+                      reset();
+                      setQuery(term);
+                    }}
+                  >
+                    {term}
+                  </button>
+                ))}
               </div>
-              <Button onClick={reset} variant="default" size="default">
-                Clear all filters
-              </Button>
+              <Button onClick={reset}>Clear all filters</Button>
             </div>
           )}
 
-          {/* Grouped Catalog View */}
-          <div className={styles.groups}>
-            {groups.map((pkg) => {
-              const isAgentic = AGENTIC_FRAMEWORK_IDS.has(pkg.id);
-              const isOpen = !!query.trim() || expandAll || open === pkg.id;
-              const entries = expanded.includes(pkg.id) ? pkg.entries : pkg.entries.slice(0, 60);
-              const jsGroups = [...new Set(entries.map((entry) => javascriptGroup(entry.name)))];
-
-              return (
-                <section
-                  key={pkg.id}
-                  className={`${styles.group} ${isAgentic ? styles.agenticGroup : ""}`}
-                  style={{ "--accent": pkg.accent } as CSSProperties}
-                >
-                  <header className={styles.groupHead}>
-                    <h2>
-                      <button
-                        aria-label={`Toggle ${pkg.name}`}
-                        aria-expanded={isOpen}
-                        aria-controls={`api-group-${pkg.id}`}
-                        onClick={() => {
-                          if (isOpen) {
-                            setOpen(null);
-                            if (expandAll) setExpandAll(false);
-                          } else {
-                            setOpen(pkg.id);
-                          }
-                        }}
-                      >
-                        <ChevronDown
-                          size={16}
-                          className={isOpen ? "" : styles.closed}
-                          aria-hidden="true"
-                        />
-                        <span className={styles.groupIcon} aria-hidden="true">
-                          {packageMark(pkg)}
-                        </span>
-                        <span className={styles.groupName}>{pkg.name}</span>
-                        {isAgentic && (
-                          <UiBadge variant="secondary" className={styles.frameworkBadge}>
-                            <Sparkles size={11} aria-hidden="true" />
-                            Agentic AI
-                          </UiBadge>
-                        )}
-                        <small>{pkg.entries.length}</small>
-                      </button>
-                    </h2>
-                    <div className={styles.groupMetaActions}>
-                      <span className={styles.groupMeta}>{pkg.description}</span>
-                      <a
-                        href={pkg.docs}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.docsLink}
-                        title={`Open official ${pkg.name} documentation`}
-                      >
-                        Docs <ArrowUpRight size={12} aria-hidden="true" />
-                      </a>
-                    </div>
-                  </header>
-                  <div id={`api-group-${pkg.id}`} hidden={!isOpen}>
-                    {isOpen && (
-                      <>
-                        {pkg.id === "javascript" ? (
-                          jsGroups.map((group) => (
-                            <div className={styles.subgroup} key={group}>
-                              <h3>{group}</h3>
-                              <div className={styles.items}>
-                                {entries
-                                  .filter((entry) => javascriptGroup(entry.name) === group)
-                                  .map((entry) => entryLink(pkg, entry))}
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className={styles.items}>
-                            {entries.map((entry) => entryLink(pkg, entry))}
-                          </div>
-                        )}
-                        {entries.length < pkg.entries.length && (
+          {categories.map((category) => (
+            <section className={ref.category} key={category.id} aria-labelledby={`api-category-${category.id}`}>
+              <h2 id={`api-category-${category.id}`} className={ref.categoryHeading}>
+                {category.label}
+                <span className={ref.count}>
+                  {category.packages.reduce((sum, pkg) => sum + pkg.entries.length, 0).toLocaleString("en-US")}
+                </span>
+              </h2>
+              <div className={ref.packages}>
+                {category.packages.map((pkg) => {
+                  const isOpen = searching || expandAll || open === pkg.id || packageId === pkg.id;
+                  const entries = expanded.includes(pkg.id) || searching ? pkg.entries : pkg.entries.slice(0, 60);
+                  const full = API_PACKAGES.find((item) => item.id === pkg.id);
+                  const jsGroups = [...new Set(entries.map((entry) => javascriptGroup(entry.name)))];
+                  return (
+                    <section
+                      key={pkg.id}
+                      className={ref.package}
+                      data-open={isOpen || undefined}
+                      style={{ "--accent": pkg.accent } as CSSProperties}
+                    >
+                      <header className={ref.packageHead}>
+                        <h3>
                           <button
-                            className={styles.showAll}
+                            type="button"
+                            aria-label={`Toggle ${pkg.name}`}
+                            aria-expanded={isOpen}
+                            aria-controls={`api-group-${pkg.id}`}
+                            onClick={() => {
+                              if (isOpen) {
+                                setOpen(null);
+                                if (expandAll) setExpandAll(false);
+                                if (packageId === pkg.id) setPackageId("all");
+                              } else {
+                                setOpen(pkg.id);
+                              }
+                            }}
+                          >
+                            <span className={ref.packageMark} aria-hidden="true">
+                              {packageMark(pkg)}
+                            </span>
+                            <span className={ref.packageTitle}>
+                              <span className={ref.packageName}>{pkg.name}</span>
+                              <span className={ref.packageDescription}>{pkg.description}</span>
+                            </span>
+                            <span className={ref.count}>
+                              {pkg.entries.length === full?.entries.length
+                                ? pkg.entries.length
+                                : `${pkg.entries.length} of ${full?.entries.length}`}
+                            </span>
+                            <ChevronDown size={16} aria-hidden="true" className={ref.chevron} />
+                          </button>
+                        </h3>
+                        <a
+                          href={pkg.docs}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={ref.docsLink}
+                          aria-label={`Official ${pkg.name} documentation (opens in a new tab)`}
+                        >
+                          Official docs <ArrowUpRight size={13} aria-hidden="true" />
+                        </a>
+                      </header>
+                      {full && <PackageFacts pkg={full} />}
+                      <div id={`api-group-${pkg.id}`} hidden={!isOpen}>
+                        {isOpen &&
+                          (pkg.id === "javascript" ? (
+                            jsGroups.map((group) => (
+                              <div className={ref.subgroup} key={group}>
+                                <h4>{group}</h4>
+                                <ul className={ref.entries}>
+                                  {entries.filter((entry) => javascriptGroup(entry.name) === group).map((entry) => entryRow(pkg, entry))}
+                                </ul>
+                              </div>
+                            ))
+                          ) : (
+                            <ul className={ref.entries}>{entries.map((entry) => entryRow(pkg, entry))}</ul>
+                          ))}
+                        {isOpen && entries.length < pkg.entries.length && (
+                          <button
+                            type="button"
+                            className={ref.showAll}
                             onClick={() => setExpanded((previous) => [...previous, pkg.id])}
                           >
                             Show all {pkg.entries.length} identifiers
                           </button>
                         )}
-                      </>
-                    )}
-                  </div>
-                </section>
-              );
-            })}
-          </div>
-          <p className={styles.provenance}>
-            Every reference opens inside MasterClass. Status labels describe the catalog snapshot;
-            verify behaviour against the version installed in your project.
-          </p>
-        </>
-      )}
+                      </div>
+                    </section>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
+
+          <aside className={ref.legend} aria-label="How to read this reference">
+            <h2>Reading the reference</h2>
+            <dl>
+              {API_STATUSES.map((item) => (
+                <div key={item.id}>
+                  <dt>
+                    <span className={ref.statusDot} data-status={item.id} aria-hidden="true" />
+                    {item.label}
+                  </dt>
+                  <dd>{STATUS_HINTS[item.id]}</dd>
+                </div>
+              ))}
+              <div>
+                <dt>
+                  <span className={ref.guideTag}>Guide</span>
+                </dt>
+                <dd>A hand-written page with syntax, parameters and a worked example. Other identifiers open a page prepared in the app.</dd>
+              </div>
+            </dl>
+            <p>Statuses describe this catalog snapshot. Check them against the version installed in your project.</p>
+          </aside>
+        </div>
+      </div>
+
+      <AgentBlueprint />
     </div>
   );
 }

@@ -1,15 +1,15 @@
 import "server-only";
 import { ZodError } from "zod";
 import { authConfigured } from "./config";
-import { supabaseServer, currentUser } from "./auth";
+import { supabaseServer } from "./auth";
 import { after } from "next/server";
 import { recordEvent } from "./monitoring";
 export class HttpError extends Error { constructor(public status: number, public code: string) { super(code); } }
 export async function userId() {
   if (!authConfigured()) throw new HttpError(503, "setup_required");
-  const user = await currentUser();
-  if (!user) throw new HttpError(401, "signin_required");
-  return user.id;
+  const { data } = await (await supabaseServer()).auth.getUser();
+  if (!data.user) throw new HttpError(401, "signin_required");
+  return data.user.id;
 }
 export async function jsonBody(request: Request, max = 30000) {
   if (Number(request.headers.get("content-length")) > max) throw new HttpError(413, "request_too_large");

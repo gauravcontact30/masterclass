@@ -15,45 +15,6 @@ export async function supabaseServer() {
   });
 }
 export async function currentUser() {
-  const store = await cookies();
-  const devSession = store.get("mc_dev_session");
-  if (devSession?.value) {
-    try {
-      const parsed = JSON.parse(decodeURIComponent(devSession.value));
-      return {
-        id: parsed.id ?? "dev-user-001",
-        email: parsed.email ?? "student@masterclass.dev",
-        app_metadata: { provider: "dev" },
-        user_metadata: { full_name: parsed.name ?? "MasterClass Student" },
-        aud: "authenticated",
-        created_at: new Date().toISOString(),
-      } as any;
-    } catch {
-      return {
-        id: "dev-user-001",
-        email: "student@masterclass.dev",
-        app_metadata: { provider: "dev" },
-        user_metadata: { full_name: "MasterClass Student" },
-        aud: "authenticated",
-        created_at: new Date().toISOString(),
-      } as any;
-    }
-  }
-
-  try {
-    const { data } = await (await supabaseServer()).auth.getUser();
-    if (data?.user) return data.user;
-  } catch {
-    // Supabase offline or paused — fallback to direct access
-  }
-
-  // Direct access: default student session so dashboard and APIs work without credentials
-  return {
-    id: "student-user-001",
-    email: "student@masterclass.dev",
-    app_metadata: { provider: "direct" },
-    user_metadata: { full_name: "MasterClass Student" },
-    aud: "authenticated",
-    created_at: new Date().toISOString(),
-  } as any;
+  const { data } = await (await supabaseServer()).auth.getUser();
+  return data.user;
 }

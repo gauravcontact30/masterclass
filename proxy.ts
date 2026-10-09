@@ -40,13 +40,50 @@ export default async function proxy(request: NextRequest) {
     }
   }
 
-  // 3. Direct Access: Auth pages redirect directly to dashboard
-  if (pathname === "/sign-in" || pathname === "/sign-up" || pathname.startsWith("/sign-in/") || pathname.startsWith("/sign-up/")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  // 3. Super Admin Route Protection Check
+  if (pathname.startsWith("/dashboard/super-admin")) {
+    const hasSessionCookie = request.cookies.getAll().some(
+      (c) => c.name.includes("auth-token") || c.name.startsWith("sb-")
+    );
+    if (process.env.SUPABASE_URL && !hasSessionCookie) {
+      const signInUrl = new URL("/sign-in", request.url);
+      signInUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(signInUrl);
+    }
   }
 
-  // 4. Session & Header Response Handling
+  // 4. Supabase Session Management & Auth Redirection
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   let response = NextResponse.next({ request });
+
+  if (url && key) {
+    const isMarketing =
+      pathname === "/" &&
+      !request.cookies.getAll().some(({ name }) => /^sb-.+-auth-token(?:\.\d+)?$/.test(name));
+
+    if (!isMarketing) {
+      const supabase = createServerClient(url, key, {
+        cookies: {
+          getAll: () => request.cookies.getAll(),
+          setAll: (list) => {
+            list.forEach(({ name, value }) => request.cookies.set(name, value));
+            response = NextResponse.next({ request });
+            list.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+          },
+        },
+      });
+
+      const { data } = await supabase.auth.getUser();
+      const target = redirectFor({ pathname, signedIn: Boolean(data.user) });
+      if (target) {
+        const redirected = NextResponse.redirect(new URL(target, request.url));
+        response.cookies.getAll().forEach((cookie) => redirected.cookies.set(cookie));
+        redirected.headers.set("Cache-Control", "private, no-store");
+        return redirected;
+      }
+    }
+  }
 
   // 5. Attach Next.js Edge Security and Performance Headers
   response.headers.set("X-Content-Type-Options", "nosniff");
