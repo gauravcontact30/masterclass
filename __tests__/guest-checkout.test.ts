@@ -35,7 +35,7 @@ function query(table: string) {
     if (operation === "insert") {
       if (table === "subscriptions" && tables.subscriptions.some(row => row.user_id === value.user_id)) return { data: null, error: new Error("duplicate") };
       // Column defaults from migration 0022.
-      const row = table === "guest_checkouts" ? { status: "created", user_id: null, created_user: false, claimed_at: null, created_at: new Date().toISOString(), ...value } : { ...value };
+      const row = table === "guest_checkouts" ? { status: "created", user_id: null, created_user: false, created_at: new Date().toISOString(), ...value } : { ...value };
       tables[table].push(row); return { data: { ...row }, error: null };
     }
     const matched = rows();
@@ -112,19 +112,19 @@ test("verification rejects a forged signature or a different subscription", asyn
   expect(users).toHaveLength(0);
 });
 
-test("a paid checkout creates the account, attaches the membership and signs the buyer in once", async () => {
+test("a paid checkout creates a passwordless account and never signs the paying browser in", async () => {
   const { checkoutId } = await (await checkout()).json();
   remote = { ...remote, status: "active", paid_count: 1 };
   const response = await verify(checkoutId);
-  expect(await response.json()).toEqual({ status: "active", email: "asha@example.com", signedIn: true, newAccount: true });
+  expect(await response.json()).toEqual({ status: "active", email: "asha@example.com", newAccount: true });
   expect(users).toEqual([{ id: "user_1", email: "asha@example.com" }]);
   expect(tables.subscriptions).toEqual([expect.objectContaining({ user_id: "user_1", provider_ref: "sub_guest", tier: "monthly" })]);
   expect(savePreparations).toHaveBeenCalledWith("user_1", [prep]);
   expect(reconcileSubscription).toHaveBeenCalledWith("sub_guest", expect.stringMatching(/^guest-verify:/));
-  expect(verifyOtp).toHaveBeenCalledTimes(1);
-  // A replayed verification never mints a second session.
-  expect((await (await verify(checkoutId)).json()).signedIn).toBe(false);
-  expect(verifyOtp).toHaveBeenCalledTimes(1);
+  // Paying does not prove the buyer owns the email, so no session is issued here.
+  expect(verifyOtp).not.toHaveBeenCalled();
+  await verify(checkoutId);
+  expect(verifyOtp).not.toHaveBeenCalled();
   expect(users).toHaveLength(1);
 });
 
@@ -140,7 +140,7 @@ test("the webhook path links a paid checkout even if the browser never returned"
   await checkout();
   remote = { ...remote, status: "authenticated" };
   const row = await fulfilGuestCheckout("sub_guest", "evt_2");
-  expect(row).toMatchObject({ status: "fulfilled", user_id: "user_1", created_user: true, claimed_at: null });
+  expect(row).toMatchObject({ status: "fulfilled", user_id: "user_1", created_user: true });
   expect(reconcileSubscription).toHaveBeenCalledWith("sub_guest", "evt_2");
   expect(await fulfilGuestCheckout("sub_unknown", "evt_3")).toBeNull();
 });
@@ -153,7 +153,7 @@ test("a second live membership for the same account is stopped and flagged for r
   remote = { ...remote, status: "active", paid_count: 1 };
   jest.spyOn(console, "error").mockImplementation(() => {});
   const body = await (await verify(checkoutId)).json();
-  expect(body).toMatchObject({ status: "conflict", signedIn: false });
+  expect(body).toMatchObject({ status: "conflict" });
   expect(razorpay).toHaveBeenCalledWith("subscriptions/sub_guest/cancel", { cancel_at_cycle_end: 0 });
   expect(tables.subscriptions).toEqual([expect.objectContaining({ provider_ref: "sub_member" })]);
   expect(verifyOtp).not.toHaveBeenCalled();

@@ -2,9 +2,9 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { GuestCheckout } from "@/components/guest-checkout";
 import { openSubscriptionCheckout } from "@/lib/razorpay-checkout";
 
-jest.mock("next/navigation", () => ({ useRouter: () => ({ replace: jest.fn() }) }));
 jest.mock("@/components/landing-fonts", () => ({ anek: { variable: "anek" } }));
-jest.mock("@/lib/supabase-browser", () => ({ supabaseBrowser: () => ({ auth: { updateUser: jest.fn(async () => ({ error: null })) } }) }));
+const signInWithOtp = jest.fn(async () => ({ error: null }));
+jest.mock("@/lib/supabase-browser", () => ({ supabaseBrowser: () => ({ auth: { signInWithOtp } }) }));
 jest.mock("@/lib/razorpay-checkout", () => ({ openSubscriptionCheckout: jest.fn() }));
 
 const fill = () => {
@@ -19,7 +19,7 @@ const respond = (...bodies: [number, unknown][]) => {
   return mock;
 };
 
-test("payment waits for a preparation, then shows the active membership", async () => {
+test("payment waits for a preparation, then emails the new account a sign-in link", async () => {
   render(<GuestCheckout initialTier="yearly" enabled prices={{ monthly: 299, yearly: 2999 }} />);
   const pay = screen.getByRole("button", { name: /Pay .*2,999 securely/ });
   expect(pay).toBeDisabled();
@@ -28,7 +28,7 @@ test("payment waits for a preparation, then shows the active membership", async 
   expect(pay).toBeEnabled();
   const fetch = respond(
     [200, { checkoutId: "c1", subscriptionId: "sub_1", keyId: "rzp_test", prefill: { email: "asha@example.com", name: "Asha" } }],
-    [200, { status: "active", email: "asha@example.com", signedIn: true, newAccount: true }],
+    [200, { status: "active", email: "asha@example.com", newAccount: true }],
   );
   jest.mocked(openSubscriptionCheckout).mockResolvedValue({ razorpay_payment_id: "pay_1", razorpay_subscription_id: "sub_1", razorpay_signature: "a".repeat(64) });
   fireEvent.click(pay);
@@ -36,7 +36,10 @@ test("payment waits for a preparation, then shows the active membership", async 
   expect(JSON.parse(fetch.mock.calls[0][1].body)).toMatchObject({ action: "checkout", tier: "yearly", email: "asha@example.com", name: "Asha" });
   expect(JSON.parse(fetch.mock.calls[1][1].body)).toMatchObject({ action: "verify", checkoutId: "c1", razorpay_payment_id: "pay_1" });
   expect(openSubscriptionCheckout).toHaveBeenCalledWith(expect.objectContaining({ subscription_id: "sub_1", prefill: { email: "asha@example.com", name: "Asha" } }));
-  expect(screen.getByLabelText(/Set a password/)).toBeInTheDocument();
+  // The link goes to the inbox; this browser is never signed in directly.
+  expect(await screen.findByText(/We emailed a sign-in link to asha@example.com/)).toBeInTheDocument();
+  expect(signInWithOtp).toHaveBeenCalledTimes(1);
+  expect(signInWithOtp).toHaveBeenCalledWith({ email: "asha@example.com", options: expect.objectContaining({ shouldCreateUser: false }) });
 });
 
 test("an email with an account is sent to sign in instead of paying", async () => {

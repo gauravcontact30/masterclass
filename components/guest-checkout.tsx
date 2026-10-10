@@ -176,7 +176,7 @@ function SignInLink({ email, text }: { email: string; text: (en: string, hi: str
       setState(error ? "error" : "sent");
     } catch { setState("error"); }
   }
-  useEffect(() => { if (sentOnce.current) return; sentOnce.current = true; void send(); }); // eslint-disable-line react-hooks/exhaustive-deps -- send once on mount
+  useEffect(() => { if (sentOnce.current) return; sentOnce.current = true; void send(); });
   return <div className={styles.password}>
     <p className={styles.saved} role="status"><MailCheck size={16} aria-hidden="true" /><ExpandedText text={state === "sending"
       ? text("Sending your sign-in link…", "आपका साइन-इन लिंक भेजा जा रहा है…")
