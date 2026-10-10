@@ -89,6 +89,9 @@
   border-radius: 999px;
   white-space: nowrap;
 }
+@media (max-width: 640px) {
+  .verifiedBadge { max-width: 100%; white-space: normal; line-height: 1.45; border-radius: 12px; }
+}
 
 /* Sticky Search & Filter Toolbar */
 .panel {

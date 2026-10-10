@@ -5,7 +5,7 @@ import { requireLearningUser as currentUser } from "@/lib/server/subscription-ac
 import { authConfigured, databaseConfigured, billingConfigured } from "@/lib/server/config";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Techy · Profissional Learn" };
+export const metadata = { title: "Techy · Professional Learn" };
 
 export default async function Page() {
   const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser() : null;

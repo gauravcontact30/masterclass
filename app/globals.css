@@ -772,3 +772,40 @@ ul.learning-key-points.pointwise > li::before, .notes-bullets > li::before { con
 .workspace { --dashboard-card-gap: 24px; }
 .workspace :has(> [data-slot="card"] + [data-slot="card"]) { gap: var(--dashboard-card-gap); }
 @media (max-width: 640px) { .workspace { --dashboard-card-gap: 18px; } }
+
+/* Phone sidebar: the dashboard and Professional Learn navs become single-line
+   swipe rows instead of cramped 4-up grids, and the sidebar scrolls away with
+   the page rather than pinning ~300px of navigation over the content. */
+@media (max-width: 760px) {
+  .app-shell.compact-workspace .sidebar { position: relative; max-height: none; }
+  .app-shell.compact-workspace .sidebar > nav:is(:first-of-type, .sidebar-pro-nav) {
+    display: flex; flex-wrap: nowrap; gap: 6px; margin: 0 -15px; padding: 2px 15px;
+    overflow-x: auto; overscroll-behavior-x: contain; scroll-padding-inline: 15px; scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 12px, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 12px, #000 calc(100% - 28px), transparent);
+  }
+  .app-shell.compact-workspace .sidebar > nav:is(:first-of-type, .sidebar-pro-nav)::-webkit-scrollbar { display: none; }
+  .app-shell.compact-workspace .sidebar > nav:is(:first-of-type, .sidebar-pro-nav) > :is(a, button) {
+    flex: none; width: auto; min-width: 0; min-height: 36px; margin: 0; padding: 8px 12px; gap: 7px;
+    font-size: 12px; white-space: nowrap; justify-content: flex-start;
+  }
+  .app-shell.compact-workspace .sidebar > nav:first-of-type > .sidebar-search-row { flex: none; padding: 0 4px 0 0; }
+  .app-shell.compact-workspace .sidebar > nav:first-of-type > .sidebar-search-row > .sidebar-notes { flex: none; min-height: 36px; padding: 8px 6px 8px 12px; font-size: 12px; white-space: nowrap; }
+  .app-shell.compact-workspace .sidebar > .sidebar-pro-nav { margin-top: 6px; }
+  .app-shell.compact-workspace .sidebar > .sidebar-pro-nav > a > svg:last-child:not(:first-child) { display: none; }
+}
+/* Tablet widths: breadcrumb + refresh + super admin + language + avatar don't
+   fit beside a 200px sidebar, so the actions drop to a second line when needed. */
+@media (min-width: 601px) and (max-width: 1100px) {
+  .app-shell.compact-workspace .topbar { flex-wrap: wrap; height: auto; min-height: 62px; gap: 8px 16px; padding-block: 10px; }
+  .app-shell.compact-workspace .topbar-actions { margin-left: auto; flex-wrap: wrap; justify-content: flex-end; gap: 10px; min-width: 0; }
+}
+@media (min-width: 601px) and (max-width: 760px) { .app-shell.compact-workspace .topbar { min-height: 48px; } }
+@media (max-width: 600px) {
+  .app-shell.compact-workspace .topbar-actions { flex-wrap: wrap; justify-content: flex-end; min-width: 0; }
+}
+@media (max-width: 480px) {
+  .super-admin-header-link { padding: 7px; }
+  .super-admin-header-link > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .super-admin-header-link > svg:last-child { display: none; }
+}

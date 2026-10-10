@@ -1124,6 +1124,10 @@
   outline: none !important;
 }
 
+/* Long topology names truncate inside the trigger instead of pushing it past the panel. */
+.readerTopologySelect { min-width: 0; }
+.readerTopologySelect [data-slot="select-value"] { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 .readerTopologySelect:focus-visible,
 .readerTopologySelect:focus {
   outline: none !important;

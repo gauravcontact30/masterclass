@@ -42,7 +42,7 @@ export function publicPage(path: PublicPage["path"]): PublicPage {
   return page;
 }
 
-const ogImage = { url: "/opengraph-image", width: 1200, height: 630, alt: `${siteName} — Technology and AI learning guides in English and Hindi` };
+const ogImage = { url: "/opengraph-image", width: 1200, height: 630, alt: `${siteName} — School, exam and technology learning in English and Hindi` };
 
 /**
  * Complete metadata for a public page. Next.js replaces (not merges) nested

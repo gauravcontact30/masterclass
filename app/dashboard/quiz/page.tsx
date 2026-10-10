@@ -5,7 +5,7 @@ import { authConfigured, databaseConfigured, billingConfigured } from "@/lib/ser
 import { proSectionContent } from "@/lib/server/pro-learn-pages";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Quiz · Profissional Learn" };
+export const metadata = { title: "Quiz · Professional Learn" };
 
 export default async function Page() {
   const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser() : null;

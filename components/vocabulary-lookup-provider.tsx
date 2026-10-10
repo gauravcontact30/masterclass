@@ -9,11 +9,15 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import dynamic from "next/dynamic";
 import { BookOpen, Loader2 } from "lucide-react";
 import type { WordLookup } from "@/lib/english-word";
-import { getCachedWordLookup, prefetchWordDetails } from "@/lib/vocabulary-storage";
-import { VocabularyWordModal } from "./vocabulary-word-modal";
 import styles from "./vocabulary-lookup-floating.module.css";
+
+// This provider wraps every page from the root layout. vocabulary-storage pulls
+// in zod (~400 KB raw), so it and the modal load on the first lookup, never up front.
+const loadStorage = () => import("@/lib/vocabulary-storage");
+const VocabularyWordModal = dynamic(() => import("./vocabulary-word-modal").then(m => m.VocabularyWordModal), { ssr: false });
 
 export const OPEN_WORD_LOOKUP_EVENT = "masterclass:open-word-lookup";
 
@@ -67,6 +71,7 @@ export function VocabularyLookupProvider({ children }: { children: ReactNode }) 
     const clean = word.trim().replace(/[.,!?;:()"'“”‘’]/g, "");
     if (!clean) return;
 
+    const { getCachedWordLookup, prefetchWordDetails } = await loadStorage();
     // Check if details are already provided or in cache
     const existing = lookup ?? getCachedWordLookup(clean);
     if (existing) {
@@ -149,7 +154,7 @@ export function VocabularyLookupProvider({ children }: { children: ReactNode }) 
           });
           setSelectionWord(raw);
           // Prefetch in background during user reaction time so modal opens pre-populated
-          prefetchWordDetails(raw).catch(() => {});
+          loadStorage().then(({ prefetchWordDetails }) => prefetchWordDetails(raw)).catch(() => {});
           return;
         }
       }
@@ -218,14 +223,14 @@ export function VocabularyLookupProvider({ children }: { children: ReactNode }) 
         </button>
       )}
 
-      {/* On-the-fly Vocabulary Modal */}
-      <VocabularyWordModal
+      {/* On-the-fly Vocabulary Modal: mounted from the first lookup on, so its chunk loads only then */}
+      {activeWord !== null && <VocabularyWordModal
         word={activeWord}
         initialLookup={initialLookup}
         isOpen={isModalOpen}
         onClose={closeWordLookup}
         onWordChange={(newWord) => setActiveWord(newWord)}
-      />
+      />}
     </VocabularyLookupContext.Provider>
   );
 }

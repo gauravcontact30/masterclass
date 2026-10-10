@@ -34,7 +34,7 @@ export function sidebarSuggestions(access: PreparationAccess, hi: boolean): Side
     ["workflow", "Workflow", "agentic ai single agent multi agent langchain langgraph langsmith deep agents integrations workflow supervisor"],
     ["lessons", "Lessons", "lessons articles syllabus reading"], ["quiz", "Quiz", "quiz test multiple choice score"],
     ["interview", "Interview", "interview questions company google meta amazon"], ["mentors", "Mentors", "mentor chat ai tutor ask"],
-  ].map(([id, label, keywords]) => ({ id: `pro:${id}`, label, hint: "Profissional Learn", scope: "professional" as const, href: `/dashboard/${id}`, keywords }));
+  ].map(([id, label, keywords]) => ({ id: `pro:${id}`, label, hint: "Professional Learn", scope: "professional" as const, href: `/dashboard/${id}`, keywords }));
   const options = PREPARATIONS.filter(option => access.isSuperAdmin || access.selections.includes(option.id));
   const preparation: SidebarSuggestion[] = PREPARATION_GROUPS.flatMap(group => group.categories.filter(id => options.some(option => option.category === id)).flatMap(id => [
     { id: `cat:${id}`, label: pick(CATEGORY_LABELS[id]), hint: pick(group.label), scope: "preparation" as const, href: `/dashboard/${id}`, keywords: `${CATEGORY_LABELS[id].en} ${CATEGORY_LABELS[id].hi} ${group.label.en}` },

@@ -46,8 +46,7 @@ const nextConfig: NextConfig = {
       })),
       // public/images files are not content-hashed, so cache for a month rather than forever.
       { source: "/images/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=2592000, stale-while-revalidate=86400" }] },
-      // Content-hashed Next.js static assets
-      ...(process.env.NODE_ENV === "production" ? [{ source: "/_next/static/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] }] : []),
+      // /_next/static is content-hashed and Next.js already serves it immutable; overriding it only triggers a build warning.
     ];
   },
 };

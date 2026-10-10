@@ -19,7 +19,7 @@ test.each([
 
 test("Techy has a separate professional section and renders its supplied deck", () => {
   render(<Workspace authEnabled={false} configured={false} billingEnabled={false} initialCategory="techy" notesContent={<section aria-label="Techy deck">Practice</section>}/>);
-  const nav = within(screen.getByRole("navigation", { name: "Profissional Learn" }));
+  const nav = within(screen.getByRole("navigation", { name: "Professional Learn" }));
   expect(nav.getByRole("link", { name: "Techy" })).toHaveAttribute("href", "/dashboard/techy");
   expect(nav.getByRole("link", { name: "Techy" })).toHaveAttribute("aria-current", "page");
   expect(nav.getByRole("link", { name: "API Docs" })).toHaveAttribute("href", "/dashboard/api-docs");

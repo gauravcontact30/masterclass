@@ -149,3 +149,7 @@
   .chevron { display: none; }
   .tablet { padding: 2%; border-radius: 6% / 8.6%; }
 }
+/* Three equal tabs leave too little room for icon + label side by side. */
+@media (max-width: 480px) {
+  .tab { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 6px; padding: 10px 4px; font-size: 13px; text-align: center; overflow-wrap: anywhere; }
+}

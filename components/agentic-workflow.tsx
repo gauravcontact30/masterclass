@@ -344,7 +344,7 @@ function WorkflowStudioReader({
         {/* Toolbar & Shadcn Select Dropdown matching API Docs filterPanel toolbar */}
         <div className={apiStyles.toolbar} style={{ marginTop: "16px" }}>
           <div className={apiStyles.toolbarPrimaryRow}>
-            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap flex-1">
+            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap flex-1 min-w-0">
               <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider font-mono whitespace-nowrap">
                 Topology:
               </span>
