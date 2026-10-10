@@ -6,7 +6,6 @@ import { useEffect, useRef } from "react";
 import { ArrowLeft, ArrowRight, Check, CircleAlert, Languages, LockKeyhole, MailCheck, PartyPopper } from "lucide-react";
 import { Wordmark } from "./brand-mark";
 import { ExpandedText } from "./expanded-text";
-import { PreparationPicker } from "./preparation-picker";
 import { useLanguage } from "./language-provider";
 import { requestJson, errorKey } from "@/lib/client";
 import { openSubscriptionCheckout, type SubscriptionPayment } from "@/lib/razorpay-checkout";
@@ -28,7 +27,6 @@ export function GuestCheckout({ initialTier, enabled, prices }: { initialTier: T
   const hi = language === "hi";
   const text = (en: string, hindi: string) => hi ? hindi : en;
   const [tier, setTier] = useState<Tier>(initialTier);
-  const [selections, setSelections] = useState<string[]>([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
@@ -47,10 +45,9 @@ export function GuestCheckout({ initialTier, enabled, prices }: { initialTier: T
 
   async function pay(event: React.FormEvent) {
     event.preventDefault();
-    if (!selections.length) { setError("invalid_request"); return; }
     setBusy(true); setError(null); setNotice(null);
     try {
-      const checkout = await requestJson<Checkout>("/api/billing/guest", json({ action: "checkout", tier, email, name, selections }));
+      const checkout = await requestJson<Checkout>("/api/billing/guest", json({ action: "checkout", tier, email, name }));
       const payment = await openSubscriptionCheckout({ key: checkout.keyId, subscription_id: checkout.subscriptionId, name: "MasterClass", description: tier === "yearly" ? t("yearly") : t("monthly"), prefill: checkout.prefill });
       if (!payment) { setNotice("checkout_closed"); return; }
       setPaid({ checkoutId: checkout.checkoutId, payment });
@@ -83,7 +80,7 @@ export function GuestCheckout({ initialTier, enabled, prices }: { initialTier: T
         <div className={styles.intro}>
           <p className={styles.eyebrow}><LockKeyhole size={13} aria-hidden="true" /><ExpandedText text={text("No account needed to start", "शुरू करने के लिए खाता ज़रूरी नहीं")} /></p>
           <h1><ExpandedText text={text("Start your membership", "अपनी सदस्यता शुरू करें")} /></h1>
-          <p><ExpandedText text={text("Pick a plan and your preparation, then pay securely. We set up your account with the email you give here.", "योजना और अपनी तैयारी चुनें, फिर सुरक्षित भुगतान करें। आपका खाता यहाँ दिए गए ईमेल से बनाया जाएगा।")} /></p>
+          <p><ExpandedText text={text("One membership unlocks every course and category. Pick a plan and pay securely. We set up your account with the email you give here.", "एक सदस्यता से हर कोर्स और श्रेणी खुलती है। योजना चुनें और सुरक्षित भुगतान करें। आपका खाता यहाँ दिए गए ईमेल से बनाया जाएगा।")} /></p>
         </div>
 
         {!enabled && <p className={styles.banner} role="status"><CircleAlert size={16} aria-hidden="true" /><ExpandedText text={text("Checkout is not enabled yet. Please check back soon.", "भुगतान अभी सक्षम नहीं है। कृपया जल्द फिर देखें।")} /></p>}
@@ -103,13 +100,8 @@ export function GuestCheckout({ initialTier, enabled, prices }: { initialTier: T
               </div>
             </section>
 
-            <section className={styles.step} aria-labelledby="step-prep">
-              <h2 id="step-prep"><span>2</span><ExpandedText text={text("Choose your preparation", "अपनी तैयारी चुनें")} /></h2>
-              <PreparationPicker value={selections} onChange={setSelections} disabled={busy} />
-            </section>
-
             <section className={styles.step} aria-labelledby="step-you">
-              <h2 id="step-you"><span>3</span><ExpandedText text={text("Your details", "आपका विवरण")} /></h2>
+              <h2 id="step-you"><span>2</span><ExpandedText text={text("Your details", "आपका विवरण")} /></h2>
               <div className={styles.fields}>
                 <label className={styles.field}><span><ExpandedText text={text("Full name", "पूरा नाम")} /></span><input type="text" autoComplete="name" required maxLength={80} value={name} onChange={event => setName(event.target.value)} disabled={busy} /></label>
                 <label className={styles.field}><span><ExpandedText text={text("Email", "ईमेल")} /></span><input type="email" autoComplete="email" required maxLength={254} value={email} onChange={event => setEmail(event.target.value)} disabled={busy} aria-describedby="guest-email-hint" /></label>
@@ -122,9 +114,9 @@ export function GuestCheckout({ initialTier, enabled, prices }: { initialTier: T
             <p className={styles.summaryLabel}>LEARN IN APP</p>
             <p className={styles.summaryPlan}><ExpandedText text={tier === "monthly" ? text("Monthly membership", "मासिक सदस्यता") : text("Yearly membership", "वार्षिक सदस्यता")} /></p>
             <p className={styles.summaryPrice}>{money(prices[tier])}<small><ExpandedText text={tier === "monthly" ? text(" / month", " / माह") : text(" / year", " / वर्ष")} /></small></p>
-            <ul>{[text("Your selected preparation", "आपकी चुनी हुई तैयारी"), text("Published lessons & worked answers", "प्रकाशित पाठ और हल सहित उत्तर"), text("Timed practice", "समयबद्ध अभ्यास"), text("English / Hindi", "अंग्रेज़ी / हिन्दी")].map(item => <li key={item}><Check size={14} aria-hidden="true" /><ExpandedText text={item} /></li>)}</ul>
-            <p className={styles.summaryMeta}><ExpandedText text={selections.length ? text(`${selections.length} preparation${selections.length === 1 ? "" : "s"} selected`, `${selections.length} तैयारी चुनी गई`) : text("Choose at least one preparation", "कम से कम एक तैयारी चुनें")} /></p>
-            <button type="submit" className={styles.pay} disabled={busy || !enabled || !selections.length}>
+            <ul>{[text("Every course & category included", "हर कोर्स और श्रेणी शामिल"), text("Published lessons & worked answers", "प्रकाशित पाठ और हल सहित उत्तर"), text("Timed practice", "समयबद्ध अभ्यास"), text("English / Hindi", "अंग्रेज़ी / हिन्दी")].map(item => <li key={item}><Check size={14} aria-hidden="true" /><ExpandedText text={item} /></li>)}</ul>
+            <p className={styles.summaryMeta}><ExpandedText text={text("No course selection needed — focus your dashboard any time after you join.", "कोर्स चुनने की ज़रूरत नहीं — जुड़ने के बाद कभी भी अपना डैशबोर्ड केंद्रित करें।")} /></p>
+            <button type="submit" className={styles.pay} disabled={busy || !enabled}>
               <ExpandedText text={busy ? t("loading") : text(`Pay ${money(prices[tier])} securely`, `${money(prices[tier])} सुरक्षित भुगतान करें`)} />{!busy && <ArrowRight size={16} aria-hidden="true" />}
             </button>
             <p className={styles.fine}><ExpandedText text={t("billing_renewal_notice")} /></p>

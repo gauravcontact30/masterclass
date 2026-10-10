@@ -6,12 +6,12 @@ import { openSubscriptionCheckout } from "@/lib/razorpay-checkout";
 jest.mock("@/lib/razorpay-checkout",()=>({openSubscriptionCheckout:jest.fn()}));
 jest.mock("@/lib/client", () => ({ requestJson: jest.fn(), errorKey: jest.requireActual("@/lib/client").errorKey }));
 beforeEach(() => { jest.clearAllMocks(); jest.mocked(requestJson).mockImplementation(async (url) => url.includes("invoices") ? {invoices:[]} : { monthly:299, yearly:2999, enabled:true }); });
-test("only a paid plan is offered and yearly checkout carries the selected preparation", async () => {
+test("only a paid plan is offered and yearly checkout needs no course selection", async () => {
   const user = userEvent.setup(); const refresh = jest.fn().mockResolvedValue(undefined);
-  render(<Membership enabled data={{ tier: "free", used: 0, limit: 0, subscription: null, creditBalance: 2 }} selections={["nda"]} onRefresh={refresh}/>);
+  render(<Membership enabled data={{ tier: "free", used: 0, limit: 0, subscription: null, creditBalance: 2 }} onRefresh={refresh}/>);
   await screen.findByText("₹299"); expect(screen.queryByText(/free|download credit|per download/i)).not.toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: /yearly/i })); await user.click(screen.getByRole("button", { name: "Choose plan" }));
-  await waitFor(() => expect(requestJson).toHaveBeenCalledWith("/api/billing", expect.objectContaining({ body: JSON.stringify({ action: "checkout", tier: "yearly", selections: ["nda"] }) })));
+  await waitFor(() => expect(requestJson).toHaveBeenCalledWith("/api/billing", expect.objectContaining({ body: JSON.stringify({ action: "checkout", tier: "yearly" }) })));
 });
 test("active members manage renewal without opening a duplicate checkout", async () => {
   const user = userEvent.setup(); render(<Membership enabled selections={["nda"]} data={{ tier: "monthly", used: 0, limit: 50, creditBalance: 0, subscription: { status: "active", current_period_end: "2030-01-01", cancel_at_cycle_end: false } }} onRefresh={jest.fn()}/>);

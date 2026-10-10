@@ -5,7 +5,8 @@ import { required, billingConfigured } from "./config";
 import { HttpError } from "./http";
 import { db, check } from "./db";
 import { razorpay, billingSubscription, reconcileSubscription, validateSubscriptionPlan } from "./billing";
-import { savePreparations } from "./preparations";
+import { savePreparationsFor } from "./preparations";
+import { profile } from "./repository";
 
 export type GuestCheckout = { id:string; email:string; name:string; tier:"monthly"|"yearly"; selections:string[]; provider_ref:string; status:"created"|"fulfilled"|"conflict"; user_id:string|null; created_user:boolean; created_at:string };
 const terminal = ["cancelled","completed","expired"];
@@ -53,12 +54,13 @@ export async function createGuestCheckout(input: { tier:"monthly"|"yearly"; emai
  */
 async function ensureAccount(row: GuestCheckout) {
   const existing = await accountIdByEmail(row.email);
-  if (existing) return { id:existing, created:false };
+  if (existing) { await profile(existing); return { id:existing, created:false }; }
   const { data, error } = await db().auth.admin.createUser({ email:row.email, email_confirm:true, user_metadata:{ full_name:row.name } });
-  if (data?.user) return { id:data.user.id, created:true };
+  // Subscriptions and this checkout reference profiles; don't depend on the auth trigger's timing.
+  if (data?.user) { await profile(data.user.id); return { id:data.user.id, created:true }; }
   // A concurrent fulfilment (webhook vs. browser) may have created it first.
   const raced = await accountIdByEmail(row.email);
-  if (raced) return { id:raced, created:false };
+  if (raced) { await profile(raced); return { id:raced, created:false }; }
   throw new Error(error?.message ?? "guest_account_failed");
 }
 
@@ -104,7 +106,9 @@ export async function fulfilGuestCheckout(ref: string, eventId: string): Promise
         console.error(JSON.stringify({ event:"guest_checkout_conflict", checkout:row.id, subscription:ref }));
         return { ...linked, status:"conflict" };
       }
-      await savePreparations(account.id, linked.selections);
+      // There is no browser session here (webhook / guest verify), so save as the server.
+      // A preference failure must not block access the customer has paid for.
+      if (linked.selections.length) await savePreparationsFor(account.id, linked.selections).catch(() => undefined);
     }
     row = (await guestRow("id", row.id))!;
     if (row.status === "conflict") return row;

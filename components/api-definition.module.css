@@ -14,6 +14,7 @@
   --card-ink: #5e4a8f;
   --card-well: #ebe4f6;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   align-content: start;
   gap: 12px;
   min-width: 0;
@@ -59,7 +60,9 @@
   display: flex;
   align-items: center;
   gap: 9px;
+  min-width: 0;
   margin: 0;
+  overflow-wrap: anywhere;
   color: var(--ink, #262624);
   font-size: 15px;
   font-weight: 650;

@@ -38,7 +38,8 @@ export const PREPARATIONS: PreparationOption[] = [
 ];
 const known = new Set(PREPARATIONS.map(option => option.id));
 export const preparationSchema = z.array(z.string().refine(id => known.has(id))).min(1).max(PREPARATIONS.length).refine(ids => new Set(ids).size === ids.length);
-export type PreparationAccess = { selections: string[]; isSuperAdmin: boolean };
+/** `focused` is true only when the learner saved their own subset; otherwise `selections` is every category. */
+export type PreparationAccess = { selections: string[]; isSuperAdmin: boolean; focused?: boolean };
 export function canReadStudy(access: PreparationAccess, course: StudyCourse) { return access.isSuperAdmin || access.selections.includes(course.category === "course" ? "system-design" : course.board ? `${course.board}-${course.grade}` : course.id); }
 export function canReadTechnology(access: PreparationAccess, technologyId: string) { return access.isSuperAdmin || access.selections.includes(`tech:${technologyId}`); }
 export function isSuperAdminUser(user: { email?: string; email_confirmed_at?: string | null } | null) { return Boolean(user?.email_confirmed_at && user.email?.trim().toLowerCase() === "garvcontact30@gmail.com"); }

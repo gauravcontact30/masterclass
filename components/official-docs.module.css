@@ -1637,7 +1637,7 @@
   .categoryPillsWrap { min-width: 0; width: 100%; }
   .panel { padding: 20px 16px; }
   .catalogFooter { align-items: flex-start; }
-  .categoryControls { margin-left: auto; }
+  .categoryControls { margin-left: auto; flex-shrink: 1; min-width: 0; max-width: 100%; }
   .field { flex-wrap: wrap; }
   .searchActions { flex-wrap: wrap; }
   .cardFoot, .filterMetaRow { flex-wrap: wrap; gap: 8px; }

@@ -11,7 +11,7 @@ import { createGuestCheckout, fulfilGuestCheckout, guestCheckoutById, guestEmail
 
 export const runtime = "nodejs";
 const inputSchema = z.discriminatedUnion("action", [
-  z.object({ action:z.literal("checkout"), tier:z.enum(["monthly","yearly"]), email:guestEmail, name:z.string().trim().min(1).max(80), selections:preparationSchema }).strict(),
+  z.object({ action:z.literal("checkout"), tier:z.enum(["monthly","yearly"]), email:guestEmail, name:z.string().trim().min(1).max(80), selections:preparationSchema.optional() }).strict(),
   z.object({ action:z.literal("verify"), checkoutId:z.uuid(), razorpay_payment_id:z.string().regex(/^pay_[a-zA-Z0-9]+$/), razorpay_subscription_id:z.string().regex(/^sub_[a-zA-Z0-9]+$/), razorpay_signature:z.string().regex(/^[a-f0-9]{64}$/i) }).strict(),
 ]);
 const client = (request: Request) => createHash("sha256").update(request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anonymous").digest("hex").slice(0, 32);
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       if ((await (await supabaseServer()).auth.getUser()).data.user) throw new HttpError(409, "use_account_checkout");
       await rateLimit(`billing:guest:checkout:${client(request)}`, 6, 600);
       await rateLimit(`billing:guest:email:${input.email}`, 4, 600);
-      const checkout = await createGuestCheckout(input);
+      const checkout = await createGuestCheckout({ ...input, selections:input.selections ?? [] });
       return Response.json({ ...checkout, keyId:required("RAZORPAY_KEY_ID"), tier:input.tier, amount:Math.round(subscriptionPrice(input.tier) * 100), currency:"INR", prefill:{ email:input.email, name:input.name } });
     }
     await rateLimit(`billing:guest:verify:${client(request)}`, 20, 60);

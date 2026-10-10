@@ -67,3 +67,4 @@
 @media(max-width:700px) { .hero { align-items:flex-start; flex-direction:column; gap:12px; } .stats { gap:8px; } .stats>div { padding:12px; grid-template-columns:1fr; } .stats svg { display:none; } .stats span { line-height:1.5; } .toolbar { flex-wrap:wrap; } .search { flex-basis:100%; } .toolbar select { flex:1; min-width:0; } .group>header,.entry { padding:16px; } .entry footer { gap:10px; } }
 
 :global(.workspace) .groups, :global(.workspace) .stats { gap: var(--dashboard-card-gap, 24px); }
+@media(max-width:420px) { .stats { grid-template-columns:minmax(0,1fr); } .stats>div { grid-template-columns:auto minmax(0,1fr); align-items:baseline; gap:10px; } }

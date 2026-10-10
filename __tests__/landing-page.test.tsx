@@ -60,7 +60,7 @@ test("live pricing switches billing cycles and leads to membership setup", async
   fireEvent.click(screen.getByRole("button",{name:/Yearly/}));
   expect(screen.getByText(/3,499/, {selector:"div.compactPrice"})).toBeInTheDocument();
   expect(screen.getByText(/billed yearly/)).toBeInTheDocument();
-  expect(screen.getByRole("link",{name:"Choose preparation & plan"})).toHaveAttribute("href","/subscribe?plan=yearly");
+  expect(screen.getByRole("link",{name:"Subscribe now"})).toHaveAttribute("href","/subscribe?plan=yearly");
 });
 
 test("language changes stay local for a public visitor", async () => {

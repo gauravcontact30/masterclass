@@ -14,7 +14,7 @@ import { entitlementTier } from "@/lib/domain";
 export const runtime = "nodejs";
 const terminal = ["cancelled", "completed", "expired"];
 const inputSchema = z.discriminatedUnion("action", [
-  z.object({ action:z.literal("checkout"), tier:z.enum(["monthly","yearly"]), selections:preparationSchema }).strict(),
+  z.object({ action:z.literal("checkout"), tier:z.enum(["monthly","yearly"]), selections:preparationSchema.optional() }).strict(),
   z.object({ action:z.literal("verify"), razorpay_payment_id:z.string().regex(/^pay_[a-zA-Z0-9]+$/), razorpay_subscription_id:z.string().regex(/^sub_[a-zA-Z0-9]+$/), razorpay_signature:z.string().regex(/^[a-f0-9]{64}$/i) }).strict(),
   z.object({ action:z.literal("cancel") }).strict(),
   z.object({ action:z.literal("refresh") }).strict(),
@@ -64,14 +64,14 @@ export async function POST(request: Request) {
       if (["created","authenticated"].includes(remote.status) && !existing.cancel_at_cycle_end) {
         if (remote.plan_id !== planId) throw new HttpError(409,"checkout_plan_conflict");
         await validateSubscriptionPlan(input.tier);
-        await savePreparations(owner,input.selections);
+        if (input.selections) await savePreparations(owner,input.selections);
         return checkoutResponse(remote,input.tier);
       }
       const paidUntil = Math.max(remote.current_end ? remote.current_end * 1000 : 0, Date.parse(existing.current_period_end ?? "") || 0);
       if (!terminal.includes(remote.status) || paidUntil > Date.now()) throw new HttpError(409,"subscription_exists");
     }
     await validateSubscriptionPlan(input.tier);
-    await savePreparations(owner,input.selections);
+    if (input.selections) await savePreparations(owner,input.selections);
     const remote = billingSubscription.parse(await razorpay("subscriptions", { plan_id:planId, total_count:input.tier === "monthly" ? 120 : 10, quantity:1, customer_notify:1, notes:{ user_id:owner } }));
     // A created mandate is never a paid entitlement. Webhooks/verification establish access.
     const row = { user_id:owner, provider_ref:remote.id, tier:input.tier, status:"created", synced_at:new Date(0).toISOString(), current_period_end:null, grace_until:null, cancel_at_cycle_end:false };

@@ -5,13 +5,13 @@ import { fulfilGuestCheckout } from "@/lib/server/guest-billing";
 import { db } from "@/lib/server/db";
 import { supabaseServer } from "@/lib/server/auth";
 import { razorpay, reconcileSubscription } from "@/lib/server/billing";
-import { savePreparations } from "@/lib/server/preparations";
+import { savePreparationsFor } from "@/lib/server/preparations";
 import { PREPARATIONS } from "@/lib/study/preparations";
 
 jest.mock("@/lib/server/auth", () => ({ supabaseServer: jest.fn() }));
 jest.mock("@/lib/server/rate-limit", () => ({ rateLimit: jest.fn() }));
-jest.mock("@/lib/server/preparations", () => ({ savePreparations: jest.fn() }));
-jest.mock("@/lib/server/repository", () => ({ account: jest.fn(async () => ({ tier: remote.status === "active" ? "monthly" : "free" })) }));
+jest.mock("@/lib/server/preparations", () => ({ savePreparationsFor: jest.fn(async () => undefined) }));
+jest.mock("@/lib/server/repository", () => ({ profile: jest.fn(async () => ({})), account: jest.fn(async () => ({ tier: remote.status === "active" ? "monthly" : "free" })) }));
 jest.mock("@/lib/server/billing", () => ({ ...jest.requireActual("@/lib/server/billing"), razorpay: jest.fn(), reconcileSubscription: jest.fn(), validateSubscriptionPlan: jest.fn() }));
 jest.mock("@/lib/server/db", () => ({ db: jest.fn(), check: ({ data, error }: { data: unknown; error: unknown }) => { if (error) throw error; return data; } }));
 
@@ -75,6 +75,18 @@ beforeEach(() => {
   } as never);
 });
 
+test("a guest can subscribe without choosing any course category", async () => {
+  const response = await post({ action: "checkout", tier: "yearly", email: "ravi@example.com", name: "Ravi" });
+  const body = await response.json();
+  expect(response.status).toBe(200);
+  expect(body).toMatchObject({ subscriptionId: "sub_guest", tier: "yearly", amount: 299900 });
+  expect(tables.guest_checkouts[0]).toMatchObject({ email: "ravi@example.com", tier: "yearly", selections: [] });
+  remote = { ...remote, status: "active", paid_count: 1 };
+  await fulfilGuestCheckout("sub_guest", "evt_no_selection");
+  expect(savePreparationsFor).not.toHaveBeenCalled();
+  expect(tables.subscriptions[0]).toMatchObject({ provider_ref: "sub_guest", tier: "yearly" });
+});
+
 test("checkout creates a Razorpay subscription tagged with the guest checkout", async () => {
   const response = await checkout();
   expect(response.status).toBe(200);
@@ -119,7 +131,8 @@ test("a paid checkout creates a passwordless account and never signs the paying 
   expect(await response.json()).toEqual({ status: "active", email: "asha@example.com", newAccount: true });
   expect(users).toEqual([{ id: "user_1", email: "asha@example.com" }]);
   expect(tables.subscriptions).toEqual([expect.objectContaining({ user_id: "user_1", provider_ref: "sub_guest", tier: "monthly" })]);
-  expect(savePreparations).toHaveBeenCalledWith("user_1", [prep]);
+  // Fulfilment runs without a browser session, so preferences are saved server-side.
+  expect(savePreparationsFor).toHaveBeenCalledWith("user_1", [prep]);
   expect(reconcileSubscription).toHaveBeenCalledWith("sub_guest", expect.stringMatching(/^guest-verify:/));
   // Paying does not prove the buyer owns the email, so no session is issued here.
   expect(verifyOtp).not.toHaveBeenCalled();
