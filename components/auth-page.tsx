@@ -22,16 +22,30 @@ function authErrorKey(error: { code?: string; message?: string }): TranslationKe
   return code in en ? code as TranslationKey : "service_error";
 }
 
-export function AuthPage({ mode, enabled }: { mode: "signin" | "signup"; enabled: boolean }) {
+export function AuthPage({ mode, enabled, initialEmail = "" }: { mode: "signin" | "signup"; enabled: boolean; initialEmail?: string }) {
   const { t, language, setLanguage } = useLanguage();
   const router = useRouter();
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<TranslationKey | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [sent, setSent] = useState(false);
+  const [linkSent, setLinkSent] = useState(false);
+  const hi = language === "hi";
+
+  // Accounts created at guest checkout have no password until the owner sets one.
+  async function sendLink() {
+    if (!email.trim()) { setError("invalid_request"); return; }
+    setBusy(true); setError(null);
+    try {
+      const { error } = await supabaseBrowser().auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}/auth/callback` } });
+      // Report success either way, so the form does not reveal which emails have accounts.
+      if (error && error.status !== 400 && error.status !== 422) { setError(authErrorKey(error)); return; }
+      setLinkSent(true);
+    } catch { setError("service_error"); } finally { setBusy(false); }
+  }
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -76,6 +90,13 @@ export function AuthPage({ mode, enabled }: { mode: "signin" | "signup"; enabled
               <p className={styles.lead}><ExpandedText text={t("setupHelp")} /></p>
               <Link className={styles.switchLink} href="/"><ExpandedText text={t("dashboard")} /></Link>
             </section>
+          ) : linkSent ? (
+            <section className={styles.notice}>
+              <span className={styles.noticeIcon}><MailCheck size={20} aria-hidden="true" /></span>
+              <h1 className={styles.title}><ExpandedText text={hi ? "अपना ईमेल देखें" : "Check your email"} /></h1>
+              <p className={styles.lead}><ExpandedText text={hi ? `अगर ${email.trim()} से कोई खाता है, तो हमने उस पर साइन-इन लिंक भेजा है। लिंक खोलकर साइन इन करें।` : `If an account exists for ${email.trim()}, we have sent it a sign-in link. Open the link to sign in.`} /></p>
+              <button type="button" className={styles.switchLink} onClick={() => setLinkSent(false)}><ExpandedText text={hi ? "वापस जाएँ" : "Back to sign in"} /></button>
+            </section>
           ) : sent ? (
             <section className={styles.notice}>
               <span className={styles.noticeIcon}><MailCheck size={20} aria-hidden="true" /></span>
@@ -114,6 +135,7 @@ export function AuthPage({ mode, enabled }: { mode: "signin" | "signup"; enabled
                 </div>
                 <Button className={styles.submit} type="submit" disabled={busy}><ExpandedText text={busy ? t("loading") : t(mode === "signin" ? "signin" : "signup")} /></Button>
               </form>
+              {mode === "signin" && <p className={styles.switchRow}><button type="button" className={styles.switchLink} disabled={busy} onClick={() => void sendLink()}><ExpandedText text={hi ? "पासवर्ड नहीं है? मुझे साइन-इन लिंक ईमेल करें" : "No password? Email me a sign-in link"} /></button></p>}
               <p className={styles.switchRow}><Link className={styles.switchLink} href={mode === "signin" ? "/sign-up" : "/sign-in"}><ExpandedText text={t(mode === "signin" ? "noAccount" : "haveAccount")} /></Link></p>
               {mode === "signup" && <p className={styles.hint}>{language === "hi"
                 ? <>खाता बनाकर आप हमारी <Link href="/terms">सेवा की शर्तें</Link> और <Link href="/privacy">गोपनीयता नीति</Link> स्वीकार करते हैं।</>

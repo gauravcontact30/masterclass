@@ -28,7 +28,7 @@ export async function openRazorpayCheckout(options: { key:string; amount:number;
   new window.Razorpay(options).open();
 }
 /** Resolves only after Checkout completes or is dismissed, keeping duplicate clicks disabled. */
-export async function openSubscriptionCheckout(options: { key:string; subscription_id:string; name:string; description:string }): Promise<SubscriptionPayment | null> {
+export async function openSubscriptionCheckout(options: { key:string; subscription_id:string; name:string; description:string; prefill?:{ email?:string; name?:string } }): Promise<SubscriptionPayment | null> {
   await loadCheckout();
   return new Promise((resolve,reject) => {
     if (!window.Razorpay) { reject(new Error("payment_unavailable")); return; }

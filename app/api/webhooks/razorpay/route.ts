@@ -4,6 +4,7 @@ import { api,HttpError } from "@/lib/server/http";
 import { verifyHmac } from "@/lib/server/secrets";
 import { required } from "@/lib/server/config";
 import { reconcileSubscription,reconcileDownloadCredit } from "@/lib/server/billing";
+import { fulfilGuestCheckout } from "@/lib/server/guest-billing";
 import { db,check } from "@/lib/server/db";
 export async function POST(request:Request){return api(async()=>{
   const raw=await request.text();if(raw.length>200000)throw new HttpError(413,"invalid_request");
@@ -31,8 +32,10 @@ export async function POST(request:Request){return api(async()=>{
   // Hash signed body instead of trusting an unsigned event-id header for deduplication.
   const id=createHash("sha256").update(raw).digest("hex");
   if(check(await db().from("webhook_events").select("event_id").eq("provider","razorpay").eq("event_id",id).maybeSingle()))return Response.json({duplicate:true});
-  if(subscriptionEvent)await reconcileSubscription(subscriptionEvent.entity.id,id);
-  else if(invoiceSubscription)await reconcileSubscription(invoiceSubscription,id);
+  // A subscription bought without signing in is linked to its account first.
+  const sync=async(ref:string)=>{if(!(await fulfilGuestCheckout(ref,id)))await reconcileSubscription(ref,id);};
+  if(subscriptionEvent)await sync(subscriptionEvent.entity.id);
+  else if(invoiceSubscription)await sync(invoiceSubscription);
   else if(downloadCreditPayment && downloadCreditPayment.entity.order_id)await reconcileDownloadCredit(downloadCreditPayment.entity.order_id,id);
   return Response.json({ok:true});
 }, request);}

@@ -4,6 +4,7 @@ import { required } from "@/lib/server/config";
 import { equalSecret } from "@/lib/server/secrets";
 import { db, check } from "@/lib/server/db";
 import { reconcileSubscription } from "@/lib/server/billing";
+import { sweepGuestCheckouts } from "@/lib/server/guest-billing";
 
 export const runtime="nodejs";
 export const maxDuration=300;
@@ -17,6 +18,8 @@ export async function POST(request:Request) {
       try {await reconcileSubscription(row.provider_ref,`scheduled:${randomUUID()}`);reconciled++;}
       catch {failed++;}
     }
-    return Response.json({reconciled,failed},{status:failed?503:200});
+    const guests=await sweepGuestCheckouts();
+    failed+=guests.failed;
+    return Response.json({reconciled,failed,guestsFulfilled:guests.fulfilled},{status:failed?503:200});
   },request);
 }

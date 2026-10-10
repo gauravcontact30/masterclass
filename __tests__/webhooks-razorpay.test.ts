@@ -6,6 +6,8 @@ import { db } from "@/lib/server/db";
 
 jest.mock("@/lib/server/secrets", () => ({ verifyHmac: jest.fn() }));
 jest.mock("@/lib/server/billing", () => ({ reconcileSubscription: jest.fn(), reconcileDownloadCredit: jest.fn() }));
+// Not a guest checkout: the webhook falls through to plain reconciliation.
+jest.mock("@/lib/server/guest-billing", () => ({ fulfilGuestCheckout: jest.fn().mockResolvedValue(null) }));
 jest.mock("@/lib/server/db", () => ({
   db: jest.fn(),
   check: ({ data, error }: { data: unknown; error: unknown }) => { if (error) throw error; return data; },

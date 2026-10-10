@@ -8,6 +8,7 @@ import { HttpError } from "@/lib/server/http";
 jest.mock("@/lib/server/super-admin",()=>({requireSuperAdmin:jest.fn()}));
 jest.mock("@/lib/server/rate-limit",()=>({rateLimit:jest.fn()}));
 jest.mock("@/lib/server/billing",()=>({validateSubscriptionPlan:jest.fn(),reconcileSubscription:jest.fn()}));
+jest.mock("@/lib/server/guest-billing",()=>({sweepGuestCheckouts:jest.fn().mockResolvedValue({fulfilled:0,failed:0})}));
 jest.mock("@/lib/server/db",()=>({db:jest.fn(),check:({data}:{data:unknown})=>data}));
 beforeEach(()=>{
   jest.mocked(requireSuperAdmin).mockResolvedValue({id:"admin"} as never);
@@ -40,6 +41,6 @@ test("scheduled reconciliation reports partial failures so the scheduler retries
   jest.mocked(db).mockReturnValue({from:()=>query} as never);
   jest.mocked(reconcileSubscription).mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error("provider unavailable"));
   const response=await reconcile(new Request("http://localhost/api/internal/billing-reconcile",{method:"POST",headers:{authorization:"Bearer private-worker-secret"}}));
-  expect(response.status).toBe(503);expect(await response.json()).toEqual({reconciled:1,failed:1});
+  expect(response.status).toBe(503);expect(await response.json()).toEqual({reconciled:1,failed:1,guestsFulfilled:0});
   expect(query.limit).toHaveBeenCalledWith(10);
 });

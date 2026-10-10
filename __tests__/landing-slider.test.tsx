@@ -80,13 +80,33 @@ describe("navbar", () => {
     expect(toggle).toHaveAttribute("aria-expanded", "false");
   });
 
-  test("links, language switch and calls to action", () => {
+  test("the account dropdown holds the language toggle, Sign in and Sign up", () => {
+    render(<LandingNavbar links={links} />);
+    const trigger = screen.getByRole("button", { name: "Account" });
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("link", { name: "Sign in" })).not.toBeInTheDocument();
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("group", { name: "Language" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "EN" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "हिन्दी" })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/sign-in");
+    expect(screen.getByRole("link", { name: "Sign up" })).toHaveAttribute("href", "/sign-up");
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).toHaveFocus();
+    fireEvent.click(trigger);
+    fireEvent.pointerDown(document.body);
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+  });
+
+  test("the header has section links and no Start learning button", () => {
     render(<LandingNavbar links={links} />);
     const nav = within(screen.getByRole("navigation", { name: "Main navigation" }));
     expect(nav.getByRole("link", { name: "Library" })).toHaveAttribute("href", "#library");
-    expect(screen.getByRole("button", { name: "EN" })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getAllByRole("link", { name: /Start learning/ })[0]).toHaveAttribute("href", "/sign-up");
-    expect(screen.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/sign-in");
+    expect(screen.queryByRole("link", { name: /Start learning/ })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Toggle navigation" }));
+    expect(screen.queryByRole("link", { name: /Start learning/ })).not.toBeInTheDocument();
   });
 });
 

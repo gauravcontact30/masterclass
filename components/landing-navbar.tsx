@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
-import { ArrowRight, BookOpen, CodeXml, Crown, Languages, Library, LogIn, Menu, MessageCircle, Route, Terminal, X, type LucideIcon } from "lucide-react";
+import { BookOpen, CodeXml, Crown, Languages, Library, LogIn, Menu, MessageCircle, Route, Terminal, UserPlus, UserRound, X, type LucideIcon } from "lucide-react";
 import { Wordmark } from "./brand-mark";
 import { useLanguage } from "./language-provider";
 import styles from "./landing-home.module.css";
@@ -33,6 +33,8 @@ export function LandingNavbar({ links }: { links: [string, string][] }) {
   const text = (en: string, hindi: string) => hi ? hindi : en;
   const [scrolled, setScrolled] = useState(false);
   const [menu, setMenu] = useState(false);
+  const [account, setAccount] = useState(false);
+  const accountRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState<string | null>(null);
   const [indicator, setIndicator] = useState<Indicator>({ left: 0, right: 0, visible: false, href: null });
   const navRef = useRef<HTMLElement>(null);
@@ -71,6 +73,16 @@ export function LandingNavbar({ links }: { links: [string, string][] }) {
     return () => window.removeEventListener("keydown", close);
   }, [menu]);
 
+  // The account dropdown closes on Escape (returning focus to its button) and on any click outside it.
+  useEffect(() => {
+    if (!account) return;
+    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") { setAccount(false); accountRef.current?.querySelector("button")?.focus(); } };
+    const onPointer = (event: PointerEvent) => { if (!accountRef.current?.contains(event.target as Node)) setAccount(false); };
+    window.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPointer);
+    return () => { window.removeEventListener("keydown", onKey); document.removeEventListener("pointerdown", onPointer); };
+  }, [account]);
+
   return <header className={styles.navbar} data-solid={scrolled || menu || undefined}>
     <div className={styles.navbarInner}>
       <Link href="/" aria-label="MasterClass" className={styles.brand}><Wordmark /></Link>
@@ -85,18 +97,31 @@ export function LandingNavbar({ links }: { links: [string, string][] }) {
             <span>{label}</span>
           </a>;
         })}
-        {menu && <Link className={styles.navMobileSignin} href="/sign-in" onClick={() => setMenu(false)}><LogIn size={17} strokeWidth={1.9} aria-hidden="true" />{text("Sign in", "साइन इन")}</Link>}
-        <Link className={styles.navMobileCta} href="/sign-up" onClick={() => setMenu(false)}>{text("Start learning", "सीखना शुरू करें")}<ArrowRight size={17} aria-hidden="true" /></Link>
       </nav>
       <div className={styles.navActions}>
-        <div className={styles.langSwitch} role="group" aria-label={text("Language", "भाषा")}>
-          <Languages size={12} strokeWidth={1.75} className={styles.langIcon} aria-hidden="true" />
-          <button type="button" aria-pressed={!hi} onClick={() => setLanguage("en", false)}>EN</button>
-          <button type="button" aria-pressed={hi} onClick={() => setLanguage("hi", false)}>HI</button>
+        <div ref={accountRef} className={styles.account}>
+          <button type="button" className={styles.accountButton} aria-label={text("Account", "खाता")} aria-expanded={account} aria-controls="landing-account-menu" onClick={() => { setAccount(value => !value); setMenu(false); }}>
+            <UserRound size={19} strokeWidth={1.9} aria-hidden="true" />
+          </button>
+          {account && <div id="landing-account-menu" className={styles.accountMenu}>
+            <div className={styles.accountLang} role="group" aria-label={text("Language", "भाषा")}>
+              <span><Languages size={15} strokeWidth={1.9} aria-hidden="true" />{text("Language", "भाषा")}</span>
+              <div>
+                <button type="button" aria-pressed={!hi} onClick={() => setLanguage("en", false)}>EN</button>
+                <button type="button" lang="hi" aria-pressed={hi} onClick={() => setLanguage("hi", false)}>हिन्दी</button>
+              </div>
+            </div>
+            <Link className={styles.accountItem} href="/sign-in" onClick={() => setAccount(false)}>
+              <span className={styles.accountIcon} aria-hidden="true"><LogIn size={16} strokeWidth={1.9} /></span>
+              <span><strong>{text("Sign in", "साइन इन")}</strong><small aria-hidden="true">{text("Welcome back", "फिर से स्वागत है")}</small></span>
+            </Link>
+            <Link className={styles.accountItem} href="/sign-up" onClick={() => setAccount(false)}>
+              <span className={`${styles.accountIcon} ${styles.accountIconNew}`} aria-hidden="true"><UserPlus size={16} strokeWidth={1.9} /></span>
+              <span><strong>{text("Sign up", "साइन अप")}</strong><small aria-hidden="true">{text("Create a free account", "मुफ़्त खाता बनाएँ")}</small></span>
+            </Link>
+          </div>}
         </div>
-        <Link className={styles.navSignin} href="/sign-in"><LogIn size={15} strokeWidth={1.9} aria-hidden="true" /><span>{text("Sign in", "साइन इन")}</span></Link>
-        <Link className={styles.navCta} href="/sign-up">{text("Start learning", "सीखना शुरू करें")}<ArrowRight size={15} strokeWidth={2.1} aria-hidden="true" className={styles.navCtaArrow} /></Link>
-        <button type="button" className={styles.navMenu} aria-expanded={menu} aria-label={text("Toggle navigation", "नेविगेशन खोलें")} onClick={() => setMenu(value => !value)}>{menu ? <X size={19} aria-hidden="true" /> : <Menu size={19} aria-hidden="true" />}</button>
+        <button type="button" className={styles.navMenu} aria-expanded={menu} aria-label={text("Toggle navigation", "नेविगेशन खोलें")} onClick={() => { setMenu(value => !value); setAccount(false); }}>{menu ? <X size={19} aria-hidden="true" /> : <Menu size={19} aria-hidden="true" />}</button>
       </div>
     </div>
   </header>;

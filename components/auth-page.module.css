@@ -57,6 +57,8 @@
 .switchRow{margin-top:22px;padding-top:18px;border-top:1px solid var(--line);text-align:center}
 .switchLink{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#4d4c48;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:3px;transition:text-decoration-color .15s}
 .switchLink:hover{text-decoration-color:currentColor}
+button.switchLink{padding:0;border:0;background:none;font-family:inherit;cursor:pointer}
+button.switchLink:disabled{opacity:.6;cursor:default}
 .notice .switchLink{margin-top:20px}
 .noticeIcon{display:grid;place-items:center;width:44px;height:44px;margin-bottom:18px;border-radius:12px;background:#e8e6dc;color:var(--ink)}
 
