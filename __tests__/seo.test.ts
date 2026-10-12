@@ -15,7 +15,7 @@ test("only an explicitly enabled HTTPS deployment is indexable", () => {
   expect(robots().rules).toEqual({ userAgent: "*", disallow: "/" });
   process.env.SEO_INDEXABLE = "true";
   expect(isIndexable()).toBe(true);
-  expect(sitemap().map(entry => entry.url)).toEqual(["https://learning.example.com/", "https://learning.example.com/courses", "https://learning.example.com/about", "https://learning.example.com/contact", "https://learning.example.com/privacy", "https://learning.example.com/terms"]);
+  expect(sitemap().map(entry => entry.url)).toEqual(["https://learning.example.com/", "https://learning.example.com/courses", "https://learning.example.com/about", "https://learning.example.com/contact", "https://learning.example.com/privacy", "https://learning.example.com/terms", "https://learning.example.com/refund-policy"]);
   expect(robots().sitemap).toBe("https://learning.example.com/sitemap.xml");
   expect(websiteSchema().url).toBe("https://learning.example.com/");
   process.env.APP_URL = "http://localhost:3000";

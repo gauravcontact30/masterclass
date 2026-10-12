@@ -40,7 +40,7 @@ const answerCalls = () => (global.fetch as jest.Mock).mock.calls.filter(([url]) 
 const PROVIDERS = {
   providers: [
     { id: "anthropic", label: "Claude", grounded: false, description: "Answers from the model, tuned for this app." },
-    { id: "perplexity", label: "Perplexity", grounded: true, description: "Searches the web first, so answers cite the pages they came from." },
+    { id: "perplexity", label: "Perplexity", grounded: true, description: "Searches the web first, so version-sensitive answers stay current." },
   ],
   default: "perplexity",
 };

@@ -52,7 +52,7 @@ function authoredDetail(pkg: ApiPackage, entry: ApiEntry, seed: Seed): ApiDetail
       distinction,
       importRule,
       `Grouped under ${seed.category} in this app's Hooks reference.`,
-      `Verify against the official page for the version you have installed: ${seed.sources[0]}`,
+      `Behaviour can change between releases; check the release notes for the version of ${pkg.name} you have installed.`,
     ].filter(Boolean),
     useCases: [seed.example, ...pkg.topics.slice(0, 3).map(topic => `${topic}: where ${entry.name} tends to appear`)],
     code: seed.workflow,

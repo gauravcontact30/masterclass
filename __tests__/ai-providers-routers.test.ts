@@ -44,7 +44,9 @@ test("OpenRouter sends attribution headers, opts in to cost, and reports it", as
   process.env.OPENROUTER_API_KEY = "sk-or-test"; process.env.APP_URL = "https://masterclass.example";
   (global.fetch as jest.Mock).mockResolvedValue(answer("Closures keep their scope.", { prompt_tokens: 5, completion_tokens: 7, cost: 0.0012 }, { annotations: [{ url_citation: { url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures" } }] }));
   const result = await completeWithProvider("openrouter", "Explain.", [{ role: "user", content: "Closures?" }], 300, undefined, "mentor");
-  expect(result).toMatchObject({ provider: "openrouter", model: "openrouter/auto", text: "Closures keep their scope.", sources: ["developer.mozilla.org"] });
+  expect(result).toMatchObject({ provider: "openrouter", model: "openrouter/auto", text: "Closures keep their scope." });
+  // Citation annotations are dropped: the app never shows sources.
+  expect(result).not.toHaveProperty("sources");
   const [url, init] = providerCalls()[0];
   expect(url).toBe("https://openrouter.ai/api/v1/chat/completions");
   expect(init.headers).toMatchObject({ Authorization: "Bearer sk-or-test", "X-Title": "MasterClass", "HTTP-Referer": "https://masterclass.example" });
@@ -84,8 +86,8 @@ test("Vercel AI Gateway goes through the AI SDK with a vendor/model string", asy
   process.env.AI_GATEWAY_API_KEY = "vck-test";
   generateText.mockResolvedValue({ text: " Hooks run after render. ", finishReason: "stop", usage: { inputTokens: 3, outputTokens: 4 } });
   const result = await completeWithProvider("gateway", "Explain.", [{ role: "user", content: "useEffect?" }], 200, undefined, "mentor", { timeoutMs: 5000 });
-  expect(result).toEqual({ text: "Hooks run after render.", provider: "gateway", model: "anthropic/claude-sonnet-5", sources: [], truncated: false });
-  expect(generateText).toHaveBeenCalledWith(expect.objectContaining({ model: "anthropic/claude-sonnet-5", system: "Explain.", maxOutputTokens: 200, maxRetries: 0, timeout: 5000 }));
+  expect(result).toEqual({ text: "Hooks run after render.", provider: "gateway", model: "anthropic/claude-sonnet-5", truncated: false });
+  expect(generateText).toHaveBeenCalledWith(expect.objectContaining({ model: "anthropic/claude-sonnet-5", system: expect.stringMatching(/^Explain\.[\s\S]*Never include citations/), maxOutputTokens: 200, maxRetries: 0, timeout: 5000 }));
 });
 
 test("a gateway refusal falls back to the next configured provider", async () => {

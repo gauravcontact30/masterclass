@@ -28,7 +28,7 @@ export function javascriptGroup(name: string) {
  * until it is placed here.
  */
 export const API_CATEGORIES: { id: string; label: string; packages: string[] }[] = [
-  { id: "agentic", label: "Agentic AI frameworks", packages: ["deepagents", "langchain", "langgraph", "integrations", "langsmith"] },
+  { id: "agentic", label: "Agentic AI frameworks", packages: ["deepagents", "langchain", "langgraph", "integrations", "langsmith", "langflow"] },
   { id: "ai", label: "AI, ML & data science", packages: ["ai", "aitools", "agents", "numpy", "pandas", "polars", "scipy", "sklearn", "tensorflow", "pytorch", "keras", "seaborn", "plotly"] },
   { id: "languages", label: "Languages & runtimes", packages: ["javascript", "jspuzzles", "typescript", "python", "node"] },
   { id: "frontend", label: "Frontend & state", packages: ["nextjs", "react", "angular", "tanstack", "zustand", "redux", "t3"] },

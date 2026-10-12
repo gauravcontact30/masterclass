@@ -19,8 +19,8 @@ test("every catalog package sits in exactly one category", () => {
 test("the reference is divided by category with real catalog facts", () => {
   render(<ApiDocs />);
   const facts = screen.getByLabelText("Catalog at a glance");
-  expect(within(facts).getByText("59")).toBeInTheDocument();
-  expect(within(facts).getByText("5,593")).toBeInTheDocument();
+  expect(within(facts).getByText("60")).toBeInTheDocument();
+  expect(within(facts).getByText("5,802")).toBeInTheDocument();
   expect(within(facts).getByText(String(Object.keys(API_DETAILS).length))).toBeInTheDocument();
   for (const category of API_CATEGORIES) expect(screen.getByRole("heading", { level: 2, name: new RegExp(`^${category.label}`) })).toBeInTheDocument();
   expect(screen.getByRole("navigation", { name: "Browse packages" })).toBeInTheDocument();
@@ -35,7 +35,7 @@ test("choosing a package in the index filters to it and shows its details", asyn
   expect(screen.getByRole("link", { name: "usePathname" })).toHaveAttribute("href", "/dashboard/api-docs/nextjs/usePathname");
   expect(screen.getAllByText("Guide").length).toBeGreaterThan(0);
   await user.click(screen.getByRole("button", { name: "Show all packages" }));
-  expect(screen.getByRole("status")).toHaveTextContent("5,593 identifiers in 59 packages");
+  expect(screen.getByRole("status")).toHaveTextContent("5,802 identifiers in 60 packages");
 });
 
 test("status toggles appear as removable active filters", async () => {

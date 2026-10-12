@@ -120,3 +120,43 @@ test("the three learning paths link to the matching part of the courses page", (
   expect(links).toEqual(["/courses#cbse", "/courses#ssc", "/courses#technology"]);
   expect([...document.querySelectorAll("img")].every(image => image.getAttribute("alt"))).toBe(true);
 });
+
+describe("navbar subscribe menu", () => {
+  const links: [string, string][] = [["#pricing", "Pricing"]];
+  test("Monthly / Yearly tabs switch the price and the checkout link", () => {
+    render(<LandingNavbar links={links} prices={{ monthly: 299, yearly: 2999 }} />);
+    const trigger = screen.getByRole("button", { name: "Subscribe" });
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    const monthly = screen.getByRole("tab", { name: "Monthly" }), yearly = screen.getByRole("tab", { name: /Yearly/ });
+    expect(monthly).toHaveAttribute("aria-selected", "true");
+    expect(yearly).toHaveTextContent("Save 16%");
+    expect(screen.getByRole("tabpanel")).toHaveTextContent("₹299");
+    expect(screen.getByRole("link", { name: /Subscribe monthly/ })).toHaveAttribute("href", "/subscribe?plan=monthly");
+    fireEvent.keyDown(monthly, { key: "ArrowRight" });
+    expect(yearly).toHaveAttribute("aria-selected", "true");
+    expect(yearly).toHaveFocus();
+    expect(screen.getByRole("tabpanel")).toHaveTextContent("₹2,999");
+    expect(screen.getByRole("link", { name: /Subscribe yearly/ })).toHaveAttribute("href", "/subscribe?plan=yearly");
+    fireEvent.click(monthly);
+    expect(screen.getByRole("link", { name: /Subscribe monthly/ })).toBeInTheDocument();
+  });
+
+  test("shows a dash until prices load and closes with Escape", () => {
+    render(<LandingNavbar links={links} />);
+    const trigger = screen.getByRole("button", { name: "Subscribe" });
+    fireEvent.click(trigger);
+    expect(screen.getByRole("tabpanel")).toHaveTextContent("—");
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("tablist")).toBeNull();
+    expect(trigger).toHaveFocus();
+  });
+
+  test("opening the account menu closes the plans menu", () => {
+    render(<LandingNavbar links={links} />);
+    fireEvent.click(screen.getByRole("button", { name: "Subscribe" }));
+    fireEvent.click(screen.getByRole("button", { name: "Account" }));
+    expect(screen.queryByRole("tablist")).toBeNull();
+  });
+});

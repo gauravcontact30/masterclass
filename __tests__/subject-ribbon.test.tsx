@@ -7,7 +7,7 @@ describe("SubjectRibbon and TechnologyModal", () => {
     localStorage.clear();
   });
 
-  test("renders technology pills with icons and opens modal on click", () => {
+  test("renders technology pills with icons and opens modal on click", async () => {
     render(
       <LanguageProvider>
         <SubjectRibbon />
@@ -25,7 +25,7 @@ describe("SubjectRibbon and TechnologyModal", () => {
     fireEvent.click(reactButtons[0]);
 
     // Modal dialog is now displayed
-    const dialog = screen.getByRole("dialog");
+    const dialog = await screen.findByRole("dialog");
     expect(dialog).toBeInTheDocument();
     expect(screen.getByText("React 19")).toBeInTheDocument();
     expect(screen.getByText(/Frontend Library/i)).toBeInTheDocument();
@@ -38,7 +38,7 @@ describe("SubjectRibbon and TechnologyModal", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  test("closes modal on Escape key press", () => {
+  test("closes modal on Escape key press", async () => {
     render(
       <LanguageProvider>
         <SubjectRibbon />
@@ -48,7 +48,7 @@ describe("SubjectRibbon and TechnologyModal", () => {
     const dockerButtons = screen.getAllByRole("button", { name: /Docker/i });
     fireEvent.click(dockerButtons[0]);
 
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
     expect(screen.getByText("Docker & Containers")).toBeInTheDocument();
 
     // Press Escape

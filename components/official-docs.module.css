@@ -70,28 +70,7 @@
   max-width: 74ch;
 }
 
-.badgeRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
 
-.verifiedBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #047857;
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
-  padding: 4px 12px;
-  border-radius: 999px;
-  white-space: nowrap;
-}
-@media (max-width: 640px) {
-  .verifiedBadge { max-width: 100%; white-space: normal; line-height: 1.45; border-radius: 12px; }
-}
 
 /* Sticky Search & Filter Toolbar */
 .panel {
@@ -684,16 +663,6 @@
   font-weight: 600;
 }
 
-.originBadge {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--tone-ink, #9a4a2c);
-  opacity: 0.88;
-}
 
 .cardTitle {
   margin: 0;
@@ -1031,14 +1000,6 @@
   border-color: #d1d5db;
 }
 
-.verifiedModalBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #059669;
-}
 
 .modalTitle {
   margin: 0;

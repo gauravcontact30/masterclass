@@ -129,12 +129,11 @@ export function AiProviderSwitch({ providers, provider, onChoose, label = "Answe
   </div>;
 }
 
-/** Plain-text provenance: hostnames a grounded answer used, never outbound links. */
-export function AiProvenance({ provider, sources, providers }: { provider?: string; sources?: string[]; providers: AiProviderOption[] }) {
+/** Which model prepared an answer. Sources and citations are never shown. */
+export function AiProvenance({ provider, providers }: { provider?: string; providers: AiProviderOption[] }) {
   if (!provider) return null;
   const label = providers.find(item => item.id === provider)?.label ?? provider;
   return <p className={styles.provenance}>
     Prepared with {label}
-    {sources?.length ? ` · sources searched: ${sources.join(", ")}` : ""}
   </p>;
 }

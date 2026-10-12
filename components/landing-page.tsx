@@ -46,7 +46,7 @@ export function LandingPage({ pro, library, prices: initialPrices }: { pro?: Lan
   const navigation = [["#paths", text("Paths", "पथ")], ...(library ? [["#library", text("Library", "लाइब्रेरी")]] : []), ...(pro ? [["#techy", "Techy"], ["#api-docs", "API Docs"]] : []), ["#study-engine", text("How it answers", "उत्तर कैसे")], ["#pricing", text("Membership", "सदस्यता")]];
   const format = (value: number) => new Intl.NumberFormat(hi ? "hi-IN" : "en-IN").format(value);
   return <div className={`${styles.page} ${home.home} ${anek.variable} ${anek.className}`}><a className={styles.skip} href="#main-content">{text("Skip to content", "सामग्री पर जाएँ")}</a>
-    <LandingNavbar links={navigation as [string, string][]} />
+    <LandingNavbar links={navigation as [string, string][]} prices={priceState === "ready" ? prices : null} />
     <main id="main-content" tabIndex={-1}>
     <h1 className={home.srOnly}>{text("MasterClass: school, exam and technology learning in English and Hindi", "MasterClass: अंग्रेज़ी और हिन्दी में स्कूल, परीक्षा और तकनीक की पढ़ाई")}</h1>
     <LandingSlider technologies={library?.counts.technology} />

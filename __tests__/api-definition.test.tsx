@@ -24,6 +24,11 @@ test("every authored example stays valid code once annotated", () => {
       expect(annotated.split("\n").filter(line => line.includes("# ")).length).toBeGreaterThan(0);
       continue;
     }
+    // Shell, JSON, HTML and text examples are shown exactly as written.
+    if (!["typescript", "tsx", "javascript", "jsx"].includes(detail.language)) {
+      expect({ id, annotated }).toEqual({ id, annotated: normalizeCode(detail.code, detail.language) });
+      continue;
+    }
     const jsx = /<\/?[A-Za-z]/.test(detail.code);
     const file = ts.createSourceFile(`x.${jsx ? "tsx" : "ts"}`, annotated, ts.ScriptTarget.Latest, true, jsx ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
     expect({ id, errors: (file as unknown as { parseDiagnostics: unknown[] }).parseDiagnostics.length }).toEqual({ id, errors: 0 });

@@ -169,6 +169,16 @@
     "licenseName": "CC0 1.0",
     "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
   },
+  "langflow": {
+    "src": "/images/brands/langflow.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Langflow",
+    "sourceUrl": "https://simpleicons.org/?q=langflow",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
   "n8n": {
     "src": "/images/brands/n8n.svg",
     "width": 24,

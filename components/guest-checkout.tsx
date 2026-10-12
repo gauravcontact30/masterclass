@@ -9,7 +9,6 @@ import { ExpandedText } from "./expanded-text";
 import { useLanguage } from "./language-provider";
 import { requestJson, errorKey } from "@/lib/client";
 import { openSubscriptionCheckout, type SubscriptionPayment } from "@/lib/razorpay-checkout";
-import { supabaseBrowser } from "@/lib/supabase-browser";
 import type { TranslationKey } from "@/lib/i18n";
 import { anek } from "./landing-fonts";
 import styles from "./guest-checkout.module.css";
@@ -121,8 +120,8 @@ export function GuestCheckout({ initialTier, enabled, prices }: { initialTier: T
             </button>
             <p className={styles.fine}><ExpandedText text={t("billing_renewal_notice")} /></p>
             <p className={styles.fine}>{hi
-              ? <>भुगतान करके आप हमारी <Link href="/terms">सेवा की शर्तें</Link> और <Link href="/privacy">गोपनीयता नीति</Link> स्वीकार करते हैं।</>
-              : <>By paying you agree to our <Link href="/terms">Terms of service</Link> and <Link href="/privacy">Privacy policy</Link>.</>}</p>
+              ? <>भुगतान करके आप हमारे <Link href="/terms">नियम और शर्तें</Link>, <Link href="/privacy">गोपनीयता नीति</Link> और <Link href="/refund-policy">रद्दीकरण व रिफ़ंड नीति</Link> स्वीकार करते हैं।</>
+              : <>By paying you agree to our <Link href="/terms">Terms &amp; conditions</Link>, <Link href="/privacy">Privacy policy</Link> and <Link href="/refund-policy">Cancellation &amp; refund policy</Link>.</>}</p>
           </aside>
         </form>
       </>}
@@ -164,6 +163,8 @@ function SignInLink({ email, text }: { email: string; text: (en: string, hi: str
   async function send() {
     setState("sending");
     try {
+      // Loaded on use: the Supabase SDK and its Buffer polyfill are ~250 KB the checkout never needs before payment.
+      const { supabaseBrowser } = await import("@/lib/supabase-browser");
       const { error } = await supabaseBrowser().auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}/auth/callback` } });
       setState(error ? "error" : "sent");
     } catch { setState("error"); }

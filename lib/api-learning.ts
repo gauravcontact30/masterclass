@@ -38,7 +38,7 @@ export function authoredProject(pkg: ApiPackage, entry: ApiEntry, detail: ApiDet
 }
 
 // Python-ecosystem packages render their examples as Python; everything else as TypeScript.
-const PYTHON_PACKAGES = new Set(["python", "numpy", "pandas", "polars", "scipy", "sklearn", "tensorflow", "pytorch", "keras", "fastapi", "seaborn", "plotly", "requests", "httpx", "scrapy", "pydantic", "deepagents", "langchain", "langgraph", "integrations", "langsmith"]);
+const PYTHON_PACKAGES = new Set(["python", "numpy", "pandas", "polars", "scipy", "sklearn", "tensorflow", "pytorch", "keras", "fastapi", "seaborn", "plotly", "requests", "httpx", "scrapy", "pydantic", "deepagents", "langchain", "langgraph", "integrations", "langsmith", "langflow"]);
 export const apiCodeLanguage = (packageId: string): CodeLanguage => PYTHON_PACKAGES.has(packageId) ? "python" : "typescript";
 
 /**

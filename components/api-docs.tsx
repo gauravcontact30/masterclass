@@ -40,6 +40,7 @@ import {
   type ApiPackage,
 } from "@/lib/api-docs";
 import { API_DETAILS } from "@/lib/api-docs-details";
+import { agenticSection, agenticSections } from "@/lib/api-docs-agentic";
 import { apiDetailSchema, type ContentSource, type GeneratedApiDetail } from "@/lib/pro-learn/types";
 import { type CodeLanguage } from "@/lib/code-highlight";
 import styles from "./api-docs.module.css";
@@ -63,6 +64,7 @@ export const AGENTIC_FRAMEWORK_ORDER = [
   "langgraph",
   "integrations",
   "langsmith",
+  "langflow",
 ] as const;
 export const AGENTIC_FRAMEWORK_IDS = new Set<string>(AGENTIC_FRAMEWORK_ORDER);
 
@@ -84,7 +86,6 @@ type GeneratedResult = {
   source: ContentSource;
   reason?: string;
   provider?: string;
-  sources?: string[];
 };
 const DETAIL_CACHE = "masterclass:api-detail:v2";
 function readCache(key: string): GeneratedResult | null {
@@ -166,9 +167,6 @@ function useGeneratedDetail(
           source: payload.source === "ai" ? "ai" : "library",
           reason: typeof payload.reason === "string" ? payload.reason : undefined,
           provider: typeof payload.provider === "string" ? payload.provider : undefined,
-          sources: Array.isArray(payload.sources)
-            ? payload.sources.filter((item: unknown) => typeof item === "string").slice(0, 8)
-            : undefined,
         };
         if (data.source === "ai") writeCache(key, data);
         setState({ key, status: "ready", data });
@@ -327,7 +325,6 @@ export function ApiDetail({
                   ))}
                 <AiProvenance
                   provider={generated.data?.provider}
-                  sources={generated.data?.sources}
                   providers={providers}
                 />
                 {fromLibrary && (
@@ -633,6 +630,8 @@ export function ApiDocs() {
   const [open, setOpen] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string[]>([]);
   const [expandAll, setExpandAll] = useState(false);
+  // Agentic AI framework packages start open with every entry listed; this tracks the ones the reader closed.
+  const [collapsed, setCollapsed] = useState<string[]>([]);
   const [showTypes, setShowTypes] = useState(false);
   const [searchScope, setSearchScope] = useState<SearchScope>("all");
   const [indexRail, setIndexRail] = useState(false);
@@ -718,6 +717,7 @@ export function ApiDocs() {
     setOpen(null);
     setExpanded([]);
     setExpandAll(false);
+    setCollapsed([]);
   }
 
   function entryRow(pkg: ApiPackage, entry: ApiEntry) {
@@ -995,6 +995,7 @@ export function ApiDocs() {
                   type="button"
                   className={ref.textButton}
                   onClick={() => {
+                    setCollapsed(expandAll ? [...AGENTIC_FRAMEWORK_ORDER] : []);
                     setExpandAll((previous) => !previous);
                     setOpen(null);
                   }}
@@ -1047,8 +1048,10 @@ export function ApiDocs() {
               </h2>
               <div className={ref.packages}>
                 {category.packages.map((pkg) => {
-                  const isOpen = searching || expandAll || open === pkg.id || packageId === pkg.id;
-                  const entries = expanded.includes(pkg.id) || searching ? pkg.entries : pkg.entries.slice(0, 60);
+                  const agentic = AGENTIC_FRAMEWORK_IDS.has(pkg.id);
+                  const isOpen = searching || expandAll || open === pkg.id || packageId === pkg.id || (agentic && !collapsed.includes(pkg.id));
+                  const entries = agentic || expanded.includes(pkg.id) || searching ? pkg.entries : pkg.entries.slice(0, 60);
+                  const sectionNames = agenticSections(pkg.id);
                   const full = API_PACKAGES.find((item) => item.id === pkg.id);
                   const jsGroups = [...new Set(entries.map((entry) => javascriptGroup(entry.name)))];
                   return (
@@ -1067,10 +1070,12 @@ export function ApiDocs() {
                             aria-controls={`api-group-${pkg.id}`}
                             onClick={() => {
                               if (isOpen) {
+                                if (agentic) setCollapsed((previous) => [...previous, pkg.id]);
                                 setOpen(null);
                                 if (expandAll) setExpandAll(false);
                                 if (packageId === pkg.id) setPackageId("all");
                               } else {
+                                setCollapsed((previous) => previous.filter((id) => id !== pkg.id));
                                 setOpen(pkg.id);
                               }
                             }}
@@ -1103,7 +1108,19 @@ export function ApiDocs() {
                       {full && <PackageFacts pkg={full} />}
                       <div id={`api-group-${pkg.id}`} hidden={!isOpen}>
                         {isOpen &&
-                          (pkg.id === "javascript" ? (
+                          (sectionNames ? (
+                            sectionNames.map((section) => {
+                              const inSection = entries.filter((entry) => agenticSection(pkg.id, entry.name, entry.kind) === section);
+                              return inSection.length ? (
+                                <div className={ref.subgroup} key={section}>
+                                  <h4>
+                                    {section} <span className={ref.subgroupCount}>{inSection.length}</span>
+                                  </h4>
+                                  <ul className={ref.entries}>{inSection.map((entry) => entryRow(pkg, entry))}</ul>
+                                </div>
+                              ) : null;
+                            })
+                          ) : pkg.id === "javascript" ? (
                             jsGroups.map((group) => (
                               <div className={ref.subgroup} key={group}>
                                 <h4>{group}</h4>

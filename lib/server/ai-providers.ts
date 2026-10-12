@@ -2,6 +2,7 @@ import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { monitorAi, recordFallback } from "./ai-monitoring";
 import { databaseConfigured } from "./config";
+import { stripCompletionCitations } from "@/lib/strip-citations";
 
 /**
  * One completion interface over the models that can write learning content.
@@ -14,13 +15,14 @@ import { databaseConfigured } from "./config";
  * Gemini, Groq, Mistral and DeepSeek are direct keys for teams that have them.
  *
  * Every caller receives the same shape, so a feature only chooses a provider —
- * it never learns a second API. Citations come back as plain hostnames because
- * generated study content in this app never renders an outbound link.
+ * it never learns a second API. The app shows no citations or source lists, so
+ * every provider is told not to write them and any that slip through are
+ * stripped before the text reaches a caller.
  */
 export const AI_PROVIDERS = ["anthropic", "perplexity", "openrouter", "gateway", "portkey", "openai", "gemini", "groq", "mistral", "deepseek"] as const;
 export type AiProvider = (typeof AI_PROVIDERS)[number];
 export type ProviderMessage = { role: "user" | "assistant"; content: string };
-export type ProviderCompletion = { text: string; provider: AiProvider; model: string; sources: string[]; truncated?: boolean };
+export type ProviderCompletion = { text: string; provider: AiProvider; model: string; truncated?: boolean };
 /**
  * Per-call overrides. `model` lets a feature pin its own model (the study tutor
  * has STUDY_CHAT_MODEL), `allowTruncated` returns a cut-off answer instead of
@@ -133,21 +135,9 @@ export function resolveProvider(requested?: string | null): AiProvider | null {
   return provider && providerConfigured(provider) ? provider : null;
 }
 
-/** Hostnames only: a source is provenance the learner can recognise, not a link. */
-function hostnames(values: unknown): string[] {
-  if (!Array.isArray(values)) return [];
-  const hosts = values.flatMap(value => {
-    const url = typeof value === "string" ? value : typeof (value as { url?: unknown })?.url === "string" ? (value as { url: string }).url : "";
-    try { return url ? [new URL(url).hostname.replace(/^www\./, "")] : []; } catch { return []; }
-  });
-  return [...new Set(hosts)].slice(0, 8);
-}
-
 type CompatibleResponse = {
-  choices?: { message?: { content?: string; annotations?: { url_citation?: { url?: string } }[] }; finish_reason?: string }[];
+  choices?: { message?: { content?: string }; finish_reason?: string }[];
   usage?: { prompt_tokens?: number; completion_tokens?: number; cost?: number };
-  citations?: unknown;
-  search_results?: unknown;
 };
 
 async function completeCompatible(provider: CompatibleProvider, system: string, messages: ProviderMessage[], maxTokens: number, signal: AbortSignal | undefined, feature: string, options?: CompleteOptions): Promise<ProviderCompletion> {
@@ -179,9 +169,7 @@ async function completeCompatible(provider: CompatibleProvider, system: string, 
   // The reasoning models emit their scratchpad first; it is not part of the answer.
   const text = (choice?.message?.content ?? "").replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
   if (!text) throw new Error("empty_completion");
-  // Perplexity lists search results; OpenRouter's web plugin annotates the message instead.
-  const annotations = choice?.message?.annotations?.map(item => item.url_citation?.url);
-  return { text, provider, model, sources: hostnames(response.search_results ?? response.citations ?? annotations), truncated };
+  return { text, provider, model, truncated };
 }
 
 /**
@@ -208,7 +196,7 @@ async function completeGateway(system: string, messages: ProviderMessage[], maxT
   if (truncated && !options?.allowTruncated) throw new Error("truncated");
   const text = response.text.trim();
   if (!text) throw new Error("empty_completion");
-  return { text, provider: "gateway", model, sources: [], truncated };
+  return { text, provider: "gateway", model, truncated };
 }
 
 async function completeAnthropic(system: string, messages: ProviderMessage[], maxTokens: number, signal: AbortSignal | undefined, feature: string, options?: CompleteOptions): Promise<ProviderCompletion> {
@@ -218,7 +206,7 @@ async function completeAnthropic(system: string, messages: ProviderMessage[], ma
   const truncated = response.stop_reason === "max_tokens";
   if (truncated && !options?.allowTruncated) throw new Error("truncated");
   const text = response.content.filter(block => block.type === "text").map(block => block.text).join("").trim();
-  return { text, provider: "anthropic", model, sources: [], truncated };
+  return { text, provider: "anthropic", model, truncated };
 }
 
 /** A provider rejected the request; status is carried so callers can classify it. */
@@ -269,7 +257,16 @@ export async function completeWithFallback(provider: AiProvider, system: string,
   throw refusal;
 }
 
+/** Appended to every system prompt: the app never shows citations, footnotes or source lists. */
+const NO_CITATIONS = "Never include citations, citation markers such as [1], footnotes, reference lists, Sources lines or source URLs in your answer.";
+
 export async function completeWithProvider(provider: AiProvider, system: string, messages: ProviderMessage[], maxTokens: number, signal?: AbortSignal, feature = "mentor", options?: CompleteOptions): Promise<ProviderCompletion> {
+  const completion = await completeRaw(provider, `${system}\n\n${NO_CITATIONS}`, messages, maxTokens, signal, feature, options);
+  // Grounded models can still mark claims with "[1][5]"; the markers never reach a reader.
+  return { ...completion, text: stripCompletionCitations(completion.text) };
+}
+
+async function completeRaw(provider: AiProvider, system: string, messages: ProviderMessage[], maxTokens: number, signal: AbortSignal | undefined, feature: string, options?: CompleteOptions): Promise<ProviderCompletion> {
   if (!providerConfigured(provider)) throw new Error(`provider_unconfigured:${provider}`);
   if (provider === "anthropic") return completeAnthropic(system, messages, maxTokens, signal, feature, options);
   if (provider === "gateway") return completeGateway(system, messages, maxTokens, signal, feature, options);

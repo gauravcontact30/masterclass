@@ -1,9 +1,10 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ApiDocs } from "@/components/api-docs";
-import { API_PACKAGES, API_TYPES, filterApiPackages } from "@/lib/api-docs";
+import { API_PACKAGES, API_TYPES, filterApiPackages, groupByCategory } from "@/lib/api-docs";
 jest.mock("@/components/api-project-workspace",()=>({ApiProjectWorkspace:()=> <div>Project workspace</div>}));
 import { API_DETAILS } from "@/lib/api-docs-details";
+import { AGENTIC_ADDITIONS, AGENTIC_PACKAGE_IDS, agenticSection, agenticSections } from "@/lib/api-docs-agentic";
 import { catalogApiDetail, enrichApiLearning } from "@/lib/api-learning";
 import { catalogReference } from "@/lib/server/api-reference-fallback";
 import styles from "@/components/api-docs.module.css";
@@ -13,8 +14,8 @@ jest.mock("next/navigation", () => ({ usePathname: () => "/dashboard/api-docs", 
 beforeEach(() => { mockSearchParams = new URLSearchParams(); });
 
 test("reference catalog has unique identifiers, supported types and HTTPS documentation", () => {
-  expect(API_PACKAGES).toHaveLength(59);
-  expect(API_PACKAGES.reduce((sum, pkg) => sum + pkg.entries.length, 0)).toBe(5593);
+  expect(API_PACKAGES).toHaveLength(60);
+  expect(API_PACKAGES.reduce((sum, pkg) => sum + pkg.entries.length, 0)).toBe(5802);
   const kinds = API_TYPES.map(type => type.k);
   for (const pkg of API_PACKAGES) {
     expect(pkg.docs).toMatch(/^https:\/\//);
@@ -183,4 +184,42 @@ test("an authored Hook renders every reference section: short definition, syntax
   expect(screen.getByRole("heading", { name: "Interview questions & answers" })).toBeVisible();
   // Still no outbound links in generated study content.
   for (const link of document.querySelectorAll<HTMLAnchorElement>("a[href^='http']")) { expect(link.href).toMatch(/^https:\/\//); expect(link.rel).toContain("noopener"); }
+});
+
+test("every Agentic AI framework lists all of its entries, open and grouped by section", async () => {
+  const user = userEvent.setup();
+  render(<ApiDocs/>);
+  for (const id of AGENTIC_PACKAGE_IDS) {
+    const pkg = API_PACKAGES.find(item => item.id === id)!;
+    const group = document.getElementById(`api-group-${id}`)!;
+    expect(group).toBeVisible();
+    // No "Show all" cap: every catalog entry, including each new one, is a link in the list.
+    expect(within(group).getAllByRole("link")).toHaveLength(pkg.entries.length);
+    for (const added of AGENTIC_ADDITIONS[id]) {
+      expect(pkg.entries.some(entry => entry.name === added.name)).toBe(true);
+      expect(API_DETAILS[`${id}:${added.name}`]?.notes.length).toBeGreaterThan(0);
+    }
+    const headings = within(group).getAllByRole("heading", { level: 4 }).map(node => node.textContent?.replace(/\s*\d+$/, ""));
+    expect(headings).toEqual(agenticSections(id)!.filter(section => pkg.entries.some(entry => agenticSection(id, entry.name, entry.kind) === section)));
+  }
+  expect(within(document.getElementById("api-group-langchain")!).getByRole("link", { name: "SummarizationMiddleware" })).toBeVisible();
+  // Collapsing is remembered, and the toggle reopens it.
+  await user.click(screen.getByRole("button", { name: "Toggle LangChain" }));
+  expect(document.getElementById("api-group-langchain")).not.toBeVisible();
+  await user.click(screen.getByRole("button", { name: "Toggle LangChain" }));
+  expect(document.getElementById("api-group-langchain")).toBeVisible();
+});
+
+test("Langflow sits under Agentic AI frameworks with an authored page for every entry", () => {
+  const agentic = groupByCategory(API_PACKAGES).find(category => category.id === "agentic")!;
+  expect(agentic.label).toBe("Agentic AI frameworks");
+  expect(agentic.packages.map(pkg => pkg.id)).toContain("langflow");
+  const langflow = API_PACKAGES.find(pkg => pkg.id === "langflow")!;
+  expect(langflow.docs).toBe("https://docs.langflow.org");
+  for (const entry of langflow.entries) {
+    const detail = API_DETAILS[`langflow:${entry.name}`];
+    expect(detail?.source).toMatch(/^https:\/\/docs\.langflow\.org\//);
+    expect(detail.notes.length).toBeGreaterThanOrEqual(1);
+    expect(detail.code.length).toBeGreaterThan(0);
+  }
 });

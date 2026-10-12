@@ -309,11 +309,6 @@ export function VocabularyWordModal({
                     /{entry.pronunciation}/
                   </span>
                 )}
-                {lookup?.source && (
-                  <span>
-                    · Source: {lookup.source === "library" ? "Curated" : lookup.source === "dictionary" ? "Dictionary" : "AI"}
-                  </span>
-                )}
               </div>
             </div>
           </div>

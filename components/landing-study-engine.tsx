@@ -22,7 +22,7 @@ export function LandingStudyEngine() {
   const steps = [
     { Icon: BookOpenCheck, title: text("Your library first", "पहले आपकी लाइब्रेरी"), body: text("Every question is matched against published notes, handbooks and API references before any model is asked.", "किसी मॉडल से पूछने से पहले हर प्रश्न को प्रकाशित नोट्स, हैंडबुक और API संदर्भों से मिलाया जाता है।") },
     { Icon: Route, title: text("The right model for the question", "प्रश्न के लिए सही मॉडल"), body: text("Version-sensitive questions go to a search-grounded model; if one provider is down, the next configured one answers.", "संस्करण से जुड़े प्रश्न खोज-आधारित मॉडल को जाते हैं; एक प्रदाता बंद हो तो अगला उपलब्ध प्रदाता उत्तर देता है।") },
-    { Icon: ShieldCheck, title: text("Sources you can check", "जाँचने योग्य स्रोत"), body: text("Grounded answers name the sites they read, so you can verify a fact before you learn it.", "खोज-आधारित उत्तर पढ़ी गई साइटों के नाम बताते हैं, ताकि आप सीखने से पहले तथ्य जाँच सकें।") },
+    { Icon: ShieldCheck, title: text("Clean, focused answers", "साफ़, केंद्रित उत्तर"), body: text("No citation markers or source lists — just the explanation, examples and code you came for.", "कोई संदर्भ चिह्न या स्रोत सूची नहीं — केवल व्याख्या, उदाहरण और कोड।") },
     { Icon: Languages, title: text("English or Hindi", "अंग्रेज़ी या हिन्दी"), body: text("Ask in either language; code, formulas and API names stay exact.", "किसी भी भाषा में पूछें; कोड, सूत्र और API नाम सटीक रहते हैं।") },
   ];
   const models = ["Claude", "Perplexity", "OpenRouter", "Vercel AI Gateway", "Portkey", "Gemini", "Groq", "Mistral"];
@@ -42,7 +42,6 @@ export function LandingStudyEngine() {
           <p className={styles.tool}><span>⎿</span> {text("Routing: Perplexity · grounded", "रूटिंग: Perplexity · खोज-आधारित")}</p>
           <p className={styles.answer}><span className={styles.dot}>●</span> aₙ = a + (n − 1)d → a₅ = 3 + 4 × 4 = <b>19</b></p>
           <p className={styles.muted}>{text("Count the four gaps, not five.", "चार अंतर गिनें, पाँच नहीं।")}</p>
-          <p className={styles.sources}>{text("Sources", "स्रोत")}: ncert.nic.in · cbseacademic.nic.in</p>
           <p className={styles.cursor}><span>&gt;</span> <i /></p>
         </div>
       </div>

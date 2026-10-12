@@ -10,6 +10,6 @@ export const maxDuration = 180;
 export const POST = proLearnRoute("lesson", z.object({ trackId: z.string().max(40), topic: z.string().trim().min(2).max(160), level: z.enum(PRO_LEVELS), provider: z.enum(AI_PROVIDERS).optional() }).strict(), async (input, signal) => {
   const track = trackById(input.trackId);
   if (!track) throw new HttpError(400, "invalid_request");
-  const { lesson, provider, sources } = await generateLesson(track, input.topic, input.level, signal, input.provider);
-  return { lesson, source: "ai", provider, sources };
+  const { lesson, provider } = await generateLesson(track, input.topic, input.level, signal, input.provider);
+  return { lesson, source: "ai", provider };
 });

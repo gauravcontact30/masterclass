@@ -35,6 +35,7 @@ const extra = [
   ['LangChain', 'https://docs.langchain.com/oss/python/langchain/overview'],
   ['LangGraph', 'https://docs.langchain.com/oss/python/langgraph/overview'],
   ['LangSmith', 'https://docs.langchain.com/langsmith/observability'],
+  ['Langflow', 'https://docs.langflow.org'],
   ['n8n', 'https://docs.n8n.io/'],
   ['PyTorch', 'https://pytorch.org/tutorials/'],
   ['TensorFlow', 'https://www.tensorflow.org/learn'],

@@ -3,8 +3,11 @@
 import { useState } from "react";
 import Image from "next/image";
 import type { LibraryEntry } from "@/lib/landing-library";
-import { TECHNOLOGIES_CATALOG, type TechnologyInfo } from "@/lib/technology-catalog";
-import { TechnologyModal } from "./technology-modal";
+import dynamic from "next/dynamic";
+import type { TechnologyInfo } from "@/lib/technology-catalog";
+
+// The catalog (~80 KB) and its modal load on the first pill click, not with the landing page.
+const TechnologyModal = dynamic(() => import("./technology-modal").then(mod => mod.TechnologyModal), { ssr: false });
 import { useLanguage } from "./language-provider";
 import styles from "./landing-home.module.css";
 
@@ -55,7 +58,8 @@ export function SubjectRibbon({ entries }: { entries?: LibraryEntry[] }) {
   const hi = language === "hi";
   const [activeTech, setActiveTech] = useState<TechnologyInfo | null>(null);
 
-  const handlePillClick = (techId: string, label: string) => {
+  const handlePillClick = async (techId: string, label: string) => {
+    const { TECHNOLOGIES_CATALOG } = await import("@/lib/technology-catalog");
     const found = TECHNOLOGIES_CATALOG[techId];
     if (found) {
       setActiveTech(found);
@@ -113,7 +117,7 @@ export function SubjectRibbon({ entries }: { entries?: LibraryEntry[] }) {
                   <button
                     type="button"
                     className={styles.ribbonPillButton}
-                    onClick={() => handlePillClick(item.id, item.label)}
+                    onClick={() => void handlePillClick(item.id, item.label)}
                     tabIndex={copy === 1 ? -1 : undefined}
                     aria-haspopup="dialog"
                   >

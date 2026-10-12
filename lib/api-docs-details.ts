@@ -1,4 +1,6 @@
 import type { CodeLanguage } from "./code-highlight";
+import { LANGFLOW_DETAILS } from "./api-docs-langflow";
+import { AGENTIC_DETAILS } from "./api-docs-agentic";
 
 export type ApiDetail = { packageName: string; description: string; signature: string; parameters: { name: string; type: string; description: string }[]; returns: string; notes: string[]; useCases: string[]; code: string; language: CodeLanguage; source: string; related: string[] };
 
@@ -553,4 +555,6 @@ export const API_DETAILS: Record<string, ApiDetail> = {
     source: "https://reference.langchain.com/python/integrations/overview",
     related: ["PineconeVectorStore","Chroma","OpenAIEmbeddings","BaseRetriever"],
   },
+  ...LANGFLOW_DETAILS,
+  ...AGENTIC_DETAILS,
 };

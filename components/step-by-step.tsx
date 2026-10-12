@@ -24,6 +24,7 @@ import { Tabs, TabsList, TabsTab } from "./ui/tabs";
 import { SearchSectionIcon } from "./search-section-icon";
 import { CodeFiles } from "./code-files";
 import { pageWindow } from "./pager";
+import { stripCitationsDeep } from "@/lib/strip-citations";
 import styles from "./step-by-step.module.css";
 
 export const CARDS_PER_PAGE = 2;
@@ -71,7 +72,7 @@ const capitalise = (word: string) => word[0].toUpperCase() + word.slice(1);
 
 function loadAsked(): StepCard[] {
   try {
-    const raw = JSON.parse(localStorage.getItem(STORE_KEY) ?? "[]");
+    const raw = stripCitationsDeep(JSON.parse(localStorage.getItem(STORE_KEY) ?? "[]"));
     if (!Array.isArray(raw)) return [];
     return raw.flatMap((item): StepCard[] => {
       if (!item || typeof item.id !== "string" || typeof item.question !== "string") return [];
@@ -740,7 +741,7 @@ export function StepByStep({ initialQuestion = "", technologies = [] }: { initia
         <NativeSelect className={styles.select} aria-label="Filter by level" value={filters.level} onChange={event => setFilter("level", event.target.value)}>
           <NativeSelectOption value="all">All levels</NativeSelectOption>{STEP_LEVELS.map(level => <NativeSelectOption key={level} value={level}>{capitalise(level)}</NativeSelectOption>)}
         </NativeSelect>
-        <NativeSelect className={styles.select} aria-label="Filter by source" value={filters.origin} onChange={event => setFilter("origin", event.target.value as Filters["origin"])}>
+        <NativeSelect className={styles.select} aria-label="Filter by card type" value={filters.origin} onChange={event => setFilter("origin", event.target.value as Filters["origin"])}>
           <NativeSelectOption value="all">All cards</NativeSelectOption><NativeSelectOption value="asked">My questions</NativeSelectOption><NativeSelectOption value="built-in">Built-in guides</NativeSelectOption>
         </NativeSelect>
         <NativeSelect className={styles.select} aria-label="Sort cards" value={filters.sort} onChange={event => setFilter("sort", event.target.value as Filters["sort"])}>

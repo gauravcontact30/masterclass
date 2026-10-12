@@ -75,7 +75,7 @@ const perplexityReply = (content: unknown) => ({
   text: async () => "",
 });
 
-test("a learner can ask for Perplexity, and the page records which model answered and what it read", async () => {
+test("a learner can ask for Perplexity, and the page records which model answered but never its sources", async () => {
   process.env.PERPLEXITY_API_KEY = "pplx-test";
   process.env.PERPLEXITY_MODEL = "sonar";
   global.fetch = jest.fn().mockResolvedValue(perplexityReply(generated)) as jest.Mock;
@@ -83,7 +83,7 @@ test("a learner can ask for Perplexity, and the page records which model answere
   const result = await apiDetail(pkg.id, entry.name, undefined, "perplexity");
   expect(result.source).toBe("ai");
   expect(result.provider).toBe("perplexity");
-  expect(result.sources).toEqual(["react.dev"]);
+  expect(result).not.toHaveProperty("sources");
   expect(result.detail.signature).toBe("const deferred = useDeferredValue(value)");
   expect(result.detail.project).not.toBeNull();
   expect((global.fetch as jest.Mock).mock.calls[0][0]).toBe("https://api.perplexity.ai/chat/completions");
@@ -112,7 +112,9 @@ test("a React Hook with authored teaching content renders every section with rea
   expect(detail.code).toContain("'use client'");
   expect(detail.notes.length).toBeGreaterThanOrEqual(4);
   expect(detail.notes.join(" ")).toContain("Import useDeferredValue from react");
-  expect(detail.notes.join(" ")).toContain("https://react.dev/reference/react/useDeferredValue");
+  // Notes carry no source links; the official page is only the detail's source field.
+  expect(detail.notes.join(" ")).not.toMatch(/https?:\/\//);
+  expect(detail.source).toBe("https://react.dev/reference/react/useDeferredValue");
   expect(detail.useCases.length).toBeGreaterThanOrEqual(3);
   expect(detail.related.length).toBeGreaterThan(0);
   expect(detail.related.every(name => name !== "useDeferredValue")).toBe(true);

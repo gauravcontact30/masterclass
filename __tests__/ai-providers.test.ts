@@ -54,7 +54,7 @@ test("the Perplexity model defaults to sonar and honours the override", () => {
   expect(providerModel("perplexity")).toBe("sonar");
 });
 
-test("a Perplexity completion sends a bearer-authenticated chat request and returns the answer with its sources", async () => {
+test("a Perplexity completion sends a bearer-authenticated chat request and returns the answer without any sources", async () => {
   (global.fetch as jest.Mock).mockResolvedValue(answer("Turbopack is the default bundler in Next.js 16.", {
     search_results: [{ url: "https://nextjs.org/docs/app/guides/upgrading/version-16" }, { url: "https://www.nextjs.org/blog" }, { url: "https://react.dev/blog" }],
   }));
@@ -64,7 +64,8 @@ test("a Perplexity completion sends a bearer-authenticated chat request and retu
   expect(result.model).toBe("sonar");
   expect(result.text).toBe("Turbopack is the default bundler in Next.js 16.");
   // Hostnames only, de-duplicated and without www: provenance, never an outbound link.
-  expect(result.sources).toEqual(["nextjs.org", "react.dev"]);
+  // Search results are never passed on: the app shows no citations or sources.
+  expect(result).not.toHaveProperty("sources");
 
   const [url, init] = (global.fetch as jest.Mock).mock.calls[0];
   expect(url).toBe("https://api.perplexity.ai/chat/completions");
@@ -74,15 +75,15 @@ test("a Perplexity completion sends a bearer-authenticated chat request and retu
   expect(body.model).toBe("sonar");
   expect(body.max_tokens).toBe(900);
   expect(body.messages).toEqual([
-    { role: "system", content: "You write reference pages." },
+    { role: "system", content: expect.stringMatching(/^You write reference pages\.\n\nNever include citations/) },
     { role: "user", content: "What changed in Next.js 16?" },
   ]);
 });
 
-test("citations are accepted when the response has no search_results", async () => {
+test("a response with citations still returns only the answer", async () => {
   (global.fetch as jest.Mock).mockResolvedValue(answer("Answer.", { citations: ["https://react.dev/reference/react/use", "not a url"] }));
   const result = await completeWithProvider("perplexity", "system", [{ role: "user", content: "q" }], 500);
-  expect(result.sources).toEqual(["react.dev"]);
+  expect(result).not.toHaveProperty("sources");
 });
 
 test("a reasoning model's scratchpad is removed before the answer is used", async () => {
@@ -137,7 +138,7 @@ test("a provider that is out of credit hands the request to the other one instea
   const completion = await providers.completeWithFallback("anthropic", "system", [{ role: "user", content: "hi" }], 500);
   expect(completion.provider).toBe("perplexity");
   expect(completion.text).toBe("Perplexity answered instead.");
-  expect(completion.sources).toEqual(["nextjs.org"]);
+  expect(completion).not.toHaveProperty("sources");
 });
 
 test("a fallback is only for a refusal: a malformed answer would fail the same way elsewhere", async () => {

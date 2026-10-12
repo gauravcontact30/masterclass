@@ -28369,6 +28369,111 @@
           "name": "BudgetExceededError",
           "kind": "C",
           "status": "s"
+        },
+        {
+          "name": "write_todos",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "task",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "execute",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "SubAgent",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "CompiledSubAgent",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "AsyncSubAgent",
+          "kind": "C",
+          "status": "p"
+        },
+        {
+          "name": "SubAgentMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "StateBackend",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "FilesystemBackend",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "LocalShellBackend",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "StoreBackend",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "CompositeBackend",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "BackendProtocol",
+          "kind": "I",
+          "status": "s"
+        },
+        {
+          "name": "SandboxBackendProtocol",
+          "kind": "I",
+          "status": "s"
+        },
+        {
+          "name": "skills",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "memory (AGENTS.md)",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "FilesystemPermission",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "interrupt_on",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "FilesystemMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "RubricMiddleware",
+          "kind": "C",
+          "status": "p"
+        },
+        {
+          "name": "CodeInterpreterMiddleware",
+          "kind": "C",
+          "status": "p"
         }
       ]
     },
@@ -28604,6 +28709,151 @@
           "name": "PydanticOutputParser",
           "kind": "C",
           "status": "s"
+        },
+        {
+          "name": "AgentMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "before_model",
+          "kind": "@",
+          "status": "s"
+        },
+        {
+          "name": "after_model",
+          "kind": "@",
+          "status": "s"
+        },
+        {
+          "name": "before_agent",
+          "kind": "@",
+          "status": "s"
+        },
+        {
+          "name": "after_agent",
+          "kind": "@",
+          "status": "s"
+        },
+        {
+          "name": "wrap_model_call",
+          "kind": "@",
+          "status": "s"
+        },
+        {
+          "name": "wrap_tool_call",
+          "kind": "@",
+          "status": "s"
+        },
+        {
+          "name": "dynamic_prompt",
+          "kind": "@",
+          "status": "s"
+        },
+        {
+          "name": "hook_config",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "ModelRequest",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "SummarizationMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "PIIMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ModelFallbackMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ModelRetryMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ToolRetryMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "TodoListMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "LLMToolSelectorMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ContextEditingMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ShellToolMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ToolStrategy",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ProviderStrategy",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "with_structured_output",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "bind_tools",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "content_blocks",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "batch",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "InMemoryRateLimiter",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ToolRuntime",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Agent streaming",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "Short-term memory",
+          "kind": "M",
+          "status": "s"
         }
       ]
     },
@@ -28829,6 +29079,126 @@
           "name": "RemainingSteps",
           "kind": "C",
           "status": "s"
+        },
+        {
+          "name": "add_conditional_edges",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "add_sequence",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "Runtime & context_schema",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "input_schema / output_schema",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "recursion_limit",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "Command(resume=...)",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "Command.PARENT",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "Subgraphs",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "stream_mode",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "get_stream_writer",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "stream_events",
+          "kind": "F",
+          "status": "p"
+        },
+        {
+          "name": "get_state_history",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "durability",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "InMemorySaver",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "get_store",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "Semantic memory search",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "RetryPolicy",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "TimeoutPolicy",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "CachePolicy",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ToolNode",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "tools_condition",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "langgraph.json",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "langgraph dev",
+          "kind": "CLI",
+          "status": "s"
+        },
+        {
+          "name": "RemoteGraph",
+          "kind": "C",
+          "status": "s"
         }
       ]
     },
@@ -29034,6 +29404,86 @@
           "name": "StreamlitCallbackHandler",
           "kind": "C",
           "status": "s"
+        },
+        {
+          "name": "AzureChatOpenAI",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ChatXAI",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ChatDeepSeek",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ChatPerplexity",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ChatHuggingFace",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ChatNVIDIA",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ChatOpenRouter",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "VoyageAIEmbeddings",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "InMemoryVectorStore",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ElasticsearchStore",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "MongoDBAtlasVectorSearch",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "RedisVectorStore",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "PyPDFLoader",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "DoclingLoader",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "TavilySearch",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "MongoDBSaver",
+          "kind": "C",
+          "status": "s"
         }
       ]
     },
@@ -29214,6 +29664,621 @@
           "name": "RunType",
           "kind": "E",
           "status": "s"
+        },
+        {
+          "name": "LANGSMITH_TRACING",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "LANGSMITH_API_KEY",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "LANGSMITH_PROJECT",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "LANGSMITH_ENDPOINT",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "wrap_anthropic",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "Metadata & tags",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "Threads",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "Distributed tracing",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "create_llm_as_judge",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "Pairwise evaluation",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "create_dataset",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "create_feedback",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "push_prompt",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "pull_prompt",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "pytest.mark.langsmith",
+          "kind": "@",
+          "status": "s"
+        },
+        {
+          "name": "Vitest & Jest",
+          "kind": "M",
+          "status": "s"
+        }
+      ]
+    },
+    {
+      "id": "langflow",
+      "name": "Langflow",
+      "icon": "🧩",
+      "description": "low-code visual builder for AI agents and workflows, served through a REST API, MCP and A2A servers, and the LFX runtime",
+      "docs": "https://docs.langflow.org",
+      "accent": "#7528FC",
+      "topics": [
+        "Flows & components",
+        "Run API & tweaks",
+        "Workflow API (v2)",
+        "Webhooks",
+        "MCP server & client",
+        "Custom Python components",
+        "LFX runtime",
+        "Deployment & authentication"
+      ],
+      "entries": [
+        {
+          "name": "Flow",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "Components & ports",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "Tweaks",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "Session ID",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "Global variables",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "Tool Mode",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "Playground",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "Projects",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "uv pip install langflow",
+          "kind": "CLI",
+          "status": "s"
+        },
+        {
+          "name": "langflow run",
+          "kind": "CLI",
+          "status": "s"
+        },
+        {
+          "name": "langflow superuser",
+          "kind": "CLI",
+          "status": "s"
+        },
+        {
+          "name": "langflow api-key",
+          "kind": "CLI",
+          "status": "s"
+        },
+        {
+          "name": "langflow migration",
+          "kind": "CLI",
+          "status": "s"
+        },
+        {
+          "name": "langflow copy-db",
+          "kind": "CLI",
+          "status": "s"
+        },
+        {
+          "name": "docker run langflowai/langflow",
+          "kind": "CLI",
+          "status": "s"
+        },
+        {
+          "name": "lfx run",
+          "kind": "CLI",
+          "status": "s"
+        },
+        {
+          "name": "lfx serve",
+          "kind": "CLI",
+          "status": "s"
+        },
+        {
+          "name": "lfx push",
+          "kind": "CLI",
+          "status": "s"
+        },
+        {
+          "name": "POST /api/v1/run/{flow_id}",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "POST /api/v1/run/advanced/{flow_id}",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "POST /api/v1/webhook/{flow_id}",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "POST /api/v2/workflows",
+          "kind": "SVC",
+          "status": "p"
+        },
+        {
+          "name": "GET /api/v2/workflows",
+          "kind": "SVC",
+          "status": "p"
+        },
+        {
+          "name": "GET /api/v2/workflows/{job_id}/events",
+          "kind": "SVC",
+          "status": "p"
+        },
+        {
+          "name": "POST /api/v2/workflows/stop",
+          "kind": "SVC",
+          "status": "p"
+        },
+        {
+          "name": "POST /api/v1/responses",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "POST /api/v1/build/{flow_id}/flow",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "POST /api/v1/flows/",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "GET /api/v1/flows/",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "PATCH /api/v1/flows/{flow_id}",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "POST /api/v1/flows/upload/",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "POST /api/v1/flows/download/",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "POST /api/v1/projects/",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "GET /api/v1/projects/download/{project_id}",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "POST /api/v1/files/upload/{flow_id}",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "POST /api/v2/files",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "GET /api/v1/monitor/messages",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "GET /api/v1/monitor/builds",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "GET /api/v1/monitor/traces",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "GET /logs-stream",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "POST /api/v1/users/",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "GET /api/v1/users/whoami",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "POST /api/v1/api_key/",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "GET /health_check",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "GET /api/v1/all",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "/api/v1/mcp/project/{project_id}/streamable",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "POST /api/v1/a2a/{flow_id}/jsonrpc",
+          "kind": "SVC",
+          "status": "p"
+        },
+        {
+          "name": "Chat Input",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Chat Output",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Agent",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Language Model",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Embedding Model",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Prompt Template",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Message History",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Structured Output",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Parser",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Split Text",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Loop",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "If-Else",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Smart Router",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Run Flow",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "URL",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Web Search",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Python Interpreter",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "MCP Tools",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Webhook",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Knowledge Base",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Guardrails",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Batch Run",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Human Input",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "langflow-chat",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Component",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Output",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "update_build_config",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "Message",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "JSON",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Table",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "LangflowClient",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "LANGFLOW_AUTO_LOGIN",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "LANGFLOW_SUPERUSER",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "LANGFLOW_SECRET_KEY",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "LANGFLOW_DATABASE_URL",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "LANGFLOW_API_KEY_SOURCE",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "LANGFLOW_COMPONENTS_PATH",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "LANGFLOW_WORKERS",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "LANGFLOW_CONFIG_DIR",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "LANGFLOW_TWEAKS_POLICY",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "LANGFLOW_WEBHOOK_AUTH_ENABLE",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "LANGFLOW_VARIABLES_TO_GET_FROM_ENVIRONMENT",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "LANGFLOW_CACHE_TYPE",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "LANGFLOW_LOAD_FLOWS_PATH",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "X-LANGFLOW-GLOBAL-VAR-*",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "API Request",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Read File",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Write File",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Type Convert",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Smart Transform",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "SQL Database",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "LLM Selector",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Calculator",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Current Date",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "LangSmith & tracing integrations",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "Voice mode",
+          "kind": "M",
+          "status": "d"
         }
       ]
     }

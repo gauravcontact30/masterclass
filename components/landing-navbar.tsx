@@ -4,6 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProp
 import Link from "next/link";
 import { BookOpen, CodeXml, Crown, Languages, Library, LogIn, Menu, MessageCircle, Route, Terminal, UserPlus, UserRound, X, type LucideIcon } from "lucide-react";
 import { Wordmark } from "./brand-mark";
+import { LandingPlansMenu } from "./landing-plans-menu";
 import { useLanguage } from "./language-provider";
 import styles from "./landing-home.module.css";
 
@@ -27,13 +28,15 @@ const NAV_ICONS: Record<string, LucideIcon> = {
  * the pointer across the links and rests on the section currently in view;
  * each link has its own light pill colour, and the link under it turns dark.
  */
-export function LandingNavbar({ links }: { links: [string, string][] }) {
+export function LandingNavbar({ links, prices = null }: { links: [string, string][]; prices?: { monthly: number; yearly: number } | null }) {
   const { language, setLanguage } = useLanguage();
   const hi = language === "hi";
   const text = (en: string, hindi: string) => hi ? hindi : en;
   const [scrolled, setScrolled] = useState(false);
   const [menu, setMenu] = useState(false);
   const [account, setAccount] = useState(false);
+  const [plans, setPlans] = useState(false);
+  const openPlans = useCallback((value: boolean) => { setPlans(value); if (value) { setAccount(false); setMenu(false); } }, []);
   const accountRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState<string | null>(null);
   const [indicator, setIndicator] = useState<Indicator>({ left: 0, right: 0, visible: false, href: null });
@@ -83,7 +86,7 @@ export function LandingNavbar({ links }: { links: [string, string][] }) {
     return () => { window.removeEventListener("keydown", onKey); document.removeEventListener("pointerdown", onPointer); };
   }, [account]);
 
-  return <header className={styles.navbar} data-solid={scrolled || menu || undefined}>
+  return <header className={styles.navbar} data-solid={scrolled || menu || plans || undefined}>
     <div className={styles.navbarInner}>
       <Link href="/" aria-label="MasterClass" className={styles.brand}><Wordmark /></Link>
       <nav ref={navRef} className={styles.navLinks} data-open={menu || undefined} aria-label={text("Main navigation", "मुख्य नेविगेशन")} onMouseLeave={() => moveTo(active)}>
@@ -99,8 +102,9 @@ export function LandingNavbar({ links }: { links: [string, string][] }) {
         })}
       </nav>
       <div className={styles.navActions}>
+        <LandingPlansMenu prices={prices} open={plans} onOpenChange={openPlans} />
         <div ref={accountRef} className={styles.account}>
-          <button type="button" className={styles.accountButton} aria-label={text("Account", "खाता")} aria-expanded={account} aria-controls="landing-account-menu" onClick={() => { setAccount(value => !value); setMenu(false); }}>
+          <button type="button" className={styles.accountButton} aria-label={text("Account", "खाता")} aria-expanded={account} aria-controls="landing-account-menu" onClick={() => { setAccount(value => !value); setMenu(false); setPlans(false); }}>
             <UserRound size={19} strokeWidth={1.9} aria-hidden="true" />
           </button>
           {account && <div id="landing-account-menu" className={styles.accountMenu}>
@@ -121,7 +125,7 @@ export function LandingNavbar({ links }: { links: [string, string][] }) {
             </Link>
           </div>}
         </div>
-        <button type="button" className={styles.navMenu} aria-expanded={menu} aria-label={text("Toggle navigation", "नेविगेशन खोलें")} onClick={() => { setMenu(value => !value); setAccount(false); }}>{menu ? <X size={19} aria-hidden="true" /> : <Menu size={19} aria-hidden="true" />}</button>
+        <button type="button" className={styles.navMenu} aria-expanded={menu} aria-label={text("Toggle navigation", "नेविगेशन खोलें")} onClick={() => { setMenu(value => !value); setAccount(false); setPlans(false); }}>{menu ? <X size={19} aria-hidden="true" /> : <Menu size={19} aria-hidden="true" />}</button>
       </div>
     </div>
   </header>;

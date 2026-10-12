@@ -39,10 +39,11 @@ import { essentialPoints } from "@/lib/pro-learn/essentials";
 import { BrandMark, TopicCover, hasTopicMedia } from "./topic-media";
 import type { TechnologyHandbook } from "@/lib/pro-learn/technology-handbooks";
 import type { Catalogue } from "@/lib/pro-learn/catalogue";
+import { stripCitationsDeep } from "@/lib/strip-citations";
 import styles from "./answer-search.module.css";
 
 type LibraryMatch = { id: string; title: string; technology: string; category: string; description: string };
-type Result = { walkthrough?: "git"; answer: SearchAnswer | null; provider?: string; sources?: string[]; matches: LibraryMatch[]; reason?: string; prepared?: "exam" | "interview"; references?: { title: string; url: string }[]; topic?: { subject: string; name: string; summary: string }; screens?: readonly OfficialScreen[];
+type Result = { walkthrough?: "git"; answer: SearchAnswer | null; provider?: string; matches: LibraryMatch[]; reason?: string; prepared?: "exam" | "interview"; topic?: { subject: string; name: string; summary: string }; screens?: readonly OfficialScreen[];
   /** The rest of the opened topic's own category: what else this area covers. */
   related?: readonly { name: string; summary: string }[] };
 /** One question and what came back for it, keyed by the normalised question so asking twice reuses the answer. */
@@ -128,7 +129,8 @@ function reviveAnswer(answer: Partial<SearchAnswer> | null | undefined): SearchA
 /** Answered searches survive a reload; a half-finished one does not, because nothing is in flight after it. */
 function readCards(): Card[] {
   try {
-    const stored = JSON.parse(localStorage.getItem(CARDS_KEY) ?? "[]") as Card[];
+    // Answers saved before citation markers were stripped are cleaned on the way back in.
+    const stored = stripCitationsDeep(JSON.parse(localStorage.getItem(CARDS_KEY) ?? "[]")) as Card[];
     if (!Array.isArray(stored)) return [];
     return stored.filter(card => card?.id && card.status === "ready" && card.result).slice(0, MAX_CARDS)
       .map(card => ({ ...card, result: { ...card.result!, answer: reviveAnswer(card.result!.answer) } }));
@@ -220,7 +222,7 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
     const related = siblings.filter(other => other.name !== item.name).map(other => ({ name: other.name, summary: other.summary }));
     setGroup(siblings.length ? { technology, classroom, items: siblings } : null);
     setPreparedCard({ id: `prepared:${technology}:${item.category}:${item.name}`, question: `${item.name} · ${item.category}`, at: 0, status: "ready",
-      result: { answer, walkthrough: lesson.walkthrough, matches: [], prepared: lesson.kind, references: lesson.sources, screens: screensFor(technology, item.category, item.name), related,
+      result: { answer, walkthrough: lesson.walkthrough, matches: [], prepared: lesson.kind, screens: screensFor(technology, item.category, item.name), related,
         topic: { subject: technology, name: item.name, summary: item.summary } } });
     setReading(true);
   }, []);
@@ -284,7 +286,6 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
       settle({ status: "ready", result: {
         answer: reviveAnswer(payload.answer),
         provider: typeof payload.provider === "string" ? payload.provider : undefined,
-        sources: Array.isArray(payload.sources) ? payload.sources.filter((item: unknown) => typeof item === "string") : [],
         matches: Array.isArray(payload.matches) ? payload.matches : [],
         reason: typeof payload.reason === "string" ? payload.reason : undefined,
       } });
@@ -368,7 +369,7 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
       title: handbook.title,
       render: () => {
         const renderBook = (handbook: TechnologyHandbook) => <CatalogBrowser id={handbook.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")} title={handbook.title} noun="topics"
-        description={handbook.description} items={handbook.topics} categories={handbook.categories} sources={handbook.sources}
+        description={handbook.description} items={handbook.topics} categories={handbook.categories}
         cover={<TopicCover label={handbook.title} />}
         onExplain={(item, group) => explain(item, handbook.title, false, group)}
         // A package handbook lists products — axios, boto3, @nestjs/common —
@@ -740,9 +741,7 @@ function AnswerDocument({ card, providers, onAsk, onRetry, onForget, onOpenRelat
 
         <p className={styles.provenance}>
           <span>{card.result.prepared ? "Prepared learning notes · available instantly" : `Answered with ${providers.find(item => item.id === card.result?.provider)?.label ?? card.result?.provider ?? "the configured model"}`}</span>
-          {card.result.sources?.length ? <span className={styles.hosts}>{card.result.sources.map(host => <span key={host}>{host}</span>)}</span> : null}
         </p>
-        {!!card.result.references?.length && <div className={styles.references}><span>Official learning sources</span>{card.result.references.map(reference => <a key={reference.url} href={reference.url} target="_blank" rel="noopener noreferrer">{reference.title}</a>)}</div>}
 
         {!!answer.followUps.length && <Block icon={<ArrowRight size={16} aria-hidden="true" />} title="Ask next">
           <div className={styles.chips}>{answer.followUps.map(item => <button key={item} type="button" onClick={() => onAsk(item)}>{item}</button>)}</div>

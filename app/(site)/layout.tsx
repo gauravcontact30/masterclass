@@ -5,7 +5,7 @@ import styles from "./site.module.css";
 
 // Server-rendered chrome for the indexable pages: no client JS beyond the root providers.
 const NAV = PUBLIC_PAGES.filter(page => ["/courses", "/about", "/contact"].includes(page.path));
-const LEGAL = PUBLIC_PAGES.filter(page => ["/privacy", "/terms"].includes(page.path));
+const LEGAL = PUBLIC_PAGES.filter(page => ["/privacy", "/terms", "/refund-policy"].includes(page.path));
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return <div className={styles.page}>

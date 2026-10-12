@@ -413,7 +413,7 @@ function WordDialog({ item, onClose }: { item: CatalogItem | null; onClose: () =
  * listing, which is what keeps it reusable for the next catalogue.
  */
 export function CatalogBrowser({
-  id, title, description, noun, items, categories, itemIcon, categoryIcon, question, onAsk, onExplain, sources,
+  id, title, description, noun, items, categories, itemIcon, categoryIcon, question, onAsk, onExplain,
   cover = <TopicCover label={title} catalogueId={id} />,
   technology = title,
 }: {
@@ -451,7 +451,6 @@ export function CatalogBrowser({
    * came from or re-deriving the grouping the grid already has.
    */
   onExplain?: (item: CatalogItem, group: CatalogItem[]) => void;
-  sources?: { title: string; url: string; reviewedAt: string }[];
 }) {
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
@@ -598,11 +597,6 @@ export function CatalogBrowser({
         <span className={styles.count}>{filtering || tab !== ALL ? `${found.length} of ${items.length}` : `${items.length} ${noun}`}</span>
       </div>
       <p>{description}</p>
-      {!!sources?.length && <details className={styles.sources}>
-        <summary>Official learning sources</summary>
-        <ul>{sources.map(source => <li key={source.url}><a href={source.url} target="_blank" rel="noopener noreferrer">{source.title}</a></li>)}</ul>
-        <small>Reviewed {sources[0].reviewedAt}</small>
-      </details>}
     </div>
 
     <div className={styles.tools}>

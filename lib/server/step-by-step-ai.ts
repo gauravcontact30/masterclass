@@ -8,6 +8,7 @@ import { bestGuide } from "@/lib/step-by-step/guides";
 import { stepGuideSchema, STEP_CATEGORIES, type StepGuide, type StepSearchOptions } from "@/lib/step-by-step/types";
 import { createHash } from "node:crypto";
 import { cacheGet, cacheSet } from "@/lib/redis";
+import { stripCitationsDeep } from "@/lib/strip-citations";
 
 export type StepAnswer = { guide: StepGuide | null; source: "ai" | "library"; provider?: AiProvider; reason?: string };
 
@@ -48,7 +49,7 @@ export async function stepByStepAnswer(question: string, options: StepSearchOpti
   if (!chosen || !aiAvailable(chosen)) return { guide: library(), source: "library", reason: "ai_unavailable" };
   const cacheKey = `ai:step-by-step:${createHash("sha256").update(`${question}:${JSON.stringify(options)}:${chosen}`).digest("hex")}`;
   try {
-    const cached = await cacheGet<StepGuide>(cacheKey);
+    const cached = stripCitationsDeep(await cacheGet<StepGuide>(cacheKey));
     if (cached) return { guide: cached, source: "ai", provider: chosen };
   } catch {
     // Non-blocking cache lookup error

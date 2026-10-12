@@ -8,7 +8,7 @@ test("the section explains how an answer is made, with the terminal hidden from 
   renderSection();
   const section = screen.getByRole("region", { name: /Ask once/ });
   expect(section).toHaveAttribute("id", "study-engine");
-  expect(screen.getAllByRole("heading", { level: 3 }).map(item => item.textContent)).toEqual(["Your library first", "The right model for the question", "Sources you can check", "English or Hindi"]);
+  expect(screen.getAllByRole("heading", { level: 3 }).map(item => item.textContent)).toEqual(["Your library first", "The right model for the question", "Clean, focused answers", "English or Hindi"]);
   // The terminal repeats the steps as a picture, so it is not read twice.
   expect(section.querySelector("[aria-hidden='true'] .sources, [aria-hidden='true']")).not.toBeNull();
   expect(screen.getByRole("link", { name: /Try Search/ })).toHaveAttribute("href", "/dashboard/search");

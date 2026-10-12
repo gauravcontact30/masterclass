@@ -238,6 +238,8 @@ const looksLikeJsx = (code: string) => /return\s*\(?\s*<[A-Za-z]/.test(code) || 
  * above, at the same indentation. JSX children use {/* *\/} so the code stays valid.
  */
 export function annotateCode(code: string, language: Lang, column = 46): string {
+  // Comments are written as "#" or "//", which would corrupt shell, JSON, HTML or plain-text examples.
+  if (!isPython(language) && !["typescript", "tsx", "javascript", "jsx"].includes(language)) return code;
   const lines = code.split("\n");
   const notes = lineNotes(code, language);
   const jsx = !isPython(language) && looksLikeJsx(code);

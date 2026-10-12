@@ -17,7 +17,7 @@ export default function TermsPage() {
       <ul>
         <li>Memberships are billed monthly or yearly at the price shown before checkout. Payments are processed by Razorpay.</li>
         <li>Access starts once your payment is verified.</li>
-        <li>You can cancel renewal at any time from the Membership page. Access continues until the end of the period you have paid for.</li>
+        <li>You can cancel renewal at any time from the Membership page. Access continues until the end of the period you have paid for. See the <Link href="/refund-policy">cancellation &amp; refund policy</Link> for when payments are refunded.</li>
       </ul>
       <h2>Study content</h2>
       <p>Guides, notes, worked answers and practice questions are for your personal learning. Do not copy, resell or republish them. Coverage varies by path; check the <Link href="/courses">courses page</Link> before subscribing. Board and exam names belong to their respective organisations, and MasterClass is not affiliated with or endorsed by them.</p>

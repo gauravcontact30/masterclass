@@ -591,6 +591,14 @@
     "thumbnail": "/images/learning/official-resource.svg"
   },
   {
+    "name": "Langflow",
+    "url": "https://docs.langflow.org",
+    "aliases": [
+      "langflow"
+    ],
+    "thumbnail": "/images/brands/langflow.svg"
+  },
+  {
     "name": "n8n",
     "url": "https://docs.n8n.io/",
     "aliases": [],

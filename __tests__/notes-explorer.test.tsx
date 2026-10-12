@@ -82,9 +82,9 @@ test("toolbar supports keyboard search and independent removable filter chips", 
   expect(await screen.findByText(/not measured interview frequency or company-specific statistics/)).toBeVisible();
 });
 
-test("Sources and reading contains in-app chapters instead of website links", () => {
+test("the reading guide contains in-app chapters instead of website links", () => {
   render(<NotesExplorer notes={notes} technologies={technologies} />);
-  fireEvent.click(screen.getByText("Sources & reading for Node.js", { exact: true }));
+  fireEvent.click(screen.getByText("Reading guide for Node.js", { exact: true }));
   expect(screen.getByRole("heading", { name: "Node.js: the reading guide" })).toBeVisible();
   expect(screen.getByText("Keep the event loop responsive", { selector: "h5" })).toBeVisible();
   expect(document.querySelector('a[href^="http"]')).toBeNull();

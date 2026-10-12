@@ -135,7 +135,7 @@ describe("StepByStep page", () => {
     expect(cardsRegion().compareDocumentPosition(search) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(within(cardsRegion()).getByRole("navigation", { name: "Step by step result pages" })).toBeInTheDocument();
     expect(screen.getByRole("switch", { name: /^AI Mode (on|off)$/ })).toHaveAttribute("data-slot", "switch");
-    for (const name of ["Filter by level", "Filter by source", "Sort cards"]) expect(screen.getByRole("combobox", { name })).toHaveAttribute("data-slot", "native-select");
+    for (const name of ["Filter by level", "Filter by card type", "Sort cards"]) expect(screen.getByRole("combobox", { name })).toHaveAttribute("data-slot", "native-select");
     expect(screen.getByRole("textbox", { name: "Your question" })).toHaveAttribute("data-slot", "input-group-control");
     expect(screen.getByRole("textbox", { name: "Search cards" }).closest("[data-slot=input-group]")).not.toBeNull();
     expect(screen.getByRole("button", { name: "Get steps" })).toHaveAttribute("data-slot", "button");

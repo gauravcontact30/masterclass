@@ -16,7 +16,6 @@ import {
   ExternalLink,
   Layers,
   Search,
-  ShieldCheck,
   Sparkles,
   Terminal,
   Lightbulb,
@@ -433,12 +432,6 @@ export function OfficialDocs() {
               Key concepts for {OFFICIAL_DOCS.length} technologies, with learning objectives, highlighted takeaways, and rated questions with answers.
             </p>
           </div>
-          <div className={styles.badgeRow}>
-            <span className={styles.verifiedBadge}>
-              <ShieldCheck size={14} aria-hidden="true" />
-              Official source links
-            </span>
-          </div>
         </div>
       </header>
 
@@ -839,10 +832,6 @@ export function OfficialDocs() {
                     <Badge variant="outline" className={styles.softBadge}>
                       {doc.version}
                     </Badge>
-                    <span className={styles.originBadge}>
-                      <ShieldCheck size={11} aria-hidden="true" />
-                      Official
-                    </span>
                   </div>
                   <h2 className={styles.cardTitle}>{doc.title}</h2>
                 </CardHeader>
@@ -959,9 +948,6 @@ export function OfficialDocs() {
                   <Badge variant="outline" className={styles.modalVersionBadge}>
                     {selectedModalDoc.version}
                   </Badge>
-                  <span className={styles.verifiedModalBadge}>
-                    <ShieldCheck size={13} aria-hidden="true" /> Source documentation
-                  </span>
                 </div>
 
                 <DialogTitle className={styles.modalTitle}>
