@@ -13,6 +13,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "images:vocabulary": "tsx --env-file-if-exists=.env scripts/generate-card-images.ts --set vocabulary",
+    "images:aws": "tsx --env-file-if-exists=.env scripts/generate-card-images.ts --set aws",
     "purge:legacy": "tsx --env-file=.env scripts/purge-legacy-documents.ts",
     "sonar": "sonar-scanner",
     "test:coverage": "jest --coverage"

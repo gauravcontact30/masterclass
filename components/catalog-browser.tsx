@@ -413,7 +413,7 @@ function WordDialog({ item, onClose }: { item: CatalogItem | null; onClose: () =
  * listing, which is what keeps it reusable for the next catalogue.
  */
 export function CatalogBrowser({
-  id, title, description, noun, items, categories, itemIcon, categoryIcon, question, onAsk, onExplain,
+  id, title, description, noun, items, categories, itemIcon, itemImage, categoryIcon, question, onAsk, onExplain,
   cover = <TopicCover label={title} catalogueId={id} />,
   technology = title,
 }: {
@@ -432,6 +432,12 @@ export function CatalogBrowser({
   items: CatalogItem[];
   categories: CatalogCategory[];
   itemIcon: (item: CatalogItem) => ReactNode;
+  /**
+   * A picture across the top of each card, when the catalogue has them. A card
+   * whose picture fails to load simply goes without — the icon in its header
+   * still names it.
+   */
+  itemImage?: (item: CatalogItem) => { src: string; alt: string } | null;
   categoryIcon: (category: string) => ReactNode;
   /**
    * Artwork for the catalogue as a whole — a product logo or a subject scene.
@@ -689,6 +695,7 @@ export function CatalogBrowser({
                 setDragOverName(null);
               }}
             >
+              {itemImage && <CardPicture image={itemImage(item)} />}
               <div className={styles.cardHead}>
                 <div
                   className={styles.cardDragHandle}
@@ -805,4 +812,13 @@ export function CatalogBrowser({
     <LearningResources key={title} technology={title} />
     <WordDialog item={opened} onClose={() => setOpened(null)} />
   </section>;
+}
+
+function CardPicture({ image }: { image: { src: string; alt: string } | null }) {
+  const [failed, setFailed] = useState(false);
+  if (!image || failed) return null;
+  return <div className={styles.cardPicture}>
+    {/* eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP from the storage bucket; re-optimising it would only add cost. */}
+    <img src={image.src} alt={image.alt} loading="lazy" decoding="async" onError={() => setFailed(true)} />
+  </div>;
 }

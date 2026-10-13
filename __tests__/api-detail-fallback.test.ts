@@ -15,7 +15,7 @@ async function apiDetail(packageId: string, name: string, signal?: AbortSignal, 
 const ENV = { ...process.env };
 beforeEach(() => {
   process.env = { ...ENV };
-  for (const key of ["ANTHROPIC_API_KEY", "ANTHROPIC_MODEL", "PERPLEXITY_API_KEY", "PERPLEXITY_MODEL"]) delete process.env[key];
+  for (const key of ["ANTHROPIC_API_KEY", "ANTHROPIC_MODEL", "PERPLEXITY_API_KEY", "PERPLEXITY_MODEL", "AI_GATEWAY_API_KEY", "VERCEL_OIDC_TOKEN"]) delete process.env[key];
 });
 afterAll(() => { process.env = ENV; });
 

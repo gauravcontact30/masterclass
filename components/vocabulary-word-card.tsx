@@ -1,13 +1,20 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { ArrowUpRight, Volume2, Trash2, BookOpen, Quote, Plus, Minus, Check, GripVertical } from "lucide-react";
+import { ArrowUpRight, Volume2, Trash2, Plus, Minus, GripVertical } from "lucide-react";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
+import { VocabularyWordIcon } from "./vocabulary-word-icon";
+import { vocabularyImageUrl } from "@/lib/vocabulary-image";
 import type { WordHistoryCard } from "./vocabulary-history";
 import styles from "./vocabulary-history.module.css";
 import searchStyles from "./answer-search.module.css";
 
+/**
+ * A picture flashcard: a scene that shows the word's meaning on top, and a dark
+ * caption underneath with the word, its meaning in both languages and the
+ * sentence. The picture does the remembering; the caption does the explaining.
+ */
 export function VocabularyWordCard({ card, selected, onOpen, onUpdate, onDelete, dragProps }: {
   card: WordHistoryCard; selected: boolean; onOpen: () => void;
   onUpdate: (changes: { checked?: boolean; language?: "en" | "hi" }) => void;
@@ -22,6 +29,10 @@ export function VocabularyWordCard({ card, selected, onOpen, onUpdate, onDelete,
   const hindi = card.language === "hi";
   const titled = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
   const title = titled(entry.word);
+  const imageUrl = vocabularyImageUrl(entry.word);
+  // A word that has no picture yet (a dictionary or AI lookup, or a library
+  // word the generator has not reached) keeps its icon instead of a broken image.
+  const [imageFailed, setImageFailed] = useState(false);
   const [audioMessage, setAudioMessage] = useState("");
   const speaking = useRef(false);
   useEffect(() => () => {
@@ -47,8 +58,12 @@ export function VocabularyWordCard({ card, selected, onOpen, onUpdate, onDelete,
   }
 
   return <article className={styles.wordCard} data-selected={selected || undefined} data-learned={card.checked || undefined} aria-labelledby={`${id}-word`}>
-    <header className={styles.wordHeader}>
-      <div className={styles.wordTitleRow}>
+    <div className={styles.flashPicture}>
+      {imageUrl && !imageFailed
+        // eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP from the storage bucket; re-optimising it would only add cost.
+        ? <img src={imageUrl} alt={`A scene showing the meaning of “${entry.word}”`} loading="lazy" decoding="async" onError={() => setImageFailed(true)} />
+        : <div className={styles.flashFallback} aria-hidden="true"><VocabularyWordIcon word={entry.word} meaning={entry.meaning} size={56} /></div>}
+      <div className={styles.flashOverlay}>
         <div
           className={styles.cardDragHandle}
           title="Drag to reposition card"
@@ -59,72 +74,63 @@ export function VocabularyWordCard({ card, selected, onOpen, onUpdate, onDelete,
         >
           <GripVertical size={14} aria-hidden="true" />
         </div>
-        <span className={styles.vocabEyebrow}>Vocabulary</span>
-        <h3 id={`${id}-word`} title={title} className={styles.wordTitle}>{title}</h3>
+        <label className={styles.learnedToggle} title={hindi ? "सीख लिया" : "Learned"}>
+          <Checkbox className={styles.headerCheckbox} id={`${id}-checkbox`} checked={card.checked ?? false} onCheckedChange={checked => onUpdate({ checked })} aria-label={`Mark ${entry.word} as learned`} />
+          <span className={styles.learnedLabelText}>{card.checked ? (hindi ? "सीख लिया" : "Learned") : (hindi ? "सीखें" : "Learned")}</span>
+        </label>
       </div>
-      <div className={styles.meaningRow}>
-        {entry.hindi && <span className={styles.headerHindiBadge} lang="hi" title={hindi ? "हिन्दी अर्थ" : "Hindi meaning"}>{entry.hindi}</span>}
+    </div>
+    <div className={styles.flashCaption}>
+      <header className={styles.flashHead}>
+        <h3 id={`${id}-word`} title={title} className={styles.wordTitle}>{title}</h3>
         <p className={styles.pronunciation} title={`${hindi ? "उच्चारण" : "Pronunciation"}: ${entry.pronunciation || "Unavailable"}`}>
           <span className={searchStyles.srOnly}>{hindi ? "उच्चारण" : "Pronunciation"}: </span><span lang="en" className={styles.pronunciationText}>{entry.pronunciation || "Unavailable"}</span>
         </p>
+      </header>
+      <div className={styles.cardBody} tabIndex={0} role="region" aria-label={`Details for ${entry.word}`}>
+        {audioMessage && <p className={styles.audioStatus} role="status">{audioMessage}</p>}
+        {hindi ? (
+          <p lang="hi" className={styles.flashMeaning}>{entry.hindi || "हिन्दी अर्थ अभी उपलब्ध नहीं है।"}</p>
+        ) : (
+          <>
+            <p lang="en" className={styles.flashMeaning}>{entry.meaning}</p>
+            {entry.hindi && <p lang="hi" className={styles.hindiSubMeaning}>{entry.hindi}</p>}
+          </>
+        )}
+        <div className={styles.sentence}>
+          <span className={searchStyles.srOnly}>{hindi ? "वाक्य में" : "Sentence"}: </span>
+          {hindi && entry.sentenceHindi ? (
+            <p lang="hi">{entry.sentenceHindi}</p>
+          ) : (
+            <>
+              <p lang="en">{entry.sentence || "An example sentence is unavailable for this entry."}</p>
+              {entry.sentenceHindi && <p lang="hi" className={styles.hindiSubSentence}>{entry.sentenceHindi}</p>}
+            </>
+          )}
+        </div>
+        {(["synonyms", "antonyms"] as const).map(kind => entry[kind].length > 0 && <section className={styles.relatedWords} data-kind={kind} key={kind}>
+          <h4>{kind === "synonyms" ? <Plus size={12} aria-hidden="true" /> : <Minus size={12} aria-hidden="true" />}{kind === "synonyms" ? (hindi ? "समानार्थी" : "Synonyms") : (hindi ? "विलोम" : "Antonyms")} <span>{entry[kind].length}</span></h4>
+          <ul>{entry[kind].map(pair => <li key={pair.word}>
+            {/* In Hindi the gloss leads and the English word follows it, so the
+                list reads in the card's own language. */}
+            {hindi && pair.hindi
+              ? <><strong lang="hi">{pair.hindi}</strong><span lang="en">{titled(pair.word)}</span></>
+              : <strong lang="en">{titled(pair.word)}</strong>}
+          </li>)}</ul>
+        </section>)}
       </div>
-      <div className={styles.cardControlsRow}>
+      <footer className={styles.cardFooter}>
         <div className={styles.cardControls}>
           <Button type="button" variant="outline" size="xs" onClick={hear} aria-label={`Hear it: ${entry.word}`} title="Hear it" className={styles.hearButton}><Volume2 size={13} aria-hidden="true" /><span>Hear it</span></Button>
           <Button type="button" variant="outline" size="xs" role="switch" aria-checked={hindi} aria-label={`Hindi for ${entry.word}`} onClick={() => onUpdate({ language: hindi ? "en" : "hi" })} className={styles.languageSwitch} title={hindi ? "अंग्रेज़ी में देखें" : "Switch to Hindi"}>
             <span data-active={!hindi || undefined}>EN</span><span data-active={hindi || undefined}>HI</span>
           </Button>
         </div>
-        <label className={styles.learnedToggle} title={hindi ? "सीख लिया" : "Learned"}>
-          <Checkbox className={styles.headerCheckbox} id={`${id}-checkbox`} checked={card.checked ?? false} onCheckedChange={checked => onUpdate({ checked })} aria-label={`Mark ${entry.word} as learned`} />
-          <span className={styles.learnedLabelText}>{card.checked ? (hindi ? "सीख लिया" : "Learned") : (hindi ? "सीखें" : "Learned")}</span>
-        </label>
-      </div>
-    </header>
-    <div className={styles.cardBody} tabIndex={0} role="region" aria-label={`Details for ${entry.word}`}>
-    {audioMessage && <p className={styles.audioStatus} role="status">{audioMessage}</p>}
-    <section className={styles.cardSection}>
-      <h4><BookOpen size={13} aria-hidden="true" />{hindi ? "अर्थ" : "Meaning"}</h4>
-      {hindi ? (
-        <p lang="hi">{entry.hindi || "हिन्दी अर्थ अभी उपलब्ध नहीं है।"}</p>
-      ) : (
-        <>
-          <p lang="en">{entry.meaning}</p>
-          {entry.hindi && <p lang="hi" className={styles.hindiSubMeaning}>{entry.hindi}</p>}
-        </>
-      )}
-    </section>
-    <section className={`${styles.cardSection} ${styles.sentence}`}>
-      <h4><Quote size={13} aria-hidden="true" />{hindi ? (entry.sentenceHindi ? "वाक्य में" : "अंग्रेज़ी वाक्य") : "Sentence"}</h4>
-      {hindi && entry.sentenceHindi ? (
-        <p lang="hi">{entry.sentenceHindi}</p>
-      ) : (
-        <>
-          <p lang="en">{entry.sentence || "An example sentence is unavailable for this entry."}</p>
-          {entry.sentenceHindi && <p lang="hi" className={styles.hindiSubSentence}>{entry.sentenceHindi}</p>}
-        </>
-      )}
-    </section>
-    {(["synonyms", "antonyms"] as const).map(kind => <section className={`${styles.cardSection} ${styles.relatedWords}`} data-kind={kind} key={kind}>
-      <h4>{kind === "synonyms" ? <Plus size={13} aria-hidden="true" /> : <Minus size={13} aria-hidden="true" />}{kind === "synonyms" ? (hindi ? "समानार्थी" : "Synonyms") : (hindi ? "विलोम" : "Antonyms")} <span>{entry[kind].length}</span></h4>
-      {entry[kind].length ? <ul>{entry[kind].map(pair => <li key={pair.word}>
-        {/* In Hindi the gloss leads and the English word follows it, so the
-            list reads in the card's own language; a word with no gloss keeps
-            the English word as its heading rather than showing a blank. */}
-        {hindi && pair.hindi
-          ? <><strong lang="hi">{pair.hindi}</strong><span lang="en">{titled(pair.word)}</span></>
-          : <><strong lang="en">{titled(pair.word)}</strong>{hindi && <span lang="hi">हिन्दी अर्थ उपलब्ध नहीं है</span>}</>}
-      </li>)}</ul> : <p>{hindi ? "इस अर्थ के लिए कोई शब्द सूचीबद्ध नहीं है।" : `No ${kind} listed for this meaning.`}</p>}
-    </section>)}
+        <div className={styles.cardActions}>
+          <Button type="button" variant="ghost" size="xs" aria-label={`Open ${entry.word}`} onClick={onOpen}>Open<ArrowUpRight size={13} aria-hidden="true" /></Button>
+          <Button type="button" variant="ghost" size="xs" className={styles.deleteCard} aria-label={`Delete ${entry.word}`} onClick={onDelete}><Trash2 size={13} aria-hidden="true" />{hindi ? "हटाएँ" : "Delete"}</Button>
+        </div>
+      </footer>
     </div>
-    <footer className={styles.cardFooter}>
-      <div className={styles.cardMeta}>
-        <span className={styles.learningStatus} data-learned={card.checked || undefined}>{card.checked ? <Check size={12} aria-hidden="true" /> : <BookOpen size={12} aria-hidden="true" />}{card.checked ? (hindi ? "सीख लिया" : "Learned") : (hindi ? "अभ्यास करें" : "Practicing")}</span>
-      </div>
-      <div className={styles.cardActions}>
-      <Button type="button" variant="ghost" size="xs" aria-label={`Open ${entry.word}`} onClick={onOpen}>Open<ArrowUpRight size={13} aria-hidden="true" /></Button>
-      <Button type="button" variant="ghost" size="xs" className={styles.deleteCard} aria-label={`Delete ${entry.word}`} onClick={onDelete}><Trash2 size={13} aria-hidden="true" />{hindi ? "हटाएँ" : "Delete"}</Button>
-      </div>
-    </footer>
   </article>;
 }

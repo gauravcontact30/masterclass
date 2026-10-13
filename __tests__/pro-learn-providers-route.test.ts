@@ -4,7 +4,11 @@ import { GET } from "@/app/api/pro-learn/providers/route";
 const ENV = { ...process.env };
 const both = { ANTHROPIC_API_KEY: "sk-ant-test", ANTHROPIC_MODEL: "claude-sonnet-5", PERPLEXITY_API_KEY: "pplx-test", PERPLEXITY_MODEL: "sonar" };
 
-beforeEach(() => { process.env = { ...ENV, ...both }; });
+beforeEach(() => {
+  process.env = { ...ENV, ...both };
+  // A real gateway key in .env would make "gateway" a third configured provider.
+  delete process.env.AI_GATEWAY_API_KEY; delete process.env.VERCEL_OIDC_TOKEN;
+});
 afterAll(() => { process.env = ENV; });
 
 async function providers() {

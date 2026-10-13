@@ -1,5 +1,6 @@
 "use client";
 
+import { awsServiceImageUrl } from "@/lib/aws-service-image";
 import learningCard from "./learning-card.module.css";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { ArrowRight, Building2, Check, ChevronDown, ChevronLeft, ChevronRight, CornerDownLeft, FolderTree, GraduationCap, Images, Layers, Lightbulb, ListOrdered, Search, Sigma, Sparkles, TriangleAlert, X } from "lucide-react";
@@ -342,6 +343,7 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
         cover={<TopicCover label="AWS" />}
         onExplain={(item, group) => explain(item, "AWS", false, group)}
         itemIcon={item => <AwsServiceIcon name={item.name} category={item.category} />}
+        itemImage={item => { const src = awsServiceImageUrl(item.name); return src ? { src, alt: `Illustration of what ${item.name} does` } : null; }}
         categoryIcon={category => <AwsCategoryIcon category={category} />}
         question={item => `What is ${item.name}, what is it for, and when should I use it?`}
         onAsk={value => void ask(value)} /> }] : []),

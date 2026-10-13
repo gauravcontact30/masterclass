@@ -641,3 +641,10 @@
 
 /* Consistent separation between dashboard cards. */
 :global(.workspace) .grid { gap: var(--dashboard-card-gap, 24px); }
+
+/* A catalogue that has pictures shows one across the top of each card, above
+   the header strip; the card's own rounding clips it. */
+.cardPicture { aspect-ratio: 3 / 2; overflow: hidden; border-radius: 12px 12px 0 0; background: var(--card-line, var(--hair)); }
+.cardPicture img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .3s ease; }
+.card:hover .cardPicture img { transform: scale(1.03); }
+@media (prefers-reduced-motion: reduce) { .card:hover .cardPicture img { transform: none; } }

@@ -15,7 +15,7 @@ beforeEach(() => {
   jest.resetModules();
   // The tutor needs the database for its shared public rate limit.
   process.env = { ...ENV, NEXT_PUBLIC_SUPABASE_URL: "https://project.supabase.co", SUPABASE_SERVICE_ROLE_KEY: "service-role-test" };
-  for (const key of ["ANTHROPIC_API_KEY", "ANTHROPIC_MODEL", "STUDY_CHAT_MODEL", "PERPLEXITY_API_KEY", "PERPLEXITY_MODEL"]) delete process.env[key];
+  for (const key of ["ANTHROPIC_API_KEY", "ANTHROPIC_MODEL", "STUDY_CHAT_MODEL", "PERPLEXITY_API_KEY", "PERPLEXITY_MODEL", "AI_GATEWAY_API_KEY", "VERCEL_OIDC_TOKEN"]) delete process.env[key];
   global.fetch = jest.fn() as jest.Mock;
 });
 afterAll(() => { process.env = ENV; });

@@ -7,6 +7,8 @@ const answer = (content: string, extra: Record<string, unknown> = {}) => reply({
 
 beforeEach(() => {
   process.env = { ...ENV, ANTHROPIC_API_KEY: "sk-ant-test", ANTHROPIC_MODEL: "claude-sonnet-5", PERPLEXITY_API_KEY: "pplx-test", PERPLEXITY_MODEL: "sonar" };
+  // A real gateway key in .env would make "gateway" a third configured provider.
+  delete process.env.AI_GATEWAY_API_KEY; delete process.env.VERCEL_OIDC_TOKEN;
   global.fetch = jest.fn() as jest.Mock;
 });
 afterAll(() => { process.env = ENV; });

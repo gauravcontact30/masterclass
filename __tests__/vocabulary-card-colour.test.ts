@@ -37,7 +37,7 @@ test("the checked tick, the header bar and the header rule all read the card's m
     /\.headerCheckbox\[data-checked\][^{]*\{[^}]*background:\s*var\(--mark/,
     /\.headerCheckbox\[data-checked\][^{]*\{[^}]*color:\s*var\(--mark-ink/,
     /\.wordCard\[data-learned\]::before \{[^}]*background:\s*var\(--mark/,
-    /\.wordCard\[data-learned\] \.wordHeader \{[^}]*border-bottom-color:\s*var\(--mark/,
+    /\.wordCard\[data-learned\] \.flashHead \{[^}]*border-bottom-color:\s*var\(--mark/,
   ];
   for (const rule of marked) expect(css).toMatch(rule);
 });
