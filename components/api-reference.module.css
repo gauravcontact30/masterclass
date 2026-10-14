@@ -1240,3 +1240,51 @@
     animation: none;
   }
 }
+
+/* Agentic framework entries as picture cards, like Search's Popular AWS
+   services: the generated illustration runs flush across the top. */
+.cardGrid {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  padding: 10px;
+}
+
+.entry.entryCard {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 0 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.entry.entryCard[data-guide] {
+  grid-column: auto;
+}
+
+.entry.entryCard:hover {
+  border-color: var(--line-strong);
+  background: #fff;
+}
+
+.entryCard .entryPicture {
+  border-radius: 0;
+}
+
+.entryCardBody {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 10px 0;
+}
+
+.entryCard .entryPicture + .entryCardBody {
+  padding-top: 2px;
+}
+
+.entryCard .entryMeta {
+  padding: 0 10px;
+  margin-top: auto;
+}

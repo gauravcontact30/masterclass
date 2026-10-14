@@ -725,6 +725,31 @@ export function ApiDocs() {
 
   function entryRow(pkg: ApiPackage, entry: ApiEntry) {
     const guide = API_DETAILS[`${pkg.id}:${entry.name}`];
+    // The agentic frameworks read as picture cards, like the Popular AWS
+    // services on Search: the illustration across the top, then the name.
+    if (AGENTIC_FRAMEWORK_IDS.has(pkg.id)) return (
+      <li className={`${ref.entry} ${ref.entryCard}`} key={entry.name} data-guide={guide ? "" : undefined}>
+        <LearningPicture variant="card" className={ref.entryPicture} src={learningImageUrl("api", [pkg.id, entry.name])} alt="" />
+        <div className={ref.entryCardBody}>
+          <Badge kind={entry.kind} />
+          <div className={ref.entryText}>
+            <Link className={ref.entryLink} href={apiTopicHref(pathname, pkg.id, entry.name)}>
+              {entry.name}
+            </Link>
+            {guide && <p className={ref.entrySummary}>{guide.description}</p>}
+          </div>
+        </div>
+        <span className={ref.entryMeta}>
+          {guide && <span className={ref.guideTag}>Guide</span>}
+          {entry.status !== "s" && (
+            <span className={ref.statusTag} data-status={entry.status}>
+              {statusLabel(entry.status)}
+            </span>
+          )}
+          <span className={ref.kindLabel}>{kindLabel(entry.kind)}</span>
+        </span>
+      </li>
+    );
     return (
       <li className={ref.entry} key={entry.name} data-guide={guide ? "" : undefined}>
         <Badge kind={entry.kind} />
@@ -1120,7 +1145,7 @@ export function ApiDocs() {
                                   <h4>
                                     {section} <span className={ref.subgroupCount}>{inSection.length}</span>
                                   </h4>
-                                  <ul className={ref.entries}>{inSection.map((entry) => entryRow(pkg, entry))}</ul>
+                                  <ul className={agentic ? `${ref.entries} ${ref.cardGrid}` : ref.entries}>{inSection.map((entry) => entryRow(pkg, entry))}</ul>
                                 </div>
                               ) : null;
                             })
@@ -1134,7 +1159,7 @@ export function ApiDocs() {
                               </div>
                             ))
                           ) : (
-                            <ul className={ref.entries}>{entries.map((entry) => entryRow(pkg, entry))}</ul>
+                            <ul className={agentic ? `${ref.entries} ${ref.cardGrid}` : ref.entries}>{entries.map((entry) => entryRow(pkg, entry))}</ul>
                           ))}
                         {isOpen && entries.length < pkg.entries.length && (
                           <button

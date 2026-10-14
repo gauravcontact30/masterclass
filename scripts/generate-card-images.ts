@@ -30,6 +30,7 @@
  *   npm run images:vocabulary -- --limit 50                      # the next 50 missing
  *   npm run images:aws                                           # everything still missing
  *   npm run images:vocabulary -- --only knell --replace          # redo one that has a picture
+ *   npm run images:api -- --packages langchain,langgraph         # only these API packages
  *
  * Needs AI_GATEWAY_API_KEY, NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY,
  * plus ANTHROPIC_API_KEY unless VOCABULARY_DIRECTOR_VIA_GATEWAY=1. CARD_IMAGE_MODEL
@@ -126,7 +127,13 @@ async function pictureSet(name: string): Promise<PictureSet> {
         .filter(item => !item.vocabulary)
         .map(item => ({ name: item.name, context: `${catalogue}, ${item.category}`, summary: item.summary, points: item.points, label: `${catalogue}: ${item.name}`, parts: [catalogue, item.name] }))),
   ]);
-  if (name === "api") return learningSet("api", API_PACKAGES.flatMap(pkg => [
+  // --packages deepagents,langchain paints only those API packages, in that order.
+  const packages = flag("packages")?.split(",").map(id => id.trim()).filter(Boolean);
+  if (name === "api") return learningSet("api", (packages ? packages.map(id => {
+    const pkg = API_PACKAGES.find(item => item.id === id);
+    if (!pkg) throw new Error(`--packages: no API package "${id}"`);
+    return pkg;
+  }) : API_PACKAGES).flatMap(pkg => [
     { name: pkg.name, context: "API reference", summary: pkg.description, points: pkg.topics, label: pkg.id, parts: [pkg.id] },
     ...pkg.entries.map(entry => {
       const detail = API_DETAILS[`${pkg.id}:${entry.name}`];
