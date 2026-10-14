@@ -117,11 +117,21 @@ async function pictureSet(name: string): Promise<PictureSet> {
     })),
   });
   // The catalogue labels are the ones components/answer-search.tsx asks with.
+  // --catalogues "Redis,Next.js 16+" paints only the tabs whose title starts
+  // with each prefix, prefix by prefix in that order.
+  const catalogues = flag("catalogues")?.split(",").map(prefix => prefix.trim().toLowerCase()).filter(Boolean);
   if (name === "topics") return learningSet("topics", [
     // Painted tab by tab in the order the Search page lists its tabs (by tab
     // title, alphabetically), so the first tabs fill in first.
-    ...[["AI terms", "AI terms worth knowing", aiTerms()] as const, ["Python", "Python handbook", pythonTopics()] as const, ...TECHNOLOGY_HANDBOOKS.map(book => [book.title, book.title, book.topics] as const)]
-      .sort((a, b) => a[1].localeCompare(b[1]))
+    ...((tabs: (readonly [string, string, { name: string; category: string; summary: string; points?: string[]; vocabulary?: unknown }[]])[]) => {
+      tabs.sort((a, b) => a[1].localeCompare(b[1]));
+      if (!catalogues) return tabs;
+      return catalogues.flatMap(prefix => {
+        const picked = tabs.filter(tab => tab[1].toLowerCase().startsWith(prefix));
+        if (!picked.length) throw new Error(`--catalogues: no Search tab starts with "${prefix}"`);
+        return picked;
+      });
+    })([["AI terms", "AI terms worth knowing", aiTerms()] as const, ["Python", "Python handbook", pythonTopics()] as const, ...TECHNOLOGY_HANDBOOKS.map(book => [book.title, book.title, book.topics] as const)])
       .flatMap(([catalogue, , items]) => items
         // Vocabulary rows already have their word pictures (--set vocabulary).
         .filter(item => !item.vocabulary)
@@ -291,6 +301,14 @@ async function main() {
   console.log(`${existing.size} already in "${set.bucket}"; generating ${subjects.length} with ${MODEL}, ${concurrency} at a time, at most ${rpm} images a minute, up to ${attempts} attempts each.`);
 
   const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  // The SDKs' own timeouts have still let a stalled connection hang a card
+  // (and so, one worker at a time, the whole run) for good. A hard deadline
+  // turns that into an ordinary failure the attempt loop can recover from.
+  const deadline = <T,>(work: Promise<T>, ms: number, step: string) => {
+    let timer: NodeJS.Timeout | undefined;
+    return Promise.race([work, new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error(`${step} timed out after ${ms / 1000}s`)), ms); })])
+      .finally(() => clearTimeout(timer));
+  };
   // Each image request waits for the next free slot, spaced evenly across the minute.
   let nextSlot = Date.now();
   const takeSlot = async () => {
@@ -300,7 +318,7 @@ async function main() {
   };
   // A dropped connection never settles on its own, so each painting gets a
   // deadline; a timed-out request is retried like a rate-limited one.
-  const rateLimited = (error: unknown) => /rate limit|timeout|aborted|fetch failed/i.test(error instanceof Error ? `${error.name} ${error.message}` : String(error));
+  const rateLimited = (error: unknown) => /rate limit|timeout|timed out|aborted|fetch failed/i.test(error instanceof Error ? `${error.name} ${error.message}` : String(error));
 
   async function paint(prompt: string) {
     // A rate-limit rejection is not the card's fault: wait out the window and
@@ -308,17 +326,18 @@ async function main() {
     for (let tries = 1; ; tries++) {
       await takeSlot();
       try {
-        const { image } = await generateImage({
+        const { image } = await deadline(generateImage({
           model: gateway.image(MODEL),
           prompt,
           // OpenAI's image models take a fixed size; the rest take a ratio.
           ...(MODEL.startsWith("openai/") ? { size: set.shape.openai } : { aspectRatio: set.shape.ratio }),
           maxRetries: 1,
           abortSignal: AbortSignal.timeout(180_000),
-        });
+        }), 240_000, "painting");
         return image.uint8Array;
       } catch (error) {
-        if (!rateLimited(error) || tries >= 10) throw error;
+        if (!rateLimited(error) || tries >= 4) throw error;
+        console.log(`  (painting retry ${tries}: ${error instanceof Error ? error.message : String(error)})`);
         nextSlot = Math.max(nextSlot, Date.now() + 61_000);
       }
     }
@@ -338,7 +357,7 @@ async function main() {
         let critique: string | undefined;
         let unpicturable = false;
         for (let attempt = 1; attempt <= attempts; attempt++) {
-          const scene = await subject.design(critique);
+          const scene = await deadline(subject.design(critique), 480_000, "scene design");
           // A setting or a naming difference no picture can tell apart from its
           // neighbours would only burn every attempt and be rejected anyway.
           if (attempt === 1 && !scene.distinct) { unpicturable = true; break; }
@@ -353,7 +372,7 @@ async function main() {
             continue;
           }
           const webp = await sharp(raw).resize(set.shape.width, set.shape.height, { fit: "cover", position: "attention" }).webp({ quality: 72 }).toBuffer();
-          const verdict = await subject.judge(await sharp(webp).resize(480).jpeg({ quality: 80 }).toBuffer());
+          const verdict = await deadline(subject.judge(await sharp(webp).resize(480).jpeg({ quality: 80 }).toBuffer()), 480_000, "review");
           log.push({ scene: scene.scene, cue: scene.focal_cue, verdict });
           if (!best || merit(verdict) > merit(best.verdict)) best = { webp, verdict };
           if (passes(verdict)) break;
