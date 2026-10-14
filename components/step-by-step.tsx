@@ -26,6 +26,8 @@ import { CodeFiles } from "./code-files";
 import { pageWindow } from "./pager";
 import { stripCitationsDeep } from "@/lib/strip-citations";
 import styles from "./step-by-step.module.css";
+import { LearningPicture } from "./learning-picture";
+import { learningImageUrl } from "@/lib/learning-image";
 
 export const CARDS_PER_PAGE = 2;
 /** Technology pills per page of the strip, as on the Search page's "Explore topics". */
@@ -56,6 +58,8 @@ export type StepCard = {
 export type Filters = { text: string; technology: string; level: string; origin: Origin | "all"; sort: "recent" | "az" | "steps" };
 const NO_FILTERS: Filters = { text: "", technology: "", level: "all", origin: "all", sort: "recent" };
 
+/** Only the built-in guides have generated pictures; asked and AI answers do not. */
+const guideImage = (card: StepCard) => card.origin === "built-in" ? learningImageUrl("guides", ["step-by-step", card.id.replace(/^guide:/, "")]) : null;
 const BUILT_IN: StepCard[] = STEP_GUIDES.map(({ id, ...guide }, index) => ({ id: `guide:${id}`, question: guide.question, at: -index, origin: "built-in", status: "ready", guide, source: "library" }));
 
 const ERRORS: Record<string, string> = {
@@ -296,6 +300,7 @@ function GuideDetail({ card, tone, onClose, onRegenerate, onEditAndRegenerate }:
   const number = (section: string) => order.indexOf(section) + 1;
   return <Card role="article" className={styles.detail} style={toneStyle(tone)} aria-label={`Step by step answer: ${guide.question}`}>
     <CardHeader className={styles.detailHead}>
+      <LearningPicture src={guideImage(card)} alt={`Illustration of ${guide.question}`} />
       <div className={styles.badges}>
         <Badge className={styles.toneBadge}>{guide.category}</Badge>
         <Badge variant="outline" className={styles.softBadge}>{capitalise(guide.level)}</Badge>
@@ -463,6 +468,7 @@ function ResultCard({
   const [editedQuestion, setEditedQuestion] = useState(card.question);
 
   return <Card role="article" className={`${styles.card} ${learningCard.card}`} style={toneStyle(tone)} data-status={card.status} aria-current={selected || undefined} aria-label={card.question}>
+    <LearningPicture variant="card" className={styles.cardPicture} src={guideImage(card)} alt="" />
     <CardHeader className={styles.cardHead}>
       <div className={styles.cardTop}>
         <Badge className={styles.toneBadge}>{guide?.category ?? (card.status === "loading" ? "Preparing" : "Unanswered")}</Badge>

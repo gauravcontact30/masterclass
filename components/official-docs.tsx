@@ -2,6 +2,8 @@
 
 import { ImportedDocumentation } from "./documentation-refresh";
 import learningCard from "./learning-card.module.css";
+import { LearningPicture } from "@/components/learning-picture";
+import { learningImageUrl } from "@/lib/learning-image";
 import { useState, useMemo, useCallback, useEffect, type CSSProperties } from "react";
 import {
   BookOpen,
@@ -791,6 +793,7 @@ export function OfficialDocs() {
                   setDragOverCardId(null);
                 }}
               >
+                <LearningPicture variant="card" className={styles.cardPicture} src={learningImageUrl("docs", [doc.id])} alt={`Illustration of how ${doc.title} works`} />
                 {/* Drag & Drop handler icon on top left corner */}
                 <div
                   className={styles.cardDragHandle}
@@ -957,6 +960,8 @@ export function OfficialDocs() {
                 <DialogDescription className={styles.modalTagline}>
                   {selectedModalDoc.tagline}
                 </DialogDescription>
+
+                <LearningPicture src={learningImageUrl("docs", [selectedModalDoc.id])} alt={`Illustration of how ${selectedModalDoc.title} works`} />
 
                 {/* External Links */}
                 <div className={styles.modalLinksRow}>

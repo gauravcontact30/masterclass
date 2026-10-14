@@ -1,6 +1,8 @@
 "use client";
 
 import learningCard from "./learning-card.module.css";
+import { LearningPicture } from "@/components/learning-picture";
+import { learningImageUrl } from "@/lib/learning-image";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -38,7 +40,7 @@ function Section({ section }: { section: LessonSection }) {
   </section>;
 }
 
-function Reader({ lesson, track, siblings, done, onToggleDone, onBack, onOpen }: { lesson: ProLesson; track: ProTrack; siblings: ProLesson[]; done: boolean; onToggleDone?: () => void; onBack: () => void; onOpen: (lesson: ProLesson) => void }) {
+function Reader({ lesson, track, siblings, done, builtIn, onToggleDone, onBack, onOpen }: { lesson: ProLesson; track: ProTrack; siblings: ProLesson[]; done: boolean; builtIn: boolean; onToggleDone?: () => void; onBack: () => void; onOpen: (lesson: ProLesson) => void }) {
   const index = siblings.findIndex(item => item.id === lesson.id);
   const previous = index > 0 ? siblings[index - 1] : null, next = index >= 0 && index < siblings.length - 1 ? siblings[index + 1] : null;
   return <div>
@@ -49,6 +51,7 @@ function Reader({ lesson, track, siblings, done, onToggleDone, onBack, onOpen }:
     <article className={styles.article}>
       <p className={styles.eyebrow}><BrandOrGlyph label={track.name} glyph={track.icon} size={14}/> {track.name} · {lesson.tag}</p>
       <h1>{lesson.title}</h1>
+      {builtIn && <LearningPicture src={learningImageUrl("lessons", [lesson.track, lesson.id])} alt={`Illustration of ${lesson.title}`} />}
       <div className={styles.articleMeta}><span className={styles.level} data-level={lesson.level}>{lesson.level}</span><span className={styles.cat}>{lesson.minutes} min read</span></div>
       <p className={styles.lead}>{lesson.lead || lesson.summary}</p>
       {lesson.sections.map(section => <Section key={section.h} section={section}/>)}
@@ -98,6 +101,7 @@ export function ProLessons({ lessons, aiReady }: { lessons: ProLesson[]; aiReady
   function lessonCard(lesson: ProLesson) {
     const isDone = done.has(`${track.id}:${lesson.id}`);
     return <button key={lesson.id} className={`${styles.lessonCard} ${learningCard.card}`} data-done={isDone} onClick={() => openLesson(lesson)} aria-label={`${lesson.title}${isDone ? ", completed" : ""}`}>
+      <LearningPicture variant="card" className={styles.lessonPicture} src={learningImageUrl("lessons", [lesson.track, lesson.id])} alt="" />
       <span className={styles.cardNumber}>LESSON {String(trackLessons.indexOf(lesson) + 1).padStart(2, "0")}</span>
       <span className={styles.doneMark} aria-hidden="true"><Check size={13}/></span>
       <span className={styles.lessonTag}>{lesson.tag}</span><h3>{lesson.title}</h3><p>{lesson.summary}</p>
@@ -118,7 +122,7 @@ export function ProLessons({ lessons, aiReady }: { lessons: ProLesson[]; aiReady
 
   if (open) {
     const isSaved = "generated" in open;
-    return <div className={styles.root}><Reader lesson={open} track={track} siblings={isSaved ? savedForTrack : trackLessons} done={done.has(`${open.track}:${open.id}`)} onToggleDone={isSaved ? undefined : () => toggleDone(`${open.track}:${open.id}`)} onBack={() => setOpen(null)} onOpen={openLesson}/></div>;
+    return <div className={styles.root}><Reader lesson={open} track={track} siblings={isSaved ? savedForTrack : trackLessons} done={done.has(`${open.track}:${open.id}`)} builtIn={!isSaved} onToggleDone={isSaved ? undefined : () => toggleDone(`${open.track}:${open.id}`)} onBack={() => setOpen(null)} onOpen={openLesson}/></div>;
   }
   const completed = trackLessons.filter(lesson => done.has(`${track.id}:${lesson.id}`)).length;
   const topics = [...new Set(visible.map(lesson => lesson.tag))].map(name => {

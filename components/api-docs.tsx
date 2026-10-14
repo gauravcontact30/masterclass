@@ -56,6 +56,8 @@ import { AgentBlueprint } from "./agent-blueprint";
 import { ApiDefinitionCards } from "./api-definition";
 import { AiProvenance, AiProviderPicker, useAiProvider } from "./ai-provider-picker";
 import { KeyText } from "./key-text";
+import { LearningPicture } from "./learning-picture";
+import { learningImageUrl } from "@/lib/learning-image";
 import { shortDefinition } from "@/lib/notes-study";
 
 export const AGENTIC_FRAMEWORK_ORDER = [
@@ -276,6 +278,7 @@ export function ApiDetail({
             </span>
             {detail?.since && <span className={styles.kind}>{detail.since}</span>}
           </h1>
+          <LearningPicture src={learningImageUrl("api", [pkg.id, entry.name])} alt={`Illustration of how ${entry.name} works`} />
           {!curated && <AiProviderPicker providers={providers} provider={provider} onChoose={choose} />}
           {!detail && generated.status === "loading" && (
             <div className={styles.generating} role="status">
@@ -1107,6 +1110,7 @@ export function ApiDocs() {
                       </header>
                       {full && <PackageFacts pkg={full} />}
                       <div id={`api-group-${pkg.id}`} hidden={!isOpen}>
+                        {isOpen && <LearningPicture src={learningImageUrl("api", [pkg.id])} alt={`Illustration of how ${pkg.name} works`} />}
                         {isOpen &&
                           (sectionNames ? (
                             sectionNames.map((section) => {

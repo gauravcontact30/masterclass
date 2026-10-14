@@ -16,6 +16,8 @@ import { codeLineNotes } from "@/lib/code-line-notes";
 import { CodeLineComment } from "./code-line-comment";
 import type { TechyExample } from "@/lib/techy-examples";
 import styles from "./techy.module.css";
+import { LearningPicture } from "./learning-picture";
+import { learningImageUrl } from "@/lib/learning-image";
 import { DashboardPageHeader } from "./dashboard-page-header";
 
 const sections = ["Key features", "Subjective Test", "Objective Quiz", "Code examples", "Corporate English"] as const;
@@ -65,6 +67,7 @@ function Deck({ topic }: { topic: TechyTopic }) {
   function move(next: number) { setIndex(next); setRevealed(false); setDraft(""); }
   return <section className={styles.deck} aria-label={`${topic.title} flashcards`}>
     <header className={styles.deckHeading}><div><p className={styles.eyebrow}>{topic.category} / STUDY DECK</p><h2>{topic.title}</h2><p>{topic.summary}</p></div><a href={topic.source} target="_blank" rel="noreferrer">Official reference ↗</a></header>
+    <LearningPicture src={learningImageUrl("guides", ["techy", topic.id])} alt={`Illustration of ${topic.title}`} />
     <div className={styles.sections} aria-label="Learning sections">{availableSections.map((item, position) => <button key={item} aria-pressed={section === item} onClick={() => changeSection(item)}><span>0{position + 1}</span>{item}</button>)}</div>
     {section === "Service atlas" ? <TechyServices key={topic.id} scope={topic.id as ServiceScope}/> : <>
     <div className={styles.deckMeta}><span><Layers size={14}/> {section} <b>· {index + 1} / {count}</b></span>{section === "Objective Quiz" ? <span aria-live="polite">{score} correct · {answered}/{topic.questions.length} answered</span> : <span>Recall first. Reveal. Repeat.</span>}</div>

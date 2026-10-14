@@ -1,0 +1,12 @@
+.card, .hero { overflow: hidden; background: var(--hair, #ece9df); }
+.card img, .hero img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* Flush across the top of a card: the card's own padding starts below it. */
+.card { aspect-ratio: 3 / 2; border-radius: inherit; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.card img { transition: transform .3s ease; }
+:hover > .card img { transform: scale(1.03); }
+
+.hero { aspect-ratio: 3 / 2; max-width: 560px; margin: 12px 0 18px; border-radius: 14px; }
+
+@media (max-width: 600px) { .hero { max-width: none; } }
+@media (prefers-reduced-motion: reduce) { :hover > .card img { transform: none; } }

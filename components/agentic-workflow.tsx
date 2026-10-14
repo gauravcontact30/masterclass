@@ -68,6 +68,8 @@ import readerStyles from "./official-docs-reader.module.css";
 import cardStyles from "./official-docs-cards.module.css";
 import mechStyles from "./agentic-workflow.module.css";
 import apiStyles from "./api-docs.module.css";
+import { LearningPicture } from "./learning-picture";
+import { learningImageUrl } from "@/lib/learning-image";
 
 export const CARDS_PER_PAGE = 4;
 export const CATEGORIES_PER_PAGE = 3;
@@ -462,6 +464,7 @@ function WorkflowStudioReader({
               <h2>{workflow.title}</h2>
               <p>{workflow.subtitle}</p>
             </header>
+            <LearningPicture src={learningImageUrl("workflow", [workflow.id])} alt={`Illustration of the ${workflow.title} execution flow`} />
 
             <nav className={cardStyles.jumpLinks} aria-label={`${workflow.title} learning sections`}>
               <a href={`#${prefix}-key`}>Key information</a>
@@ -1350,6 +1353,7 @@ export function AgenticWorkflowDashboard() {
                   style={toneStyle(toneIndex)}
                   onClick={() => setSelectedModalDoc(wf)}
                 >
+                  <LearningPicture variant="card" className={mechStyles.cardPicture} src={learningImageUrl("workflow", [wf.id])} alt={`Illustration of the ${wf.title} execution flow`} />
                   <CardHeader style={{ padding: "0 18px", gap: "6px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span className={styles.cardKeyPointBadge}>
@@ -1458,6 +1462,7 @@ export function AgenticWorkflowDashboard() {
             </DialogHeader>
 
             <div className={styles.modalBody}>
+              <LearningPicture src={learningImageUrl("workflow", [selectedModalDoc.id])} alt={`Illustration of the ${selectedModalDoc.title} execution flow`} />
               <div>
                 <h4 style={{ fontSize: "14px", fontWeight: 650, margin: "0 0 8px" }}>Architecture Overview</h4>
                 <p style={{ fontSize: "13.5px", lineHeight: 1.65, color: "#3d3d3a", margin: 0 }}>

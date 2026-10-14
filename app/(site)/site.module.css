@@ -47,3 +47,6 @@
   .actions { margin-left: auto; }
   .footer small { margin-left: 0; }
 }
+
+/* A learning-path picture runs flush across the top of its card, inside the padding. */
+.cardPicture { margin: -20px -20px 14px; }

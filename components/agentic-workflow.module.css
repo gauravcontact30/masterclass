@@ -1314,3 +1314,8 @@
 }
 
 
+
+/* The workflow card pads its top edge; the picture runs flush across it instead. */
+.cardPicture {
+  margin-top: -16px;
+}

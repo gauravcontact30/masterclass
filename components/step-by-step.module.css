@@ -425,3 +425,6 @@
 
 /* Consistent separation between dashboard cards. */
 :global(.workspace) .grid { gap: var(--dashboard-card-gap, 24px); }
+
+/* The generated picture runs flush across the top of a card, over its top padding. */
+.cardPicture { margin-top: -18px; }

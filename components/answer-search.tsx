@@ -1,6 +1,8 @@
 "use client";
 
 import { awsServiceImageUrl } from "@/lib/aws-service-image";
+import { learningImageUrl } from "@/lib/learning-image";
+import { vocabularyImageUrl } from "@/lib/vocabulary-image";
 import learningCard from "./learning-card.module.css";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { ArrowRight, Building2, Check, ChevronDown, ChevronLeft, ChevronRight, CornerDownLeft, FolderTree, GraduationCap, Images, Layers, Lightbulb, ListOrdered, Search, Sigma, Sparkles, TriangleAlert, X } from "lucide-react";
@@ -155,6 +157,16 @@ function whenLabel(at: number) {
   if (hours < 24) return `${hours} hr ago`;
   const days = Math.round(hours / 24);
   return days === 1 ? "yesterday" : `${days} days ago`;
+}
+
+/**
+ * The picture for a Search topic card, under the catalogue label the generator
+ * names it by (`npm run images:topics`). Vocabulary rows show their word's
+ * picture from the vocabulary set instead.
+ */
+function topicImage(catalogue: string, item: CatalogItem) {
+  const src = item.vocabulary ? vocabularyImageUrl(item.name) : learningImageUrl("topics", [catalogue, item.name]);
+  return src ? { src, alt: item.vocabulary ? `Picture showing the meaning of ${item.name}` : `Illustration of how ${item.name} works` } : null;
 }
 
 /**
@@ -353,6 +365,7 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
         items={aiGlossary} categories={aiGlossaryCategories}
         onExplain={(item, group) => explain(item, "AI terms", false, group)}
         itemIcon={item => <AiTermIcon name={item.name} category={item.category} />}
+        itemImage={item => topicImage("AI terms", item)}
         categoryIcon={category => <AiCategoryIcon category={category} />}
         question={item => `Explain ${item.name} in the context of building with AI: what it means, why it matters, and how it is used in practice.`}
         onAsk={value => void ask(value)} /> }] : []),
@@ -363,6 +376,7 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
         cover={<TopicCover label="Python" />}
         onExplain={(item, group) => explain(item, "Python", false, group)}
         itemIcon={item => <PythonTopicIcon name={item.name} category={item.category} />}
+        itemImage={item => topicImage("Python", item)}
         categoryIcon={category => <PythonCategoryIcon category={category} />}
         question={item => `Explain ${item.name} in Python: what it is, how it works, a short runnable example, and the mistakes people make with it.`}
         onAsk={value => void ask(value)} /> }] : []),
@@ -382,6 +396,7 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
           if (hasTopicMedia(item.name)) return <BrandMark label={item.name} size={15} />;
           return <TechnologyTopicIcon category={item.category} />;
         }}
+        itemImage={item => topicImage(handbook.title, item)}
         categoryIcon={category => <TechnologyCategoryIcon category={category} />}
         question={item => `Explain ${item.name} in ${handbook.questionPrefix}: what it is, how it works, a short runnable example, and the mistakes people make with it.`}
         onAsk={value => void ask(value)} />;
