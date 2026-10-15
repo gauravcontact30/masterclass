@@ -1,0 +1,1813 @@
+{
+ "Anomaly Detection": {
+  "sourceUrl": "https://platform.openai.com/docs/introduction",
+  "sourceTitle": "Key concepts | OpenAI API",
+  "summary": "Anomaly detection can use embedding vectors to represent data and identify items that differ from a reference set. OpenAI documents embeddings as useful for anomaly detection, but not a dedicated anomaly-detection API.",
+  "explanation": "Convert comparable data items into embedding vectors and identify items whose vectors are unusually distant from a reference group. The documentation names anomaly detection as an embedding use case, but does not prescribe a specific detection algorithm or threshold.",
+  "syntax": "client.embeddings.create({ model, input })",
+  "parameters": [],
+  "returns": "An embedding vector produced from a text string.",
+  "example": {
+   "title": "Generate embeddings for anomaly detection",
+   "code": "from openai import OpenAI\n\nclient = OpenAI()\n\nresponse = client.embeddings.create(\n    model=\"text-embedding-3-small\",\n    input=[\"normal event\", \"unusual event\"]\n)\n\nvectors = [item.embedding for item in response.data]\nprint(vectors)",
+   "language": "python",
+   "explanation": "Generate embedding vectors that can then be compared with a distance metric or used by an anomaly-detection system."
+  },
+  "useCases": [
+   {
+    "title": "Text outlier detection",
+    "scenario": "Detect unusual text records by comparing their vectors with vectors from normal records."
+   },
+   {
+    "title": "Semantic monitoring",
+    "scenario": "Flag semantically atypical support tickets, logs, or events within a collection."
+   }
+  ],
+  "related": [
+   "search",
+   "clustering",
+   "recommendations",
+   "classification",
+   "text embedding models"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is an embedding?",
+    "answer": "An embedding is a vector representation of data intended to preserve aspects of its content or meaning. Items that are similar tend to have embeddings that are closer together than unrelated items.",
+    "followUp": "How could those vectors support anomaly detection? Compare a new vector with vectors representing normal behavior and investigate sufficiently distant results; the documentation does not define the distance metric or cutoff."
+   },
+   {
+    "question": "How can text embeddings be used for anomaly detection?",
+    "answer": "OpenAI text embedding models accept a text string as input and return an embedding vector. Those vectors provide the representation used by downstream applications such as anomaly detection.",
+    "followUp": "What must be decided before production use? Define the reference population, similarity or distance method, and threshold using representative data, because the page does not supply those policy choices."
+   },
+   {
+    "question": "What other uses does the documentation list for embeddings?",
+    "answer": "Embeddings are also useful for search, clustering, recommendations, and classification. These are application patterns built on the vector representation rather than separate anomaly-detection operations documented on the page.",
+    "followUp": "Why might one embedding workflow support several tasks? The same semantic vector representation can be compared or grouped differently depending on the downstream objective."
+   }
+  ],
+  "keyPoints": [
+   "An embedding represents an individual data item as a vector.",
+   "The vector is designed to retain relevant content or semantic information.",
+   "Similarity is commonly reflected by smaller separation between embedding vectors.",
+   "Unrelated items tend to be represented farther apart than similar items.",
+   "OpenAI provides models that transform text strings into embedding vectors.",
+   "Anomaly detection is one of the documented downstream applications."
+  ],
+  "gotchas": [
+   "The page identifies anomaly detection as a use case for embeddings, not as a complete built-in anomaly-detection API; distance calculation and thresholding remain application responsibilities."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Clustering": {
+  "sourceUrl": "https://platform.openai.com/docs/guides/embeddings",
+  "sourceTitle": "Vector embeddings | OpenAI API",
+  "summary": "Clustering groups text by similarity using semantically meaningful embedding vectors. It is an unsupervised way to uncover hidden groupings in a large text dataset.",
+  "explanation": "Clustering applies an unsupervised grouping algorithm to embedding vectors so semantically similar text is assigned to the same group.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "Cluster labels for the embedded text items; the page demonstrates storing them in a `Cluster` column.",
+  "example": {
+   "title": "Cluster embedding vectors",
+   "code": "from sklearn.cluster import KMeans\nimport numpy as np\n\nembeddings = np.array([\n    [1.0, 0.0], [0.9, 0.1],\n    [0.0, 1.0], [0.1, 0.9],\n])\nmodel = KMeans(n_clusters=2, init=\"k-means++\", random_state=42)\nmodel.fit(embeddings)\nprint(model.labels_)",
+   "language": "python",
+   "explanation": "This runnable example groups embedding vectors into two clusters with K-means."
+  },
+  "useCases": [
+   {
+    "title": "Topic discovery",
+    "scenario": "Organize a large text corpus into discovered themes."
+   },
+   {
+    "title": "Review analysis",
+    "scenario": "Separate favorable and unfavorable review patterns."
+   },
+   {
+    "title": "Semantic segmentation",
+    "scenario": "Identify groups of semantically related documents."
+   }
+  ],
+  "related": [
+   "Embeddings",
+   "Search",
+   "Recommendations",
+   "Anomaly detection",
+   "Classification",
+   "KMeans"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How would you cluster text with OpenAI embeddings?",
+    "answer": "OpenAI embeddings convert text into vectors that preserve aspects of content or meaning. A clustering algorithm can then group vectors according to similarity.",
+    "followUp": "Why are embeddings useful before clustering? Similar text tends to produce vectors that are closer together than unrelated text."
+   },
+   {
+    "question": "When is clustering appropriate?",
+    "answer": "Clustering is useful when the dataset has no predefined labels and the goal is to discover latent groups. The documentation presents textual data as the input and embedding vectors as the representation.",
+    "followUp": "What does the output mean? Each item receives a cluster assignment, which should be interpreted by examining the text in each group."
+   },
+   {
+    "question": "What are the main implementation steps?",
+    "answer": "A practical workflow is to create embeddings, arrange them into a matrix, select a cluster count, fit K-means, and store the resulting labels. The documentation example uses four clusters and k-means++ initialization.",
+    "followUp": "What should be checked after fitting? Inspect whether the groups are coherent and whether the selected cluster count reflects the task."
+   }
+  ],
+  "keyPoints": [
+   "Use clustering to organize and interpret large collections of text.",
+   "Generate an embedding for each text item before applying a clustering algorithm.",
+   "Clusters may represent different themes or sentiment patterns, and multiple clusters can describe related aspects of the same dataset.",
+   "K-means requires selecting the number of clusters explicitly in the documented example.",
+   "Fit the clustering model to a matrix whose rows contain the embedding vectors."
+  ],
+  "gotchas": [
+   "Because clustering is unsupervised, choose and validate the number and meaning of groups rather than treating labels as predefined ground truth."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Context Window": {
+  "sourceUrl": "https://platform.openai.com/docs/guides/prompt-engineering",
+  "sourceTitle": "Prompt engineering | OpenAI API",
+  "summary": "A context window is the token-based memory limit for a model during a generation request. It determines how much input and conversational material the model can consider, and its size varies by model.",
+  "explanation": "A context window is the token-based working memory available during one model generation request. It covers the input supplied to the model and limits how much conversation, instructions, retrieved data, and generated output can fit together; exact capacity depends on the selected model.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Inspect a model's context capacity",
+   "code": "from openai import OpenAI\n\nclient = OpenAI()\nresponse = client.responses.create(\n    model=\"gpt-4.1\",\n    input=\"Explain context windows in one sentence.\"\n)\nprint(response.output_text)",
+   "language": "python",
+   "explanation": "This runnable example sends a request to a model whose documentation specifies a context-window capacity."
+  },
+  "useCases": [
+   {
+    "title": "Capacity planning",
+    "scenario": "Choosing a model for long documents or conversation history."
+   },
+   {
+    "title": "Prompt sizing",
+    "scenario": "Keeping prompts within the selected model's token limit."
+   },
+   {
+    "title": "Context management",
+    "scenario": "Deciding whether to reduce, retrieve, or summarize context."
+   }
+  ],
+  "related": [
+   "tokens",
+   "prompt engineering",
+   "gpt-4.1",
+   "gpt-5.5"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The context window is a token-based limit on the information a model can consider for a generation request.",
+   "The counted context is measured in tokens and can represent different input modalities, including text and images.",
+   "Available capacity varies substantially between models, ranging from roughly 100,000 tokens to about one million for newer models."
+  ],
+  "gotchas": [
+   "A request can exceed the model's available working context, so keep the combined prompt and included material within the selected model's limit.",
+   "Context-window capacity is model-specific; check the selected model's documentation instead of assuming one universal limit."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "createEmbedding": {
+  "sourceUrl": "https://platform.openai.com/docs/guides/embeddings",
+  "sourceTitle": "Vector embeddings | OpenAI API",
+  "summary": "Creates numerical vector representations of text through the OpenAI embeddings API. These vectors can be used for semantic search, retrieval, and related machine-learning workflows.",
+  "explanation": "Send text input and an embedding model name to the embeddings API. The response contains embedding vectors in its data collection, with one result corresponding to each supplied input item.",
+  "syntax": "client.embeddings.create({ model, input })",
+  "parameters": [
+   {
+    "name": "input",
+    "type": "string | string[]",
+    "description": "Text string or array of text strings to convert into embedding vectors."
+   },
+   {
+    "name": "model",
+    "type": "string",
+    "description": "Name of the embedding model, such as text-embedding-3-small."
+   }
+  ],
+  "returns": "A response whose data items contain embedding vectors; one item is returned for each input text.",
+  "example": {
+   "title": "Create embeddings for multiple texts",
+   "code": "import OpenAI from \"openai\";\n\nconst client = new OpenAI();\n\nconst response = await client.embeddings.create({\n  model: \"text-embedding-3-small\",\n  input: [\"A document about machine learning.\", \"A document about databases.\"]\n});\n\nconsole.log(response.data.map(item => item.embedding.length));",
+   "language": "typescript",
+   "explanation": "Creates one embedding vector for each supplied text using the OpenAI embeddings API."
+  },
+  "useCases": [
+   {
+    "title": "Semantic search",
+    "scenario": "Convert documents into vectors that can be indexed and compared for meaning."
+   },
+   {
+    "title": "Retrieval",
+    "scenario": "Represent a user question and compare it with stored document vectors."
+   },
+   {
+    "title": "Text feature generation",
+    "scenario": "Transform text into numerical features for downstream machine-learning processing."
+   }
+  ],
+  "related": [
+   "embeddings API",
+   "text-embedding-3-small",
+   "retrieval",
+   "vector embeddings"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the embeddings API create?",
+    "answer": "The method accepts text input and a model identifier, then returns embedding vectors in the response data. For multiple inputs, provide an array and read the corresponding vector from each data item.",
+    "followUp": "How would you embed a batch? Pass an array of strings as input and associate each returned data item with the input at the same position."
+   },
+   {
+    "question": "How do you create an embedding for text?",
+    "answer": "Use an embedding model such as text-embedding-3-small and provide the text to represent. The returned vector is available from the embedding field of each response item.",
+    "followUp": "What should change when embedding several texts? Supply multiple strings in the input array and process every returned vector rather than only the first one."
+   },
+   {
+    "question": "Where is the generated vector located in the response?",
+    "answer": "The API response exposes results through data, and each result contains an embedding vector. The vector can then be used by an application for semantic comparison or retrieval workflows.",
+    "followUp": "How can the output support retrieval? Store vectors and compare a query vector with stored vectors using a similarity method implemented by the retrieval system."
+   }
+  ],
+  "keyPoints": [
+   "Call the embeddings endpoint with the text you want represented and the chosen embedding model.",
+   "The documentation uses text-embedding-3-small as a current example model for generating vectors.",
+   "For a single input, retrieve the generated vector from the first response item's embedding field."
+  ],
+  "gotchas": [
+   "Normalize embedded text by replacing newline characters when preparing content, as shown in the documentation example."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Embedding": {
+  "sourceUrl": "https://platform.openai.com/docs/guides/embeddings",
+  "sourceTitle": "Vector embeddings | OpenAI API",
+  "summary": "Embeddings represent text as vectors that preserve aspects of content or meaning. They support similarity-based tasks such as search, clustering, recommendations, anomaly detection, and classification.",
+  "explanation": "An embedding is a vector representation of text that preserves aspects of its content or meaning. Send one or more text inputs with an embedding model to the embeddings endpoint; the response contains a vector for each input, which can then be compared or indexed for similarity-based applications.",
+  "syntax": "client.embeddings.create(input=[text], model=\"text-embedding-3-small\")",
+  "parameters": [
+   {
+    "name": "input",
+    "type": "string | array of strings",
+    "description": "Text, or an array of text inputs, to embed."
+   },
+   {
+    "name": "model",
+    "type": "string",
+    "description": "The identifier of the embedding model, such as text-embedding-3-small."
+   }
+  ],
+  "returns": "An embeddings response containing a data array; each item includes the generated embedding vector.",
+  "example": {
+   "title": "Create a text embedding",
+   "code": "from openai import OpenAI\n\nclient = OpenAI()\nresponse = client.embeddings.create(\n    input=[\"The food was delicious\"],\n    model=\"text-embedding-3-small\"\n)\nprint(len(response.data[0].embedding))",
+   "language": "python",
+   "explanation": "Creates an embedding for one text string and prints the returned vector’s dimensionality."
+  },
+  "useCases": [
+   {
+    "title": "Search",
+    "scenario": "Rank documents or passages by semantic similarity to a query."
+   },
+   {
+    "title": "Clustering",
+    "scenario": "Group text items by semantic similarity."
+   },
+   {
+    "title": "Recommendations",
+    "scenario": "Recommend related items based on their text representations."
+   },
+   {
+    "title": "Classification",
+    "scenario": "Assign text to the label with the most similar embedding."
+   }
+  ],
+  "related": [
+   "text-embedding-3-small",
+   "embeddings API",
+   "semantic search",
+   "clustering",
+   "recommendations",
+   "classification"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Embeddings convert text into vectors whose relative closeness represents semantic relatedness.",
+   "Typical applications include semantic search, clustering, recommendations, anomaly detection, diversity measurement, and classification.",
+   "Call the embeddings endpoint with the input text and model identifier, such as text-embedding-3-small.",
+   "Embedding models accept text and return numerical vectors suitable for downstream similarity operations.",
+   "Check the model index for the input limit of the chosen embedding model."
+  ],
+  "gotchas": [
+   "Keep each input below the selected embedding model’s maximum context length.",
+   "The request must specify both the text input and an embedding model."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "embeddings": {
+  "sourceUrl": "https://platform.openai.com/docs/guides/embeddings",
+  "sourceTitle": "Vector embeddings | OpenAI API",
+  "summary": "Embeddings convert text into vectors that preserve aspects of its content or meaning. Comparing these vectors enables semantic search, clustering, recommendations, anomaly detection, diversity measurement, and classification.",
+  "explanation": "The embeddings API transforms input text into a numeric vector intended to preserve aspects of the text's content or meaning. Applications compare these vectors to support semantic similarity tasks such as search, clustering, recommendations, anomaly detection, and classification.",
+  "syntax": "client.embeddings.create(input=[text], model=\"text-embedding-3-small\")",
+  "parameters": [
+   {
+    "name": "input",
+    "type": "string or array of strings",
+    "description": "The text string or strings to convert into embeddings."
+   },
+   {
+    "name": "model",
+    "type": "string",
+    "description": "The name of the embedding model, such as text-embedding-3-small."
+   }
+  ],
+  "returns": "An embedding vector for each supplied input text.",
+  "example": {
+   "title": "Create a text embedding",
+   "code": "from openai import OpenAI\n\nclient = OpenAI()\ntext = \"Semantic search finds related meaning.\"\nresult = client.embeddings.create(\n    model=\"text-embedding-3-small\",\n    input=text,\n)\nvector = result.data[0].embedding\nprint(len(vector))",
+   "language": "python",
+   "explanation": "Creates an embedding vector for a text string and prints its dimensionality."
+  },
+  "useCases": [
+   {
+    "title": "Search",
+    "scenario": "Rank documents by semantic relevance to a natural-language query."
+   },
+   {
+    "title": "Clustering",
+    "scenario": "Group texts or items according to vector similarity."
+   },
+   {
+    "title": "Recommendations",
+    "scenario": "Suggest items whose text representations are related."
+   },
+   {
+    "title": "Anomaly detection",
+    "scenario": "Identify items with unusually low relatedness to the rest of a collection."
+   }
+  ],
+  "related": [
+   "text-embedding-3-small",
+   "embeddings API",
+   "semantic search",
+   "clustering",
+   "recommendations",
+   "anomaly detection",
+   "classification"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is an embedding?",
+    "answer": "An embedding is a vector representation of data that aims to preserve aspects of its content or meaning. Related data tends to produce vectors that are closer together than unrelated data.",
+    "followUp": "How would you use embeddings for retrieval? Generate vectors for documents and queries, then rank documents by vector similarity."
+   },
+   {
+    "question": "How do you obtain an embedding?",
+    "answer": "Send the text string and embedding model name to the embeddings endpoint. The response contains the resulting embedding vector for the input.",
+    "followUp": "What should be persisted for later search? Store document vectors with their source identifiers and metadata, then embed incoming queries with the same model."
+   },
+   {
+    "question": "What problems are embeddings useful for?",
+    "answer": "Common applications include search, clustering, recommendations, anomaly detection, diversity measurement, and classification. These tasks use relationships between vectors to find similar or unusual text.",
+    "followUp": "Why is chunking useful for document search? It lets retrieval compare a query with focused portions of a document instead of one vector representing the entire document."
+   }
+  ],
+  "keyPoints": [
+   "Text embeddings quantify how related text strings are.",
+   "Typical applications include semantic search, clustering, recommendations, anomaly detection, diversity measurement, and classification.",
+   "The request requires input text and an embedding model name.",
+   "Similarity between vectors is useful as a proxy for similarity between the represented data.",
+   "Text embedding models accept strings and return vectors."
+  ],
+  "gotchas": [
+   "Keep each input within the selected model’s maximum context length; embedding models do not produce output tokens."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Few-shot Learning": {
+  "sourceUrl": "https://platform.openai.com/docs/guides/gpt-best-practices",
+  "sourceTitle": "GPT Best Practices",
+  "summary": "Few-shot learning steers a language model with a handful of input/output examples in the prompt. The model infers the pattern and applies it to a new task input.",
+  "explanation": "Few-shot learning guides a language model with a small set of input/output demonstrations included in the prompt. The model infers the demonstrated pattern and applies it to a new request, commonly with the examples placed in a developer message.",
+  "syntax": "developer message containing input/output demonstrations",
+  "parameters": [],
+  "returns": "The model's response to a new input, generated according to the demonstrated pattern.",
+  "example": {
+   "title": "Few-shot sentiment classification",
+   "code": "from openai import OpenAI\n\nclient = OpenAI()\nresponse = client.responses.create(\n    model=\"gpt-4.1\",\n    input=[\n        {\"role\":\"developer\",\"content\":\"Classify sentiment.\\n\\nExamples:\\nInput: I love it.\\nOutput: positive\\n\\nInput: It broke.\\nOutput: negative\"},\n        {\"role\":\"user\",\"content\":\"The service was excellent.\"}\n    ]\n)\nprint(response.output_text)",
+   "language": "python",
+   "explanation": "The developer message supplies demonstrations, and the user message contains a new input for the model to classify."
+  },
+  "useCases": [
+   {
+    "title": "Few-shot classification",
+    "scenario": "Classify incoming text into labels by showing labeled examples."
+   },
+   {
+    "title": "Structured transformation",
+    "scenario": "Convert inputs into a target format by demonstrating representative transformations."
+   },
+   {
+    "title": "Prompt-based task steering",
+    "scenario": "Teach a response style or task procedure without fine-tuning."
+   }
+  ],
+  "related": [
+   "prompting",
+   "developer message",
+   "fine-tuning",
+   "input/output examples"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is few-shot learning?",
+    "answer": "Few-shot learning steers a model by placing several input/output demonstrations in the prompt instead of fine-tuning it. The model infers the pattern represented by those demonstrations and uses it for a new input.",
+    "followUp": "How should the demonstrations be selected? Include a diverse range of possible inputs paired with the desired outputs."
+   },
+   {
+    "question": "Where should few-shot examples be placed?",
+    "answer": "The examples are usually supplied as part of a developer message in the API request. The new task input is then presented separately for the model to process using the demonstrated pattern.",
+    "followUp": "Why use a developer message? It is the documented location OpenAI recommends for these examples in an API request."
+   },
+   {
+    "question": "How does few-shot learning differ from fine-tuning?",
+    "answer": "Few-shot learning uses a handful of examples in the prompt, while fine-tuning trains the model with many more examples than can fit in the prompt. Fine-tuning can therefore improve performance across a wider range of tasks.",
+    "followUp": "What is the main practical trade-off? Prompt demonstrations avoid training but consume prompt space; fine-tuning requires a training workflow but supports more examples."
+   }
+  ],
+  "keyPoints": [
+   "A small demonstration set can redirect a general-purpose model toward a task it was not explicitly trained to perform.",
+   "The technique works by putting a limited number of paired inputs and desired outputs directly into the prompt.",
+   "The model infers the task pattern from the demonstrations rather than receiving a separately trained task-specific model.",
+   "After inferring the pattern, the model applies it to the new user request.",
+   "For API integrations, place the demonstrations in a developer message."
+  ],
+  "gotchas": [
+   "Use varied demonstrations that cover the possible input patterns; narrow examples may not steer the model reliably across the task."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Fine-tuning": {
+  "sourceUrl": "https://platform.openai.com/docs/guides/fine-tuning",
+  "sourceTitle": "Model optimization",
+  "summary": "Fine-tuning adapts an OpenAI base model to a specific task using representative input-output examples. The process involves preparing JSONL data, creating a job, and evaluating the resulting model.",
+  "explanation": "Fine-tuning adapts an OpenAI base model to examples of the inputs and outputs expected by an application. The workflow is to collect representative data, upload it as JSONL, create a training job, and evaluate the resulting model; reinforcement fine-tuning also requires a grader.",
+  "syntax": "client.fine_tuning.jobs.create(training_file=\"file-...\", model=\"...\")",
+  "parameters": [
+   {
+    "name": "model",
+    "type": "string",
+    "description": "The base model to adapt; it must be one of the supported models."
+   },
+   {
+    "name": "training_file",
+    "type": "string",
+    "description": "The identifier of an uploaded JSONL file containing training examples."
+   },
+   {
+    "name": "validation_file",
+    "type": "string",
+    "description": "Optional identifier of an uploaded JSONL validation file used for periodic validation metrics."
+   }
+  ],
+  "returns": "A fine-tuning job whose eventual result includes the newly created fine-tuned model name.",
+  "example": {
+   "title": "Create a fine-tuning job",
+   "code": "from openai import OpenAI\n\nclient = OpenAI()\n\njob = client.fine_tuning.jobs.create(\n    training_file=\"file-abc123\",\n    model=\"gpt-4.1-mini\"\n)\nprint(job.id)",
+   "language": "python",
+   "explanation": "Creates a fine-tuning job from an uploaded JSONL training file and prints the job identifier."
+  },
+  "useCases": [
+   {
+    "title": "Specialize task behavior",
+    "scenario": "A task needs consistent behavior that prompting alone does not provide."
+   },
+   {
+    "title": "Adapt to application examples",
+    "scenario": "A production workload repeats a well-defined input-output pattern."
+   },
+   {
+    "title": "Optimize with a grader",
+    "scenario": "A reinforcement fine-tuning workflow needs scored behavior."
+   }
+  ],
+  "related": [
+   "model optimization",
+   "JSONL",
+   "training file",
+   "validation file",
+   "reinforcement fine-tuning",
+   "grader",
+   "evaluation"
+  ],
+  "since": "",
+  "keyPoints": [
+   "It specializes an OpenAI base model using examples that represent the inputs and outputs your application expects.",
+   "Begin by assembling examples that reflect the task and production inputs.",
+   "Upload the training dataset as a JSONL file.",
+   "Start training by creating a fine-tuning job through the dashboard or API.",
+   "Reinforcement fine-tuning additionally uses a grader to assess model behavior.",
+   "Measure the trained model against representative test data after training."
+  ],
+  "gotchas": [
+   "The platform is being phased out: new users cannot access it, while existing users can create jobs only for a limited period."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "fineTuning": {
+  "sourceUrl": "https://platform.openai.com/docs/guides/fine-tuning",
+  "sourceTitle": "Model optimization | OpenAI API",
+  "summary": "Fine-tuning adapts an OpenAI base model to task-specific behavior using representative input-output examples. Prepare JSONL data, upload it, create a job, and evaluate the resulting model.",
+  "explanation": "Fine-tuning adapts an OpenAI base model to task-specific behavior by training it on representative input-output examples. The workflow is to prepare JSONL data, upload it, create a job, and evaluate the resulting model; reinforcement fine-tuning additionally uses a grader.",
+  "syntax": "client.fine_tuning.jobs.create(model=\"MODEL_ID\", training_file=\"FILE_ID\", validation_file=\"FILE_ID\")",
+  "parameters": [
+   {
+    "name": "model",
+    "type": "string",
+    "description": "Identifier of the supported base model to fine-tune."
+   },
+   {
+    "name": "training_file",
+    "type": "string",
+    "description": "ID of the uploaded JSONL file containing training examples; the file must use the fine-tune purpose."
+   },
+   {
+    "name": "validation_file",
+    "type": "string",
+    "description": "Optional ID of the uploaded JSONL validation file used for periodic validation metrics."
+   },
+   {
+    "name": "hyperparameters",
+    "type": "object",
+    "description": "Optional hyperparameters controlling the fine-tuning job."
+   }
+  ],
+  "returns": "A fine-tuning job object containing details about the enqueued job, including status and the fine-tuned model name once available.",
+  "example": {
+   "title": "Create a fine-tuning job",
+   "code": "from openai import OpenAI\n\nclient = OpenAI()\n\njob = client.fine_tuning.jobs.create(\n    training_file=\"file-ABC123\",\n    model=\"gpt-4.1-mini\",\n)\nprint(job.id)",
+   "language": "python",
+   "explanation": "Creates a fine-tuning job from an uploaded JSONL training file and prints the job identifier."
+  },
+  "useCases": [
+   {
+    "title": "Task specialization",
+    "scenario": "A task needs consistent learned behavior that prompting alone does not reliably produce."
+   },
+   {
+    "title": "Efficiency optimization",
+    "scenario": "A smaller model should achieve the required accuracy with fewer prompt tokens."
+   },
+   {
+    "title": "Reinforcement fine-tuning",
+    "scenario": "A behavior must be optimized against a measurable reward rather than fixed target outputs."
+   },
+   {
+    "title": "Iterative model improvement",
+    "scenario": "A model needs evaluation-driven iteration on representative production-like examples."
+   }
+  ],
+  "related": [
+   "model optimization workflow",
+   "JSONL",
+   "fine-tuning job",
+   "validation metrics",
+   "reinforcement fine-tuning",
+   "grader",
+   "training file",
+   "fine-tuned model"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is fine-tuning and what is its basic workflow?",
+    "answer": "Fine-tuning trains an OpenAI base model on examples representing the inputs and outputs expected in an application. The normal workflow is to collect examples, upload JSONL, create a job, and evaluate the result.",
+    "followUp": "When should you fine-tune instead of relying only on prompting? Fine-tuning is appropriate when a specific task benefits from learned behavior; evaluation should establish whether it improves representative real-world performance."
+   },
+   {
+    "question": "What data does a fine-tuning job require?",
+    "answer": "The training dataset is uploaded as a JSONL file, and the file is supplied when creating the fine-tuning job. A validation file is optional and produces periodic validation metrics during training.",
+    "followUp": "Why keep validation data separate? Overlapping training and validation examples make the validation measurements less representative of generalization."
+   },
+   {
+    "question": "How does reinforcement fine-tuning differ from ordinary fine-tuning?",
+    "answer": "Reinforcement fine-tuning adds a grader that scores the model's behavior. That score guides the training process, unlike ordinary supervised examples that directly specify desired outputs.",
+    "followUp": "What extra design problem does reinforcement fine-tuning introduce? The grader must reliably measure the target behavior, or optimization can reward undesirable outputs."
+   }
+  ],
+  "keyPoints": [
+   "It specializes a base model using examples that reflect the application's expected inputs and outputs.",
+   "Begin by assembling representative training examples before starting a job.",
+   "The training dataset is uploaded to the platform in JSONL format.",
+   "Creating the job starts the model-training process after the data is available.",
+   "Reinforcement fine-tuning requires a grader that evaluates model behavior.",
+   "Evaluation is a distinct final stage used to judge whether the tuned model meets the task goal."
+  ],
+  "gotchas": [
+   "The platform is being phased out: new users cannot access it, while existing users retain limited job-creation access and fine-tuned models remain usable until their base models are deprecated."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Function Calling": {
+  "sourceUrl": "https://platform.openai.com/docs/guides/function-calling?api-mode=responses",
+  "sourceTitle": "Function calling",
+  "summary": "Function calling lets OpenAI models request application code or external services through declared function tools. Your application executes the requested calls, returns their outputs, and lets the model continue or answer.",
+  "explanation": "Function calling lets an OpenAI model request application code or an external service through a declared function schema. The application receives one or more calls, validates and executes their JSON arguments, then submits each result so the model can continue with a final answer or additional calls.",
+  "syntax": "tools: [{ type: \"function\", name, description, parameters, strict }]",
+  "parameters": [
+   {
+    "name": "tools",
+    "type": "array",
+    "description": "Array of callable function tool definitions supplied with an API request."
+   },
+   {
+    "name": "name",
+    "type": "string",
+    "description": "Function name selected by the model."
+   },
+   {
+    "name": "arguments",
+    "type": "string",
+    "description": "JSON-encoded arguments generated for the selected function."
+   },
+   {
+    "name": "parameters",
+    "type": "object",
+    "description": "JSON Schema describing the function's input arguments."
+   },
+   {
+    "name": "strict",
+    "type": "boolean",
+    "description": "Whether strict mode is enforced for the function call."
+   }
+  ],
+  "returns": "A model response containing zero or more function calls; after tool outputs are submitted, the model returns a final response or additional calls.",
+  "example": {
+   "title": "Function calling with the Responses API",
+   "code": "import OpenAI from \"openai\";\n\nconst client = new OpenAI();\n\nconst tools = [{\n  type: \"function\",\n  name: \"get_weather\",\n  description: \"Get the current weather for a location\",\n  parameters: {\n    type: \"object\",\n    properties: { location: { type: \"string\" } },\n    required: [\"location\"],\n    additionalProperties: false\n  },\n  strict: true\n}];\n\nlet response = await client.responses.create({\n  model: \"gpt-4.1\",\n  input: \"What is the weather in Paris?\",\n  tools\n});\n\nfor (const item of response.output) {\n  if (item.type === \"function_call\") {\n    const args = JSON.parse(item.arguments);\n    const result = await getWeather(args.location);\n    response = await client.responses.create({\n      model: \"gpt-4.1\",\n      previous_response_id: response.id,\n      input: [{ type: \"function_call_output\", call_id: item.call_id, output: JSON.stringify(result) }]\n    });\n  }\n}",
+   "language": "typescript",
+   "explanation": "Defines a function tool, lets the model choose it, executes the application-side implementation, and sends the result back for a final response."
+  },
+  "useCases": [
+   {
+    "title": "Fetching data",
+    "scenario": "Retrieve current weather, search a knowledge base, or fetch records from an API before composing an answer."
+   },
+   {
+    "title": "Taking action",
+    "scenario": "Submit forms, invoke APIs, modify application state, or hand off an agent workflow."
+   }
+  ],
+  "related": [
+   "tools",
+   "function_call",
+   "function_call_output",
+   "tool_calls",
+   "parallel_tool_calls",
+   "Structured Outputs"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the function-calling flow?",
+    "answer": "Function calling is a multi-step exchange: provide tools, receive a tool call, execute it in application code, submit the tool output, and receive a final response or more calls. The model selects calls from the available schemas.",
+    "followUp": "How should a loop handle a response containing several calls? Iterate over all function-call items, execute each safely, submit each corresponding output, and continue until the model returns a non-call response."
+   },
+   {
+    "question": "What belongs in a function definition?",
+    "answer": "A function definition uses a function type, a name, a usage description, a JSON Schema parameter definition, and a strictness setting. The schema tells the model which arguments the application expects.",
+    "followUp": "Why include a detailed description? It guides when and how the model should use the function, improving tool selection and argument generation."
+   },
+   {
+    "question": "Who executes a requested function and how is its result returned?",
+    "answer": "The model does not execute application code itself. Your application parses the model's JSON-encoded arguments, performs the operation, and sends the result back using the tool call's identifier.",
+    "followUp": "What should production code do before execution? Validate arguments against the expected schema and apply normal authorization, error handling, and side-effect controls."
+   }
+  ],
+  "keyPoints": [
+   "Treat function calling as an application–model conversation rather than a single completion.",
+   "Declare available functions in the request's tools collection.",
+   "Run the selected operation in your own application using the generated arguments.",
+   "Send execution results back in a follow-up request so the model can incorporate them.",
+   "Use the current tools parameter to expose callable functions.",
+   "Design response processing for zero, one, or multiple function calls."
+  ],
+  "gotchas": [
+   "Handle every response as potentially containing multiple tool calls; do not assume exactly one.",
+   "A model-generated call is only a request: your application must run the function and provide its output."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "moderations": {
+  "sourceUrl": "https://platform.openai.com/docs/guides/moderation",
+  "sourceTitle": "Moderation",
+  "summary": "The Moderations API identifies potentially harmful text and image content. Use its category flags and scores to apply application-specific filtering, review, or account-safety policies.",
+  "explanation": "The Moderations API evaluates text and image inputs with a moderation model and returns category flags and scores. Applications can use these results to filter content, route cases for review, or take account-level action.",
+  "syntax": "POST /v1/moderations",
+  "parameters": [
+   {
+    "name": "model",
+    "type": "string",
+    "description": "The moderation model to use; the documentation identifies `omni-moderation-latest` as accepting text and image inputs."
+   },
+   {
+    "name": "input",
+    "type": "string or array",
+    "description": "The text and/or image content to classify."
+   }
+  ],
+  "returns": "A moderation result containing the model, successful result data, category flags and scores, or an error object when moderation cannot complete.",
+  "example": {
+   "title": "Moderate text and image input",
+   "code": "from openai import OpenAI\n\nclient = OpenAI()\nresult = client.moderations.create(\n    model=\"omni-moderation-latest\",\n    input=[\n        {\"type\":\"text\",\"text\":\"I will hurt you.\"},\n        {\"type\":\"image_url\",\"image_url\":{\"url\":\"https://example.com/image.png\"}}\n    ],\n)\n\nprint(result.results[0].flagged)\nprint(result.results[0].categories)",
+   "language": "python",
+   "explanation": "This sends text and an image to the moderation endpoint and prints whether any category flagged the input plus the category results."
+  },
+  "useCases": [
+   {
+    "title": "Pre-publication content filtering",
+    "scenario": "Classify user-submitted text or images before publishing them."
+   },
+   {
+    "title": "Generated-content safety checks",
+    "scenario": "Request moderation alongside generated output and inspect it before display."
+   },
+   {
+    "title": "Safety review routing",
+    "scenario": "Send flagged cases to human review instead of automatically blocking every result."
+   },
+   {
+    "title": "Account intervention",
+    "scenario": "Use moderation signals as part of account enforcement workflows."
+   }
+  ],
+  "related": [
+   "Moderate generated content",
+   "omni-moderation-latest",
+   "ModerationResults",
+   "category_scores",
+   "flagged",
+   "Responses API",
+   "Chat Completions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the Moderations API return?",
+    "answer": "The endpoint returns moderation results for submitted content, including a flagged boolean, category labels, and category scores. The application should apply its own policy to decide whether to block, review, or otherwise respond.",
+    "followUp": "How would you handle a failed moderation operation? Check whether the result is successful before reading scores, then apply an explicit fail-safe policy appropriate to the application."
+   },
+   {
+    "question": "Which input types does moderation support?",
+    "answer": "The current moderation model handles text and image inputs. It does not classify audio, so audio safety requires a separate control or workflow.",
+    "followUp": "What if the application receives mixed multimodal content? Moderate each supported text or image input and define a separate policy for unsupported modalities."
+   },
+   {
+    "question": "How can moderation be used with generated content?",
+    "answer": "Moderation can be performed as a separate endpoint request, or moderation scores can be requested alongside generated content. In the latter case, the model still generates normally, so the application must inspect the scores before displaying or acting on the output.",
+    "followUp": "What should happen when generated output is flagged? Hold the output from the user-facing path and route it through the application's enforcement or review policy."
+   }
+  ],
+  "keyPoints": [
+   "Moderation results are signals; your application decides whether to filter content, send it for review, or intervene on an account.",
+   "The endpoint does not charge for moderation requests.",
+   "Image inputs sent for moderation have a 20 MB size limit.",
+   "Use the current omni moderation model for supported text and image requests."
+  ],
+  "gotchas": [
+   "The current moderation model accepts text and images, but audio is not a supported input modality.",
+   "Do not submit known or suspected child sexual abuse material; this API is not a substitute for dedicated child-safety safeguards.",
+   "A moderation operation may return an error object rather than scores, so inspect the result type before accessing score fields."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Multi-Head Attention": {
+  "sourceUrl": "https://docs.pytorch.org/docs/2.14/generated/torch.nn.MultiheadAttention.html",
+  "sourceTitle": "MultiheadAttention — PyTorch 2.14 documentation",
+  "summary": "PyTorch's MultiheadAttention jointly attends to information from multiple representation subspaces. It splits the model dimension across parallel heads, combines their outputs, and supports self-attention or cross-attention.",
+  "explanation": "MultiheadAttention projects queries, keys, and values into multiple representation subspaces, computes attention independently for each head, concatenates the head outputs, and applies a final projection. With batch_first=True, inputs and outputs use batch, sequence, feature ordering.",
+  "syntax": "torch.nn.MultiheadAttention(embed_dim, num_heads, dropout=0.0, bias=True, add_bias_kv=False, add_zero_attn=False, kdim=None, vdim=None, batch_first=False, device=None, dtype=None)",
+  "parameters": [
+   {
+    "name": "embed_dim",
+    "type": "int",
+    "description": "Total dimension of the model."
+   },
+   {
+    "name": "num_heads",
+    "type": "int",
+    "description": "Number of parallel attention heads."
+   },
+   {
+    "name": "dropout",
+    "type": "float",
+    "description": "Dropout probability on attention weights."
+   },
+   {
+    "name": "bias",
+    "type": "bool",
+    "description": "If True, adds learnable bias to input projections."
+   },
+   {
+    "name": "batch_first",
+    "type": "bool",
+    "description": "If True, input and output tensors use (batch, seq, feature) order."
+   },
+   {
+    "name": "query",
+    "type": "Tensor",
+    "description": "Query embeddings."
+   },
+   {
+    "name": "key",
+    "type": "Tensor",
+    "description": "Key embeddings."
+   },
+   {
+    "name": "value",
+    "type": "Tensor",
+    "description": "Value embeddings."
+   },
+   {
+    "name": "attn_mask",
+    "type": "Tensor | None",
+    "description": "Mask that prevents attention to certain positions."
+   }
+  ],
+  "returns": "forward returns attn_output and attn_output_weights; weights are averaged across heads by default or returned per head when average_attn_weights=False.",
+  "example": {
+   "title": "Two-head self-attention",
+   "code": "import torch\nfrom torch import nn\n\nmha = nn.MultiheadAttention(embed_dim=8, num_heads=2, batch_first=True)\nx = torch.randn(1, 4, 8)\ny, weights = mha(x, x, x)\nprint(y.shape, weights.shape)",
+   "language": "python",
+   "explanation": "Creates a two-head self-attention layer and applies it to a batch-first sequence."
+  },
+  "useCases": [
+   {
+    "title": "Self-attention",
+    "scenario": "Apply attention within one sequence by passing the same tensor as query, key, and value."
+   },
+   {
+    "title": "Cross-attention",
+    "scenario": "Use one sequence as query and another as key-value input."
+   },
+   {
+    "title": "Transformer layers",
+    "scenario": "Build Transformer encoder and decoder components."
+   },
+   {
+    "title": "Attention visualization",
+    "scenario": "Inspect attention distributions for analysis or debugging."
+   }
+  ],
+  "related": [
+   "torch.nn.MultiheadAttention",
+   "torch.nn.functional.multi_head_attention_forward",
+   "TransformerEncoderLayer",
+   "TransformerDecoderLayer"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Multiple attention heads let the model attend jointly to different representation subspaces.",
+   "The module implements the original Transformer multi-head attention architecture.",
+   "The head outputs are concatenated and passed through an output projection.",
+   "num_heads controls how many attention computations run in parallel.",
+   "The forward call consumes query, key, and value embeddings and returns attention results.",
+   "By default, returned attention weights are averaged across heads; disable averaging to inspect per-head weights."
+  ],
+  "gotchas": [
+   "Choose an embed_dim divisible by num_heads so each head receives an integer-sized feature subspace.",
+   "Set batch_first=True when your tensors use batch, sequence, feature order; otherwise the default layout is different.",
+   "A 2D attention mask applies uniformly across batches; use a 3D mask for batch-specific attention restrictions."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Prompt Engineering": {
+  "sourceUrl": "https://platform.openai.com/docs/guides/gpt",
+  "sourceTitle": "Text generation",
+  "summary": "Prompt engineering designs model instructions and inputs to produce responses that consistently satisfy requirements. Use clear guidance, context, examples, evaluations, and versioned deployment practices to improve reliability.",
+  "explanation": "Prompt engineering is the deliberate design of model instructions and inputs so responses consistently satisfy a task. You improve prompts by stating the goal clearly, supplying needed context or examples, testing behavior with representative evaluations, and versioning changes as part of deployment.",
+  "syntax": "client.responses.create({ model, instructions, input })",
+  "parameters": [
+   {
+    "name": "instructions",
+    "type": "string",
+    "description": "High-level behavioral instructions, including tone, goals, and examples of correct responses."
+   },
+   {
+    "name": "input",
+    "type": "string",
+    "description": "The task prompt or user input to process."
+   }
+  ],
+  "returns": "A model-generated response whose content is evaluated against the prompt's intended requirements.",
+  "example": {
+   "title": "Use instructions with the Responses API",
+   "code": "from openai import OpenAI\n\nclient = OpenAI()\nresponse = client.responses.create(\n    model=\"gpt-5\",\n    instructions=\"You are a concise technical tutor. Explain concepts with one example.\",\n    input=\"Explain prompt engineering in two sentences.\"\n)\nprint(response.output_text)",
+   "language": "python",
+   "explanation": "This runnable example separates high-level behavior from the task input when calling the Responses API."
+  },
+  "useCases": [
+   {
+    "title": "Define model behavior",
+    "scenario": "You need consistent behavior, tone, or output constraints across requests."
+   },
+   {
+    "title": "Evaluate prompt revisions",
+    "scenario": "You are iterating on a prompt and need evidence that a change improves results."
+   },
+   {
+    "title": "Version and stage deployments",
+    "scenario": "You are releasing prompt changes to a production application."
+   }
+  ],
+  "related": [
+   "message roles",
+   "Responses API",
+   "model snapshots",
+   "evaluation suites",
+   "reusable prompts",
+   "Playground",
+   "Evals API"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is prompt engineering, and why does it require testing?",
+    "answer": "Prompt engineering is writing effective model instructions so the generated content consistently meets requirements. Since generation is non-deterministic, the process combines deliberate design with empirical testing.",
+    "followUp": "How would you make prompt behavior safer to change? Add representative fixtures, tests, and evaluation checks, then roll changes out through the deployment system with staged controls when needed."
+   },
+   {
+    "question": "How do instructions differ from input in the Responses API?",
+    "answer": "The Responses API separates high-level behavior in instructions from the task supplied in input. The documentation states that instructions have higher priority than a prompt in input.",
+    "followUp": "What should be tested when changing instructions? Test representative inputs and expected properties, then compare evaluation results before and after the change."
+   },
+   {
+    "question": "How should prompts be managed in production?",
+    "answer": "A production prompt should be versioned like application code: keep it in the deployment path, test it against representative fixtures, and evaluate its behavior before release. Pinning model snapshots also helps maintain consistent behavior while prompts evolve.",
+    "followUp": "What if the model version changes? Re-run the evaluation suite against the new snapshot and review any behavior differences before promotion."
+   }
+  ],
+  "keyPoints": [
+   "The core activity is crafting instructions that guide the model toward the required result.",
+   "Message roles provide a broadly applicable way to structure instructions.",
+   "Use the instructions field to define behavior, tone, goals, and examples of correct responses.",
+   "Use automated tests and evaluation suites to quantify prompt performance during iteration.",
+   "For the Responses API, send the prepared instructions and task input as separate request fields.",
+   "Before deploying a prompt revision, establish representative test cases and checks that expose regressions.",
+   "Treat prompt updates as deployable configuration and stage them when gradual rollout is appropriate."
+  ],
+  "gotchas": [
+   "Do not expect input text to override higher-priority instructions supplied through the Responses API's instructions parameter.",
+   "A prompt is not a guarantee of identical output; validate behavior empirically rather than relying on wording alone."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Reinforcement Learning": {
+  "sourceUrl": "https://platform.openai.com/docs/guides/fine-tuning",
+  "sourceTitle": "Model optimization | OpenAI API",
+  "summary": "Reinforcement fine-tuning (RFT) trains a reasoning model by grading generated responses and reinforcing higher-scoring behavior. It is intended for complex, domain-specific tasks that require advanced reasoning.",
+  "explanation": "Reinforcement fine-tuning trains a reasoning model by generating answers to training prompts, grading those answers with an expert-defined grader, and reinforcing higher-scoring reasoning. The workflow uses a JSONL dataset, an uploaded training file, a fine-tuning job, and subsequent evaluation.",
+  "syntax": "client.fine_tuning.jobs.create(training_file, model, method={type: \"reinforcement\", reinforcement: {grader}})",
+  "parameters": [
+   {
+    "name": "training_file",
+    "type": "string",
+    "description": "JSONL training dataset uploaded to OpenAI and referenced by its file identifier."
+   },
+   {
+    "name": "model",
+    "type": "string",
+    "description": "The reasoning model to fine-tune; the page lists o4-mini-2025-04-16 for RFT."
+   },
+   {
+    "name": "method",
+    "type": "object",
+    "description": "Fine-tuning method configuration containing reinforcement fine-tuning and a grader."
+   },
+   {
+    "name": "grader",
+    "type": "object",
+    "description": "Expert-defined grader used to score generated model behavior."
+   }
+  ],
+  "returns": "A fine-tuning job object whose identifier can be used to monitor the training job and evaluate the resulting model.",
+  "example": {
+   "title": "Create a reinforcement fine-tuning job",
+   "code": "from openai import OpenAI\n\nclient = OpenAI()\n\njob = client.fine_tuning.jobs.create(\n    training_file=\"file-abc123\",\n    model=\"o4-mini-2025-04-16\",\n    method={\n        \"type\": \"reinforcement\",\n        \"reinforcement\": {\n            \"grader\": {\"type\": \"string_check\", \"name\": \"exact_match\"}\n        },\n    },\n)\nprint(job.id)",
+   "language": "python",
+   "explanation": "Creates a reinforcement fine-tuning job using a training file, a supported reasoning model, and a grader."
+  },
+  "useCases": [
+   {
+    "title": "Specialized reasoning",
+    "scenario": "Complex domain-specific tasks requiring advanced reasoning."
+   },
+   {
+    "title": "Medical diagnosis support",
+    "scenario": "Medical diagnoses based on history and diagnostic guidelines."
+   },
+   {
+    "title": "Legal passage selection",
+    "scenario": "Determining relevant passages from legal case law."
+   }
+  ],
+  "related": [
+   "Fine-tuning",
+   "Supervised fine-tuning",
+   "Direct preference optimization",
+   "Evaluation",
+   "Graders"
+  ],
+  "since": "",
+  "keyPoints": [
+   "RFT evaluates a generated response with an expert-defined grade and reinforces behavior associated with better scores.",
+   "Higher-scoring responses provide the training signal for improving the model’s reasoning behavior.",
+   "An RFT job includes a grader that scores the model’s behavior on generated answers.",
+   "Evaluation follows training so you can determine whether the fine-tuned model improved."
+  ],
+  "gotchas": [
+   "A reliable expert grader is required; disagreement about the ideal result can make reinforcement signals unreliable.",
+   "This method is restricted to reasoning models rather than general-purpose models."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "responses": {
+  "sourceUrl": "https://platform.openai.com/docs/",
+  "sourceTitle": "Overview - OpenAI API",
+  "summary": "The Responses API makes direct model requests for text, structured outputs, tools, and multimodal workflows. Submit a model and input, then read generated output from the returned response.",
+  "explanation": "The Responses API accepts a model identifier and input, then returns a response containing generated output items. The official SDK exposes the resulting text through output_text, while the API also supports multimodal inputs, tools, structured outputs, and stateful interactions.",
+  "syntax": "client.responses.create({ model, input })",
+  "parameters": [
+   {
+    "name": "model",
+    "type": "string",
+    "description": "The model identifier used to generate the response."
+   },
+   {
+    "name": "input",
+    "type": "string or array",
+    "description": "Text or other supported input supplied to the model."
+   }
+  ],
+  "returns": "A response object containing generated output items; SDK clients expose convenient text through output_text.",
+  "example": {
+   "title": "Create a text response",
+   "code": "import OpenAI from \"openai\";\n\nconst client = new OpenAI();\nconst response = await client.responses.create({\n  model: \"gpt-5\",\n  input: \"Summarize this sentence in five words: Responses API is direct.\",\n});\n\nconsole.log(response.output_text);",
+   "language": "typescript",
+   "explanation": "Creates a model response from text input and prints the SDK's combined text output."
+  },
+  "useCases": [
+   {
+    "title": "Text generation",
+    "scenario": "Generate text or code from a prompt."
+   },
+   {
+    "title": "Multimodal analysis",
+    "scenario": "Extract or classify information from images or documents."
+   },
+   {
+    "title": "Structured output",
+    "scenario": "Return data that downstream code can validate against a schema."
+   },
+   {
+    "title": "Tool-enabled workflows",
+    "scenario": "Connect model requests to external capabilities."
+   }
+  ],
+  "related": [
+   "Structured Outputs",
+   "Chat Completions API",
+   "Tools",
+   "Conversations API",
+   "Reasoning models"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you create a basic text response?",
+    "answer": "Call responses.create with a model and input. The returned object contains generated output, and the SDK provides output_text for convenient text access.",
+    "followUp": "How would you handle structured results? Use the Responses API's structured-output capability and consume the response according to the declared schema."
+   },
+   {
+    "question": "Why choose the Responses API instead of Chat Completions?",
+    "answer": "Responses is intended for direct model requests and supports text, image, audio, tools, and stateful interactions. The API returns output items rather than only a single text field.",
+    "followUp": "What changes for tool use? Attach the relevant tool and explicitly process the returned tool-call output before continuing the interaction."
+   },
+   {
+    "question": "What are the supported ways to call Responses?",
+    "answer": "Use the official SDK or call the HTTP endpoint directly. SDK usage requires a client, a model, and input; HTTP requests target the Responses endpoint with bearer authentication.",
+    "followUp": "What should be reviewed before deployment? Check authentication, errors, rate limits, and request-ID logging in the API reference."
+   }
+  ],
+  "keyPoints": [
+   "Use Responses as the main entry point for direct model calls that combine generation with structured data, tools, or multimodal inputs.",
+   "Treat output as a collection of generated items rather than assuming every result is one plain string.",
+   "Structured Outputs are suitable when downstream code needs model results constrained by a JSON schema."
+  ],
+  "gotchas": [
+   "Inspect output when you need the structured output items; output_text is a convenience for text-only handling.",
+   "Do not begin new text-generation integrations with the older Chat Completions API when Responses is appropriate.",
+   "Prefer Responses for reasoning models to obtain the documented performance and intelligence benefits."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Self-Attention": {
+  "sourceUrl": "https://docs.pytorch.org/docs/2.14/generated/torch.nn.modules.transformer.TransformerEncoderLayer.html",
+  "sourceTitle": "TransformerEncoderLayer — PyTorch 2.14 documentation",
+  "summary": "Self-attention lets sequence positions integrate information from one another. PyTorch’s TransformerEncoderLayer implements this with a feedforward network and exposes multi-head attention configuration.",
+  "explanation": "Self-attention lets each position in a sequence combine information from other positions using multi-head attention. In PyTorch, TransformerEncoderLayer packages this self-attention with a feedforward network, normalization, dropout, and residual structure; with batch_first=True, inputs and outputs use batch, sequence, feature order.",
+  "syntax": "class torch.nn.modules.transformer.TransformerEncoderLayer(d_model, nhead, dim_feedforward=2048, dropout=0.1, activation=<function relu>, layer_norm_eps=1e-05, batch_first=False, norm_first=False, bias=True, device=None, dtype=None)",
+  "parameters": [
+   {
+    "name": "d_model",
+    "type": "int",
+    "description": "Number of expected features in each input element; required."
+   },
+   {
+    "name": "nhead",
+    "type": "int",
+    "description": "Number of heads in the multi-head attention module; required."
+   },
+   {
+    "name": "dim_feedforward",
+    "type": "int",
+    "description": "Feedforward network dimension; default 2048."
+   },
+   {
+    "name": "dropout",
+    "type": "float",
+    "description": "Dropout probability; default 0.1."
+   },
+   {
+    "name": "activation",
+    "type": "string or callable",
+    "description": "Intermediate activation: relu, gelu, or a unary callable; default relu."
+   },
+   {
+    "name": "layer_norm_eps",
+    "type": "float",
+    "description": "Layer-normalization epsilon; default 1e-5."
+   },
+   {
+    "name": "batch_first",
+    "type": "bool",
+    "description": "Whether input and output use batch, sequence, feature order; default false."
+   },
+   {
+    "name": "norm_first",
+    "type": "bool",
+    "description": "Whether normalization occurs before attention and feedforward operations; default false."
+   },
+   {
+    "name": "bias",
+    "type": "bool",
+    "description": "Whether to include bias terms; default true."
+   },
+   {
+    "name": "device",
+    "type": "torch.device or equivalent",
+    "description": "Device for module parameters."
+   },
+   {
+    "name": "dtype",
+    "type": "torch.dtype or equivalent",
+    "description": "Data type for module parameters."
+   }
+  ],
+  "returns": "A tensor with the same sequence-feature shape as the input; with batch_first=True, input and output are (batch, sequence, feature).",
+  "example": {
+   "title": "Apply a self-attention encoder layer",
+   "code": "import torch\nfrom torch import nn\n\nlayer = nn.TransformerEncoderLayer(\n    d_model=8, nhead=2, batch_first=True\n)\nx = torch.randn(2, 4, 8)\ny = layer(x)\nprint(y.shape)  # torch.Size([2, 4, 8])",
+   "language": "python",
+   "explanation": "Creates a two-head Transformer encoder layer and applies self-attention plus its feedforward network to a batch-first sequence."
+  },
+  "useCases": [
+   {
+    "title": "Sequence representation learning",
+    "scenario": "Encode token sequences for language or other sequential data."
+   },
+   {
+    "title": "Transformer encoders",
+    "scenario": "Build an encoder stack from repeated Transformer layers."
+   },
+   {
+    "title": "Context-aware features",
+    "scenario": "Model relationships between positions in a sequence through multi-head attention."
+   }
+  ],
+  "related": [
+   "torch.nn.Transformer",
+   "torch.nn.TransformerEncoder",
+   "torch.nn.TransformerEncoderLayer",
+   "torch.nn.MultiheadAttention"
+  ],
+  "since": "",
+  "keyPoints": [
+   "A TransformerEncoderLayer combines self-attention with a feedforward network.",
+   "The layer follows the original Transformer encoder architecture.",
+   "d_model is the required feature width of each input token.",
+   "nhead is the required number of attention heads.",
+   "dim_feedforward controls the intermediate feedforward width and defaults to 2048.",
+   "dropout sets the dropout probability and defaults to 0.1."
+  ],
+  "gotchas": [
+   "The default layout is sequence, batch, feature; set batch_first=True when tensors are arranged as batch, sequence, feature.",
+   "norm_first changes normalization from after attention and feedforward operations to before them.",
+   "The layer supports both regular torch.Tensor inputs and Nested Tensor inputs; derived classes are expected to accept both formats."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Semantic Search": {
+  "sourceUrl": "https://platform.openai.com/docs/guides/retrieval",
+  "sourceTitle": "Retrieval | OpenAI API",
+  "summary": "Semantic search uses embeddings to find semantically relevant chunks in indexed data, including matches with few or no shared keywords. OpenAI's Retrieval API performs this search over vector stores.",
+  "explanation": "Semantic search represents a natural-language query and stored content as embeddings, then ranks stored chunks by semantic similarity. OpenAI's Retrieval API performs this search over vector stores and returns matching chunks, similarity scores, and their source files; query rewriting can optionally improve search queries.",
+  "syntax": "client.vector_stores.search(vector_store_id, query, rewrite_query=false)",
+  "parameters": [
+   {
+    "name": "vector_store_id",
+    "type": "string",
+    "description": "Identifier of the vector store containing the indexed data."
+   },
+   {
+    "name": "query",
+    "type": "string",
+    "description": "Natural-language text to search for."
+   },
+   {
+    "name": "rewrite_query",
+    "type": "boolean",
+    "description": "Optional setting that rewrites the query for improved performance."
+   }
+  ],
+  "returns": "A list of results containing relevant chunks, similarity scores, and the file of origin.",
+  "example": {
+   "title": "Search a vector store",
+   "code": "from openai import OpenAI\n\nclient = OpenAI()\n\nresults = client.vector_stores.search(\n    vector_store_id=\"vs_123\",\n    query=\"How do I reset my password?\",\n)\n\nfor result in results.data:\n    print(result.filename, result.score)\n    for content in result.content:\n        print(content.text)",
+   "language": "python",
+   "explanation": "Searches a vector store with a natural-language query and prints matching files, similarity scores, and content chunks."
+  },
+  "useCases": [
+   {
+    "title": "Knowledge-base retrieval",
+    "scenario": "Retrieve relevant passages from an internal knowledge base before generating an answer."
+   },
+   {
+    "title": "Natural-language document search",
+    "scenario": "Find documents matching a user's intent when exact keywords differ."
+   },
+   {
+    "title": "Similarity-based discovery",
+    "scenario": "Locate semantically related code or text across an indexed corpus."
+   }
+  ],
+  "related": [
+   "vector stores",
+   "embeddings",
+   "Retrieval API",
+   "query rewriting",
+   "file search"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The Retrieval API searches your own data by semantic meaning rather than requiring exact keyword matches.",
+   "Vector stores index the data used for semantic retrieval.",
+   "A natural-language query is passed to the vector store's search operation.",
+   "When query rewriting is enabled, the rewritten form is exposed as search_query in the result."
+  ],
+  "gotchas": [
+   "Search results contain chunks and scores, so applications should inspect the returned content and relevance rather than treating a result as a complete document.",
+   "Query rewriting is optional; enable it explicitly when query phrasing needs optimization."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Supervised Learning": {
+  "sourceUrl": "https://platform.openai.com/docs/guides/fine-tuning",
+  "sourceTitle": "Model optimization | OpenAI API",
+  "summary": "Supervised fine-tuning adapts a supported model using examples of prompts and correct responses. It is intended for tasks such as classification, nuanced translation, fixed-format generation, and instruction-following correction.",
+  "explanation": "Supervised fine-tuning adapts a supported base model by showing it examples of prompts paired with desired responses. The model learns this demonstrated behavior, making it useful when prompting alone does not reliably produce the required classification, format, translation style, or instruction-following behavior.",
+  "syntax": "client.fine_tuning.jobs.create(training_file=\"file-id\", model=\"model-id\")",
+  "parameters": [
+   {
+    "name": "training_file",
+    "type": "string",
+    "description": "Identifier of the uploaded training dataset containing prompt-and-target examples."
+   },
+   {
+    "name": "model",
+    "type": "string",
+    "description": "Supported base model to adapt, such as gpt-4.1-mini-2025-04-14."
+   }
+  ],
+  "returns": "A fine-tuning job object representing the submitted supervised fine-tuning operation.",
+  "example": {
+   "title": "Create a supervised fine-tuning job",
+   "code": "from openai import OpenAI\n\nclient = OpenAI()\n\njob = client.fine_tuning.jobs.create(\n    training_file=\"file-abc123\",\n    model=\"gpt-4.1-mini-2025-04-14\",\n)\nprint(job.id)",
+   "language": "python",
+   "explanation": "Creates a supervised fine-tuning job using a prepared training file."
+  },
+  "useCases": [
+   {
+    "title": "Classification",
+    "scenario": "Assigning inputs to a defined set of labels."
+   },
+   {
+    "title": "Nuanced translation",
+    "scenario": "Producing translations that preserve subtle distinctions or a required style."
+   },
+   {
+    "title": "Format-constrained generation",
+    "scenario": "Returning content that follows a consistent schema or presentation format."
+   },
+   {
+    "title": "Instruction-following correction",
+    "scenario": "Improving recurring cases where a model misses explicit instructions."
+   }
+  ],
+  "related": [
+   "Vision fine-tuning",
+   "Direct preference optimization",
+   "Reinforcement fine-tuning",
+   "Evaluations"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is supervised fine-tuning, and when is it useful?",
+    "answer": "Supervised fine-tuning trains a model with examples that pair prompts with desired outputs. It is suited to tasks such as classification, nuanced translation, fixed-format generation, and correcting instruction-following failures.",
+    "followUp": "When would you prefer prompting instead? Prefer prompting when the task can be reliably specified without changing the model’s learned behavior or output tendencies."
+   },
+   {
+    "question": "What kind of data does supervised fine-tuning use?",
+    "answer": "The dataset supplies correct responses for prompts, giving the model direct demonstrations of the intended behavior. This differs from preference-based methods, which provide relative preferences rather than one target response.",
+    "followUp": "What makes a training example valuable? It should represent the production task and contain a reliable target response that exemplifies the desired behavior."
+   },
+   {
+    "question": "Which problems are good candidates for supervised fine-tuning?",
+    "answer": "Supervised fine-tuning is particularly useful for classification, nuanced translation, constrained content formats, and instruction-following problems. These are cases where repeated examples can make the desired response pattern more dependable.",
+    "followUp": "What should be evaluated after tuning? Compare tuned-model outputs with held-out evaluation examples to verify that the intended behavior improved."
+   }
+  ],
+  "keyPoints": [
+   "SFT is the documentation’s abbreviation for supervised fine-tuning.",
+   "Training consists of showing the model prompt-and-answer examples that represent the desired behavior.",
+   "Use SFT when outputs must consistently follow a particular structure or format.",
+   "SFT can target recurring cases where the base model does not follow instructions correctly."
+  ],
+  "gotchas": [
+   "The training examples need correct target responses; incorrect demonstrations can teach the model undesirable behavior.",
+   "Human-authored ground-truth answers are a common source of training targets, so consistency and quality matter."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "System Prompt": {
+  "sourceUrl": "https://platform.openai.com/docs/api-reference/chat/create",
+  "sourceTitle": "Chat Completions | OpenAI API Reference",
+  "summary": "A system prompt is an application-level instruction supplied as a system-role message to guide model behavior. For newer o1 models, use a developer message instead.",
+  "explanation": "A system prompt is an application-provided instruction supplied with a system-role message to guide model behavior. In Chat Completions, it is included in the messages array alongside user and assistant messages; however, the documentation notes that newer o1 models use developer messages instead of system messages.",
+  "syntax": "{ \"role\": \"system\", \"content\": \"...\" }",
+  "parameters": [
+   {
+    "name": "messages",
+    "type": "array",
+    "description": "The ordered conversation messages, including the system or developer instruction and user input."
+   },
+   {
+    "name": "model",
+    "type": "string",
+    "description": "The model that generates the completion."
+   }
+  ],
+  "returns": "A chat completion containing the model-generated assistant message.",
+  "example": {
+   "title": "System message in Chat Completions",
+   "code": "from openai import OpenAI\n\nclient = OpenAI()\nresponse = client.chat.completions.create(\n    model=\"gpt-4o-mini\",\n    messages=[\n        {\"role\": \"system\", \"content\": \"You are a concise coding tutor.\"},\n        {\"role\": \"user\", \"content\": \"Explain recursion in one sentence.\"}\n    ]\n)\nprint(response.choices[0].message.content)",
+   "language": "python",
+   "explanation": "Creates a chat completion with a system message that sets application-level behavior before the user's request."
+  },
+  "useCases": [
+   {
+    "title": "Behavior control",
+    "scenario": "Set a consistent persona or response style for a chat application."
+   },
+   {
+    "title": "Instruction hierarchy",
+    "scenario": "Define application rules before processing user input."
+   },
+   {
+    "title": "Conversation guidance",
+    "scenario": "Provide stable context for multi-turn conversations."
+   }
+  ],
+  "related": [
+   "developer message",
+   "user message",
+   "assistant message",
+   "Chat Completions"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Developer instructions are intended to control application behavior and take precedence over end-user instructions.",
+   "Model outputs are represented as assistant-role messages in the conversation structure.",
+   "A system message carries the instruction content that establishes the model's behavior.",
+   "System-message content must use text content rather than other multimodal content types."
+  ],
+  "gotchas": [
+   "For o1 models and newer, use a developer message rather than a system message when providing application-level instructions."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "t-SNE": {
+  "sourceUrl": "https://platform.openai.com/docs/guides/embeddings",
+  "sourceTitle": "Vector embeddings | OpenAI API",
+  "summary": "OpenAI’s embeddings guide uses t-SNE to transform high-dimensional embedding data into two dimensions for visualization. The example applies scikit-learn’s TSNE to an embedding matrix and recommends cosine similarity for comparing embeddings.",
+  "explanation": "t-SNE is used to transform high-dimensional embedding vectors into two dimensions so their relationships can be visualized. The documented example configures the number of output dimensions, perplexity, initialization, learning rate, and random seed before transforming the embedding matrix.",
+  "syntax": "TSNE(n_components=2, perplexity=15, random_state=42, init=\"random\", learning_rate=200).fit_transform(matrix)",
+  "parameters": [
+   {
+    "name": "n_components",
+    "type": "integer",
+    "description": "Number of output dimensions; the documented example sets this to 2."
+   },
+   {
+    "name": "perplexity",
+    "type": "number",
+    "description": "Neighborhood-size setting used by the documented t-SNE example."
+   },
+   {
+    "name": "random_state",
+    "type": "integer",
+    "description": "Seed used to make the documented example reproducible."
+   },
+   {
+    "name": "init",
+    "type": "string",
+    "description": "Initialization strategy used by the documented example."
+   },
+   {
+    "name": "learning_rate",
+    "type": "number",
+    "description": "Optimization learning rate used by the documented example."
+   }
+  ],
+  "returns": "A two-dimensional representation of the embedding matrix for visualization.",
+  "example": {
+   "title": "Project embeddings with t-SNE",
+   "code": "import numpy as np\nimport pandas as pd\nfrom sklearn.manifold import TSNE\n\nembeddings = np.array([\n    [0.1, 0.2, 0.3],\n    [0.2, 0.1, 0.4],\n    [0.8, 0.7, 0.6],\n    [0.7, 0.8, 0.5],\n])\n\nprojection = TSNE(\n    n_components=2,\n    perplexity=2,\n    random_state=42,\n    init=\"random\",\n    learning_rate=200,\n).fit_transform(embeddings)\n\nprint(pd.DataFrame(projection, columns=[\"x\", \"y\"]))",
+   "language": "python",
+   "explanation": "This projects four embedding vectors into two dimensions for visualization."
+  },
+  "useCases": [
+   {
+    "title": "Visualize high-dimensional embeddings in two dimensions",
+    "scenario": "Exploring embedding datasets"
+   },
+   {
+    "title": "Look for clusters or relationships in projected vectors",
+    "scenario": "Inspecting semantic structure"
+   },
+   {
+    "title": "Use cosine similarity on original embeddings while reserving t-SNE for plots",
+    "scenario": "Maintaining retrieval quality"
+   }
+  ],
+  "related": [
+   "embeddings",
+   "cosine similarity",
+   "TSNE",
+   "NumPy",
+   "pandas"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is t-SNE used for in the embeddings workflow?",
+    "answer": "t-SNE takes high-dimensional embedding vectors and maps them to two dimensions for visualization. It is useful for inspecting structure in embedding data, but the projection is not the embedding itself.",
+    "followUp": "Why should similarity evaluation remain in the original space? The documentation recommends cosine similarity for comparing embeddings, while t-SNE is introduced for visualization."
+   },
+   {
+    "question": "Which t-SNE parameters appear in the official example?",
+    "answer": "The documented configuration sets n_components to 2, uses perplexity 15, initializes randomly, sets learning_rate to 200, and fixes random_state at 42. These settings produce a reproducible two-dimensional projection for the example.",
+    "followUp": "What should change when the dataset or visualization goal changes? Reconsider the projection parameters and validate the resulting plot rather than treating the example values as universal defaults."
+   },
+   {
+    "question": "What does t-SNE transform?",
+    "answer": "The input is a matrix created from the embedding column, converted to a NumPy array, and passed to TSNE.fit_transform. The result is a two-dimensional representation of the original embedding rows.",
+    "followUp": "How can the resulting coordinates be used? Attach them to the corresponding records and plot them, while retaining the source embeddings for actual similarity operations."
+   }
+  ],
+  "keyPoints": [
+   "The dimensionality of the source vectors depends on the embedding model, so visualization code should not assume a fixed input width.",
+   "The workflow explicitly creates a t-SNE model and then transforms the embedding matrix.",
+   "The official example uses two output dimensions, perplexity 15, a fixed seed, random initialization, and learning rate 200.",
+   "Use cosine similarity for embedding relatedness rather than interpreting t-SNE coordinates as the canonical similarity space."
+  ],
+  "gotchas": [
+   "t-SNE is a visualization transformation, not a replacement for the original embedding space or its similarity metric."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Temperature": {
+  "sourceUrl": "https://platform.openai.com/docs/api-reference/completions/create",
+  "sourceTitle": "Completions | OpenAI API Reference",
+  "summary": "Temperature controls sampling randomness in a completion. Values from 0 to 2 trade determinism for variety: lower is more focused, higher is more random.",
+  "explanation": "Temperature controls randomness during sampling. Lower values make output more focused and deterministic, while higher values increase variation; it accepts values from 0 to 2.",
+  "syntax": "temperature: number | null",
+  "parameters": [
+   {
+    "name": "temperature",
+    "type": "number or null",
+    "description": "Sampling temperature, from 0 to 2. Higher values increase randomness; lower values make output more focused and deterministic."
+   }
+  ],
+  "returns": "The generated completion, including its text and associated metadata.",
+  "example": {
+   "title": "Use a low temperature for focused completions",
+   "code": "from openai import OpenAI\n\nclient = OpenAI()\nresponse = client.completions.create(\n    model=\"gpt-3.5-turbo-instruct\",\n    prompt=\"Write a haiku about winter.\",\n    temperature=0.2,\n    max_tokens=30,\n)\nprint(response.choices[0].text)",
+   "language": "python",
+   "explanation": "This runnable Python example requests a focused completion by setting temperature to 0.2."
+  },
+  "useCases": [
+   {
+    "title": "Focused generation",
+    "scenario": "Generate stable, focused answers or code with less variation."
+   },
+   {
+    "title": "Creative generation",
+    "scenario": "Increase creative variation in prose or brainstorming output."
+   },
+   {
+    "title": "Sampling control",
+    "scenario": "Tune output randomness while leaving top_p unchanged."
+   }
+  ],
+  "related": [
+   "top_p",
+   "max_tokens",
+   "model",
+   "prompt"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Set temperature to a number from 0 through 2.",
+   "Higher settings produce more varied and less predictable output.",
+   "Lower settings favor focused, repeatable-looking output.",
+   "Temperature and top_p are alternative sampling controls; normally adjust only one."
+  ],
+  "gotchas": [
+   "Avoid changing temperature and top_p together; tune one sampling control at a time."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Tokenization": {
+  "sourceUrl": "https://platform.openai.com/docs/introduction",
+  "sourceTitle": "Key concepts",
+  "summary": "Tokenization divides text into tokens—commonly occurring character sequences that models process. Token count affects how much input and generated output can fit within a model’s context length.",
+  "explanation": "Tokenization splits text into commonly occurring character sequences called tokens. Models process these tokens sequentially, and the tokenizer determines how much input and generated output fits within a model's context length.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Count tokens with tiktoken",
+   "code": "from tiktoken import get_encoding\n\nencoding = get_encoding(\"cl100k_base\")\ntext = \"ChatGPT is great!\"\ntokens = encoding.encode(text)\nprint(tokens)\nprint(len(tokens))",
+   "language": "python",
+   "explanation": "This Python example encodes text with tiktoken and prints both its token IDs and token count."
+  },
+  "useCases": [
+   {
+    "title": "Context budgeting",
+    "scenario": "Estimate whether a prompt plus its expected completion fits a model's context window."
+   },
+   {
+    "title": "Prompt analysis",
+    "scenario": "Inspect how spaces, words, and punctuation are split before designing prompts."
+   },
+   {
+    "title": "Embedding validation",
+    "scenario": "Measure input size before sending embedding requests."
+   }
+  ],
+  "related": [
+   "Tokenizer",
+   "tiktoken",
+   "context length",
+   "embeddings models"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a token?",
+    "answer": "Tokens are chunks of commonly occurring character sequences rather than necessarily whole words. For example, a word may split into multiple tokens, while a short common word may remain one token.",
+    "followUp": "How would you estimate token usage before making a request? Use a tokenizer for the target model; the English rule of thumb is about four characters or three-quarters of a word per token."
+   },
+   {
+    "question": "How can token count be estimated?",
+    "answer": "A practical English estimate is approximately four characters or 0.75 words per token. This is only a rough estimate, so exact budgeting should use the tokenizer.",
+    "followUp": "Why can the estimate be inaccurate? Token boundaries depend on the actual character sequences, including spaces and uncommon text."
+   },
+   {
+    "question": "Why does tokenization matter for API requests?",
+    "answer": "Token count matters because the input and generated output together must fit the model's maximum context length. Counting tokens helps determine whether a request can fit before sending it.",
+    "followUp": "What changes for embeddings? Since embeddings models do not produce tokens, only the input must remain below their maximum context length."
+   }
+  ],
+  "keyPoints": [
+   "Both text-generation and embedding models consume text as token chunks.",
+   "A token is a frequent sequence of characters, not necessarily a complete word.",
+   "Token boundaries can split a single word into multiple pieces.",
+   "Spaces commonly belong to the token beginning a word, affecting token boundaries and counts.",
+   "For English text, use four characters or three-quarters of a word as a rough planning estimate.",
+   "The official tokenizer tool can inspect how a particular string is segmented and counted."
+  ],
+  "gotchas": [
+   "For text-generation models, input and output share the model's context budget; exceeding the combined maximum prevents the request from fitting.",
+   "Embedding inputs still have a maximum context length, even though embedding models do not generate output tokens."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "tools": {
+  "sourceUrl": "https://platform.openai.com/docs/guides/function-calling",
+  "sourceTitle": "Function calling | OpenAI API",
+  "summary": "`tools` is the request parameter that gives an OpenAI model access to callable functions and built-in capabilities. The model can choose a tool, while your application performs the operation and returns its output for continued generation.",
+  "explanation": "The `tools` parameter is an array of capabilities made available to the model for a request. A model can select a tool, after which the application executes the corresponding code and sends the result in a follow-up request so the model can produce a final response or make additional tool calls.",
+  "syntax": "tools: Tool[]",
+  "parameters": [
+   {
+    "name": "tools",
+    "type": "array",
+    "description": "Array of tools that the model may call for the request; entries can describe custom functions or supported built-in tools."
+   }
+  ],
+  "returns": "The model response may contain a tool call, a final response, or additional tool calls.",
+  "example": {
+   "title": "Declare a function tool",
+   "code": "import OpenAI from \"openai\";\n\nconst client = new OpenAI();\nconst tools = [{\n  type: \"function\",\n  name: \"get_weather\",\n  description: \"Get current temperature for a city.\",\n  parameters: {\n    type: \"object\",\n    properties: { location: { type: \"string\" } },\n    required: [\"location\"],\n    additionalProperties: false\n  },\n  strict: true\n}];\n\nconst response = await client.responses.create({\n  model: \"gpt-5\",\n  tools,\n  input: \"What is the weather in Paris?\"\n});\nconsole.log(response.output);",
+   "language": "typescript",
+   "explanation": "Supplies a function tool to the Responses API so the model can request application-side weather retrieval."
+  },
+  "useCases": [
+   {
+    "title": "Custom function calling",
+    "scenario": "Expose application-owned operations such as weather lookup, database retrieval, or business actions to a model."
+   },
+   {
+    "title": "Built-in web search",
+    "scenario": "Offer web search when a response needs current external information."
+   },
+   {
+    "title": "Deferred tool discovery",
+    "scenario": "Manage a large catalog of callable capabilities by loading less-common tools only when needed."
+   }
+  ],
+  "related": [
+   "function calling",
+   "tool calling",
+   "tool_search",
+   "Responses API",
+   "web_search",
+   "file search"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the role of the `tools` parameter?",
+    "answer": "The `tools` array declares capabilities the model may use, including custom functions and built-in tools. With function calling, the application still executes the requested function; the model does not directly run application code.",
+    "followUp": "How does the application complete a function call? It reads the tool call's arguments, runs the function, then makes another model request containing the tool output."
+   },
+   {
+    "question": "Describe the tool-calling flow.",
+    "answer": "The interaction is multi-step: send tools with the request, receive a tool call, execute it in the application, send the result back, and receive a final response or another call.",
+    "followUp": "Why might another call occur? The model can require multiple tools or successive tool invocations before it has enough information to answer."
+   },
+   {
+    "question": "How is a function tool defined?",
+    "answer": "A custom function tool uses a schema describing its name, purpose, and parameters. Strict structured parameters help constrain the arguments the model generates.",
+    "followUp": "What should be validated before execution? Validate the tool name and arguments against application-side rules, because the model's request is not itself authorization."
+   }
+  ],
+  "keyPoints": [
+   "A tool call is a model response indicating that the model wants the application to use one of the supplied capabilities.",
+   "Declare custom functions in the request's `tools` parameter.",
+   "The documented flow has five stages: provide tools, receive a call, execute it, return its output, and receive the model's continuation.",
+   "For large tool collections, tool search can defer tool definitions until relevant tools are found."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Vector Database": {
+  "sourceUrl": "https://platform.openai.com/docs/guides/retrieval",
+  "sourceTitle": "Retrieval | OpenAI API",
+  "summary": "A vector store is an OpenAI-managed container for files used in semantic search. Files are automatically chunked, embedded, and indexed when added, and natural-language queries return relevant content.",
+  "explanation": "A vector store is an OpenAI-managed container for searchable files. Adding a file causes it to be chunked, embedded, and indexed; semantic search then returns relevant chunks, similarity scores, and their source files.",
+  "syntax": "client.vector_stores.search(vector_store_id=VECTOR_STORE_ID, query=QUERY)",
+  "parameters": [
+   {
+    "name": "vector_store_id",
+    "type": "string",
+    "description": "Identifier of the vector store to search."
+   },
+   {
+    "name": "query",
+    "type": "string",
+    "description": "Natural-language text describing the information to retrieve."
+   }
+  ],
+  "returns": "A list of search results containing relevant chunks, similarity scores, and the source file for each result.",
+  "example": {
+   "title": "Create and search a vector store",
+   "code": "from openai import OpenAI\n\nclient = OpenAI()\n\nvector_store = client.vector_stores.create(name=\"Product documentation\")\nclient.vector_stores.files.create(\n    vector_store_id=vector_store.id,\n    file_id=\"file_abc123\",\n)\n\nresults = client.vector_stores.search(\n    vector_store_id=vector_store.id,\n    query=\"How do I configure authentication?\",\n)\n\nfor result in results.data:\n    print(result.content[0].text)",
+   "language": "python",
+   "explanation": "Creates a vector store, associates an uploaded file with it, and searches the indexed content with a natural-language query."
+  },
+  "useCases": [
+   {
+    "title": "Documentation search",
+    "scenario": "Retrieve relevant passages from uploaded product or technical documentation."
+   },
+   {
+    "title": "Retrieval-augmented generation",
+    "scenario": "Ground model responses in an organization's uploaded files."
+   },
+   {
+    "title": "File search",
+    "scenario": "Use OpenAI's built-in file search over indexed files."
+   }
+  ],
+  "related": [
+   "Retrieval API",
+   "File Search",
+   "Files API",
+   "vector_store",
+   "vector_store_file",
+   "semantic search"
+  ],
+  "since": "",
+  "keyPoints": [
+   "A vector store is the searchable container used by both the Retrieval API and the file search tool.",
+   "Files become searchable through automatic chunking, embedding, and indexing when added.",
+   "Semantic retrieval uses the search operation with a natural-language query.",
+   "Search results include matching chunks, similarity scores, and the originating file.",
+   "The store's file entries are vector_store_file objects backed by Files API file objects."
+  ],
+  "gotchas": [
+   "Adding a file triggers automatic chunking, embedding, and indexing, so the searchable representation is generated by the service."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Zero-shot Learning": {
+  "sourceUrl": "https://platform.openai.com/docs/guides/embeddings",
+  "sourceTitle": "Vector embeddings | OpenAI API",
+  "summary": "Zero-shot classification with embeddings assigns new text to the most similar candidate class without labeled training data. Embed each class name or short description, compare it with the input embedding, and choose the highest-similarity class.",
+  "explanation": "Zero-shot classification uses an embedding model without labeled training examples. Represent each candidate class by its name or a short description, embed the new text and every class representation, then compare similarities and select the class with the highest score.",
+  "syntax": "client.embeddings.create(model=\"text-embedding-3-small\", input=[...])",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Embedding-based zero-shot classification",
+   "code": "from openai import OpenAI\n\nclient = OpenAI()\n\nresponse = client.embeddings.create(\n    model=\"text-embedding-3-small\",\n    input=[\"cat\", \"dog\", \"vehicle\"]\n)\n\n# Compare each input embedding with embeddings for class descriptions,\n# then choose the class with the highest similarity.",
+   "language": "python",
+   "explanation": "This example obtains embeddings that can be compared with embeddings for candidate class descriptions; classification selects the most similar class."
+  },
+  "useCases": [
+   {
+    "title": "Unsupervised category assignment",
+    "scenario": "Classify text into predefined categories when labeled examples are unavailable."
+   },
+   {
+    "title": "Intent routing",
+    "scenario": "Match incoming text to candidate intents represented by short descriptions."
+   },
+   {
+    "title": "Semantic classification",
+    "scenario": "Select the closest semantic label from a fixed list of classes."
+   }
+  ],
+  "related": [
+   "Vector embeddings",
+   "embeddings API",
+   "text-embedding-3-small",
+   "zero-shot classification"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Embeddings support classification when no labeled examples are available.",
+   "Create one embedding for each candidate class name or concise class description.",
+   "Embed the incoming text and compare it against every candidate-class embedding.",
+   "Assign the class whose embedding has the greatest similarity to the input embedding."
+  ],
+  "gotchas": [
+   "Zero-shot classification does not require labeled training data, but its quality depends on the class representations and similarity method."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

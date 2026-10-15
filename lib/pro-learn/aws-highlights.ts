@@ -30,6 +30,8 @@ export type AwsHighlight = {
   points?: string[];
   /** Where the row is used in practice, and what it is for: "Title — scenario". */
   useCase?: { title: string; scenario: string };
+  /** Interview preparation authored on the row: a likely question and its model answer. */
+  interview?: { question: string; answer: string }[];
   /**
    * The general form of the command this row is about, for rows that are one.
    *

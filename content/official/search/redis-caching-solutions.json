@@ -1,0 +1,2687 @@
+{
+ "Atomicity & messaging::Locks and leases": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/clients/patterns/distributed-locks/",
+  "sourceTitle": "Distributed Locks with Redis | Docs",
+  "summary": "Use SET with NX and a bounded PX lifetime to claim a resource, storing a unique token as proof of ownership. Release only after atomically confirming that the key still contains that token.",
+  "explanation": "A lock is a Redis key created conditionally with SET NX and a bounded PX lifetime. Store a value unique to the acquiring request, and release the key only after atomically verifying that the stored value still matches that token; otherwise an expired lease might have been acquired by another worker while the original work was still finishing.",
+  "syntax": "SET resource_name my_random_value NX PX 30000",
+  "parameters": [
+   {
+    "name": "resource_name",
+    "type": "key",
+    "description": "The lock key identifying the shared resource."
+   },
+   {
+    "name": "my_random_value",
+    "type": "string",
+    "description": "A value unique across clients and lock requests, used as the ownership token."
+   },
+   {
+    "name": "NX",
+    "type": "option",
+    "description": "Only set when the key does not already exist."
+   },
+   {
+    "name": "30000",
+    "type": "integer",
+    "description": "Expiration duration in milliseconds."
+   }
+  ],
+  "returns": "SET returns success when the lease is acquired; otherwise acquisition fails. The ownership-check release returns deletion only when the stored value matches the caller's token.",
+  "example": {
+   "title": "Token-checked Redis lease",
+   "code": "import { randomUUID } from \"node:crypto\";\nimport { createClient } from \"redis\";\n\nconst client = createClient();\nawait client.connect();\n\nconst key = \"lock:report\";\nconst token = randomUUID();\nconst acquired = await client.set(key, token, { NX: true, PX: 30_000 });\n\nif (acquired === \"OK\") {\n  try {\n    await generateReport();\n  } finally {\n    await client.eval(\n      \"if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end\",\n      { keys: [key], arguments: [token] }\n    );\n  }\n}\n\nasync function generateReport() {}\nawait client.quit();",
+   "language": "typescript",
+   "explanation": "Creates a 30-second lease using a unique token and removes it only when the stored token still belongs to this worker."
+  },
+  "useCases": [
+   {
+    "title": "Exclusive resource processing",
+    "scenario": "Several workers may process the same resource concurrently."
+   },
+   {
+    "title": "Crash recovery through expiry",
+    "scenario": "A worker can crash or lose connectivity while holding a lock."
+   },
+   {
+    "title": "Majority-based Redlock acquisition",
+    "scenario": "A lock must coordinate clients across multiple independent Redis instances."
+   }
+  ],
+  "related": [
+   "SET",
+   "NX",
+   "PX",
+   "DELEX",
+   "Redlock",
+   "Redis expires feature"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you acquire a Redis lock safely?",
+    "answer": "Use SET with NX so only a request that finds the key absent creates it, and PX to attach a finite lifetime. The stored value should be unique to the client and request.",
+    "followUp": "Why is a finite lifetime necessary? It ensures a failed client does not retain the resource forever; the remaining validity must also account for acquisition time."
+   },
+   {
+    "question": "Why must lock release verify a token?",
+    "answer": "Release it with an atomic check that compares the key’s current value with the caller’s token, deleting only on equality. A plain DEL could remove a newer owner’s lock after the original lease expired.",
+    "followUp": "What can happen if the lease expires during work? A different client may acquire the key, so the old worker must not perform ownership-sensitive cleanup or assume exclusivity."
+   },
+   {
+    "question": "How does Redlock differ from a single Redis lock?",
+    "answer": "The basic single-instance pattern uses one Redis key with a TTL. Redlock extends acquisition across multiple independent instances and accepts the lock only when a majority succeeds before the validity period runs out.",
+    "followUp": "How is remaining validity calculated? Start with the configured validity and subtract the elapsed time spent acquiring the lock."
+   }
+  ],
+  "keyPoints": [
+   "Acquire a bounded lease with SET, a unique value, NX, and a millisecond expiration.",
+   "NX makes acquisition conditional, preventing competing requests from overwriting an existing owner.",
+   "Treat the value as an ownership token generated for each acquisition attempt.",
+   "Release requires an atomic value comparison followed by deletion.",
+   "In Redlock, subtract acquisition latency from the original lease duration before using the lock."
+  ],
+  "gotchas": [
+   "A lease can expire before the protected work ends, so the worker must not assume ownership remains valid for the whole operation.",
+   "Never use a shared constant token: another request could present the same value and incorrectly pass the ownership check.",
+   "For the multi-instance Redlock algorithm, acquisition also depends on reaching a majority within the validity window."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Atomicity & messaging::Lua scripts and functions": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/programmability/eval-intro/",
+  "sourceTitle": "Scripting with Lua | Docs - Redis",
+  "summary": "Redis Lua scripts execute bounded application logic inside the server, letting related reads and writes happen atomically with fewer client round trips. Because execution blocks Redis, scripts should be short and predictable.",
+  "explanation": "Lua scripts run inside Redis and can combine reads, condition checks, and writes into one atomic operation. Redis executes the whole script synchronously, so clients cannot observe an intermediate state; keep the work bounded because the server is blocked for the script's entire runtime.",
+  "syntax": "EVAL script numkeys [key ...] [arg ...]",
+  "parameters": [
+   {
+    "name": "script",
+    "type": "string",
+    "description": "Lua source code to execute."
+   },
+   {
+    "name": "numkeys",
+    "type": "integer",
+    "description": "Number of key names that follow the script."
+   },
+   {
+    "name": "keys",
+    "type": "string...",
+    "description": "Key names referenced by the script through KEYS."
+   },
+   {
+    "name": "args",
+    "type": "string...",
+    "description": "Additional values referenced by the script through ARGV."
+   }
+  ],
+  "returns": "The script's return value, produced by its final Lua expression or return statement and encoded as a Redis reply.",
+  "example": {
+   "title": "Atomic conditional write",
+   "code": "local current = redis.call('GET', KEYS[1])\nif not current then\n  redis.call('SET', KEYS[1], ARGV[1])\n  return 1\nend\nreturn 0",
+   "language": "text",
+   "explanation": "Run with EVAL, passing one key and the value to set. The read and conditional write execute together on Redis."
+  },
+  "useCases": [
+   {
+    "title": "Conditional updates",
+    "scenario": "A value should be checked and updated without another client changing it between operations."
+   },
+   {
+    "title": "Multi-key coordination",
+    "scenario": "One logical operation must modify several keys together."
+   },
+   {
+    "title": "Round-trip reduction",
+    "scenario": "Client-side branching would require several network round trips."
+   }
+  ],
+  "related": [
+   "EVAL",
+   "EVALSHA",
+   "SCRIPT LOAD",
+   "redis.call()",
+   "redis.pcall()",
+   "KEYS",
+   "ARGV",
+   "Redis Functions"
+  ],
+  "since": "2.6.0",
+  "interview": [
+   {
+    "question": "What does atomic execution mean for a Redis Lua script?",
+    "answer": "Redis runs a Lua script atomically: its effects are applied as one indivisible operation, and clients cannot observe an intermediate state. The script executes on the server through Redis's embedded Lua 5.1 interpreter.",
+    "followUp": "What is the availability trade-off? The script blocks all server activity for its complete runtime, so logic should remain short and bounded."
+   },
+   {
+    "question": "How are inputs passed to a Lua script?",
+    "answer": "Use EVAL with the script source, the number of keys, then the key arguments and other arguments. Inside Lua, access keys through KEYS and non-key values through ARGV.",
+    "followUp": "Why distinguish KEYS from ARGV? Redis uses the explicit key list to identify the keys the script operates on, while other inputs belong in ARGV."
+   },
+   {
+    "question": "How does Lua invoke Redis commands?",
+    "answer": "redis.call() invokes a Redis command and returns its reply, while redis.pcall() provides protected-call behavior for command errors. Both are available to server-side Lua code.",
+    "followUp": "When is pcall useful? Use it when the script needs to handle a Redis-command error rather than aborting immediately."
+   }
+  ],
+  "keyPoints": [
+   "Server-side Lua moves multi-step application logic next to the data, reducing client round trips.",
+   "EVAL sends and executes a Lua script directly on Redis.",
+   "A script can coordinate conditional changes across multiple keys and data types as one operation.",
+   "Use redis.call for normal command execution or redis.pcall when protected error handling is needed.",
+   "SCRIPT LOAD caches source by digest so later invocations can use the cached script path."
+  ],
+  "gotchas": [
+   "A script blocks every connected client while it runs, so avoid expensive or unbounded computation.",
+   "The blocking behavior is global, not limited to clients that invoked the script."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Atomicity & messaging::MULTI, EXEC and WATCH": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/using-commands/transactions/",
+  "sourceTitle": "Transactions",
+  "summary": "Redis MULTI queues commands and EXEC runs them sequentially as an atomic group. WATCH adds optimistic concurrency control: if a watched key changes before EXEC, Redis aborts the transaction and the client can retry.",
+  "explanation": "MULTI starts a transaction and queues subsequent commands rather than running them immediately. EXEC runs the queued commands sequentially as one uninterrupted group; WATCH adds an optimistic check, causing EXEC to abort when a watched key changed before commit, so the application can retry with fresh data.",
+  "syntax": "MULTI\nEXEC\nWATCH key [key ...]",
+  "parameters": [],
+  "returns": "MULTI returns OK; EXEC returns the transaction's command results, or a Null reply when a watched key changed.",
+  "example": {
+   "title": "Optimistic update with WATCH and MULTI",
+   "code": "import { createClient } from \"redis\";\n\nconst redis = createClient();\nawait redis.connect();\n\nfor (;;) {\n  await redis.watch(\"balance\");\n  const balance = Number((await redis.get(\"balance\")) ?? 0);\n  if (balance < 10) {\n    await redis.unwatch();\n    break;\n  }\n\n  const result = await redis.multi()\n    .decrBy(\"balance\", 10)\n    .incr(\"purchases\")\n    .exec();\n\n  if (result !== null) break;\n}\n\nawait redis.close();",
+   "language": "typescript",
+   "explanation": "Reads a value, watches it, and commits related updates only if the watched key remains unchanged."
+  },
+  "useCases": [
+   {
+    "title": "Optimistic compare-and-set",
+    "scenario": "Update a value only when it is still the version or balance previously read."
+   },
+   {
+    "title": "Atomic grouped updates",
+    "scenario": "Apply several related writes without another client interleaving commands between them."
+   },
+   {
+    "title": "Conflict-aware cache coordination",
+    "scenario": "Retry a cache mutation after another worker changes the same key during preparation."
+   }
+  ],
+  "related": [
+   "MULTI",
+   "EXEC",
+   "WATCH",
+   "DISCARD",
+   "UNWATCH",
+   "Null reply",
+   "check-and-set (CAS)"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What do MULTI and EXEC guarantee?",
+    "answer": "MULTI switches the connection into transaction mode and queues later commands. EXEC then executes the queued commands sequentially, without another client request being served between commands.",
+    "followUp": "Can commands from another client interleave inside the transaction? No: Redis serializes the transaction's queued commands as one uninterrupted execution."
+   },
+   {
+    "question": "How does WATCH prevent stale updates?",
+    "answer": "WATCH provides check-and-set behavior by monitoring selected keys. If any watched key changes before EXEC, EXEC returns a null reply and the queued transaction does not run.",
+    "followUp": "Does WATCH block competing clients? No: it is optimistic; competing work proceeds, and the transaction is rejected if the watched state changes."
+   },
+   {
+    "question": "How should an application respond to a concurrent modification?",
+    "answer": "Use WATCH before reading the values used to calculate an update, then start MULTI, queue the writes, and call EXEC. A null result indicates a conflict, so reread current values and retry.",
+    "followUp": "What should happen after a conflict? Retry the read-and-commit sequence using fresh data, with an application-level limit or failure policy."
+   }
+  ],
+  "keyPoints": [
+   "A transaction groups several Redis commands into one commit attempt.",
+   "Queued commands run in their submitted order, producing a deterministic sequence within the transaction.",
+   "Other clients cannot interleave requests while the transaction executes.",
+   "After MULTI, commands are deferred until EXEC rather than taking effect immediately.",
+   "WATCH enables optimistic compare-before-commit behavior for transaction inputs.",
+   "Clients can detect a concurrent modification by checking for a null EXEC result."
+  ],
+  "gotchas": [
+   "A watched-key change makes the entire transaction fail; handle EXEC returning a null reply and retry or report a conflict.",
+   "Do not assume only another client can invalidate WATCH: local writes, expiration, and eviction can also cause aborts."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Atomicity & messaging::Pipelining": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/using-commands/pipelining/",
+  "sourceTitle": "Redis pipelining",
+  "summary": "Redis pipelining batches independent commands so a client can send them without waiting for each reply, reducing network round trips. It improves communication efficiency but does not by itself make the batch atomic.",
+  "explanation": "A pipeline queues several Redis commands so the client can send them together and read the replies in one step. This reduces request-and-response network overhead, but pipelining alone does not provide the uninterrupted execution guarantee of a transaction; use a transaction when atomic execution is required.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "The client receives one response for each queued command, in the same order as the commands were sent.",
+  "example": {
+   "title": "Batch independent commands",
+   "code": "import redis\n\nr = redis.Redis(decode_responses=True)\nwith r.pipeline(transaction=False) as pipe:\n    pipe.set(\"name\", \"Ada\")\n    pipe.get(\"name\")\n    results = pipe.execute()\nprint(results)",
+   "language": "python",
+   "explanation": "Queues independent commands, sends them together, and returns their results in command order."
+  },
+  "useCases": [
+   {
+    "title": "Batch independent key operations",
+    "scenario": "A service must update or read many unrelated keys during one request."
+   },
+   {
+    "title": "Reduce round trips for bulk cache work",
+    "scenario": "A client performs bulk cache warming or invalidation."
+   },
+   {
+    "title": "Process commands in bounded batches",
+    "scenario": "An application needs to queue many commands while controlling memory use."
+   }
+  ],
+  "related": [
+   "transactions",
+   "RESP",
+   "request/response protocol",
+   "Redis clients"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does Redis pipelining solve?",
+    "answer": "Pipelining sends multiple commands without waiting for each individual reply, then reads the replies together. Its main benefit is reducing network and processing overhead caused by repeated request-response exchanges.",
+    "followUp": "Does pipelining make commands atomic? No. Use a transaction when the commands must execute in an uninterrupted sequence."
+   },
+   {
+    "question": "How does a pipeline reduce latency?",
+    "answer": "The client writes several commands to the same connection before reading their responses. Redis processes the requests and the client later reads the responses in order.",
+    "followUp": "Why batch rather than pipeline indefinitely? Very large queues can increase memory use, so send a reasonable batch, read replies, and continue."
+   },
+   {
+    "question": "When should a transaction be used instead?",
+    "answer": "Pipelining and transactions are different features. A pipeline improves communication efficiency, while a transaction provides uninterrupted execution for its commands.",
+    "followUp": "When are independent commands a good pipeline workload? When their correctness does not depend on isolation from other clients."
+   }
+  ],
+  "keyPoints": [
+   "A client can issue multiple commands before waiting for any individual response.",
+   "Commands can be written to the server in succession, then their responses can be read afterward.",
+   "Reading replies together reduces repeated network round trips.",
+   "The technique is broadly available through Redis client libraries.",
+   "Pipelining is a long-standing Redis capability and is available across Redis versions."
+  ],
+  "gotchas": [
+   "Do not create an unbounded pipeline: split large workloads into reasonably sized batches so queued commands and replies do not consume excessive memory."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Atomicity & messaging::Pub/Sub": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/pubsub/",
+  "sourceTitle": "Redis Pub/sub | Docs",
+  "summary": "Redis Pub/Sub broadcasts channel messages to currently subscribed clients in publication order. It is at-most-once delivery: disconnected subscribers cannot replay missed messages, so use it only when loss is acceptable or separately handled.",
+  "explanation": "A Redis client subscribes to one or more channels, while another client publishes payloads to those channels. Redis pushes each published message to clients currently subscribed to the matching channel, preserving publication order; delivery is at-most-once, so an unavailable subscriber cannot recover a missed message.",
+  "syntax": "PUBLISH channel message; SUBSCRIBE channel [channel ...]; PSUBSCRIBE pattern [pattern ...]",
+  "parameters": [],
+  "returns": "PUBLISH returns the number of clients that received the message; subscription commands emit subscription and message events rather than a durable result.",
+  "example": {
+   "title": "Transient cache invalidation broadcast",
+   "code": "redis-cli SUBSCRIBE cache:invalidate\n# In another terminal:\nredis-cli PUBLISH cache:invalidate '{\"key\":\"user:42\"}'",
+   "language": "bash",
+   "explanation": "Run the subscriber first, then publish an invalidation event from another client. The subscriber receives the event only while its subscription is active."
+  },
+  "useCases": [
+   {
+    "title": "Cache invalidation signals",
+    "scenario": "A cache entry changes and active application instances should promptly discard their local copy."
+   },
+   {
+    "title": "Transient fan-out events",
+    "scenario": "Connected clients need ephemeral updates such as presence or live notifications."
+   },
+   {
+    "title": "Best-effort broadcast",
+    "scenario": "Multiple workers need the same noncritical notification, with missed notifications handled by a separate reconciliation path."
+   }
+  ],
+  "related": [
+   "SUBSCRIBE",
+   "UNSUBSCRIBE",
+   "PUBLISH",
+   "PSUBSCRIBE",
+   "PUNSUBSCRIBE",
+   "PUBSUB",
+   "Redis Streams"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What delivery guarantee does Redis Pub/Sub provide?",
+    "answer": "Redis Pub/Sub uses at-most-once delivery. A message reaches each client currently subscribed to its channel, but Redis does not retain it for disconnected clients or retry delivery after a failure.",
+    "followUp": "How would you support recovery? Use a durable Redis mechanism such as Streams, where consumers can read retained entries and acknowledge or track progress."
+   },
+   {
+    "question": "How does message routing work?",
+    "answer": "The publisher sends a channel and payload with PUBLISH. Redis fans that payload out to all currently subscribed clients, and subscribers receive messages in publication order.",
+    "followUp": "What happens if there are no subscribers? The publication is not stored, so a later subscriber cannot receive it."
+   },
+   {
+    "question": "How do exact and pattern subscriptions differ?",
+    "answer": "SUBSCRIBE registers exact channel names, while PSUBSCRIBE registers glob-style patterns. A client in subscribed mode receives matching published messages and can manage its subscriptions with the Pub/Sub commands.",
+    "followUp": "What trade-off does pattern subscription introduce? It is convenient for channel families, but broad patterns can deliver more traffic than narrowly selected channels."
+   }
+  ],
+  "keyPoints": [
+   "Publishers name channels rather than individual recipients; subscribers independently register interest in those channels.",
+   "Within the documented Pub/Sub flow, consumers observe messages according to their publication order.",
+   "Each published message is delivered zero or one time; Pub/Sub provides no duplicate redelivery guarantee.",
+   "After Redis sends a message, the Pub/Sub system does not offer a second delivery attempt.",
+   "The publisher supplies a channel and message payload using the PUBLISH command."
+  ],
+  "gotchas": [
+   "A subscriber that is disconnected or cannot process a message loses it permanently; use Pub/Sub only when missing an event is acceptable or another mechanism handles recovery.",
+   "Pub/Sub does not retry or replay published messages, so it is unsuitable as the sole transport for durable work or state changes.",
+   "Messages published while no matching subscriber is active disappear rather than being queued for later consumers."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Atomicity & messaging::Rate limiting": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/use-cases/rate-limiter/",
+  "sourceTitle": "Redis rate limiter",
+  "summary": "Redis supports fixed-window, sliding-window, and token-bucket rate limiters. Keep the read–decision–update sequence atomic with Lua EVAL so concurrent requests cannot bypass limits or lose updates.",
+  "explanation": "A Redis rate limiter reads request state, decides whether a request fits the policy, and updates that state. Choose fixed windows for simplicity, sliding windows for recent-history precision, or token buckets for controlled bursts; execute the read–decision–update sequence in one Lua EVAL so concurrent requests cannot interfere.",
+  "syntax": "EVAL script numkeys [key ...] [arg ...]",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Atomic fixed-window limiter",
+   "code": "const Redis = require('ioredis');\nconst redis = new Redis();\n\nconst script = `\nlocal count = redis.call('INCR', KEYS[1])\nif count == 1 then\n  redis.call('EXPIRE', KEYS[1], ARGV[1])\nend\nreturn count\n`;\n\nasync function allowed(clientId) {\n  const window = Math.floor(Date.now() / 1000 / 60);\n  const key = `rate:${clientId}:${window}`;\n  const count = await redis.eval(script, 1, key, 60);\n  return count <= 10;\n}\n\nallowed('user-42').then(console.log);",
+   "language": "javascript",
+   "explanation": "This runnable fixed-window example increments one client/window counter and sets its TTL during the first request; the single script makes the state change atomic."
+  },
+  "useCases": [
+   {
+    "title": "Fixed-window API quotas",
+    "scenario": "A simple quota per API key or route needs low memory and automatic cleanup."
+   },
+   {
+    "title": "Sliding-window protection",
+    "scenario": "A high-value endpoint needs accurate recent-request tracking."
+   },
+   {
+    "title": "Token-bucket burst control",
+    "scenario": "Traffic arrives in bursts but must obey a long-term average rate."
+   }
+  ],
+  "related": [
+   "INCR",
+   "EXPIRE",
+   "EVAL",
+   "EVALSHA",
+   "TIME",
+   "ZREMRANGEBYSCORE",
+   "ZCARD",
+   "sorted sets"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does a fixed-window Redis limiter work?",
+    "answer": "A fixed window counts requests in a discrete interval, usually with one counter key per client and window. Redis can increment the counter and assign expiration so inactive windows clean themselves up.",
+    "followUp": "How would you prevent a race between incrementing and expiring? Put both operations in one Lua EVAL, or use an equivalent atomic transaction where appropriate."
+   },
+   {
+    "question": "How would you implement a sliding window?",
+    "answer": "A sliding-window log stores request timestamps, commonly in a sorted set. The limiter removes timestamps outside the recent window, checks the remaining cardinality, and adds the new request when capacity remains.",
+    "followUp": "What is the trade-off? Accuracy improves, but memory grows with the number of timestamps retained for each client."
+   },
+   {
+    "question": "When is a token bucket preferable?",
+    "answer": "A token bucket stores the current token count and timing information. Tokens refill according to elapsed time up to the bucket capacity; an allowed request consumes one token, and the refill/check/consume sequence must be atomic.",
+    "followUp": "Why is atomicity essential? Without it, concurrent requests can each observe the same token and overspend the bucket."
+   }
+  ],
+  "keyPoints": [
+   "Redis can support the three common policies—fixed window, sliding window, and token bucket—within one deployment.",
+   "A fixed-window counter uses INCR for the request count and EXPIRE to remove the completed window automatically.",
+   "Choose the Redis structure according to the algorithm: strings for counters, sorted sets for timestamp logs, and hashes for bucket fields.",
+   "A Lua script makes state inspection, policy evaluation, and mutation one server-side operation."
+  ],
+  "gotchas": [
+   "Do not split reading, deciding, and updating across separate commands: concurrent requests can observe identical state and both pass."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Caching patterns::Cache invalidation": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/use-cases/cache-aside/",
+  "sourceTitle": "Redis cache-aside",
+  "summary": "Invalidate cache-aside entries after updating the primary store, then let the next read repopulate them. Per-key TTLs provide an additional bound on stale data.",
+  "explanation": "In a cache-aside flow, reads check Redis first and repopulate a missing entry from the primary source. After changing the primary record, delete the corresponding Redis key instead of trying to update the cached copy; a later read reconstructs it, while a TTL limits the maximum stale period.",
+  "syntax": "DEL key [key ...]",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Invalidate a cache-aside entry after a write",
+   "code": "async function updateUser(id, user) {\n  await db.users.update(id, user);\n  await redis.del(`cache:user:${id}`);\n}\n\nasync function getUser(id) {\n  const key = `cache:user:${id}`;\n  const cached = await redis.get(key);\n  if (cached) return JSON.parse(cached);\n\n  const user = await db.users.find(id);\n  await redis.set(key, JSON.stringify(user), { EX: 300 });\n  return user;\n}",
+   "language": "javascript",
+   "explanation": "Update the primary record first, then delete its cache key. The next read misses Redis, loads the current record, and stores it again with a bounded TTL."
+  },
+  "useCases": [
+   {
+    "title": "Entity update invalidation",
+    "scenario": "A user, product, or order record changes and its cached representation must no longer be served."
+   },
+   {
+    "title": "Cache-aside repopulation",
+    "scenario": "A read-through cache should recover automatically after an explicit deletion."
+   },
+   {
+    "title": "Client-side cache notifications",
+    "scenario": "Applications use Redis client-side caching and need local entries removed after server-side changes."
+   },
+   {
+    "title": "TTL-based staleness bound",
+    "scenario": "A missed or delayed invalidation must not leave stale data indefinitely."
+   }
+  ],
+  "related": [
+   "cache-aside",
+   "GET",
+   "SET",
+   "DEL",
+   "EX",
+   "PX",
+   "client-side caching",
+   "invalidation message"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does cache-aside invalidation work on an update?",
+    "answer": "Write the updated value to the primary store first, then issue DEL for its Redis cache key. The next read misses the cache, fetches the new primary value, and repopulates Redis.",
+    "followUp": "How can stale data still be bounded if an invalidation is missed? Use a per-entry EX or PX TTL so entries expire after a configured interval."
+   },
+   {
+    "question": "Describe the read path after invalidation.",
+    "answer": "The application reads Redis on each request and falls back to the primary store on a miss. It then writes the fetched result back to Redis, typically with a TTL.",
+    "followUp": "What should happen when the cached object represents a changed record? Delete that object’s key rather than rewriting the cached representation."
+   },
+   {
+    "question": "How does Redis client-side caching notify clients?",
+    "answer": "Client-side caching tracks keys read by a client and sends invalidation messages when those keys change. Clients must remove the corresponding local entries to avoid serving stale data.",
+    "followUp": "What timing caveat applies? Invalidation is asynchronous, so removal can occur shortly after the write rather than exactly when it happens."
+   }
+  ],
+  "keyPoints": [
+   "Perform the primary write before deleting the related cache key, so subsequent reads can rebuild the entry from current data.",
+   "After deletion, the first cache miss retrieves the authoritative value and can repopulate Redis.",
+   "Use GET and SET with an entry-specific expiration to constrain how long stale data can remain available.",
+   "Use DEL for direct, application-controlled invalidation when the source record changes.",
+   "A client must evict the notified local key to prevent returning an invalid cached value."
+  ],
+  "gotchas": [
+   "Do not attempt to keep the cached value synchronized by rewriting it during the update; delete the key after the primary change."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Caching patterns::Cache stampede": {
+  "sourceUrl": "https://redis.io/blog/cache-layer-architecture-guide/",
+  "sourceTitle": "Cache Layer Architecture: A Practical Guide to Speed & Scale",
+  "summary": "A cache stampede occurs when a popular key expires and many requests regenerate it concurrently. Redis caching solutions mitigate this with request coalescing, TTL jitter, or controlled regeneration through queueing.",
+  "explanation": "A stampede occurs when a popular key expires and many readers miss together. Prevent it by letting one caller regenerate the value while concurrent callers wait for the populated key, or by varying expiration times so misses are distributed. Queueing can additionally smooth bursts when regeneration must be rate-limited.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Add TTL jitter",
+   "code": "const ttl = 3600 + Math.floor(Math.random() * 601);\nawait redis.set(\"product:42\", JSON.stringify(product), { EX: ttl });",
+   "language": "javascript",
+   "explanation": "Store each value with a slightly different expiration so popular entries do not expire simultaneously."
+  },
+  "useCases": [
+   {
+    "title": "Single-flight regeneration",
+    "scenario": "A high-traffic product or profile key expires and many requests arrive together."
+   },
+   {
+    "title": "Staggered expirations",
+    "scenario": "Many related keys have similar lifetimes and tend to expire together."
+   },
+   {
+    "title": "Queue-based regeneration",
+    "scenario": "Database capacity is limited and cache rebuilds arrive in bursts."
+   }
+  ],
+  "related": [
+   "Request coalescing",
+   "TTL jitter",
+   "Distributed locks",
+   "Lua scripting",
+   "Redis Streams",
+   "Rate limiting",
+   "Cache-aside pattern"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a cache stampede, and how does request coalescing prevent it?",
+    "answer": "A cache stampede happens when a popular key expires and many concurrent requests query the database to rebuild it. Request coalescing permits one request to load the value while the others wait for the resulting cache entry.",
+    "followUp": "How can Redis implement coordination atomically? Use a short-lived lock acquired with SET NX, or an EVAL script that combines the required operations atomically."
+   },
+   {
+    "question": "How does TTL jitter help?",
+    "answer": "TTL jitter adds a small random component to each entry's expiration time. This staggers expirations and reduces synchronized cache misses across keys.",
+    "followUp": "When would jitter be insufficient? If one very hot key expires, jitter does not prevent its readers from colliding; combine it with single-flight regeneration."
+   },
+   {
+    "question": "When should controlled regeneration use queueing?",
+    "answer": "Queueing places regeneration requests into a queue or Redis Streams instead of sending them directly to the database. A worker then processes them at a rate the database can sustain, smoothing bursts.",
+    "followUp": "What trade-off does queueing introduce? It protects the database but may increase freshness or response latency unless stale values or asynchronous refresh are acceptable."
+   }
+  ],
+  "keyPoints": [
+   "The failure pattern is synchronized expiration followed by duplicate backend regeneration for the same popular key.",
+   "Request coalescing turns concurrent misses into one backend fetch and waiting readers.",
+   "TTL jitter spreads expiration events and lowers the chance of a broad synchronized miss."
+  ],
+  "gotchas": [
+   "TTL selection trades freshness against cache-hit rate and load: shorter values increase primary traffic, while longer values allow more stale reads.",
+   "Treat TTL as the maximum stale-data window, not merely as an eviction preference."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Caching patterns::Cache-aside": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/use-cases/cache-aside/",
+  "sourceTitle": "Redis cache-aside",
+  "summary": "Cache-aside checks Redis first, loads the source of truth on a miss, and stores the result with a TTL. Writes update the primary and invalidate the corresponding Redis key.",
+  "explanation": "The application checks Redis for a key on every read. A hit returns immediately; a miss loads the source of truth, stores the result with a TTL, and returns it. On updates, write the primary first and delete the cache key so a later read repopulates it.",
+  "syntax": "GET cache:{entity}:{id}\nSET cache:{entity}:{id} <value> EX <seconds>\nDEL cache:{entity}:{id}",
+  "parameters": [],
+  "returns": "On a hit, the cached value; on a miss, the value loaded from the primary and then cached.",
+  "example": {
+   "title": "Cache-aside read and invalidation",
+   "code": "import { createClient } from \"redis\";\n\nconst redis = createClient();\nawait redis.connect();\n\nasync function getProduct(id: string) {\n  const key = `cache:product:${id}`;\n  const cached = await redis.get(key);\n  if (cached) return JSON.parse(cached);\n\n  const product = await primaryRead(id);\n  await redis.set(key, JSON.stringify(product), { EX: 60 });\n  return product;\n}\n\nasync function updateProduct(id: string, product: unknown) {\n  await primaryWrite(id, product);\n  await redis.del(`cache:product:${id}`);\n}\n\nasync function primaryRead(id: string) { return { id, name: \"Example\" }; }\nasync function primaryWrite(id: string, product: unknown) {}\n",
+   "language": "typescript",
+   "explanation": "The read path checks Redis, loads the primary store on a miss, and caches the result with a TTL. The write path updates the source of truth first, then removes the cached key."
+  },
+  "useCases": [
+   {
+    "title": "Read-heavy workloads",
+    "scenario": "Repeated reads of popular records can be served from Redis while reducing primary-database traffic."
+   },
+   {
+    "title": "Working-set caching",
+    "scenario": "Only requested entities enter Redis, keeping the cache focused on the active working set."
+   },
+   {
+    "title": "Bounded-staleness data",
+    "scenario": "TTL-based expiration plus write invalidation provides a bounded window for stale data."
+   }
+  ],
+  "related": [
+   "lazy loading",
+   "cache hit",
+   "cache miss",
+   "TTL",
+   "GET",
+   "SET",
+   "EX",
+   "PX"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does cache-aside work?",
+    "answer": "The application owns both cache and primary-store access. It checks Redis first, reads the primary on a miss, writes the result to Redis, and returns it.",
+    "followUp": "What bounds staleness? A per-entry TTL limits how long an uninvalidated value can remain available; explicit deletion handles writes that require fresher reads."
+   },
+   {
+    "question": "What happens on a cache miss?",
+    "answer": "A cache hit avoids the primary read. A miss loads the source data, stores it under a derived key, commonly with a TTL, and then returns it.",
+    "followUp": "Why derive keys from request parameters? Equivalent requests must map to the same key so repeated reads can reuse the cached result."
+   },
+   {
+    "question": "How should writes handle cached values?",
+    "answer": "Update the primary data first, then delete the corresponding Redis key. The next read misses and repopulates Redis from the updated source value.",
+    "followUp": "What if another process changes the primary? Cache-aside cannot detect that change immediately, so TTL expiration or coordinated invalidation is needed."
+   }
+  ],
+  "keyPoints": [
+   "Populate Redis only after a requested item misses, rather than preloading all source data.",
+   "A hit serves the cached value directly and avoids a primary-database read.",
+   "Build deterministic keys from the request inputs so identical queries address the same cached result.",
+   "Use an entity-and-identifier key convention and attach a TTL to bound stale-serving time.",
+   "The write sequence is primary update followed by cache invalidation.",
+   "Lazy population naturally limits Redis contents to data that clients actually request."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Caching patterns::Hot keys and large values": {
+  "sourceUrl": "https://redis.io/docs/latest/operate/rs/monitoring/observability/",
+  "sourceTitle": "Redis Enterprise Software observability and monitoring guidance",
+  "summary": "Find hot keys and oversized keys before scaling Redis. Hot keys overload one shard, while large values increase CPU and network costs; inspect them with Redis CLI analyzers and then reduce concentration or payload size.",
+  "explanation": "A hot key concentrates requests on the single shard that owns it, so that shard can become CPU-bound while other shards remain underused. Large keys—typically hundreds of kilobytes or more—can raise network traffic and CPU usage. Detect both with Redis CLI analysis, then reduce pressure through local caching, splitting data, bounded reads, or asynchronous deletion.",
+  "syntax": "redis-cli --hotkeys\nredis-cli --memkeys\nredis-cli --bigkeys",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Inspect hot and large keys",
+   "code": "redis-cli --hotkeys\nredis-cli --memkeys\nredis-cli --bigkeys",
+   "language": "bash",
+   "explanation": "Run these analyzers against a Redis database to sample frequently accessed keys and inspect memory-heavy keys. Use the findings to decide whether to cache reads locally, split large values, or constrain range queries before adding capacity."
+  },
+  "useCases": [
+   {
+    "title": "Add an application-local cache for hot reads",
+    "scenario": "Read-heavy traffic repeatedly targets one key."
+   },
+   {
+    "title": "Split an oversized value into smaller keys",
+    "scenario": "One collection or payload consumes substantial memory and bandwidth."
+   },
+   {
+    "title": "Use bounded range reads instead of full scans",
+    "scenario": "A sorted set or similar collection is expensive to scan."
+   },
+   {
+    "title": "Delete asynchronously with UNLINK",
+    "scenario": "A huge key must be removed in production."
+   }
+  ],
+  "related": [
+   "redis-cli --hotkeys",
+   "redis-cli --memkeys",
+   "redis-cli --bigkeys",
+   "LFU eviction policy",
+   "application-local cache",
+   "UNLINK",
+   "ZRANGE",
+   "ZREVRANGE"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why can one hot key hurt a Redis cluster even when the cluster has spare capacity?",
+    "answer": "A hot key is accessed extremely frequently, and Redis places each key on only one shard. Consequently, that shard can experience high CPU utilization and increased latency for unrelated operations. Detect it with hot-key analysis, then consider an application-local cache for read-only traffic.",
+    "followUp": "How would you handle a hot key that must support writes? Replicate or distribute the data across multiple keys or shards, then reconcile writes at the application layer; local caching alone cannot safely absorb writes."
+   },
+   {
+    "question": "What makes a Redis key 'large,' and how do you find one?",
+    "answer": "Large keys are values or collections that are hundreds of kilobytes or larger. They can increase network traffic and CPU utilization, so inspect the keyspace with --memkeys or --bigkeys before scaling the cluster.",
+    "followUp": "What is a safer alternative to repeatedly scanning a large sorted set? Read bounded ranges rather than requesting the complete range from 0 through -1."
+   },
+   {
+    "question": "Which Redis CLI tools help diagnose hot and oversized keys?",
+    "answer": "Use --hotkeys to sample frequently accessed keys and --memkeys to identify the largest keys and average sizes by type. For --hotkeys, first configure an LFU eviction policy and ensure enough memory is available for eviction.",
+    "followUp": "What should happen after discovery? Split oversized data, bound range operations, cache read-only hot data locally, and use UNLINK when removing huge keys."
+   }
+  ],
+  "keyPoints": [
+   "A key cannot spread its workload across shards automatically; all of its requests target the shard that owns it.",
+   "A hot key can degrade latency for unrelated requests handled by the same overloaded shard.",
+   "Treat values or collections at roughly hundreds of kilobytes and above as candidates for large-key investigation.",
+   "Oversized payloads consume more network bandwidth and processing time, making them a capacity and latency concern.",
+   "After enabling LFU eviction, use this CLI analyzer to sample keys with unusually high access activity.",
+   "Use memkeys to sample the live keyspace and locate memory-heavy keys.",
+   "Decompose oversized collections or payloads into smaller keys when one key becomes a bottleneck."
+  ],
+  "gotchas": [
+   "Adding shards does not solve CPU pressure caused by operations on one huge key.",
+   "Use UNLINK for very large-key deletion to avoid blocking the server with synchronous DEL."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Caching patterns::TTL and expiration": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/using-commands/keyspace/",
+  "sourceTitle": "Key expiration",
+  "summary": "Set a TTL to remove cache keys automatically when their freshness window ends. Expiration deletes keys on timeout; eviction is a separate memory-limit mechanism that follows a configured policy.",
+  "explanation": "A key can have a time-to-live set with EXPIRE or a relative expiration option on a write. Redis automatically deletes the key when its timeout elapses; TTL reports the remaining lifetime. This expiration lifecycle is distinct from eviction, which removes keys to satisfy a database memory limit according to its configured policy.",
+  "syntax": "EXPIRE key seconds\nTTL key",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "string",
+    "description": "Key whose lifetime should be set or inspected."
+   },
+   {
+    "name": "seconds",
+    "type": "integer",
+    "description": "Relative lifetime before deletion, in seconds, for EXPIRE."
+   }
+  ],
+  "returns": "EXPIRE reports whether the timeout was applied; TTL returns the remaining expiration time in seconds, or a special result when the key is missing or has no expiration.",
+  "example": {
+   "title": "Cache a value with an expiration",
+   "code": "const redis = require('redis');\n\nconst client = redis.createClient();\nawait client.connect();\n\nawait client.set('user:42', JSON.stringify({name: 'Ada'}), {EX: 300});\nconsole.log(await client.ttl('user:42'));\n\nawait client.quit();",
+   "language": "javascript",
+   "explanation": "Stores a cache entry with a five-minute TTL, then reads its remaining lifetime."
+  },
+  "useCases": [
+   {
+    "title": "Freshness-bound response caching",
+    "scenario": "Cache database or API responses for a defined freshness window."
+   },
+   {
+    "title": "Temporary state",
+    "scenario": "Remove session, token, or temporary state after inactivity or a fixed lifetime."
+   },
+   {
+    "title": "Memory-managed caching",
+    "scenario": "Combine TTLs with eviction policies when memory pressure requires additional removal."
+   }
+  ],
+  "related": [
+   "EXPIRE",
+   "TTL",
+   "PEXPIRE",
+   "PTTL",
+   "EXPIREAT",
+   "PEXPIREAT",
+   "EXPIRETIME",
+   "PEXPIRETIME"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use expiration to bound how long cached data remains available; the timeout is commonly called a TTL.",
+   "After the TTL elapses, Redis automatically removes the key.",
+   "EXPIRE assigns a relative lifetime to an existing key."
+  ],
+  "gotchas": [
+   "Expiration timing is resolved to milliseconds, so applications should not assume only whole-second precision.",
+   "A key without an expiration remains indefinitely unless the application deletes it or another operation changes its lifetime."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Caching patterns::Write-behind tradeoffs": {
+  "sourceUrl": "https://redis.io/blog/guide-to-cache-optimization-strategies/",
+  "sourceTitle": "The complete guide to cache optimization strategies for developers",
+  "summary": "Write-behind stores updates in Redis first and persists them to the backing database asynchronously. It lowers write latency and enables batching, but accepts delayed consistency and possible loss of buffered writes if Redis fails or evicts them.",
+  "explanation": "Write-behind places the initial write in Redis and propagates it to the backing database asynchronously, often after a delay or in batches. This lowers write latency and can reduce database work, but the interval before persistence creates consistency and durability risks if Redis fails or evicts the buffered data.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Buffer an update in Redis",
+   "code": "const redis = require(\"redis\");\n\nconst client = redis.createClient({ url: process.env.REDIS_URL });\nawait client.connect();\n\nawait client.hSet(\"profile:42\", { name: \"Ada\", plan: \"pro\" });\nconsole.log(await client.hGetAll(\"profile:42\"));\n\nawait client.quit();",
+   "language": "javascript",
+   "explanation": "The application acknowledges a profile update in Redis first; a separate write-behind component would later flush the changed data to the backing database."
+  },
+  "useCases": [
+   {
+    "title": "Write-heavy workloads",
+    "scenario": "High-volume updates where lower request latency matters more than immediate database persistence."
+   },
+   {
+    "title": "Batch-friendly changes",
+    "scenario": "Multiple updates can be combined before persistence to reduce backend write overhead."
+   },
+   {
+    "title": "Tolerant business data",
+    "scenario": "Data can tolerate a temporary persistence gap and a bounded loss window."
+   }
+  ],
+  "related": [
+   "write-back caching",
+   "cache-aside",
+   "write-through caching",
+   "eventual consistency",
+   "data consistency",
+   "data loss"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is write-behind caching, and why use it?",
+    "answer": "Write-behind sends the application’s write to the cache first, then asynchronously forwards it to the database after a delay. Its main benefits are lower write latency and the possibility of batching writes for efficiency.",
+    "followUp": "What failure must the design tolerate? A cache crash or eviction before the flush can lose buffered writes, so critical data needs a stronger durability strategy."
+   },
+   {
+    "question": "How does write-behind improve write performance?",
+    "answer": "The cache acknowledges the update immediately, while a background process later propagates it to the backing database. This decouples request latency from persistent-storage latency and can reduce the number of database operations through batching.",
+    "followUp": "What read behavior follows? Reads may observe data that has not reached the database yet, so consumers must accept eventual consistency or use another coordination mechanism."
+   },
+   {
+    "question": "What are the principal risks?",
+    "answer": "The central tradeoff is speed and batching efficiency versus consistency and durability. If the cache holding new writes crashes or is evicted before persistence, those writes are lost.",
+    "followUp": "When is it appropriate? It best fits workloads where delayed persistence and a bounded loss window are acceptable; it is risky for irreplaceable, immediately durable records."
+   }
+  ],
+  "keyPoints": [
+   "The application’s first write targets Redis rather than the backing database.",
+   "A cache-side background process later persists the buffered change.",
+   "Write-behind can make requests faster and combine multiple updates before database persistence.",
+   "Persistence happens outside the request’s synchronous write path."
+  ],
+  "gotchas": [
+   "Buffered updates can be lost when Redis fails or evicts them before the asynchronous database write completes.",
+   "Treat write-behind as an eventual-consistency pattern with an explicit data-loss window, not as immediate durable persistence.",
+   "A successful cache response does not prove that the backing database already contains the update."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Caching patterns::Write-through caching": {
+  "sourceUrl": "https://redis.io/solutions/caching/",
+  "sourceTitle": "Fast caching solutions with Redis",
+  "summary": "Write-through caching places Redis between the application and database: each write updates the cache synchronously and flows to the database. It favors cache–database consistency, but requires handling partial failures and the extra latency of writing to two systems.",
+  "explanation": "The application sends writes through Redis rather than updating the database independently. Redis updates its cached value synchronously and then forwards the change to the database, so successful operations keep both stores aligned; because the operation spans two systems, failure handling must define how to compensate or reconcile a partial write.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Write through Redis and compensate on database failure",
+   "code": "async function writeThrough(redis, db, key, value) {\n  await redis.set(key, JSON.stringify(value));\n  try {\n    await db.save(key, value);\n  } catch (error) {\n    await redis.del(key);\n    throw error;\n  }\n}",
+   "language": "javascript",
+   "explanation": "The cache receives the write first, then synchronously persists it to the database; a database failure removes the cache entry to avoid retaining an uncommitted value."
+  },
+  "useCases": [
+   {
+    "title": "Fresh read models",
+    "scenario": "Read-heavy applications with frequently changing records where reads should reflect the latest successful writes."
+   },
+   {
+    "title": "Staleness-sensitive data",
+    "scenario": "Financial data, balances, or inventory counts where stale cached values can cause incorrect decisions."
+   },
+   {
+    "title": "Consistency over write speed",
+    "scenario": "Applications that can tolerate higher write latency in exchange for faster, current reads."
+   }
+  ],
+  "related": [
+   "write-behind caching",
+   "cache-aside",
+   "operational data store",
+   "database",
+   "cache consistency"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does write-through caching work?",
+    "answer": "In write-through caching, the cache sits between the application and the operational data store. Updates reach the cache synchronously, and the cache forwards them to the database, favoring consistency between the two stores.",
+    "followUp": "What happens if only one write succeeds? A partial failure can create inconsistency, so the design must define compensation or reconciliation."
+   },
+   {
+    "question": "What are the primary benefits and costs?",
+    "answer": "The main benefit is that the cache is updated as part of each write, making newly written data available immediately and reducing the chance of stale cached values. The trade-off is additional write latency because the operation involves both systems.",
+    "followUp": "When is that trade-off worthwhile? It suits read-heavy workloads where stale data is unacceptable, such as financial or inventory information."
+   },
+   {
+    "question": "What operational pitfalls should be considered?",
+    "answer": "Write-through can leave cold data in the cache because every write is cached regardless of whether the value will be read. It can also suffer a partial failure between cache and database, which requires explicit recovery handling.",
+    "followUp": "How could recovery be implemented? Use compensation, retry or reconciliation logic, and define which store is authoritative for repair."
+   }
+  ],
+  "keyPoints": [
+   "The cache acts as the intermediary on the write path instead of letting the application update the database directly.",
+   "A write updates Redis synchronously and then propagates through it to the backing database.",
+   "The pattern is chosen primarily to keep cached and durable values aligned."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Client hooks & events::Client error events": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/clients/nodejs/error-handling/",
+  "sourceTitle": "Error handling | Docs | Redis",
+  "summary": "Node-Redis emits client errors through the `error` event. Register a listener immediately after creating the client to prevent an unhandled error from unexpectedly terminating the Node.js process.",
+  "explanation": "Node-Redis emits an `error` event whenever an error occurs inside the client. Register at least one listener immediately after creating the client, before connecting or issuing commands, so the error is handled rather than propagated as an unhandled EventEmitter error that can terminate the Node.js process.",
+  "syntax": "client.on('error', error => { /* handle error */ });",
+  "parameters": [
+   {
+    "name": "error",
+    "type": "Error",
+    "description": "The error object emitted when a client error occurs."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Register a Redis client error listener",
+   "code": "import { createClient } from 'redis';\n\nconst client = createClient();\nclient.on('error', error => {\n  console.error('Redis client error:', error);\n});\n\nawait client.connect();\nconsole.log(await client.get('key'));\nawait client.quit();",
+   "language": "typescript",
+   "explanation": "Create the client, register an error listener before connecting, then use and close the connection."
+  },
+  "useCases": [
+   {
+    "title": "Protect initialization and connection setup",
+    "scenario": "Application startup"
+   },
+   {
+    "title": "Monitor transport and socket failures",
+    "scenario": "Long-running service"
+   },
+   {
+    "title": "Send client failures to logs or monitoring",
+    "scenario": "Production operations"
+   }
+  ],
+  "related": [
+   "createClient",
+   "client.connect()",
+   "connect",
+   "ready",
+   "end",
+   "reconnecting"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When should an application attach the Redis client error listener?",
+    "answer": "Node-Redis emits `error` when an error occurs within the client. Register a listener on the client immediately after `createClient()` so errors are handled and do not become unhandled EventEmitter errors.",
+    "followUp": "What can happen if the listener is omitted? The system throws the client error, potentially causing the Node.js process to exit unexpectedly."
+   },
+   {
+    "question": "What does the `error` event communicate?",
+    "answer": "The listener receives the error object as its argument, so the handler can log it or route it to application monitoring. The event commonly represents a network problem, such as an unexpectedly closed socket.",
+    "followUp": "How should the handler be improved in production? Preserve the error context in structured logs and combine it with the client’s reconnect behavior and application-level recovery policy."
+   },
+   {
+    "question": "Show the basic declaration for an error listener.",
+    "answer": "Use `client.on('error', handler)` after creating the client and before `connect()`. The listener is a client-level safety requirement, not merely a handler for command results.",
+    "followUp": "Does the listener replace command-level error handling? No; command failures and recovery decisions still need handling appropriate to the operation, while this listener prevents unhandled client errors."
+   }
+  ],
+  "keyPoints": [
+   "The client exposes several lifecycle events, but `error` is the critical one for preventing unhandled client failures.",
+   "An `error` event is emitted whenever an error occurs inside the Redis client.",
+   "Every client should have an error listener as part of its initialization.",
+   "Attach the handler with the client’s EventEmitter-style `on` method and the `error` event name.",
+   "The handler can record the received error, including a clear Redis-client label and the original error object."
+  ],
+  "gotchas": [
+   "A client without at least one error listener can cause the system to throw the error and may unexpectedly exit the Node.js process."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Client hooks & events::Client-side cache invalidation": {
+  "sourceUrl": "https://redis.io/docs/latest/commands/client-tracking/",
+  "sourceTitle": "CLIENT TRACKING",
+  "summary": "CLIENT TRACKING enables server-assisted client-side caching. Redis remembers keys read by a connection and sends invalidations when those keys change or are evicted, allowing the local cache to drop stale entries.",
+  "explanation": "With tracking enabled, Redis records keys read by the connection. If a tracked key changes—or is evicted—Redis sends an invalidation message over the same RESP3 connection, or through a redirected connection; the client must remove that key locally to prevent stale results. Broadcasting instead watches configured prefixes without recording individual reads.",
+  "syntax": "CLIENT TRACKING <ON | OFF> [REDIRECT client-id] [PREFIX prefix [PREFIX prefix ...]] [BCAST] [OPTIN] [OPTOUT] [NOLOOP]",
+  "parameters": [
+   {
+    "name": "ON | OFF",
+    "type": "option",
+    "description": "Enable or disable tracking for the connection."
+   },
+   {
+    "name": "REDIRECT client-id",
+    "type": "option",
+    "description": "Send invalidations to another connection identified by its client ID."
+   },
+   {
+    "name": "PREFIX prefix [PREFIX prefix ...]",
+    "type": "option",
+    "description": "Track or broadcast keys beginning with one or more prefixes."
+   },
+   {
+    "name": "BCAST",
+    "type": "option",
+    "description": "Enable prefix-based broadcasting mode."
+   },
+   {
+    "name": "OPTIN",
+    "type": "option",
+    "description": "Track only explicitly opted-in commands."
+   },
+   {
+    "name": "OPTOUT",
+    "type": "option",
+    "description": "Track commands by default unless explicitly opted out."
+   },
+   {
+    "name": "NOLOOP",
+    "type": "option",
+    "description": "Do not send invalidations for keys modified by this connection."
+   }
+  ],
+  "returns": "OK when tracking is successfully enabled or disabled.",
+  "example": {
+   "title": "Enable tracking for a cached read",
+   "code": "import { createClient } from \"redis\";\n\nconst redis = createClient({ url: \"redis://localhost:6379\" });\nawait redis.connect();\n\nawait redis.clientTrackingOn();\nconst value = await redis.get(\"user:42\");\n\n// A RESP3 invalidation message causes the client cache to drop user:42.\nconsole.log(value);\nawait redis.quit();",
+   "language": "javascript",
+   "explanation": "Connect with a RESP3-capable client, enable tracking, and read a key; later changes to that key produce an invalidation that the client must use to remove its local copy."
+  },
+  "useCases": [
+   {
+    "title": "Keep a local object cache coherent",
+    "scenario": "A service keeps frequently read Redis objects in process memory and needs changes made by other clients to invalidate those entries."
+   },
+   {
+    "title": "Use same-connection invalidations",
+    "scenario": "A RESP3 client wants invalidations alongside ordinary commands without maintaining a second message connection."
+   },
+   {
+    "title": "Invalidate by key prefix",
+    "scenario": "Applications cache groups of keys and can invalidate them by namespace rather than tracking every read."
+   },
+   {
+    "title": "Opt in selected cacheable reads",
+    "scenario": "A client needs to exclude selected reads from default tracking."
+   }
+  ],
+  "related": [
+   "CLIENT CACHING",
+   "CLIENT TRACKINGINFO",
+   "CLIENT UNTRACKING"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does CLIENT TRACKING solve?",
+    "answer": "CLIENT TRACKING makes Redis remember keys read by a connection. When a remembered key is modified, Redis sends an invalidation message so the client can remove its local copy.",
+    "followUp": "How can tracking avoid per-key server memory? Use broadcasting mode: subscribe to prefixes and receive notifications for matching keys, without Redis remembering each client's accessed keys."
+   },
+   {
+    "question": "How are invalidation messages delivered?",
+    "answer": "RESP3 delivers invalidation messages on the tracking connection. RESP2 can use a different connection through redirection, and Pub/Sub is also available for the redirected path.",
+    "followUp": "Why might a client redirect messages? It separates invalidations from ordinary request and response traffic, which can simplify client-side cache handling."
+   },
+   {
+    "question": "Compare default and broadcasting tracking modes.",
+    "answer": "Default tracking records keys requested by the client, so notifications are limited to keys that client may have cached. Broadcasting does not track individual reads and instead notifies subscribers when matching prefixes are touched.",
+    "followUp": "When is broadcasting preferable? It can be useful when prefix-based coverage is acceptable and avoiding server-side per-client tracking memory matters."
+   }
+  ],
+  "keyPoints": [
+   "CLIENT TRACKING turns on server-assisted client-side caching support for the connection.",
+   "Default tracking builds a per-connection record from keys read during the connection lifetime.",
+   "A modification to a tracked key triggers an invalidation notification.",
+   "Eviction caused by a maxmemory policy is another invalidation trigger.",
+   "Broadcasting lets clients receive prefix-based notifications without first requesting each individual key."
+  ],
+  "gotchas": [
+   "Same-connection invalidations require RESP3; RESP2 clients need a redirected connection using the available redirection mechanism.",
+   "NOLOOP suppresses the notification for a client's own modification, but the tracked key is still removed from the invalidation table.",
+   "Receiving a notification is not enough: the client must actually evict the corresponding local entry."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Client hooks & events::Connection lifecycle events": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/clients/nodejs/connect/",
+  "sourceTitle": "Connect to the server | Docs",
+  "summary": "node-redis emits connect, ready, reconnecting, and end as connection lifecycle events. Use them with isReady and isOpen to distinguish connection progress, command readiness, recovery, and intentional shutdown.",
+  "explanation": "A node-redis client emits lifecycle events as it begins connecting, becomes usable, retries after an error, and is intentionally closed. Register listeners on the client to update pool-health state; use isReady for command readiness and isOpen for socket status. Handle error separately because connection failures are reported there.",
+  "syntax": "client.on(event, listener)",
+  "parameters": [],
+  "returns": "The lifecycle events carry no parameters except error, which receives an Error object; client.isReady returns a Boolean.",
+  "example": {
+   "title": "Observe node-redis connection events",
+   "code": "import { createClient } from \"redis\";\n\nconst client = createClient({ url: process.env.REDIS_URL });\n\nclient.on(\"connect\", () => console.log(\"connecting\"));\nclient.on(\"ready\", () => console.log(\"ready\"));\nclient.on(\"reconnecting\", () => console.log(\"reconnecting\"));\nclient.on(\"end\", () => console.log(\"closed\"));\nclient.on(\"error\", (error) => console.error(\"Redis error\", error));\n\nawait client.connect();\nconsole.log(client.isReady);\nawait client.quit();",
+   "language": "typescript",
+   "explanation": "Registers the documented lifecycle listeners, checks readiness, and intentionally closes the client."
+  },
+  "useCases": [
+   {
+    "title": "Pool health state",
+    "scenario": "A connection pool needs to expose whether a client can currently execute Redis commands."
+   },
+   {
+    "title": "Connection telemetry",
+    "scenario": "An application needs operational visibility into connection attempts and retry cycles."
+   },
+   {
+    "title": "Graceful shutdown tracking",
+    "scenario": "A service must separate planned shutdown from network failure."
+   }
+  ],
+  "related": [
+   "client.isReady",
+   "client.isOpen",
+   "socket.reconnectionStrategy",
+   "client.quit()",
+   "error"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What do connect and ready mean?",
+    "answer": "connect means the client is about to begin connecting. ready means the connection has completed and the client can be used; both events carry no parameters.",
+    "followUp": "How would you distinguish socket availability from command readiness? Use isOpen for the underlying socket and isReady for readiness to send commands."
+   },
+   {
+    "question": "When does reconnecting occur?",
+    "answer": "reconnecting is emitted before node-redis tries to reconnect after an error-related connection loss. Automatic reconnection is enabled by default and can be customized with socket.reconnectionStrategy.",
+    "followUp": "What behavior should a health check expose during this event? Mark the client as recovering until ready is emitted again, rather than treating the open socket flag alone as sufficient."
+   },
+   {
+    "question": "How should a pool interpret end?",
+    "answer": "end indicates that the client was intentionally closed with client.quit(). The event has no parameters, so consumers should use it to record planned shutdown rather than infer an unexpected network failure.",
+    "followUp": "Which event should capture an unexpected connection problem? Listen for error; the documentation describes it as the event carrying the Error parameter."
+   }
+  ],
+  "keyPoints": [
+   "node-redis exposes connection lifecycle events directly on the client object.",
+   "connect marks the beginning of a connection attempt and supplies no event argument.",
+   "ready is the event a pool can use to mark a client usable for Redis commands.",
+   "reconnecting signals a retry phase after an error-related connection loss.",
+   "Use isReady as the direct readiness check when deciding whether the client can send commands.",
+   "isOpen reports transport-level socket state, which is distinct from command readiness."
+  ],
+  "gotchas": [
+   "Register an error listener as well: connection failures commonly surface as network errors, and an unhandled error can terminate the Node.js process.",
+   "Treat reconnecting as recovery activity after an error, not as proof that commands are currently ready to run.",
+   "Do not classify every end event as an outage; the documented event represents an intentional quit."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Client hooks & events::Keyspace notifications": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/pubsub/keyspace-notifications/",
+  "sourceTitle": "Redis keyspace notifications",
+  "summary": "Keyspace notifications let Redis clients receive Pub/Sub events for key changes such as expiration and eviction. Use keyspace channels to watch a key, or keyevent channels to watch an operation across keys; notifications are disabled until configured.",
+  "explanation": "Redis publishes notifications through Pub/Sub channels when operations affect the data set. A keyspace channel is organized by key and carries the event name; a keyevent channel is organized by event and carries the key name. Notifications are disabled by default and are enabled with the notify-keyspace-events configuration setting. Expiration and eviction events can then be consumed without repeatedly scanning for missing keys.",
+  "syntax": "CONFIG SET notify-keyspace-events <event-mask>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Observe a key expiration",
+   "code": "const Redis = require('ioredis');\n\nconst redis = new Redis();\nconst events = new Redis();\n\n(async () => {\n  await redis.config('SET', 'notify-keyspace-events', 'KEA');\n  await events.psubscribe('__keyevent@0__:*');\n  events.on('pmessage', (_pattern, channel, key) => {\n    console.log(channel, key);\n  });\n  await redis.set('cache:user:42', 'value', 'EX', 1);\n  setTimeout(() => process.exit(0), 1500);\n})();",
+   "language": "javascript",
+   "explanation": "Enables key-event notifications, subscribes to database 0 events, and prints the expired key."
+  },
+  "useCases": [
+   {
+    "title": "React to cache disappearance",
+    "scenario": "A cache-maintenance worker removes related entries when a cached key expires or is evicted."
+   },
+   {
+    "title": "Track data-set activity",
+    "scenario": "An observability consumer counts operations such as expirations or deletions by subscribing to an event pattern."
+   },
+   {
+    "title": "Monitor one key",
+    "scenario": "A service watches changes to a particular key without repeatedly checking its existence."
+   }
+  ],
+  "related": [
+   "notify-keyspace-events",
+   "CONFIG SET",
+   "Pub/Sub",
+   "__keyspace@<db>__",
+   "__keyevent@<db>__",
+   "expired",
+   "evicted"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do keyspace and keyevent notifications differ?",
+    "answer": "Redis exposes two Pub/Sub channel forms. A keyspace notification uses a channel such as __keyspace@0__:mykey and publishes the event name, while a keyevent notification uses __keyevent@0__:del and publishes the key name.",
+    "followUp": "Which form is better for monitoring every expiration? Subscribe to the keyevent pattern __keyevent@0__:expired, because the event is fixed and each message identifies the affected key."
+   },
+   {
+    "question": "How are notifications enabled?",
+    "answer": "Set notify-keyspace-events to a mask containing K for keyspace channels or E for keyevent channels, plus the event-category flags needed by the application. CONFIG SET can change the setting at runtime, and an empty value disables notifications.",
+    "followUp": "What is the operational trade-off? Notifications consume CPU, so enable only the channel and event categories required by the consumer."
+   },
+   {
+    "question": "Can a consumer rely on notifications for guaranteed delivery?",
+    "answer": "Notifications use Redis Pub/Sub, which is fire-and-forget. A subscriber that disconnects misses events generated during the gap; Redis does not provide a notification history through this mechanism.",
+    "followUp": "How can an application recover reliably? Combine notifications with a durable source of truth or periodic reconciliation, rather than treating the event stream as a complete log."
+   }
+  ],
+  "keyPoints": [
+   "They provide push-based observation of data-set changes, avoiding polling for keys that disappeared.",
+   "Expiry events can be scoped to a database, such as database 0.",
+   "Redis offers two notification families for each qualifying operation: keyspace and keyevent.",
+   "Keyspace channels identify the key in the channel; keyevent channels identify the operation in the channel.",
+   "The K configuration flag enables keyspace-channel notifications.",
+   "The E configuration flag enables keyevent-channel notifications.",
+   "An empty notify-keyspace-events value turns the feature off."
+  ],
+  "gotchas": [
+   "Pub/Sub does not replay missed notifications, so a disconnected consumer loses events.",
+   "In a cluster, subscribe to every node whose events you need because notifications are node-specific.",
+   "Enable notifications deliberately: they add CPU overhead and start disabled."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Client hooks & events::Pub/Sub message handlers": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/use-cases/pub-sub/nodejs/",
+  "sourceTitle": "Redis pub/sub with node-redis",
+  "summary": "Pub/Sub handlers run on a dedicated subscriber connection because a subscribed Redis connection cannot handle ordinary commands. With node-redis, duplicate the client and pass a callback to subscribe or pSubscribe.",
+  "explanation": "A Redis connection that subscribes enters subscribe-only mode, so its message callback must be registered on a dedicated connection. Duplicate the normal client, connect the duplicate, and pass a listener to subscribe; keep the original client for publishing or ordinary commands.",
+  "syntax": "await subscriber.subscribe(channel, listener)\nawait subscriber.pSubscribe(pattern, listener)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Dedicated subscriber with a message callback",
+   "code": "import { createClient } from 'redis';\n\nconst client = createClient({ url: 'redis://localhost:6379' });\nawait client.connect();\n\nconst subscriber = client.duplicate();\nawait subscriber.connect();\n\nawait subscriber.subscribe('cache-events', (message) => {\n  console.log('Cache event:', message);\n});\n\nawait client.publish('cache-events', 'invalidate:product:42');",
+   "language": "typescript",
+   "explanation": "A duplicated connection receives messages through the callback while the original connection remains available for publishing or other Redis commands."
+  },
+  "useCases": [
+   {
+    "title": "Cache invalidation",
+    "scenario": "Invalidate application cache entries when another process publishes a change notification."
+   },
+   {
+    "title": "Worker event processing",
+    "scenario": "Deliver notifications to workers that subscribe to exact event channels."
+   },
+   {
+    "title": "Pattern-based routing",
+    "scenario": "Listen to a family of channels such as cache:invalidate:* without registering each channel individually."
+   }
+  ],
+  "related": [
+   "SUBSCRIBE",
+   "UNSUBSCRIBE",
+   "PSUBSCRIBE",
+   "PUNSUBSCRIBE",
+   "PUBLISH",
+   "client.duplicate()",
+   "client.subscribe()",
+   "client.pSubscribe()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why should a Pub/Sub subscriber use a separate Redis connection?",
+    "answer": "A subscriber connection enters a restricted mode after subscribing, so it should not be used for normal commands. The client documentation recommends creating a dedicated connection for the subscription.",
+    "followUp": "How would you preserve access to ordinary commands? Duplicate the main client, connect the duplicate, and use that duplicate only for subscriptions."
+   },
+   {
+    "question": "How is a message handler wired in node-redis?",
+    "answer": "With node-redis, register the callback as the second argument to subscribe. The callback receives each published message for the subscribed channel.",
+    "followUp": "How would you handle several channels? Subscribe to each required channel, or use pattern subscriptions when channel names follow a pattern."
+   },
+   {
+    "question": "When would you choose SUBSCRIBE versus PSUBSCRIBE?",
+    "answer": "SUBSCRIBE adds exact channel subscriptions, while PSUBSCRIBE matches channel-name patterns. Redis delivers published messages to currently subscribed clients in publication order.",
+    "followUp": "What trade-off comes with pattern subscriptions? They can cover a channel hierarchy without registering every channel, but broad patterns may receive more messages than needed."
+   }
+  ],
+  "keyPoints": [
+   "After subscription, Redis pushes matching messages through the same socket rather than treating the connection like a normal command client.",
+   "Use a duplicate client to isolate the subscribe-mode connection from the client used for ordinary application work.",
+   "The handler is supplied directly to subscribe for exact channels or pSubscribe for patterns.",
+   "Handlers observe messages in publication order for the messages delivered to the subscriber.",
+   "Publishing sends the payload to every currently subscribed client for the selected channel."
+  ],
+  "gotchas": [
+   "Do not use the subscribed connection for ordinary Redis operations; retain a separate connection for them.",
+   "Subscription management remains possible on the subscribed connection, but ordinary command execution does not."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Client hooks & events::Reconnect strategy": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/clients/nodejs/connect/",
+  "sourceTitle": "Connect to the server | Docs",
+  "summary": "Configure node-redis reconnection with a fixed delay, disablement, or a custom function. A bounded exponential delay plus random jitter prevents synchronized clients from repeatedly hitting a failing server.",
+  "explanation": "When node-redis loses its connection, it can call a user-supplied reconnect strategy with the retry count. The function returns a delay in milliseconds for the next attempt; adding jitter and a maximum cap spreads retries across clients and limits how aggressively a failing server is contacted. Returning false disables reconnection, while a number supplies a fixed delay.",
+  "syntax": "createClient({ socket: { reconnectStrategy: retries => number | false } })",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "CreateClientOptions",
+    "description": "Client configuration containing socket.reconnectStrategy; the function receives the retry count."
+   },
+   {
+    "name": "retries",
+    "type": "number",
+    "description": "Number of reconnection attempts already made, used to calculate the next delay."
+   }
+  ],
+  "returns": "A reconnect delay in milliseconds, or a disabling decision such as false, depending on the configured strategy.",
+  "example": {
+   "title": "Bounded exponential reconnect delay",
+   "code": "import { createClient } from 'redis';\n\nconst client = createClient({\n  socket: {\n    reconnectStrategy: retries => {\n      const jitter = Math.floor(Math.random() * 100);\n      const delay = Math.min(2 ** retries * 50, 3000);\n      return delay + jitter;\n    }\n  }\n});\n\nclient.on('error', error => console.error(error));\nawait client.connect();\n",
+   "language": "typescript",
+   "explanation": "Creates a node-redis client whose reconnect delay grows exponentially, is capped, and includes random jitter."
+  },
+  "useCases": [
+   {
+    "title": "Recover from transient disconnects",
+    "scenario": "A Redis instance is restarting or temporarily unreachable."
+   },
+   {
+    "title": "Spread fleet-wide retries",
+    "scenario": "Many application instances share one Redis service."
+   },
+   {
+    "title": "Disable automatic reconnection",
+    "scenario": "A service must stop trying after a policy decision."
+   }
+  ],
+  "related": [
+   "socket.reconnectStrategy",
+   "createClient",
+   "error event",
+   "exponential backoff",
+   "jitter"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you configure a custom reconnect strategy in node-redis?",
+    "answer": "Set `socket.reconnectStrategy` to a function. It receives the retry count and returns the delay before the next attempt; it can also determine how reconnection is handled.",
+    "followUp": "How would you avoid a retry storm? Use exponential growth, cap the delay, and add random jitter so clients do not retry in sync."
+   },
+   {
+    "question": "What configuration choices are available for reconnection?",
+    "answer": "The strategy can be disabled with `false`, use a fixed millisecond delay with a number, or compute behavior dynamically with a function. The default behavior is automatic exponential backoff with jitter.",
+    "followUp": "When might a fixed delay be preferable? In a tightly controlled environment with a small client population and predictable recovery timing, though it provides less coordination resistance."
+   },
+   {
+    "question": "How should a reconnect delay function be designed?",
+    "answer": "A practical function calculates an exponential delay such as \u001b[2m\u001b[2m2 to the power of retries\u001b[0m multiplied by a base interval, limits it to a maximum, then adds random jitter. This bounds server load while allowing progressively longer recovery attempts.",
+    "followUp": "Why cap the delay? Without a cap, later retries can become unnecessarily slow; the cap defines the maximum recovery interval."
+   }
+  ],
+  "keyPoints": [
+   "Automatic reconnection is available after the client loses its server connection.",
+   "Configure reconnection behavior inside the client's socket options.",
+   "A numeric strategy creates a constant delay, expressed in milliseconds.",
+   "A function lets the application calculate retry behavior rather than using one fixed interval.",
+   "Random jitter can be added to separate otherwise synchronized client attempts.",
+   "The documented pattern combines exponential growth with a 3-second maximum delay."
+  ],
+  "gotchas": [
+   "The documented option is named `reconnectStrategy` in the client configuration example; use the exact current API spelling.",
+   "Replacing the default strategy removes its built-in jitter, so add equivalent randomization if many clients may reconnect together.",
+   "Returning or configuring a disabling value prevents automatic recovery; choose this only when reconnection is handled elsewhere."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Client hooks & events::Server-side scripts as hooks": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/programmability/eval-intro/",
+  "sourceTitle": "Scripting with Lua",
+  "summary": "Run Lua scripts or Redis Functions on the server to make multi-step reads and writes atomic. This prevents clients from interleaving commands during a read-modify-write operation.",
+  "explanation": "A Lua script or Redis function executes the read, decision, and write on the Redis server as one atomic operation. Redis blocks other server activity while it runs, so another client cannot interleave commands into the middle of the sequence. Use KEYS for key names and ARGV for other inputs.",
+  "syntax": "EVAL script numkeys [key [key ...]] [arg [arg ...]]",
+  "parameters": [
+   {
+    "name": "script/function",
+    "type": "string",
+    "description": "Lua source code to execute, or the registered function name for FCALL."
+   },
+   {
+    "name": "numkeys and keys",
+    "type": "integer and string[]",
+    "description": "Number of key names supplied, followed by key names in KEYS."
+   },
+   {
+    "name": "args",
+    "type": "string[]",
+    "description": "Additional non-key arguments exposed to the script through ARGV."
+   }
+  ],
+  "returns": "The value explicitly returned by the script or function; the page explains that server-side code can return command results but does not define a single fixed return type.",
+  "example": {
+   "title": "Atomic server-side increment",
+   "code": "const Redis = require('ioredis');\n\nconst redis = new Redis();\nconst script = `\n  local current = tonumber(redis.call('GET', KEYS[1]) or '0')\n  local next = current + tonumber(ARGV[1])\n  redis.call('SET', KEYS[1], next)\n  return next\n`;\n\nredis.eval(script, 1, 'counter', 1).then(console.log);",
+   "language": "javascript",
+   "explanation": "The client sends one Lua script that reads, updates, and returns a counter value without another client interleaving operations."
+  },
+  "useCases": [
+   {
+    "title": "Atomic conditional updates",
+    "scenario": "A counter, quota, or token-bucket update must inspect current state before writing a new value."
+   },
+   {
+    "title": "Cross-key consistency",
+    "scenario": "One logical operation must update related values stored under multiple keys."
+   },
+   {
+    "title": "Server-side multi-step workflows",
+    "scenario": "Application logic would otherwise require several client-server round trips."
+   }
+  ],
+  "related": [
+   "EVAL",
+   "EVALSHA",
+   "EVAL_RO",
+   "EVALSHA_RO",
+   "FCALL",
+   "FCALL_RO",
+   "FUNCTION LOAD",
+   "redis.call()"
+  ],
+  "since": "2.6.0 for EVAL; 7.0 for Redis Functions",
+  "interview": [
+   {
+    "question": "Why can a server-side script prevent a read-modify-write race?",
+    "answer": "Redis executes a script atomically on the server, and its effects appear as though they all happened or none had happened. The execution blocks other server activity, preventing another client from interleaving the read and write.",
+    "followUp": "What is the trade-off of this guarantee? A long-running script delays every connected client until it finishes."
+   },
+   {
+    "question": "How does a Lua script interact with Redis data?",
+    "answer": "A Lua script invokes Redis commands with redis.call() or redis.pcall(). The script receives key names through KEYS and other values through ARGV, allowing the complete operation to remain server-side.",
+    "followUp": "When should pcall be preferred? Use it when a Redis command error should be returned to the script instead of immediately aborting it."
+   },
+   {
+    "question": "How do Redis Functions differ from ad hoc Lua scripts?",
+    "answer": "Redis Functions provide server-managed code that is declared before invocation and called by name with FCALL. They retain atomic execution while avoiding the need to send or reload script source for every call.",
+    "followUp": "What is a function-specific safety option? A no-writes flag can identify read-only functions so Redis can run them with read-only safeguards."
+   }
+  ],
+  "keyPoints": [
+   "Lua scripts move application logic into Redis, reducing client-server round trips for multi-step operations.",
+   "The entire script is indivisible from other clients' perspective.",
+   "A client observes the script before it has taken effect or after its complete effect, not a partial state.",
+   "One script can inspect conditions and update several keys as a single operation.",
+   "Use redis.call for normal command execution or redis.pcall when command errors should be handled by the script.",
+   "For Redis 7+, Functions are the durable, named server-side programmability option."
+  ],
+  "gotchas": [
+   "Long-running scripts or functions pause every connected client, so keep server-side logic short.",
+   "Read-only script variants cannot perform updates; use a regular execution command when the hook writes data."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redis foundations::Hashes": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/data-types/hashes/",
+  "sourceTitle": "Redis hashes | Docs",
+  "summary": "Redis hashes group an entity's named fields under one key. They support field-level reads, writes, and counter updates, avoiding replacement of one serialized object for every small change.",
+  "explanation": "A Redis hash stores an entity as a Redis key containing multiple field-value pairs. Commands can read or change one field without serializing and replacing the entire entity, while numeric fields can be updated with counter commands.",
+  "syntax": "HSET key field value [field value ...]\nHGET key field\nHGETALL key\nHINCRBY key field increment",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "string",
+    "description": "Redis key identifying the hash"
+   },
+   {
+    "name": "field/value",
+    "type": "string",
+    "description": "One or more field names and their values for HSET; a field name for HGET"
+   }
+  ],
+  "returns": "HGET returns a field value; HGETALL returns all field-value pairs; HSET creates or modifies fields.",
+  "example": {
+   "title": "Store and update user fields",
+   "code": "HSET user:1001 name \"Ada\" plan \"pro\" login_count 3\nHGET user:1001 plan\nHINCRBY user:1001 login_count 1\nHGETALL user:1001",
+   "language": "bash",
+   "explanation": "This creates a user record, reads one field, atomically increments a numeric field, and retrieves the complete hash."
+  },
+  "useCases": [
+   {
+    "title": "Basic objects",
+    "scenario": "Store profile, configuration, or device attributes as separate named values."
+   },
+   {
+    "title": "Grouped counters",
+    "scenario": "Keep related integer metrics under one entity key and update them independently."
+   },
+   {
+    "title": "Partial cache updates",
+    "scenario": "Change one cached attribute without encoding and rewriting the whole record."
+   }
+  ],
+  "related": [
+   "HSET",
+   "HGET",
+   "HGETALL",
+   "HMGET",
+   "HINCRBY",
+   "DEL"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Redis hash, and why use one for an object?",
+    "answer": "A hash is a record-like collection of field-value pairs stored under one Redis key. It is useful for basic objects and grouped counters, and lets applications update individual fields rather than replacing one serialized value.",
+    "followUp": "When would HGETALL be inappropriate? For a large hash, retrieve only required fields with HGET or HMGET to avoid returning every field."
+   },
+   {
+    "question": "How do the main hash access commands differ?",
+    "answer": "HSET creates or modifies a field, and HGET reads one field. HGETALL reads the complete hash; the documented complexities are O(1) for HSET and HGET and O(N) for HGETALL.",
+    "followUp": "How can a client reduce round trips while reading several fields? Use HMGET, which returns values for multiple requested fields."
+   },
+   {
+    "question": "How are counters represented inside a hash?",
+    "answer": "HINCRBY increments an integer-valued field by a supplied amount. If the field is absent, Redis starts from zero, making the command useful for grouped counters.",
+    "followUp": "What should be checked before using HINCRBY? The existing value must be interpretable as an integer; otherwise the increment cannot be applied."
+   }
+  ],
+  "keyPoints": [
+   "A hash models one record as named fields grouped under a single Redis key.",
+   "Hashes suit lightweight objects and sets of related counters.",
+   "HSET both adds new fields and overwrites values for fields that already exist.",
+   "HGET reads one named field without fetching unrelated values.",
+   "HGETALL reconstructs the complete field map returned by Redis.",
+   "HGETALL scales with the number of fields returned, unlike constant-time single-field access."
+  ],
+  "gotchas": [
+   "HGETALL returns every field and value, so retrieving a large hash can cost more than reading selected fields.",
+   "HINCRBY treats a missing field as zero; confirm that this default matches the application's intended initialization."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redis foundations::JSON and search capabilities": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/ai/redisvl/concepts/search-and-indexing/",
+  "sourceTitle": "Search & Indexing | Docs",
+  "summary": "Redis stores searchable documents as hashes or JSON objects and maintains secondary indexes over selected fields. Verify that the deployed Redis environment enables the JSON and search capabilities your application needs.",
+  "explanation": "Redis keeps documents in hashes or JSON values and maintains separate secondary indexes that reference them. JSON storage supports nested structures through JSONPath, while field types determine whether searches perform text matching, exact tag filtering, numeric ranges, geographic queries, or vector similarity. JSON search requires the relevant JSON and search capabilities to be enabled in the database.",
+  "syntax": "FT.CREATE index ON JSON PREFIX count prefix SCHEMA field AS alias type ...",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Index and search a JSON document",
+   "code": "FT.CREATE idx ON JSON PREFIX 1 doc: SCHEMA $.title AS title TEXT $.price AS price NUMERIC\nJSON.SET doc:1 $ '{\"title\":\"Redis\",\"price\":10}'\nFT.SEARCH idx '@title:Redis @price:[0 20]'",
+   "language": "bash",
+   "explanation": "Stores a JSON document, creates a secondary index over JSONPath fields, and searches text and numeric values."
+  },
+  "useCases": [
+   {
+    "title": "Store and search nested JSON",
+    "scenario": "Applications with hierarchical records"
+   },
+   {
+    "title": "Filter structured fields",
+    "scenario": "Exact filters, ranges, or ordering"
+   },
+   {
+    "title": "Run vector similarity search",
+    "scenario": "Semantic retrieval over embeddings"
+   },
+   {
+    "title": "Search analyzed text",
+    "scenario": "Full-text document lookup"
+   }
+  ],
+  "related": [
+   "FT.CREATE",
+   "FT.SEARCH",
+   "FT.AGGREGATE",
+   "JSON.SET",
+   "JSONPath",
+   "Redis Hash",
+   "RediSearch",
+   "RedisJSON"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the relationship between a Redis document and its search index?",
+    "answer": "Redis search indexes are secondary structures maintained alongside hashes or JSON documents. They reference the source data and are updated when documents are written or deleted.",
+    "followUp": "How can nested JSON fields be indexed? Define the field with a JSONPath expression and assign it an alias and field type in the index schema."
+   },
+   {
+    "question": "Why choose JSON storage instead of hashes?",
+    "answer": "JSON storage preserves nested document structure and lets an index address nested fields with JSONPath expressions. This avoids flattening naturally hierarchical data.",
+    "followUp": "When would a hash be preferable? Use a hash for flat documents when nested structure is unnecessary and simple field access is sufficient."
+   },
+   {
+    "question": "Which search field types does Redis support?",
+    "answer": "Field types control query behavior: text supports full-text search, tags support exact matching, numeric fields support ranges and sorting, geo fields support location queries, and vector fields support similarity search.",
+    "followUp": "What must be checked before using these features? Confirm that the deployed database enables the required JSON and search capabilities."
+   }
+  ],
+  "keyPoints": [
+   "Search indexes add queryable structures without replacing the underlying Redis data.",
+   "Documents remain in hashes or JSON values; the index stores references and optimized lookup structures.",
+   "JSON is suited to hierarchical records that would be awkward to represent as flat hash fields.",
+   "JSONPath lets an index select nested properties while retaining the original JSON shape.",
+   "Use tag fields when filtering requires exact values rather than analyzed text.",
+   "Numeric fields enable ordered comparisons and result sorting.",
+   "Vector fields support nearest-neighbor-style matching based on embedding similarity."
+  ],
+  "gotchas": [
+   "An index is not a second copy of the document; deleting or changing the source document affects its index entry."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redis foundations::Keys and namespacing": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/using-commands/keyspace/index.html.md",
+  "sourceTitle": "Redis keyspace",
+  "summary": "Design Redis keys as stable, readable strings with explicit tenant and entity sections. Use a consistent delimiter-based schema and distinguish absent keys from stored empty values.",
+  "explanation": "Redis keys are unrestricted strings, so applications must prevent collisions themselves. A consistent colon-separated schema can express tenant, entity, and identifier boundaries; checking for a null GET result distinguishes absence from a stored empty string.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Namespaced key and missing-value check",
+   "code": "const key = (tenantId, entity, id) => `${tenantId}:${entity}:${id}`;\n\nawait redis.set(key(\"acme\", \"user\", \"42\"), \"Ada\");\nconst value = await redis.get(key(\"acme\", \"user\", \"42\"));\n\nif (value === null) {\n  console.log(\"missing\");\n} else {\n  console.log(value); // \"\" is present, not missing\n}",
+   "language": "javascript",
+   "explanation": "Use a consistent colon-separated schema that includes the tenant and entity. Redis returns null for a missing string key, while an existing key can contain the empty string."
+  },
+  "useCases": [
+   {
+    "title": "Tenant-isolated cache entries",
+    "scenario": "Multi-tenant caching"
+   },
+   {
+    "title": "Stable object lookup keys",
+    "scenario": "Entity caching"
+   },
+   {
+    "title": "Missing-versus-empty handling",
+    "scenario": "Cache reads"
+   }
+  ],
+  "related": [
+   "key",
+   "value",
+   "key-value pair",
+   "keyspace",
+   "SET",
+   "GET"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How should an application namespace Redis keys?",
+    "answer": "Redis keys are strings with few format restrictions, but Redis does not provide namespaces. Applications commonly use a consistent colon-separated convention such as tenant:entity:id to reduce collisions.",
+    "followUp": "How would you preserve tenant isolation? Include the tenant identifier in every key and ensure every access path constructs keys through the same schema."
+   },
+   {
+    "question": "What makes a Redis key schema useful?",
+    "answer": "Use a schema such as user:1000 or tenant:entity:id. The documentation recommends sticking to a schema and notes that colon-separated sections are a common convention.",
+    "followUp": "What trade-off exists between readable and compact names? Short names save some memory, but readable names make the data model clearer; choose a practical balance."
+   },
+   {
+    "question": "How can code distinguish missing data from an empty value?",
+    "answer": "A missing key and a stored empty string are different states. A string lookup returns nil when the key does not exist, whereas the empty string is a valid Redis key and can also be a stored value.",
+    "followUp": "How should callers represent these states? Preserve the client library's null or nil result for absence and treat an actual empty string as present data."
+   }
+  ],
+  "keyPoints": [
+   "Treat keys as part of the data model: encode the entity and identifier clearly.",
+   "Use colons to separate logical sections, such as tenant, entity type, and record identifier.",
+   "Adopt one stable key schema and apply it consistently across reads and writes.",
+   "An object-type and identifier pattern is a practical foundation for entity keys.",
+   "Use dots or dashes when a section contains multiple words, while keeping the overall schema predictable.",
+   "Redis permits keys up to 512 MB, though the practical design should remain much smaller."
+  ],
+  "gotchas": [
+   "Redis has no built-in namespaces; a naming convention is required to avoid collisions.",
+   "An empty key name is valid, so do not assume an empty string identifies a missing key.",
+   "Avoid excessively long names because they increase memory use and can make lookups more expensive."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redis foundations::Lists": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/data-types/lists/",
+  "sourceTitle": "Redis lists",
+  "summary": "Redis Lists are insertion-ordered sequences of strings that support efficient operations at both ends. They fit queue- and stack-like patterns, including blocking consumers, but reliability requirements must be checked separately.",
+  "explanation": "A Redis list is an insertion-ordered sequence of string values. Add elements at either end, remove elements from either end, inspect ranges or indexes, and use blocking list operations when consumers should wait for work. Lists are implemented as linked lists, so end insertions are efficient, while indexed access depends on the element's position.",
+  "syntax": "LPUSH key element [element ...]\nRPOP key [count]\nBLPOP key [key ...] timeout",
+  "parameters": [],
+  "returns": "List commands return values according to the selected operation; pop commands return removed string elements, while blocking pops wait for an available element or timeout.",
+  "example": {
+   "title": "FIFO queue with LPUSH and RPOP",
+   "code": "const Redis = require('ioredis');\n\nconst redis = new Redis();\n\nasync function main() {\n  await redis.lpush('jobs', JSON.stringify({ id: 1, task: 'email' }));\n  const item = await redis.rpop('jobs');\n  console.log(item ? JSON.parse(item) : null);\n  await redis.quit();\n}\n\nmain();",
+   "language": "javascript",
+   "explanation": "Adds a serialized job to the list's head and removes the oldest job from its tail, demonstrating FIFO queue behavior."
+  },
+  "useCases": [
+   {
+    "title": "Task queues",
+    "scenario": "FIFO work processing"
+   },
+   {
+    "title": "Undo stacks",
+    "scenario": "LIFO state reversal"
+   },
+   {
+    "title": "Blocking handoff",
+    "scenario": "Producer-consumer messaging"
+   },
+   {
+    "title": "Trimmed event lists",
+    "scenario": "Bounded recent-history storage"
+   }
+  ],
+  "related": [
+   "LPUSH",
+   "RPOP",
+   "RPUSH",
+   "LPOP",
+   "BLPOP",
+   "BRPOP",
+   "LRANGE",
+   "LINDEX"
+  ],
+  "since": "2.2.0",
+  "interview": [
+   {
+    "question": "What is a Redis List?",
+    "answer": "Redis Lists are ordered collections of strings arranged by insertion order. They support adding and removing values at either end, which makes them suitable for queue and stack patterns.",
+    "followUp": "How would you implement FIFO behavior? Add with LPUSH and remove with RPOP, or use the opposite pair consistently."
+   },
+   {
+    "question": "How can a Redis List implement a queue?",
+    "answer": "Use LPUSH to place new work at the head and RPOP to consume from the tail. This preserves first-in, first-out ordering because the oldest inserted item reaches the tail first.",
+    "followUp": "What should be checked before choosing this for production work processing? Confirm the required delivery, retry, and failure semantics; a simple pop does not by itself provide durable acknowledgment."
+   },
+   {
+    "question": "What are the performance characteristics of Redis Lists?",
+    "answer": "Redis Lists use linked-list storage, so inserting at the head or tail remains efficient even when the list is very large. Access by index is less efficient because traversal depends on the index.",
+    "followUp": "Which operation is preferable for inspecting a queue's front portion? Use a range query when appropriate, while avoiding repeated deep index lookups."
+   }
+  ],
+  "keyPoints": [
+   "A List stores string values in an ordered linked-list structure.",
+   "LPUSH adds one or more values to the left side of a list.",
+   "LPUSH can create the list key as part of adding the first value.",
+   "Blocking list commands can let consumers wait for asynchronously produced items."
+  ],
+  "gotchas": [
+   "Avoid frequent random access by index for large lists; linked-list index access requires work proportional to the position.",
+   "Blocking operations support waiting consumers, but queue reliability requirements should be evaluated separately rather than assumed from list behavior."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redis foundations::Sets": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/data-types/sets/",
+  "sourceTitle": "Redis Sets",
+  "summary": "Redis sets represent unordered collections of unique string members. They support efficient membership checks and set algebra such as unions, intersections, and differences.",
+  "explanation": "Redis sets store unique string members without preserving order. Add or remove members, test membership, count or enumerate them, and combine sets with union, intersection, and difference commands.",
+  "syntax": "SADD key member [member ...]",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "key",
+    "description": "The key of the set to read or modify."
+   },
+   {
+    "name": "member",
+    "type": "string",
+    "description": "One or more string values stored as set members."
+   },
+   {
+    "name": "destination",
+    "type": "key",
+    "description": "A destination key for STORE variants of set operations."
+   }
+  ],
+  "returns": "Depending on the command, Redis returns an integer count, Boolean-like membership result, array of members, or a set-operation result; STORE variants write the result to a destination key.",
+  "example": {
+   "title": "Set membership and operations",
+   "code": "SADD users:admins alice bob alice\nSADD users:developers bob carol\nSINTER users:admins users:developers\nSUNION users:admins users:developers\nSDIFF users:admins users:developers\nSISMEMBER users:admins alice",
+   "language": "bash",
+   "explanation": "This runnable Redis CLI session adds members, compares sets, and tests membership. Duplicate input is ignored."
+  },
+  "useCases": [
+   {
+    "title": "Unique-item tracking",
+    "scenario": "Track distinct visitors or identifiers associated with an object."
+   },
+   {
+    "title": "Relationship modeling",
+    "scenario": "Associate users with roles, groups, or permissions."
+   },
+   {
+    "title": "Set comparison",
+    "scenario": "Compare audiences, capabilities, or other collections."
+   },
+   {
+    "title": "Union, intersection, and difference",
+    "scenario": "Determine shared or exclusive membership across collections."
+   }
+  ],
+  "related": [
+   "SADD",
+   "SREM",
+   "SISMEMBER",
+   "SMISMEMBER",
+   "SCARD",
+   "SMEMBERS",
+   "SSCAN",
+   "SINTER"
+  ],
+  "since": "1.0.0",
+  "interview": [
+   {
+    "question": "What is a Redis set, and when would you use one?",
+    "answer": "A Redis set is an unordered collection of unique string members. It is appropriate for membership tracking and for union, intersection, and difference operations.",
+    "followUp": "How would you model ordered unique values? Use a sorted set, which associates members with scores and supports ordered access."
+   },
+   {
+    "question": "Which commands handle membership and cardinality?",
+    "answer": "Use SADD to add members, SISMEMBER to test one member, SMISMEMBER to test several, SCARD to count members, and SMEMBERS to retrieve all members. SADD creates the key if it does not already exist.",
+    "followUp": "How can you avoid fetching a very large set at once? Use SSCAN to iterate through members incrementally rather than requesting the complete collection."
+   },
+   {
+    "question": "How do Redis set operations differ?",
+    "answer": "SINTER returns members common to multiple sets, SUNION returns members present in any supplied set, and SDIFF returns members in the first set but not the later sets. The STORE variants write the result to a destination key.",
+    "followUp": "What determines SDIFF's result when several keys are supplied? The first key is the reference set; members found in subsequent sets are removed from that result."
+   }
+  ],
+  "keyPoints": [
+   "Sets enforce uniqueness automatically, making them useful for representing membership without maintaining a separate duplicate-checking structure.",
+   "A set can record distinct values such as visitors, tags, or feature flags associated with an entity.",
+   "Use a separate set key for a relation, such as the users assigned to a role.",
+   "Redis computes shared members, combined membership, or relative membership directly through set commands.",
+   "SADD accepts one or more members in one command and creates the set key when absent.",
+   "SCARD provides set cardinality in constant time according to the command summary.",
+   "SISMEMBER answers a single membership question, while SMISMEMBER handles multiple candidate members."
+  ],
+  "gotchas": [
+   "Do not depend on insertion or retrieval order; use a sorted set when ordering or scores matter.",
+   "Adding the same member again does not create another entry, so duplicate inputs do not increase cardinality.",
+   "SMEMBERS can be expensive for large sets because it returns every member; prefer incremental scanning when appropriate."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redis foundations::Sorted sets": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/data-types/sorted-sets/",
+  "sourceTitle": "Redis sorted sets | Docs",
+  "summary": "Sorted sets associate unique string members with scores and keep them ordered. They support efficient ranking, score updates, and bounded retrieval by rank or score.",
+  "explanation": "A sorted set stores unique string members alongside scores and keeps them ordered from lowest to highest. Add or update members with ZADD, then retrieve members by rank or score; equal scores are resolved lexicographically.",
+  "syntax": "ZADD key [NX | XX] [GT | LT] [CH] [INCR] score member [score member ...]\nZRANGE key start stop [BYSCORE | BYLEX] [REV] [LIMIT offset count] [WITHSCORES]",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "string",
+    "description": "Key holding the sorted set."
+   },
+   {
+    "name": "members",
+    "type": "SortedSetMember | Array<SortedSetMember>",
+    "description": "One or more score-member pairs supplied to ZADD."
+   },
+   {
+    "name": "start",
+    "type": "integer",
+    "description": "Zero-based starting index for an index range."
+   },
+   {
+    "name": "stop",
+    "type": "integer",
+    "description": "Zero-based ending index for an index range."
+   }
+  ],
+  "returns": "ZADD returns the number of newly added members (excluding score updates); ZRANGE returns the matching members, optionally paired with their scores.",
+  "example": {
+   "title": "Create and read a leaderboard",
+   "code": "redis-cli ZADD leaderboard 1250 alice 980 bob 1100 carol\nredis-cli ZREVRANGE leaderboard 0 2 WITHSCORES",
+   "language": "bash",
+   "explanation": "Adds three members with numeric scores, then returns the three highest-scoring members first."
+  },
+  "useCases": [
+   {
+    "title": "Leaderboards",
+    "scenario": "Maintain players ordered by points and retrieve the top or bottom ranks."
+   },
+   {
+    "title": "Scheduling",
+    "scenario": "Store events or jobs with timestamps as scores and select items within a time window."
+   },
+   {
+    "title": "Range queries",
+    "scenario": "Fetch only members whose ranks or scores fall inside a bounded interval."
+   }
+  ],
+  "related": [
+   "ZADD",
+   "ZRANGE",
+   "ZREVRANGE",
+   "ZINCRBY",
+   "WITHSCORES",
+   "leaderboards"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Redis sorted set, and how are its members ordered?",
+    "answer": "A sorted set is a collection of unique string members, each associated with a score. Redis orders members by ascending score, using lexicographic order to break ties.",
+    "followUp": "How would you retrieve the highest-ranked members? Use ZREVRANGE with a zero-based start and end range, optionally adding WITHSCORES."
+   },
+   {
+    "question": "What does ZADD do?",
+    "answer": "ZADD inserts members or updates the scores of existing members, creating the key when necessary. Updating a score also changes the member's position in the sorted set.",
+    "followUp": "What is the update complexity? The documentation states that adding or updating an element takes O(log(N)) time."
+   },
+   {
+    "question": "How do ZRANGE and ZREVRANGE differ?",
+    "answer": "ZRANGE reads members by index range in ascending order, while ZREVRANGE reads them in descending order. Range boundaries are expressed as zero-based indexes.",
+    "followUp": "How can results include scores? Add the WITHSCORES option to the range command."
+   }
+  ],
+  "keyPoints": [
+   "Each member appears at most once and is positioned using its associated score.",
+   "ZADD supports both insertion and score changes in one command.",
+   "The first ZADD against a new key initializes the sorted set automatically.",
+   "ZRANGE supports bounded retrieval by rank using start and end indexes.",
+   "Adding an element has logarithmic time complexity relative to the set size."
+  ],
+  "gotchas": [
+   "Members sharing a score are not ordered by insertion time; Redis orders them lexicographically.",
+   "Adding an existing member changes its score and therefore can change its position."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redis foundations::Streams": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/data-types/streams/",
+  "sourceTitle": "Redis Streams",
+  "summary": "Redis Streams are append-only logs of field/value entries with ordered IDs. Producers append with XADD; consumers can read directly or use consumer groups, which distribute work and track unacknowledged messages.",
+  "explanation": "A stream stores field/value entries in append order and assigns each one a time-ordered ID. Producers use XADD; consumers can read directly with XREAD or use XREADGROUP through a consumer group. Groups distribute entries among their consumers, track pending unacknowledged entries, and advance a group delivery cursor; XACK records successful processing.",
+  "syntax": "XADD key [NOMKSTREAM] [MAXLEN|MINID [=|~] threshold [LIMIT count]] <* | id> field value [field value ...]\nXREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] id [id ...]\nXGROUP CREATE key group id|$ [MKSTREAM]\nXREADGROUP GROUP group consumer [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] id [id ...]\nXACK key group id [id ...]",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Append and acknowledge a stream entry",
+   "code": "import { createClient } from 'redis';\n\nconst redis = createClient();\nawait redis.connect();\n\nawait redis.xAdd('events', '*', { type: 'signup', user: '42' });\nawait redis.xGroupCreate('events', 'workers', '0', { MKSTREAM: true });\n\nconst result = await redis.xReadGroup(\n  'workers', 'consumer-1',\n  { key: 'events', id: '>' },\n  { COUNT: 10, BLOCK: 1000 }\n);\n\nif (result?.[0]?.messages[0]) {\n  const message = result[0].messages[0];\n  console.log(message.message);\n  await redis.xAck('events', 'workers', message.id);\n}\n\nawait redis.quit();",
+   "language": "typescript",
+   "explanation": "Appends an event, creates a consumer group, reads entries not yet delivered to that group, and acknowledges one processed entry."
+  },
+  "useCases": [
+   {
+    "title": "Parallel worker processing",
+    "scenario": "Multiple workers need to divide event processing while retaining acknowledgement state."
+   },
+   {
+    "title": "Independent event consumers",
+    "scenario": "Several independent applications need to consume the same ordered event history."
+   },
+   {
+    "title": "Event log and replay",
+    "scenario": "A system needs durable, replayable records rather than transient notifications."
+   }
+  ],
+  "related": [
+   "XADD",
+   "XREAD",
+   "XREADGROUP",
+   "XGROUP",
+   "XACK",
+   "consumer groups",
+   "pending messages",
+   "stream entries"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do Redis Streams differ from ordinary list-based queues?",
+    "answer": "XADD appends a field/value entry and Redis assigns an ID based on stream time ordering. XREAD reads entries directly without consumer-group bookkeeping, while XREADGROUP reads through a group and tracks delivery.",
+    "followUp": "How would you recover an entry from a failed consumer? Use the group’s pending-entry mechanisms and reassign an unacknowledged entry before acknowledging it after successful processing."
+   },
+   {
+    "question": "What guarantees does a consumer group provide?",
+    "answer": "A consumer group is a logical consumer shared by multiple named consumers. Redis gives each message to one consumer in that group, while different groups each receive the stream’s entries independently.",
+    "followUp": "Why use more than one group? Separate groups allow independent applications or workflows to process the same stream without sharing a delivery cursor."
+   },
+   {
+    "question": "Which commands manage Redis Stream consumer-group state?",
+    "answer": "XGROUP manages consumer groups, XREADGROUP reads through a group, and XACK marks a pending message as processed. The group tracks the first ID never consumed and pending messages that have been delivered but not acknowledged.",
+    "followUp": "What happens if a consumer crashes after receiving an entry? The entry remains pending, so recovery logic can identify it and arrange reprocessing rather than silently losing it."
+   }
+  ],
+  "keyPoints": [
+   "Streams are append-only: entries are added to a log and are not edited in place.",
+   "Within one consumer group, Redis distributes messages across consumers so the group can process work in parallel.",
+   "A group maintains a delivery position representing the earliest entry it has not yet consumed.",
+   "Multiple groups can subscribe to the same stream, with each group receiving every stream entry independently.",
+   "After successful processing, the consumer calls XACK to remove that entry from the group’s pending work."
+  ],
+  "gotchas": [
+   "Do not substitute XREAD for group processing: consumer-group reads use XREADGROUP, which maintains group delivery and pending-entry state.",
+   "Consumers in one group share work, so a message is assigned to one consumer within that group rather than broadcast to every member.",
+   "A delivered but unacknowledged entry remains pending; processing workers must acknowledge completed entries with XACK."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redis foundations::Strings and counters": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/data-types/strings/",
+  "sourceTitle": "Redis Strings",
+  "summary": "Redis strings store byte sequences, including cached data. Use INCR or INCRBY for server-side atomic counters, rather than client-side read-modify-write sequences that can lose concurrent updates.",
+  "explanation": "Redis strings hold byte sequences, including text or serialized data. For counters, Redis interprets the stored string as a signed 64-bit base-10 integer and performs the increment on the server, avoiding a client-side GET/change/SET race; a missing key starts at zero.",
+  "syntax": "INCR key\nINCRBY key increment",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "Redis key",
+    "description": "The key whose string value is incremented."
+   },
+   {
+    "name": "increment",
+    "type": "signed integer",
+    "description": "The integer amount added to the key; INCR uses one."
+   }
+  ],
+  "returns": "The value of the key after the increment, as a signed 64-bit integer.",
+  "example": {
+   "title": "Atomic page-view counter",
+   "code": "const key = \"pageviews\";\nawait redis.set(key, \"0\");\nconst first = await redis.incr(key);\nconst second = await redis.incrby(key, 4);\nconsole.log(first, second); // 1 5",
+   "language": "javascript",
+   "explanation": "Use a Redis client to initialize a string key and update it with server-side atomic increments."
+  },
+  "useCases": [
+   {
+    "title": "Event counters",
+    "scenario": "Count page views, requests, or other events as they happen."
+   },
+   {
+    "title": "Variable deltas",
+    "scenario": "Track a value that changes by amounts larger than one."
+   },
+   {
+    "title": "Application metrics",
+    "scenario": "Maintain per-user or per-object numeric state in separate keys."
+   }
+  ],
+  "related": [
+   "SET",
+   "GET",
+   "INCR",
+   "INCRBY",
+   "DECR",
+   "DECRBY",
+   "GETSET",
+   "EXPIRE"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does INCR behave for a missing key?",
+    "answer": "INCR atomically increases a string value by one and returns the resulting integer. If the key is absent, Redis treats it as zero before applying the increment.",
+    "followUp": "What happens if two clients increment concurrently? Each server-side INCR is atomic, so both updates are preserved; a GET/change/SET sequence could lose one update."
+   },
+   {
+    "question": "When would you choose INCRBY instead of INCR?",
+    "answer": "INCRBY applies an integer delta to the value stored in a string key and returns the new value. It is useful when changes can be larger than one or can be negative through the related decrement commands.",
+    "followUp": "How would you add expiration to a counter? Pair the increment with expiration carefully; the documentation notes that combining INCR and EXPIRE for a bounded window may require a Lua script so the operations are treated together."
+   },
+   {
+    "question": "Why are counters categorized as strings?",
+    "answer": "Redis calls these counters string operations because it has no separate integer data type. The value is stored as a string representation, while integer-valued strings use an optimized integer representation internally.",
+    "followUp": "Why should the client avoid parsing and rewriting the value? Server-side increment keeps the read-modify-write operation atomic and prevents simultaneous clients from overwriting one another's updates."
+   }
+  ],
+  "keyPoints": [
+   "INCR reads the string as a base-10 integer before adding one and storing the result.",
+   "INCRBY changes a string counter by a caller-supplied integer amount.",
+   "Both increment commands naturally create a counter when their key is missing.",
+   "A straightforward counter sends an increment command whenever the counted event occurs.",
+   "Event counting can be implemented with one server-side increment per event."
+  ],
+  "gotchas": [
+   "INCR fails when the key is not a string or when its string contents cannot be parsed as an integer.",
+   "A string counter must remain within the signed 64-bit integer range."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redis operations::ACLs and TLS": {
+  "sourceUrl": "https://redis.io/docs/latest/operate/oss_and_stack/management/security/acl/",
+  "sourceTitle": "ACL | Docs - Redis",
+  "summary": "Redis ACLs authenticate named users and restrict their commands and key patterns. Combine these application-level permissions with TLS and limited network exposure to protect Redis clients and traffic.",
+  "explanation": "Redis ACLs associate an authenticated connection with a named user and enforce that user's command and key-pattern permissions. TLS protects Redis communication in transit; keep network exposure restricted as well, because ACLs control operations after a connection reaches Redis.",
+  "syntax": "ACL SETUSER username [rule [rule ...]]",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Connect with a restricted user",
+   "code": "redis-cli --tls -h localhost -p 6379 --user app --pass \"$REDIS_PASSWORD\" ACL SETUSER app on resetkeys '~cache:*' +get +set -@dangerous",
+   "language": "bash",
+   "explanation": "Connect over TLS and authenticate as an application user whose ACL permits only GET and SET for keys matching cache:*; configure TLS certificates as required by the deployment."
+  },
+  "useCases": [
+   {
+    "title": "Tenant or service isolation",
+    "scenario": "A service should read and write only its own cache namespace."
+   },
+   {
+    "title": "Read-only application access",
+    "scenario": "A reporting process needs reads but must not mutate cached data."
+   },
+   {
+    "title": "Operational safety",
+    "scenario": "Operators and applications require different capabilities."
+   },
+   {
+    "title": "Encrypted client and replication traffic",
+    "scenario": "Redis traffic must not be observable in transit."
+   }
+  ],
+  "related": [
+   "ACL SETUSER",
+   "ACL GETUSER",
+   "ACL LIST",
+   "ACL CAT",
+   "ACL DRYRUN",
+   "AUTH",
+   "TLS",
+   "key patterns"
+  ],
+  "since": "Redis 6 (ACL authentication); Redis 7.0 (subcommand and key-",
+  "interview": [
+   {
+    "question": "How does Redis ACL authorization work?",
+    "answer": "ACLs authenticate a client with a username and password, then associate the connection with that user. Redis applies the user's command and key restrictions to subsequent requests.",
+    "followUp": "How would you limit a cache client? Define a named user with only the required read/write commands and a key pattern such as ~cache:*."
+   },
+   {
+    "question": "How are commands and subcommands restricted?",
+    "answer": "Use command rules such as +get or +set to allow individual commands, - rules to remove them, and command categories when appropriate. Redis 7.0 and later also support targeting subcommands with the | separator.",
+    "followUp": "How can one allow CONFIG GET but deny CONFIG SET? Use +config|get and -config|set on Redis 7.0 or later."
+   },
+   {
+    "question": "How do key patterns and TLS complement each other?",
+    "answer": "Key permissions use patterns to control which keys a command can touch, beginning with Redis 7.0. TLS separately encrypts supported Redis communication channels, including client connections, replication links, and the cluster bus.",
+    "followUp": "Why still restrict network access? TLS protects transport and ACLs authorize operations, but reducing reachability limits who can attempt connections in the first place."
+   }
+  ],
+  "keyPoints": [
+   "ACLs provide per-identity limits over both executable commands and accessible keys.",
+   "A client authenticates with a username and valid password before Redis applies the identity's permissions.",
+   "Use +command rules to grant individual commands, while -command rules remove commands from a user's allowed set.",
+   "Redis 7.0+ supports key patterns that constrain how commands may access keys."
+  ],
+  "gotchas": [
+   "A default user can have full database access when no ACL is configured, so do not rely on unauthenticated default access.",
+   "Subcommand blocking with command|subcommand syntax is available starting in Redis 7.0; account for the deployed Redis version."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redis operations::Connections and pooling": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/clients/pools-and-muxing/",
+  "sourceTitle": "Connection pools and multiplexing",
+  "summary": "Connection pooling reuses a bounded set of Redis connections, while multiplexing shares one connection across operations. Choose the model and client that fit your concurrency and runtime, and return borrowed connections promptly.",
+  "explanation": "A pool keeps a bounded set of reusable connections. Borrowing a connection marks it busy; releasing it returns it to the pool rather than closing the socket. Multiplexing is an alternative in which many operations share one connection, so the client choice should match the runtime and concurrency model.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Reuse a Redis client",
+   "code": "import { createClient } from \"redis\";\n\nconst client = createClient({ url: process.env.REDIS_URL });\n\nawait client.connect();\nawait client.set(\"greeting\", \"hello\");\nconsole.log(await client.get(\"greeting\"));\nawait client.quit();",
+   "language": "typescript",
+   "explanation": "Create one client, reuse its internally managed pool across operations, and close it when the process ends."
+  },
+  "useCases": [
+   {
+    "title": "Reuse connections across requests",
+    "scenario": "Long-lived API service"
+   },
+   {
+    "title": "Coordinate simultaneous Redis operations",
+    "scenario": "Concurrent worker process"
+   },
+   {
+    "title": "Reuse connections during instance lifetime",
+    "scenario": "Serverless function with warm instances"
+   }
+  ],
+  "related": [
+   "connection pooling",
+   "multiplexing",
+   "redis-py",
+   "jedis",
+   "go-redis",
+   "StackExchange.Redis"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does connection pooling work?",
+    "answer": "A pool initializes a small set of connections and tracks whether each is available or in use. Borrowing reuses an existing connection, while closing the borrowed handle returns it to the pool.",
+    "followUp": "How does multiplexing differ? Multiplexing lets multiple requests share a connection; StackExchange.Redis uses this approach rather than connection pooling."
+   },
+   {
+    "question": "Why use a connection pool?",
+    "answer": "Pooling avoids repeatedly creating and closing sockets, which reduces connection overhead and improves production performance. The client selects an available connection for each operation and reuses it afterward.",
+    "followUp": "What should be checked if the pool is exhausted? Ensure borrowed connections are always released and choose limits suitable for the workload."
+   },
+   {
+    "question": "Which client models are documented?",
+    "answer": "The documented clients supporting pooling include redis-py, Jedis, and go-redis. StackExchange.Redis is documented as supporting multiplexing instead.",
+    "followUp": "What runtime concern affects client choice? A long-lived service can retain pooled connections, while a serverless process should reuse a connection or pool across invocations when its lifetime permits."
+   }
+  ],
+  "keyPoints": [
+   "Redis client connection management has two principal models: pooling and multiplexing.",
+   "A pool starts with a small connection set instead of creating one socket for every request.",
+   "Borrowing marks a pooled connection as busy so concurrent operations can be coordinated.",
+   "Releasing a connection makes it available for reuse and avoids repeatedly opening sockets.",
+   "Pool demand can exceed the initial allocation, so applications should account for growth and server limits.",
+   "The page identifies redis-py, Jedis, and go-redis as clients with pooling support."
+  ],
+  "gotchas": [
+   "Returning a pooled connection is not the same as closing its socket; failing to return borrowed connections can exhaust the pool."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redis operations::Memory limits and eviction": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/reference/eviction/",
+  "sourceTitle": "Key eviction",
+  "summary": "Redis uses maxmemory to cap cache data and maxmemory-policy to decide what happens at the limit. Depending on the policy, it evicts keys or rejects new writes while reads continue.",
+  "explanation": "Redis compares cache usage with maxmemory and, when the limit is exceeded, applies maxmemory-policy until usage falls below the limit. Policies either evict selected keys or, with noeviction, reject commands that would add cached data; reads continue to work.",
+  "syntax": "maxmemory <bytes>\nmaxmemory-policy <policy>",
+  "parameters": [
+   {
+    "name": "maxmemory",
+    "type": "configuration directive",
+    "description": "Maximum amount of memory allocated for cache data."
+   },
+   {
+    "name": "maxmemory-policy",
+    "type": "configuration directive",
+    "description": "Policy used when maxmemory is reached."
+   }
+  ],
+  "returns": "Eviction policies remove keys when the configured memory limit is exceeded; noeviction returns an error for commands that would cache new data.",
+  "example": {
+   "title": "Configure and inspect eviction",
+   "code": "CONFIG SET maxmemory 100mb\nCONFIG SET maxmemory-policy allkeys-lru\nINFO stats",
+   "language": "bash",
+   "explanation": "Set a cache limit and an LRU eviction policy, then inspect Redis statistics to monitor behavior."
+  },
+  "useCases": [
+   {
+    "title": "General-purpose LRU cache",
+    "scenario": "A cache should retain recently accessed entries regardless of whether they have TTLs."
+   },
+   {
+    "title": "Write-rejection behavior",
+    "scenario": "A cache must preserve all existing keys and surface memory pressure to the application."
+   },
+   {
+    "title": "TTL-controlled cache",
+    "scenario": "Only expiring entries should be candidates for removal."
+   }
+  ],
+  "related": [
+   "maxmemory",
+   "maxmemory-policy",
+   "noeviction",
+   "allkeys-lru",
+   "allkeys-lfu",
+   "allkeys-random",
+   "volatile-lru",
+   "volatile-lfu"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do maxmemory and maxmemory-policy work together?",
+    "answer": "maxmemory defines the maximum amount of memory intended for cache data. When usage exceeds it, Redis enforces the configured maxmemory-policy and evicts keys until usage is back below the limit.",
+    "followUp": "What happens if the policy is noeviction? Redis does not evict keys; commands that cache new data return an error, while reads of existing data continue to work."
+   },
+   {
+    "question": "Compare noeviction, allkeys-lru, and volatile-lru.",
+    "answer": "noeviction preserves keys but rejects commands that would add cached data. The eviction policies instead choose keys using criteria such as recency, frequency, randomness, or expiration time.",
+    "followUp": "When would volatile-lru be risky? It can only evict keys carrying a TTL, so a dataset without eligible expiring keys cannot be relieved by that policy."
+   },
+   {
+    "question": "How do allkeys and volatile policy families differ?",
+    "answer": "allkeys-lru evicts the least recently used key from the complete keyspace. volatile-lru restricts candidates to keys with an associated expiration, whereas allkeys-lfu uses access frequency rather than recency.",
+    "followUp": "How does allkeys-random differ? It selects keys at random, without using recency, frequency, or expiration as its selection criterion."
+   }
+  ],
+  "keyPoints": [
+   "Set maxmemory to define the memory budget for cached data.",
+   "Choose maxmemory-policy according to whether the workload favors recency, frequency, randomness, expiration, or rejecting new writes.",
+   "Once usage passes the limit, Redis repeatedly removes policy-selected keys until memory falls below the configured threshold.",
+   "allkeys-lfu considers access frequency across all keys, making it suitable when frequently accessed entries should be retained.",
+   "volatile-ttl prioritizes expiring keys whose remaining lifetime is shortest.",
+   "noeviction protects existing keys by turning memory pressure into write errors."
+  ],
+  "gotchas": [
+   "With noeviction, write failures caused by the memory limit apply to the primary; replicas do not independently enforce this condition.",
+   "A volatile policy can remove only keys with an expiration; it may therefore fail to free memory when no eligible keys remain.",
+   "Under noeviction, existing data remains readable even though commands that add cached data can return errors."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redis operations::RDB and AOF persistence": {
+  "sourceUrl": "https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/",
+  "sourceTitle": "Redis persistence",
+  "summary": "RDB periodically saves compact point-in-time snapshots, while AOF records write operations for replay during recovery. RDB favors compact backups and fast restarts; AOF offers more configurable durability, and both can be enabled together.",
+  "explanation": "RDB periodically records the complete dataset as a compact point-in-time file, making backups and large-dataset restarts efficient, but changes since the latest snapshot can be lost. AOF records each dataset-changing command and rebuilds state by replaying the log; its fsync policy controls durability. Redis can use both, combining AOF recovery with RDB backups.",
+  "syntax": "CONFIG SET appendonly yes\nCONFIG SET appendfsync everysec\nBGREWRITEAOF",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Enable and rewrite AOF",
+   "code": "redis-cli CONFIG SET appendonly yes\nredis-cli CONFIG SET appendfsync everysec\nredis-cli SET user:42 alice\nredis-cli BGREWRITEAOF",
+   "language": "bash",
+   "explanation": "Enables AOF, selects once-per-second synchronization, writes a key, and compacts the append-only file."
+  },
+  "useCases": [
+   {
+    "title": "Backup with RDB snapshots",
+    "scenario": "Create compact backups or restore a dataset version from a known point in time."
+   },
+   {
+    "title": "Durable write logging",
+    "scenario": "Reduce the amount of recent data exposed to loss after a restart by selecting an AOF synchronization policy."
+   },
+   {
+    "title": "Hybrid persistence",
+    "scenario": "Use AOF for operational recovery while retaining RDB snapshots for backups and faster restart paths."
+   }
+  ],
+  "related": [
+   "RDB",
+   "AOF",
+   "BGREWRITEAOF",
+   "CONFIG SET",
+   "appendonly",
+   "appendfsync",
+   "SAVE",
+   "dump.rdb"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do RDB and AOF differ?",
+    "answer": "RDB creates periodic point-in-time snapshots in a compact file. It is useful for backups and generally enables faster restarts with large datasets, but it can omit writes made after the last snapshot.",
+    "followUp": "Which approach offers finer durability control? AOF, because it supports configurable synchronization policies such as no sync, once per second, or every query."
+   },
+   {
+    "question": "How does AOF recovery work?",
+    "answer": "AOF records every command that changes the dataset and replays those commands during startup to reconstruct the data. Redis records commands in the Redis protocol format, allowing the log to represent the operations needed for recovery.",
+    "followUp": "How can an AOF be reduced in size? Use BGREWRITEAOF to create a rewritten, compact representation of the current dataset."
+   },
+   {
+    "question": "Why combine RDB and AOF?",
+    "answer": "Redis can enable RDB and AOF together. This combines a compact snapshot suitable for backups with the AOF mechanism for more complete recovery during normal operation.",
+    "followUp": "What operational constraint applies when converting an RDB-only server to AOF? The documented conversion procedure requires stopping writes while generating the AOF, then stopping Redis and enabling AOF in the configuration before restart."
+   }
+  ],
+  "keyPoints": [
+   "RDB stores a compact, single-file image of the dataset at a particular moment, which is convenient for backup handling.",
+   "For large datasets, RDB can reduce restart time compared with reconstructing state from an AOF log.",
+   "AOF appends operations instead of updating earlier log positions, avoiding seek-based writes and the documented power-outage corruption concern.",
+   "Startup can rebuild the dataset by replaying the persisted AOF operations.",
+   "A single Redis instance may use both persistence mechanisms, allowing their operational strengths to be combined."
+  ],
+  "gotchas": [
+   "An RDB snapshot represents only the dataset state captured at its scheduled interval, so writes after that point may not be recoverable.",
+   "AOF is not a single durability level: its selected fsync policy determines how frequently recent writes reach durable storage.",
+   "AOF recovery re-executes the recorded commands, so restart behavior differs from loading one snapshot file."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redis operations::Redis Cluster and hash slots": {
+  "sourceUrl": "https://redis.io/docs/latest/operate/oss_and_stack/management/scaling/",
+  "sourceTitle": "Scale with Redis Cluster",
+  "summary": "Redis Cluster partitions its keyspace into 16,384 hash slots and distributes those slots across nodes. Use hash tags to colocate related keys when multi-key commands, transactions, or Lua scripts must operate on them together.",
+  "explanation": "Redis Cluster divides its keyspace into 16,384 hash slots. It computes a key's slot with CRC16 modulo 16,384, then routes the key to the node responsible for that slot. A hash tag—the substring inside the first valid curly-brace pair—lets you deliberately place related keys together. Multi-key commands, transactions, and Lua scripts require all participating keys to share a slot.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Keep related keys in one slot",
+   "code": "const Redis = require('ioredis');\n\nconst cluster = new Redis.Cluster([\n  { host: '127.0.0.1', port: 7000 },\n  { host: '127.0.0.1', port: 7001 }\n]);\n\n(async () => {\n  await cluster.set('{user:42}:name', 'Ada');\n  await cluster.set('{user:42}:plan', 'pro');\n  const values = await cluster.mget('{user:42}:name', '{user:42}:plan');\n  console.log(values);\n  await cluster.quit();\n})();",
+   "language": "javascript",
+   "explanation": "Both keys use the same hash tag, so they map to one slot and can participate in the same multi-key operation."
+  },
+  "useCases": [
+   {
+    "title": "Colocate per-entity keys",
+    "scenario": "A request updates and reads several fields belonging to one customer."
+   },
+   {
+    "title": "Keep transaction keys compatible",
+    "scenario": "A transaction needs to modify multiple keys atomically."
+   },
+   {
+    "title": "Enable single-slot scripting",
+    "scenario": "A Lua script accesses several related keys."
+   }
+  ],
+  "related": [
+   "hash slots",
+   "CRC16",
+   "hash tags",
+   "multi-key operations",
+   "transactions",
+   "Lua scripts",
+   "Redis Cluster data sharding"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Redis Cluster map a key to a node?",
+    "answer": "Redis Cluster has exactly 16,384 hash slots. It assigns a key by computing CRC16 of the key, taking the result modulo 16,384, and routing the key to the node that owns the resulting slot.",
+    "followUp": "How can two keys be made compatible with a multi-key command? Use the same hash tag, such as {user:42}, in both key names so the tagged portion determines the same slot."
+   },
+   {
+    "question": "What is the cross-slot restriction?",
+    "answer": "Multi-key operations are supported only when every key used by one command execution belongs to the same hash slot. The same restriction applies to an entire transaction or Lua script execution.",
+    "followUp": "What happens when keys map to different slots? Redis rejects the operation with a cross-slot error rather than coordinating it across nodes."
+   },
+   {
+    "question": "What are hash tags and why use them?",
+    "answer": "A hash tag is the key substring inside a valid pair of curly braces. Redis hashes that substring instead of the whole key, allowing related keys such as {user:42}:name and {user:42}:plan to share a slot.",
+    "followUp": "What design trade-off follows? Tags improve multi-key locality but can concentrate traffic and data on one slot, reducing distribution balance."
+   }
+  ],
+  "keyPoints": [
+   "Redis Cluster uses 16,384 fixed hash slots. A key's slot is calculated with CRC16(key) modulo 16,384.",
+   "Nodes own subsets of the slot range, so keys are distributed among nodes according to their calculated slots.",
+   "A multi-key command succeeds only when all its keys belong to one hash slot.",
+   "The same single-slot requirement applies to complete transactions and Lua script executions.",
+   "Put a shared hash tag in related key names to intentionally colocate them in one slot."
+  ],
+  "gotchas": [
+   "Most multi-key operations cannot span different hash slots. A command, transaction, or Lua script that uses keys from different slots fails with a cross-slot error.",
+   "Use a hash tag only for keys that must be colocated; concentrating too many keys under one tag can create an uneven workload."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redis operations::Replication and failover": {
+  "sourceUrl": "https://redis.io/docs/latest/operate/oss_and_stack/management/replication/",
+  "sourceTitle": "Replication | Redis",
+  "summary": "Redis replication is asynchronous, so replica lag can leave recently acknowledged writes vulnerable during failover. WAIT and replica-lag write thresholds reduce this risk but do not provide strong consistency or guarantee that acknowledged writes survive failover.",
+  "explanation": "Redis replication is asynchronous: a primary can acknowledge a write before a replica has processed it, creating replica lag. WAIT can require acknowledgements from a chosen number of replicas, but it does not provide strong consistency; a failover can still discard an acknowledged write depending on persistence configuration.",
+  "syntax": "WAIT numreplicas timeout",
+  "parameters": [
+   {
+    "name": "numreplicas",
+    "type": "integer",
+    "description": "Number of replicas whose acknowledgements are required."
+   },
+   {
+    "name": "timeout",
+    "type": "integer",
+    "description": "Maximum time to wait for acknowledgements, in milliseconds."
+   }
+  ],
+  "returns": "WAIT returns the number of replicas that acknowledged the preceding writes from the current client; it can return before the requested count when the timeout expires.",
+  "example": {
+   "title": "Wait for replica acknowledgement",
+   "code": "SET session:123 active\nWAIT 1 1000",
+   "language": "bash",
+   "explanation": "Write the value, then wait up to 1 second for at least one replica to acknowledge the preceding write."
+  },
+  "useCases": [
+   {
+    "title": "Require replica acknowledgements",
+    "scenario": "A write should be copied to several replicas before the client proceeds."
+   },
+   {
+    "title": "Gate writes on replica health",
+    "scenario": "A primary should stop accepting writes when too few healthy, current replicas exist."
+   },
+   {
+    "title": "Evaluate failover data-loss risk",
+    "scenario": "An application must assess whether a failover could omit recent writes."
+   }
+  ],
+  "related": [
+   "WAIT",
+   "WAITAOF",
+   "min-replicas-to-write",
+   "min-replicas-max-lag",
+   "partial resynchronization",
+   "replication stream",
+   "failover"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why can failover lose an acknowledged write?",
+    "answer": "Replication is asynchronous, so the primary may reply before a replica processes the write. Replica lag therefore creates a window where a recently acknowledged write may be absent after failover.",
+    "followUp": "How can an application reduce this window? Use WAIT after writes to require acknowledgements from a specified number of replicas, while recognizing that failover can still lose acknowledged writes."
+   },
+   {
+    "question": "What does WAIT guarantee?",
+    "answer": "WAIT blocks until the requested number of replicas acknowledge preceding writes from the current client, or until its timeout expires. It improves replication acknowledgement coverage but does not make Redis strongly consistent.",
+    "followUp": "What does WAIT return on timeout? It returns the number of replicas that acknowledged the relevant writes, even if the requested count was not reached."
+   },
+   {
+    "question": "How can Redis restrict writes when replicas are lagging?",
+    "answer": "The primary can be configured with min-replicas-to-write and min-replicas-max-lag. Writes are accepted only when enough replicas are connected and their reported lag is within the configured limit.",
+    "followUp": "Does this prove a particular write reached a replica? No. Because replication is asynchronous, the configuration reduces risk but cannot ensure that the specific write was received."
+   }
+  ],
+  "keyPoints": [
+   "The primary normally sends the client acknowledgement without waiting for replica processing.",
+   "WAIT counts acknowledgements from the configured number of other Redis instances for preceding writes.",
+   "Replica lag is tracked through periodic pings and acknowledgements of the processed replication stream.",
+   "Use this setting to require a minimum number of attached replicas before accepting writes.",
+   "Use this setting to define the maximum permitted replica lag for write acceptance.",
+   "Both the replica count and lag threshold must be satisfied for the primary to accept a write."
+  ],
+  "gotchas": [
+   "WAIT does not guarantee that an acknowledged write survives failover.",
+   "Asynchronous replication leaves a window in which a primary failure can lose recent writes.",
+   "Replica acknowledgements should not be treated as a strong-consistency guarantee."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redis operations::Sentinel": {
+  "sourceUrl": "https://redis.io/docs/latest/operate/oss_and_stack/management/sentinel/",
+  "sourceTitle": "High availability with Redis Sentinel | Docs",
+  "summary": "Redis Sentinel monitors a Redis primary and its replicas, provides notifications and client discovery, and coordinates automatic failover. It promotes a replica and reconfigures the topology when the primary fails.",
+  "explanation": "Sentinel runs as a group of Redis instances that monitors a primary and its replicas. When the primary fails, the group selects and authorizes a leader, promotes a suitable replica, reconfigures other replicas, and supplies clients with the new primary address.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Connect through Sentinel",
+   "code": "from redis.sentinel import Sentinel\n\nsentinel = Sentinel([\n    (\"localhost\", 26379),\n    (\"localhost\", 26380),\n    (\"localhost\", 26381),\n])\nredis = sentinel.master_for(\"mymaster\", decode_responses=True)\nredis.set(\"healthcheck\", \"ok\")\nprint(redis.get(\"healthcheck\"))",
+   "language": "python",
+   "explanation": "Creates a Sentinel-aware Python client, discovers the current primary for the monitored service, and performs a write."
+  },
+  "useCases": [
+   {
+    "title": "Primary-replica high availability",
+    "scenario": "Run a primary with replicas and need automatic recovery without adopting Redis Cluster."
+   },
+   {
+    "title": "Failover-aware service discovery",
+    "scenario": "Let clients discover the current primary after topology changes."
+   },
+   {
+    "title": "Operational monitoring",
+    "scenario": "Expose health and state changes to operators or automation."
+   }
+  ],
+  "related": [
+   "Redis replication",
+   "Redis Cluster",
+   "automatic failover",
+   "Sentinel API",
+   "sentinel.conf",
+   "redis-cli"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Redis Sentinel do?",
+    "answer": "Sentinel monitors a primary and its replicas, reports health and state, and can coordinate automatic failover. After a primary failure, it promotes a replica and reconfigures the remaining replicas to follow the new primary.",
+    "followUp": "Why deploy multiple Sentinels? They use quorum and leader authorization so one observer does not unilaterally fail over the service."
+   },
+   {
+    "question": "How does an application connect through Sentinel?",
+    "answer": "A Sentinel-aware client asks Sentinel for the current primary address rather than permanently connecting to one data node. After failover, the client can use the newly returned primary address.",
+    "followUp": "What must the client library support? It must implement Sentinel discovery and failover behavior explicitly; ordinary Redis protocol support alone is insufficient."
+   },
+   {
+    "question": "What capabilities besides failover does Sentinel provide?",
+    "answer": "Sentinel provides monitoring, notifications, automatic failover, and a configuration-provider API for clients. It is intended for high availability when Redis Cluster is not being used.",
+    "followUp": "Which port should be opened for Sentinel communication? The documented default is TCP 26379, while ordinary Redis server traffic commonly uses 6379."
+   }
+  ],
+  "keyPoints": [
+   "Use Sentinel to add high availability to a primary-replica deployment that does not use Redis Cluster.",
+   "Continuous health checks let Sentinel detect problems with both the primary and replicas.",
+   "Applications and operators can receive notifications about monitored-instance problems.",
+   "During automatic failover, Sentinel promotes a replica when the monitored primary is unavailable.",
+   "After promotion, remaining replicas are redirected to follow the new primary.",
+   "The Sentinel API supports inspecting Sentinel state and checking monitored-node health."
+  ],
+  "gotchas": [
+   "Do not confuse Sentinel's default port with Redis's normal data-server port, 6379."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redis operations::Slow log and latency analysis": {
+  "sourceUrl": "https://redis.io/docs/latest/operate/oss_and_stack/management/optimization/latency-monitor/",
+  "sourceTitle": "Redis latency monitoring",
+  "summary": "Diagnose cache latency by separating server command execution from client communication and connection pressure. Combine SLOWLOG, LATENCY monitoring, and client-side latency measurement to locate the bottleneck.",
+  "explanation": "Redis separates server-side command execution from client communication in its slow-log model. Use SLOWLOG to find commands that block the server, LATENCY monitoring to classify latency events and obtain diagnostic guidance, and redis-cli latency measurement to assess the end-to-end response path; connection counts and pooling help expose saturation outside command execution.",
+  "syntax": "CONFIG SET latency-monitor-threshold <milliseconds>\nLATENCY LATEST\nLATENCY HISTORY <event>\nLATENCY DOCTOR\nSLOWLOG GET <number-of-entries>\nredis-cli --latency -h <host> -p <port>",
+  "parameters": [
+   {
+    "name": "latency-monitor-threshold",
+    "type": "integer",
+    "description": "Latency-monitor threshold in milliseconds; only events exceeding it are logged."
+   },
+   {
+    "name": "event",
+    "type": "string",
+    "description": "Optional event name used to retrieve one event's latency time series."
+   },
+   {
+    "name": "number of entries",
+    "type": "integer",
+    "description": "Number of slow-log entries to retrieve with SLOWLOG GET."
+   }
+  ],
+  "returns": "LATENCY LATEST returns the latest samples for all events; LATENCY DOCTOR returns a human-readable analysis report; SLOWLOG GET returns slow-log entries.",
+  "example": {
+   "title": "Enable latency analysis",
+   "code": "CONFIG SET latency-monitor-threshold 100\nLATENCY LATEST\nLATENCY DOCTOR\nredis-cli --latency -h 127.0.0.1 -p 6379",
+   "language": "bash",
+   "explanation": "Enables event sampling, requests recent samples and a diagnosis, then measures server response latency from the client."
+  },
+  "useCases": [
+   {
+    "title": "Find expensive server operations",
+    "scenario": "Commands appear slow or block other requests."
+   },
+   {
+    "title": "Investigate network or client delay",
+    "scenario": "Slow-log entries are normal but clients report high response times."
+   },
+   {
+    "title": "Detect connection saturation",
+    "scenario": "Latency rises during connection churn or traffic spikes."
+   },
+   {
+    "title": "Generate a latency report",
+    "scenario": "Operations need an interpretable diagnosis of latency events."
+   }
+  ],
+  "related": [
+   "SLOWLOG GET",
+   "LATENCY LATEST",
+   "LATENCY HISTORY",
+   "LATENCY RESET",
+   "LATENCY GRAPH",
+   "LATENCY DOCTOR",
+   "CONFIG SET latency-monitor-threshold",
+   "redis-cli --latency"
+  ],
+  "since": "2.8.13",
+  "interview": [
+   {
+    "question": "What does Redis Slow Log measure?",
+    "answer": "SLOWLOG isolates command execution because it records queries exceeding the configured execution time without including client communication. Therefore, a command absent from the slow log does not rule out network or client-side delay.",
+    "followUp": "How would you test the network path? Run redis-cli latency measurement and compare its result with server-side slow-log and latency-monitor data."
+   },
+   {
+    "question": "How do you enable and inspect Redis latency monitoring?",
+    "answer": "Set latency-monitor-threshold with CONFIG SET, then use LATENCY LATEST for recent samples and LATENCY DOCTOR for a human-readable analysis. The monitor records events that exceed the configured threshold.",
+    "followUp": "How can you inspect a particular event over time? Use LATENCY HISTORY with that event name to retrieve its latency time series."
+   },
+   {
+    "question": "How do you distinguish command cost from network delay and connection saturation?",
+    "answer": "A slow cache can have efficient commands but still experience high response latency from client communication or connection pressure. Check end-to-end latency separately, correlate latency with connection counts, and use a connection pool rather than repeatedly opening connections.",
+    "followUp": "What command-level pattern commonly deserves investigation? Long-running or high-complexity operations and large keys can create blocking work; inspect them with SLOWLOG GET."
+   }
+  ],
+  "keyPoints": [
+   "Enable monitoring by setting a millisecond threshold; Redis then records qualifying latency spikes.",
+   "Use LATENCY LATEST to see the newest samples across monitored event types.",
+   "Use LATENCY DOCTOR when you need Redis to summarize latency causes in readable diagnostic form.",
+   "For managed Redis offerings, inspect slow operations through the provider's slow-log interface."
+  ],
+  "gotchas": [
+   "Latency monitoring ignores events below its configured threshold; choose a threshold that matches the symptom rather than assuming every delay is recorded."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

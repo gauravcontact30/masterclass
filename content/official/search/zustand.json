@@ -1,0 +1,2343 @@
+{
+ "Hooks::Binding a vanilla store": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/reference/hooks/use-store",
+  "sourceTitle": "useStore - Zustand Docs",
+  "summary": "Use useStore to consume a framework-independent Zustand vanilla store from React. Pass the existing StoreApi and optionally select a slice, avoiding a second source of truth.",
+  "explanation": "Create the store with the vanilla API, then pass its StoreApi and an optional selector to useStore. The hook subscribes the component to the selected value, while actions remain available through the same store; this connects framework-independent state to React without duplicating state.",
+  "syntax": "useStore<T, U = T>(store: StoreApi<T>, selectorFn?: (state: T) => U): U",
+  "parameters": [
+   {
+    "name": "storeApi",
+    "type": "StoreApi<T>",
+    "description": "The StoreApi instance used to access and subscribe to the vanilla store."
+   },
+   {
+    "name": "selectorFn",
+    "type": "(state: T) => U",
+    "description": "Optional function receiving the store state and returning the value to read."
+   }
+  ],
+  "returns": "The value selected from the current store state; without a selector, the complete state.",
+  "example": {
+   "title": "Read a vanilla counter store in React",
+   "code": "import { createStore } from 'zustand/vanilla'\nimport { useStore } from 'zustand'\nimport { useEffect, useState } from 'react'\n\ntype CounterState = {\n  count: number\n  increment: () => void\n}\n\nconst counterStore = createStore<CounterState>()((set) => ({\n  count: 0,\n  increment: () => set((state) => ({ count: state.count + 1 }))\n}))\n\nexport function Counter() {\n  const count = useStore(counterStore, (state) => state.count)\n  const increment = useStore(counterStore, (state) => state.increment)\n  return <button onClick={increment}>{count}</button>\n}",
+   "language": "tsx",
+   "explanation": "A vanilla store is created once and passed to useStore, so React reads and subscribes to that same store rather than creating another store."
+  },
+  "useCases": [
+   {
+    "title": "Share state across frameworks",
+    "scenario": "A non-React module owns state while React displays and updates it."
+   },
+   {
+    "title": "Consume an instance from context",
+    "scenario": "Several independently created store instances must be selected by a React subtree."
+   },
+   {
+    "title": "Select focused values",
+    "scenario": "Components should subscribe only to the state or action they use."
+   }
+  ],
+  "related": [
+   "StoreApi",
+   "createStore",
+   "useStoreWithEqualityFn",
+   "selectorFn"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useStore do?",
+    "answer": "useStore is a React Hook for consuming a vanilla Zustand store. It receives the StoreApi and an optional selector, then returns the selected current value and subscribes the component to updates.",
+    "followUp": "How would you avoid repeating the context lookup? Define a custom hook that reads the StoreApi from context, checks it, and delegates to useStore with the caller's selector."
+   },
+   {
+    "question": "What arguments does useStore accept?",
+    "answer": "The first argument is the vanilla store's StoreApi. The optional selector receives the complete state and returns the value the component should read.",
+    "followUp": "Why use a selector? It lets a component subscribe to a specific derived or state field instead of consuming the entire state object."
+   },
+   {
+    "question": "Why bind a vanilla store to React?",
+    "answer": "A vanilla store can be shared between framework-independent code and React. React components use the same StoreApi through useStore, so no second React-bound source of truth is required.",
+    "followUp": "How can this work with multiple store instances? Store the desired instance in context and have a custom hook pass that instance to useStore."
+   }
+  ],
+  "keyPoints": [
+   "Use useStore when React needs to consume a store created with Zustand's vanilla API.",
+   "The basic call supplies the StoreApi first and a selector second.",
+   "A selector can project the complete state into the value a component needs.",
+   "The hook's result has the selector's output shape, so it can return state, actions, or derived data.",
+   "A custom React hook can hide context access and provide a focused API for the vanilla store."
+  ],
+  "gotchas": [
+   "Pass the vanilla store itself to useStore; do not call the hook as though the store were already bound to React.",
+   "When the store comes from context, validate that the context contains a store before calling useStore."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::Context-scoped store hooks": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/reference/hooks/use-store.html",
+  "sourceTitle": "useStore - Zustand Docs",
+  "summary": "Create a vanilla Zustand store inside each provider, pass it through React context, and expose it through a typed selector hook. This provides isolated state for each provider subtree instead of sharing one global store.",
+  "explanation": "A vanilla store is created once for each provider instance and placed in React context. The wrapper hook retrieves that store, fails clearly when used outside its provider, and delegates selection to Zustand's useStore so components subscribe only to the selected slice.",
+  "syntax": "useStore<T, U = T>(store: StoreApi<T>, selectorFn?: (state: T) => U): U",
+  "parameters": [
+   {
+    "name": "store",
+    "type": "StoreApi<T>",
+    "description": "The vanilla Zustand store API supplied by the provider or selected from a store collection."
+   },
+   {
+    "name": "selectorFn",
+    "type": "(state: T) => U",
+    "description": "A function that receives the complete state and returns the value the component should use."
+   }
+  ],
+  "returns": "useStore returns the selected state value, or the complete state when no selector is supplied.",
+  "example": {
+   "title": "Scoped store provider and wrapper hook",
+   "code": "import { createContext, useContext, useState, type ReactNode } from 'react'\nimport { useStore } from 'zustand'\nimport { createBearStore, type BearState } from './store'\n\ntype BearStore = ReturnType<typeof createBearStore>\nconst BearContext = createContext<BearStore | null>(null)\n\nfunction BearProvider({ children }: { children: ReactNode }) {\n  const [store] = useState(() => createBearStore())\n  return <BearContext.Provider value={store}>{children}</BearContext.Provider>\n}\n\nfunction useBear<T>(selector: (state: BearState) => T): T {\n  const store = useContext(BearContext)\n  if (!store) throw new Error('Missing BearProvider')\n  return useStore(store, selector)\n}\n\nexport function Counter() {\n  const bears = useBear((s) => s.bears)\n  return <span>{bears}</span>\n}",
+   "language": "tsx",
+   "explanation": "Creates one vanilla store for each provider instance and exposes selected state through a typed hook."
+  },
+  "useCases": [
+   {
+    "title": "Independent provider subtrees",
+    "scenario": "A component tree needs isolated state instances, such as independently controlled widgets or editors."
+   },
+   {
+    "title": "Prop-initialized stores",
+    "scenario": "Initial state or store configuration comes from component properties."
+   },
+   {
+    "title": "Request-scoped application state",
+    "scenario": "An application must avoid sharing state between server requests."
+   },
+   {
+    "title": "Dynamic store collections",
+    "scenario": "Several tabs or keyed entities each need their own vanilla store."
+   }
+  ],
+  "related": [
+   "useStore",
+   "createStore",
+   "createContext",
+   "useContext",
+   "React context",
+   "Provider",
+   "useState",
+   "StoreApi"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How would you expose a scoped Zustand store through React context?",
+    "answer": "Create a vanilla store with createStore, put its API in a React context, and initialize it once inside the provider. The custom hook reads the context and calls useStore with the caller's selector.",
+    "followUp": "Why use a wrapper instead of exposing useStore directly? It centralizes provider validation and gives consumers a typed, domain-specific hook."
+   },
+   {
+    "question": "Why create the store per provider rather than using a global store?",
+    "answer": "Each provider owns a separate store instance, so separate provider subtrees can maintain independent state. This is useful when state must not be shared globally.",
+    "followUp": "What changes for request-scoped rendering? Avoid module-level stores and create one store for each request, then hydrate the client with matching data."
+   },
+   {
+    "question": "What is the role of the selector in the typed wrapper hook?",
+    "answer": "The hook accepts a selector and passes it to useStore. The selector determines the returned value and lets a component subscribe to only the state it needs.",
+    "followUp": "How could multiple dynamic stores be selected? Keep a collection of stores and have the custom hook choose the appropriate store before invoking useStore."
+   }
+  ],
+  "keyPoints": [
+   "useStore connects a vanilla Zustand store to React components.",
+   "A provider-scoped store gives each provider subtree independent state.",
+   "React context carries the store API from the provider to descendants.",
+   "The wrapper hook combines context lookup with typed selector-based access.",
+   "The relevant useStore signature takes a StoreApi and an optional selector, returning the selected type.",
+   "For dynamic scopes, a map can retain multiple typed store instances keyed by an identifier."
+  ],
+  "gotchas": [
+   "The wrapper must guard against a missing provider so consumers receive an explicit error rather than attempting to use an absent store.",
+   "Initialize the store through a lazy state initializer so the provider retains one store instance across renders."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::createWithEqualityFn": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/reference/apis/create-with-equality-fn",
+  "sourceTitle": "createWithEqualityFn - Zustand Docs",
+  "summary": "Creates a React store hook like create, but with a configurable default equality function. Each hook call can also provide its own comparator to avoid unnecessary re-renders.",
+  "explanation": "Call createWithEqualityFn with a state creator and optionally a default equality function. It returns a bound React hook with store API methods; each hook call can select state and optionally provide another equality function to control whether the selected result triggers a re-render.",
+  "syntax": "createWithEqualityFn<T>()(stateCreatorFn: StateCreator<T, [], []>, defaultEqualityFn?: <U>(a: U, b: U) => boolean)",
+  "parameters": [
+   {
+    "name": "stateCreatorFn",
+    "type": "StateCreator<T, [], []>",
+    "description": "Function receiving set, get, and store; normally returns the state and methods exposed by the store."
+   },
+   {
+    "name": "defaultEqualityFn",
+    "type": "<U>(a: U, b: U) => boolean",
+    "description": "Optional comparator used to skip re-renders; defaults to Object.is."
+   }
+  ],
+  "returns": "A React hook with API utilities attached; it supports selector-based reads and equality-based re-render skipping.",
+  "example": {
+   "title": "Store hook with default and per-call equality",
+   "code": "import { createWithEqualityFn } from 'zustand/traditional'\nimport { shallow } from 'zustand/shallow'\n\ntype BearState = {\n  bears: number\n  increase: () => void\n}\n\nconst useBearStore = createWithEqualityFn<BearState>((set) => ({\n  bears: 0,\n  increase: () => set((state) => ({ bears: state.bears + 1 })),\n}), Object.is)\n\nexport function BearCount() {\n  const bears = useBearStore((state) => state.bears)\n  const selected = useBearStore(\n    (state) => ({ bears: state.bears }),\n    shallow,\n  )\n  return <button onClick={useBearStore.getState().increase}>{selected.bears} ({bears})</button>\n}",
+   "language": "tsx",
+   "explanation": "Creates a bound store hook with Object.is as its default comparison, while a call site can supply shallow for an individual selector."
+  },
+  "useCases": [
+   {
+    "title": "Reduce unnecessary re-renders",
+    "scenario": "A store frequently selects derived objects or collections and needs comparison beyond reference identity."
+   },
+   {
+    "title": "Per-component equality policies",
+    "scenario": "Different components need different comparison behavior for their selected values."
+   },
+   {
+    "title": "Create an equality-aware bound store",
+    "scenario": "An application wants the normal bound-store API while using a custom default comparator."
+   }
+  ],
+  "related": [
+   "create",
+   "useStoreWithEqualityFn",
+   "shallow",
+   "zustand/traditional",
+   "useSyncExternalStoreWithSelector"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does createWithEqualityFn differ from create?",
+    "answer": "It is a React-oriented variant of create that returns a hook with the store API attached. Its distinguishing feature is support for a default equality function and an optional equality function at each selector call.",
+    "followUp": "Why might a selector call pass shallow? It can compare selected object-like results more usefully than reference identity and avoid unnecessary re-renders when the selected values are unchanged."
+   },
+   {
+    "question": "What arguments does createWithEqualityFn accept?",
+    "answer": "The first argument is the state creator, which receives set, get, and store and normally returns the exposed state and actions. The second argument is optional; when omitted, the default comparison is Object.is.",
+    "followUp": "What happens when a default equality function is omitted? The hook uses Object.is unless a call supplies another equality function."
+   },
+   {
+    "question": "How does equality affect component re-rendering?",
+    "answer": "The returned hook accepts a selector and an equality function, allowing the component to subscribe to derived data and skip re-renders when the equality check says the result is unchanged. The hook also exposes the store's API utilities.",
+    "followUp": "Which dependency matters when importing from zustand/traditional? use-sync-external-store must be installed because that entry point relies on useSyncExternalStoreWithSelector."
+   }
+  ],
+  "keyPoints": [
+   "It creates a React hook that also exposes the store API utilities.",
+   "A custom equality check can be configured for comparing selected results.",
+   "Equality checks provide finer control over component re-render timing.",
+   "Its basic call supplies a state creator and an optional default equality function.",
+   "The state creator receives set, get, and store.",
+   "If no default comparator is supplied, Object.is is used.",
+   "Using the returned hook involves a selector and an equality function."
+  ],
+  "gotchas": [
+   "The traditional entry point requires the `use-sync-external-store` package to be installed."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::Hook-free access": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/reference/apis/create",
+  "sourceTitle": "create - Zustand Docs",
+  "summary": "Zustand's create API attaches getState and subscribe to the returned hook. Use them from event handlers and other non-React code where hooks cannot run.",
+  "explanation": "A Zustand store created with create exposes getState and subscribe alongside its React hook. Non-React code can call getState to read state or invoke actions, while subscribe registers a callback for store updates and returns an unsubscribe function.",
+  "syntax": "const useStore = create<T>()((set, get, store) => state)\nuseStore.getState()\nuseStore.subscribe(listener)",
+  "parameters": [
+   {
+    "name": "selector",
+    "type": "(state) => selectedValue",
+    "description": "A function receiving the current store state and returning the selected value or triggering an action."
+   },
+   {
+    "name": "listener",
+    "type": "(state) => void",
+    "description": "A callback invoked when the store's state updates."
+   }
+  ],
+  "returns": "create returns a React hook with setState, getState, getInitialState, and subscribe attached. subscribe returns an unsubscribe function.",
+  "example": {
+   "title": "Accessing a store outside React",
+   "code": "import { create } from 'zustand'\n\ntype Store = {\n  count: number\n  increment: () => void\n}\n\nconst useStore = create<Store>((set) => ({\n  count: 0,\n  increment: () => set((state) => ({ count: state.count + 1 })),\n}))\n\nconst stop = useStore.subscribe((state) => {\n  console.log('count:', state.count)\n})\n\nfunction onMessage() {\n  useStore.getState().increment()\n}\n\nonMessage()\nstop()",
+   "language": "typescript",
+   "explanation": "Use the attached store methods from non-React code: read the current state or invoke an action with getState, and observe updates with subscribe."
+  },
+  "useCases": [
+   {
+    "title": "Event-driven updates",
+    "scenario": "A WebSocket, DOM listener, timer, or other callback needs to invoke a Zustand action."
+   },
+   {
+    "title": "External synchronization",
+    "scenario": "A logger, animation loop, or integration must react to store changes without rendering a component."
+   },
+   {
+    "title": "Pre-React-18 batching",
+    "scenario": "A React 17 application updates state from a callback outside React's event system."
+   }
+  ],
+  "related": [
+   "create",
+   "createStore",
+   "getState",
+   "subscribe",
+   "setState",
+   "getInitialState",
+   "subscribeWithSelector",
+   "unstable_batchedUpdates"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How can Zustand state be used from an event handler or other non-React code?",
+    "answer": "The hook returned by create has API utilities attached, including getState and subscribe. Non-React code can call getState().action() without invoking a React hook, and subscribe can observe state updates.",
+    "followUp": "How would you stop observing updates? Call the function returned by subscribe; the documentation demonstrates returning that function from an effect cleanup."
+   },
+   {
+    "question": "What is the role of subscribe outside React?",
+    "answer": "subscribe registers a callback that runs whenever the store state updates. It is suitable for external state management, while getState provides access to the current store state and its actions.",
+    "followUp": "How can subscriptions be narrowed to a selected value? Use the subscribeWithSelector middleware, which supports subscribing to partial state with a selector."
+   },
+   {
+    "question": "Which utilities are attached to a Zustand hook created with create?",
+    "answer": "The create API returns a React hook with setState, getState, getInitialState, and subscribe attached. This lets one store serve React components and non-React consumers through the same API surface.",
+    "followUp": "What alternative supports a store without a React hook? createStore from zustand/vanilla creates a vanilla store exposing the corresponding store methods."
+   }
+  ],
+  "keyPoints": [
+   "A hook created with create also exposes imperative store utilities, so non-React code can use the same store.",
+   "subscribe runs its callback after store updates, making it useful for reacting to changes outside component rendering.",
+   "Use subscribe when an external system needs to stay synchronized with Zustand state.",
+   "React consumers can still pass a selector to the hook, while imperative consumers use the attached store API."
+  ],
+  "gotchas": [
+   "Do not synchronously call store utilities while the store is being initialized; use them after creation, such as inside an action.",
+   "With React 17 or earlier, updating from outside a React event handler may require unstable_batchedUpdates to avoid synchronous rendering issues."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::Hooks in tests": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/learn/guides/testing",
+  "sourceTitle": "Testing - Zustand Docs",
+  "summary": "Reset every Zustand store after each test and read component state through the same store hook. The documented mock captures each store's initial state, then restores it during test cleanup.",
+  "explanation": "The testing guide recommends mocking Zustand so every created store records its initial state and can be reset after each test. Components and tests should consume the store through the hook, while the attached store API provides state access and reset support.",
+  "syntax": "afterEach(() => {\n  act(() => {\n    storeResetFns.forEach((resetFn) => resetFn())\n  })\n})",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Reset a hook-backed store between tests",
+   "code": "import { act, renderHook } from '@testing-library/react'\nimport { afterEach, expect, test } from 'vitest'\nimport { useBearStore } from './store'\n\nafterEach(() => {\n  act(() => useBearStore.setState(useBearStore.getInitialState(), true))\n})\n\ntest('reads state through the store hook', () => {\n  const { result } = renderHook(() => useBearStore((state) => state.bears))\n  expect(result.current).toBe(0)\n})",
+   "language": "tsx",
+   "explanation": "The test renders the same hook used by components, while afterEach restores its initial state."
+  },
+  "useCases": [
+   {
+    "title": "Verify UI reads the hook-backed store",
+    "scenario": "React component tests"
+   },
+   {
+    "title": "Restore every store centrally",
+    "scenario": "Test suites with multiple stores"
+   },
+   {
+    "title": "Configure automatic mocking and cleanup",
+    "scenario": "Vitest setup"
+   }
+  ],
+  "related": [
+   "create",
+   "createStore",
+   "getInitialState",
+   "setState",
+   "getState",
+   "Testing",
+   "How to reset state"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How would you isolate Zustand stores between tests?",
+    "answer": "Use a Zustand mock that wraps store creation, captures each store's initial state, and stores a reset callback. Run every callback inside an afterEach cleanup, wrapped in act for React tests.",
+    "followUp": "Why capture initial state per store? Because an application can create multiple stores, and each reset must restore that particular store rather than a shared snapshot."
+   },
+   {
+    "question": "How should a component test read Zustand state?",
+    "answer": "A component reads state by calling the store hook with a selector, such as useBearStore(state => state.bears). This exercises the same subscription path that the component uses.",
+    "followUp": "How can a test inspect the complete state without rendering? Use the hook's attached getState API, while keeping rendered component tests on the hook path."
+   },
+   {
+    "question": "What does the test reset mechanism restore?",
+    "answer": "The reset callback uses the store's initial snapshot and replaces the current state, ensuring test mutations are discarded. The guide's mock applies this to every store created through the mocked create functions.",
+    "followUp": "What setup difference matters in Vitest? If globals are disabled, import afterEach and vi in the setup module before configuring the mock."
+   }
+  ],
+  "keyPoints": [
+   "Mock Zustand's store creators so the test runner can restore all created stores after every test.",
+   "Keep reset callbacks in a shared Set, allowing one cleanup to cover every store in the application.",
+   "At creation time, capture each store's initial snapshot and register a callback that restores it.",
+   "Use replace semantics when restoring the captured snapshot, so reset removes test-added state as well as changed values."
+  ],
+  "gotchas": [
+   "Vitest projects without global test APIs must import afterEach and vi explicitly in the setup file.",
+   "Resetting belongs in an afterEach cleanup so mutations from one test do not leak into another."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::Named slice hooks": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/learn/guides/slices-pattern",
+  "sourceTitle": "Slices Pattern - Zustand Docs",
+  "summary": "Create separate slice functions, combine them into one bounded Zustand store, and expose slice-specific hooks that accept selectors limited to each slice. This preserves one shared store while reducing accidental whole-store selection.",
+  "explanation": "Define each slice separately, combine them into one store, and export a hook for each slice that forwards a selector to the bounded store. The slice-specific hook narrows what callers can select, helping prevent accidental whole-store selection while preserving one shared store.",
+  "syntax": "const useSliceStore = <T>(selector: (state: SliceState) => T) => useBoundStore(selector as (state: FullState) => T)",
+  "parameters": [
+   {
+    "name": "selector",
+    "type": "(state: SliceState) => T",
+    "description": "The selector passed to each slice-specific hook; it selects a value from that slice's state."
+   },
+   {
+    "name": "set",
+    "type": "StateCreator set function",
+    "description": "The Zustand state updater supplied to each slice creator."
+   }
+  ],
+  "returns": "Each named slice hook returns the value produced by its selector and subscribes the component to the selected slice state.",
+  "example": {
+   "title": "Named hooks over combined slices",
+   "code": "import { create } from 'zustand'\n\ntype BearState = {\n  bears: number\n  addBear: () => void\n}\n\ntype FishState = {\n  fishes: number\n  addFish: () => void\n}\n\nexport const createBearSlice = (set: any): BearState => ({\n  bears: 0,\n  addBear: () => set((state: BearState) => ({ bears: state.bears + 1 })),\n})\n\nexport const createFishSlice = (set: any): FishState => ({\n  fishes: 0,\n  addFish: () => set((state: FishState) => ({ fishes: state.fishes + 1 })),\n})\n\nconst useBoundStore = create<BearState & FishState>()((...args) => ({\n  ...createBearSlice(...args),\n  ...createFishSlice(...args),\n}))\n\nexport const useBearStore = <T>(selector: (state: BearState) => T) =>\n  useBoundStore(selector as (state: BearState & FishState) => T)\nexport const useFishStore = <T>(selector: (state: FishState) => T) =>\n  useBoundStore(selector as (state: BearState & FishState) => T)\n\nexport function App() {\n  const bears = useBearStore((state) => state.bears)\n  const addFish = useFishStore((state) => state.addFish)\n  return <button onClick={addFish}>{bears}</button>\n}",
+   "language": "tsx",
+   "explanation": "The slices are combined into one Zustand store, while wrapper hooks expose only each slice's state type to call sites."
+  },
+  "useCases": [
+   {
+    "title": "Keep domain state modular",
+    "scenario": "Large applications with multiple domains"
+   },
+   {
+    "title": "Compose one bounded store",
+    "scenario": "Shared state assembled from several features"
+   },
+   {
+    "title": "Prevent broad store selection",
+    "scenario": "Teams enforcing narrower component dependencies"
+   }
+  ],
+  "related": [
+   "Slices Pattern",
+   "create",
+   "useBoundStore",
+   "Selectors"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Split a large store into independent slice creators so related state and actions remain modular.",
+   "Merge slice creators into one bounded Zustand store rather than creating separate runtime stores.",
+   "A slice creator receives Zustand's set function and returns that slice's state and actions.",
+   "Selectors let a component subscribe to a particular property instead of reading the complete store."
+  ],
+  "gotchas": [
+   "Apply middleware only to the combined store, not inside individual slice creators, because the documentation warns that slice-level middleware can cause unexpected issues."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useStore with a selector": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/reference/hooks/use-store",
+  "sourceTitle": "useStore - Zustand Docs",
+  "summary": "Call useStore with a vanilla store and selector to read only the state or action a React component needs. The selector's result is the hook's return value.",
+  "explanation": "Pass a vanilla Zustand store and a selector to useStore. The hook subscribes the component to the selector's result and returns that selected value, making it suitable for consuming only the state or action needed by the component.",
+  "syntax": "useStore<T, U = T>(store: StoreApi<T>, selectorFn?: (state: T) => U): U",
+  "parameters": [
+   {
+    "name": "storeApi",
+    "type": "StoreApi<T>",
+    "description": "The StoreApi instance used to access the vanilla Zustand store."
+   },
+   {
+    "name": "selectorFn",
+    "type": "(state: T) => U",
+    "description": "Optional function that receives state T and returns the selected result U."
+   }
+  ],
+  "returns": "The value returned by the selector, or the store state when no selector is provided.",
+  "example": {
+   "title": "Select values from a vanilla store",
+   "code": "import { createStore } from 'zustand/vanilla'\nimport { useStore } from 'zustand'\nimport { createRoot } from 'react-dom/client'\nimport { StrictMode } from 'react'\n\ntype State = { count: number; increment: () => void }\nconst store = createStore<State>((set) => ({\n  count: 0,\n  increment: () => set((state) => ({ count: state.count + 1 })),\n}))\n\nfunction Counter() {\n  const count = useStore(store, (state) => state.count)\n  const increment = useStore(store, (state) => state.increment)\n  return <button onClick={increment}>Count: {count}</button>\n}\n\ncreateRoot(document.getElementById('root')!).render(\n  <StrictMode><Counter /></StrictMode>,\n)",
+   "language": "tsx",
+   "explanation": "The component subscribes separately to the count value and increment action from a vanilla Zustand store."
+  },
+  "useCases": [
+   {
+    "title": "Read a focused state slice",
+    "scenario": "A component needs one field from a vanilla store."
+   },
+   {
+    "title": "Select an action",
+    "scenario": "A component needs to dispatch an update without reading unrelated state."
+   },
+   {
+    "title": "Build a typed context hook",
+    "scenario": "A context provider supplies a store instance to descendants."
+   }
+  ],
+  "related": [
+   "StoreApi",
+   "useStoreWithEqualityFn",
+   "createStore",
+   "useContext"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useStore do?",
+    "answer": "useStore is a React Hook for consuming a vanilla Zustand store. Call it with the store API and a selector; it returns the value produced by that selector.",
+    "followUp": "How would you consume the same store through context? Read the store from useContext, validate that it exists, then pass it and the component's selector to useStore."
+   },
+   {
+    "question": "What are the arguments to useStore?",
+    "answer": "The first argument is the store API instance, which provides access to the store utilities. The optional selector receives the complete state and returns the value or derived data the component needs.",
+    "followUp": "How can a reusable context hook preserve type safety? Make it generic over the selector result and return useStore(store, selector)."
+   },
+   {
+    "question": "What does useStore return?",
+    "answer": "The return type is the selector result, defaulting to the whole store state when no selector type is supplied. Therefore, selecting a field returns that field's type, while selecting an action returns the action's function type.",
+    "followUp": "What should be used when custom equality checking is required? Use useStoreWithEqualityFn, which adds an equality function for controlling re-renders."
+   }
+  ],
+  "keyPoints": [
+   "Use this hook when a React component needs to read from a store created with the vanilla store API.",
+   "The normal call supplies the store first and a selector second, assigning the selected result to a local value.",
+   "The generic signature maps the full state type T to the selected result type U.",
+   "The store argument is a StoreApi instance rather than the hook returned by create.",
+   "The selector receives current state and can return a field, action, or derived value.",
+   "For slice-based consumption, provide both the vanilla store and a selector to the hook."
+  ],
+  "gotchas": [
+   "The selector is the second argument; omitting it is valid in the type signature but does not select a narrower slice.",
+   "A selector can return any derived value, so selecting a newly created object may produce changing results; use a stable or shallow-aware approach when needed."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useStoreWithEqualityFn": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/reference/hooks/use-store-with-equality-fn",
+  "sourceTitle": "useStoreWithEqualityFn - Zustand Docs",
+  "summary": "A React hook for reading a vanilla Zustand store with a selector and optional custom equality function. Use it when the default comparison is not the right test for deciding whether a component should re-render.",
+  "explanation": "Pass a vanilla store, a selector, and optionally an equality function. The hook returns the selector’s current result and uses the equality function to decide whether a subscribed component needs to re-render, giving finer control than the default comparison.",
+  "syntax": "useStoreWithEqualityFn<T, U = T>(store: StoreApi<T>, selectorFn: (state: T) => U, equalityFn?: (a: U, b: U) => boolean): U",
+  "parameters": [
+   {
+    "name": "store",
+    "type": "StoreApi<T>",
+    "description": "The vanilla store API instance used for access and subscription."
+   },
+   {
+    "name": "selectorFn",
+    "type": "(state: T) => U",
+    "description": "Function that derives the component’s selected value from the state."
+   },
+   {
+    "name": "equalityFn",
+    "type": "(a: U, b: U) => boolean",
+    "description": "Optional comparator for deciding whether two selected values are equal."
+   }
+  ],
+  "returns": "The value produced by `selectorFn` for the current store state.",
+  "example": {
+   "title": "Select multiple values with shallow equality",
+   "code": "import { createStore } from 'zustand/vanilla'\nimport { useStoreWithEqualityFn } from 'zustand/traditional'\nimport { shallow } from 'zustand/shallow'\n\ntype State = { bears: number; fish: number }\nconst store = createStore<State>(() => ({ bears: 0, fish: 0 }))\n\nexport function BearCounts() {\n  const counts = useStoreWithEqualityFn(\n    store,\n    (state) => ({ bears: state.bears, fish: state.fish }),\n    shallow,\n  )\n  return <div>{counts.bears} bears, {counts.fish} fish</div>\n}",
+   "language": "tsx",
+   "explanation": "Reads a selected object from a vanilla store and uses shallow comparison to avoid updates when its top-level values are unchanged."
+  },
+  "useCases": [
+   {
+    "title": "Use a vanilla store in React",
+    "scenario": "A component consumes a slice from a store created with the vanilla API and needs React subscription behavior."
+   },
+   {
+    "title": "Apply custom result comparison",
+    "scenario": "A selector returns a compound value whose update policy is not adequately represented by the default comparison."
+   },
+   {
+    "title": "Control re-render frequency",
+    "scenario": "A component should avoid updates when selected values remain equivalent under a domain-specific rule."
+   }
+  ],
+  "related": [
+   "useStore",
+   "createStore",
+   "createWithEqualityFn",
+   "use-sync-external-store",
+   "useSyncExternalStoreWithSelector",
+   "shallow"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `useStoreWithEqualityFn` do?",
+    "answer": "It is a React hook for subscribing to a vanilla Zustand store. The selector determines the returned slice, while the equality function controls whether a changed selector result should trigger a re-render.",
+    "followUp": "Why use it instead of `useStore`? Use it when the default comparison is not the right criterion, such as when selecting a newly created object and comparing it with a custom rule."
+   },
+   {
+    "question": "What is the hook’s TypeScript signature?",
+    "answer": "Its signature is `useStoreWithEqualityFn<T, U = T>(store: StoreApi<T>, selectorFn: (state: T) => U, equalityFn?: (a: U, b: U) => boolean): U`. The equality function is optional and receives the previous and next selected values.",
+    "followUp": "What does the generic `U` represent? It is the selector’s result type, which can differ from the complete store state type `T`."
+   },
+   {
+    "question": "How does the equality function affect rendering?",
+    "answer": "The selector should return the data the component needs, and the equality function decides whether that selected data is considered equivalent for rendering. This can provide more granular control over re-renders.",
+    "followUp": "What dependency is needed with the traditional import? Install `use-sync-external-store`, because that entry point relies on `useSyncExternalStoreWithSelector`."
+   }
+  ],
+  "keyPoints": [
+   "It connects a vanilla Zustand store to a React component.",
+   "A caller can supply comparison logic tailored to the selected value.",
+   "The comparison determines more precisely when subscribed components update.",
+   "The selector maps the full store state to the value consumed by the component.",
+   "The equality function can suppress rendering when two selected results are equivalent.",
+   "The hook’s result is the selector-derived data rather than necessarily the entire state."
+  ],
+  "gotchas": [
+   "The traditional entry point requires the `use-sync-external-store` package.",
+   "The hook expects all three inputs when custom comparison behavior is needed; omitting the equality function gives up that custom test."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Middleware & architecture::Async actions and races": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/learn/guides/beginner-typescript",
+  "sourceTitle": "Beginner TypeScript Guide - Zustand Docs",
+  "summary": "Zustand actions can be async: fetch remote data, type the response, and update the store after awaiting it. The official page does not document race prevention or stale-response protection.",
+  "explanation": "The official page demonstrates async actions that fetch remote data, parse a typed API response, and update Zustand state. It does not document race prevention or stale-response handling, so those unsupported details are omitted.",
+  "syntax": "create<T>()((set) => ({ ... }))",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Async Zustand action with request status",
+   "code": "type BearState = {\n  bears: number\n  status: 'idle' | 'loading' | 'success' | 'error'\n  error: string | null\n  fetchBears: () => Promise<void>\n}\n\nexport const useBearStore = create<BearState>()((set) => ({\n  bears: 0,\n  status: 'idle',\n  error: null,\n  fetchBears: async () => {\n    set({ status: 'loading', error: null })\n    try {\n      const res = await fetch('/api/bears')\n      if (!res.ok) throw new Error(`HTTP ${res.status}`)\n      const data: { count: number } = await res.json()\n      set({ bears: data.count, status: 'success' })\n    } catch (error) {\n      set({ status: 'error', error: String(error) })\n    }\n  },\n}))",
+   "language": "typescript",
+   "explanation": "The async store action exposes loading and error state while fetching typed API data."
+  },
+  "useCases": [
+   {
+    "title": "Remote data loading",
+    "scenario": "Fetch remote data and place the result in a Zustand store."
+   },
+   {
+    "title": "Typed async state",
+    "scenario": "Expose typed API results to components through store state."
+   },
+   {
+    "title": "Store-level async action",
+    "scenario": "Keep request logic colocated with the state it updates."
+   }
+  ],
+  "related": [
+   "create",
+   "set",
+   "BearData"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Store actions may be asynchronous, so they can await remote requests before updating state.",
+   "An async action can fetch a value and commit the resulting data to the store.",
+   "Typing the API response helps ensure the fetched payload has the expected shape.",
+   "Components can consume the resulting state and invoke the asynchronous store action."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Middleware & architecture::Context-scoped stores": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/learn/guides/initialize-state-with-props.html",
+  "sourceTitle": "Initialize state with props - Zustand Docs",
+  "summary": "Create a vanilla Zustand store per provider or request, pass it through React context, and consume it with useStore. This isolates independently mounted features and supports request- or prop-specific initialization.",
+  "explanation": "A context-scoped Zustand store is a vanilla store instance created for a provider or request, then passed through React context and consumed with useStore. This keeps independently mounted feature instances isolated and lets initialization depend on component inputs.",
+  "syntax": "createStore(stateCreatorFn); useStore(store, selectorFn)",
+  "parameters": [
+   {
+    "name": "stateCreatorFn",
+    "type": "StateCreator<T>",
+    "description": "Function that defines the vanilla store's state and actions."
+   },
+   {
+    "name": "selectorFn",
+    "type": "(state: T) => U",
+    "description": "Function selecting the data to read from the current store state."
+   },
+   {
+    "name": "children",
+    "type": "ReactNode",
+    "description": "React descendants rendered inside the provider."
+   }
+  ],
+  "returns": "createStore returns a vanilla store exposing setState, getState, getInitialState, and subscribe; useStore returns the selector's result.",
+  "example": {
+   "title": "Provider-scoped counter store",
+   "code": "import { createContext, useContext, useState, type ReactNode } from 'react'\nimport { createStore, useStore } from 'zustand'\n\ntype CounterState = { count: number; increment: () => void }\ntype CounterStore = ReturnType<typeof createCounterStore>\n\nconst createCounterStore = () =>\n  createStore<CounterState>((set) => ({\n    count: 0,\n    increment: () => set((state) => ({ count: state.count + 1 })),\n  }))\n\nconst CounterContext = createContext<CounterStore | null>(null)\n\nfunction CounterProvider({ children }: { children: ReactNode }) {\n  const [store] = useState(createCounterStore)\n  return <CounterContext.Provider value={store}>{children}</CounterContext.Provider>\n}\n\nfunction useCounter<U>(selector: (state: CounterState) => U) {\n  const store = useContext(CounterContext)\n  if (!store) throw new Error('Missing CounterProvider')\n  return useStore(store, selector)\n}",
+   "language": "tsx",
+   "explanation": "Each provider creates one vanilla store instance and supplies it through React context; descendants select state from that instance."
+  },
+  "useCases": [
+   {
+    "title": "Isolated feature instances",
+    "scenario": "A reusable feature appears multiple times and each instance needs independent state."
+   },
+   {
+    "title": "Dependency-injected initialization",
+    "scenario": "Initial values come from component props or other injected dependencies."
+   },
+   {
+    "title": "Per-request server state",
+    "scenario": "A server-rendered application must avoid sharing mutable state between concurrent requests."
+   },
+   {
+    "title": "Keyed store collection",
+    "scenario": "An application manages many independently addressed store instances."
+   }
+  ],
+  "related": [
+   "createStore",
+   "useStore",
+   "React context",
+   "createContext",
+   "useContext",
+   "Next.js"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you scope a Zustand store to a feature subtree?",
+    "answer": "Use createStore to make a vanilla store, create one instance in a provider, place it in React context, and consume it with useStore plus a selector. The provider boundary determines which components share that instance.",
+    "followUp": "How would you support multiple keyed instances? Store a map of createCounterStore results in context, then select the store by key before calling useStore."
+   },
+   {
+    "question": "Why use a separate store per request in a server-rendered application?",
+    "answer": "Create the store per request rather than as module state. This prevents concurrent requests from sharing mutable state and allows request-specific initialization.",
+    "followUp": "What must happen during hydration? Initialize the server and client stores with matching data so their rendered output agrees."
+   },
+   {
+    "question": "How does a React component consume a vanilla Zustand store?",
+    "answer": "A vanilla store exposes APIs such as setState, getState, getInitialState, and subscribe. React components can subscribe selectively by passing that store and a selector to useStore.",
+    "followUp": "Why use a selector? It returns only the requested derived portion of current state, limiting the component's subscription to that selection."
+   }
+  ],
+  "keyPoints": [
+   "Use a vanilla store together with React context when a feature needs dependency injection or component-provided initialization.",
+   "Separate provider instances can give independently mounted feature instances isolated state.",
+   "Create the store lazily in component state so the instance remains stable across provider re-renders.",
+   "A custom hook can hide context lookup and expose selector-based access to descendants.",
+   "A context-held map supports managing multiple stores addressed by identifiers.",
+   "Pass the selected vanilla store and selector to useStore to subscribe from React."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Middleware & architecture::devtools middleware": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/reference/middlewares/devtools.html",
+  "sourceTitle": "devtools - Zustand Docs",
+  "summary": "Zustand's `devtools` middleware connects a store to Redux DevTools without Redux. It lets you inspect state transitions, label updates, and hide selected actions from the displayed timeline.",
+  "explanation": "The devtools middleware connects a Zustand store to the Redux DevTools Extension without Redux. It observes state changes, supports debugging features such as time travel, and accepts options including a store name, anonymous action label, and regular-expression filters for hiding selected actions from the DevTools display.",
+  "syntax": "devtools(stateCreatorFn, devtoolsOptions)",
+  "parameters": [
+   {
+    "name": "stateCreatorFn",
+    "type": "StateCreator",
+    "description": "State creator function receiving Zustand's `set`, `get`, and store context."
+   },
+   {
+    "name": "devtoolsOptions",
+    "type": "DevtoolsOptions",
+    "description": "Optional middleware configuration, including `name`, `anonymousActionType`, and `actionsDenylist`."
+   }
+  ],
+  "returns": "A wrapped state creator function instrumented for Redux DevTools.",
+  "example": {
+   "title": "Named actions with a filtered timeline",
+   "code": "import { create } from 'zustand'\nimport { devtools } from 'zustand/middleware'\n\ntype Store = {\n  user: string | null\n  token: string | null\n  login: (user: string, token: string) => void\n  logout: () => void\n  updateData: () => void\n}\n\nexport const useStore = create<Store>()(\n  devtools(\n    (set) => ({\n      user: null,\n      token: null,\n      login: (user, token) => set({ user, token }, undefined, 'auth/login'),\n      logout: () => set({ user: null, token: null }, undefined, 'auth/logout'),\n      updateData: () => set({ user: 'updated' }, undefined, 'internal/updateData'),\n    }),\n    { name: 'AuthStore', actionsDenylist: ['internal/.*'] },\n  ),\n)",
+   "language": "typescript",
+   "explanation": "Wrap the store creator with devtools, provide action names as the third set argument, and filter internal actions from the displayed DevTools timeline."
+  },
+  "useCases": [
+   {
+    "title": "Inspect state changes and time-travel through transitions.",
+    "scenario": "Development debugging"
+   },
+   {
+    "title": "Give mutations meaningful names for a readable debugging timeline.",
+    "scenario": "Action observability"
+   },
+   {
+    "title": "Hide internal or sensitive action entries from the displayed DevTools history.",
+    "scenario": "Timeline reduction"
+   }
+  ],
+  "related": [
+   "Redux DevTools Extension",
+   "actionsDenylist",
+   "anonymousActionType",
+   "name",
+   "set"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Zustand's `devtools` middleware provide?",
+    "answer": "The middleware is `devtools(stateCreatorFn, devtoolsOptions)`. It connects Zustand to the Redux DevTools Extension without requiring Redux, enabling inspection and time-travel debugging.",
+    "followUp": "How can an action receive a meaningful label? Pass the label as the third argument to `set`, as in `set(nextState, undefined, 'auth/login')`."
+   },
+   {
+    "question": "How do you hide selected actions from the DevTools timeline?",
+    "answer": "Use the `actionsDenylist` option with a string or array of regular-expression patterns. Matching actions are hidden from the Redux DevTools display, which is useful for internal or sensitive actions.",
+    "followUp": "Does this option protect the action from being sent to DevTools? No; the documentation says matching actions are still sent and only filtered from display."
+   },
+   {
+    "question": "What happens when an update has no explicit action name?",
+    "answer": "The middleware accepts `anonymousActionType` for mutations without an explicit action label. If no label is inferred, its default is `anonymous`.",
+    "followUp": "What should be used when several stores appear in the extension? Set distinct `name` values in the middleware options so the stores can be identified separately."
+   }
+  ],
+  "keyPoints": [
+   "Wrap a Zustand state creator with `devtools` to connect it to the Redux DevTools Extension while keeping Redux itself out of the store.",
+   "Use `actionsDenylist` to remove selected action names from the DevTools timeline.",
+   "Set `anonymousActionType` to control the label shown for updates that do not provide an explicit action type.",
+   "Without an explicit label, the middleware uses an inferred action type when available and otherwise falls back to `anonymous`.",
+   "Filtering behavior is delegated directly to the Redux DevTools extension.",
+   "A denylist is suited to keeping internal or sensitive action entries out of the visible debugging timeline."
+  ],
+  "gotchas": [
+   "actionsDenylist does not prevent sensitive actions from being transmitted; it only removes matching actions from the visible DevTools timeline.",
+   "Denylist entries are regular-expression patterns, so characters such as `.`, `*`, and `/` affect what matches.",
+   "The Redux DevTools extension package is a required dependency when using this middleware."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Middleware & architecture::Immer middleware": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/reference/middlewares/immer",
+  "sourceTitle": "immer - Zustand",
+  "summary": "Zustand's `immer` middleware lets state updates use draft-mutation syntax while Immer creates immutable results. It is useful for nested data, but Immer's rules and reference changes still determine whether Zustand notifies subscribers.",
+  "explanation": "The `immer` middleware wraps a Zustand state creator so updater functions receive Immer drafts. Mutating a draft creates the next immutable state, but updates still depend on reference changes that Zustand can detect.",
+  "syntax": "immer<T>(stateCreatorFn: StateCreator<T, [], []>): StateCreator<T, [['zustand/immer', never]], []>",
+  "parameters": [
+   {
+    "name": "stateCreatorFn",
+    "type": "StateCreator<T, [], []>",
+    "description": "A Zustand state creator receiving `set`, `get`, and `store`, usually returning the store's state and actions."
+   }
+  ],
+  "returns": "A state creator function with the Immer middleware mutator applied.",
+  "example": {
+   "title": "Draft-based counter update",
+   "code": "import { create } from 'zustand'\nimport { immer } from 'zustand/middleware/immer'\n\ntype State = {\n  count: number\n  increment: (qty: number) => void\n}\n\nexport const useCountStore = create<State>()(\n  immer((set) => ({\n    count: 0,\n    increment: (qty) =>\n      set((state) => {\n        state.count += qty\n      }),\n  })),\n)",
+   "language": "typescript",
+   "explanation": "The updater receives an Immer draft, so nested state can be changed with mutable syntax while Immer produces the immutable result."
+  },
+  "useCases": [
+   {
+    "title": "Nested object updates",
+    "scenario": "A store contains nested records such as todos and actions need to toggle or edit fields."
+   },
+   {
+    "title": "Reducing immutable-update boilerplate",
+    "scenario": "A store manages immutable state but manual object and array copying makes actions noisy."
+   },
+   {
+    "title": "Drafting class-based state",
+    "scenario": "A store uses class instances and wants Immer draft behavior for those objects."
+   }
+  ],
+  "related": [
+   "Immer middleware",
+   "zustand/middleware/immer",
+   "create",
+   "createStore",
+   "StateCreator",
+   "immerable"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the `immer` middleware change about Zustand updates?",
+    "answer": "`immer` accepts a Zustand state creator and returns another state creator with Immer-enabled updates. Its updater callback can mutate the draft, and Immer turns those mutations into the immutable next state.",
+    "followUp": "What happens if a class instance is mutated without Immer's `immerable` marker? Immer may mutate the original object rather than a proxy, leaving Zustand unable to observe a changed reference."
+   },
+   {
+    "question": "How is Immer middleware applied to a store?",
+    "answer": "The middleware is imported from `zustand/middleware/immer` and wraps the creator passed to `create` or `createStore`. The wrapped creator keeps the normal `set`, `get`, and store contract while allowing draft mutations in `set` callbacks.",
+    "followUp": "How would you update a nested todo? Pass a functional updater to `set` and assign the nested draft property directly, such as toggling `state.todos[id].done`."
+   },
+   {
+    "question": "What reference-related pitfall does the documentation describe?",
+    "answer": "Immer does not make arbitrary mutations safe: its own rules still apply. For class objects, the docs require `[immerable] = true`; without it, the object may be changed in place and subscriptions may not run.",
+    "followUp": "Why can subscriptions be skipped? Zustand checks whether state actually changed, so equal current and next references can make it conclude that nothing changed."
+   }
+  ],
+  "keyPoints": [
+   "It provides immutable state updates through a more convenient draft-mutation style.",
+   "Nested or structured data can be updated without manually copying each containing object.",
+   "The typed middleware accepts a state creator and returns a Zustand state creator annotated with the Immer mutator.",
+   "The wrapped creator follows Zustand's normal creator contract and receives `set`, `get`, and `store`.",
+   "A nested field can be toggled directly inside the draft updater instead of rebuilding the surrounding object."
+  ],
+  "gotchas": [
+   "Class instances must be marked `[immerable] = true`; otherwise Immer can mutate the actual object instead of producing a draft-based next state.",
+   "If the current and next state remain reference-equal because Immer rules were violated, Zustand skips subscriber notifications.",
+   "Install `immer` directly in the application before importing this middleware."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Middleware & architecture::partialize and migrations": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/reference/integrations/persisting-store-data",
+  "sourceTitle": "Persisting store data - Zustand Docs",
+  "summary": "Persist only durable fields with partialize, then use version and migrate to transform older saved state when the persisted schema changes.",
+  "explanation": "Use persist's partialize option to select durable fields for storage. When the persisted schema changes, increase version and use migrate to transform older data into the current shape.",
+  "syntax": "persist(stateCreator, options)",
+  "parameters": [
+   {
+    "name": "partialize",
+    "type": "(state: Object) => Object",
+    "description": "Function selecting the fields to store; defaults to returning the entire state."
+   },
+   {
+    "name": "version",
+    "type": "number",
+    "description": "Number identifying the persisted-state schema."
+   },
+   {
+    "name": "migrate",
+    "type": "(persistedState: Object, version: number) => Object | Promise<Object>",
+    "description": "Transforms persisted data when its stored version differs from the current version."
+   }
+  ],
+  "returns": "persist returns a state-management middleware that persists and rehydrates the selected store state; migrate returns state compliant with the latest version.",
+  "example": {
+   "title": "Partial persistence with migration",
+   "code": "import { create } from 'zustand'\nimport { persist } from 'zustand/middleware'\n\ntype State = {\n  position: { x: number; y: number }\n  draft: string\n  setPosition: (x: number, y: number) => void\n}\n\nexport const useStore = create<State>()(\n  persist(\n    (set) => ({\n      position: { x: 0, y: 0 },\n      draft: '',\n      setPosition: (x, y) => set({ position: { x, y } }),\n    }),\n    {\n      name: 'position-storage',\n      version: 1,\n      partialize: (state) => ({ position: state.position }),\n      migrate: (persisted, version) => {\n        if (version === 0) {\n          const old = persisted as { x: number; y: number }\n          return { position: { x: old.x, y: old.y } }\n        }\n        return persisted\n      },\n    },\n  ),\n)",
+   "language": "typescript",
+   "explanation": "Only the durable position is saved. When version 0 data is found, migrate converts separate coordinates into the current position object."
+  },
+  "useCases": [
+   {
+    "title": "Persist only durable state",
+    "scenario": "A store contains temporary UI input, caches, or other fields that should not survive reloads."
+   },
+   {
+    "title": "Evolve a persisted schema",
+    "scenario": "A saved field is renamed or its nesting changes between releases."
+   },
+   {
+    "title": "Backward-compatible upgrades",
+    "scenario": "Users upgrade while retaining locally stored preferences or position data."
+   }
+  ],
+  "related": [
+   "persist",
+   "rehydration",
+   "storage",
+   "version",
+   "migrate"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does partialize do in Zustand persist?",
+    "answer": "partialize receives the complete store state and returns the subset written to storage. Its default is the identity function, so explicitly selecting durable fields prevents transient state from being persisted.",
+    "followUp": "What happens if a field is renamed? Increase the persistence version and migrate the old persisted object to the new field name before returning it."
+   },
+   {
+    "question": "How do version and migrate work together?",
+    "answer": "version identifies the schema version expected by the current code. If the stored version differs, Zustand invokes migrate when supplied; otherwise the stored value is not used.",
+    "followUp": "Can migration be asynchronous? Yes. The documented return type permits a Promise of the migrated object."
+   },
+   {
+    "question": "What must a migration function return?",
+    "answer": "migrate receives the persisted state and its stored version, then returns data compliant with the latest persisted schema. A typical migration copies old fields into the replacement structure and removes obsolete fields.",
+    "followUp": "Why remove old fields? Returning obsolete properties can leave persisted data inconsistent with the current schema and defeats the migration's normalization step."
+   }
+  ],
+  "keyPoints": [
+   "partialize filters the complete state before persistence, allowing the store to retain only durable data.",
+   "The partialize callback accepts the state object and returns the object that should be persisted.",
+   "Use migrate when a storage schema changes incompatibly so older saved data can continue to be used.",
+   "Migration receives both the old persisted object and its version, enabling version-specific transformations.",
+   "The migration output must conform to the current persisted schema before rehydration completes.",
+   "Raise the version whenever the persisted shape changes incompatibly, such as when renaming a stored field."
+  ],
+  "gotchas": [
+   "Changing version without providing a migration discards the stored value when versions differ.",
+   "The migration result must already match the current persisted schema.",
+   "Migration logic should branch on the supplied stored version rather than assuming every record has the newest shape."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Middleware & architecture::persist middleware": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/reference/middlewares/persist",
+  "sourceTitle": "persist - Zustand Docs",
+  "summary": "`persist` saves selected Zustand state across reloads or restarts. Define a unique storage key and explicitly manage versioning and hydration when the store needs durable, portable behavior.",
+  "explanation": "Wrap a state creator with `persist` and provide a unique `name`; Zustand serializes the persisted state to storage and restores it during hydration. Configure `storage`, `partialize`, `version`, `migrate`, merging, and hydration callbacks when the default behavior is not sufficient.",
+  "syntax": "persist(stateCreatorFn, persistOptions)",
+  "parameters": [
+   {
+    "name": "stateCreatorFn",
+    "type": "StateCreator",
+    "description": "State creator function wrapped by the middleware."
+   },
+   {
+    "name": "persistOptions",
+    "type": "PersistOptions",
+    "description": "Configuration object controlling the storage key, adapter, filtering, versioning, migration, merging, and hydration behavior."
+   }
+  ],
+  "returns": "A state creator enhanced with persistence and rehydration behavior.",
+  "example": {
+   "title": "Persist a versioned store",
+   "code": "import { create } from 'zustand'\nimport { persist } from 'zustand/middleware'\n\ntype Store = {\n  bears: number\n  increase: () => void\n}\n\nexport const useBearStore = create<Store>()(\n  persist(\n    (set) => ({\n      bears: 0,\n      increase: () => set((state) => ({ bears: state.bears + 1 })),\n    }),\n    { name: 'bear-storage', version: 1 },\n  ),\n)",
+   "language": "typescript",
+   "explanation": "Creates a store whose selected state is persisted under a deliberate storage key and version."
+  },
+  "useCases": [
+   {
+    "title": "Persist browser state",
+    "scenario": "A user preference or small client-side session value must survive page refreshes."
+   },
+   {
+    "title": "Persist a selected subset",
+    "scenario": "A store contains fields that should survive, alongside transient or derived fields that should not."
+   },
+   {
+    "title": "Migrate stored schemas",
+    "scenario": "The persisted state shape changes between releases."
+   },
+   {
+    "title": "Control hydration",
+    "scenario": "Server rendering or asynchronous storage makes automatic restoration timing unsuitable."
+   }
+  ],
+  "related": [
+   "createJSONStorage",
+   "PersistStorage",
+   "partialize",
+   "onRehydrateStorage",
+   "migrate",
+   "merge",
+   "rehydrate",
+   "skipHydration"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the `persist` middleware do?",
+    "answer": "`persist` stores Zustand state across reloads or application restarts. The required `name` becomes the storage key, while storage defaults to JSON-backed `localStorage`.",
+    "followUp": "How would you avoid persisting sensitive or transient fields? Use `partialize` to return only the fields that should be written."
+   },
+   {
+    "question": "How does hydration differ between synchronous and asynchronous storage?",
+    "answer": "Hydration retrieves persisted data and merges it with the current state. Synchronous storage hydrates during store creation, whereas asynchronous storage hydrates later in a microtask.",
+    "followUp": "How can hydration be controlled for SSR? Set `skipHydration: true` and invoke `rehydrate` manually when the client is ready."
+   },
+   {
+    "question": "How should persisted-state schema changes be handled?",
+    "answer": "Set `version` when the persisted shape has a schema version, and provide `migrate` to transform old persisted data when versions differ. Without a matching version and migration path, the stored state is not used.",
+    "followUp": "How can the default merge behavior be changed? Supply `merge` to define custom logic; the default is a shallow merge."
+   }
+  ],
+  "keyPoints": [
+   "Use `persist` when state must survive a browser reload or an application restart.",
+   "Make `name` unique and deliberate because it identifies the stored record.",
+   "Without a custom adapter, persisted data uses JSON serialization with `localStorage`.",
+   "Use `partialize` to keep transient, derived, or sensitive fields out of storage.",
+   "Pair a changed `version` with `migrate` to convert data saved by an older schema.",
+   "During rehydration, the saved value is shallow-merged into current state unless `merge` overrides it."
+  ],
+  "gotchas": [
+   "Changing the persisted shape without a migration can make an existing value unusable; provide `migrate` when changing versions.",
+   "With `skipHydration: true`, call the store's `rehydrate` API yourself, which is useful when controlling hydration in SSR."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Middleware & architecture::Resetting state": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/learn/guides/how-to-reset-state.html",
+  "sourceTitle": "How to reset state - Zustand Docs",
+  "summary": "Zustand can restore a store to its initial snapshot through a reset action. For multiple stores, register reset callbacks and run them together.",
+  "explanation": "Define a reset action inside the store and call set with store.getInitialState(). Because the initial state includes the action functions, the reset restores data without removing those functions. For several stores, register reset callbacks and invoke them together; use replace mode when resetting through setState.",
+  "syntax": "reset: () => { set(store.getInitialState()) }",
+  "parameters": [],
+  "returns": "The page documents reset patterns and does not specify a separate return value for the reset action.",
+  "example": {
+   "title": "Reset a Zustand store to its initial state",
+   "code": "import { create } from 'zustand'\n\ntype State = {\n  bears: number\n  increase: () => void\n  reset: () => void\n}\n\nconst useBearStore = create<State>()((set, get, store) => ({\n  bears: 0,\n  increase: () => set((state) => ({ bears: state.bears + 1 })),\n  reset: () => set(store.getInitialState()),\n}))\n\nuseBearStore.getState().increase()\nuseBearStore.getState().reset()\nconsole.log(useBearStore.getState().bears)",
+   "language": "typescript",
+   "explanation": "The reset action replaces the current data with the store's captured initial state while retaining the action functions."
+  },
+  "useCases": [
+   {
+    "title": "Clear session state",
+    "scenario": "A user logs out and in-memory store data must return to its starting values."
+   },
+   {
+    "title": "Reset test fixtures",
+    "scenario": "Tests need isolated stores between cases."
+   },
+   {
+    "title": "Global reset",
+    "scenario": "An application has several independent stores that must be cleared together."
+   }
+  ],
+  "related": [
+   "create",
+   "StateCreator",
+   "getInitialState",
+   "setState",
+   "set"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you reset a Zustand store without losing its actions?",
+    "answer": "Add a reset action that calls set(store.getInitialState()). The store's initial snapshot contains both the data and the action functions, so resetting restores the data while keeping the API available.",
+    "followUp": "How would you reset several stores? Register a reset function for each store in a shared Set, then iterate through that Set from a resetAllStores function."
+   },
+   {
+    "question": "How can an application reset multiple Zustand stores at once?",
+    "answer": "Create a Set of reset callbacks. Wrap store creation, add a callback that invokes store.setState(store.getInitialState(), true), and call every callback when a global reset is needed.",
+    "followUp": "Why use the second argument true? It enables replacement rather than shallow merging, ensuring stale keys are removed during the reset."
+   },
+   {
+    "question": "Where does the reset value come from?",
+    "answer": "Use the store API's getInitialState method to obtain the initial snapshot, then pass it to set or setState. The documented pattern captures the initial state when the store is created and uses it later for resetting.",
+    "followUp": "What should be checked when using replacement mode? Confirm that the initial snapshot includes all state fields and actions that the store must expose after the reset."
+   }
+  ],
+  "keyPoints": [
+   "A reset action can restore a store to its initial state on demand.",
+   "Call set with getInitialState to restore the captured initial snapshot.",
+   "A shared reset mechanism can reset multiple Zustand stores together.",
+   "Keep reset callbacks in a Set so they can be invoked collectively.",
+   "Iterate over registered reset callbacks to perform a global reset."
+  ],
+  "gotchas": [
+   "The multi-store helper uses replace mode, so ensure the initial state contains every required action and state property before replacing the store."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Middleware & architecture::Slices pattern": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/learn/guides/slices-pattern",
+  "sourceTitle": "Slices Pattern - Zustand Docs",
+  "summary": "Compose domain-specific slice creators into one bounded Zustand store. Apply middleware to the combined store, not to individual slices, and include middleware mutator types when using TypeScript.",
+  "explanation": "The slices pattern defines separate state-creator functions for cohesive domains, then composes them into one bounded Zustand store. The combined store can receive middleware at the root; keeping middleware out of individual slices avoids composition problems. With TypeScript, the store type is the intersection of slice types, and middleware mutators can be added to each slice's StateCreator type when required.",
+  "syntax": "create<Store>()((...a) => ({ ...createSliceA(...a), ...createSliceB(...a) }))",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Composing typed slices",
+   "code": "import { create, type StateCreator } from 'zustand'\nimport { persist } from 'zustand/middleware'\n\ntype BearSlice = { bears: number; addBear: () => void }\ntype FishSlice = { fishes: number; addFish: () => void }\ntype Store = BearSlice & FishSlice\n\ntype Slice = StateCreator<Store, [], [], BearSlice | FishSlice>\n\nconst createBearSlice: StateCreator<Store, [], [], BearSlice> = (set) => ({\n  bears: 0,\n  addBear: () => set((state) => ({ bears: state.bears + 1 })),\n})\n\nconst createFishSlice: StateCreator<Store, [], [], FishSlice> = (set) => ({\n  fishes: 0,\n  addFish: () => set((state) => ({ fishes: state.fishes + 1 })),\n})\n\nexport const useBoundStore = create<Store>()(\n  persist((...a) => ({\n    ...createBearSlice(...a),\n    ...createFishSlice(...a),\n  }), { name: 'bound-store' }),\n)",
+   "language": "typescript",
+   "explanation": "Each slice owns a part of the state, while the root creator spreads those parts into one persisted store."
+  },
+  "useCases": [
+   {
+    "title": "Modular domain state",
+    "scenario": "A large application has independent domains such as bears, fish, users, or settings."
+   },
+   {
+    "title": "One bounded store",
+    "scenario": "Several slices must be consumed through one Zustand hook and store API."
+   },
+   {
+    "title": "Root-level middleware",
+    "scenario": "The complete store needs persistence or developer tooling."
+   },
+   {
+    "title": "Typed slice composition",
+    "scenario": "TypeScript codebase requires each slice and its middleware stack to be explicit."
+   }
+  ],
+  "related": [
+   "StateCreator",
+   "create",
+   "persist",
+   "devtools",
+   "combine",
+   "bounded store"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does the slices pattern compose a store?",
+    "answer": "The pattern extracts domain-specific state and actions into separate slice creators. The root store invokes each creator with the same Zustand arguments and merges their returned objects, yielding one bounded store.",
+    "followUp": "How should middleware be placed? Apply it around the combined root creator, not inside individual slices, so middleware observes the final store consistently."
+   },
+   {
+    "question": "How do you type slices with TypeScript?",
+    "answer": "Use an intersection type for the complete store, such as BearSlice & FishSlice. Each slice creator can then be typed as a StateCreator whose final state type is its own slice.",
+    "followUp": "What changes when a slice uses middleware? Include the middleware mutator tuple in StateCreator's mutator parameter, such as the devtools tuple shown in the TypeScript guide."
+   },
+   {
+    "question": "Where should middleware be applied?",
+    "answer": "Wrap the combined creator with persist, devtools, or another middleware at the root. The documentation specifically cautions that middleware should be applied only to the combined store.",
+    "followUp": "Why avoid slice-local middleware? Separate wrappers can interact unexpectedly when the slices are later merged into one store."
+   }
+  ],
+  "keyPoints": [
+   "Split a large store into domain-focused slice creators so each piece remains easier to organize and reuse.",
+   "The root creator combines slice results by spreading them into a single bounded Zustand store.",
+   "A slice that needs another domain can receive the shared creator arguments and coordinate with the other composed state.",
+   "Once composed, the bounded store accepts middleware using the usual Zustand wrapping pattern.",
+   "Type middleware-aware slices by replacing the empty mutator list with the middleware mutator tuple."
+  ],
+  "gotchas": [
+   "Apply middleware to the composed store rather than inside individual slice creators; per-slice middleware can produce unexpected behavior."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Selectors & subscriptions::Atomic selectors": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/learn/guides/beginner-typescript",
+  "sourceTitle": "Beginner TypeScript Guide - Zustand Docs",
+  "summary": "Subscribe to the smallest state value a consumer needs by passing a selector to the Zustand hook. Use useShallow for multi-value object selections when shallow equality should prevent unnecessary re-renders.",
+  "explanation": "An atomic selector is a store hook call that returns only the state value a consumer needs, such as `(state) => state.bears`. Zustand then updates that consumer when the selected value changes rather than making it depend on the whole store. When selecting multiple values as a new object, useShallow helps avoid renders when those values remain shallowly equal.",
+  "syntax": "useStore((state) => state.value)",
+  "parameters": [
+   {
+    "name": "state",
+    "type": "Store state",
+    "description": "The store state supplied to the selector."
+   }
+  ],
+  "returns": "The selected state value, or an object containing multiple selected values.",
+  "example": {
+   "title": "Subscribe to selected state",
+   "code": "import { create } from 'zustand'\nimport { useShallow } from 'zustand/react/shallow'\n\ntype BearStore = {\n  bears: number\n  food: number\n  addBear: () => void\n}\n\nconst useBearStore = create<BearStore>((set) => ({\n  bears: 0,\n  food: 10,\n  addBear: () => set((state) => ({ bears: state.bears + 1 })),\n}))\n\nexport function BearCounter() {\n  const bears = useBearStore((state) => state.bears)\n  const { food } = useBearStore(\n    useShallow((state) => ({ food: state.food })),\n  )\n  return <p>{bears} bears, {food} food</p>\n}",
+   "language": "tsx",
+   "explanation": "The component subscribes separately to the individual values it consumes; useShallow is shown for an object-shaped selection."
+  },
+  "useCases": [
+   {
+    "title": "Single-value subscription",
+    "scenario": "A component displays one counter or status field."
+   },
+   {
+    "title": "Multiple selected values",
+    "scenario": "A component needs two or more independent fields."
+   },
+   {
+    "title": "Shallow-equal derived selection",
+    "scenario": "A selector returns a newly created object or array."
+   }
+  ],
+  "related": [
+   "useShallow",
+   "selectors",
+   "multiple selectors"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Pass a selector to the store hook to subscribe to one required property instead of the entire store.",
+   "Selecting narrowly can reduce component re-renders and improve performance.",
+   "A consumer can select multiple properties when it needs more than one store value.",
+   "An object-returning selector groups several selected fields into one result.",
+   "Wrap object or array selections with useShallow when shallow equality should determine whether the consumer updates."
+  ],
+  "gotchas": [
+   "Returning a new object for multiple selections may cause unnecessary re-renders; useShallow when shallow equality is sufficient."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Selectors & subscriptions::Derived state": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/learn/guides/beginner-typescript",
+  "sourceTitle": "Beginner TypeScript Guide",
+  "summary": "Use selectors to compute values from existing Zustand state instead of storing redundant derived fields. This keeps the store minimal and reduces unnecessary re-renders.",
+  "explanation": "A selector receives the current Zustand state and returns a computed value for a component or subscriber. Keep only canonical data in the store; calculate dependent values in the selector so duplicated state cannot become inconsistent. Selectors also limit subscriptions to the returned slice, helping avoid updates unrelated to the selected value.",
+  "syntax": "useStore((state) => computedValue)",
+  "parameters": [],
+  "returns": "The selected or computed value returned by the selector.",
+  "example": {
+   "title": "Derive a value with a selector",
+   "code": "import { create } from 'zustand'\n\ntype BearStore = {\n  bears: number\n  doubleBears: () => number\n  addBear: () => void\n}\n\nconst useBearStore = create<BearStore>((set, get) => ({\n  bears: 0,\n  doubleBears: () => get().bears * 2,\n  addBear: () => set((state) => ({ bears: state.bears + 1 })),\n}))\n\nconst doubleBears = useBearStore((state) => state.bears * 2)\nconsole.log(doubleBears)\n",
+   "language": "typescript",
+   "explanation": "The selector computes a value from the canonical bears state without storing a second derived field."
+  },
+  "useCases": [
+   {
+    "title": "Compute display values",
+    "scenario": "A UI needs a count, total, label, or status calculated from stored fields."
+   },
+   {
+    "title": "Share derived reads",
+    "scenario": "Several components need the same calculation from canonical store data."
+   },
+   {
+    "title": "Limit subscriptions",
+    "scenario": "A component should update only when its computed result changes."
+   },
+   {
+    "title": "Type-safe derivation",
+    "scenario": "A TypeScript store needs safe calculations based on typed state."
+   }
+  ],
+  "related": [
+   "create",
+   "useStore",
+   "useShallow",
+   "subscribeWithSelector"
+  ],
+  "since": "",
+  "keyPoints": [
+   "State that can be calculated from canonical fields does not need its own stored property.",
+   "Return the computed value from a selector passed to the Zustand hook.",
+   "Derived selectors prevent redundant copies that could diverge from their source state.",
+   "A selector also defines the portion of state that the component observes.",
+   "Selecting a focused value can avoid re-rendering for unrelated store changes.",
+   "With TypeScript, derived calculations receive the declared type of their source state."
+  ],
+  "gotchas": [
+   "Returning a new object from a selector may cause unnecessary re-renders; use shallow comparison when selecting multiple values.",
+   "Do not store values that can be calculated from existing state; derive them instead."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Selectors & subscriptions::Stable selector results": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/reference/hooks/use-shallow",
+  "sourceTitle": "useShallow - Zustand Docs",
+  "summary": "Avoid returning a newly allocated object or array from a selector when its contents are unchanged. Wrap the selector with useShallow, or select each value separately, so unchanged selections remain stable.",
+  "explanation": "Zustand's default equality check uses Object.is, so a selector that creates a new object on every read can repeatedly appear changed. useShallow memoizes the selector result by comparing the selected object's properties, or you can select each value separately.",
+  "syntax": "useShallow<T, U = T>(selectorFn: (state: T) => U): (state: T) => U",
+  "parameters": [
+   {
+    "name": "selectorFn",
+    "type": "(state: T) => U",
+    "description": "Selector function that receives the store state and returns the derived value to memoize."
+   }
+  ],
+  "returns": "A memoized selector function that returns the selected value and reuses the prior result when shallow comparison finds no change.",
+  "example": {
+   "title": "Stabilize an object selector",
+   "code": "import { useShallow } from 'zustand/react/shallow'\n\nconst useBearStore = create((set) => ({\n  searchValue: '',\n  setSearchValue: (searchValue) => set({ searchValue }),\n}))\n\nfunction SearchBox() {\n  const { searchValue, setSearchValue } = useBearStore(\n    useShallow((state) => ({\n      searchValue: state.searchValue,\n      setSearchValue: state.setSearchValue,\n    })),\n  )\n\n  return <input value={searchValue} onChange={(e) => setSearchValue(e.target.value)} />\n}",
+   "language": "tsx",
+   "explanation": "Wrap an object-returning selector with useShallow so Zustand compares its properties rather than the newly created wrapper object."
+  },
+  "useCases": [
+   {
+    "title": "Bundle multiple fields safely",
+    "scenario": "A component needs several independent store fields as one destructured result."
+   },
+   {
+    "title": "Stabilize derived collections",
+    "scenario": "A selector derives keys, names, or another shallow collection from state."
+   },
+   {
+    "title": "Prevent reference-driven update loops",
+    "scenario": "A component repeatedly re-renders or loops after upgrading to Zustand v5."
+   }
+  ],
+  "related": [
+   "useStore",
+   "useStoreWithEqualityFn",
+   "subscribeWithSelector",
+   "shallow"
+  ],
+  "since": "v5",
+  "interview": [
+   {
+    "question": "Why can an object-returning selector cause repeated updates?",
+    "answer": "The default equality check is Object.is. Therefore, returning a newly allocated object from a selector makes the result unequal even when its properties contain the same values; useShallow compares those properties instead.",
+    "followUp": "What is another solution besides useShallow? Select each required value with a separate selector, avoiding a wrapper object entirely."
+   },
+   {
+    "question": "How does useShallow stabilize selector results?",
+    "answer": "useShallow returns a memoized version of the selector. It keeps the selected reference stable when the selected properties are unchanged, allowing the component to avoid unnecessary re-renders.",
+    "followUp": "What does shallow comparison not do? It does not recursively compare nested objects; nested references must themselves remain stable."
+   },
+   {
+    "question": "How can stable results be achieved without useShallow?",
+    "answer": "A selector can return one store value directly, such as state.searchValue, without creating a new container. For multiple values, separate selectors avoid recreating a wrapper object.",
+    "followUp": "When is useShallow preferable? It is convenient when a component needs several values together and shallow property comparison is sufficient."
+   }
+  ],
+  "keyPoints": [
+   "Use useShallow when a selector derives an object or array whose contents may stay unchanged across reads.",
+   "The hook memoizes selector output by comparing its top-level members rather than requiring the outer container to retain identity.",
+   "A freshly allocated result fails the default identity comparison even when its selected values are unchanged.",
+   "For a small number of fields, individual selectors provide stable primitive or function results without creating a wrapper."
+  ],
+  "gotchas": [
+   "With Zustand v5, a fresh reference from a selector can cause an infinite update loop because Object.is sees each new object as different.",
+   "Wrapping several selected values in a newly constructed object defeats reference equality unless shallow comparison is used."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Selectors & subscriptions::subscribeWithSelector": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/reference/middlewares/subscribe-with-selector",
+  "sourceTitle": "subscribeWithSelector - Zustand Docs",
+  "summary": "Zustand middleware for subscribing to selected state outside React. It adds granular subscriptions and returns cleanup functions for removing listeners.",
+  "explanation": "Apply this middleware to a Zustand state creator to extend the store's subscription API. Subscribers can provide a selector and receive the selected value plus its previous value when that selection changes; the returned unsubscribe function removes the listener.",
+  "syntax": "subscribeWithSelector<T>(stateCreatorFn: StateCreator<T, [], []>): StateCreator<T, [['zustand/subscribeWithSelector', never]], []>",
+  "parameters": [
+   {
+    "name": "stateCreatorFn",
+    "type": "StateCreator<T, [], []>",
+    "description": "A state creator receiving Zustand's set function, get function, and store, normally returning the exposed state and methods."
+   }
+  ],
+  "returns": "A state creator function: StateCreator<T, [['zustand/subscribeWithSelector', never]], []>.",
+  "example": {
+   "title": "Subscribe to a selected slice",
+   "code": "import { createStore } from 'zustand/vanilla'\nimport { subscribeWithSelector } from 'zustand/middleware'\n\ntype PositionStore = {\n  position: { x: number; y: number }\n  setPosition: (position: { x: number; y: number }) => void\n}\n\nconst store = createStore<PositionStore>()(\n  subscribeWithSelector((set) => ({\n    position: { x: 0, y: 0 },\n    setPosition: (position) => set({ position }),\n  })),\n)\n\nconst unsubscribe = store.subscribe(\n  (state) => state.position,\n  (position, previousPosition) => {\n    console.log(position, previousPosition)\n  },\n)\n\nstore.getState().setPosition({ x: 10, y: 20 })\nunsubscribe()",
+   "language": "typescript",
+   "explanation": "Creates a vanilla store and listens only for changes to its position slice. The returned cleanup function stops the subscription."
+  },
+  "useCases": [
+   {
+    "title": "Observe granular state outside React",
+    "scenario": "An external service needs updates only when one store slice changes."
+   },
+   {
+    "title": "Clean up an owned subscription",
+    "scenario": "A component or integration owns a listener whose lifecycle ends later."
+   },
+   {
+    "title": "Reduce irrelevant notifications",
+    "scenario": "A store has frequent unrelated updates and a consumer needs one partial state value."
+   }
+  ],
+  "related": [
+   "subscribe",
+   "createStore",
+   "StateCreator",
+   "set",
+   "get"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `subscribeWithSelector` provide?",
+    "answer": "`subscribeWithSelector` is middleware that changes the store subscription API so a caller can subscribe to selected state rather than the complete state. Its signature wraps a state creator and returns another state creator.",
+    "followUp": "How can a caller stop receiving updates? Call the unsubscribe function returned by `store.subscribe`."
+   },
+   {
+    "question": "Why use a selector with a subscription?",
+    "answer": "The selector identifies the partial state to observe, and the listener is invoked when that selected value updates. This is useful for granular external subscriptions.",
+    "followUp": "What should be selected when an external consumer only needs one field? Pass a selector such as `(state) => state.position`."
+   },
+   {
+    "question": "How is the middleware installed?",
+    "answer": "The middleware is applied when creating the store, for example by passing `subscribeWithSelector((set) => ({ ... }))` to `createStore`. The wrapped creator receives `set`, `get`, and `store` in the normal state-creator pattern.",
+    "followUp": "What does the wrapper return? A state-creator function suitable for store creation."
+   }
+  ],
+  "keyPoints": [
+   "It enables subscriptions to a chosen portion of the current store state.",
+   "Wrap the state creator with `subscribeWithSelector` before constructing the store.",
+   "The input state creator follows Zustand's state-creator contract and receives set, get, and store.",
+   "A listener is called when the subscribed partial state updates.",
+   "The subscription API supports external state-management integrations, not only React components."
+  ],
+  "gotchas": [
+   "A subscription targets the selected partial state, not necessarily every store update.",
+   "This API is intended for subscriptions outside React as well as other external consumers.",
+   "The middleware wraps a state creator; it is not itself the store instance."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Selectors & subscriptions::Transient updates": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/reference/middlewares/subscribe-with-selector",
+  "sourceTitle": "subscribeWithSelector - Zustand Docs",
+  "summary": "Transient updates use a selector subscription to notify an external renderer only when the selected slice changes. This updates DOM, canvas, or other external output without forcing a React render for every store update.",
+  "explanation": "Use a vanilla Zustand store enhanced with subscribeWithSelector, then subscribe to the specific state slice an external renderer needs. The listener runs when that selected value changes, so the renderer can update directly rather than causing React to render for every store update.",
+  "syntax": "subscribeWithSelector(stateCreatorFn)",
+  "parameters": [
+   {
+    "name": "stateCreatorFn",
+    "type": "StateCreator<T, [], []>",
+    "description": "A state creator receiving set, get, and store and returning the store's exposed state and methods."
+   }
+  ],
+  "returns": "A state creator function enhanced for selector-based subscriptions.",
+  "example": {
+   "title": "Drive a DOM renderer from a selected subscription",
+   "code": "import { createStore } from 'zustand/vanilla'\nimport { subscribeWithSelector } from 'zustand/middleware'\n\ntype Position = { x: number; y: number }\nconst store = createStore<{\n  position: Position\n  setPosition: (position: Position) => void\n}>()(\n  subscribeWithSelector((set) => ({\n    position: { x: 0, y: 0 },\n    setPosition: (position) => set({ position }),\n  })),\n)\n\nconst dot = document.createElement('div')\ndocument.body.append(dot)\n\nconst render = (position: Position) => {\n  dot.style.transform = `translate(${position.x}px, ${position.y}px)`\n}\n\nrender(store.getInitialState().position)\nconst unsubscribe = store.subscribe((state) => state.position, render)\nstore.getState().setPosition({ x: 20, y: 30 })\nunsubscribe()",
+   "language": "typescript",
+   "explanation": "The selector subscription updates a DOM element directly when the position changes, without involving a React render."
+  },
+  "useCases": [
+   {
+    "title": "DOM rendering",
+    "scenario": "Update a DOM element when a selected position or size changes."
+   },
+   {
+    "title": "Graphics rendering",
+    "scenario": "Synchronize a canvas or WebGL scene with store state."
+   },
+   {
+    "title": "External synchronization",
+    "scenario": "Feed selected store changes into an external state-management or integration layer."
+   }
+  ],
+  "related": [
+   "subscribeWithSelector",
+   "subscribe",
+   "createStore",
+   "getInitialState",
+   "getState"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Wrap the state creator with subscribeWithSelector to enable selector-based subscriptions.",
+   "The listener receives updates for the selected portion of state rather than requiring a full-store subscription.",
+   "A subscription can drive non-React consumers directly.",
+   "The middleware accepts a state creator and returns an enhanced state creator.",
+   "Use the returned state creator when constructing the vanilla store.",
+   "Type the listener from the store's subscribe API when writing TypeScript."
+  ],
+  "gotchas": [
+   "The callback is tied to the selected slice, so unrelated state changes do not trigger it.",
+   "This pattern is for external consumers such as a DOM or canvas renderer, not only React components."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Selectors & subscriptions::useShallow": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/reference/hooks/use-shallow.html",
+  "sourceTitle": "useShallow",
+  "summary": "useShallow memoizes a Zustand selector with shallow comparison. It is useful for object or array selections whose top-level values can remain equivalent even when the selector creates a new wrapper.",
+  "explanation": "useShallow wraps a selector and memoizes its result with shallow comparison. When a selector creates an equivalent object or array on an update, the wrapper preserves the previous reference, so a component subscribed to that selection does not re-render unnecessarily; it still updates when the selected top-level values change.",
+  "syntax": "useShallow<T, U = T>(selectorFn: (state: T) => U): (state: T) => U",
+  "parameters": [
+   {
+    "name": "selectorFn",
+    "type": "(state: T) => U",
+    "description": "A function that returns data derived from the current store state."
+   }
+  ],
+  "returns": "A memoized selector function that preserves the previous result when successive results are shallowly equal.",
+  "example": {
+   "title": "Stable computed array selection",
+   "code": "import { create } from 'zustand'\nimport { useShallow } from 'zustand/react/shallow'\n\ntype Store = {\n  papaBear: string\n  mamaBear: string\n  littleBear: string\n}\n\nconst useMeals = create<Store>(() => ({\n  papaBear: 'large porridge-pot',\n  mamaBear: 'middle-size porridge pot',\n  littleBear: 'A little, small, wee pot',\n}))\n\nexport function BearNames() {\n  const names = useMeals(useShallow((state) => Object.keys(state)))\n  return <div>{names.join(', ')}</div>\n}",
+   "language": "tsx",
+   "explanation": "The selector produces a new array, but useShallow reuses the previous result when its entries are shallowly equal, preventing unnecessary component renders."
+  },
+  "useCases": [
+   {
+    "title": "Computed arrays",
+    "scenario": "The selector returns Object.keys(state) or another freshly allocated array whose entries are unchanged."
+   },
+   {
+    "title": "Grouped object selections",
+    "scenario": "The selector returns several state fields or actions in a newly created object."
+   },
+   {
+    "title": "Reference-stable derived selections",
+    "scenario": "A component subscribes to derived data whose top-level values, rather than wrapper identity, define whether it changed."
+   }
+  ],
+  "related": [
+   "shallow",
+   "useStore",
+   "create",
+   "createWithEqualityFn"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does useShallow solve?",
+    "answer": "useShallow wraps a selector and returns a memoized selector. It compares successive results shallowly and retains the prior reference when the selected top-level values are equivalent, which can prevent needless React renders.",
+    "followUp": "What comparison normally causes the problem? Zustand's computed selector output is checked with Object.is, so a newly allocated but equivalent array or object is considered changed."
+   },
+   {
+    "question": "Give a situation where useShallow is appropriate.",
+    "answer": "It is useful when a selector derives an object or array, such as Object.keys(state), and that derived value is repeatedly recreated. The component then re-renders only when the derived top-level contents change shallowly.",
+    "followUp": "When should it not be used as a general deep-equality solution? It only addresses shallowly equal results; nested data requires a selection and equality strategy whose semantics match the nested data."
+   },
+   {
+    "question": "What is the signature and how is it used?",
+    "answer": "The hook is imported from zustand/react/shallow and receives one selector function. Its type is useShallow<T, U = T>(selectorFn: (state: T) => U): (state: T) => U.",
+    "followUp": "How can the same idea apply to an object selection? Wrap a selector returning an object, for example selected fields and actions, so stable property references can preserve the wrapper reference."
+   }
+  ],
+  "keyPoints": [
+   "Call useShallow with a selector to obtain a memoized selector, then pass that returned function to the store hook.",
+   "The selector function derives the value consumed by the component from the current store state.",
+   "Memoization is based on shallow comparison rather than deep comparison.",
+   "For key-list selections, unchanged keys can keep the component from rendering again even when the selector creates a new array.",
+   "Object selections can use stable property references so equality is applied to their contents rather than merely to a newly created wrapper."
+  ],
+  "gotchas": [
+   "Without useShallow, a selector that creates a fresh object or array can trigger a render because Zustand compares the selector output with Object.is.",
+   "Use it only when shallow equality represents the meaning of the selection; nested changes are not the concern addressed by this hook."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Store fundamentals::create and bound hooks": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/reference/apis/create",
+  "sourceTitle": "create - Zustand Docs",
+  "summary": "Create produces a React-bound Zustand hook from a state creator. Call that hook with a selector in a component to read the selected part of current state.",
+  "explanation": "Call create with a state creator that receives set and returns the store's state and actions. The result is a hook carrying store APIs; inside a component, pass a selector to subscribe to the specific value needed and receive that selected result.",
+  "syntax": "create<T>()(stateCreatorFn: StateCreator<T, [], []>): UseBoundStore<StoreApi<T>>",
+  "parameters": [
+   {
+    "name": "stateCreatorFn",
+    "type": "StateCreator<T, [], []>",
+    "description": "A function receiving set, get, and store; it usually returns the state and methods exposed by the store."
+   }
+  ],
+  "returns": "A React Hook with API utilities attached: setState, getState, getInitialState, and subscribe.",
+  "example": {
+   "title": "React-bound store with a selector",
+   "code": "import { create } from 'zustand'\n\ninterface BearState {\n  bears: number\n  addBear: () => void\n}\n\nconst useBearStore = create<BearState>()((set) => ({\n  bears: 0,\n  addBear: () => set((state) => ({ bears: state.bears + 1 })),\n}))\n\nexport function BearCounter() {\n  const bears = useBearStore((state) => state.bears)\n  return <button onClick={() => useBearStore.getState().addBear()}>{bears} bears</button>\n}",
+   "language": "tsx",
+   "explanation": "Creates a React-bound store and reads only the selected bears value in the component."
+  },
+  "useCases": [
+   {
+    "title": "Selective component subscription",
+    "scenario": "A component needs one field from a shared store and should react to changes to that field."
+   },
+   {
+    "title": "Imperative store access",
+    "scenario": "Application logic needs to update or inspect the store without placing the operation in component JSX."
+   },
+   {
+    "title": "Shared state and actions",
+    "scenario": "A store combines data and operations in one React-consumable module."
+   }
+  ],
+  "related": [
+   "create",
+   "StateCreator",
+   "UseBoundStore",
+   "StoreApi",
+   "setState",
+   "getState",
+   "getInitialState",
+   "subscribe"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the TypeScript signature for creating a bound store?",
+    "answer": "The curried TypeScript form is create<T>()(stateCreatorFn), and it returns a UseBoundStore<StoreApi<T>>. The state creator defines the state and methods exposed by the store.",
+    "followUp": "Why use the curried form in TypeScript? It enables inference of the store type, avoiding weaker or incomplete type inference."
+   },
+   {
+    "question": "What does create return?",
+    "answer": "The returned value is a React hook with attached setState, getState, getInitialState, and subscribe utilities. A component can call it with a selector to derive data from current state.",
+    "followUp": "When would direct getState be preferable? Use it for imperative access outside React rendering, while components should subscribe through the hook for reactive updates."
+   },
+   {
+    "question": "How is a selector used with the bound hook?",
+    "answer": "A selector lets the component subscribe to just the state portion it needs, such as state.bears. The hook returns the selector's result rather than the entire store state.",
+    "followUp": "What performance issue can a selector help avoid? Selecting a narrower value can reduce updates and unnecessary component re-renders when unrelated state changes."
+   }
+  ],
+  "keyPoints": [
+   "Use create to produce a store hook that works directly in React and also exposes imperative store utilities.",
+   "The usual declaration assigns create's result to a use-prefixed store hook.",
+   "The state creator receives set, get, and store, then normally returns the state fields and actions to expose.",
+   "A selector can derive the value a component consumes from the current store state.",
+   "When selecting from the hook, provide the selector as the hook's argument."
+  ],
+  "gotchas": [
+   "Do not invoke the state creator's set, get, or store arguments while the store is being initialized; use them after creation, such as in an action."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Store fundamentals::createStore and vanilla stores": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/reference/apis/create-store.html",
+  "sourceTitle": "createStore - Zustand Docs",
+  "summary": "createStore builds a framework-independent Zustand store from a state creator. The resulting store exposes getState, setState, getInitialState, and subscribe.",
+  "explanation": "A vanilla store is created by passing a state creator to createStore. The creator defines state and actions, while the returned store exposes getState, setState, getInitialState, and subscribe for reading, updating, observing, and inspecting its initial snapshot.",
+  "syntax": "createStore(stateCreatorFn)",
+  "parameters": [
+   {
+    "name": "stateCreatorFn",
+    "type": "(set, get, store) => state",
+    "description": "Function receiving set, get, and store; normally returns the store's state and exposed methods."
+   }
+  ],
+  "returns": "A vanilla store exposing setState, getState, getInitialState, and subscribe.",
+  "example": {
+   "title": "Vanilla counter store",
+   "code": "import { createStore } from 'zustand/vanilla'\n\ntype CounterStore = {\n  count: number\n  increment: () => void\n}\n\nconst counterStore = createStore<CounterStore>()((set) => ({\n  count: 0,\n  increment: () => set((state) => ({ count: state.count + 1 })),\n}))\n\nconst unsubscribe = counterStore.subscribe((state) => {\n  console.log(state.count)\n})\n\ncounterStore.getState().increment()\nconsole.log(counterStore.getState().count)\nunsubscribe()",
+   "language": "typescript",
+   "explanation": "Creates a framework-independent counter, reads its state, updates it through an action, and listens for changes."
+  },
+  "useCases": [
+   {
+    "title": "Keep state independent of a UI framework",
+    "scenario": "Shared application state"
+   },
+   {
+    "title": "Read or update state from event handlers and external code",
+    "scenario": "Imperative integrations"
+   },
+   {
+    "title": "Notify listeners when store state changes",
+    "scenario": "Reactive consumers"
+   }
+  ],
+  "related": [
+   "setState",
+   "getState",
+   "getInitialState",
+   "subscribe",
+   "useStore",
+   "create"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does createStore return?",
+    "answer": "createStore accepts a state creator and returns a vanilla store object. That object provides getState, setState, getInitialState, and subscribe, so it can be used without a framework.",
+    "followUp": "How would a React component consume this store? Use Zustand's useStore hook with the vanilla store, which connects the component to the store's state and subscriptions."
+   },
+   {
+    "question": "What does the state creator receive?",
+    "answer": "The stateCreatorFn receives set, get, and store. It normally returns the state fields and action methods that the store should expose.",
+    "followUp": "Why might an action use get rather than close over a value? get reads the store's current state when the action runs, avoiding stale initialization-time data."
+   },
+   {
+    "question": "How are a vanilla store's state and changes accessed?",
+    "answer": "subscribe registers a listener for store updates, and the returned unsubscribe function removes that listener. getState reads the current snapshot, while setState applies updates directly to the store.",
+    "followUp": "What is getInitialState useful for? It provides the store's initial snapshot, which can support initial rendering or comparison with later state."
+   }
+  ],
+  "keyPoints": [
+   "Use createStore when the store should remain independent of React or another UI framework.",
+   "Pass a state creator to createStore; the creator defines the store's state and public actions.",
+   "The creator receives set for updates, get for reading current state, and store for access to store APIs.",
+   "Return an object containing the state values and action methods that callers should be able to use.",
+   "The returned store is an imperative API rather than a framework-bound hook.",
+   "The store exposes methods to update state, read current and initial snapshots, and subscribe to changes."
+  ],
+  "gotchas": [
+   "Do not call the creator's set, get, or store arguments while the store is being initialized; use them after creation, such as inside actions."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Store fundamentals::Functional updates": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/learn/guides/immutable-state-and-merging.html",
+  "sourceTitle": "Immutable state and merging",
+  "summary": "Functional updates pass a callback to `set` so the next state is calculated from the current state. Return the changed fields; Zustand shallowly merges them by default.",
+  "explanation": "A functional update passes a callback to Zustand's set function. Zustand invokes it with the current state, and the callback returns the partial state to merge, making updates derived from the latest value rather than a captured snapshot.",
+  "syntax": "set((state) => ({ changedField: deriveFrom(state.changedField) }), replace?)",
+  "parameters": [
+   {
+    "name": "updater",
+    "type": "(state) => Partial<State>",
+    "description": "A state-updater callback that receives the current store state and returns the next partial state."
+   },
+   {
+    "name": "replace",
+    "type": "boolean",
+    "description": "Whether to replace the complete store state instead of shallowly merging the updater result."
+   }
+  ],
+  "returns": "The updater returns a partial state object that Zustand shallowly merges into the store by default; with `replace` true, it returns the complete replacement state.",
+  "example": {
+   "title": "Increment from the current state",
+   "code": "import { create } from 'zustand'\n\ntype CounterStore = {\n  count: number\n  increment: () => void\n}\n\nconst useCounterStore = create<CounterStore>((set) => ({\n  count: 0,\n  increment: () => set((state) => ({ count: state.count + 1 })),\n}))\n\nuseCounterStore.getState().increment()\nconsole.log(useCounterStore.getState().count)",
+   "language": "typescript",
+   "explanation": "The action receives the current store state and returns the next count, so repeated calls build on the latest value."
+  },
+  "useCases": [
+   {
+    "title": "Incrementing derived values",
+    "scenario": "Counters, totals, or other values whose next value depends on the current value."
+   },
+   {
+    "title": "Immutable nested updates",
+    "scenario": "Updating one property inside a nested object while retaining sibling properties."
+   },
+   {
+    "title": "Reliable consecutive updates",
+    "scenario": "Applying repeated or rapid updates without using a captured stale value."
+   }
+  ],
+  "related": [
+   "set",
+   "create",
+   "updater functions",
+   "immutable state and merging",
+   "shallow merge",
+   "replace"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does a functional update increment a value?",
+    "answer": "Pass a callback to `set`, such as `set((state) => ({ count: state.count + 1 }))`. Zustand supplies the current state to that callback, and the returned object becomes the update.",
+    "followUp": "How would you update a nested counter? Return the nested object too: `set((state) => ({ nested: { ...state.nested, count: state.nested.count + 1 } }))`. This preserves the other nested properties."
+   },
+   {
+    "question": "Why use the callback form instead of passing a plain object?",
+    "answer": "The callback form derives the next value from the state Zustand provides when the update runs. This avoids calculating from an outdated value captured elsewhere.",
+    "followUp": "Why is a functional update especially useful for consecutive updates? Each callback can derive its result from the state current at its execution, rather than relying on an earlier snapshot."
+   },
+   {
+    "question": "What does `set` do with the object returned by the updater?",
+    "answer": "Zustand's default update is a shallow merge, so returning `{ count: next }` updates that field without manually spreading the whole store. The merge does not recursively copy nested objects.",
+    "followUp": "What changes when `replace` is `true`? The returned value replaces the store state, so omitted fields—including actions—can be lost."
+   }
+  ],
+  "keyPoints": [
+   "Use the callback form of `set` whenever the next value depends on an existing value.",
+   "An updater callback belongs inside a store action or another call to `set`.",
+   "Return only the changed top-level property when the default shallow merge is sufficient.",
+   "For nested updates, explicitly construct the changed nested object instead of expecting deep merging."
+  ],
+  "gotchas": [
+   "Nested objects are not merged recursively; spread the nested object yourself before changing one of its properties.",
+   "Using the replacement option discards the normal merge behavior, so preserve any state you still need when returning the replacement value."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Store fundamentals::Immutable nested updates": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/reference/middlewares/immer.html",
+  "sourceTitle": "immer - Zustand Docs",
+  "summary": "Zustand updates nested state immutably by copying each changed object level. The `immer` middleware provides a concise draft-based alternative that creates the immutable update for you.",
+  "explanation": "Zustand's default set operation merges only one level, so a nested update must create a new object for each changed level. The immer middleware offers a shorter alternative: wrap the state creator and write the update against a draft; Immer produces the next immutable state and Zustand can notify subscribers when references change.",
+  "syntax": "immer<T>(stateCreatorFn: StateCreator<T, [], []>): StateCreator<T, [['zustand/immer', never]], []>",
+  "parameters": [
+   {
+    "name": "stateCreatorFn",
+    "type": "StateCreator<T, [], []>",
+    "description": "A function receiving `set`, `get`, and `store`, usually returning the store's exposed state and actions."
+   }
+  ],
+  "returns": "The `immer` middleware returns a state creator function.",
+  "example": {
+   "title": "Update a nested object with Immer",
+   "code": "import { create } from 'zustand'\nimport { immer } from 'zustand/middleware/immer'\n\ntype State = {\n  person: { name: string; age: number }\n  birthday: () => void\n}\n\nconst usePersonStore = create<State>()(\n  immer((set) => ({\n    person: { name: 'Ada', age: 36 },\n    birthday: () =>\n      set((state) => {\n        state.person.age += 1\n      }),\n  })),\n)\n\nusePersonStore.getState().birthday()\nconsole.log(usePersonStore.getState().person.age)",
+   "language": "typescript",
+   "explanation": "The Immer middleware lets the action use mutation-like syntax while producing the immutable update Zustand needs."
+  },
+  "useCases": [
+   {
+    "title": "Manual spread updates",
+    "scenario": "A nested object has one changed property and the update should preserve sibling properties."
+   },
+   {
+    "title": "Deep updates with Immer",
+    "scenario": "Several object levels must change and manual copying would obscure the action's intent."
+   },
+   {
+    "title": "Record-based nested state",
+    "scenario": "A store contains complex records such as todos and actions toggle fields inside them."
+   },
+   {
+    "title": "Draftable class objects",
+    "scenario": "A domain model uses class instances with Immer-managed updates."
+   }
+  ],
+  "related": [
+   "set",
+   "create",
+   "createStore",
+   "immer",
+   "StateCreator",
+   "Immer",
+   "immerable",
+   "immutable state and merging"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why must nested objects be copied when updating Zustand state?",
+    "answer": "Zustand's set function performs a shallow merge, so it does not recursively merge nested objects. For a nested update, copy each object level that leads to the changed value, or use Immer to generate those immutable copies.",
+    "followUp": "What happens if you mutate a nested object in place? The reference may stay unchanged, so Zustand can consider the state unchanged and avoid notifying subscribers."
+   },
+   {
+    "question": "How does Zustand's Immer middleware simplify nested updates?",
+    "answer": "The immer middleware wraps a state creator and returns another state creator. Actions can then write mutation-like changes to the draft, while Immer handles the immutable next-state creation.",
+    "followUp": "How would you make a class instance work with Immer? Mark the class as draftable by adding the Immer `immerable` marker."
+   },
+   {
+    "question": "What setup is required to use Immer with Zustand?",
+    "answer": "The middleware is imported from `zustand/middleware/immer`, and Immer must be installed as a direct dependency. It is applied by wrapping the function passed to `create` or `createStore`.",
+    "followUp": "What should be checked when an Immer update does not trigger subscribers? Verify that the update follows Immer's rules, especially for class objects that need the draftability marker."
+   }
+  ],
+  "keyPoints": [
+   "The conventional immutable approach copies every path level from the root to the changed property.",
+   "The spread operator is the standard way to construct replacement objects while retaining unchanged properties.",
+   "Immer is a documented alternative for reducing repetitive nested-copying code.",
+   "The same Immer approach applies to nested state updates in Zustand.",
+   "Immer is especially useful when deeply nested immutable updates would otherwise become verbose."
+  ],
+  "gotchas": [
+   "Immer must be used according to its rules; otherwise Zustand may not observe the update correctly.",
+   "If an Immer-managed class is not made draftable, the current and next state can remain equal and subscriptions may be skipped."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Store fundamentals::Shallow merging and replacement": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/learn/guides/immutable-state-and-merging.html",
+  "sourceTitle": "Immutable state and merging - Zustand Docs",
+  "summary": "Zustand shallowly merges top-level updates by default, preserving other fields and actions. Pass true as set's second argument to replace the entire store state.",
+  "explanation": "Zustand's set function shallowly merges an update into the existing store by default. Pass true as the second argument to replace the complete state, so replacing a state object that omits actions also removes those actions.",
+  "syntax": "set(nextState, replace?)",
+  "parameters": [
+   {
+    "name": "nextState",
+    "type": "State | (state: State) => State",
+    "description": "The next state value or updater function that returns the next state."
+   },
+   {
+    "name": "replace",
+    "type": "boolean",
+    "description": "When true, replaces the complete state instead of shallowly merging it."
+   }
+  ],
+  "returns": "Updates the Zustand store; by default it shallowly merges the update, or replaces the complete state when replace is true.",
+  "example": {
+   "title": "Merge or replace store state",
+   "code": "import { create } from 'zustand'\n\ntype Store = {\n  count: number\n  increment: () => void\n  reset: () => void\n}\n\nconst useStore = create<Store>()((set) => ({\n  count: 0,\n  increment: () => set((state) => ({ count: state.count + 1 })),\n  reset: () => set({ count: 0 }),\n}))\n\nuseStore.setState({ count: 10 })\nuseStore.setState({ count: 0 }, true)\n",
+   "language": "typescript",
+   "explanation": "The first update is shallowly merged, so the actions remain available. Passing true as the replace argument replaces the whole store, including its actions."
+  },
+  "useCases": [
+   {
+    "title": "Partial top-level updates",
+    "scenario": "Change one or more top-level fields while retaining other state and actions."
+   },
+   {
+    "title": "Nested updates",
+    "scenario": "Modify a property inside a nested object without discarding sibling properties."
+   },
+   {
+    "title": "Full-state replacement",
+    "scenario": "Reset or swap the complete store snapshot intentionally."
+   }
+  ],
+  "related": [
+   "set",
+   "create",
+   "immutable state",
+   "actions",
+   "nested state"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Zustand do when set receives a partial state update?",
+    "answer": "By default, set merges the supplied update into the current state at one level. Therefore, an update such as set({ count: 1 }) changes count while retaining other top-level fields, including actions.",
+    "followUp": "How would you update one nested property without losing its siblings? Use set with a nested spread, such as set(state => ({ nested: { ...state.nested, count: state.nested.count + 1 } }))."
+   },
+   {
+    "question": "How do you replace the entire Zustand state instead of merging it?",
+    "answer": "Pass true as the second argument to set: set(nextState, true). This disables merging and replaces the entire store state with nextState.",
+    "followUp": "What risk does replacement create in a store containing actions? Any omitted action properties disappear, so the replacement object must include everything that should remain."
+   },
+   {
+    "question": "Does Zustand's default merge perform a deep merge?",
+    "answer": "The default shallow merge only operates across top-level properties. For nested objects, create a new nested object and explicitly spread the prior nested value before changing the target property.",
+    "followUp": "Why is this needed? Replacing the nested object without spreading it discards sibling properties because the merge does not recurse into nested objects."
+   }
+  ],
+  "keyPoints": [
+   "Use the store-provided set function to apply state updates.",
+   "Because merging is built in, a functional update can return only the changed top-level fields.",
+   "The default merge preserves unrelated top-level fields but does not recursively merge nested objects.",
+   "Update nested state by spreading the existing nested object and overriding the specific property.",
+   "Set the replace boolean to true when the intended update should discard the previous state.",
+   "Actions can live alongside data in the same store and are affected by whole-state replacement."
+  ],
+  "gotchas": [
+   "Using replacement mode can remove fields and actions that are not included in the new state.",
+   "Nested objects are not deep-merged; spread the existing nested object when changing one nested field."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Store fundamentals::State and actions": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/learn/guides/updating-state.html",
+  "sourceTitle": "Updating state - Zustand Docs",
+  "summary": "Keep state-changing rules in named store actions. Callers select an action and express intent, while the action uses Zustand's set function to apply the update.",
+  "explanation": "Define actions alongside state in the store creator. Each action expresses an intended change and calls set with the partial state update; consumers select and invoke the action instead of manipulating store fields directly.",
+  "syntax": "create<State & Actions>((set) => ({ state, action: (value) => set({ field: value }) }))",
+  "parameters": [
+   {
+    "name": "set",
+    "type": "(partial: State | ((state: State) => State), replace?: boolean) => void",
+    "description": "The state creator receives `set`; actions in the returned store commonly accept the values needed for their intended update."
+   }
+  ],
+  "returns": "Actions return void in the documented examples; the store creator returns the state-and-actions object used to create the hook.",
+  "example": {
+   "title": "Named actions in a Zustand store",
+   "code": "import { create } from 'zustand'\n\ntype PersonState = {\n  firstName: string\n  lastName: string\n}\n\ntype PersonActions = {\n  updateFirstName: (firstName: string) => void\n  updateLastName: (lastName: string) => void\n}\n\nconst usePersonStore = create<PersonState & PersonActions>((set) => ({\n  firstName: '',\n  lastName: '',\n  updateFirstName: (firstName) => set({ firstName }),\n  updateLastName: (lastName) => set({ lastName }),\n}))\n\nusePersonStore.getState().updateFirstName('Ada')",
+   "language": "typescript",
+   "explanation": "The store exposes named operations that update individual fields through Zustand's set function."
+  },
+  "useCases": [
+   {
+    "title": "Field updates",
+    "scenario": "A form or profile store needs separate operations for changing individual fields."
+   },
+   {
+    "title": "Intent-oriented domain operations",
+    "scenario": "A feature has domain-specific transitions that should be callable from components without exposing update mechanics."
+   },
+   {
+    "title": "Focused selectors",
+    "scenario": "A component should subscribe only to the value and action it needs."
+   }
+  ],
+  "related": [
+   "create",
+   "set",
+   "setState",
+   "selectors",
+   "updater functions",
+   "immutable state and merging"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you model actions in Zustand?",
+    "answer": "Put state and named functions in the object returned by create's state creator. An action calls set with the intended partial update, and components select the action before invoking it.",
+    "followUp": "Can actions be defined outside the store? Yes; the documentation notes that external module-level actions can avoid requiring a hook and support code splitting."
+   },
+   {
+    "question": "What does set do when an action updates state?",
+    "answer": "Use the provided set function for store updates. It shallowly merges the supplied update into the existing state, so an action can update one top-level field without manually spreading the whole store.",
+    "followUp": "What changes for nested state? Rebuild the nested object explicitly, typically by spreading the previous nested value before changing its field."
+   },
+   {
+    "question": "How should an action update state derived from the current value?",
+    "answer": "For a change based on existing state, pass an updater function to set. The updater receives the current state and returns the next partial state, such as incrementing a counter from its current value.",
+    "followUp": "Why avoid mutating a Map or Set in place? Zustand compares references, so mutation preserves the reference; create a new Map or Set to make the change observable."
+   }
+  ],
+  "keyPoints": [
+   "Keep update functions next to the state they modify, making the store's public operations explicit.",
+   "Actions should delegate writes to Zustand's update API rather than changing state directly.",
+   "Using set also preserves Zustand's merge behavior and notification mechanism.",
+   "A simple action can return only the top-level field it intends to change."
+  ],
+  "gotchas": [
+   "Do not mutate stored objects in place; create a new object when changing object state."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Zustand integration::Hydration and persistence": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/reference/integrations/persisting-store-data",
+  "sourceTitle": "Persisting store data - Zustand Docs",
+  "summary": "Zustand persistence restores browser-stored state and merges it into the store. In SSR apps, defer that restoration so browser data does not alter the initial server/client render.",
+  "explanation": "Persisted browser state is recovered from storage during hydration and merged with the store. In server-rendered applications, automatic recovery can make the client’s first render differ from the server’s HTML, so defer it with `skipHydration: true` and call `rehydrate()` at a controlled client-side point.",
+  "syntax": "persist(stateCreator, options)",
+  "parameters": [
+   {
+    "name": "name",
+    "type": "string",
+    "description": "Storage key used by the persist middleware; the storage defaults to JSON-backed localStorage when not supplied."
+   },
+   {
+    "name": "skipHydration",
+    "type": "boolean",
+    "description": "When true, prevents automatic hydration during initialization; call `rehydrate()` manually."
+   }
+  ],
+  "returns": "A persisted Zustand store API with storage persistence and a `persist.rehydrate()` method.",
+  "example": {
+   "title": "Manual client rehydration",
+   "code": "import { create } from 'zustand'\nimport { persist } from 'zustand/middleware'\n\ntype State = {\n  theme: 'light' | 'dark'\n  setTheme: (theme: State['theme']) => void\n}\n\nexport const useTheme = create<State>()(\n  persist(\n    (set) => ({\n      theme: 'light',\n      setTheme: (theme) => set({ theme }),\n    }),\n    { name: 'theme-storage', skipHydration: true },\n  ),\n)\n\nexport function ThemeHydration() {\n  useTheme.persist.rehydrate()\n  return null\n}",
+   "language": "typescript",
+   "explanation": "Skip automatic hydration and trigger rehydration deliberately on the client, rather than rendering browser-persisted values as part of the server output."
+  },
+  "useCases": [
+   {
+    "title": "Avoid SSR hydration mismatches",
+    "scenario": "A server-rendered page must produce identical initial HTML on server and client."
+   },
+   {
+    "title": "Restore browser preferences",
+    "scenario": "A preference or session-like UI setting should survive page reloads."
+   },
+   {
+    "title": "Coordinate delayed hydration",
+    "scenario": "Persisted data comes from asynchronous storage and is unavailable immediately."
+   }
+  ],
+  "related": [
+   "persist",
+   "createJSONStorage",
+   "rehydrate",
+   "onHydrate",
+   "onFinishHydration",
+   "hasHydrated"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does hydration mean in Zustand persistence?",
+    "answer": "Hydration retrieves persisted state from storage and merges it with the current Zustand state. With synchronous storage such as `localStorage`, this happens during store creation; asynchronous storage hydrates later.",
+    "followUp": "How would you prevent a server/client mismatch? Set `skipHydration: true`, then call `useStore.persist.rehydrate()` from a client-controlled lifecycle point before showing UI that depends on persisted values."
+   },
+   {
+    "question": "Why use `skipHydration` in an SSR application?",
+    "answer": "`skipHydration` disables the middleware’s automatic initialization hydration. This is useful for server-rendered applications because the browser’s stored value should not affect the server’s initial output.",
+    "followUp": "What trade-off does this introduce? The application must coordinate the later `rehydrate()` call and may need to delay dependent UI until hydration completes."
+   },
+   {
+    "question": "Why can persisted state cause a hydration error?",
+    "answer": "A hydration mismatch occurs when the server-rendered markup and the client’s first render differ. Reading browser persistence during that initial client render can change the component output and cause the warning.",
+    "followUp": "What should determine the initial render instead? Use identical server and client initial state, then apply persisted browser state after the initial render is safely established."
+   }
+  ],
+  "keyPoints": [
+   "The `persist` middleware saves Zustand state in a storage backend so it can survive reloads.",
+   "Automatic hydration normally runs as the store is initialized.",
+   "Applications can explicitly start recovery by calling the store’s `rehydrate` method.",
+   "Hydration restores stored values and merges them into the current store state.",
+   "Persistence supports synchronous and asynchronous hydration paths.",
+   "Synchronous storage makes restored state available when the store is created.",
+   "Asynchronous storage postpones restoration until a later microtask."
+  ],
+  "gotchas": [
+   "Using browser-persisted data to change the initial server-rendered component can produce a hydration mismatch warning.",
+   "`skipHydration` prevents automatic hydration; the application must invoke `rehydrate()` itself.",
+   "With asynchronous storage, persisted state may not be available during the first React render."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Zustand integration::Next.js and SSR": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/learn/guides/nextjs",
+  "sourceTitle": "Setup with Next.js - Zustand Docs",
+  "summary": "In Next.js SSR, create a separate Zustand store for each request and initialize the client with the same data used on the server. Provide the store through component-level context rather than sharing a global store.",
+  "explanation": "For Next.js SSR, use a store factory rather than module-level singleton state. Instantiate it per request and provide it through a component-level context, passing identical initial data when the client initializes so the server-rendered output and client hydration agree. Keep React Server Components from reading or mutating the store.",
+  "syntax": "const createStore = (initState) => createStore(...);",
+  "parameters": [
+   {
+    "name": "initial data",
+    "type": "application-defined state",
+    "description": "Initial state/data used to construct the request-scoped store; the page does not specify a formal API signature."
+   }
+  ],
+  "returns": "A request-scoped Zustand store supplied through React Context; the page does not define a formal return signature.",
+  "example": {
+   "title": "Request-scoped Next.js store",
+   "code": "import { createStore } from 'zustand/vanilla'\nimport { createContext, useContext } from 'react'\nimport { useStore } from 'zustand'\n\ntype State = { count: number; inc: () => void }\ntype Store = ReturnType<typeof createCounterStore>\n\nconst createCounterStore = (initialCount = 0) =>\n  createStore<State>()((set) => ({\n    count: initialCount,\n    inc: () => set((state) => ({ count: state.count + 1 })),\n  }))\n\nconst CounterStoreContext = createContext<Store | null>(null)\n\nexport function CounterStoreProvider({ initialCount, children }: { initialCount: number; children: React.ReactNode }) {\n  const store = createCounterStore(initialCount)\n  return <CounterStoreContext.Provider value={store}>{children}</CounterStoreContext.Provider>\n}\n\nexport function Counter() {\n  const store = useContext(CounterStoreContext)!\n  const count = useStore(store, (state) => state.count)\n  return <button onClick={() => store.getState().inc()}>{count}</button>\n}",
+   "language": "tsx",
+   "explanation": "Create the store from request-provided initial data inside a provider, then read it through the provider so server and client begin with the same snapshot."
+  },
+  "useCases": [
+   {
+    "title": "Isolate request state",
+    "scenario": "App Router pages rendered on the server"
+   },
+   {
+    "title": "Keep snapshots identical",
+    "scenario": "SSR pages hydrated in the browser"
+   },
+   {
+    "title": "Scope stores with Context",
+    "scenario": "Routes that need component-lifetime reset behavior"
+   },
+   {
+    "title": "Use module state safely",
+    "scenario": "Applications using Next.js server caching"
+   }
+  ],
+  "related": [
+   "SSR and Hydration",
+   "Context",
+   "App Router",
+   "Pages Router",
+   "React Server Components",
+   "store factory function"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Build a fresh store for every server request to isolate users and request data.",
+   "Initialize the server and client stores from identical data so hydration sees the same snapshot.",
+   "SSR produces a server render and a client render; both must be compatible.",
+   "Use component-level context when the store lifecycle must reset with the component tree.",
+   "The module-state model remains compatible with App Router server caching when stores are scoped correctly."
+  ],
+  "gotchas": [
+   "Do not define the store globally: concurrent requests must not share one store instance.",
+   "Do not access or mutate the store from React Server Components.",
+   "Different server and client render output causes hydration errors."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Zustand integration::Testing stores": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/learn/guides/testing",
+  "sourceTitle": "Testing - Zustand Docs",
+  "summary": "Wrap Zustand store creation in the test mock, capture each store's initial state, and reset all registered stores after every test. This keeps tests isolated while actions and selector-visible results are verified against a clean baseline.",
+  "explanation": "The testing setup wraps Zustand's creation functions so every store records its initial state. An after-each hook runs all registered reset functions inside React's act, restoring isolation for the next test; tests can then exercise store actions and assert selector results.",
+  "syntax": "afterEach(() => { act(() => { storeResetFns.forEach((resetFn) => resetFn()) }) })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Testing a store with automatic resets",
+   "code": "import { act } from '@testing-library/react'\nimport { renderHook } from '@testing-library/react'\nimport { useCounter } from './store'\n\ntest('increments and resets between tests', () => {\n  const { result } = renderHook(() => useCounter((s) => s.count))\n  act(() => result.current + 1)\n  expect(result.current).toBe(0)\n})",
+   "language": "typescript",
+   "explanation": "Use the test runner setup from the documentation to register each store's initial state and reset every store after each test."
+  },
+  "useCases": [
+   {
+    "title": "Prevent cross-test state leakage",
+    "scenario": "A test suite mutates several Zustand stores across independent test cases."
+   },
+   {
+    "title": "Reset subscribed stores safely",
+    "scenario": "React components subscribe to stores while tests reset them."
+   },
+   {
+    "title": "Cover create and createStore together",
+    "scenario": "An application mixes hook-based stores and vanilla stores."
+   }
+  ],
+  "related": [
+   "create",
+   "createStore",
+   "getInitialState",
+   "setState",
+   "act",
+   "afterEach",
+   "storeResetFns"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does the documented setup isolate tests?",
+    "answer": "The mock records each store's initial state when the store is created. After every test, it runs all registered reset functions inside act, restoring isolation.",
+    "followUp": "Why use a Set? It provides a single collection of reset callbacks for all stores and avoids duplicate registrations."
+   },
+   {
+    "question": "Which store-creation APIs must the test mock cover?",
+    "answer": "Both create and createStore are wrapped, so hook-based and vanilla stores participate in the same reset mechanism. Each wrapper captures getInitialState and registers a callback that calls setState with replacement enabled.",
+    "followUp": "What additional concern exists for createStore? Its curried form must be detected and routed through the matching wrapper."
+   },
+   {
+    "question": "What should a store test verify?",
+    "answer": "Tests should interact with actions and assert the resulting state or selector-visible value. The reset happens independently in afterEach, so each test starts from the store's recorded initial snapshot.",
+    "followUp": "How would you test a vanilla store? Call its action through getState, then inspect the selected or complete state and rely on the same reset hook."
+   }
+  ],
+  "keyPoints": [
+   "Keep reset callbacks in one collection so every store created during the test environment can be restored together.",
+   "Capture the store's initial snapshot immediately after creation; this is the baseline used by later resets.",
+   "Iterate through every registered callback after a test rather than resetting only one known store.",
+   "Re-export Zustand's public exports from the mock while overriding the creation functions needed for reset tracking."
+  ],
+  "gotchas": [
+   "Reset registered stores in an after-each hook; otherwise mutations from one test can leak into later tests.",
+   "The reset uses the replace flag, so it replaces the complete state rather than shallow-merging the snapshot.",
+   "If the application uses createStore, the mock must handle both its curried and uncurried forms."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Zustand integration::TypeScript store types": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/learn/guides/advanced-typescript",
+  "sourceTitle": "#common Recipes",
+  "summary": "Type Zustand stores with `create<T>()(...)`, including both state and actions, and compose middleware directly inside `create`. Use `combine` when you want state inference instead of declaring the full store type.",
+  "explanation": "Declare one store type containing both data and action functions, then use the curried create form to annotate it. Middleware can wrap the state creator directly; when combining devtools with immer, the documentation recommends placing devtools outermost. The combine middleware is an alternative when you want TypeScript to infer the state portion automatically.",
+  "syntax": "create<T>()(middleware(stateCreator, options?))",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Typed store with composed middleware",
+   "code": "import { create } from 'zustand'\nimport { devtools, persist } from 'zustand/middleware'\n\ntype BearState = {\n  bears: number\n  addBear: () => void\n}\n\nexport const useBearStore = create<BearState>()(\n  devtools(\n    persist(\n      (set) => ({\n        bears: 0,\n        addBear: () => set((state) => ({ bears: state.bears + 1 })),\n      }),\n      { name: 'bear-store' },\n    ),\n  ),\n)\n\nuseBearStore.getState().addBear()\nconsole.log(useBearStore.getState().bears)",
+   "language": "typescript",
+   "explanation": "Defines state and actions with a single type, then composes persistence inside devtools."
+  },
+  "useCases": [
+   {
+    "title": "Typed state and actions",
+    "scenario": "A store has state fields and action functions that should share one explicit TypeScript contract."
+   },
+   {
+    "title": "Middleware composition",
+    "scenario": "A store needs persistence or developer tooling without losing contextual inference."
+   },
+   {
+    "title": "Inferred state with combine",
+    "scenario": "A store's initial state can define the shape cleanly and explicit annotation adds unnecessary repetition."
+   }
+  ],
+  "related": [
+   "create",
+   "combine",
+   "devtools",
+   "persist",
+   "immer",
+   "StateCreator"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you type a Zustand store with actions?",
+    "answer": "Use `create<Store>()(...)` when the store type needs annotation. The type normally includes both state fields and action functions, while the initializer supplies their implementations.",
+    "followUp": "How can annotation be reduced? Use `combine`, which separates initial state from actions and lets TypeScript infer the resulting state type."
+   },
+   {
+    "question": "How are middleware stacks typed?",
+    "answer": "Middleware does not require a separate TypeScript mechanism. Put middleware directly around the state creator inside `create`, while preserving the store type annotation when needed.",
+    "followUp": "What ordering rule applies to devtools? Put `devtools` around the other middleware, such as `devtools(immer(...))`."
+   },
+   {
+    "question": "When would you choose combine?",
+    "answer": "The `combine` middleware can infer the state from its initial-state object and initializer, so an explicit state interface is often unnecessary. It is useful when separating initial state from actions improves readability.",
+    "followUp": "What limitation should be remembered? `combine` is a leaf middleware and does not add a store mutator, so it differs from middleware that changes the store API."
+   }
+  ],
+  "keyPoints": [
+   "Annotate a typed store with the curried `create<T>()(...)` form rather than the untyped single-call form.",
+   "The generic type represents the store state shape, which can include action methods alongside data.",
+   "Middleware composition follows the normal Zustand wrapping pattern; TypeScript does not require a separate middleware typing procedure.",
+   "Choose `combine` when automatic inference is preferable to manually declaring the complete store type.",
+   "In a middleware stack, put devtools outermost where practical to preserve the documented integration behavior."
+  ],
+  "gotchas": [
+   "Place devtools as the outermost middleware when composing it with other middleware; for example, wrap immer with devtools rather than the reverse.",
+   "Keep middleware directly inside create so TypeScript can infer the contextual types correctly.",
+   "Use the curried create form for an explicitly typed store; the extra call is part of the documented TypeScript pattern."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Zustand integration::Zustand versus Redux": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/learn/getting-started/comparison.html",
+  "sourceTitle": "Comparison",
+  "summary": "Zustand and Redux both use immutable state and selectors, but Zustand avoids context providers and permits direct store updates. Optional redux and devtools middleware cover teams that prefer reducer/dispatch conventions or Redux-style debugging.",
+  "explanation": "Zustand and Redux both use immutable state and selector-based render optimization, but Zustand does not require context providers and can update state without dispatched actions or reducers. Redux-like reducers remain available through optional middleware, while DevTools integration is also optional for teams that need Redux-style debugging.",
+  "syntax": "create((set, get) => ({ ...state, action: () => set(...) }))",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Direct updates with optional Redux DevTools",
+   "code": "import { create } from 'zustand'\nimport { devtools } from 'zustand/middleware'\n\ntype State = {\n  count: number\n  increment: () => void\n}\n\nconst useStore = create<State>()(\n  devtools((set) => ({\n    count: 0,\n    increment: () => set((state) => ({ count: state.count + 1 })),\n  }))\n)\n\nexport function Counter() {\n  const count = useStore((state) => state.count)\n  const increment = useStore((state) => state.increment)\n\n  return <button onClick={increment}>{count}</button>\n}",
+   "language": "tsx",
+   "explanation": "This store updates state directly through an action while optionally exposing changes to Redux DevTools for inspection and time-travel debugging."
+  },
+  "useCases": [
+   {
+    "title": "Direct Zustand store actions",
+    "scenario": "A team wants a small store without provider wiring or Redux boilerplate."
+   },
+   {
+    "title": "Redux-style updates",
+    "scenario": "A team needs reducer and dispatch conventions while retaining Zustand."
+   },
+   {
+    "title": "Optional Redux DevTools",
+    "scenario": "A team needs action timelines, inspection, or time-travel debugging."
+   }
+  ],
+  "related": [
+   "Comparison",
+   "Flux inspired practice",
+   "redux middleware",
+   "devtools middleware",
+   "selectors"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Both libraries organize updates around immutable state, so immutable update reasoning still applies when moving between them.",
+   "Zustand avoids the provider setup Redux requires, which can simplify store integration.",
+   "For rendering, neither library provides a fundamentally different optimization model; selectors remain the recommended tool.",
+   "Choose selectors deliberately to subscribe components only to the state they need."
+  ],
+  "gotchas": [
+   "Do not add Redux-style context providers merely to use a Zustand store.",
+   "The DevTools middleware requires the separate Redux DevTools extension package."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

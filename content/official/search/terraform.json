@@ -1,0 +1,1868 @@
+{
+ "Language fundamentals::Data sources": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/language/data-sources",
+  "sourceTitle": "Query data from external sources | Terraform",
+  "summary": "Terraform data sources read information from providers and external Terraform configurations without creating or modifying resources. Declare one with a `data` block and use its returned attributes elsewhere in the configuration.",
+  "explanation": "A data source lets Terraform read information supplied by a provider without creating or changing the corresponding infrastructure. Declare one with a data block, provide its provider-specific query arguments, and reference returned attributes elsewhere so configuration can use existing or externally managed values.",
+  "syntax": "data \"TYPE\" \"LABEL\" {\n  # provider-specific arguments\n}",
+  "parameters": [
+   {
+    "name": "TYPE",
+    "type": "string",
+    "description": "Provider-defined data-source type to query."
+   },
+   {
+    "name": "LABEL",
+    "type": "string",
+    "description": "Local name used to identify the queried data."
+   },
+   {
+    "name": "provider-specific arguments",
+    "type": "block",
+    "description": "Provider-specific query arguments for the selected data source."
+   }
+  ],
+  "returns": "Provider-returned data-source attributes, accessible through the data.<TYPE>.<LABEL>.<ATTRIBUTE> reference form.",
+  "example": {
+   "title": "Read an existing AMI",
+   "code": "data \"aws_ami\" \"ubuntu\" {\n  most_recent = true\n\n  filter {\n    name   = \"name\"\n    values = [\"ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*\"]\n  }\n\n  owners = [\"099720109477\"]\n}\n\nresource \"aws_instance\" \"example\" {\n  ami           = data.aws_ami.ubuntu.id\n  instance_type = \"t3.micro\"\n}",
+   "language": "hcl",
+   "explanation": "Reads the latest matching AMI without provisioning it, then supplies its ID to an instance."
+  },
+  "useCases": [
+   {
+    "title": "Use existing infrastructure",
+    "scenario": "Look up an existing cloud object, such as an image or network, and pass its returned identifier to a managed resource."
+   },
+   {
+    "title": "Connect configurations",
+    "scenario": "Retrieve values exposed by another Terraform configuration or workspace."
+   },
+   {
+    "title": "Keep configuration dynamic",
+    "scenario": "Query provider APIs dynamically instead of hardcoding values that may change."
+   }
+  ],
+  "related": [
+   "data block",
+   "Data sources",
+   "Resources",
+   "terraform_remote_state"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Terraform data source?",
+    "answer": "A data source is a read-only interface supplied by a provider. It retrieves information from an API, another Terraform configuration, or another supported source, but it does not create or modify resources.",
+    "followUp": "How does it differ from a managed resource? A resource represents an object whose lifecycle Terraform manages, whereas a data source only queries and exposes information."
+   },
+   {
+    "question": "How do you declare and use one?",
+    "answer": "Declare it with `data \"TYPE\" \"LABEL\"`, then add the arguments required by that provider's data-source documentation. Terraform queries it and makes the returned attributes available to the configuration.",
+    "followUp": "How can multiple instances be declared? Use `count` or `for_each`, which are mutually exclusive, and reference the resulting collection appropriately."
+   },
+   {
+    "question": "How are data-source results referenced?",
+    "answer": "Use `data.<TYPE>.<LABEL>.<ATTRIBUTE>` to read an attribute returned by the data source. This allows another resource or expression to consume values such as an existing object's ID.",
+    "followUp": "When might the value be unavailable during planning? Terraform may defer the data-source read until apply if its configuration depends on values not yet known."
+   }
+  ],
+  "keyPoints": [
+   "Data sources query provider-backed information while leaving the underlying infrastructure unchanged.",
+   "A `data` block identifies the provider data source and supplies its query arguments.",
+   "Each declaration describes one data-source instance, identified by its type and label.",
+   "Every declaration requires a data-source type and a local label for referring to its result.",
+   "Returned attributes can feed expressions and arguments in other Terraform blocks.",
+   "The standard reference contains the `data` prefix, source type, label, and requested attribute."
+  ],
+  "gotchas": [
+   "A data source is normally read during planning, but Terraform can postpone the read until apply when configuration details require it.",
+   "Because data blocks accept Terraform expressions, changing inputs can change which external value Terraform reads."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Language fundamentals::Locals and expressions": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/language/values/locals",
+  "sourceTitle": "Use locals to reuse expressions",
+  "summary": "Terraform locals assign names to expressions so a module can reuse intermediate values instead of repeating calculations. Reference each named value with local.<NAME>.",
+  "explanation": "A locals block assigns names to valid Terraform expressions. Within the same module, reference each named value with local.<NAME>; the value may depend on variables, resources, data sources, functions, or other locals, so repeated or complex calculations can be centralized.",
+  "syntax": "locals {\n  <NAME> = <EXPRESSION>\n}\n\nlocal.<NAME>",
+  "parameters": [],
+  "returns": "The value produced by the assigned Terraform expression.",
+  "example": {
+   "title": "Reuse a computed value",
+   "code": "locals {\n  app_name    = \"${var.project_name}-${var.environment}\"\n  common_tags = {\n    Name        = local.app_name\n    Environment = var.environment\n  }\n}\n\nresource \"aws_instance\" \"example\" {\n  # ...\n  tags = local.common_tags\n}",
+   "language": "hcl",
+   "explanation": "The local values name expressions once, then the resource reuses the resulting tag map."
+  },
+  "useCases": [
+   {
+    "title": "Centralize repeated values",
+    "scenario": "The same computed value appears in multiple resources or arguments."
+   },
+   {
+    "title": "Name a complex expression",
+    "scenario": "A naming expression combines variables, functions, or resource attributes."
+   },
+   {
+    "title": "Reuse common tags",
+    "scenario": "Several resources share the same metadata."
+   }
+  ],
+  "related": [
+   "local.<NAME>",
+   "locals block",
+   "variables",
+   "resource attributes",
+   "function outputs",
+   "module"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Terraform local value, and how do you reference one?",
+    "answer": "A local value gives a name to an expression so the configuration can reuse it within a module. Define it in a locals block and reference it with local.<NAME>.",
+    "followUp": "Can a child module read a parent module's local directly? No. Pass the local value to the child module as an input argument."
+   },
+   {
+    "question": "What can a local value depend on?",
+    "answer": "A locals block can contain any valid Terraform expression. Its value can use variables, resource attributes, function results, or other local values.",
+    "followUp": "Can locals in one block reference locals in the same block? Yes, provided the references do not create circular dependencies."
+   },
+   {
+    "question": "When should locals be used?",
+    "answer": "Use locals when a value is reused in several places or comes from a complex expression. Naming it reduces repetition and gives the expression a meaningful name.",
+    "followUp": "What trade-off should you consider? A local can make the configuration harder to read by hiding where its value originates."
+   }
+  ],
+  "keyPoints": [
+   "A local names an expression so multiple configuration locations can reuse its computed value.",
+   "Declare reusable intermediate values in a locals block.",
+   "Locals are available in every module and accept any valid Terraform expression.",
+   "A local may use variables, resource attributes, function outputs, and other local values.",
+   "Read an individual local with the local.<NAME> reference form.",
+   "A module may define any number of temporary local values."
+  ],
+  "gotchas": [
+   "Locals can hide the source of a value, so avoid introducing them when a direct expression is clearer.",
+   "A local is module-scoped; pass it as a child-module argument when another module needs its value.",
+   "Declare with locals, but reference individual values with local.<NAME>, not locals.<NAME>."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Language fundamentals::Outputs": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/language/block/output",
+  "sourceTitle": "Output block reference for the Terraform configuration language",
+  "summary": "Terraform outputs expose named infrastructure values from a module. Root outputs are available to the CLI, while child outputs can be consumed by parent modules or other configurations using remote state.",
+  "explanation": "An output block evaluates its required value expression and publishes the result as a named module output. Root-module outputs can be shown by Terraform, while child-module outputs become accessible to the parent; output values are also stored in state.",
+  "syntax": "output \"<LABEL>\" {\n  type        = <TYPE>\n  value       = <EXPRESSION>\n  description = \"<STRING>\"\n  sensitive   = <true|false>\n  ephemeral   = <true|false>\n  depends_on  = [<REFERENCE>]\n  deprecated  = \"<STRING>\"\n  precondition {\n    condition     = <EXPRESSION>\n    error_message = \"<STRING>\"\n  }\n}",
+  "parameters": [
+   {
+    "name": "value",
+    "type": "Expression",
+    "description": "Expression whose evaluated result Terraform returns and stores as the output value."
+   },
+   {
+    "name": "description",
+    "type": "string",
+    "description": "Optional explanatory text for the output."
+   },
+   {
+    "name": "sensitive",
+    "type": "bool",
+    "description": "Optional flag controlling whether Terraform treats the output as sensitive."
+   },
+   {
+    "name": "ephemeral",
+    "type": "bool",
+    "description": "Optional flag allowing the output to be available without being persisted in state."
+   },
+   {
+    "name": "depends_on",
+    "type": "list",
+    "description": "Optional explicit dependencies for evaluating the output."
+   },
+   {
+    "name": "deprecated",
+    "type": "string",
+    "description": "Optional deprecation message for the output."
+   },
+   {
+    "name": "type",
+    "type": "type constraint",
+    "description": "Optional output type constraint."
+   },
+   {
+    "name": "precondition",
+    "type": "block",
+    "description": "Optional validation block for the output value."
+   }
+  ],
+  "returns": "The evaluated result of the required `value` expression, exposed as the output's value and stored in state.",
+  "example": {
+   "title": "Expose resource attributes",
+   "code": "output \"instance_id\" {\n  description = \"ID of the web instance\"\n  value       = aws_instance.web.id\n}\n\noutput \"instance_ip\" {\n  value = aws_instance.web.private_ip\n}",
+   "language": "hcl",
+   "explanation": "These outputs expose selected resource attributes to the root module's CLI output and to callers of a child module."
+  },
+  "useCases": [
+   {
+    "title": "Display infrastructure details",
+    "scenario": "A root module needs to show an infrastructure attribute after apply."
+   },
+   {
+    "title": "Pass values to a parent module",
+    "scenario": "A reusable child module must return resource information to its caller."
+   },
+   {
+    "title": "Share values through remote state",
+    "scenario": "Separate Terraform configurations need to share root-module results."
+   },
+   {
+    "title": "Feed automation",
+    "scenario": "An external workflow needs a Terraform result after an operation."
+   }
+  ],
+  "related": [
+   "terraform output",
+   "terraform_remote_state",
+   "module.<CHILD_MODULE_NAME>.<OUTPUT_NAME>",
+   "sensitive",
+   "ephemeral",
+   "precondition"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Terraform output?",
+    "answer": "An output block names and exposes a value from a module. In a root module, Terraform can display it on the command line; in a child module, the parent can consume it.",
+    "followUp": "How does a parent reference a child output? Use `module.<CHILD_MODULE_NAME>.<OUTPUT_NAME>`."
+   },
+   {
+    "question": "What does the `value` argument do?",
+    "answer": "The `value` argument is required and accepts any valid expression. Terraform evaluates that expression and uses its result as the output's return value.",
+    "followUp": "Can an output return a collection? Yes. The value expression can produce any valid Terraform value, including structured values."
+   },
+   {
+    "question": "How are output values consumed?",
+    "answer": "Root-module outputs can be read with the `terraform output` command, and Terraform also displays them after applying the configuration. Outputs are stored in state, so the command extracts them from the state file.",
+    "followUp": "How can another configuration consume them? A configuration using the `terraform_remote_state` data source can access root-module outputs."
+   }
+  ],
+  "keyPoints": [
+   "Use an output block to publish selected infrastructure information from a module.",
+   "A child module can return resource attributes for its parent module to use.",
+   "Root-module outputs provide values that Terraform can display in command-line results.",
+   "A separate configuration can consume root outputs through the `terraform_remote_state` data source.",
+   "The output expression may calculate or select any valid Terraform value.",
+   "Parents address a child output with the module name followed by the output name."
+  ],
+  "gotchas": [
+   "Every output declaration requires a value expression; omitting it makes the configuration invalid.",
+   "Do not treat outputs as transient display-only values: their evaluated results are persisted in state."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Language fundamentals::Providers": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/language/providers/requirements",
+  "sourceTitle": "Provider Requirements - Configuration Language | Terraform",
+  "summary": "Declare required providers inside the top-level terraform block, specifying each provider's local name, source address, and acceptable version constraint. Run terraform init to install a matching version and update the dependency lock file.",
+  "explanation": "Put required_providers inside the top-level terraform block. Each provider entry gives Terraform a local name, a source address, and an optional version constraint; a separate provider block supplies settings such as authentication or region. Running terraform init installs a matching version and records the selected dependency in the lock file.",
+  "syntax": "terraform {\n  required_providers {\n    <LOCAL_NAME> = {\n      source  = \"<HOSTNAME>/<NAMESPACE>/<TYPE>\"\n      version = \"<VERSION_CONSTRAINT>\"\n    }\n  }\n}",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Declare and configure AWS",
+   "code": "terraform {\n  required_providers {\n    aws = {\n      source  = \"hashicorp/aws\"\n      version = \"~> 6.0\"\n    }\n  }\n}\n\nprovider \"aws\" {\n  region = \"us-east-1\"\n}\n",
+   "language": "hcl",
+   "explanation": "Declares the AWS provider's Registry source and acceptable version range, then configures its region."
+  },
+  "useCases": [
+   {
+    "title": "Declare provider dependencies",
+    "scenario": "A configuration uses a cloud, SaaS, or API integration and must tell Terraform which plugin to install."
+   },
+   {
+    "title": "Constrain provider versions",
+    "scenario": "A team needs repeatable initialization and protection against incompatible provider upgrades."
+   },
+   {
+    "title": "Map local names to provider sources",
+    "scenario": "A module uses a provider under a name that differs from its registry type."
+   }
+  ],
+  "related": [
+   "terraform block",
+   "provider block",
+   "terraform init",
+   "Dependency Lock File",
+   "version constraints",
+   "source address"
+  ],
+  "since": "0.13",
+  "interview": [
+   {
+    "question": "What belongs in a provider requirement?",
+    "answer": "A provider requirement identifies the plugin Terraform needs. Its declaration includes a local name, source location, and version constraint, and it must be placed in required_providers within the top-level terraform block.",
+    "followUp": "How does Terraform choose the installed release? It selects the latest version satisfying the configured constraint during initialization, then records the dependency selection in the lock file."
+   },
+   {
+    "question": "What do source, local name, and version mean?",
+    "answer": "The source address identifies where Terraform obtains the provider, while the local name is the configuration name used by the module. The version constraint limits which releases are acceptable.",
+    "followUp": "Why keep the source explicit? It gives Terraform the provider's registry identity rather than relying on an ambiguous name."
+   },
+   {
+    "question": "What does terraform init do for providers?",
+    "answer": "Use terraform init after declaring requirements. Terraform installs the required provider and updates the dependency lock file with the selected version and platform information.",
+    "followUp": "What is the purpose of the lock file? It makes subsequent installations reproducible by recording dependency selections and checksums."
+   }
+  ],
+  "keyPoints": [
+   "Configurations explicitly list the provider plugins they depend on so Terraform can install and use them.",
+   "Each requirement maps a local provider name to its source address and acceptable version range.",
+   "Declare requirements in the top-level terraform block, not in a standalone configuration block.",
+   "Use a separate provider block for provider-specific configuration such as credentials, endpoints, or regions.",
+   "terraform init normally selects the newest release that satisfies the configured constraint.",
+   "Version constraints help prevent initialization from selecting releases incompatible with the configuration."
+  ],
+  "gotchas": [
+   "Do not place required_providers at the configuration root; it belongs inside the top-level terraform block.",
+   "Initialization selects and installs a matching provider and updates the dependency lock file.",
+   "Leaving provider versions unconstrained can allow incompatible newer releases; specify a constraint."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Language fundamentals::Resources": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/language/block/resource",
+  "sourceTitle": "resource block reference",
+  "summary": "A resource block describes infrastructure and the settings Terraform should use to create and manage it. Its type and label identify the resource, while provider arguments and Terraform meta-arguments control its configuration and lifecycle.",
+  "explanation": "A resource block declares an infrastructure object by specifying its provider-defined type and a local label. Arguments configure that object, while Terraform meta-arguments control creation and lifecycle behavior. Terraform uses the type and label as the resource address in state, then reconciles the declared configuration with the real object when applying.",
+  "syntax": "resource \"<TYPE>\" \"<LABEL>\" {\n  # provider-specific arguments\n  # optional Terraform meta-arguments\n}",
+  "parameters": [
+   {
+    "name": "TYPE",
+    "type": "resource type",
+    "description": "Provider-defined resource type to create and manage; the built-in terraform_data type stores values and can trigger Terraform operations without creating infrastructure."
+   },
+   {
+    "name": "LABEL",
+    "type": "identifier",
+    "description": "Local resource name used in the resource address and state tracking."
+   },
+   {
+    "name": "provider arguments",
+    "type": "provider-defined",
+    "description": "Provider-specific arguments that configure the selected resource."
+   },
+   {
+    "name": "meta-arguments",
+    "type": "Terraform configuration",
+    "description": "Optional Terraform meta-arguments such as count, for_each, depends_on, provider, and lifecycle."
+   }
+  ],
+  "returns": "A managed resource instance tracked in Terraform state and addressable as `<TYPE>.<LABEL>`.",
+  "example": {
+   "title": "Declare a resource",
+   "code": "resource \"terraform_data\" \"example\" {\n  input = \"managed by Terraform\"\n}\n",
+   "language": "hcl",
+   "explanation": "This declares a built-in resource with a type and label; Terraform tracks it in state and can use its value without creating external infrastructure."
+  },
+  "useCases": [
+   {
+    "title": "Manage infrastructure",
+    "scenario": "Declare a provider-backed object such as a network, compute instance, or DNS record."
+   },
+   {
+    "title": "Scale with count",
+    "scenario": "Create several identical or nearly identical instances."
+   },
+   {
+    "title": "Iterate with for_each",
+    "scenario": "Create instances from a map or set with distinct keys."
+   },
+   {
+    "title": "Use terraform_data",
+    "scenario": "Store values or trigger operations without creating external infrastructure."
+   }
+  ],
+  "related": [
+   "count",
+   "depends_on",
+   "for_each",
+   "lifecycle",
+   "provider",
+   "terraform_data"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use a resource block to describe infrastructure and its desired settings.",
+   "Provider documentation defines the resource-specific arguments available in the block.",
+   "Every resource block requires a type and a label.",
+   "The type selects which kind of infrastructure object Terraform manages.",
+   "The label gives Terraform a local name for tracking the resource.",
+   "Reference a declared resource with its type and label separated by a dot.",
+   "Use count when you need several substantially identical resource instances."
+  ],
+  "gotchas": [
+   "A resource label identifies the object to Terraform but does not configure the real infrastructure."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Language fundamentals::Variables and validation": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/language/values/variables%23sensitive-values",
+  "sourceTitle": "Input Variables - Configuration Language | Terraform | HashiCorp Developer",
+  "summary": "Terraform input variables parameterize modules so callers can supply values at runtime. Type constraints and validation blocks reject unsuitable input before planning proceeds.",
+  "explanation": "Define input variables as a module interface, optionally constrain their types, and add validation rules for requirements beyond type checking. Terraform evaluates these rules before generating a plan and stops with the supplied error message when a rule fails.",
+  "syntax": "variable \"<NAME>\" {\n  type        = <TYPE>\n  default     = <EXPRESSION>\n  description = \"<DESCRIPTION>\"\n\n  validation {\n    condition     = <EXPRESSION>\n    error_message = \"<ERROR_MESSAGE>\"\n  }\n}",
+  "parameters": [
+   {
+    "name": "LABEL",
+    "type": "identifier",
+    "description": "The variable label that names the input."
+   },
+   {
+    "name": "type",
+    "type": "type constraint",
+    "description": "Constrains the type of value assignable to the variable."
+   },
+   {
+    "name": "default",
+    "type": "expression",
+    "description": "Supplies a fallback value and makes the variable optional."
+   },
+   {
+    "name": "description",
+    "type": "string",
+    "description": "Documents the variable's purpose."
+   },
+   {
+    "name": "validation",
+    "type": "block",
+    "description": "Defines a rule the variable value must meet in addition to type constraints."
+   },
+   {
+    "name": "condition",
+    "type": "expression",
+    "description": "Expression that must be true for the value to be valid."
+   },
+   {
+    "name": "error_message",
+    "type": "string",
+    "description": "Message displayed when validation fails."
+   },
+   {
+    "name": "sensitive",
+    "type": "boolean",
+    "description": "Marks the value as sensitive."
+   },
+   {
+    "name": "nullable",
+    "type": "boolean",
+    "description": "Controls whether the variable may be null."
+   },
+   {
+    "name": "ephemeral",
+    "type": "boolean",
+    "description": "Marks the value as ephemeral."
+   },
+   {
+    "name": "const",
+    "type": "boolean",
+    "description": "Requires a constant value."
+   },
+   {
+    "name": "deprecated",
+    "type": "string",
+    "description": "Records a deprecation message."
+   }
+  ],
+  "returns": "A validated input value accessible through var.<NAME>; invalid values produce the configured error message and stop the operation.",
+  "example": {
+   "title": "Validated environment input",
+   "code": "variable \"environment\" {\n  type        = string\n  description = \"Deployment environment\"\n\n  validation {\n    condition     = contains([\"dev\", \"staging\", \"prod\"], var.environment)\n    error_message = \"Environment must be dev, staging, or prod.\"\n  }\n}\n\noutput \"environment\" {\n  value = var.environment\n}",
+   "language": "hcl",
+   "explanation": "This module accepts an environment name and rejects values outside the permitted set during planning."
+  },
+  "useCases": [
+   {
+    "title": "Restrict enumerated choices",
+    "scenario": "A module supports multiple deployment environments while allowing only approved names."
+   },
+   {
+    "title": "Enforce input formats",
+    "scenario": "A module requires identifiers, names, or tags to follow format and length rules."
+   },
+   {
+    "title": "Parameterize reusable modules",
+    "scenario": "A reusable module exposes tunable settings without source edits."
+   }
+  ],
+  "related": [
+   "type constraints",
+   "default",
+   "description",
+   "sensitive",
+   "nullable",
+   "ephemeral",
+   "const",
+   "deprecated"
+  ],
+  "since": "0.13.0",
+  "interview": [
+   {
+    "question": "What are Terraform input variables, and how does validation extend type constraints?",
+    "answer": "Input variables provide a module interface: callers supply values at runtime, while the module refers to them with var.<NAME>. A type constraint checks the value's type, and a validation block adds application-specific requirements.",
+    "followUp": "How can a module reject an unsupported environment? Add a validation condition using contains on an allowed list and provide error_message for failures."
+   },
+   {
+    "question": "When does Terraform evaluate variable validation, and what happens when it fails?",
+    "answer": "A validation block contains a condition expression that returns true for valid input and false otherwise. Terraform evaluates input validation before generating a plan; a false condition reports the configured error and prevents the operation from proceeding.",
+    "followUp": "What restriction applies to the condition expression? It can refer only to the containing variable and must not produce errors."
+   },
+   {
+    "question": "How do defaults affect whether an input variable is required?",
+    "answer": "A variable can be optional when it has a default expression; without a default, the caller must provide a value. Variables let modules be customized without changing their source code.",
+    "followUp": "How does a child module receive an input? Its parent passes the value as an argument in the module block."
+   }
+  ],
+  "keyPoints": [
+   "A variable block creates a configurable module interface, allowing callers to provide values without editing the module source.",
+   "Variables make one module reusable across different configurations and environments.",
+   "Use type constraints for basic value-shape checking before applying more specific validation rules.",
+   "Validation handles domain rules that a type alone cannot express.",
+   "Invalid input is rejected during planning rather than after infrastructure changes begin.",
+   "Read a declared input variable elsewhere in configuration with the var.<NAME> reference form."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Modules & composition::Composition over inheritance": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/language/modules/develop/composition",
+  "sourceTitle": "Module Composition | Terraform",
+  "summary": "Build Terraform environments by composing small modules in a flat structure. Pass dependencies from the root module into modules instead of embedding those dependencies inside them.",
+  "explanation": "Keep modules relatively small and compose them from the root module. A module receives dependencies through input variables, while the root module connects reusable building blocks and can arrange the same modules differently for different systems.",
+  "syntax": "module \"NAME\" {\n  source = \"SOURCE\"\n  INPUT = VALUE\n}",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Flat module composition",
+   "code": "module \"network\" {\n  source = \"./modules/network\"\n\n  base_cidr_block = \"10.0.0.0/8\"\n}\n\nmodule \"consul_cluster\" {\n  source = \"./modules/consul-cluster\"\n\n  vpc_id     = module.network.vpc_id\n  subnet_ids = module.network.subnet_ids\n}",
+   "language": "hcl",
+   "explanation": "The root module composes separate network and cluster modules by passing the network outputs into the cluster inputs."
+  },
+  "useCases": [
+   {
+    "title": "Connect infrastructure layers",
+    "scenario": "Create a network module and pass its outputs to an application or cluster module."
+   },
+   {
+    "title": "Build environment variants",
+    "scenario": "Reuse the same modules with different dependency wiring for different environments."
+   },
+   {
+    "title": "Share dependencies",
+    "scenario": "Keep service modules independent from how shared infrastructure is implemented."
+   }
+  ],
+  "related": [
+   "module blocks",
+   "input variables",
+   "output values",
+   "root module",
+   "child modules",
+   "dependency inversion"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is module composition in Terraform?",
+    "answer": "Module composition means assembling multiple relatively small modules in the root module and connecting them with expressions. Dependencies are passed from the root module rather than created and owned inside the dependent module.",
+    "followUp": "Why does this improve reuse? The same building-block modules can be connected in different ways, while each module remains unaware of how its dependencies are implemented."
+   },
+   {
+    "question": "How should modules be structured for composition?",
+    "answer": "A flat module tree usually has one level of child modules. The root module uses output values from one module as input values for another, making the relationships explicit.",
+    "followUp": "What is the trade-off of a deeply nested tree? It can create a complex hierarchy and make individual modules harder to reuse in different combinations."
+   },
+   {
+    "question": "How should a module receive its dependencies?",
+    "answer": "Use dependency inversion: make a module accept the object it needs through an input variable. The caller creates or obtains that dependency and passes it to the module.",
+    "followUp": "Why avoid detection logic inside the module? A module that detects whether a dependency exists and creates it otherwise mixes responsibilities and limits how callers can integrate it with existing infrastructure."
+   }
+  ],
+  "keyPoints": [
+   "Composition uses a shallow module structure to assemble multiple reusable building blocks into a larger system.",
+   "The root module can form a larger environment by connecting specialized modules rather than putting every concern into one module.",
+   "A dependent module should receive resources or values from its caller instead of embedding and managing its own copies.",
+   "Passing dependencies through the root module allows the same modules to support different environment arrangements.",
+   "Small modules with explicit dependency inputs are easier to combine and adapt than broad modules that own their dependencies."
+  ],
+  "gotchas": [
+   "Deeply nesting child modules can make modules harder to reuse; prefer a shallow tree with composition in the root module.",
+   "Embedding a dependency such as a network inside a service module can prevent that dependency from being shared with other infrastructure.",
+   "Do not make a module conditionally discover or create an existing dependency; pass the required object as an input instead."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Modules & composition::count and for_each": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/language/modules/configuration",
+  "sourceTitle": "Use modules in your configuration",
+  "summary": "Use count or for_each on one module block to create multiple module instances. count uses numeric indexes for similarly configured copies; for_each uses map or set keys when instances need distinct values.",
+  "explanation": "Use count when every instance is configured alike and identified by a numeric index. Use for_each when instances need distinct values from a map or set; Terraform then addresses each resource or module instance by its key, making the key part of state identity.",
+  "syntax": "module \"<NAME>\" {\n  source   = \"<SOURCE>\"\n  count    = <NUMBER>\n  # or:\n  for_each = <MAP_OR_SET>\n}",
+  "parameters": [
+   {
+    "name": "count",
+    "type": "number",
+    "description": "Number of instances to create; instances use integer indexes."
+   },
+   {
+    "name": "for_each",
+    "type": "map or set of strings",
+    "description": "Map or set whose elements determine instances; each instance uses a key."
+   },
+   {
+    "name": "each.key",
+    "type": "string",
+    "description": "The current instance's key or set element inside a for_each block."
+   },
+   {
+    "name": "each.value",
+    "type": "value",
+    "description": "The current instance's associated value; for a set, it is the element itself."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Create keyed module instances",
+   "code": "variable \"projects\" {\n  type = map(object({\n    environment = string\n    instance_type = string\n  }))\n  default = {\n    alpha = { environment = \"dev\",  instance_type = \"t3.micro\" }\n    beta  = { environment = \"prod\", instance_type = \"t3.small\" }\n  }\n}\n\nmodule \"app\" {\n  source = \"./modules/app\"\n  for_each = var.projects\n\n  environment   = each.value.environment\n  instance_type = each.value.instance_type\n  name          = each.key\n}\n\noutput \"app_names\" {\n  value = [for key, app in module.app : key]\n}",
+   "language": "hcl",
+   "explanation": "The module is instantiated once per map entry; each.key supplies the stable instance key and each.value supplies that entry's object."
+  },
+  "useCases": [
+   {
+    "title": "Uniform copies with count",
+    "scenario": "Provision a fixed number of nearly identical module instances."
+   },
+   {
+    "title": "Keyed instances with for_each",
+    "scenario": "Provision one module instance per named environment, project, or service."
+   },
+   {
+    "title": "Per-instance values",
+    "scenario": "Pass different configuration to each instance from a map or set."
+   }
+  ],
+  "related": [
+   "each.key",
+   "each.value",
+   "count.index",
+   "module blocks",
+   "resource blocks",
+   "resource instance addresses",
+   "state"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do count and for_each differ?",
+    "answer": "count creates the requested number of instances, all sharing the block's configuration, and addresses them with integer indexes such as resource.example[0]. for_each creates one instance for every map entry or set element and addresses instances by keys such as module.app[\"alpha\"].",
+    "followUp": "What happens when a for_each key changes? The key is part of the instance address, so changing it represents a different instance; how Terraform handles the existing object depends on the resulting plan and any state migration you perform."
+   },
+   {
+    "question": "When should you choose for_each over count?",
+    "answer": "Use count when instances are nearly identical or when a numeric quantity is the natural model. Use for_each when each instance needs values that cannot be derived reliably from an integer, because map or set keys identify the instances.",
+    "followUp": "How can a conditional create zero or one count-based instance? Set count to a conditional expression that evaluates to 0 or 1, then reference the resulting instance with its index when it exists."
+   },
+   {
+    "question": "What values are available inside repeated blocks?",
+    "answer": "For a resource or module using for_each, each.key is the current map key or set element and each.value is the associated value; for a set, the key and value are the item. A count-based block instead exposes count.index.",
+    "followUp": "How should a module consume provider settings when repeated? Keep provider configuration in the root module and let the child module inherit it, because repeated modules cannot contain provider blocks."
+   }
+  ],
+  "keyPoints": [
+   "count creates a specified number of instances from one module block.",
+   "for_each creates one module instance for each key in its collection.",
+   "count is suited to copies that share configuration rather than requiring per-instance arguments.",
+   "A map can drive module repetition, with each map entry producing one corresponding instance.",
+   "Within a repeated block, each.key identifies the current item and each.value provides its value."
+  ],
+  "gotchas": [
+   "A block may use only one of these meta-arguments; choose the one matching the instance identity you need.",
+   "A repeated module must inherit its provider configuration from the root module."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Modules & composition::Dependency ordering": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/language/modules/configuration",
+  "sourceTitle": "Use modules in your configuration",
+  "summary": "Terraform infers module ordering from references in module arguments. Add depends_on only for genuine hidden dependencies that expressions cannot reveal.",
+  "explanation": "Terraform builds a dependency graph from references in expressions. A module argument that uses another module's output creates an implicit dependency, letting Terraform order operations while preserving parallelism where possible. Use depends_on only when the dependency is real but hidden because the dependent block does not reference data from the upstream object.",
+  "syntax": "module \"name\" {\n  source = \"./path\"\n  depends_on = [module.upstream]\n}",
+  "parameters": [
+   {
+    "name": "depends_on",
+    "type": "list of references",
+    "description": "A list of direct references to upstream resources or child modules in the same calling module."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Implicit module dependency",
+   "code": "module \"network\" {\n  source = \"./modules/network\"\n}\n\nmodule \"app\" {\n  source     = \"./modules/app\"\n  subnet_ids = module.network.subnet_ids\n}",
+   "language": "hcl",
+   "explanation": "The app module references a value from the network module, so Terraform infers the dependency and orders operations accordingly."
+  },
+  "useCases": [
+   {
+    "title": "Implicit output dependency",
+    "scenario": "A module argument consumes an upstream module output."
+   },
+   {
+    "title": "Hidden module dependency",
+    "scenario": "A module relies on another module's side effects but does not reference its data."
+   },
+   {
+    "title": "Parallel module creation",
+    "scenario": "Several modules can proceed independently."
+   }
+  ],
+  "related": [
+   "depends_on",
+   "module blocks",
+   "module outputs",
+   "implicit dependency",
+   "dependency graph"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Module resources can be created in parallel unless dependency relationships require ordering.",
+   "Terraform infers a module dependency when its arguments reference an upstream resource or module value.",
+   "Implicit references determine the required ordering without manually adding depends_on.",
+   "Use depends_on for hidden dependencies that Terraform cannot infer from expressions.",
+   "An explicit module dependency makes Terraform finish upstream operations first.",
+   "Prefer a precise expression reference because Terraform can track which value actually drives the dependency."
+  ],
+  "gotchas": [
+   "Using depends_on broadly can produce more conservative plans and unnecessary replacements.",
+   "The depends_on value must be a list of direct references to resources or child modules in the same calling module.",
+   "A module-level dependency affects all resources and data sources associated with that module, so its scope can be broader than intended."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Modules & composition::Dynamic blocks": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/language/expressions/dynamic-blocks",
+  "sourceTitle": "Dynamic Blocks - Configuration Language | Terraform",
+  "summary": "Dynamic blocks generate repeated nested blocks from a collection. They are useful for reusable module interfaces when the number or contents of nested blocks varies.",
+  "explanation": "A dynamic block iterates over a collection and emits one nested block per element. Its label identifies the block type, for_each supplies the collection, an optional iterator names the current element, content defines each generated block, and labels can supply generated block labels.",
+  "syntax": "dynamic \"<BLOCK_LABEL>\" {\n  for_each = <COLLECTION>\n  iterator = <ITERATOR_NAME>\n  labels   = [<LABELS>]\n  content {\n    <ARGUMENTS>\n  }\n}",
+  "parameters": [
+   {
+    "name": "label",
+    "type": "identifier",
+    "description": "Name of the nested block type to generate."
+   },
+   {
+    "name": "for_each",
+    "type": "complex value",
+    "description": "Collection whose elements produce generated blocks."
+   },
+   {
+    "name": "iterator",
+    "type": "identifier",
+    "description": "Optional name for the current-element temporary variable."
+   },
+   {
+    "name": "labels",
+    "type": "list of strings",
+    "description": "Optional list of labels for each generated block."
+   },
+   {
+    "name": "content",
+    "type": "nested block",
+    "description": "Body template for each generated block."
+   }
+  ],
+  "returns": "Generated nested blocks inside the enclosing resource, data source, provider, or provisioner block.",
+  "example": {
+   "title": "Generate repeated nested blocks",
+   "code": "variable \"settings\" {\n  type = list(object({\n    namespace = string\n    name      = string\n    value     = string\n  }))\n  default = []\n}\n\nresource \"example_resource\" \"example\" {\n  dynamic \"setting\" {\n    for_each = var.settings\n    iterator = item\n    content {\n      namespace = item.value.namespace\n      name      = item.value.name\n      value     = item.value.value\n    }\n  }\n}",
+   "language": "hcl",
+   "explanation": "This generates one setting block for each object in var.settings."
+  },
+  "useCases": [
+   {
+    "title": "Configurable repeated settings",
+    "scenario": "A module accepts a list or map of settings and must emit one provider-specific nested block per item."
+   },
+   {
+    "title": "Nested repeated structures",
+    "scenario": "A resource has nested structures at more than one level and each level is driven by collection data."
+   },
+   {
+    "title": "Module interface abstraction",
+    "scenario": "A reusable module hides provider-specific block details while exposing a clean collection-based input."
+   }
+  ],
+  "related": [
+   "for expression",
+   "for_each",
+   "content",
+   "iterator",
+   "labels",
+   "resource blocks",
+   "data blocks",
+   "provider blocks"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does a dynamic block do?",
+    "answer": "A dynamic block is Terraform's block-producing counterpart to a for expression. It loops over a complex value and creates one nested block for every element.",
+    "followUp": "How would you generate nested dynamic structures? Nest a dynamic block inside the content block of another dynamic block."
+   },
+   {
+    "question": "What are the main parts of a dynamic block?",
+    "answer": "The label names the nested block to generate, for_each supplies the collection, and content describes each generated block. iterator optionally renames the temporary current-element variable; otherwise the label is used.",
+    "followUp": "When would labels be needed? Use the optional labels argument when each generated block requires one or more labels."
+   },
+   {
+    "question": "What limitations apply to dynamic blocks?",
+    "answer": "Dynamic blocks can generate arguments supported by the enclosing resource, data source, provider, or provisioner. They cannot generate meta-argument blocks such as lifecycle or provisioner because Terraform processes those before expressions are safely evaluated.",
+    "followUp": "What design trade-off should guide their use? Avoid unnecessary abstraction because excessive dynamic configuration harms readability and maintainability."
+   }
+  ],
+  "keyPoints": [
+   "Use dynamic blocks when a nested block must repeat according to a collection.",
+   "The collection passed to for_each determines how many nested blocks Terraform creates.",
+   "The dynamic block label is the type of nested block emitted.",
+   "Set iterator when the default label-based temporary variable would be unclear or conflict with another name.",
+   "Use labels to provide the required labels for each generated nested block.",
+   "Put the arguments for every generated nested block inside content."
+  ],
+  "gotchas": [
+   "Dynamic blocks cannot create arbitrary blocks or meta-argument blocks; they can generate only nested arguments supported by the enclosing resource, data source, provider, or provisioner.",
+   "Do not use dynamic blocks for lifecycle or provisioner blocks because Terraform must process those before expression evaluation.",
+   "Prefer explicit nested blocks when they keep a module easier to understand; reserve dynamic blocks for useful abstraction."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Modules & composition::Module sources and versions": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/language/modules/configuration",
+  "sourceTitle": "Use modules in your configuration",
+  "summary": "Declare a module's source and, for registry modules, constrain its acceptable versions. This keeps Terraform from silently selecting an unrelated module release while allowing the constraint to define the permitted update range.",
+  "explanation": "A module block declares a child module and its source. Registry modules can use version constraints; Terraform selects the newest installed version satisfying the constraint, or downloads the newest matching version when none is installed. Git modules instead use the source URL's ref query parameter to select a branch, tag, or commit.",
+  "syntax": "module \"<NAME>\" {\n  source  = \"<MODULE_SOURCE>\"\n  version = \"<VERSION_CONSTRAINT>\"\n}",
+  "parameters": [
+   {
+    "name": "source",
+    "type": "string",
+    "description": "Location of the child module configuration, such as a registry address, Git URL, object-storage address, or local path."
+   },
+   {
+    "name": "version",
+    "type": "string",
+    "description": "A version constraint for a module obtained from a registry."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Registry module with a version constraint",
+   "code": "module \"vpc\" {\n  source  = \"terraform-aws-modules/vpc/aws\"\n  version = \"~> 5.0\"\n\n  name = \"example-vpc\"\n  cidr = \"10.0.0.0/16\"\n}",
+   "language": "hcl",
+   "explanation": "This selects the VPC module from the public registry and permits compatible 5.x releases below 6.0."
+  },
+  "useCases": [
+   {
+    "title": "Registry module reuse",
+    "scenario": "Select a reusable module from the public or private Terraform Registry."
+   },
+   {
+    "title": "Controlled upgrades",
+    "scenario": "Allow compatible registry updates while excluding later incompatible releases."
+   },
+   {
+    "title": "Git-based module sourcing",
+    "scenario": "Use a Git tag, branch, or commit for a module stored in a repository."
+   }
+  ],
+  "related": [
+   "module block",
+   "source argument",
+   "version argument",
+   "ref query parameter",
+   "Terraform Registry",
+   "private Terraform registry"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does a module source specify?",
+    "answer": "The source argument tells Terraform where to obtain the child module configuration. It can refer to a registry, Git repository, object storage service, or local file system.",
+    "followUp": "How do you select a Git commit? Add the ref query parameter to the Git source and set it to a value supported by git checkout, such as a SHA-1 hash."
+   },
+   {
+    "question": "How does Terraform choose a registry module version?",
+    "answer": "The version argument accepts a version constraint for registry modules. Terraform uses the newest installed version that satisfies it, downloading the newest matching version if necessary.",
+    "followUp": "Why constrain the acceptable versions? Explicit constraints help avoid unexpected or unwanted module changes during later operations."
+   },
+   {
+    "question": "Can every module source use the version argument?",
+    "answer": "A registry module can use a version constraint such as ~> 5.0. A local module cannot use version because it is loaded from the same source repository and shares the caller's version.",
+    "followUp": "What should be used for a Git module instead? Use source with a ref query parameter to identify a branch, tag, or commit."
+   }
+  ],
+  "keyPoints": [
+   "Supported source categories include registries, Git repositories, object storage, and local directories.",
+   "Use version constraints when selecting modules from a public or private registry.",
+   "A constraint is a selection rule: Terraform prefers the newest installed release that satisfies it.",
+   "If no installed release matches, Terraform obtains the newest available matching version.",
+   "For Git sources, ref selects a branch, tag, or commit supported by git checkout."
+  ],
+  "gotchas": [
+   "Do not add version to local-path or Git module sources; the argument is supported for registry modules."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Modules & composition::Module structure": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/language/modules/develop/structure",
+  "sourceTitle": "Standard Module Structure",
+  "summary": "A Terraform module is a directory of configuration files that groups related resources into a reusable unit. Input variables define its interface and outputs expose results to callers.",
+  "explanation": "A Terraform module is a directory of configuration files that groups related resources. Its variables define caller-provided inputs, resources implement the infrastructure, and outputs publish selected results so callers can connect modules without depending on their internal implementation.",
+  "syntax": "module \"NAME\" {\n  source = \"SOURCE\"\n  # input arguments = values\n}",
+  "parameters": [
+   {
+    "name": "input variables",
+    "type": "module arguments",
+    "description": "Values accepted by the module and declared with input variable blocks."
+   },
+   {
+    "name": "source",
+    "type": "module source",
+    "description": "A module source location configured in the calling module's module block."
+   },
+   {
+    "name": "outputs",
+    "type": "module results",
+    "description": "Values exposed by output blocks for use by the calling module."
+   }
+  ],
+  "returns": "Output values made available to the calling module through module.<MODULE-NAME>.<OUTPUT-NAME>.",
+  "example": {
+   "title": "A reusable module interface",
+   "code": "module \"web\" {\n  source = \"./modules/web\"\n\n  instance_count = 2\n}\n\n# modules/web/variables.tf\nvariable \"instance_count\" {\n  type = number\n}\n\n# modules/web/main.tf\nresource \"example_server\" \"web\" {\n  count = var.instance_count\n}\n\n# modules/web/outputs.tf\noutput \"server_ids\" {\n  value = example_server.web[*].id\n}",
+   "language": "hcl",
+   "explanation": "The caller supplies the module's input variable, while the module manages resources and publishes selected results through an output."
+  },
+  "useCases": [
+   {
+    "title": "Publish a reusable module",
+    "scenario": "Package infrastructure for distribution in a separate repository using Terraform's recognized conventional layout."
+   },
+   {
+    "title": "Parameterize infrastructure",
+    "scenario": "Expose configuration knobs while keeping resource implementation inside the module."
+   },
+   {
+    "title": "Compose infrastructure",
+    "scenario": "Connect independent building blocks through caller-supplied inputs and module outputs."
+   }
+  ],
+  "related": [
+   "module block",
+   "input variables",
+   "output values",
+   "resources",
+   "root module",
+   "child module",
+   "nested modules",
+   "module composition"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the standard structure of a reusable Terraform module?",
+    "answer": "A module is a directory containing Terraform configuration files that groups related resources. A standard reusable module commonly has main.tf, variables.tf, and outputs.tf, with variables defining its input interface and outputs exposing selected results.",
+    "followUp": "How would you keep a module repository composable? Keep nested modules under modules/ and have callers compose them, avoiding nested modules that directly call one another and create a deep tree."
+   },
+   {
+    "question": "How do Terraform modules communicate?",
+    "answer": "Variables accept values from the calling module, resources define infrastructure, and outputs return values to the caller. This separates a module's public interface from its implementation.",
+    "followUp": "How can one module consume another module's result? Pass an output expression such as module.network.subnet_ids into an input argument of the dependent module."
+   },
+   {
+    "question": "How does a root configuration use a child module?",
+    "answer": "A module call uses a module block with a source identifying the module location and arguments supplying its declared inputs. The caller can then reference an exposed value with module.<MODULE-NAME>.<OUTPUT-NAME>.",
+    "followUp": "Why prefer a relatively flat module tree? Flat composition makes individual modules easier to reuse in different combinations than a deeply nested hierarchy."
+   }
+  ],
+  "keyPoints": [
+   "HashiCorp defines a conventional layout for reusable modules shared from separate repositories.",
+   "These are the recommended filenames for a minimal module: main.tf for the main configuration, variables.tf for inputs, and outputs.tf for outputs.",
+   "Place nested modules below the modules/ directory in a standard module repository."
+  ],
+  "gotchas": [
+   "A standard module repository must have Terraform configuration files in its root directory; the conventional filenames are recommendations, not mandatory.",
+   "Do not treat README input and output documentation as a required part of the standard structure.",
+   "Use relative paths for nested modules in the same repository so Terraform treats them as part of that package rather than downloading them."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Operating safely::CI pipelines": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/intro/core-workflow",
+  "sourceTitle": "The Core Workflow Enhanced",
+  "summary": "Use CI to run a speculative Terraform plan for pull requests and review its proposed changes. After approval and merge, generate and apply a fresh plan from the default branch.",
+  "explanation": "A CI workflow runs a speculative plan for each pull-request change so reviewers can inspect the proposed infrastructure updates without changing real resources. After approval and merge, the workflow creates and applies a new plan from the shared default branch, using the latest configuration and state.",
+  "syntax": "terraform plan [options]\nterraform apply [options] [planfile]",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Automated plan and reviewed apply",
+   "code": "terraform plan -input=false\nterraform apply -input=false tfplan",
+   "language": "bash",
+   "explanation": "Save and apply a reviewed plan in automation; in a real CI system, generate the plan for the pull request and apply a fresh plan from the default branch after merge."
+  },
+  "useCases": [
+   {
+    "title": "Preview proposed infrastructure changes",
+    "scenario": "A developer opens or updates a pull request."
+   },
+   {
+    "title": "Deploy reviewed changes after merge",
+    "scenario": "Reviewers approve and merge a pull request into the default branch."
+   },
+   {
+    "title": "Centralize Terraform operations in CI",
+    "scenario": "Teams need consistent execution and protected credentials."
+   }
+  ],
+  "related": [
+   "terraform plan",
+   "terraform apply",
+   "speculative plan",
+   "pull requests",
+   "primary version control branch",
+   "shared Continuous Integration (CI) environment"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How should CI separate review from deployment?",
+    "answer": "A pull request should trigger a plan-only run so reviewers can see the proposed infrastructure changes without affecting real infrastructure. After approval and merge, a new plan should be created from the shared branch and applied.",
+    "followUp": "Why create a new plan after merging? The reviewed branch plan may no longer reflect the latest shared branch or state, so the final run must calculate changes again."
+   },
+   {
+    "question": "What happens after a pull request is merged?",
+    "answer": "Use a plan-only operation for each pull-request commit and expose its result for review. Configure a separate workflow for the default branch that performs the final plan and apply after the merge.",
+    "followUp": "What should happen if the final plan differs from the reviewed plan? Stop or require review according to the team's approval policy rather than blindly applying unexpected changes."
+   },
+   {
+    "question": "What sequence does Terraform recommend for automation?",
+    "answer": "Automation should initialize the working directory, create a plan, have a human review it, and then apply the approved changes. In CI, the pull-request plan is for code review and is not reused for deployment.",
+    "followUp": "How can automation avoid interactive prompts? Use noninteractive options such as -input=false and pass a saved plan explicitly when applying it."
+   }
+  ],
+  "keyPoints": [
+   "Run a speculative plan when a pull request is opened so proposed changes are available during review.",
+   "CI can publish speculative-plan output directly on the pull request, keeping infrastructure impact visible beside the code change.",
+   "After merge, review the concrete plan generated against the shared branch and current state before deployment.",
+   "A shared CI environment centralizes Terraform execution instead of requiring every contributor to configure sensitive inputs locally."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Operating safely::Drift detection": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/tutorials/state/resource-drift",
+  "sourceTitle": "Manage resource drift",
+  "summary": "Detect infrastructure changes made outside Terraform by comparing real resources with Terraform state. Review a refresh-only plan, then update configuration to adopt intentional changes or apply configuration to revert unwanted drift.",
+  "explanation": "Terraform detects drift by refreshing its view of real infrastructure and comparing it with the resources recorded in state. Use a refresh-only plan to inspect external changes, then either update configuration to keep an intentional change or apply the existing configuration to restore the prior setting.",
+  "syntax": "terraform plan -refresh-only",
+  "parameters": [],
+  "returns": "A refresh-only plan reports how Terraform state differs from actual infrastructure; an apply can persist reconciled state or restore configuration-defined settings.",
+  "example": {
+   "title": "Check for drift",
+   "code": "terraform plan -refresh-only",
+   "language": "bash",
+   "explanation": "Runs a refresh-only plan to compare Terraform state with the real infrastructure without proposing configuration changes to apply."
+  },
+  "useCases": [
+   {
+    "title": "Detect manual changes",
+    "scenario": "A cloud resource was edited manually and its actual settings may no longer match Terraform."
+   },
+   {
+    "title": "Adopt intentional drift",
+    "scenario": "An external system intentionally changed a resource and Terraform should manage the new setting."
+   },
+   {
+    "title": "Revert unwanted drift",
+    "scenario": "A manual change violates the declared configuration and should be undone."
+   }
+  ],
+  "related": [
+   "terraform plan",
+   "terraform apply",
+   "-refresh-only",
+   "refresh-only operations",
+   "Terraform state",
+   "Terraform configuration"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Terraform performs an implicit comparison during plan and apply operations.",
+   "Use the refresh-only workflow when changes may have been made manually or by another system.",
+   "The refresh-only plan reveals differences without applying configuration changes.",
+   "Adopt intentional external changes by editing Terraform configuration and applying it.",
+   "Reject unwanted drift by applying the configuration that represents the desired state."
+  ],
+  "gotchas": [
+   "A normal plan refreshes state only in memory; use refresh-only operations when you need to inspect or update the recorded state explicitly.",
+   "Unmanaged external edits can lead Terraform to change, destroy, or recreate resources during reconciliation, so review the plan carefully."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Operating safely::Moved and removed blocks": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/language/modules/develop/refactoring",
+  "sourceTitle": "Refactor modules | Terraform",
+  "summary": "Use Terraform's moved block to change a resource or module address without destroying the live object. Record address history so plans preserve infrastructure and module upgrades remain safe.",
+  "explanation": "A moved block records an address change between a resource or module's old and new locations. During planning, Terraform looks for an object at from, renames it to to in state, and plans against the new address, avoiding destruction. Keep historical moves to preserve upgrade paths; remove a moved block only when no supported configuration still uses its old address.",
+  "syntax": "moved {\n  from = <old address>\n  to   = <new address>\n}",
+  "parameters": [
+   {
+    "name": "from",
+    "type": "string",
+    "description": "Previous address of the module or resource; it may select modules, resources, or resources inside child modules."
+   },
+   {
+    "name": "to",
+    "type": "string",
+    "description": "New address to which the module or resource is relocated; it may select modules, resources, or resources inside child modules."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Rename a resource safely",
+   "code": "moved {\n  from = aws_instance.a\n  to   = aws_instance.b\n}\n\nresource \"aws_instance\" \"b\" {\n  ami           = \"ami-0c55b159cbfafé1f0\"\n  instance_type = \"t3.micro\"\n}",
+   "language": "hcl",
+   "explanation": "Terraform updates the state address from aws_instance.a to aws_instance.b, so the existing instance is retained rather than replaced."
+  },
+  "useCases": [
+   {
+    "title": "Rename a resource",
+    "scenario": "A resource is renamed in configuration while its real infrastructure should remain intact."
+   },
+   {
+    "title": "Move a resource or module",
+    "scenario": "A resource or module is relocated between addresses or module boundaries."
+   },
+   {
+    "title": "Expand or split module structure",
+    "scenario": "A module is reorganized into multiple instances or divided into smaller modules."
+   }
+  ],
+  "related": [
+   "Refactor modules",
+   "moved block",
+   "terraform state mv",
+   "resource address",
+   "module address",
+   "Create multiple instances",
+   "Split a module"
+  ],
+  "since": "1.1",
+  "interview": [
+   {
+    "question": "How does a moved block prevent replacement?",
+    "answer": "A moved block declares from and to addresses. Terraform checks state at from, changes the object's address to to, and includes that address update in the plan without destroying the object.",
+    "followUp": "What happens if the block is removed? Configurations still referring to the old address can plan to delete the existing object, so historical blocks should normally remain."
+   },
+   {
+    "question": "What are the from and to arguments?",
+    "answer": "The from address identifies the prior resource or module address, while to identifies its new address. Both are required and can address modules, resources, and resources in child modules.",
+    "followUp": "How would you represent two sequential renames? Use multiple moved blocks that chain each old address to the next address."
+   },
+   {
+    "question": "Which refactoring scenarios can moved blocks support?",
+    "answer": "Moved blocks support moving or renaming resources and modules, creating multiple instances, renaming module calls, and splitting modules. Terraform uses the recorded address transition while planning the configuration change.",
+    "followUp": "Why keep old moves after later refactors? They preserve the upgrade path for users starting from earlier module versions."
+   }
+  ],
+  "keyPoints": [
+   "Use a moved block when an existing resource or module changes address and must remain live.",
+   "Terraform resolves the old state address before planning the object at its new address.",
+   "The refactor changes Terraform's address mapping while preserving the infrastructure object.",
+   "A moved block may eventually be removed when the module or resource itself is no longer needed, subject to compatibility considerations."
+  ],
+  "gotchas": [
+   "Deleting a moved block too early can make configurations using the old address plan a deletion instead of a move.",
+   "Retain historical address migrations so users upgrading from older module versions continue to have a safe path.",
+   "For successive renames, chain moves instead of collapsing history into only the latest address."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Operating safely::Plan review": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/cli/commands/plan",
+  "sourceTitle": "terraform plan command",
+  "summary": "Review Terraform's execution plan as a change proposal before applying it. Investigate every create, update, or destroy action and reject unexpected results.",
+  "explanation": "Terraform first refreshes its view of existing remote objects, compares that state with the configuration, and proposes actions such as creating, changing, or destroying resources. Review those actions for unexpected changes; save an approved plan with -out and pass that file to apply so Terraform executes the reviewed proposal.",
+  "syntax": "terraform plan [options]",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "options",
+    "description": "Command-line options for controlling plan generation; the page documents the syntax as terraform plan [options]."
+   }
+  ],
+  "returns": "An execution plan describing proposed infrastructure changes; with -out=FILE, a saved plan file is written.",
+  "example": {
+   "title": "Review and apply a saved plan",
+   "code": "terraform plan -out=tfplan\nterraform show tfplan\nterraform apply tfplan",
+   "language": "bash",
+   "explanation": "Generate a saved plan, inspect its proposed actions, and apply that exact reviewed plan."
+  },
+  "useCases": [
+   {
+    "title": "Pre-apply safety check",
+    "scenario": "Before deploying a configuration change, inspect proposed resource actions and confirm they match the intended change."
+   },
+   {
+    "title": "Team review",
+    "scenario": "When a plan needs peer review, save it and share the resulting proposal with the team."
+   },
+   {
+    "title": "Change review in CI",
+    "scenario": "In pull-request automation, use a speculative plan to show infrastructure effects without applying them."
+   }
+  ],
+  "related": [
+   "terraform apply",
+   "terraform show",
+   "execution plan",
+   "speculative plan",
+   "-out=FILE"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does terraform plan do?",
+    "answer": "terraform plan reads current remote state, compares it with configuration, and proposes actions that would reconcile the difference. It does not perform those actions, so it is suitable for checking the proposal before deployment.",
+    "followUp": "What makes a plan applicable later? Use -out=FILE to save it, then provide that file as an argument to terraform apply."
+   },
+   {
+    "question": "How do you review a Terraform plan safely?",
+    "answer": "The output describes actions such as create, update, and destroy. Review whether each proposed action matches the intended configuration change before approving an apply.",
+    "followUp": "How can a team review proposed changes in pull requests? Use speculative plans generated by HCP Terraform's VCS integration."
+   },
+   {
+    "question": "How does applying a saved plan differ from running plan?",
+    "answer": "terraform apply can create a plan interactively and ask for confirmation, or it can consume a previously saved plan. Applying a saved plan executes the proposal that was inspected.",
+    "followUp": "What is the distinction between a saved plan and a speculative plan? A saved plan is written with -out and can later be passed to apply; a speculative plan describes effects without intent to apply."
+   }
+  ],
+  "keyPoints": [
+   "Use plan as a preview of the infrastructure changes Terraform proposes.",
+   "Before proposing changes, Terraform refreshes information about existing remote objects.",
+   "The proposal comes from comparing configuration with the prior state.",
+   "The plan is a reconciliation proposal, not merely a list of configuration differences.",
+   "Reject or revise the change when the proposal does not match expectations.",
+   "Save a reviewed proposal when the apply must use the exact plan examined."
+  ],
+  "gotchas": [
+   "Running plan is non-destructive, but it does not deploy anything by itself.",
+   "A plan without -out is not intended to be applied as a saved approval artifact.",
+   "Review the complete output, including actions on resources that may not be the main focus of the change."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Operating safely::Secrets handling": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/language/style",
+  "sourceTitle": "Style Guide",
+  "summary": "Keep credentials out of Terraform configuration by using provider environment variables, dynamic credentials, or Vault. Mark sensitive inputs to hide them from plan and apply output, but secure state because Terraform can still store secrets there.",
+  "explanation": "Use provider-specific environment variables, dynamic provider credentials, or a secrets manager such as Vault instead of putting credentials directly in configuration. Mark sensitive variables to suppress display in plan and apply output, but treat the value as exposed in state because Terraform can still persist it in plaintext.",
+  "syntax": "variable \"NAME\" {\n  type      = string\n  sensitive = true\n}",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Sensitive provider input",
+   "code": "variable \"api_token\" {\n  type      = string\n  sensitive = true\n}\n\nprovider \"example\" {\n  token = var.api_token\n}",
+   "language": "hcl",
+   "explanation": "Pass the token through a sensitive input variable; provide its value outside the configuration, such as through an environment-specific variable mechanism."
+  },
+  "useCases": [
+   {
+    "title": "Inject provider credentials",
+    "scenario": "A provider needs an API token or cloud credential without exposing it in .tf files."
+   },
+   {
+    "title": "Suppress sensitive output",
+    "scenario": "A configuration accepts passwords, private keys, or other confidential input values."
+   },
+   {
+    "title": "Use Vault integration",
+    "scenario": "Terraform must retrieve credentials or application secrets from a centralized system."
+   },
+   {
+    "title": "Use encrypted remote state",
+    "scenario": "A team needs shared state while reducing exposure of credentials in local files."
+   }
+  ],
+  "related": [
+   "sensitive",
+   "dynamic provider credentials",
+   "HashiCorp Vault",
+   "Terraform Vault provider",
+   "provider-specific environment variables",
+   "remote state storage",
+   "HCP Terraform",
+   "Terraform Enterprise"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Terraform's sensitive setting do?",
+    "answer": "Set sensitive = true on variables containing passwords or private keys. This prevents Terraform from displaying those values during plan or apply, but it does not protect them from being stored in state.",
+    "followUp": "How should long-lived credentials be avoided? Prefer dynamic provider credentials or a secrets manager such as Vault, and supply provider credentials through environment variables where supported."
+   },
+   {
+    "question": "How can provider credentials be kept out of configuration?",
+    "answer": "Provider-specific environment variables keep credentials out of the Terraform configuration. However, Terraform may still persist values that providers expose or resources record in the state file.",
+    "followUp": "What additional control is needed? Secure the state backend and limit access because state can contain credentials and other sensitive data."
+   },
+   {
+    "question": "Why does state storage matter for secrets?",
+    "answer": "If local state is used without remote storage, the CLI stores the complete state as plaintext on local disk. HCP Terraform and Terraform Enterprise provide encrypted state storage through HashiCorp Vault.",
+    "followUp": "What should be avoided when sharing data between HCP Terraform or Terraform Enterprise workspaces? Use the tfe_outputs data source rather than sharing full state files."
+   }
+  ],
+  "keyPoints": [
+   "Mark password and private-key variables as sensitive so Terraform omits their values from plan and apply output.",
+   "Use short-lived dynamic credentials or Vault instead of embedding durable credentials in configuration.",
+   "Prefer each provider's supported environment variables as the credential injection mechanism.",
+   "Retrieve secrets through the Vault provider when Terraform must integrate with a secrets-management system.",
+   "Without remote state, local Terraform keeps the full state unencrypted on disk.",
+   "HCP Terraform and Terraform Enterprise offer encrypted state storage through HashiCorp Vault."
+  ],
+  "gotchas": [
+   "The sensitive flag hides a value from plan and apply output but does not remove it from state.",
+   "Values obtained from environment variables or Vault can still be written to state when Terraform records them.",
+   "Protect state storage and avoid sharing complete state files."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Operating safely::Targeted applies": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/cli/commands/plan",
+  "sourceTitle": "Planning Options",
+  "summary": "Targeted applies use `-target=ADDRESS` to focus Terraform on selected resources and their dependencies. Treat this as an exceptional recovery or limitation workaround, not a normal workflow.",
+  "explanation": "Terraform targeting narrows planning and applying to the addressed resource instances plus objects they depend on. Resource addresses can identify one instance, every instance of a resource, or a module instance and its child resources; because this can leave other changes unexamined, use it only for exceptional recovery or Terraform limitations.",
+  "syntax": "terraform apply -target=ADDRESS",
+  "parameters": [
+   {
+    "name": "ADDRESS",
+    "type": "resource address",
+    "description": "Resource address identifying the resource, resource instance, or module instance to focus on."
+   }
+  ],
+  "returns": "A plan or apply operation restricted to the targeted instances and their dependencies; no separate return value is documented.",
+  "example": {
+   "title": "Target one resource instance",
+   "code": "terraform plan -target='aws_instance.web[0]'\nterraform apply -target='aws_instance.web[0]'",
+   "language": "bash",
+   "explanation": "This targets one resource instance, including its dependencies. Use it only for an exceptional recovery or limitation workaround, then run an ordinary plan to reconcile the full configuration."
+  },
+  "useCases": [
+   {
+    "title": "Mistake recovery",
+    "scenario": "Recovering after an infrastructure or state mistake requires changing one affected portion first."
+   },
+   {
+    "title": "Work around a limitation",
+    "scenario": "A Terraform limitation prevents the normal full operation from completing."
+   },
+   {
+    "title": "Select one resource instance",
+    "scenario": "A specific indexed instance must be selected from a resource using count or for_each."
+   }
+  ],
+  "related": [
+   "terraform plan",
+   "terraform apply",
+   "resource address",
+   "count",
+   "for_each",
+   "module instance",
+   "dependency graph"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Terraform targeting do?",
+    "answer": "Use `-target=ADDRESS` with `terraform plan` or `terraform apply`. Terraform selects matching resource instances and also includes objects they depend on, directly or indirectly.",
+    "followUp": "What happens when the address names a resource using `for_each`? An unindexed resource address selects all current instances; an indexed address selects only that instance."
+   },
+   {
+    "question": "Why is `-target` a last resort?",
+    "answer": "Targeting is intended for exceptional situations, such as recovering from mistakes or working around Terraform limitations. It should not be part of routine operations because the restricted plan can miss drift elsewhere.",
+    "followUp": "How would you reduce the risk afterward? Run a normal plan without `-target` so Terraform evaluates the full configuration and state."
+   },
+   {
+    "question": "How do resource addresses affect targeting?",
+    "answer": "A single-instance resource uses the same resource and instance address. Resources with `count` or `for_each` require an instance index when selecting one instance, such as `aws_instance.example[0]`.",
+    "followUp": "What does a module-instance address select? It selects all resources in that module instance and all resources in its child module instances."
+   }
+  ],
+  "keyPoints": [
+   "Pass `-target=ADDRESS` to restrict Terraform's attention to selected resources.",
+   "The selected address may refer to a particular resource instance rather than an entire resource.",
+   "Terraform expands the selection to include direct and transitive dependencies of the targeted instances.",
+   "Valid exceptional uses include recovery after mistakes and workarounds for Terraform limitations.",
+   "Indexed addresses are needed to target one instance when a resource uses `count` or `for_each`."
+  ],
+  "gotchas": [
+   "Routine targeting can leave configuration drift undetected and make the resulting state confusing.",
+   "An address naming a resource rather than an indexed instance selects every current instance when count or for_each is used.",
+   "Targeting a module instance is broader than one resource: it includes the module's resources and those in child modules."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "State::Import": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/cli/import",
+  "sourceTitle": "Import existing infrastructure resources | Terraform",
+  "summary": "Import associates an existing infrastructure object with a Terraform resource address so Terraform can manage it without recreating it. Use the CLI for one resource or an import block for configuration-driven and multi-resource workflows.",
+  "explanation": "Terraform associates an existing remote object with a resource address in state. Define the destination resource, add an import block with the provider-specific ID and target address, review the plan, and apply it; the import block can also drive generated configuration.",
+  "syntax": "terraform import ADDRESS ID\n\nimport {\n  id = \"PROVIDER_SPECIFIC_ID\"\n  to = RESOURCE_ADDRESS\n}",
+  "parameters": [
+   {
+    "name": "id",
+    "type": "string",
+    "description": "Provider-specific identifier for the infrastructure to import."
+   },
+   {
+    "name": "to",
+    "type": "resource address",
+    "description": "Terraform resource address that receives the imported object in state."
+   }
+  ],
+  "returns": "The existing remote object is recorded in Terraform state and associated with the specified resource address.",
+  "example": {
+   "title": "Configuration-driven import",
+   "code": "terraform {\n  required_providers {\n    docker = {\n      source  = \"kreuzwerker/docker\"\n      version = \"~> 3.0\"\n    }\n  }\n}\n\nprovider \"docker\" {}\n\nresource \"docker_container\" \"web\" {\n  name  = \"imported-web\"\n  image = \"nginx:latest\"\n}\n\nimport {\n  id = \"existing-container-id\"\n  to = docker_container.web\n}\n",
+   "language": "hcl",
+   "explanation": "Declare the destination resource and its provider-specific identifier, then run `terraform plan` and `terraform apply` to import it through configuration."
+  },
+  "useCases": [
+   {
+    "title": "Adopt existing infrastructure",
+    "scenario": "An infrastructure object already exists outside Terraform and should be managed by Terraform."
+   },
+   {
+    "title": "Import multiple resources",
+    "scenario": "Several existing objects need to enter state through a repeatable plan-and-apply workflow."
+   },
+   {
+    "title": "Generate configuration",
+    "scenario": "Imported resources need generated starter configuration."
+   }
+  ],
+  "related": [
+   "terraform import",
+   "import block",
+   "terraform plan",
+   "-generate-config-out",
+   "HCP Terraform"
+  ],
+  "since": "1.5",
+  "interview": [
+   {
+    "question": "What does Terraform import do?",
+    "answer": "Import connects an already-existing remote object to a Terraform resource address in state. The resource configuration must describe the destination, while the provider-specific ID identifies the remote object.",
+    "followUp": "How can several resources be imported together? Define multiple import blocks, each with its own `id` and `to` arguments, then use the plan-and-apply workflow."
+   },
+   {
+    "question": "What is the difference between CLI import and configuration-driven import?",
+    "answer": "The CLI form is `terraform import ADDRESS ID`. It records the object in state but does not generate configuration, so the resource block must already exist.",
+    "followUp": "How would you preview the operation and generate configuration? Use an import block, run `terraform plan`, and optionally pass `-generate-config-out` before applying."
+   },
+   {
+    "question": "What are the arguments in an import block?",
+    "answer": "The `id` argument is the provider-specific identifier of the existing infrastructure. The `to` argument is the Terraform resource address that will represent it in state.",
+    "followUp": "What should be checked after import? Run `terraform plan` and reconcile the configuration with the imported object's actual attributes to avoid unintended changes."
+   }
+  ],
+  "keyPoints": [
+   "Import brings infrastructure created outside Terraform into Terraform management.",
+   "Import workflows are available through both the Terraform CLI and HCP Terraform.",
+   "Use import blocks when the workflow must handle more than one resource.",
+   "The CLI workflow requires a destination resource block before importing.",
+   "Configuration-driven import is the route for generating accompanying resource configuration."
+  ],
+  "gotchas": [
+   "The CLI command does not create configuration; use an import block when configuration generation is needed.",
+   "Do not bind one remote object to multiple Terraform resource addresses."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "State::Remote backends": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/language/state/backends",
+  "sourceTitle": "Backends: State Storage and Locking",
+  "summary": "Remote backends store Terraform state in a shared remote service, giving a team one consistent state location. Depending on the backend, they can also provide state locking and remote execution.",
+  "explanation": "A remote backend places Terraform state in a shared remote service rather than the local filesystem. Terraform can use that backend for state operations, and supported backends can lock state to prevent conflicting concurrent changes.",
+  "syntax": "terraform {\n  backend \"remote\" {\n    organization = \"ORG\"\n    workspaces {\n      name = \"WORKSPACE\"\n    }\n  }\n}",
+  "parameters": [
+   {
+    "name": "organization",
+    "type": "string",
+    "description": "HCP Terraform organization containing the workspace."
+   },
+   {
+    "name": "workspaces",
+    "type": "object",
+    "description": "The HCP Terraform workspace name or workspace selection configuration."
+   }
+  ],
+  "returns": "The backend stores Terraform state remotely and may execute Terraform operations in HCP Terraform when full remote operations are enabled.",
+  "example": {
+   "title": "Configure an HCP Terraform remote backend",
+   "code": "terraform {\n  backend \"remote\" {\n    organization = \"example_corp\"\n    workspaces {\n      name = \"my-app-prod\"\n    }\n  }\n}\n",
+   "language": "hcl",
+   "explanation": "Configure Terraform to store state in the specified HCP Terraform workspace; run `terraform init` to initialize the backend."
+  },
+  "useCases": [
+   {
+    "title": "Team collaboration",
+    "scenario": "A team needs every contributor and CI job to use the same infrastructure state."
+   },
+   {
+    "title": "Conflict prevention",
+    "scenario": "Concurrent plans or applies must be coordinated when the backend supports locking."
+   },
+   {
+    "title": "Remote execution",
+    "scenario": "An organization wants Terraform plans and applies to run in HCP Terraform's managed environment."
+   },
+   {
+    "title": "Cross-configuration data",
+    "scenario": "One configuration needs outputs produced by another Terraform configuration."
+   }
+  ],
+  "related": [
+   "backend",
+   "local backend",
+   "remote backend",
+   "state locking",
+   "terraform state pull",
+   "terraform state push",
+   "HCP Terraform workspace",
+   "terraform_remote_state"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does a remote backend solve?",
+    "answer": "A backend defines where Terraform stores state and can provide state locking. A remote backend puts that state in a shared service so multiple people can work with the same infrastructure state.",
+    "followUp": "Can remote state be used without remote execution? Yes. With local operations, the backend stores state remotely while Terraform commands still execute on the local machine."
+   },
+   {
+    "question": "How do you inspect or manually transfer remote state?",
+    "answer": "Terraform can continue using state-related commands with remote state as though the state were local. For example, `terraform state pull` retrieves remote state and writes it to standard output.",
+    "followUp": "How can state be recovered after a backend write failure? Terraform may write it locally, and an operator can use `terraform state push` to manually send state to the remote backend after resolving the problem."
+   },
+   {
+    "question": "What is distinctive about the remote backend?",
+    "answer": "The `remote` backend can store state snapshots and, when configured for full remote operations, execute plans and applies in HCP Terraform's run environment. Variable values come from the associated workspace.",
+    "followUp": "What changes when using local operations with HCP Terraform? Only state is stored in HCP Terraform; plan and apply execute locally."
+   }
+  ],
+  "keyPoints": [
+   "A backend has two core responsibilities: persist Terraform state and expose locking functionality when supported.",
+   "The backend choice controls the location of Terraform's state data.",
+   "Remote storage does not remove ordinary state and console workflows from the Terraform CLI.",
+   "The `remote` backend combines state storage with optional HCP Terraform execution.",
+   "Workspace selection can target one HCP Terraform workspace or a group of similarly named workspaces.",
+   "Initialization can migrate existing state into newly created or empty remote workspaces."
+  ],
+  "gotchas": [
+   "Do not assume every backend prevents concurrent operations; locking is available only when the selected backend supports it.",
+   "A failed remote write can cause Terraform to write state locally for recovery, so inspect and manually reconcile that state when prompted."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "State::State locking": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/language/state/locking",
+  "sourceTitle": "State: Locking | Terraform | HashiCorp Developer",
+  "summary": "Terraform automatically locks shared state during operations that could write it when the backend supports locking. This prevents concurrent writers from corrupting state; disable locking only with caution.",
+  "explanation": "When the configured backend supports locking, Terraform automatically acquires a lock before operations that can write state and releases it afterward. A second operation cannot acquire that lock, so Terraform stops instead of allowing concurrent writers; use a lock timeout to wait, and reserve force-unlock for a lock left behind after automatic unlocking failed.",
+  "syntax": "terraform force-unlock LOCK_ID",
+  "parameters": [
+   {
+    "name": "-lock=false",
+    "type": "command-line flag",
+    "description": "Disable state locking for most commands; not recommended."
+   },
+   {
+    "name": "-lock-timeout=DURATION",
+    "type": "command-line flag",
+    "description": "Wait for a specified duration while acquiring a state lock."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Wait briefly for the state lock",
+   "code": "terraform plan -lock-timeout=30s\nterraform apply -lock-timeout=30s",
+   "language": "bash",
+   "explanation": "Run state-changing commands with a bounded wait for another operation to release the lock."
+  },
+  "useCases": [
+   {
+    "title": "Serialize shared-state writes",
+    "scenario": "Multiple engineers or automation jobs target one remote state at the same time."
+   },
+   {
+    "title": "Recover a stale lock",
+    "scenario": "A previous process failed after acquiring a lock and automatic cleanup did not complete."
+   },
+   {
+    "title": "Wait for the current writer",
+    "scenario": "An operation starts while another state-changing operation is still running."
+   }
+  ],
+  "related": [
+   "terraform force-unlock",
+   "-lock=false",
+   "-lock-timeout=DURATION",
+   "backend",
+   "state locking"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When does Terraform state locking occur?",
+    "answer": "Terraform locks state automatically for operations that may write it, provided the backend supports locking. If another operation holds the lock, Terraform does not continue until it obtains the lock.",
+    "followUp": "What happens when lock acquisition is slow? Terraform emits a status message while waiting; a lock timeout can bound how long a command retries."
+   },
+   {
+    "question": "How can locking be disabled, and should it be?",
+    "answer": "The `-lock=false` option disables locking for most commands, but the documentation recommends against using it. Without the lock, concurrent operations can interfere with one another and corrupt shared state.",
+    "followUp": "Why might a command fail immediately on a held lock? A zero or insufficient lock timeout leaves no time for the other operation to release it."
+   },
+   {
+    "question": "When is force-unlock appropriate?",
+    "answer": "`terraform force-unlock` manually removes a lock when automatic unlocking failed. It requires the unique lock ID printed by Terraform, which helps ensure the intended lock is targeted.",
+    "followUp": "Why is force-unlock dangerous? Removing another user's active lock can create multiple writers, so it should be limited to a lock known to belong to you."
+   }
+  ],
+  "keyPoints": [
+   "Locking is conditional on backend support and covers every operation that can write state.",
+   "The lock excludes competing writers, reducing the risk of shared-state corruption.",
+   "Users normally do not need to request locking explicitly.",
+   "A status message signals that Terraform is still waiting for the lock.",
+   "Terraform provides a recovery command for locks that remain after an unlocking failure.",
+   "The required lock ID protects against unlocking a different lock accidentally."
+  ],
+  "gotchas": [
+   "Do not disable locking casually: bypassing it can permit concurrent state writers.",
+   "Use force-unlock only for your own stale lock after automatic unlocking has failed.",
+   "Verify that the selected backend supports locking; the feature is not universal."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "State::State purpose": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/language/state/purpose",
+  "sourceTitle": "Purpose of Terraform State",
+  "summary": "Terraform state is the record that connects declared resource instances to the real-world objects they manage. Terraform needs it to calculate changes, preserve dependency metadata, and operate efficiently.",
+  "explanation": "Terraform keeps a state record that links configuration resource instances to their real-world objects. During planning, it uses that record alongside refreshed infrastructure data to determine what must change, while also retaining dependency metadata and cached values for efficient operation.",
+  "syntax": "terraform plan",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Inspect planned changes",
+   "code": "terraform plan",
+   "language": "bash",
+   "explanation": "Running a plan lets Terraform compare configuration with its recorded state and determine proposed infrastructure changes."
+  },
+  "useCases": [
+   {
+    "title": "Plan configuration changes",
+    "scenario": "After changing Terraform configuration, use state to determine which resources require creation, modification, or removal."
+   },
+   {
+    "title": "Improve planning performance",
+    "scenario": "Keep dependency information and resource values available so operations scale better for large infrastructures."
+   },
+   {
+    "title": "Coordinate team operations",
+    "scenario": "Use shared remote state and locking when several people or automation processes manage the same infrastructure."
+   }
+  ],
+  "related": [
+   "Terraform state",
+   "resource instances",
+   "remote state",
+   "state backend",
+   "state locking",
+   "terraform plan"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the primary purpose of Terraform state?",
+    "answer": "Terraform state maps resource instances in configuration to the corresponding objects in a remote system. After creating an object, Terraform records its identity so later operations can update or delete that object when configuration changes.",
+    "followUp": "Why not query every remote object on every run? Terraform needs a mapping from configuration addresses to managed objects, and querying everything would be inefficient and could not reliably establish ownership."
+   },
+   {
+    "question": "Besides resource identity, what does state provide?",
+    "answer": "State retains dependency information and resource values, which helps Terraform operate efficiently on larger infrastructures. During planning, Terraform uses the state to determine the changes needed to reach the desired configuration.",
+    "followUp": "What happens if state is stale? Terraform refreshes state from real infrastructure before operations, so the plan can account for changes made outside Terraform."
+   },
+   {
+    "question": "How does state storage affect collaboration?",
+    "answer": "By default, Terraform stores state in a file in the working directory where Terraform runs. A remote backend can store it centrally and, when supported, lock it so concurrent runs do not use the same state simultaneously.",
+    "followUp": "Why does locking matter? It prevents two users or processes from accidentally running Terraform concurrently against the same state."
+   }
+  ],
+  "keyPoints": [
+   "Terraform cannot manage infrastructure without maintaining state.",
+   "State acts as Terraform's database for connecting configuration to real infrastructure.",
+   "Terraform maintains this mapping in its own state structure rather than relying only on provider queries.",
+   "State preserves recent dependency information so Terraform can reason about resource relationships.",
+   "Planning depends on the current recorded resource state to calculate the required changes.",
+   "Remote state with locking helps prevent concurrent users from applying conflicting operations."
+  ],
+  "gotchas": [
+   "Do not bind one remote object to multiple Terraform resource instances; Terraform expects a one-to-one binding.",
+   "A local state file is unsuitable for team coordination; use remote state when multiple users need a current shared record.",
+   "Without an accurate state record, Terraform cannot reliably calculate the changes required to reach the desired configuration."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "State::State surgery": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/cli/state/move",
+  "sourceTitle": "Move resources",
+  "summary": "State surgery means deliberately changing Terraform's state bindings rather than changing real infrastructure. Move bindings to preserve objects during refactors, or remove bindings to make Terraform forget objects without destroying them.",
+  "explanation": "Terraform's state subcommands let you deliberately change bindings without editing the state file directly. Use `state mv` to associate an existing remote object with a compatible new address; use `state rm` to make Terraform forget an object while leaving it in the real world. Back up and review carefully because these operations alter Terraform's record of ownership.",
+  "syntax": "terraform state mv [options] SOURCE DESTINATION\nterraform state rm [options] ADDRESS...",
+  "parameters": [
+   {
+    "name": "SOURCE",
+    "type": "resource address",
+    "description": "Current resource, resource-instance, or module address to move."
+   },
+   {
+    "name": "DESTINATION",
+    "type": "resource address",
+    "description": "New compatible resource, resource-instance, or module address."
+   }
+  ],
+  "returns": "The commands modify Terraform state and write a backup; `state mv` reports the moved binding, while `state rm` reports removed bindings.",
+  "example": {
+   "title": "Move and remove state bindings",
+   "code": "terraform state mv 'aws_instance.app' 'aws_instance.web'\nterraform state rm 'aws_instance.legacy'",
+   "language": "bash",
+   "explanation": "These commands rename a state binding without recreating the object, then stop managing another object without destroying it."
+  },
+  "useCases": [
+   {
+    "title": "Rename without recreation",
+    "scenario": "Rename a resource block while retaining the existing remote object."
+   },
+   {
+    "title": "Refactor module structure",
+    "scenario": "Move a resource into or out of a child module."
+   },
+   {
+    "title": "Forget a resource",
+    "scenario": "Stop managing an object in the current workspace without deleting it."
+   },
+   {
+    "title": "Change ownership",
+    "scenario": "Transfer management between configurations or workspaces by removing and later importing the object."
+   }
+  ],
+  "related": [
+   "terraform state",
+   "terraform state mv",
+   "terraform state rm",
+   "terraform state list",
+   "terraform state show",
+   "terraform import"
+  ],
+  "since": "",
+  "keyPoints": [
+   "`state mv` changes which address tracks an existing remote object.",
+   "Use `state mv` when renaming a resource or changing its module location without recreating the object.",
+   "Use `state rm` to remove a binding from the current configuration and workspace."
+  ],
+  "gotchas": [
+   "For `state mv`, both addresses must be valid resource addresses and must identify the same kind of object.",
+   "A resource or instance can only be moved to another address using the same resource type.",
+   "`terraform state rm` forgets the binding but does not delete the associated remote object."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "State::Workspaces": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/cli/workspaces",
+  "sourceTitle": "Manage workspaces | Terraform | HashiCorp Developer",
+  "summary": "Terraform CLI workspaces let one configuration manage multiple separate state instances in the same working directory. They are useful for similar environments that need isolated, non-overlapping resources.",
+  "explanation": "A CLI workspace is a separate state-data instance attached to the current Terraform working directory. Reusing the same configuration with different selected workspaces lets Terraform manage distinct, non-overlapping resource sets; provide different input variables when environments need different values.",
+  "syntax": "terraform workspace <list|new|select|delete> [NAME]",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Use a workspace for staging",
+   "code": "terraform workspace new staging\nterraform workspace select staging\nterraform plan\nterraform apply",
+   "language": "bash",
+   "explanation": "Create or select an environment-specific state instance, then plan and apply the same configuration against it."
+  },
+  "useCases": [
+   {
+    "title": "Separate similar environments",
+    "scenario": "Development and staging use nearly identical Terraform code but must not share state."
+   },
+   {
+    "title": "Repeat one configuration",
+    "scenario": "A team wants multiple independent resource sets from one root configuration."
+   },
+   {
+    "title": "Isolate local state",
+    "scenario": "Local state is used and each environment needs its own state location."
+   }
+  ],
+  "related": [
+   "terraform workspace list",
+   "terraform workspace new",
+   "terraform workspace select",
+   "terraform workspace delete",
+   "terraform.tfstate.d",
+   "working directory"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem do Terraform CLI workspaces solve?",
+    "answer": "A CLI workspace is a separate instance of state data within one working directory. Running the same configuration in different workspaces allows Terraform to manage multiple non-overlapping resource sets.",
+    "followUp": "How do you switch instances? Use `terraform workspace select NAME`; create one with `terraform workspace new NAME`."
+   },
+   {
+    "question": "Which commands manage CLI workspaces?",
+    "answer": "Use `terraform workspace list`, `new`, `select`, and `delete` to manage the workspace set. The selected workspace determines which state Terraform uses for subsequent operations.",
+    "followUp": "What local filesystem detail matters? With local state, additional workspace states are stored under `terraform.tfstate.d`."
+   },
+   {
+    "question": "When should workspaces be preferred over directories?",
+    "answer": "Workspaces fit environments that use essentially the same configuration but require separate state. If configurations substantially diverge, separate directories avoid forcing unrelated environments through one configuration.",
+    "followUp": "Why might variables still differ? Each workspace can represent a different environment, so inputs generally must be supplied explicitly for that environment."
+   }
+  ],
+  "keyPoints": [
+   "Each CLI workspace gives one working directory another isolated state instance.",
+   "One configuration can manage separate resource collections without combining their state.",
+   "The CLI provides commands to inspect, create, and remove workspace names.",
+   "Select the target environment before planning or applying its resources.",
+   "With local state, additional workspace state files are kept below `terraform.tfstate.d`."
+  ],
+  "gotchas": [
+   "Selecting a workspace does not automatically provide environment-specific inputs; pass or configure the variables that distinguish each environment.",
+   "Terraform CLI workspaces and HCP Terraform workspaces are different concepts; this card covers the CLI feature."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

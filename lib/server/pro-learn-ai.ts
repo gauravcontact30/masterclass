@@ -5,6 +5,8 @@ import { createHash } from "node:crypto";
 import type { z } from "zod";
 import { enrichApiLearning } from "@/lib/api-learning";
 import { catalogReference } from "./api-reference-fallback";
+import { officialApiCard } from "./official-content";
+import { officialApiDetail } from "@/lib/official-content/apply";
 import { API_DETAILS } from "@/lib/api-docs-details";
 import { API_PACKAGES, API_TYPES } from "@/lib/api-docs";
 import { TECHY_TOPICS } from "@/lib/techy-content";
@@ -81,6 +83,9 @@ export async function apiDetail(packageId: string, name: string, signal?: AbortS
   if (!pkg || !entry) throw new HttpError(404, "not_found");
   const curated = API_DETAILS[`${packageId}:${name}`];
   if (curated) return {detail:enrichApiLearning(pkg,entry,curated),source:"library"};
+  // Written offline from the entry's official page and verified against it.
+  const official = officialApiCard(packageId, name);
+  if (official) return { detail: enrichApiLearning(pkg, entry, officialApiDetail(official, catalogReference(pkg, entry))), source: "library" };
   // Only 13 of the catalog's identifiers are hand-authored, so an unavailable or
   // failing model must not leave the page with no reference at all: fall back to
   // the catalog summary the client already labels as such, with a retry button.

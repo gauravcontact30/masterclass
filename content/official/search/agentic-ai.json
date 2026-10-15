@@ -1,0 +1,71 @@
+{
+ "Agent Protocols and Tools::Model Context Protocol (MCP)": {
+  "sourceUrl": "https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro",
+  "sourceTitle": "What is the Model Context Protocol (MCP)?",
+  "summary": "MCP is an open standard that lets AI applications connect to external systems through a common protocol. It supports data sources, callable tools, and reusable prompt-based workflows.",
+  "explanation": "MCP uses a client–server design for exchanging context between AI applications and external systems. A host can create clients that connect to servers exposing tools, resources, and prompts; the protocol uses JSON-RPC messages and capability negotiation so each side can advertise supported features.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Calling an MCP tool",
+   "code": "const result = await client.callTool({ name: \"search\", arguments: { query: \"MCP\" } });",
+   "language": "typescript",
+   "explanation": "An MCP client asks a connected server to execute a named tool with structured arguments."
+  },
+  "useCases": [
+   {
+    "title": "Context retrieval",
+    "scenario": "An AI assistant needs information from local files or databases."
+   },
+   {
+    "title": "Tool execution",
+    "scenario": "An agent must search, calculate, call an API, or perform another operation."
+   },
+   {
+    "title": "Prompt workflows",
+    "scenario": "An application offers repeatable, parameterized interaction patterns."
+   }
+  ],
+  "related": [
+   "MCP clients",
+   "MCP servers",
+   "JSON-RPC",
+   "tools",
+   "resources",
+   "prompts",
+   "notifications",
+   "capability negotiation"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does MCP solve?",
+    "answer": "MCP standardizes integration between LLM applications and external data sources and tools. It defines shared primitives such as resources, prompts, and tools, allowing applications to reuse integrations instead of implementing a separate connector for each service.",
+    "followUp": "How are supported features discovered? During capability negotiation, clients and servers declare the features they support, such as tools, resource subscriptions, or prompt templates."
+   },
+   {
+    "question": "Describe MCP's architecture.",
+    "answer": "MCP follows a host–client–server architecture. A host can run multiple client instances, and those clients connect to servers that expose capabilities through the protocol.",
+    "followUp": "Why separate clients from servers? The separation isolates application concerns and creates clear security boundaries between the host and external integrations."
+   },
+   {
+    "question": "What protocol and primitives does MCP use?",
+    "answer": "MCP is built on JSON-RPC and focuses on context exchange and sampling coordination between clients and servers. Its core primitives include tools, resources, prompts, and notifications.",
+    "followUp": "What distinguishes the primitives? Tools are executable capabilities, resources provide contextual information, and prompts represent reusable interaction templates."
+   }
+  ],
+  "keyPoints": [
+   "MCP gives AI applications a common way to connect with external systems rather than requiring bespoke integration conventions.",
+   "The protocol covers three useful integration categories: data sources, callable tools, and reusable workflows or prompts.",
+   "A single host may coordinate several MCP clients, allowing it to connect independently to multiple servers or integrations.",
+   "JSON-RPC provides the message foundation while MCP concentrates on exchanging context and coordinating sampling.",
+   "Each request carries the information needed to interpret it, which avoids relying on hidden protocol session state."
+  ],
+  "gotchas": [
+   "Treat requests as self-contained: do not assume the protocol maintains implicit conversational state between messages.",
+   "Clients must account for server capabilities instead of assuming every server provides every MCP primitive."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

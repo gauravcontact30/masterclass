@@ -1,0 +1,3009 @@
+{
+ "add_edge": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langgraph/graph-api",
+  "sourceTitle": "Graph API overview - Docs by LangChain",
+  "summary": "`addEdge` adds an unconditional transition between LangGraph.js nodes. Use `START` and `END` to define entry and termination, then compile the builder.",
+  "explanation": "In a LangGraph.js `StateGraph`, `addEdge` creates a fixed transition from one node to another. Use `START` to define the graph entry point and `END` to terminate execution; after adding nodes and edges, compile the builder before invoking the resulting graph.",
+  "syntax": "addEdge(startKey, endKey)",
+  "parameters": [
+   {
+    "name": "startKey",
+    "type": "string | typeof START",
+    "description": "The source node name, or the virtual `START` node."
+   },
+   {
+    "name": "endKey",
+    "type": "string | typeof END",
+    "description": "The destination node name, or the virtual `END` node."
+   }
+  ],
+  "returns": "The graph builder, allowing chained graph construction.",
+  "example": {
+   "title": "Connect a simple graph",
+   "code": "import { END, START, StateGraph, StateSchema } from \"@langchain/langgraph\";\n\nconst State = new StateSchema({ value: z.number() });\nconst builder = new StateGraph(State)\n  .addNode(\"step\", (state) => ({ value: state.value + 1 }))\n  .addEdge(START, \"step\")\n  .addEdge(\"step\", END);\n\nconst graph = builder.compile();\nconst result = await graph.invoke({ value: 0 });\nconsole.log(result.value);",
+   "language": "typescript",
+   "explanation": "Creates a graph with one node, connects the virtual start and end nodes, compiles it, and invokes it."
+  },
+  "useCases": [
+   {
+    "title": "Sequential pipelines",
+    "scenario": "Define a linear workflow where each completed node always leads to the same next node."
+   },
+   {
+    "title": "Graph lifecycle boundaries",
+    "scenario": "Declare the first executable node and the final termination point."
+   },
+   {
+    "title": "Static workflow topology",
+    "scenario": "Connect parallel branches or converge fixed workflow stages without runtime routing."
+   }
+  ],
+  "related": [
+   "StateGraph",
+   "START",
+   "END",
+   "addConditionalEdges",
+   "addNode"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `addEdge` do?",
+    "answer": "`addEdge` defines a fixed transition: after the source node completes, the destination node is scheduled. It is appropriate when routing does not depend on state.",
+    "followUp": "How would you route based on state? Use `addConditionalEdges` with a routing function rather than a fixed edge."
+   },
+   {
+    "question": "How do you define graph entry and termination?",
+    "answer": "Connect `START` to the first node and connect the final node to `END`. These virtual nodes define where execution enters and exits the graph.",
+    "followUp": "What happens if the graph has no outgoing work? Execution halts when there are no more nodes to execute."
+   },
+   {
+    "question": "When can a fixed edge model a workflow?",
+    "answer": "The builder is configured with nodes and edges, then compiled into an executable graph. The compiled graph is what you invoke with input state.",
+    "followUp": "What can be used for a multi-step sequence? Add consecutive fixed edges, such as `step1` to `step2` and then `step2` to `step3`."
+   }
+  ],
+  "keyPoints": [
+   "Use `addEdge(source, target)` for unconditional routing between two nodes.",
+   "An edge from `START` establishes the graph's entry point.",
+   "Edges determine which node runs next; fixed edges are the non-branching form.",
+   "The usual construction order is state, nodes, edges, and compilation."
+  ],
+  "gotchas": [
+   "Use addConditionalEdges instead when the next node depends on runtime state; addEdge represents an unconditional transition."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "add_messages": {
+  "sourceUrl": "https://langchain-ai.github.io/langgraphjs/reference/functions/langgraph.addMessages.html",
+  "sourceTitle": "addMessages | LangGraph.js API Reference",
+  "summary": "addMessages is a LangGraph reducer that combines an existing message list with incoming messages. It supports standard messages and special modifiers such as RemoveMessage.",
+  "explanation": "addMessages is a prebuilt reducer for combining LangGraph message-state updates. It appends new messages, handles updates to existing messages, supports RemoveMessage instances, and returns LangChain message objects.",
+  "syntax": "addMessages(left: Messages, right: Messages): BaseMessage<MessageStructure<MessageToolSet>, MessageType>[]",
+  "parameters": [
+   {
+    "name": "left",
+    "type": "Messages",
+    "description": "The existing messages to merge."
+   },
+   {
+    "name": "right",
+    "type": "Messages",
+    "description": "The new messages or message modifiers to merge."
+   }
+  ],
+  "returns": "BaseMessage<MessageStructure<MessageToolSet>, MessageType>[]",
+  "example": {
+   "title": "Append messages with addMessages",
+   "code": "import { addMessages } from \"@langchain/langgraph\";\nimport { AIMessage, HumanMessage } from \"@langchain/core/messages\";\n\nconst current = [new HumanMessage({ content: \"Hello\", id: \"1\" })];\nconst updated = addMessages(\n  current,\n  [new AIMessage({ content: \"Hi there!\", id: \"2\" })],\n);\n\nconsole.log(updated.map((message) => message.content));",
+   "language": "typescript",
+   "explanation": "The reducer merges an existing message list with new messages and returns the combined list."
+  },
+  "useCases": [
+   {
+    "title": "Message-state reduction",
+    "scenario": "Define a graph state field containing conversation history and merge node outputs into it."
+   },
+   {
+    "title": "Appending conversation messages",
+    "scenario": "Add newly generated human or AI messages without manually concatenating arrays."
+   },
+   {
+    "title": "Message modification",
+    "scenario": "Apply message operations such as RemoveMessage while reducing state updates."
+   }
+  ],
+  "related": [
+   "Messages",
+   "RemoveMessage",
+   "BaseMessage",
+   "MessageStructure",
+   "MessageToolSet"
+  ],
+  "since": "",
+  "keyPoints": [
+   "addMessages combines the current messages with messages returned by a graph node.",
+   "It supports standard messages and special modifiers, including RemoveMessage.",
+   "The function returns an array of BaseMessage values.",
+   "The API reference identifies its declaration in the LangGraph core message type definitions."
+  ],
+  "gotchas": [
+   "The reducer also accepts special message modifiers such as RemoveMessage, not only ordinary messages.",
+   "Use it as a state reducer when message updates should be merged instead of replacing the current list."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "add_node": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langgraph/use-graph-api",
+  "sourceTitle": "Use the graph API",
+  "summary": "Adds a named node to a LangGraph.js StateGraph. The node implementation runs when graph execution reaches it and can return updates to the graph state.",
+  "explanation": "In the JavaScript graph builder, addNode registers a named node implementation in a StateGraph. The node can be a function that returns state updates; after adding edges, compile the builder and invoke the resulting graph.",
+  "syntax": "graph.addNode(name, node)",
+  "parameters": [
+   {
+    "name": "name",
+    "type": "string",
+    "description": "The node name used to identify the node and reference it from edges."
+   },
+   {
+    "name": "node",
+    "type": "NodeAction",
+    "description": "The node implementation that runs when the graph reaches this node."
+   }
+  ],
+  "returns": "The StateGraph builder, enabling chained graph construction.",
+  "example": {
+   "title": "Register a node in a StateGraph",
+   "code": "import { Annotation, StateGraph, START, END } from \"@langchain/langgraph\";\n\nconst State = Annotation.Root({\n  result: Annotation<string>(),\n});\n\nconst node = () => ({ result: \"done\" });\n\nconst graph = new StateGraph(State)\n  .addNode(\"node\", node)\n  .addEdge(START, \"node\")\n  .addEdge(\"node\", END)\n  .compile();\n\nconsole.log(await graph.invoke({}));",
+   "language": "typescript",
+   "explanation": "Defines a state graph, registers a node by name, connects it between START and END, compiles the graph, and invokes it."
+  },
+  "useCases": [
+   {
+    "title": "Build a workflow",
+    "scenario": "Registering application logic as a step in a stateful workflow."
+   },
+   {
+    "title": "Add agent steps",
+    "scenario": "Connecting an agent or tool operation to graph control flow."
+   },
+   {
+    "title": "Compose subgraphs",
+    "scenario": "Embedding a compiled subgraph when state keys are shared."
+   }
+  ],
+  "related": [
+   "StateGraph",
+   "addEdge",
+   "START",
+   "compile",
+   "invoke"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The first argument identifies the node, while the second supplies the function or runnable that performs its work.",
+   "Create the graph with a state schema before adding nodes.",
+   "Connect START to the registered node so execution can enter it."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Agent handoffs": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langchain/multi-agent/handoffs",
+  "sourceTitle": "Handoffs",
+  "summary": "Agent handoffs use tools to update state and dynamically route behavior to another step or agent. The documentation presents middleware-based handoffs within one agent and subgraph-based handoffs between distinct agents.",
+  "explanation": "Agent handoffs use tools to update persistent state, allowing behavior or routing to change across turns. LangChain documents both middleware-based handoffs within one agent and graph-based handoffs between distinct agent nodes.",
+  "syntax": "new Command({ goto: \"agent_name\", update: { messages: [...] } })",
+  "parameters": [],
+  "returns": "A Command that updates state and routes execution to a new step or agent.",
+  "example": {
+   "title": "Handoff tool",
+   "code": "import { createAgent, tool } from \"langchain\";\nimport { Command } from \"@langchain/langgraph\";\nimport { z } from \"zod\";\n\nconst transferToSupport = tool(\n  () => new Command({\n    goto: \"support\",\n    update: {\n      messages: [{ role: \"tool\", content: \"Transferred to support\", tool_call_id: \"handoff\" }],\n    },\n  }),\n  {\n    name: \"transfer_to_support\",\n    description: \"Transfer the conversation to the support agent\",\n    schema: z.object({}),\n  },\n);\n\nconst agent = createAgent({\n  model: \"openai:gpt-4.1-mini\",\n  tools: [transferToSupport],\n});\n\nawait agent.invoke({ messages: [{ role: \"user\", content: \"I need support\" }] });",
+   "language": "typescript",
+   "explanation": "This illustrates a handoff tool returning Command to update state and route execution to another agent."
+  },
+  "useCases": [
+   {
+    "title": "Dynamic single-agent behavior",
+    "scenario": "A single conversational agent must switch prompts and tools as the workflow progresses."
+   },
+   {
+    "title": "Specialist-agent routing",
+    "scenario": "Separate specialist agents need to transfer control through a graph."
+   },
+   {
+    "title": "Selective message propagation",
+    "scenario": "A workflow needs tightly controlled inter-agent context."
+   }
+  ],
+  "related": [
+   "Command",
+   "Command.PARENT",
+   "single agent with middleware",
+   "multiple agent subgraphs",
+   "ToolMessage",
+   "AIMessage"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the core mechanism behind an agent handoff?",
+    "answer": "A handoff is driven by a tool that returns Command, which updates state and causes a transition to another step or agent. The state can also dynamically change one agent's prompt and available tools.",
+    "followUp": "When would you choose subgraphs? Use them when agents need bespoke implementations, such as complex graph-based retrieval or reflection workflows."
+   },
+   {
+    "question": "How do single-agent and multi-agent handoffs differ?",
+    "answer": "Use one agent with middleware for most handoff scenarios because it is simpler and message history flows naturally. Use multiple agent subgraphs when distinct graph nodes require independent implementations.",
+    "followUp": "What is the tradeoff of subgraphs? They provide precise control over inter-agent messages, but require explicit history management."
+   },
+   {
+    "question": "What must be preserved during a subgraph handoff?",
+    "answer": "A handoff tool can route to another graph node with Command.PARENT and must preserve valid conversation history. Include the AI tool-call message and a ToolMessage acknowledging that call.",
+    "followUp": "Why does the acknowledgement matter? Without the matching tool response, the request-response sequence is malformed for the LLM."
+   }
+  ],
+  "keyPoints": [
+   "Handoffs let an agent alter its behavior according to state that persists across turns.",
+   "A tool can change a state variable such as the active agent or current step.",
+   "Returning Command from a handoff tool triggers movement to another step or agent.",
+   "The middleware pattern keeps one agent while adapting its configuration dynamically.",
+   "The subgraph pattern represents distinct agents as separate graph nodes.",
+   "Graph-based handoff tools use Command.PARENT to select the next agent node."
+  ],
+  "gotchas": [
+   "When a handoff tool updates messages, include a matching tool response so the model's tool-call history remains valid.",
+   "A subgraph handoff must preserve the initiating AI message together with an acknowledging ToolMessage.",
+   "With multiple subgraphs, message propagation is your responsibility rather than automatic."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "AIMessage": {
+  "sourceUrl": "https://langchain-ai.github.io/langgraphjs/reference/types/langgraph-sdk.AIMessage.html",
+  "sourceTitle": "AIMessage | LangGraph.js API Reference",
+  "summary": "AIMessage represents an AI response in LangGraph.js. It can include content, typed tool calls, invalid tool calls, usage metadata, and an optional example marker.",
+  "explanation": "AIMessage is a LangChain message type representing an AI response. In LangGraph.js it can carry ordinary content, tool-call requests, invalid tool calls, usage metadata, and an optional custom tool-call type parameter that enables type-safe handling of tool names and arguments.",
+  "syntax": "type AIMessage<ToolCall = DefaultToolCall> = BaseMessage & { example?: boolean; invalid_tool_calls?: InvalidToolCall[]; tool_calls?: ToolCall[]; type: \"ai\"; usage_metadata?: UsageMetadata; };",
+  "parameters": [
+   {
+    "name": "ToolCall",
+    "type": "type parameter",
+    "description": "Optional generic type describing the tool-call objects stored in the message; it defaults to DefaultToolCall."
+   }
+  ],
+  "returns": "An AIMessage value: a BaseMessage with AI-specific fields and an optional, parameterized tool-call collection.",
+  "example": {
+   "title": "Typed AIMessage tool call",
+   "code": "import { AIMessage } from \"@langchain/core/messages\";\n\ntype WeatherToolCall = {\n  name: \"get_weather\";\n  args: { location: string };\n  id: string;\n  type: \"tool_call\";\n};\n\ntype MyToolCalls = WeatherToolCall;\n\nconst message: AIMessage<MyToolCalls> = new AIMessage({\n  content: \"\",\n  tool_calls: [{\n    name: \"get_weather\",\n    args: { location: \"San Francisco\" },\n    id: \"call_1\",\n    type: \"tool_call\",\n  }],\n});\n\nfor (const tool of message.tool_calls ?? []) {\n  if (tool.name === \"get_weather\") console.log(tool.args.location);\n}",
+   "language": "typescript",
+   "explanation": "Creates an AI message with a typed weather tool call and safely reads its location."
+  },
+  "useCases": [
+   {
+    "title": "Carry tool-call requests",
+    "scenario": "An LLM requests an external operation such as weather lookup or database access."
+   },
+   {
+    "title": "Model custom tool-call unions",
+    "scenario": "A TypeScript application needs compile-time checking of tool names and argument objects."
+   },
+   {
+    "title": "Attach usage metadata",
+    "scenario": "An application records token counts or other provider usage details with each model response."
+   }
+  ],
+  "related": [
+   "BaseMessage",
+   "DefaultToolCall",
+   "InvalidToolCall",
+   "ToolCall",
+   "UsageMetadata"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What distinguishes AIMessage from a generic base message?",
+    "answer": "AIMessage is a type alias combining BaseMessage with AI-specific fields. Its discriminator is type: \"ai\", and it can include tool_calls, invalid_tool_calls, usage_metadata, and an optional example flag.",
+    "followUp": "How would you preserve type safety for several tools? Define a discriminated union of tool-call variants and pass that union as the AIMessage generic parameter."
+   },
+   {
+    "question": "What is the purpose of AIMessage<ToolCall>?",
+    "answer": "The generic parameter controls the type of tool calls stored on the message. It defaults to DefaultToolCall, but callers can provide a custom type to make tool names and argument objects type-safe.",
+    "followUp": "What does narrowing look like? Check a discriminating field such as tool.name, then TypeScript narrows the corresponding args shape."
+   },
+   {
+    "question": "How should code consume tool calls safely?",
+    "answer": "A tool-call collection is optional, so code should check whether tool_calls exists before iterating it. Once present, each call exposes the custom tool-call structure selected by the generic parameter.",
+    "followUp": "How should malformed requests be represented? Use invalid_tool_calls when the response contains tool-call data that could not be parsed into valid calls."
+   }
+  ],
+  "keyPoints": [
+   "A response may contain zero or more structured tool-call requests.",
+   "Parsing failures can be retained as invalid tool-call entries.",
+   "The message can carry model usage information alongside the response.",
+   "The generic tool-call type is optional and falls back to the standard DefaultToolCall type."
+  ],
+  "gotchas": [
+   "If no custom tool-call type is supplied, the generic uses the default tool-call shape.",
+   "Custom tool-call types should be modeled as a discriminated union so narrowing by tool name produces the intended argument type."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Annotation": {
+  "sourceUrl": "https://langchain-ai.github.io/langgraphjs/reference/modules/langgraph.Annotation.html",
+  "sourceTitle": "Namespace Annotation",
+  "summary": "Annotation declares channels for StateGraph state. Use it directly for replacement semantics or configure a reducer to combine node updates.",
+  "explanation": "Annotation creates channels for fields in an Annotation.Root state schema. A field can either keep the latest node update or use a reducer to combine the existing value with each update; an optional default supplies its initial value.",
+  "syntax": "Annotation<T>(config?)\nAnnotation.Root(spec)",
+  "parameters": [
+   {
+    "name": "value/configuration",
+    "type": "T or Annotation<T> configuration",
+    "description": "The channel's value type, optionally followed by reducer and default configuration."
+   },
+   {
+    "name": "spec",
+    "type": "AnnotationRootSpec",
+    "description": "An object mapping state field names to annotations, passed to Annotation.Root."
+   }
+  ],
+  "returns": "An annotation channel for a state field, or an annotation root when used through Annotation.Root.",
+  "example": {
+   "title": "Define state with Annotation",
+   "code": "import { Annotation, StateGraph } from \"@langchain/langgraph\";\n\nconst State = Annotation.Root({\n  input: Annotation<string>,\n  output: Annotation<string>({\n    reducer: (current, update) => `${current}\\n${update}`,\n    default: () => \"\",\n  }),\n});\n\nconst graph = new StateGraph(State)\n  .addNode(\"respond\", (state) => ({ output: `Answer: ${state.input}` }))\n  .addEdge(\"__start__\", \"respond\")\n  .addEdge(\"respond\", \"__end__\")\n  .compile();\n\nconst result = await graph.invoke({ input: \"Hello\" });\nconsole.log(result.output);",
+   "language": "typescript",
+   "explanation": "Defines graph state with a direct channel and a reducer-backed channel, then runs a node that writes an output value."
+  },
+  "useCases": [
+   {
+    "title": "Declare graph state",
+    "scenario": "A graph needs a typed state schema shared by its nodes."
+   },
+   {
+    "title": "Aggregate updates with a reducer",
+    "scenario": "Several nodes contribute to one field, such as accumulated messages or text."
+   },
+   {
+    "title": "Type node state",
+    "scenario": "A node should return a precisely typed partial state update."
+   }
+  ],
+  "related": [
+   "Annotation.Root",
+   "StateGraph",
+   "MessagesAnnotation",
+   "messagesStateReducer"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Annotation do in LangGraph.js?",
+    "answer": "Annotation defines channels used by a StateGraph state schema. With a direct annotation, a node's returned value becomes the channel's current value.",
+    "followUp": "How would you preserve multiple node updates? Define the field with a reducer, then combine the existing value and each incoming update in that reducer."
+   },
+   {
+    "question": "How is Annotation used with StateGraph?",
+    "answer": "Use Annotation.Root to wrap an object whose fields are annotated channels. The resulting root annotation can be passed to StateGraph, and its State type can be used to type node input.",
+    "followUp": "How can a node update only part of the state? Return an object containing only the fields that node changes; the graph applies each field's channel behavior."
+   },
+   {
+    "question": "When should a field use a reducer or default value?",
+    "answer": "A reducer-backed annotation applies the reducer to a node's returned update. A default function can provide the channel's initial value, which is useful when combining updates into an initially empty collection or string.",
+    "followUp": "What should a reducer's inputs represent? Treat them as the current channel value and the node-provided update, and return the next channel value."
+   }
+  ],
+  "keyPoints": [
+   "Annotation is the helper for declaring the channels that make up a StateGraph state schema.",
+   "Place Annotation fields inside Annotation.Root to define the graph's state shape.",
+   "The direct form uses last-write behavior: the newest node update replaces the previous channel value.",
+   "The reducer form lets a field aggregate updates rather than simply replacing its prior value.",
+   "Use the root annotation's generated State type to type a node's state parameter."
+  ],
+  "gotchas": [
+   "Without a reducer, a field is overwritten by the latest value returned for that channel.",
+   "A reducer changes the update behavior, so its implementation must combine the current value and incoming update correctly."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Checkpoint": {
+  "sourceUrl": "https://langchain-ai.github.io/langgraphjs/reference/modules/langgraph-checkpoint.html",
+  "sourceTitle": "@langchain/langgraph-checkpoint",
+  "summary": "Checkpoint is a point-in-time snapshot of LangGraph state. Checkpointers persist snapshots per thread, enabling memory, resumption, human-in-the-loop workflows, and recovery.",
+  "explanation": "A checkpoint is a snapshot of graph state at a particular execution point. A checkpointer persists these snapshots, associates them with a thread, and can later retrieve or list them; this supports resuming execution, conversational memory, human review, and recovery after failures.",
+  "syntax": "interface Checkpoint { v: number; id: string; ts: string; channel_values: Record<string, unknown>; channel_versions: Record<string, number | string>; versions_seen: Record<string, Record<string, number | string>>; pending_sends: unknown[]; }",
+  "parameters": [],
+  "returns": "A persisted checkpoint is represented as a checkpoint tuple containing the checkpoint and associated configuration, metadata, and pending writes.",
+  "example": {
+   "title": "Persist graph state by thread",
+   "code": "import { MemorySaver } from \"@langchain/langgraph\";\nimport { StateGraph, Annotation } from \"@langchain/langgraph\";\n\nconst State = Annotation.Root({ count: Annotation<number>() });\nconst checkpointer = new MemorySaver();\nconst graph = new StateGraph(State)\n  .addNode(\"increment\", (state) => ({ count: state.count + 1 }))\n  .addEdge(\"__start__\", \"increment\")\n  .compile({ checkpointer });\n\nawait graph.invoke({ count: 0 }, {\n  configurable: { thread_id: \"demo\" },\n});",
+   "language": "typescript",
+   "explanation": "Compiles a graph with a checkpointer so its state is saved for the specified thread."
+  },
+  "useCases": [
+   {
+    "title": "Conversation memory",
+    "scenario": "Preserve conversational state across invocations."
+   },
+   {
+    "title": "Human-in-the-loop workflows",
+    "scenario": "Pause execution for approval or review and continue later."
+   },
+   {
+    "title": "Fault-tolerant execution",
+    "scenario": "Resume from saved state after a node or process failure."
+   },
+   {
+    "title": "Debugging and time travel",
+    "scenario": "Inspect or replay earlier graph states."
+   }
+  ],
+  "related": [
+   "BaseCheckpointSaver",
+   "CheckpointTuple",
+   "SerializerProtocol",
+   "thread_id",
+   "checkpoint_id"
+  ],
+  "since": "",
+  "keyPoints": [
+   "A checkpoint captures the graph's state at one execution point.",
+   "Checkpointers are the persistence mechanism used to save graph state.",
+   "The checkpointer API supports working with saved graph state.",
+   "A configured checkpointer records state after each superstep.",
+   "Threads group checkpoints belonging to one logical run or conversation.",
+   "Custom checkpointers must implement the BaseCheckpointSaver contract."
+  ],
+  "gotchas": [
+   "A thread identifier is required when invoking a graph that uses checkpointing; a checkpoint identifier is optional.",
+   "Failed executions can leave pending writes, so resuming can avoid rerunning nodes that already completed successfully."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Command": {
+  "sourceUrl": "https://langchain-ai.github.io/langgraphjs/reference/classes/langgraph.Command.html",
+  "sourceTitle": "Command | LangGraph.js API Reference",
+  "summary": "Command lets a LangGraph node combine a state update with routing instructions. It can target ordinary nodes, Send-based execution, or a parent graph from a subgraph.",
+  "explanation": "Command packages a graph state update with execution control. A node can return it to write an update and route to one or more nodes, including a parent graph or a node receiving an explicit Send payload.",
+  "syntax": "new Command<Resume = unknown, Update extends Record<string, unknown> = Record<string, unknown>, Nodes extends string = string>(args: Omit<CommandParams<Resume, Update, Nodes>, \"lg_name\">)",
+  "parameters": [
+   {
+    "name": "update",
+    "type": "Update",
+    "description": "State update applied as though the node returned this value directly."
+   },
+   {
+    "name": "goto",
+    "type": "Nodes | Send<Nodes, any> | (Nodes | Send<Nodes, any>)[]",
+    "description": "Next node, nodes, or Send value(s) to execute."
+   },
+   {
+    "name": "graph",
+    "type": "string",
+    "description": "Target graph; omitted means the current graph, while Command.PARENT targets the closest parent graph from a subgraph."
+   },
+   {
+    "name": "resume",
+    "type": "Resume",
+    "description": "Value used to resume execution after an interrupt."
+   }
+  ],
+  "returns": "A Command<Resume, Update, Nodes> instance that carries state updates and/or graph control instructions.",
+  "example": {
+   "title": "Update state and route with Command",
+   "code": "import { Annotation, Command, StateGraph, START, END } from \"@langchain/langgraph\";\n\nconst State = Annotation.Root({\n  value: Annotation<number>(),\n  next: Annotation<string>(),\n});\n\nconst route = (state: typeof State.State): Command<\"finish\"> => {\n  if (state.value > 0) {\n    return new Command({ update: { next: \"finish\" }, goto: \"finish\" });\n  }\n  return new Command({ update: { next: \"finish\" }, goto: END });\n};\n\nconst finish = (state: typeof State.State) => ({\n  value: state.value + 1,\n});\n\nconst graph = new StateGraph(State)\n  .addNode(\"route\", route)\n  .addNode(\"finish\", finish)\n  .addEdge(START, \"route\")\n  .addEdge(\"finish\", END)\n  .compile();\n\nawait graph.invoke({ value: 1, next: \"\" });",
+   "language": "typescript",
+   "explanation": "The node returns a Command that updates state and selects the next destination in one result."
+  },
+  "useCases": [
+   {
+    "title": "Combined update and routing",
+    "scenario": "A node needs to write state and select the next node without a separate conditional edge."
+   },
+   {
+    "title": "Explicit-input dispatch with Send",
+    "scenario": "A workflow must send different inputs to selected downstream nodes."
+   },
+   {
+    "title": "Cross-graph navigation",
+    "scenario": "A subgraph must hand control to a node in its parent graph."
+   },
+   {
+    "title": "Interrupt resumption",
+    "scenario": "A node resumes an interrupted workflow with a supplied value."
+   }
+  ],
+  "related": [
+   "CommandInstance",
+   "Send",
+   "Command.PARENT",
+   "StateGraph",
+   "interrupt"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does Command solve?",
+    "answer": "A Command combines a state update with control flow in a single node return. Its update is written as though the node had returned that state value directly, while goto chooses the next node or nodes.",
+    "followUp": "How can a command route across graph boundaries? Set graph to Command.PARENT when returning from a subgraph, and configure the parent graph's possible destinations."
+   },
+   {
+    "question": "What does the Command constructor accept?",
+    "answer": "The constructor receives an object matching CommandParams, excluding the internal lg_name field. The main options are update for state changes, goto for destinations or Send objects, graph for graph targeting, and resume for interrupt continuation.",
+    "followUp": "What does a Send destination add? It lets the command execute a selected node with the exact input carried by the Send object."
+   },
+   {
+    "question": "What forms can goto take?",
+    "answer": "goto may be one node name, a sequence of node names, one Send object, or a sequence of Send objects. This supports ordinary routing as well as fan-out-style execution with explicit per-node inputs.",
+    "followUp": "When should a node use multiple destinations? Use a sequence when the same command must schedule several next steps or Send objects with distinct inputs."
+   }
+  ],
+  "keyPoints": [
+   "Command can combine state changes with messages or navigation to downstream nodes.",
+   "Return Command when a node must both modify state and decide the next route, instead of separating those concerns into a conditional edge.",
+   "The update field supplies the state patch produced by the command-returning node.",
+   "A string in goto names the next node to execute.",
+   "A Send value in goto directs execution to a node with explicitly supplied input.",
+   "The graph field chooses where the command is delivered: the current graph by default or another supported graph target."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "compile": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langgraph/graph-api",
+  "sourceTitle": "Graph API overview",
+  "summary": "`StateGraph.compile()` validates a graph definition and produces the executable graph. It is also the place to configure runtime options such as checkpointers and breakpoints.",
+  "explanation": "Call `compile` on a completed StateGraph to turn its node-and-edge definition into an executable graph. Compilation performs structural checks and accepts runtime options such as a checkpointer; the returned graph can then be invoked or streamed.",
+  "syntax": "const graph = builder.compile(options?);",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "CompileOptions",
+    "description": "Optional compile configuration, including runtime settings such as a checkpointer; the API reference also lists cache and description options."
+   }
+  ],
+  "returns": "A compiled executable graph, represented by a CompiledGraph-compatible runtime object.",
+  "example": {
+   "title": "Compile and invoke a graph",
+   "code": "import { StateGraph, START, END, Annotation } from \"@langchain/langgraph\";\n\nconst State = Annotation.Root({\n  value: Annotation<number>(),\n});\n\nconst workflow = new StateGraph(State)\n  .addNode(\"double\", (state) => ({ value: state.value * 2 }))\n  .addEdge(START, \"double\")\n  .addEdge(\"double\", END);\n\nconst graph = workflow.compile();\nconst result = await graph.invoke({ value: 3 });\nconsole.log(result.value); // 6",
+   "language": "typescript",
+   "explanation": "Build a StateGraph, connect its start and end nodes, compile it, and invoke the resulting runnable graph."
+  },
+  "useCases": [
+   {
+    "title": "Execute a workflow",
+    "scenario": "Turn a completed node-and-edge workflow into a runnable graph."
+   },
+   {
+    "title": "Configure checkpointing",
+    "scenario": "Attach persistence to graph execution."
+   },
+   {
+    "title": "Validate graph topology",
+    "scenario": "Catch malformed graph structure before runtime execution."
+   }
+  ],
+  "related": [
+   "StateGraph",
+   "CompiledGraph",
+   "checkpointer",
+   "breakpoints",
+   "invoke",
+   "State",
+   "nodes",
+   "edges"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `StateGraph.compile()` do?",
+    "answer": "`compile()` converts the graph builder into an executable compiled graph. It also performs basic structural validation and is required before the graph can be used.",
+    "followUp": "What runtime concerns can be configured during compilation? The documentation identifies checkpointers and breakpoints as runtime arguments, and the API also exposes cache-related configuration."
+   },
+   {
+    "question": "When should compilation happen?",
+    "answer": "The graph should be assembled first by defining state, adding nodes, and adding edges. Calling `.compile()` then produces the runnable graph object.",
+    "followUp": "Why not execute the builder directly? The builder represents the workflow definition; compilation creates the runtime object that supports execution methods such as invocation."
+   },
+   {
+    "question": "How do you configure a checkpointer?",
+    "answer": "A checkpointer can be supplied through compile options, for example `builder.compile({ checkpointer })`. This attaches persistence behavior to the compiled graph.",
+    "followUp": "What changes when a checkpointer is configured? Runtime state can be persisted and used for features such as durable execution, subject to the checkpointer's capabilities."
+   }
+  ],
+  "keyPoints": [
+   "After adding the graph’s nodes and edges, call `.compile()` to create the executable graph.",
+   "Pass a checkpointer in the compile options when the graph needs persistence.",
+   "Compilation catches basic structural issues, including orphaned nodes."
+  ],
+  "gotchas": [
+   "A graph builder is only a definition; invoking or otherwise using it before calling `compile` is invalid.",
+   "Compilation validates graph structure, so disconnected or otherwise malformed definitions can fail at this stage."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Context object": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langchain/runtime",
+  "sourceTitle": "Runtime",
+  "summary": "Context is static, per-run information made available to an agent through its Runtime. Define its shape with contextSchema, pass values via the invocation context option, and access them in tools or middleware.",
+  "explanation": "A Context object is per-run information supplied separately from conversation state, such as a user identifier, database connection, or feature flag. Define its shape with contextSchema, pass values through the context invocation option, and read them from runtime.context in tools or middleware.",
+  "syntax": "const agent = createAgent({ contextSchema });\nawait agent.invoke(input, { context });",
+  "parameters": [
+   {
+    "name": "contextSchema",
+    "type": "Zod schema",
+    "description": "Zod schema describing the runtime context shape."
+   },
+   {
+    "name": "context",
+    "type": "ContextType",
+    "description": "Per-run values supplied in the invocation options."
+   }
+  ],
+  "returns": "An agent result containing the invocation output; the documentation does not specify a distinct return type for the context object.",
+  "example": {
+   "title": "Pass per-run context to an agent",
+   "code": "import { createAgent } from \"langchain\";\nimport * as z from \"zod\";\n\nconst ContextSchema = z.object({\n  userId: z.string(),\n});\n\nconst agent = createAgent({\n  model: \"openai:gpt-4.1-mini\",\n  tools: [],\n  contextSchema: ContextSchema,\n});\n\nconst result = await agent.invoke(\n  { messages: [{ role: \"user\", content: \"Hello\" }] },\n  { context: { userId: \"user-123\" } },\n);\n\nconsole.log(result);\n",
+   "language": "typescript",
+   "explanation": "Defines per-run context and supplies it when invoking the agent; tools or middleware can read it through the runtime."
+  },
+  "useCases": [
+   {
+    "title": "Inject request-scoped dependencies",
+    "scenario": "A tool needs to query a database selected for the current request."
+   },
+   {
+    "title": "Carry user metadata",
+    "scenario": "Middleware personalizes behavior using the authenticated account."
+   },
+   {
+    "title": "Pass feature flags",
+    "scenario": "A deployment enables or disables behavior per invocation."
+   }
+  ],
+  "related": [
+   "Runtime",
+   "runtime.context",
+   "contextSchema",
+   "thread_id",
+   "StateGraph"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How is runtime context configured and accessed?",
+    "answer": "Define a schema with contextSchema when creating the agent, then provide matching values in the context field of the invocation options. Tools and middleware access those values through the runtime context.",
+    "followUp": "How should conversation identity differ from runtime configuration? Use thread_id for message history and checkpoints, and context for data needed only during that run."
+   },
+   {
+    "question": "What is runtime context useful for?",
+    "answer": "Context carries static information such as user metadata, database connections, or other dependencies for one agent invocation. It avoids putting those dependencies in global state, which supports stateless and reusable code.",
+    "followUp": "What should happen when a value must evolve during execution? Put mutable run data in graph state rather than static runtime context."
+   },
+   {
+    "question": "What is the role of contextSchema?",
+    "answer": "The context schema describes the structure of the context stored in the agent runtime. The invocation supplies the actual context object, and application code can consume it through runtime.context.",
+    "followUp": "Is context automatically visible to the model? No; a tool, middleware, or other logic must read it and add relevant information to the prompt or messages."
+   }
+  ],
+  "keyPoints": [
+   "Context is suited to static per-invocation dependencies, including user identifiers and database connections.",
+   "Attaching dependencies to runtime context keeps application code independent of mutable global variables.",
+   "Per-run context improves isolation, making agents easier to test and reuse.",
+   "Use contextSchema to declare the expected shape of the context object.",
+   "Provide concrete runtime values through the context option when invoking the agent.",
+   "A tool can receive runtime and use its context to access invocation-specific data."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "createReactAgent": {
+  "sourceUrl": "https://langchain-ai.github.io/langgraphjs/reference/modules/langgraph.html",
+  "sourceTitle": "LangGraph.js API Reference",
+  "summary": "Creates a prebuilt ReAct agent graph from a language model and tools. The agent can invoke tools during a message-driven execution loop before returning a response.",
+  "explanation": "createReactAgent constructs a prebuilt agent graph from a language model and tools. The graph repeatedly lets the model choose whether to call a tool, executes selected tools, and continues until the model produces a final response.",
+  "syntax": "createReactAgent({ llm: model, tools: [tool] })",
+  "parameters": [
+   {
+    "name": "llm",
+    "type": "BaseChatModel or compatible language-model runnable",
+    "description": "Language model used to reason and select whether to call tools."
+   },
+   {
+    "name": "tools",
+    "type": "Array of tools",
+    "description": "Tools available to the agent during its execution loop."
+   }
+  ],
+  "returns": "An agent graph runnable that accepts message state and produces the resulting agent state.",
+  "example": {
+   "title": "Create a tool-using ReAct agent",
+   "code": "import { createReactAgent, tool } from \"langchain\";\nimport { ChatAnthropic } from \"@langchain/anthropic\";\nimport { z } from \"zod\";\n\nconst getWeather = tool(\n  async ({ location }) => `Weather for ${location}: sunny`,\n  { name: \"get_weather\", schema: z.object({ location: z.string() }) }\n);\n\nconst agent = createReactAgent({\n  llm: new ChatAnthropic({ model: \"claude-3-7-sonnet-latest\" }),\n  tools: [getWeather],\n});\n\nconst result = await agent.invoke({\n  messages: [{ role: \"user\", content: \"What is the weather in SF?\" }],\n});\nconsole.log(result.messages.at(-1)?.content);",
+   "language": "typescript",
+   "explanation": "Creates an agent with a chat model and weather tool, then invokes it with a user message."
+  },
+  "useCases": [
+   {
+    "title": "Tool-augmented chat",
+    "scenario": "A conversational assistant needs to answer questions using external functions such as weather lookup."
+   },
+   {
+    "title": "Conditional tool use",
+    "scenario": "A model must decide dynamically whether a supplied capability is needed for each request."
+   },
+   {
+    "title": "Prebuilt agent orchestration",
+    "scenario": "An application wants a ready-made agent loop without manually wiring model and tool nodes."
+   }
+  ],
+  "related": [
+   "tool",
+   "ChatAnthropic",
+   "agent.invoke",
+   "messages"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does createReactAgent do?",
+    "answer": "It creates a ReAct agent graph that combines a language model with tools. The returned graph can be invoked with a messages state, and the model may use the supplied tools before answering.",
+    "followUp": "How would you add another capability? Pass another tool in the tools array, ensuring it has a callable implementation and schema suitable for model tool selection."
+   },
+   {
+    "question": "What are the main configuration options?",
+    "answer": "The llm option supplies the chat model responsible for deciding whether to respond or call a tool. The tools option supplies the functions available to that model.",
+    "followUp": "What happens if no tool is appropriate? The model can finish with a direct response, so tool execution is not required for every invocation."
+   },
+   {
+    "question": "How is the resulting agent run?",
+    "answer": "Invoke the returned agent with an object whose messages field contains the conversation, such as a user role and content. The result contains the agent's resulting message state.",
+    "followUp": "How can a conversation continue? Preserve the returned messages and provide them in a later invocation together with the next user message."
+   }
+  ],
+  "keyPoints": [
+   "The documented JavaScript example imports createReactAgent and tool from the langchain package.",
+   "A chat model instance is created and supplied as the agent's language model.",
+   "The returned agent is executed asynchronously through its invoke method."
+  ],
+  "gotchas": [
+   "The current documentation presents this as a prebuilt ReAct agent rather than a general-purpose graph constructor.",
+   "The function requires its configuration to be passed as an options object."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "END": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langgraph/graph-api",
+  "sourceTitle": "Graph API overview",
+  "summary": "END is LangGraph.js’s terminal graph node. Route an edge—typically a conditional edge—to END when execution should stop and no further node should run.",
+  "explanation": "END is a special terminal node in LangGraph.js. Use it as the destination of an edge—commonly a conditional edge—to indicate that execution has no further actions after the selected node completes.",
+  "syntax": "import { END } from \"@langchain/langgraph\";",
+  "parameters": [],
+  "returns": "A graph destination representing terminal execution; it does not run another node after the incoming edge.",
+  "example": {
+   "title": "Terminate a graph with END",
+   "code": "import { END, START, StateGraph } from \"@langchain/langgraph\";\nimport { Annotation } from \"@langchain/langgraph\";\n\nconst State = Annotation.Root({ done: Annotation<boolean>() });\nconst graph = new StateGraph(State)\n  .addNode(\"check\", () => ({ done: true }))\n  .addEdge(START, \"check\")\n  .addConditionalEdges(\"check\", (state) => state.done ? END : \"check\")\n  .compile();\n\nawait graph.invoke({ done: false });",
+   "language": "typescript",
+   "explanation": "The graph routes from the check node to END when the state indicates completion."
+  },
+  "useCases": [
+   {
+    "title": "Finish a workflow",
+    "scenario": "A workflow reaches a successful or failed terminal state."
+   },
+   {
+    "title": "Terminate a loop",
+    "scenario": "A graph repeatedly processes state until a runtime condition is satisfied."
+   },
+   {
+    "title": "Conditional routing",
+    "scenario": "A router chooses whether to continue processing or stop."
+   }
+  ],
+  "related": [
+   "START",
+   "StateGraph",
+   "conditional edges",
+   "compile",
+   "addConditionalEdges"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does END represent?",
+    "answer": "END is a special node representing a terminal point in the graph. An edge to END tells LangGraph that no actions follow the completed node.",
+    "followUp": "How would a loop terminate conditionally? Add a conditional edge whose router returns END when the termination condition is met; otherwise return the next node name."
+   },
+   {
+    "question": "How is END commonly used with loops?",
+    "answer": "Use END as the return value from a conditional-edge router when the graph should stop. This is especially useful for loops, where the router decides between continuing to another node and terminating.",
+    "followUp": "Why use a conditional edge rather than an unconditional edge? Because the destination depends on runtime state, allowing the same node to either continue processing or finish."
+   },
+   {
+    "question": "How do you reference END in LangGraph.js?",
+    "answer": "Import END from @langchain/langgraph and use it in the graph's edge definitions. The JavaScript documentation shows it alongside START and StateGraph in a graph-building example.",
+    "followUp": "What is the relationship between START and END? START identifies the graph's entry edge, while END identifies a terminal destination."
+   }
+  ],
+  "keyPoints": [
+   "END marks a terminal node in the graph.",
+   "An edge targeting END means there are no actions after that edge completes.",
+   "Conditional edges are the usual way to route into END based on a termination condition.",
+   "A loop can stop by routing to END once its termination condition is reached."
+  ],
+  "gotchas": [
+   "Graphs containing loops need an explicit termination mechanism; otherwise, execution cannot finish."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "entrypoint": {
+  "sourceUrl": "https://langchain-ai.github.io/langgraphjs/reference/variables/langgraph.entrypoint.html",
+  "sourceTitle": "entrypoint | LangGraph.js API Reference",
+  "summary": "`entrypoint` wraps an asynchronous function as a LangGraph workflow. It returns an executable Pregel instance and can be configured with a name, checkpointer, and runtime features.",
+  "explanation": "Call `entrypoint` with a name or options object and an asynchronous function. The function receives the workflow input and optionally a runtime configuration, while `entrypoint` returns a Pregel instance that supports workflow execution; use a checkpointer when the workflow needs persisted state or resumable behavior.",
+  "syntax": "entrypoint(optionsOrName, func)",
+  "parameters": [
+   {
+    "name": "optionsOrName",
+    "type": "string | EntrypointOptions",
+    "description": "A string name or an EntrypointOptions configuration object."
+   },
+   {
+    "name": "func",
+    "type": "(input: InputT, config?: LangGraphRunnableConfig) => Promise<OutputT>",
+    "description": "The asynchronous function that executes the workflow; it accepts input and optionally LangGraphRunnableConfig."
+   }
+  ],
+  "returns": "A Pregel instance that can be run to execute the workflow.",
+  "example": {
+   "title": "Minimal entrypoint workflow",
+   "code": "import { entrypoint } from \"@langchain/langgraph\";\n\nconst workflow = entrypoint(\n  \"double\",\n  async (value: number) => value * 2\n);\n\nconst result = await workflow.invoke(21);\nconsole.log(result); // 42",
+   "language": "typescript",
+   "explanation": "Creates a named workflow whose input is doubled, then invokes the returned workflow."
+  },
+  "useCases": [
+   {
+    "title": "Function-based workflows",
+    "scenario": "Create a functional LangGraph workflow from a single asynchronous function."
+   },
+   {
+    "title": "Resumable execution",
+    "scenario": "Run workflows that need checkpoint-backed persistence or human review."
+   },
+   {
+    "title": "Custom streaming",
+    "scenario": "Expose application-specific events through LangGraph's custom stream."
+   }
+  ],
+  "related": [
+   "EntrypointFunction",
+   "EntrypointOptions",
+   "LangGraphRunnableConfig",
+   "Pregel",
+   "getPreviousState",
+   "getWriter",
+   "entrypoint.final"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `entrypoint` return?",
+    "answer": "`entrypoint` defines a workflow around a function. Its wrapped function accepts an input and optionally a `LangGraphRunnableConfig`, and the call returns a `Pregel` instance that executes the workflow.",
+    "followUp": "How would you pass three independent values? Use a single object as the input, because the wrapped function may accept at most two parameters and the second is configuration."
+   },
+   {
+    "question": "What arguments does `entrypoint` accept?",
+    "answer": "The first argument can be an entrypoint name string or an options object, and the second is the function that performs the workflow. The resulting `Pregel` instance can then be invoked to run it.",
+    "followUp": "When would the options object be preferable? Use it when configuring properties such as a name or checkpointer rather than relying on the shorthand name form."
+   },
+   {
+    "question": "How does an entrypoint support state and runtime features?",
+    "answer": "A checkpointer can persist workflow state, and `getPreviousState` can retrieve the value returned by the previous invocation on the same thread ID. State beyond the return value can be saved with `entrypoint.final`.",
+    "followUp": "How can custom stream data be emitted? Use `getWriter` or the `writer` property on `LangGraphRunnableConfig`."
+   }
+  ],
+  "keyPoints": [
+   "The function turns ordinary workflow logic into a LangGraph workflow.",
+   "The first argument supports either configuration or a concise workflow name.",
+   "The callback contains the workflow's executable logic.",
+   "The return value is an executable Pregel runtime object.",
+   "Custom streaming can be produced through the writer helper or runtime configuration.",
+   "Use `entrypoint.final` when persisted state must include more than the normal workflow result."
+  ],
+  "gotchas": [
+   "The wrapped function can take only the input and optional configuration; package multiple logical inputs into one object.",
+   "The second argument is reserved for LangGraph runtime configuration, not another application input.",
+   "Use one object input when the workflow needs several values.",
+   "Previous state is thread-scoped and available through the documented helper rather than being an implicit local variable."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Episodic Memory": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/concepts/memory",
+  "sourceTitle": "Memory overview",
+  "summary": "Episodic memory captures past events and actions so an agent can remember how tasks were accomplished. It is commonly reused as few-shot examples that guide future task execution.",
+  "explanation": "Episodic memory records past events or actions, especially the experiences behind successful task completion. Agents commonly reuse these records as few-shot examples, allowing future behavior to reflect how similar tasks were handled rather than only retaining isolated facts.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Reuse an episodic example",
+   "code": "import { ChatOpenAI } from \"@langchain/openai\";\nimport { HumanMessage } from \"@langchain/core/messages\";\n\nconst model = new ChatOpenAI({ model: \"gpt-4o-mini\" });\nconst examples = [\n  { input: \"Reset my password\", approach: \"Verify identity, then send a reset link.\" },\n];\n\nconst prompt = `Use this past experience as a guide:\\n${JSON.stringify(examples)}\\n\\nUser: Reset my password`;\nconst response = await model.invoke([new HumanMessage(prompt)]);\nconsole.log(response.content);",
+   "language": "typescript",
+   "explanation": "A previous interaction is stored as a few-shot example and inserted into a later prompt so the agent can reuse the demonstrated approach."
+  },
+  "useCases": [
+   {
+    "title": "Support-task replay",
+    "scenario": "An agent handles recurring support requests and reuses successful prior interaction sequences."
+   },
+   {
+    "title": "Few-shot task guidance",
+    "scenario": "An agent selects previous task demonstrations to guide a new but similar workflow."
+   },
+   {
+    "title": "Cross-session learning",
+    "scenario": "An application preserves experiences across conversations for later reuse."
+   }
+  ],
+  "related": [
+   "Semantic memory",
+   "Procedural memory",
+   "Long-term memory",
+   "Few-shot example prompting"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is episodic memory, and why is it useful for agents?",
+    "answer": "Episodic memory is memory of previous events or actions. In an agent, it is useful for remembering how to accomplish a task, often by reusing past sequences as few-shot examples.",
+    "followUp": "How does it differ from semantic memory? Semantic memory stores facts, while episodic memory stores experiences and task trajectories."
+   },
+   {
+    "question": "How is episodic memory commonly implemented?",
+    "answer": "A common implementation stores prior successful interaction sequences and includes selected examples in a later prompt. This gives the model demonstrations of an effective approach to imitate.",
+    "followUp": "What should retrieval optimize for? It should select examples relevant to the current task rather than indiscriminately adding old interactions."
+   },
+   {
+    "question": "How does episodic memory differ from semantic memory?",
+    "answer": "The distinction is based on content: semantic memory captures facts, whereas episodic memory captures experiences. Episodic records therefore help an agent reproduce a method, not just recall information.",
+    "followUp": "Can one interaction contain both types? Yes; its factual outcome can become semantic memory while the sequence and method remain episodic memory."
+   }
+  ],
+  "keyPoints": [
+   "It focuses on retrieving what happened before, including prior actions taken by an agent.",
+   "Experiential knowledge belongs in episodic memory, in contrast to standalone factual knowledge.",
+   "Its practical value is preserving task-solving approaches that an agent can apply again.",
+   "Past action sequences can serve as demonstrations for improving later task execution.",
+   "As a long-term memory category, episodic information can persist beyond an individual conversation session."
+  ],
+  "gotchas": [
+   "Treat episodic memory as experience examples, not merely a fact store; the documented pattern is to place prior sequences into few-shot prompts."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "handoff": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langchain/multi-agent/handoffs",
+  "sourceTitle": "Handoffs",
+  "summary": "Handoffs let tools change state so an agent can dynamically reconfigure itself or transfer control to another agent. They can be implemented with middleware for one agent or with separate agent subgraphs.",
+  "explanation": "A handoff is a state-driven transfer of control. A tool changes a persistent state value and returns a Command, allowing middleware to reconfigure one agent or route execution among separate agent nodes; when messages are updated during a cross-agent handoff, the tool call and its acknowledging ToolMessage must both remain in the history.",
+  "syntax": "tool(async () => new Command({ goto: \"agent_name\", update: { active_agent: \"agent_name\" } }), options)",
+  "parameters": [],
+  "returns": "A Command that updates graph state and triggers a transition to another step or agent.",
+  "example": {
+   "title": "Route with a handoff tool",
+   "code": "import { createAgent } from \"langchain\";\nimport { tool } from \"langchain\";\nimport { Command } from \"@langchain/langgraph\";\nimport { z } from \"zod\";\n\nconst handoff = tool(\n  async () =>\n    new Command({\n      goto: \"specialist\",\n      update: { active_agent: \"specialist\" },\n    }),\n  {\n    name: \"transfer_to_specialist\",\n    description: \"Transfer the conversation to the specialist agent.\",\n    schema: z.object({}),\n  },\n);\n\nconst agent = createAgent({\n  model: \"openai:gpt-4.1-mini\",\n  tools: [handoff],\n});\n\nconst result = await agent.invoke({\n  messages: [{ role: \"user\", content: \"I need specialist help.\" }],\n});\nconsole.log(result.messages.at(-1)?.content);",
+   "language": "typescript",
+   "explanation": "This illustrates the documented mechanism: a tool returns a Command that updates state and routes execution to another step or agent."
+  },
+  "useCases": [
+   {
+    "title": "Dynamic single-agent configuration",
+    "scenario": "A single assistant needs to change its system prompt and available tools as the conversation moves between stages."
+   },
+   {
+    "title": "Specialist-agent delegation",
+    "scenario": "Different specialists should own distinct graph nodes and receive control through explicit routing."
+   },
+   {
+    "title": "Stateful conversational routing",
+    "scenario": "A workflow needs to retain the active stage across turns and use it to select subsequent behavior."
+   }
+  ],
+  "related": [
+   "Command",
+   "Command.PARENT",
+   "ToolMessage",
+   "AIMessage",
+   "single agent with middleware",
+   "multiple agent subgraphs",
+   "active_agent",
+   "current_step"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the core mechanism of a handoff?",
+    "answer": "A handoff uses a tool to update state and return a Command. The updated state can change an agent’s configuration or route execution to another agent node.",
+    "followUp": "How would you preserve history across separate agents? Include the AIMessage containing the handoff tool call and a matching ToolMessage acknowledging it."
+   },
+   {
+    "question": "When should you use middleware versus multiple agent subgraphs?",
+    "answer": "Use middleware when one agent should dynamically change its prompt or tools based on state. Use multiple agent subgraphs when distinct agents should exist as separate graph nodes.",
+    "followUp": "What is the main context-management difference? Middleware preserves the normal message flow, while separate agents require an explicit choice of messages passed between them."
+   },
+   {
+    "question": "How does a handoff move execution between agent nodes?",
+    "answer": "A handoff tool returns a Command that changes state and triggers a transition. For agent-node routing, the handoff uses Command.PARENT to identify the next node in the parent graph.",
+    "followUp": "What history invariant must hold after the transfer? Every model tool call must have its corresponding tool response, including an artificial response for the handoff."
+   }
+  ],
+  "keyPoints": [
+   "Handoffs make runtime behavior depend on state rather than requiring a fixed agent configuration.",
+   "A tool can persist the active step or agent across turns, giving later execution a routing signal.",
+   "The state can either reconfigure one agent or select a different agent.",
+   "The documented designs are a single agent with middleware and multiple agent subgraphs.",
+   "In the subgraph design, each distinct agent is represented as a graph node."
+  ],
+  "gotchas": [
+   "When a handoff tool updates messages, include an acknowledging ToolMessage with the matching tool-call ID; otherwise the conversation history is malformed.",
+   "For separate subgraph agents, route back through the parent graph with Command.PARENT rather than treating the destination as a local node.",
+   "Cross-agent handoffs do not automatically define the shared context; choose which messages each receiving agent should see."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Handoff": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langchain/multi-agent/handoffs",
+  "sourceTitle": "Handoffs - Docs by LangChain",
+  "summary": "Handoffs use tools and state updates to change an agent's behavior or route execution to another agent. They can be implemented with middleware in one agent or with multiple agent subgraphs.",
+  "explanation": "A handoff is implemented as a tool-driven state transition: the tool returns a Command that updates state and changes the next step or agent. For subgraph handoffs, Command.PARENT routes to another agent node, while the triggering AIMessage and an acknowledging ToolMessage keep the conversation history valid.",
+  "syntax": "new Command({ goto, update })",
+  "parameters": [],
+  "returns": "A Command that updates state and triggers routing to a new step or agent.",
+  "example": {
+   "title": "Route to another agent",
+   "code": "import { Command } from \"@langchain/langgraph\";\n\nconst handoff = new Command({\n  goto: \"specialist\",\n  update: { active_agent: \"specialist\" },\n});",
+   "language": "typescript",
+   "explanation": "Creates a command that updates workflow state and routes execution to a specialist node."
+  },
+  "useCases": [
+   {
+    "title": "Dynamic agent configuration",
+    "scenario": "A single agent needs to switch prompts or available tools based on the current workflow state."
+   },
+   {
+    "title": "Specialist routing",
+    "scenario": "A request must move from one specialist agent to another."
+   },
+   {
+    "title": "Multi-agent subgraphs",
+    "scenario": "A workflow uses distinct graph-based agents and needs explicit control over the messages passed between them."
+   }
+  ],
+  "related": [
+   "Command",
+   "Command.PARENT",
+   "ToolMessage",
+   "AIMessage",
+   "handoffs",
+   "middleware",
+   "agent subgraphs"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Handoffs let an agent alter its behavior according to persistent workflow state.",
+   "The transition is driven by a tool whose result is a Command that changes state and execution.",
+   "Updating state can move execution to another workflow step or agent.",
+   "The documented designs are one agent with middleware or multiple agent subgraphs.",
+   "The subgraph design models each specialist as its own graph node."
+  ],
+  "gotchas": [
+   "When a handoff tool updates messages, return an acknowledging ToolMessage with the same tool-call ID; otherwise the conversation history is malformed.",
+   "Use Command.PARENT when routing between distinct agent subgraphs rather than routing only within the current graph."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "HumanMessage": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/integrations/chat/openai",
+  "sourceTitle": "ChatOpenAI integration - Docs by LangChain",
+  "summary": "HumanMessage represents a user's input in LangChain conversations. Create it with text or structured multimodal content and pass it to chat models or LangGraph state.",
+  "explanation": "HumanMessage is the LangChain message type for representing input from a user. Construct one with text or structured content, then pass it to a chat model or graph as part of the conversation state.",
+  "syntax": "new HumanMessage(content)",
+  "parameters": [
+   {
+    "name": "content",
+    "type": "string | MessageContent",
+    "description": "The user message content, supplied as text or structured multimodal content."
+   }
+  ],
+  "returns": "A HumanMessage instance representing a user-authored message.",
+  "example": {
+   "title": "Create a HumanMessage",
+   "code": "import { HumanMessage } from \"@langchain/core/messages\";\n\nconst message = new HumanMessage(\"What time is it?\");\nconsole.log(message.role);   // \"user\"\nconsole.log(message.content); // \"What time is it?\"",
+   "language": "typescript",
+   "explanation": "Creates a user-authored message that can be included in a chat model's message array."
+  },
+  "useCases": [
+   {
+    "title": "Chat invocation",
+    "scenario": "Send a user prompt to a chat model."
+   },
+   {
+    "title": "Graph messages",
+    "scenario": "Seed or update a LangGraph conversation state."
+   },
+   {
+    "title": "Multimodal requests",
+    "scenario": "Provide multimodal user input such as images or files."
+   }
+  ],
+  "related": [
+   "AIMessage",
+   "SystemMessage",
+   "BaseMessage",
+   "StateGraph"
+  ],
+  "since": "",
+  "keyPoints": [
+   "HumanMessage identifies content as originating from the user.",
+   "The message exposes role, content, and response metadata fields shared by LangChain messages.",
+   "HumanMessage can carry text or multimodal content such as images, audio, and files.",
+   "In LangGraph.js, instantiate HumanMessage with a string when adding a user turn to graph state."
+  ],
+  "gotchas": [
+   "A plain string input is automatically converted to a HumanMessage, so constructing one explicitly is optional when invoking a model with text."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "interrupt": {
+  "sourceUrl": "https://langchain-ai.github.io/langgraphjs/reference/functions/langgraph.interrupt.html",
+  "sourceTitle": "interrupt | LangGraph.js API Reference",
+  "summary": "Pauses execution of a graph node and exposes a value to the caller. When the graph is re-invoked with Command({ resume }), interrupt returns that resume value inside the node.",
+  "explanation": "interrupt pauses a graph node and exposes its payload to the caller. Re-invoking the graph with Command({ resume }) supplies the value returned by interrupt, allowing the node to continue.",
+  "syntax": "interrupt<R>(value: unknown): R",
+  "parameters": [
+   {
+    "name": "value",
+    "type": "unknown",
+    "description": "Value presented to the caller when execution is interrupted; it is available in task.interrupts[].value."
+   }
+  ],
+  "returns": "The resume value provided when the graph is re-invoked with a Command.",
+  "example": {
+   "title": "Pause for human approval",
+   "code": "import { Command, interrupt } from \"@langchain/langgraph\";\n\nconst review = async () => {\n  const approved = interrupt({\n    message: \"Approve this action?\",\n    action: \"send_email\"\n  });\n  return { approved };\n};\n\n// Resume the paused graph with:\nnew Command({ resume: true });",
+   "language": "typescript",
+   "explanation": "Call interrupt with a JSON-serializable payload to pause the node; invoke the graph again with Command and a resume value, which becomes the call's return value."
+  },
+  "useCases": [
+   {
+    "title": "Human approval",
+    "scenario": "Pause before sending an email, making a tool call, or performing another consequential action."
+   },
+   {
+    "title": "External input",
+    "scenario": "Wait for an external decision or edited content before continuing a workflow."
+   },
+   {
+    "title": "Sequential checkpoints",
+    "scenario": "Place several checkpoints in one node and handle their responses in order."
+   }
+  ],
+  "related": [
+   "Command",
+   "GraphInterrupt",
+   "Runtime.interrupt",
+   "task.interrupts"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use interrupt to pause execution at a chosen point in a node.",
+   "The call eventually evaluates to the resume value supplied when execution continues.",
+   "Without an available resume value, interrupt suspends the graph by raising a GraphInterrupt carrying the payload.",
+   "Continue a paused run by invoking the graph again with Command and resume.",
+   "The payload supplied to interrupt is exposed to the task's interrupt records."
+  ],
+  "gotchas": [
+   "Do not swallow the control-flow exception: avoid try/catch around interrupt, or rethrow the GraphInterrupt from the catch block.",
+   "Multiple calls in one node are processed in order, so keep their sequence stable across resumption."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Interrupt": {
+  "sourceUrl": "https://langchain-ai.github.io/langgraphjs/reference/functions/langgraph.interrupt.html",
+  "sourceTitle": "interrupt | LangGraph.js API Reference",
+  "summary": "interrupt pauses a graph node and exposes a value to the caller. Re-invoking the graph with Command and a resume value makes that value available as interrupt's result.",
+  "explanation": "Call interrupt inside a graph node to suspend execution and expose a payload to the caller. With persistence and a thread ID, re-invoke the graph using Command({ resume })`; that resume value becomes the return value of interrupt. Avoid catching the interruption unless the special graph interruption is rethrown.",
+  "syntax": "interrupt<R>(value: R): R",
+  "parameters": [
+   {
+    "name": "value",
+    "type": "R",
+    "description": "The value supplied to the caller when execution pauses; it must be JSON-serializable."
+   }
+  ],
+  "returns": "The resume value provided when the graph is re-invoked with a Command.",
+  "example": {
+   "title": "Pause and resume a graph node",
+   "code": "import { Command, interrupt, MemorySaver, StateGraph, Annotation } from \"@langchain/langgraph\";\n\nconst State = Annotation.Root({ approved: Annotation<boolean | undefined>() });\nconst checkpointer = new MemorySaver();\nconst graph = new StateGraph(State)\n  .addNode(\"review\", () => ({ approved: interrupt({ question: \"Approve?\" }) }))\n  .addEdge(\"__start__\", \"review\")\n  .addEdge(\"review\", \"__end__\")\n  .compile({ checkpointer });\n\nconst config = { configurable: { thread_id: \"review-1\" } };\nawait graph.invoke({}, config);\nconst result = await graph.invoke(new Command({ resume: true }), config);\nconsole.log(result.approved);",
+   "language": "typescript",
+   "explanation": "The node pauses with a JSON-serializable review payload, then resumes on the same thread when invoked with a Command containing the resume value."
+  },
+  "useCases": [
+   {
+    "title": "Human review",
+    "scenario": "Pause a workflow for a person to approve, reject, or edit proposed output before downstream nodes continue."
+   },
+   {
+    "title": "External input",
+    "scenario": "Stop execution while waiting for external information, then continue the same persisted run when the information arrives."
+   },
+   {
+    "title": "Sequential checkpoints",
+    "scenario": "Insert several approval or input checkpoints into one node and handle each response in order."
+   }
+  ],
+  "related": [
+   "Command",
+   "GraphInterrupt",
+   "MemorySaver",
+   "checkpointer",
+   "thread_id"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does interrupt pause and resume execution?",
+    "answer": "interrupt pauses the current node by raising a special graph interruption when no resume value is available. The payload is surfaced to the caller, and a later Command resume value is returned from the interrupt call.",
+    "followUp": "What happens if a resume value is already available? The function returns that value instead of raising a new interruption, allowing the node to continue."
+   },
+   {
+    "question": "What infrastructure is required for a resumable interrupt?",
+    "answer": "The graph needs persistence through a checkpointer and a thread ID in its configuration. Resume by invoking the graph again with Command containing the resume value.",
+    "followUp": "Why is the thread ID necessary? It identifies the persisted execution whose state should be continued."
+   },
+   {
+    "question": "Can a node contain multiple interrupts?",
+    "answer": "Multiple interrupts may occur in one node, and LangGraph handles them sequentially. Each call can pause and later receive its corresponding resume value.",
+    "followUp": "What design constraint follows from sequential handling? The node must preserve a stable interrupt call order across executions."
+   }
+  ],
+  "keyPoints": [
+   "interrupt is a function for pausing execution at a chosen point inside a graph node.",
+   "After resumption, interrupt evaluates to the value supplied through Command's resume input.",
+   "Without an available resume value, the call signals suspension by throwing GraphInterrupt and carries the supplied payload.",
+   "A node may request several pauses; LangGraph processes those interrupt calls in sequence.",
+   "Continue a suspended run by invoking the graph again with a Command that contains resume data."
+  ],
+  "gotchas": [
+   "Do not swallow the special GraphInterrupt exception; wrapping interrupt in try/catch can prevent normal pause behavior unless the exception is rethrown.",
+   "Pass only JSON-serializable data as the interrupt payload.",
+   "Compile with a checkpointer so execution state can be restored when the graph resumes.",
+   "Use the same thread ID when resuming so LangGraph locates the paused execution."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Long-term Memory": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/concepts/memory",
+  "sourceTitle": "Memory overview",
+  "summary": "Long-term memory stores user- or application-specific data across sessions and conversational threads. LangGraph saves it as JSON documents in a store, addressed by a custom namespace and key.",
+  "explanation": "Long-term memory stores JSON documents in a LangGraph store so agents can retain and recall user- or application-specific information across conversations. Memories are organized by a custom namespace and key, allowing data to be shared across threads rather than tied to one conversation.",
+  "syntax": "store.put(namespace, key, value)\nstore.get(namespace, key)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Store and recall long-term memory",
+   "code": "const store = new InMemoryStore();\nconst namespace = [\"memories\", userId];\nawait store.put(namespace, \"preferences\", {\n  food: \"vegetarian\",\n});\nconst memory = await store.get(namespace, \"preferences\");\nconsole.log(memory?.value);",
+   "language": "typescript",
+   "explanation": "Stores and retrieves a JSON memory in a user-specific namespace."
+  },
+  "useCases": [
+   {
+    "title": "User preferences",
+    "scenario": "Persisting a user's preferences so later conversations can personalize responses."
+   },
+   {
+    "title": "Cross-thread application data",
+    "scenario": "Sharing facts or knowledge across multiple conversational threads in an application."
+   },
+   {
+    "title": "Custom-scoped memory",
+    "scenario": "Keeping durable records scoped to a tenant, user, or other custom namespace."
+   }
+  ],
+  "related": [
+   "short-term memory",
+   "stores",
+   "namespace",
+   "key",
+   "checkpointers",
+   "cross-thread persistence"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What distinguishes long-term memory from short-term memory?",
+    "answer": "Long-term memory persists user-specific or application-level data across conversations and sessions. Unlike short-term memory, it is shared across conversational threads and can be recalled in any thread.",
+    "followUp": "How is long-term memory organized? It is stored as JSON documents in a store, with each document addressed by a custom namespace and distinct key."
+   },
+   {
+    "question": "Where does LangGraph keep long-term memories?",
+    "answer": "LangGraph stores long-term memories as JSON documents in a store. The store provides the persistence mechanism for saving and recalling those documents.",
+    "followUp": "What should identify a memory? Use a stable custom namespace and key that represent the intended scope and record."
+   },
+   {
+    "question": "How are long-term memories addressed?",
+    "answer": "Namespaces define the scope for long-term memories, and keys distinguish individual records within that scope. This structure supports user-, application-, or other custom-scoped data.",
+    "followUp": "Why not scope everything by thread ID? Thread scope is appropriate for short-term conversational state, while long-term memory must be available across threads."
+   }
+  ],
+  "keyPoints": [
+   "Long-term memory supports durable user or application data that remains available across sessions and threads.",
+   "A stored memory is not limited to the conversation that created it; any thread can retrieve it.",
+   "Applications can choose a scope such as a user, tenant, or application instead of relying only on thread identifiers.",
+   "Memory values use JSON-document storage, making structured application data suitable for persistence."
+  ],
+  "gotchas": [
+   "Do not use thread-scoped state when information must persist across conversations; long-term data belongs in a custom namespace.",
+   "A namespace and key together identify a memory, so changing either can cause reads to miss previously stored data."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "MemorySaver": {
+  "sourceUrl": "https://langchain-ai.github.io/langgraphjs/reference/classes/langgraph.MemorySaver.html",
+  "sourceTitle": "MemorySaver | LangGraph.js API Reference",
+  "summary": "MemorySaver is LangGraph.js's in-memory checkpointer for saving graph checkpoints by thread. It is useful for development and testing, but its state is lost when the process restarts.",
+  "explanation": "MemorySaver is an in-memory implementation of LangGraph's checkpoint saver. Attach it during graph compilation so checkpoints are associated with thread IDs and can support state continuity during the process lifetime.",
+  "syntax": "new MemorySaver(serde?: SerializerProtocol): MemorySaver",
+  "parameters": [
+   {
+    "name": "serde",
+    "type": "SerializerProtocol",
+    "description": "Optional serializer used to encode and decode checkpoint data."
+   }
+  ],
+  "returns": "A MemorySaver instance that implements the checkpoint-saver interface.",
+  "example": {
+   "title": "Use MemorySaver with a graph",
+   "code": "import { MemorySaver } from \"@langchain/langgraph\";\nimport { StateGraph, StateSchema, START, END } from \"@langchain/langgraph\";\n\nconst State = new StateSchema({ value: { reducer: (a: number, b: number) => b, default: () => 0 } });\nconst graph = new StateGraph(State)\n  .addNode(\"increment\", (state) => ({ value: state.value + 1 }))\n  .addEdge(START, \"increment\")\n  .addEdge(\"increment\", END)\n  .compile({ checkpointer: new MemorySaver() });\n\nconst config = { configurable: { thread_id: \"demo\" } };\nconsole.log(await graph.invoke({ value: 0 }, config));",
+   "language": "typescript",
+   "explanation": "Creates an in-memory checkpointer, attaches it when compiling a graph, and invokes that graph with a thread identifier."
+  },
+  "useCases": [
+   {
+    "title": "Development-time thread memory",
+    "scenario": "Keep short-term conversation or graph state available across invocations that use the same thread during one process lifetime."
+   },
+   {
+    "title": "Testing checkpoint behavior",
+    "scenario": "Run graph tests that need checkpoint-backed state without provisioning a database."
+   },
+   {
+    "title": "Human-in-the-loop and time-travel workflows",
+    "scenario": "Pause, resume, inspect, or replay graph execution using in-memory checkpoints."
+   }
+  ],
+  "related": [
+   "BaseCheckpointSaver",
+   "SerializerProtocol",
+   "Checkpoint",
+   "StateGraph",
+   "CompiledGraph",
+   "thread_id",
+   "checkpoint_id"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is MemorySaver and how is it used?",
+    "answer": "MemorySaver is a checkpointer that stores graph checkpoints in memory. Pass an instance to the graph's compile configuration, then provide a thread_id when invoking the graph so state is associated with that thread.",
+    "followUp": "How would you preserve state across deployments? Replace MemorySaver with a durable checkpointer backed by persistent storage, because in-memory checkpoints disappear when the process exits."
+   },
+   {
+    "question": "What does a checkpointer enable?",
+    "answer": "A checkpointer records graph state at supersteps and enables thread-scoped capabilities such as conversational continuity and human-in-the-loop workflows. MemorySaver provides that behavior without external persistence, while the process remains alive.",
+    "followUp": "What identifier is required for checkpoint lookup? Supply configurable.thread_id; checkpoint_id can additionally select a particular checkpoint when needed."
+   },
+   {
+    "question": "How does thread-scoped memory work with MemorySaver?",
+    "answer": "Compile the graph with a MemorySaver instance and invoke it using a consistent thread_id. Reusing that identifier lets separate invocations refer to the same in-memory thread state.",
+    "followUp": "Can separate application replicas share this state? No. Process-local memory is not a shared or durable persistence layer, so use an external checkpointer for that requirement."
+   }
+  ],
+  "keyPoints": [
+   "MemorySaver implements the checkpointer role, allowing a graph to save and retrieve execution state.",
+   "Using it can provide conversational continuity and support workflows that pause, resume, or inspect graph execution.",
+   "Every invocation that should use checkpointed thread state needs a configurable thread_id.",
+   "Saved checkpoints represent graph state snapshots rather than an unrestricted application database.",
+   "The class is part of the LangGraph.js API and is exposed as MemorySaver."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "MessagesAnnotation": {
+  "sourceUrl": "https://langchain-ai.github.io/langgraphjs/reference/variables/langgraph.MessagesAnnotation.html",
+  "sourceTitle": "MessagesAnnotation | LangGraph.js API Reference - GitHub Pages",
+  "summary": "MessagesAnnotation is a prebuilt LangGraph state annotation for accumulating messages across graph nodes. It supports standard messages and special modifiers such as RemoveMessage.",
+  "explanation": "MessagesAnnotation is a prebuilt LangGraph state annotation for a messages array. It combines messages returned by nodes and supports both ordinary messages and RemoveMessage-based modifications.",
+  "syntax": "const graph = new StateGraph(MessagesAnnotation)",
+  "parameters": [],
+  "returns": "A state annotation whose state contains a `messages` array and whose reducer combines returned messages.",
+  "example": {
+   "title": "Use MessagesAnnotation as graph state",
+   "code": "import { MessagesAnnotation, StateGraph, START, END } from \"@langchain/langgraph\";\n\nconst graph = new StateGraph(MessagesAnnotation)\n  .addNode(\"reply\", (state) => ({\n    messages: [{ role: \"ai\", content: `Received: ${state.messages.at(-1)?.content}` }],\n  }))\n  .addEdge(START, \"reply\")\n  .addEdge(\"reply\", END)\n  .compile();\n\nconst result = await graph.invoke({\n  messages: [{ role: \"user\", content: \"Hello\" }],\n});\nconsole.log(result.messages.at(-1)?.content);",
+   "language": "typescript",
+   "explanation": "Creates a graph whose state uses MessagesAnnotation, appends an AI response, and invokes the compiled graph."
+  },
+  "useCases": [
+   {
+    "title": "Message-based graph state",
+    "scenario": "Build a conversational workflow where each node contributes messages to a shared conversation state."
+   },
+   {
+    "title": "Agent and tool workflows",
+    "scenario": "Implement agent loops in which model responses, tool calls, and tool results travel through one state key."
+   },
+   {
+    "title": "Custom state extensions",
+    "scenario": "Extend message state with application-specific fields by spreading `MessagesAnnotation.spec` into a larger annotation schema."
+   }
+  ],
+  "related": [
+   "StateGraph",
+   "Annotation",
+   "RemoveMessage",
+   "ToolNode",
+   "BaseMessage"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does MessagesAnnotation provide?",
+    "answer": "MessagesAnnotation is a prebuilt state annotation that combines messages returned by graph nodes. A StateGraph can receive it directly, so nodes read and update the typed `messages` state key.",
+    "followUp": "How can a graph add other state fields? Answer: create a root annotation that spreads `MessagesAnnotation.spec` and adds annotations for the additional fields."
+   },
+   {
+    "question": "How do nodes update the messages state?",
+    "answer": "A node can return either one message or an array under the `messages` key. The annotation combines that returned content with the existing message state rather than replacing the conversation by default.",
+    "followUp": "What should a node return when it has no message update? Answer: return a partial state object without `messages`, leaving the existing message state unchanged."
+   },
+   {
+    "question": "How is MessagesAnnotation used in a StateGraph?",
+    "answer": "Import it from `@langchain/langgraph` and pass it to `new StateGraph(MessagesAnnotation)`. After adding nodes and edges, compile the graph before invoking it.",
+    "followUp": "How can tool execution be added? Answer: route tool-call-producing AI messages to a tool node, then return tool messages through the same `messages` state key."
+   }
+  ],
+  "keyPoints": [
+   "It supplies a ready-made state definition centered on accumulating messages returned by graph nodes.",
+   "Its message reducer understands normal messages as well as removal modifiers.",
+   "The public import comes from the main `@langchain/langgraph` package.",
+   "Pass the annotation directly to `StateGraph` to make it the graph's state schema.",
+   "Nodes may update the state with one message or with multiple messages in the `messages` field."
+  ],
+  "gotchas": [
+   "Treat the state as message-aware rather than as a plain array: special RemoveMessage values are supported alongside standard messages."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Parallel tool calls": {
+  "sourceUrl": "https://langchain-ai.github.io/langgraphjs/reference/classes/langgraph.prebuilt.ToolNode.html",
+  "sourceTitle": "ToolNode | LangGraph.js API Reference",
+  "summary": "ToolNode executes the tools requested by the latest AIMessage. Multiple requested tools run in parallel, and the node returns one ToolMessage for each call.",
+  "explanation": "Parallel tool calls are handled by ToolNode: it reads the tool calls in the latest AIMessage, runs the requested tools concurrently, and returns a separate ToolMessage for each call. This is useful in a StateGraph or MessageGraph when independent operations can be performed during the same model step.",
+  "syntax": "new ToolNode(tools)",
+  "parameters": [],
+  "returns": "A list of ToolMessages, one for each tool call.",
+  "example": {
+   "title": "Execute parallel tool calls",
+   "code": "import { ToolNode } from \"@langchain/langgraph/prebuilt\";\nimport { AIMessage, ToolMessage } from \"@langchain/core/messages\";\n\nconst tools = [\n  async function getWeather({ city }: { city: string }) {\n    return `${city}: sunny`;\n  },\n  async function getTime({ city }: { city: string }) {\n    return `${city}: 12:00`;\n  },\n];\n\nconst toolNode = new ToolNode(tools);\nconst message = new AIMessage({\n  content: \"\",\n  tool_calls: [\n    { name: \"getWeather\", args: { city: \"Boston\" }, id: \"1\", type: \"tool_call\" },\n    { name: \"getTime\", args: { city: \"Tokyo\" }, id: \"2\", type: \"tool_call\" },\n  ],\n});\n\nconst result = await toolNode.invoke({ messages: [message] });\nconsole.log(result.messages.map((m: ToolMessage) => m.content));",
+   "language": "typescript",
+   "explanation": "ToolNode receives one AI message containing multiple tool calls and executes those calls in parallel, returning one ToolMessage for each result."
+  },
+  "useCases": [
+   {
+    "title": "Run independent operations concurrently",
+    "scenario": "A model requests weather, calendar, and database operations in one response."
+   },
+   {
+    "title": "Add prebuilt tool execution",
+    "scenario": "A graph needs standard tool execution without implementing dispatch logic."
+   },
+   {
+    "title": "Connect tool calls to either supported graph style",
+    "scenario": "A workflow uses message-based state or a messages field in graph state."
+   }
+  ],
+  "related": [
+   "ToolNode",
+   "AIMessage",
+   "ToolMessage",
+   "StateGraph",
+   "MessageGraph"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does ToolNode do with parallel tool calls?",
+    "answer": "ToolNode is a prebuilt node that executes the tools requested in the most recent AIMessage. When that message contains several calls, ToolNode runs them in parallel and returns one ToolMessage per call.",
+    "followUp": "How would you represent the input? Pass a graph state containing a messages key with the AIMessage, or use the corresponding MessageGraph input."
+   },
+   {
+    "question": "What is the output shape when several tools are called?",
+    "answer": "The node returns a list of ToolMessages. Each message contains the result of one requested tool call, allowing the graph or model to process all completed results.",
+    "followUp": "What must downstream code avoid assuming? It must not treat the result as one tool output; it should iterate over the returned messages."
+   },
+   {
+    "question": "Which graph styles support ToolNode?",
+    "answer": "ToolNode can be used in either a StateGraph with a messages key or in a MessageGraph. The model first produces an AIMessage containing tool calls, and the node executes those calls.",
+    "followUp": "When is this pattern most useful? When independent tools can answer different parts of a request during one model step."
+   }
+  ],
+  "keyPoints": [
+   "ToolNode consumes tool requests from the latest AIMessage rather than selecting tools independently.",
+   "The node supports both state-based graphs and message-only graphs.",
+   "Several calls in one AIMessage are executed concurrently.",
+   "Results are returned as one ToolMessage per executed call."
+  ],
+  "gotchas": [
+   "Calls execute concurrently, so tools that mutate shared state or depend on one another should not be placed in the same batch without coordination.",
+   "Do not expect a single scalar result: consume the returned list and associate each ToolMessage with its corresponding call."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "RunnableConfig": {
+  "sourceUrl": "https://langchain-ai.github.io/langgraphjs/reference/interfaces/langgraph.LangGraphRunnableConfig.html",
+  "sourceTitle": "Interface LangGraphRunnableConfig<ContextType>",
+  "summary": "RunnableConfig is the per-call configuration object for LangGraph runnables. It carries execution limits, tracing data, cancellation, runtime values, persistence, and custom-stream output settings.",
+  "explanation": "RunnableConfig carries per-call execution controls and tracing data into a runnable and its sub-runs. It can also expose runtime configurable values, context, interruption, persistence, and custom streaming through optional properties.",
+  "syntax": "interface LangGraphRunnableConfig<ContextType extends Record<string, any> = Record<string, any>> { callbacks?: Callbacks; configurable?: ContextType; context?: ContextType; interrupt?: (value: unknown) => unknown; maxConcurrency?: number; metadata?: Record<string, unknown>; recursionLimit?: number; runId?: string; runName?: string; signal?: AbortSignal; store?: BaseStore; tags?: string[]; timeout?: number; writer?: (chunk: unknown) => void; }",
+  "parameters": [
+   {
+    "name": "callbacks",
+    "type": "Callbacks",
+    "description": "Callbacks for this call and any sub-calls."
+   },
+   {
+    "name": "configurable",
+    "type": "ContextType",
+    "description": "Runtime values for configurable attributes on this runnable or sub-runnables."
+   },
+   {
+    "name": "context",
+    "type": "ContextType",
+    "description": "User-provided context."
+   },
+   {
+    "name": "interrupt",
+    "type": "(value: unknown) => unknown",
+    "description": "Function that pauses a graph node and supports resumption through Command."
+   },
+   {
+    "name": "maxConcurrency",
+    "type": "number",
+    "description": "Maximum number of parallel calls."
+   },
+   {
+    "name": "metadata",
+    "type": "Record<string, unknown>",
+    "description": "Metadata for this call and sub-calls; keys are strings and values must be JSON-serializable."
+   },
+   {
+    "name": "recursionLimit",
+    "type": "number",
+    "description": "Maximum number of recursive calls; defaults to 25."
+   },
+   {
+    "name": "runId",
+    "type": "string",
+    "description": "Unique tracer run identifier; a UUID is generated if omitted."
+   },
+   {
+    "name": "runName",
+    "type": "string",
+    "description": "Tracer run name; defaults to the class name."
+   },
+   {
+    "name": "signal",
+    "type": "AbortSignal",
+    "description": "Abort signal for the call."
+   },
+   {
+    "name": "store",
+    "type": "BaseStore",
+    "description": "Store used by the call."
+   },
+   {
+    "name": "tags",
+    "type": "string[]",
+    "description": "Tags for this call and sub-calls."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Invoke an entrypoint with runtime configuration",
+   "code": "import { entrypoint } from \"@langchain/langgraph\";\n\nconst workflow = entrypoint(\n  { name: \"config-demo\" },\n  async (input: string, config) => {\n    config.writer?.({ input });\n    return config.configurable?.tenant ?? \"default\";\n  }\n);\n\nconst result = await workflow.invoke(\"hello\", {\n  configurable: { tenant: \"acme\" },\n  tags: [\"demo\"],\n  timeout: 5000,\n});\n\nconsole.log(result);",
+   "language": "typescript",
+   "explanation": "Pass runtime controls and application-specific configurable values as the second argument when invoking an entrypoint."
+  },
+  "useCases": [
+   {
+    "title": "Trace nested executions",
+    "scenario": "Attach tracing and observability data to graph or runnable calls."
+   },
+   {
+    "title": "Control runtime execution",
+    "scenario": "Limit parallelism, recursion, execution time, or cancellation behavior."
+   },
+   {
+    "title": "Provide runtime configuration",
+    "scenario": "Pass tenant, user, or other per-request values into configurable workflows."
+   },
+   {
+    "title": "Coordinate streaming and interrupts",
+    "scenario": "Emit custom chunks or pause and resume graph-node execution."
+   }
+  ],
+  "related": [
+   "LangGraphRunnableConfig",
+   "entrypoint",
+   "Command",
+   "BaseStore",
+   "Callbacks"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is RunnableConfig used for?",
+    "answer": "RunnableConfig is the optional per-invocation configuration object passed to a runnable. It can carry callbacks, tags, metadata, concurrency limits, tracing identifiers, cancellation, timeouts, and runtime values.",
+    "followUp": "How would you propagate application-specific runtime data? Use the configurable or context properties, typing the context when appropriate and reading it inside the runnable."
+   },
+   {
+    "question": "How do configurable values and entrypoints relate?",
+    "answer": "configurable stores runtime values for attributes made configurable on a runnable or its sub-runnables. In LangGraph entrypoints, the configuration is the second argument after the workflow input.",
+    "followUp": "How can a workflow emit custom stream data? Use the writer callback supplied in the configuration, or the entrypoint getWriter facility."
+   },
+   {
+    "question": "Which execution limits can RunnableConfig apply?",
+    "answer": "maxConcurrency limits the number of parallel calls, while recursionLimit limits recursive calls and defaults to 25. timeout is expressed in milliseconds, and signal allows cancellation when its AbortSignal is aborted.",
+    "followUp": "What happens if a timeout or abort signal is triggered? The call is stopped according to the supplied timeout or abort signal rather than continuing normally."
+   }
+  ],
+  "keyPoints": [
+   "callbacks apply to the current call and nested sub-calls, allowing instrumentation to follow a runnable hierarchy.",
+   "tags propagate to callbacks, whereas metadata is supplied to start handlers for tracing and observability.",
+   "configurable supplies runtime overrides for configurable attributes on the runnable and its children.",
+   "interrupt can pause a graph node and return a resume value when the graph is invoked again with Command.",
+   "maxConcurrency controls how many calls may run in parallel.",
+   "runId lets callers assign a tracer run identifier; without one, a UUID is generated.",
+   "timeout defines the per-call time limit in milliseconds."
+  ],
+  "gotchas": [
+   "recursionLimit is finite by default; raise it explicitly when a workflow legitimately needs more recursive calls.",
+   "Metadata must use string keys and JSON-serializable values."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Semantic Search": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langgraph/add-memory",
+  "sourceTitle": "Memory",
+  "summary": "Semantic search lets a LangGraph agent retrieve memory-store items by meaning rather than exact wording. Configure semantic indexing, then provide a natural-language query to the store.",
+  "explanation": "Semantic search lets an agent retrieve stored memories by meaning instead of requiring exact word matches. Configure an embedding model for the store, then pass a natural-language query to the store's search method.",
+  "syntax": "await store.search(namespace, { query: string });",
+  "parameters": [
+   {
+    "name": "namespace",
+    "type": "string[]",
+    "description": "Namespace tuple identifying the memory collection to search."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Search options containing the natural-language query."
+   }
+  ],
+  "returns": "An array of stored items ranked by semantic similarity.",
+  "example": {
+   "title": "Semantic search in a memory store",
+   "code": "const items = await store.search([\"user_123\", \"memories\"], {\n  query: \"I'm hungry\",\n});",
+   "language": "typescript",
+   "explanation": "Searches a memory namespace using a natural-language query and returns semantically similar stored items."
+  },
+  "useCases": [
+   {
+    "title": "Personalized agents",
+    "scenario": "Retrieve user preferences or facts from long-term memory across conversations."
+   },
+   {
+    "title": "Meaning-based memory retrieval",
+    "scenario": "Find relevant stored information when the query wording differs from the saved text."
+   },
+   {
+    "title": "Context-aware responses",
+    "scenario": "Support agent workflows that search memory before generating a response."
+   }
+  ],
+  "related": [
+   "Store",
+   "search",
+   "memory store",
+   "semantic similarity",
+   "embedding model",
+   "indexing settings"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Configure the graph's memory store for semantic search before querying it.",
+   "The store can retrieve memories based on semantic similarity rather than exact textual matches.",
+   "Use the store's search method with a namespace and search options.",
+   "The query can be written in natural language to find conceptually related stored items."
+  ],
+  "gotchas": [
+   "Semantic search requires indexing settings in the graph or deployment configuration; calling search with a query alone is not sufficient."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Send": {
+  "sourceUrl": "https://langchain-ai.github.io/langgraphjs/reference/classes/langgraph.Send.html",
+  "sourceTitle": "Send | LangGraph.js API Reference",
+  "summary": "Send routes execution to a named graph node with custom input state. Returning multiple Send objects from conditional edges enables dynamic fan-out and map-reduce workflows.",
+  "explanation": "Send is a routing packet used from conditional edges to invoke a named graph node with custom input state. The input can differ from the graph’s main state, enabling dynamic fan-out patterns such as parallel map-reduce workflows.",
+  "syntax": "new Send<Node extends string = string, Args = any>(node: Node, args: Args)",
+  "parameters": [
+   {
+    "name": "node",
+    "type": "Node extends string",
+    "description": "Name of the node to invoke."
+   },
+   {
+    "name": "args",
+    "type": "Args",
+    "description": "Custom state or arguments passed to the node invocation."
+   }
+  ],
+  "returns": "A Send instance representing a message or packet addressed to a graph node.",
+  "example": {
+   "title": "Fan out work with Send",
+   "code": "import { Annotation, Send, StateGraph } from \"@langchain/langgraph\";\n\nconst State = Annotation.Root({\n  subjects: Annotation<string[]>(),\n  jokes: Annotation<string[]>({ reducer: (a, b) => a.concat(b) }),\n});\n\nconst fanOut = (state: typeof State.State) =>\n  state.subjects.map(\n    (subject) => new Send(\"generate_joke\", { subjects: [subject] }),\n  );\n\nconst graph = new StateGraph(State)\n  .addNode(\"generate_joke\", (state) => ({\n    jokes: [`Joke about ${state.subjects}`],\n  }))\n  .addConditionalEdges(\"__start__\", fanOut)\n  .addEdge(\"generate_joke\", \"__end__\")\n  .compile();\n\nconst result = await graph.invoke({ subjects: [\"cats\", \"dogs\"] });\nconsole.log(result);",
+   "language": "typescript",
+   "explanation": "Returns one Send object per subject so the same node runs with separate input states."
+  },
+  "useCases": [
+   {
+    "title": "Dynamic fan-out",
+    "scenario": "Map each item in a collection to a separate invocation of the same node."
+   },
+   {
+    "title": "Map-reduce workflows",
+    "scenario": "Run repeated node executions concurrently and collect their outputs with a reducer."
+   },
+   {
+    "title": "Custom per-branch state",
+    "scenario": "Pass a node a state shape tailored to a branch rather than the graph’s central state."
+   }
+  ],
+  "related": [
+   "StateGraph",
+   "Annotation",
+   "SendInterface"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Each Send instance identifies the destination node and carries the input that node should receive.",
+   "Use Send when routing decisions need to construct per-invocation state dynamically.",
+   "The destination node can receive state tailored to the particular branch or item being processed.",
+   "A common pattern is mapping multiple inputs to repeated node executions and reducing their outputs afterward.",
+   "Mapping an array to Send objects can schedule multiple executions of one node with distinct states.",
+   "Use a reducer on the aggregate field when collecting results from parallel Send executions."
+  ],
+  "gotchas": [
+   "The payload is the node’s custom input, not necessarily the graph-wide state shape.",
+   "Return Send instances from conditional-edge routing logic rather than treating Send as a normal node result."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Short-term Memory": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langgraph/add-memory",
+  "sourceTitle": "Memory",
+  "summary": "Short-term memory gives an agent thread-scoped state for maintaining multi-turn conversation history. A checkpointer persists that state so the same thread can continue across invocations.",
+  "explanation": "Short-term memory is thread-scoped agent state backed by a checkpointer. The checkpointer saves checkpoints so a conversation can continue across invocations, while each step reads the current state and updates it as execution proceeds.",
+  "syntax": "builder.compile({ checkpointer });",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Preserve conversation state across invocations",
+   "code": "import { MemorySaver } from \"@langchain/langgraph\";\nimport { createReactAgent } from \"@langchain/langgraph/prebuilt\";\n\nconst checkpointer = new MemorySaver();\nconst agent = createReactAgent({\n  llm,\n  tools: [],\n  checkpointSaver: checkpointer,\n});\n\nawait agent.invoke(\n  { messages: [{ role: \"user\", content: \"My name is Bob\" }] },\n  { configurable: { thread_id: \"conversation-1\" } },\n);\n\nconst result = await agent.invoke(\n  { messages: [{ role: \"user\", content: \"What is my name?\" }] },\n  { configurable: { thread_id: \"conversation-1\" } },\n);\nconsole.log(result.messages.at(-1)?.content);",
+   "language": "typescript",
+   "explanation": "The checkpointer stores agent state for a thread. Reusing the same thread identifier on later invocations lets the agent access earlier conversation messages."
+  },
+  "useCases": [
+   {
+    "title": "Multi-turn chat",
+    "scenario": "A support assistant needs to remember earlier turns while handling one customer conversation."
+   },
+   {
+    "title": "Resumable workflows",
+    "scenario": "An agent must continue after a process restart or later request."
+   },
+   {
+    "title": "Conversation history management",
+    "scenario": "A long-running conversation needs controlled context growth."
+   }
+  ],
+  "related": [
+   "Memory",
+   "checkpointer",
+   "thread",
+   "state",
+   "persistence",
+   "trim messages",
+   "delete messages",
+   "summarize messages"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is short-term memory in LangGraph?",
+    "answer": "Short-term memory is thread-level persistence that lets an agent track a multi-turn conversation. It is represented in the agent state and persisted through a checkpointer.",
+    "followUp": "How would you prevent unbounded history growth? Use message trimming, deletion, summarization, checkpoint management, or another filtering strategy."
+   },
+   {
+    "question": "How is short-term memory persisted?",
+    "answer": "A checkpointer persists a thread's graph state as checkpoints. Supplying it when compiling or creating the agent enables conversation continuity across invocations.",
+    "followUp": "How does this differ from long-term memory? Long-term memory uses a store for application-defined data outside graph state and can span threads."
+   },
+   {
+    "question": "When is short-term memory read and updated?",
+    "answer": "The graph updates short-term memory when it is invoked or when a step completes, and reads the state at the beginning of each step. This allows later steps to use the accumulated conversation state.",
+    "followUp": "What does a checkpoint represent? It is a persisted snapshot of the thread's graph state that can support resumption and related workflows."
+   }
+  ],
+  "keyPoints": [
+   "It maintains message history for the current session, making multi-turn conversations possible.",
+   "The conversation history is held in agent state rather than treated as unrelated external data.",
+   "A checkpointer saves state so an interrupted or later invocation can resume the same thread.",
+   "Execution reads current state at step boundaries and writes updates after invocation or completed steps."
+  ],
+  "gotchas": [
+   "Long conversations can exceed the model's context window; trim, delete, or summarize messages before invoking the model.",
+   "Memory is isolated by thread, so use a consistent thread identifier for one conversation and a different one for another."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "START": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langgraph/graph-api",
+  "sourceTitle": "Graph API overview",
+  "summary": "START is LangGraph.js's virtual beginning node. Use it to connect graph input to the node or nodes that should execute first.",
+  "explanation": "START is a special virtual node representing the beginning of graph execution. Connect it with addEdge to choose the first node, or with addConditionalEdges when the entry point depends on routing logic.",
+  "syntax": "import { START } from \"@langchain/langgraph\";\ngraph.addEdge(START, \"nodeName\");",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Connect START to the first node",
+   "code": "import { START, StateGraph, StateSchema } from \"@langchain/langgraph\";\n\nconst State = new StateSchema({\n  message: z.string().default(() => \"\"),\n});\n\nconst graph = new StateGraph(State)\n  .addNode(\"nodeA\", () => ({ message: \"started\" }))\n  .addEdge(START, \"nodeA\")\n  .compile();",
+   "language": "typescript",
+   "explanation": "The edge from START makes nodeA the graph's entry point."
+  },
+  "useCases": [
+   {
+    "title": "Fixed entry point",
+    "scenario": "A graph has one deterministic first processing step."
+   },
+   {
+    "title": "Conditional entry routing",
+    "scenario": "Initial routing depends on the incoming state."
+   },
+   {
+    "title": "Input handoff",
+    "scenario": "A graph needs an explicit boundary between input and application nodes."
+   }
+  ],
+  "related": [
+   "StateGraph",
+   "addEdge",
+   "addConditionalEdges",
+   "END"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is START in LangGraph.js?",
+    "answer": "START represents the beginning of graph execution and routes user input into the graph. Referencing it lets you determine which node or nodes run first.",
+    "followUp": "How can entry selection depend on runtime state? Use addConditionalEdges from START so a routing function selects the initial destination."
+   },
+   {
+    "question": "How do you define a graph entry point?",
+    "answer": "Use addEdge(START, \"nodeA\") to connect the virtual START node to a named node. This establishes nodeA as the first node executed.",
+    "followUp": "What should be used when there are multiple possible initial nodes? Use addConditionalEdges from START rather than a fixed edge."
+   },
+   {
+    "question": "When would you use conditional edges from START?",
+    "answer": "A fixed entry point uses addEdge from START, while conditional entry uses addConditionalEdges from START. Both approaches specify where graph execution enters.",
+    "followUp": "Why is START useful even though it is virtual? It provides an explicit graph boundary for routing initial user input."
+   }
+  ],
+  "keyPoints": [
+   "START marks the boundary where input enters the graph.",
+   "Use START primarily to select the graph's initial node or nodes.",
+   "A fixed entry route is declared by adding an edge from START to a node.",
+   "Conditional routing from START supports different initial destinations.",
+   "The configured entry point runs first when graph execution begins."
+  ],
+  "gotchas": [
+   "The edge must identify the graph's entry node or nodes; START itself is not an application node."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "State Management": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langgraph/graph-api",
+  "sourceTitle": "Graph API overview",
+  "summary": "State Management is LangGraph's shared-state model for agent workflows. Define a state schema, let nodes return partial updates, and use reducers to determine how updates are combined.",
+  "explanation": "State is a shared data structure that represents the current application snapshot. Nodes read the state and return partial updates; LangGraph applies those updates through each field's reducer, then edges determine what runs next.",
+  "syntax": "const graph = new StateGraph(State).addNode(name, node).addEdge(from, to).compile();",
+  "parameters": [],
+  "returns": "A compiled graph that can be invoked to execute nodes and produce state updates.",
+  "example": {
+   "title": "Shared state with StateGraph",
+   "code": "import { Annotation, StateGraph, START, END } from \"@langchain/langgraph\";\n\nconst State = Annotation.Root({\n  input: Annotation<string>(),\n  result: Annotation<string>(),\n});\n\nconst graph = new StateGraph(State)\n  .addNode(\"process\", (state) => ({\n    result: state.input.toUpperCase(),\n  }))\n  .addEdge(START, \"process\")\n  .addEdge(\"process\", END)\n  .compile();\n\nconst output = await graph.invoke({ input: \"hello\" });\nconsole.log(output.result);",
+   "language": "typescript",
+   "explanation": "Defines shared state, lets a node read it and return a partial update, then compiles and invokes the graph."
+  },
+  "useCases": [
+   {
+    "title": "Share context between nodes",
+    "scenario": "Multi-step agent workflows"
+   },
+   {
+    "title": "Aggregate updates with reducers",
+    "scenario": "Parallel or concurrent node execution"
+   },
+   {
+    "title": "Update and route with Command",
+    "scenario": "Conditional workflow transitions"
+   }
+  ],
+  "related": [
+   "StateGraph",
+   "StateSchema",
+   "Command",
+   "reducer",
+   "CompiledGraph"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is state in LangGraph?",
+    "answer": "State is the shared data structure representing the application's current snapshot. It is typically defined with a schema, and nodes read it while returning updates to it.",
+    "followUp": "How are concurrent updates combined? Each state key can define a reducer that aggregates values received from multiple nodes."
+   },
+   {
+    "question": "What does StateGraph provide?",
+    "answer": "StateGraph is the main graph class for building an agent workflow. It is parameterized by a user-defined State object, and its nodes communicate by reading and writing shared state.",
+    "followUp": "What must happen before execution? Add the required nodes and edges, then compile the StateGraph into an executable graph."
+   },
+   {
+    "question": "How do node updates affect state?",
+    "answer": "Nodes emit updates to state, and the configured reducer for each key determines how an update is applied. A node can therefore return only the fields it wants to change rather than reconstructing the full state.",
+    "followUp": "How can one operation both update state and choose the next node? Return a Command from the node function to update state and route in one step."
+   }
+  ],
+  "keyPoints": [
+   "Use StateGraph when constructing a graph around user-defined state.",
+   "Reducers control how each emitted update is applied to its state key.",
+   "StateSchema defines state fields using standard schemas and special value types.",
+   "Command supports combining a state update with routing from a node."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "StateGraph": {
+  "sourceUrl": "https://langchain-ai.github.io/langgraphjs/reference/classes/langgraph.StateGraph.html",
+  "sourceTitle": "StateGraph | LangGraph.js API Reference",
+  "summary": "StateGraph is the builder for stateful workflows whose nodes read shared state and return partial updates. Add nodes and edges, optionally configure reducers, then compile the graph before invoking it.",
+  "explanation": "StateGraph builds a workflow whose nodes read and partially update shared state. Define the state schema, add nodes and edges, then compile the builder before invoking the resulting graph; reducers can combine updates when multiple nodes write the same key.",
+  "syntax": "new StateGraph<SD, S, U, N, I, O, C, NodeReturnType, InterruptType, WriterType>(stateDefinition)",
+  "parameters": [
+   {
+    "name": "SD",
+    "type": "State definition",
+    "description": "State definition used to type the graph's state and updates; the documentation exposes the constructor through the generic state-definition parameter."
+   },
+   {
+    "name": "S",
+    "type": "State",
+    "description": "The graph's state type."
+   },
+   {
+    "name": "U",
+    "type": "Update type",
+    "description": "The type of updates returned by nodes."
+   },
+   {
+    "name": "N",
+    "type": "Node-name type",
+    "description": "The node-name type."
+   },
+   {
+    "name": "I",
+    "type": "Input type",
+    "description": "The input state type."
+   },
+   {
+    "name": "O",
+    "type": "Output type",
+    "description": "The output state type."
+   },
+   {
+    "name": "C",
+    "type": "Context type",
+    "description": "The context type."
+   },
+   {
+    "name": "NodeReturnType",
+    "type": "Node return type",
+    "description": "The node return type."
+   },
+   {
+    "name": "InterruptType",
+    "type": "Interrupt type",
+    "description": "The interrupt type."
+   },
+   {
+    "name": "WriterType",
+    "type": "Writer type",
+    "description": "The writer type."
+   }
+  ],
+  "returns": "StateGraph<SD, S, U, N, I, O, C, NodeReturnType, InterruptType, WriterType>",
+  "example": {
+   "title": "Minimal StateGraph",
+   "code": "import { Annotation, StateGraph } from \"@langchain/langgraph\";\n\nconst State = Annotation.Root({\n  count: Annotation<number>,\n});\n\nconst graph = new StateGraph(State)\n  .addNode(\"increment\", (state) => ({ count: state.count + 1 }))\n  .addEdge(\"__start__\", \"increment\")\n  .addEdge(\"increment\", \"__end__\")\n  .compile();\n\nconst result = await graph.invoke({ count: 0 });\nconsole.log(result);",
+   "language": "typescript",
+   "explanation": "Defines annotated state, adds a node and edges, compiles the graph, and invokes the resulting executable graph."
+  },
+  "useCases": [
+   {
+    "title": "Stateful agent workflows",
+    "scenario": "Build an agent workflow from state-reading and state-writing nodes connected by edges."
+   },
+   {
+    "title": "Reducer-based aggregation",
+    "scenario": "Accumulate or combine values when several nodes update the same field."
+   },
+   {
+    "title": "Typed graph interfaces",
+    "scenario": "Define a graph with typed input and output state boundaries."
+   },
+   {
+    "title": "Planning and tool-use control flow",
+    "scenario": "Create branching, looping, or tool-oriented execution paths with graph edges."
+   }
+  ],
+  "related": [
+   "Annotation",
+   "CompiledStateGraph",
+   "CompiledGraph",
+   "Send"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is StateGraph and what is its basic lifecycle?",
+    "answer": "StateGraph is the builder for a graph in which nodes communicate through shared state. A node receives the defined state and returns a partial state update; after nodes and edges are configured, compile the graph before using it.",
+    "followUp": "How are concurrent writes to one state key combined? If the key has a reducer, its reducer aggregates the values received from multiple nodes; otherwise the channel keeps the latest value according to its configuration."
+   },
+   {
+    "question": "How do nodes update StateGraph state?",
+    "answer": "A node reads the graph's state and returns only the fields it wants to update, rather than reconstructing the entire state object. This enables independent nodes to update selected state keys.",
+    "followUp": "What type should a reducer implement? It should accept the current value and an update value, with the shape `(left: Value, right: UpdateValue) => Value`."
+   },
+   {
+    "question": "How is StateGraph state defined?",
+    "answer": "The constructor is parameterized by a user-defined state schema, commonly created with Annotation. Annotation can define channels directly or attach reducers to fields, and the graph is then built with nodes and edges.",
+    "followUp": "What does compilation produce? It produces a compiled graph, which is the executable result of the StateGraph builder and should be used for invocation."
+   }
+  ],
+  "keyPoints": [
+   "StateGraph models workflows around a shared state that nodes read and update.",
+   "Node functions consume the declared state and return only a partial update.",
+   "State fields may define reducers to control how updates are aggregated.",
+   "Reducers receive the existing value and an incoming update, then return the combined value.",
+   "Annotation is the related API to use when declaring StateGraph state channels.",
+   "The builder must be compiled after its structure is configured."
+  ],
+  "gotchas": [
+   "Calling StateGraph methods does not make the workflow executable; compile it before use."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Streaming": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langgraph/streaming",
+  "sourceTitle": "Streaming",
+  "summary": "LangGraph's `stream` API lets applications observe graph execution as it happens. Select a stream mode to receive state changes, full state snapshots, LLM tokens, custom events, checkpoints, tasks, or debug events.",
+  "explanation": "LangGraph's `stream` method exposes graph execution as an async iterable. Choose a stream mode to receive state updates, complete state snapshots, LLM tokens, custom data, checkpoints, task events, or debugging information.",
+  "syntax": "await graph.stream(input, { streamMode: \"updates\" })",
+  "parameters": [
+   {
+    "name": "input",
+    "type": "Graph input",
+    "description": "Initial graph state supplied to the stream invocation."
+   },
+   {
+    "name": "config",
+    "type": "Stream options",
+    "description": "Options including the selected stream mode, such as `updates`, `values`, `messages`, `custom`, `checkpoints`, `tasks`, or `debug`."
+   }
+  ],
+  "returns": "An async iterable of streamed graph execution output.",
+  "example": {
+   "title": "Stream graph updates",
+   "code": "import { StateGraph, Annotation } from \"@langchain/langgraph\";\n\nconst State = Annotation.Root({\n  count: Annotation<number>(),\n});\n\nconst graph = new StateGraph(State)\n  .addNode(\"increment\", (state) => ({ count: state.count + 1 }))\n  .addEdge(\"__start__\", \"increment\")\n  .addEdge(\"increment\", \"__end__\")\n  .compile();\n\nconst stream = await graph.stream(\n  { count: 0 },\n  { streamMode: \"updates\" }\n);\n\nfor await (const chunk of stream) {\n  console.log(chunk);\n}",
+   "language": "typescript",
+   "explanation": "Runs a graph and prints each node's state update as it becomes available."
+  },
+  "useCases": [
+   {
+    "title": "Agent progress",
+    "scenario": "Show incremental progress while a multi-step graph executes."
+   },
+   {
+    "title": "Token streaming",
+    "scenario": "Render LLM responses token by token in a chat interface."
+   },
+   {
+    "title": "Custom events",
+    "scenario": "Send application-specific events from graph nodes to a client."
+   },
+   {
+    "title": "Observability",
+    "scenario": "Inspect checkpoints, tasks, or detailed runtime events during execution."
+   }
+  ],
+  "related": [
+   "streamMode",
+   "updates",
+   "values",
+   "messages",
+   "custom",
+   "checkpoints",
+   "tasks",
+   "debug"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Call `graph.stream(...)` and consume the returned async iterable with `for await...of`.",
+   "Choose `updates` for incremental state changes or `values` for the full state after each graph step.",
+   "The `updates` mode reports only what changed after each execution step.",
+   "The `values` mode reports the accumulated state snapshot after each execution step.",
+   "Use `messages` when the application needs to render model output progressively.",
+   "Available modes cover state, model messages, custom events, checkpoints, task events, and debugging."
+  ],
+  "gotchas": [
+   "Use `messages` for token-level LLM output; it is different from state streaming modes such as `updates` and `values`."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Streaming events": {
+  "sourceUrl": "https://langchain-ai.github.io/langgraphjs/reference/classes/langgraph.CompiledGraph.html",
+  "sourceTitle": "CompiledGraph | LangGraph.js API Reference",
+  "summary": "`streamEvents` exposes an asynchronous stream of runnable lifecycle events while a graph executes. Each event identifies its type, source runnable, and execution ID, enabling real-time progress handling and selective filtering.",
+  "explanation": "`streamEvents` returns an asynchronous event stream for a runnable or compiled graph. Each event identifies the lifecycle phase, the runnable that emitted it, and its execution ID, allowing applications to observe intermediate progress and filter events such as streamed model output.",
+  "syntax": "streamEvents(input, options, streamOptions?): IterableReadableStream<StreamEvent>",
+  "parameters": [
+   {
+    "name": "input",
+    "type": "null | InputType | CommandType",
+    "description": "Input passed to the runnable or compiled graph."
+   },
+   {
+    "name": "options",
+    "type": "Partial<PregelOptions<...> & { version: \"v1\" | \"v2\" }>",
+    "description": "Options including the required stream event version, such as `version: \"v2\"`."
+   },
+   {
+    "name": "streamOptions",
+    "type": "Omit<EventStreamCallbackHandlerInput, \"autoClose\">",
+    "description": "Optional callback-handler streaming configuration, excluding `autoClose`."
+   }
+  ],
+  "returns": "IterableReadableStream<StreamEvent>",
+  "example": {
+   "title": "Print streamed model output",
+   "code": "const stream = await graph.streamEvents(input, { version: \"v2\" });\n\nfor await (const event of stream) {\n  if (event.event === \"on_chat_model_stream\") {\n    process.stdout.write(event.data?.chunk?.content ?? \"\");\n  }\n}",
+   "language": "typescript",
+   "explanation": "Iterates over runnable events and prints streamed chat-model content as it arrives."
+  },
+  "useCases": [
+   {
+    "title": "Live token rendering",
+    "scenario": "Display model output incrementally in a chat interface."
+   },
+   {
+    "title": "Execution progress",
+    "scenario": "Show progress from intermediate nodes and tools during a long graph run."
+   },
+   {
+    "title": "Tracing and diagnostics",
+    "scenario": "Inspect which runnable emitted each lifecycle notification."
+   }
+  ],
+  "related": [
+   "stream",
+   "StreamEvent",
+   "EventStreamCallbackHandler",
+   "on_chat_model_start",
+   "on_chat_model_stream",
+   "on_chat_model_end"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `streamEvents` provide?",
+    "answer": "`streamEvents` creates an iterator of `StreamEvent` objects that reports runnable progress in real time. The event object includes the event name, the emitting runnable's name, and a run ID.",
+    "followUp": "How would you select only generated tokens? Filter for the appropriate model stream lifecycle event, such as `on_chat_model_stream`, and read its chunk data."
+   },
+   {
+    "question": "How are stream events named?",
+    "answer": "Event names follow the pattern `on_[runnable_type]_(start|stream|end)`. This lets consumers distinguish invocation start, incremental output, and completion for each runnable type.",
+    "followUp": "How can nested execution be correlated? Use each event's run ID and preserve parent-child relationships when the surrounding event data provides them."
+   },
+   {
+    "question": "What does `streamEvents` return and how is it consumed?",
+    "answer": "The method accepts an input and options containing a stream-events version, and returns an `IterableReadableStream<StreamEvent>`. In JavaScript, consume it with `for await...of`.",
+    "followUp": "Why choose version `v2` in current code? It is an explicitly supported version in the documented signature and should be passed rather than relying on an implicit default."
+   }
+  ],
+  "keyPoints": [
+   "The method exposes events from a runnable's internal execution rather than only its final result.",
+   "Consume the result as an asynchronous iterator to react while execution is still underway.",
+   "Lifecycle names encode the runnable category and whether execution started, streamed, or ended.",
+   "Use the event's `name` field to identify which runnable produced a notification.",
+   "Use `run_id` to distinguish separate executions of the same runnable."
+  ],
+  "gotchas": [
+   "Filter using the documented lifecycle naming pattern, such as `on_chat_model_stream`; event names are not arbitrary labels.",
+   "Nested runnables emit their own events and IDs, so do not assume one run ID represents the entire execution tree."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Structured outputs": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langchain/structured-output",
+  "sourceTitle": "Structured output",
+  "summary": "Structured output lets a LangChain agent return validated data that conforms to a declared schema instead of free-form text. The result is available in the final state’s structuredResponse field.",
+  "explanation": "An agent can be configured with a Zod, Standard Schema, or JSON Schema response format. LangChain validates the model's result and places the typed data in the agent state's structuredResponse field; it uses provider-native output when supported and otherwise falls back to tool calling.",
+  "syntax": "createAgent({ model, responseFormat: schemaOrStrategy })",
+  "parameters": [
+   {
+    "name": "responseFormat",
+    "type": "Zod schema, Standard Schema-compatible schema, JSON Schema object, ToolStrategy, or ProviderStrategy",
+    "description": "The schema or response strategy that defines the agent's structured return value."
+   }
+  ],
+  "returns": "The agent's final state, including the validated structured response in structuredResponse.",
+  "example": {
+   "title": "Return a validated structured response",
+   "code": "import { createAgent } from \"langchain\";\nimport { z } from \"zod\";\n\nconst Contact = z.object({\n  name: z.string(),\n  email: z.string().email(),\n});\n\nconst agent = createAgent({\n  model: \"openai:gpt-4.1-mini\",\n  responseFormat: Contact,\n});\n\nconst result = await agent.invoke({\n  messages: [{ role: \"user\", content: \"Contact Ada at ada@example.com\" }],\n});\n\nconsole.log(result.structuredResponse);",
+   "language": "typescript",
+   "explanation": "Defines a Zod schema, configures an agent with it as its response format, and reads the validated structured response from the final state."
+  },
+  "useCases": [
+   {
+    "title": "Consume typed agent data",
+    "scenario": "Applications need reliable fields for downstream code, storage, or API responses."
+   },
+   {
+    "title": "Use provider-native structured output",
+    "scenario": "A provider supports native schema-constrained generation and should be preferred."
+   },
+   {
+    "title": "Enforce a schema through tool calling",
+    "scenario": "A model lacks native structured-output support but supports tool calling."
+   }
+  ],
+  "related": [
+   "createAgent",
+   "responseFormat",
+   "toolStrategy",
+   "providerStrategy",
+   "structuredResponse"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does structured output provide for an agent?",
+    "answer": "Structured output constrains an agent's result to a declared schema instead of free-form text. The agent validates the generated data and exposes it as structuredResponse in its final state.",
+    "followUp": "How does strategy selection work? If the model supports native structured output, the agent can use a provider strategy; otherwise it uses tool calling."
+   },
+   {
+    "question": "Which schema formats can responseFormat accept?",
+    "answer": "The responseFormat option accepts a Zod schema, a Standard Schema-compatible schema, or a JSON Schema object. This gives the agent a concrete contract for the returned data.",
+    "followUp": "Why use an explicit strategy wrapper? It lets you choose providerStrategy or toolStrategy instead of relying on automatic selection."
+   },
+   {
+    "question": "How are native and tool-calling strategies related?",
+    "answer": "The default behavior is tool calling, where an additional tool call constructs the structured result. Models with native structured-output support can use that provider-native strategy instead.",
+    "followUp": "What should an application inspect after invocation? It should read the structuredResponse property from the final state and handle validation or invocation errors appropriately."
+   }
+  ],
+  "keyPoints": [
+   "Structured output gives an agent a predictable data contract rather than an unconstrained prose response.",
+   "The response format supports Zod, Standard Schema-compatible, and JSON Schema definitions.",
+   "Generated structured data is captured and validated before the application receives it.",
+   "Supported models can use provider-native structured output rather than the fallback tool-calling approach.",
+   "Tool calling provides structured output for models without native structured-output support."
+  ],
+  "gotchas": [
+   "Unless the model supports native structured output, the default strategy adds a tool call to produce the structured result.",
+   "Read structuredResponse from the final agent state rather than expecting the structured object as the plain text message."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Supervisor Agent": {
+  "sourceUrl": "https://langchain-ai.github.io/langgraphjs/reference/functions/langgraph-supervisor.createSupervisor.html",
+  "sourceTitle": "createSupervisor | LangGraph.js API Reference",
+  "summary": "createSupervisor builds a hierarchical multi-agent supervisor that routes tasks among specialized agents using handoff tools. Configure the supervisor model, managed agents, prompt, naming mode, output-history mode, and optional pre-model processing.",
+  "explanation": "createSupervisor builds a hierarchical multi-agent workflow in which a language model routes work among specialized agents through handoff tools. The returned workflow must be compiled before invocation; optional settings control agent-name exposure, message-history forwarding, and preprocessing before the supervisor model runs.",
+  "syntax": "createSupervisor({ agents, llm, prompt?, agentNameMode?, outputMode?, preModelHook?, ... })",
+  "parameters": [
+   {
+    "name": "agents",
+    "type": "PregelNode[]",
+    "description": "Managed worker agents that the supervisor can delegate to."
+   },
+   {
+    "name": "llm",
+    "type": "LanguageModelLike",
+    "description": "Language model used by the supervisor."
+   },
+   {
+    "name": "prompt",
+    "type": "string | SystemMessage | SystemMessagePromptTemplate | ...",
+    "description": "Instructions that guide supervisor routing and coordination."
+   },
+   {
+    "name": "agentNameMode",
+    "type": "\"inline\" | \"tool\"",
+    "description": "Controls how managed-agent names are exposed to the supervisor model."
+   },
+   {
+    "name": "outputMode",
+    "type": "\"full_history\" | \"last_message\"",
+    "description": "Controls whether full worker history or only the last message is added."
+   },
+   {
+    "name": "preModelHook",
+    "type": "RunnableLike",
+    "description": "Optional node run before the supervisor LLM, useful for trimming or summarizing history."
+   }
+  ],
+  "returns": "A supervisor graph that coordinates the supplied agents and must be compiled before execution.",
+  "example": {
+   "title": "Create and invoke a supervisor",
+   "code": "import { createSupervisor } from \"@langchain/langgraph-supervisor\";\nimport { createReactAgent } from \"@langchain/langgraph/prebuilt\";\nimport { ChatOpenAI } from \"@langchain/openai\";\n\nconst model = new ChatOpenAI({ model: \"gpt-4o-mini\" });\nconst researcher = createReactAgent({ model, tools: [] });\nconst supervisor = createSupervisor({\n  agents: [researcher],\n  llm: model,\n  prompt: \"Delegate research tasks to the researcher.\",\n}).compile();\n\nconst result = await supervisor.invoke({\n  messages: [{ role: \"user\", content: \"Research LangGraph.\" }],\n});\nconsole.log(result.messages.at(-1)?.content);",
+   "language": "typescript",
+   "explanation": "Creates one worker agent, places it under a supervisor, compiles the workflow, and invokes it with a user message."
+  },
+  "useCases": [
+   {
+    "title": "Hierarchical multi-agent orchestration",
+    "scenario": "Several domain specialists must be coordinated by one central decision-maker."
+   },
+   {
+    "title": "Message-history management",
+    "scenario": "Worker outputs need controlled context sharing with the coordinator."
+   },
+   {
+    "title": "History trimming or summarization",
+    "scenario": "Long conversations require preprocessing before model calls."
+   },
+   {
+    "title": "Agent-name exposure",
+    "scenario": "The model needs explicit worker identity in routed messages."
+   }
+  ],
+  "related": [
+   "LangGraph Multi-Agent Supervisor",
+   "createSupervisor",
+   "handoff tools",
+   "full_history",
+   "last_message",
+   "preModelHook",
+   "agentNameMode"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does createSupervisor do?",
+    "answer": "createSupervisor constructs a multi-agent supervisor that coordinates specialized agents. It uses an LLM to decide which managed agent to invoke and exposes handoff tools for agent-to-agent communication.",
+    "followUp": "How would you reduce context growth? Configure the documented pre-model node to trim or summarize history before the supervisor LLM runs, and consider forwarding only the last worker message."
+   },
+   {
+    "question": "What are the core inputs and lifecycle?",
+    "answer": "The supervisor receives managed agents and an LLM, along with optional prompt and configuration settings. The resulting workflow is compiled and then invoked like a LangGraph application.",
+    "followUp": "Why compile it? Compilation turns the graph definition into an executable workflow that can be invoked and used with LangGraph runtime features."
+   },
+   {
+    "question": "How can agent names be exposed to the supervisor?",
+    "answer": "Agent-name handling controls how a managed agent's identity is exposed to the supervisor model. The documented modes include adding the name inline in message content with XML-style tags or using the alternative name-exposure behavior.",
+    "followUp": "When would inline naming help? It can make the worker identity explicit in the model-visible content, which is useful when the supervisor must distinguish similarly shaped outputs."
+   }
+  ],
+  "keyPoints": [
+   "The factory creates a central coordinator for a hierarchical multi-agent workflow.",
+   "Managed agents communicate through handoff tools exposed to the supervisor workflow.",
+   "The full-history mode preserves all messages produced by a managed agent when adding its result to the shared workflow history.",
+   "The default last-message mode limits forwarded worker output to the most recent message.",
+   "Agent-name configuration determines how worker identity is presented to the supervisor model."
+  ],
+  "gotchas": [
+   "Choose message-history mode deliberately: the documented setting can forward the full agent history or only the last message, with the latter as the default.",
+   "Use the pre-model hook for long histories when trimming or summarization is needed before the supervisor calls its language model.",
+   "Workers are coordinated by the supervisor; design specialized agents and avoid assuming that workers communicate directly with one another."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Task": {
+  "sourceUrl": "https://langchain-ai.github.io/langgraphjs/reference/functions/langgraph.task.html",
+  "sourceTitle": "Function task",
+  "summary": "`task` wraps an asynchronous operation for use inside a LangGraph entrypoint or StateGraph. Its returned proxy produces promises, enabling checkpoint-aware execution and parallel task calls.",
+  "explanation": "The `task` function wraps an asynchronous operation and returns a promise-producing proxy. The proxy can be called only from an entrypoint or StateGraph; with checkpointing enabled, its inputs and outputs must be serializable, and concurrent calls can be awaited together.",
+  "syntax": "task<ArgsT extends unknown[], OutputT>(optionsOrName: string | TaskOptions, func: TaskFunc<ArgsT, OutputT>): (...args: ArgsT) => Promise<OutputT>",
+  "parameters": [
+   {
+    "name": "optionsOrName",
+    "type": "string | TaskOptions",
+    "description": "A task name string or TaskOptions configuration object."
+   },
+   {
+    "name": "func",
+    "type": "TaskFunc<ArgsT, OutputT>",
+    "description": "The function that performs the task."
+   }
+  ],
+  "returns": "A proxy accepting the original arguments and returning `Promise<OutputT>`.",
+  "example": {
+   "title": "Parallel task execution",
+   "code": "import { entrypoint, task } from \"@langchain/langgraph\";\n\nconst addOne = task(\"add\", async (value: number) => value + 1);\n\nconst workflow = entrypoint(\"example\", async (numbers: number[]) => {\n  const promises = numbers.map((number) => addOne(number));\n  return await Promise.all(promises);\n});\n\nconst result = await workflow.invoke([1, 2, 3]);\nconsole.log(result); // [2, 3, 4]",
+   "language": "typescript",
+   "explanation": "Defines a task and runs several task calls concurrently inside an entrypoint."
+  },
+  "useCases": [
+   {
+    "title": "Parallel work",
+    "scenario": "Run independent asynchronous operations at the same time and collect their results."
+   },
+   {
+    "title": "Configured tasks",
+    "scenario": "Give a unit of work a stable name or configure behavior such as retries."
+   },
+   {
+    "title": "Checkpointed workflows",
+    "scenario": "Use task calls within a checkpointed workflow where serializable inputs and outputs can be persisted."
+   }
+  ],
+  "related": [
+   "entrypoint",
+   "StateGraph",
+   "TaskOptions",
+   "TaskFunc",
+   "MemorySaver"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the `task` function return?",
+    "answer": "`task` accepts either a name or a TaskOptions object plus a task function. It returns a proxy with the same argument list that always resolves to a Promise of the task result.",
+    "followUp": "How would you run independent tasks concurrently? Map the inputs to task calls, then await the resulting promises with `Promise.all`."
+   },
+   {
+    "question": "Where may a LangGraph task be called?",
+    "answer": "Tasks must run inside an entrypoint or StateGraph. This restriction lets LangGraph apply its runtime behavior, including checkpoint-aware execution.",
+    "followUp": "What additional constraint applies with a checkpointer? Task inputs and outputs must be serializable."
+   },
+   {
+    "question": "How does `task` support parallel execution?",
+    "answer": "A task can be invoked like a normal function, but each invocation produces a promise. Independent invocations can therefore be started together and awaited collectively.",
+    "followUp": "Why is this useful for I/O-bound work? Concurrent waiting can reduce total elapsed time when operations do not depend on one another."
+   }
+  ],
+  "keyPoints": [
+   "Use `task` to wrap an operation as a LangGraph task.",
+   "The returned task proxy is callable with the wrapped function's arguments.",
+   "Every task invocation returns a promise rather than the direct value.",
+   "Start independent task calls together and await them collectively for parallel execution.",
+   "The first argument can name the task or configure it with TaskOptions.",
+   "The second argument supplies the asynchronous implementation."
+  ],
+  "gotchas": [
+   "Calling a task outside an entrypoint or StateGraph is invalid.",
+   "Use serializable task arguments and results when checkpointing is enabled.",
+   "The original wrapped function is subject to the same execution-context restriction as the task proxy."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "tool": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langgraph/workflows-agents",
+  "sourceTitle": "Workflows and agents",
+  "summary": "LangGraph's ToolNode executes tools within workflows and supports parallel calls, error handling, and state injection. It is useful when an agent needs controlled, graph-based tool execution.",
+  "explanation": "A tool is a callable capability exposed to an agent. The agent can select it from the configured tool set, provide model-generated arguments, and use its result in the workflow.",
+  "syntax": "new ToolNode(tools)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Give an agent a tool",
+   "code": "import { createReactAgent } from \"@langchain/langgraph/prebuilt\";\nimport { tool } from \"@langchain/core/tools\";\nimport { z } from \"zod\";\n\nconst getWeather = tool(\n  async ({ city }) => `Weather for ${city}: sunny`,\n  {\n    name: \"get_weather\",\n    description: \"Get the current weather for a city\",\n    schema: z.object({ city: z.string() }),\n  },\n);\n\nconst agent = createReactAgent({\n  llm,\n  tools: [getWeather],\n});\n\nconst result = await agent.invoke({\n  messages: [{ role: \"user\", content: \"What is the weather in Paris?\" }],\n});",
+   "language": "typescript",
+   "explanation": "Defines a structured tool and supplies it to a ReAct agent, which can decide when to call it."
+  },
+  "useCases": [
+   {
+    "title": "Agent tool execution",
+    "scenario": "Run one or more model-selected tools in a LangGraph workflow."
+   },
+   {
+    "title": "Parallel tool calls",
+    "scenario": "Execute multiple independent tool calls efficiently."
+   },
+   {
+    "title": "State-aware tools",
+    "scenario": "Expose graph state or run context to JavaScript tools."
+   }
+  ],
+  "related": [
+   "ToolNode",
+   "ToolRuntime",
+   "createReactAgent"
+  ],
+  "since": "",
+  "keyPoints": [
+   "ToolNode runs tools inside a graph and is intended for workflows needing explicit execution control.",
+   "ToolNode can coordinate multiple tool calls while managing common execution concerns.",
+   "ToolNode is a foundational component for graph-based agent tool execution.",
+   "A tool receives the model-produced arguments as its first argument.",
+   "JavaScript tools can use their second argument to access state and run-scoped context."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Tool Calling": {
+  "sourceUrl": "https://langchain-ai.github.io/langgraphjs/reference/classes/langgraph.prebuilt.ToolNode.html",
+  "sourceTitle": "ToolNode | LangGraph.js API Reference",
+  "summary": "Tool calling lets a LangGraph.js workflow execute tools selected by a model. ToolNode handles dispatch, parallel execution, and returns one ToolMessage per tool call.",
+  "explanation": "Tool calling in LangGraph.js connects model-generated tool requests to executable tools. ToolNode reads the tool calls in the latest AI message, runs the requested tools, and returns one ToolMessage per call; multiple calls can run in parallel.",
+  "syntax": "new ToolNode(tools)",
+  "parameters": [
+   {
+    "name": "tools",
+    "type": "StructuredToolInterface[] | Record<string, StructuredToolInterface>",
+    "description": "The tools that ToolNode may execute; supplied as a tool array or a mapping of tool names to tools."
+   }
+  ],
+  "returns": "A Runnable node result containing ToolMessages, one for each executed tool call.",
+  "example": {
+   "title": "Execute a model tool call",
+   "code": "import { ToolNode } from \"@langchain/langgraph/prebuilt\";\nimport { tool } from \"@langchain/core/tools\";\nimport { z } from \"zod\";\n\nconst getWeather = tool(\n  async ({ city }) => `Sunny in ${city}`,\n  {\n    name: \"get_weather\",\n    description: \"Get the weather for a city\",\n    schema: z.object({ city: z.string() }),\n  },\n);\n\nconst toolNode = new ToolNode([getWeather]);\nconst result = await toolNode.invoke({\n  messages: [{\n    role: \"assistant\",\n    content: \"\",\n    tool_calls: [{\n      name: \"get_weather\",\n      args: { city: \"Paris\" },\n      id: \"call-1\",\n      type: \"tool_call\",\n    }],\n  }],\n});\nconsole.log(result.messages[0].content);",
+   "language": "typescript",
+   "explanation": "ToolNode receives a message containing model-generated tool calls, executes the matching tools, and returns ToolMessages."
+  },
+  "useCases": [
+   {
+    "title": "Execute external actions",
+    "scenario": "Run model-selected APIs, database queries, or application functions inside a graph."
+   },
+   {
+    "title": "Parallel tool execution",
+    "scenario": "Let several independent model requests finish concurrently."
+   },
+   {
+    "title": "Build agent workflows",
+    "scenario": "Use a ready-made execution node instead of implementing tool dispatch and result messages."
+   }
+  ],
+  "related": [
+   "ToolNode",
+   "ToolMessage",
+   "StateGraph",
+   "MessageGraph",
+   "ToolRuntime",
+   "createReactAgent"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does ToolNode do?",
+    "answer": "ToolNode is a prebuilt LangGraph node that executes the tools requested in the latest AI message. It returns ToolMessages corresponding to the executed calls.",
+    "followUp": "How are concurrent calls handled? Multiple requested tool calls are executed in parallel, producing one ToolMessage for each call."
+   },
+   {
+    "question": "How is ToolNode configured and invoked?",
+    "answer": "Construct ToolNode with the tools it may execute, then invoke it with graph state containing the relevant messages. The node matches each model tool call to the configured tool.",
+    "followUp": "What input shape is required? The state must expose a messages collection containing an AI message with tool_calls."
+   },
+   {
+    "question": "How do tools access arguments and graph context?",
+    "answer": "A tool receives the arguments generated by the model as its first argument. In JavaScript, graph-side state and run-scoped context can be accessed through the tool's second ToolRuntime argument.",
+    "followUp": "What is the access boundary? A tool can access only state values passed to ToolNode, so required state must be available there."
+   }
+  ],
+  "keyPoints": [
+   "ToolNode dispatches the tool requests contained in the most recent AI message.",
+   "Several tool calls in one message can execute concurrently.",
+   "Execution results are returned as ToolMessages, with a separate message for every call."
+  ],
+  "gotchas": [
+   "The input graph state must provide messages in the form expected by ToolNode; it supports StateGraph message state or MessageGraph."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Tool choice": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langgraph/sql-agent",
+  "sourceTitle": "Build a custom SQL agent",
+  "summary": "`tool_choice` controls whether a model must call a bound tool. In the JavaScript workflow, `tool_choice: \"any\"` forces a tool call for a dedicated agent step.",
+  "explanation": "Tool choice configures how a model uses bound tools. In the documented JavaScript workflow, passing `tool_choice: \"any\"` to `bindTools` forces the model to select a tool, which is useful when a workflow step must perform a tool operation before continuing.",
+  "syntax": "model.bindTools(tools, { tool_choice: \"any\" })",
+  "parameters": [
+   {
+    "name": "tool_choice",
+    "type": "string",
+    "description": "Tool-choice policy passed to the model binding; the documented JavaScript example uses `\"any\"` to force a tool call."
+   }
+  ],
+  "returns": "A model response produced after applying the selected tool-choice policy; with `\"any\"`, the invocation requires a tool call.",
+  "example": {
+   "title": "Require a tool call",
+   "code": "const llmWithTools = model.bindTools([getSchemaTool], {\n  tool_choice: \"any\",\n});\nconst response = await llmWithTools.invoke(state.messages);",
+   "language": "typescript",
+   "explanation": "Binds a model to a tool and requires a tool call when invoking it."
+  },
+  "useCases": [
+   {
+    "title": "Force schema inspection",
+    "scenario": "A workflow stage must retrieve database schema before generating a query."
+   },
+   {
+    "title": "Constrain workflow stages",
+    "scenario": "A multi-stage agent needs mandatory tool operations at selected points."
+   },
+   {
+    "title": "Customize per-step prompts",
+    "scenario": "Different steps require different instructions while using tools."
+   }
+  ],
+  "related": [
+   "bindTools",
+   "ToolNode",
+   "tool calling",
+   "dedicated nodes"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `tool_choice: \"any\"` do?",
+    "answer": "`tool_choice` controls whether and how a model selects among tools bound to it. In the JavaScript example, `\"any\"` requires a tool call for that invocation.",
+    "followUp": "How can a workflow guarantee a particular operation? Use a dedicated node with only the required tool bound, then invoke the model with an appropriate forced tool-choice setting."
+   },
+   {
+    "question": "How is tool choice used in the JavaScript workflow?",
+    "answer": "The model is first bound to the relevant tool with `bindTools`, and the resulting model is then invoked with the current message state. This keeps tool selection inside the workflow node.",
+    "followUp": "Why use a dedicated node? It lets the workflow force tool calls at specific stages and customize the prompt for each stage."
+   },
+   {
+    "question": "Why place forced tool calls in dedicated nodes?",
+    "answer": "Dedicated nodes can force tool calls when needed and customize prompts associated with each step. The search result documents this pattern for listing tables, retrieving schema, generating a query, and checking it.",
+    "followUp": "What is the broader design benefit? Explicit stages provide finer control than leaving the entire sequence to one unconstrained agent loop."
+   }
+  ],
+  "keyPoints": [
+   "Tool choice is model-dependent: only models that expose this capability can honor a requested selection policy.",
+   "The JavaScript example uses the `any` value to require that the model call a tool.",
+   "A workflow can place mandatory tool operations in separate nodes instead of relying on one general-purpose agent step.",
+   "Dedicated tool-call nodes also allow prompts to be tailored to the exact operation being performed."
+  ],
+  "gotchas": [
+   "The documented setting forces the model to make a tool call rather than allowing a direct text response."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "ToolNode": {
+  "sourceUrl": "https://langchain-ai.github.io/langgraphjs/reference/classes/langgraph.prebuilt.ToolNode.html",
+  "sourceTitle": "ToolNode | LangGraph.js API Reference",
+  "summary": "ToolNode is a prebuilt LangGraph.js node that executes tool calls from an AIMessage. It supports graph message state and parallel execution, returning one ToolMessage per call.",
+  "explanation": "ToolNode is a prebuilt LangGraph.js runnable that receives an AIMessage with tool calls, looks up the matching tools, executes requested calls—concurrently when there are several—and returns one ToolMessage per call. It accepts graph state containing messages, a message list directly, or tool-call objects, and can be placed in a StateGraph or used independently.",
+  "syntax": "new ToolNode(tools)",
+  "parameters": [
+   {
+    "name": "tools",
+    "type": "StructuredToolInterface[]",
+    "description": "Tools that ToolNode can execute; construct the node with an array of tools."
+   }
+  ],
+  "returns": "A runnable result containing ToolMessages, one for each tool call.",
+  "example": {
+   "title": "Execute an AI-generated tool call",
+   "code": "import { AIMessage } from \"@langchain/core/messages\";\nimport { tool } from \"@langchain/core/tools\";\nimport { ToolNode } from \"@langchain/langgraph/prebuilt\";\n\nconst getWeather = tool(\n  async ({ location }: { location: string }) => `Weather in ${location}: sunny`,\n  {\n    name: \"get_weather\",\n    description: \"Get the weather for a location\",\n    schema: undefined as any\n  }\n);\n\nconst toolNode = new ToolNode([getWeather]);\nconst message = new AIMessage({\n  content: \"\",\n  tool_calls: [{ name: \"get_weather\", args: { location: \"sf\" }, id: \"call-1\", type: \"tool_call\" }]\n});\n\nconst result = await toolNode.invoke({ messages: [message] });\nconsole.log(result);\n",
+   "language": "typescript",
+   "explanation": "Creates a ToolNode, supplies an AIMessage containing a tool call, and invokes the node to produce the corresponding ToolMessage."
+  },
+  "useCases": [
+   {
+    "title": "Graph tool execution",
+    "scenario": "Execute model-generated tools inside a StateGraph or MessageGraph."
+   },
+   {
+    "title": "Parallel tool calls",
+    "scenario": "Run several independent tool calls concurrently."
+   },
+   {
+    "title": "Standalone execution",
+    "scenario": "Invoke a tool executor directly with an AIMessage or tool-call list."
+   }
+  ],
+  "related": [
+   "toolsCondition",
+   "MessagesAnnotation",
+   "StateGraph",
+   "AIMessage",
+   "ToolMessage"
+  ],
+  "since": "",
+  "keyPoints": [
+   "ToolNode executes the tools requested by the final AIMessage.",
+   "Multiple requested tools execute in parallel rather than strictly one after another.",
+   "The result is a list containing one ToolMessage for every executed call.",
+   "Use ToolNode in a StateGraph with messages state or in a MessageGraph."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Tools": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langchain/tools",
+  "sourceTitle": "Tools",
+  "summary": "Tools are callable functions that let LangChain agents interact with external systems. A chat model chooses when to call a tool and supplies arguments according to its declared input schema.",
+  "explanation": "Tools are callable functions with declared inputs and outputs that an agent can expose to a chat model. The model chooses whether to invoke one and supplies arguments based on the conversation; an agent then executes the call and feeds the result back into its loop.",
+  "syntax": "tool(async (args) => result, { name, description, schema })",
+  "parameters": [
+   {
+    "name": "implementation",
+    "type": "callable function",
+    "description": "The function that performs the tool's operation and returns its result."
+   },
+   {
+    "name": "name",
+    "type": "string",
+    "description": "A unique identifier the model uses to refer to the tool."
+   },
+   {
+    "name": "description",
+    "type": "string",
+    "description": "Human-readable guidance describing the tool's purpose."
+   },
+   {
+    "name": "schema",
+    "type": "input schema",
+    "description": "Schema describing the tool's accepted arguments."
+   }
+  ],
+  "returns": "A callable tool definition with declared metadata, input validation, and an implementation result.",
+  "example": {
+   "title": "Define a tool",
+   "code": "import { tool } from \"langchain\";\nimport * as z from \"zod\";\n\nconst getWeather = tool(\n  async ({ city }) => `Weather for ${city}: sunny`,\n  {\n    name: \"get_weather\",\n    description: \"Get the weather for a city\",\n    schema: z.object({ city: z.string() }),\n  },\n);",
+   "language": "typescript",
+   "explanation": "This defines a callable tool with a name, description, input schema, and implementation."
+  },
+  "useCases": [
+   {
+    "title": "Fetch real-time data",
+    "scenario": "An agent needs current information unavailable in its prompt or model knowledge."
+   },
+   {
+    "title": "Run code or actions",
+    "scenario": "An agent must perform computation or execute an operational function."
+   },
+   {
+    "title": "Query external databases",
+    "scenario": "An agent needs to read from or interact with an external data store."
+   }
+  ],
+  "related": [
+   "agents",
+   "chat models",
+   "create_agent",
+   "middleware",
+   "headless tools"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a tool in an agent system?",
+    "answer": "A tool is a callable function with a defined input and output contract. It gives an agent capabilities such as retrieving data, executing code, querying databases, or taking actions.",
+    "followUp": "How does a model decide which tool to use? It considers the conversation context and generates the arguments for the selected tool."
+   },
+   {
+    "question": "How do you define a tool in LangChain.js?",
+    "answer": "Define it with the `tool` function and provide an implementation plus metadata: a name, description, and input schema. The schema describes the arguments that the model may supply.",
+    "followUp": "Why include a description? It helps the model understand the tool's purpose and decide when it is relevant."
+   },
+   {
+    "question": "How do tools participate in an agent loop?",
+    "answer": "Tools are used by agents, which expose them during the model's tool-calling loop. The model can request a call, the tool runs, and its result becomes available for continued agent reasoning.",
+    "followUp": "What other integration can execute tools? In LangGraph workflows, tools can be registered with a graph, while agent execution is commonly handled through an agent abstraction."
+   }
+  ],
+  "keyPoints": [
+   "Tools give agents capabilities beyond generating text, including interaction with external systems.",
+   "Typical tool capabilities include live data retrieval, code execution, and database queries.",
+   "A tool is implemented as a callable function rather than merely descriptive prompt text.",
+   "Tools should expose an explicit contract for accepted arguments and returned results.",
+   "The tool definition is supplied to the chat model so it can produce tool calls.",
+   "The basic JavaScript creation path imports `tool` from the LangChain package."
+  ],
+  "gotchas": [
+   "Do not assume every available tool will run: the model selects invocation from the conversation context.",
+   "The input must conform to the tool's declared schema because the model generates the arguments."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Tracing": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langgraph/observability",
+  "sourceTitle": "LangSmith Observability",
+  "summary": "Tracing records the steps an agent takes from input to output as LangSmith runs. Enable it with LangSmith environment variables to inspect execution and debug LangGraph applications.",
+  "explanation": "Tracing records an application's execution as a sequence of runs, allowing LangSmith to display the steps from input to output. For a LangGraph.js application, enable it with environment variables; LangSmith then visualizes graph execution and helps debug agent behavior.",
+  "syntax": "export LANGSMITH_TRACING=true\nexport LANGSMITH_API_KEY=<your-api-key>",
+  "parameters": [
+   {
+    "name": "LANGSMITH_TRACING",
+    "type": "environment variable",
+    "description": "Set to true to enable LangSmith tracing."
+   },
+   {
+    "name": "LANGSMITH_API_KEY",
+    "type": "environment variable",
+    "description": "LangSmith API key used for authentication."
+   }
+  ],
+  "returns": "A LangSmith trace containing runs for the application's execution.",
+  "example": {
+   "title": "Enable LangGraph tracing",
+   "code": "import { ChatOpenAI } from \"@langchain/openai\";\nimport { StateGraph, START, END, Annotation } from \"@langchain/langgraph\";\n\nconst State = Annotation.Root({\n  messages: Annotation<any[]>({ reducer: (a, b) => a.concat(b), default: () => [] }),\n});\n\nconst model = new ChatOpenAI({ model: \"gpt-4o-mini\" });\nconst graph = new StateGraph(State)\n  .addNode(\"agent\", async (state) => ({ messages: [await model.invoke(state.messages)] }))\n  .addEdge(START, \"agent\")\n  .addEdge(\"agent\", END)\n  .compile();\n\nconst result = await graph.invoke({ messages: [\"Explain tracing\"] });\nconsole.log(result.messages.at(-1)?.content);",
+   "language": "typescript",
+   "explanation": "Run the graph with LangSmith tracing enabled through the environment."
+  },
+  "useCases": [
+   {
+    "title": "Debug agent behavior",
+    "scenario": "Inspect prompts, tool calls, intermediate steps, and outputs while developing an agent."
+   },
+   {
+    "title": "Monitor production runs",
+    "scenario": "Review execution paths and failures in a deployed application."
+   },
+   {
+    "title": "Understand execution flow",
+    "scenario": "Analyze how graph nodes and model calls contribute to an answer."
+   }
+  ],
+  "related": [
+   "LangSmith",
+   "LangGraph",
+   "LangChainTracer",
+   "traceable",
+   "LANGSMITH_TRACING_BACKGROUND"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does tracing provide for a LangGraph application?",
+    "answer": "Tracing represents an application's work as a sequence of runs, where each step from input to output can be inspected in LangSmith. It is enabled for LangGraph applications through the LangSmith tracing configuration.",
+    "followUp": "How would you trace a custom function? Wrap or decorate it with the supported traceable utility so LangSmith can nest its run."
+   },
+   {
+    "question": "How is LangSmith tracing enabled?",
+    "answer": "Set LANGSMITH_TRACING=true and provide LANGSMITH_API_KEY. Once configured, LangSmith can visualize the application's execution steps.",
+    "followUp": "How can tracing be disabled locally? Set LANGSMITH_TRACING=false so trace data is not sent."
+   },
+   {
+    "question": "Are custom functions and SDK calls traced automatically?",
+    "answer": "LangGraph and LangChain modules can be traced automatically after the tracing environment is configured. Other SDKs or custom functions must be wrapped appropriately for their runs to be included and nested.",
+    "followUp": "What serverless concern must be handled? Ensure tracing is not left in background mode when the execution context may end early."
+   }
+  ],
+  "keyPoints": [
+   "A trace models the complete path an application follows from its input to its output.",
+   "Every step within that path is recorded as an individual run.",
+   "Tracing supports debugging a locally running application.",
+   "The basic setup uses environment variables to turn tracing on and authenticate with LangSmith.",
+   "Without another project configuration, traces are sent to the default LangSmith project."
+  ],
+  "gotchas": [
+   "In serverless deployments, set background callbacks to finish tracing before the function exits.",
+   "Custom SDK calls and functions need an appropriate tracing wrapper to appear as nested traces."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "trim_messages": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langgraph/add-memory",
+  "sourceTitle": "Memory - Docs by LangChain",
+  "summary": "`trimMessages` reduces a conversation history to fit an LLM's context window. Configure the retention strategy, token budget, and valid message boundaries before invoking the model.",
+  "explanation": "trimMessages selects a bounded portion of a message list before an LLM call. With the last-message strategy, it retains the newest messages up to the configured token budget while the boundary options help preserve valid conversation structure.",
+  "syntax": "trimMessages(messages, { strategy, maxTokens, startOn, endOn })",
+  "parameters": [
+   {
+    "name": "messages",
+    "type": "BaseMessage[]",
+    "description": "The message list to trim, such as `state.messages`."
+   },
+   {
+    "name": "strategy",
+    "type": "string",
+    "description": "Controls which side of the history is retained; the documented example uses `\"last\"`."
+   },
+   {
+    "name": "maxTokens",
+    "type": "number",
+    "description": "Maximum number of tokens to retain."
+   },
+   {
+    "name": "startOn",
+    "type": "string",
+    "description": "Message type at which the retained segment may begin."
+   },
+   {
+    "name": "endOn",
+    "type": "string[]",
+    "description": "Message types at which the retained segment may end."
+   }
+  ],
+  "returns": "A trimmed message list suitable for passing to the model.",
+  "example": {
+   "title": "Trim graph messages before an LLM call",
+   "code": "import { trimMessages } from \"@langchain/core/messages\";\nimport { StateSchema, MessagesValue, GraphNode } from \"@langchain/langgraph\";\n\nconst State = new StateSchema({ messages: MessagesValue });\n\nconst callModel: GraphNode<typeof State> = async (state) => {\n  const messages = trimMessages(state.messages, {\n    strategy: \"last\",\n    maxTokens: 128,\n    startOn: \"human\",\n    endOn: [\"human\", \"tool\"],\n  });\n  const response = await model.invoke(messages);\n  return { messages: [response] };\n};",
+   "language": "typescript",
+   "explanation": "Keeps a bounded recent message history before invoking the model."
+  },
+  "useCases": [
+   {
+    "title": "Bound prompt size",
+    "scenario": "A graph accumulates a long conversation and needs to keep prompts within the selected model's context window."
+   },
+   {
+    "title": "Keep a valid recent exchange",
+    "scenario": "A model call should use recent dialogue while preserving human and tool message boundaries."
+   },
+   {
+    "title": "Prepare node input",
+    "scenario": "A node receives the complete state history but should send only a budgeted subset to the LLM."
+   }
+  ],
+  "related": [
+   "MessagesValue",
+   "GraphNode",
+   "BaseMessage",
+   "model.invoke"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does trimMessages solve?",
+    "answer": "It trims the message history before invoking the model, using a token budget and a strategy such as retaining the last messages. The JavaScript example uses `strategy: \"last\"` and `maxTokens: 128`.",
+    "followUp": "How can boundary options help? Set `startOn` and `endOn` to message roles that form valid boundaries, such as starting on human and ending on human or tool messages."
+   },
+   {
+    "question": "How does the example limit retained history?",
+    "answer": "`strategy: \"last\"` keeps the recent portion of the conversation, while `maxTokens` limits the retained history. This reduces the chance that the prompt exceeds the model's context window.",
+    "followUp": "What should be adjusted for a different model? Recalculate the budget for that model's supported context window and token-counting behavior."
+   },
+   {
+    "question": "What do startOn and endOn control?",
+    "answer": "The example passes `startOn: \"human\"` and `endOn: [\"human\", \"tool\"]`. These options constrain where trimming may begin and end, helping avoid cutting the history at unsuitable message boundaries.",
+    "followUp": "Why might tool messages matter? A tool result can be part of the latest interaction, so retaining it may preserve the context needed for the next model call."
+   }
+  ],
+  "keyPoints": [
+   "Token counting provides the basis for deciding when history is approaching the model's context limit.",
+   "The strategy determines which side of the history is retained; the JavaScript example uses the recent-message approach.",
+   "Apply trimming immediately before the model invocation rather than storing only the shortened history as the canonical state.",
+   "The sample permits the retained segment to end on either a human or tool message."
+  ],
+  "gotchas": [
+   "Choose a token budget below the model's context limit so the resulting prompt remains acceptable.",
+   "The limit is token-based; it is not simply a count of message objects."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

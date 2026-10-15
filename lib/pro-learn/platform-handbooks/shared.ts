@@ -13,8 +13,8 @@ export function defineHandbook(title: string, description: string, url: string, 
     prepared.sources = sources;
     prepared.answer.steps.push({ title: `${title}: how the pieces fit`, detail: context.mechanism, code: "" },
       { title: "Applied walkthrough", detail: context.example, code: "" });
+    // The pitfall is said once, under "Watch out for" — not again as a question.
     prepared.answer.caveats = [context.pitfall];
-    prepared.answer.subjects.push({ name: `What can go wrong when using ${title}?`, summary: context.pitfall, details: [], keyPoints: [] });
     return { ...topic, prepared };
   });
   const counts = new Map<string, number>();

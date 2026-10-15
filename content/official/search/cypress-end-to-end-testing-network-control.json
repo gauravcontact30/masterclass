@@ -1,0 +1,359 @@
+{
+ "Browser basics::Command queue": {
+  "sourceUrl": "https://docs.cypress.io/app/core-concepts/introduction-to-cypress",
+  "sourceTitle": "Introduction to Cypress",
+  "summary": "Cypress commands are queued for later execution and yield subjects through the command chain instead of returning values synchronously. Use chaining or `.then()` to work with a command's result.",
+  "explanation": "Cypress commands are added to a central queue when invoked and execute later in order. A command does not synchronously return its subject; instead, Cypress yields that subject to the next command or passes it to a `.then()` callback. Synchronous JavaScript runs immediately, so use chaining or `.then()` when code depends on a Cypress result.",
+  "syntax": "cy.<command>()\ncy.<command>().then((subject) => { ... })",
+  "parameters": [],
+  "returns": "Cypress commands return immediately after being appended to the queue; their subjects are yielded rather than synchronously returned.",
+  "example": {
+   "title": "Read a yielded subject",
+   "code": "cy.get('button').then(($button) => {\n  expect($button).to.be.visible\n})",
+   "language": "typescript",
+   "explanation": "The callback receives the subject yielded by the preceding command, so assertions or dependent work run after Cypress resolves the command."
+  },
+  "useCases": [
+   {
+    "title": "Consume a yielded subject",
+    "scenario": "Access the element or value produced by a previous Cypress command."
+   },
+   {
+    "title": "Sequence dependent assertions",
+    "scenario": "Run assertions only after a command has resolved."
+   },
+   {
+    "title": "Coordinate synchronous code",
+    "scenario": "Prevent immediate JavaScript from racing ahead of queued Cypress commands."
+   }
+  ],
+  "related": [
+   ".then()",
+   "cy.get()",
+   "subject",
+   "Cypress commands",
+   "command queue"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Cypress manages the chain and passes each command's yielded subject to the following command.",
+   "Use the yielded subject through chaining or a callback rather than expecting a synchronous return value.",
+   "Calling a command schedules it; execution happens later through Cypress's command queue.",
+   "The JavaScript call finishes immediately, while the queued command sequence executes afterward.",
+   "`.then()` receives the previous command's resolved subject as its first callback argument."
+  ],
+  "gotchas": [
+   "Do not assign a Cypress command to a variable expecting its eventual subject; use chaining or `.then()` instead.",
+   "Avoid mixing immediate JavaScript reads with commands when the JavaScript depends on a command that has not run yet.",
+   "Do not treat Cypress chains as ordinary promises or try to reconcile them with your own promise flow."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Browser basics::Commands and chaining": {
+  "sourceUrl": "https://docs.cypress.io/app/core-concepts/introduction-to-cypress",
+  "sourceTitle": "Introduction to Cypress",
+  "summary": "Cypress commands are queued and composed into chains, with each command yielding a subject to the next. Queries and assertions retry; action commands execute once, so re-query after DOM-changing actions when necessary.",
+  "explanation": "Cypress queues commands while the test function runs and executes them afterward. Each command yields a subject for the next command; queries and assertions can retry, while action commands execute once, so separate queries may be safer when the application re-renders elements.",
+  "syntax": "cy.[command](...args).<command>(...args)",
+  "parameters": [],
+  "returns": "Each command yields a subject to the next command; the yielded value depends on the command.",
+  "example": {
+   "title": "Query, interact, and assert in one chain",
+   "code": "cy.get('input[name=\"email\"]')\n  .should('be.visible')\n  .type('ada@example.com')\n  .should('have.value', 'ada@example.com')",
+   "language": "javascript",
+   "explanation": "This chain queries an input, checks it, types into the yielded element, and verifies the resulting value."
+  },
+  "useCases": [
+   {
+    "title": "Form interactions",
+    "scenario": "Locate an element, interact with it, and verify its state."
+   },
+   {
+    "title": "Retryable checks",
+    "scenario": "Read application state and assert that it has reached an expected condition."
+   },
+   {
+    "title": "Inspecting subjects",
+    "scenario": "Pass a yielded DOM element or value into custom callback logic."
+   },
+   {
+    "title": "Stable interactions",
+    "scenario": "Re-query after an action that may trigger a DOM re-render."
+   }
+  ],
+  "related": [
+   "cy.get()",
+   "cy.contains()",
+   "cy.should()",
+   "cy.then()",
+   "cy.click()",
+   "cy.type()",
+   "Cypress commands",
+   "queries"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Cypress commands form chains because each command yields a subject that the following command receives.",
+   "Begin a chain with a `cy` command; the first command's yielded subject determines which commands can follow.",
+   "Queries inspect application state, yield elements or other data, and retry until the yielded result is current.",
+   "Calling a Cypress command queues it; execution happens after the test function has finished setting up the chain.",
+   "Use `.then()` to access the previous yielded subject in a callback after the preceding command resolves."
+  ],
+  "gotchas": [
+   "Commands are enqueued rather than executed immediately, so do not depend on ordinary synchronous JavaScript timing around Cypress commands."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Browser basics::cy.get and querying": {
+  "sourceUrl": "https://docs.cypress.io/api/commands/get",
+  "sourceTitle": "cy.get() | Cypress API Documentation",
+  "summary": "`cy.get()` queries DOM elements by selector or retrieves aliases. As a Cypress query, it retries and yields a subject that can be chained into actions and assertions.",
+  "explanation": "`cy.get()` queries the document for matching elements and automatically retries while Cypress waits for the application to reach the expected state. It can also resolve aliases such as `@saveButton`; the yielded subject can be used safely by later commands and assertions. When chained from `cy`, searching starts at the document, except inside `.within()`, where it starts from the scoped root.",
+  "syntax": "cy.get(selector)\ncy.get(alias)\ncy.get(selector, options)\ncy.get(alias, options)",
+  "parameters": [
+   {
+    "name": "selector",
+    "type": "String selector",
+    "description": "A selector used to filter matching DOM elements."
+   },
+   {
+    "name": "alias",
+    "type": "String",
+    "description": "An alias created with `.as()` and referenced using `@` plus its name."
+   },
+   {
+    "name": "options",
+    "type": "Object",
+    "description": "Options that change the default behavior of `cy.get()`."
+   }
+  ],
+  "returns": "Yields the matching DOM elements or the result of an alias lookup; for an intercept alias, yields the most recent interception or null if no request has matched. The result is safe to chain further commands.",
+  "example": {
+   "title": "Query and act on an application control",
+   "code": "cy.visit('/settings')\ncy.get('[data-cy=\"save\"]')\n  .should('be.visible')\n  .click()\ncy.get('.toast').should('contain', 'Saved')",
+   "language": "javascript",
+   "explanation": "Queries the save control by selector, waits for it to be visible, clicks it, then queries the resulting notification."
+  },
+  "useCases": [
+   {
+    "title": "Query application controls",
+    "scenario": "Find a button, input, or other control before acting on it."
+   },
+   {
+    "title": "Synchronize with dynamic UI",
+    "scenario": "Wait for an element to appear or reach an asserted state."
+   },
+   {
+    "title": "Read aliases",
+    "scenario": "Retrieve an aliased DOM subject or network result."
+   },
+   {
+    "title": "Use combined selectors",
+    "scenario": "Match several element types in one query."
+   }
+  ],
+  "related": [
+   "cy.as()",
+   "cy.find()",
+   "cy.contains()",
+   "cy.root()",
+   "cy.within()",
+   "cy.should()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use `cy.get(selector)` to find one or more DOM elements, or `cy.get(alias)` to retrieve an aliased value.",
+   "Selector matching follows familiar jQuery-style querying behavior.",
+   "The selector argument filters the elements returned from the application DOM.",
+   "An optional options object can customize command behavior, such as timeout-related settings.",
+   "The yielded subject is either the matched elements or the value resolved from an alias.",
+   "Comma-separated selectors let one query return elements matching any listed selector."
+  ],
+  "gotchas": [
+   "A top-level `cy.get()` searches the whole document; use `.within()` when the query should be scoped to a container.",
+   "The command yields a subject for subsequent commands, rather than performing an immediate synchronous lookup.",
+   "Alias lookups require the `@` prefix, such as `cy.get('@saveButton')`."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Browser basics::Interacting with forms": {
+  "sourceUrl": "https://docs.cypress.io/api/commands/submit",
+  "sourceTitle": "cy.submit() | Cypress API Documentation",
+  "summary": "Fill form controls with Cypress commands, assert their values or state, and submit the form with `.submit()`. The submission command requires the selected subject to be a `<form>`.",
+  "explanation": "Use Cypress's DOM queries and action commands to operate form controls as a user would, then assert the resulting values or state. Submit the form explicitly with `.submit()` when the form itself is the subject.",
+  "syntax": "cy.get('form').submit()\ncy.get('form').submit(options)",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Optional settings that change the command's default behavior."
+   }
+  ],
+  "returns": "Yields the same subject it was given.",
+  "example": {
+   "title": "Submit a completed form",
+   "code": "describe('user form', () => {\n  it('fills, submits, and checks the form', () => {\n    cy.visit('/users/new')\n    cy.get('[data-testid=\"first-name\"]')\n      .type('Johnny')\n      .should('have.value', 'Johnny')\n    cy.get('[data-testid=\"last-name\"]').type('Appleseed')\n    cy.get('form').submit()\n  })\n})",
+   "language": "javascript",
+   "explanation": "This test enters values through the form controls, verifies one entered value, and submits the form."
+  },
+  "useCases": [
+   {
+    "title": "Test successful form submission",
+    "scenario": "Complete a registration or profile form and submit it."
+   },
+   {
+    "title": "Validate field values",
+    "scenario": "Verify that entered values are present in controls."
+   },
+   {
+    "title": "Check invalid submissions",
+    "scenario": "Exercise browser-side required-field validation."
+   }
+  ],
+  "related": [
+   "cy.get()",
+   "cy.type()",
+   "cy.contains()",
+   "cy.click()",
+   "cy.should()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Call `.submit()` to submit a form selected from the page.",
+   "Select the form itself before calling `.submit()`; an input element is not a valid subject.",
+   "The command yields the original form subject, but later commands should not rely on that subject because Cypress marks such chaining unsafe.",
+   "Start the command chain with a DOM-yielding query such as `cy.get()`.",
+   "Assertions chained before submission are awaited automatically."
+  ],
+  "gotchas": [
+   "Do not depend on the form subject in commands chained after `.submit()`; query the page again or assert an independent result.",
+   "`.submit()` only works when the command chain yields a form, not an input or another element.",
+   "Client-side validation failures cause `.submit()` to fail, so provide valid required values when testing successful submission."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Configuration::Fixtures and test data": {
+  "sourceUrl": "https://docs.cypress.io/api/commands/fixture",
+  "sourceTitle": "cy.fixture () | Cypress API Documentation",
+  "summary": "Load fixed test data from a file in Cypress’s fixturesFolder. Use it to share deterministic records or assets and to stub network responses without relying on a live backend.",
+  "explanation": "Place stable test data in the configured fixtures folder and load it with cy.fixture(), or reference it directly in an intercept response. Cypress caches a fixture after its first read, so repeated uses receive the same contents; use cy.readFile() instead when a file changes during the test.",
+  "syntax": "cy.fixture(filePath)\ncy.fixture(filePath, encoding)\ncy.fixture(filePath, options)\ncy.fixture(filePath, encoding, options)",
+  "parameters": [
+   {
+    "name": "filePath",
+    "type": "string",
+    "description": "Path to a file within the fixturesFolder; the extension may be omitted."
+   },
+   {
+    "name": "encoding",
+    "type": "string | null",
+    "description": "Encoding used to read the fixture, including null for a Cypress.Buffer."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Command options."
+   }
+  ],
+  "returns": "Yields the loaded fixture contents, parsed or encoded according to the file type and supplied encoding.",
+  "example": {
+   "title": "Stub a request with fixture data",
+   "code": "describe('users', () => {\n  beforeEach(() => {\n    cy.intercept('GET', '/api/users', { fixture: 'users.json' }).as('getUsers')\n  })\n\n  it('shows deterministic user data', () => {\n    cy.visit('/users')\n    cy.wait('@getUsers')\n    cy.contains('Ada Lovelace').should('be.visible')\n  })\n})",
+   "language": "typescript",
+   "explanation": "Each test stubs the users request with the checked-in users.json fixture, so the page receives predictable data instead of depending on a live backend."
+  },
+  "useCases": [
+   {
+    "title": "Deterministic network data",
+    "scenario": "Stub API responses with checked-in JSON so end-to-end assertions use predictable data."
+   },
+   {
+    "title": "Reusable test data",
+    "scenario": "Share the same user, image, CSV, or JSON data across multiple tests."
+   },
+   {
+    "title": "Asset-based scenarios",
+    "scenario": "Load an image or other fixture asset for upload or rendering tests."
+   },
+   {
+    "title": "Use cy.readFile() instead",
+    "scenario": "Read output generated during a test or data that changes between reads."
+   }
+  ],
+  "related": [
+   "cy.intercept()",
+   "cy.readFile()",
+   "fixturesFolder",
+   "static import/require of JSON fixtures"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Fixtures keep controlled, reusable test data outside the test implementation.",
+   "Unless configured otherwise, Cypress resolves fixture paths from cypress/fixtures.",
+   "Use cy.fixture() to load fixed records or supported assets from the fixtures directory.",
+   "Fixture data can serve as deterministic responses for intercepted network requests.",
+   "Fixtures are intended to remain stable during execution, supporting repeatable tests.",
+   "JSON fixtures can also be imported statically when build-time loading suits the spec."
+  ],
+  "gotchas": [
+   "A fixture is cached after its first read for a given path and encoding, so editing the file during a test will not change later reads.",
+   "Use cy.readFile() for generated or changing files rather than cy.fixture().",
+   "The fixtures folder must be configured for cy.fixture() to work."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Debugging::Debugging and retries": {
+  "sourceUrl": "https://docs.cypress.io/app/guides/debugging",
+  "sourceTitle": "Debugging in Cypress | Cypress Documentation",
+  "summary": "Use the Command Log, snapshots, console details, and cy.debug() to inspect failed browser behavior. Enable test retries to compare repeated attempts and identify flaky tests.",
+  "explanation": "Cypress exposes each test command in the Command Log and captures snapshots that can restore the application to earlier states. Clicking a command reveals its subject and result; enabling test retries reruns failed tests for additional attempts, while cy.debug() adds a breakpoint and browser-console details for the previous command.",
+  "syntax": "cy.debug()\nretries: { runMode: number, openMode: number }",
+  "parameters": [],
+  "returns": "cy.debug() yields the subject received from the previous command; test retries rerun failed tests up to the configured retry count.",
+  "example": {
+   "title": "Inspect a flaky assertion",
+   "code": "describe('checkout', () => {\n  it('submits an order', () => {\n    cy.visit('/checkout')\n    cy.get('[data-cy=submit]').click()\n    cy.debug()\n    cy.contains('Order confirmed').should('be.visible')\n  })\n})",
+   "language": "typescript",
+   "explanation": "Run this in Cypress open mode, click the cy.debug() command, and inspect the browser console while Cypress retries the linked query and assertion."
+  },
+  "useCases": [
+   {
+    "title": "Inspect command state and snapshots",
+    "scenario": "A selector or assertion fails intermittently while developing in Cypress open mode."
+   },
+   {
+    "title": "Detect flaky test behavior with retries",
+    "scenario": "A test passes locally but fails intermittently in CI."
+   },
+   {
+    "title": "Pause with cy.debug()",
+    "scenario": "A linked query and assertion need browser-console inspection during failure."
+   },
+   {
+    "title": "Trace execution through the Command Log",
+    "scenario": "A test contains unexpected lifecycle or network-related commands."
+   }
+  ],
+  "related": [
+   "cy.debug()",
+   "Cypress.log()",
+   "Command Log",
+   "test retries",
+   "snapshots",
+   "retry-ability",
+   "command:retry"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Clicking a command exposes its subject and yielded value for diagnosis.",
+   "In open mode, expand retry attempts individually to compare their behavior.",
+   "Use test retries to identify flaky tests and failures that appear in CI.",
+   "Place cy.debug() in a chain when you need a breakpoint while a linked assertion is failing."
+  ],
+  "gotchas": [
+   "Test retries must be enabled in Cypress configuration before failed tests receive additional attempts.",
+   "cy.debug() does not repeatedly log or break during later retry cycles."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

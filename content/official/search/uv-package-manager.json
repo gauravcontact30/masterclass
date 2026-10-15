@@ -1,0 +1,2475 @@
+{
+ "Python environments::Platform markers": {
+  "sourceUrl": "https://docs.astral.sh/uv/concepts/projects/dependencies/",
+  "sourceTitle": "Managing dependencies | uv - Astral",
+  "summary": "Use PEP 508 environment markers to make uv dependencies conditional on Python versions, operating systems, architectures, or other environment properties. Markers can also restrict dependency sources.",
+  "explanation": "Environment markers attach conditions to dependency declarations. uv evaluates markers such as the operating system or Python version and includes the dependency only when the condition matches; marker expressions can also be used to select dependency sources.",
+  "syntax": "uv add \"<package>; <environment marker>\"",
+  "parameters": [
+   {
+    "name": "requirement",
+    "type": "string",
+    "description": "A dependency requirement followed by a PEP 508 environment marker expression."
+   },
+   {
+    "name": "environment marker",
+    "type": "expression",
+    "description": "The marker expression, such as sys_platform == 'linux' or python_version < '3.9'."
+   }
+  ],
+  "returns": "The dependency is included only when its environment marker evaluates true for the target environment.",
+  "example": {
+   "title": "Linux-only dependency",
+   "code": "uv add \"jax; sys_platform == 'linux'\"",
+   "language": "bash",
+   "explanation": "Adds JAX only when the environment reports Linux."
+  },
+  "useCases": [
+   {
+    "title": "Operating-system-specific dependency",
+    "scenario": "A library is needed only on Linux."
+   },
+   {
+    "title": "Python-version-specific dependency",
+    "scenario": "Different package releases support different Python versions."
+   },
+   {
+    "title": "Conditional dependency source",
+    "scenario": "A package source or index should apply only to selected platforms."
+   }
+  ],
+  "related": [
+   "environment markers",
+   "sys_platform",
+   "platform_system",
+   "platform_machine",
+   "python_version",
+   "python_full_version",
+   "--python-platform",
+   "--python-version"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Declare conditional dependencies with environment markers in the requirement, such as a platform or Python-version expression.",
+   "The marker expression determines whether uv uses the requirement in the current environment.",
+   "Markers support operating system, architecture, Python version, and implementation conditions.",
+   "Use uv's alternate-platform and alternate-version options when checking or compiling for another target."
+  ],
+  "gotchas": [
+   "Use a quoted requirement when adding a dependency with a marker, so the shell does not interpret the semicolon.",
+   "A universal resolution must remain installable across the project's complete requires-python range."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Python environments::Python installation": {
+  "sourceUrl": "https://docs.astral.sh/uv/concepts/python-versions/",
+  "sourceTitle": "Python versions | uv",
+  "summary": "Install supported Python interpreters with uv and understand the difference between uv-managed versions and system installations. uv can select existing interpreters or download compatible managed versions as needed.",
+  "explanation": "uv can discover Python installations already on the system and can also download and manage supported CPython or PyPy distributions. It normally uses managed interpreters when available and downloads one automatically when needed; flags let you require managed or system interpreters.",
+  "syntax": "uv python install [TARGETS]\nuv python list [--managed-python|--no-managed-python]",
+  "parameters": [
+   {
+    "name": "TARGETS",
+    "type": "version specifier(s)",
+    "description": "Python version or versions to install; if omitted, uv uses its configured version sources."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Install and select a managed interpreter",
+   "code": "uv python install 3.12\nuv python list\nuv run --python 3.12 python --version",
+   "language": "bash",
+   "explanation": "Install a managed Python, inspect available interpreters, then run Python with the requested version."
+  },
+  "useCases": [
+   {
+    "title": "Install a reproducible interpreter",
+    "scenario": "A project requires a Python version that is not installed locally."
+   },
+   {
+    "title": "Require uv-managed Python",
+    "scenario": "A command must not depend on operating-system or pyenv interpreters."
+   },
+   {
+    "title": "Use system Python only",
+    "scenario": "An organization standardizes on an existing interpreter already available on each machine."
+   }
+  ],
+  "related": [
+   "uv python install",
+   "uv python list",
+   "--managed-python",
+   "--no-managed-python",
+   "Python preference",
+   "CPython",
+   "PyPy",
+   "system Python installations"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does uv distinguish managed and system Python?",
+    "answer": "uv recognizes interpreters already available on the machine as system Python installations. Versions downloaded by uv are managed Python installations; operating-system and pyenv installations remain system installations in uv's terminology.",
+    "followUp": "How can a command require one category? Use --managed-python to exclude system interpreters, or --no-managed-python to exclude managed interpreters."
+   },
+   {
+    "question": "How do you install a specific Python version?",
+    "answer": "Run `uv python install` with a version such as `3.12` to install a managed interpreter. uv supports downloadable CPython and PyPy distributions for macOS, Linux, and Windows.",
+    "followUp": "What happens if no version is specified? uv verifies that a managed version is installed or installs the latest version."
+   },
+   {
+    "question": "What is uv's default interpreter-selection behavior?",
+    "answer": "By default, uv attempts to use Python versions found on the system and downloads a managed version only when necessary. The `--managed-python` flag changes this behavior so system versions are ignored.",
+    "followUp": "How would you inspect only managed interpreters? Run `uv python list --managed-python`."
+   }
+  ],
+  "keyPoints": [
+   "uv calls interpreters it downloaded and installed managed Python installations.",
+   "Every interpreter not installed by uv is classified as a system Python installation.",
+   "Supported managed distributions include CPython and PyPy across the three listed operating systems.",
+   "Interpreter selection prefers usable system versions before downloading a managed one.",
+   "A version can be installed explicitly with `uv python install`, followed by the requested version.",
+   "The --managed-python flag restricts selection to uv-managed interpreters."
+  ],
+  "gotchas": [
+   "uv classifies Python installed by tools such as pyenv as system Python, not managed Python.",
+   "An explicit installation command is optional because uv can download a required version automatically.",
+   "Use --no-managed-python when the command must avoid uv-managed interpreters."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Python environments::Python version pinning": {
+  "sourceUrl": "https://docs.astral.sh/uv/concepts/projects/config/",
+  "sourceTitle": "Configuring projects | uv",
+  "summary": "uv lets a project declare its supported Python range with requires-python and record an interpreter preference. The range governs compatibility and dependency resolution, while the preference guides which Python installation uv selects.",
+  "explanation": "uv records a project interpreter preference in the project configuration and uses the project's requires-python constraint when selecting a compatible interpreter. The preference controls whether uv uses managed or system Python installations, while requires-python defines the supported version range for the project and influences dependency resolution.",
+  "syntax": "[project]\nrequires-python = \">=3.12\"\n\n[tool.uv]\npython-preference = \"only-managed\"",
+  "parameters": [
+   {
+    "name": "project.requires-python",
+    "type": "PEP 440 version specifier",
+    "description": "Python version range supported by the project; declared under [project]."
+   },
+   {
+    "name": "tool.uv.python-preference",
+    "type": "configuration value",
+    "description": "Interpreter-selection policy controlling uv's preference for managed or system Python installations."
+   },
+   {
+    "name": "--python",
+    "type": "CLI option",
+    "description": "Explicit interpreter or Python version for an individual command."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Declare support and select managed Python",
+   "code": "[project]\nname = \"example\"\nversion = \"0.1.0\"\nrequires-python = \">=3.12\"\n\n[tool.uv]\npython-preference = \"only-managed\"",
+   "language": "toml",
+   "explanation": "This project declares Python 3.12 or newer as supported, while uv is configured to prefer only uv-managed interpreters."
+  },
+  "useCases": [
+   {
+    "title": "Standardize interpreter selection",
+    "scenario": "A team needs reproducible local setup behavior."
+   },
+   {
+    "title": "Declare compatibility",
+    "scenario": "A package supports several Python minor versions."
+   },
+   {
+    "title": "Constrain dependency resolution",
+    "scenario": "A project resolves dependencies for multiple supported Python versions."
+   }
+  ],
+  "related": [
+   "project.requires-python",
+   "tool.uv.python-preference",
+   "--python",
+   "Python installations",
+   "virtual environment",
+   "dependency resolution"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you declare the Python versions a uv project supports?",
+    "answer": "Set the project's supported range with project.requires-python in pyproject.toml. uv uses that range when selecting compatible dependencies and interpreters.",
+    "followUp": "What happens if a dependency does not support the whole range? uv must choose a dependency version compatible with the project's declared range; otherwise resolution fails."
+   },
+   {
+    "question": "What is the purpose of a project interpreter preference?",
+    "answer": "python-preference configures whether uv prefers managed Python installations or system interpreters. It expresses interpreter-selection policy, while requires-python expresses project compatibility.",
+    "followUp": "How can a CI job use a different interpreter? Pass --python, which explicitly selects the interpreter for that command."
+   },
+   {
+    "question": "How does requires-python affect dependency resolution?",
+    "answer": "The project's requires-python range affects both allowed Python syntax and dependency-version selection. During resolution, dependencies must be compatible with the entire declared range.",
+    "followUp": "Why can a broad range make resolution harder? Every selected dependency must remain installable across that full range, which can exclude newer package releases."
+   }
+  ],
+  "keyPoints": [
+   "Declare the project's supported Python range with project.requires-python in pyproject.toml.",
+   "The requirement also limits which Python syntax the project may use.",
+   "uv uses the declared range when selecting dependency versions, so dependencies must support that range."
+  ],
+  "gotchas": [
+   "requires-python is not merely an interpreter selection hint: it also constrains syntax permitted in the project."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Python environments::uv pip compile and sync": {
+  "sourceUrl": "https://docs.astral.sh/uv/pip/compile/",
+  "sourceTitle": "Locking environments | uv",
+  "summary": "Resolve requirements into pinned `requirements.txt` or `pylock.toml` output with `uv pip compile`, then use `uv pip sync` to make an environment match that output exactly.",
+  "explanation": "`uv pip compile` resolves direct requirements and their compatible transitive dependencies into a pinned `requirements.txt` or `pylock.toml`. `uv pip sync` then installs the file's complete dependency set and removes packages that are not listed, producing an environment that matches the compiled output.",
+  "syntax": "uv pip compile [OPTIONS] <SRC_FILE|--group <GROUP>>\nuv pip sync [OPTIONS] <SRC_FILE>",
+  "parameters": [
+   {
+    "name": "SRC_FILE|--group GROUP",
+    "type": "uv pip compile positional input",
+    "description": "Compile input file or dependency group; commonly a requirements input file or pyproject.toml."
+   },
+   {
+    "name": "-o, --output-file",
+    "type": "option",
+    "description": "Output path for the generated requirements.txt or pylock.toml."
+   },
+   {
+    "name": "--python-platform",
+    "type": "option",
+    "description": "Target platform for resolution."
+   },
+   {
+    "name": "--python-version",
+    "type": "option",
+    "description": "Target Python version for resolution."
+   },
+   {
+    "name": "--universal",
+    "type": "flag",
+    "description": "Generate a universal resolution."
+   },
+   {
+    "name": "SRC_FILE",
+    "type": "uv pip sync positional input",
+    "description": "Input requirements.txt or pylock.toml file used for synchronization."
+   },
+   {
+    "name": "--strict",
+    "type": "flag",
+    "description": "Warn when transitive dependencies are absent from the input file."
+   }
+  ],
+  "returns": "`uv pip compile` writes a pinned `requirements.txt` or `pylock.toml`; `uv pip sync` updates the environment to match that file and removes packages not listed.",
+  "example": {
+   "title": "Compile and synchronize a virtual environment",
+   "code": "python -m venv .venv\nsource .venv/bin/activate\nprintf 'requests\\n' > requirements.in\nuv pip compile requirements.in -o requirements.txt\nuv pip sync requirements.txt\npython -c \"import requests; print(requests.__version__)\"",
+   "language": "bash",
+   "explanation": "Creates an environment, resolves the input requirement into a pinned requirements file, then makes the environment match that file."
+  },
+  "useCases": [
+   {
+    "title": "Create a pinned requirements file",
+    "scenario": "A project has direct dependencies in requirements.in and needs reproducible installs."
+   },
+   {
+    "title": "Enforce environment reproducibility",
+    "scenario": "A CI job or deployment environment must contain exactly the reviewed dependency set."
+   },
+   {
+    "title": "Generate a universal resolution",
+    "scenario": "One dependency file must support multiple operating systems."
+   },
+   {
+    "title": "Use pylock.toml output",
+    "scenario": "A team is migrating from requirements.txt to the standardized lock format."
+   }
+  ],
+  "related": [
+   "requirements.in",
+   "requirements.txt",
+   "pyproject.toml",
+   "pylock.toml",
+   "uv export",
+   "uv pip install",
+   "--universal",
+   "--python-platform"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do `uv pip compile` and `uv pip sync` differ?",
+    "answer": "`uv pip compile` resolves an input such as `requirements.in` or `pyproject.toml` into a pinned `requirements.txt` or `pylock.toml`. `uv pip sync` consumes that output and changes the environment to match it, including removing unlisted packages.",
+    "followUp": "What happens when the compiled file omits a transitive dependency? It is not installed; use a complete compile or export output, or use `--strict` to warn about missing transitive dependencies."
+   },
+   {
+    "question": "When should sync be preferred over install?",
+    "answer": "`uv pip sync requirements.txt` treats the file as the authoritative environment specification and removes packages that are not listed. `uv pip install` is the alternative when existing extra packages should remain.",
+    "followUp": "How would you synchronize from the newer lock format? Pass the `pylock.toml` file directly to `uv pip sync`, such as `uv pip sync pylock.toml`."
+   },
+   {
+    "question": "What controls the portability of a compiled resolution?",
+    "answer": "By default, the pip interface produces a platform-specific resolution. `uv pip compile --universal` can instead produce a requirements file containing markers for the platforms where dependencies apply.",
+    "followUp": "How can compilation target another platform and Python version? Combine `--python-platform` and `--python-version`, for example for Linux and Python 3.10."
+   }
+  ],
+  "keyPoints": [
+   "Use `uv pip compile requirements.in -o requirements.txt` to resolve an input file into pinned output.",
+   "A `pyproject.toml` can be compiled directly, with the output written to a requirements or pylock file.",
+   "Choose sync when reproducibility requires the installed environment to correspond exactly to the compiled file.",
+   "Sync accepts either of the documented resolution-output formats."
+  ],
+  "gotchas": [
+   "Sync is destructive toward packages absent from the input file; use `uv pip install` when extra packages should be retained.",
+   "The sync input must contain the transitive dependencies, normally because it was generated by `uv pip compile` or `uv export`."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Python environments::uv pip install": {
+  "sourceUrl": "https://docs.astral.sh/uv/pip/packages/",
+  "sourceTitle": "Managing packages | uv",
+  "summary": "Use `uv pip install` for pip-compatible package installation in an environment outside uv's project workflow. It installs into a selected virtual or non-virtual Python environment and supports packages, extras, editable installs, Git sources, and requirement files.",
+  "explanation": "`uv pip install` provides a pip-compatible way to add packages to an environment. By default, uv targets an active virtual environment or discovers a `.venv`; use `--python` for a specific interpreter or `--system` for the system interpreter.",
+  "syntax": "uv pip install [OPTIONS] <PACKAGE|--requirement FILE>...",
+  "parameters": [
+   {
+    "name": "requirements",
+    "type": "package specifiers, -r file, or pyproject.toml",
+    "description": "Package requirements, requirement files, or project metadata to install."
+   },
+   {
+    "name": "--python",
+    "type": "path",
+    "description": "Select a specific Python interpreter and its environment."
+   },
+   {
+    "name": "--system",
+    "type": "flag",
+    "description": "Install into the system Python environment."
+   },
+   {
+    "name": "--extra",
+    "type": "name",
+    "description": "Install optional dependencies declared by a project."
+   },
+   {
+    "name": "--all-extras",
+    "type": "flag",
+    "description": "Install all optional dependencies."
+   }
+  ],
+  "returns": "Installs the requested packages into the selected Python environment.",
+  "example": {
+   "title": "Install a package in a virtual environment",
+   "code": "uv venv\nuv pip install ruff",
+   "language": "bash",
+   "explanation": "Creates a virtual environment, then installs Ruff into the environment selected by uv."
+  },
+  "useCases": [
+   {
+    "title": "Manage an external environment",
+    "scenario": "You have an existing virtual environment and want pip-compatible installation without changing project metadata."
+   },
+   {
+    "title": "Install package requirements",
+    "scenario": "You need to add a package, version constraint, or optional extra directly."
+   },
+   {
+    "title": "Install from dependency files",
+    "scenario": "You want to populate an environment from requirements or project metadata."
+   },
+   {
+    "title": "Install a local project editably",
+    "scenario": "You need an editable local checkout during development."
+   }
+  ],
+  "related": [
+   "uv pip sync",
+   "uv pip compile",
+   "uv venv",
+   "--compile-bytecode",
+   "UV_COMPILE_BYTECODE",
+   "requirements.txt",
+   "pyproject.toml"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Which environment does `uv pip install` modify by default?",
+    "answer": "It installs packages using uv's pip-compatible interface. The default target is an active virtual environment or a `.venv` found in the current directory or a parent directory.",
+    "followUp": "How would you target a non-virtual environment? Use `--python /path/to/python`, or use `--system` to select the first Python interpreter on `PATH`."
+   },
+   {
+    "question": "What is a typical setup for installing a package?",
+    "answer": "Run `uv venv` to create the environment, then invoke `uv pip install package`. uv automatically uses the newly created `.venv` when it is in the current directory.",
+    "followUp": "How can installation be directed to a particular environment without activation? Pass its interpreter path with `--python /path/to/python`."
+   },
+   {
+    "question": "How can packages be installed from dependency files?",
+    "answer": "Use `-r requirements.txt` to install from a requirements file. The interface also accepts a `pyproject.toml` through `-r`, and supports optional dependencies with `--extra` or `--all-extras`.",
+    "followUp": "How can build isolation be bypassed for a package with problematic build requirements? Preinstall the build dependency, then run `uv pip install --no-build-isolation package`."
+   }
+  ],
+  "keyPoints": [
+   "The command is intended to substitute for common pip-style installation workflows with minimal packaging changes.",
+   "An activated virtual environment takes precedence as the installation target.",
+   "If no environment is active, uv searches upward for a `.venv` directory.",
+   "Use `--python` when the target environment is identified by a Python executable.",
+   "A direct package install uses the package name, such as `uv pip install flask`.",
+   "Extras can be requested by adding the extra in brackets to the package requirement."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Python environments::Virtual environments": {
+  "sourceUrl": "https://docs.astral.sh/uv/pip/environments/",
+  "sourceTitle": "Using environments | uv",
+  "summary": "uv isolates package installations in virtual environments and lets you choose the Python interpreter before creating one. It discovers activated or nearby environments by default, while --python and --system provide explicit targeting.",
+  "explanation": "uv keeps package installations isolated by preferring an activated environment, then a nearby .venv or Conda environment. Use uv venv to create one and --python to choose the interpreter; uv can obtain a requested Python version if needed. For an explicit target, pass the environment's Python executable, while --system opts into modifying system Python.",
+  "syntax": "uv venv [OPTIONS] [PATH]\nuv venv --python <PYTHON> [PATH]\nuv pip install [OPTIONS] [<PACKAGE>...]",
+  "parameters": [
+   {
+    "name": "--python",
+    "type": "option",
+    "description": "Python version or executable path used to create or target the environment."
+   },
+   {
+    "name": "--system",
+    "type": "flag",
+    "description": "Opt into installing into the system Python environment."
+   },
+   {
+    "name": "path",
+    "type": "positional",
+    "description": "Path of the environment to create; defaults to `.venv` in the current directory."
+   }
+  ],
+  "returns": "A created virtual-environment directory, or installed packages in the environment selected by the interpreter and discovery rules.",
+  "example": {
+   "title": "Create and target an environment",
+   "code": "uv venv --python 3.12\nuv pip install --python .venv/bin/python requests",
+   "language": "bash",
+   "explanation": "Creates a .venv environment with Python 3.12, then installs requests into that environment by explicitly selecting its interpreter."
+  },
+  "useCases": [
+   {
+    "title": "Project isolation",
+    "scenario": "Create a clean project-local environment before installing dependencies."
+   },
+   {
+    "title": "Interpreter selection",
+    "scenario": "Ensure a project uses a required Python release."
+   },
+   {
+    "title": "Explicit environment targeting",
+    "scenario": "Install into an existing environment without activating it."
+   },
+   {
+    "title": "Intentional system installation",
+    "scenario": "Use a system interpreter only for controlled administrative or container workflows."
+   }
+  ],
+  "related": [
+   "VIRTUAL_ENV",
+   "CONDA_PREFIX",
+   ".venv",
+   "uv pip install",
+   "uv pip sync",
+   "uv python install",
+   "Python interpreter"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you create a virtual environment with a specific Python version?",
+    "answer": "uv creates an isolated environment with `uv venv`. The `--python` option selects the interpreter used to create it, such as `uv venv --python 3.11`; uv can install the requested version when necessary.",
+    "followUp": "How can an installation target a particular environment without activating it? Use `uv pip install --python /path/to/venv/bin/python ...`, which selects the environment through its interpreter."
+   },
+   {
+    "question": "How does uv choose an environment for `uv pip install`?",
+    "answer": "For mutating commands, uv first checks an activated environment through `VIRTUAL_ENV`, then an activated Conda environment through `CONDA_PREFIX`, and finally a `.venv` in the current or nearest parent directory.",
+    "followUp": "What takes precedence over those discovered environments? An explicit `--python` path identifies the target interpreter directly."
+   },
+   {
+    "question": "How do you intentionally install outside a virtual environment?",
+    "answer": "The `--system` flag explicitly permits installation into the system Python, while `--python` can target any environment associated with a specified executable, including a non-virtual environment. The default is designed to avoid unintended system modifications.",
+    "followUp": "Why is `--system` not generally preferred? System Python layouts and distribution patches vary, so installations can be unsupported or cause complications."
+   }
+  ],
+  "keyPoints": [
+   "Virtual environments separate project packages from the base Python installation, reducing dependency interference between projects.",
+   "For environment-mutating commands, uv prioritizes activated virtual environments, activated Conda environments, then a nearby .venv.",
+   "Run `uv venv` to create the conventional `.venv` directory in the working directory.",
+   "The `--python` option makes the target explicit and can point to an interpreter belonging to a non-virtual environment.",
+   "Use `--system` only as an explicit opt-in when modifying the system interpreter is required.",
+   "uv is independent of the Python runtime, but it still needs an interpreter target for dependency installation and source builds."
+  ],
+  "gotchas": [
+   "Without an activated or discoverable virtual environment, ordinary uv pip installs do not target system Python; use --system or --python explicitly when that is intentional.",
+   "System installation may fail or behave differently across operating systems and distributions, so prefer an isolated environment.",
+   "A nearby .venv can be selected automatically, so check the directory hierarchy when an install appears to target an unexpected environment."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Resolution & workspaces::Constraints and overrides": {
+  "sourceUrl": "https://docs.astral.sh/uv/concepts/resolution/",
+  "sourceTitle": "Resolution | uv - Astral Docs",
+  "summary": "Constraints restrict the versions permitted by existing requirements; overrides replace declared requirements and can widen the allowed range. Neither mechanism adds an otherwise unrequested package, and overrides are intended as a last resort when dependency metadata is known to be incorrect.",
+  "explanation": "A constraint adds an allowed-version restriction to the requirements already declared by direct or transitive dependencies, so it can only narrow resolution and does not introduce a package. An override instead replaces those declared requirements for the named package, allowing resolution to select versions that the original metadata would reject; it is intended as a last resort when the metadata is wrong but compatibility is known.",
+  "syntax": "[tool.uv]\nconstraint-dependencies = [\"package>=lower,<upper\"]\noverride-dependencies = [\"package>=version\"]",
+  "parameters": [
+   {
+    "name": "constraint-dependencies",
+    "type": "array of requirement strings",
+    "description": "Requirement entries that narrow versions during resolution without requesting installation."
+   },
+   {
+    "name": "override-dependencies",
+    "type": "array of requirement strings",
+    "description": "Requirement entries that replace declared requirements for matching packages during resolution."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Constraining versus overriding a dependency",
+   "code": "[project]\ndependencies = [\"a\", \"b\"]\n\n[tool.uv]\nconstraint-dependencies = [\"c>=1.0,<2.0\"]\noverride-dependencies = [\"c>=2.0\"]",
+   "language": "toml",
+   "explanation": "This project narrows c with a constraint and then replaces constituent requirements for c with an override; use one strategy for a real project, not both together."
+  },
+  "useCases": [
+   {
+    "title": "Narrow a transitive range",
+    "scenario": "A transitive dependency has many acceptable releases, but a project needs a bounded range for compatibility or reproducibility."
+   },
+   {
+    "title": "Keep resolutions synchronized",
+    "scenario": "A project must align resolution with versions selected by another environment or dependency set."
+   },
+   {
+    "title": "Bypass bad metadata",
+    "scenario": "A dependency declares an upper bound that is known to be incorrect, blocking a compatible release."
+   },
+   {
+    "title": "Scope overrides with markers",
+    "scenario": "Different override requirements target the same package under different dependency conditions."
+   }
+  ],
+  "related": [
+   "constraint files",
+   "override files",
+   "--constraint",
+   "--override",
+   "constraint-dependencies",
+   "tool.uv.override-dependencies",
+   "markers",
+   "transitive dependency"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do constraints differ from overrides?",
+    "answer": "Constraints are additive restrictions on the versions allowed by existing requirements. They cannot add a package to the resolution, and they only matter when that package is already requested directly or transitively.",
+    "followUp": "What should be used to remove an erroneous upper bound? Use an override, because it replaces the constituent package requirements and can expand the acceptable version set."
+   },
+   {
+    "question": "When is a constraint appropriate?",
+    "answer": "Use a constraint when a transitive dependency must stay within a narrower version range or when a resolution should remain aligned with another set of versions. Define it through a constraints file or the project’s constraint-dependencies setting.",
+    "followUp": "Does the constraint itself install the package? No; another direct or transitive dependency must request it."
+   },
+   {
+    "question": "When should an override be used?",
+    "answer": "Use an override only when the declared metadata leads to an unsuccessful or undesirable resolution and compatibility with the replacement requirement is known. Overrides replace the requirements declared by constituent packages rather than combining with them.",
+    "followUp": "What happens in a workspace? All workspace members must remain mutually compatible because uv resolves their dependencies together."
+   }
+  ],
+  "keyPoints": [
+   "A constraint narrows the acceptable versions for a package.",
+   "Listing a package only as a constraint does not add it to the resolution.",
+   "Constraints are especially useful for controlling transitive dependencies.",
+   "Overrides replace a package’s declared dependency requirements to bypass a problematic resolution.",
+   "Use overrides only as a last resort when compatibility with the replacement is known.",
+   "Constraints narrow; overrides can widen the acceptable version set.",
+   "Project overrides are declared with tool.uv.override-dependencies."
+  ],
+  "gotchas": [
+   "An override does not cause an otherwise unrequested package to be installed.",
+   "An unscoped override also affects direct requirements, not only transitive ones.",
+   "Multiple overrides for one package need distinct markers."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Resolution & workspaces::Dependency upgrades": {
+  "sourceUrl": "https://docs.astral.sh/uv/concepts/projects/sync/",
+  "sourceTitle": "Locking and syncing",
+  "summary": "Upgrade a selected dependency with `uv lock --upgrade-package` while preserving other locked versions where possible. Review the resulting uv.lock changes because compatible transitive dependencies may also be re-resolved.",
+  "explanation": "uv normally prefers versions already recorded in uv.lock, so ordinary locking does not upgrade released packages. Use --upgrade-package to deliberately refresh one dependency while retaining other locked versions where possible; the resolver may still change transitive packages when needed to produce a compatible solution.",
+  "syntax": "uv lock --upgrade-package <package>\nuv lock --upgrade-package <package>==<version>\nuv lock --upgrade",
+  "parameters": [
+   {
+    "name": "package",
+    "type": "string",
+    "description": "Package name, optionally followed by `==<version>`, identifying the dependency to upgrade."
+   }
+  ],
+  "returns": "Updates the project's uv.lock resolution; the page does not define a separate return value.",
+  "example": {
+   "title": "Upgrade one dependency and inspect the lockfile",
+   "code": "uv lock --upgrade-package requests\nuv diff --from uv.lock --to uv.lock",
+   "language": "bash",
+   "explanation": "Upgrade only requests within the project's constraints, then inspect the resulting lockfile changes before committing them."
+  },
+  "useCases": [
+   {
+    "title": "Focused package upgrade",
+    "scenario": "A security or bug-fix release is available for one direct dependency and unrelated packages should remain stable."
+   },
+   {
+    "title": "Exact-version upgrade",
+    "scenario": "A team needs to move a dependency to a known compatible release."
+   },
+   {
+    "title": "Full lockfile refresh",
+    "scenario": "A maintenance cycle calls for refreshing the complete dependency graph."
+   }
+  ],
+  "related": [
+   "uv lock",
+   "--upgrade",
+   "--upgrade-package",
+   "uv.lock",
+   "dependency constraints",
+   "uv sync"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you upgrade one dependency without upgrading everything?",
+    "answer": "Use `uv lock --upgrade-package <package>` to request the latest compatible version of one package while retaining other locked versions where possible. The request is still bounded by the project's dependency constraints.",
+    "followUp": "What if the requested package's upgrade requires a transitive change? uv may update transitive versions as part of finding a compatible resolution; inspect the lockfile diff before accepting it."
+   },
+   {
+    "question": "Why does running `uv lock` not automatically fetch every newest release?",
+    "answer": "A lockfile is preferred during resolution, so already locked versions generally remain selected. Versions change when constraints make the old selection invalid or when an upgrade is explicitly requested with `--upgrade`.",
+    "followUp": "How would you refresh every dependency instead? Run `uv lock --upgrade`, then review the complete lockfile change."
+   },
+   {
+    "question": "How can you request a specific version?",
+    "answer": "The command `uv lock --upgrade-package <package>==<version>` targets a specific version. The chosen version must still satisfy the project's dependency constraints, including any upper bounds.",
+    "followUp": "What should be checked when pinning an exact version? Confirm that the constraint is compatible with all project requirements and review any resulting transitive resolution changes."
+   }
+  ],
+  "keyPoints": [
+   "Run `uv lock --upgrade-package <package>` when you want a focused upgrade rather than a repository-wide refresh.",
+   "Use `uv lock --upgrade-package <package>==<version>` to deliberately target an exact release.",
+   "Without an explicit upgrade, uv changes a locked package only when the existing selection no longer satisfies project constraints.",
+   "The resolver keeps an upgrade inside the ranges declared by the project, including upper bounds.",
+   "Use `uv lock --upgrade` when the intended scope is every dependency rather than a selected package."
+  ],
+  "gotchas": [
+   "An explicit upgrade cannot cross the version bounds declared by the project.",
+   "Other packages remain pinned preferentially, so upgrading one direct dependency does not mean every package moves to its newest release.",
+   "A newly released package is not selected automatically merely because the lockfile is being reused."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Resolution & workspaces::Editable installations": {
+  "sourceUrl": "https://docs.astral.sh/uv/concepts/projects/config/",
+  "sourceTitle": "Configuring projects",
+  "summary": "uv installs a configured project in editable mode by default, making source changes immediately available during development. Use `--no-editable` to perform a non-editable installation for deployment-style validation.",
+  "explanation": "With a build system configured, uv normally installs the project in editable mode, so source changes appear immediately in the environment. Use the non-editable option when you need an installation that does not depend on the original source tree, such as when checking a deployment artifact.",
+  "syntax": "uv sync [--no-editable]\nuv run [--no-editable]",
+  "parameters": [
+   {
+    "name": "uv sync",
+    "type": "command",
+    "description": "Synchronize the project environment, installing the project and dependencies according to the lockfile."
+   },
+   {
+    "name": "uv run",
+    "type": "command",
+    "description": "Run a command in the project environment, applying project installation behavior."
+   },
+   {
+    "name": "--no-editable",
+    "type": "option",
+    "description": "Disable editable installation for the project and workspace members."
+   }
+  ],
+  "returns": "The project environment contains either an editable project installation by default or a non-editable installation when `--no-editable` is used.",
+  "example": {
+   "title": "Development and distribution-style installations",
+   "code": "uv sync\nuv sync --no-editable",
+   "language": "bash",
+   "explanation": "The first command installs the project for development; the second installs a non-editable copy for a deployment-style check."
+  },
+  "useCases": [
+   {
+    "title": "Reflect source edits without reinstalling",
+    "scenario": "Local development"
+   },
+   {
+    "title": "Check a non-editable project installation",
+    "scenario": "Deployment validation"
+   },
+   {
+    "title": "Avoid dependence on the source checkout",
+    "scenario": "Container builds"
+   }
+  ],
+  "related": [
+   "Build systems",
+   "Project environment",
+   "uv sync",
+   "uv run",
+   "--no-editable",
+   "Deployment use-cases"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does uv do by default when syncing a project?",
+    "answer": "uv installs a project in editable mode by default when a build system is defined. This makes source changes immediately visible in the project environment instead of requiring a reinstall.",
+    "followUp": "How would you test an installation that does not rely on the source checkout? Run `uv sync --no-editable`, which installs the project non-editably."
+   },
+   {
+    "question": "How do you opt out of editable mode?",
+    "answer": "Use `uv sync --no-editable` or `uv run --no-editable`. The flag switches the project from editable installation to non-editable installation, which is suitable for deployment-oriented checks.",
+    "followUp": "Why is this useful for a container build? It avoids making the deployed environment depend on the originating source directory."
+   },
+   {
+    "question": "Why use editable mode during development but non-editable mode for deployment?",
+    "answer": "Editable mode exposes the project source directly to the interpreter, so edits are reflected without rebuilding and reinstalling the project. Non-editable mode instead installs a built distribution into the environment.",
+    "followUp": "What limitation remains for native extensions? Editing native code does not rebuild the extension before it is imported."
+   }
+  ],
+  "keyPoints": [
+   "A configured project is editable by default, so development does not require reinstalling after ordinary source changes.",
+   "The development environment sees source edits immediately because uv uses editable installation.",
+   "Both synchronization and execution commands can disable editable installation with `--no-editable`.",
+   "The flag requests a normal installation rather than one linked to the source tree.",
+   "Non-editable mode is intended for deployment scenarios, including Docker image construction."
+  ],
+  "gotchas": [
+   "Editable installation applies only when the project declares a build system; otherwise uv installs dependencies without installing the project.",
+   "Editable installs have limitations: the build backend must support them, and changes to native modules do not trigger recompilation before import."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Resolution & workspaces::Git and path dependencies": {
+  "sourceUrl": "https://docs.astral.sh/uv/concepts/projects/dependencies/",
+  "sourceTitle": "Managing dependencies | uv",
+  "summary": "uv supports Git and path dependency sources through [tool.uv.sources]. Pin Git sources to a commit revision for reproducibility; path sources can point to local wheels, archives, or projects.",
+  "explanation": "uv records non-registry dependencies in [tool.uv.sources]. A Git source can use a repository URL plus a branch, tag, or immutable revision; for reproducibility, use a commit revision. A path source points to a wheel, source archive, or directory containing pyproject.toml, and relative paths are resolved from the project directory.",
+  "syntax": "[tool.uv.sources]\npackage = { git = \"https://host/repository.git\", rev = \"<commit>\" }\npackage = { path = \"../package\" }",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Pin a Git dependency to a commit",
+   "code": "[project]\ndependencies = [\"httpx\"]\n\n[tool.uv.sources]\nhttpx = { git = \"https://github.com/encode/httpx\", rev = \"<commit-hash>\" }",
+   "language": "toml",
+   "explanation": "Declare the package normally, then map it to a Git source pinned to an immutable commit revision."
+  },
+  "useCases": [
+   {
+    "title": "Consume a Git repository",
+    "scenario": "A project depends on unreleased upstream code."
+   },
+   {
+    "title": "Link a local project",
+    "scenario": "Several packages are developed together in one repository."
+   },
+   {
+    "title": "Reproduce a fixed revision",
+    "scenario": "A build must use an exact upstream snapshot."
+   }
+  ],
+  "related": [
+   "[tool.uv.sources]",
+   "uv add",
+   "Git dependency source",
+   "Path dependency source",
+   "workspace source",
+   "URL dependency"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you declare a Git dependency in uv?",
+    "answer": "Use a Git source in [tool.uv.sources], such as { git = \"https://...\", rev = \"<commit>\" }. The project dependency remains named in [project.dependencies], while the source mapping selects the repository.",
+    "followUp": "How would you make a moving Git reference reproducible? Pin rev to a commit hash rather than relying on a branch or tag."
+   },
+   {
+    "question": "What forms can a path dependency take?",
+    "answer": "A path source can reference a wheel, source distribution, or project directory. The path may be absolute or relative, and a project directory is built and installed by default.",
+    "followUp": "What must a directory path dependency contain? It needs a pyproject.toml so uv can treat it as a package."
+   },
+   {
+    "question": "How do Git references affect reproducibility?",
+    "answer": "uv caches Git dependencies using the fully resolved commit hash, and compilation can write Git dependencies at a specific commit. Therefore, a commit-pinned source provides a clearer reproducibility strategy than an unpinned reference.",
+    "followUp": "What is the trade-off of a local path dependency in a lockfile workflow? Its contents are local and can change independently, so use a published or Git-pinned source when other environments need identical inputs."
+   }
+  ],
+  "keyPoints": [
+   "Non-registry dependencies are configured through the project's [tool.uv.sources] mapping.",
+   "The documented source categories include index, Git, URL, and path.",
+   "Use git+ with HTTP(S) or SSH repository URLs when declaring a Git source.",
+   "A path dependency may target a wheel, source distribution, or local project directory.",
+   "Relative paths are supported, which is useful for sibling packages in a repository."
+  ],
+  "gotchas": [
+   "A directory path is treated as an installable package by default; it must contain suitable project metadata.",
+   "Git command-line URLs need the git+ prefix when supplied as a dependency source."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Resolution & workspaces::Locked versus frozen": {
+  "sourceUrl": "https://docs.astral.sh/uv/concepts/projects/sync/",
+  "sourceTitle": "Locking and syncing | uv",
+  "summary": "Use --locked to reject a stale uv.lock instead of updating it. Use --frozen to use the existing lockfile without checking whether it matches current project metadata.",
+  "explanation": "uv normally checks and may update the lockfile before operations. Use --locked when the manifest and lockfile must already agree; use --frozen when the existing uv.lock should be used without checking whether it matches the project's current metadata.",
+  "syntax": "uv run [OPTIONS] ...\nuv run --locked ...\nuv run --frozen ...\nuv lock --check",
+  "parameters": [
+   {
+    "name": "--locked",
+    "type": "command-line option",
+    "description": "Require the lockfile to be up-to-date; fail instead of updating it."
+   },
+   {
+    "name": "--frozen",
+    "type": "command-line option",
+    "description": "Use the lockfile without checking whether it is up-to-date."
+   },
+   {
+    "name": "--check",
+    "type": "command-line option for uv lock",
+    "description": "Check whether the lockfile is up-to-date."
+   }
+  ],
+  "returns": "Commands succeed using the selected lockfile policy; --locked errors when the lockfile is stale, while --frozen errors when the lockfile is missing.",
+  "example": {
+   "title": "Compare lockfile modes",
+   "code": "uv run --locked python -c \"print('validated')\"\nuv run --frozen python -c \"print('lockfile used')\"",
+   "language": "bash",
+   "explanation": "The first command verifies that uv.lock is current and fails if it is not; the second uses the existing lockfile without checking it."
+  },
+  "useCases": [
+   {
+    "title": "Reject dependency drift",
+    "scenario": "Continuous integration"
+   },
+   {
+    "title": "Use a partial build context",
+    "scenario": "Docker builds with only uv.lock mounted"
+   },
+   {
+    "title": "Check lockfile freshness",
+    "scenario": "Local validation"
+   }
+  ],
+  "related": [
+   "uv lock",
+   "uv run",
+   "uv sync",
+   "uv.lock",
+   "--check"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When should --locked be used?",
+    "answer": "Use --locked when CI should reject a stale lockfile. uv checks that the lockfile is up-to-date and raises an error rather than updating it.",
+    "followUp": "What should be used when only uv.lock is available during an early Docker build? Use --frozen, because uv cannot validate the lock against project and workspace metadata that has not been copied yet."
+   },
+   {
+    "question": "How does --frozen differ from --locked?",
+    "answer": "Use --frozen when the existing lockfile is the source of truth and uv must not check whether it is current. It still requires the lockfile to exist.",
+    "followUp": "What happens if uv.lock is absent? The command exits with an error instead of resolving dependencies."
+   },
+   {
+    "question": "What is the practical distinction between the flags?",
+    "answer": "Both flags prevent the normal automatic lock update, but they enforce different guarantees: --locked validates freshness, while --frozen skips that freshness check.",
+    "followUp": "How can freshness be checked directly? Run uv lock --check, which is equivalent to --locked for other commands."
+   }
+  ],
+  "keyPoints": [
+   "Use --locked to prevent automatic locking and require the committed lockfile to remain current.",
+   "A stale lockfile makes a --locked operation fail rather than silently rewriting uv.lock.",
+   "Use --frozen when you want uv to consume uv.lock without validating it against current metadata.",
+   "uv lock --check provides the direct freshness check corresponding to --locked on commands such as uv run."
+  ],
+  "gotchas": [
+   "--frozen does not detect manifest changes or lockfile drift; it trusts the existing lockfile.",
+   "--locked fails when project metadata would require a lockfile update."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Resolution & workspaces::Lockfile export": {
+  "sourceUrl": "https://docs.astral.sh/uv/concepts/projects/export/",
+  "sourceTitle": "Exporting a lockfile | uv",
+  "summary": "Export uv.lock into requirements.txt, pylock.toml, or CycloneDX v1.5 JSON when another tool cannot consume uv’s native lockfile. Choose the format with `--format` and save it with `--output-file`.",
+  "explanation": "`uv export` reads the project lockfile and converts its resolved dependencies into a format another tool can consume. Select `requirements.txt`, `pylock.toml`, or CycloneDX v1.5 with `--format`; use `--output-file` to save the result instead of printing it.",
+  "syntax": "uv export [OPTIONS]",
+  "parameters": [
+   {
+    "name": "--format <format>",
+    "type": "option",
+    "description": "Selects the export format: requirements.txt, pylock.toml, or cyclonedx1.5."
+   },
+   {
+    "name": "--output-file <path>",
+    "type": "option",
+    "description": "Writes the export to the specified file instead of stdout."
+   },
+   {
+    "name": "--all-packages",
+    "type": "flag",
+    "description": "Exports dependencies for all workspace members."
+   },
+   {
+    "name": "--locked / --frozen",
+    "type": "flag",
+    "description": "Prevents uv from re-locking before export."
+   }
+  ],
+  "returns": "A serialized dependency export in the selected format, printed to stdout or written to the requested file.",
+  "example": {
+   "title": "Export for pip-based deployment",
+   "code": "uv export --format requirements.txt --output-file requirements.txt\npip install -r requirements.txt",
+   "language": "bash",
+   "explanation": "Exports the uv lockfile as a pip-compatible requirements file, then installs that file with pip."
+  },
+  "useCases": [
+   {
+    "title": "Generate requirements.txt",
+    "scenario": "A deployment system accepts only pip-compatible dependency files."
+   },
+   {
+    "title": "Generate pylock.toml",
+    "scenario": "A Python tool expects the standardized PEP 751 lockfile format."
+   },
+   {
+    "title": "Generate CycloneDX SBOM",
+    "scenario": "Security or compliance tooling consumes software bill-of-materials data."
+   },
+   {
+    "title": "Export the whole workspace",
+    "scenario": "A monorepo deployment needs dependencies from every workspace member."
+   }
+  ],
+  "related": [
+   "uv.lock",
+   "requirements.txt",
+   "pylock.toml",
+   "CycloneDX v1.5",
+   "--all-packages",
+   "--format",
+   "--output-file",
+   "uv pip install"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why use uv export instead of consuming uv.lock directly?",
+    "answer": "`uv export` converts uv.lock into a format intended for another tool or workflow. The documented formats are requirements.txt, pylock.toml, and CycloneDX v1.5 JSON.",
+    "followUp": "How would you prevent export from changing resolution? Use `--locked` or `--frozen`, because the project is otherwise re-locked before exporting."
+   },
+   {
+    "question": "How do you choose and save an export format?",
+    "answer": "Specify the target with `--format`, then use `--output-file` when the result must be written to disk. Without an output file, the export is printed to standard output.",
+    "followUp": "What happens if `--format` is omitted? uv defaults to requirements.txt, or infers the format from the output filename when one is provided."
+   },
+   {
+    "question": "Which export formats does uv support, and when might they be used?",
+    "answer": "The `requirements.txt` output is compatible with pip-style installation workflows, while `pylock.toml` is the standardized Python lockfile format defined by PEP 751. CycloneDX output is intended for software-bill-of-materials workflows.",
+    "followUp": "How can a workspace export include every member? Add `--all-packages`; selected extras and groups then apply to all workspace members."
+   }
+  ],
+  "keyPoints": [
+   "Use lockfile export when a deployment tool or workflow cannot consume uv.lock directly.",
+   "The documented export targets are requirements.txt, pylock.toml, and CycloneDX v1.5 JSON.",
+   "Pass `--format` to select the representation required by the downstream tool.",
+   "Without an output path, the generated content is emitted to standard output.",
+   "Use `--output-file` when deployment needs a generated artifact on disk.",
+   "A requirements.txt export can be installed by uv pip or pip."
+  ],
+  "gotchas": [
+   "Do not generally maintain both uv.lock and requirements.txt as parallel sources of truth."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Resolution & workspaces::Package indexes": {
+  "sourceUrl": "https://docs.astral.sh/uv/concepts/indexes/index.md",
+  "sourceTitle": "Package indexes | uv",
+  "summary": "Configure index order and authentication while keeping uv’s default first-index behavior, which limits resolution to the first index containing a package and reduces dependency-confusion risk.",
+  "explanation": "uv consults configured indexes in declaration order, while the default PyPI index remains lowest priority. Its default first-index strategy stops considering candidates after the first index containing a package; authentication can be supplied through index configuration or supported credential sources, without switching to a strategy that combines candidates across indexes.",
+  "syntax": "[[tool.uv.index]]\nname = \"internal\"\nurl = \"https://packages.example.com/simple/\"\n\n[tool.uv]\nindex-strategy = \"first-index\"",
+  "parameters": [
+   {
+    "name": "--index",
+    "type": "string",
+    "description": "Additional package index URL; repeated values are considered in order."
+   },
+   {
+    "name": "--index-strategy",
+    "type": "first-index | unsafe-first-match | unsafe-best-match",
+    "description": "Selects first-index, unsafe-first-match, or unsafe-best-match resolution behavior."
+   },
+   {
+    "name": "authenticate",
+    "type": "string",
+    "description": "Controls authentication behavior for a configured index."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Prioritize a private package index",
+   "code": "[[tool.index]]\nname = \"internal\"\nurl = \"https://packages.example.com/simple/\"\nexplicit = true\n\n[tool.uv]\nindex-strategy = \"first-index\"",
+   "language": "toml",
+   "explanation": "Configure an internal index explicitly while retaining uv’s dependency-confusion-resistant default strategy."
+  },
+  "useCases": [
+   {
+    "title": "Private plus public registries",
+    "scenario": "A project uses an internal registry for proprietary packages and PyPI for public dependencies."
+   },
+   {
+    "title": "Dependency-confusion-resistant resolution",
+    "scenario": "A build must ensure a package is selected from the first trusted index where it exists."
+   },
+   {
+    "title": "Authenticated package access",
+    "scenario": "A registry requires a password or token and should have explicit per-index authentication behavior."
+   }
+  ],
+  "related": [
+   "--index",
+   "--index-strategy",
+   "UV_INDEX_STRATEGY",
+   "[[tool.uv.index]]",
+   "authenticate",
+   "default = true",
+   "explicit = true"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does uv prioritize multiple package indexes?",
+    "answer": "Indexes are searched in their configured order, with command-line indexes taking precedence over configuration-file indexes. The default PyPI index is special: it is always lowest priority.",
+    "followUp": "What happens when the same package exists on two indexes? With first-index, uv limits candidate versions to the first index where that package is found."
+   },
+   {
+    "question": "Compare uv's index strategies.",
+    "answer": "first-index searches indexes in order and restricts resolution to the first index containing the package. unsafe-first-match and unsafe-best-match broaden selection across indexes, with unsafe-best-match exposing dependency-confusion risk.",
+    "followUp": "Why is first-index safer? A malicious package on another index cannot win merely by having a higher version when the package already exists on the preferred index."
+   },
+   {
+    "question": "How does uv authenticate to package indexes?",
+    "answer": "Private indexes commonly require a username/password or access token. uv first tries an unauthenticated request, then searches for credentials and retries authenticated access when credentials are available; per-index authenticate settings can change this behavior.",
+    "followUp": "Where can credentials come from? Supported sources include the URL, netrc, uv's credential store, and optionally a keyring provider."
+   }
+  ],
+  "keyPoints": [
+   "Declare private indexes before lower-priority sources when package ownership should prefer the private source.",
+   "Command-line index declarations override the corresponding ordering from configuration files.",
+   "PyPI is available implicitly unless the configuration changes the default-index setup.",
+   "The default resolver examines indexes in order and confines versions to the first matching index.",
+   "Authentication behavior can be customized for an individual index rather than applied only globally.",
+   "Private registries generally need basic credentials or an access token for package retrieval."
+  ],
+  "gotchas": [
+   "Avoid unsafe-best-match unless you deliberately accept dependency-confusion risk; it combines candidates from all indexes.",
+   "Moving the default index in the configuration does not make it higher priority.",
+   "A failed unauthenticated request can trigger credential lookup, so configure the relevant authentication source rather than assuming credentials are sent first."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Resolution & workspaces::Workspace members": {
+  "sourceUrl": "https://docs.astral.sh/uv/concepts/projects/workspaces/",
+  "sourceTitle": "Using workspaces | uv",
+  "summary": "Resolve a multi-package workspace together with one shared lockfile, while using --package to choose which member uv run or uv sync targets.",
+  "explanation": "A workspace groups multiple Python packages under one root and gives them a shared lockfile. uv resolves the complete workspace together; commands such as uv run and uv sync default to the root, but --package lets you target a particular member from any workspace directory.",
+  "syntax": "[tool.uv.workspace]\nmembers = [\"packages/*\"]\nexclude = [\"packages/seeds\"]\n\nuv run --package <member> <command>\nuv sync --package <member>",
+  "parameters": [
+   {
+    "name": "--package",
+    "type": "string",
+    "description": "Workspace member name passed to select the package targeted by uv run or uv sync."
+   },
+   {
+    "name": "members",
+    "type": "list of globs",
+    "description": "Required list of globs identifying directories included as workspace members."
+   },
+   {
+    "name": "exclude",
+    "type": "list of globs",
+    "description": "Optional list of globs identifying directories excluded from membership."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Define and target workspace members",
+   "code": "[tool.uv.workspace]\nmembers = [\"packages/*\"]\nexclude = [\"packages/seeds\"]\n\n# From the workspace root:\n# uv lock\n# uv run --package api python -m api\n# uv sync --package web",
+   "language": "toml",
+   "explanation": "This workspace resolves all included packages together, while --package selects the member targeted by run or sync."
+  },
+  "useCases": [
+   {
+    "title": "Coordinate monorepo dependencies",
+    "scenario": "A monorepo contains several applications and libraries that must share a consistent dependency resolution."
+   },
+   {
+    "title": "Target one member",
+    "scenario": "A developer needs to execute a command against one package without changing the current directory."
+   },
+   {
+    "title": "Filter workspace membership",
+    "scenario": "A workspace uses broad directory globs but must omit generated or special-purpose projects."
+   }
+  ],
+  "related": [
+   "tool.uv.workspace",
+   "members",
+   "exclude",
+   "uv lock",
+   "uv run",
+   "uv sync",
+   "--package",
+   "tool.uv.sources"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does uv represent a workspace and resolve it?",
+    "answer": "A workspace is a group of packages managed together. Each package has its own pyproject.toml, while uv uses one lockfile for the workspace, so uv lock resolves the packages as a unit.",
+    "followUp": "How can one member depend on another? Declare the dependency with tool.uv.sources and set workspace = true for the member."
+   },
+   {
+    "question": "How do you define which directories are workspace members?",
+    "answer": "Add a tool.uv.workspace table to pyproject.toml. The members key is required and accepts directory globs; exclude is optional and removes matching directories.",
+    "followUp": "What must each selected directory contain? A pyproject.toml file, otherwise it does not satisfy the workspace member requirement."
+   },
+   {
+    "question": "How do you choose a particular member for commands?",
+    "answer": "uv run and uv sync target the workspace root by default. Pass --package with a member name to run or sync that member from any directory in the workspace.",
+    "followUp": "How do you inspect the workspace? Use uv workspace list for member names, or uv workspace dir --package NAME for a member path."
+   }
+  ],
+  "keyPoints": [
+   "A workspace is a managed group of one or more packages called workspace members.",
+   "Members keep separate project metadata, but dependency locking is shared across the workspace.",
+   "Locking resolves the complete workspace rather than only the package where the command is run.",
+   "Run and sync use the root unless a different member is selected.",
+   "Use --package to target a named member for run or sync from anywhere within the workspace.",
+   "Workspace configuration requires members; exclude can narrow the included directories."
+  ],
+  "gotchas": [
+   "All directories selected by members and not removed by exclude must contain their own pyproject.toml.",
+   "The root is always included as a workspace member, so it cannot be treated as an unrelated container.",
+   "When declaring a dependency on another member, use an explicit workspace source rather than relying on implicit discovery."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Tools & delivery::Cache management": {
+  "sourceUrl": "https://docs.astral.sh/uv/concepts/cache/",
+  "sourceTitle": "Caching | uv",
+  "summary": "Inspect uv's cache separately from a project's declared dependencies, then measure, prune, or clear cached data. Package-specific cleaning, full cleaning, and CI-focused pruning support targeted maintenance without changing project dependency declarations.",
+  "explanation": "uv keeps disposable but reusable downloads, builds, and environments in a cache separate from the dependencies declared by a project. Use cache commands to locate or measure it, remove unused entries, clear selected packages, or empty it entirely; uv recreates needed environments and cache data later.",
+  "syntax": "uv cache [OPTIONS] <COMMAND>\nuv cache dir\nuv cache size\nuv cache clean [OPTIONS] [PACKAGE]...\nuv cache prune [OPTIONS]",
+  "parameters": [
+   {
+    "name": "PACKAGE",
+    "type": "string...",
+    "description": "Optional package names whose cache entries should be removed by `uv cache clean`."
+   },
+   {
+    "name": "OPTIONS",
+    "type": "options",
+    "description": "Optional command options controlling cache operations."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Inspect and prune uv's cache",
+   "code": "uv cache dir\nuv cache size\nuv cache prune\nuv cache clean ruff",
+   "language": "bash",
+   "explanation": "Inspect the cache location and size, remove unused entries, then optionally clear cached data for one package."
+  },
+  "useCases": [
+   {
+    "title": "Find and reduce cache storage",
+    "scenario": "Local maintenance"
+   },
+   {
+    "title": "Invalidate one package's cached data",
+    "scenario": "Targeted troubleshooting"
+   },
+   {
+    "title": "Minimize retained CI cache data",
+    "scenario": "Continuous integration"
+   }
+  ],
+  "related": [
+   "uv cache",
+   "uv cache clean",
+   "uv cache prune",
+   "uv cache dir",
+   "uv cache size",
+   "--cache-dir",
+   "UV_CACHE_DIR",
+   "tool.uv.cache-dir"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you inspect and reduce uv's cache?",
+    "answer": "`uv cache dir` prints the active cache path, while `uv cache size` reports its size. `uv cache prune` removes unused entries and centralized project environments; `uv cache clean` removes all entries or entries for named packages.",
+    "followUp": "How would you reduce a CI cache after a job? Run `uv cache prune --ci`, which removes pre-built wheels and unpacked source distributions but keeps wheels built from source."
+   },
+   {
+    "question": "How is uv's cache different from project dependencies?",
+    "answer": "The cache stores disposable data that improves reuse, not the project's declared dependency specification. Cleaning or pruning it does not edit project metadata; uv recreates needed cached environments and data when required.",
+    "followUp": "What happens to centralized project environments after pruning? They are removed and recreated as needed."
+   },
+   {
+    "question": "How can you clear only one package's cached data?",
+    "answer": "Use `uv cache clean <package-name>` to invalidate cached data for one package, such as `uv cache clean ruff`. Use `uv cache clean` without a package to clear every cache entry.",
+    "followUp": "What remains after a full clean? The cache directory and its lock file remain so other uv processes can share the cache safely."
+   }
+  ],
+  "keyPoints": [
+   "Run `uv cache dir` to discover which cache location the current uv invocation uses.",
+   "Pruning removes unused cache data and centralized project environments rather than declared project dependencies.",
+   "Pass one or more package names to clean cached entries associated with selected packages.",
+   "A package-less clean empties the cache contents completely.",
+   "Periodic pruning is an appropriate maintenance operation because it targets entries uv no longer needs."
+  ],
+  "gotchas": [
+   "A full clean removes cache entries but leaves the cache directory and lock file in place.",
+   "In CI, the specialized prune mode removes pre-built wheels and unpacked source distributions while retaining wheels built from source.",
+   "Disabling caching does not mean uv has no cache directory: it uses a temporary directory for that operation.",
+   "For best performance, place the cache and virtual environments on the same filesystem."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Tools & delivery::Script metadata": {
+  "sourceUrl": "https://docs.astral.sh/uv/guides/scripts/index.md",
+  "sourceTitle": "Scripts | uv",
+  "summary": "Declare a standalone Python script's dependencies in an inline TOML metadata block. uv reads the block when running the script and creates an environment with the required packages.",
+  "explanation": "A standalone Python script can carry its own dependency declaration in a TOML metadata block at the beginning of the file. `uv run` reads that block, creates an isolated environment for the script, and installs the specified packages; `uv add --script` can create or update the declaration.",
+  "syntax": "# /// script\n# requires-python = \">=3.12\"\n# dependencies = [\"package>=version\"]\n# ///",
+  "parameters": [
+   {
+    "name": "requires-python",
+    "type": "TOML string",
+    "description": "Python version constraint for the script, such as `>=3.12`."
+   },
+   {
+    "name": "dependencies",
+    "type": "TOML array of strings",
+    "description": "Packages required by the script, expressed as dependency specifiers."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Standalone script with inline dependencies",
+   "code": "# /// script\n# requires-python = \">=3.12\"\n# dependencies = [\n#   \"requests<3\",\n# ]\n# ///\nimport requests\n\nprint(requests.get(\"https://astral.sh\").status_code)\n",
+   "language": "python",
+   "explanation": "Save as example.py and run it with `uv run example.py`; uv reads the embedded metadata and supplies the declared package."
+  },
+  "useCases": [
+   {
+    "title": "Portable utilities",
+    "scenario": "A single-file utility needs third-party packages but should not require a checked-in project."
+   },
+   {
+    "title": "Self-describing scripts",
+    "scenario": "A script is shared with colleagues or executed on another machine."
+   },
+   {
+    "title": "Project-independent execution",
+    "scenario": "A script needs a different dependency set from the project containing it."
+   }
+  ],
+  "related": [
+   "uv add --script",
+   "uv init --script",
+   "uv run",
+   "inline script metadata",
+   "requires-python",
+   "dependencies",
+   "--index"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does a standalone script declare dependencies?",
+    "answer": "Put a PEP 723-style TOML block at the top of the Python file, using fields such as `requires-python` and `dependencies`. Running the file with `uv run` causes uv to create an environment containing the declared packages.",
+    "followUp": "What happens if the file is run from a uv project? The script's inline dependency set is used and the project's dependencies are ignored."
+   },
+   {
+    "question": "How can metadata be added or changed?",
+    "answer": "Use `uv add --script example.py package-specifier` to add or update the script's inline metadata. uv writes the dependency declaration into the script rather than requiring a separate project file.",
+    "followUp": "How would you add a package from another index? Supply the index with `--index` when invoking `uv add --script`."
+   },
+   {
+    "question": "What is the required metadata shape?",
+    "answer": "The metadata uses a `script` block represented by TOML comments, and the `dependencies` field is required even when it is empty. This keeps the dependency information in the script itself.",
+    "followUp": "What benefit does this provide at execution time? uv can create the environment needed for that particular script on demand."
+   }
+  ],
+  "keyPoints": [
+   "Dependencies travel with the script, so a standalone file can describe what it needs without a separate dependency manifest.",
+   "Use uv commands to maintain the embedded declaration instead of editing dependency entries manually.",
+   "`uv add --script file.py package` is the documented command pattern for adding packages.",
+   "Execution provisions an environment from the metadata when the script is run.",
+   "The format follows Python's standardized inline script metadata approach."
+  ],
+  "gotchas": [
+   "The metadata block must include `dependencies`, including when the script currently has no packages.",
+   "Do not add `--no-project` merely to isolate a script that already declares inline metadata."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Tools & delivery::uv build": {
+  "sourceUrl": "https://docs.astral.sh/uv/concepts/projects/build/",
+  "sourceTitle": "Using UV Build",
+  "summary": "`uv build` creates source and wheel distributions, normally under `dist/`. Inspect those archives to verify the files included before delivery.",
+  "explanation": "Run `uv build` in a project directory to create distributions in `dist/`. uv first creates the source distribution, then builds the wheel from that source archive; use selection flags when only one format is needed. The build backend, rather than uv itself, determines package contents.",
+  "syntax": "uv build [OPTIONS] [SRC]",
+  "parameters": [
+   {
+    "name": "--sdist",
+    "type": "flag",
+    "description": "Build only a source distribution."
+   },
+   {
+    "name": "--wheel",
+    "type": "flag",
+    "description": "Build only a wheel distribution."
+   },
+   {
+    "name": "<SRC>",
+    "type": "path",
+    "description": "Build the package in the specified directory."
+   },
+   {
+    "name": "--package <PACKAGE>",
+    "type": "option",
+    "description": "Build the named package within the current workspace."
+   }
+  ],
+  "returns": "Creates source and/or wheel distribution files in the `dist/` directory.",
+  "example": {
+   "title": "Build and inspect distributions",
+   "code": "uv build\npython -m zipfile -l dist/*.whl\n tar -tzf dist/*.tar.gz",
+   "language": "bash",
+   "explanation": "Build both distributions, then list their contents to verify which files were packaged."
+  },
+  "useCases": [
+   {
+    "title": "Create release distributions",
+    "scenario": "Prepare release artifacts for publishing to a package registry."
+   },
+   {
+    "title": "Audit packaged files",
+    "scenario": "Check whether documentation, package modules, metadata, or other required files made it into the archives."
+   },
+   {
+    "title": "Select a distribution format",
+    "scenario": "Generate only the artifact type required by a downstream release workflow."
+   }
+  ],
+  "related": [
+   "uv publish",
+   "[build-system]",
+   "source distribution",
+   "wheel",
+   "dist/"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `uv build` do?",
+    "answer": "`uv build` acts as a PEP 517 build frontend: it selects the Python version and invokes the backend configured in `[build-system]`. By default it writes the generated artifacts to `dist/`.",
+    "followUp": "How would you build only one artifact? Use `--sdist` for a source distribution or `--wheel` for a wheel."
+   },
+   {
+    "question": "What is the difference between an sdist and a wheel?",
+    "answer": "A source distribution contains source and metadata, while a wheel contains pre-built artifacts that can be installed directly. Running `uv build` creates both by default.",
+    "followUp": "Why inspect both? Their contents and installation paths can differ, so each should be validated before publishing."
+   },
+   {
+    "question": "How do you verify what was packaged?",
+    "answer": "Use `uv build --sdist` or `uv build --wheel` to select one format, and inspect the resulting archive files under `dist/`. The backend determines which project files enter those archives.",
+    "followUp": "How can you test packaging completeness? Install or run smoke tests against each generated distribution in an isolated environment."
+   }
+  ],
+  "keyPoints": [
+   "The command supports the two standard Python distribution formats: source archives and installable wheels.",
+   "With no path or package selector, it builds the current project and places the results in `dist/`.",
+   "Use `--sdist` when the delivery artifact should be only a source distribution.",
+   "Use `--wheel` to produce only the wheel artifact.",
+   "Passing both format flags explicitly builds both distributions directly from project source."
+  ],
+  "gotchas": [
+   "Do not assume uv controls package contents or filenames; inspect the configured build backend when files are missing or unexpected.",
+   "The wheel is built from the generated source distribution, so testing the source archive helps catch omissions that could affect the wheel."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Tools & delivery::uv in CI": {
+  "sourceUrl": "https://docs.astral.sh/uv/guides/integration/github/index.md",
+  "sourceTitle": "Using uv with GitHub Actions | uv",
+  "summary": "In CI, pin uv and Python, cache using the dependency lockfile, fail when uv.lock is stale, and synchronize without updating it. Prune the cache afterward to control its size.",
+  "explanation": "In CI, install a known uv release and the project’s required Python version, then persist uv’s cache with a key derived from the lockfile. Check that uv.lock is current before using --locked synchronization, and prune the cache at the end to keep restored artifacts efficient.",
+  "syntax": "uv lock --check\nuv sync --locked\nuv cache prune --ci",
+  "parameters": [
+   {
+    "name": "version",
+    "type": "setup-uv action input",
+    "description": "Optional uv release to install; pin this in CI for repeatable tool behavior."
+   },
+   {
+    "name": "python-version",
+    "type": "setup-uv action input",
+    "description": "Python version used by the job or project; configure it explicitly or follow the project pin."
+   },
+   {
+    "name": "enable-cache",
+    "type": "setup-uv action input",
+    "description": "Enables persistence of uv’s cache across workflow runs."
+   },
+   {
+    "name": "cache-dependency-glob",
+    "type": "setup-uv action input",
+    "description": "Files used to determine cache invalidation; use uv.lock for project workflows."
+   }
+  ],
+  "returns": "A CI job with a pinned uv tool and interpreter, dependency-aware cache restoration, stale-lockfile failure, reproducible synchronization, and CI cache cleanup.",
+  "example": {
+   "title": "Pinned uv CI job",
+   "code": "name: CI\non: [push, pull_request]\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: astral-sh/setup-uv@v7\n        with:\n          version: \"0.9.17\"\n          python-version: \"3.12\"\n          enable-cache: true\n          cache-dependency-glob: uv.lock\n      - run: uv lock --check\n      - run: uv sync --locked\n      - run: uv run pytest\n      - run: uv cache prune --ci",
+   "language": "yaml",
+   "explanation": "A GitHub Actions job pins uv and Python, keys its cache from uv.lock, rejects an outdated lockfile, installs without changing the lockfile, runs tests, and trims CI cache entries."
+  },
+  "useCases": [
+   {
+    "title": "Reproducible tests",
+    "scenario": "GitHub Actions test workflows"
+   },
+   {
+    "title": "Faster dependency setup",
+    "scenario": "Jobs that repeatedly install the same dependencies"
+   },
+   {
+    "title": "Lockfile enforcement",
+    "scenario": "Teams committing uv.lock"
+   },
+   {
+    "title": "Cache-size management",
+    "scenario": "Large or frequent CI workloads"
+   }
+  ],
+  "related": [
+   "astral-sh/setup-uv",
+   "uv sync",
+   "uv run",
+   "uv lock --check",
+   "uv sync --locked",
+   "uv cache prune --ci",
+   "uv.lock",
+   "requirements.txt"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How would you make uv-based GitHub Actions reproducible?",
+    "answer": "Use the official setup-uv action, set its version explicitly, enable caching, and configure the Python version. The action can install uv, place it on PATH, and persist the cache; project commands can then use uv sync and uv run.",
+    "followUp": "How should cache invalidation work? Include uv.lock in the cache key so dependency changes restore a compatible cache rather than reusing an unrelated one."
+   },
+   {
+    "question": "How do you prevent stale dependency resolution in CI?",
+    "answer": "Run uv lock --check to fail when the committed lockfile is not up to date, then run uv sync --locked so synchronization cannot silently update it. This separates validation of the lockfile from installation.",
+    "followUp": "What changes for a uv pip workflow? Key the cache from requirements.txt rather than uv.lock, because uv pip does not use the project lockfile in that way."
+   },
+   {
+    "question": "How should the uv cache be restored and maintained?",
+    "answer": "Enable the uv cache in the setup action and key it with the operating system plus a hash of uv.lock. Add a fallback operating-system key if desired, then run uv cache prune --ci after the job to reduce cache size.",
+    "followUp": "Why is pruning not guaranteed to speed every job? Its effect depends on the packages being installed, so retaining source-built wheels may be more valuable for some workloads."
+   }
+  ],
+  "keyPoints": [
+   "Use the official setup action to install uv and expose it to subsequent job steps.",
+   "The setup action can follow the project’s Python pin instead of relying on the runner’s default interpreter.",
+   "Persisting the uv cache can reduce repeated package-download and build work.",
+   "Include the operating system and uv.lock hash in the cache key to restore dependency-compatible artifacts.",
+   "Prune the cache after the job to discard CI-unhelpful artifacts while retaining useful built wheels."
+  ],
+  "gotchas": [
+   "Pruning is recommended, but its performance benefit depends on which packages the job installs.",
+   "The uv project workflow and uv pip workflow use different dependency files for cache invalidation.",
+   "When using the official setup action, avoid assuming the runner’s default interpreter matches the project pin."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Tools & delivery::uv in Docker": {
+  "sourceUrl": "https://docs.astral.sh/uv/guides/integration/docker/",
+  "sourceTitle": "Using uv in Docker",
+  "summary": "Use Docker layer ordering and BuildKit cache mounts to make uv dependency installation reusable across builds. Copy metadata first, install dependencies without the project, then copy source and install the project.",
+  "explanation": "In a Docker build, copy only the project metadata and lockfile first, then run `uv sync --frozen --no-install-project` with a persistent BuildKit cache mount. Copy application files afterward and run `uv sync --frozen` to install the project without invalidating the dependency layer whenever source changes. Keep the environment inside the image rather than copying a host-created `.venv`.",
+  "syntax": "RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-install-project",
+  "parameters": [
+   {
+    "name": "target",
+    "type": "Dockerfile mount option",
+    "description": "BuildKit cache mount target used for uv's cache."
+   },
+   {
+    "name": "--frozen",
+    "type": "uv sync option",
+    "description": "Prevents uv from changing dependencies or the lockfile."
+   },
+   {
+    "name": "--no-install-project",
+    "type": "uv sync option",
+    "description": "Skips installing the local project during the dependency layer."
+   }
+  ],
+  "returns": "A Docker image containing the locked dependencies and application virtual environment.",
+  "example": {
+   "title": "Cache uv dependencies in Docker",
+   "code": "FROM python:3.12-slim\n\nCOPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/\n\nWORKDIR /app\n\n# Install dependencies before copying application source.\nCOPY pyproject.toml uv.lock ./\nRUN --mount=type=cache,target=/root/.cache/uv \\\n    uv sync --frozen --no-install-project\n\n# Copy source and install the project.\nCOPY . /app\nRUN --mount=type=cache,target=/root/.cache/uv \\\n    uv sync --frozen\n\nCMD [\"/app/.venv/bin/python\", \"-m\", \"myapp\"]",
+   "language": "dockerfile",
+   "explanation": "This Dockerfile separates dependency installation from source copying and uses a BuildKit cache mount for uv's cache."
+  },
+  "useCases": [
+   {
+    "title": "Reuse dependency layers",
+    "scenario": "Application source changes frequently but dependency metadata is stable."
+   },
+   {
+    "title": "Persist uv's build cache",
+    "scenario": "Repeated Docker builds need faster dependency installation."
+   },
+   {
+    "title": "Build the environment in Docker",
+    "scenario": "A container image should contain its own environment rather than a host-created environment."
+   }
+  ],
+  "related": [
+   "uv sync",
+   "uv.lock",
+   "pyproject.toml",
+   "UV_LINK_MODE",
+   "UV_CACHE_DIR",
+   "BuildKit cache mounts",
+   "Docker multi-stage builds"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Mount uv's cache at `/root/.cache/uv` with Docker BuildKit so dependency artifacts can be reused between builds.",
+   "Install dependencies without installing the local project before copying source files, preventing source changes from invalidating that layer.",
+   "Set copy link mode when using a cache mount so the environment does not depend on links into the cache."
+  ],
+  "gotchas": [
+   "Without a cache mount, use `--no-cache` when reducing the final image size matters."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Tools & delivery::uv publish": {
+  "sourceUrl": "https://docs.astral.sh/uv/guides/package/index.md",
+  "sourceTitle": "index.md",
+  "summary": "Publish already-built Python distributions with `uv publish`. Use scoped credentials and a named index or upload URL so artifacts go to the intended registry.",
+  "explanation": "After distributions have been built, uv uploads them to a package registry. Credentials can come from command-line options or environment variables, while a configured named index provides a deliberate publishing target and its upload endpoint.",
+  "syntax": "uv publish [OPTIONS] [FILES]",
+  "parameters": [
+   {
+    "name": "--index <name>",
+    "type": "option",
+    "description": "Select the named index configured in `pyproject.toml`."
+   },
+   {
+    "name": "--token <token>",
+    "type": "option",
+    "description": "Provide a token for publishing."
+   },
+   {
+    "name": "--username <username>",
+    "type": "option",
+    "description": "Provide the publishing username."
+   },
+   {
+    "name": "--password <password>",
+    "type": "option",
+    "description": "Provide the publishing password."
+   },
+   {
+    "name": "--publish-url <url>",
+    "type": "option",
+    "description": "Specify the upload endpoint."
+   },
+   {
+    "name": "--check-url <url>",
+    "type": "option",
+    "description": "Specify the index URL used to check whether artifacts already exist."
+   },
+   {
+    "name": "--no-attestations",
+    "type": "flag",
+    "description": "Skip uploading collected attestations."
+   }
+  ],
+  "returns": "Uploads the built distribution files to the selected package index; no separate return value is documented.",
+  "example": {
+   "title": "Build and publish with a scoped token",
+   "code": "uv build\nUV_PUBLISH_TOKEN=\"$PYPI_TOKEN\" uv publish --index pypi",
+   "language": "bash",
+   "explanation": "Build the distributions, then publish them to the configured PyPI index using a token supplied through the environment."
+  },
+  "useCases": [
+   {
+    "title": "PyPI release",
+    "scenario": "Release a package to PyPI from a local workstation or CI job."
+   },
+   {
+    "title": "Private-index publishing",
+    "scenario": "Send distributions to a private registry with an explicit configured target."
+   },
+   {
+    "title": "Credential-free trusted publishing",
+    "scenario": "Publish from GitHub Actions using PyPI Trusted Publishers."
+   },
+   {
+    "title": "Attestation delivery",
+    "scenario": "Upload attestations alongside distributions when the registry supports them."
+   }
+  ],
+  "related": [
+   "uv build",
+   "[[tool.uv.index]]",
+   "publish-url",
+   "UV_PUBLISH_TOKEN",
+   "UV_PUBLISH_USERNAME",
+   "UV_PUBLISH_PASSWORD",
+   "UV_PUBLISH_URL",
+   "UV_PUBLISH_CHECK_URL"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `uv publish` do?",
+    "answer": "`uv publish` uploads already-built distribution files to a package index. Run `uv build` first when the artifacts do not yet exist, then provide credentials and select the intended index.",
+    "followUp": "How should a private registry be configured? Define a named `[[tool.uv.index]]` entry with both its read URL and `publish-url`, then publish with `--index <name>`."
+   },
+   {
+    "question": "How are publishing credentials supplied?",
+    "answer": "Use `--token` or `UV_PUBLISH_TOKEN` for token authentication. Alternatively, use `--username` and `--password`, or their `UV_PUBLISH_USERNAME` and `UV_PUBLISH_PASSWORD` environment variables.",
+    "followUp": "What is the PyPI-specific shortcut for token authentication? uv uses the token with the username `__token__` when `UV_PUBLISH_TOKEN` or `--token` is supplied."
+   },
+   {
+    "question": "How do you publish deliberately to a non-default registry?",
+    "answer": "A configured named index makes the target explicit: add `publish-url` to `[[tool.uv.index]]` and invoke `uv publish --index <name>`. For other registries, `--check-url` should identify the index URL used to determine whether a package already exists.",
+    "followUp": "Why is `--check-url` distinct from the upload URL? The upload endpoint receives artifacts, while the index URL is used for existence checks before uploading."
+   }
+  ],
+  "keyPoints": [
+   "`uv publish` handles the upload phase for source and binary distributions; building is a separate `uv build` step.",
+   "A PyPI token can be passed directly or through its dedicated environment variable.",
+   "Basic username-and-password authentication is available through matching flags or environment variables.",
+   "Custom registries use a named index configuration with a separate upload endpoint selected by `--index`.",
+   "For registries other than PyPI, `--check-url` accepts the package index URL for pre-upload checks."
+  ],
+  "gotchas": [
+   "Selecting a configured index requires the project configuration file to be available, including in a publishing CI job.",
+   "Supplying only `UV_PUBLISH_URL` is less safe because uv cannot check whether the package already exists before uploading.",
+   "Trusted Publisher workflows on PyPI do not need explicitly configured credentials."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Tools & delivery::uv tool install": {
+  "sourceUrl": "https://docs.astral.sh/uv/reference/storage/",
+  "sourceTitle": "Storage",
+  "summary": "Install a Python package as a persistent command-line tool with `uv tool install`. Use uv's directory commands and environment variables to locate or configure the installed tool and its executable.",
+  "explanation": "`uv tool install` installs a Python package as a command-line tool in an isolated, persistent environment. Its executable is placed in uv's tool binary directory; inspect that location with `uv tool dir --bin` and ensure the directory is on your PATH.",
+  "syntax": "uv tool install <PACKAGE>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Install and expose a CLI",
+   "code": "uv tool install ruff\nuv tool dir --bin\nruff check .",
+   "language": "bash",
+   "explanation": "Installs Ruff as a persistent tool, shows the directory containing its executable, then runs Ruff from the shell."
+  },
+  "useCases": [
+   {
+    "title": "Install a standalone developer CLI",
+    "scenario": "A developer needs a globally available formatter or linter without adding it to a project environment."
+   },
+   {
+    "title": "Customize tool storage",
+    "scenario": "A team wants command executables stored outside uv's default data locations."
+   },
+   {
+    "title": "Diagnose executable exposure",
+    "scenario": "A shell cannot find a tool that installed successfully."
+   }
+  ],
+  "related": [
+   "uv tool dir",
+   "uv tool update-shell",
+   "UV_TOOL_DIR",
+   "UV_TOOL_BIN_DIR"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `uv tool install` do?",
+    "answer": "It installs the package as a command-line tool in a persistent environment, separate from a project environment. The installed command is exposed through uv's tool executable directory.",
+    "followUp": "How would you diagnose a command-not-found error after installation? Run `uv tool dir --bin`, verify that directory is on PATH, and use `uv tool update-shell` if appropriate."
+   },
+   {
+    "question": "How do you find the installation and executable directories?",
+    "answer": "`uv tool dir` reports the directory where uv stores tool environments. Adding `--bin` instead reports the directory containing executables for installed tools.",
+    "followUp": "How can the locations be customized? Set `UV_TOOL_DIR` for tool installations and `UV_TOOL_BIN_DIR` for tool executables."
+   },
+   {
+    "question": "Why might an installed CLI not be immediately runnable?",
+    "answer": "The tool executable directory is not automatically placed on PATH. Therefore, installation can succeed while invoking the command by name still fails.",
+    "followUp": "What is the direct remedy? Add the directory returned by `uv tool dir --bin` to PATH, or let `uv tool update-shell` configure it."
+   }
+  ],
+  "keyPoints": [
+   "Use `uv tool install` to install a Python package as a command-line application.",
+   "Tool environments persist under a `tools/` directory within uv's persistent data storage.",
+   "Run `uv tool dir` to inspect the directory holding installed tool environments.",
+   "Run `uv tool dir --bin` to locate the directory containing the installed command executables.",
+   "Set `UV_TOOL_DIR` when the default tool-installation location should be changed.",
+   "Set `UV_TOOL_BIN_DIR` when the executable exposure directory should be changed."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Tools & delivery::uvx and uv tool run": {
+  "sourceUrl": "https://docs.astral.sh/uv/concepts/tools/index.md",
+  "sourceTitle": "Tools | uv",
+  "summary": "`uvx` and `uv tool run` execute Python CLI tools in temporary, isolated environments instead of adding them to project dependencies. `uvx` is the shorter alias for `uv tool run`.",
+  "explanation": "`uvx` is a convenience alias for `uv tool run`. It resolves the requested Python package, creates or reuses a disposable virtual environment in uv's cache, and runs the package's command outside the current project environment. Use `uv run` instead when the tool must access the project's installed dependencies.",
+  "syntax": "uvx <tool> [args...]\nuv tool run <tool> [args...]",
+  "parameters": [
+   {
+    "name": "<tool> [args...]",
+    "type": "command-line arguments",
+    "description": "The package/command to execute, followed by its command-line arguments."
+   }
+  ],
+  "returns": "The invoked tool's standard output and exit status.",
+  "example": {
+   "title": "Run Ruff once",
+   "code": "uvx ruff check .",
+   "language": "bash",
+   "explanation": "Runs Ruff in its temporary isolated tool environment without adding Ruff to the project dependencies."
+  },
+  "useCases": [
+   {
+    "title": "One-off development tools",
+    "scenario": "Run a formatter or linter once without changing project dependencies."
+   },
+   {
+    "title": "Clean tool isolation",
+    "scenario": "Execute a Python CLI with dependencies isolated from the application environment."
+   },
+   {
+    "title": "Cached repeated runs",
+    "scenario": "Reuse a resolved tool environment for faster repeated invocations."
+   }
+  ],
+  "related": [
+   "uv run",
+   "uv tool install",
+   "uv tool upgrade",
+   "uv cache clean"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use `uvx <command>` for a one-off CLI invocation without adding the tool to application dependencies.",
+   "`uvx name` and `uv tool run name` are interchangeable commands.",
+   "Each tool runs in an environment isolated from the current project, so its dependencies do not become project dependencies.",
+   "uv caches the temporary environment to make repeated executions faster.",
+   "The conceptual equivalent is `uv run --no-project --with <name> -- <name>`, with tool-specific caching and package inference."
+  ],
+  "gotchas": [
+   "The cached environment is disposable: clearing uv's cache removes it, and a later invocation recreates it.",
+   "The first invocation selects the latest available version; later invocations reuse the cached version unless the cache or requested version changes.",
+   "Do not use `uvx` for tools that need the project's installed environment; use `uv run` instead."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "uv projects::Dependency groups and extras": {
+  "sourceUrl": "https://docs.astral.sh/uv/concepts/projects/dependencies/",
+  "sourceTitle": "Managing dependencies | uv - Astral",
+  "summary": "uv uses extras for published, consumer-selectable optional features and dependency groups for local development requirements. Keep these declarations separate because extras are package metadata, while development groups are not published.",
+  "explanation": "uv stores consumer-facing optional features in [project.optional-dependencies] and local development tools in [dependency-groups]. Extras are published metadata that must be explicitly selected during synchronization, while the dev group is enabled by default and is omitted from published requirements.",
+  "syntax": "uv add [--dev | --group GROUP | --optional EXTRA] PACKAGE",
+  "parameters": [
+   {
+    "name": "PACKAGE",
+    "type": "package requirement",
+    "description": "Package to add to the project dependency declaration."
+   },
+   {
+    "name": "EXTRA",
+    "type": "string",
+    "description": "Name of the published optional-dependency set."
+   },
+   {
+    "name": "GROUP",
+    "type": "string",
+    "description": "Name of the local development dependency set."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Separate an extra from a development group",
+   "code": "[project]\nname = \"demo\"\ndependencies = [\"httpx\"]\n\n[project.optional-dependencies]\nnetwork = [\"httpx\"]\n\n[dependency-groups]\ndev = [\"pytest\"]\n",
+   "language": "toml",
+   "explanation": "The package publishes the network extra for consumers, while pytest stays in the local development group."
+  },
+  "useCases": [
+   {
+    "title": "Publish optional features as extras",
+    "scenario": "A library offers integrations such as database or network support that users may opt into."
+   },
+   {
+    "title": "Keep development tools in a dependency group",
+    "scenario": "A project needs test, lint, type-checking, or documentation tools only during development."
+   },
+   {
+    "title": "Separate published metadata from local tooling",
+    "scenario": "A project needs a reproducible development environment without exposing its tooling to package consumers."
+   }
+  ],
+  "related": [
+   "project.dependencies",
+   "project.optional-dependencies",
+   "dependency-groups",
+   "uv add",
+   "--dev",
+   "--group",
+   "--optional",
+   "uv sync"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do dependency groups differ from extras?",
+    "answer": "Use project.optional-dependencies for optional features that consumers can request, and dependency-groups for development requirements. Optional dependencies become published project metadata, whereas development dependencies remain local and are not included in published requirements.",
+    "followUp": "How would you install a consumer feature during synchronization? Use uv sync --extra NAME, or uv sync --all-extras to select every extra."
+   },
+   {
+    "question": "What does uv do with the dev group and extras during uv sync?",
+    "answer": "The dev dependency group is synchronized by default. Use --no-dev to omit it, or --only-dev to install that group without the project and its dependencies.",
+    "followUp": "What happens if an extra is not selected? Its dependencies are not installed by uv sync, even though the optional dependency is declared."
+   },
+   {
+    "question": "How are dependencies added to these two kinds of collections?",
+    "answer": "Add a development dependency with uv add --dev PACKAGE or another group with uv add --group GROUP PACKAGE. Add a published optional feature with uv add --optional EXTRA PACKAGE.",
+    "followUp": "How can you inspect the equivalent declaration? Edit [dependency-groups] and [project.optional-dependencies] directly in pyproject.toml."
+   }
+  ],
+  "keyPoints": [
+   "uv separates dependency declarations across project dependencies, published optional dependencies, local dependency groups, and development sources.",
+   "Use project.optional-dependencies for optional features that downstream users may request as extras.",
+   "Use dependency-groups for tools and packages needed while developing the project itself.",
+   "Regular project dependencies are the package's required published requirements and are distinct from optional extras and local groups.",
+   "uv add --optional EXTRA PACKAGE writes a package into a named published extra.",
+   "Development groups use the standardized PEP 735 dependency-groups table."
+  ],
+  "gotchas": [
+   "Do not put consumer-facing runtime features in a dependency group: development groups are local-only and are excluded from published requirements.",
+   "Declaring an extra does not install it automatically; select it with --extra or enable every extra with --all-extras.",
+   "The dev group is enabled by default, unlike other dependency groups, unless synchronization explicitly excludes it."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "uv projects::pyproject.toml": {
+  "sourceUrl": "https://docs.astral.sh/uv/concepts/projects/layout/",
+  "sourceTitle": "Structure and files | uv",
+  "summary": "pyproject.toml is uv's standard project manifest. It identifies the project root and declares metadata, Python compatibility, dependencies, build details, and uv configuration.",
+  "explanation": "uv uses pyproject.toml as the project manifest. The [project] table holds standardized metadata, Python compatibility, and dependencies, while [tool.uv] holds uv-specific behavior; commands such as uv add can update dependency declarations and the lockfile.",
+  "syntax": "[project]\nname = \"example\"\nversion = \"0.1.0\"\nrequires-python = \">=3.12\"\ndependencies = []\n\n[tool.uv]\npackage = true",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A minimal uv project manifest",
+   "code": "[project]\nname = \"example\"\nversion = \"0.1.0\"\nrequires-python = \">=3.12\"\ndependencies = [\"httpx>=0.27\"]\n\n[tool.uv]\npackage = true",
+   "language": "toml",
+   "explanation": "This manifest declares the project identity, supported Python versions, a runtime dependency, and uv-specific packaging behavior."
+  },
+  "useCases": [
+   {
+    "title": "Define the project identity",
+    "scenario": "Starting a new application or library"
+   },
+   {
+    "title": "Declare supported Python versions",
+    "scenario": "Constraining environments and dependency resolution"
+   },
+   {
+    "title": "Provide build and package metadata",
+    "scenario": "Publishing or building a distributable project"
+   },
+   {
+    "title": "Expose CLI entry points",
+    "scenario": "Adding project commands"
+   }
+  ],
+  "related": [
+   "[project]",
+   "project.requires-python",
+   "project.dependencies",
+   "[project.scripts]",
+   "[project.entry-points]",
+   "[build-system]",
+   "[tool.uv]",
+   "uv add"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What role does pyproject.toml play in a uv project?",
+    "answer": "uv recognizes pyproject.toml as the project manifest and uses it to locate the project root. The file stores standardized project metadata and dependency declarations, while uv-specific settings belong in tool.uv.",
+    "followUp": "How does uv determine whether the project itself is installed? The tool.uv.package setting can force installation, while a build-system declaration also defines how the project is built."
+   },
+   {
+    "question": "Which information belongs in the [project] table?",
+    "answer": "The [project] table contains fields such as name, version, requires-python, and dependencies. Dependencies can be edited directly or managed with uv add and uv remove.",
+    "followUp": "Where would uv-specific configuration go? It belongs under [tool.uv], separate from standardized [project] metadata."
+   },
+   {
+    "question": "How is Python compatibility declared?",
+    "answer": "requires-python declares the Python versions supported by the project. uv uses this constraint when resolving the project's dependencies and environment.",
+    "followUp": "What other project metadata can be declared? The documentation also describes scripts, entry points, build configuration, and dependency-related settings in pyproject.toml."
+   }
+  ],
+  "keyPoints": [
+   "Use pyproject.toml as the central manifest for a uv Python project.",
+   "The file also tells uv where the project begins.",
+   "At minimum, define the project's name and version in the [project] table.",
+   "The manifest can also describe Python requirements, dependencies, build settings, and command entry points.",
+   "Set project.requires-python to state which Python versions the project supports.",
+   "Use [project.scripts] to expose project command-line interfaces.",
+   "Set tool.uv.package to false when the project should not be built and installed.",
+   "Maintain the manifest by hand or use uv's dependency commands."
+  ],
+  "gotchas": [
+   "A project without pyproject.toml is not recognized by uv as a project root.",
+   "Enabling packaging changes the project environment behavior: uv builds and installs the project.",
+   "A project that is packaged without an explicit build system may use setuptools' legacy backend."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "uv projects::uv add and remove": {
+  "sourceUrl": "https://docs.astral.sh/uv/reference/cli/",
+  "sourceTitle": "Commands | uv",
+  "summary": "Use `uv add` and `uv remove` to change a project's declared dependencies while updating its lockfile and environment. They provide a command-line alternative to manually editing `pyproject.toml`.",
+  "explanation": "`uv add` records packages in the project's `pyproject.toml`, then updates the lockfile and environment. `uv remove` deletes the dependency declaration and likewise updates the lockfile and environment, keeping project metadata and resolution aligned.",
+  "syntax": "uv add [OPTIONS] <PACKAGES|--requirements ...>\nuv remove [OPTIONS] <PACKAGES>...",
+  "parameters": [
+   {
+    "name": "PACKAGES|--requirements",
+    "type": "package specifications or requirements input",
+    "description": "Packages or a requirements file to add; `uv add` also accepts options such as `--dev`, `--group`, and `--optional`."
+   },
+   {
+    "name": "PACKAGES",
+    "type": "package specifications",
+    "description": "One or more declared dependencies to remove from the project."
+   }
+  ],
+  "returns": "The commands update project dependency metadata and, by default, the lockfile and project environment.",
+  "example": {
+   "title": "Add and remove a dependency",
+   "code": "uv add requests\nuv remove requests",
+   "language": "bash",
+   "explanation": "Adds requests to the project, then removes it while updating the declared dependencies and project state."
+  },
+  "useCases": [
+   {
+    "title": "Declare a dependency",
+    "scenario": "Add a runtime or development package to an existing uv project."
+   },
+   {
+    "title": "Update a requirement",
+    "scenario": "Change the version requirement of a dependency already listed in the project."
+   },
+   {
+    "title": "Delete a dependency",
+    "scenario": "Remove a package and its project declaration."
+   },
+   {
+    "title": "Migrate requirements",
+    "scenario": "Import packages from an existing requirements file."
+   }
+  ],
+  "related": [
+   "pyproject.toml",
+   "uv.lock",
+   "uv sync",
+   "uv pip install",
+   "--dev",
+   "--group",
+   "--optional",
+   "--frozen"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `uv add` change?",
+    "answer": "`uv add` writes dependencies to `pyproject.toml` and updates both the lockfile and project environment. It can also update an existing dependency's version specifier.",
+    "followUp": "What happens with marker-specific duplicate entries? If markers differ, uv adds another dependency entry instead of replacing the existing one."
+   },
+   {
+    "question": "How does `uv remove` behave?",
+    "answer": "`uv remove` removes dependencies from `pyproject.toml` and updates the lockfile and project environment. If several entries exist for one dependency because of different markers, all are removed.",
+    "followUp": "Does it remove every installation of the package? No; a package manually installed with `uv pip install` is not removed by this command."
+   },
+   {
+    "question": "Which options control lockfile and environment updates?",
+    "answer": "Both commands support project dependency management from the terminal, while `uv add -r` can import dependencies from a requirements file. `--frozen` skips lockfile updates and `--no-sync` skips environment updates.",
+    "followUp": "How can a dependency be added without resolving whether it exists or is compatible? Use `--frozen`, which adds the requested dependency verbatim."
+   }
+  ],
+  "keyPoints": [
+   "`uv add` declares the requested packages in the project's `pyproject.toml`.",
+   "Adding a package also refreshes the lockfile and synchronizes the project environment.",
+   "`uv remove` deletes the requested dependency declarations from project metadata.",
+   "Removal clears all marker-specific entries for the selected dependency.",
+   "The command locates the project from the current directory or an ancestor.",
+   "Adding an already-declared package changes its version requirement rather than creating a duplicate in the usual case."
+  ],
+  "gotchas": [
+   "`uv remove` does not uninstall a package that was installed manually with `uv pip install`.",
+   "Removing a dependency that is not declared in the project fails.",
+   "Use `--frozen` only when intentionally avoiding a lockfile update.",
+   "Use `--no-sync` when the environment should not be synchronized immediately."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "uv projects::uv init": {
+  "sourceUrl": "https://docs.astral.sh/uv/concepts/projects/init/",
+  "sourceTitle": "Creating projects | uv",
+  "summary": "Create an application or library project with `uv init`, then inspect the generated `pyproject.toml` before adding dependencies. Choose `--lib` for a library or `--bare` for metadata only.",
+  "explanation": "Run `uv init` in the current directory or provide a target path to create a Python project. It generates project metadata and source-layout files; use `--lib` for a library, `--no-package` to omit the build system, or `--bare` to create only `pyproject.toml`. Inspect the generated `pyproject.toml` before using `uv add` to declare dependencies.",
+  "syntax": "uv init [OPTIONS] [PATH]",
+  "parameters": [
+   {
+    "name": "OPTIONS",
+    "type": "flags",
+    "description": "Initialization options controlling the project template, packaging, backend, directory, and metadata."
+   },
+   {
+    "name": "PATH",
+    "type": "path",
+    "description": "Target directory or project path; defaults to the current working directory for an application or library."
+   }
+  ],
+  "returns": "Creates a new project with a pyproject.toml and, for the standard application or library templates, a source layout and related project files.",
+  "example": {
+   "title": "Create and inspect an application project",
+   "code": "uv init example-app\ncd example-app\ncat pyproject.toml\nuv add requests",
+   "language": "bash",
+   "explanation": "Creates an application project, lets you inspect its generated metadata, then adds a dependency."
+  },
+  "useCases": [
+   {
+    "title": "Create an application",
+    "scenario": "Starting a script, web server, or command-line interface project with uv's default structure."
+   },
+   {
+    "title": "Create a library",
+    "scenario": "Preparing an installable reusable package with a source directory and build system."
+   },
+   {
+    "title": "Create a bare project",
+    "scenario": "Bootstrapping project metadata without generating the standard source layout."
+   }
+  ],
+  "related": [
+   "uv add",
+   "uv sync",
+   "uv lock",
+   "uv run",
+   "pyproject.toml",
+   "--app",
+   "--lib",
+   "--no-package"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the basic syntax of `uv init`?",
+    "answer": "The command is `uv init [OPTIONS] [PATH]`. Without a path, uv initializes the current working directory; supplying a path creates or initializes the target directory.",
+    "followUp": "How would you create only project metadata? Use `uv init --bare`, which creates a `pyproject.toml` without the normal project files."
+   },
+   {
+    "question": "How do application and library initialization differ?",
+    "answer": "Application projects are the default. They suit scripts, web servers, and command-line interfaces, while `--lib` selects a library project.",
+    "followUp": "How can packaging be disabled for an application? Use `--no-package`, which omits the build-system setup."
+   },
+   {
+    "question": "What should you inspect and do after initialization?",
+    "answer": "`uv init` creates the project structure and `pyproject.toml`; dependencies should then be declared with `uv add`. The generated metadata should be inspected before adding dependencies.",
+    "followUp": "What happens if the destination is already part of a project? An existing `pyproject.toml` at the target causes an error, while a parent project can make the new project a workspace member."
+   }
+  ],
+  "keyPoints": [
+   "Use `uv init` to create a new Python project.",
+   "Initialization offers application and library templates.",
+   "The application template is selected unless you request another type.",
+   "Pass `--lib` when the project is intended to be a library.",
+   "Default projects use a build system and a dedicated `src/<project_name>/` source directory.",
+   "Use `--bare` when only the project metadata file is needed."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "uv projects::uv lock": {
+  "sourceUrl": "https://docs.astral.sh/uv/guides/projects/",
+  "sourceTitle": "Working on projects | uv",
+  "summary": "`uv lock` resolves project dependencies and records exact versions in `uv.lock`. It manages the lockfile; installing those versions requires environment commands such as `uv sync`, while project commands may lock automatically.",
+  "explanation": "`uv lock` resolves the dependencies declared by a project and creates or updates `uv.lock`; it does not install those packages into the project environment. Installation is performed by commands such as `uv sync`, while commands such as `uv run` can lock and sync automatically.",
+  "syntax": "uv lock [OPTIONS]",
+  "parameters": [
+   {
+    "name": "--upgrade",
+    "type": "flag",
+    "description": "Re-resolve all packages and update their versions where possible."
+   },
+   {
+    "name": "--upgrade-package <PACKAGE>",
+    "type": "option",
+    "description": "Attempt to update one named package to its latest compatible version while keeping the rest of the lockfile intact."
+   },
+   {
+    "name": "--check",
+    "type": "flag",
+    "description": "Assert that the lockfile is already current without updating it."
+   }
+  ],
+  "returns": "Creates or updates the project's `uv.lock` file; it does not itself install packages into the project environment.",
+  "example": {
+   "title": "Lock, install, and run a project",
+   "code": "uv lock\nuv sync\nuv run python -c \"import requests; print(requests.__version__)\"",
+   "language": "bash",
+   "explanation": "Run the lock command to resolve and record versions, then sync to install the locked packages before running the project."
+  },
+  "useCases": [
+   {
+    "title": "Refresh a project lockfile",
+    "scenario": "After changing dependency declarations, refresh the committed resolution so collaborators and deployments use a reproducible set of versions."
+   },
+   {
+    "title": "Validate lockfile freshness",
+    "scenario": "Run `uv lock --check` in continuous integration to detect changes that require a lockfile update."
+   },
+   {
+    "title": "Perform a targeted upgrade",
+    "scenario": "Run `uv lock --upgrade-package requests` to update one dependency while retaining the rest of the existing resolution."
+   },
+   {
+    "title": "Upgrade the complete resolution",
+    "scenario": "Run `uv lock --upgrade` when intentionally reconsidering all package versions."
+   }
+  ],
+  "related": [
+   "uv.lock",
+   "uv sync",
+   "uv run",
+   "uv add",
+   "pyproject.toml",
+   "--upgrade",
+   "--upgrade-package",
+   "--check"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `uv lock` do, and does it install packages?",
+    "answer": "`uv lock` resolves the project's declared dependencies and writes the exact resolution to `uv.lock`. It updates the lockfile, but installation into the project environment is handled by syncing commands such as `uv sync`.",
+    "followUp": "How can a CI job reject stale lockfiles? Run `uv lock --check`; it verifies that the lockfile is up to date without intentionally changing it."
+   },
+   {
+    "question": "Why commit `uv.lock` to version control?",
+    "answer": "The lockfile records exact dependency information while `pyproject.toml` expresses broader requirements. `uv.lock` is universal, so it captures resolutions across supported platforms, architectures, and Python versions.",
+    "followUp": "Why commit it? Version-controlling the lockfile gives developers and deployments a consistent, reproducible dependency set."
+   },
+   {
+    "question": "What dependency inputs does uv resolve?",
+    "answer": "Locking resolves all project dependencies together, including project dependencies, extras, and dependency groups. This requires the declared dependencies to be mutually compatible before the lockfile can be produced.",
+    "followUp": "How would you update only one package? Use `uv lock --upgrade-package <package>`, which attempts a compatible upgrade while preserving the rest of the lockfile."
+   }
+  ],
+  "keyPoints": [
+   "The command records an exact, cross-platform dependency resolution in `uv.lock`.",
+   "Run `uv lock` explicitly when you want to create or refresh the project's lockfile.",
+   "Project commands such as `uv run` and `uv sync` may create or update the lockfile automatically.",
+   "Use `--upgrade-package` for a targeted compatible upgrade instead of upgrading the entire lockfile."
+  ],
+  "gotchas": [
+   "Do not edit `uv.lock` by hand; change project declarations or use uv commands instead.",
+   "In a workspace, locking resolves the workspace collectively rather than only the current member."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "uv projects::uv run": {
+  "sourceUrl": "https://docs.astral.sh/uv/concepts/projects/run/",
+  "sourceTitle": "Running commands | uv",
+  "summary": "Run a command in a uv project environment. uv synchronizes the project before execution unless synchronization is explicitly disabled.",
+  "explanation": "From a project directory, uv prepares the project environment before starting the requested command. It checks that the lockfile reflects pyproject.toml and that the environment reflects the lockfile, then runs the command with the project's required dependencies available.",
+  "syntax": "uv run [OPTIONS] <COMMAND> [ARGS...]",
+  "parameters": [
+   {
+    "name": "<COMMAND> [ARGS...]",
+    "type": "command arguments",
+    "description": "Command and its arguments to execute in the project environment."
+   },
+   {
+    "name": "--with <PACKAGE>",
+    "type": "option",
+    "description": "Add a dependency only for this invocation."
+   },
+   {
+    "name": "--no-project",
+    "type": "option",
+    "description": "Skip project installation and dependency management for the invocation."
+   }
+  ],
+  "returns": "The exit status and standard output/error of the executed command; the documentation does not define a separate return value.",
+  "example": {
+   "title": "Run Python in the project environment",
+   "code": "uv run python -c \"print('hello from the project')\"",
+   "language": "bash",
+   "explanation": "Runs Python with the project's installed dependencies and ensures the project environment is synchronized first."
+  },
+  "useCases": [
+   {
+    "title": "Execute project commands",
+    "scenario": "Run project code or tools with declared dependencies available."
+   },
+   {
+    "title": "Run tests and development tools",
+    "scenario": "Run test suites or development tools without manually activating .venv."
+   },
+   {
+    "title": "Use temporary dependencies",
+    "scenario": "Try a package or alternate dependency version for one command."
+   }
+  ],
+  "related": [
+   "uv sync",
+   "uv add",
+   "uvx",
+   "--with",
+   "--no-project",
+   "project environment",
+   "lockfile",
+   "pyproject.toml"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does uv run do before starting a command?",
+    "answer": "uv run executes a command in the project's environment. Before execution, it updates the environment when needed so the command sees the project's required dependencies at their locked versions.",
+    "followUp": "How can an invocation add a temporary dependency? Use `--with`, such as `uv run --with httpx python -c \"import httpx\"`; that dependency is included for the invocation without being added to the project."
+   },
+   {
+    "question": "Why use uv run instead of invoking Python directly?",
+    "answer": "Use `uv run <command>` for commands that need the project environment, such as `uv run pytest tests` or `uv run python -c \"import example\"`. The project environment is isolated from the current shell unless the command is run through uv.",
+    "followUp": "How would you run a shell script that needs the project? Prefix the interpreter command, for example `uv run bash scripts/foo.sh`."
+   },
+   {
+    "question": "How does uv run keep the project environment synchronized?",
+    "answer": "uv run synchronizes automatically: it checks the lockfile against `pyproject.toml` and checks the environment against the lockfile before running. This keeps the environment current without requiring a separate manual sync command.",
+    "followUp": "How can synchronization be avoided? Use the documented option that disables automatic synchronization, when that behavior is explicitly required."
+   }
+  ],
+  "keyPoints": [
+   "It accepts either a project-provided command or an arbitrary script or command.",
+   "Each invocation validates the lockfile against the project's pyproject.toml.",
+   "It also brings the environment into agreement with the lockfile before execution.",
+   "Commands run with the project's required dependencies at the versions recorded in the lockfile.",
+   "Use repeated `--with` options to add one-off dependencies or request a particular dependency version."
+  ],
+  "gotchas": [
+   "A script passed directly to uv run is treated as an isolated script invocation rather than automatically using the project environment."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "uv projects::uv sync": {
+  "sourceUrl": "https://docs.astral.sh/uv/concepts/projects/sync/",
+  "sourceTitle": "Locking and syncing | uv",
+  "summary": "Synchronize the project environment with the selected packages from the uv lockfile. By default, `uv sync` performs an exact sync and removes packages not present in the lockfile.",
+  "explanation": "`uv sync` resolves the project when needed, then installs the selected packages from the lockfile into the project environment. The default operation is exact: packages absent from the lockfile are removed. Use flags to preserve extras, select optional dependencies, or control locking.",
+  "syntax": "uv sync [OPTIONS]",
+  "parameters": [
+   {
+    "name": "--extra <EXTRA>",
+    "type": "option",
+    "description": "Optional dependency group to include."
+   },
+   {
+    "name": "--inexact",
+    "type": "flag",
+    "description": "Keep packages that are not declared in the lockfile."
+   },
+   {
+    "name": "--locked",
+    "type": "flag",
+    "description": "Synchronize without re-locking when the lockfile is already expected to be valid."
+   },
+   {
+    "name": "--frozen",
+    "type": "flag",
+    "description": "Synchronize from the existing lockfile without checking or updating it."
+   }
+  ],
+  "returns": "Updates the project environment to match the selected dependency set in the lockfile; it may create the environment and remove extraneous packages.",
+  "example": {
+   "title": "Sync with an extra",
+   "code": "uv sync --extra docs",
+   "language": "bash",
+   "explanation": "Synchronizes the project environment and includes the optional `docs` dependency group."
+  },
+  "useCases": [
+   {
+    "title": "Refresh a development environment",
+    "scenario": "After changing project dependencies, update the managed environment to the current resolution."
+   },
+   {
+    "title": "Bootstrap a project",
+    "scenario": "Create the project environment and install its locked dependencies on a new machine."
+   },
+   {
+    "title": "Enable an extra",
+    "scenario": "Install an optional dependency group for documentation, testing, or another feature."
+   },
+   {
+    "title": "Clean undeclared packages",
+    "scenario": "Remove stale packages so the environment matches declared project dependencies exactly."
+   }
+  ],
+  "related": [
+   "uv lock",
+   "uv run",
+   "uv.lock",
+   "project environment",
+   "extras",
+   "--all-extras",
+   "--dev",
+   "--no-dev"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `uv sync` do?",
+    "answer": "`uv sync` installs a selected subset of the project’s locked dependencies into the project environment. It also keeps that environment aligned with the lockfile and performs exact synchronization by default.",
+    "followUp": "What happens if the lockfile is stale? By default, uv re-locks before syncing; `--locked` or `--frozen` can prevent that, with different validation behavior."
+   },
+   {
+    "question": "What does exact syncing mean?",
+    "answer": "Exact synchronization removes packages that are not present in the lockfile. This prevents undeclared or stale packages from remaining in the project environment.",
+    "followUp": "How would you preserve an unmanaged package? Use `uv sync --inexact`, which retains extraneous packages."
+   },
+   {
+    "question": "How are project extras handled?",
+    "answer": "Optional dependencies are not installed automatically. Select one explicitly, such as with `uv sync --extra docs`, to include that extra in the synchronized environment.",
+    "followUp": "How could you inspect the available command options? Run `uv sync --help`; the CLI reference documents options such as `--extra`, `--inexact`, `--locked`, and `--frozen`."
+   }
+  ],
+  "keyPoints": [
+   "The command installs the dependency subset selected for the project into its managed environment.",
+   "Although commands such as `uv run` synchronize automatically, you can invoke synchronization directly with `uv sync`.",
+   "Its default exact mode cleans packages that are absent from the lockfile.",
+   "Use `--extra NAME` to add a project optional-dependency group to the synchronization.",
+   "If the project environment does not exist, synchronization can create it as part of the command."
+  ],
+  "gotchas": [
+   "The default exact behavior removes packages that are not in the lockfile; add `--inexact` when those extra packages must remain.",
+   "Optional dependencies are excluded unless you explicitly select them with `--extra` or another appropriate option."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "uv projects::uv tree": {
+  "sourceUrl": "https://docs.astral.sh/uv/reference/cli/",
+  "sourceTitle": "Commands | uv - Astral Docs",
+  "summary": "`uv tree` displays a project's direct and transitive dependency tree. Use its options to inspect a PEP 723 script or include compressed wheel sizes.",
+  "explanation": "`uv tree` resolves and displays the dependency graph for the current project, making both direct requirements and packages pulled in transitively visible. Options can switch the source to a PEP 723 script, add package metadata such as compressed wheel sizes, or alter resolution and index behavior.",
+  "syntax": "uv tree [OPTIONS]",
+  "parameters": [
+   {
+    "name": "OPTIONS",
+    "type": "options",
+    "description": "Optional command-line flags controlling which dependency source and details are displayed."
+   }
+  ],
+  "returns": "A formatted dependency tree for the project or selected PEP 723 script.",
+  "example": {
+   "title": "Show the project tree with package sizes",
+   "code": "uv tree --show-sizes",
+   "language": "bash",
+   "explanation": "Run this from a uv project to display its dependency tree and include compressed wheel sizes where available."
+  },
+  "useCases": [
+   {
+    "title": "Trace indirect packages",
+    "scenario": "Dependency diagnosis"
+   },
+   {
+    "title": "Review the resolved graph",
+    "scenario": "Project inspection"
+   },
+   {
+    "title": "Inspect script dependencies",
+    "scenario": "PEP 723 development"
+   }
+  ],
+  "related": [
+   "uv pip tree",
+   "--script",
+   "--show-sizes",
+   "uv lock",
+   "--locked",
+   "--frozen"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does `uv tree` differ from `uv pip tree`?",
+    "answer": "Use `uv tree` for a project's dependency graph. Use `uv pip tree` instead when the target is an installed environment rather than a project.",
+    "followUp": "How can the tree target a script? Pass `--script` followed by the PEP 723 Python script; uv resolves dependencies from that script's inline metadata."
+   },
+   {
+    "question": "What is the basic syntax and purpose of `uv tree`?",
+    "answer": "The command is invoked as `uv tree [OPTIONS]`. It displays the dependency tree for the project, and options determine additional output or the dependency source.",
+    "followUp": "What option adds package size information? `--show-sizes` includes compressed wheel sizes for packages in the tree."
+   },
+   {
+    "question": "Why is `uv tree` useful when diagnosing dependencies?",
+    "answer": "`uv tree` reads project dependency information and shows the resulting tree, including transitive packages. This helps reveal how indirect dependencies enter the project.",
+    "followUp": "What happens before a lockfile-reading command runs? uv automatically updates the lockfile unless a lock-control option changes that behavior."
+   }
+  ],
+  "keyPoints": [
+   "The command visualizes the dependency graph belonging to the current uv project.",
+   "Use `--script` to inspect a PEP 723 Python script instead of the current project.",
+   "For a script target, uv resolves dependencies from the script’s inline metadata according to PEP 723.",
+   "The `--show-sizes` option adds compressed wheel-size information to package entries."
+  ],
+  "gotchas": [
+   "Running `uv tree` can update the lockfile automatically before displaying the tree; use the documented lock controls when you need to prevent or avoid that behavior."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

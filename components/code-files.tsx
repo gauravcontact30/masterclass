@@ -35,7 +35,7 @@ function buildTree(files: AnswerFile[]): TreeRow[] {
   return rows;
 }
 
-export function CodeFiles({ files, label = "Code example", className, annotate = true, lineComments = annotate, includeConfigTabs = true, explainFormatting = true, hoverComments = false }: { files: AnswerFile[]; label?: string; className?: string; annotate?: boolean; lineComments?: boolean; includeConfigTabs?: boolean; explainFormatting?: boolean; hoverComments?: boolean }) {
+export function CodeFiles({ files, label = "Code example", className, annotate = true, lineComments = annotate, includeConfigTabs = true, explainFormatting = true, hoverComments = false, skin }: { files: AnswerFile[]; label?: string; className?: string; annotate?: boolean; lineComments?: boolean; includeConfigTabs?: boolean; explainFormatting?: boolean; hoverComments?: boolean; /** "apple": the neutral light Xcode look, with plain tabs instead of pastel ones. */ skin?: "apple" }) {
   const id = useId();
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [active, setActive] = useState(() => Math.max(0, files.findIndex(file => isCodeExampleTab(file.path, includeConfigTabs))));
@@ -59,7 +59,7 @@ export function CodeFiles({ files, label = "Code example", className, annotate =
 
   function selectFile(index: number) { setActive(index); setCopied(false); setCopyFailed(false); setHoveredLine(null); }
 
-  return <figure className={className ? `${styles.wrap} ${className}` : styles.wrap} aria-label={label}>
+  return <figure className={className ? `${styles.wrap} ${className}` : styles.wrap} aria-label={label} data-skin={skin}>
     <figcaption className={styles.bar}>
       <span className={styles.dots} aria-hidden="true"><i /><i /><i /></span>
       <button type="button" className={styles.disclose} aria-expanded={open} onClick={() => setOpen(value => !value)}>

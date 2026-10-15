@@ -1,0 +1,1978 @@
+{
+ "Core objects::DaemonSets": {
+  "sourceUrl": "https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/",
+  "sourceTitle": "DaemonSet",
+  "summary": "A DaemonSet ensures that every node, or a selected subset of nodes, runs a copy of a Pod. It is suited to node-local agents such as storage, logging, and monitoring daemons.",
+  "explanation": "A DaemonSet is managed by the control plane to keep one Pod copy on every node, or on a selected subset. It creates Pods for newly matching nodes, removes them when nodes leave, and deletes its managed Pods when the DaemonSet is deleted unless orphaning is requested.",
+  "syntax": "apiVersion: apps/v1\nkind: DaemonSet\nmetadata:\n  name: <name>\nspec:\n  selector:\n    matchLabels: <pod-labels>\n  template:\n    metadata:\n      labels: <pod-labels>\n    spec:\n      containers: <containers>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "DaemonSet for node-local logging",
+   "code": "apiVersion: apps/v1\nkind: DaemonSet\nmetadata:\n  name: node-logger\n  labels:\n    app: node-logger\nspec:\n  selector:\n    matchLabels:\n      app: node-logger\n  template:\n    metadata:\n      labels:\n        app: node-logger\n    spec:\n      containers:\n        - name: logger\n          image: busybox:1.36\n          command: [\"sh\", \"-c\", \"while true; do date; sleep 30; done\"]",
+   "language": "yaml",
+   "explanation": "This manifest runs a continuously logging Pod on each eligible node."
+  },
+  "useCases": [
+   {
+    "title": "Cluster storage daemon",
+    "scenario": "Deploy a storage-related agent on every node that needs it."
+   },
+   {
+    "title": "Log collection",
+    "scenario": "Collect logs from workloads or the host on each node."
+   },
+   {
+    "title": "Node monitoring",
+    "scenario": "Gather health and resource metrics from every node."
+   },
+   {
+    "title": "Node infrastructure agent",
+    "scenario": "Provide a node-local networking or device integration helper."
+   }
+  ],
+  "related": [
+   "Pod",
+   "DaemonSet controller",
+   "nodeSelector",
+   "RollingUpdate",
+   "OnDelete",
+   "kubectl apply"
+  ],
+  "since": "",
+  "keyPoints": [
+   "It maintains one copy of a Pod on every node or on the subset selected by the workload configuration.",
+   "When a newly added node matches the DaemonSet's requirements, the controller schedules a Pod there.",
+   "Pods associated with nodes that leave the cluster are cleaned up automatically.",
+   "Removing the DaemonSet also removes its managed Pods by default.",
+   "A storage agent that must be present on each node is a typical DaemonSet workload.",
+   "Log collectors are a standard use case because each node can produce local logs.",
+   "Node monitoring agents commonly run as DaemonSets to collect per-node health data."
+  ],
+  "gotchas": [
+   "Deleting a DaemonSet normally removes the Pods it created; use orphan cascading only when you intentionally want those Pods to remain.",
+   "Use a DaemonSet for node-local work rather than ordinary application replicas that should be distributed independently of node identity."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Core objects::Deployments": {
+  "sourceUrl": "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/",
+  "sourceTitle": "Deployments | Kubernetes",
+  "summary": "A Deployment declares a desired number of interchangeable Pods and the template used to create them. Kubernetes reconciles that declaration through ReplicaSets, supporting controlled rollouts when the template changes.",
+  "explanation": "A Deployment records the desired Pod count and a Pod template. Its controller creates and manages ReplicaSets, then adjusts the ReplicaSets and their Pods until the observed workload matches that declaration; changing the template starts a new revision and replacement process.",
+  "syntax": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: <name>\nspec:\n  replicas: <count>\n  selector:\n    matchLabels: <labels>\n  template:\n    metadata:\n      labels: <same-labels>\n    spec:\n      containers: [...]",
+  "parameters": [
+   {
+    "name": "spec.replicas",
+    "type": "integer",
+    "description": "Desired number of Pods to run."
+   },
+   {
+    "name": "spec.selector",
+    "type": "LabelSelector",
+    "description": "Label selector identifying the Pods managed by the Deployment; it must match the template labels."
+   },
+   {
+    "name": "spec.template",
+    "type": "PodTemplateSpec",
+    "description": "Pod specification used to create the Deployment's Pods."
+   },
+   {
+    "name": "spec.strategy",
+    "type": "DeploymentStrategy",
+    "description": "Method used to replace old Pods with new ones: Recreate or RollingUpdate."
+   }
+  ],
+  "returns": "A Deployment object whose controller maintains the requested ReplicaSets and Pods and reports rollout progress in status.",
+  "example": {
+   "title": "A stateless web Deployment",
+   "code": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: web\n  template:\n    metadata:\n      labels:\n        app: web\n    spec:\n      containers:\n        - name: web\n          image: nginx:1.27\n          ports:\n            - containerPort: 80",
+   "language": "yaml",
+   "explanation": "This manifest requests three matching Pods running the declared container. Apply it with kubectl apply -f deployment.yaml, then inspect progress with kubectl rollout status deployment/web."
+  },
+  "useCases": [
+   {
+    "title": "Stateless application replicas",
+    "scenario": "Run a stateless HTTP service with several interchangeable instances."
+   },
+   {
+    "title": "Controlled rolling updates",
+    "scenario": "Release a new container image while limiting simultaneous disruption."
+   },
+   {
+    "title": "Rollbacks",
+    "scenario": "Return to an earlier ReplicaSet revision after an unsuccessful release."
+   }
+  ],
+  "related": [
+   "ReplicaSet",
+   "PodTemplateSpec",
+   "Deployment Controller",
+   "RollingUpdate",
+   "Recreate",
+   "kubectl rollout status"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does a Deployment manage?",
+    "answer": "A Deployment is a declarative workload object for applications that usually do not keep state. It maintains Pods through ReplicaSets, while the controller moves actual state toward the declared desired state.",
+    "followUp": "How does an update avoid replacing all Pods simultaneously? The controller creates a new ReplicaSet and progressively scales it up while scaling down the old one."
+   },
+   {
+    "question": "How do replicas and the Pod template work together?",
+    "answer": "The replica setting expresses the desired number of Pods, and the template describes each Pod's metadata and containers. The controller continuously reconciles the running workload with those fields.",
+    "followUp": "What field triggers a new revision? Changing the Pod template causes a new ReplicaSet and revision to be created."
+   },
+   {
+    "question": "What happens during a rolling update?",
+    "answer": "The default strategy is RollingUpdate. By default, the controller keeps at least 75% of the desired Pods available during an update, allowing up to 25% to be unavailable.",
+    "followUp": "How can rollout progress be observed? Use kubectl rollout status for the Deployment and examine its status when progress stalls."
+   }
+  ],
+  "keyPoints": [
+   "Deployments are intended primarily for stateless application workloads whose Pods can be replaced.",
+   "You declare the target configuration rather than scripting each Pod replacement.",
+   "The Deployment controller continuously reconciles the cluster toward the requested state.",
+   "A Deployment creates or rolls out a ReplicaSet, which is responsible for creating Pods.",
+   "Changing the Pod template produces a new revision and a gradual handoff from old Pods to new ones.",
+   "Rolling updates limit simultaneous disruption while replacing Pods.",
+   "Use kubectl rollout status to monitor whether the rollout has finished."
+  ],
+  "gotchas": [
+   "Unless explicitly changed, updates use RollingUpdate rather than replacing every Pod at once."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Core objects::Jobs and CronJobs": {
+  "sourceUrl": "https://v1-32.docs.kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/",
+  "sourceTitle": "Cron Jobs",
+  "summary": "Jobs run finite work until completion, while CronJobs create those Jobs repeatedly from a cron-formatted schedule. Jobs manage their Pods; CronJobs manage scheduled Job creation.",
+  "explanation": "A Job describes work that should finish and stop. It creates Pods and retries failed execution according to its configuration; a CronJob instead uses a cron-formatted schedule and a nested Job template to create Jobs repeatedly. The CronJob creates Jobs, while each Job manages the Pods that perform the work.",
+  "syntax": "apiVersion: batch/v1\nkind: Job\nmetadata:\n  name: example\nspec:\n  template:\n    spec:\n      restartPolicy: Never\n      containers:\n        - name: task\n          image: busybox\n          command: [\"sh\", \"-c\", \"echo done\"]\n---\napiVersion: batch/v1\nkind: CronJob\nmetadata:\n  name: example-scheduled\nspec:\n  schedule: \"*/5 * * * *\"\n  jobTemplate:\n    spec:\n      template:\n        spec:\n          restartPolicy: OnFailure\n          containers:\n            - name: task\n              image: busybox\n              command: [\"sh\", \"-c\", \"echo scheduled\"]",
+  "parameters": [
+   {
+    "name": "spec.schedule",
+    "type": "string",
+    "description": "Required cron-formatted schedule controlling when Jobs are created."
+   },
+   {
+    "name": "spec.jobTemplate",
+    "type": "JobTemplateSpec",
+    "description": "Required template describing each Job created by the CronJob."
+   },
+   {
+    "name": "spec.concurrencyPolicy",
+    "type": "string",
+    "description": "Optional policy for concurrent executions: Allow, Forbid, or Replace."
+   },
+   {
+    "name": "spec.startingDeadlineSeconds",
+    "type": "integer",
+    "description": "Optional deadline, in seconds, for starting a missed Job."
+   },
+   {
+    "name": "spec.successfulJobsHistoryLimit",
+    "type": "integer",
+    "description": "Number of successful finished Jobs to retain."
+   },
+   {
+    "name": "spec.failedJobsHistoryLimit",
+    "type": "integer",
+    "description": "Number of failed finished Jobs to retain."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Scheduled task",
+   "code": "apiVersion: batch/v1\nkind: CronJob\nmetadata:\n  name: hello\nspec:\n  schedule: \"*/5 * * * *\"\n  concurrencyPolicy: Forbid\n  jobTemplate:\n    spec:\n      backoffLimit: 2\n      template:\n        spec:\n          restartPolicy: OnFailure\n          containers:\n            - name: hello\n              image: busybox:1.36\n              command: [\"/bin/sh\", \"-c\", \"date; echo Hello from Kubernetes\"]",
+   "language": "yaml",
+   "explanation": "Creates a CronJob that starts a short-lived BusyBox Job every five minutes and avoids overlapping executions."
+  },
+  "useCases": [
+   {
+    "title": "One-off work",
+    "scenario": "Run a finite migration, batch calculation, or one-time administrative action."
+   },
+   {
+    "title": "Parallel batch processing",
+    "scenario": "Process several independent work items at the same time."
+   },
+   {
+    "title": "Scheduled operations",
+    "scenario": "Perform recurring backups, reports, or other periodic maintenance."
+   },
+   {
+    "title": "Time-based automation",
+    "scenario": "Trigger a task at a chosen time or during a low-activity period."
+   }
+  ],
+  "related": [
+   "Pod",
+   "JobSpec",
+   "JobTemplateSpec",
+   "CronJobSpec",
+   "concurrencyPolicy",
+   "kubectl create job",
+   "kubectl get cronjob"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Kubernetes Job?",
+    "answer": "A Job represents a one-off task that runs to completion and then stops. It creates one or more Pods and keeps retrying Pod execution until the configured completion or failure conditions are met.",
+    "followUp": "How would you run several units of work concurrently? Configure the Job for multiple completions and parallel Pods, then choose behavior appropriate to the workload's coordination needs."
+   },
+   {
+    "question": "How does a CronJob differ from a Job?",
+    "answer": "A CronJob periodically creates Jobs from its nested job template. The schedule uses cron syntax, while the created Job is responsible for its Pods.",
+    "followUp": "What happens if an execution overlaps the next scheduled time? Set concurrencyPolicy to control whether concurrent runs are allowed, skipped, or replaced."
+   },
+   {
+    "question": "How do you control overlapping and retained CronJob runs?",
+    "answer": "Use concurrencyPolicy to define overlap behavior: Allow permits concurrent Jobs, Forbid skips a new run while the previous one is active, and Replace stops the active Job before creating the new one. Retention limits can control how many finished Jobs remain.",
+    "followUp": "How can missed schedules be constrained? Use startingDeadlineSeconds; executions that miss that deadline are counted as failed."
+   }
+  ],
+  "keyPoints": [
+   "A Job is the controller for finite work rather than a continuously running service.",
+   "Jobs create Pods and retry their execution until the Job's configured outcome is reached.",
+   "Parallel execution lets one Job process multiple work units at the same time.",
+   "A CronJob is the scheduling layer that launches separate Job objects repeatedly.",
+   "Every CronJob must provide a schedule.",
+   "The Job definition belongs inside the CronJob's required jobTemplate.",
+   "CronJob schedules are expressed using cron syntax."
+  ],
+  "gotchas": [
+   "Scheduling is approximate, so commands should tolerate occasional timing variation and should not assume exact-once creation.",
+   "Do not treat a CronJob as the component that directly manages the workload Pods."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Core objects::Pods": {
+  "sourceUrl": "https://v1-36.docs.kubernetes.io/docs/concepts/workloads/pods/",
+  "sourceTitle": "Pods | Kubernetes",
+  "summary": "A Pod is Kubernetes’s smallest deployable unit: one or more tightly coupled containers sharing network and storage resources. Because Pods are ephemeral, workload resources such as Deployments or Jobs usually create and manage them instead of users creating Pods directly.",
+  "explanation": "A Pod is Kubernetes’s smallest deployable unit: one or more tightly coupled containers that share network and storage resources and run together on the same Node. Pods are relatively ephemeral, so workload controllers normally create and replace them to provide replication, recovery, scaling, or updates.",
+  "syntax": "apiVersion: v1\nkind: Pod\nmetadata:\n  name: <pod-name>\nspec:\n  containers:\n    - name: <container-name>\n      image: <image>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A minimal Pod manifest",
+   "code": "apiVersion: v1\nkind: Pod\nmetadata:\n  name: nginx\nspec:\n  containers:\n    - name: nginx\n      image: nginx:1.27\n",
+   "language": "yaml",
+   "explanation": "This manifest creates one Pod containing one container. For production workloads, prefer a controller such as a Deployment."
+  },
+  "useCases": [
+   {
+    "title": "Single-container workload",
+    "scenario": "Run one application instance with the common one-container-per-Pod model."
+   },
+   {
+    "title": "Co-located containers",
+    "scenario": "Place tightly coupled helper and application containers together so they share the Pod context."
+   },
+   {
+    "title": "Controller-managed replicas",
+    "scenario": "Represent replicated application instances managed by a Deployment or another workload controller."
+   }
+  ],
+  "related": [
+   "Deployment",
+   "Job",
+   "ReplicaSet",
+   "StatefulSet",
+   "DaemonSet",
+   "Node",
+   "workload resources",
+   "Pod lifecycle"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Pod, and how do its containers relate to one another?",
+    "answer": "A Pod is the smallest deployable unit in Kubernetes. It contains one or more containers with shared storage and network resources, and those containers are co-located and co-scheduled on the same Node.",
+    "followUp": "Why not deploy two tightly coupled containers as separate Pods? They would not naturally share the Pod’s network and storage context or be guaranteed to run together."
+   },
+   {
+    "question": "When should a Pod contain multiple containers?",
+    "answer": "The common model is one container per Pod, with Kubernetes managing the Pod as the wrapper rather than managing the container directly. Multi-container Pods are for containers that are relatively tightly coupled and belong to the same logical host.",
+    "followUp": "What is the horizontal scaling unit? Create additional Pod instances, normally through a workload controller, rather than adding containers to one Pod."
+   },
+   {
+    "question": "Why are Pods rarely created directly?",
+    "answer": "Pods are intended to be relatively ephemeral, so directly creating one does not provide the normal workload lifecycle guarantees. Deployments, Jobs, and other workload resources use controllers to create and manage Pods.",
+    "followUp": "Which abstraction fits a stateless application needing declarative updates? A Deployment, which manages Pods and ReplicaSets."
+   }
+  ],
+  "keyPoints": [
+   "A Pod is Kubernetes’s smallest unit that can be created and managed as a deployable workload.",
+   "A Pod groups one or more containers that share storage and networking.",
+   "All containers in a Pod run together on the same host and share the Pod’s execution context.",
+   "Most Pods wrap a single application container.",
+   "Treat each Pod as one application instance; horizontal scaling uses more Pods.",
+   "Controllers manage groups of replicated Pods and maintain the desired workload arrangement."
+  ],
+  "gotchas": [
+   "Creating a Pod directly generally leaves lifecycle management to you; use a workload resource such as a Deployment or Job instead.",
+   "Do not scale one Pod by adding containers; run multiple Pod instances through an appropriate workload resource.",
+   "A Pod is placed on a single Node, so its containers cannot be distributed across Nodes."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Core objects::ReplicaSets": {
+  "sourceUrl": "https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/",
+  "sourceTitle": "ReplicaSet - Kubernetes",
+  "summary": "A ReplicaSet keeps a specified number of matching Pods running. Deployments usually manage ReplicaSets automatically during rollouts, so direct use is mainly for custom update orchestration or workloads without updates.",
+  "explanation": "A ReplicaSet continuously compares the number of Pods selected by its label selector with the desired replica count. It creates Pods from its template when too few exist and removes excess Pods when too many exist. Deployments normally create and manage ReplicaSets during updates, so direct ReplicaSet management is mainly for custom rollout orchestration or workloads that do not need updates.",
+  "syntax": "apiVersion: apps/v1\nkind: ReplicaSet\nmetadata:\n  name: <name>\nspec:\n  replicas: <number>\n  selector:\n    matchLabels: <labels>\n  template:\n    metadata:\n      labels: <matching-labels>\n    spec: <pod-spec>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A standalone ReplicaSet",
+   "code": "apiVersion: apps/v1\nkind: ReplicaSet\nmetadata:\n  name: frontend\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: frontend\n  template:\n    metadata:\n      labels:\n        app: frontend\n    spec:\n      containers:\n      - name: web\n        image: nginx:1.27",
+   "language": "yaml",
+   "explanation": "This manifest asks Kubernetes to keep three Pods matching the selector running."
+  },
+  "useCases": [
+   {
+    "title": "Replica maintenance",
+    "scenario": "Keep a fixed number of identical stateless Pods running."
+   },
+   {
+    "title": "Deployment rollouts",
+    "scenario": "Use a Deployment to create successive ReplicaSets during a rolling update."
+   },
+   {
+    "title": "Custom orchestration",
+    "scenario": "Implement update behavior that does not fit Deployment strategies."
+   },
+   {
+    "title": "Stable replicated workload",
+    "scenario": "Run a replicated workload that does not require application updates."
+   }
+  ],
+  "related": [
+   "Deployment",
+   "Pod",
+   "label selector",
+   "Pod template",
+   "RollingUpdate",
+   "ReplicationController"
+  ],
+  "since": "",
+  "keyPoints": [
+   "A ReplicaSet keeps a stable number of matching Pods available.",
+   "Its selector identifies the Pods it manages.",
+   "The replicas value expresses the desired Pod count.",
+   "The Pod template supplies the specification for replacement Pods.",
+   "The controller creates or deletes Pods to converge on the requested count.",
+   "Deployments normally own ReplicaSets and use them during application rollouts."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Core objects::StatefulSets": {
+  "sourceUrl": "https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/",
+  "sourceTitle": "StatefulSets",
+  "summary": "StatefulSets manage replicated Pods that need consistent identities, stable network names, and persistent storage. They also provide ordered deployment, scaling, and updates.",
+  "explanation": "A StatefulSet manages replicated Pods whose individual identities remain consistent across rescheduling. Each Pod receives a predictable ordinal, hostname and network identity, while volume claim templates can provide storage tied to that identity; the controller normally creates or removes Pods in ordinal order and waits for readiness between steps.",
+  "syntax": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: <name>\nspec:\n  serviceName: <headless-service>\n  replicas: <count>\n  selector:\n    matchLabels: <labels>\n  template: <pod-template>",
+  "parameters": [
+   {
+    "name": "spec.replicas",
+    "type": "integer",
+    "description": "Desired number of Pod replicas."
+   },
+   {
+    "name": "spec.selector",
+    "type": "LabelSelector",
+    "description": "Label selector identifying the Pods managed by the StatefulSet."
+   },
+   {
+    "name": "spec.template",
+    "type": "PodTemplateSpec",
+    "description": "Template describing the Pods to create."
+   },
+   {
+    "name": "spec.serviceName",
+    "type": "string",
+    "description": "Name of the governing Service that provides the Pods' network identity."
+   },
+   {
+    "name": "spec.volumeClaimTemplates",
+    "type": "PersistentVolumeClaim[]",
+    "description": "Templates for persistent volume claims associated with StatefulSet Pods."
+   },
+   {
+    "name": "spec.podManagementPolicy",
+    "type": "string",
+    "description": "Controls whether Pod creation and termination are ordered or parallel."
+   },
+   {
+    "name": "spec.updateStrategy",
+    "type": "StatefulSetUpdateStrategy",
+    "description": "Controls how changes to the StatefulSet are applied."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Three replicated web Pods with stable identities",
+   "code": "apiVersion: v1\nkind: Service\nmetadata:\n  name: web\nspec:\n  clusterIP: None\n  selector:\n    app: web\n---\napiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: web\nspec:\n  serviceName: web\n  replicas: 3\n  selector:\n    matchLabels:\n      app: web\n  template:\n    metadata:\n      labels:\n        app: web\n    spec:\n      containers:\n        - name: nginx\n          image: nginx:1.27\n          ports:\n            - containerPort: 80\n              name: web\n  volumeClaimTemplates:\n    - metadata:\n        name: data\n      spec:\n        accessModes: [\"ReadWriteOnce\"]\n        resources:\n          requests:\n            storage: 1Gi",
+   "language": "yaml",
+   "explanation": "The headless Service supplies network discovery, while the StatefulSet creates three identically templated Pods with stable ordinals and one persistent volume claim per Pod."
+  },
+  "useCases": [
+   {
+    "title": "Replicated databases",
+    "scenario": "A database cluster needs each member to retain its identity and data volume after rescheduling."
+   },
+   {
+    "title": "Stable service discovery",
+    "scenario": "A clustered system discovers members through predictable per-Pod DNS names."
+   },
+   {
+    "title": "Ordered cluster orchestration",
+    "scenario": "A workload must initialize members sequentially and terminate them in reverse ordinal order."
+   }
+  ],
+  "related": [
+   "Headless Service",
+   "Pod management policy",
+   "OrderedReady",
+   "Parallel",
+   "RollingUpdate",
+   "OnDelete",
+   "PersistentVolumeClaim",
+   "volumeClaimTemplates"
+  ],
+  "since": "1.5",
+  "interview": [
+   {
+    "question": "What problem does a StatefulSet solve?",
+    "answer": "A StatefulSet is a controller for stateful applications whose replicas need consistent identities. It preserves each Pod's ordinal, hostname and associated storage identity while managing deployment and scaling.",
+    "followUp": "How is the network identity exposed? A governing headless Service provides stable DNS records for the StatefulSet Pods."
+   },
+   {
+    "question": "How does StatefulSet Pod ordering work?",
+    "answer": "With the default OrderedReady policy, Pods are created in increasing ordinal order and the controller waits for each predecessor to become Running and Ready. Scale-down removes higher ordinals first.",
+    "followUp": "How can ordering be relaxed? Set podManagementPolicy to Parallel so creation and termination do not wait on ordinal neighbors."
+   },
+   {
+    "question": "How are StatefulSet updates performed?",
+    "answer": "The updateStrategy field controls automated updates. RollingUpdate, the default, updates Pods in reverse ordinal order; OnDelete waits for Pods to be deleted before updating them.",
+    "followUp": "What does a RollingUpdate still preserve? It follows the StatefulSet's ordering and readiness guarantees while progressing through the Pods."
+   }
+  ],
+  "keyPoints": [
+   "Each managed Pod keeps a stable identity rather than being interchangeable with another replica.",
+   "Use StatefulSets when application replicas require durable storage or individually addressable network identities.",
+   "A Pod's stable network identity is paired with its corresponding storage identity."
+  ],
+  "gotchas": [
+   "Create the governing headless Service yourself; the StatefulSet does not create it automatically."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Health, storage & security::Liveness and startup probes": {
+  "sourceUrl": "https://v1-33.docs.kubernetes.io/docs/concepts/configuration/liveness-readiness-startup-probes/",
+  "sourceTitle": "Liveness, Readiness, and Startup Probes",
+  "summary": "Use a startup probe to give slow applications time to initialize, then let a liveness probe restart containers that become stuck. Startup success unlocks liveness and readiness checks.",
+  "explanation": "A startup probe checks whether the application has initialized and, while it remains unsuccessful, prevents liveness and readiness checks from running. After startup succeeds, the liveness probe periodically tests the container; repeated failures cause the kubelet to restart it, allowing recovery from deadlocks without terminating an application merely because initialization is slow.",
+  "syntax": "startupProbe: <Probe>\nlivenessProbe: <Probe>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Startup protection with liveness recovery",
+   "code": "apiVersion: v1\nkind: Pod\nmetadata:\n  name: probe-demo\nspec:\n  containers:\n  - name: app\n    image: busybox:1.36\n    args: [\"/bin/sh\", \"-c\", \"touch /tmp/healthy; sleep 30; rm -f /tmp/healthy; sleep 600\"]\n    livenessProbe:\n      exec:\n        command: [\"cat\", \"/tmp/healthy\"]\n      initialDelaySeconds: 5\n      periodSeconds: 5\n    startupProbe:\n      exec:\n        command: [\"cat\", \"/tmp/healthy\"]\n      failureThreshold: 30\n      periodSeconds: 10",
+   "language": "yaml",
+   "explanation": "This Pod uses an exec check against a file. The startup probe gets the application time to initialize; after it succeeds, the liveness probe checks periodically and lets the kubelet restart the container if the check repeatedly fails."
+  },
+  "useCases": [
+   {
+    "title": "Protect slow startup",
+    "scenario": "An application needs substantial time to load configuration, data, or caches before it can answer health checks."
+   },
+   {
+    "title": "Recover stuck containers",
+    "scenario": "A process remains present but can deadlock or stop making progress after initialization."
+   },
+   {
+    "title": "Separate startup and runtime health",
+    "scenario": "Different health criteria are needed during initialization and normal operation."
+   }
+  ],
+  "related": [
+   "Readiness probe",
+   "initialDelaySeconds",
+   "periodSeconds",
+   "failureThreshold",
+   "exec probe",
+   "HTTP probe",
+   "gRPC probe",
+   "restartPolicy"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does a liveness probe solve?",
+    "answer": "A liveness probe detects a running container that has entered a broken state, such as a deadlock. When it fails repeatedly, the kubelet restarts the container.",
+    "followUp": "How do you protect a slow-starting application from liveness restarts? Configure a startup probe; liveness checks remain disabled until startup succeeds."
+   },
+   {
+    "question": "How does a startup probe differ from a liveness probe?",
+    "answer": "A startup probe verifies that the application inside the container has started. It runs only during startup and, when configured, postpones liveness and readiness checks until it succeeds.",
+    "followUp": "What happens if startup never succeeds? The container is killed after the startup probe's failure budget is exhausted, and the Pod's `restartPolicy` governs what happens next."
+   },
+   {
+    "question": "What do the main probe timing and result fields control?",
+    "answer": "`periodSeconds` controls how often the kubelet runs a probe, while `initialDelaySeconds` postpones the first probe. For an exec probe, the kubelet runs the specified command in the target container; exit status 0 means success.",
+    "followUp": "How could an HTTP probe implement the same pattern? Configure an HTTP GET against the container's health endpoint and port, then use startup timing appropriate to the application's initialization."
+   }
+  ],
+  "keyPoints": [
+   "Use liveness checks to detect containers that are running but no longer making progress; repeated failures prompt a kubelet restart.",
+   "A single failed check is not necessarily enough to restart the container; the configured failure threshold determines consecutive failures.",
+   "Startup checks answer whether initialization has completed, rather than whether an already-running application has become stuck.",
+   "Pair startup and liveness probes when initialization may be lengthy but post-startup deadlocks should still trigger automatic recovery.",
+   "A configured startup probe gates both other probe types during initialization, so traffic readiness and liveness monitoring begin only afterward.",
+   "Startup probing is a one-time startup phase; liveness and readiness are periodic checks after that phase."
+  ],
+  "gotchas": [
+   "A startup probe is not the only delay mechanism: `initialDelaySeconds` can postpone the first liveness check, but startup probes are designed for slow initialization.",
+   "Do not expect liveness or readiness checks to run during startup; both remain disabled until the startup probe succeeds.",
+   "Set startup timing deliberately: if the probe never succeeds, the container is killed after the configured failure window and normal restart-policy behavior applies."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Health, storage & security::Persistent volumes and claims": {
+  "sourceUrl": "https://kubernetes.io/docs/concepts/storage/persistent-volumes/",
+  "sourceTitle": "Persistent Volumes",
+  "summary": "PersistentVolumes provide durable storage independently of Pods, while PersistentVolumeClaims request and consume that storage. Reclaim policies control what happens after a claim releases a volume.",
+  "explanation": "A PersistentVolume (PV) represents durable storage supplied to the cluster, while a PersistentVolumeClaim (PVC) expresses a namespaced request for storage. Kubernetes binds a compatible PV to the claim and a Pod mounts that claim; when the claim is released, the PV's reclaim policy determines whether storage is retained, recycled, or deleted.",
+  "syntax": "kind: PersistentVolume\nspec:\n  persistentVolumeReclaimPolicy: Retain\n---\nkind: PersistentVolumeClaim\nspec:\n  resources:\n    requests:\n      storage: 1Gi",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "PV, PVC, and Pod",
+   "code": "apiVersion: v1\nkind: PersistentVolume\nmetadata:\n  name: example-pv\nspec:\n  capacity:\n    storage: 1Gi\n  volumeMode: Filesystem\n  accessModes:\n    - ReadWriteOnce\n  persistentVolumeReclaimPolicy: Retain\n  storageClassName: manual\n  hostPath:\n    path: /mnt/data\n---\napiVersion: v1\nkind: PersistentVolumeClaim\nmetadata:\n  name: example-pvc\nspec:\n  accessModes:\n    - ReadWriteOnce\n  storageClassName: manual\n  resources:\n    requests:\n      storage: 1Gi\n---\napiVersion: v1\nkind: Pod\nmetadata:\n  name: example-pod\nspec:\n  containers:\n    - name: app\n      image: nginx:1.27\n      volumeMounts:\n        - mountPath: /usr/share/nginx/html\n          name: data\n  volumes:\n    - name: data\n      persistentVolumeClaim:\n        claimName: example-pvc",
+   "language": "yaml",
+   "explanation": "This declares a manually managed PersistentVolume, a claim that requests matching capacity and access, and a Pod that mounts the claim. Retain keeps the volume for manual recovery after the claim is removed; hostPath is suitable only for a simple node-local example."
+  },
+  "useCases": [
+   {
+    "title": "Durable application data",
+    "scenario": "A workload needs data to survive Pod replacement or restart."
+   },
+   {
+    "title": "Storage abstraction",
+    "scenario": "Several teams request storage without embedding backend-specific volume configuration in Pods."
+   },
+   {
+    "title": "Manual reclamation",
+    "scenario": "An administrator must preserve data after a claim is removed and recover it deliberately."
+   }
+  ],
+  "related": [
+   "PersistentVolume",
+   "PersistentVolumeClaim",
+   "persistentVolumeReclaimPolicy",
+   "StorageClass",
+   "dynamic provisioning",
+   "accessModes",
+   "volumeMode",
+   "claimRef"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What are PVs and PVCs, and how do they relate?",
+    "answer": "A PV is cluster storage, and a PVC is a user's request for storage. A PVC can bind to a compatible PV, after which a Pod can mount the claim.",
+    "followUp": "Why use a PVC instead of putting provider-specific volume details directly in a Pod? A PVC lets users request durable storage without needing to know the details of the cloud or storage environment."
+   },
+   {
+    "question": "Explain PersistentVolume reclaim policies.",
+    "answer": "The reclaim policy controls what happens after a PV is released from its claim. Retain leaves it for manual reclamation, Delete removes the volume when supported, and Recycle performs a basic scrub but is deprecated.",
+    "followUp": "Which policy is safest for valuable data? Retain, because the PV and its data remain available for manual recovery rather than being automatically deleted."
+   },
+   {
+    "question": "How does a Pod consume a PVC?",
+    "answer": "A Pod uses a volume entry with a persistentVolumeClaim source and names the claim to mount. The PVC specifies requested storage and access mode, while the PV supplies compatible capacity and storage details.",
+    "followUp": "What happens if a claim remains in use when deleted? PVC removal is postponed until no Pods actively use it."
+   }
+  ],
+  "keyPoints": [
+   "A PVC is the user-facing request that describes the storage a workload needs.",
+   "Reclaim policy determines the PV's post-claim lifecycle.",
+   "The documented policy choices are Retain, Recycle, and Delete."
+  ],
+  "gotchas": [
+   "Do not choose Recycle for new designs; use dynamic provisioning instead.",
+   "Deleting a PVC that a Pod still uses does not immediately remove the claim.",
+   "Recycle support is limited to these volume types in the documented release.",
+   "Deleting a PV does not necessarily delete its external storage asset, so manual cleanup may be required."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Health, storage & security::RBAC": {
+  "sourceUrl": "https://kubernetes.io/docs/reference/access-authn-authz/rbac/",
+  "sourceTitle": "Using RBAC Authorization",
+  "summary": "Kubernetes RBAC regulates API access by assigning resource permissions to users, groups, or service accounts through roles and bindings. Apply the least privilege principle: grant only the namespace-scoped resources and verbs each subject actually needs.",
+  "explanation": "RBAC authorizes Kubernetes API requests by matching a subject to permissions in a Role or ClusterRole through a RoleBinding or ClusterRoleBinding. Roles describe allowed API groups, resources, and verbs; namespace-scoped bindings limit where those permissions apply, while cluster-scoped objects can grant broader access.",
+  "syntax": "apiVersion: rbac.authorization.k8s.io/v1\nkind: Role|ClusterRole\nrules:\n- apiGroups: [\"...\"]\n  resources: [\"...\"]\n  verbs: [\"...\"]\n---\napiVersion: rbac.authorization.k8s.io/v1\nkind: RoleBinding|ClusterRoleBinding\nsubjects: [...]\nroleRef:\n  kind: Role|ClusterRole\n  name: ...\n  apiGroup: rbac.authorization.k8s.io",
+  "parameters": [
+   {
+    "name": "apiGroups",
+    "type": "string[]",
+    "description": "API groups containing the target resources; use an empty string for the core API group."
+   },
+   {
+    "name": "resources",
+    "type": "string[]",
+    "description": "Resource types the rule can access, such as pods."
+   },
+   {
+    "name": "verbs",
+    "type": "string[]",
+    "description": "Allowed API actions, such as get, list, watch, create, update, patch, or delete."
+   },
+   {
+    "name": "subjects",
+    "type": "Subject[]",
+    "description": "Users, groups, or service accounts receiving the permissions through a binding."
+   }
+  ],
+  "returns": "RBAC authorization decisions allow or deny Kubernetes API requests according to the matching policy rules.",
+  "example": {
+   "title": "Namespace-scoped Pod reader",
+   "code": "apiVersion: rbac.authorization.k8s.io/v1\nkind: Role\nmetadata:\n  name: pod-reader\n  namespace: app\nrules:\n- apiGroups: [\"\"]\n  resources: [\"pods\"]\n  verbs: [\"get\", \"watch\", \"list\"]\n---\napiVersion: rbac.authorization.k8s.io/v1\nkind: RoleBinding\nmetadata:\n  name: read-pods\n  namespace: app\nsubjects:\n- kind: ServiceAccount\n  name: app-reader\n  namespace: app\nroleRef:\n  kind: Role\n  name: pod-reader\n  apiGroup: rbac.authorization.k8s.io",
+   "language": "yaml",
+   "explanation": "A namespace-scoped Role grants a service account only read access to Pods in the app namespace, and the RoleBinding connects that identity to the permission set."
+  },
+  "useCases": [
+   {
+    "title": "Constrain workload permissions",
+    "scenario": "A controller or application needs to read selected resources in its own namespace."
+   },
+   {
+    "title": "Namespace-scoped team access",
+    "scenario": "A developer needs access to application resources without cluster-wide administration."
+   },
+   {
+    "title": "Deliberately grant cluster-wide access",
+    "scenario": "A platform component must manage resources across namespaces."
+   }
+  ],
+  "related": [
+   "Role",
+   "ClusterRole",
+   "RoleBinding",
+   "ClusterRoleBinding",
+   "ServiceAccount",
+   "rbac.authorization.k8s.io",
+   "verbs",
+   "apiGroups"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is Kubernetes RBAC?",
+    "answer": "RBAC uses the rbac.authorization.k8s.io API group to make authorization decisions. A Role or ClusterRole states permissions, and a RoleBinding or ClusterRoleBinding assigns those permissions to subjects.",
+    "followUp": "How would you reduce blast radius for a workload? Use a namespace-scoped Role and RoleBinding, grant only the required verbs and resources, and avoid wildcard permissions."
+   },
+   {
+    "question": "How do RoleBinding and ClusterRoleBinding differ?",
+    "answer": "A RoleBinding applies permissions in one namespace, even when it references a ClusterRole. A ClusterRoleBinding grants the referenced permissions cluster-wide, so it should be reserved for genuinely cluster-wide requirements.",
+    "followUp": "When is a ClusterRole appropriate without a ClusterRoleBinding? A ClusterRole can be referenced by namespace RoleBindings to reuse permission definitions while retaining namespace scope."
+   },
+   {
+    "question": "How should RBAC permissions follow least privilege?",
+    "answer": "Least privilege means assigning only the permissions explicitly needed by the user or service account. Prefer namespace-level permissions, avoid broad wildcards, and use highly privileged accounts only when necessary.",
+    "followUp": "Why are wildcard permissions risky? Kubernetes is extensible, so a wildcard can also authorize access to resource types introduced in the future."
+   }
+  ],
+  "keyPoints": [
+   "Kubernetes stores RBAC policy objects in the rbac.authorization.k8s.io API group and evaluates them for API authorization.",
+   "Because policies are Kubernetes API objects, administrators can create and update authorization rules dynamically.",
+   "Grant users and workloads only the smallest permission set that supports their actual operation.",
+   "Define rules around the exact API actions the subject needs rather than granting a convenient broad role.",
+   "Use namespace-scoped Roles and bindings when access does not require cluster-wide visibility or modification.",
+   "A RoleBinding is the preferred binding for restricting a subject to one namespace."
+  ],
+  "gotchas": [
+   "Wildcards can silently include resource types added to the cluster later, so enumerate the required resources and verbs.",
+   "Membership in system:masters bypasses RBAC checks and provides unrestricted superuser access.",
+   "Namespace boundaries do not fully contain the impact of workloads that can create or control other resources in that namespace."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Health, storage & security::Readiness probes": {
+  "sourceUrl": "https://kubernetes.io/docs/concepts/workloads/pods/probes/",
+  "sourceTitle": "Liveness, Readiness, and Startup Probes",
+  "summary": "A readiness probe tells Kubernetes whether a container can receive traffic. When it fails, the Pod is removed from matching Service endpoints until readiness returns, without the probe itself restarting the container.",
+  "explanation": "The kubelet periodically evaluates a container's readiness probe. A successful check lets the Pod receive traffic from matching Services; a failed check marks the container unready and causes the EndpointSlice controller to remove the Pod IP from those Services' EndpointSlices, without restarting the container.",
+  "syntax": "readinessProbe:\n  exec:\n    command: [\"/bin/cat\", \"/tmp/healthy\"]\n  initialDelaySeconds: 5\n  periodSeconds: 5",
+  "parameters": [
+   {
+    "name": "readinessProbe",
+    "type": "Probe",
+    "description": "Probe configuration containing a handler such as exec, HTTP GET, or TCP, plus timing and threshold settings."
+   },
+   {
+    "name": "periodSeconds",
+    "type": "integer",
+    "description": "Number of seconds between probe executions; the documented default is 10 seconds."
+   },
+   {
+    "name": "initialDelaySeconds",
+    "type": "integer",
+    "description": "Number of seconds to wait before beginning checks."
+   }
+  ],
+  "returns": "The probe produces Success, Failure, or Unknown. Success permits traffic, Failure marks the container unready and removes it from matching Service endpoints, and Unknown causes no action while checks continue.",
+  "example": {
+   "title": "HTTP readiness probe",
+   "code": "apiVersion: v1\nkind: Pod\nmetadata:\n  name: readiness-demo\nspec:\n  containers:\n    - name: app\n      image: nginx:1.27\n      readinessProbe:\n        httpGet:\n          path: /ready\n          port: 8080\n        initialDelaySeconds: 5\n        periodSeconds: 5",
+   "language": "yaml",
+   "explanation": "This Pod configures an HTTP readiness check that tests port 8080 and path /ready every five seconds after the initial delay."
+  },
+  "useCases": [
+   {
+    "title": "Gate startup traffic",
+    "scenario": "An application must load files, establish connections, or warm caches before serving requests."
+   },
+   {
+    "title": "Handle temporary unavailability",
+    "scenario": "A running application temporarily cannot serve requests because of an external dependency, overload, or recovery event."
+   },
+   {
+    "title": "Check HTTP service readiness",
+    "scenario": "A service exposes a health endpoint that reports whether it can accept requests."
+   }
+  ],
+  "related": [
+   "livenessProbe",
+   "startupProbe",
+   "EndpointSlice",
+   "Services",
+   "initialDelaySeconds",
+   "periodSeconds",
+   "timeoutSeconds",
+   "successThreshold"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What happens when a readiness probe fails?",
+    "answer": "A readiness probe determines whether a container can accept traffic. When it fails, Kubernetes marks the container unready and matching Services stop sending traffic to the Pod; the container is not killed.",
+    "followUp": "How does Kubernetes implement the Service change? The EndpointSlice controller removes the Pod IP from the EndpointSlices for matching Services."
+   },
+   {
+    "question": "How are readiness probes evaluated?",
+    "answer": "The kubelet runs the probe periodically throughout the container lifecycle. It can execute a command or make a network request, and the result controls the container's ready state.",
+    "followUp": "What does an Unknown result do? No action is taken, and the kubelet performs further checks."
+   },
+   {
+    "question": "How does an HTTP readiness probe decide success?",
+    "answer": "An HTTP probe sends a GET request to the Pod IP on the configured port and path. Responses from 200 through 399 count as successful.",
+    "followUp": "What alternative network probe is documented? A TCP probe checks whether the configured port is open; an immediately closed connection still counts as healthy."
+   }
+  ],
+  "keyPoints": [
+   "Use readiness to express whether the application is currently able to serve requests.",
+   "A failed readiness result removes the Pod from matching Service endpoint data.",
+   "Readiness failure changes routing eligibility rather than restarting the container.",
+   "HTTP readiness checks target a path and port on the Pod address.",
+   "HTTP status codes 200–399 satisfy the documented success condition.",
+   "periodSeconds controls the interval between probe attempts and defaults to 10 seconds."
+  ],
+  "gotchas": [
+   "A readiness probe continues after startup, so temporary faults or overload can later remove the Pod from Service endpoints.",
+   "Use initialDelaySeconds or a startupProbe when the application needs additional time before readiness checks begin.",
+   "A readiness result does not determine whether liveness checking runs successfully; configure each probe for its own purpose."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Health, storage & security::Rolling updates and rollback": {
+  "sourceUrl": "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/",
+  "sourceTitle": "Deployments",
+  "summary": "Deployments replace Pods progressively through RollingUpdate, keeping the application available while new Pods become ready. Retained ReplicaSet history lets you undo the rollout to the previous or a specified revision.",
+  "explanation": "A Deployment normally performs a RollingUpdate when its Pod template changes: it creates Pods from the new template while gradually scaling down the old ReplicaSet and scaling up the new one. Kubernetes records revisions in the controlled ReplicaSets, so kubectl rollout undo can restore the previous or a selected revision; only the Pod-template portion is reverted.",
+  "syntax": "kubectl rollout undo deployment/<name> [--to-revision=<revision>]",
+  "parameters": [
+   {
+    "name": "<name>",
+    "type": "string",
+    "description": "Deployment name targeted by kubectl rollout commands."
+   },
+   {
+    "name": "<revision>",
+    "type": "integer",
+    "description": "Optional revision number to restore with --to-revision."
+   },
+   {
+    "name": "spec.revisionHistoryLimit",
+    "type": "integer",
+    "description": "Maximum number of old ReplicaSets retained for rollback."
+   },
+   {
+    "name": "spec.strategy.rollingUpdate.maxUnavailable / maxSurge",
+    "type": "quantity or percentage",
+    "description": "Rolling-update availability and surge controls."
+   }
+  ],
+  "returns": "A revised Deployment rollout, or a rollback to the selected retained revision.",
+  "example": {
+   "title": "Update and undo a Deployment",
+   "code": "kubectl create deployment nginx-deployment --image=nginx:1.25\nkubectl set image deployment/nginx-deployment nginx=nginx:1.26\nkubectl rollout status deployment/nginx-deployment\nkubectl rollout undo deployment/nginx-deployment",
+   "language": "bash",
+   "explanation": "Creates a Deployment, changes its container image, waits for the rollout, then reverts to the previous revision."
+  },
+  "useCases": [
+   {
+    "title": "Progressive application updates",
+    "scenario": "Release a new container image without replacing every Pod simultaneously."
+   },
+   {
+    "title": "Emergency rollback",
+    "scenario": "Restore the last known-good Pod template after a faulty release."
+   },
+   {
+    "title": "Targeted revision recovery",
+    "scenario": "Select a known historical revision instead of only undoing the latest change."
+   }
+  ],
+  "related": [
+   "Deployment",
+   "ReplicaSet",
+   "RollingUpdate",
+   "Recreate",
+   "kubectl rollout history",
+   "kubectl rollout status",
+   "kubectl rollout undo",
+   "revisionHistoryLimit"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does a Deployment perform a rolling update?",
+    "answer": "A rolling update gradually replaces old Pods with new Pods rather than terminating everything first. For a Deployment, RollingUpdate is the default strategy, and maxUnavailable and maxSurge constrain how many Pods may be unavailable or temporarily exceed the desired count.",
+    "followUp": "How can a rollout be reverted to an exact earlier state? Use kubectl rollout undo deployment/<name> --to-revision=<number>; the revision comes from the Deployment's rollout history."
+   },
+   {
+    "question": "How do you roll back a Deployment?",
+    "answer": "Use kubectl rollout history deployment/<name> to inspect revisions, then kubectl rollout undo deployment/<name> to return to the previous revision. A specific revision can be selected with --to-revision.",
+    "followUp": "What must be retained for this to work? The Deployment must retain old ReplicaSets through revisionHistoryLimit; setting it to zero disables rollback."
+   },
+   {
+    "question": "How does Kubernetes retain rollback history?",
+    "answer": "The Deployment's revision history is stored in the ReplicaSets it controls. Kubernetes retains 10 old ReplicaSets by default, and revisionHistoryLimit changes how many are retained for possible rollback.",
+    "followUp": "What exactly changes during rollback? Only the Deployment's Pod-template portion is rolled back; other Deployment fields remain as they are."
+   }
+  ],
+  "keyPoints": [
+   "With RollingUpdate, the Deployment gradually scales down the old ReplicaSet while scaling up the new one.",
+   "Configure maxUnavailable to limit unavailable Pods and maxSurge to limit temporary extra Pods during an update.",
+   "Changing the Pod template, such as its image, starts a new Deployment rollout.",
+   "The default history keeps ten old ReplicaSets, allowing previous revisions to remain available for rollback.",
+   "Use --to-revision with kubectl rollout undo when the target is not simply the immediately preceding revision."
+  ],
+  "gotchas": [
+   "Setting revisionHistoryLimit to 0 removes the old ReplicaSets needed for rollback, so rollback is disabled.",
+   "A rollback does not revert every Deployment field; it restores only the Pod template.",
+   "Changes outside the Pod template do not themselves trigger a Deployment rolling update."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Health, storage & security::Security context": {
+  "sourceUrl": "https://kubernetes.io/docs/concepts/security/linux-kernel-security-constraints/",
+  "sourceTitle": "Linux kernel security constraints for Pods and containers",
+  "summary": "Use a securityContext to run workloads as non-root, remove unnecessary Linux capabilities, and make the container root filesystem read-only. These settings reduce the privileges and writable surface available to a compromised process.",
+  "explanation": "A Pod or container securityContext defines Linux security constraints. Set runAsNonRoot to require a non-root process, use capabilities.drop to remove privileges, and enable readOnlyRootFilesystem to prevent writes to the container root filesystem. Pod-level settings can apply to containers, while container-level settings provide more specific control.",
+  "syntax": "securityContext: { runAsNonRoot: true, readOnlyRootFilesystem: true, capabilities: { drop: [\"ALL\"] } }",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Hardened Pod security context",
+   "code": "apiVersion: v1\nkind: Pod\nmetadata:\n  name: hardened\nspec:\n  securityContext:\n    runAsNonRoot: true\n  containers:\n    - name: app\n      image: busybox:1.36\n      command: [\"sh\", \"-c\", \"sleep 3600\"]\n      securityContext:\n        allowPrivilegeEscalation: false\n        readOnlyRootFilesystem: true\n        capabilities:\n          drop: [\"ALL\"]\n",
+   "language": "yaml",
+   "explanation": "This Pod runs the container as non-root, prevents privilege escalation, makes its root filesystem read-only, and removes Linux capabilities."
+  },
+  "useCases": [
+   {
+    "title": "Least-privilege workloads",
+    "scenario": "Running application containers with the least privilege needed."
+   },
+   {
+    "title": "Reducing writeable attack surface",
+    "scenario": "Restricting filesystem tampering after a container compromise."
+   },
+   {
+    "title": "Constraining untrusted images",
+    "scenario": "Applying security settings to images managed by another team."
+   }
+  ],
+  "related": [
+   "runAsNonRoot",
+   "runAsUser",
+   "runAsGroup",
+   "readOnlyRootFilesystem",
+   "capabilities",
+   "allowPrivilegeEscalation",
+   "securityContext"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use securityContext in the Pod manifest to declare process security constraints.",
+   "Prefer an explicit non-root identity and set runAsNonRoot to true.",
+   "The same context can control capabilities and UID/GID-based file access.",
+   "A read-only filesystem limits where a compromised or misbehaving program can write.",
+   "Non-root execution can reduce reliance on powerful kernel capabilities."
+  ],
+  "gotchas": [
+   "A non-root identity still needs appropriate permissions for the application to work."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Networking & configuration::ConfigMaps": {
+  "sourceUrl": "https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/",
+  "sourceTitle": "Configure a Pod to Use a ConfigMap",
+  "summary": "ConfigMaps inject non-secret key-value configuration into Pods. Applications can consume selected values as environment variables or expose them as files through a mounted volume.",
+  "explanation": "A ConfigMap stores non-confidential key-value data separately from container images. A Pod can consume selected keys through configMapKeyRef environment entries or expose the data as read-only files by mounting a volume whose ConfigMap name matches the object. The Pod and ConfigMap must share a namespace.",
+  "syntax": "kubectl create configmap <map-name> <data-source>",
+  "parameters": [
+   {
+    "name": "metadata.name",
+    "type": "string",
+    "description": "The ConfigMap object's metadata.name identifies the configuration object referenced by a Pod."
+   },
+   {
+    "name": "data",
+    "type": "map[string]string",
+    "description": "A map of non-confidential configuration values."
+   },
+   {
+    "name": "spec.volumes[].configMap.name",
+    "type": "string",
+    "description": "A Pod volume source naming the ConfigMap to mount."
+   },
+   {
+    "name": "env[].valueFrom.configMapKeyRef",
+    "type": "object",
+    "description": "An individual environment-variable reference to a ConfigMap key."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "ConfigMap as environment variable and mounted file",
+   "code": "apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: app-settings\ndata:\n  LOG_LEVEL: info\n  app.properties: |\n    feature.enabled=true\n---\napiVersion: v1\nkind: Pod\nmetadata:\n  name: configmap-demo\nspec:\n  containers:\n  - name: app\n    image: busybox:1.36\n    command: [\"sh\", \"-c\", \"echo $LOG_LEVEL; cat /etc/app/app.properties; sleep 3600\"]\n    env:\n    - name: LOG_LEVEL\n      valueFrom:\n        configMapKeyRef:\n          name: app-settings\n          key: LOG_LEVEL\n    volumeMounts:\n    - name: config\n      mountPath: /etc/app\n      readOnly: true\n  volumes:\n  - name: config\n    configMap:\n      name: app-settings",
+   "language": "yaml",
+   "explanation": "The Pod reads one ConfigMap key as an environment variable and mounts the ConfigMap data as read-only files."
+  },
+  "useCases": [
+   {
+    "title": "Externalize application configuration",
+    "scenario": "Provide environment-specific settings without rebuilding the container image."
+   },
+   {
+    "title": "Mount configuration files",
+    "scenario": "Make property, JSON, or similar configuration available under a directory."
+   },
+   {
+    "title": "Share configuration",
+    "scenario": "Let several Pods consume the same non-secret settings."
+   }
+  ],
+  "related": [
+   "ConfigMap",
+   "configMapKeyRef",
+   "envFrom",
+   "configMap volume",
+   "volumeMounts",
+   "items",
+   "kustomization.yaml",
+   "Secret"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a ConfigMap and how can a Pod consume it?",
+    "answer": "A ConfigMap stores non-confidential configuration as key-value data. A Pod can consume it through environment variables, command arguments, read-only volume files, or code that reads the Kubernetes API.",
+    "followUp": "How does a Pod consume one selected key? Define an environment entry with valueFrom.configMapKeyRef and specify the ConfigMap name and key."
+   },
+   {
+    "question": "How do you mount ConfigMap data as files?",
+    "answer": "Define a volume under spec.volumes with configMap.name, then mount it into the container with volumeMounts. Each data key becomes a filename in the mounted directory unless items project selected keys to paths.",
+    "followUp": "How would you restrict the mounted files? Use the volume's items list to select keys and assign their target paths."
+   },
+   {
+    "question": "How do you expose ConfigMap values as environment variables?",
+    "answer": "Use env[].valueFrom.configMapKeyRef for an individual key, or envFrom to expose all key-value pairs as environment variables. The referenced ConfigMap must be in the Pod's namespace.",
+    "followUp": "What happens when mounted data changes? Mounted volume content is updated automatically, whereas an existing process's environment does not change."
+   }
+  ],
+  "keyPoints": [
+   "ConfigMaps provide a Kubernetes object for injecting application configuration into Pods.",
+   "A Pod can use ConfigMap data through environment variables, command-line arguments, or volume-mounted files.",
+   "Keeping configuration outside the image helps reuse the same image across environments.",
+   "Create ConfigMaps with kubectl or generate them through Kustomize.",
+   "When mounted as a volume, data keys become filenames by default.",
+   "One ConfigMap can be shared by multiple Pods."
+  ],
+  "gotchas": [
+   "References are namespace-scoped: the consuming Pod and ConfigMap must be in the same namespace.",
+   "ConfigMaps are not supported by static Pods."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Networking & configuration::Ingress": {
+  "sourceUrl": "https://kubernetes.io/docs/concepts/services-networking/ingress/",
+  "sourceTitle": "Ingress - Kubernetes",
+  "summary": "Ingress exposes HTTP and HTTPS routes from outside a Kubernetes cluster to Services. Rules select backends using request hosts and paths, while an Ingress controller implements the routing.",
+  "explanation": "An Ingress resource defines HTTP or HTTPS rules that map external requests to Services. The controller handling the resource evaluates the host and path, then forwards matching traffic to the selected Service backend.",
+  "syntax": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: <name>\nspec:\n  rules:\n  - host: <hostname>\n    http:\n      paths:\n      - path: <path>\n        pathType: <Exact|Prefix>\n        backend:\n          service:\n            name: <service-name>\n            port:\n              number: <port>",
+  "parameters": [
+   {
+    "name": "spec.rules[].host",
+    "type": "string",
+    "description": "Optional fully qualified hostname used to select an HTTP rule."
+   },
+   {
+    "name": "spec.rules[].http.paths[].path",
+    "type": "string",
+    "description": "URL path matched within a host rule."
+   },
+   {
+    "name": "spec.rules[].http.paths[].pathType",
+    "type": "string",
+    "description": "Path matching behavior, such as Prefix or Exact."
+   },
+   {
+    "name": "spec.rules[].http.paths[].backend.service",
+    "type": "IngressServiceBackend",
+    "description": "Destination Service name and port."
+   }
+  ],
+  "returns": "Routes matching external HTTP or HTTPS requests to the selected Service backend.",
+  "example": {
+   "title": "Host and path routing",
+   "code": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: web\nspec:\n  ingressClassName: nginx\n  rules:\n  - host: app.example.com\n    http:\n      paths:\n      - path: /api\n        pathType: Prefix\n        backend:\n          service:\n            name: api\n            port:\n              number: 8080",
+   "language": "yaml",
+   "explanation": "Routes requests for app.example.com whose path begins with /api to the api Service on port 8080. A compatible Ingress controller must be installed and configured to implement the resource."
+  },
+  "useCases": [
+   {
+    "title": "Consolidate web entry points",
+    "scenario": "Expose several HTTP applications behind one external address."
+   },
+   {
+    "title": "Path-based routing",
+    "scenario": "Send /api and /shop requests to different Services."
+   },
+   {
+    "title": "Host-based routing",
+    "scenario": "Send different domains to separate Services."
+   },
+   {
+    "title": "HTTPS termination",
+    "scenario": "Terminate TLS at the external HTTP entry point."
+   }
+  ],
+  "related": [
+   "IngressClass",
+   "IngressRule",
+   "HTTPIngressPath",
+   "IngressBackend",
+   "Service",
+   "Gateway API"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is an Ingress, and what does it route?",
+    "answer": "Ingress is an API object for exposing HTTP and HTTPS routes from outside the cluster to Services. Its rules use hosts and paths to select a Service backend, while an Ingress controller implements the routing.",
+    "followUp": "How does a request select a backend? The controller evaluates the host first, then the paths under the matching rule, and forwards the request to the associated Service."
+   },
+   {
+    "question": "How do host and path rules determine routing?",
+    "answer": "A host is optional. Without one, the rule can apply to traffic arriving through the Ingress address; with one, the request host must match it. Each path names a backend Service and port.",
+    "followUp": "What if no rule matches? The controller may use a default backend when configured; otherwise the controller's behavior determines the response."
+   },
+   {
+    "question": "What operational component is required for an Ingress to work?",
+    "answer": "The Ingress API defines the desired routing rules, but it does not itself provide a load balancer or controller. A controller must be installed, and its class can be selected with ingressClassName.",
+    "followUp": "Why specify ingressClassName? It identifies which controller should reconcile the resource when multiple controllers or classes exist."
+   }
+  ],
+  "keyPoints": [
+   "Ingress provides an external entry point for HTTP and HTTPS traffic destined for in-cluster Services.",
+   "Routing behavior comes from rules declared in the Ingress object.",
+   "An HTTP rule can include a host and a list of path-to-backend mappings.",
+   "The host field is optional, so a rule can be shared across hosts when no host is specified.",
+   "One Ingress can distribute requests to different backends according to its declared rules."
+  ],
+  "gotchas": [
+   "A request must satisfy both the configured host and path before it is sent to the Service.",
+   "Ingress is intended for HTTP and HTTPS routing, not arbitrary network protocols or ports."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Networking & configuration::Network policies": {
+  "sourceUrl": "https://kubernetes.io/docs/concepts/services-networking/network-policies/",
+  "sourceTitle": "Network Policies - Kubernetes",
+  "summary": "Kubernetes NetworkPolicy restricts IP- and port-level traffic involving selected Pods. It replaces unrestricted Pod-to-Pod communication with declarative ingress and egress rules.",
+  "explanation": "A NetworkPolicy selects the Pods it governs and declares allowed ingress, egress, or both. Rules can identify peers by Pod labels, namespace labels, or IP blocks and can constrain ports; applicable policies combine additively, while a connection must be allowed by both its source egress and destination ingress policies.",
+  "syntax": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: <name>\nspec:\n  podSelector: <selector>\n  policyTypes: [Ingress, Egress]\n  ingress: <rules>\n  egress: <rules>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Allow frontend access to nginx",
+   "code": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: allow-nginx-from-frontend\n  namespace: default\nspec:\n  podSelector:\n    matchLabels:\n      app: nginx\n  policyTypes:\n    - Ingress\n  ingress:\n    - from:\n        - podSelector:\n            matchLabels:\n              app: frontend\n      ports:\n        - protocol: TCP\n          port: 80",
+   "language": "yaml",
+   "explanation": "Allows TCP port 80 access to nginx Pods only from frontend Pods in the same namespace."
+  },
+  "useCases": [
+   {
+    "title": "Tier-to-tier access control",
+    "scenario": "A frontend tier should reach only the HTTP port of an application tier."
+   },
+   {
+    "title": "Namespace isolation",
+    "scenario": "A namespace should accept traffic only from explicitly selected namespaces."
+   },
+   {
+    "title": "Egress destination restriction",
+    "scenario": "An application should reach only approved external CIDR ranges."
+   }
+  ],
+  "related": [
+   "NetworkPolicySpec",
+   "podSelector",
+   "namespaceSelector",
+   "ipBlock",
+   "policyTypes",
+   "ingress",
+   "egress",
+   "NetworkPolicyPeer"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does NetworkPolicy solve?",
+    "answer": "NetworkPolicy is a Kubernetes API object for controlling IP- or port-level traffic involving selected Pods. It can govern traffic within the cluster and between Pods and the outside world, provided the network plugin supports enforcement.",
+    "followUp": "How do multiple policies affect a selected Pod? Their allowed connections are unioned for each direction, so evaluation order does not change the result."
+   },
+   {
+    "question": "How does a NetworkPolicy select targets and peers?",
+    "answer": "The policy's podSelector identifies the Pods to which the policy applies. Peer selectors can then identify allowed Pods, namespaces, or IP blocks, and rules may restrict ports.",
+    "followUp": "What does an empty podSelector mean? It selects every Pod in the policy's namespace."
+   },
+   {
+    "question": "How are ingress and egress evaluated?",
+    "answer": "Ingress controls traffic arriving at selected Pods, while Egress controls traffic leaving them. For a source-to-destination connection, applicable source egress and destination ingress rules must both permit it.",
+    "followUp": "Can a policy specify both directions? Yes: its policy types can include Ingress, Egress, or both, with corresponding rule sections."
+   }
+  ],
+  "keyPoints": [
+   "Use NetworkPolicy to regulate traffic among cluster Pods and between Pods and external destinations.",
+   "Allowed peers are expressed with Pod selectors, namespace selectors, or IP blocks.",
+   "A Pod selector can identify peer Pods, but a Pod cannot use policy to block access to itself.",
+   "When several policies apply, their permissions accumulate instead of one policy overriding another.",
+   "A policy can govern incoming traffic, outgoing traffic, or both directions."
+  ],
+  "gotchas": [
+   "A NetworkPolicy object alone does not enforce traffic rules; the cluster's network plugin must implement NetworkPolicy.",
+   "Policies are additive rather than ordered, so adding a policy can expand the permitted set.",
+   "Pod-to-Pod traffic needs permission on both ends when policies govern the corresponding directions.",
+   "IP-block rules do not override the documented allowance for traffic to or from the hosting node."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Networking & configuration::Secrets": {
+  "sourceUrl": "https://kubernetes.io/docs/concepts/configuration/secret/",
+  "sourceTitle": "Secrets | Kubernetes",
+  "summary": "Kubernetes Secrets store small sensitive values such as passwords, tokens, and keys. Protect them with encryption at rest, least-privilege RBAC, and limited container access.",
+  "explanation": "A Secret is a Kubernetes object for sensitive values such as passwords, tokens, and keys. Store values in data as base64-encoded strings or use stringData for unencoded input, then expose selected keys to Pods through environment variables or mounted volumes. Protect Secrets with encryption at rest, least-privilege RBAC, and restricted container access.",
+  "syntax": "kubectl create secret generic NAME [--from-literal=key1=value1] [--from-file=[key=]source] [--dry-run=client -o yaml]",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "object",
+    "description": "Secret payload encoded as base64 strings; each key uses alphanumeric characters, '-', '_' or '.'."
+   },
+   {
+    "name": "stringData",
+    "type": "object",
+    "description": "Secret payload supplied as unencoded strings for convenience."
+   },
+   {
+    "name": "type",
+    "type": "string",
+    "description": "Identifies the Secret kind, such as Opaque or a built-in specialized type."
+   },
+   {
+    "name": "immutable",
+    "type": "boolean",
+    "description": "When true, prevents data updates after creation; metadata can still change."
+   }
+  ],
+  "returns": "A Secret object stored in the Kubernetes API and made available to authorized Pods through supported references.",
+  "example": {
+   "title": "Create an opaque Secret",
+   "code": "apiVersion: v1\nkind: Secret\nmetadata:\n  name: app-credentials\ntype: Opaque\nstringData:\n  username: app\n  password: replace-me",
+   "language": "yaml",
+   "explanation": "Apply this manifest to create an opaque Secret; stringData accepts plaintext input and Kubernetes encodes it when storing the object."
+  },
+  "useCases": [
+   {
+    "title": "Environment configuration",
+    "scenario": "A container needs database credentials or another sensitive setting at runtime."
+   },
+   {
+    "title": "Credential files",
+    "scenario": "A Pod needs credentials represented as files, such as SSH keys."
+   },
+   {
+    "title": "Private image pulls",
+    "scenario": "Kubelet must authenticate to a private container registry."
+   }
+  ],
+  "related": [
+   "ConfigMap",
+   "Encryption at Rest",
+   "RBAC",
+   "stringData",
+   "data",
+   "env[].valueFrom.secretKeyRef",
+   "secret volume",
+   "external Secret store providers"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Kubernetes Secret, and how does it differ from a ConfigMap?",
+    "answer": "A Secret is an object intended for confidential values such as passwords, tokens, and keys. Unlike ConfigMaps, it is specifically designed for sensitive data, but base64 representation alone is not encryption.",
+    "followUp": "How would you reduce exposure? Enable encryption at rest, apply least-privilege RBAC, restrict which containers can access the Secret, and consider an external Secret store."
+   },
+   {
+    "question": "How do data and stringData differ?",
+    "answer": "The data field contains values encoded as base64 strings. The stringData field accepts ordinary strings for convenience, and Kubernetes converts them when the Secret is created or updated.",
+    "followUp": "What happens when a key appears in both fields? The stringData value takes precedence over the data value."
+   },
+   {
+    "question": "What controls are needed to protect Secrets?",
+    "answer": "Secrets are not automatically confidential simply because they use the Secret resource. By default, they are stored unencrypted in the API server's backing datastore, and API or datastore access can expose them.",
+    "followUp": "What additional risk exists for Pod creators? A user allowed to create a Pod in a namespace may be able to read any Secret in that namespace indirectly."
+   }
+  ],
+  "keyPoints": [
+   "Secrets hold small sensitive values, including credentials, tokens, or keys, instead of embedding them in application code or Pod specifications.",
+   "Use Secrets for confidential configuration and ConfigMaps for non-confidential configuration.",
+   "Configure datastore encryption so Secret contents are protected if the underlying storage is accessed.",
+   "Use narrowly scoped RBAC permissions rather than broad read or write access to Secret resources.",
+   "Expose each Secret only to the containers that require it, reducing unnecessary credential access.",
+   "Common uses include container environment variables, Pod credentials, and authentication for pulling images from private registries."
+  ],
+  "gotchas": [
+   "Base64 encoding does not provide confidentiality; enable encryption at rest because the default datastore representation is unencrypted.",
+   "Pod-creation permission can indirectly grant access to every Secret in the namespace, so namespace and RBAC boundaries must be designed carefully."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Networking & configuration::Service types": {
+  "sourceUrl": "https://kubernetes.io/docs/concepts/services-networking/service/",
+  "sourceTitle": "Service | Kubernetes",
+  "summary": "Choose a Service type based on where clients connect: ClusterIP for cluster-internal access, NodePort for a port on every node, or LoadBalancer for an external load balancer. ClusterIP is the default.",
+  "explanation": "A Service's type determines how clients reach its selected Pods. ClusterIP provides an internal virtual IP, NodePort adds a fixed port on every node, and LoadBalancer provisions or integrates with an external load balancer; NodePort and LoadBalancer also provide ClusterIP behavior.",
+  "syntax": "apiVersion: v1\nkind: Service\nmetadata:\n  name: <name>\nspec:\n  type: ClusterIP | NodePort | LoadBalancer\n  selector: <pod-labels>\n  ports:\n    - port: <service-port>\n      targetPort: <pod-port>",
+  "parameters": [
+   {
+    "name": "spec.type",
+    "type": "string",
+    "description": "Selects the exposure model: ClusterIP, NodePort, or LoadBalancer."
+   },
+   {
+    "name": "spec.ports[].port",
+    "type": "integer",
+    "description": "The port exposed by the Service."
+   },
+   {
+    "name": "spec.ports[].targetPort",
+    "type": "integer",
+    "description": "The Pod port receiving forwarded traffic."
+   },
+   {
+    "name": "spec.ports[].nodePort",
+    "type": "integer",
+    "description": "Optional fixed port used by NodePort on each node."
+   }
+  ],
+  "returns": "A Service resource that provides a stable network endpoint for selected Pods using the chosen exposure type.",
+  "example": {
+   "title": "Expose an application with NodePort",
+   "code": "apiVersion: v1\nkind: Service\nmetadata:\n  name: web\nspec:\n  type: NodePort\n  selector:\n    app: web\n  ports:\n    - port: 80\n      targetPort: 8080\n      nodePort: 30080",
+   "language": "yaml",
+   "explanation": "Creates a Service reachable through port 30080 on each node and forwards traffic to port 8080 on matching Pods."
+  },
+  "useCases": [
+   {
+    "title": "Internal service discovery",
+    "scenario": "A backend should be consumed only by workloads inside the cluster."
+   },
+   {
+    "title": "Direct node exposure",
+    "scenario": "A service must be reachable through node addresses and a chosen port."
+   },
+   {
+    "title": "External application access",
+    "scenario": "A supported infrastructure provider can supply an external load-balancing endpoint."
+   }
+  ],
+  "related": [
+   "Service",
+   "ClusterIP",
+   "NodePort",
+   "LoadBalancer",
+   "Ingress",
+   "Gateway",
+   "service-node-port-range"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does ClusterIP do, and what happens when type is omitted?",
+    "answer": "ClusterIP exposes a Service on a cluster-internal IP and is the default when type is omitted. It is reachable only from within the cluster.",
+    "followUp": "How can an internal Service be exposed publicly without changing it to NodePort? Use an Ingress or Gateway that routes external traffic to the Service."
+   },
+   {
+    "question": "How does NodePort expose a Service?",
+    "answer": "NodePort exposes the Service on every node's IP at a static node port. Kubernetes also creates the cluster IP behavior associated with ClusterIP.",
+    "followUp": "What happens if nodePort is not specified? The control plane allocates an unused port from the configured service node-port range."
+   },
+   {
+    "question": "What does LoadBalancer require and provide?",
+    "answer": "LoadBalancer exposes a Service through an external load balancer. The cluster must provide a load-balancing component or integrate with a cloud provider; traffic is directed to backend Pods.",
+    "followUp": "What built-in behavior does LoadBalancer retain? It includes ClusterIP behavior for in-cluster clients and extends it with external load-balancer configuration."
+   }
+  ],
+  "keyPoints": [
+   "ClusterIP keeps the Service reachable through an address inside the cluster.",
+   "Omitting spec.type selects ClusterIP.",
+   "NodePort makes the Service available at the selected port on every node address.",
+   "NodePort also receives cluster-IP-style internal access.",
+   "LoadBalancer is the type intended to connect the Service to an external load-balancing endpoint.",
+   "After external entry, traffic is sent toward the Pods selected by the Service."
+  ],
+  "gotchas": [
+   "ClusterIP is not suitable when clients outside the cluster must connect directly; use NodePort, LoadBalancer, or an HTTP-focused Ingress or Gateway instead.",
+   "LoadBalancer requires a supported cloud integration or another external load-balancing implementation; Kubernetes alone does not supply the component.",
+   "If nodePort is omitted, Kubernetes chooses a port from the configured NodePort range, whose documented default is 30000-32767."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Networking & configuration::Services": {
+  "sourceUrl": "https://kubernetes.io/docs/concepts/services-networking/service/index.html",
+  "sourceTitle": "Service",
+  "summary": "A Service gives a changing group of Pods a stable network identity. Clients use the Service while Kubernetes tracks matching Pods and routes traffic to their current endpoints.",
+  "explanation": "A Service is a Kubernetes API object that groups matching Pods behind a stable virtual network identity. Its selector determines the current endpoints, while Kubernetes tracks those endpoints and routes client traffic to an available backend, allowing Pods to be replaced or scaled without changing the Service clients use.",
+  "syntax": "apiVersion: v1\nkind: Service\nmetadata:\n  name: <service-name>\nspec:\n  selector:\n    <label-key>: <label-value>\n  ports:\n    - port: <service-port>\n      targetPort: <pod-port>",
+  "parameters": [
+   {
+    "name": "spec.selector",
+    "type": "map[string]string",
+    "description": "The label selector used to choose the Pods backing the Service."
+   },
+   {
+    "name": "spec.ports",
+    "type": "array of ServicePort",
+    "description": "The ports exposed by the Service and their corresponding backend ports."
+   },
+   {
+    "name": "spec.type",
+    "type": "string",
+    "description": "The exposure mode, such as ClusterIP, NodePort, LoadBalancer, or ExternalName."
+   }
+  ],
+  "returns": "A Service object with a stable virtual IP or DNS identity and routing to its selected endpoints.",
+  "example": {
+   "title": "Internal Service for web Pods",
+   "code": "apiVersion: v1\nkind: Service\nmetadata:\n  name: web\nspec:\n  selector:\n    app: web\n  ports:\n    - port: 80\n      targetPort: 8080\n  type: ClusterIP",
+   "language": "yaml",
+   "explanation": "Creates an internal Service named web that selects Pods labeled app=web and forwards port 80 to their port 8080."
+  },
+  "useCases": [
+   {
+    "title": "Internal service discovery",
+    "scenario": "A frontend needs a dependable address for replicated backend Pods."
+   },
+   {
+    "title": "Node-level exposure",
+    "scenario": "A workload must be reachable through a port on cluster nodes."
+   },
+   {
+    "title": "Cloud or external load balancing",
+    "scenario": "An application needs an externally provisioned load balancer."
+   }
+  ],
+  "related": [
+   "EndpointSlice",
+   "ClusterIP",
+   "NodePort",
+   "LoadBalancer",
+   "ExternalName",
+   "label selector",
+   "Service DNS",
+   "kube-proxy"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does a Service solve?",
+    "answer": "A Service exposes a logical group of Pods through a stable network endpoint. A selector identifies the Pods, and Kubernetes maintains endpoint information for the currently matching backends.",
+    "followUp": "How can a Service target workloads outside the cluster? Use a Service without a selector and supply the corresponding EndpointSlice objects."
+   },
+   {
+    "question": "How does a Service find its backends?",
+    "answer": "The selector continuously determines which Pods belong to the Service. Kubernetes represents the resulting backend endpoints with EndpointSlice objects, updating them as Pods change.",
+    "followUp": "Why use EndpointSlices? They divide endpoint data into manageable subsets and scale better than one large endpoint list."
+   },
+   {
+    "question": "What are the main Service types?",
+    "answer": "ClusterIP is the default type and gives the Service an internal virtual IP. NodePort exposes the Service through a port on each node, while LoadBalancer asks an external load balancer implementation to expose it.",
+    "followUp": "What is ExternalName? It maps the Service to an external DNS name instead of proxying traffic through a virtual IP."
+   }
+  ],
+  "keyPoints": [
+   "A ClusterIP gives clients a stable virtual address for reaching the Service.",
+   "Selector-based membership changes automatically as Pods are created, deleted, or relabeled.",
+   "EndpointSlices hold the Service's backend endpoint information in partitions.",
+   "Applications can discover Services through injected environment variables or cluster DNS."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Scheduling & resources::Horizontal autoscaling": {
+  "sourceUrl": "https://kubernetes.io/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/",
+  "sourceTitle": "Horizontal Pod Autoscaling",
+  "summary": "Horizontal Pod Autoscaling automatically adjusts a supported workload's replica count to match demand measured through resource or custom metrics. It adds or removes Pods within configured limits.",
+  "explanation": "A HorizontalPodAutoscaler is an API resource paired with a control-plane controller. The controller periodically reads configured resource or custom metrics, calculates the desired replica count, and updates the target workload through its scale subresource; it can also apply separate scale-up and scale-down behavior rules.",
+  "syntax": "kubectl autoscale deployment <deployment-name> --cpu=<percentage> --min=<minimum> --max=<maximum>",
+  "parameters": [
+   {
+    "name": "spec.scaleTargetRef",
+    "type": "CrossVersionObjectReference",
+    "description": "Workload resource whose replica count is managed by the HPA."
+   },
+   {
+    "name": "spec.minReplicas",
+    "type": "int32",
+    "description": "Lowest permitted replica count."
+   },
+   {
+    "name": "spec.maxReplicas",
+    "type": "int32",
+    "description": "Highest permitted replica count."
+   },
+   {
+    "name": "spec.metrics",
+    "type": "MetricSpec",
+    "description": "Metrics used to calculate the desired replica count."
+   },
+   {
+    "name": "spec.behavior",
+    "type": "HorizontalPodAutoscalerBehavior",
+    "description": "Optional separate scale-up and scale-down policies."
+   }
+  ],
+  "returns": "The controller updates the target workload's desired replica count to match observed metrics, bounded by the configured scaling limits.",
+  "example": {
+   "title": "CPU-based HPA",
+   "code": "apiVersion: autoscaling/v2\nkind: HorizontalPodAutoscaler\nmetadata:\n  name: web\nspec:\n  scaleTargetRef:\n    apiVersion: apps/v1\n    kind: Deployment\n    name: web\n  minReplicas: 2\n  maxReplicas: 10\n  metrics:\n  - type: Resource\n    resource:\n      name: cpu\n      target:\n        type: Utilization\n        averageUtilization: 60",
+   "language": "yaml",
+   "explanation": "This HPA keeps the Deployment between two and ten Pods and adjusts replicas toward 60% average CPU utilization."
+  },
+  "useCases": [
+   {
+    "title": "Variable web traffic",
+    "scenario": "A web service experiences changing request volume and should add or remove application Pods automatically."
+   },
+   {
+    "title": "Resource-based workers",
+    "scenario": "A worker workload should maintain a target average CPU or memory utilization across its replicas."
+   },
+   {
+    "title": "Custom-metric scaling",
+    "scenario": "A service exposes an application-specific metric and needs scaling decisions based on that signal."
+   }
+  ],
+  "related": [
+   "HorizontalPodAutoscaler",
+   "autoscaling/v2",
+   "scale subresource",
+   "Deployment",
+   "StatefulSet",
+   "kubectl autoscale",
+   "kubectl get hpa",
+   "kubectl describe hpa"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a HorizontalPodAutoscaler and how does it work?",
+    "answer": "An HPA is both a Kubernetes API resource and a controller. The controller periodically observes metrics such as average CPU, average memory, or custom metrics and changes the target workload's replica count.",
+    "followUp": "How does it change replicas? It uses the workload's scale subresource, which exposes replica count and current scaling state."
+   },
+   {
+    "question": "How does horizontal scaling differ from vertical scaling?",
+    "answer": "Horizontal scaling adds or removes Pods to match demand. Vertical scaling instead changes resources such as CPU or memory assigned to Pods that already exist.",
+    "followUp": "Which workload types can be targeted? A target must support scaling through the scale subresource; non-scalable objects such as DaemonSets are excluded."
+   },
+   {
+    "question": "How can HPA scaling behavior be customized?",
+    "answer": "The autoscaling/v2 API supports a behavior field for configuring separate scale-up and scale-down behavior. This lets the HPA apply different policies to each direction.",
+    "followUp": "What does the HPA observe? It reads the metrics specified by the HPA, which can include resource utilization or custom metrics."
+   }
+  ],
+  "keyPoints": [
+   "HPA changes the replica count of supported workload resources automatically.",
+   "An increase in demand is handled by adding Pods rather than enlarging existing Pods.",
+   "The target can be driven by CPU, memory, or custom metric observations.",
+   "Deployments and StatefulSets expose the scale subresource that HPA uses to update replicas.",
+   "When demand falls, HPA can reduce replicas but does not go below the configured minimum."
+  ],
+  "gotchas": [
+   "The target must implement the scale subresource; objects such as DaemonSets cannot be horizontally autoscaled.",
+   "Avoid managing the target workload's spec.replicas in its manifest while HPA is active, because the autoscaler controls that value.",
+   "Metric changes are reconciled periodically rather than continuously, so scaling is not instantaneous."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Scheduling & resources::Node selectors and affinity": {
+  "sourceUrl": "https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/",
+  "sourceTitle": "Assigning Pods to Nodes",
+  "summary": "Deliberately place Pods by matching node labels with nodeSelector or richer node-affinity rules. Required affinity blocks unsuitable nodes, while preferred affinity guides placement without making it mandatory.",
+  "explanation": "Node selectors and affinity constrain scheduling through node labels. A nodeSelector requires every listed label, while node affinity expresses required rules that block scheduling or preferred rules that influence placement without making it mandatory; using both means both constraints must pass.",
+  "syntax": "spec.nodeSelector\nspec.affinity.nodeAffinity\nrequiredDuringSchedulingIgnoredDuringExecution\npreferredDuringSchedulingIgnoredDuringExecution",
+  "parameters": [
+   {
+    "name": "spec.nodeSelector",
+    "type": "map[string]string",
+    "description": "Mapping of node-label keys to required label values."
+   },
+   {
+    "name": "spec.affinity.nodeAffinity",
+    "type": "NodeAffinity",
+    "description": "Node-affinity scheduling rules, including required and preferred terms."
+   },
+   {
+    "name": "requiredDuringSchedulingIgnoredDuringExecution",
+    "type": "NodeSelector",
+    "description": "Hard node-affinity rules that must match at scheduling time."
+   },
+   {
+    "name": "preferredDuringSchedulingIgnoredDuringExecution",
+    "type": "PreferredSchedulingTerm",
+    "description": "Soft node-affinity rules that the scheduler attempts to satisfy."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Prefer a node zone",
+   "code": "apiVersion: v1\nkind: Pod\nmetadata:\n  name: preferred-zone\nspec:\n  affinity:\n    nodeAffinity:\n      preferredDuringSchedulingIgnoredDuringExecution:\n      - weight: 1\n        preference:\n          matchExpressions:\n          - key: topology.kubernetes.io/zone\n            operator: In\n            values: [\"us-central1-a\"]\n  containers:\n  - name: app\n    image: nginx:1.27\n",
+   "language": "yaml",
+   "explanation": "This Pod prefers nodes in one zone but can still be scheduled elsewhere when no matching node is available."
+  },
+  "useCases": [
+   {
+    "title": "Enforce node eligibility",
+    "scenario": "A workload must run only on nodes carrying a required hardware, operating-system, or environment label."
+   },
+   {
+    "title": "Express placement preferences",
+    "scenario": "A workload should favor a zone or node group but remain schedulable when preferred capacity is unavailable."
+   },
+   {
+    "title": "Use expressive matching",
+    "scenario": "A workload needs label operators and selector terms rather than simple key-value equality."
+   }
+  ],
+  "related": [
+   "nodeSelector",
+   "affinity",
+   "nodeAffinity",
+   "nodeSelectorTerms",
+   "matchExpressions",
+   "requiredDuringSchedulingIgnoredDuringExecution",
+   "preferredDuringSchedulingIgnoredDuringExecution",
+   "nodeName"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do nodeSelector and node affinity differ?",
+    "answer": "nodeSelector matches node labels and requires all specified labels. Node affinity is more expressive and supports both hard and soft scheduling rules.",
+    "followUp": "How would you combine them? Both are evaluated, so a node must satisfy the nodeSelector and the node-affinity requirements."
+   },
+   {
+    "question": "What are the two node-affinity rule types?",
+    "answer": "requiredDuringSchedulingIgnoredDuringExecution prevents scheduling unless the rule matches. preferredDuringSchedulingIgnoredDuringExecution makes the scheduler try matching nodes, but it can schedule elsewhere if necessary.",
+    "followUp": "What does IgnoredDuringExecution imply? A later label change does not make this rule a requirement to evict the already-running Pod according to this scheduling rule."
+   },
+   {
+    "question": "Where is node affinity declared and how is it expressed?",
+    "answer": "Node affinity is configured under `.spec.affinity.nodeAffinity`. Its selector terms use node-label match expressions, allowing more detailed selection logic than nodeSelector.",
+    "followUp": "How can you express alternatives? Use nodeSelectorTerms and match expressions to describe the accepted node-label combinations."
+   }
+  ],
+  "keyPoints": [
+   "Use nodeSelector for straightforward placement based on a set of required node labels.",
+   "A Pod declares its basic node-label requirements in `spec.nodeSelector`.",
+   "Choose affinity when placement needs richer matching logic than exact label pairs.",
+   "Node affinity selects eligible nodes by evaluating labels attached to those nodes.",
+   "Required node affinity acts as a hard filter: an unmatched rule leaves the Pod unscheduled.",
+   "Preferred node affinity influences the scheduler's choice among otherwise eligible nodes."
+  ],
+  "gotchas": [
+   "Combining nodeSelector with node affinity narrows eligibility because the Pod must satisfy both sets of constraints.",
+   "Preferred node affinity is a soft preference, not a guarantee; the scheduler may use another eligible node.",
+   "Every nodeSelector label is mandatory, so a missing label prevents the Pod from landing on that node."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Scheduling & resources::Pod disruption budgets": {
+  "sourceUrl": "https://kubernetes.io/docs/concepts/workloads/pods/disruptions/",
+  "sourceTitle": "Disruptions",
+  "summary": "A PodDisruptionBudget limits simultaneous Pod unavailability caused by voluntary disruptions. It protects a selected replicated application by requiring a minimum available level or allowing only a maximum unavailable level.",
+  "explanation": "A PodDisruptionBudget (PDB) applies to Pods selected by labels and limits voluntary evictions so the selected replicated workload retains its availability requirement. Set exactly one of minAvailable or maxUnavailable; the value may be a number or percentage. Eviction requests are admitted only when the resulting availability still satisfies the budget.",
+  "syntax": "apiVersion: policy/v1\nkind: PodDisruptionBudget\nmetadata:\n  name: <name>\nspec:\n  selector:\n    matchLabels: <labels>\n  minAvailable: <number-or-percentage>\n  # or maxUnavailable: <number-or-percentage>",
+  "parameters": [
+   {
+    "name": "spec.selector",
+    "type": "LabelSelector",
+    "description": "Required label selector identifying the Pods covered by the budget."
+   },
+   {
+    "name": "spec.minAvailable",
+    "type": "IntOrString",
+    "description": "Minimum number or percentage of selected Pods that must remain available after an eviction; mutually exclusive with maxUnavailable."
+   },
+   {
+    "name": "spec.maxUnavailable",
+    "type": "IntOrString",
+    "description": "Maximum number or percentage of selected Pods that may be unavailable after an eviction; mutually exclusive with minAvailable."
+   }
+  ],
+  "returns": "An admission decision for a voluntary eviction: allowed when the resulting selected-Pod availability satisfies the PDB, otherwise blocked or delayed.",
+  "example": {
+   "title": "Require two available Pods",
+   "code": "apiVersion: policy/v1\nkind: PodDisruptionBudget\nmetadata:\n  name: web-pdb\nspec:\n  minAvailable: 2\n  selector:\n    matchLabels:\n      app: web",
+   "language": "yaml",
+   "explanation": "This budget requires two selected web Pods to remain available after a voluntary eviction."
+  },
+  "useCases": [
+   {
+    "title": "Keep enough replicas running while nodes are drained.",
+    "scenario": "Planned node maintenance"
+   },
+   {
+    "title": "Prevent voluntary evictions from removing too many members for quorum.",
+    "scenario": "Quorum-based services"
+   },
+   {
+    "title": "Set a count or percentage that reflects the application's availability tolerance.",
+    "scenario": "Highly available replicated applications"
+   }
+  ],
+  "related": [
+   "Eviction API",
+   "voluntary disruption",
+   "involuntary disruption",
+   "AlwaysAllow unhealthy Pod Eviction Policy",
+   "DisruptionTarget condition",
+   "Deployment",
+   "StatefulSet"
+  ],
+  "since": "Kubernetes v1.21",
+  "interview": [
+   {
+    "question": "What does a PodDisruptionBudget protect?",
+    "answer": "A PDB limits simultaneous Pod loss caused by voluntary disruption. It does so by requiring a minimum available count or by limiting the maximum unavailable count for Pods matched by its selector.",
+    "followUp": "What happens when a node drain would violate the budget? The Eviction API refuses or delays that eviction until the budget can be satisfied."
+   },
+   {
+    "question": "How does a PDB choose the Pods it governs?",
+    "answer": "The selector identifies the Pods covered by the budget. The PDB then evaluates the selected Pods' availability after a proposed eviction, even accounting for the evicted Pod's absence.",
+    "followUp": "Why should a selector be narrow and intentional? An overly broad selector can make unrelated workloads share one disruption budget and unnecessarily block evictions."
+   },
+   {
+    "question": "Do PDBs control every kind of Pod disruption?",
+    "answer": "PDBs govern voluntary evictions, while rolling-update availability is controlled by the workload resource's update strategy. Involuntary disruptions are not prevented, but they count against the budget.",
+    "followUp": "How can unhealthy Pods affect draining? The documentation recommends the AlwaysAllow unhealthy-pod eviction policy so misbehaving applications can still be evicted during a node drain."
+   }
+  ],
+  "keyPoints": [
+   "Use a PDB to cap simultaneous voluntary availability loss for a replicated application.",
+   "Express the policy relative to the workload's intended replica count.",
+   "For five intended replicas and four required available, one voluntary eviction is allowed but a second is not."
+  ],
+  "gotchas": [
+   "Some voluntary actions, including directly deleting Pods or Deployments, can bypass a PDB; tools should use the Eviction API.",
+   "A PDB cannot stop failures or other involuntary unavailability, although those unavailable Pods reduce the remaining budget."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Scheduling & resources::Quality of service": {
+  "sourceUrl": "https://kubernetes.io/docs/concepts/workloads/pods/pod-qos/",
+  "sourceTitle": "Pod Quality of Service Classes",
+  "summary": "Kubernetes QoS classes help determine which Pods are most likely to be evicted when a node is under resource pressure. The usual order is BestEffort, Burstable, then Guaranteed, refined by resource usage and Pod priority.",
+  "explanation": "Kubernetes assigns each Pod a QoS class from its container resource requests and limits. During node-pressure eviction, the kubelet generally considers BestEffort Pods first, then Burstable Pods, and finally Guaranteed Pods; however, actual ranking also considers whether usage exceeds requests, Pod priority, and usage relative to requests.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Guaranteed QoS Pod",
+   "code": "apiVersion: v1\nkind: Pod\nmetadata:\n  name: qos-demo\nspec:\n  containers:\n  - name: app\n    image: nginx:1.27\n    resources:\n      requests:\n        cpu: \"100m\"\n        memory: \"128Mi\"\n      limits:\n        cpu: \"100m\"\n        memory: \"128Mi\"",
+   "language": "yaml",
+   "explanation": "This Pod qualifies for the Guaranteed QoS class because its CPU and memory requests equal its limits."
+  },
+  "useCases": [
+   {
+    "title": "Protect important workloads",
+    "scenario": "Protect critical workloads from node-pressure eviction by assigning matching CPU and memory requests and limits."
+   },
+   {
+    "title": "Predict eviction risk",
+    "scenario": "Estimate which Pods a pressured node may terminate when capacity is exhausted."
+   },
+   {
+    "title": "Investigate evictions",
+    "scenario": "Diagnose unexpected evictions by comparing Pod QoS, requests, limits, priority, and actual usage."
+   }
+  ],
+  "related": [
+   "Guaranteed",
+   "Burstable",
+   "BestEffort",
+   "node-pressure eviction",
+   "resource requests",
+   "resource limits",
+   "Pod Priority and Preemption"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What are the Kubernetes QoS classes, and what is their usual eviction order?",
+    "answer": "Kubernetes defines Guaranteed, Burstable, and BestEffort QoS classes. Under node resource pressure, the usual eviction order is BestEffort, then Burstable, then Guaranteed.",
+    "followUp": "What can change the apparent order? The kubelet also considers whether usage exceeds requests, Pod priority, and usage relative to requests."
+   },
+   {
+    "question": "How does Kubernetes classify a Pod as Guaranteed?",
+    "answer": "A Pod is Guaranteed when every container has positive CPU and memory requests and limits, and each request equals its corresponding limit. If these conditions are not met but at least one relevant request or limit exists, the Pod may be Burstable.",
+    "followUp": "How does a Pod become BestEffort? It has no CPU or memory requests or limits for any container."
+   },
+   {
+    "question": "How does node-pressure eviction differ from scheduler preemption?",
+    "answer": "Node-pressure eviction is performed by the kubelet to reclaim resources when a node is under pressure. Scheduler preemption is different: it removes lower-priority Pods so a pending higher-priority Pod can be scheduled, and QoS is not used to select those preemption targets.",
+    "followUp": "Which signal does node-pressure eviction use first? Whether usage of the starved resource exceeds the Pod's request."
+   }
+  ],
+  "keyPoints": [
+   "Every Pod receives one of three QoS classes: Guaranteed, Burstable, or BestEffort.",
+   "The broad eviction sequence under node pressure is BestEffort first, Burstable second, and Guaranteed last.",
+   "For resource-pressure eviction, Pods that stay within their resource requests are not candidates on that basis.",
+   "The kubelet refines the broad QoS order using resource-request overuse, Pod priority, and usage compared with requests.",
+   "A Pod's effective request is calculated by adding the requests of its containers.",
+   "BestEffort Pods receive the least protection from node-pressure eviction."
+  ],
+  "gotchas": [
+   "A Pod can still be evicted when it exceeds its resource request during node pressure, even if its QoS class is otherwise relatively protected.",
+   "Do not confuse node-pressure eviction with scheduler preemption: preemption chooses targets using priority, not QoS.",
+   "When a Pod becomes an eviction candidate because of resource pressure, eviction terminates every container in that Pod."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Scheduling & resources::Requests and limits": {
+  "sourceUrl": "https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/?ref=akschecklist",
+  "sourceTitle": "Resource Management for Pods and Containers | Kubernetes",
+  "summary": "Use CPU and memory requests to reserve capacity and guide Pod placement; use limits to cap what a container can consume at runtime.",
+  "explanation": "A container's requests describe the CPU and memory capacity the scheduler uses when selecting a node, while limits define the maximum resources the running container may consume. The kubelet reserves at least the requested amount for that container and enforces limits; if a limit is supplied without a request, Kubernetes uses the limit as the request unless a default was applied.",
+  "syntax": "spec.containers[].resources:\n  requests:\n    cpu: <quantity>\n    memory: <quantity>\n  limits:\n    cpu: <quantity>\n    memory: <quantity>",
+  "parameters": [
+   {
+    "name": "spec.containers[].resources.requests.cpu",
+    "type": "quantity",
+    "description": "CPU amount requested for scheduling and reservation."
+   },
+   {
+    "name": "spec.containers[].resources.requests.memory",
+    "type": "quantity",
+    "description": "Memory amount requested for scheduling and reservation."
+   },
+   {
+    "name": "spec.containers[].resources.limits.cpu",
+    "type": "quantity",
+    "description": "Maximum CPU amount the container may consume."
+   },
+   {
+    "name": "spec.containers[].resources.limits.memory",
+    "type": "quantity",
+    "description": "Maximum memory amount the container may consume."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Declare container requests and limits",
+   "code": "apiVersion: v1\nkind: Pod\nmetadata:\n  name: resource-demo\nspec:\n  containers:\n    - name: app\n      image: nginx:1.27\n      resources:\n        requests:\n          cpu: \"250m\"\n          memory: \"128Mi\"\n        limits:\n          cpu: \"500m\"\n          memory: \"256Mi\"",
+   "language": "yaml",
+   "explanation": "This Pod reserves a quarter CPU and 128 MiB of memory for scheduling, while allowing the container to use up to half a CPU and 256 MiB."
+  },
+  "useCases": [
+   {
+    "title": "Ensure a Pod is scheduled only where its declared CPU and memory fit.",
+    "scenario": "Reliable placement"
+   },
+   {
+    "title": "Prevent a container from consuming more CPU or memory than its configured ceiling.",
+    "scenario": "Runtime containment"
+   },
+   {
+    "title": "Express each container's requirements and derive the Pod's resource totals from them.",
+    "scenario": "Multi-container Pods"
+   }
+  ],
+  "related": [
+   "Resource Management for Pods and Containers",
+   "CPU",
+   "memory",
+   "ephemeral-storage",
+   "hugepages",
+   "kube-scheduler",
+   "kubelet",
+   "Pod resource request/limit"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between a resource request and a resource limit?",
+    "answer": "Requests are the amounts the scheduler uses to decide where a Pod can run. Limits are enforced by the kubelet so the running container cannot use more than the configured amount.",
+    "followUp": "What happens when only a limit is specified? Kubernetes copies that limit into the request unless an admission-time mechanism has already supplied a default request."
+   },
+   {
+    "question": "How does Kubernetes use requests during scheduling?",
+    "answer": "The scheduler checks each resource type independently and places a Pod only on a node whose available capacity can accommodate the Pod's resource requests. The request is therefore a scheduling and reservation signal, not simply an application preference.",
+    "followUp": "How is the Pod-level request calculated? For a given resource, Kubernetes sums the requests of all containers in the Pod."
+   },
+   {
+    "question": "Where are requests and limits declared?",
+    "answer": "For each container, CPU and memory values are declared under `resources.requests` and `resources.limits`. CPU, memory, ephemeral storage, and huge pages are among the resource types supported by these fields.",
+    "followUp": "Can requests and limits be specified at Pod scope? Yes; the documentation also describes Pod-level CPU and memory resource fields under `spec.resources`."
+   }
+  ],
+  "keyPoints": [
+   "A request influences the scheduler's node-placement decision.",
+   "A limit is enforced at runtime by the kubelet.",
+   "The requested amount is reserved for the individual container.",
+   "Resource requirements are configured per container in the Pod specification.",
+   "A node must have enough capacity for the aggregate requests of scheduled containers."
+  ],
+  "gotchas": [
+   "A limit without an explicit request can become the request automatically, unless admission-time defaults provide one.",
+   "Scheduling considers the combined requests of containers in the Pod, not merely one container's values.",
+   "A Pod's effective request or limit for a resource is the total across its containers."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Scheduling & resources::Taints and tolerations": {
+  "sourceUrl": "https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/",
+  "sourceTitle": "Taints and Tolerations | Kubernetes",
+  "summary": "Taints repel pods from nodes unless those pods declare matching tolerations. This lets operators reserve nodes for workloads that explicitly accept them, while placement still depends on other scheduling constraints.",
+  "explanation": "A taint marks a node so pods without a matching toleration are rejected according to the taint effect. A toleration on a PodSpec permits matching, but does not force placement there; the scheduler still considers other constraints. Matching uses key and effect plus either Equal with the same value or Exists without a value.",
+  "syntax": "kubectl taint nodes <node-name> <key>=<value>:<effect>\nspec:\n  tolerations:\n  - key: <key>\n    operator: Equal\n    value: <value>\n    effect: <effect>",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "string",
+    "description": "Taint key used for matching; an empty key matches all keys when operator is Exists."
+   },
+   {
+    "name": "operator",
+    "type": "string",
+    "description": "Matching mode: Equal compares values; Exists matches any value and should omit value."
+   },
+   {
+    "name": "value",
+    "type": "string",
+    "description": "Taint value matched by Equal; it should be empty with Exists."
+   },
+   {
+    "name": "effect",
+    "type": "string",
+    "description": "Effect to match: NoSchedule, PreferNoSchedule, or NoExecute; empty matches all effects."
+   },
+   {
+    "name": "tolerationSeconds",
+    "type": "integer",
+    "description": "For NoExecute, how many seconds the toleration remains effective; omitted means indefinitely."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Reserve a node for an accepted workload",
+   "code": "kubectl taint nodes node1 dedicated=team-a:NoSchedule\n\ncat <<'EOF' | kubectl apply -f -\napiVersion: v1\nkind: Pod\nmetadata:\n  name: team-a-workload\nspec:\n  tolerations:\n  - key: dedicated\n    operator: Equal\n    value: team-a\n    effect: NoSchedule\n  containers:\n  - name: pause\n    image: registry.k8s.io/pause:3.10\nEOF",
+   "language": "bash",
+   "explanation": "The command repels pods from node1 unless they have the matching toleration; the Pod manifest supplies that toleration."
+  },
+  "useCases": [
+   {
+    "title": "Dedicated nodes",
+    "scenario": "Keep general workloads away from nodes reserved for a dedicated team or application."
+   },
+   {
+    "title": "Specialized hardware",
+    "scenario": "Prevent ordinary pods from landing on specialized hardware unless they explicitly support it."
+   },
+   {
+    "title": "Failure handling",
+    "scenario": "Control whether unhealthy-node taints merely block new placement or also remove existing pods."
+   }
+  ],
+  "related": [
+   "PodSpec.tolerations",
+   "kubectl taint nodes",
+   "NoSchedule",
+   "PreferNoSchedule",
+   "NoExecute",
+   "node affinity"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between a taint and a toleration?",
+    "answer": "A taint is placed on a node and repels pods that do not tolerate it. A toleration is placed in the PodSpec and allows the pod to schedule when it matches the taint; it does not require placement on that node.",
+    "followUp": "How is a taint matched? The keys and effects must match, then either Exists is used without a value or Equal is used with equal values."
+   },
+   {
+    "question": "Explain the three taint effects.",
+    "answer": "NoSchedule prevents new pods from being scheduled onto the node unless they tolerate the taint. PreferNoSchedule is a softer preference, while NoExecute also evicts running pods that do not tolerate it.",
+    "followUp": "What controls delayed eviction? A NoExecute toleration can set tolerationSeconds; when omitted, the pod tolerates the taint indefinitely."
+   },
+   {
+    "question": "How do you configure a workload to use a tainted node?",
+    "answer": "Apply a taint with kubectl, for example `kubectl taint nodes node1 key1=value1:NoSchedule`. Add the corresponding key, operator, value, and effect under the pod's `spec.tolerations`.",
+    "followUp": "How would you reserve a node rather than merely permit access? Combine the toleration with another placement constraint, because tolerations alone do not select a node."
+   }
+  ],
+  "keyPoints": [
+   "Attach one or more taints to a node to repel pods lacking the corresponding tolerations.",
+   "Declare tolerations in the PodSpec, rather than on the node.",
+   "A match requires identical taint and toleration keys and effects before the operator/value rule is evaluated.",
+   "NoSchedule blocks newly scheduled pods that lack a matching toleration."
+  ],
+  "gotchas": [
+   "A toleration makes a pod eligible for a tainted node, but it does not ensure that the scheduler will place the pod there.",
+   "Using an empty toleration is broad: it can match every taint, so prefer a narrowly scoped key, value, and effect when reserving nodes.",
+   "For Exists matching, omit value; supplying one makes the toleration invalid for that matching rule."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

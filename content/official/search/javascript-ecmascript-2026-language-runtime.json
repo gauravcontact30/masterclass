@@ -1,0 +1,3328 @@
+{
+ "Array methods::Array.from and Array.of": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from",
+  "sourceTitle": "Array.from() - JavaScript | MDN Web Docs",
+  "summary": "Array.from() builds a shallow-copied array from an iterable or array-like value, optionally mapping each element. Array.of() builds an array from its arguments, avoiding Array()'s special handling of a single numeric argument.",
+  "explanation": "Array.from() creates a new array from an iterable or an array-like object and can transform each value during creation. Array.of() creates a new array whose elements are exactly the arguments supplied, including when there is one argument or none.",
+  "syntax": "Array.from(items)\nArray.from(items, mapFn)\nArray.from(items, mapFn, thisArg)\nArray.of()\nArray.of(element1)\nArray.of(element1, element2)\nArray.of(element1, element2, /* …, */ elementN)",
+  "parameters": [
+   {
+    "name": "items",
+    "type": "iterable or array-like object",
+    "description": "Iterable or array-like object to convert to an array."
+   },
+   {
+    "name": "mapFn",
+    "type": "function",
+    "description": "Optional function applied to each element; it receives the element and index."
+   },
+   {
+    "name": "thisArg",
+    "type": "any",
+    "description": "Optional this value used when calling mapFn."
+   },
+   {
+    "name": "element1, …, elementN",
+    "type": "any",
+    "description": "Values used as the elements of the resulting array."
+   }
+  ],
+  "returns": "A new Array instance.",
+  "example": {
+   "title": "Convert and construct arrays",
+   "code": "const fromSet = Array.from(new Set([1, 2, 2]), (n) => n * 10);\nconst values = Array.of(7);\n\nconsole.log(fromSet); // [10, 20]\nconsole.log(values);  // [7]",
+   "language": "javascript",
+   "explanation": "This converts a Set to an array while mapping each value, then creates a one-element array without the single-number behavior of Array()."
+  },
+  "useCases": [
+   {
+    "title": "Materialize iterable data",
+    "scenario": "Convert Set, Map, or another iterable into an ordinary array."
+   },
+   {
+    "title": "Normalize array-like inputs",
+    "scenario": "Turn array-like values with length and indexed properties into arrays."
+   },
+   {
+    "title": "Map while constructing",
+    "scenario": "Transform values during conversion without a separate map pass."
+   },
+   {
+    "title": "Avoid Array constructor ambiguity",
+    "scenario": "Create arrays reliably when the input may contain zero, one, or many values."
+   }
+  ],
+  "related": [
+   "Array.fromAsync()",
+   "Array()",
+   "Object.keys()",
+   "Object.values()",
+   "Object.entries()",
+   "Array subclass"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Array.from() accepts iterables such as Set and Map, or array-like objects with indexed values and a length.",
+   "The optional mapFn transforms each element while the result array is being built.",
+   "mapFn receives the current element and its index.",
+   "Both methods return a newly created Array instance.",
+   "Array.of() places all supplied arguments into the new array, preserving their values and order.",
+   "Unlike Array(7), Array.of(7) produces one element containing the number 7.",
+   "Array.of() can be inherited by an Array subclass to create instances of that subclass."
+  ],
+  "gotchas": [
+   "Array.of(7) creates [7], while Array(7) creates an empty array with length 7.",
+   "Array.from() does not consume async iterables; use Array.fromAsync() for that case.",
+   "When using mapFn, each source value is transformed before it is stored in the result."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Array methods::Array.prototype.at": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/at",
+  "sourceTitle": "Array.prototype.at() - JavaScript | MDN",
+  "summary": "Returns the array element at a zero-based index. Negative indexes count backward from the end, so -1 reads the last element.",
+  "explanation": "Call at(index) on an array to retrieve the element at a zero-based position. A negative index is shifted from the array's length, so -1 selects the final element; positions outside the array produce undefined.",
+  "syntax": "at(index)",
+  "parameters": [
+   {
+    "name": "index",
+    "type": "integer",
+    "description": "Zero-based array-element index, converted to an integer; negative values count from the end."
+   }
+  ],
+  "returns": "The element at the calculated index, or undefined when the index is outside the array bounds.",
+  "example": {
+   "title": "Read elements with positive and negative indexes",
+   "code": "const values = [\"first\", \"middle\", \"last\"];\n\nconsole.log(values.at(0));\nconsole.log(values.at(-1));\nconsole.log(values.at(-4));",
+   "language": "javascript",
+   "explanation": "Reads the first element, the last element using a negative index, and an out-of-range position."
+  },
+  "useCases": [
+   {
+    "title": "Read the last element",
+    "scenario": "Retrieve the final item without manually subtracting from length."
+   },
+   {
+    "title": "Use negative relative indexes",
+    "scenario": "Access an element relative to the end of an array."
+   },
+   {
+    "title": "Handle out-of-range access",
+    "scenario": "Safely read a possibly absent position."
+   }
+  ],
+  "related": [
+   "Array.prototype.with()",
+   "Array bracket notation",
+   "Array.length"
+  ],
+  "since": "2022",
+  "keyPoints": [
+   "at(index) returns the element located at the supplied integer position.",
+   "Negative indexes count backward from the array's end, with -1 selecting the last element.",
+   "The index is zero-based and converted to an integer before lookup.",
+   "For a negative index, the effective position is calculated by adding it to the array length.",
+   "A successful lookup returns the matching array element.",
+   "For non-negative integer indexes, at(index) gives the same element as bracket notation.",
+   "Use at() for relative reads and with() when a corresponding relative-index update is needed."
+  ],
+  "gotchas": [
+   "Bracket notation does not interpret negative numbers as relative array indexes; use at(-1) instead.",
+   "An index outside the valid range returns undefined rather than reading a corresponding property.",
+   "The method can operate on array-like objects, provided they have a length property and integer-keyed properties."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Array methods::Array.prototype.filter": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter",
+  "sourceTitle": "Array.prototype.filter() - JavaScript - MDN Web Docs",
+  "summary": "Builds a new shallow array containing the elements for which a predicate returns a truthy value. The original array is not changed.",
+  "explanation": "Call filter with a predicate function. JavaScript invokes the predicate for each assigned array element, passing the element, its index, and the original array; elements whose predicate result is truthy are copied into a new shallow array. The optional thisArg supplies this for the predicate.",
+  "syntax": "filter(callbackFn)\nfilter(callbackFn, thisArg)",
+  "parameters": [
+   {
+    "name": "callbackFn",
+    "type": "function",
+    "description": "A function run for each assigned element. Return a truthy value to retain the element and a falsy value to exclude it. It receives element, index, and array."
+   },
+   {
+    "name": "thisArg",
+    "type": "any",
+    "description": "Optional value used as this when callbackFn executes."
+   }
+  ],
+  "returns": "A new shallow array containing the elements for which callbackFn returns a truthy value; if none pass, an empty array.",
+  "example": {
+   "title": "Keep passing scores",
+   "code": "const scores = [42, 78, 55, 91];\nconst passing = scores.filter((score) => score >= 60);\n\nconsole.log(passing); // [78, 91]",
+   "language": "javascript",
+   "explanation": "Creates a new array containing only scores that meet the passing threshold."
+  },
+  "useCases": [
+   {
+    "title": "Subset data",
+    "scenario": "Select records matching a condition before rendering or processing them."
+   },
+   {
+    "title": "Clean inputs",
+    "scenario": "Remove invalid, empty, or disallowed values from a collection."
+   },
+   {
+    "title": "Apply predicates",
+    "scenario": "Keep items meeting a numeric or business-rule threshold."
+   }
+  ],
+  "related": [
+   "Array.prototype.map()",
+   "Array.prototype.find()",
+   "Array.prototype.findIndex()",
+   "Array.prototype.some()",
+   "Array.prototype.every()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "filter is an iterative array method that evaluates a callback across the relevant elements.",
+   "It returns a separate array containing each element whose predicate result is truthy.",
+   "Falsy predicate results exclude elements from the result.",
+   "The returned array is a shallow copy, so retained object references are not deep-cloned.",
+   "When every predicate result is falsy, filter returns an empty array.",
+   "The callback receives the current element, its index, and the array on which filter was called."
+  ],
+  "gotchas": [
+   "The predicate is skipped for holes in sparse arrays, so empty slots do not produce callback calls.",
+   "The method can operate on array-like objects with a length and integer-keyed properties, not only actual arrays."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Array methods::Array.prototype.find and findLast": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findLast",
+  "sourceTitle": "Array.prototype.findLast() - JavaScript - MDN Web Docs",
+  "summary": "`find()` returns the first array element whose predicate is truthy; `findLast()` returns the last matching element. Both return `undefined` when no element matches.",
+  "explanation": "Call `find()` to scan an array from the lowest index upward, or `findLast()` to scan from the highest index downward. Each invokes the predicate until it returns a truthy value, then returns that element; if no predicate call succeeds, the result is `undefined`.",
+  "syntax": "find(callbackFn)\nfind(callbackFn, thisArg)\nfindLast(callbackFn)\nfindLast(callbackFn, thisArg)",
+  "parameters": [
+   {
+    "name": "callbackFn",
+    "type": "function",
+    "description": "A function called for each element. It returns a truthy value for a match and a falsy value otherwise; it receives the current element, index, and array."
+   },
+   {
+    "name": "thisArg",
+    "type": "any",
+    "description": "A value used as `this` when calling `callbackFn`."
+   }
+  ],
+  "returns": "The last (highest-index) element satisfying the predicate, or `undefined` when no element matches.",
+  "example": {
+   "title": "Find from either direction",
+   "code": "const numbers = [5, 12, 50, 130, 44];\n\nconst firstOver45 = numbers.find((value) => value > 45);\nconst lastOver45 = numbers.findLast((value) => value > 45);\n\nconsole.log(firstOver45); // 50\nconsole.log(lastOver45);  // 130",
+   "language": "javascript",
+   "explanation": "The same predicate finds the first matching value from the left and the last matching value from the right."
+  },
+  "useCases": [
+   {
+    "title": "Find the first match",
+    "scenario": "Select the earliest item satisfying a condition, such as the first available record."
+   },
+   {
+    "title": "Find the last match",
+    "scenario": "Select the most recent or highest-index item satisfying a condition."
+   },
+   {
+    "title": "Search collections by a rule",
+    "scenario": "Use a predicate to locate an object by a property without manually writing a loop."
+   }
+  ],
+  "related": [
+   "Array.prototype.find",
+   "Array.prototype.findIndex",
+   "Array.prototype.findLastIndex"
+  ],
+  "since": "",
+  "keyPoints": [
+   "`findLast()` searches from the last index toward the first.",
+   "The returned value is the matching element itself, not its index.",
+   "A missing match produces `undefined`.",
+   "Use `find()` when the desired match is the earliest one in normal array order.",
+   "The method repeatedly applies a predicate while scanning the array.",
+   "The predicate is called for each visited element until a match is found.",
+   "Because it is generic, the method can operate on suitable array-like values."
+  ],
+  "gotchas": [
+   "`findLast()` visits elements from the highest index downward, so its result can differ from `find()` when several elements match.",
+   "Handle the no-match case explicitly because both methods return `undefined` when the predicate never matches.",
+   "`findLast()` can work with array-like objects, provided the `this` value has a `length` property and integer-keyed properties."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Array methods::Array.prototype.flat and flatMap": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap",
+  "sourceTitle": "Array.prototype.flatMap() - JavaScript - MDN Web Docs",
+  "summary": "flat() creates a new array by recursively flattening nested arrays to a chosen depth, defaulting to one level. flatMap() maps each element and flattens the callback results by one level in the same operation.",
+  "explanation": "flat() returns a new shallow array after recursively concatenating nested arrays to the requested depth. flatMap() applies a callback to each present element, then flattens callback results by exactly one level, combining mapping and flattening in one operation.",
+  "syntax": "arr.flat(depth)\narr.flatMap(callbackFn)\narr.flatMap(callbackFn, thisArg)",
+  "parameters": [
+   {
+    "name": "depth",
+    "type": "number",
+    "description": "Optional flattening depth; defaults to 1. Deeper nested arrays beyond this depth remain nested."
+   },
+   {
+    "name": "callbackFn",
+    "type": "function",
+    "description": "Function executed for each source element. It may return an array to flatten by one level or a non-array value to append directly."
+   },
+   {
+    "name": "thisArg",
+    "type": "any",
+    "description": "Optional value used as this when callbackFn runs."
+   }
+  ],
+  "returns": "Both methods return a new array. flat() contains elements concatenated through the requested depth; flatMap() contains callback results flattened by one level.",
+  "example": {
+   "title": "Flatten and expand arrays",
+   "code": "const nested = [1, [2, 3], [[4]]];\nconst once = nested.flat();\nconst deeply = nested.flat(2);\nconst expanded = [1, 2, 3].flatMap((n) => [n, n * 10]);\n\nconsole.log(once);     // [1, 2, 3, [4]]\nconsole.log(deeply);   // [1, 2, 3, 4]\nconsole.log(expanded); // [1, 10, 2, 20, 3, 30]",
+   "language": "javascript",
+   "explanation": "Use flat() to copy and flatten nested arrays to a chosen depth; use flatMap() when each element must first produce a value or array and the results should be flattened one level."
+  },
+  "useCases": [
+   {
+    "title": "Flatten nested data",
+    "scenario": "Convert nested arrays such as grouped records or batches into a shallower list."
+   },
+   {
+    "title": "Map and expand",
+    "scenario": "Expand each input item into zero, one, or several output items."
+   },
+   {
+    "title": "Efficient pipeline",
+    "scenario": "Combine transformation and one-level flattening without creating an intermediate mapped array."
+   }
+  ],
+  "related": [
+   "Array.prototype.map()"
+  ],
+  "since": "ECMAScript 2019",
+  "keyPoints": [
+   "flat() recursively concatenates nested array elements up to the supplied depth.",
+   "The optional depth controls flattening depth and defaults to 1.",
+   "flat() returns a new array rather than changing the original array.",
+   "flatMap() maps each element and then flattens the mapped results by one level.",
+   "flatMap() corresponds conceptually to map() followed by flat(1), while combining the operations.",
+   "flatMap() requires a callback function that runs for each non-empty source element.",
+   "Both methods are generic and can operate on array-like objects with length and integer-keyed properties."
+  ],
+  "gotchas": [
+   "Sparse arrays lose empty slots at the levels that flat() processes.",
+   "flatMap() skips empty source slots, and empty slots in returned arrays are ignored during flattening.",
+   "flatMap() does not flatten non-array callback results; it appends them as single values.",
+   "For flat(), only array elements are flattened; other element values remain unchanged."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Array methods::Array.prototype.includes and indexOf": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array",
+  "sourceTitle": "Array - JavaScript | MDN Web Docs",
+  "summary": "Use includes() to test whether an array contains a value, or indexOf() to obtain the first matching index. includes() returns a boolean; indexOf() returns an index or -1.",
+  "explanation": "Use Array.prototype.includes() when the result should be true or false. Use Array.prototype.indexOf() when you need the first matching index; it returns -1 when no match exists.",
+  "syntax": "includes(searchElement)\nincludes(searchElement, fromIndex)\nindexOf(searchElement)\nindexOf(searchElement, fromIndex)",
+  "parameters": [
+   {
+    "name": "searchElement",
+    "type": "any",
+    "description": "The value or element to search for."
+   },
+   {
+    "name": "fromIndex",
+    "type": "integer",
+    "description": "Optional zero-based position from which to begin searching; converted to an integer. Negative values count from the end."
+   }
+  ],
+  "returns": "includes() returns true when the value is found and false otherwise. indexOf() returns the first matching index, or -1 when the value is absent.",
+  "example": {
+   "title": "Test membership and find a position",
+   "code": "const values = [\"a\", NaN, \"b\", \"a\"];\n\nconsole.log(values.includes(NaN)); // true\nconsole.log(values.indexOf(\"a\"));   // 0\nconsole.log(values.indexOf(\"z\"));   // -1\nconsole.log(values.includes(\"b\", 2)); // true",
+   "language": "javascript",
+   "explanation": "Use includes() for a boolean membership test and indexOf() when the first matching position is needed."
+  },
+  "useCases": [
+   {
+    "title": "Membership validation",
+    "scenario": "Checking whether a permitted value appears in an array."
+   },
+   {
+    "title": "Locate an element",
+    "scenario": "Retrieving the position of the first matching item."
+   },
+   {
+    "title": "Bounded search",
+    "scenario": "Searching from a chosen position, including a position measured from the end."
+   },
+   {
+    "title": "Find special numeric values",
+    "scenario": "Handling NaN membership checks."
+   }
+  ],
+  "related": [
+   "Array.prototype.includes()",
+   "Array.prototype.indexOf()",
+   "SameValueZero",
+   "strict equality",
+   "Array-like objects"
+  ],
+  "since": "",
+  "keyPoints": [
+   "indexOf() returns the position of the first matching element.",
+   "indexOf() uses strict equality, so NaN cannot be found with it.",
+   "A negative fromIndex starts the search relative to the array's end, while traversal still proceeds forward."
+  ],
+  "gotchas": [
+   "indexOf() ignores holes in sparse arrays; includes() treats empty slots as if they contained undefined.",
+   "An out-of-range fromIndex makes indexOf() return -1; for includes(), the corresponding result is false."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Array methods::Array.prototype.join": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/join",
+  "sourceTitle": "Array.prototype.join() - JavaScript | MDN Web Docs",
+  "summary": "Array.prototype.join() converts an array’s elements to one string, placing a chosen separator between adjacent elements. It uses commas by default and returns an empty string for an empty array.",
+  "explanation": "Call join on an array to create one string from its elements. The optional separator is converted to a string and placed between elements; without one, commas are used. null, undefined, and sparse slots contribute empty text, while nested arrays are converted recursively and use commas at deeper levels.",
+  "syntax": "join()\njoin(separator)",
+  "parameters": [
+   {
+    "name": "separator",
+    "type": "string | undefined",
+    "description": "A string placed between each adjacent pair of elements. If omitted, a comma is used."
+   }
+  ],
+  "returns": "A string containing all array elements joined together; an empty array returns the empty string.",
+  "example": {
+   "title": "Join values with a custom separator",
+   "code": "const values = [\"red\", undefined, \"blue\", [\"green\", \"yellow\"]];\nconsole.log(values.join(\" | \"));\n// \"red |  | blue | green,yellow\"",
+   "language": "javascript",
+   "explanation": "This joins the top-level elements with a pipe separator; undefined becomes empty text, and the nested array uses commas internally."
+  },
+  "useCases": [
+   {
+    "title": "Format delimited text",
+    "scenario": "Create a delimited line from fields for display or export."
+   },
+   {
+    "title": "Build readable strings",
+    "scenario": "Combine path or label segments with a controlled separator."
+   },
+   {
+    "title": "Present collections",
+    "scenario": "Render array values in logs or simple UI output."
+   }
+  ],
+  "related": [
+   "Array.prototype.toString()",
+   "Array.prototype.map()",
+   "Array.prototype.toLocaleString()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "join() returns one string containing the array elements, separated by commas by default or by the supplied separator.",
+   "With one element, the result is simply that element converted to text; no separator is inserted.",
+   "Omitting the argument selects a comma as the separator.",
+   "An empty array produces an empty string.",
+   "Array toString() uses join() internally with no separator argument.",
+   "The method can operate on array-like values, not only actual Array instances."
+  ],
+  "gotchas": [
+   "null and undefined do not appear as their literal words; each contributes an empty string.",
+   "Empty slots behave like undefined, so consecutive separators can appear.",
+   "A separator does not propagate into nested arrays.",
+   "Self-referential arrays skip the cyclic reference rather than recursing forever."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Array methods::Array.prototype.map": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map",
+  "sourceTitle": "Array.prototype.map() - JavaScript - MDN Web Docs",
+  "summary": "Creates a new array by applying a callback to every present element of an array. Each callback result becomes the corresponding element in the new array.",
+  "explanation": "Call map with a callback to process each present array element. The callback receives the element, its index, and the original array; its returned value becomes the corresponding item in a new array. The optional thisArg supplies callback this, and the source array is not changed by map itself.",
+  "syntax": "map(callbackFn)\nmap(callbackFn, thisArg)",
+  "parameters": [
+   {
+    "name": "callbackFn",
+    "type": "Function",
+    "description": "A function executed for each present element. It receives the element, its index, and the array on which map was called; its return value becomes one output element."
+   },
+   {
+    "name": "thisArg",
+    "type": "any",
+    "description": "Optional value used as this when callbackFn executes."
+   }
+  ],
+  "returns": "A new array with each element produced by the callback function.",
+  "example": {
+   "title": "Transform every element",
+   "code": "const prices = [10, 20, 30];\nconst withTax = prices.map((price, index) =>\n  ({ item: index + 1, total: price * 1.2 })\n);\nconsole.log(withTax);",
+   "language": "javascript",
+   "explanation": "Creates a separate object for each price while using the element and its index."
+  },
+  "useCases": [
+   {
+    "title": "Transform values",
+    "scenario": "Convert raw values into a different representation, such as prices into tax-inclusive totals."
+   },
+   {
+    "title": "Project records",
+    "scenario": "Create view-model objects or display labels from domain records."
+   },
+   {
+    "title": "Add positional data",
+    "scenario": "Use an element's index while producing ordered output."
+   },
+   {
+    "title": "Process array-like data",
+    "scenario": "Apply the same operation to array-like objects with length and integer-keyed properties."
+   }
+  ],
+  "related": [
+   "Array.prototype.filter()",
+   "Array.prototype.flatMap()",
+   "Array.prototype.forEach()",
+   "Array.prototype.reduce()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "map transforms each element and returns a new array containing the callback results.",
+   "map is an iterative array method that processes elements through a callback.",
+   "Each callback result occupies one position in the output array.",
+   "The callback can receive the current element, its index, and the source array.",
+   "The return value is a new array whose entries come from callback return values.",
+   "For array-like receivers, map uses the receiver's length when determining indexed positions."
+  ],
+  "gotchas": [
+   "A callback that omits return, or explicitly returns undefined, places undefined in the corresponding result position.",
+   "Empty positions are skipped rather than passed to the callback.",
+   "Mapping does not fill holes: corresponding holes remain holes in the result.",
+   "The method can operate on array-like values with length and integer-keyed properties, not only actual arrays."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Array methods::Array.prototype.reduce": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce",
+  "sourceTitle": "Array.prototype.reduce() - JavaScript - MDN Web Docs",
+  "summary": "Array.prototype.reduce() runs a callback from left to right, carrying each callback result into the next call. It returns the final accumulated value, optionally starting from an explicitly supplied initial value.",
+  "explanation": "reduce() processes array elements from left to right, passing the callback's result into the next call as the accumulator. With an initial value, processing starts at index 0; without one, the first present element becomes the accumulator and processing starts at the next element.",
+  "syntax": "reduce(callbackFn)\nreduce(callbackFn, initialValue)",
+  "parameters": [
+   {
+    "name": "callbackFn",
+    "type": "Function",
+    "description": "A function called for each processed element. Its returned value becomes the accumulator for the next call; the callback receives accumulator, currentValue, currentIndex, and array."
+   },
+   {
+    "name": "initialValue",
+    "type": "Any",
+    "description": "The value used to initialize the accumulator before the first callback invocation."
+   }
+  ],
+  "returns": "The value produced by the reducer callback after processing the array.",
+  "example": {
+   "title": "Sum array values",
+   "code": "const prices = [10, 15, 5];\nconst total = prices.reduce((sum, price) => sum + price, 0);\nconsole.log(total); // 30",
+   "language": "javascript",
+   "explanation": "Adds each price to an explicitly initialized accumulator and produces the total."
+  },
+  "useCases": [
+   {
+    "title": "Summation and aggregation",
+    "scenario": "Add numeric values or combine measurements into one total."
+   },
+   {
+    "title": "Indexing and grouping",
+    "scenario": "Build an object, map, or grouped structure from array records."
+   },
+   {
+    "title": "Folding into a formatted result",
+    "scenario": "Compose values into a string or other sequential representation."
+   },
+   {
+    "title": "Stateful sequence processing",
+    "scenario": "Accumulate state while transforming a sequence in one pass."
+   }
+  ],
+  "related": [
+   "Array.prototype.reduceRight()",
+   "Array.prototype.map()",
+   "Array.prototype.filter()",
+   "Array.prototype.some()",
+   "Array.prototype.every()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The method folds the array into one result, whose type can differ from the element type.",
+   "The callback processes elements from lower indexes to higher indexes.",
+   "Each callback result becomes the accumulator for the next invocation.",
+   "The final callback result is returned by reduce().",
+   "An initial value makes the first element the first currentValue and starts callbacks at index 0.",
+   "Without an initial value, the first present element seeds the accumulator and is not passed to the callback as currentValue."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Array methods::Array.prototype.slice and splice": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice",
+  "sourceTitle": "Array.prototype.splice () - JavaScript | MDN",
+  "summary": "Use `slice()` to copy a range into a new shallow array without mutation. Use `splice()` to remove, replace, or insert elements in the existing array and receive the deleted elements.",
+  "explanation": "Use `slice(start, end)` to create a shallow copy of the range from `start` through just before `end`; it leaves the source unchanged. Use `splice(start, deleteCount, ...items)` to mutate the source by deleting elements and inserting supplied items at the same position; it returns the deleted elements.",
+  "syntax": "slice()\nslice(start)\nslice(start, end)\n\nsplice(start)\nsplice(start, deleteCount)\nsplice(start, deleteCount, item1)\nsplice(start, deleteCount, item1, item2)\nsplice(start, deleteCount, item1, item2, /* …, */ itemN)",
+  "parameters": [
+   {
+    "name": "start",
+    "type": "integer",
+    "description": "Zero-based index at which to start extraction, converted to an integer. Negative values count from the end; omitted `start` defaults to 0."
+   },
+   {
+    "name": "end",
+    "type": "integer, optional",
+    "description": "Zero-based index at which to end extraction, converted to an integer; extraction stops before this index. If omitted, extraction continues to the end."
+   },
+   {
+    "name": "start",
+    "type": "integer",
+    "description": "Zero-based index at which to start changing the array, converted to an integer; negative values count from the end."
+   },
+   {
+    "name": "deleteCount",
+    "type": "integer, optional",
+    "description": "Number of elements to remove from `start`."
+   },
+   {
+    "name": "item1 … itemN",
+    "type": "any, optional",
+    "description": "Elements to insert beginning at `start`."
+   }
+  ],
+  "returns": "`slice()` returns a new array containing the extracted elements. `splice()` returns an array containing the deleted elements; it is empty when none are removed.",
+  "example": {
+   "title": "Copy versus mutate",
+   "code": "const values = [\"a\", \"b\", \"c\", \"d\"];\nconst copy = values.slice(1, 3);\nconst removed = values.splice(1, 2, \"x\");\n\nconsole.log(copy);    // [\"b\", \"c\"]\nconsole.log(removed); // [\"b\", \"c\"]\nconsole.log(values);  // [\"a\", \"x\", \"d\"]",
+   "language": "javascript",
+   "explanation": "`slice()` copies the selected range without changing the original; `splice()` removes and inserts elements in the original array."
+  },
+  "useCases": [
+   {
+    "title": "Non-mutating extraction",
+    "scenario": "Create a subsection or shallow copy while preserving the source array."
+   },
+   {
+    "title": "In-place deletion",
+    "scenario": "Remove one or more elements and inspect what was deleted."
+   },
+   {
+    "title": "In-place replacement",
+    "scenario": "Replace a range with a different number of elements."
+   },
+   {
+    "title": "In-place insertion",
+    "scenario": "Insert elements at the beginning, middle, or end of an array."
+   }
+  ],
+  "related": [
+   "Array.prototype.toSpliced()",
+   "Array.prototype.push()",
+   "Array.prototype.unshift()",
+   "Array.prototype.concat()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "`slice()` creates a new shallow-copy array from a selected portion of the source.",
+   "The range starts at `start` and stops before `end`, so the end boundary is exclusive.",
+   "Calling `slice()` does not change the source array.",
+   "`splice()` can delete, replace, and insert elements directly in the source array.",
+   "The return value of `splice()` is an array containing the elements it removed.",
+   "Negative `start` values count backward from the array's end.",
+   "Additional `splice()` arguments are inserted at the change position."
+  ],
+  "gotchas": [
+   "`slice()` is non-mutating, but `splice()` changes the original array in place.",
+   "Do not use `splice()` when the original array must remain unchanged; use `slice()` or `toSpliced()` instead.",
+   "`splice()` always returns an array, including an empty array when nothing was deleted.",
+   "Sparse arrays remain sparse in the copied range; missing indexes are not converted into explicit `undefined` values."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Array methods::Array.prototype.some and every": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every",
+  "sourceTitle": "Array.prototype.every() - JavaScript - MDN Web Docs",
+  "summary": "some() tests whether at least one visited array element passes a predicate; every() tests whether all visited elements pass. Both stop as soon as the final Boolean result is known.",
+  "explanation": "Both methods call a predicate for each assigned array element in ascending index order. some() returns true as soon as the predicate is truthy and otherwise returns false; every() returns false as soon as the predicate is falsy and otherwise returns true. The optional thisArg supplies callback this, and sparse-array holes are skipped.",
+  "syntax": "array.some(callbackFn, thisArg)\narray.every(callbackFn, thisArg)",
+  "parameters": [
+   {
+    "name": "callbackFn",
+    "type": "Function",
+    "description": "A function called for each assigned array element. It should return a truthy value when the element passes and a falsy value otherwise; it receives element, index, and array."
+   },
+   {
+    "name": "thisArg",
+    "type": "any",
+    "description": "Optional value used as this when callbackFn executes."
+   }
+  ],
+  "returns": "some() returns true when a predicate result is truthy and otherwise false; every() returns false when a predicate result is falsy and otherwise true.",
+  "example": {
+   "title": "Testing array conditions",
+   "code": "const values = [2, 5, 8];\n\nconst hasOdd = values.some((value) => value % 2 !== 0);\nconst allEven = values.every((value) => value % 2 === 0);\n\nconsole.log(hasOdd);  // true\nconsole.log(allEven); // false",
+   "language": "javascript",
+   "explanation": "The predicates are evaluated until some() finds a passing value or every() finds a failing value."
+  },
+  "useCases": [
+   {
+    "title": "Any-match validation",
+    "scenario": "Check whether a collection contains at least one item meeting a condition."
+   },
+   {
+    "title": "All-items validation",
+    "scenario": "Verify that every input satisfies a constraint before continuing."
+   },
+   {
+    "title": "Short-circuit checks",
+    "scenario": "Stop expensive predicate work as soon as a match or failure determines the result."
+   }
+  ],
+  "related": [
+   "Array.prototype.some()",
+   "Array.prototype.find()",
+   "Array.prototype.findIndex()",
+   "Array.prototype.forEach()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "every() answers whether all visited elements pass the predicate.",
+   "The callback receives the current element, its index, and the source array.",
+   "Pass the optional thisArg when the predicate needs an explicit this value.",
+   "Both methods are iterative array operations driven by a callback predicate.",
+   "every() returns true only when no visited element fails the test.",
+   "The methods require length and integer-keyed properties rather than a specific Array instance."
+  ],
+  "gotchas": [
+   "Neither predicate runs for holes in sparse arrays; only indexes with assigned values are visited.",
+   "every() returns true for an empty array, while the corresponding no-match result from some() is false.",
+   "every() short-circuits at the first falsy predicate result, so later elements are not tested.",
+   "Array.prototype methods can operate on array-like values with length and integer-keyed properties, not only actual arrays."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Array methods::Array.prototype.sort and toSorted": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort",
+  "sourceTitle": "Array.prototype.sort()",
+  "summary": "Sort an array in place with `sort()`, or create a sorted copy with `toSorted()`. Supply a comparator for ordering such as numbers numerically rather than by default string comparison.",
+  "explanation": "Both methods order array elements using an optional comparator. `sort()` changes the existing array and returns that same array, while `toSorted()` creates and returns a shallow sorted copy. Without a comparator, elements are converted to strings and ordered by Unicode code point values; a comparator such as `(a, b) => a - b` provides numeric ordering.",
+  "syntax": "sort()\nsort(compareFn)\ntoSorted()\ntoSorted(compareFn)",
+  "parameters": [
+   {
+    "name": "compareFn",
+    "type": "function | undefined",
+    "description": "Optional function determining the relative order of two elements. If omitted, elements are converted to strings and sorted by each character's Unicode code point value."
+   }
+  ],
+  "returns": "`sort()` returns the reference to the original, now-sorted array. `toSorted()` returns a new array with the elements sorted in ascending order.",
+  "example": {
+   "title": "Mutating and non-mutating sorting",
+   "code": "const values = [10, 2, 1];\nconst copy = values.toSorted((a, b) => a - b);\nvalues.sort((a, b) => a - b);\n\nconsole.log(copy);   // [1, 2, 10]\nconsole.log(values); // [1, 2, 10]",
+   "language": "javascript",
+   "explanation": "Use `toSorted()` when the original array must remain unchanged; use `sort()` when in-place mutation is intended."
+  },
+  "useCases": [
+   {
+    "title": "In-place ordering",
+    "scenario": "An array may be changed directly and the resulting reference is useful."
+   },
+   {
+    "title": "Immutable-style sorting",
+    "scenario": "Existing data must be preserved while producing ordered output."
+   },
+   {
+    "title": "Custom comparison",
+    "scenario": "Numbers, objects, or domain-specific values need a defined order."
+   },
+   {
+    "title": "Array-like values",
+    "scenario": "A sortable array-like object should be handled generically."
+   }
+  ],
+  "related": [
+   "Array.prototype.sort()",
+   "Array.prototype.toSorted()",
+   "Array.prototype.toReversed()",
+   "Array.prototype.toSpliced()",
+   "Array.prototype.with()"
+  ],
+  "since": "ECMAScript 2023",
+  "keyPoints": [
+   "`sort()` mutates the receiver rather than creating a separate array.",
+   "The return value from `sort()` is the same array object after sorting.",
+   "`toSorted()` is the non-mutating counterpart to `sort()`.",
+   "`toSorted()` returns a newly created array containing the sorted elements.",
+   "`toSorted()` can operate on array-like values with a length and integer-keyed properties."
+  ],
+  "gotchas": [
+   "The default ordering is string-based, so numeric arrays may need a comparator for numeric order.",
+   "Sparse-array holes are treated as `undefined` by `toSorted()` and end up at the array's end.",
+   "A comparator cannot control the placement of sparse-array holes."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Async JavaScript::AbortController": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/API/AbortController",
+  "sourceTitle": "AbortController - Web APIs | MDN",
+  "summary": "AbortController lets you cancel one or more supported asynchronous operations, such as fetch requests. Share its AbortSignal with operations and call abort() to request cancellation.",
+  "explanation": "Create an AbortController, give its signal to an asynchronous operation such as fetch(), and call abort() when the operation should stop. The same signal can be supplied to multiple supported operations, allowing one controller to coordinate their cancellation.",
+  "syntax": "new AbortController()",
+  "parameters": [],
+  "returns": "The constructor creates an AbortController object. The signal property returns an AbortSignal; abort() aborts the associated asynchronous operation.",
+  "example": {
+   "title": "Abort a fetch request",
+   "code": "const controller = new AbortController();\nconst timeout = setTimeout(() => controller.abort(), 1000);\n\ntry {\n  const response = await fetch(\"https://example.com\", {\n    signal: controller.signal,\n  });\n  console.log(await response.text());\n} catch (error) {\n  if (error.name === \"AbortError\") console.log(\"Request aborted\");\n  else throw error;\n} finally {\n  clearTimeout(timeout);\n}",
+   "language": "javascript",
+   "explanation": "Creates a controller, passes its signal to fetch, and aborts the request after one second."
+  },
+  "useCases": [
+   {
+    "title": "Cancel fetch requests",
+    "scenario": "Cancel a network request when a user navigates away or presses a cancel button."
+   },
+   {
+    "title": "Stop response consumption",
+    "scenario": "Stop reading a response body or stream before all data is consumed."
+   },
+   {
+    "title": "Coordinate cancellation",
+    "scenario": "Use one cancellation trigger for several supported asynchronous operations."
+   }
+  ],
+  "related": [
+   "AbortSignal",
+   "AbortController.signal",
+   "AbortController.abort()",
+   "fetch()"
+  ],
+  "since": "March 2019",
+  "keyPoints": [
+   "An AbortController coordinates cancellation for one or more web requests.",
+   "Instantiate the controller with new AbortController().",
+   "The controller communicates cancellation through its signal object.",
+   "Read controller.signal and pass it to an operation that accepts an AbortSignal.",
+   "Call controller.abort() to request cancellation before the operation finishes.",
+   "AbortController is also available in Web Workers."
+  ],
+  "gotchas": [
+   "Calling abort() does not undo completed work; it affects an asynchronous operation only before completion.",
+   "AbortController can stop fetch requests, response-body consumption, and streams, but only operations that support the signal respond to it."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Async JavaScript::Iterables and generators": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols",
+  "sourceTitle": "Iteration protocols",
+  "summary": "Iterables expose iteration behavior through Symbol.iterator, while async iterables use Symbol.asyncIterator and promise-based iterator results. Generators pause at yield, making synchronous and asynchronous data production lazy.",
+  "explanation": "An iterable supplies an iterator through Symbol.iterator; its next() method produces iterator-result objects containing value and done. Async iterables use Symbol.asyncIterator, whose iterator methods return promises, so for await...of can consume values as they become available. Generator functions suspend at yield and continue when next() is called, enabling lazy pipelines.",
+  "syntax": "[Symbol.iterator](); [Symbol.asyncIterator](); next(); function* name() {}; async function* name() {}; for (const value of iterable) {}; for await (const value of asyncIterable) {}",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Lazy asynchronous batching",
+   "code": "async function* batches(values, size) {\n  let batch = [];\n  for await (const value of values) {\n    batch.push(value);\n    if (batch.length === size) {\n      yield batch;\n      batch = [];\n    }\n  }\n  if (batch.length) yield batch;\n}\n\nfor await (const batch of batches([1, 2, 3, 4, 5], 2)) {\n  console.log(batch);\n}",
+   "language": "javascript",
+   "explanation": "This async generator lazily groups values into arrays and consumes them with for await...of."
+  },
+  "useCases": [
+   {
+    "title": "Lazy data pipelines",
+    "scenario": "Process values only when the consumer requests them."
+   },
+   {
+    "title": "Asynchronous streams",
+    "scenario": "Consume streams or other values that arrive asynchronously."
+   },
+   {
+    "title": "Iterable composition",
+    "scenario": "Compose producers by delegating to another iterable with yield*."
+   },
+   {
+    "title": "Custom collections",
+    "scenario": "Expose custom collection traversal through Symbol.iterator or Symbol.asyncIterator."
+   }
+  ],
+  "related": [
+   "Iterable protocol",
+   "Iterator protocol",
+   "Async iterator protocol",
+   "Async iterable protocol",
+   "Symbol.iterator",
+   "Symbol.asyncIterator",
+   "Generator",
+   "AsyncGenerator"
+  ],
+  "since": "",
+  "keyPoints": [
+   "An iterable controls how its values are produced for constructs such as for...of.",
+   "Symbol.iterator must return an iterator; the method may be ordinary or generator-based.",
+   "Async iteration has separate protocols parallel to synchronous iteration.",
+   "Async iterator methods return promises for iterator-result objects.",
+   "A generator object can both provide next() and be consumed as an iterable.",
+   "Async generators provide lazy asynchronous iteration and can be consumed by async iteration syntax."
+  ],
+  "gotchas": [
+   "A synchronous generator cannot directly consume an async iterable."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Async JavaScript::Promise combinators": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_promises",
+  "sourceTitle": "Using promises",
+  "summary": "JavaScript provides four promise combinators for concurrent operations: all, allSettled, any, and race. Select one based on whether every operation must succeed, every result is needed, the first success is sufficient, or the first settlement should win.",
+  "explanation": "Promise combinators consume an iterable and return one promise. Choose all when every operation must succeed, allSettled when every outcome matters, any when the first successful operation is enough, and race when the first settlement—success or failure—should decide the result.",
+  "syntax": "Promise.all(iterable)\nPromise.allSettled(iterable)\nPromise.any(iterable)\nPromise.race(iterable)",
+  "parameters": [
+   {
+    "name": "iterable",
+    "type": "iterable",
+    "description": "An iterable containing promises or values that are converted to promises by the combinator."
+   }
+  ],
+  "returns": "A single Promise whose fulfillment or rejection behavior depends on the selected combinator.",
+  "example": {
+   "title": "Collect every outcome",
+   "code": "const tasks = [\n  fetch(\"/config.json\").then((r) => r.json()),\n  fetch(\"/feature-flags.json\").then((r) => r.json()),\n];\n\nconst results = await Promise.allSettled(tasks);\nfor (const result of results) {\n  if (result.status === \"fulfilled\") console.log(result.value);\n  else console.error(result.reason);\n}",
+   "language": "javascript",
+   "explanation": "Runs independent requests concurrently and reports each outcome without stopping when one fails."
+  },
+  "useCases": [
+   {
+    "title": "Require every result",
+    "scenario": "Several independent operations must all succeed before continuing."
+   },
+   {
+    "title": "Inspect all outcomes",
+    "scenario": "Independent tasks may fail, but each outcome must be recorded."
+   },
+   {
+    "title": "Use the first success",
+    "scenario": "Multiple alternatives are available and the first successful one is enough."
+   },
+   {
+    "title": "React to the first settlement",
+    "scenario": "A timeout or whichever operation settles first should determine the result."
+   }
+  ],
+  "related": [
+   "Promise",
+   "Promise.all()",
+   "Promise.allSettled()",
+   "Promise.any()",
+   "Promise.race()",
+   "AggregateError"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The four combinators start asynchronous operations concurrently.",
+   "Promise.all() fulfills with values in input order only when every input fulfills.",
+   "Promise.allSettled() waits for every operation and reports fulfillment or rejection for each.",
+   "Promise.any() fulfills with the first successful result.",
+   "Promise.race() adopts the first input settlement, whether fulfillment or rejection."
+  ],
+  "gotchas": [
+   "Promise.all() rejects early but does not cancel the remaining operations; they continue running.",
+   "Promise.any() rejects only after every input rejects, including an empty iterable, and exposes an AggregateError."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Async JavaScript::Promises and async": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_promises",
+  "sourceTitle": "Using promises - JavaScript | MDN Web Docs",
+  "summary": "Promises represent eventual success or failure of asynchronous work. async/await and promise combinators compose that work, while AbortController can cancel many underlying operations.",
+  "explanation": "A promise represents the eventual success or failure of asynchronous work. An async function always returns a promise; await pauses that function until another promise settles, while other jobs can continue. Promise combinators compose concurrent work, and cancellation generally targets the underlying operation through AbortController and AbortSignal rather than the promise itself.",
+  "syntax": "async function name(parameters) { await expression; }",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "string or Request",
+    "description": "The URL or request input passed to fetch."
+   },
+   {
+    "name": "signal",
+    "type": "AbortSignal",
+    "description": "An optional cancellation signal passed through fetch options."
+   }
+  ],
+  "returns": "An async function returns a Promise resolved with its return value or rejected by an uncaught exception; fetch returns a Promise for a Response.",
+  "example": {
+   "title": "Await and cancel a request",
+   "code": "async function fetchWithTimeout(url, signal) {\n  const response = await fetch(url, { signal });\n  if (!response.ok) throw new Error(`HTTP ${response.status}`);\n  return response.json();\n}\n\nconst controller = new AbortController();\nconst task = fetchWithTimeout('/data.json', controller.signal);\ncontroller.abort();\n\ntry {\n  console.log(await task);\n} catch (error) {\n  console.error('Request failed or was cancelled:', error);\n}",
+   "language": "javascript",
+   "explanation": "This function awaits a promise-based request and lets the caller cancel the underlying operation with an AbortSignal."
+  },
+  "useCases": [
+   {
+    "title": "Sequential asynchronous steps",
+    "scenario": "Read a response and transform it after asynchronous I/O completes."
+   },
+   {
+    "title": "Concurrent composition",
+    "scenario": "Run independent promise-returning operations together and combine their outcomes."
+   },
+   {
+    "title": "Cancellation",
+    "scenario": "Stop an obsolete network request or other abortable operation."
+   },
+   {
+    "title": "Event-loop scheduling",
+    "scenario": "Handle completion callbacks through queued jobs without blocking the current synchronous run."
+   }
+  ],
+  "related": [
+   "Promise",
+   "async function",
+   "await",
+   "Promise.all()",
+   "Promise.allSettled()",
+   "Promise.any()",
+   "Promise.race()",
+   "AbortController"
+  ],
+  "since": "",
+  "keyPoints": [
+   "A promise gives code a handle for observing whether asynchronous work eventually succeeds or fails.",
+   "Calling an async function always produces a fresh promise for its eventual result.",
+   "await suspends only the current async function until the awaited promise settles.",
+   "Use Promise.all, Promise.allSettled, Promise.any, or Promise.race to compose concurrent operations.",
+   "An await does not block unrelated asynchronous work from progressing."
+  ],
+  "gotchas": [
+   "Cancelling a promise directly is not supported; cancel the underlying operation, commonly with AbortController.",
+   "A then callback does not run immediately, even when the promise is already settled."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "ES2026 additions::Array.fromAsync": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/fromAsync",
+  "sourceTitle": "Array.fromAsync () - JavaScript - MDN",
+  "summary": "Collects values from an async iterable, iterable, or array-like object into a new array. It awaits values and optional mapper results while preserving input order.",
+  "explanation": "Array.fromAsync() selects an async iterator when available, otherwise adapts a synchronous iterable or reads an array-like object. It awaits values sequentially, optionally awaits each mapper result, and returns a promise fulfilled with the collected array.",
+  "syntax": "Array.fromAsync(items)\nArray.fromAsync(items, mapFn)\nArray.fromAsync(items, mapFn, thisArg)",
+  "parameters": [
+   {
+    "name": "items",
+    "type": "async iterable, iterable, or array-like object",
+    "description": "An async iterable, iterable, or array-like object to convert to an array."
+   },
+   {
+    "name": "mapFn",
+    "type": "function",
+    "description": "Optional function called for every element; its result is awaited and collected."
+   },
+   {
+    "name": "thisArg",
+    "type": "any",
+    "description": "Optional value used as this when executing mapFn."
+   }
+  ],
+  "returns": "A new Promise whose fulfillment value is a new Array instance.",
+  "example": {
+   "title": "Collect and map an async iterable",
+   "code": "async function* values() {\n  yield 1;\n  yield Promise.resolve(2);\n  yield 3;\n}\n\nconst result = await Array.fromAsync(values(), value => value * 2);\nconsole.log(result); // [2, 4, 6]",
+   "language": "javascript",
+   "explanation": "Consumes an async generator in order, awaits each value, applies the mapper, and produces the resulting array."
+  },
+  "useCases": [
+   {
+    "title": "Collect asynchronous results",
+    "scenario": "Convert an async generator or other async iterable into a materialized array."
+   },
+   {
+    "title": "Map during collection",
+    "scenario": "Apply an asynchronous or synchronous transformation while collecting values."
+   },
+   {
+    "title": "Normalize mixed promise inputs",
+    "scenario": "Turn synchronous iterables or array-like objects containing promise values into an array after awaiting them."
+   }
+  ],
+  "related": [
+   "for await...of",
+   "Promise.all()",
+   "Array.from()",
+   "async iterable",
+   "ReadableStream",
+   "AsyncGenerator"
+  ],
+  "since": "",
+  "keyPoints": [
+   "It collects supported asynchronous or synchronous sources into a new shallow-copied array.",
+   "Async iterables are consumed using behavior similar to for await...of.",
+   "The method returns a promise, not the array directly.",
+   "An optional mapper transforms each item before the transformed value is collected.",
+   "Objects implementing the async-iterable protocol are supported.",
+   "Await the returned promise to obtain the completed array."
+  ],
+  "gotchas": [
+   "Values are awaited one at a time, so this is sequential rather than concurrent collection.",
+   "The next item is not requested until the current item has settled.",
+   "A mapper may return a promise; its result is awaited before insertion."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "ES2026 additions::Error.isError": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/isError",
+  "sourceTitle": "Error.isError() - JavaScript | MDN",
+  "summary": "Error.isError() tests whether a value is an Error using built-in branding. It is more reliable than instanceof Error for cross-realm values and rejects objects that only imitate Error through their prototype.",
+  "explanation": "Error.isError(value) performs a branded check for the internal error identity associated with built-in Error objects. Unlike instanceof Error, it can recognize errors created by another realm and does not accept ordinary objects that merely inherit from Error.prototype.",
+  "syntax": "Error.isError(value)",
+  "parameters": [
+   {
+    "name": "value",
+    "type": "any",
+    "description": "The value to be checked."
+   }
+  ],
+  "returns": "true if value is an Error; otherwise, false.",
+  "example": {
+   "title": "Recognize errors across realms",
+   "code": "const crossRealmError = (() => {\n  const frame = document.createElement(\"iframe\");\n  document.body.append(frame);\n  const error = new frame.contentWindow.Error(\"from another realm\");\n  frame.remove();\n  return error;\n})();\n\nconsole.log(Error.isError(crossRealmError)); // true\nconsole.log(Error.isError({\n  __proto__: Error.prototype,\n})); // false",
+   "language": "javascript",
+   "explanation": "This browser example shows that Error.isError recognizes an Error created in another realm while rejecting an object that only inherits from Error.prototype."
+  },
+  "useCases": [
+   {
+    "title": "Classify caught values",
+    "scenario": "Handling values caught by catch, including non-Error throws."
+   },
+   {
+    "title": "Handle cross-realm errors",
+    "scenario": "Receiving errors from iframes, workers, or other execution realms."
+   },
+   {
+    "title": "Avoid prototype spoofing",
+    "scenario": "Checking whether an object is a genuine built-in error rather than a prototype lookalike."
+   }
+  ],
+  "related": [
+   "Error",
+   "TypeError",
+   "AggregateError",
+   "DOMException",
+   "instanceof"
+  ],
+  "since": "",
+  "keyPoints": [
+   "It is a static method for testing whether a value is an Error.",
+   "Its call form takes one value to test.",
+   "The result is a Boolean: true for an Error and false otherwise.",
+   "The test uses the object's built-in Error branding rather than only its prototype chain.",
+   "Errors from another iframe or realm are recognized.",
+   "instanceof can fail for cross-realm errors because each realm has a different Error constructor.",
+   "Prefer this method when handling values that may originate in another realm."
+  ],
+  "gotchas": [
+   "DOMException values are also accepted, even though DOMException is not specified as a subclass of Error.",
+   "Prototype spoofing does not make an object pass the check."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "ES2026 additions::Iterator.concat": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/concat",
+  "sourceTitle": "Iterator.concat() - JavaScript - MDN Web Docs",
+  "summary": "Iterator.concat() lazily combines one or more iterable objects into a new iterator. It yields each source's values in order without materializing an intermediate array.",
+  "explanation": "Call Iterator.concat() with one or more iterable objects. It returns an iterator that consumes each source in sequence, so values are produced on demand rather than collected into an intermediate array; sources after an infinite iterable are never reached.",
+  "syntax": "Iterator.concat(it)\nIterator.concat(it1, it2)\nIterator.concat(it1, it2, /* …, */ itN)",
+  "parameters": [
+   {
+    "name": "it, it1, it2, …, itN",
+    "type": "iterable",
+    "description": "An object implementing the iterable protocol; pass one or more iterable objects."
+   }
+  ],
+  "returns": "A new Iterator object that yields the values from each input iterable in sequence.",
+  "example": {
+   "title": "Concatenate iterable sources",
+   "code": "const first = [1, 2];\nconst second = new Set([3, 4]);\n\nconst combined = Iterator.concat(first, second);\nconsole.log([...combined]); // [1, 2, 3, 4]",
+   "language": "javascript",
+   "explanation": "The iterator produces values from both iterables in order, while the spread operation consumes it."
+  },
+  "useCases": [
+   {
+    "title": "Join heterogeneous iterables",
+    "scenario": "Combine arrays, sets, generators, or other iterable sources while preserving source order."
+   },
+   {
+    "title": "Build lazy pipelines",
+    "scenario": "Process values only as they are requested, avoiding eager allocation and computation."
+   },
+   {
+    "title": "Handle infinite iterables",
+    "scenario": "Consume an unbounded source when later sources do not need to be reached."
+   }
+  ],
+  "related": [
+   "Iterator.from()",
+   "Iterator.prototype.flatMap()",
+   "Iterator"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Iterator.concat() is a static method that accepts iterable sources and returns a new iterator.",
+   "Values are emitted from the first source, then the second, and so on.",
+   "Consumption is lazy, avoiding the intermediate array and work for values that are never requested.",
+   "Infinite iterables are supported, although later sources may remain unreachable.",
+   "Array, Set, generator, and other iterable types can be combined."
+  ],
+  "gotchas": [
+   "Each argument must be iterable, not merely an iterator. Wrap an iterator that lacks Symbol.iterator with Iterator.from().",
+   "Passing a non-iterable value raises TypeError.",
+   "An infinite source prevents later sources from being consumed."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "ES2026 additions::JSON.parse source text": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse",
+  "sourceTitle": "JSON.parse() - JavaScript | MDN",
+  "summary": "JSON.parse() can expose the exact JSON source for each revived primitive through context.source. This lets revivers preserve numeric precision or inspect the original spelling before returning a value.",
+  "explanation": "Pass a reviver to JSON.parse and inspect its third argument, context. For an unmodified primitive, context.source contains the exact JSON text that produced that value, so the reviver can reconstruct precise numbers or analyze their spelling before returning a replacement.",
+  "syntax": "JSON.parse(text, reviver)",
+  "parameters": [
+   {
+    "name": "text",
+    "type": "string",
+    "description": "The JSON text to parse."
+   },
+   {
+    "name": "reviver",
+    "type": "function",
+    "description": "Optional function that transforms values. For primitive values it receives key, value, and context."
+   }
+  ],
+  "returns": "The JavaScript value represented by the JSON text, after reviver transformations.",
+  "example": {
+   "title": "Preserve a precise integer",
+   "code": "const json = '{\"amount\": 9007199254740993}';\nconst result = JSON.parse(json, (key, value, context) =>\n  key === \"amount\" ? BigInt(context.source) : value,\n);\n\nconsole.log(result.amount); // 9007199254740993n",
+   "language": "javascript",
+   "explanation": "The reviver uses context.source to recover the original numeric text and convert it to BigInt before precision is lost."
+  },
+  "useCases": [
+   {
+    "title": "High-precision numeric data",
+    "scenario": "Convert large JSON integers to BigInt without losing precision during Number parsing."
+   },
+   {
+    "title": "Source-sensitive validation",
+    "scenario": "Inspect whether a primitive used exponent notation, trailing zeros, or a particular literal spelling."
+   },
+   {
+    "title": "Custom deserialization",
+    "scenario": "Transform selected primitive values using their original JSON representation."
+   }
+  ],
+  "related": [
+   "JSON.parse()",
+   "JSON",
+   "JSON.stringify()"
+  ],
+  "since": "ES2026",
+  "keyPoints": [
+   "The reviver receives a third context argument for primitive values.",
+   "context.source holds the original JSON representation of the primitive.",
+   "Each reviver call gets its own context object.",
+   "Read context.source when the original spelling or precision matters.",
+   "Re-parse numeric source text with a precision-preserving type such as BigInt."
+  ],
+  "gotchas": [
+   "context is unavailable for objects and arrays; use it only when the revived value is primitive.",
+   "For high-precision numbers, use context.source rather than trusting the already-parsed value."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "ES2026 additions::Map and WeakMap upsert": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map/getOrInsertComputed",
+  "sourceTitle": "Map.prototype.getOrInsertComputed() - JavaScript | MDN",
+  "summary": "Map and WeakMap upsert methods combine lookup and insertion. Use getOrInsert for a ready default, or getOrInsertComputed to calculate the default only when the key is missing.",
+  "explanation": "Use getOrInsert to return an existing value or store a supplied default, and use getOrInsertComputed to calculate the default only when the key is missing. The same upsert operations are available on Map and WeakMap; WeakMap keys must be objects or non-registered symbols.",
+  "syntax": "getOrInsert(key, defaultValue)\ngetOrInsertComputed(key, callback)",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "any; WeakMap requires an object or non-registered symbol",
+    "description": "The key whose associated value is retrieved or inserted."
+   },
+   {
+    "name": "defaultValue",
+    "type": "any",
+    "description": "The value inserted and returned when the key is absent."
+   },
+   {
+    "name": "callback",
+    "type": "function",
+    "description": "A function called with key to compute the value inserted when the key is absent."
+   }
+  ],
+  "returns": "For an existing key, its associated value; otherwise, getOrInsert returns defaultValue and getOrInsertComputed returns callback(key) after inserting it.",
+  "example": {
+   "title": "Lazy Map upsert",
+   "code": "const cache = new Map();\n\nfunction getUserLabel(user) {\n  return cache.getOrInsertComputed(user.id, () => {\n    console.log(\"computing\");\n    return `${user.name} (${user.id})`;\n  });\n}\n\nconst user = { id: 7, name: \"Ada\" };\nconsole.log(getUserLabel(user));\nconsole.log(getUserLabel(user)); // reuses the stored value",
+   "language": "javascript",
+   "explanation": "The callback runs only when the key is absent, so the second call returns the cached label without recomputing it."
+  },
+  "useCases": [
+   {
+    "title": "Memoization and caching",
+    "scenario": "Cache a value by key while avoiding separate has/get/set branches."
+   },
+   {
+    "title": "Lazy initialization",
+    "scenario": "Create a default object only when a map does not already contain the key."
+   },
+   {
+    "title": "WeakMap object metadata",
+    "scenario": "Associate metadata with object keys without preventing their garbage collection."
+   }
+  ],
+  "related": [
+   "Map",
+   "WeakMap",
+   "Map.prototype.getOrInsert()",
+   "Map.prototype.getOrInsertComputed()",
+   "WeakMap.prototype.getOrInsert()",
+   "WeakMap.prototype.getOrInsertComputed()"
+  ],
+  "since": "ES2026",
+  "keyPoints": [
+   "getOrInsert returns the stored value when present; otherwise it inserts the supplied default and returns it.",
+   "getOrInsertComputed lazily creates and stores a value only for a missing key.",
+   "Both methods return the value associated with the key after either finding or inserting it.",
+   "The computed variant accepts a callback that produces the missing value.",
+   "The callback receives the exact key supplied to getOrInsertComputed.",
+   "For WeakMap, keys must be objects or non-registered symbols."
+  ],
+  "gotchas": [
+   "Object keys use identity: two separate objects with the same contents are different keys.",
+   "getOrInsertComputed invokes the callback with the key, so account for that argument in the callback signature.",
+   "Prefer the computed form when creating the default is expensive; getOrInsert evaluates its default argument before the method call."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "ES2026 additions::Promise.try": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/try",
+  "sourceTitle": "Promise.try() - JavaScript | MDN Web Docs",
+  "summary": "Promise.try() synchronously invokes a callback and turns its return value, thrown error, or returned promise into one promise-based flow. It is useful when synchronous and asynchronous operations need the same then/catch handling.",
+  "explanation": "Promise.try invokes its callback synchronously with any supplied arguments. A returned value becomes a fulfilled promise, a thrown error becomes a rejected promise, and a returned promise is adopted using normal promise resolution; this lets synchronous and asynchronous outcomes share then/catch handling.",
+  "syntax": "Promise.try(func)\nPromise.try(func, arg1)\nPromise.try(func, arg1, arg2)\nPromise.try(func, arg1, arg2, /* …, */ argN)",
+  "parameters": [
+   {
+    "name": "func",
+    "type": "function",
+    "description": "The callable to invoke synchronously. It may return a value, throw an error, or return a promise."
+   },
+   {
+    "name": "arg1",
+    "type": "any",
+    "description": "The first argument forwarded to func."
+   },
+   {
+    "name": "arg2",
+    "type": "any",
+    "description": "The second argument forwarded to func."
+   },
+   {
+    "name": "...argN",
+    "type": "any",
+    "description": "Additional arguments forwarded to func."
+   }
+  ],
+  "returns": "A Promise fulfilled with the callback's returned value, rejected with a synchronously thrown error, or settled according to a returned promise.",
+  "example": {
+   "title": "Normalize callback outcomes",
+   "code": "const parse = (input) => {\n  if (!input) throw new Error(\"Missing input\");\n  return JSON.parse(input);\n};\n\nPromise.try(parse, '{\"ok\":true}')\n  .then((value) => console.log(value.ok))\n  .catch((error) => console.error(error.message));",
+   "language": "javascript",
+   "explanation": "The callback is invoked immediately, while either a returned value or a synchronous throw enters the same promise-based handling flow."
+  },
+  "useCases": [
+   {
+    "title": "Normalize synchronous errors",
+    "scenario": "Run parsing or validation code whose synchronous exceptions should be handled with .catch()."
+   },
+   {
+    "title": "Unify mixed synchronous and asynchronous APIs",
+    "scenario": "Wrap a callback that may return either a plain value or a promise."
+   },
+   {
+    "title": "Forward callback arguments",
+    "scenario": "Pass context or inputs directly to the callback without creating a wrapper closure."
+   }
+  ],
+  "related": [
+   "Promise",
+   "Promise.resolve()",
+   "Promise.prototype.then()",
+   "Promise.prototype.catch()"
+  ],
+  "since": "January 2025",
+  "keyPoints": [
+   "The callback may return a plain value, throw synchronously, or produce a promise.",
+   "Promise.try invokes the callback immediately and forwards every argument supplied after the callback.",
+   "A normal synchronous return produces an already-fulfilled promise.",
+   "A synchronous exception becomes the rejection reason.",
+   "When the callback returns a promise, its eventual state determines the outcome.",
+   "The method can be called on Promise subclasses and produces the corresponding subclass promise."
+  ],
+  "gotchas": [
+   "Promise.try calls the callback synchronously; do not assume the callback itself is deferred like a then handler.",
+   "A promise returned by the callback is passed through rather than unnecessarily wrapped in another native promise.",
+   "Promise subclasses used with this generic method must accept the standard executor constructor shape."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "ES2026 additions::Set methods": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set",
+  "sourceTitle": "Set - JavaScript - MDN Web Docs",
+  "summary": "JavaScript Set provides union, intersection, difference, and symmetricDifference methods for composing sets. Each operation returns a new Set representing a standard mathematical relationship between two collections.",
+  "explanation": "These methods create new sets from two set or set-like operands. `union()` keeps elements from either operand, `intersection()` keeps shared elements, `difference()` keeps elements unique to the receiver, and `symmetricDifference()` keeps elements belonging to exactly one operand.",
+  "syntax": "set.difference(other)\nset.intersection(other)\nset.symmetricDifference(other)\nset.union(other)",
+  "parameters": [
+   {
+    "name": "other",
+    "type": "Set or set-like object",
+    "description": "The other operand; the documentation describes it as a Set object or set-like object."
+   }
+  ],
+  "returns": "A new Set containing elements selected according to the operation.",
+  "example": {
+   "title": "Set operations",
+   "code": "const frontend = new Set([\"js\", \"css\", \"html\"]);\nconst backend = new Set([\"js\", \"sql\"]);\n\nconsole.log(frontend.union(backend)); // Set(4) { \"js\", \"css\", \"html\", \"sql\" }\nconsole.log(frontend.intersection(backend)); // Set(1) { \"js\" }\nconsole.log(frontend.difference(backend)); // Set(2) { \"css\", \"html\" }\nconsole.log(frontend.symmetricDifference(backend)); // Set(3) { \"css\", \"html\", \"sql\" }",
+   "language": "javascript",
+   "explanation": "This snippet creates the four standard set combinations from two sets."
+  },
+  "useCases": [
+   {
+    "title": "Union",
+    "scenario": "Combine unique values from two collections."
+   },
+   {
+    "title": "Intersection",
+    "scenario": "Find values shared by two collections."
+   },
+   {
+    "title": "Difference analysis",
+    "scenario": "Find values removed from one collection or differing between collections."
+   },
+   {
+    "title": "Symmetric comparison",
+    "scenario": "Find values exclusive to either collection."
+   }
+  ],
+  "related": [
+   "Set.prototype.difference()",
+   "Set.prototype.intersection()",
+   "Set.prototype.symmetricDifference()",
+   "Set.prototype.union()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Set includes methods for expressing common mathematical set operations directly.",
+   "`difference()` returns elements present in the receiver but absent from the argument.",
+   "`intersection()` returns only elements present in both sets.",
+   "`symmetricDifference()` returns elements present in exactly one of the two sets.",
+   "`union()` combines the elements from both sets, with duplicates removed by Set semantics."
+  ],
+  "gotchas": [
+   "The argument can be a Set or a set-like object; it does not have to be an actual Set.",
+   "Each operation returns a new Set rather than modifying the receiver."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "ES2026 additions::Uint8Array base64 and hex": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array",
+  "sourceTitle": "Uint8Array - JavaScript | MDN Web Docs",
+  "summary": "Uint8Array now has native methods for converting byte arrays to and from base64 and hexadecimal strings. Use static methods to create arrays, instance encoders to produce strings, or setFrom methods to fill an existing array.",
+  "explanation": "Uint8Array provides static methods that create byte arrays from base64 or hexadecimal strings, plus instance methods that encode bytes or fill an existing array. Base64 supports standard and URL-safe alphabets; hexadecimal uses two case-insensitive characters per byte.",
+  "syntax": "Uint8Array.fromBase64(string)\nUint8Array.fromHex(string)\nuint8Array.toBase64(options)\nuint8Array.toHex()\nuint8Array.setFromBase64(string, options)\nuint8Array.setFromHex(string)",
+  "parameters": [
+   {
+    "name": "string",
+    "type": "string",
+    "description": "A base64 string encoding bytes to convert to a Uint8Array."
+   },
+   {
+    "name": "string",
+    "type": "string",
+    "description": "A hexadecimal string encoding bytes to convert to a Uint8Array."
+   }
+  ],
+  "returns": "fromBase64() and fromHex() return a new Uint8Array containing decoded bytes. toBase64() and toHex() return encoded strings. The setFromBase64() and setFromHex() methods return an object indicating how many input characters were read and bytes were written.",
+  "example": {
+   "title": "Encode and decode bytes",
+   "code": "const bytes = new Uint8Array([72, 105]);\n\nconst base64 = bytes.toBase64();\nconst hex = bytes.toHex();\n\nconsole.log(base64); // SGk=\nconsole.log(hex);    // 4869\nconsole.log(Uint8Array.fromBase64(base64));\nconsole.log(Uint8Array.fromHex(hex));",
+   "language": "javascript",
+   "explanation": "The snippet encodes one byte array to both formats and decodes each result back into a new Uint8Array."
+  },
+  "useCases": [
+   {
+    "title": "Base64 transport",
+    "scenario": "Transmit or store binary data in text-oriented formats such as JSON or HTTP fields."
+   },
+   {
+    "title": "Hexadecimal representation",
+    "scenario": "Represent bytes compactly for diagnostics, hashes, keys, and protocol values."
+   },
+   {
+    "title": "Populate an existing buffer",
+    "scenario": "Avoid an intermediate allocation when a pre-sized destination array is already available."
+   }
+  ],
+  "related": [
+   "Uint8Array.fromBase64()",
+   "Uint8Array.prototype.toBase64()",
+   "Uint8Array.prototype.setFromBase64()",
+   "Uint8Array.fromHex()",
+   "Uint8Array.prototype.toHex()",
+   "Uint8Array.prototype.setFromHex()"
+  ],
+  "since": "ES2025",
+  "keyPoints": [
+   "The API covers both directions: decode strings into bytes and encode bytes into strings.",
+   "Base64 operations are available as static decoding, instance encoding, and existing-array population methods.",
+   "Hexadecimal has the same three-operation shape: create, encode, or populate.",
+   "Standard base64 represents three bytes with four characters from its 64-character alphabet.",
+   "Hexadecimal represents every byte with exactly two hexadecimal characters, accepting either letter case.",
+   "setFromBase64() writes into an existing array and reports the input characters read and output bytes written."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Foundations::Destructuring and spread": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators?Destructuring_assignment",
+  "sourceTitle": "Expressions and operators - JavaScript | MDN",
+  "summary": "Destructuring extracts array elements or object properties into variables. Spread expands iterables or enumerable object properties to create new arrays, argument lists, or objects without mutating the source.",
+  "explanation": "Destructuring patterns read selected values from arrays or object properties into variables, while spread expands iterable values into arrays or argument lists and copies enumerable own properties into object literals. Rest syntax in a destructuring pattern collects the values or properties not selected by earlier entries.",
+  "syntax": "const [a, b] = iterable;\nconst { a, b } = object;\nconst result = [...iterable];\nconst object = { ...source };",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Extract and compose values",
+   "code": "const person = { name: \"Ada\", role: \"engineer\" };\nconst { name, ...details } = person;\nconst updated = { ...details, active: true };\nconst tags = [\"js\", \"web\"];\nconst allTags = [\"code\", ...tags];\nconsole.log(name, updated, allTags);",
+   "language": "javascript",
+   "explanation": "This runnable example extracts an object property, collects the remaining properties, and creates new objects and arrays with spread."
+  },
+  "useCases": [
+   {
+    "title": "Extract data",
+    "scenario": "Read selected fields from function results or configuration objects."
+   },
+   {
+    "title": "Compose collections",
+    "scenario": "Create arrays or objects that combine existing values with additions or overrides."
+   },
+   {
+    "title": "Split known and remaining data",
+    "scenario": "Collect unmatched properties while separating known fields."
+   },
+   {
+    "title": "Forward iterable values",
+    "scenario": "Pass array contents as individual function arguments."
+   }
+  ],
+  "related": [
+   "Assignment patterns",
+   "Binding patterns",
+   "Rest properties and rest elements",
+   "Spread syntax",
+   "Iterable protocol",
+   "Object.assign()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Destructuring binds array elements or object properties to separate variables.",
+   "Patterns can unpack values in declarations, assignments, and other binding positions.",
+   "Array rest gathers all elements not matched earlier into a new array.",
+   "Object rest gathers unmatched enumerable own properties into a new object.",
+   "Array spread expands iterable elements where array elements or function arguments are accepted.",
+   "Object spread composes a new object from enumerable own key-value pairs.",
+   "Object spread can differ from Object.assign because it does not invoke setters on the target."
+  ],
+  "gotchas": [
+   "A destructuring rest property must appear last and cannot be followed by a comma.",
+   "Object spread copies enumerable own properties, not every property or prototype member."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Foundations::Modules and execution": {
+  "sourceUrl": "https://tc39.es/ecma262/2026/multipage/executable-code-and-execution-contexts.html",
+  "sourceTitle": "ECMAScript® 2026 Language Specification",
+  "summary": "ES modules use module environment records to hold scoped declarations and import/export bindings. Execution contexts track the runtime state of evaluated code on a per-agent stack.",
+  "explanation": "An ECMAScript module has its own declarative environment containing module bindings, including immutable import bindings that indirectly access bindings in another module. During evaluation, execution contexts track the code being run, its environment records, realm, and this value; the running context is the top of the execution-context stack.",
+  "syntax": "import { name } from \"module\";\nexport { name };",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Importing an exported binding",
+   "code": "// math.js\nexport const answer = 42;\n\n// main.js\nimport { answer } from \"./math.js\";\n\nconsole.log(answer);",
+   "language": "javascript",
+   "explanation": "Run main.js as an ES module; the imported binding resolves to the exported value."
+  },
+  "useCases": [
+   {
+    "title": "Modular application structure",
+    "scenario": "Split a program into files with explicit dependencies."
+   },
+   {
+    "title": "Encapsulation through exports",
+    "scenario": "Share implementation details while exposing a deliberate public API."
+   },
+   {
+    "title": "Understanding scope and execution",
+    "scenario": "Reason about variable lookup, imports, and nested calls."
+   },
+   {
+    "title": "Live module bindings",
+    "scenario": "Explain why an imported name reflects the exporter’s binding and cannot be reassigned locally."
+   }
+  ],
+  "related": [
+   "Declarative Environment Record",
+   "Module Environment Record",
+   "Environment Record",
+   "execution context",
+   "execution context stack",
+   "running execution context",
+   "import bindings",
+   "LexicalEnvironment"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Declarative environment records represent scopes containing declarations such as variables, constants, classes, modules, imports, and functions.",
+   "Bindings connect declared identifiers with their values or storage within an environment record.",
+   "Each module gets a module environment record for its outer scope.",
+   "An import refers indirectly to the exporting module's binding rather than creating an independently assignable local value.",
+   "Execution contexts model the state needed while JavaScript evaluates executable code.",
+   "Contexts are managed as a stack, with nested or transferred execution recorded above the caller."
+  ],
+  "gotchas": [
+   "Imported bindings cannot be assigned to from the importing module.",
+   "The currently executing context is the stack's top element; calling code can push a new context.",
+   "Entering code associated with a different executable context creates and pushes a new execution context."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Foundations::Variables and closures": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures",
+  "sourceTitle": "Closures - JavaScript - MDN Web Docs - Mozilla",
+  "summary": "A closure is a function together with access to the lexical environment where it was created. This lets nested functions preserve and update private state after the surrounding function has finished.",
+  "explanation": "JavaScript resolves a variable through the lexical scopes surrounding its declaration. A function retains access to the bindings visible where it was created, even after the outer function has returned; calling that function can therefore preserve private mutable state without placing it in global scope.",
+  "syntax": "function outer() {\n  let state = initialValue;\n  return function inner() { /* use state */ };\n}",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Preserve state with a closure",
+   "code": "function createCounter() {\n  let count = 0;\n  return () => ++count;\n}\n\nconst next = createCounter();\nconsole.log(next()); // 1\nconsole.log(next()); // 2",
+   "language": "javascript",
+   "explanation": "The returned function retains access to the private count binding, so each call updates and returns the preserved state."
+  },
+  "useCases": [
+   {
+    "title": "Encapsulated state",
+    "scenario": "Keep a counter, cache, or other evolving value private to a returned function."
+   },
+   {
+    "title": "Module-like interfaces",
+    "scenario": "Expose operations over internal data while hiding the underlying binding."
+   },
+   {
+    "title": "Configurable callbacks",
+    "scenario": "Create callbacks that retain configuration or context after setup completes."
+   }
+  ],
+  "related": [
+   "lexical scoping",
+   "lexical environment",
+   "scope chain",
+   "nested functions",
+   "function creation"
+  ],
+  "since": "",
+  "keyPoints": [
+   "A closure pairs a function with the surrounding lexical environment captured at its declaration.",
+   "Function creation establishes the closure; it is not limited to functions returned from other functions.",
+   "An inner function can read bindings from enclosing scopes.",
+   "The captured environment includes bindings that were in scope when the function was created.",
+   "Lookup can continue through several enclosing function scopes, forming a scope chain."
+  ],
+  "gotchas": [
+   "Scope is determined by where a variable is declared in source code, not by where the function is later called."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Language core::Arrays and collection methods": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array",
+  "sourceTitle": "Array — JavaScript | MDN",
+  "summary": "JavaScript array methods provide callback-based ways to transform, select, search, and combine data. Modern non-mutating alternatives return changed copies instead of altering the original array.",
+  "explanation": "Array iterative methods call a callback across array elements: map builds a result array, filter keeps elements whose test is truthy, find stops at the first match, and reduce carries an accumulator to one final value. Newer non-mutating methods such as toReversed return a changed copy while leaving the source array intact.",
+  "syntax": "array.map(callbackFn, thisArg)\narray.filter(callbackFn, thisArg)\narray.find(predicate, thisArg)\narray.reduce(callbackFn, initialValue)\narray.toReversed()\narray.toSorted()\narray.toSpliced(start, deleteCount, ...items)\narray.with(index, value)",
+  "parameters": [
+   {
+    "name": "callbackFn / predicate",
+    "type": "function",
+    "description": "Callback function or predicate called for each visited element; callbacks receive the element, index, and array. reduce additionally receives the accumulator."
+   },
+   {
+    "name": "thisArg / initialValue",
+    "type": "any",
+    "description": "Optional value used as callback this, or as the initial reduce accumulator."
+   }
+  ],
+  "returns": "map, filter, and the non-mutating copy methods return new arrays; find returns the first matching element or undefined; reduce returns one accumulated value.",
+  "example": {
+   "title": "Compose array methods",
+   "code": "const scores = [72, 91, 58, 84];\n\nconst passing = scores\n  .filter(score => score >= 60)\n  .map(score => score + 5);\n\nconst total = passing.reduce((sum, score) => sum + score, 0);\nconst firstHigh = scores.find(score => score > 90);\nconst reversed = scores.toReversed();\n\nconsole.log({ passing, total, firstHigh, reversed, scores });",
+   "language": "javascript",
+   "explanation": "This runnable example filters, transforms, accumulates, searches, and reverses without mutating the original array."
+  },
+  "useCases": [
+   {
+    "title": "Transform data",
+    "scenario": "Convert each item into another representation, such as extracting fields or applying calculations."
+   },
+   {
+    "title": "Select data",
+    "scenario": "Keep only records that satisfy validation, authorization, or business rules."
+   },
+   {
+    "title": "Search and aggregate",
+    "scenario": "Locate one matching record or combine values into totals, indexes, or summaries."
+   },
+   {
+    "title": "Avoid mutation",
+    "scenario": "Create sorted, reversed, spliced, or element-replaced copies while preserving the input array."
+   }
+  ],
+  "related": [
+   "Array.prototype.every()",
+   "Array.prototype.filter()",
+   "Array.prototype.find()",
+   "Array.prototype.findIndex()",
+   "Array.prototype.findLast()",
+   "Array.prototype.findLastIndex()",
+   "Array.prototype.flatMap()",
+   "Array.prototype.forEach()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "map transforms every visited element into a corresponding element of a new array.",
+   "These methods invoke callbacks while iterating through array elements.",
+   "Several array methods construct new arrays and may use the receiver's species constructor.",
+   "The modern non-mutating alternatives include toReversed for reverse and toSorted for sort."
+  ],
+  "gotchas": [
+   "A map callback that does not return a value places undefined in the result; use filter or flatMap when removing elements.",
+   "reverse mutates the source array; use toReversed when a new array is required."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Language core::Classes and private fields": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements",
+  "sourceTitle": "Private elements - JavaScript | MDN",
+  "summary": "JavaScript classes define instance or static fields, methods, accessors, constructors, and inheritance. Names beginning with # create hard-private elements that only the declaring class can access.",
+  "explanation": "A class groups instance data and behavior, can inherit from another class with extends, and can hide implementation details with private elements. A private field is declared with a # name in the class body and is usable only by code in that class; outside access is rejected by the language.",
+  "syntax": "class ClassName extends ParentClass {\n  #privateField = initialValue;\n  static #privateStaticField = initialValue;\n  method() {}\n}",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A class with private state",
+   "code": "class Counter {\n  #value = 0;\n\n  constructor(start = 0) {\n    this.#value = start;\n  }\n\n  increment() {\n    this.#value++;\n    return this.#value;\n  }\n\n  get value() {\n    return this.#value;\n  }\n}\n\nconst counter = new Counter(2);\nconsole.log(counter.increment(), counter.value);",
+   "language": "javascript",
+   "explanation": "The class keeps its counter in a private field and exposes controlled access through methods and a getter."
+  },
+  "useCases": [
+   {
+    "title": "Encapsulate object state",
+    "scenario": "Hide mutable implementation data while exposing a small public API."
+   },
+   {
+    "title": "Protect static state",
+    "scenario": "Keep caches, counters, or configuration shared by all instances but inaccessible externally."
+   },
+   {
+    "title": "Design inheritance boundaries",
+    "scenario": "Extend a base class without exposing the base class's internal fields to subclasses."
+   }
+  ],
+  "related": [
+   "Classes",
+   "Private elements",
+   "Private methods",
+   "Private static fields",
+   "Private static methods",
+   "Private getters",
+   "Private setters",
+   "static"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Private fields, methods, accessors, and static elements use a # prefix.",
+   "Use this.#field or another instance expression with dot notation, but only inside the declaring class.",
+   "A class cannot declare two private elements with the same name, except for a getter-setter pair.",
+   "Private state can belong to each instance or to the class itself via static private fields.",
+   "Private instance fields are initialized as part of constructing an instance, with base and derived classes differing in when initialization occurs.",
+   "Private fields are part of the broader private-elements feature set alongside private methods and accessors."
+  ],
+  "gotchas": [
+   "Private fields cannot be read or written from outside their declaring class.",
+   "Inheritance does not grant a subclass access to private fields declared by its parent.",
+   "A private field must be declared in the class body; assigning a new #name later cannot create one.",
+   "The reserved private name #constructor cannot be used."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Language core::Errors and resource cleanup": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Resource_management",
+  "sourceTitle": "JavaScript resource management",
+  "summary": "Use `using` and `await using` to tie resource cleanup to scope exit, including when errors occur. Disposable protocols and stacks provide predictable synchronous or asynchronous cleanup.",
+  "explanation": "Declare a synchronous disposable with `using`; JavaScript calls its `[Symbol.dispose]()` method when the variable's scope ends, including during exception unwinding. Cleanup runs in reverse declaration order, and disposal failures are represented with `SuppressedError` so the original and cleanup errors are retained.",
+  "syntax": "using variable = expression;\nawait using variable = expression;",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Cleanup still runs when work fails",
+   "code": "class FileHandle {\n  constructor(name) { this.name = name; }\n  [Symbol.dispose]() { console.log(`closed ${this.name}`); }\n}\n\nfunction readConfig() {\n  using file = new FileHandle(\"config.json\");\n  throw new Error(\"invalid configuration\");\n}\n\ntry {\n  readConfig();\n} catch (error) {\n  console.log(error.message);\n}",
+   "language": "javascript",
+   "explanation": "The disposable resource is closed automatically when the function exits, even though the body throws."
+  },
+  "useCases": [
+   {
+    "title": "Scope-bound synchronous resources",
+    "scenario": "Close streams, locks, or handles automatically when a function or block exits."
+   },
+   {
+    "title": "Exception-safe cleanup",
+    "scenario": "Release resources even when the protected operation throws."
+   },
+   {
+    "title": "Asynchronous disposal",
+    "scenario": "Clean up resources whose disposal itself is asynchronous."
+   },
+   {
+    "title": "Multiple disposers and error reporting",
+    "scenario": "Coordinate several resources while retaining errors from cleanup."
+   }
+  ],
+  "related": [
+   "await using",
+   "Symbol.dispose",
+   "Symbol.asyncDispose",
+   "DisposableStack",
+   "AsyncDisposableStack",
+   "SuppressedError"
+  ],
+  "since": "",
+  "keyPoints": [
+   "`using` creates a block-scoped binding whose resource is synchronously cleaned up.",
+   "Scope exit invokes the resource’s `[Symbol.dispose]()` method automatically.",
+   "The resource lifetime follows the binding’s enclosing block, function, or module scope.",
+   "Several resources are released from last declared to first declared.",
+   "The cleanup process preserves both the triggering error and disposal errors."
+  ],
+  "gotchas": [
+   "using does not hide failures; the body’s error is still thrown after cleanup.",
+   "Multiple resources are disposed in reverse declaration order."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Language core::Objects and prototypes": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Advanced_JavaScript_objects/Object_prototypes",
+  "sourceTitle": "Object prototypes - Learn web development | MDN",
+  "summary": "JavaScript objects inherit properties and methods through prototype chains. Property lookup starts with the object and follows prototypes until it finds a match or reaches null.",
+  "explanation": "An object has its own properties plus a prototype link to another object or null. When a requested property is absent from the object, JavaScript searches that prototype and continues along the chain until it finds the property or reaches null, returning undefined if no match exists.",
+  "syntax": "Object.create(proto)\nObject.getPrototypeOf(obj)\nObject.setPrototypeOf(obj, proto)",
+  "parameters": [
+   {
+    "name": "obj",
+    "type": "object",
+    "description": "The object whose prototype should be read."
+   },
+   {
+    "name": "proto",
+    "type": "object or null",
+    "description": "The prototype object to use; it may be another object or null."
+   }
+  ],
+  "returns": "Property lookup returns the found property value; if the property is absent throughout the prototype chain, it returns undefined. Object.create() returns a new object with the specified prototype.",
+  "example": {
+   "title": "Prototype-based property lookup",
+   "code": "const animal = { eats: true };\nconst dog = Object.create(animal);\ndog.name = \"Milo\";\n\nconsole.log(dog.name);       // Milo: own property\nconsole.log(dog.eats);       // true: inherited property\nconsole.log(Object.getPrototypeOf(dog) === animal); // true",
+   "language": "javascript",
+   "explanation": "The example creates an object whose prototype is another object, then demonstrates own-property lookup and inherited-property lookup."
+  },
+  "useCases": [
+   {
+    "title": "Shared methods",
+    "scenario": "Create objects that share behavior without duplicating methods."
+   },
+   {
+    "title": "Prototype introspection",
+    "scenario": "Inspect where an object's inherited properties come from."
+   },
+   {
+    "title": "Object delegation",
+    "scenario": "Build lightweight delegation relationships between objects."
+   },
+   {
+    "title": "Null-prototype dictionaries",
+    "scenario": "Create dictionary-like objects without Object.prototype inheritance."
+   }
+  ],
+  "related": [
+   "Object",
+   "Object.create()",
+   "Object.getPrototypeOf()",
+   "Object.setPrototypeOf()",
+   "Object.prototype",
+   "prototype chain",
+   "[[Prototype]]"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Inheritance in JavaScript works through prototype objects rather than requiring class-based inheritance.",
+   "Each object is connected to a prototype, which supplies fallback properties and methods.",
+   "Because prototypes are objects too, lookup can continue through multiple links in a prototype chain.",
+   "Property access checks own properties first, then searches successive prototypes.",
+   "A prototype chain stops at an object whose prototype is null.",
+   "Object.create() constructs an object with an explicitly chosen prototype."
+  ],
+  "gotchas": [
+   "Do not use the deprecated __proto__ accessor for ordinary prototype access; prefer Object.getPrototypeOf() and Object.setPrototypeOf().",
+   "Object.prototype terminates the usual chain; objects with a null prototype have no inherited Object.prototype properties."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Language core::Primitive values and coercion": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Data_structures",
+  "sourceTitle": "JavaScript data types and data structures",
+  "summary": "JavaScript primitives are immutable values, while coercion converts values when an operation expects a primitive. Explicit conversion clarifies intent; == may coerce operands, whereas === does not, and Object.is() has distinct NaN and signed-zero behavior.",
+  "explanation": "JavaScript primitives are immutable values such as strings, numbers, booleans, BigInts, symbols, null, and undefined. Explicit conversions make intent clear, while == may convert operands before comparing; === compares without that conversion, and Object.is() differs for NaN and signed zero.",
+  "syntax": "==, ===, Object.is(value1, value2), Number(value), String(value), Boolean(value)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Primitive values and comparison",
+   "code": "const values = [\"42\", 42, true, null, undefined, 0n];\n\nconsole.log(typeof values[0]); // \"string\"\nconsole.log(Number(values[0])); // 42\nconsole.log(\"42\" == 42); // true: loose equality converts\nconsole.log(\"42\" === 42); // false: strict equality does not\nconsole.log(Object.is(NaN, NaN)); // true\nconsole.log(Object.is(-0, 0)); // false",
+   "language": "javascript",
+   "explanation": "The snippet contrasts primitive types, explicit conversion with Number(), and the different equality algorithms."
+  },
+  "useCases": [
+   {
+    "title": "Use strict equality",
+    "scenario": "Compare values while preserving their types"
+   },
+   {
+    "title": "Make conversion explicit",
+    "scenario": "Convert input before arithmetic or validation"
+   },
+   {
+    "title": "Use Object.is() for NaN and signed zero",
+    "scenario": "Check identity-sensitive numeric results"
+   },
+   {
+    "title": "Understand primitive coercion",
+    "scenario": "Handle values supplied as objects or mixed primitives"
+   }
+  ],
+  "related": [
+   "Primitive",
+   "Equality comparisons and sameness",
+   "Equality (==)",
+   "Object.is()",
+   "Symbol.toPrimitive",
+   "BigInt",
+   "String"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use ==, ===, and Object.is() as distinct comparison tools rather than interchangeable spellings.",
+   "The === operator compares without implicit type conversion.",
+   "Coercion converts or unwraps values when an operation requires a primitive representation.",
+   "Loose equality can first convert an object operand to a primitive.",
+   "During loose equality, a Boolean may be converted numerically before comparison."
+  ],
+  "gotchas": [
+   "Loose equality can convert operands, so expressions such as \"42\" == 42 can be true even though the values have different types.",
+   "Strict equality returns false when operands have different types; it does not perform implicit conversion.",
+   "The equality algorithms treat NaN and signed zero specially, so ordinary equality may not match identity-style expectations.",
+   "Object.is() avoids coercion, but it differs from === for NaN and for -0 versus +0."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Language core::Regular expressions": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions",
+  "sourceTitle": "Regular expressions - JavaScript - MDN",
+  "summary": "JavaScript regular expressions describe structured text using patterns, groups, assertions, quantifiers, and escapes. Named groups make extracted values readable, while RegExp.escape() safely converts dynamic text into literal pattern content.",
+  "explanation": "A regular expression describes text to find or validate using literals, character classes, quantifiers, groups, assertions, and escapes. JavaScript supports named capturing groups so matched text can be retrieved through the result's groups object, while RegExp.escape() safely turns dynamic text into literal pattern content.",
+  "syntax": "pattern; /pattern/flags; new RegExp(pattern, flags)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Extract named fields from text",
+   "code": "const text = \"Order: 42, customer: Ada\";\nconst pattern = /Order: (?<id>\\d+), customer: (?<customer>[A-Za-z]+)/;\nconst match = pattern.exec(text);\n\nif (match) {\n  console.log(match.groups.id, match.groups.customer);\n}",
+   "language": "javascript",
+   "explanation": "This pattern captures an order ID and customer name under readable group names, then reads them from the match result."
+  },
+  "useCases": [
+   {
+    "title": "Search and validation",
+    "scenario": "Validate or locate structured input such as identifiers, dates, or tokens."
+   },
+   {
+    "title": "Readable parsing",
+    "scenario": "Extract meaningful fields from matched text using named groups."
+   },
+   {
+    "title": "Relationship checks",
+    "scenario": "Match repeated or related text with backreferences."
+   },
+   {
+    "title": "Safe dynamic patterns",
+    "scenario": "Safely build patterns containing user- or program-supplied literal text."
+   }
+  ],
+  "related": [
+   "RegExp",
+   "RegExp.prototype.exec()",
+   "String.prototype.match()",
+   "String.prototype.matchAll()",
+   "String.prototype.replace()",
+   "String.prototype.replaceAll()",
+   "Capturing group: (...)",
+   "Named capturing group: (?<name>...)"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Parenthesized groups combine subpatterns; capturing groups additionally retain the text they matched.",
+   "Named groups still participate in numeric capture ordering, even when accessed by name.",
+   "Use exec(), match(), or matchAll() results to obtain captured substrings.",
+   "Named groups make extraction resilient to changes in the positions of other groups.",
+   "Use RegExp.escape() when inserting dynamic text as a literal part of a pattern.",
+   "A backreference requires earlier captured text and matches that same text again."
+  ],
+  "gotchas": [
+   "A named group name cannot be repeated in one pattern; duplicate names cause a syntax error.",
+   "Regex metacharacters are special by default, so escape them when matching them literally.",
+   "A slash must be escaped inside a regex literal or it will terminate the literal.",
+   "Do not use \\0 as a numbered backreference; it represents the NUL character."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Language core::Typed arrays and DataView": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Typed_arrays",
+  "sourceTitle": "JavaScript typed arrays",
+  "summary": "Typed arrays and DataView are views over binary buffers. Typed arrays offer convenient fixed-width elements, while DataView provides explicit byte order and unaligned reads and writes.",
+  "explanation": "An ArrayBuffer stores raw bytes, while typed arrays and DataView provide views over that storage. Typed arrays interpret fixed-width elements in the platform byte order; DataView exposes individual getter and setter methods, lets each multi-byte operation specify little-endian ordering, defaults to big-endian, and permits unaligned offsets.",
+  "syntax": "new DataView(buffer, byteOffset, byteLength)",
+  "parameters": [
+   {
+    "name": "buffer",
+    "type": "ArrayBuffer",
+    "description": "The ArrayBuffer containing the binary data."
+   },
+   {
+    "name": "byteOffset",
+    "type": "number",
+    "description": "The byte offset from the beginning of buffer; defaults to 0."
+   },
+   {
+    "name": "byteLength",
+    "type": "number",
+    "description": "The length of the view in bytes; when omitted, the view extends to the buffer's end."
+   }
+  ],
+  "returns": "A DataView object representing a region of the supplied buffer.",
+  "example": {
+   "title": "Shared buffer with explicit endianness",
+   "code": "const buffer = new ArrayBuffer(4);\nconst bytes = new Uint8Array(buffer);\nconst view = new DataView(buffer);\n\nbytes.set([0x01, 0x02, 0x03, 0x04]);\nconsole.log(view.getUint16(0));\nconsole.log(view.getUint16(0, true));\nview.setUint16(2, 0x1234, true);\nconsole.log([...bytes]);",
+   "language": "javascript",
+   "explanation": "The same buffer is viewed as bytes and as 16-bit values; DataView reads both byte orders and writes little-endian data."
+  },
+  "useCases": [
+   {
+    "title": "Binary formats",
+    "scenario": "Parse or construct binary file and network-protocol fields with known widths and byte order."
+   },
+   {
+    "title": "WebAssembly interoperability",
+    "scenario": "Read and write WebAssembly memory whose multi-byte values use a specified byte order."
+   },
+   {
+    "title": "Shared buffer views",
+    "scenario": "Share one byte storage region between byte-level processing and typed numeric access."
+   },
+   {
+    "title": "Unaligned structures",
+    "scenario": "Access records whose fields begin at offsets that are not aligned to their widths."
+   }
+  ],
+  "related": [
+   "ArrayBuffer",
+   "SharedArrayBuffer",
+   "DataView",
+   "TypedArray",
+   "Uint8Array",
+   "Int16Array",
+   "Uint32Array",
+   "Float32Array"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Typed arrays provide array-like, fixed-width access to binary data stored in memory buffers.",
+   "Buffers hold storage; views define how that storage is interpreted and accessed.",
+   "The two principal view families are typed arrays and DataView.",
+   "A view describes the element type, byte starting position, and accessible element count.",
+   "DataView is the lower-level choice when each read or write needs precise control.",
+   "DataView lets each applicable multi-byte operation control byte order explicitly."
+  ],
+  "gotchas": [
+   "Typed arrays use the host platform's native byte order, so their multi-byte representation is not portable by itself.",
+   "DataView operations default to big-endian; pass true to a getter or setter when little-endian encoding is required.",
+   "DataView allows unaligned multi-byte access, unlike typed-array views whose offsets must match their element alignment."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Object & JSON::JSON.parse and the reviver": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse",
+  "sourceTitle": "JSON.parse() - JavaScript | MDN Web Docs",
+  "summary": "JSON.parse() converts JSON text into a JavaScript value. An optional reviver transforms parsed values from the deepest properties outward before the final result is returned.",
+  "explanation": "JSON.parse reads JSON text and produces its corresponding JavaScript value. With a reviver, it visits parsed values from the deepest properties outward, letting each returned value replace the original; returning undefined removes that property.",
+  "syntax": "JSON.parse(text)\nJSON.parse(text, reviver)",
+  "parameters": [
+   {
+    "name": "text",
+    "type": "string",
+    "description": "The JSON text to parse."
+   },
+   {
+    "name": "reviver",
+    "type": "function",
+    "description": "Optional function used to transform each parsed value before the result is returned. It receives key, value, and an optional context object."
+   }
+  ],
+  "returns": "The JavaScript value represented by the JSON text, after any reviver transformations.",
+  "example": {
+   "title": "Transform parsed properties",
+   "code": "const json = '{\"created\":\"2026-01-15T12:00:00.000Z\",\"count\":2}';\n\nconst value = JSON.parse(json, function (key, value) {\n  if (key === \"created\") return new Date(value);\n  if (key === \"count\") return value * 10;\n  return value;\n});\n\nconsole.log(value.created instanceof Date); // true\nconsole.log(value.count); // 20",
+   "language": "javascript",
+   "explanation": "The reviver converts the parsed date string into a Date and transforms the count before the complete result is returned."
+  },
+  "useCases": [
+   {
+    "title": "Deserialize JSON",
+    "scenario": "Convert a JSON response or stored JSON string into JavaScript objects, arrays, and primitive values."
+   },
+   {
+    "title": "Restore types",
+    "scenario": "Turn serialized date strings into Date instances or restore other application-specific types."
+   },
+   {
+    "title": "Transform data",
+    "scenario": "Validate or normalize fields while constructing the final in-memory representation."
+   },
+   {
+    "title": "Filter properties",
+    "scenario": "Drop unwanted properties by returning undefined for them."
+   }
+  ],
+  "related": [
+   "JSON.stringify()",
+   "Date.prototype.toJSON()",
+   "BigInt"
+  ],
+  "since": "",
+  "keyPoints": [
+   "It converts JSON text into the corresponding JavaScript value, object, or array.",
+   "Passing a reviver lets you replace parsed values while the result is being produced.",
+   "The reviver controls the replacement value for each parsed entry.",
+   "The callback receives the property key and its parsed value; current documentation also describes an optional context argument.",
+   "Values are visited deepest-first, and the root is processed last.",
+   "A second argument that is not callable has no reviving effect."
+  ],
+  "gotchas": [
+   "When the root is a primitive, the reviver is called once with an empty key; objects and arrays also receive a final root call with an empty key.",
+   "The reviver cannot prevent parsing or recover precision already lost during ordinary number parsing."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Object & JSON::JSON.stringify": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify",
+  "sourceTitle": "JSON.stringify() - JavaScript | MDN Web Docs",
+  "summary": "Converts a JavaScript value to a JSON string, optionally transforming or selecting properties with a replacer and adding indentation with space.",
+  "explanation": "JSON.stringify() converts a JavaScript value into a JSON string. A replacer function or property list can control what is serialized, while the space argument adds readable indentation; values that JSON cannot represent may be omitted, converted, or cause an error.",
+  "syntax": "JSON.stringify(value)\nJSON.stringify(value, replacer)\nJSON.stringify(value, replacer, space)",
+  "parameters": [
+   {
+    "name": "value",
+    "type": "any",
+    "description": "The JavaScript value to convert to a JSON string."
+   },
+   {
+    "name": "replacer",
+    "type": "function | array | null",
+    "description": "Optional function that transforms values, or an array of strings and numbers naming properties to include."
+   },
+   {
+    "name": "space",
+    "type": "number | string",
+    "description": "Optional indentation control. A number specifies spaces, capped at 10; a string supplies indentation, truncated to 10 characters."
+   }
+  ],
+  "returns": "A JSON string representing the value. If the value is undefined, a function, or a symbol at the top level, the method returns undefined.",
+  "example": {
+   "title": "Filter and format an object",
+   "code": "const data = { user: \"Ada\", password: \"secret\", active: true };\n\nconst json = JSON.stringify(\n  data,\n  (key, value) => key === \"password\" ? undefined : value,\n  2,\n);\n\nconsole.log(json);",
+   "language": "javascript",
+   "explanation": "Serializes an object while omitting the password and formatting the resulting JSON with two-space indentation."
+  },
+  "useCases": [
+   {
+    "title": "Transmit structured data",
+    "scenario": "Creating a request body or other text payload from JavaScript data."
+   },
+   {
+    "title": "Store serialized state",
+    "scenario": "Persisting JSON-compatible state in storage or files."
+   },
+   {
+    "title": "Filter properties",
+    "scenario": "Removing secrets or selecting fields before output."
+   },
+   {
+    "title": "Pretty-print JSON",
+    "scenario": "Making serialized data readable for logs and debugging."
+   }
+  ],
+  "related": [
+   "JSON.parse()",
+   "JSON",
+   "toJSON()",
+   "Date.prototype.toJSON()",
+   "BigInt"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The method returns textual JSON rather than another JavaScript object.",
+   "The replacer can be a function for custom transformation or an array selecting properties.",
+   "Unsupported values are not represented as ordinary JSON values."
+  ],
+  "gotchas": [
+   "A non-function, non-array replacer does not filter object properties; it leaves all string-keyed properties eligible for serialization.",
+   "Extra properties attached to arrays are not serialized."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Object & JSON::Object.assign and object spread": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign",
+  "sourceTitle": "Object.assign() - MDN",
+  "summary": "Object.assign() copies own enumerable properties from one or more sources onto a target and returns the modified target. Object spread copies those properties into a new object, making it useful for shallow cloning and merging.",
+  "explanation": "Object.assign(target, ...sources) copies each source's own enumerable properties onto the target and returns that target. Object spread copies the same kind of properties into a newly created object. Both operations are shallow; later sources or properties win on duplicate keys, but assign uses the target's setters while spread defines properties without invoking target setters.",
+  "syntax": "Object.assign(target, source1, source2, /* …, */ sourceN)",
+  "parameters": [
+   {
+    "name": "target",
+    "type": "any",
+    "description": "The target object to receive copied properties; a primitive target is converted to an object."
+   },
+   {
+    "name": "source1, …, sourceN",
+    "type": "any",
+    "description": "One or more source values whose own enumerable properties are copied; null and undefined sources are skipped."
+   }
+  ],
+  "returns": "The modified target object.",
+  "example": {
+   "title": "Merge defaults and apply updates",
+   "code": "const defaults = { theme: \"light\", retries: 2 };\nconst options = { ...defaults, retries: 3 };\n\nObject.assign(options, { debug: true });\n\nconsole.log(options);\n// { theme: \"light\", retries: 3, debug: true }",
+   "language": "javascript",
+   "explanation": "This creates a new object with spread, then mutates that object with Object.assign."
+  },
+  "useCases": [
+   {
+    "title": "Merge configuration",
+    "scenario": "Combine configuration objects while letting later values override earlier defaults."
+   },
+   {
+    "title": "Shallow clone",
+    "scenario": "Create a shallow copy without mutating the original object."
+   },
+   {
+    "title": "Mutate a target",
+    "scenario": "Apply a set of enumerable updates directly to an existing target object."
+   }
+  ],
+  "related": [
+   "Object.assign()",
+   "spread syntax (...)",
+   "object initializer",
+   "enumerable own properties",
+   "shallow copy"
+  ],
+  "since": "ES2015",
+  "keyPoints": [
+   "Object.assign copies enumerable own properties from every supplied source onto the target.",
+   "The return value is the same target object after copying.",
+   "When keys collide, the value from the later source wins.",
+   "Enumerable own string-keyed and symbol-keyed properties are included.",
+   "Object spread creates a new object and adds the source's enumerated properties to it.",
+   "Several objects can be merged into a fresh object with successive spread operands."
+  ],
+  "gotchas": [
+   "Object.assign reads source properties and writes through the target, so getters and setters can run.",
+   "Neither operation deep-clones nested objects; nested references remain shared.",
+   "Object spread does not trigger setters on the object being created."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Object & JSON::Object.create and prototypes": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create",
+  "sourceTitle": "Object.create()",
+  "summary": "Creates a new object with an explicitly chosen prototype, or with null as its prototype. An optional second argument defines own properties using property descriptors.",
+  "explanation": "Object.create() returns a new object whose internal prototype is the first argument. Passing a second object defines own properties through property descriptors; passing null as the prototype creates an object with no inherited prototype.",
+  "syntax": "Object.create(proto)\nObject.create(proto, propertiesObject)",
+  "parameters": [
+   {
+    "name": "proto",
+    "type": "Object or null",
+    "description": "The object that becomes the prototype of the newly created object; null creates a null-prototype object."
+   },
+   {
+    "name": "propertiesObject",
+    "type": "Object or undefined",
+    "description": "Optional object whose enumerable own properties describe property descriptors to define on the new object."
+   }
+  ],
+  "returns": "A new object with the specified prototype object and properties.",
+  "example": {
+   "title": "Create an object with a chosen prototype",
+   "code": "const personPrototype = {\n  greet() {\n    return `Hello, ${this.name}`;\n  },\n};\n\nconst alice = Object.create(personPrototype, {\n  name: {\n    value: \"Alice\",\n    enumerable: true,\n    writable: true,\n    configurable: true,\n  },\n});\n\nconsole.log(alice.greet());\nconsole.log(Object.getPrototypeOf(alice) === personPrototype);",
+   "language": "javascript",
+   "explanation": "Creates an object whose prototype supplies greet(), while the second argument defines name using a property descriptor."
+  },
+  "useCases": [
+   {
+    "title": "Prototype-based delegation",
+    "scenario": "Share methods or default data among related objects without repeating those members on every object."
+   },
+   {
+    "title": "Null-prototype dictionaries",
+    "scenario": "Create dictionary-like objects without inherited Object.prototype names or methods."
+   },
+   {
+    "title": "Descriptor-controlled initialization",
+    "scenario": "Define own properties with precise writable, enumerable, and configurable settings during creation."
+   }
+  ],
+  "related": [
+   "Object.getPrototypeOf()",
+   "Object.defineProperties()",
+   "Object.prototype",
+   "prototype chain",
+   "null-prototype objects"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The first argument selects the new object's prototype, so inherited properties and methods can be shared through the prototype chain.",
+   "The one-argument form creates an object with the specified prototype.",
+   "The two-argument form additionally defines own properties from descriptor definitions.",
+   "The method returns a distinct object configured with the requested prototype and any defined properties.",
+   "Use Object.create(null) when the object should not inherit from Object.prototype."
+  ],
+  "gotchas": [
+   "The second argument contains descriptors, not ordinary property values; omitted descriptor flags therefore use their descriptor defaults.",
+   "The prototype argument must be an object or null; primitives cause a TypeError."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Object & JSON::Object.defineProperty and descriptors": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty",
+  "sourceTitle": "Object.defineProperty() - JavaScript | MDN",
+  "summary": "Defines or modifies one object property using a descriptor that controls its value, writability, enumerability, configurability, or accessor functions. Descriptors are either data descriptors or accessor descriptors.",
+  "explanation": "Object.defineProperty() creates or updates one property using a descriptor. A descriptor is either a data descriptor, which uses value and writable, or an accessor descriptor, which uses get and set; both kinds can also specify enumerable and configurable.",
+  "syntax": "Object.defineProperty(obj, prop, descriptor)",
+  "parameters": [
+   {
+    "name": "obj",
+    "type": "Object",
+    "description": "The object on which to define the property."
+   },
+   {
+    "name": "prop",
+    "type": "string | Symbol",
+    "description": "A string or Symbol specifying the key of the property to be defined or modified."
+   },
+   {
+    "name": "descriptor",
+    "type": "Object",
+    "description": "The descriptor for the property being defined or modified."
+   }
+  ],
+  "returns": "The object that was passed to the function, with the specified property added or modified.",
+  "example": {
+   "title": "Define a read-only property",
+   "code": "const user = {};\n\nObject.defineProperty(user, \"id\", {\n  value: 42,\n  writable: false,\n  enumerable: true,\n  configurable: false,\n});\n\nconsole.log(user.id); // 42\nconsole.log(Object.keys(user)); // [\"id\"]\n\nuser.id = 7;\nconsole.log(user.id); // 42",
+   "language": "javascript",
+   "explanation": "Defines an enumerable, non-writable, non-configurable data property and demonstrates that assignment does not change its value."
+  },
+  "useCases": [
+   {
+    "title": "Create non-enumerable properties",
+    "scenario": "Expose metadata or internal state without including it in normal property enumeration."
+   },
+   {
+    "title": "Create read-only properties",
+    "scenario": "Prevent accidental reassignment of a value while keeping it readable."
+   },
+   {
+    "title": "Define getter and setter accessors",
+    "scenario": "Compute a value on access or validate assignments."
+   },
+   {
+    "title": "Restrict property configuration",
+    "scenario": "Control whether a property can later be deleted or reconfigured."
+   }
+  ],
+  "related": [
+   "Object.getOwnPropertyDescriptor()",
+   "Object.getOwnPropertyDescriptors()",
+   "Object.defineProperties()",
+   "Reflect.defineProperty()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "It can create a property or redefine an existing one, and its result is the object supplied as the first argument.",
+   "Use a data descriptor for stored values, or an accessor descriptor for getter/setter behavior.",
+   "Data descriptors use value for the stored value and writable to control assignment changes.",
+   "Accessor descriptors use get and set functions instead of a stored value.",
+   "writable controls whether assignment can replace a data property's value.",
+   "enumerable controls whether the property appears during property enumeration.",
+   "An accessor setter receives the value assigned to the property."
+  ],
+  "gotchas": [
+   "Omitted descriptor flags default to false, so a newly defined property is non-writable, non-enumerable, and non-configurable.",
+   "Do not combine data fields such as value or writable with accessor fields such as get or set.",
+   "Defining a property does not trigger an existing setter because the operation uses [[DefineOwnProperty]], not ordinary assignment."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Object & JSON::Object.freeze and Object.seal": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/seal",
+  "sourceTitle": "Object.seal() - JavaScript - MDN Web Docs",
+  "summary": "Object.seal() fixes an object's property set and makes existing properties non-configurable while preserving writability. Object.freeze() applies the same shape restriction and also makes existing data properties non-writable.",
+  "explanation": "Object.seal prevents extensions and makes existing properties non-configurable, so the object's shape cannot change while writable values may still change. Object.freeze applies those restrictions and additionally makes existing data properties non-writable; both operations affect only the object itself, not nested objects.",
+  "syntax": "Object.seal(obj)\nObject.freeze(obj)",
+  "parameters": [
+   {
+    "name": "obj",
+    "type": "Object",
+    "description": "The object to seal or freeze."
+   }
+  ],
+  "returns": "Both methods return the same object that was passed in.",
+  "example": {
+   "title": "Seal mutable properties; freeze all existing data properties",
+   "code": "const account = { name: \"Ada\", balance: 100 };\n\nObject.seal(account);\naccount.balance = 125; // Allowed: the property is still writable.\n// account.currency = \"USD\"; // TypeError in strict mode: no new properties.\n\nconst settings = Object.freeze({ darkMode: true });\n// settings.darkMode = false; // TypeError in strict mode: read-only property.\n\nconsole.log(Object.isSealed(account), Object.isFrozen(settings));",
+   "language": "javascript",
+   "explanation": "Sealing fixes an object's property set while allowing writable values to change; freezing also makes existing data properties non-writable."
+  },
+  "useCases": [
+   {
+    "title": "Stable mutable records",
+    "scenario": "Prevent consumers from adding or removing fields while allowing controlled updates to existing writable fields."
+   },
+   {
+    "title": "Immutable settings",
+    "scenario": "Expose configuration or constants that must not be changed after initialization."
+   },
+   {
+    "title": "Integrity hardening",
+    "scenario": "Protect shared object shapes and built-in objects from later modification."
+   }
+  ],
+  "related": [
+   "Object.isSealed()",
+   "Object.isFrozen()",
+   "Object.preventExtensions()",
+   "Object.isExtensible()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Object.seal prevents new properties and makes every existing property non-configurable.",
+   "Sealed objects can still update existing writable values.",
+   "Object.freeze prevents extensions and locks existing properties against writes and configuration changes.",
+   "A frozen object's property set and existing property descriptors cannot be changed.",
+   "Sealing combines non-extensibility with non-configurable existing properties.",
+   "The main distinction is that seal preserves writability while freeze removes it for data properties."
+  ],
+  "gotchas": [
+   "Adding or deleting properties on a sealed object fails, either silently or with a TypeError, commonly in strict mode.",
+   "Freezing is shallow: nested objects remain independently mutable unless they are frozen too."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Object & JSON::Object.fromEntries": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/fromEntries",
+  "sourceTitle": "Object.fromEntries () - JavaScript | MDN",
+  "summary": "Object.fromEntries() creates a new object from an iterable of key-value pairs, such as a Map or array of two-item arrays. It supports string and symbol property keys.",
+  "explanation": "Object.fromEntries() consumes an iterable that produces two-element entries. It uses each entry's first element as a property key and its second as the value, creating and returning a new ordinary object; keys may be strings or symbols.",
+  "syntax": "Object.fromEntries(iterable)",
+  "parameters": [
+   {
+    "name": "iterable",
+    "type": "iterable",
+    "description": "An iterable that produces objects containing a property key at index 0 and its value at index 1; arrays and maps are typical inputs."
+   }
+  ],
+  "returns": "A new object whose properties are defined by the iterable's key-value entries.",
+  "example": {
+   "title": "Create an object from a Map",
+   "code": "const pairs = new Map([\n  [\"language\", \"JavaScript\"],\n  [\"year\", 2026],\n]);\n\nconst result = Object.fromEntries(pairs);\nconsole.log(result); // { language: \"JavaScript\", year: 2026 }",
+   "language": "javascript",
+   "explanation": "Converts the map's two-element entries into properties of a new object."
+  },
+  "useCases": [
+   {
+    "title": "Convert a Map",
+    "scenario": "Turn a Map into a plain object for serialization or property-based access."
+   },
+   {
+    "title": "Rebuild transformed data",
+    "scenario": "Transform entries with map/filter, then reconstruct an object."
+   },
+   {
+    "title": "Consume custom iterables",
+    "scenario": "Create an object from custom iterable key-value records."
+   }
+  ],
+  "related": [
+   "Object.entries()",
+   "Array.from()",
+   "Map"
+  ],
+  "since": "",
+  "keyPoints": [
+   "It builds a new object from key-value pairs.",
+   "The argument can be any iterable, including arrays and maps.",
+   "Each entry is normally a two-item array: key first, value second.",
+   "Entry keys can be strings or symbols.",
+   "The return value is a newly created object containing the entries.",
+   "The input must provide the iterable protocol.",
+   "It reverses Object.entries() by turning pairs back into an object."
+  ],
+  "gotchas": [
+   "The method ignores the receiver, so calling it through another constructor does not create instances of that constructor.",
+   "Unlike Object.entries(), it accepts symbol keys as well as string keys.",
+   "Every produced entry needs a key at position 0 and a value at position 1."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Object & JSON::Object.keys, values and entries": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object",
+  "sourceTitle": "Object",
+  "summary": "Object.keys(), Object.values(), and Object.entries() return arrays derived from an object's own enumerable string-keyed properties: names, values, or [key, value] pairs.",
+  "explanation": "These static methods inspect an object directly and return arrays containing its own enumerable string-keyed properties. Use keys for names, values for corresponding values, and entries for two-element [key, value] arrays; inherited and non-enumerable properties are excluded.",
+  "syntax": "Object.keys(obj)\nObject.values(obj)\nObject.entries(obj)",
+  "parameters": [
+   {
+    "name": "obj",
+    "type": "object",
+    "description": "The object whose own enumerable string-keyed properties are inspected; primitive values are coerced except null and undefined."
+   }
+  ],
+  "returns": "An array containing the selected own enumerable string-keyed property names, values, or [key, value] pairs.",
+  "example": {
+   "title": "Read an object's keys, values, and entries",
+   "code": "const user = { name: \"Ada\", age: 36 };\n\nconsole.log(Object.keys(user));\nconsole.log(Object.values(user));\nconsole.log(Object.entries(user));\n\nfor (const [key, value] of Object.entries(user)) {\n  console.log(`${key}: ${value}`);\n}",
+   "language": "javascript",
+   "explanation": "This prints the object's enumerable string-keyed property names, values, and key-value pairs, then iterates over the pairs."
+  },
+  "useCases": [
+   {
+    "title": "Inspect keys",
+    "scenario": "Select only property names for validation, lookup, or display."
+   },
+   {
+    "title": "Inspect values",
+    "scenario": "Extract a collection of property values for aggregation or transformation."
+   },
+   {
+    "title": "Process entries",
+    "scenario": "Loop through names and values together or transform object data with array methods."
+   }
+  ],
+  "related": [
+   "Object.keys()",
+   "Object.values()",
+   "Object.entries()",
+   "Object.fromEntries()",
+   "for...in"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Object.keys(obj) returns an array of the object's own enumerable string-keyed property names.",
+   "Object.values(obj) returns the values associated with those properties.",
+   "Object.entries(obj) returns each property as a two-element [key, value] array.",
+   "The methods ignore non-enumerable properties.",
+   "Inherited properties are excluded because these methods inspect only own properties.",
+   "Choose Object.keys when only property names are needed.",
+   "Choose Object.entries when both names and values are needed."
+  ],
+  "gotchas": [
+   "Passing null or undefined throws a TypeError instead of producing an empty result.",
+   "Primitive inputs are coerced: strings can produce indexed properties, while other non-null primitives produce empty arrays.",
+   "Results follow the object's property-enumeration order; this is not necessarily insertion order for every key."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Object & JSON::structuredClone": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/API/Window/structuredClone",
+  "sourceTitle": "structuredClone() method - Web APIs | MDN",
+  "summary": "Creates a deep clone of a structured-cloneable value, including supported built-ins such as Map, Set, Date, and typed arrays. It can optionally transfer transferable resources, detaching them from the original.",
+  "explanation": "structuredClone(value) creates a deep copy using the structured clone algorithm. It can preserve supported built-in data structures and circular references, while an optional transfer list moves transferable resources instead of copying them.",
+  "syntax": "structuredClone(value)\nstructuredClone(value, options)",
+  "parameters": [
+   {
+    "name": "value",
+    "type": "any structured-cloneable type",
+    "description": "The value to clone; it must be structured-cloneable."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Optional options object containing transfer, an array of transferable objects to move rather than clone."
+   }
+  ],
+  "returns": "A deep copy of the original value.",
+  "example": {
+   "title": "Deep-clone structured data",
+   "code": "const original = {\n  when: new Date(\"2025-01-01\"),\n  tags: new Set([\"js\", \"web\"]),\n  bytes: new Uint8Array([1, 2, 3]),\n};\n\nconst copy = structuredClone(original);\ncopy.tags.add(\"clone\");\ncopy.bytes[0] = 9;\n\nconsole.log(original.tags.has(\"clone\")); // false\nconsole.log(original.bytes[0]); // 1\nconsole.log(copy.when instanceof Date); // true",
+   "language": "javascript",
+   "explanation": "The clone has independent nested data while retaining supported built-in types such as Date, Set, and typed arrays."
+  },
+  "useCases": [
+   {
+    "title": "Independent state copies",
+    "scenario": "Duplicate nested application state without sharing object references."
+   },
+   {
+    "title": "Cyclic data",
+    "scenario": "Copy data containing circular references that JSON serialization cannot handle."
+   },
+   {
+    "title": "Rich structured values",
+    "scenario": "Preserve supported built-in collections and binary data during cloning."
+   },
+   {
+    "title": "Transfer ownership",
+    "scenario": "Move transferable resources efficiently instead of duplicating them."
+   }
+  ],
+  "related": [
+   "structured clone algorithm",
+   "DataCloneError",
+   "transferable objects",
+   "Map",
+   "Set",
+   "Date",
+   "TypedArray"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The value argument must be a type supported by the structured clone algorithm.",
+   "The return value is a separate deep copy rather than the original object.",
+   "Transferable resources may be moved with options.transfer instead of copied.",
+   "After transfer, the original transferable resource is detached and cannot be used."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Promise API::Promise.race and Promise.any": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise",
+  "sourceTitle": "Promise - JavaScript | MDN",
+  "summary": "Promise.race adopts the first input promise to settle, whether fulfilled or rejected. Promise.any adopts the first input to fulfill and rejects with AggregateError only if every input rejects.",
+  "explanation": "Both static methods consume an iterable of promises or thenables and return a new promise. Promise.race adopts the state of whichever input settles first, while Promise.any ignores rejections until one input fulfills; it rejects with AggregateError only when every input rejects.",
+  "syntax": "Promise.race(iterable)\nPromise.any(iterable)",
+  "parameters": [
+   {
+    "name": "iterable",
+    "type": "Iterable",
+    "description": "An iterable, such as an Array, containing promises, thenables, or non-promise values."
+   }
+  ],
+  "returns": "Each method returns a new Promise. Promise.race settles asynchronously with the state of the first input to settle; an empty iterable leaves it pending. Promise.any fulfills asynchronously with the first fulfillment, or rejects asynchronously with AggregateError containing rejection reasons when all inputs reject; an empty iterable is already rejected.",
+  "example": {
+   "title": "First success versus first settlement",
+   "code": "const tasks = [\n  fetch(\"/primary.json\"),\n  fetch(\"/backup.json\")\n];\n\ntry {\n  const response = await Promise.any(tasks);\n  console.log(\"First successful response:\", response.status);\n} catch (error) {\n  if (error instanceof AggregateError) {\n    console.error(\"Every request failed\", error.errors);\n  }\n}\n\nconst fastest = await Promise.race([\n  fetch(\"/fast.json\"),\n  new Promise((_, reject) =>\n    setTimeout(() => reject(new Error(\"Timed out\")), 3000)\n  )\n]);\nconsole.log(fastest.status);",
+   "language": "javascript",
+   "explanation": "Use Promise.any when failures should be ignored until one operation succeeds, and Promise.race when the first settlement—including rejection—should decide the result."
+  },
+  "useCases": [
+   {
+    "title": "First successful fallback",
+    "scenario": "Several equivalent services or mirrors are queried; use Promise.any to accept the first successful result while tolerating failures."
+   },
+   {
+    "title": "Timeout or fastest task",
+    "scenario": "A timeout or competing operation must determine success or failure as soon as it settles; use Promise.race."
+   },
+   {
+    "title": "Resilient redundant requests",
+    "scenario": "Multiple independent providers are contacted concurrently and the application needs a usable response rather than the fastest error."
+   }
+  ],
+  "related": [
+   "Promise",
+   "Promise.all()",
+   "Promise.allSettled()",
+   "AggregateError",
+   "Promise.prototype.then()",
+   "Promise.prototype.catch()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Promise.race returns a promise that adopts the first input's outcome, whether fulfillment or rejection.",
+   "Promise.any resolves with the first fulfillment and ignores earlier rejections.",
+   "If every Promise.any input rejects, the result rejects with AggregateError."
+  ],
+  "gotchas": [
+   "An empty iterable makes Promise.race remain pending indefinitely.",
+   "Even already-settled inputs do not make Promise.race settle synchronously.",
+   "Inputs may be thenables or ordinary values; ordinary values can win immediately according to iterable order."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Promise API::Promise.resolve, reject and chaining": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise",
+  "sourceTitle": "Promise - JavaScript | MDN",
+  "summary": "Promise.resolve() converts a value into a promise, while Promise.reject() creates a rejected promise. then() returns a new promise, so handler results, returned thenables, and errors determine the next link in a chain.",
+  "explanation": "Promise.resolve() turns a value into a promise, adopting a thenable's eventual state, while Promise.reject() creates a newly rejected promise with the supplied reason. Calling then() returns a new promise: returned values fulfill it, returned promises or thenables determine its state, and thrown errors reject it, so successive then() calls form a chain.",
+  "syntax": "Promise.resolve(value)\nPromise.reject(reason)\npromise.then(onFulfilled, onRejected)",
+  "parameters": [
+   {
+    "name": "value",
+    "type": "any",
+    "description": "The value to convert to a promise; thenables are adopted and existing promises may be returned unchanged."
+   },
+   {
+    "name": "reason",
+    "type": "any",
+    "description": "The reason with which the newly created promise is rejected."
+   },
+   {
+    "name": "onFulfilled",
+    "type": "function",
+    "description": "Optional callback for fulfillment."
+   },
+   {
+    "name": "onRejected",
+    "type": "function",
+    "description": "Optional callback for rejection."
+   }
+  ],
+  "returns": "Promise.resolve() returns a promise resolved with or adopting the supplied value; Promise.reject() returns a newly rejected promise; then() returns a new promise whose state follows the handler result or thrown error.",
+  "example": {
+   "title": "Resolve, reject, and chain",
+   "code": "const ready = Promise.resolve(\"data\");\n\nready\n  .then(value => `${value}!`)\n  .then(value => console.log(value))\n  .catch(error => console.error(error));\n\nPromise.reject(new Error(\"failed\")).catch(error =>\n  console.log(error.message),\n);",
+   "language": "javascript",
+   "explanation": "The first chain transforms and prints a fulfilled value; the second creates a rejected promise and handles its reason."
+  },
+  "useCases": [
+   {
+    "title": "Normalize a value",
+    "scenario": "Start a pipeline from an already available value or existing promise."
+   },
+   {
+    "title": "Represent rejection",
+    "scenario": "Create a controlled failure for a promise-based API."
+   },
+   {
+    "title": "Build a promise chain",
+    "scenario": "Run asynchronous or dependent transformations in sequence."
+   },
+   {
+    "title": "Handle chain errors",
+    "scenario": "Centralize failure handling after multiple operations."
+   }
+  ],
+  "related": [
+   "Promise",
+   "Promise.prototype.then()",
+   "Promise.prototype.catch()",
+   "Promise.prototype.finally()",
+   "thenable"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Promise.resolve(value) creates a promise settled from value.",
+   "Promise.reject(reason) creates a rejected promise carrying reason.",
+   "then(onFulfilled, onRejected) optionally handles fulfillment and rejection.",
+   "Each then() result can receive another handler, enabling sequential promise processing.",
+   "A handler's returned promise controls the state observed by the next then() in the chain."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Shipping JavaScript::Feature detection": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Testing/Feature_detection",
+  "sourceTitle": "Implementing feature detection",
+  "summary": "Check whether a runtime exposes a feature before using it, then provide supported code or a fallback. Prefer testing capabilities directly rather than inferring support from browser identity.",
+  "explanation": "Feature detection tests whether the current environment exposes a feature, then chooses supported code or a fallback. For JavaScript APIs, inspect the relevant object for a property or method before accessing it; some features also require checking a method's return value or whether an assigned value is retained.",
+  "syntax": "\"featureName\" in object",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Detect an API member before use",
+   "code": "if (\"geolocation\" in navigator) {\n  navigator.geolocation.getCurrentPosition(showPosition);\n} else {\n  showFallback();\n}",
+   "language": "javascript",
+   "explanation": "Checks whether the current browser exposes geolocation before using it; otherwise, the application selects a fallback."
+  },
+  "useCases": [
+   {
+    "title": "Progressive enhancement",
+    "scenario": "Use a modern Web API only when the current browser exposes its entry point."
+   },
+   {
+    "title": "Graceful degradation",
+    "scenario": "Serve a fallback path when a newly shipped capability is unavailable."
+   },
+   {
+    "title": "Compatibility checks",
+    "scenario": "Verify element properties or method results before relying on browser behavior."
+   }
+  ],
+  "related": [
+   "Document.createElement()",
+   "Window.matchMedia",
+   "@supports",
+   "navigator",
+   "geolocation"
+  ],
+  "since": "",
+  "keyPoints": [
+   "For JavaScript APIs, inspect the object that should expose the feature's entry-point method or property.",
+   "The `in` operator can test whether an API member is available on an object before use.",
+   "For element capabilities, create an in-memory element and inspect the relevant property.",
+   "Some detections require calling an available method and validating its specific return value.",
+   "A capability can be tested by assigning a value and checking whether the element preserves it."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Shipping JavaScript::Modules in browsers and Node": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Language_overview",
+  "sourceTitle": "JavaScript language overview",
+  "summary": "JavaScript modules are files addressed by paths or URLs and connected with import/export. Resolution is host-defined, so browser and Node package boundaries must use specifiers each runtime understands.",
+  "explanation": "ECMAScript modules exchange values through static import and export declarations. Whether a module specifier works is decided by the host: browsers resolve URL-based paths, while Node also supports package-oriented resolution, so portable code should define clear ESM boundaries and use specifiers valid in its target runtime.",
+  "syntax": "import { name } from \"./module.js\";\nexport { name };",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A portable ESM boundary",
+   "code": "// package.json: {\"type\":\"module\"}\n// browser: <script type=\"module\" src=\"./main.js\"></script>\n\n// main.js\nimport { greet } from \"./greet.js\";\n\nconsole.log(greet(\"Ada\"));",
+   "language": "javascript",
+   "explanation": "Use an explicit module entry point and a relative specifier with its file extension; the same ESM files can be loaded by a browser or by Node when the package is configured for modules."
+  },
+  "useCases": [
+   {
+    "title": "Cross-runtime modules",
+    "scenario": "Share ESM source between a browser application and a Node service."
+   },
+   {
+    "title": "Maintainable package structure",
+    "scenario": "Define stable internal boundaries between files using named exports."
+   },
+   {
+    "title": "Browser loading",
+    "scenario": "Choose relative URL paths for browser-delivered module graphs."
+   },
+   {
+    "title": "Node package integration",
+    "scenario": "Use filesystem- and package-oriented resolution in Node projects."
+   }
+  ],
+  "related": [
+   "import",
+   "export",
+   "import()",
+   "import.meta",
+   "module specifier",
+   "import maps",
+   "type=\"module\""
+  ],
+  "since": "",
+  "keyPoints": [
+   "Treat each module as a file addressed by a path or URL, with the exact addressing rules supplied by its host.",
+   "Use named or default exports to define a module boundary, and imports to consume the exposed bindings.",
+   "The same import text may not resolve identically in a browser and Node, so choose runtime-compatible specifiers.",
+   "Relative imports resolve from the importing module rather than from a project-wide root.",
+   "Node commonly resolves modules through its filesystem and package ecosystem, unlike browser URL loading.",
+   "Browser-oriented module graphs can use URL-based resolution, including HTTP URLs where supported."
+  ],
+  "gotchas": [
+   "Do not assume that a specifier has identical resolution behavior everywhere; the host environment defines resolution.",
+   "A browser script must be marked with `type=\"module\"` before static imports or exports can be used.",
+   "Keep browser-only globals out of modules intended to execute in Node."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Shipping JavaScript::TC39 proposal stages": {
+  "sourceUrl": "https://tc39.es/process-document/",
+  "sourceTitle": "The TC39 Process",
+  "summary": "TC39 proposal stages describe how a JavaScript feature moves from an idea to a finished standard feature. Stage 3 recommends implementation; Stage 4 means the proposal is complete and ready for inclusion in ECMAScript.",
+  "explanation": "TC39 proposals advance through stages that communicate maturity and committee expectations. Stage 3 means implementation is recommended, while Stage 4 means the feature is complete and ready for inclusion in the ECMAScript standard; earlier stages can still change or be abandoned.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Treat stages as proposal status",
+   "code": "// Proposal stages are process labels, not runtime syntax.\nconst proposal = { stage: 3, status: \"recommended for implementation\" };\n\nif (proposal.stage < 4) {\n  console.log(\"Not yet a finished ECMAScript feature\");\n}",
+   "language": "javascript",
+   "explanation": "This runnable example treats a proposal stage as metadata and avoids presenting an unfinished proposal as standard JavaScript."
+  },
+  "useCases": [
+   {
+    "title": "Check shipping status",
+    "scenario": "Evaluating whether a feature is standard"
+   },
+   {
+    "title": "Interpret stage labels",
+    "scenario": "Reading proposal repositories or release notes"
+   },
+   {
+    "title": "Separate experiments from stable JavaScript",
+    "scenario": "Choosing whether to use a feature in production"
+   }
+  ],
+  "related": [
+   "The TC39 Process",
+   "Stages",
+   "ECMAScript editions",
+   "ECMAScript® 2026 Language Specification"
+  ],
+  "since": "",
+  "keyPoints": [
+   "TC39 uses Stage 0 plus maturity stages 1, 2, 2.7, 3, and 4.",
+   "A proposal advances only after committee approval for the next stage.",
+   "Stage 0 is an initial idea that is not yet being considered by the committee.",
+   "Stage 1 examines the problem, possible solutions, and cross-cutting concerns.",
+   "Stage 2 has a preferred direction, but its design may still change significantly.",
+   "Stage 3 indicates that implementations and validation should proceed.",
+   "Stage 4 marks a finished proposal suitable for inclusion in ECMAScript."
+  ],
+  "gotchas": [
+   "A Stage 2 proposal is not guaranteed to ship; its inclusion can still be abandoned."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "String methods::String.prototype.localeCompare": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare",
+  "sourceTitle": "String.prototype.localeCompare() - JavaScript - MDN Web Docs",
+  "summary": "Compares two strings according to locale-sensitive sort rules. It returns a negative, positive, or zero value based on whether the reference string comes before, after, or is equivalent to the comparison string.",
+  "explanation": "Call the method on the string to use as the reference and pass the string to compare as the first argument. Optional locale and options arguments control language-sensitive ordering; the result is negative, positive, or zero according to their relative order. For repeated comparisons, reuse an Intl.Collator comparator.",
+  "syntax": "localeCompare(compareString)\nlocaleCompare(compareString, locales)\nlocaleCompare(compareString, locales, options)",
+  "parameters": [
+   {
+    "name": "compareString",
+    "type": "string",
+    "description": "The string to compare with the reference string; it is converted to a string if necessary."
+   },
+   {
+    "name": "locales",
+    "type": "string | string[]",
+    "description": "Optional BCP 47 locale tag or array of locale tags used for language-sensitive comparison."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Optional Intl.Collator options object controlling comparison behavior."
+   }
+  ],
+  "returns": "An integer whose sign indicates ordering: negative if the reference string precedes compareString, positive if it follows, or 0 if they are equivalent.",
+  "example": {
+   "title": "Locale-aware sorting",
+   "code": "const names = [\"Zoe\", \"Åke\", \"Ana\"];\nnames.sort((a, b) => a.localeCompare(b, \"en\", { sensitivity: \"base\" }));\nconsole.log(names);",
+   "language": "javascript",
+   "explanation": "Sorts names using English locale-aware ordering while treating case and accents as equivalent."
+  },
+  "useCases": [
+   {
+    "title": "Locale-aware sorting",
+    "scenario": "Sorting names, labels, or words according to a reader's language conventions."
+   },
+   {
+    "title": "Customized equality or ordering",
+    "scenario": "Comparing strings while configuring case or accent sensitivity."
+   },
+   {
+    "title": "Numeric-aware comparison",
+    "scenario": "Ordering strings containing digits in natural numeric order through collator options."
+   }
+  ],
+  "related": [
+   "Intl.Collator",
+   "Intl.Collator.prototype.compare",
+   "Array.prototype.sort"
+  ],
+  "since": "",
+  "keyPoints": [
+   "It compares the reference string with another string using locale-sensitive sort order.",
+   "Pass a locale and options to select language conventions and comparison behavior.",
+   "Interpret only the sign of the returned number: negative, positive, or zero.",
+   "Where supported, the method uses the internationalization collator machinery."
+  ],
+  "gotchas": [
+   "The method only guarantees the sign of the result: negative means the reference precedes the other string, positive means it follows, and zero means equivalence.",
+   "For many comparisons, constructing one Intl.Collator and reusing its compare method can be more efficient than repeatedly calling localeCompare."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "String methods::String.prototype.matchAll": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/matchAll",
+  "sourceTitle": "String.prototype.matchAll () - JavaScript | MDN",
+  "summary": "Returns an iterator over every match of a pattern, including capture groups and each match’s position. Use a global regular expression and consume the iterator once.",
+  "explanation": "Call matchAll() with a global regular expression to obtain a one-use iterator. Iterating it yields exec()-shaped match arrays containing the full match, capture groups, index, input, and—when applicable—named groups. The iterator can be consumed with for...of, spread syntax, or Array.from().",
+  "syntax": "str.matchAll(regexp)",
+  "parameters": [
+   {
+    "name": "regexp",
+    "type": "RegExp | object",
+    "description": "A regular expression or an object with a Symbol.matchAll method. A non-RegExp value is converted to a global RegExp."
+   }
+  ],
+  "returns": "An iterable, non-restartable iterator of match arrays; it is empty when no matches are found.",
+  "example": {
+   "title": "Read matches, groups, and positions",
+   "code": "const text = \"ID: A12, ID: B34\";\nconst pattern = /ID: (?<id>[A-Z]\\d+)/g;\n\nfor (const match of text.matchAll(pattern)) {\n  console.log(match.groups.id, match.index);\n}",
+   "language": "javascript",
+   "explanation": "Prints each identifier together with its starting UTF-16 index."
+  },
+  "useCases": [
+   {
+    "title": "Parse structured text",
+    "scenario": "Extract repeated records while retaining named or numbered fields."
+   },
+   {
+    "title": "Locate matches",
+    "scenario": "Inspect where each occurrence begins in the original string."
+   },
+   {
+    "title": "Simplify repeated matching",
+    "scenario": "Replace manual global exec() loops with direct iteration."
+   }
+  ],
+  "related": [
+   "RegExp.prototype.exec()",
+   "RegExp.prototype[Symbol.matchAll]()",
+   "String.prototype.match()",
+   "Symbol.matchAll"
+  ],
+  "since": "ES2020",
+  "keyPoints": [
+   "matchAll() finds every match and returns an iterator rather than an array.",
+   "Each yielded match preserves numbered and named capture-group results.",
+   "Match entries follow the familiar exec() array shape.",
+   "It provides a simpler alternative to manually looping over exec() with a global expression.",
+   "Consume the iterator using for...of, spread syntax, or Array.from().",
+   "Arguments can customize matching by exposing Symbol.matchAll."
+  ],
+  "gotchas": [
+   "A RegExp argument must include the g flag; otherwise matchAll() throws a TypeError.",
+   "The returned iterator is consumable only once; save the resulting array if you need to traverse matches again.",
+   "A non-RegExp pattern is converted with a global RegExp, which differs from passing an existing non-global RegExp."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "String methods::String.prototype.normalize": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize",
+  "sourceTitle": "String.prototype.normalize()",
+  "summary": "Converts a string to a Unicode normalization form so canonically or compatibly equivalent code-point sequences can be compared consistently. With no argument, it uses NFC.",
+  "explanation": "normalize() first converts the receiver to a string, chooses NFC when no form is supplied, and otherwise validates the requested form. It returns a normalized string using canonical or compatibility decomposition, optionally followed by composition; the original string is not changed.",
+  "syntax": "normalize()\nnormalize(form)",
+  "parameters": [
+   {
+    "name": "form",
+    "type": "string | undefined",
+    "description": "The Unicode normalization form: \"NFC\", \"NFD\", \"NFKC\", or \"NFKD\". If omitted or undefined, \"NFC\" is used."
+   }
+  ],
+  "returns": "A string containing the Unicode Normalization Form of the given string.",
+  "example": {
+   "title": "Compare canonically equivalent strings",
+   "code": "const composed = \"é\";\nconst decomposed = \"e\\u0301\";\n\nconsole.log(composed === decomposed); // false\nconsole.log(composed.normalize(\"NFC\") === decomposed.normalize(\"NFC\")); // true",
+   "language": "javascript",
+   "explanation": "The two strings use different code-point sequences for the same character; NFC converts both to a comparable canonical form."
+  },
+  "useCases": [
+   {
+    "title": "Unicode-aware equality checks",
+    "scenario": "Compare user-entered text that may use composed or decomposed Unicode sequences."
+   },
+   {
+    "title": "Canonicalize text for storage",
+    "scenario": "Create a consistent representation before storing or indexing text."
+   },
+   {
+    "title": "Compatibility normalization",
+    "scenario": "Handle compatibility-equivalent characters when an application intentionally treats them alike."
+   }
+  ],
+  "related": [
+   "String.prototype.localeCompare",
+   "String.prototype.toLowerCase",
+   "String.prototype.toUpperCase"
+  ],
+  "since": "",
+  "keyPoints": [
+   "String.prototype.normalize() returns a string in a selected Unicode normalization form.",
+   "The form parameter accepts exactly NFC, NFD, NFKC, or NFKD.",
+   "NFC decomposes canonically and then recomposes canonically.",
+   "NFKC applies compatibility decomposition and then canonical composition."
+  ],
+  "gotchas": [
+   "Calling normalize() without an argument uses NFC, so choose another form explicitly when that is required."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "String methods::String.prototype.replace and replaceAll": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace",
+  "sourceTitle": "String.prototype.replace() - JavaScript | MDN",
+  "summary": "replace() replaces the first string-pattern match, or matches selected by a regular expression; replaceAll() replaces every match. Both accept replacement text or a function and return a new string.",
+  "explanation": "Both methods return a new string without changing the original. A string pattern is replaced once by replace(), while replaceAll() replaces every occurrence; regular expressions can be used, and callback replacements compute replacement text for each match.",
+  "syntax": "replace(pattern, replacement)\nreplaceAll(pattern, replacement)",
+  "parameters": [
+   {
+    "name": "pattern",
+    "type": "string | RegExp | object",
+    "description": "The string or regular expression, or an object providing Symbol.replace, to search for."
+   },
+   {
+    "name": "replacement",
+    "type": "string | function",
+    "description": "Replacement text, or a function invoked for each match to produce replacement text."
+   }
+  ],
+  "returns": "A new string with the selected matches replaced by the replacement text or callback results.",
+  "example": {
+   "title": "Replacing the first or every match",
+   "code": "const text = \"foo foo\";\n\nconst first = text.replace(\"foo\", \"bar\");\nconst every = text.replaceAll(\"foo\", \"bar\");\nconst doubled = text.replaceAll(/foo/g, (match) => match.toUpperCase());\n\nconsole.log(first);   // \"bar foo\"\nconsole.log(every);   // \"bar bar\"\nconsole.log(doubled); // \"FOO FOO\"",
+   "language": "javascript",
+   "explanation": "The snippet contrasts first-match replacement, all string matches, and a callback replacement for every match."
+  },
+  "useCases": [
+   {
+    "title": "First-match substitution",
+    "scenario": "Change one known occurrence while leaving later identical text untouched."
+   },
+   {
+    "title": "Global literal replacement",
+    "scenario": "Replace every occurrence of a literal substring."
+   },
+   {
+    "title": "Pattern-based transformation",
+    "scenario": "Apply a regular expression and calculate replacement text from each match."
+   }
+  ],
+  "related": [
+   "RegExp",
+   "RegExp.prototype[Symbol.replace]",
+   "String.prototype.match",
+   "String.prototype.replaceAll"
+  ],
+  "since": "",
+  "keyPoints": [
+   "replace() returns a new string after replacing matches with text or a callback result.",
+   "With a string pattern, replace() changes only the first occurrence.",
+   "replaceAll() changes every matching occurrence and returns the resulting string.",
+   "Both methods accept string or regular-expression patterns and string or function replacements.",
+   "replace() performs multiple replacements only when given a global regular expression.",
+   "The input string remains unchanged because these methods produce new strings."
+  ],
+  "gotchas": [
+   "A regular expression passed to replaceAll() must use the global (g) flag.",
+   "replace() replaces only the first occurrence when its pattern is a string.",
+   "Neither method mutates the original string; assign or use the returned value."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "String methods::String.prototype.slice and substring": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/substring",
+  "sourceTitle": "String.prototype.substring() - JavaScript | MDN",
+  "summary": "slice() and substring() return a new string from a start position up to, but excluding, an end position. slice() supports negative indexes from the end; substring() clamps negative or NaN positions to zero and swaps reversed positions.",
+  "explanation": "Both methods return a new string containing characters from a start position up to, but not including, an end position. slice() interprets negative positions from the end and returns an empty string when the normalized end is before the start; substring() clamps negative or NaN positions to zero and swaps its positions when the first exceeds the second.",
+  "syntax": "substring(indexStart)\nsubstring(indexStart, indexEnd)",
+  "parameters": [
+   {
+    "name": "indexStart",
+    "type": "number",
+    "description": "The index of the first character to include in the returned substring."
+   },
+   {
+    "name": "indexEnd",
+    "type": "number, optional",
+    "description": "The index of the first character to exclude in the returned substring."
+   }
+  ],
+  "returns": "A new string containing the extracted section of the string.",
+  "example": {
+   "title": "Comparing slice() and substring()",
+   "code": "const text = \"Mozilla\";\n\nconsole.log(text.slice(1, 4));      // \"ozi\"\nconsole.log(text.slice(-3));         // \"lla\"\nconsole.log(text.substring(5, 2));   // \"zil\"\nconsole.log(text.substring(-2, 3));  // \"Moz\"",
+   "language": "javascript",
+   "explanation": "This compares exclusive end positions, negative-index handling, and substring() argument swapping."
+  },
+  "useCases": [
+   {
+    "title": "Selecting text by range",
+    "scenario": "Extract a prefix, suffix, or bounded section using explicit character positions."
+   },
+   {
+    "title": "Reading from the end with slice()",
+    "scenario": "Use negative positions when selecting from the end of a string."
+   },
+   {
+    "title": "Handling unordered bounds",
+    "scenario": "Choose substring() when reversed bounds should still produce a range."
+   }
+  ],
+  "related": [
+   "String.prototype.substring()",
+   "String.prototype.slice()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The first argument identifies the inclusive starting position.",
+   "The optional second argument is an exclusive end position.",
+   "substring() differs from slice() by ordering its arguments before extracting when the first is larger."
+  ],
+  "gotchas": [
+   "substring() swaps the arguments when the first position is greater than the second, whereas slice() returns an empty string in that situation.",
+   "Negative and NaN arguments become zero for substring(); do not expect negative indexes to count backward."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "String methods::String.prototype.split": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split",
+  "sourceTitle": "String.prototype.split() | MDN Web Docs",
+  "summary": "Splits a string around a separator or pattern and returns the resulting substrings in an array. An optional limit caps the number of returned entries.",
+  "explanation": "`split()` searches the calling string from left to right for a separator, removes each separator match from the output, and returns the intervening substrings in an array. The separator may be a string, a regular expression, or another object implementing `Symbol.split`; an optional limit stops the result after that many entries.",
+  "syntax": "split(separator)\nsplit(separator, limit)",
+  "parameters": [
+   {
+    "name": "separator",
+    "type": "string | undefined | object",
+    "description": "The pattern at which each split occurs. It may be `undefined`, a string, or an object with a `Symbol.split` method, such as a regular expression."
+   },
+   {
+    "name": "limit",
+    "type": "number",
+    "description": "An optional non-negative integer limiting the number of substrings included in the result."
+   }
+  ],
+  "returns": "An Array of substrings produced by splitting the calling string at the separator.",
+  "example": {
+   "title": "Split a comma-separated string",
+   "code": "const text = \"red,green,blue\";\nconst colors = text.split(\",\");\nconsole.log(colors); // [\"red\", \"green\", \"blue\"]",
+   "language": "javascript",
+   "explanation": "Splits the string wherever the comma separator occurs and returns the resulting substrings in an array."
+  },
+  "useCases": [
+   {
+    "title": "Parse delimited text",
+    "scenario": "Turn comma-, tab-, or whitespace-delimited text into individual values."
+   },
+   {
+    "title": "Split with patterns",
+    "scenario": "Use a regular expression to divide text at variable separators."
+   },
+   {
+    "title": "Bound the result size",
+    "scenario": "Limit output when only the first few fields are needed."
+   }
+  ],
+  "related": [
+   "String",
+   "RegExp",
+   "Symbol.split"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The method searches for a pattern and divides the string into ordered substrings.",
+   "The method accepts a separator and an optional limit.",
+   "`separator` identifies where divisions occur and may be a string, `undefined`, or an object with `Symbol.split`.",
+   "Without a separator, the original string is returned as the sole array element.",
+   "`limit` is a non-negative integer restricting how many substrings are returned.",
+   "A zero limit always produces an empty array.",
+   "A string separator divides at every occurrence and returns the resulting strings."
+  ],
+  "gotchas": [
+   "Regular-expression separators with capturing groups add those captured values to the returned array, including `undefined` for unmatched groups.",
+   "An empty input with a non-empty separator produces an array containing one empty string.",
+   "Splitting an empty string with an empty string produces `[]`, not `[\"\"]`."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "String methods::String.prototype.startsWith, endsWith and includes": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String",
+  "sourceTitle": "String",
+  "summary": "Use `startsWith()`, `endsWith()`, and `includes()` to test whether a string begins with, ends with, or contains a substring. They perform case-sensitive checks and return `true` or `false`.",
+  "explanation": "These methods perform case-sensitive substring tests. `startsWith()` searches from a specified starting position, `endsWith()` treats its optional argument as the string’s effective end position, and `includes()` searches from an optional starting position; all return a boolean and reject regular expressions.",
+  "syntax": "startsWith(searchString)\nstartsWith(searchString, position)\nendsWith(searchString)\nendsWith(searchString, endPosition)\nincludes(searchString)\nincludes(searchString, position)",
+  "parameters": [
+   {
+    "name": "searchString",
+    "type": "string",
+    "description": "The string to test for at the beginning, end, or within the calling string; non-regexp values are converted to strings."
+   },
+   {
+    "name": "position / endPosition",
+    "type": "number, optional",
+    "description": "For `startsWith()` and `includes()`, the search starting index; defaults to 0. For `endsWith()`, the effective end position; defaults to the string length."
+   }
+  ],
+  "returns": "`true` when the requested characters satisfy the method's boundary or containment test, including for an empty search string; otherwise `false`.",
+  "example": {
+   "title": "Checking string boundaries and contents",
+   "code": "const value = \"JavaScript runtime\";\n\nconsole.log(value.startsWith(\"Java\")); // true\nconsole.log(value.endsWith(\"time\"));    // true\nconsole.log(value.includes(\"Script\"));  // true\nconsole.log(value.includes(\"script\"));  // false\n\nconsole.log(value.startsWith(\"Script\", 4)); // true\nconsole.log(value.endsWith(\"Java\", 10));    // true\nconsole.log(value.includes(\"run\", 10));     // true",
+   "language": "javascript",
+   "explanation": "The snippet checks a prefix, a suffix, and a substring, then demonstrates the optional position limits and case-sensitive matching."
+  },
+  "useCases": [
+   {
+    "title": "Boundary validation",
+    "scenario": "Validate filename extensions, URL suffixes, or protocol prefixes."
+   },
+   {
+    "title": "Substring detection",
+    "scenario": "Check whether user-facing text contains a required token."
+   },
+   {
+    "title": "Prefix dispatch",
+    "scenario": "Branch on command, event, or route prefixes."
+   },
+   {
+    "title": "Position-aware matching",
+    "scenario": "Limit a search to a particular region of a string."
+   }
+  ],
+  "related": [
+   "String.prototype.indexOf()",
+   "String.prototype.lastIndexOf()",
+   "String.prototype.match()",
+   "String.prototype.search()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "`endsWith(searchString, endPosition)` tests whether the string ends with the requested characters.",
+   "`includes(searchString, position)` tests for the search string anywhere at or after the optional position.",
+   "`startsWith(searchString, position)` tests for the search string beginning at the optional position."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ }
+}

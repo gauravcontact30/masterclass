@@ -1,5 +1,17 @@
 import type { AwsCategory, AwsHighlight } from "./aws-highlights";
 import { WORKED_EXAMPLES } from "./worked-examples";
+import { WEB_WORKED_EXAMPLES } from "./worked-examples-web";
+import { WEB_WORKED_EXAMPLES_2 } from "./worked-examples-web-2";
+
+/** Examples scoped to one handbook, so a short row name like `use` cannot match another tab. */
+const WEB_EXAMPLES: Record<string, (typeof WEB_WORKED_EXAMPLES)[string]> = { ...WEB_WORKED_EXAMPLES, ...WEB_WORKED_EXAMPLES_2, "useRouter and useSearchParams": WEB_WORKED_EXAMPLES.useSearchParams };
+const HANDBOOK_EXAMPLES: Record<string, typeof WEB_EXAMPLES> = {
+  "React 19+ — Components, Actions & Server UI": WEB_EXAMPLES,
+  "React 19+ Hooks — State, Effects & Actions": WEB_EXAMPLES,
+  "Next.js 16+ — Routing, Rendering & Caching": WEB_EXAMPLES,
+  "Next.js 16+ Hooks — App Router Navigation": WEB_EXAMPLES,
+  "Next.js 16+ APIs — Directives, Functions, Hooks & Config": WEB_EXAMPLES,
+};
 import { ROW_DETAILS } from "./row-details";
 import { ENGLISH_EXAM_VOCABULARY } from "./english-exam-vocabulary";
 import { AUTOMATION_HANDBOOKS } from "./automation-handbooks";
@@ -32,7 +44,7 @@ const handbook = (title: string, description: string, questionPrefix: string, ro
   const authored = ROW_DETAILS[title] ?? {};
   const topics = rows.map(row => {
     const detail = authored[row.name];
-    const code = row.code ?? WORKED_EXAMPLES[row.name];
+    const code = row.code ?? WORKED_EXAMPLES[row.name] ?? HANDBOOK_EXAMPLES[title]?.[row.name];
     return detail || code ? { ...row, ...detail, ...(code ? { code } : {}) } : row;
   });
   for (const topic of topics) counts.set(topic.category, (counts.get(topic.category) ?? 0) + 1);
@@ -79,7 +91,6 @@ export const TECHNOLOGY_HANDBOOKS = [
     { name: "React Compiler", category: "Performance", summary: "Use build-time automatic memoization while keeping the Rules of React intact." },
     { name: "Transitions", category: "Performance", summary: "Keep urgent input responsive while rendering non-urgent updates in the background." },
     { name: "Activity and View Transitions", category: "Modern React", summary: "Preserve hidden UI work and coordinate visual transitions in React 19.2 and later." },
-    { name: "Fragment refs", category: "Modern React", summary: "Observe and interact with the DOM children represented by a Fragment ref." },
     { name: "Conditional rendering", category: "Foundations", summary: "Render alternate UI states clearly with conditions, guards and early returns." },
     { name: "Lists and keys", category: "Foundations", summary: "Render collections with stable keys that represent item identity rather than array position." },
     { name: "Controlled inputs", category: "Actions & forms", summary: "Keep form values in React state when validation and coordinated updates need a single source of truth." },

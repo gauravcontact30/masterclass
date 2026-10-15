@@ -1,0 +1,1838 @@
+{
+ "Hooks::Loaded flags before rendering": {
+  "sourceUrl": "https://clerk.com/docs/nextjs/reference/objects/clerk",
+  "sourceTitle": "Clerk class - Objects - Next.js | Clerk Docs",
+  "summary": "Clerk exposes a loaded flag so hooks-based UI can wait for initialization before rendering Clerk-dependent content. The flag is true in ready or degraded states, not only when Clerk is fully operational.",
+  "explanation": "A Clerk hook exposes a loaded flag on the Clerk object. Treat false as initialization in progress, and render code that needs Clerk only when the flag becomes true; the documented ready states are ready and degraded.",
+  "syntax": "const clerk = useClerk(); clerk.loaded",
+  "parameters": [],
+  "returns": "The useClerk hook returns the Clerk object, including the loaded boolean and status fields.",
+  "example": {
+   "title": "Render after Clerk loads",
+   "code": "import { useClerk } from '@clerk/nextjs'\n\nexport default function Home() {\n  const clerk = useClerk()\n\n  return <main>{clerk.loaded && <Editor />}</main>\n}",
+   "language": "tsx",
+   "explanation": "Render the dependent component only after Clerk reports that it is loaded."
+  },
+  "useCases": [
+   {
+    "title": "Delay dependent components",
+    "scenario": "A component initializes an editor, widget, or other library only after Clerk is available."
+   },
+   {
+    "title": "Branch on Clerk status",
+    "scenario": "The UI needs a distinct loading, degraded, or error treatment."
+   },
+   {
+    "title": "Keep unrelated UI responsive",
+    "scenario": "Only part of a page requires authentication context or Clerk APIs."
+   }
+  ],
+  "related": [
+   "useClerk",
+   "loaded",
+   "status",
+   "Clerk",
+   "ready",
+   "degraded",
+   "loading",
+   "error"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Clerk's loaded flag represent?",
+    "answer": "Use the Clerk object's loaded boolean before rendering code that depends on Clerk. It is false while status is loading and true when status is ready or degraded.",
+    "followUp": "How should a component handle a failed initialization? The documented status union includes error, so it should provide an error or retry path rather than treating every non-loading state as successful."
+   },
+   {
+    "question": "How do you prevent rendering a component before Clerk is ready?",
+    "answer": "The flag prevents dependent UI from rendering during Clerk initialization. A common pattern is clerk.loaded && <DependentComponent />.",
+    "followUp": "How can you avoid delaying unrelated UI? Apply the check only around the dependent component, not around the entire application."
+   },
+   {
+    "question": "Does loaded mean Clerk is fully operational?",
+    "answer": "The flag is true for both ready and degraded statuses. Therefore, code should decide whether partial operation is acceptable instead of equating loaded with fully operational.",
+    "followUp": "When might a stricter check be needed? If the feature requires full Clerk functionality, inspect status and require ready explicitly."
+   }
+  ],
+  "keyPoints": [
+   "The loaded boolean tells you whether the Clerk object can be used by dependent code.",
+   "During initialization, loaded is false; use that period to show a loading state or omit dependent UI.",
+   "Both ready and degraded count as loaded, so the flag represents availability rather than perfect operation.",
+   "Use status when the loaded boolean is too coarse and the UI needs to distinguish loading, degraded, ready, and error."
+  ],
+  "gotchas": [
+   "The flag is false during initialization, so accessing Clerk-dependent UI before checking it can show an incorrect intermediate state.",
+   "Loaded also includes the degraded state; do not require status to be ready if the component can operate with partial Clerk functionality."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useAuth": {
+  "sourceUrl": "https://clerk.com/docs/core-1/references/react/use-auth",
+  "sourceTitle": "useAuth() - Client-side Helpers | Clerk Docs",
+  "summary": "The useAuth() hook exposes lightweight authentication state, user and session IDs, organization context, and session helpers. It can asynchronously retrieve the current session token or a custom JWT without requiring the complete user object.",
+  "explanation": "Call useAuth() inside a Clerk-supported React component to obtain lightweight authentication state, the current user and session identifiers, and helper methods. Check loading and signed-in status before using protected identifiers or requesting a token; getToken() asynchronously returns the current session token or a custom JWT template.",
+  "syntax": "const { isLoaded, isSignedIn, userId, sessionId, getToken } = useAuth(options?)",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "null | { treatPendingAsSignedOut?: boolean; }",
+    "description": "Optional configuration for the hook. treatPendingAsSignedOut determines whether pending sessions count as signed out and defaults to true."
+   }
+  ],
+  "returns": "An object containing authentication state and active-session helpers, including isLoaded, isSignedIn, userId, sessionId, organization fields, signOut(), and getToken().",
+  "example": {
+   "title": "Read auth state and fetch a session token",
+   "code": "import { useAuth } from '@clerk/nextjs'\n\nexport default function Page() {\n  const { isLoaded, isSignedIn, userId, sessionId, getToken } = useAuth()\n\n  if (!isLoaded) return <p>Loading...</p>\n  if (!isSignedIn) return <p>Sign in required</p>\n\n  async function loadData() {\n    const token = await getToken()\n    return fetch('/api/data', {\n      headers: token ? { Authorization: `Bearer ${token}` } : {},\n    })\n  }\n\n  return <button onClick={loadData}>Load data for {userId}</button>\n}",
+   "language": "tsx",
+   "explanation": "Reads the loaded authentication state and identifiers, then obtains the current session token for an authenticated request."
+  },
+  "useCases": [
+   {
+    "title": "Gate UI by authentication state",
+    "scenario": "A component needs to show different content while Clerk initializes, when signed out, and when signed in."
+   },
+   {
+    "title": "Authorize an API request",
+    "scenario": "A client calls an API that expects Clerk authentication."
+   },
+   {
+    "title": "Reference auth identifiers",
+    "scenario": "A feature needs the current account or session identifier for local state, routing, or telemetry."
+   },
+   {
+    "title": "Read organization context",
+    "scenario": "A multi-tenant interface needs the active organization and role."
+   }
+  ],
+  "related": [
+   "isLoaded",
+   "isSignedIn",
+   "userId",
+   "sessionId",
+   "orgId",
+   "orgRole",
+   "getToken",
+   "signOut"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does useAuth() solve, and what kind of data does it expose?",
+    "answer": "useAuth() exposes the minimal authentication context needed by a client component: loading and signed-in state, user and session identifiers, organization context, and session-management helpers. It avoids requiring the complete user object when a component only needs auth metadata or a token.",
+    "followUp": "How should a component avoid acting on incomplete auth state? Check isLoaded first, then branch on isSignedIn before using protected identifiers or calling getToken()."
+   },
+   {
+    "question": "How do you use useAuth() to authenticate a request?",
+    "answer": "getToken() returns a promise for the current session token and can also request a custom JWT template. Await the result and use the token when making an authenticated request to an external resource.",
+    "followUp": "What should happen if the result is null? Treat the request as unauthenticated or refresh the application’s auth flow rather than sending an invalid Authorization header."
+   },
+   {
+    "question": "What does treatPendingAsSignedOut control?",
+    "answer": "The hook accepts an options object with treatPendingAsSignedOut. When true, pending sessions are considered signed out; the documentation lists true as the default.",
+    "followUp": "When might you change this option? When the UI must distinguish a pending session from a genuinely signed-out state, configure it to preserve that distinction and handle the pending state explicitly."
+   }
+  ],
+  "keyPoints": [
+   "Use the hook for current authentication state plus operations on the active session, rather than loading the complete user object.",
+   "The returned auth context can provide the user ID, session ID, session token, organization ID, and organization role.",
+   "isSignedIn reports whether the current user is signed in.",
+   "userId identifies the current user and is suitable when only the identifier is needed.",
+   "sessionId identifies the current active session.",
+   "getToken retrieves the current session token or a custom JWT template for downstream requests."
+  ],
+  "gotchas": [
+   "The treatPendingAsSignedOut option defaults to true, so pending sessions are treated as signed out unless you explicitly change it.",
+   "Do not treat isSignedIn or identifiers as final before Clerk has initialized; gate rendering or requests with isLoaded.",
+   "getToken() is asynchronous and may resolve to null, so await it and handle the absence of a token before setting an authorization header."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useClerk": {
+  "sourceUrl": "https://clerk.com/docs/reference/hooks/use-clerk",
+  "sourceTitle": "useClerk() | Clerk Docs",
+  "summary": "useClerk() provides the Clerk object inside a React application. Use it for imperative operations such as opening a sign-in modal or implementing advanced custom authentication flows.",
+  "explanation": "Call useClerk() inside a React component to obtain the Clerk object. Use that object for imperative authentication and session operations, such as opening a sign-in modal; it also exposes the methods and properties documented in the Clerk reference.",
+  "syntax": "const clerk = useClerk()",
+  "parameters": [],
+  "returns": "The Clerk object, including the methods and properties listed in the Clerk reference.",
+  "example": {
+   "title": "Open a sign-in modal",
+   "code": "\"use client\"\n\nimport { useClerk } from \"@clerk/nextjs\"\n\nexport default function SignInButton() {\n  const clerk = useClerk()\n\n  return <button onClick={() => clerk.openSignIn({})}>Sign in</button>\n}",
+   "language": "tsx",
+   "explanation": "The component gets the Clerk object from the hook and uses it to open the sign-in modal when the button is clicked."
+  },
+  "useCases": [
+   {
+    "title": "Open sign-in imperatively",
+    "scenario": "A custom sign-in button needs to launch Clerk's modal rather than render a prebuilt button."
+   },
+   {
+    "title": "Build custom OAuth",
+    "scenario": "An application implements a custom OAuth flow that cannot use a standard Clerk Component."
+   },
+   {
+    "title": "Replace Clerk Components",
+    "scenario": "A custom authentication experience needs direct access to Clerk methods and properties."
+   }
+  ],
+  "related": [
+   "Clerk",
+   "openSignIn()",
+   "Clerk Components",
+   "useUser()",
+   "useAuth()",
+   "useSignIn()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useClerk() return?",
+    "answer": "useClerk() returns the Clerk object. That object provides the methods and properties listed in the Clerk reference, enabling imperative operations such as opening the sign-in modal.",
+    "followUp": "When is this hook appropriate? Use it for advanced cases, such as a fully custom OAuth flow or when direct access to Clerk is needed instead of a Clerk Component."
+   },
+   {
+    "question": "How can you open a sign-in modal with useClerk()?",
+    "answer": "Call useClerk() in a React component, store the returned object, and invoke a method in an event handler. For example, clerk.openSignIn({}) opens the sign-in modal.",
+    "followUp": "How would you adapt this for another imperative operation? Select the relevant method from the Clerk reference and call it on the returned Clerk object."
+   },
+   {
+    "question": "When should you avoid useClerk()?",
+    "answer": "The hook is intended for advanced use cases rather than ordinary authentication UI. It can help build alternatives to Clerk Components when a custom implementation is required.",
+    "followUp": "What is the trade-off of using it? Direct access gives flexibility, but it exposes lower-level APIs and makes the application responsible for its custom interaction flow."
+   }
+  ],
+  "keyPoints": [
+   "The hook gives a React component direct access to Clerk's imperative API.",
+   "Use the returned object when replacing a prebuilt Clerk Component with custom UI.",
+   "The returned object is the entry point to Clerk methods and properties documented in the reference.",
+   "Call openSignIn() on the returned object to trigger sign-in UI programmatically.",
+   "A typical button handler can use the hook to display the sign-in modal on demand."
+  ],
+  "gotchas": [
+   "Prefer Clerk Components for ordinary authentication UI; reserve this hook for advanced custom flows or as an escape hatch to the Clerk object.",
+   "A custom OAuth flow is an intended advanced scenario, but the hook is not presented as the default approach for routine sign-in UI.",
+   "The hook provides low-level access and should be used when a component-based solution does not meet the requirement."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useOrganization": {
+  "sourceUrl": "https://clerk.com/docs/react/reference/hooks/use-organization",
+  "sourceTitle": "useOrganization() - Hooks - React | Clerk Docs",
+  "summary": "Reads the active Clerk organization and can load its memberships and other related collections. Optional settings control pagination, filtering, infinite loading, and cache behavior.",
+  "explanation": "In a React component, useOrganization() exposes the active Organization plus loading state and optionally related paginated resources. Pass resource options such as memberships to fetch data that is not populated by default; the organization may be absent when no organization is active.",
+  "syntax": "useOrganization(options?)",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "UseOrganizationOptions",
+    "description": "Optional resource-loading and pagination configuration, including memberships, invitations, membershipRequests, and domains."
+   }
+  ],
+  "returns": "An object containing loading state and the active organization, with optionally requested paginated organization resources such as memberships, invitations, membership requests, and domains.",
+  "example": {
+   "title": "Display the active organization",
+   "code": "import { useOrganization } from '@clerk/react'\n\nexport default function OrganizationPage() {\n  const { isLoaded, organization } = useOrganization({\n    memberships: { pageSize: 20 },\n  })\n\n  if (!isLoaded) return <p>Loading…</p>\n  if (!organization) return <p>No active organization</p>\n\n  return (\n    <section>\n      <h1>{organization.name}</h1>\n      <p>Members: {organization.memberships?.count ?? 0}</p>\n    </section>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Reads the active organization and requests its memberships with up to 20 results per page."
+  },
+  "useCases": [
+   {
+    "title": "Show the active organization’s name and details",
+    "scenario": "Organization dashboard"
+   },
+   {
+    "title": "Load and paginate the active organization’s memberships",
+    "scenario": "Member administration"
+   },
+   {
+    "title": "Filter organization memberships for a searchable member list",
+    "scenario": "Directory search"
+   },
+   {
+    "title": "Append collection pages for infinite scrolling",
+    "scenario": "Long collections"
+   }
+  ],
+  "related": [
+   "Organization object",
+   "useOrganization()",
+   "memberships",
+   "invitations",
+   "membershipRequests",
+   "domains",
+   "PaginatedResources"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useOrganization() provide?",
+    "answer": "useOrganization() retrieves attributes of the currently active organization. It returns loading state and the organization object, while optional resource settings request memberships or other related collections.",
+    "followUp": "How would you load members? Pass memberships: true for default loading, or provide an object such as memberships: { pageSize: 20 } when pagination control is needed."
+   },
+   {
+    "question": "How are related organization collections loaded?",
+    "answer": "Memberships, invitations, membership requests, and domains are not populated by default. Request the collection explicitly by passing true or an options object.",
+    "followUp": "How can an infinite-scroll list be implemented? Set the collection's infinite option to true so newly fetched data is appended instead of replacing the existing list."
+   },
+   {
+    "question": "What kinds of options can be passed to the hook?",
+    "answer": "The hook accepts one object containing optional resource properties. A resource can be true or an object with pagination and resource-specific options, including page size and infinite loading behavior.",
+    "followUp": "What does keepPreviousData do? When true, previously fetched data remains in the cache until the new data arrives."
+   }
+  ],
+  "keyPoints": [
+   "Use the hook to read data for the organization currently selected as active in the Clerk session.",
+   "Its configuration is one object whose properties control which related organization resources are fetched.",
+   "Set infinite to true when paginated results should accumulate, such as for an infinite-scroll member list.",
+   "The infinite option is designed for interfaces that load additional collection pages as the user scrolls.",
+   "Use keepPreviousData to avoid discarding the current collection while a refreshed page is loading."
+  ],
+  "gotchas": [
+   "Related collections are not loaded unless requested through the hook options.",
+   "Use true for default collection loading or an options object when pagination and filtering are needed.",
+   "If you configure pagination without a page size, the collection defaults to 10 results per page."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useOrganizationList": {
+  "sourceUrl": "https://clerk.com/docs/react/reference/hooks/use-organization-list",
+  "sourceTitle": "useOrganizationList() - Hooks - React | Clerk Docs",
+  "summary": "Lists a user's Organization memberships, invitations, and suggestions, and provides methods to create Organizations and manage the Active Organization. Resources are loaded only when explicitly enabled.",
+  "explanation": "Call the hook with a resource option such as userMemberships to opt into loading organization data. The returned paginated resource exposes membership data and pagination controls, while setActive changes the current Active Organization; the hook also provides invitation, suggestion, and creation capabilities.",
+  "syntax": "useOrganizationList(options?)",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Enables and configures the user's Organization memberships, invitations, or suggestions resources. Resource options can include initialPage, pageSize, status, infinite, and keepPreviousData."
+   }
+  ],
+  "returns": "Returns an object containing isLoaded, resource-specific paginated data and controls, createOrganization(), and setActive().",
+  "example": {
+   "title": "Organization switcher",
+   "code": "import { useOrganizationList } from '@clerk/nextjs'\n\nexport default function OrganizationSwitcher() {\n  const { isLoaded, setActive, userMemberships } = useOrganizationList({\n    userMemberships: { pageSize: 5, keepPreviousData: true },\n  })\n\n  if (!isLoaded) return <p>Loading…</p>\n\n  return (\n    <ul>\n      {userMemberships?.data.map(({ organization }) => (\n        <li key={organization.id}>\n          <button onClick={() => setActive({ organization: organization.id })}>\n            {organization.name}\n          </button>\n        </li>\n      ))}\n    </ul>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Loads the signed-in user's memberships, displays each Organization, and makes the selected one active."
+  },
+  "useCases": [
+   {
+    "title": "Organization switcher",
+    "scenario": "An authenticated user needs to choose among Organizations they belong to."
+   },
+   {
+    "title": "Invitation management",
+    "scenario": "A user must review and accept pending Organization invitations."
+   },
+   {
+    "title": "Paginated membership list",
+    "scenario": "A dashboard displays many memberships without loading them all at once."
+   },
+   {
+    "title": "Organization creation",
+    "scenario": "A product lets users create an Organization from a custom interface."
+   }
+  ],
+  "related": [
+   "useOrganization",
+   "useOrganizationCreationDefaults",
+   "setActive",
+   "userMemberships",
+   "userInvitations",
+   "userSuggestions",
+   "PaginatedResources"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useOrganizationList provide?",
+    "answer": "The hook exposes the signed-in user's organization memberships, invitations, and suggestions, plus methods for creating organizations and managing the Active Organization. Resource properties are opt-in, so pass true or an options object to fetch them.",
+    "followUp": "How would you avoid replacing earlier results while loading more memberships? Set infinite to true in the userMemberships options so newly fetched data is appended."
+   },
+   {
+    "question": "How would you build an organization switcher?",
+    "answer": "Use the userMemberships option to request membership data, then read its data array. Each membership includes an organization that can be displayed or selected.",
+    "followUp": "How do you switch the selected organization? Call setActive with the chosen organization's ID."
+   },
+   {
+    "question": "How can membership results be paginated?",
+    "answer": "Pagination options include initialPage and pageSize, while keepPreviousData preserves prior results during fetching. The infinite option appends newly fetched results instead of replacing the existing list.",
+    "followUp": "What is the default page size? It is 10 results per page unless pageSize is specified."
+   }
+  ],
+  "keyPoints": [
+   "The hook covers three user-scoped organization resources: memberships, invitations, and suggestions.",
+   "Besides list resources, it supports organization creation and active-organization management.",
+   "Configure the hook through one options object containing resource-specific settings.",
+   "Enable each resource with true or provide an object when pagination or fetching behavior needs configuration.",
+   "Set pageSize to control the maximum results returned in each page.",
+   "The infinite option is suited to interfaces that keep extending one list as pages load."
+  ],
+  "gotchas": [
+   "The membership, invitation, and suggestion resources remain empty unless explicitly enabled with true or a configuration object.",
+   "Use infinite when implementing an append-as-you-fetch list; otherwise new pages replace the current list.",
+   "Do not assume the hook fetches every organization-related resource automatically; opt in only to what the UI needs."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useReverification": {
+  "sourceUrl": "https://clerk.com/docs/nextjs/reference/hooks/use-reverification",
+  "sourceTitle": "useReverification() - Hooks - Next.js | Clerk Docs",
+  "summary": "Wrap a sensitive request so Clerk can require a fresh credential check before it completes. Successful reverification automatically retries the original request.",
+  "explanation": "useReverification wraps a request-making function and manages the session reverification flow. If Clerk determines that the user's credentials are stale, it presents a modal; successful verification automatically retries the original request, while a custom onNeedsReverification handler can replace the default UI.",
+  "syntax": "useReverification(fetcher, options?)",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "object",
+    "description": "An optional options object. Its onNeedsReverification callback receives level, complete, cancel, and inProgress for a custom UI."
+   },
+   {
+    "name": "fetcher",
+    "type": "() => Promise<unknown>",
+    "description": "The function whose request should be protected and retried after successful reverification."
+   },
+   {
+    "name": "onNeedsReverification",
+    "type": "(properties: NeedsReverificationParameters) => void",
+    "description": "Callback invoked when reverification is needed; use it to build custom UI instead of the default."
+   }
+  ],
+  "returns": "A function that invokes the wrapped request and manages reverification, retrying the original request after successful verification.",
+  "example": {
+   "title": "Protect a sensitive request",
+   "code": "\"use client\"\n\nimport { useReverification } from '@clerk/nextjs'\n\nexport default function TransferButton() {\n  const transferMoney = useReverification(() =>\n    fetch('/api/transfer', {\n      method: 'POST',\n      body: JSON.stringify({ amountInCents: 5000 }),\n    })\n  )\n\n  return <button onClick={() => transferMoney()}>Transfer</button>\n}",
+   "language": "tsx",
+   "explanation": "Wrap the sensitive request with the hook. Clerk shows its reverification UI when the request needs a fresh credential check, then retries the original request after successful verification."
+  },
+  "useCases": [
+   {
+    "title": "Protect sensitive mutations",
+    "scenario": "A signed-in user submits a bank transfer or other high-impact operation."
+   },
+   {
+    "title": "Render custom reverification UI",
+    "scenario": "An application needs a branded or specialized credential prompt."
+   },
+   {
+    "title": "Enforce credential freshness",
+    "scenario": "A protected client request may occur after the user's credential freshness window expires."
+   }
+  ],
+  "related": [
+   "NeedsReverificationParameters",
+   "onNeedsReverification",
+   "level",
+   "complete",
+   "cancel",
+   "inProgress",
+   "has()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useReverification do?",
+    "answer": "It wraps a function that performs a sensitive request. If Clerk reports that reverification is needed, the hook prompts the user and automatically retries the original request after successful verification.",
+    "followUp": "How would you replace the built-in prompt? Pass onNeedsReverification and render custom UI from the supplied flow state; call complete after verification or cancel to reject the request."
+   },
+   {
+    "question": "What happens when reverification is required?",
+    "answer": "The hook uses a prebuilt modal by default when the request requires a fresh credential check. The original request is retried after the user successfully verifies their credentials.",
+    "followUp": "What happens if the user does not verify? The custom flow can call cancel, which marks reverification as cancelled and rejects the original request."
+   },
+   {
+    "question": "How do you implement custom reverification UI?",
+    "answer": "onNeedsReverification is an optional callback receiving the reverification flow properties. Those properties include level, complete, cancel, and inProgress, allowing an application to build its own UI.",
+    "followUp": "Which callback finishes the protected operation? complete marks the flow complete and retries the original request; cancel rejects it instead."
+   }
+  ],
+  "keyPoints": [
+   "Use the hook when a signed-in user must confirm their credentials again before a sensitive operation can proceed.",
+   "The default behavior displays Clerk's modal when the wrapped request requires fresh verification.",
+   "A successful credential check causes the previously intercepted request to run again automatically.",
+   "Use onNeedsReverification to opt into handling the prompt and flow with application-owned UI.",
+   "Custom handlers receive state and control members for displaying progress and deciding how the flow ends.",
+   "The default credential freshness period can be changed for server-side checks with Clerk's has helper."
+  ],
+  "gotchas": [
+   "By default, credentials remain valid for 10 minutes after sign-in or reverification; actions beyond that window can trigger the flow.",
+   "Providing onNeedsReverification means your handler must provide the custom reverification UI and coordinate completion or cancellation."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useSession": {
+  "sourceUrl": "https://clerk.com/docs/react/reference/hooks/use-session",
+  "sourceTitle": "useSession() - Hooks - React | Clerk Docs",
+  "summary": "useSession() exposes the current user's Clerk session, authentication-loading state, sign-in state, and active-session helpers. Use the session's lastActiveAt Date to show when it was most recently active.",
+  "explanation": "In a React application, call useSession() to obtain Clerk's loading and sign-in state together with the current session. After Clerk has loaded and the user is signed in, read session.lastActiveAt, a Date, or use the session's available helpers.",
+  "syntax": "const { isLoaded, session, isSignedIn } = useSession()",
+  "parameters": [],
+  "returns": "An object containing isLoaded, isSignedIn, session, and helpers for setting the active session. The session value represents the current user's Session object.",
+  "example": {
+   "title": "Display the active session's last-active time",
+   "code": "import { useSession } from '@clerk/react'\n\nexport default function SessionInfo() {\n  const { isLoaded, session, isSignedIn } = useSession()\n\n  if (!isLoaded) return <p>Loading...</p>\n  if (!isSignedIn) return <p>Sign in to view this page</p>\n\n  return <p>Last active: {session.lastActiveAt.toLocaleString()}</p>\n}",
+   "language": "tsx",
+   "explanation": "Reads the Clerk authentication state and displays the active session's last-active time after loading and sign-in checks."
+  },
+  "useCases": [
+   {
+    "title": "Show session activity",
+    "scenario": "A profile or account screen needs to show when the current authentication session was last active."
+   },
+   {
+    "title": "Gate protected UI",
+    "scenario": "A protected React view must render different content while Clerk loads, for signed-out users, and for signed-in users."
+   },
+   {
+    "title": "Manage the active session",
+    "scenario": "An application needs to inspect or change which session is active through Clerk's session helpers."
+   }
+  ],
+  "related": [
+   "Session object",
+   "setActive()",
+   "isLoaded",
+   "isSignedIn",
+   "lastActiveAt"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useSession() provide?",
+    "answer": "useSession() exposes the current user's session and helpers for setting the active session. Its returned state also lets the component determine whether Clerk has loaded and whether the user is signed in.",
+    "followUp": "What should a component do before reading session properties? First wait for isLoaded, then handle the signed-out state using isSignedIn; only afterward access session."
+   },
+   {
+    "question": "How should isLoaded be used?",
+    "answer": "isLoaded indicates that Clerk has loaded the current authentication state. It starts false, becomes true after loading, and may become false during authentication updates.",
+    "followUp": "Why can it change after initial rendering? Operations such as switching organizations through setActive() can update the authentication state."
+   },
+   {
+    "question": "How do you display the session's last-active time?",
+    "answer": "session is the current user's Session object. Its lastActiveAt property is a Date representing when the session was last active, so it can be formatted with toLocaleString().",
+    "followUp": "How can a component avoid a runtime error? Guard access with loading and signed-in checks before dereferencing session."
+   }
+  ],
+  "keyPoints": [
+   "The hook exposes the current user's session to a React component.",
+   "In addition to session data, the return value includes helpers for changing the active session.",
+   "Use isLoaded to distinguish the initial or updating authentication state from a loaded state.",
+   "The session field represents the currently active user session.",
+   "Use session.lastActiveAt when the UI needs to show the session's most recent activity time."
+  ],
+  "gotchas": [
+   "Do not treat isLoaded as permanently true: it can become false again while authentication state changes.",
+   "Format lastActiveAt as a date rather than treating it as a string."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useSessionList": {
+  "sourceUrl": "https://clerk.com/docs/react/reference/hooks/use-session-list",
+  "sourceTitle": "useSessionList() - Hooks - React | Clerk Docs",
+  "summary": "useSessionList lists Session objects registered on the current client device. Use it to render session choices for an account switcher, after Clerk has loaded authentication state.",
+  "explanation": "Call the hook in a React component and read its returned state. Wait for isLoaded before using sessions; once loaded, sessions contains the client device's registered SessionResource objects, while setActive can be used to choose the active session or organization.",
+  "syntax": "const { isLoaded, sessions, setActive } = useSessionList()",
+  "parameters": [],
+  "returns": "An object containing isLoaded, sessions, and setActive. Before loading, isLoaded is false and sessions is undefined; after loading, sessions is SessionResource[].",
+  "example": {
+   "title": "Render client sessions",
+   "code": "import { useSessionList } from '@clerk/react'\n\nexport default function AccountSwitcher() {\n  const { isLoaded, sessions } = useSessionList()\n\n  if (!isLoaded) return <p>Loading sessions...</p>\n\n  return (\n    <ul>\n      {sessions.map((session) => (\n        <li key={session.id}>{session.id}</li>\n      ))}\n    </ul>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Renders the sessions registered on the client after Clerk finishes loading."
+  },
+  "useCases": [
+   {
+    "title": "Account switching",
+    "scenario": "A user needs to choose among identities or sessions already registered in the same browser."
+   },
+   {
+    "title": "Session count",
+    "scenario": "The UI should show how many client-side sessions are available."
+   },
+   {
+    "title": "Active-context selection",
+    "scenario": "A product needs a control that changes the active session or organization."
+   }
+  ],
+  "related": [
+   "useSession",
+   "setActive",
+   "SessionResource",
+   "useOrganizationList"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useSessionList return?",
+    "answer": "It returns the current user's sessions registered on the client device. The result includes isLoaded, sessions, and setActive; sessions is available as SessionResource[] after loading.",
+    "followUp": "How would you avoid a race while switching organizations? Treat isLoaded as potentially false during the update and withhold session-dependent rendering until it is true again."
+   },
+   {
+    "question": "Why must a component handle isLoaded?",
+    "answer": "Check isLoaded before reading or rendering sessions. Before Clerk finishes loading, sessions is undefined, so rendering sessions.length immediately can fail.",
+    "followUp": "What should a component render during that state? A loading UI or another placeholder, then the session list after isLoaded becomes true."
+   },
+   {
+    "question": "How can this hook support an account switcher?",
+    "answer": "The hook exposes setActive, which sets the active session and/or organization. That makes the returned data suitable for account-switching interfaces when each session is presented as a selectable option.",
+    "followUp": "What state transition must the UI tolerate after calling setActive? Clerk authentication state may update and isLoaded can temporarily revert to false."
+   }
+  ],
+  "keyPoints": [
+   "useSessionList provides the current client-side session collection through the sessions property.",
+   "The collection is scoped to sessions registered on the device where the React application is running.",
+   "Use isLoaded as the readiness flag before consuming the session collection.",
+   "The returned setActive helper can select an active session, an organization, or both.",
+   "The sessions array can be counted or iterated to build session-aware UI."
+  ],
+  "gotchas": [
+   "Do not assume loading ends permanently: isLoaded can become false again during authentication-state updates, so loading-sensitive UI should account for that.",
+   "This is a client-device session list, not an unrestricted server-side list of every session in the application."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useSignIn and useSignUp": {
+  "sourceUrl": "https://clerk.com/docs/guides/development/custom-flows/authentication/email-password",
+  "sourceTitle": "Build a custom email/password authentication flow",
+  "summary": "useSignIn() and useSignUp() expose Clerk's SignIn and SignUp resources so you can build authentication screens and advance each flow yourself. Handle verification or missing requirements, then finalize a completed flow to activate its session.",
+  "explanation": "The hooks expose SignIn and SignUp resources for implementing authentication screens yourself. Start the appropriate flow, collect any required verification or missing fields, and finalize the resource when its status is complete so Clerk can establish the active session.",
+  "syntax": "const { isLoaded, signIn } = useSignIn();\nconst { isLoaded, signUp } = useSignUp();",
+  "parameters": [
+   {
+    "name": "emailAddress",
+    "type": "string",
+    "description": "The email address supplied to the password sign-up attempt."
+   },
+   {
+    "name": "password",
+    "type": "string",
+    "description": "The password supplied to the password sign-up attempt."
+   }
+  ],
+  "returns": "useSignIn() and useSignUp() provide the SignIn and SignUp resources used to control custom authentication flows.",
+  "example": {
+   "title": "Start a password sign-up",
+   "code": "import { useSignUp } from '@clerk/nextjs';\n\nexport default function SignUpForm() {\n  const { isLoaded, signUp } = useSignUp();\n\n  async function submit(emailAddress: string, password: string) {\n    if (!isLoaded) return;\n    await signUp.password({ emailAddress, password });\n    await signUp.verifications.sendEmailCode();\n  }\n\n  return <button onClick={() => submit('user@example.com', 'password123!')}>Sign up</button>;\n}",
+   "language": "tsx",
+   "explanation": "This component obtains the SignUp resource, starts password sign-up, and sends an email verification code once the Clerk client is loaded."
+  },
+  "useCases": [
+   {
+    "title": "Custom password sign-up",
+    "scenario": "A branded registration form needs email/password sign-up with email verification."
+   },
+   {
+    "title": "Custom password sign-in",
+    "scenario": "A product replaces Clerk's prebuilt login UI with its own email/password screen."
+   },
+   {
+    "title": "Handle missing sign-up requirements",
+    "scenario": "An OAuth response requires additional account information before completion."
+   },
+   {
+    "title": "Separate sign-in and sign-up screens",
+    "scenario": "Separate registration and login pages need equivalent custom authentication logic."
+   }
+  ],
+  "related": [
+   "SignIn",
+   "SignUp",
+   "signUp.password()",
+   "signUp.verifications.sendEmailCode()",
+   "signUp.verifications.verifyEmailCode()",
+   "signUp.finalize()",
+   "signIn.password()",
+   "missing_requirements"
+  ],
+  "since": "",
+  "keyPoints": [
+   "useSignUp returns the resource used to drive a custom registration flow.",
+   "useSignIn returns the resource used to drive a custom login flow.",
+   "Start password registration with signUp.password(), supplying the collected email address and password.",
+   "Request email verification after creating the password-based sign-up attempt.",
+   "Verify the submitted email code through the sign-up verification resource.",
+   "A complete sign-up status indicates that the registration requirements have been met.",
+   "Finalize the completed sign-up to make its new session active."
+  ],
+  "gotchas": [
+   "Sending a verification code does not finish registration; verify the code and check that signUp.status is complete before finalizing.",
+   "Call finalize only after the sign-up requirements have been satisfied."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useUser": {
+  "sourceUrl": "https://clerk.com/docs/react/reference/hooks/use-user",
+  "sourceTitle": "useUser() - Hooks - React | Clerk Docs",
+  "summary": "Reactively access Clerk's current User object, signed-in status, and authentication loading state with useUser(). Use the returned User object to read account data and manage the account.",
+  "explanation": "Call useUser() inside a React component to reactively obtain Clerk's current user, authentication status, and loading state. Wait for isLoaded before making decisions; after loading, use isSignedIn to narrow access to user properties. The returned User object also exposes account-management methods such as update() and reload().",
+  "syntax": "const { isLoaded, isSignedIn, user } = useUser()",
+  "parameters": [],
+  "returns": "An object containing isLoaded, isSignedIn, and user. isLoaded indicates whether Clerk has loaded authentication state; isSignedIn indicates whether the user is signed in; user is the current User object or null when signed out.",
+  "example": {
+   "title": "Read the current user",
+   "code": "import { useUser } from '@clerk/react'\n\nexport default function Profile() {\n  const { isLoaded, isSignedIn, user } = useUser()\n\n  if (!isLoaded) return <p>Loading...</p>\n  if (!isSignedIn) return <p>Sign in to view your profile.</p>\n\n  return <p>Hello, {user.id}!</p>\n}",
+   "language": "tsx",
+   "explanation": "This component waits for Clerk to initialize, handles signed-out users, and then reads the authenticated user's ID."
+  },
+  "useCases": [
+   {
+    "title": "Render account information",
+    "scenario": "A profile or account page needs to display the signed-in person's Clerk data."
+   },
+   {
+    "title": "Gate user-specific UI",
+    "scenario": "A protected view must show a loading state, then either authenticated content or a sign-in prompt."
+   },
+   {
+    "title": "Update user information",
+    "scenario": "A settings form needs to change account details through the User object."
+   },
+   {
+    "title": "Reload current user data",
+    "scenario": "A component must refresh account data after an external change."
+   }
+  ],
+  "related": [
+   "User",
+   "isLoaded",
+   "isSignedIn",
+   "update()",
+   "reload()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useUser() provide?",
+    "answer": "useUser() returns the current User object together with isLoaded and isSignedIn. isLoaded indicates whether Clerk has initialized its authentication state, while isSignedIn indicates whether a user is authenticated.",
+    "followUp": "Why should a component check isLoaded first? Because authentication state is not ready before loading completes, so rendering decisions made earlier can be incorrect."
+   },
+   {
+    "question": "How should a component safely render user data?",
+    "answer": "A component should first render a loading state when isLoaded is false. Once loaded, it should handle the signed-out case using isSignedIn before accessing user data.",
+    "followUp": "What should happen if loading becomes false again? The component should return to its loading or transition state instead of assuming the previous user state remains current."
+   },
+   {
+    "question": "How can the returned User object be managed?",
+    "answer": "The returned User object provides account data and methods for managing the account. Clerk's examples show update() for changing user information and reload() for retrieving the latest user data.",
+    "followUp": "When is reload() useful? Use it when user information may have changed elsewhere and the component needs the newest representation."
+   }
+  ],
+  "keyPoints": [
+   "Use the hook to obtain the authenticated user's complete Clerk User object inside a React component.",
+   "The isSignedIn value lets the UI distinguish authenticated and unauthenticated states.",
+   "Use isLoaded as the readiness signal before making authentication-dependent rendering decisions.",
+   "The user value contains the current account's data after authentication has been established.",
+   "The User object includes account-management capabilities, including the documented update and reload methods."
+  ],
+  "gotchas": [
+   "Do not assume isLoaded stays true forever; it may become false again while Clerk updates authentication state."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Organizations & data::Invitations": {
+  "sourceUrl": "https://clerk.com/docs/guides/organizations/add-members/invitations",
+  "sourceTitle": "Send and manage Organization invitations via Clerk - Add members ... | Clerk Docs",
+  "summary": "Invite users to an organization by email and assign a role. Clerk provides the invitation link and handles sign-in, sign-up, and acceptance through its prebuilt flow.",
+  "explanation": "An organization member with the required permission calls inviteMember() on the active organization with an email address and role. Clerk sends the recipient a unique invitation link; existing users can accept it, while new users must sign up first. The prebuilt components and Account Portal handle the invitation flow, including acceptance.",
+  "syntax": "organization.inviteMember({ emailAddress, role })",
+  "parameters": [
+   {
+    "name": "emailAddress",
+    "type": "string",
+    "description": "The email address of the user to invite."
+   },
+   {
+    "name": "role",
+    "type": "string",
+    "description": "The Role that will be assigned to the user."
+   }
+  ],
+  "returns": "An OrganizationInvitationResource object.",
+  "example": {
+   "title": "Invite a member from the active organization",
+   "code": "import { useOrganization } from '@clerk/nextjs'\n\nexport function InviteMember() {\n  const { organization } = useOrganization()\n\n  async function invite() {\n    if (!organization) return\n    await organization.inviteMember({\n      emailAddress: 'teammate@example.com',\n      role: 'org:member',\n    })\n  }\n\n  return <button onClick={invite}>Invite teammate</button>\n}",
+   "language": "tsx",
+   "explanation": "Uses the active organization to send an invitation with a specified email address and role."
+  },
+  "useCases": [
+   {
+    "title": "Invite a teammate",
+    "scenario": "A team administrator adds a teammate to an organization with a chosen role."
+   },
+   {
+    "title": "Self-serve team onboarding",
+    "scenario": "A product lets an existing organization member add colleagues from an organization-specific screen."
+   },
+   {
+    "title": "Server-managed invitations",
+    "scenario": "A backend service needs to create or revoke invitations with a controlled redirect or server-side workflow."
+   }
+  ],
+  "related": [
+   "useOrganization()",
+   "inviteMember()",
+   "OrganizationInvitationResource",
+   "createOrganizationMembership()",
+   "Backend API",
+   "Account Portal",
+   "revoke invitation"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you invite a user?",
+    "answer": "Call inviteMember() on the active organization and provide the recipient's email address and desired role. It returns an OrganizationInvitationResource.",
+    "followUp": "How would you support a custom redirect URL? Use the server-side Backend API or clerkClient, because the client-side method always redirects to the Account Portal sign-in page."
+   },
+   {
+    "question": "What happens after an invitation is sent?",
+    "answer": "Clerk emails the recipient a unique invitation link. Visiting it sends a signed-out user to the Account Portal sign-in page; a signed-in user is redirected to the application's homepage.",
+    "followUp": "What if the recipient is not yet an application user? They must sign up before they can accept the invitation."
+   },
+   {
+    "question": "How are invitation flows managed?",
+    "answer": "The prebuilt components and Account Portal manage creating, managing, and accepting organization invitations. Invitations can also be revoked server-side before the user joins.",
+    "followUp": "How can an application avoid email invitations entirely? Add an existing same-instance user directly with createOrganizationMembership()."
+   }
+  ],
+  "keyPoints": [
+   "An invitation is the organization workflow for adding a new member.",
+   "Each invitation is delivered by email through a unique link.",
+   "Both existing application users and prospective users can receive invitations.",
+   "A recipient without an account must complete sign-up before acceptance.",
+   "Client code obtains the active organization through useOrganization().",
+   "The invitation operation is invoked on the active organization object."
+  ],
+  "gotchas": [
+   "Email must be enabled because Clerk sends the invitation to the recipient's email address.",
+   "Invitation creation is restricted to administrators by default; custom permissions can change who may invite.",
+   "The client-side inviteMember() flow cannot choose a redirect URL; use the server-side flow when a custom redirect is required."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Organizations & data::Organizations": {
+  "sourceUrl": "https://clerk.com/docs/guides/organizations/overview",
+  "sourceTitle": "Organizations - Build multi-tenant B2B applications",
+  "summary": "Clerk Organizations model teams by grouping users with roles and permissions. Users can belong to multiple organizations, while the active organization supplies the current team context for data access and authorization.",
+  "explanation": "Clerk stores organizations inside an application and lets users belong to more than one. The active organization represents the team context currently being viewed; it determines organization-specific data access and the roles and permissions applied to that session. Use that context to decide which data to display and which actions to permit.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Switch the active organization",
+   "code": "import { OrganizationList } from '@clerk/nextjs'\n\nexport default function OrganizationsPage() {\n  return <OrganizationList afterSelectOrganizationUrl=\"/dashboard\" />\n}",
+   "language": "tsx",
+   "explanation": "Renders the signed-in user's organizations and lets them choose which one becomes active."
+  },
+  "useCases": [
+   {
+    "title": "Multi-tenant B2B application",
+    "scenario": "A SaaS product isolates each customer's users and organization-specific records."
+   },
+   {
+    "title": "Workspace switching",
+    "scenario": "A collaboration app lets users move between workspaces without changing accounts."
+   },
+   {
+    "title": "Organization-scoped authorization",
+    "scenario": "An application shows or enables features according to team membership and permissions."
+   }
+  ],
+  "related": [
+   "Roles",
+   "Permissions",
+   "Organization context",
+   "Organization memberships",
+   "Active Organization"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is an organization and what does active organization mean in Clerk?",
+    "answer": "An organization groups users into a team context. A user may belong to several organizations, while the active organization identifies the one currently being viewed and supplies the relevant memberships, roles, and permissions.",
+    "followUp": "What should an application use this context for? Use it to scope displayed data and determine which actions or pages the user may access."
+   },
+   {
+    "question": "How do roles and permissions relate to organizations?",
+    "answer": "Roles and permissions are defined at the application level and apply across its organizations. The active organization determines which organization-specific role and related permissions the user has in the current context.",
+    "followUp": "Why define them centrally? A shared application-level definition keeps authorization behavior consistent across organizations while membership supplies the organization-specific assignment."
+   },
+   {
+    "question": "Can users belong to multiple organizations?",
+    "answer": "A Clerk application can contain multiple organizations, and each organization can have multiple users. Users can switch among organizations they belong to, with the selected one becoming the active organization.",
+    "followUp": "What happens in multiple browser tabs? Each tab independently preserves its selected active organization for that tab's lifetime."
+   }
+  ],
+  "keyPoints": [
+   "Use an organization to model a team and attach its members to roles and permissions.",
+   "A single user account can participate in several organizations rather than being limited to one team.",
+   "Sessions expose the team context needed to build organization-aware application behavior.",
+   "Organizations are scoped to a Clerk application, which can host many separate team contexts.",
+   "An organization represents a multi-user team rather than an individual account.",
+   "The active organization is the user's current team context."
+  ],
+  "gotchas": [
+   "Different browser tabs do not share the selected active organization; each tab retains its own organization context.",
+   "Do not treat the active organization as presentation-only: it changes the organization-scoped data and access context."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Organizations & data::Role-based permissions": {
+  "sourceUrl": "https://clerk.com/docs/guides/organizations/control-access/roles-and-permissions",
+  "sourceTitle": "B2B/B2C Roles and Permissions with Clerk Organizations - Control Access",
+  "summary": "Authorize server-side actions by checking the signed-in user's role in their Active Organization. Clerk supports default and custom roles, with role definitions shared across an application’s Organizations.",
+  "explanation": "Clerk evaluates the requested role against the signed-in user's active Organization. Server-side code can call auth() and use its has() helper to make the authorization decision before performing an action; if no Active Organization is selected, role checks generally evaluate to false.",
+  "syntax": "const { has } = await auth()\nhas({ role: 'org:admin' })",
+  "parameters": [
+   {
+    "name": "has",
+    "type": "authorization requirement",
+    "description": "Role or permission requirement passed to the server authorization helper."
+   }
+  ],
+  "returns": "A boolean authorization result from has(); use it to allow or deny the protected server operation.",
+  "example": {
+   "title": "Authorize an organization action on the server",
+   "code": "import { auth } from '@clerk/nextjs/server'\n\nexport async function POST() {\n  const { has } = await auth()\n\n  if (!has({ role: 'org:admin' })) {\n    return new Response('Forbidden', { status: 403 })\n  }\n\n  return Response.json({ ok: true })\n}",
+   "language": "typescript",
+   "explanation": "This server route allows the action only when the signed-in user has the organization administrator role."
+  },
+  "useCases": [
+   {
+    "title": "Server endpoint authorization",
+    "scenario": "Protect an API route or server action so only organization administrators can execute it."
+   },
+   {
+    "title": "Multi-organization access control",
+    "scenario": "Apply the same role model across multiple tenants in one Clerk application."
+   },
+   {
+    "title": "Organization administration",
+    "scenario": "Restrict sensitive organization-management operations to Clerk's built-in administrative role."
+   }
+  ],
+  "related": [
+   "Roles and Permissions",
+   "Active Organization",
+   "Organizations",
+   "System Permissions",
+   "auth()",
+   "has()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you authorize an organization role on the server?",
+    "answer": "Use the server-side auth() helper, obtain its has() authorization function, and test the required organization role before executing the protected operation. Return a forbidden response when the check fails.",
+    "followUp": "What context does the check use? It uses the user's Active Organization, so a missing active organization causes the check to fail by default."
+   },
+   {
+    "question": "Which organization is used for a role check?",
+    "answer": "The role check is scoped to the user's Active Organization. The user may belong to several Organizations, but the selected active one supplies the role being evaluated.",
+    "followUp": "What should a server endpoint do if no organization is active? Deny the operation rather than treating the absence of context as authorization."
+   },
+   {
+    "question": "How are Clerk system permissions verified?",
+    "answer": "System permissions should be checked through the user's role. A role can bundle permissions, while the role itself is the documented way to verify access to Clerk system permissions.",
+    "followUp": "Why not check a system permission directly? Clerk specifically directs system-permission checks to role verification, so the role is the supported authorization boundary."
+   }
+  ],
+  "keyPoints": [
+   "Organization roles provide an access-control boundary for resources and actions inside that organization.",
+   "A user can have different organization access contexts because memberships are organization-specific.",
+   "The Active Organization selects the data scope and role context used by authorization checks.",
+   "Clerk supplies common default roles and supports custom roles for more precise authorization models."
+  ],
+  "gotchas": [
+   "A role check requires an Active Organization; otherwise the authorization result will generally be false.",
+   "System permissions are represented through roles, so check the role rather than trying to test a system permission directly."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Organizations & data::Signature verification and idempotency": {
+  "sourceUrl": "https://clerk.com/docs/reference/backend/verify-webhook",
+  "sourceTitle": "verifyWebhook() - clerkClient",
+  "summary": "Verify every Clerk webhook with verifyWebhook before trusting its payload. Make processing idempotent so retries or duplicate deliveries do not repeat side effects.",
+  "explanation": "Clerk signs webhook requests through Svix. Verify the raw request with verifyWebhook before trusting its data, and design processing so retries do not create duplicate records or repeat unsafe effects.",
+  "syntax": "function verifyWebhook(request: Request, options: { signingSecret?: string }): Promise<WebhookEvent>;",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "{ signingSecret?: string }",
+    "description": "Optional configuration object containing the webhook signing secret."
+   }
+  ],
+  "returns": "Promise<WebhookEvent>",
+  "example": {
+   "title": "Verified, repeatable Clerk webhook handler",
+   "code": "import { verifyWebhook } from '@clerk/nextjs/webhooks'\n\nexport async function POST(request: Request) {\n  try {\n    const event = await verifyWebhook(request)\n    if (event.type === 'user.created') {\n      await upsertUser({ clerkId: event.data.id })\n    }\n    return new Response('OK', { status: 200 })\n  } catch {\n    return new Response('Invalid webhook', { status: 400 })\n  }\n}",
+   "language": "typescript",
+   "explanation": "Verify the request before using its event data, then make the database write repeatable with an upsert."
+  },
+  "useCases": [
+   {
+    "title": "Safe user provisioning",
+    "scenario": "Synchronizing Clerk users with an application database."
+   },
+   {
+    "title": "Lifecycle automation",
+    "scenario": "Reacting to organization or user lifecycle events."
+   },
+   {
+    "title": "Retry-tolerant processing",
+    "scenario": "Recovering from transient delivery failures."
+   }
+  ],
+  "related": [
+   "verifyWebhook()",
+   "Webhook signing secret",
+   "Svix",
+   "CLERK_WEBHOOK_SIGNING_SECRET",
+   "Payload structure"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How should a Clerk webhook be authenticated?",
+    "answer": "Call verifyWebhook with the incoming Request before trusting the event. It validates the signed request and returns the verified webhook event data; invalid requests should be rejected rather than processed.",
+    "followUp": "Why must verification happen before JSON parsing? Signature validation depends on the original request representation, so a middleware-transformed body can make a valid signature fail."
+   },
+   {
+    "question": "How do you make webhook handling idempotent?",
+    "answer": "Webhook delivery can be retried, so processing must tolerate the same event more than once. Store or enforce uniqueness using a stable event or delivery identifier, and use upserts for database synchronization.",
+    "followUp": "What should happen when the same delivery ID appears again? Recognize it as already handled and return success without repeating the side effect."
+   },
+   {
+    "question": "What response behavior should a verified webhook endpoint implement?",
+    "answer": "Return a successful HTTP response after valid processing and a client-error response when verification fails. This separates accepted deliveries from invalid requests and lets the delivery system retry failures when appropriate.",
+    "followUp": "How can ordering affect synchronization? Compare event freshness with the stored record and avoid applying an older update over newer data."
+   }
+  ],
+  "keyPoints": [
+   "Clerk webhook authenticity is established by validating the Svix signature.",
+   "The supported Clerk helper is verifyWebhook, which returns verified event data.",
+   "verifyWebhook is asynchronous and resolves to the validated event.",
+   "The helper can receive an optional signingSecret configuration value.",
+   "Prefer the CLERK_WEBHOOK_SIGNING_SECRET environment variable over passing the secret directly.",
+   "Expose a POST endpoint because Clerk sends webhook deliveries from an external server."
+  ],
+  "gotchas": [
+   "Do not read or act on webhook data before signature verification.",
+   "Keep the signing secret server-side and obtain it from the configured Dashboard endpoint."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Organizations & data::User and public metadata": {
+  "sourceUrl": "https://clerk.com/docs/guides/users/extending",
+  "sourceTitle": "User metadata - User management | Clerk Docs",
+  "summary": "Choose public metadata for user data the frontend may read, and private metadata for server-only information. Both are written through the backend; private metadata is not exposed to frontend code.",
+  "explanation": "Clerk stores custom user information in metadata on the User object. Public metadata is readable by frontend and backend code but writable only on the backend, while private metadata is accessible and writable only from backend code and webhook handlers.",
+  "syntax": "updateUserMetadata(userId, { publicMetadata, privateMetadata })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Set public and private metadata",
+   "code": "import { createClerkClient } from '@clerk/backend';\n\nconst clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });\n\nawait clerk.users.updateUserMetadata('user_123', {\n  publicMetadata: { birthday: '1990-01-01' },\n  privateMetadata: { stripeCustomerId: 'cus_123' },\n});",
+   "language": "typescript",
+   "explanation": "This backend example stores client-readable birthday data separately from server-only billing data."
+  },
+  "useCases": [
+   {
+    "title": "Client-readable profile data",
+    "scenario": "Expose a user attribute, such as a birthday, to frontend application code without allowing frontend writes."
+   },
+   {
+    "title": "Private integration data",
+    "scenario": "Keep a Stripe customer ID or other sensitive integration value available only to backend code."
+   },
+   {
+    "title": "Frontend personalization",
+    "scenario": "Read public metadata in a frontend component through the User object."
+   },
+   {
+    "title": "Server-side processing",
+    "scenario": "Read private metadata on the backend when processing requests or webhooks."
+   }
+  ],
+  "related": [
+   "User object",
+   "publicMetadata",
+   "privateMetadata",
+   "unsafeMetadata",
+   "useUser()",
+   "getUser()",
+   "updateUserMetadata()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Clerk provides public, private, and unsafe metadata categories; this card focuses on public and private data.",
+   "Use public metadata for values the client needs to display or use.",
+   "Frontend code can read public metadata but cannot securely write it.",
+   "Public metadata suits client-visible values that users must not be allowed to change.",
+   "Private metadata is appropriate for server-only values such as payment-provider identifiers.",
+   "A Stripe customer ID is an example of data suitable for private metadata.",
+   "Use updateUserMetadata() from backend code to write public metadata.",
+   "The same updateUserMetadata() operation writes private metadata from backend code."
+  ],
+  "gotchas": [
+   "Backend reads through getUser() are rate-limited; frequently accessed private metadata should instead be attached to the user's session token.",
+   "Do not place private or sensitive values where frontend code can access them."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Organizations & data::Webhooks": {
+  "sourceUrl": "https://clerk.com/docs/guides/development/webhooks/overview",
+  "sourceTitle": "Webhooks overview | Clerk Docs",
+  "summary": "Use Clerk webhooks to receive user and organization lifecycle notifications and mirror the corresponding data into your database. Clerk delivers each configured event as an HTTP POST containing a JSON payload.",
+  "explanation": "Clerk sends an HTTP POST containing a JSON event when a subscribed event occurs. Verify the request, inspect its type and data, then apply the relevant change—such as creating, updating, or deleting a corresponding local user or organization record.",
+  "syntax": "POST /your-webhook-endpoint",
+  "parameters": [],
+  "returns": "An HTTP response from the receiving webhook endpoint; the page does not prescribe a specific response signature.",
+  "example": {
+   "title": "Sync selected user events",
+   "code": "import { verifyWebhook } from '@clerk/nextjs/webhooks'\n\nexport async function POST(req: Request) {\n  const event = await verifyWebhook(req)\n\n  if (event.type === 'user.created' || event.type === 'user.updated') {\n    const user = event.data\n    await db.user.upsert({\n      where: { clerkId: user.id },\n      update: { email: user.email_addresses[0]?.email_address },\n      create: { clerkId: user.id, email: user.email_addresses[0]?.email_address },\n    })\n  }\n\n  return new Response('OK')\n}",
+   "language": "typescript",
+   "explanation": "Verifies the Clerk webhook and upserts local records for selected user events."
+  },
+  "useCases": [
+   {
+    "title": "Synchronize user records",
+    "scenario": "Keep a local users table aligned with Clerk when users are created or updated."
+   },
+   {
+    "title": "Synchronize organization records",
+    "scenario": "React to organization lifecycle notifications by updating organization data in an application database."
+   },
+   {
+    "title": "Trigger downstream actions",
+    "scenario": "Start application workflows after Clerk changes, such as sending a notification."
+   }
+  ],
+  "related": [
+   "event-driven communication",
+   "HTTP POST",
+   "JSON payload",
+   "data",
+   "type",
+   "user.* events",
+   "User object",
+   "Event Catalog"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do Clerk webhooks deliver changes to an application?",
+    "answer": "Clerk webhooks let an application receive event notifications when Clerk data changes. Clerk sends an HTTP POST to the configured endpoint, and the request body contains a JSON object with event data.",
+    "followUp": "What should the handler use to decide which synchronization operation to perform? Use the event's type field, then interpret the data field according to that event type."
+   },
+   {
+    "question": "What are the important fields in a Clerk webhook payload?",
+    "answer": "The event payload includes data containing the event-specific object and type identifying what triggered the webhook. A handler can use these fields to update its own database or trigger another application action.",
+    "followUp": "How can the handler remain correct across user and organization events? Branch on type and map each event's data shape to the corresponding local operation."
+   },
+   {
+    "question": "How can webhooks support database synchronization?",
+    "answer": "A typical synchronization flow receives the POST, reads the JSON payload, identifies the event type, and writes the relevant information to the application's database. User events carry a User object, so the handler can mirror that object locally.",
+    "followUp": "What other application behavior can follow event processing? The payload can also drive actions such as sending a notification, in addition to database updates."
+   }
+  ],
+  "keyPoints": [
+   "Webhooks communicate reactively: Clerk notifies your endpoint when a subscribed change occurs rather than requiring continuous polling.",
+   "User lifecycle changes such as creation and updates can be mirrored into an application database.",
+   "The receiving endpoint must accept POST requests for the event types configured in Clerk.",
+   "Webhook handlers should parse the request body as JSON before processing the event.",
+   "Read data for the object that must be created or changed in the local system.",
+   "Use type to select the synchronization operation for the incoming notification."
+  ],
+  "gotchas": [
+   "Interpret data according to the event type; its shape is not identical for every webhook.",
+   "User event data represents the Clerk User object, while other event families may provide different objects."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Sessions & protection::Custom claims": {
+  "sourceUrl": "https://clerk.com/docs/guides/sessions/customize-session-tokens",
+  "sourceTitle": "Customize your session token",
+  "summary": "Add application-specific fields to Clerk’s session JWT so authorization data is available in the authenticated request context without an extra Backend API lookup. Configure claims in the Clerk Dashboard and read them through sessionClaims.",
+  "explanation": "Clerk lets you add application-specific claims to its JWT session token through the Dashboard. At runtime, Clerk replaces user-data placeholders with current values, and your application reads the resulting fields from the Auth object's sessionClaims property, avoiding an extra Backend API request for those values.",
+  "syntax": "{\n  \"claimName\": \"{{user.public_metadata.claimName}}\"\n}",
+  "parameters": [],
+  "returns": "The Auth object exposes custom token fields through its sessionClaims property.",
+  "example": {
+   "title": "Read a custom session claim",
+   "code": "import { auth } from '@clerk/nextjs/server'\n\nexport default async function Page() {\n  const { sessionClaims } = await auth()\n  const onboardingComplete = sessionClaims?.onboardingComplete === true\n\n  return <p>{onboardingComplete ? 'Ready' : 'Finish onboarding'}</p>\n}",
+   "language": "tsx",
+   "explanation": "Reads a custom claim from the authenticated request context without making a separate Backend API call."
+  },
+  "useCases": [
+   {
+    "title": "Carry a role, plan, or permission value into the request context.",
+    "scenario": "Authorization checks"
+   },
+   {
+    "title": "Expose a small onboarding-completion flag without fetching the user separately.",
+    "scenario": "Onboarding flows"
+   },
+   {
+    "title": "Make selected user attributes available to backend request handlers.",
+    "scenario": "User-specific display"
+   }
+  ],
+  "related": [
+   "Session tokens",
+   "Auth object",
+   "sessionClaims",
+   "User metadata",
+   "JWT templates",
+   "CustomJwtSessionClaims"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem do custom claims solve?",
+    "answer": "A custom claim is an application-specific field added to Clerk’s generated session JWT. It lets the backend read authorization-related data from the authenticated request context instead of making a separate Backend API call.",
+    "followUp": "How would you keep the token small? Add only the required metadata fields rather than serializing the complete metadata object, and stay within the documented custom-claim size guidance."
+   },
+   {
+    "question": "How are custom claims configured and consumed?",
+    "answer": "Configure the claim in the Clerk Dashboard under Sessions, in the Customize session token Claims editor. The claim can use Clerk’s user-data placeholders, which Clerk resolves when it creates the token.",
+    "followUp": "Where is the value read in application code? From the Auth object’s sessionClaims property returned by the authentication helper."
+   },
+   {
+    "question": "What size constraint affects custom claims?",
+    "answer": "Session tokens are stored in cookies, and browsers commonly cap cookies at 4 KB. Because Clerk’s default claims already consume space, the guide recommends keeping custom claims under about 1.2 KB.",
+    "followUp": "What data-shaping strategy follows from this constraint? Store a narrowly selected field, such as one onboarding flag, rather than an entire metadata object."
+   }
+  ],
+  "keyPoints": [
+   "Use the session-token customization feature when the application needs extra user or authorization data in the JWT.",
+   "Reading the claim from the received token avoids an additional request to Clerk’s Backend API.",
+   "Configure claims in the Clerk Dashboard’s Sessions area using the Claims editor.",
+   "Application code accesses configured custom claims through sessionClaims on the Auth object.",
+   "Claims can represent application-specific values selected for the application’s authorization or session logic.",
+   "The token carries the selected data directly, enabling local request-time reads."
+  ],
+  "gotchas": [
+   "Session tokens are stored in a cookie, so the browser’s cookie limit constrains how much custom data you can add.",
+   "Keep custom claims within roughly 1.2 KB after Clerk’s default claims are included."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Sessions & protection::Middleware": {
+  "sourceUrl": "https://clerk.com/docs/reference/nextjs/clerk-middleware",
+  "sourceTitle": "Combine Middleware",
+  "summary": "Use Clerk middleware to integrate authentication with Next.js and selectively protect route groups. Routes are public by default, so opt in to protection for paths that require a signed-in user.",
+  "explanation": "The middleware runs on matched requests and uses a route matcher to identify protected path groups. When a request matches, `auth.protect()` enforces authentication; routes that do not match remain public unless protected elsewhere.",
+  "syntax": "clerkMiddleware(async (auth, req) => { if (isProtectedRoute(req)) await auth.protect() })",
+  "parameters": [],
+  "returns": "The middleware configuration handles matching requests; when a protected matcher matches, `auth.protect()` enforces authentication, typically redirecting unauthenticated users.",
+  "example": {
+   "title": "Protect selected route groups",
+   "code": "import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'\n\nconst isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/forum(.*)'])\n\nexport default clerkMiddleware(async (auth, req) => {\n  if (isProtectedRoute(req)) await auth.protect()\n})",
+   "language": "typescript",
+   "explanation": "This middleware keeps routes public by default and requires authentication only for paths matching the declared protected groups."
+  },
+  "useCases": [
+   {
+    "title": "Protect a dashboard route group",
+    "scenario": "Require authentication for dashboard pages grouped under a common path."
+   },
+   {
+    "title": "Protect selected application areas",
+    "scenario": "Restrict forum pages while leaving marketing and sign-in pages public."
+   },
+   {
+    "title": "Combine authentication with custom middleware logic",
+    "scenario": "Apply request-time routing logic alongside Clerk authentication."
+   }
+  ],
+  "related": [
+   "clerkMiddleware()",
+   "createRouteMatcher()",
+   "auth.protect()",
+   "resource-based auth checks",
+   "Route Handlers",
+   "Server Actions"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use `clerkMiddleware()` in Next.js middleware to connect Clerk authentication to incoming requests.",
+   "The helper works with both Next.js routing systems: App Router and Pages Router.",
+   "Protection is opt-in, so explicitly identify the route groups that require authentication.",
+   "Unmatched routes remain accessible to signed-out visitors unless another server-side check protects them.",
+   "Use Clerk's signed-in-user protection guidance when a route or resource must require authentication."
+  ],
+  "gotchas": [
+   "This API is deprecated; prefer resource-level authentication checks for pages, Route Handlers, and Server Functions.",
+   "Do not treat middleware as the only authorization boundary; protect access near the resource that reads or changes data.",
+   "With the current middleware behavior, forgetting to add a route to the protected matcher leaves it public."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Sessions & protection::Multi-session handling": {
+  "sourceUrl": "https://clerk.com/docs/guides/development/custom-flows/authentication/multi-session-applications.md",
+  "sourceTitle": "Multi-session applications",
+  "summary": "Clerk multi-session handling lets several accounts stay signed in in the same browser and lets the user switch among them. Enable it in the Dashboard, then manage available sessions with the Client and setActive().",
+  "explanation": "Enable multi-session handling in the Clerk Dashboard, then use the client’s available sessions with setActive() to change the active account. New sign-ins are added automatically; use signOut() with a session ID to remove one session while leaving the others signed in.",
+  "syntax": "setActive({ session: sessionId })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Switch to another signed-in account",
+   "code": "import { useClerk } from '@clerk/nextjs'\n\nexport function AccountSwitcher() {\n  const { client, setActive } = useClerk()\n\n  async function switchAccount(sessionId: string) {\n    await setActive({ session: sessionId })\n  }\n\n  return (\n    <button onClick={() => switchAccount(client?.sessions[0]?.id ?? '')}>\n      Switch account\n    </button>\n  )\n}",
+   "language": "tsx",
+   "explanation": "This component reads the client sessions and activates a selected session. In a real switcher, render each available session and pass its ID to switchAccount."
+  },
+  "useCases": [
+   {
+    "title": "Personal and work accounts",
+    "scenario": "A developer tool needs separate personal and work identities available in one browser."
+   },
+   {
+    "title": "Account switching",
+    "scenario": "A support agent must move between customer accounts without repeated sign-ins."
+   },
+   {
+    "title": "Custom session selector",
+    "scenario": "An application needs an account picker built with custom UI rather than Clerk’s prebuilt components."
+   }
+  ],
+  "related": [
+   "useClerk()",
+   "Client",
+   "setActive()",
+   "signOut()",
+   "Sessions",
+   "Multi-session handling"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you switch between signed-in accounts?",
+    "answer": "Enable Multi-session handling in the Clerk Dashboard. Then obtain the Client through useClerk(), inspect its available sessions, and call setActive() with the chosen session.",
+    "followUp": "How would you add another account? Reuse the existing sign-in flow; Clerk automatically appends the newly authenticated session to the client’s available sessions."
+   },
+   {
+    "question": "What does multi-session handling provide?",
+    "answer": "A multi-session application keeps multiple accounts signed in in one browser, while each account remains independent and can access different resources. The user switches by making a particular session active.",
+    "followUp": "How can one account be removed without affecting the others? Sign out the active session by passing its session ID."
+   },
+   {
+    "question": "How do you sign out one account?",
+    "answer": "Use useClerk() to access signOut(). Passing a session ID signs out that specific active session while the remaining sessions stay signed in.",
+    "followUp": "What is the alternative when all sessions should be removed? Use signOut() without targeting one session, according to the applicable Clerk API behavior."
+   }
+  ],
+  "keyPoints": [
+   "It lets several accounts remain authenticated concurrently in one browser.",
+   "Users can change the active account without repeating the full authentication process.",
+   "Sessions preserve account separation, so each active account uses its own permissions and resources.",
+   "Read the client’s sessions and activate the session selected by the user.",
+   "An Add account action can route users through the application’s normal sign-in flow."
+  ],
+  "gotchas": [
+   "The feature is unavailable until Multi-session handling is enabled in the Clerk Dashboard.",
+   "Adding an account uses the existing sign-in flow; do not create a separate session manually.",
+   "To remove only one account, pass that session's ID rather than signing out the whole client."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Sessions & protection::Server-side auth": {
+  "sourceUrl": "https://clerk.com/docs/reference/nextjs/app-router/auth",
+  "sourceTitle": "auth() - App Router - Next.js | Clerk Docs",
+  "summary": "On the server, use auth() to read the active Clerk user's ID before querying application data. Reject unauthenticated requests and scope each query with userId.",
+  "explanation": "In a Next.js App Router server context, call auth() to obtain the active request's authentication state and userId. Reject unauthenticated requests before querying application data, then use the verified ID as the ownership filter for that query. The helper requires Clerk middleware and runs only on the server.",
+  "syntax": "const { isAuthenticated, userId } = await auth()",
+  "parameters": [],
+  "returns": "auth() returns the Auth object of the currently active user, including authentication state and the user's ID.",
+  "example": {
+   "title": "Scope server data to the signed-in user",
+   "code": "import { auth } from '@clerk/nextjs/server'\nimport { NextResponse } from 'next/server'\n\nexport async function GET() {\n  const { isAuthenticated, userId } = await auth()\n\n  if (!isAuthenticated) {\n    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })\n  }\n\n  const records = await db.records.findMany({ where: { userId } })\n  return NextResponse.json(records)\n}",
+   "language": "typescript",
+   "explanation": "Authenticates the request on the server, obtains the Clerk user ID, and scopes the application query to that ID."
+  },
+  "useCases": [
+   {
+    "title": "User-scoped page data",
+    "scenario": "A Server Component loads records belonging to the signed-in user."
+   },
+   {
+    "title": "Protected server endpoint",
+    "scenario": "A Route Handler serves private API data."
+   },
+   {
+    "title": "Ownership-aware mutation",
+    "scenario": "A Server Action writes data owned by the current user."
+   }
+  ],
+  "related": [
+   "Auth",
+   "isAuthenticated",
+   "userId",
+   "protect()",
+   "clerkMiddleware()",
+   "Server Components",
+   "Route Handlers",
+   "Server Actions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you read the current user's ID before querying data?",
+    "answer": "Use auth() in a server context and inspect its isAuthenticated and userId values. If the request is unauthenticated, reject it; otherwise use userId to constrain the application-data query.",
+    "followUp": "Why should the query be filtered by userId? It prevents a signed-in user from receiving another user's records when the data model uses the Clerk ID as ownership."
+   },
+   {
+    "question": "Where can auth() be used?",
+    "answer": "auth() is available for App Router server code, including Server Components, Route Handlers, and Server Actions. It returns the Auth object for the currently active user, including authentication state and the user ID.",
+    "followUp": "What must be configured first? clerkMiddleware() must be configured so the server request has Clerk's authentication context."
+   },
+   {
+    "question": "How should unauthenticated requests be handled?",
+    "answer": "Check isAuthenticated before running the data query. An unauthenticated request should receive an appropriate rejection, such as a 401 response in a Route Handler.",
+    "followUp": "What is the alternative when route-wide protection is desired? auth().protect() can protect access, while explicit checks allow custom unauthenticated behavior."
+   }
+  ],
+  "keyPoints": [
+   "Call auth() on the server to obtain the active request's Clerk authentication object.",
+   "Use isAuthenticated to decide whether the request may proceed to application data.",
+   "Protection can enforce authorization requirements beyond merely checking whether someone is signed in."
+  ],
+  "gotchas": [
+   "Do not call auth() from client-side code; use it only in supported server contexts.",
+   "Configure Clerk middleware before relying on auth() to provide the request authentication state."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Sessions & protection::Session tokens": {
+  "sourceUrl": "https://clerk.com/docs/guides/sessions/session-tokens",
+  "sourceTitle": "Session tokens - Session management | Clerk Docs",
+  "summary": "Clerk session tokens are short-lived JWTs used to authenticate backend requests for signed-in users. Clerk refreshes them automatically, allowing an active session to continue without manually managing token renewal.",
+  "explanation": "Clerk creates a JWT for an authenticated user and stores it in the __session cookie on the application domain. The token is intentionally short-lived; Clerk's frontend SDK refreshes it automatically in the background before it expires, allowing an active session to continue without manual token management. Middleware can validate these tokens on requests.",
+  "syntax": "getToken()",
+  "parameters": [],
+  "returns": "A short-lived JWT containing authenticated user and session information, used to authenticate backend requests.",
+  "example": {
+   "title": "Use a session token for a backend request",
+   "code": "import { useAuth } from '@clerk/nextjs'\n\nexport default function ProtectedData() {\n  const { getToken } = useAuth()\n\n  async function loadData() {\n    const token = await getToken()\n    const response = await fetch('/api/data', {\n      headers: { Authorization: `Bearer ${token}` },\n    })\n    return response.json()\n  }\n\n  return <button onClick={loadData}>Load data</button>\n}",
+   "language": "tsx",
+   "explanation": "The hook obtains the current session JWT, which can be sent as a bearer token to authenticate a backend request."
+  },
+  "useCases": [
+   {
+    "title": "Authenticate API requests",
+    "scenario": "A signed-in web application calls a protected backend endpoint and needs a bearer credential."
+   },
+   {
+    "title": "Validate requests with Clerk middleware",
+    "scenario": "A backend receives a request from a Clerk-authenticated frontend."
+   },
+   {
+    "title": "Read JWT claims",
+    "scenario": "An application needs user or session claims during backend authorization."
+   }
+  ],
+  "related": [
+   "Session tokens",
+   "Token lifetime",
+   "__session cookie",
+   "JWT",
+   "session token validation",
+   "Clerk middleware",
+   "Backend API"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Clerk session token?",
+    "answer": "A session token is a short-lived JWT containing information about the authenticated user and session. It authenticates requests to the backend, and Clerk's frontend SDK refreshes it automatically so an active session can continue.",
+    "followUp": "Why use a short lifetime? It limits the period during which a stolen token can be used, while the longer-lived session remains the source of continuity."
+   },
+   {
+    "question": "How does Clerk keep a session token current?",
+    "answer": "The token is stored in the __session cookie on the application's domain. Clerk's frontend SDK refreshes it in the background, normally every 60 seconds, before the current token expires.",
+    "followUp": "What happens if application data changes just after refresh? Claims in the current token can be stale; force a refresh or query the Backend API when immediate accuracy matters."
+   },
+   {
+    "question": "How are session tokens validated?",
+    "answer": "Clerk middleware validates session tokens automatically on each request when the middleware supplied by the SDK is used. The token includes standard claims such as expiration, which defines when it is no longer valid.",
+    "followUp": "How should a server handle an expired token? Reject the request and require the client to obtain its current token through the Clerk SDK."
+   }
+  ],
+  "keyPoints": [
+   "An authenticated application receives a session token for backend request authentication.",
+   "The token is a JWT carrying user and session information rather than an opaque identifier.",
+   "Clerk stores the token in the __session cookie on the application domain.",
+   "Clerk SDK middleware can perform request-time token validation automatically.",
+   "The JWT template's Token lifetime setting determines the expiration claim's configured lifetime."
+  ],
+  "gotchas": [
+   "Do not add redundant token-validation logic when the Clerk SDK middleware already performs validation."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Sessions & protection::Sign-out and revocation": {
+  "sourceUrl": "https://clerk.com/docs/guides/development/custom-flows/authentication/multi-session-applications",
+  "sourceTitle": "Build a custom multi-session flow - Authentication",
+  "summary": "Clerk's signOut() can end all active sessions on the current client in a multi-session application. Pass sessionId when only one session should be signed out, and redirectUrl to choose the post-sign-out destination.",
+  "explanation": "In a multi-session application, call Clerk's signOut() method without specifying a sessionId to sign out all active sessions on the current client. Supplying sessionId instead targets one particular session, while an optional redirectUrl controls where navigation goes after sign-out completes.",
+  "syntax": "function signOut(options?: SignOutOptions): Promise<void>",
+  "parameters": [
+   {
+    "name": "redirectUrl?",
+    "type": "string",
+    "description": "Optional URL or path to navigate to after sign-out completes."
+   },
+   {
+    "name": "sessionId?",
+    "type": "string",
+    "description": "Optional identifier of the particular session to sign out."
+   }
+  ],
+  "returns": "Promise<void>",
+  "example": {
+   "title": "Sign out all active sessions",
+   "code": "import { useClerk } from '@clerk/react'\n\nexport function SignOutEverywhere() {\n  const { signOut } = useClerk()\n\n  return <button onClick={() => signOut()}>Sign out everywhere</button>\n}",
+   "language": "tsx",
+   "explanation": "Calling signOut() without a sessionId deactivates all active sessions on the current client in a multi-session application."
+  },
+  "useCases": [
+   {
+    "title": "Account-wide exit",
+    "scenario": "A user suspects an account is open on another browser or device and wants one action to close the current client's active sessions."
+   },
+   {
+    "title": "Selective session removal",
+    "scenario": "An application displays several signed-in contexts and must remove only the selected one."
+   },
+   {
+    "title": "Controlled post-sign-out navigation",
+    "scenario": "A product requires users to land on a specific page after authentication ends."
+   }
+  ],
+  "related": [
+   "useClerk()",
+   "signOut()",
+   "SignOutOptions",
+   "Clerk"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does signOut() do in a multi-session application?",
+    "answer": "In a multi-session application, signOut() without options signs out all users on the current client. A sessionId option narrows the action to one session.",
+    "followUp": "How can the post-sign-out destination be controlled? Pass redirectUrl in the sign-out options."
+   },
+   {
+    "question": "How would you wire a custom React sign-out button?",
+    "answer": "Use the signOut method exposed by useClerk() in a React custom flow. Invoke it from the event handler for the sign-out control.",
+    "followUp": "What alternative access pattern does the documentation describe? The Clerk object can also provide the signOut() method."
+   },
+   {
+    "question": "Which options can be passed to signOut()?",
+    "answer": "The method accepts an optional options object. Its documented options include redirectUrl for navigation after completion and sessionId for selecting a particular session.",
+    "followUp": "When is sessionId especially useful? It is useful when a multi-session application needs to remove only one session rather than all active sessions."
+   }
+  ],
+  "keyPoints": [
+   "A custom React flow gets the sign-out operation from the useClerk() hook.",
+   "Calling signOut() without a session identifier ends every active session on the current client.",
+   "The no-argument form is the appropriate choice for an everywhere-style sign-out action."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Setup & components::Appearance customization": {
+  "sourceUrl": "https://clerk.com/docs/nextjs/guides/customizing-clerk/appearance-prop/overview",
+  "sourceTitle": "Appearance prop - Component customization - Next.js",
+  "summary": "Customize Clerk's prebuilt components with the appearance prop. Apply shared styling at the Clerk integration boundary or target one component with theme, variables, and elements settings.",
+  "explanation": "Clerk's appearance configuration lets you adapt prebuilt components to an application's visual system. Put shared settings on the provider for broad coverage, or place appearance on an individual component for local changes; use theme, variables, and elements for progressively finer control.",
+  "syntax": "<ClerkProvider appearance={{ theme, variables, elements }} />",
+  "parameters": [
+   {
+    "name": "appearance",
+    "type": "Appearance",
+    "description": "Appearance configuration containing shared or component-specific visual customization, including theme, variables, and elements settings."
+   },
+   {
+    "name": "appearance.elements",
+    "type": "Record<string, string>",
+    "description": "Mapping of Clerk component element names to custom style classes or values."
+   }
+  ],
+  "returns": "A configured Clerk component tree rendered with the requested appearance customization.",
+  "example": {
+   "title": "Customize a Clerk component element",
+   "code": "import { ClerkProvider, UserButton } from '@clerk/nextjs'\n\nexport default function App({ children }) {\n  return (\n    <ClerkProvider\n      appearance={{\n        elements: {\n          userButtonAvatarBox: 'rounded-full ring-2 ring-blue-500',\n        },\n      }}\n    >\n      <UserButton />\n      {children}\n    </ClerkProvider>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Applies a custom class to a Clerk component element through the provider-level appearance configuration."
+  },
+  "useCases": [
+   {
+    "title": "Apply shared application styling",
+    "scenario": "Several Clerk components should share the product's visual language."
+   },
+   {
+    "title": "Customize an individual component",
+    "scenario": "One prebuilt component needs a targeted visual adjustment."
+   },
+   {
+    "title": "Style component elements",
+    "scenario": "A button, avatar, or other internal part needs a specific class or state style."
+   }
+  ],
+  "related": [
+   "appearance",
+   "ClerkProvider",
+   "elements",
+   "theme",
+   "variables"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How can Clerk components be restyled consistently across an application?",
+    "answer": "Use the `appearance` prop. It can be configured globally where the Clerk integration is initialized, commonly on `ClerkProvider`, or supplied to an individual Clerk component.",
+    "followUp": "How would you style a component opened by another component? Pass an appearance configuration through the dedicated props object of the component that opens it, because top-level appearance only affects its direct recipient."
+   },
+   {
+    "question": "What does the `elements` property customize?",
+    "answer": "Use `appearance.elements` to add custom styles to the underlying DOM elements of Clerk's prebuilt components. This provides targeted element-level customization rather than only broad theme settings.",
+    "followUp": "What is the scope of a provider-level appearance object? It supplies shared styling to components under that integration, while an appearance object placed on a component is local to that component."
+   },
+   {
+    "question": "What limitation applies when one Clerk component opens another?",
+    "answer": "The top-level appearance prop affects only the component receiving it. A nested or opened component requires appearance to be supplied through that component's dedicated props object.",
+    "followUp": "Why is this distinction useful? It prevents assuming that styling a trigger automatically propagates to a separately rendered dialog or panel."
+   }
+  ],
+  "keyPoints": [
+   "Choose provider-level configuration for shared styling or attach the prop directly when only one Clerk component needs customization.",
+   "Global appearance belongs at the SDK integration boundary; the exact location depends on the Clerk SDK.",
+   "In common Clerk integrations, configure shared appearance on ClerkProvider.",
+   "Theme settings provide a focused way to override visual defaults without individually styling every element.",
+   "Use state-aware or element-specific customization when broad theme changes are insufficient.",
+   "Use elements for direct styling of named parts inside prebuilt Clerk components."
+  ],
+  "gotchas": [
+   "Provider or component-level appearance does not automatically style a component opened by another component; pass appearance through that component's dedicated props object.",
+   "Element customization targets Clerk's underlying component elements, so choose the documented element key rather than assuming a wrapper or arbitrary selector."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Setup & components::Environment keys": {
+  "sourceUrl": "https://clerk.com/docs/guides/development/clerk-environment-variables",
+  "sourceTitle": "Clerk environment variables",
+  "summary": "Separate Clerk's publishable and secret keys: expose the publishable key to frontend code and keep the secret key server-side. Use development or production keys according to the Clerk instance.",
+  "explanation": "Clerk uses one environment key for browser-side initialization and another for backend access. The publishable key identifies the Clerk instance and may be exposed through the framework's public-variable convention, while the secret key authorizes backend access and must remain server-side.",
+  "syntax": "CLERK_PUBLISHABLE_KEY=pk_test_...\nCLERK_SECRET_KEY=sk_test_...",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Separate Clerk environment keys",
+   "code": "# .env.local\nNEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...\nCLERK_SECRET_KEY=sk_test_...",
+   "language": "bash",
+   "explanation": "Put the publishable key in the client-visible environment variable and keep the secret key in a server-only variable."
+  },
+  "useCases": [
+   {
+    "title": "Frontend initialization",
+    "scenario": "A browser application needs to initialize Clerk."
+   },
+   {
+    "title": "Backend integration",
+    "scenario": "Server code calls Clerk's backend services."
+   },
+   {
+    "title": "Environment-specific configuration",
+    "scenario": "The same application is deployed locally and to production."
+   }
+  ],
+  "related": [
+   "CLERK_PUBLISHABLE_KEY",
+   "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+   "PUBLIC_CLERK_PUBLISHABLE_KEY",
+   "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY",
+   "NUXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+   "CLERK_SECRET_KEY",
+   "ClerkProvider",
+   "API keys"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Which Clerk keys belong in frontend and backend code?",
+    "answer": "Use a publishable key in the frontend and a secret key in the backend. The publishable key uses a framework-appropriate public environment-variable name, while CLERK_SECRET_KEY must stay server-side.",
+    "followUp": "Why can the publishable key be client-visible? It identifies the Clerk app for frontend access, whereas the secret key is the credential used for backend access."
+   },
+   {
+    "question": "How do you distinguish development and production keys?",
+    "answer": "Development keys begin with pk_test_ and sk_test_, while production keys begin with pk_live_ and sk_live_. Configure the appropriate pair through environment variables for each deployment environment.",
+    "followUp": "What deployment failure can result from using the wrong pair? The app may connect to the wrong Clerk instance or environment, so production should explicitly use the live keys."
+   },
+   {
+    "question": "How should environment-variable names differ between client and server?",
+    "answer": "The frontend receives the publishable key during Clerk initialization, commonly through a public framework prefix such as NEXT_PUBLIC_. The backend reads CLERK_SECRET_KEY from a server-side environment variable for access to Clerk's backend services.",
+    "followUp": "How should a Vite application name the client variable? Use VITE_CLERK_PUBLISHABLE_KEY, while keeping CLERK_SECRET_KEY unprefixed so it is not bundled for the browser."
+   }
+  ],
+  "keyPoints": [
+   "Configure a publishable key for the frontend so Clerk can initialize in the browser.",
+   "Configure the secret key for backend code that communicates with Clerk.",
+   "The two keys connect the application to its Clerk instance.",
+   "Development publishable keys start with pk_test_, while production publishable keys start with pk_live_.",
+   "Development secret keys start with sk_test_, while production secret keys start with sk_live_.",
+   "Read CLERK_SECRET_KEY from a server-side environment variable rather than embedding it in application code."
+  ],
+  "gotchas": [
+   "Never place CLERK_SECRET_KEY in a public or client-exposed environment variable; doing so exposes the backend credential."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Setup & components::Local development": {
+  "sourceUrl": "https://clerk.com/docs/guides/development/managing-environments",
+  "sourceTitle": "Instances / Environments - Development",
+  "summary": "Use a Clerk Development instance for local authentication and testing. It has separate users, a relaxed security posture, and a 100-user cap, so it must not be used for production.",
+  "explanation": "For local work, Clerk uses a Development instance rather than a production workload. This instance has a more relaxed security posture, supports local authentication, and keeps its users separate from other instances. Because the local frontend and Clerk's development API use different domains, Clerk uses development-specific session handling internally.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Use a development instance locally",
+   "code": "import { ClerkProvider } from '@clerk/nextjs';\n\nexport default function RootLayout({\n  children,\n}: Readonly<{ children: React.ReactNode }>) {\n  return (\n    <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>\n      {children}\n    </ClerkProvider>\n  );\n}",
+   "language": "tsx",
+   "explanation": "Configure the app with the development publishable key, then run it locally and create test users in the development instance."
+  },
+  "useCases": [
+   {
+    "title": "Local application development",
+    "scenario": "Build and test authentication locally with users isolated from production."
+   },
+   {
+    "title": "Pre-production testing",
+    "scenario": "Try Clerk configuration and sign-in flows before release."
+   },
+   {
+    "title": "Session integration testing",
+    "scenario": "Validate cross-site session behavior between localhost and Clerk's development API."
+   }
+  ],
+  "related": [
+   "Development instance",
+   "Production instance",
+   "FAPI",
+   "dev browser",
+   "__clerk_db_jwt",
+   "localhost",
+   "accounts.dev"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Clerk Development instance used for?",
+    "answer": "A Development instance is Clerk's default instance type for local development. It supports local authentication but has a relaxed security posture, so it is not appropriate for production.",
+    "followUp": "What happens if the app is deployed with development configuration? The development-specific setup can break in production, so production configuration and a production instance are required."
+   },
+   {
+    "question": "What limitations apply to users in a Development instance?",
+    "answer": "Development instances isolate local users and settings from other instances. They are also limited to 100 users, and user data cannot be transferred directly between instances.",
+    "followUp": "How should users be moved to production? Clerk's documented migration path must be used; users cannot simply be migrated from a Development instance to a Production instance."
+   },
+   {
+    "question": "Why does Clerk handle sessions differently during local development?",
+    "answer": "Local frontends commonly run on localhost while the development FAPI runs on an accounts.dev domain. Since that is cross-site, Clerk uses a development-specific dev-browser mechanism and transmits its state through __clerk_db_jwt instead of relying on cookies.",
+    "followUp": "Should application code read __clerk_db_jwt? No. It is an internal development mechanism and relying on it causes production failures."
+   }
+  ],
+  "keyPoints": [
+   "Clerk creates Development as the default instance type for getting started locally.",
+   "Its configuration is designed to make local authentication and development easier.",
+   "A Development instance supports no more than 100 users.",
+   "Users and their data do not transfer directly between Clerk instances.",
+   "Cross-site local development prevents dependable cookie-based client-token storage.",
+   "Clerk transmits development session state through a query-string value instead of a cookie."
+  ],
+  "gotchas": [
+   "Do not use the development instance for production workloads.",
+   "The development instance has a 100-user limit."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Setup & components::Provider setup": {
+  "sourceUrl": "https://clerk.com/docs/react/reference/components/clerk-provider",
+  "sourceTitle": "<ClerkProvider> component - UI components - React | Clerk Docs",
+  "summary": "Wrap the React application with ClerkProvider so descendant Clerk hooks and components can access authentication context. Place it at the entry point for app-wide access, or deeper when only part of the tree needs Clerk.",
+  "explanation": "Place ClerkProvider at the application entry point and pass the publishable key when the SDK requires it. Components and hooks below the provider can then consume Clerk's session and user context; a narrower provider placement is also possible when authentication is needed only in part of the tree.",
+  "syntax": "<ClerkProvider publishableKey={publishableKey}>{children}</ClerkProvider>",
+  "parameters": [
+   {
+    "name": "publishableKey",
+    "type": "string",
+    "description": "The application's publishable key, typically read from a client-safe environment variable."
+   },
+   {
+    "name": "initialState",
+    "type": "ClerkState",
+    "description": "Optional initial state of the Clerk client during server-side rendering."
+   }
+  ],
+  "returns": "A provider component that supplies Clerk session and user context to its descendant hooks and components.",
+  "example": {
+   "title": "Wrap a React app with ClerkProvider",
+   "code": "import React from 'react'\nimport ReactDOM from 'react-dom/client'\nimport App from './App'\nimport { ClerkProvider } from '@clerk/react'\n\nconst publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY\nif (!publishableKey) throw new Error('Missing Clerk Publishable Key')\n\nReactDOM.createRoot(document.getElementById('root')!).render(\n  <React.StrictMode>\n    <ClerkProvider publishableKey={publishableKey}>\n      <App />\n    </ClerkProvider>\n  </React.StrictMode>,\n)",
+   "language": "tsx",
+   "explanation": "The provider surrounds the application and receives the public key, allowing descendant Clerk components and hooks to access authentication context."
+  },
+  "useCases": [
+   {
+    "title": "Provide global auth context",
+    "scenario": "The whole application uses Clerk authentication and user-aware UI."
+   },
+   {
+    "title": "Scope authentication to a subtree",
+    "scenario": "Only selected routes or components require Clerk functionality."
+   },
+   {
+    "title": "Configure the publishable key",
+    "scenario": "A React app needs to initialize Clerk from browser configuration."
+   }
+  ],
+  "related": [
+   "ClerkProvider",
+   "useAuth",
+   "useUser",
+   "SignInButton",
+   "UserButton"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does ClerkProvider provide?",
+    "answer": "ClerkProvider is required to integrate Clerk into a React application. It supplies session and user context to Clerk hooks and components below it.",
+    "followUp": "Where should it usually be mounted? At the entry point around the application, unless only a smaller subtree needs authentication."
+   },
+   {
+    "question": "Where should ClerkProvider be placed?",
+    "answer": "The recommended placement is at the app entry point so authentication is globally accessible. It can instead be rendered deeper in the component tree for a limited part of the application.",
+    "followUp": "What security rule applies to the key? Use the publishable key in client setup and never expose the secret key in client code."
+   },
+   {
+    "question": "How is ClerkProvider configured in a basic app?",
+    "answer": "A React app commonly imports ClerkProvider from @clerk/react, reads the publishable key from an environment variable, and renders the app as its child. The provider then makes Clerk context available to descendants.",
+    "followUp": "What additional provider property may be used in server-rendered applications? An initial Clerk client state can be supplied for SSR, although normal apps do not need to set it."
+   }
+  ],
+  "keyPoints": [
+   "Add ClerkProvider to a React application before using Clerk's hooks and components.",
+   "Descendant Clerk hooks and UI components receive session and user context through the provider.",
+   "Mount the provider around the complete application entry point for app-wide authentication access.",
+   "An application-wide wrapper lets authentication be consumed throughout the component tree.",
+   "A nested provider is appropriate when only selected routes or application sections need Clerk.",
+   "Restricting the provider's scope can limit Clerk functionality to the area that needs it."
+  ],
+  "gotchas": [
+   "Do not manually provide the initial client state for ordinary application development."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

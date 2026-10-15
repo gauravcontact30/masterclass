@@ -39,6 +39,7 @@ import { ClassroomTopicIcon } from "./classroom-topic-icon";
 import { OfficialScreens } from "./official-screens";
 import { screensFor, type OfficialScreen } from "@/lib/media/official-screens";
 import { essentialPoints } from "@/lib/pro-learn/essentials";
+import { dedupeAnswer, saidOnce } from "@/lib/pro-learn/dedupe-answer";
 import { BrandMark, TopicCover, hasTopicMedia } from "./topic-media";
 import type { TechnologyHandbook } from "@/lib/pro-learn/technology-handbooks";
 import type { Catalogue } from "@/lib/pro-learn/catalogue";
@@ -64,6 +65,8 @@ const SECTIONS_PER_PAGE = 3;
 
 const cardKey = (question: string) => question.trim().toLowerCase().replace(/\s+/g, " ");
 const contentKey = (text: string) => text.trim().toLowerCase().replace(/\s+/g, " ");
+/** Key points an opened card carries, its own first and the technology's after. */
+const WORTH_REMEMBERING = 6;
 /** A step title as a file name: "Worked example" becomes "worked-example". */
 const slugPath = (title: string) => title.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().split(" ").slice(0, 3).join("-").slice(0, 28).replace(/-$/, "") || "example";
 const EXTENSIONS: Record<string, string> = { python: "py", dockerfile: "Dockerfile", bash: "sh", hcl: "tf", yaml: "yml", json: "json", tsx: "tsx", jsx: "jsx", typescript: "ts", javascript: "js", text: "txt" };
@@ -223,10 +226,17 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
     // list of things worth remembering. The technology's authored essentials are
     // merged in here rather than on the server, so the same points are not
     // serialized once per topic into the page payload.
-    const extra = essentialPoints(technology, item.category);
+    // They fill the list up to WORTH_REMEMBERING and no further: a topic with
+    // its own points should read as that topic, not as the whole technology.
+    // Essentials the lesson already says elsewhere do not count towards it.
+    const own = lesson.answer.keyPoints;
+    const said = saidOnce();
+    [lesson.answer.definition, lesson.answer.summary, ...own, ...lesson.answer.steps.map(step => step.detail),
+      ...lesson.answer.caveats.map(point => typeof point === "string" ? point : point.text)].forEach(said.remember);
+    const extra = essentialPoints(technology, item.category).filter(said.fresh).slice(0, Math.max(0, WORTH_REMEMBERING - own.length));
     const answer = {
       ...lesson.answer,
-      keyPoints: [...new Set([...lesson.answer.keyPoints, ...extra])],
+      keyPoints: [...new Set([...own, ...extra])],
       useCases: item.useCase
         ? [{ ...item.useCase, example: "" }, ...lesson.answer.useCases.filter(entry => entry.scenario !== item.useCase?.scenario)]
         : lesson.answer.useCases,
@@ -623,25 +633,30 @@ function AnswerDocument({ card, providers, onAsk, onRetry, onForget, onOpenRelat
 
     {card.status === "ready" && card.result && <div className={styles.body}>
       {answer ? <>
-        {(() => {
-          const steps = uniqueText(answer.steps, step => `${step.title}\n${step.detail}`);
-          const repeatedContent = new Set([
-            contentKey(answer.definition),
-            contentKey(answer.summary),
-            ...steps.flatMap(step => [contentKey(step.title), contentKey(step.detail)]),
-            ...answer.subjects.flatMap(subject => [contentKey(subject.name), contentKey(subject.summary), ...subject.details.map(contentKey)]),
-          ]);
-          const keyPoints = uniqueText(answer.keyPoints, point => point).filter(point => !repeatedContent.has(contentKey(point)));
+        {((rawAnswer: SearchAnswer) => {
+          // Every section is read against everything above it, so an idea the
+          // reader has already met — in any wording — is not printed again.
+          const unique = dedupeAnswer({ ...rawAnswer, steps: uniqueText(rawAnswer.steps, step => `${step.title}\n${step.detail}`) });
+          const { steps, keyPoints } = unique;
+          const answer = unique;
           // An answer that carries code inside its steps still deserves the
           // editor: each step with code becomes a file, so every topic with an
           // example gets one Code example section rather than snippets strewn
           // through the prose.
-          const exampleFiles = answer.files.length
-            ? answer.files
-            : steps.filter(step => step.code.trim()).map((step, index) => ({
+          // Shell commands stay in their step's terminal; source moves to the
+          // editor and is then not printed a second time under its step.
+          const fromSteps = !answer.files.length;
+          const inEditor = (code: string) => fromSteps && !!code.trim() && !hasCommands(code);
+          const exampleFiles = fromSteps
+            ? steps.filter(step => inEditor(step.code)).map((step, index) => ({
               path: `${slugPath(step.title || `example-${index + 1}`)}.${fileExtension(step.code)}`,
               code: step.code, note: step.title,
-            }));
+            }))
+            : answer.files;
+          // The worked example opens on the real problem it solves: the topic's
+          // first use case, which then is not listed again under the uses.
+          const problem = exampleFiles.length ? answer.useCases[0] : undefined;
+          const otherUses = problem ? answer.useCases.slice(1) : answer.useCases;
           return <>
         {/* The header already names the topic, and a prepared answer's headline
             is that same name — so the headline only appears when it says
@@ -679,17 +694,28 @@ function AnswerDocument({ card, providers, onAsk, onRetry, onForget, onOpenRelat
           </li>)}</ul>
         </Block>}
 
-        {card.result.walkthrough === "git" ? <GitWalkthrough answer={answer} /> : <Block icon={<ListOrdered size={16} aria-hidden="true" />} title="Step by step" className={styles.steps}>
+        {card.result.walkthrough === "git" ? <GitWalkthrough answer={answer} /> : !!steps.length && <Block icon={<ListOrdered size={16} aria-hidden="true" />} title="Step by step" className={styles.steps}>
           <ol>{steps.map((step, index) => <li key={`${step.title}-${index}`}>
             <span className={styles.stepNumber} aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
             <div>
               {!!step.title.trim() && !isGeneratedStepTitle(step.title) && <h4><KeyText text={step.title} /></h4>}
               <p><KeyText text={step.detail} /></p>
-              {step.code && (card.result?.prepared && !hasCommands(step.code)
+              {step.code && !inEditor(step.code) && (card.result?.prepared && !hasCommands(step.code)
                 ? <pre className={styles.preparedCode}><code>{step.code}</code></pre>
                 : <CodeSample title={step.title} code={step.code} />)}
             </div>
           </li>)}</ol>
+        </Block>}
+
+        {/* Straight after the method: the problem in a sentence, then the
+            solution as a small project, one file per editor tab. */}
+        {!!exampleFiles.length && <Block icon={<FolderTree size={16} aria-hidden="true" />} title="Worked example" className={styles.workedIde} count={exampleFiles.length}>
+          {problem && <div className={styles.workedProblem}>
+            <span className={styles.workedProblemLabel}>Problem</span>
+            <strong><KeyText text={problem.title} /></strong>
+            {problem.scenario && <p><KeyText text={problem.scenario} /></p>}
+          </div>}
+          <CodeFiles files={exampleFiles} skin="apple" annotate={false} label={problem ? `Solution · ${problem.title}` : "Solution"} />
         </Block>}
 
         {/* After the method, before the examples: the reader now has the model
@@ -710,8 +736,8 @@ function AnswerDocument({ card, providers, onAsk, onRetry, onForget, onOpenRelat
           </section>)}
         </Block>}
 
-        {!!answer.useCases.length && <Block icon={<Lightbulb size={16} aria-hidden="true" />} title="Where this comes up" fold count={answer.useCases.length}>
-          <ul className={styles.useCases}>{answer.useCases.map(item => <li key={item.title}>
+        {!!otherUses.length && <Block icon={<Lightbulb size={16} aria-hidden="true" />} title="Where this comes up" fold count={otherUses.length}>
+          <ul className={styles.useCases}>{otherUses.map(item => <li key={item.title}>
             <strong><KeyText text={item.title} /></strong>
             {item.scenario && <p><KeyText text={item.scenario} /></p>}
             {item.example && <CodeSample title={item.title} code={item.example} />}
@@ -723,10 +749,6 @@ function AnswerDocument({ card, providers, onAsk, onRetry, onForget, onOpenRelat
             <strong>{entry.industry}</strong>
             <p><KeyText text={entry.problem} /></p>
           </li>)}</ul>
-        </Block>}
-
-        {!!exampleFiles.length && <Block icon={<FolderTree size={16} aria-hidden="true" />} title="Code example" fold count={exampleFiles.length}>
-          <CodeFiles files={exampleFiles} label="Project files" />
         </Block>}
 
         {!!keyPoints.length && <Block icon={<Check size={16} aria-hidden="true" />} title="Worth remembering">
@@ -764,7 +786,7 @@ function AnswerDocument({ card, providers, onAsk, onRetry, onForget, onOpenRelat
           <div className={styles.chips}>{answer.followUps.map(item => <button key={item} type="button" onClick={() => onAsk(item)}>{item}</button>)}</div>
         </Block>}
           </>;
-        })()}
+        })(answer)}
       </> : <div className={styles.noModel} role="status">
         <p>{referenceErrorMessage(card.result.reason)}</p>
         <p>No generated answer is available for this search yet.</p>

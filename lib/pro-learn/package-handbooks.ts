@@ -304,7 +304,7 @@ export const NEXT_PACKAGES: PackageTopic[] = [
   t('"use client"', "Directives", "Marks the module and its imports as the client boundary. Everything above it stays a Server Component."),
   t('"use server"', "Directives", "Marks a module or function as a Server Function callable from the client. Treat its arguments as untrusted input."),
   t('"use cache"', "Directives", "Caches a function, component or route by its inputs. The foundation of the Cache Components model."),
-  t('"use cache: private"', "Directives", "Caches per user rather than globally, for personalised output that still benefits from reuse."),
+  t('"use cache: private"', "Directives", "Caches a function that reads `cookies()`, `headers()` or `searchParams` — in the browser's memory only, never on the server."),
   t('"use cache: remote"', "Directives", "Caches into the shared remote cache handler rather than only in memory."),
 
   // Components
@@ -349,19 +349,19 @@ export const NEXT_PACKAGES: PackageTopic[] = [
 
   // Route segment config
   t("dynamicParams", "Route segment config", "Whether params outside `generateStaticParams` render on demand or 404."),
-  t("revalidate", "Route segment config", "The default revalidation period for the segment's cached data."),
-  t("runtime", "Route segment config", "`nodejs` or `edge` for the segment. Node is the default and the usual right answer."),
+  t("revalidate", "Route segment config", "Segment-wide revalidation period in the previous caching model. Removed under Cache Components — use `cacheLife` instead."),
+  t("runtime", "Route segment config", "`nodejs` (the default) or `edge` for the segment. The Edge runtime is deprecated in 16 — remove the export."),
   t("maxDuration", "Route segment config", "The execution budget for the segment on platforms that enforce one."),
-  t("preferredRegion", "Route segment config", "Deployment hint for placing the segment near its data."),
-  t("prefetch", "Route segment config", "Per-segment prefetching behaviour, including full prefetch of a dynamic route."),
-  t("instant", "Route segment config", "Opts a segment into instant navigation, rendering the shell before data resolves."),
+  t("preferredRegion", "Route segment config", "Deployment hint for placing the segment near its data. Deprecated in 16; set regions on the platform instead."),
+  t("prefetch", "Route segment config", "Caps how much of a segment is prefetched: `'partial'` for its App Shell, `'force-disabled'` for none. Requires Cache Components."),
+  t("instant", "Route segment config", "Asks Next.js to validate, in development, that navigating into this segment shows UI immediately. Requires Cache Components."),
 
   // Server functions
   t("Server Functions", "Server functions", "`'use server'` functions invoked from the client. Always re-check authorisation inside them."),
   t("revalidatePath", "Server functions", "Invalidates the cache for a path after a mutation."),
-  t("revalidateTag", "Server functions", "Invalidates every cache entry carrying a tag — the precise alternative to path invalidation."),
+  t("revalidateTag", "Server functions", "Marks every entry with a tag stale; pass `\"max\"` as the second argument for stale-while-revalidate. Works in Route Handlers too."),
   t("updateTag", "Server functions", "Invalidates a tag and refreshes in the same pass, so the caller sees fresh data immediately."),
-  t("refresh", "Server functions", "Refreshes uncached content in place without a full navigation."),
+  t("refresh", "Server functions", "Refreshes the client router from inside a Server Action, so the page re-renders with fresh server data. Server Actions only."),
   t("redirect", "Server functions", "Throws to redirect. It must not be called inside a `try` that swallows the thrown control signal."),
   t("permanentRedirect", "Server functions", "The 308 counterpart, for URLs that have moved for good."),
   t("notFound", "Server functions", "Throws to render the nearest `not-found.js`."),
@@ -370,7 +370,7 @@ export const NEXT_PACKAGES: PackageTopic[] = [
   t("after", "Server functions", "Schedules work to run after the response is sent — logging and analytics without delaying the user."),
   t("connection", "Server functions", "Marks the point where rendering must wait for a real request, opting out of prerendering."),
   t("unstable_rethrow", "Server functions", "Re-throws Next's internal control-flow errors so a broad `catch` does not swallow a redirect."),
-  t("catchError", "Server functions", "Catches errors without capturing the framework's control-flow signals."),
+  t("catchError", "Server functions", "Creates an error-boundary component in code — the programmatic form of `error.js` that lets `redirect()` and `notFound()` pass through."),
 
   // Caching
   t("cacheLife", "Caching APIs", "Sets the stale, revalidate and expire profile for a `'use cache'` boundary."),
@@ -380,7 +380,7 @@ export const NEXT_PACKAGES: PackageTopic[] = [
   t("unstable_cache", "Caching APIs", "The previous-generation data cache wrapper. `'use cache'` supersedes it."),
   t("unstable_noStore", "Caching APIs", "Opts a call out of caching. `connection()` is the current way to express this."),
   t("fetch options", "Caching APIs", "`cache` and `next: { revalidate, tags }` control caching per request."),
-  t("staleTimes", "Caching APIs", "How long the client router reuses a cached segment before refetching."),
+  t("staleTimes", "Caching APIs", "Experimental: how long the client router reuses a cached page segment (`static` / `dynamic` seconds) before refetching."),
   t("expireTime", "Caching APIs", "The stale-while-revalidate window sent to a CDN for ISR responses."),
 
   // Request APIs
@@ -405,7 +405,7 @@ export const NEXT_PACKAGES: PackageTopic[] = [
   t("useSelectedLayoutSegments", "Client hooks", "All active segments below the calling layout — how breadcrumbs are built."),
   t("useLinkStatus", "Client hooks", "Reports whether a parent `<Link>` navigation is pending, for inline loading indicators."),
   t("useReportWebVitals", "Client hooks", "Receives Core Web Vitals measurements for forwarding to analytics."),
-  t("useOffline", "Client hooks", "Reports connectivity so the UI can degrade deliberately rather than hang."),
+  t("useOffline", "Client hooks", "Returns `true` when the app has lost connectivity. Experimental: always `false` unless `experimental.useOffline` is on."),
 
   // Config
   t("images", "next.config keys", "Remote patterns, device sizes, formats and the loader. Remote hosts must be allowlisted."),
@@ -420,7 +420,7 @@ export const NEXT_PACKAGES: PackageTopic[] = [
   t("reactCompiler", "next.config keys", "Enables the React Compiler, which memoises automatically and retires most `useMemo`."),
   t("reactStrictMode", "next.config keys", "Double-invokes render in development to surface impure components."),
   t("typedRoutes", "next.config keys", "Generates route types so `<Link href>` is checked against routes that exist."),
-  t("typescript / eslint", "next.config keys", "Whether type and lint errors fail the build. Turning them off hides real problems."),
+  t("typescript / eslint", "next.config keys", "`typescript.ignoreBuildErrors` decides whether type errors fail the build. The `eslint` key was removed in 16."),
   t("logging", "next.config keys", "Controls fetch and cache logging in development, including full URLs."),
   t("devIndicators", "next.config keys", "The on-screen build and render indicators shown during development."),
   t("allowedDevOrigins", "next.config keys", "Origins permitted to reach the dev server, which is otherwise same-origin only."),
@@ -435,7 +435,7 @@ export const NEXT_PACKAGES: PackageTopic[] = [
   t("cssChunking", "next.config keys", "How CSS is split across chunks, trading request count against duplication."),
   t("inlineCss", "next.config keys", "Inlines critical CSS into the document to cut a render-blocking request."),
   t("taint", "next.config keys", "Enables React's taint APIs, so a flagged object or value cannot cross to the client."),
-  t("proxyClientMaxBodySize", "next.config keys", "The largest request body `proxy.js` will read before rejecting it."),
+  t("proxyClientMaxBodySize", "next.config keys", "How much of a request body `proxy.js` buffers (default 10MB). Beyond it the body is truncated with a warning, not rejected."),
   t("htmlLimitedBots", "next.config keys", "User agents served blocking metadata instead of streamed HTML."),
   t("webpack", "next.config keys", "The escape hatch for custom bundling. Turbopack is the default and needs it far less often."),
 
@@ -444,13 +444,13 @@ export const NEXT_PACKAGES: PackageTopic[] = [
   t("turbopackFileSystemCache", "Turbopack config", "Persists the build cache to disk so restarts and CI runs reuse work."),
   t("turbopackChunking", "Turbopack config", "Tunes how modules are grouped into chunks."),
   t("turbopackMemoryEviction", "Turbopack config", "Bounds compiler memory on large projects by evicting cached work."),
-  t("turbopackIgnoreIssue", "Turbopack config", "Silences a specific known issue rather than disabling a whole check."),
+  t("turbopackIgnoreIssue", "Turbopack config", "`turbopack.ignoreIssue` hides a specific known Turbopack warning by file path, instead of disabling a whole check."),
 
   // CLI
   t("next dev", "CLI & adapters", "The development server, Turbopack by default, with HMR and error overlays."),
   t("next build", "CLI & adapters", "The production build, including static generation and the route size report."),
   t("next start", "CLI & adapters", "Serves a production build. Not used when deploying `output: 'standalone'` directly."),
-  t("next lint", "CLI & adapters", "Runs ESLint with the Next config and its Core Web Vitals rules."),
+  t("next lint", "CLI & adapters", "Removed in Next.js 16. Run the ESLint CLI with `eslint-config-next` directly; `next build` no longer lints."),
   t("create-next-app", "CLI & adapters", "Scaffolds a new project with TypeScript, Tailwind, ESLint and App Router choices."),
   t("Adapters", "CLI & adapters", "The deployment adapter API — build output, routing information and runtime integration for a host."),
 ];

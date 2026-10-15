@@ -1,0 +1,1461 @@
+{
+ "Migrations::Expand and contract": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v7/prisma-migrate/workflows/customizing-migrations",
+  "sourceTitle": "Customizing migrations (Prisma ORM v7)",
+  "summary": "Expand and contract ships a breaking column change through compatible stages: add the replacement, backfill data, switch application access, then remove the old column.",
+  "explanation": "Apply a breaking column change as a sequence of compatible releases. First add the replacement alongside the old column, copy existing values and verify them, switch application reads and writes, then remove the old column only after it is unused.",
+  "syntax": "npx prisma migrate dev --name <migration-name>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Expand, backfill, and contract",
+   "code": "npx prisma migrate dev --name add-biography\n# Backfill bio -> biography in a reviewed data migration\nnpx prisma migrate dev --name drop-bio",
+   "language": "bash",
+   "explanation": "This illustrates the three deployment phases: add the replacement field, backfill existing rows, then remove the obsolete field after application reads and writes have switched."
+  },
+  "useCases": [
+   {
+    "title": "Column rename",
+    "scenario": "Renaming a populated column used by application code."
+   },
+   {
+    "title": "Field consolidation",
+    "scenario": "Combining multiple existing fields into one replacement field."
+   },
+   {
+    "title": "Relation restructuring",
+    "scenario": "Changing a populated relation from one-to-many to many-to-many."
+   }
+  ],
+  "related": [
+   "Data migrations",
+   "Customizing migrations",
+   "Prisma Migrate",
+   "Migration files",
+   "Schema changes"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Split a breaking field change into several deployable, reviewable steps instead of changing it in one operation.",
+   "Begin by adding the replacement field while retaining the original field.",
+   "During expansion, dual-write to both columns while reads still use the established column.",
+   "Backfill existing rows in a separate data migration so the replacement column contains the old values.",
+   "Check that the backfill produced valid and complete replacement data before switching reads.",
+   "After validation, move reads to the new field.",
+   "Stop updating the old field before removing it from the schema.",
+   "Finish by contracting the schema: delete the unused original field through a migration."
+  ],
+  "gotchas": [
+   "The cleanup migration is destructive: remove the old field only after application code no longer depends on it.",
+   "Use this pattern for populated columns that live application code currently reads or writes."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Migrations::migrate dev": {
+  "sourceUrl": "https://www.prisma.io/docs/cli/v7/migrate/dev",
+  "sourceTitle": "prisma migrate dev | Create & Apply Migrations",
+  "summary": "Generate and apply a migration during development from changes in the Prisma schema. The command checks migration history, updates the development database, and supports creating a migration without applying it.",
+  "explanation": "After changing the Prisma schema, run this command against a development database. Prisma checks migration history in a shadow database, creates a migration for detected schema changes, applies pending migrations to the development database, and updates migration state.",
+  "syntax": "prisma migrate dev [options]",
+  "parameters": [
+   {
+    "name": "--name, -n",
+    "type": "string",
+    "description": "Name the migration."
+   },
+   {
+    "name": "--create-only",
+    "type": "boolean",
+    "description": "Create a migration without applying it."
+   },
+   {
+    "name": "--config",
+    "type": "path",
+    "description": "Use a custom Prisma configuration file."
+   },
+   {
+    "name": "--schema",
+    "type": "path",
+    "description": "Use a custom Prisma schema file."
+   },
+   {
+    "name": "--url",
+    "type": "string",
+    "description": "Override the datasource URL from Prisma configuration."
+   }
+  ],
+  "returns": "Creates migration files and applies migrations to the development database; it also updates the `_prisma_migrations` table.",
+  "example": {
+   "title": "Apply a schema migration",
+   "code": "bunx prisma migrate dev --name add_user_email",
+   "language": "bash",
+   "explanation": "Creates and applies a named development migration after a schema change."
+  },
+  "useCases": [
+   {
+    "title": "Synchronize a schema change",
+    "scenario": "A Prisma schema model or field changes during local development."
+   },
+   {
+    "title": "Create a draft migration",
+    "scenario": "A migration requires manual SQL review before execution."
+   },
+   {
+    "title": "Run with custom paths",
+    "scenario": "A project uses a non-default schema or configuration location."
+   }
+  ],
+  "related": [
+   "prisma migrate",
+   "prisma migrate deploy",
+   "prisma db push",
+   "shadow database",
+   "Prisma schema",
+   "_prisma_migrations"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `prisma migrate dev` do?",
+    "answer": "It is a development-only command that creates and applies migrations from Prisma schema changes. It also updates the migration table in the development database.",
+    "followUp": "Why is a shadow database involved? It replays migration history and applies pending migrations there so Prisma can detect drift before changing the development database."
+   },
+   {
+    "question": "Describe the command's main sequence.",
+    "answer": "It reruns migration history in the shadow database, applies pending migrations there, generates a migration for schema changes, and then applies unapplied migrations to the development database.",
+    "followUp": "What happens when drift is found? Prisma can prompt for a database reset so the database and migration history can be synchronized."
+   },
+   {
+    "question": "How do you create a migration without applying it?",
+    "answer": "Use `--create-only` to generate a migration without applying it. This is useful when the generated migration needs review or editing before execution.",
+    "followUp": "How can you target a different schema? Pass `--schema` with the path to the alternative Prisma schema file."
+   }
+  ],
+  "keyPoints": [
+   "Use it after changing the Prisma schema to produce and run a development migration.",
+   "Migration history is replayed in a shadow database as part of the command.",
+   "Schema differences are converted into a new migration.",
+   "Unapplied migrations run against the development database and migration tracking is updated.",
+   "The database connection is taken from Prisma configuration unless overridden."
+  ],
+  "gotchas": [
+   "Do not use this command for production deployments.",
+   "Configure access to a shadow database before running the command.",
+   "In Prisma 7, run generation and seed commands separately when needed.",
+   "For MongoDB, use `db push` instead."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Migrations::Seeding": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v7/prisma-migrate/workflows/seeding.md",
+  "sourceTitle": "Seeding | Prisma Documentation",
+  "summary": "Prisma seeding runs a configured script to populate a database with reproducible data. In Prisma ORM v7, invoke it explicitly with prisma db seed, keeping reference-data setup separate from test fixtures.",
+  "explanation": "Configure a seed command in the migrations section of prisma.config.ts, pointing to a script that initializes Prisma Client and writes the desired reference records. Run that command explicitly with prisma db seed; in Prisma ORM v7, migration commands no longer invoke seeding automatically.",
+  "syntax": "npx prisma db seed",
+  "parameters": [
+   {
+    "name": "seed",
+    "type": "string",
+    "description": "Command configured under migrations.seed; Prisma passes it to the project's command runner."
+   }
+  ],
+  "returns": "The configured seed command's process result; the documentation does not specify a Prisma return value.",
+  "example": {
+   "title": "Seed reference data",
+   "code": "// prisma/seed.ts\nimport { PrismaClient } from \"@prisma/client\";\n\nconst prisma = new PrismaClient();\n\nasync function main() {\n  await prisma.user.createMany({\n    data: [\n      { email: \"alice@example.com\", name: \"Alice\" },\n      { email: \"bob@example.com\", name: \"Bob\" }\n    ],\n  });\n}\n\nmain()\n  .catch(console.error)\n  .finally(() => prisma.$disconnect());",
+   "language": "typescript",
+   "explanation": "This seed script creates reproducible reference users through Prisma Client."
+  },
+  "useCases": [
+   {
+    "title": "Bootstrap local development",
+    "scenario": "A fresh development database needs a known baseline of reference records."
+   },
+   {
+    "title": "Reproduce reference data",
+    "scenario": "Several environments must contain the same roles, categories, or configuration rows."
+   },
+   {
+    "title": "Provision an environment",
+    "scenario": "A deployment or preview workflow needs an explicit data-population step after migrations."
+   }
+  ],
+  "related": [
+   "prisma.config.ts",
+   "migrations",
+   "Prisma Client",
+   "prisma db seed",
+   "seed.ts"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How is a Prisma seed script configured and executed?",
+    "answer": "Seeding is configured by placing a command in the seed key of the migrations object in prisma.config.ts. Running prisma db seed executes that command.",
+    "followUp": "How does Prisma ORM v7 differ from earlier behavior? In v7, migrate dev and migrate reset no longer trigger seeding automatically."
+   },
+   {
+    "question": "What is the purpose of database seeding?",
+    "answer": "A seed script can initialize Prisma Client and create records such as reference users. The same command can then recreate the defined dataset consistently.",
+    "followUp": "How would you prevent duplicate reference rows? Make the operation idempotent, for example by using unique keys with upsert or conflict-safe creation."
+   },
+   {
+    "question": "What does the seed configuration value represent?",
+    "answer": "The seed command is an arbitrary command configured under migrations.seed, so it can invoke the project's chosen script runner. The CLI runs it exactly when prisma db seed is called.",
+    "followUp": "What should be checked when seeding fails? Verify the configured command, script location, dependencies, and database connection before rerunning it."
+   }
+  ],
+  "keyPoints": [
+   "Use seeding to recreate a predictable dataset, making reference data reproducible across environments.",
+   "Define the seed command inside the migrations object in prisma.config.ts.",
+   "The configured value is not limited to one runner or language; Prisma executes the command as configured.",
+   "Seeding is an explicit CLI operation rather than an implicit side effect of ordinary database work.",
+   "A TypeScript seed script can live in a seed.ts file, including under the prisma directory."
+  ],
+  "gotchas": [
+   "Do not expect prisma migrate dev or prisma migrate reset to run the seed script automatically; invoke the seed command yourself."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Querying::Aggregations and groupBy": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v7/prisma-client/queries/aggregation-grouping-summarizing",
+  "sourceTitle": "Aggregation, grouping, and summarizing",
+  "summary": "Use Prisma Client to calculate counts and numeric summaries in the database. Use groupBy() when those results are needed separately for each distinct value or combination of fields.",
+  "explanation": "Prisma Client sends aggregation work to the database through aggregate and groupBy queries. groupBy creates one result per distinct value or combination named in by, while aggregate computes values across the selected records; where narrows records before grouping, and having filters completed groups.",
+  "syntax": "prisma.model.groupBy({ by, where?, _count?, _avg?, _sum?, _min?, _max?, having?, orderBy?, take?, skip? })",
+  "parameters": [
+   {
+    "name": "by",
+    "type": "string or string[]",
+    "description": "Fields whose distinct values define the groups; accepts one field or multiple fields."
+   },
+   {
+    "name": "where",
+    "type": "WhereInput",
+    "description": "Restricts input records before grouping."
+   },
+   {
+    "name": "aggregate selections",
+    "type": "object",
+    "description": "Calculates per-group counts and numeric summaries, including _count, _avg, _sum, _min, and _max."
+   },
+   {
+    "name": "having",
+    "type": "HavingInput",
+    "description": "Restricts completed groups using aggregate-aware conditions."
+   },
+   {
+    "name": "orderBy",
+    "type": "OrderByInput",
+    "description": "Controls grouped-result ordering and can use aggregate values."
+   },
+   {
+    "name": "take",
+    "type": "number",
+    "description": "Limits the number of groups returned."
+   },
+   {
+    "name": "skip",
+    "type": "number",
+    "description": "Skips groups before returning results."
+   }
+  ],
+  "returns": "A promise resolving to an array containing one object per distinct group, with the grouping fields and any requested aggregate results.",
+  "example": {
+   "title": "Group users and calculate aggregates",
+   "code": "import { PrismaClient } from '@prisma/client';\n\nconst prisma = new PrismaClient();\n\nasync function main() {\n  const usersByCountry = await prisma.user.groupBy({\n    by: ['country'],\n    _sum: { profileViews: true },\n    _count: { _all: true },\n    orderBy: { country: 'asc' },\n  });\n\n  console.log(usersByCountry);\n}\n\nmain().finally(() => prisma.$disconnect());",
+   "language": "typescript",
+   "explanation": "Groups users by country and returns both the total profile views and record count for each group."
+  },
+  "useCases": [
+   {
+    "title": "Produce per-country totals, averages, minimums, or maximums.",
+    "scenario": "Reporting"
+   },
+   {
+    "title": "Find groups that meet thresholds such as an average or sum condition.",
+    "scenario": "Analytics"
+   },
+   {
+    "title": "Order groups by an aggregate and return only the leading results.",
+    "scenario": "ランキング and dashboards"
+   }
+  ],
+  "related": [
+   "aggregate()",
+   "count()",
+   "distinct",
+   "having",
+   "orderBy",
+   "_avg",
+   "_count",
+   "_max"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When should you use aggregate versus groupBy?",
+    "answer": "Use aggregate when one result summarizes a set of records, such as an average or sum. Use groupBy when the same calculations are needed separately for each value or combination listed in by.",
+    "followUp": "How would you exclude low-volume groups? Apply an aggregate condition in having, while using where for any row-level restrictions before grouping."
+   },
+   {
+    "question": "What is the difference between where and having in a grouped query?",
+    "answer": "where filters records before Prisma forms groups, so excluded rows do not contribute to counts or numeric aggregates. having evaluates the already formed groups and can filter using aggregate values such as a sum or average.",
+    "followUp": "Why can moving a condition from where to having change a count? where removes rows before counting, whereas having preserves the group calculation and only removes the finished group."
+   },
+   {
+    "question": "What does a Prisma groupBy query return?",
+    "answer": "A groupBy query names grouping fields in by and requests aggregate operations such as _count, _sum, _avg, _min, or _max. The result contains one entry for each distinct grouping value or combination.",
+    "followUp": "How can grouped results be ranked? Order the groups using an aggregate in orderBy, then use take when the query needs only a limited number of groups."
+   }
+  ],
+  "keyPoints": [
+   "groupBy partitions records using one field or a combination of fields, producing a separate grouped result for each distinct combination.",
+   "Each group can calculate numeric summaries with _avg, _sum, _min, _max, and counts with _count.",
+   "A grouped query can combine by with an aggregate selection, such as summing profileViews independently for every country.",
+   "Use where to reduce the input rows and having to retain only groups meeting an aggregate-based condition.",
+   "having supports conditions based on a group's aggregate result rather than on individual records.",
+   "Although both identify unique value combinations, groupBy additionally supports calculations over each identified group."
+  ],
+  "gotchas": [
+   "distinct is not an aggregation substitute: groupBy can calculate aggregates within each group, whereas distinct only returns unique combinations."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Querying::findMany and filtering": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v7/prisma-client/queries/filtering-and-sorting",
+  "sourceTitle": "Filtering and sorting (Prisma ORM v7) | Prisma Documentation",
+  "summary": "Use `findMany` with a typed `where` object to filter records by field values, logical combinations, and related-record conditions. Prisma Client checks the structure of these conditions through generated types before sending the query.",
+  "explanation": "Pass a typed `where` object to `findMany` to narrow records by field values. Conditions can use field operators, combine with `OR`, `AND`, or `NOT`, and traverse relations such as requiring at least one related record that matches.",
+  "syntax": "prisma.<model>.findMany({ where: <WhereInput> })",
+  "parameters": [
+   {
+    "name": "where",
+    "type": "UserWhereInput",
+    "description": "Optional typed conditions that determine which model records are returned."
+   }
+  ],
+  "returns": "A list of records matching the supplied filter.",
+  "example": {
+   "title": "Filter users with field and logical conditions",
+   "code": "const users = await prisma.user.findMany({\n  where: {\n    email: { endsWith: \"prisma.io\" },\n    OR: [\n      { name: { contains: \"Alice\" } },\n      { name: { contains: \"Bob\" } }\n    ]\n  }\n});",
+   "language": "typescript",
+   "explanation": "Retrieves users whose email ends with the specified domain and whose name contains either search term."
+  },
+  "useCases": [
+   {
+    "title": "Field-based search",
+    "scenario": "Search records by text or exact field values."
+   },
+   {
+    "title": "Composable list queries",
+    "scenario": "Build optional filters for a list endpoint."
+   },
+   {
+    "title": "Relation filtering",
+    "scenario": "Return parents based on child-record properties."
+   }
+  ],
+  "related": [
+   "where",
+   "OR",
+   "AND",
+   "NOT",
+   "some",
+   "every",
+   "none",
+   "endsWith"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does filtering work with `findMany`?",
+    "answer": "`findMany` returns a list of records, and its `where` option filters those records. The `where` input can match model fields using equality or field-specific operators.",
+    "followUp": "How would you filter by a related to-many record? Use a relation filter such as `some`, then place the related record conditions inside it."
+   },
+   {
+    "question": "How do you combine multiple filters?",
+    "answer": "Use operators such as `OR`, `AND`, and `NOT` inside `where` to compose multiple conditions. Field operators can express comparisons or string matching instead of only exact equality.",
+    "followUp": "How can a query require a related record? Put a relation condition under the relation field and use `some` for at least one matching related record."
+   },
+   {
+    "question": "How do you filter using related records?",
+    "answer": "A relation can be filtered by nesting conditions under its relation field. For a to-many relation, `some` matches records with at least one related record satisfying the nested filter.",
+    "followUp": "How would you require that no related records match? Replace `some` with `none` and retain the nested condition."
+   }
+  ],
+  "keyPoints": [
+   "Use `where` to restrict the records returned by `findMany`.",
+   "A field can be matched directly, or filtered with an operator such as `endsWith`.",
+   "Logical operators let one query express alternatives, conjunctions, and exclusions.",
+   "Filtering can target fields on related records by nesting a relation filter inside `where`."
+  ],
+  "gotchas": [
+   "Logical operators combine conditions, but each operator has its own input shape; use arrays for `OR` and `AND`, while `NOT` can wrap a condition."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Querying::Nested writes": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v7/prisma-client/queries/relation-queries",
+  "sourceTitle": "Relation queries (Concepts) (Prisma ORM v7)",
+  "summary": "Nested writes create, update, or delete related records through a single Prisma Client create or update query. Prisma executes the operation transactionally, so failure in any part rolls back the entire change.",
+  "explanation": "A nested write places relation operations inside the data of a model's create or update query. Prisma executes the complete relational operation as one transaction, supports nesting according to the data model, and rolls everything back if any part fails.",
+  "syntax": "prisma.<model>.create({ data: { <relation>: { create | createMany | connect | update | upsert | disconnect | delete: ... } } })\nprisma.<model>.update({ where: <unique filter>, data: { <relation>: { create | createMany | connect | update | upsert | disconnect | delete: ... } } })",
+  "parameters": [],
+  "returns": "The enclosing create or update query returns the parent record according to its normal Prisma Client selection, including any relations requested with select or include.",
+  "example": {
+   "title": "Create a user with related posts",
+   "code": "const user = await prisma.user.create({\n  data: {\n    email: \"alice@prisma.io\",\n    posts: {\n      create: [\n        { title: \"First post\" },\n        { title: \"Second post\" }\n      ]\n    }\n  }\n});",
+   "language": "typescript",
+   "explanation": "Creates a user and two related posts atomically; a failure in any part rolls back the complete operation."
+  },
+  "useCases": [
+   {
+    "title": "Atomic creation of related data",
+    "scenario": "Create a parent and its related records together, such as a user with posts."
+   },
+   {
+    "title": "Extend an existing relation",
+    "scenario": "Add new related records while updating an existing parent."
+   },
+   {
+    "title": "Coordinated relational changes",
+    "scenario": "Change or remove related records as part of a parent update."
+   }
+  ],
+  "related": [
+   "create",
+   "update",
+   "createMany",
+   "updateMany",
+   "deleteMany",
+   "connect",
+   "relation fields",
+   "$transaction([])"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What are nested writes in Prisma, and what guarantee do they provide?",
+    "answer": "Nested writes let one Prisma Client create or update query modify related records transactionally. Prisma rolls back all changes if any part of the operation fails.",
+    "followUp": "How would you handle dependent operations with $transaction([])? Use nested writes when a later record needs an ID generated by an earlier operation, because the array form cannot pass those IDs between operations."
+   },
+   {
+    "question": "Where can nested writes be used?",
+    "answer": "They are available on relation fields within a model's create or update query. The nested structure can include related create, update, or delete operations supported by the data model.",
+    "followUp": "Can nested writes be arbitrarily deep? They support any nesting depth that the data model supports."
+   },
+   {
+    "question": "Do updateMany and deleteMany support nested writes?",
+    "answer": "Nested writes are not supported by top-level updateMany or deleteMany operations. Use a model create or update query with relation-field operations when relational changes are required.",
+    "followUp": "What alternative fits independent bulk changes? Use the appropriate bulk operation when records do not depend on one another or require nested relation changes."
+   }
+  ],
+  "keyPoints": [
+   "One Prisma Client query can write related records while preserving transactional behavior.",
+   "Nested writes can create, update, or delete related data across multiple tables atomically.",
+   "A failure in one nested operation cancels the changes made by the other operations.",
+   "The depth of nesting is constrained by the relations defined in the Prisma data model, not by a fixed single level.",
+   "An update can add related records with nested create or createMany operations.",
+   "Nested writes group multiple related-record operations into one transaction."
+  ],
+  "gotchas": [
+   "Do not put relation operations inside top-level bulk operations such as updateMany or deleteMany; the page excludes nested writes there.",
+   "Use nested writes through relation fields on create or update queries, not as an independent top-level operation."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Querying::Pagination": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v7/prisma-client/queries/pagination",
+  "sourceTitle": "Pagination (Prisma ORM v7) | Prisma Documentation",
+  "summary": "Prisma supports offset and cursor-based pagination. Choose cursor pagination for stable, scalable traversal of large or changing datasets; use offset when users need arbitrary numbered-page jumps.",
+  "explanation": "Cursor pagination bookmarks a result with a unique, sequential field such as an ID. Request the next batch with that cursor, a matching sort order, and a positive take value; use skip: 1 to exclude the bookmarked record.",
+  "syntax": "prisma.model.findMany({ skip, take, cursor, orderBy })",
+  "parameters": [
+   {
+    "name": "skip",
+    "type": "number",
+    "description": "Number of records to omit before selecting results; use skip: 1 after a cursor to exclude the bookmarked record."
+   },
+   {
+    "name": "take",
+    "type": "number",
+    "description": "Number of records to return; a negative value pages backward."
+   },
+   {
+    "name": "cursor",
+    "type": "object",
+    "description": "The unique sequential record that marks the current position."
+   },
+   {
+    "name": "orderBy",
+    "type": "object",
+    "description": "Defines the ordering, and cursor pagination must order by the cursor field."
+   }
+  ],
+  "returns": "A limited set of records from the requested position in the ordered result set.",
+  "example": {
+   "title": "Cursor pagination",
+   "code": "const firstPage = await prisma.post.findMany({\n  take: 10,\n  orderBy: { id: \"asc\" },\n});\n\nconst lastPost = firstPage[firstPage.length - 1];\nconst nextPage = lastPost\n  ? await prisma.post.findMany({\n      take: 10,\n      skip: 1,\n      cursor: { id: lastPost.id },\n      orderBy: { id: \"asc\" },\n    })\n  : [];",
+   "language": "typescript",
+   "explanation": "Fetches an initial page, then uses its final ID as the cursor for the next page while skipping that already-returned record."
+  },
+  "useCases": [
+   {
+    "title": "Infinite scrolling",
+    "scenario": "A social or activity feed loads successive batches as the user scrolls."
+   },
+   {
+    "title": "Large result sets",
+    "scenario": "A large dataset must be traversed efficiently in consistent order."
+   },
+   {
+    "title": "Arbitrary page jumps",
+    "scenario": "An admin table lets users open a specific numbered page."
+   },
+   {
+    "title": "Sequential feeds",
+    "scenario": "A timeline requests records before or after a known item."
+   }
+  ],
+  "related": [
+   "Prisma Client",
+   "findMany",
+   "skip",
+   "take",
+   "cursor",
+   "orderBy",
+   "offset pagination",
+   "cursor-based pagination"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What pagination approaches does Prisma Client provide?",
+    "answer": "Prisma supports offset and cursor-based pagination. Offset uses skip and take, while cursor pagination uses cursor and take to continue from a bookmarked record.",
+    "followUp": "When is offset preferable? Use it when users need direct access to numbered pages or arbitrary jumps."
+   },
+   {
+    "question": "What requirements does cursor pagination place on the cursor?",
+    "answer": "A cursor identifies the current position using a unique, sequential column, commonly an ID or timestamp. The query must order by that same cursor field so subsequent pages remain stable.",
+    "followUp": "How do you avoid returning the cursor record again? Add skip: 1 to the follow-up query."
+   },
+   {
+    "question": "Why choose cursor pagination over offset pagination?",
+    "answer": "Cursor pagination is suited to feeds, timelines, and large datasets because it provides stable, scalable paging as the dataset grows. Offset pagination becomes more expensive when the offset is large because the database must traverse skipped rows.",
+    "followUp": "How can a caller request the previous page? Use a negative take value with the appropriate cursor."
+   }
+  ],
+  "keyPoints": [
+   "Prisma offers both offset and cursor-based pagination strategies.",
+   "Use skip and take when the interface needs numbered pages or limited-depth navigation.",
+   "Use cursor and take for stable paging through feeds, timelines, and large collections.",
+   "Offset queries are simple, but their cost increases as more records are skipped.",
+   "Choose offset pagination when arbitrary numbered-page navigation is required.",
+   "Prefer cursor pagination when growing data makes performance and consistent traversal priorities."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Querying::select and include": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v7/prisma-client/queries/select-fields",
+  "sourceTitle": "Select fields | Prisma ORM v7",
+  "summary": "Use `select` to return only chosen scalar fields and `include` to add related records. Nest `select` within relation selections to keep returned relation data focused.",
+  "explanation": "Prisma Client lets a query choose scalar fields with `select` and load related records with `include`. A nested `select` can restrict which fields come back from a relation, making the result smaller and more intentional. Choose one of `select` or `include` at the top level; use nested selection when you need both a limited parent payload and related data.",
+  "syntax": "prisma.<model>.<query>({ select: { ... }, include: { ... } })",
+  "parameters": [
+   {
+    "name": "select",
+    "type": "object",
+    "description": "Boolean field selections and nested relation selections that define the returned shape."
+   },
+   {
+    "name": "include",
+    "type": "object",
+    "description": "Relation selections that add related records to the result; nested options can further shape them."
+   }
+  ],
+  "returns": "A typed result containing the selected scalar fields and/or included relations.",
+  "example": {
+   "title": "Select fields and nested relation fields",
+   "code": "const users = await prisma.user.findMany({\n  select: {\n    email: true,\n    name: true,\n    posts: {\n      select: {\n        title: true,\n        published: true,\n      },\n    },\n  },\n});",
+   "language": "typescript",
+   "explanation": "Returns each user's email and name, plus only the title and published fields from related posts."
+  },
+  "useCases": [
+   {
+    "title": "Minimize payloads",
+    "scenario": "Return a compact API response containing only public user fields."
+   },
+   {
+    "title": "Fetch related records",
+    "scenario": "Load posts or profiles together with a user."
+   },
+   {
+    "title": "Shape nested relations",
+    "scenario": "Return a user and only selected fields from each related post."
+   }
+  ],
+  "related": [
+   "Prisma Client",
+   "select",
+   "include",
+   "nested select",
+   "relation fields"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Without a projection, Prisma returns every scalar field but leaves relations out.",
+   "Use `select` to return only chosen scalar fields.",
+   "Use `include` when the result should contain related records.",
+   "To limit both levels, use a top-level selection with nested relation selections."
+  ],
+  "gotchas": [
+   "Do not put `select` and `include` together at the same query level."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema & modelling::Attributes and defaults": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v6/prisma-schema/data-model/models",
+  "sourceTitle": "Models (Prisma ORM v6)",
+  "summary": "Prisma schema attributes define primary keys, defaults, uniqueness, and mappings. Field attributes use @ syntax; model-level constraints and mappings use @@ syntax.",
+  "explanation": "Prisma attributes modify fields and model blocks. Use @id or @@id for primary keys, @unique or @@unique for unique identifiers, @default for generated or fixed values, and @map or @@map to separate Prisma names from database names. Every model needs at least one unique identifier.",
+  "syntax": "field Type @attribute\nmodel Model {\n  field Type @attribute\n  @@attribute(...)\n}",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Schema attributes in practice",
+   "code": "model User {\n  id        Int      @id @default(autoincrement())\n  email     String   @unique\n  firstName String\n  lastName  String\n  createdAt DateTime @default(now())\n\n  @@unique([firstName, lastName])\n  @@map(\"users\")\n}",
+   "language": "hcl",
+   "explanation": "This model defines an auto-incrementing primary key, a required unique email, a compound unique constraint, a timestamp default, and a mapped database table name."
+  },
+  "useCases": [
+   {
+    "title": "Primary-key design",
+    "scenario": "Identify records with a stable single-field or composite key."
+   },
+   {
+    "title": "Automatic defaults",
+    "scenario": "Generate IDs or timestamps when records are created."
+   },
+   {
+    "title": "Uniqueness enforcement",
+    "scenario": "Prevent duplicate values or value combinations."
+   },
+   {
+    "title": "Legacy database mapping",
+    "scenario": "Keep Prisma names independent from existing database names."
+   }
+  ],
+  "related": [
+   "@id",
+   "@@id",
+   "@default",
+   "@unique",
+   "@@unique",
+   "@map",
+   "@@map",
+   "autoincrement()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you define primary keys in Prisma?",
+    "answer": "Use @id on one scalar field for a single-field primary key, or @@id with a field list for a composite primary key. A model can have only one ID definition.",
+    "followUp": "What must a model have if it has no primary key? It needs a required @unique field or an @@unique block."
+   },
+   {
+    "question": "What is the difference between @unique and @@unique?",
+    "answer": "Use @unique for a field-level constraint and @@unique for a constraint spanning multiple fields. Prisma models can have multiple unique constraints.",
+    "followUp": "How would you expose a composite unique constraint in queries? Use the generated compound key selector based on the constraint's fields or its configured name."
+   },
+   {
+    "question": "How do defaults work?",
+    "answer": "@default supplies a scalar field's initial value. It can represent a database DEFAULT in relational databases or use a Prisma ORM-level function such as autoincrement() or now().",
+    "followUp": "Can a relation field use @default? No; defaults are documented for scalar fields, while relation fields are excluded."
+   }
+  ],
+  "keyPoints": [
+   "Attributes can annotate either individual fields or entire model blocks.",
+   "An ID provides the model's record identity.",
+   "Use @default to assign initial values to scalar model fields.",
+   "Use @unique for one field and @@unique for a multi-field uniqueness rule.",
+   "@map lets a Prisma field use a different database-column name.",
+   "Relational models support both single-field and composite primary keys."
+  ],
+  "gotchas": [
+   "A model may define only one primary-key identity, whether it is single-field or composite."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema & modelling::Datasource and generator": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v7/prisma-schema/overview",
+  "sourceTitle": "Prisma schema (Prisma ORM v7) | Prisma Documentation",
+  "summary": "Declare how Prisma connects to a database with a datasource block and what code or assets it generates with a generator block. In Prisma ORM 7, connection URLs are configured in prisma.config.ts.",
+  "explanation": "A Prisma schema uses a datasource block to describe how Prisma ORM connects to a database and a generator block to select the assets produced by prisma generate. In Prisma ORM 7, connection URLs are configured in prisma.config.ts rather than in the schema file, while generator settings such as provider and output remain in the generator block.",
+  "syntax": "datasource <name> {\n  provider = \"<database-provider>\"\n}\n\ngenerator <name> {\n  provider = \"<generator-provider>\"\n  output   = \"<output-path>\"\n}",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Datasource and generator blocks",
+   "code": "datasource db {\n  provider = \"postgresql\"\n}\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../generated/prisma\"\n}",
+   "language": "text",
+   "explanation": "This schema selects PostgreSQL as the data source and generates Prisma Client into a custom directory."
+  },
+  "useCases": [
+   {
+    "title": "Declare a database provider",
+    "scenario": "Connect Prisma ORM to a PostgreSQL database."
+   },
+   {
+    "title": "Create a client",
+    "scenario": "Generate Prisma Client for application database access."
+   },
+   {
+    "title": "Configure multiple generators",
+    "scenario": "Produce multiple generated assets from one schema."
+   }
+  ],
+  "related": [
+   "Data sources",
+   "Generators",
+   "Prisma Schema API",
+   "prisma generate",
+   "prisma.config.ts"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The datasource block describes the database connection configuration.",
+   "Generator blocks determine which assets Prisma creates when prisma generate runs.",
+   "Prisma Client is the default generator in Prisma ORM 7."
+  ],
+  "gotchas": [
+   "Only one datasource block is allowed in a schema.",
+   "Configure connection URLs in prisma.config.ts, not in the schema file."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema & modelling::Enums and composite types": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v6/prisma-schema/data-model/models",
+  "sourceTitle": "Models (Prisma ORM v6)",
+  "summary": "Prisma enums constrain fields to named values supported by the connector. Composite types define reusable, structured embedded records for MongoDB models.",
+  "explanation": "An enum declares a finite set of named scalar values and can be used as a model field when the connector supports enums. A composite type uses a type block to define a structured, reusable embedded object; composite types are available only with MongoDB and can be placed in models as required or list fields.",
+  "syntax": "enum Role {\n  USER\n  ADMIN\n}\n\ntype Address {\n  street String\n  city   String\n}",
+  "parameters": [
+   {
+    "name": "schema declaration",
+    "type": "Prisma Schema Language",
+    "description": "The enum identifier and its member declarations in an enum block, or the composite type identifier and field declarations in a type block."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Enum and composite type in a Prisma schema",
+   "code": "enum Role {\n  USER\n  ADMIN\n}\n\ntype Address {\n  street String\n  city   String\n}\n\nmodel User {\n  id      String  @id @default(auto()) @map(\"_id\") @db.ObjectId\n  role    Role    @default(USER)\n  address Address\n}",
+   "language": "text",
+   "explanation": "The enum restricts role to named values, while the composite type defines a reusable embedded address shape for MongoDB models."
+  },
+  "useCases": [
+   {
+    "title": "Constrain categorical fields with enums",
+    "scenario": "A status, permission, or role field must accept only a fixed set of values."
+   },
+   {
+    "title": "Reuse an embedded field shape",
+    "scenario": "Several MongoDB models share the same structured embedded data."
+   },
+   {
+    "title": "Represent structured embedded records",
+    "scenario": "A MongoDB model needs nested address, contact, or measurement data stored as an embedded document."
+   }
+  ],
+  "related": [
+   "enum block",
+   "type block",
+   "@@unique",
+   "@@index",
+   "@default",
+   "@map",
+   "MongoDB"
+  ],
+  "since": "3.10.0",
+  "interview": [
+   {
+    "question": "What is a Prisma enum, and when can it be used?",
+    "answer": "An enum is a finite set of named values declared with an enum block. It can be used in the schema when the selected database connector supports enums, either through native database support or Prisma-level enforcement.",
+    "followUp": "How would you handle a value that changes frequently? Use String instead, because changing enum members requires a schema change."
+   },
+   {
+    "question": "How do composite types differ from models?",
+    "answer": "A composite type is declared with a type block and describes a structured embedded object. A model can use that type as a field, including as a list, to represent embedded records in MongoDB.",
+    "followUp": "Where can a composite type be used? Only with MongoDB, where it maps to an embedded document."
+   },
+   {
+    "question": "Which attributes and constraints are available for composite types?",
+    "answer": "Composite types support @default and @map, plus applicable native types. They do not support @unique, @id, @relation, @ignore, or @updatedAt inside the type block; model-level unique constraints can still reference composite fields.",
+    "followUp": "How can you index a nested composite field? Define @@index on the model that uses the composite type."
+   }
+  ],
+  "keyPoints": [
+   "Declare an enum only when the chosen connector supports enum values.",
+   "Use an enum block followed by the enum name and its members.",
+   "Composite types model embedded records rather than separate top-level records.",
+   "Define named fields and types inside a composite type, much like a model.",
+   "Create reusable embedded shapes with a type block.",
+   "A containing model can include a composite field in a multi-column unique constraint."
+  ],
+  "gotchas": [
+   "Composite types cannot be used with relational database connectors.",
+   "Do not place @id, @unique, @relation, @ignore, or @updatedAt inside a composite type; define supported constraints at the containing model level where applicable.",
+   "Treat an enum as a scalar field type rather than as an embedded object or model."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema & modelling::Indexes": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v7/prisma-schema/data-model/indexes",
+  "sourceTitle": "Indexes (Prisma ORM v7) | Prisma Documentation",
+  "summary": "Declare database indexes in a Prisma model with @@index. Index fields used by real filters, sorts, and relations instead of indexing every column.",
+  "explanation": "Prisma indexes are declared at model level with @@index. Put one or more fields in the indexed field list, and use optional arguments when the database-specific index behavior requires them; Prisma then represents that index in the database schema.",
+  "syntax": "@@index(_ fields: FieldReference[], map: String?, where: raw(String) | { field: value }?)",
+  "parameters": [
+   {
+    "name": "fields",
+    "type": "FieldReference[]",
+    "description": "One or more model fields to include in the index."
+   },
+   {
+    "name": "map",
+    "type": "String?",
+    "description": "Optional underlying database index name."
+   },
+   {
+    "name": "where",
+    "type": "raw(String) | { field: value }?",
+    "description": "Optional partial-index predicate."
+   }
+  ],
+  "returns": "Defines an index in the database.",
+  "example": {
+   "title": "Composite index in a Prisma model",
+   "code": "model Post {\n  id      Int     @id @default(autoincrement())\n  title   String\n  content String?\n\n  @@index([title, content])\n}",
+   "language": "text",
+   "explanation": "Add the model-level index, then apply the schema through your normal Prisma migration workflow."
+  },
+  "useCases": [
+   {
+    "title": "Speed up filtering",
+    "scenario": "A feature frequently filters records by one scalar field."
+   },
+   {
+    "title": "Support composite queries",
+    "scenario": "Queries commonly filter or sort using the same combination of fields."
+   },
+   {
+    "title": "Avoid relation scans",
+    "scenario": "A relation field is queried in an environment without database-enforced foreign keys."
+   },
+   {
+    "title": "Tune index behavior",
+    "scenario": "A database-specific index needs ordering, clustering, or another supported option."
+   }
+  ],
+  "related": [
+   "@@unique",
+   "@id",
+   "@unique",
+   "@@fulltext",
+   "length",
+   "sort",
+   "type",
+   "clustered"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Prisma schema attributes can describe database indexes alongside unique and primary-key constraints.",
+   "Use @@index for either a single-field or composite index.",
+   "Prioritize fields that features filter, sort, or use in relations.",
+   "Use sort when the database index needs an explicit storage order.",
+   "SQL Server schemas can specify whether an index is clustered."
+  ],
+  "gotchas": [
+   "An omitted index can cause full-table scans, which become slower as the table grows.",
+   "Choose an index type based on the database and data being queried; GIN is suited to composite values such as arrays or JsonB.",
+   "Full-text indexing in MySQL and MongoDB requires the documented preview feature and @@fulltext."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema & modelling::Models and fields": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v7/prisma-schema/data-model/models",
+  "sourceTitle": "Models (Prisma ORM v7)",
+  "summary": "Prisma models describe application entities and map their fields to database structures. Fields have types; omit `?` for required values and use `?` for nullable scalar fields.",
+  "explanation": "Declare a Prisma model with named, typed fields. Add `?` to a scalar field when it may be null; fields without it are required. Attributes such as `@id`, `@default`, and `@unique` describe database and client behavior, while Prisma generates corresponding types for application code.",
+  "syntax": "model ModelName {\n  fieldName FieldType [type modifier] [attributes]\n}",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A model with required and nullable fields",
+   "code": "model User {\n  id    Int     @id @default(autoincrement())\n  email String  @unique\n  name  String?\n}",
+   "language": "text",
+   "explanation": "This schema maps the User model to a database table, with a required integer identifier, a unique required email, and a nullable name."
+  },
+  "useCases": [
+   {
+    "title": "Represent domain entities as tables",
+    "scenario": "Designing a relational data model"
+   },
+   {
+    "title": "Generate required and nullable TypeScript properties",
+    "scenario": "Validating application data"
+   },
+   {
+    "title": "Declare identifiers, defaults, and uniqueness",
+    "scenario": "Applying database rules"
+   }
+  ],
+  "related": [
+   "scalar fields",
+   "type modifiers",
+   "@id",
+   "@default",
+   "@unique",
+   "@@map"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Prisma model, and what makes up a field?",
+    "answer": "A model describes an application-domain entity and is typically mapped to a database table. Its fields have names and types, may use modifiers, and may carry attributes such as identifiers or defaults.",
+    "followUp": "How would you map a Prisma model to a differently named table? Use the `@@map` model attribute with the database table name."
+   },
+   {
+    "question": "How do required and optional fields differ?",
+    "answer": "A field without `?` is required. Relational databases represent that requirement with a `NOT NULL` constraint, and generated Prisma Client TypeScript types require a value at compile time.",
+    "followUp": "What does `String?` produce in generated application types? It represents a nullable value, commonly `string | null`."
+   },
+   {
+    "question": "What are field attributes used for?",
+    "answer": "Use field attributes to add schema behavior: `@id` identifies a record, `@default(autoincrement())` supplies generated identifiers, and `@unique` enforces uniqueness for a field.",
+    "followUp": "Can defaults be placed on relation fields? No; defaults are not allowed directly on relation fields, though backing scalar fields can have defaults."
+   }
+  ],
+  "keyPoints": [
+   "A model's properties are fields. Each field has a name and type, with optional modifiers and attributes.",
+   "Use models to represent the entities your application works with.",
+   "A field is required unless its declaration includes the `?` modifier.",
+   "For relational databases, required Prisma fields become database columns constrained as `NOT NULL`.",
+   "Generated Prisma Client TypeScript types also reflect required fields as required in application code.",
+   "Use `@default` to assign a value automatically to scalar fields when records are created."
+  ],
+  "gotchas": [
+   "The `?` modifier cannot make list fields optional; use it only with scalar or relation fields where supported.",
+   "An optional field defaults to null, so distinguish a missing value from an explicitly supplied non-null value."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema & modelling::Relations": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v7/prisma-schema/data-model/relations",
+  "sourceTitle": "Relations (Prisma ORM v7)",
+  "summary": "Prisma relations connect models through paired relation fields. Use relation scalar fields and @relation mappings for one-to-one and one-to-many associations, while many-to-many relations can be implicit or explicit.",
+  "explanation": "A Prisma relation connects two models through paired relation fields. For one-to-one and one-to-many relations, the model holding the foreign key also declares a relation scalar field, and @relation(fields, references) maps that scalar to the referenced key; a unique foreign key distinguishes one-to-one from one-to-many.",
+  "syntax": "model A {\n  relation B?\n  items    B[]\n}\n\nmodel B {\n  aId Int\n  a   A @relation(fields: [aId], references: [id])\n}",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Prisma relation declarations",
+   "code": "model User {\n  id      Int     @id @default(autoincrement())\n  profile Profile?\n  posts   Post[]\n}\n\nmodel Profile {\n  id     Int  @id @default(autoincrement())\n  userId Int  @unique\n  user   User @relation(fields: [userId], references: [id])\n}\n\nmodel Post {\n  id       Int  @id @default(autoincrement())\n  authorId Int\n  author   User @relation(fields: [authorId], references: [id])\n}",
+   "language": "text",
+   "explanation": "This schema models one user profile at most and multiple posts per user. The foreign-key fields are connected to relation fields with @relation; @unique on userId enforces the one-to-one profile association."
+  },
+  "useCases": [
+   {
+    "title": "One-to-one ownership",
+    "scenario": "Associate each user with zero or one profile while enforcing at most one profile per user."
+   },
+   {
+    "title": "One-to-many ownership",
+    "scenario": "Represent a user who authors any number of posts."
+   },
+   {
+    "title": "Many-to-many classification",
+    "scenario": "Connect posts and categories when each side can have multiple associations."
+   }
+  ],
+  "related": [
+   "One-to-one relations",
+   "One-to-many relations",
+   "Many-to-many relations",
+   "Relation fields",
+   "Relation scalar field",
+   "@relation attribute",
+   "Self-relations"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Which relation cardinalities does Prisma support?",
+    "answer": "Prisma supports one-to-one, one-to-many, and many-to-many relations. Each relation is represented by relation fields on the participating models.",
+    "followUp": "How do you model a one-to-one relation? Add a foreign-key scalar and relation field on one model, connect them with @relation, and make the foreign key unique."
+   },
+   {
+    "question": "What distinguishes one-to-one from one-to-many in a relational database?",
+    "answer": "A one-to-one relation requires a unique foreign key, while a one-to-many relation does not. Without uniqueness, several child records can reference the same parent.",
+    "followUp": "Why is uniqueness placed on the foreign key? It prevents more than one child row from pointing to the same parent."
+   },
+   {
+    "question": "What must a Prisma relation declaration contain?",
+    "answer": "A relation needs two relation fields, one on each model. For one-to-one and one-to-many relations, a relation scalar field is additionally linked through the @relation attribute.",
+    "followUp": "What does @relation(fields, references) identify? It maps the local scalar foreign key to the referenced key on the related model."
+   }
+  ],
+  "keyPoints": [
+   "Relations express links between Prisma models and allow their records to be associated.",
+   "The documented cardinalities are one-to-one, one-to-many, and many-to-many.",
+   "Declare one relation field on each participating model.",
+   "One-to-one and one-to-many relations also need a scalar foreign-key field alongside the relation field.",
+   "A single schema can combine all three cardinalities, such as User–Profile, User–Post, and Post–Category.",
+   "Use a unique foreign key for one-to-one; leave it non-unique for one-to-many."
+  ],
+  "gotchas": [
+   "Define both sides of a relation; a single relation field is not sufficient."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Transactions & production::Batch transactions": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v7/prisma-client/queries/transactions",
+  "sourceTitle": "Transactions and batch queries (Reference) (Prisma ORM v7)",
+  "summary": "Batch transactions submit independent Prisma operations together through the array form of `$transaction`. Prisma treats them as one atomic unit and rolls back the batch if any operation fails.",
+  "explanation": "The array form of `$transaction` accepts Prisma Client operations that do not depend on one another. Prisma executes them as one atomic unit: if an operation fails, the transaction is rolled back; the returned array preserves the operations' order.",
+  "syntax": "prisma.$transaction([operation1, operation2, ...])",
+  "parameters": [
+   {
+    "name": "operations",
+    "type": "PrismaPromise<any>[]",
+    "description": "An array of independent Prisma Client promises or query operations to execute atomically."
+   }
+  ],
+  "returns": "A promise resolving to an array of operation results in the same order as the supplied operations.",
+  "example": {
+   "title": "Run independent writes together",
+   "code": "import { PrismaClient } from '@prisma/client'\n\nconst prisma = new PrismaClient()\n\nasync function main() {\n  const [alice, bob] = await prisma.$transaction([\n    prisma.user.create({ data: { email: 'alice@example.com' } }),\n    prisma.user.create({ data: { email: 'bob@example.com' } }),\n  ])\n\n  console.log(alice.id, bob.id)\n}\n\nmain().finally(() => prisma.$disconnect())",
+   "language": "typescript",
+   "explanation": "Pass independent Prisma Client queries in an array to run them as one atomic transaction and receive their results in the same order."
+  },
+  "useCases": [
+   {
+    "title": "Independent writes",
+    "scenario": "Create several unrelated records together, such as independent users or settings."
+   },
+   {
+    "title": "Coordinated deletion",
+    "scenario": "Apply multiple cleanup operations that do not require one another's results."
+   },
+   {
+    "title": "Atomic bulk changes",
+    "scenario": "Run several bulk operations while preserving all-or-nothing behavior."
+   }
+  ],
+  "related": [
+   "$transaction",
+   "createMany()",
+   "updateMany()",
+   "deleteMany()",
+   "interactive transactions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When should you use the array form of `$transaction`?",
+    "answer": "Use `prisma.$transaction([operation1, operation2])` when the operations are independent. Prisma runs them as a single atomic operation, so they all succeed or the transaction is rolled back.",
+    "followUp": "What should you use when operation two needs operation one's generated ID? Use an interactive transaction callback so the second query can consume the first query's result."
+   },
+   {
+    "question": "How do you handle dependent operations?",
+    "answer": "The array form is not appropriate when one query depends on another query's result. In that case, use the callback form of `$transaction`, where application code can read an earlier result before issuing the next query.",
+    "followUp": "Why not put dependent queries in the array? The array is designed for independent writes and does not provide a way to construct a later operation from an earlier result."
+   },
+   {
+    "question": "What happens if one batched operation fails?",
+    "answer": "The transaction is atomic: Prisma treats the supplied operations as one unit. If any operation fails, Prisma Client rolls back the entire transaction rather than committing only the successful operations.",
+    "followUp": "How can you batch many records of one model? Prefer bulk methods such as `createMany()`, `updateMany()`, or `deleteMany()` when their operation matches the workload."
+   }
+  ],
+  "keyPoints": [
+   "The array groups several Prisma Client operations into one all-or-nothing unit.",
+   "Failure in one operation prevents partial commits from the batch.",
+   "The batch can contain multiple operations of the same kind, including several `deleteMany` calls.",
+   "Bulk methods such as `createMany()`, `updateMany()`, and `deleteMany()` already execute transactionally."
+  ],
+  "gotchas": [
+   "A single failed operation causes all operations in the batch to be rolled back."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Transactions & production::Client lifecycle": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v7/prisma-client/setup-and-configuration/databases-connections/connection-management",
+  "sourceTitle": "Connection management | Prisma Documentation",
+  "summary": "Reuse one PrismaClient instance across requests and disconnect it during final shutdown. Prisma connects lazily, maintains a connection pool, and should not be disconnected after every request.",
+  "explanation": "Create one PrismaClient instance in a shared module and import it wherever database access is needed. Prisma connects lazily on the first query and maintains a pool for reuse. During application shutdown, call $disconnect() to close the pool; do not disconnect after individual requests in long-running or reusable serverless processes.",
+  "syntax": "const prisma = new PrismaClient();\nawait prisma.$disconnect();",
+  "parameters": [
+   {
+    "name": "PrismaClient",
+    "type": "constructor",
+    "description": "No parameters for constructing a shared PrismaClient instance."
+   }
+  ],
+  "returns": "$disconnect() returns a Promise that resolves after Prisma Client closes its connections and stops the query engine process.",
+  "example": {
+   "title": "Shared client with graceful shutdown",
+   "code": "import { PrismaClient } from \"@prisma/client\";\n\nexport const prisma = new PrismaClient();\n\nexport async function shutdown() {\n  await prisma.$disconnect();\n}\n\nprocess.on(\"SIGTERM\", shutdown);\nprocess.on(\"SIGINT\", shutdown);\n\nexport async function getUsers() {\n  return prisma.user.findMany();\n}",
+   "language": "typescript",
+   "explanation": "This module exports one shared client for requests and disconnects it when the process receives a shutdown signal."
+  },
+  "useCases": [
+   {
+    "title": "Share one client across requests",
+    "scenario": "A long-running Node.js server handles many requests."
+   },
+   {
+    "title": "Avoid duplicate clients during hot reload",
+    "scenario": "A development server reloads modules during iteration."
+   },
+   {
+    "title": "Graceful application shutdown",
+    "scenario": "The process receives SIGINT or SIGTERM."
+   },
+   {
+    "title": "Explicitly disconnect temporary clients",
+    "scenario": "A temporary client must release resources, such as in a supported edge-runtime pattern."
+   }
+  ],
+  "related": [
+   "PrismaClient",
+   "$connect()",
+   "$disconnect()",
+   "beforeExit hook",
+   "connection pool",
+   "hot reloading"
+  ],
+  "since": "",
+  "keyPoints": [
+   "For a long-running application, instantiate one client and share it across request handlers.",
+   "Export the client from a module so the module system returns the same instance to later imports.",
+   "Explicit startup connection is usually unnecessary because the first query establishes connectivity.",
+   "The shared client owns a pool that can serve multiple requests.",
+   "Call $disconnect() during final application shutdown when the process should release database resources.",
+   "Disconnecting closes the client's pooled database connections."
+  ],
+  "gotchas": [
+   "Disconnecting after every request prevents connection reuse and adds connection setup overhead.",
+   "Repeatedly constructing clients without cleanup creates additional connection pools.",
+   "Use a development-only global to prevent hot reloads from creating duplicate clients; do not treat this as the general production pattern."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Transactions & production::Connection pooling": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v6/prisma-client/setup-and-configuration/databases-connections",
+  "sourceTitle": "Database connections (Prisma ORM v6)",
+  "summary": "Size Prisma's pool according to the runtime: divide the CPU-based default across long-running instances, while serverless functions should start with one connection per instance. Use an external pooler such as PgBouncer when many instances could exhaust the database connection limit.",
+  "explanation": "Prisma maintains a pool per PrismaClient instance. For long-running applications, divide the default pool capacity across application instances; for serverless functions, begin with one connection per instance and increase only after measuring concurrency and database capacity. An external pooler such as PgBouncer can consolidate connections when many function instances would otherwise exhaust the database.",
+  "syntax": "DATABASE_URL=\"postgresql://user:password@host:5432/db?connection_limit=1\"",
+  "parameters": [
+   {
+    "name": "connection_limit",
+    "type": "URL query parameter",
+    "description": "Maximum number of database connections in the Prisma Client pool, configured in the database connection URL."
+   }
+  ],
+  "returns": "A configured Prisma Client connection pool; individual queries acquire and release pooled database connections.",
+  "example": {
+   "title": "Start with a small serverless pool",
+   "code": "const url = new URL(process.env.DATABASE_URL!);\nurl.searchParams.set(\"connection_limit\", \"1\");\n\nconst prisma = new PrismaClient({\n  datasourceUrl: url.toString(),\n});\n\nconst user = await prisma.user.findUnique({\n  where: { id: 1 },\n});\nconsole.log(user);",
+   "language": "typescript",
+   "explanation": "This runnable pattern creates a Prisma Client with a one-connection pool, a practical starting point for a serverless function without an external pooler."
+  },
+  "useCases": [
+   {
+    "title": "Long-running application replicas",
+    "scenario": "A traditional service runs multiple replicas and needs a predictable per-instance share of the database connection budget."
+   },
+   {
+    "title": "Serverless request handlers",
+    "scenario": "A serverless function creates many PrismaClient instances as concurrency rises and must avoid multiplying direct database connections."
+   },
+   {
+    "title": "External pooling with PgBouncer",
+    "scenario": "A deployment needs more concurrency than a small direct pool can provide without exhausting database connections."
+   }
+  ],
+  "related": [
+   "optimizing the connection pool",
+   "optimizing for parallel requests",
+   "external connection poolers",
+   "PgBouncer",
+   "PrismaClient"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How should Prisma's connection pool be sized for long-running processes?",
+    "answer": "For a long-running process, start with the default pool size, calculated as physical CPUs multiplied by two plus one, divided by the number of application instances. This spreads the available connection budget across instances rather than giving every instance the full default.",
+    "followUp": "How would you size a serverless deployment without PgBouncer? Start with `connection_limit=1`, then raise it only after testing parallel requests and confirming the database can support the resulting aggregate connections."
+   },
+   {
+    "question": "Why is connection pooling especially challenging in serverless environments?",
+    "answer": "Each serverless function instance has its own PrismaClient and therefore its own pool. As instances scale out, their pool connections can collectively exceed the database limit even when the per-instance pool looks reasonable.",
+    "followUp": "What architectural option reduces this multiplication? Put an external connection pooler such as PgBouncer between the functions and the database."
+   },
+   {
+    "question": "How is Prisma's pool size configured and constrained?",
+    "answer": "The pool size is controlled through the `connection_limit` parameter in the database connection URL. The configured value must remain within the connection capacity supported by the underlying database.",
+    "followUp": "What should be checked before increasing the value? Account for all application instances and other database users, then validate the setting with workload testing rather than relying only on the per-instance number."
+   }
+  ],
+  "keyPoints": [
+   "Prisma's default pool size is computed as physical CPU count multiplied by two, plus one.",
+   "Override the calculated pool size by adding `connection_limit` to the database URL.",
+   "Use an external pooler when a smaller per-instance pool cannot handle the required concurrency.",
+   "PgBouncer helps prevent aggregate connection exhaustion when application or function instances create too many direct database connections."
+  ],
+  "gotchas": [
+   "The database's connection limit is an upper bound; increasing Prisma's pool beyond that capacity can fail or exhaust available connections.",
+   "Serverless scaling multiplies pool capacity across function instances, so a seemingly small per-instance setting can still consume many database connections.",
+   "Without an external pooler, use one connection as the initial serverless setting, then optimize based on observed parallel requests."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Transactions & production::Interactive transactions": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v6/prisma-client/queries/transactions",
+  "sourceTitle": "Transactions and batch queries (Reference) (Prisma ORM v6)",
+  "summary": "Interactive transactions let an async `$transaction` callback perform dependent reads and writes atomically. Use the callback's transaction client and set `timeout` when you need an explicit execution limit.",
+  "explanation": "Prisma starts an interactive transaction when `$transaction` receives an async callback. Use the callback's transaction client for dependent reads and writes; returning normally commits, while an error rolls back the whole unit. Configure `timeout` to limit execution time, and keep the callback short because long-lived transactions can hurt performance or cause deadlocks.",
+  "syntax": "await prisma.$transaction(async (tx) => { /* transaction work */ }, { maxWait, timeout, isolationLevel });",
+  "parameters": [
+   {
+    "name": "callback",
+    "type": "(tx) => Promise<TResult>",
+    "description": "Async callback receiving the transaction-scoped Prisma Client; Prisma operations invoked through it belong to the transaction."
+   },
+   {
+    "name": "timeout",
+    "type": "number",
+    "description": "Maximum time the interactive transaction may run before cancellation and rollback; default is 5000 ms."
+   },
+   {
+    "name": "maxWait",
+    "type": "number",
+    "description": "Maximum time to wait to acquire a transaction; default is 2000 ms."
+   },
+   {
+    "name": "isolationLevel",
+    "type": "Prisma.TransactionIsolationLevel",
+    "description": "Optional database isolation level for the transaction."
+   }
+  ],
+  "returns": "The value returned by the callback, wrapped in a Promise; successful completion commits the transaction, while an error rolls it back.",
+  "example": {
+   "title": "Read and write atomically",
+   "code": "import { PrismaClient } from \"@prisma/client\";\n\nconst prisma = new PrismaClient();\n\nconst result = await prisma.$transaction(async (tx) => {\n  const account = await tx.account.findUniqueOrThrow({\n    where: { id: 1 },\n  });\n\n  await tx.account.update({\n    where: { id: account.id },\n    data: { balance: { decrement: 10 } },\n  });\n\n  return account.id;\n}, {\n  timeout: 10000,\n});\n\nconsole.log(result);",
+   "language": "typescript",
+   "explanation": "The callback reads and updates through the transaction client, while the timeout bounds the interactive transaction."
+  },
+  "useCases": [
+   {
+    "title": "Dependent reads and writes",
+    "scenario": "A later query needs the result of an earlier query, such as loading an account before changing its balance."
+   },
+   {
+    "title": "Atomic multi-step updates",
+    "scenario": "Several related mutations must either all succeed or all be undone."
+   },
+   {
+    "title": "Conditional transaction logic",
+    "scenario": "Business rules require application logic between database operations."
+   }
+  ],
+  "related": [
+   "$transaction",
+   "maxWait",
+   "timeout",
+   "isolationLevel",
+   "Prisma.TransactionIsolationLevel",
+   "Serializable"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you create an interactive transaction?",
+    "answer": "Pass an async callback to `prisma.$transaction`. Prisma supplies a transaction client to the callback, and operations made with that client run in the same transaction; normal completion commits and an exception rolls back.",
+    "followUp": "What happens if an operation uses the root client instead of the callback client? It is not encapsulated by the interactive transaction, so dependent work should use the supplied transaction client."
+   },
+   {
+    "question": "How do you control an interactive transaction's duration?",
+    "answer": "Set the `timeout` option in the second argument to `$transaction`; it defines the maximum time before Prisma cancels and rolls back the interactive transaction. The documented default is 5 seconds.",
+    "followUp": "How should a transaction exceeding the timeout be addressed? First shorten and optimize the transaction rather than simply allowing long-running work, because long transactions can harm performance and cause deadlocks."
+   },
+   {
+    "question": "When would you choose an interactive transaction over a batch transaction?",
+    "answer": "Interactive transactions are appropriate when later operations depend on earlier reads or writes and cannot be expressed as an independent batch. The callback lets application logic run between Prisma queries while preserving atomicity for the transaction's operations.",
+    "followUp": "When should this pattern be avoided? Avoid unnecessary open time and move non-database work outside the transaction, since prolonged transactions hurt performance and can deadlock."
+   }
+  ],
+  "keyPoints": [
+   "The callback receives a transaction-scoped Prisma Client instance; commonly name it `tx` to distinguish it from the root client.",
+   "A callback that finishes successfully commits all operations performed through its transaction client.",
+   "An exception causes the interactive transaction's work to roll back automatically.",
+   "The `timeout` option places an upper bound on transaction execution and rolls it back when that limit is reached."
+  ],
+  "gotchas": [
+   "Keep the callback short; holding an interactive transaction open can reduce database performance and may cause deadlocks.",
+   "Unless overridden, the interactive transaction timeout is 5 seconds.",
+   "Use the callback argument for Prisma operations that must participate in the transaction."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Transactions & production::Isolation levels": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v6/prisma-client/queries/transactions",
+  "sourceTitle": "Transactions and batch queries (Reference) (Prisma ORM v6)",
+  "summary": "Prisma lets you choose a transaction isolation level with the `isolationLevel` option. Use it deliberately for concurrent work, and select only levels supported by your database connector.",
+  "explanation": "Prisma lets you override the database's transaction isolation level through the second argument of the interactive transaction API. Choose a level supported by the underlying connector; stronger isolation can reduce concurrency anomalies but may cause conflicting transactions to abort, so applications should account for transaction failures.",
+  "syntax": "prisma.$transaction(async (tx) => { /* operations */ }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable })",
+  "parameters": [
+   {
+    "name": "callback",
+    "type": "(tx) => Promise<T>",
+    "description": "Callback containing the Prisma operations to execute in the interactive transaction."
+   },
+   {
+    "name": "options",
+    "type": "{ isolationLevel?: Prisma.TransactionIsolationLevel }",
+    "description": "Transaction options; the relevant option is `isolationLevel`."
+   },
+   {
+    "name": "isolationLevel",
+    "type": "Prisma.TransactionIsolationLevel",
+    "description": "Requested transaction isolation level, subject to connector support."
+   }
+  ],
+  "returns": "The callback's result, returned as a promise after the transaction completes.",
+  "example": {
+   "title": "Serializable transaction",
+   "code": "import { PrismaClient, Prisma } from '@prisma/client'\n\nconst prisma = new PrismaClient()\n\nasync function main() {\n  await prisma.$transaction(\n    async (tx) => {\n      await tx.user.update({\n        where: { id: 1 },\n        data: { balance: { decrement: 10 } },\n      })\n    },\n    { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },\n  )\n}\n\nmain().finally(() => prisma.$disconnect())",
+   "language": "typescript",
+   "explanation": "Runs the update in a transaction using serializable isolation."
+  },
+  "useCases": [
+   {
+    "title": "Protect writes from concurrency anomalies",
+    "scenario": "Concurrent updates can interleave and require stronger consistency guarantees."
+   },
+   {
+    "title": "Override the database default",
+    "scenario": "A transaction needs behavior different from the database default."
+   },
+   {
+    "title": "Choose a connector-compatible level",
+    "scenario": "An application targets multiple database connectors with different isolation support."
+   }
+  ],
+  "related": [
+   "$transaction",
+   "Prisma.TransactionIsolationLevel",
+   "transactionOptions",
+   "ReadUncommitted",
+   "ReadCommitted",
+   "RepeatableRead",
+   "Snapshot",
+   "Serializable"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Pass `isolationLevel` as the second argument to an interactive `$transaction` call.",
+   "Available enum values include `ReadUncommitted`, `ReadCommitted`, `RepeatableRead`, `Snapshot`, and `Serializable`.",
+   "Omitting the option delegates the isolation choice to the database configuration.",
+   "Connector support differs, so verify that the selected level is available for PostgreSQL, MySQL, SQL Server, CockroachDB, or SQLite.",
+   "Use the `Prisma.TransactionIsolationLevel` enum rather than an arbitrary string."
+  ],
+  "gotchas": [
+   "Only use an isolation level supported by the database connector.",
+   "If no option is supplied, Prisma uses the database-configured default rather than a Prisma-wide fixed level.",
+   "Serializable isolation can be used to address transaction timing issues, but concurrent conflicts still need application handling."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Transactions & production::Query logging": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v6/prisma-client/observability-and-logging/logging",
+  "sourceTitle": "Logging (Prisma ORM v6)",
+  "summary": "Configure Prisma Client to log SQL queries and inspect their parameters and timing. Use stdout for direct output or query events for custom handling and slow-query analysis.",
+  "explanation": "Configure Prisma Client with the log option to emit query records as events, then subscribe with $on(\"query\", ...) to inspect the SQL text, parameters, and elapsed time. Use stdout logging for simpler built-in output when event handling is unnecessary.",
+  "syntax": "new PrismaClient({ log: LogLevel[] | LogDefinition[] }); prisma.$on(\"query\", (event) => { ... });",
+  "parameters": [
+   {
+    "name": "log",
+    "type": "LogLevel[] | LogDefinition[]",
+    "description": "An array of log levels or log definitions controlling Prisma Client logging."
+   }
+  ],
+  "returns": "A query event containing the generated query, parameters, and duration; $on() registers an event listener.",
+  "example": {
+   "title": "Log emitted SQL and duration",
+   "code": "import { PrismaClient } from \"@prisma/client\";\n\nconst prisma = new PrismaClient({\n  log: [\n    { emit: \"event\", level: \"query\" },\n    { emit: \"stdout\", level: \"error\" },\n  ],\n});\n\nprisma.$on(\"query\", (event) => {\n  console.log(`${event.duration}ms: ${event.query}`);\n});\n\nawait prisma.user.findMany({ take: 10 });\nawait prisma.$disconnect();",
+   "language": "typescript",
+   "explanation": "Creates a Prisma Client that emits query events and prints each query's duration and SQL text."
+  },
+  "useCases": [
+   {
+    "title": "See the SQL generated by Prisma queries",
+    "scenario": "Development debugging"
+   },
+   {
+    "title": "Find queries with unusually high durations",
+    "scenario": "Performance investigation"
+   },
+   {
+    "title": "Forward structured query events to a logging system",
+    "scenario": "Observability integration"
+   },
+   {
+    "title": "Capture query parameters and timing for selected log levels",
+    "scenario": "Production diagnostics"
+   }
+  ],
+  "related": [
+   "PrismaClient",
+   "log",
+   "$on()",
+   "query",
+   "stdout",
+   "event",
+   "LogLevel",
+   "LogDefinition"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you inspect SQL generated by Prisma Client?",
+    "answer": "Set the client's log option to include a query level with event emission, then register a $on(\"query\", handler) listener. The handler receives query information such as SQL, parameters, and duration.",
+    "followUp": "How would you avoid custom handling? Use stdout emission for the query level, which lets Prisma print query logs directly."
+   },
+   {
+    "question": "What logging destinations does Prisma Client support?",
+    "answer": "Prisma supports stdout logging and event-based logging. Stdout is the default destination, while event-based logging lets application code consume selected log events.",
+    "followUp": "Which approach supports structured integration with an observability system? Event-based logging, because the application receives the event and can transform or forward it."
+   },
+   {
+    "question": "What does the query log level record?",
+    "answer": "The query log level records queries run by Prisma; for relational databases, this means the SQL queries Prisma sends. Query events also expose execution-related timing information.",
+    "followUp": "What does the timing value represent? It covers the interval from the client issuing the query until the database responds, rather than only server-side execution."
+   }
+  ],
+  "keyPoints": [
+   "Pass log to PrismaClient to select which categories, including query, warn, error, and info, should be recorded.",
+   "Prisma can write logs directly to standard output, which is the default destination.",
+   "Choose event emission when application code needs to receive and process log records.",
+   "Configure the query level with emit set to event before registering a query listener.",
+   "Call $on(\"query\", ...) to receive emitted query records.",
+   "Query logging exposes the raw SQL sent by Prisma together with additional query information."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ }
+}

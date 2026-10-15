@@ -1,0 +1,1078 @@
+{
+ "Assertions::Assertions": {
+  "sourceUrl": "https://vitest.dev/guide/learn/matchers",
+  "sourceTitle": "Using Matchers | Guide | Vitest",
+  "summary": "Use toBe for primitive values and shared object references, toEqual for recursive structural comparison, and specialized matchers for conditions such as array contents or thrown errors. Add .not to negate any matcher.",
+  "explanation": "Vitest assertions start with expect and finish with a matcher. Use toBe for primitive equality or the same object reference, toEqual for recursively comparing structure, and specialized matchers such as toContainEqual or toThrow when the condition is more specific.",
+  "syntax": "expect(received).toBe(expected)\nexpect(received).toEqual(expected)\nexpect(received).not.toBe(expected)",
+  "parameters": [
+   {
+    "name": "received",
+    "type": "any",
+    "description": "Value received by expect and compared by the matcher."
+   },
+   {
+    "name": "value / expected",
+    "type": "any",
+    "description": "Expected value or comparison argument; toBe accepts a value and toEqual accepts the expected value."
+   }
+  ],
+  "returns": "Matchers return Awaitable<void>.",
+  "example": {
+   "title": "Choosing assertion matchers",
+   "code": "import { expect, test } from 'vitest'\n\ntest('uses the right matcher', () => {\n  expect(2 + 2).toBe(4)\n  expect({ id: 1, name: 'Ada' }).toEqual({ id: 1, name: 'Ada' })\n  expect([1, { id: 2 }]).toContainEqual({ id: 2 })\n  expect(() => { throw new Error('bad input') }).toThrow('bad input')\n})",
+   "language": "typescript",
+   "explanation": "The test uses primitive equality, recursive structural equality, array-item structural matching, and an error matcher."
+  },
+  "useCases": [
+   {
+    "title": "Primitive equality",
+    "scenario": "Checking numbers, strings, or booleans against exact expected values."
+   },
+   {
+    "title": "Structural equality",
+    "scenario": "Comparing returned objects or arrays by their nested contents."
+   },
+   {
+    "title": "Array item matching",
+    "scenario": "Verifying that an array contains an object with selected structure."
+   },
+   {
+    "title": "Error assertions",
+    "scenario": "Checking that a function throws the expected error."
+   }
+  ],
+  "related": [
+   "expect",
+   "toStrictEqual",
+   "toContainEqual",
+   "toThrow",
+   "toMatch",
+   "not",
+   "Expect API Reference"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Start with an exact-equality matcher when the expected value should match precisely.",
+   "toBe uses Object.is semantics, making it suitable for primitive values and exact references.",
+   "Prefer toBe for numbers, strings, booleans, and other primitive comparisons.",
+   "toEqual compares nested object and array contents recursively without requiring the same object reference.",
+   "Choose toStrictEqual when explicit undefined properties, sparse arrays, or object types must also match.",
+   "Prefix a matcher with .not to assert that the condition is false."
+  ],
+  "gotchas": [
+   "Do not use toBe to compare separately created objects that merely have identical properties; it checks object identity.",
+   "For an object inside an array, use toContainEqual rather than toContain."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Async testing::Testing promises": {
+  "sourceUrl": "https://main.vitest.dev/guide/learn/async",
+  "sourceTitle": "Testing Asynchronous Code | Guide",
+  "summary": "Test promise outcomes by awaiting `.resolves` or `.rejects` assertions. Async test callbacks are awaited by Vitest, while assertion-count guards help detect asynchronous paths that never run.",
+  "explanation": "Make the test callback async and await promise-based assertions. Use `.resolves` to unwrap a successful result and `.rejects` to check its rejection reason; awaiting them ensures Vitest observes the assertion before the test finishes.",
+  "syntax": "await expect(promise).resolves.<matcher>(expected)\nawait expect(promise).rejects.<matcher>(expected)",
+  "parameters": [
+   {
+    "name": "received",
+    "type": "Promise or async function",
+    "description": "A promise, or an async function supplied for rejection testing, followed by `.resolves` or `.rejects` and a matcher."
+   },
+   {
+    "name": "matcher arguments",
+    "type": "Matcher-specific",
+    "description": "The expected resolved value, rejection reason, or error characteristics accepted by the selected matcher."
+   }
+  ],
+  "returns": "The asynchronous matcher returns a Promise that must be awaited.",
+  "example": {
+   "title": "Testing resolved and rejected promises",
+   "code": "import { expect, test } from 'vitest'\n\nfunction fetchUser(id: number) {\n  return id === 1\n    ? Promise.resolve({ name: 'Alice' })\n    : Promise.reject(new Error('User not found'))\n}\n\ntest('handles promise outcomes', async () => {\n  await expect(fetchUser(1)).resolves.toMatchObject({ name: 'Alice' })\n  await expect(fetchUser(2)).rejects.toThrow('User not found')\n})",
+   "language": "typescript",
+   "explanation": "The test awaits both asynchronous assertions: one checks the resolved value and the other verifies the expected rejection."
+  },
+  "useCases": [
+   {
+    "title": "Successful promise results",
+    "scenario": "Verify that an async operation returns the expected object or value."
+   },
+   {
+    "title": "Expected rejection paths",
+    "scenario": "Confirm that invalid input or missing data produces the intended error."
+   },
+   {
+    "title": "Assertion execution checks",
+    "scenario": "Protect callback- or chain-based tests from passing without executing assertions."
+   }
+  ],
+  "related": [
+   "expect.hasAssertions()",
+   "expect.assertions(n)",
+   "test",
+   "expect().resolves",
+   "expect().rejects"
+  ],
+  "since": "",
+  "keyPoints": [
+   "An async test function is awaited by Vitest, so returning or awaiting its promise keeps the test open until asynchronous work completes.",
+   "Use `.resolves` for successful outcomes and `.rejects` for expected failures instead of manually unpacking the promise.",
+   "After unwrapping, ordinary matchers such as `toMatchObject` or `toThrow` validate the resulting value or error.",
+   "Use `expect.assertions(n)` when a test must execute a known number of assertions, especially across asynchronous callbacks."
+  ],
+  "gotchas": [
+   "Always await `.resolves` and `.rejects` assertions; otherwise the test can finish before the assertion is properly observed.",
+   "Assertions hidden in callbacks or promise chains may never run, so asynchronous tests can pass without checking anything.",
+   "Expected rejections must be handled with `.rejects` or an explicit catch; unhandled rejected promises fail the test run."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Configuration::Environment and globals": {
+  "sourceUrl": "https://vitest.dev/config/environment",
+  "sourceTitle": "environment | Config | Vitest",
+  "summary": "Configure the runtime available to tests and decide whether Vitest APIs are global. Node is the default; use jsdom for browser-like APIs and enable globals only when desired.",
+  "explanation": "Vitest runs tests in Node by default. Set `test.environment` to `jsdom` when browser APIs are needed, and set `test.globals` to `true` only when tests should use Vitest APIs globally instead of importing them.",
+  "syntax": "test: { environment: 'node' | 'jsdom' | 'happy-dom' | 'edge-runtime' | string, globals: boolean }",
+  "parameters": [
+   {
+    "name": "test.environment",
+    "type": "'node' | 'jsdom' | 'happy-dom' | 'edge-runtime' | string",
+    "description": "Selects the runtime used for test files; supported values include `node`, `jsdom`, `happy-dom`, `edge-runtime`, or a string custom environment name."
+   },
+   {
+    "name": "test.globals",
+    "type": "boolean",
+    "description": "Controls whether Vitest APIs are exposed globally; defaults to `false`."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Configure a browser-like environment and globals",
+   "code": "import { defineConfig } from 'vitest/config'\n\nexport default defineConfig({\n  test: {\n    environment: 'jsdom',\n    globals: true,\n  },\n})",
+   "language": "typescript",
+   "explanation": "This configuration supplies browser-like APIs and makes Vitest APIs available without imports."
+  },
+  "useCases": [
+   {
+    "title": "Node tests",
+    "scenario": "Unit tests for server-side code that should use the standard Node runtime."
+   },
+   {
+    "title": "Browser-like tests",
+    "scenario": "Component or DOM tests that need browser-like APIs such as `window` and `document`."
+   },
+   {
+    "title": "Global test APIs",
+    "scenario": "Teams that prefer Jest-style global `test`, `expect`, and related Vitest APIs."
+   }
+  ],
+  "related": [
+   "environmentOptions",
+   "environmentMatchGlobs",
+   "vitest/globals",
+   "vitest/jsdom"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use `test.environment` to select the runtime environment for tests.",
+   "The environment accepts built-in names such as `node` and `jsdom`, as well as custom environment names.",
+   "Web application tests can use `jsdom` or `happy-dom` for browser-like APIs.",
+   "The environment can also be selected from the command line.",
+   "Enable global Vitest APIs with the CLI option or the `globals: true` configuration setting."
+  ],
+  "gotchas": [
+   "Global APIs are disabled by default, so enabling `globals` changes the explicit-import behavior.",
+   "Choose `jsdom` explicitly for browser-oriented tests; otherwise tests use Node.",
+   "TypeScript projects using global Vitest APIs must add the corresponding type declarations."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Configuration::Test projects": {
+  "sourceUrl": "https://main.vitest.dev/guide/projects",
+  "sourceTitle": "Test Projects | Guide | Vitest",
+  "summary": "Test projects let one Vitest process run unit, browser, integration, or other suites with different configurations. Define projects inline or reference project config files and globs, while inline projects can inherit shared root setup.",
+  "explanation": "Vitest lets one process run multiple test projects, each with its own configuration. Define them in the root test.projects array as inline configurations, config files, or glob-based references; inline projects can inherit the root configuration so shared setup is reused while project-specific options distinguish unit, browser, and integration tests.",
+  "syntax": "defineConfig({ test: { projects: [...] } })",
+  "parameters": [
+   {
+    "name": "test.projects",
+    "type": "ProjectConfiguration[] | string[]",
+    "description": "An array containing inline project configurations, config-file paths, or glob patterns."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Separate test projects with shared configuration",
+   "code": "import { defineConfig } from 'vitest/config'\n\nexport default defineConfig({\n  test: {\n    setupFiles: ['./test/setup.ts'],\n    projects: [\n      {\n        extends: true,\n        test: { name: 'unit', include: ['src/**/*.test.ts'] },\n      },\n      {\n        extends: true,\n        test: {\n          name: 'browser',\n          include: ['src/**/*.browser.test.ts'],\n          browser: { enabled: true, provider: 'playwright', instances: [{ browser: 'chromium' }] },\n        },\n      },\n      {\n        extends: true,\n        test: { name: 'integration', include: ['test/integration/**/*.test.ts'] },\n      },\n    ],\n  },\n})",
+   "language": "typescript",
+   "explanation": "This root configuration defines separate unit, browser, and integration projects while inline projects inherit the shared root setup."
+  },
+  "useCases": [
+   {
+    "title": "Monorepo testing",
+    "scenario": "A monorepo has packages with separate Vitest configurations."
+   },
+   {
+    "title": "Separate test types",
+    "scenario": "Unit, browser, and integration tests need different environments or file patterns."
+   },
+   {
+    "title": "Configuration-specific suites",
+    "scenario": "Several suites need distinct aliases, plugins, or browser settings."
+   }
+  ],
+  "related": [
+   "test.projects",
+   "extends",
+   "browser.instances",
+   "--project",
+   "setupFiles",
+   "sharedViteServer"
+  ],
+  "since": "3.2.0",
+  "keyPoints": [
+   "Use test.projects to run several differently configured test groups in one Vitest process.",
+   "Projects suit monorepos and suites needing distinct aliases, plugins, environments, or browser settings.",
+   "A project can be declared inline, through a configuration file, or with a glob pattern.",
+   "Inline projects keep related configuration in the root file and are useful for small, focused test groups.",
+   "Inline projects and referenced project configurations may be combined in one projects array."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Quality::Coverage providers": {
+  "sourceUrl": "https://vitest.dev/guide/coverage.html",
+  "sourceTitle": "Coverage | Guide | Vitest",
+  "summary": "Select V8, Istanbul, or a custom provider for coverage collection, then enforce global or glob-specific thresholds. Positive values require minimum percentages; negative values cap uncovered items.",
+  "explanation": "Vitest collects coverage through a selected provider and can enforce global or file-pattern thresholds. Positive threshold values require at least that percentage; negative values instead limit how many items may remain uncovered.",
+  "syntax": "test.coverage.provider = 'v8' | 'istanbul' | 'custom'",
+  "parameters": [
+   {
+    "name": "test.coverage.provider",
+    "type": "'v8' | 'istanbul' | 'custom'",
+    "description": "Coverage provider: v8, istanbul, or custom."
+   },
+   {
+    "name": "test.coverage.thresholds",
+    "type": "object",
+    "description": "Minimum percentage or maximum uncovered-item count for lines, functions, branches, or statements."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Vitest coverage configuration",
+   "code": "import { defineConfig } from 'vitest/config'\n\nexport default defineConfig({\n  test: {\n    coverage: {\n      provider: 'v8',\n      thresholds: {\n        lines: 80,\n        functions: 80,\n        branches: 75,\n        statements: 80,\n      },\n    },\n  },\n})",
+   "language": "typescript",
+   "explanation": "Configure V8 coverage and require minimum global percentages for the main coverage metrics."
+  },
+  "useCases": [
+   {
+    "title": "Runtime-native coverage",
+    "scenario": "Use V8 coverage for projects running on Node.js, Deno, or Chromium-based browsers."
+   },
+   {
+    "title": "Instrumented coverage",
+    "scenario": "Use Istanbul when instrumented coverage is preferred or required by the project."
+   },
+   {
+    "title": "CI quality gates",
+    "scenario": "Set global minimums to make CI fail when coverage drops below the target."
+   },
+   {
+    "title": "Glob-specific thresholds",
+    "scenario": "Apply stricter or different requirements to selected source-file groups."
+   }
+  ],
+  "related": [
+   "coverage.enabled",
+   "coverage.include",
+   "coverage.exclude",
+   "coverage.reporter",
+   "coverage.thresholds.perFile",
+   "coverage.thresholds.100",
+   "customProviderModule"
+  ],
+  "since": "3.2.0",
+  "keyPoints": [
+   "Choose V8, Istanbul, or a custom provider according to the runtime and reporting needs.",
+   "If no provider is configured, Vitest uses V8.",
+   "Set test.coverage.provider in vitest.config.ts to select the built-in provider.",
+   "Positive thresholds define the minimum required percentage for the selected coverage metric.",
+   "Negative thresholds express an allowed count of uncovered items rather than a percentage.",
+   "Glob-pattern thresholds let different file groups have separate requirements."
+  ],
+  "gotchas": [
+   "V8 and Istanbul coverage support are optional dependencies, so install the provider package required by the chosen configuration.",
+   "Uncovered source files do not appear automatically; configure coverage.include when the report must include them.",
+   "The V8 provider requires a JavaScript runtime built on V8, such as Node.js, Deno, or Chromium-based browsers."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test doubles::Mock factories": {
+  "sourceUrl": "https://main.vitest.dev/api/vi",
+  "sourceTitle": "Vi | Vitest",
+  "summary": "Mock factories let `vi.mock` replace a module with controlled exports returned by a reusable factory. The factory runs once, is cached, and is applied before imports so tests stay deterministic.",
+  "explanation": "A mock factory is the second argument to `vi.mock`; it returns the replacement module exports. Vitest evaluates that factory once, caches its result for later imports, and runs the hoisted mock before imports, so tests receive the same controlled dependency implementation.",
+  "syntax": "vi.mock(path, factory?)\nvi.mock<T>(module, factory?)",
+  "parameters": [
+   {
+    "name": "path",
+    "type": "string | Promise<T>",
+    "description": "Module path or dynamic import identifying the module to replace."
+   },
+   {
+    "name": "factory",
+    "type": "MockOptions | MockFactory<T>",
+    "description": "Optional factory that returns replacement exports, or mock options such as `spy`."
+   }
+  ],
+  "returns": "void",
+  "example": {
+   "title": "Mock a module with a factory",
+   "code": "import { expect, test, vi } from 'vitest'\nimport { getUser } from './db.js'\nimport { loadUser } from './user.js'\n\nvi.mock(import('./db.js'), () => ({\n  getUser: vi.fn().mockResolvedValue({ name: 'Ada' }),\n}))\n\ntest('loads a user from the mocked database', async () => {\n  await expect(loadUser('42')).resolves.toEqual({ name: 'Ada' })\n  expect(getUser).toHaveBeenCalledWith('42')\n})",
+   "language": "typescript",
+   "explanation": "The factory replaces the database module with a reusable fake whose controlled result makes the test deterministic."
+  },
+  "useCases": [
+   {
+    "title": "Isolate external dependencies",
+    "scenario": "Replace a database, API client, or filesystem adapter with predictable exports."
+   },
+   {
+    "title": "Make outcomes deterministic",
+    "scenario": "Return a fixed value or controlled spy for a dependency used by the unit under test."
+   },
+   {
+    "title": "Build partial mocks",
+    "scenario": "Reuse a module-shaped fake across tests while retaining selected real behavior."
+   },
+   {
+    "title": "Observe real exports",
+    "scenario": "Track calls without replacing real implementations by choosing the documented spy option."
+   }
+  ],
+  "related": [
+   "vi.importActual",
+   "vi.unmock",
+   "vi.doUnmock",
+   "vi.hoisted",
+   "vi.fn",
+   "vi.mocked"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Pass a factory as the second argument to `vi.mock` to define the replacement module dynamically.",
+   "Every import of the mocked module receives the exports returned by the factory.",
+   "The factory can access the real module when a partial mock needs to preserve selected behavior.",
+   "Factories may perform asynchronous setup before returning replacement exports.",
+   "A spy option is an alternative when tracking real exports is preferable to defining a replacement factory."
+  ],
+  "gotchas": [
+   "Place the call at top level and do not rely on its visual position: Vitest hoists it and executes it before imports.",
+   "Factory state is shared by later imports until the module is explicitly unmocked or dynamically unmocked.",
+   "A factory mock does not replace dependencies loaded through CommonJS `require`.",
+   "An asynchronous factory is supported, so the replacement module may be produced with awaited setup."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test doubles::Mocked modules": {
+  "sourceUrl": "https://main.vitest.dev/api/vi",
+  "sourceTitle": "Vi | Vitest",
+  "summary": "Mock imported modules with `vi.mock`, optionally supplying a factory for replacement exports. Vitest hoists the call before imports, so the mock is registered at the module boundary.",
+  "explanation": "`vi.mock` replaces a module's imported exports with either automatically generated mocks or the object returned by a factory. Vitest hoists the call before static imports, so the substitute is registered before dependent code loads. Use a factory for explicit behavior, and use `{ spy: true }` when exports should retain their implementations while being tracked.",
+  "syntax": "vi.mock(path, factoryOrOptions?)",
+  "parameters": [
+   {
+    "name": "path",
+    "type": "string | Promise<unknown>",
+    "description": "Module path to replace; it may be a path or dynamic import expression."
+   },
+   {
+    "name": "factory",
+    "type": "() => unknown",
+    "description": "Optional factory returning the replacement module exports."
+   },
+   {
+    "name": "options",
+    "type": "{ spy?: boolean }",
+    "description": "Optional options object; `{ spy: true }` preserves implementations while tracking exports."
+   }
+  ],
+  "returns": "void",
+  "example": {
+   "title": "Mock a module at its import boundary",
+   "code": "import { describe, expect, it, vi } from 'vitest'\nimport { getUser } from './client.js'\n\nvi.mock(import('./client.js'), () => ({\n  getUser: vi.fn(() => ({ id: 1, name: 'Ada' })),\n}))\n\ndescribe('profile', () => {\n  it('uses the mocked client', () => {\n    expect(getUser()).toEqual({ id: 1, name: 'Ada' })\n  })\n})",
+   "language": "typescript",
+   "explanation": "The module import is replaced with a factory-created export before the test runs."
+  },
+  "useCases": [
+   {
+    "title": "Isolate dependencies",
+    "scenario": "Replace a database client or HTTP adapter so tests run without external I/O."
+   },
+   {
+    "title": "Control test inputs",
+    "scenario": "Provide deterministic exports for a module whose real behavior is slow or environment-dependent."
+   },
+   {
+    "title": "Spy without replacement",
+    "scenario": "Track calls while retaining real implementations."
+   },
+   {
+    "title": "Share a module mock",
+    "scenario": "Apply the same module mock across tests from a setup file."
+   }
+  ],
+  "related": [
+   "vi.doMock",
+   "vi.unmock",
+   "vi.doUnmock",
+   "vi.hoisted",
+   "vi.resetModules",
+   "vi.fn"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use `vi.mock` to replace every imported export from a target module at the module boundary.",
+   "A factory gives the mocked module an explicit export object and behavior.",
+   "Without a factory, Vitest can use a matching adjacent `__mocks__` implementation.",
+   "Mock registration occurs before imports, enabling dependent modules to receive the substitute.",
+   "The module path may use aliases configured for the Vite project.",
+   "The API applies to ESM-style imports, not CommonJS loading."
+  ],
+  "gotchas": [
+   "The call is moved ahead of imports, so writing it inside a test or setup block does not make it run there; keep it at top level.",
+   "CommonJS `require` imports are not supported by this API.",
+   "Putting the call in an imported module may prevent the expected hoisting behavior.",
+   "Factory output is shared and cached until the module is explicitly unmocked."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test doubles::vi.fn and spies": {
+  "sourceUrl": "https://vitest.dev/guide/mocking/functions",
+  "sourceTitle": "Mocking Functions",
+  "summary": "vi.fn creates a standalone mock function for callbacks or replacements, while vi.spyOn wraps an existing object method or accessor. Both track calls and share mock APIs; spies preserve the original implementation until overridden.",
+  "explanation": "Use vi.fn to create a standalone mock function, optionally with an implementation, and inspect its calls through mock properties or expect assertions. Use vi.spyOn to wrap an existing object method or accessor: it tracks calls while retaining the original behavior until you override it, and a spy can later restore the original member.",
+  "syntax": "vi.fn(fn?: Function)\nvi.spyOn<T, K extends keyof T>(object: T, method: K, accessType?: 'get' | 'set')",
+  "parameters": [
+   {
+    "name": "fn",
+    "type": "Function | undefined",
+    "description": "Optional function implementation used by the standalone mock."
+   },
+   {
+    "name": "object",
+    "type": "T",
+    "description": "Object containing the method or accessor to wrap."
+   },
+   {
+    "name": "method",
+    "type": "K extends keyof T",
+    "description": "Property key identifying the method or accessor."
+   },
+   {
+    "name": "accessType",
+    "type": "'get' | 'set' | undefined",
+    "description": "Optional accessor mode for a getter or setter."
+   }
+  ],
+  "returns": "vi.fn returns a Mock; vi.spyOn returns a MockInstance.",
+  "example": {
+   "title": "Tracking and replacing calls",
+   "code": "import { describe, expect, it, vi } from 'vitest'\n\ndescribe('spies', () => {\n  it('tracks and can replace an object method', () => {\n    const market = { getApples: () => 100 }\n    const spy = vi.spyOn(market, 'getApples')\n\n    expect(market.getApples()).toBe(100)\n    expect(spy).toHaveBeenCalledTimes(1)\n\n    spy.mockReturnValue(42)\n    expect(market.getApples()).toBe(42)\n    spy.mockRestore()\n  })\n\n  it('creates a standalone mock', () => {\n    const callback = vi.fn((value: string) => value.toUpperCase())\n    expect(callback('hello')).toBe('HELLO')\n    expect(callback).toHaveBeenCalledWith('hello')\n  })\n})",
+   "language": "typescript",
+   "explanation": "The first test observes an existing method, temporarily changes its result, and restores it; the second creates a standalone mock callback."
+  },
+  "useCases": [
+   {
+    "title": "Mock callbacks",
+    "scenario": "Pass a controlled callback into code and assert its arguments or call count."
+   },
+   {
+    "title": "Spy on methods",
+    "scenario": "Observe how an existing object method is used without changing its default behavior."
+   },
+   {
+    "title": "Control behavior",
+    "scenario": "Temporarily substitute a method result with mockReturnValue or another mock implementation."
+   },
+   {
+    "title": "Examine invocation history",
+    "scenario": "Inspect returned values, thrown results, arguments, or instances recorded by a mock."
+   }
+  ],
+  "related": [
+   "vi",
+   "vi.mock",
+   "vi.mocked",
+   "expect",
+   "Mock",
+   "MockInstance",
+   "mockImplementation",
+   "mockReturnValue"
+  ],
+  "since": "",
+  "keyPoints": [
+   "vi.fn creates a standalone mock function whose execution can be tracked.",
+   "Use vi.spyOn when the target is an existing object method or property.",
+   "The two APIs expose the same mock-control and inspection methods."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Test doubles::vi.mock": {
+  "sourceUrl": "https://main.vitest.dev/api/vi",
+  "sourceTitle": "Vi | Vitest",
+  "summary": "`vi.mock` replaces a module's imports with a factory-defined module or an automatically mocked version. The call is hoisted before imports; `{ spy: true }` preserves export implementations while tracking calls.",
+  "explanation": "`vi.mock` replaces a module at the import boundary. Vitest hoists the call before imports; an optional factory defines the replacement exports, while `{ spy: true }` keeps implementations intact and tracks calls. Prefer the dynamic-import form when supplying a factory.",
+  "syntax": "vi.mock(path: string, factory?: () => unknown, options?: { spy?: boolean }): void",
+  "parameters": [
+   {
+    "name": "path",
+    "type": "string | Promise<unknown>",
+    "description": "Module path or dynamic import identifying the module to mock; configured Vite aliases are supported."
+   },
+   {
+    "name": "factory",
+    "type": "() => unknown | object",
+    "description": "Optional factory returning replacement exports, or an options object such as `{ spy: true }`."
+   }
+  ],
+  "returns": "The documentation does not specify a return value.",
+  "example": {
+   "title": "Mock a module export",
+   "code": "import { describe, expect, test, vi } from 'vitest'\nimport { getUser } from './db.js'\n\nvi.mock(import('./db.js'), () => ({\n  getUser: vi.fn(() => ({ name: 'Alice' })),\n}))\n\ntest('uses the mocked module export', () => {\n  expect(getUser(1)).toEqual({ name: 'Alice' })\n  expect(getUser).toHaveBeenCalledWith(1)\n})",
+   "language": "typescript",
+   "explanation": "The factory replaces the imported module and supplies a trackable mock implementation for its export."
+  },
+  "useCases": [
+   {
+    "title": "Isolate external dependencies",
+    "scenario": "Replace a database client, logger, or other dependency with controlled exports during a test."
+   },
+   {
+    "title": "Control module behavior",
+    "scenario": "Return deterministic values from imported functions without invoking the real implementation."
+   },
+   {
+    "title": "Spy on a complete module",
+    "scenario": "Track calls to every export while retaining the module's original implementations."
+   },
+   {
+    "title": "Configure setup-wide mocks",
+    "scenario": "Apply the same module replacement automatically across test files."
+   }
+  ],
+  "related": [
+   "vi.doMock",
+   "vi.unmock",
+   "vi.doUnmock",
+   "vi.hoisted",
+   "vi.fn",
+   "vi.mocked"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use it to replace every import from a target module with a mock module.",
+   "The module path may use aliases configured in Vite.",
+   "A factory controls the complete set of exports returned to importing code.",
+   "The second argument can configure spying without defining replacement exports.",
+   "`{ spy: true }` tracks exports while preserving their original behavior.",
+   "Hoisting makes the mock active before imported code is evaluated."
+  ],
+  "gotchas": [
+   "The call runs before imports regardless of where it appears in the test file.",
+   "It does not mock modules loaded with `require()`.",
+   "Mocks in setup files may arrive too late for modules already cached.",
+   "A factory result is cached until the module is explicitly unmocked."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test doubles::vi.stubGlobal": {
+  "sourceUrl": "https://vitest.dev/guide/mocking/globals",
+  "sourceTitle": "Mocking Globals",
+  "summary": "Replace a global variable with a controlled test value. Restore it manually with vi.unstubAllGlobals() or configure Vitest to restore globals automatically before each test.",
+  "explanation": "vi.stubGlobal stores the supplied value under the given global name on globalThis. In jsdom or happy-dom, the value is also available through window. Restore stubs manually with vi.unstubAllGlobals(), or enable unstubGlobals in configuration for automatic restoration before each test.",
+  "syntax": "vi.stubGlobal(name: string | number | symbol, value: unknown): Vitest",
+  "parameters": [
+   {
+    "name": "name",
+    "type": "string | number | symbol",
+    "description": "Name of the global property to replace."
+   },
+   {
+    "name": "value",
+    "type": "unknown",
+    "description": "Value to install for the global property."
+   }
+  ],
+  "returns": "Vitest",
+  "example": {
+   "title": "Stub a missing browser global",
+   "code": "import { expect, test, vi } from 'vitest'\n\ntest('provides a browser global', () => {\n  const observer = vi.fn()\n\n  vi.stubGlobal('IntersectionObserver', observer)\n\n  expect(IntersectionObserver).toBe(observer)\n  expect(globalThis.IntersectionObserver).toBe(observer)\n\n  vi.unstubAllGlobals()\n})",
+   "language": "typescript",
+   "explanation": "The test installs a controlled IntersectionObserver replacement, verifies it through the global name and globalThis, then restores the original globals."
+  },
+  "useCases": [
+   {
+    "title": "Provide a missing browser API",
+    "scenario": "A browser API such as IntersectionObserver is absent in the test environment."
+   },
+   {
+    "title": "Control runtime configuration",
+    "scenario": "Application code reads a runtime global whose value must be deterministic."
+   },
+   {
+    "title": "Inject a test double",
+    "scenario": "A test needs a fake global object or function without modifying production code."
+   }
+  ],
+  "related": [
+   "vi.unstubAllGlobals",
+   "unstubGlobals",
+   "globalThis"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use vi.stubGlobal to provide globals that the current test environment does not define.",
+   "The supplied value becomes available through globalThis and the corresponding global name.",
+   "In jsdom or happy-dom, the stub is also exposed on window.",
+   "Call vi.unstubAllGlobals to restore values changed through vi.stubGlobal.",
+   "Stubs are not automatically reset between tests unless configuration enables that behavior.",
+   "Vitest remembers the original value so that a later unstub operation can restore it."
+  ],
+  "gotchas": [
+   "Global stubs persist between tests unless vi.unstubAllGlobals() is called or the unstubGlobals configuration option is enabled.",
+   "Directly assigning to globalThis or window bypasses Vitest's restoration tracking; use vi.stubGlobal when restoration is needed."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test foundations::Test and describe": {
+  "sourceUrl": "https://vitest.dev/api/test.html",
+  "sourceTitle": "Test | Vitest",
+  "summary": "Define isolated test cases with `test` and group related cases with `describe`. This structure keeps assertions focused and makes test output easier to read.",
+  "explanation": "Use `test` to declare a named case and keep its assertions in the callback. Wrap related cases in `describe` to form a suite; suites can also provide shared lifecycle setup and teardown through hooks.",
+  "syntax": "test(name: string | Function, optionsOrFn?: TestOptions | TestFunction, timeout?: number): void\ndescribe(name: string | Function, body?: () => unknown, timeout?: number): void",
+  "parameters": [
+   {
+    "name": "name",
+    "type": "string | Function",
+    "description": "The test or suite name, or a function returning a name."
+   },
+   {
+    "name": "body",
+    "type": "() => unknown",
+    "description": "The callback containing the test or suite body."
+   },
+   {
+    "name": "timeout",
+    "type": "number",
+    "description": "Optional timeout in milliseconds for the operation."
+   }
+  ],
+  "returns": "`test` returns a test declaration; `describe` returns `void`.",
+  "example": {
+   "title": "A grouped unit test",
+   "code": "import { describe, expect, test } from 'vitest'\n\nfunction add(a: number, b: number) {\n  return a + b\n}\n\ndescribe('add', () => {\n  test('returns the sum of two numbers', () => {\n    expect(add(2, 3)).toBe(5)\n  })\n})",
+   "language": "typescript",
+   "explanation": "This runnable test defines one isolated case and places it in a named suite for clearer output and organization."
+  },
+  "useCases": [
+   {
+    "title": "Isolated unit cases",
+    "scenario": "Testing one function or behavior with a focused assertion set."
+   },
+   {
+    "title": "Readable test suites",
+    "scenario": "Organizing cases for multiple functions or methods in one file."
+   },
+   {
+    "title": "Suite-level lifecycle",
+    "scenario": "Applying shared setup or teardown to related tests."
+   }
+  ],
+  "related": [
+   "it",
+   "suite",
+   "expect",
+   "beforeEach",
+   "afterEach",
+   "describe.skip",
+   "describe.only",
+   "describe.todo"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use `test` or its `it` alias to define an isolated test case containing the expectations for one behavior.",
+   "A test takes a descriptive name and a callback where assertions are executed.",
+   "Use `describe` to group related cases or benchmarks under a named suite.",
+   "Suites make the test tree easier to understand by creating logical organizational blocks.",
+   "A suite can coordinate shared setup and teardown with lifecycle hooks.",
+   "Nested suites are available when the test subject has a meaningful hierarchy."
+  ],
+  "gotchas": [
+   "Keep `describe` nesting shallow; deeply nested suites make the test structure harder to read."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test hooks::beforeAll and afterAll": {
+  "sourceUrl": "https://vitest.dev/guide/learn/setup-teardown",
+  "sourceTitle": "Setup and Teardown | Guide | Vitest",
+  "summary": "beforeAll and afterAll run once around all tests in the current file or suite. They are suited to expensive shared setup and teardown, but intentionally allow state to cross test boundaries.",
+  "explanation": "Use beforeAll for setup that should happen once before every test in the current file or suite, and afterAll for cleanup once testing is complete. Async callbacks are awaited, and beforeAll may also return a cleanup function equivalent to afterAll, so shared state can cross test boundaries deliberately.",
+  "syntax": "beforeAll(body: (context: ModuleContext) => unknown, timeout?: number): void\nafterAll(body: (context: ModuleContext) => unknown, timeout?: number): void",
+  "parameters": [
+   {
+    "name": "body",
+    "type": "(context: ModuleContext) => unknown",
+    "description": "Callback receiving the module context; its return value may be a promise or cleanup function."
+   },
+   {
+    "name": "timeout",
+    "type": "number",
+    "description": "Optional timeout in milliseconds for the hook."
+   }
+  ],
+  "returns": "void",
+  "example": {
+   "title": "Share an expensive resource",
+   "code": "import { afterAll, beforeAll, describe, expect, test } from 'vitest'\n\nlet server: { close: () => Promise<void> }\n\nbeforeAll(async () => {\n  server = await startTestServer()\n})\n\nafterAll(async () => {\n  await server.close()\n})\n\ntest('uses the shared server', async () => {\n  expect(server).toBeDefined()\n})\n\nasync function startTestServer() {\n  return { close: async () => {} }\n}",
+   "language": "typescript",
+   "explanation": "Starts one shared resource before the file's tests and closes it after they finish."
+  },
+  "useCases": [
+   {
+    "title": "Database integration tests",
+    "scenario": "Open one database connection before tests and close it after the suite."
+   },
+   {
+    "title": "Shared test server",
+    "scenario": "Start a test server once and shut it down after all requests complete."
+   },
+   {
+    "title": "Expensive fixture loading",
+    "scenario": "Load a large fixture once for a group of related tests."
+   }
+  ],
+  "related": [
+   "beforeEach",
+   "afterEach",
+   "describe",
+   "hookTimeout",
+   "ModuleContext"
+  ],
+  "since": "",
+  "keyPoints": [
+   "beforeAll registers work that runs once before the current file or suite starts.",
+   "afterAll registers cleanup that runs once after the current file or suite finishes.",
+   "Async beforeAll work is awaited before tests begin.",
+   "Async afterAll work is awaited before Vitest continues.",
+   "Use these hooks when repeating expensive setup for every test would significantly slow the suite.",
+   "A resource created by beforeAll can be shared by all tests and released afterward."
+  ],
+  "gotchas": [
+   "The hooks do not run when Vitest is used as a type checker.",
+   "Each hook has a 10-second default timeout unless hookTimeout changes it.",
+   "A hook inside describe is limited to that suite; top-level hooks cover the file."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test hooks::beforeEach and afterEach": {
+  "sourceUrl": "https://main.vitest.dev/api/hooks",
+  "sourceTitle": "Hooks | Vitest",
+  "summary": "beforeEach and afterEach run setup and teardown around every test in the current file or suite. Nested hooks enter from outer to inner and, by default, leave in reverse order.",
+  "explanation": "Import these lifecycle hooks from Vitest to run asynchronous or synchronous setup before every test and cleanup after every test. Hooks apply at file scope or only within their enclosing describe block; nested setup runs from outer to inner, while teardown reverses that order by default.",
+  "syntax": "beforeEach(body: (context: TestContext) => unknown, timeout?: number): void\nafterEach(body: (context: TestContext) => unknown, timeout?: number): void",
+  "parameters": [
+   {
+    "name": "body",
+    "type": "(context: TestContext) => unknown",
+    "description": "Callback receiving the test context; may return a promise."
+   },
+   {
+    "name": "timeout",
+    "type": "number",
+    "description": "Optional timeout in milliseconds."
+   }
+  ],
+  "returns": "void",
+  "example": {
+   "title": "Reset state around each test",
+   "code": "import { afterEach, beforeEach, describe, expect, it } from 'vitest'\n\nconst state = { value: 0 }\n\ndescribe('state', () => {\n  beforeEach(() => {\n    state.value = 0\n  })\n\n  afterEach(() => {\n    state.value = 0\n  })\n\n  it('starts clean', () => {\n    state.value++\n    expect(state.value).toBe(1)\n  })\n\n  it('is reset for the next test', () => {\n    expect(state.value).toBe(0)\n  })\n})",
+   "language": "typescript",
+   "explanation": "This suite resets shared state before and after each test."
+  },
+  "useCases": [
+   {
+    "title": "Per-test setup",
+    "scenario": "Reset shared state, fixtures, or a test database before each test."
+   },
+   {
+    "title": "Per-test cleanup",
+    "scenario": "Restore mocks, timers, files, or other resources after each test."
+   },
+   {
+    "title": "Scoped fixtures",
+    "scenario": "Apply setup only to tests inside a describe block."
+   }
+  ],
+  "related": [
+   "beforeAll",
+   "afterAll",
+   "describe",
+   "hookTimeout",
+   "sequence.hooks"
+  ],
+  "since": "",
+  "keyPoints": [
+   "beforeEach registers work that runs before every test in the current suite.",
+   "afterEach registers work that runs after every test in the current suite.",
+   "An async beforeEach is awaited before its test starts.",
+   "An async afterEach is awaited before Vitest continues.",
+   "Top-level hooks affect the file; hooks inside describe affect only that suite.",
+   "Hooks run in stack order by default, with after hooks reversed."
+  ],
+  "gotchas": [
+   "Hooks do not run when Vitest is used as a type checker.",
+   "Each hook has a default 10-second timeout; configure it globally with hookTimeout or pass a per-hook timeout."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test hooks::Global setup": {
+  "sourceUrl": "https://vitest.dev/config/globalsetup",
+  "sourceTitle": "globalSetup | Config | Vitest",
+  "summary": "Use `globalSetup` to start a real dependency once before Vitest creates test workers and stop it after all test files finish. It runs outside the test workers, so pass serializable values through `provide` and `inject` when tests need setup data.",
+  "explanation": "Set `test.globalSetup` to one or more files that run in Vitest's main process before workers are created. Export `setup` and `teardown` for separate lifecycle phases, or export a default function that returns teardown; use `provide` and `inject` when tests need serializable values from setup.",
+  "syntax": "test: { globalSetup: string | string[] }",
+  "parameters": [
+   {
+    "name": "test.globalSetup",
+    "type": "string | string[]",
+    "description": "One path or multiple paths to global setup files, resolved relative to the project root."
+   },
+   {
+    "name": "project",
+    "type": "TestProject",
+    "description": "The test project passed to a named `setup` function or default setup function; it can provide data and register rerun callbacks."
+   }
+  ],
+  "returns": "A default setup function may return a teardown function; named setup and teardown exports do not require a return value.",
+  "example": {
+   "title": "Start and stop a dependency once",
+   "code": "import { defineConfig } from 'vitest/config'\n\nexport default defineConfig({\n  test: {\n    globalSetup: './test/global-setup.ts',\n  },\n})\n\n// test/global-setup.ts\nexport async function setup() {\n  await startDependency()\n}\n\nexport async function teardown() {\n  await stopDependency()\n}\n\nasync function startDependency() {}\nasync function stopDependency() {}",
+   "language": "typescript",
+   "explanation": "Configure a global setup file whose setup starts the dependency once and whose teardown stops it after all test files finish."
+  },
+  "useCases": [
+   {
+    "title": "Run a real dependency once",
+    "scenario": "Start a database, server, or other external service once for the entire test run."
+   },
+   {
+    "title": "Centralized teardown",
+    "scenario": "Release ports, temporary resources, or processes after the test suite finishes."
+   },
+   {
+    "title": "Provide serializable setup data",
+    "scenario": "Share configuration or connection details with tests without relying on global variables."
+   },
+   {
+    "title": "Compose multiple setup files",
+    "scenario": "Coordinate multiple environment bootstrapping steps with deterministic startup and reverse-order cleanup."
+   }
+  ],
+  "related": [
+   "setupFiles",
+   "provide",
+   "inject",
+   "onTestsRerun",
+   "teardown"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Configure `test.globalSetup` with a path, or an array of paths, relative to the project root.",
+   "Use named `setup` and `teardown` exports for explicit startup and cleanup phases.",
+   "Alternatively, a default export can perform setup and return the cleanup function.",
+   "Global setup runs once before Vitest creates test workers.",
+   "Teardown runs after every test file completes.",
+   "Several global setup files can be configured.",
+   "Multiple files run in declaration order; their teardown functions run in reverse order."
+  ],
+  "gotchas": [
+   "Globals created in global setup are not directly visible to tests; transfer only serializable data with `provide` and read it with `inject`.",
+   "The setup does not run when no tests are queued.",
+   "Choose `setupFiles` for same-process initialization, but remember it runs before every test file.",
+   "In watch mode, use `onTestsRerun` when a dependency must be reconfigured before reruns."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test hooks::Hook execution order": {
+  "sourceUrl": "https://vitest.dev/guide/learn/setup-teardown",
+  "sourceTitle": "Setup and Teardown | Guide | Vitest",
+  "summary": "In nested describe blocks, outer beforeEach hooks run before inner beforeEach hooks. After the test, inner afterEach hooks run before outer afterEach hooks, creating an outer-to-inner setup and inner-to-outer cleanup sequence.",
+  "explanation": "Vitest applies hooks hierarchically. For each nested test, outer beforeEach hooks run before inner beforeEach hooks; after the test, inner afterEach hooks run before outer afterEach hooks. beforeAll and afterAll run once for the suite rather than for every test.",
+  "syntax": "beforeEach(fn, timeout?)\nafterEach(fn, timeout?)\nbeforeAll(fn, timeout?)\nafterAll(fn, timeout?)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Nested hook order",
+   "code": "import { afterEach, beforeEach, describe, expect, test } from 'vitest'\n\nconst events: string[] = []\n\nbeforeEach(() => events.push('outer before'))\nafterEach(() => events.push('outer after'))\n\ndescribe('nested suite', () => {\n  beforeEach(() => events.push('inner before'))\n  afterEach(() => events.push('inner after'))\n\n  test('runs hooks in nesting order', () => {\n    expect(events).toEqual(['outer before', 'inner before'])\n  })\n})\n\n// For this test, the complete order is:\n// outer before → inner before → test → inner after → outer after",
+   "language": "typescript",
+   "explanation": "The test records setup order; cleanup follows the reverse nesting order after the test completes."
+  },
+  "useCases": [
+   {
+    "title": "Layered setup",
+    "scenario": "Prepare shared state at file or parent-suite scope, then specialize it for nested tests."
+   },
+   {
+    "title": "Safe cleanup",
+    "scenario": "Release resources created by nested suites before disposing of shared outer resources."
+   },
+   {
+    "title": "Suite-level lifecycle",
+    "scenario": "Use suite-wide initialization and teardown when work should happen only once."
+   },
+   {
+    "title": "Debug hook order",
+    "scenario": "Trace unexpected lifecycle behavior by logging hook execution."
+   }
+  ],
+  "related": [
+   "beforeEach",
+   "afterEach",
+   "beforeAll",
+   "afterAll",
+   "describe",
+   "sequence.hooks"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Hooks at an outer level surround hooks declared in nested suites.",
+   "For setup, the outer beforeEach executes before the nested suite's beforeEach.",
+   "Inner setup runs after outer setup, allowing it to build on the broader context.",
+   "Cleanup starts with the innermost afterEach hook.",
+   "The outer afterEach runs last, after nested cleanup is complete.",
+   "Suite-wide hooks run once rather than once per test."
+  ],
+  "gotchas": [
+   "By default, after hooks run in reverse stack order, so cleanup proceeds from the innermost scope outward.",
+   "A hook inside describe does not affect tests outside that suite.",
+   "Top-level hooks wrap tests throughout the file, including tests in nested suites."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test hooks::Hook timeouts": {
+  "sourceUrl": "https://vitest.dev/api/hooks.html",
+  "sourceTitle": "Hooks - Vitest",
+  "summary": "Give an individual hook its own timeout in milliseconds instead of increasing the default for every hook. This is useful when one setup or cleanup operation is slower than the rest.",
+  "explanation": "Pass a timeout in milliseconds as the optional second argument to a hook such as beforeEach or afterEach. Vitest uses that value only for the selected hook, while the global hookTimeout remains the default for hooks without an override.",
+  "syntax": "beforeEach(fn, timeout?)\nafterEach(fn, timeout?)\nbeforeAll(fn, timeout?)\nafterAll(fn, timeout?)",
+  "parameters": [
+   {
+    "name": "fn",
+    "type": "() => Awaitable<void>",
+    "description": "Callback executed by the hook."
+   },
+   {
+    "name": "timeout",
+    "type": "number",
+    "description": "Maximum wait before Vitest terminates the hook, in milliseconds."
+   }
+  ],
+  "returns": "No return value is documented for the timeout option.",
+  "example": {
+   "title": "Give one hook a longer timeout",
+   "code": "import { beforeEach, test, expect } from 'vitest'\n\nbeforeEach(async () => {\n  await connectToTestDatabase()\n}, 30_000)\n\ntest('reads users', async () => {\n  const users = await getUsers()\n  expect(users).toEqual([])\n})",
+   "language": "typescript",
+   "explanation": "The hook gets a 30-second limit while the test keeps its own timeout settings."
+  },
+  "useCases": [
+   {
+    "title": "Slow per-test setup",
+    "scenario": "A database or service connection takes longer during suite setup."
+   },
+   {
+    "title": "Slow per-test teardown",
+    "scenario": "Large fixtures or temporary resources require extra cleanup time."
+   },
+   {
+    "title": "Suite setup and teardown",
+    "scenario": "A suite-wide environment needs more time to initialize or shut down."
+   }
+  ],
+  "related": [
+   "beforeEach",
+   "afterEach",
+   "beforeAll",
+   "afterAll",
+   "hookTimeout"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Hook APIs accept an optional timeout in milliseconds.",
+   "Use the timeout with `beforeEach` when setup needs more time.",
+   "Use the timeout with `afterEach` when cleanup needs more time.",
+   "Hooks default to 10 seconds unless a local timeout or global configuration changes it."
+  ],
+  "gotchas": [
+   "A per-hook timeout overrides the default for that hook; `hookTimeout` changes the default globally.",
+   "For hooks that wrap a test, setup and teardown are timed independently."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test hooks::Setup files": {
+  "sourceUrl": "https://main.vitest.dev/config/setupfiles",
+  "sourceTitle": "setupFiles | Config - Vitest",
+  "summary": "Use test.setupFiles to run shared initialization before every test file. Paths are resolved from the project root, and multiple setup files can be ordered through sequence.setupFiles.",
+  "explanation": "Set test.setupFiles to one path or an array of paths. Vitest resolves those paths from the project root and executes the files before each test file, in the test process and before collection begins. Use setup files for reusable initialization such as polyfills, global configuration, and custom matchers; they are not meant to provide imports or exports to test files.",
+  "syntax": "test: { setupFiles: string | string[] }",
+  "parameters": [
+   {
+    "name": "test.setupFiles",
+    "type": "string | string[]",
+    "description": "A path or paths to setup modules, resolved relative to the project root."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Register a shared setup file",
+   "code": "import { defineConfig } from 'vitest/config'\n\nexport default defineConfig({\n  test: {\n    setupFiles: ['./test/setup.ts'],\n  },\n})",
+   "language": "typescript",
+   "explanation": "This configuration runs the shared setup module before every test file."
+  },
+  "useCases": [
+   {
+    "title": "Custom expect matchers",
+    "scenario": "Install custom matchers before tests are collected."
+   },
+   {
+    "title": "Polyfills",
+    "scenario": "Load browser-like or runtime shims for every test file."
+   },
+   {
+    "title": "Global test configuration",
+    "scenario": "Apply shared global test configuration across a project."
+   }
+  ],
+  "related": [
+   "sequence.setupFiles",
+   "globalSetup",
+   "beforeAll",
+   "test.isolate"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Each configured path is resolved relative to the project root.",
+   "A setup file runs before every test file and shares its process with the tests.",
+   "Multiple setup files are ordered by default; use sequence.setupFiles to control their scheduling.",
+   "Register shared pre-test code through the test.setupFiles configuration option.",
+   "Setup files execute before test collection, making them suitable for initialization that must precede collection."
+  ],
+  "gotchas": [
+   "Exports from a setup file are not made available to test files; put shared values in another module and import that module where needed.",
+   "Disabling isolation does not make setup run only once: the setup file still executes before every test file, although imported modules are cached.",
+   "In watch mode, changing a setup file reruns the entire test suite."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

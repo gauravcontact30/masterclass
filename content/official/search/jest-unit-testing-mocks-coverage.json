@@ -1,0 +1,924 @@
+{
+ "Assertions::Custom matchers": {
+  "sourceUrl": "https://jestjs.io/docs/expect",
+  "sourceTitle": "Expect",
+  "summary": "Create readable, domain-specific Jest assertions by registering matcher functions with expect.extend. Each matcher reports whether it passed and supplies a contextual failure message.",
+  "explanation": "A custom matcher is a function registered with expect.extend. It receives the value passed to expect first, followed by matcher arguments, and returns an object or Promise containing pass and message; message should describe the failing positive or negated assertion.",
+  "syntax": "expect.extend(matchers)",
+  "parameters": [
+   {
+    "name": "matchers",
+    "type": "Record<string, Function>",
+    "description": "Object whose keys are custom matcher names and whose values are matcher functions."
+   }
+  ],
+  "returns": "A custom matcher returns an object or Promise of an object containing pass and message.",
+  "example": {
+   "title": "Register and use a custom matcher",
+   "code": "expect.extend({\n  toBeWithin(received: number, min: number, max: number) {\n    const pass = received >= min && received <= max;\n    return {\n      pass,\n      message: () =>\n        `expected ${received} ${pass ? \"not \" : \"\"}to be within ${min} and ${max}`,\n    };\n  },\n});\n\ntest(\"supports a domain-specific expectation\", () => {\n  expect(7).toBeWithin(5, 10);\n});",
+   "language": "typescript",
+   "explanation": "Registers a matcher that checks whether a number falls within an inclusive range, then uses it in a test."
+  },
+  "useCases": [
+   {
+    "title": "Domain-specific validation",
+    "scenario": "Represent business rules such as valid ranges, statuses, or identifiers with expressive assertions."
+   },
+   {
+    "title": "Reusable test assertions",
+    "scenario": "Replace repeated low-level comparisons with one reusable expectation and a focused failure message."
+   },
+   {
+    "title": "Asynchronous assertions",
+    "scenario": "Check asynchronous conditions by returning a Promise from the matcher."
+   },
+   {
+    "title": "Snapshot-aware matching",
+    "scenario": "Embed snapshot assertions in specialized matchers when snapshot output is useful."
+   }
+  ],
+  "related": [
+   "expect",
+   "expect.extend",
+   "expect.addEqualityTesters",
+   "jest-snapshot",
+   "this.equals"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Register domain-specific matchers by passing an object of matcher functions to expect.extend.",
+   "Each matcher returns an object or Promise with pass and message.",
+   "pass controls success, while message is a zero-argument function that creates the failure text.",
+   "For a failed positive assertion, message should explain why the received value did not match.",
+   "Matcher functions receive the received value followed by their declared expectation arguments.",
+   "Custom matchers can integrate snapshot testing through jest-snapshot."
+  ],
+  "gotchas": [
+   "The message function must also explain failure when the matcher is used with .not.",
+   "Return either the result object directly or a Promise resolving to one.",
+   "The received value comes first; explicit matcher arguments follow it."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Assertions::Matchers": {
+  "sourceUrl": "https://jestjs.io/docs/expect",
+  "sourceTitle": "Expect · Jest",
+  "summary": "Jest matchers express assertions about produced values. Select identity, structural, partial, negated, asymmetric, or exception matchers according to the behavior being tested.",
+  "explanation": "Matchers are methods chained after expect(value). Choose the matcher whose comparison describes the behavior: toBe for identity, toEqual for recursive equality, toMatchObject for selected object properties, and toThrow for functions expected to raise errors. Use not to invert an assertion and asymmetric helpers such as expect.anything() when a literal value is too specific.",
+  "syntax": "expect(actual).matcher(expected)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Choosing matchers by behavior",
+   "code": "test('matches exact, structural, partial, and thrown values', () => {\n  const result = {id: 7, name: 'Ada'};\n  expect(result.id).toBe(7);\n  expect(result).toEqual({id: 7, name: 'Ada'});\n  expect(result).toMatchObject({name: 'Ada'});\n  expect(() => { throw new Error('bad input'); }).toThrow('bad input');\n});",
+   "language": "javascript",
+   "explanation": "The test demonstrates identity, deep structural equality, subset matching, and exception assertions."
+  },
+  "useCases": [
+   {
+    "title": "Identity assertions",
+    "scenario": "Verify a primitive or reference has the exact expected value."
+   },
+   {
+    "title": "Deep equality",
+    "scenario": "Compare nested arrays and objects by structure."
+   },
+   {
+    "title": "Partial object matching",
+    "scenario": "Assert only the relevant fields of an object."
+   },
+   {
+    "title": "Exception assertions",
+    "scenario": "Confirm invalid input or callbacks throw an expected error."
+   }
+  ],
+  "related": [
+   "expect",
+   "toBe",
+   "toEqual",
+   "toMatchObject",
+   "toThrow",
+   "not",
+   "expect.anything",
+   "expect.stringMatching"
+  ],
+  "since": "",
+  "keyPoints": [
+   "A matcher is a method chained to expect(value), such as toEqual, toMatchObject, or toThrow.",
+   "Put the actual result in expect(...), then provide the expected value or condition to the matcher.",
+   "Use toMatchObject when only selected object properties matter and extra properties should be allowed.",
+   "Use asymmetric matchers when the assertion should accept a broad category instead of one exact literal."
+  ],
+  "gotchas": [
+   "Pass the produced value to expect; for exception assertions, pass the function that should throw.",
+   "Asymmetric helpers such as expect.anything() belong inside compatible matchers rather than being used as standalone assertions."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Assertions::Snapshot testing": {
+  "sourceUrl": "https://jestjs.io/docs/snapshot-testing",
+  "sourceTitle": "Snapshot Testing - Jest",
+  "summary": "Snapshot tests compare serialized output with a reviewed reference snapshot, helping detect unintended changes. Keep snapshots focused, commit them with code, and deliberately review updates.",
+  "explanation": "Jest serializes the value passed to `toMatchSnapshot()` and stores the result in a snapshot file beside the test. Future runs compare the new serialization with that recorded version; failures require deciding whether the implementation or the snapshot should change. Use update mode only after reviewing an intentional change.",
+  "syntax": "expect(value).toMatchSnapshot();",
+  "parameters": [],
+  "returns": "A snapshot matcher passes when the received serialized value matches the stored snapshot; otherwise it fails.",
+  "example": {
+   "title": "A focused snapshot assertion",
+   "code": "test(\"serializes the result\", () => {\n  const result = {status: \"ok\", count: 2};\n\n  expect(result).toMatchSnapshot();\n});",
+   "language": "javascript",
+   "explanation": "The first run records the serialized value; later runs compare the result with the reviewed snapshot."
+  },
+  "useCases": [
+   {
+    "title": "UI regression checks",
+    "scenario": "Detect unintended changes in serialized UI or component output."
+   },
+   {
+    "title": "Stable output verification",
+    "scenario": "Lock down stable serialized objects or text produced by a unit under test."
+   },
+   {
+    "title": "Inline snapshots",
+    "scenario": "Store small expected outputs directly in a test file."
+   },
+   {
+    "title": "Targeted snapshot updates",
+    "scenario": "Regenerate only selected snapshots after an intentional behavior change."
+   }
+  ],
+  "related": [
+   "toMatchSnapshot",
+   "toMatchInlineSnapshot",
+   "--updateSnapshot",
+   "-u",
+   "--testNamePattern",
+   "inline snapshots",
+   "snapshot artifact"
+  ],
+  "since": "",
+  "keyPoints": [
+   "A snapshot test records serialized output and compares later runs with the reference stored beside the test.",
+   "Jest checks newly produced output against the previously recorded snapshot on later executions.",
+   "Matching serialized output makes the snapshot assertion pass.",
+   "Use `jest --updateSnapshot` to regenerate snapshots after confirming that a change is intentional.",
+   "The shorter `-u` option is equivalent to `--updateSnapshot`.",
+   "Inline snapshots use the same comparison behavior but write recorded values into the test source instead of a separate `.snap` file."
+  ],
+  "gotchas": [
+   "Treat snapshots as reviewable test artifacts: commit them with the code and inspect changes during review.",
+   "A mismatch is not automatically fixed by updating; first determine whether the output change is intended.",
+   "Updating snapshots broadly can rewrite unrelated cases; restrict regeneration with `--testNamePattern` when appropriate."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Async testing::Mock timers and dates": {
+  "sourceUrl": "https://jestjs.io/docs/next/jest-object",
+  "sourceTitle": "The Jest Object",
+  "summary": "Use Jest fake timers to control scheduled callbacks and date-dependent code without waiting for real time. Set the fake system clock, advance timers deterministically, and restore real timers after each test.",
+  "explanation": "Fake timers replace timer and date-related APIs with a controllable clock. Set the clock with jest.setSystemTime, advance scheduled work with timer-control APIs, and restore native behavior with jest.useRealTimers when the test finishes.",
+  "syntax": "jest.useFakeTimers(fakeTimersConfig?)\njest.setSystemTime(now?: number | Date)\njest.advanceTimersByTime(msToRun)\njest.useRealTimers()",
+  "parameters": [
+   {
+    "name": "fakeTimersConfig",
+    "type": "FakeTimersConfig",
+    "description": "Optional timer configuration, such as selecting legacy fake timers."
+   },
+   {
+    "name": "msToRun",
+    "type": "number",
+    "description": "Milliseconds by which to advance the fake clock."
+   },
+   {
+    "name": "now",
+    "type": "number | Date",
+    "description": "Optional timestamp or Date used as the fake current time."
+   }
+  ],
+  "returns": "jest.setSystemTime and timer-control methods return the Jest object; jest.now() returns the current clock time in milliseconds.",
+  "example": {
+   "title": "Control timers and the system clock",
+   "code": "describe('expiration', () => {\n  beforeEach(() => {\n    jest.useFakeTimers();\n    jest.setSystemTime(new Date('2024-01-01T00:00:00Z'));\n  });\n\n  afterEach(() => {\n    jest.useRealTimers();\n  });\n\n  test('runs after one hour', () => {\n    const callback = jest.fn();\n    setTimeout(callback, 60 * 60 * 1000);\n\n    jest.advanceTimersByTime(60 * 60 * 1000);\n\n    expect(callback).toHaveBeenCalledTimes(1);\n  });\n});",
+   "language": "typescript",
+   "explanation": "This test freezes the fake clock, advances scheduled work by one hour, and restores real timers afterward."
+  },
+  "useCases": [
+   {
+    "title": "Run delayed work instantly",
+    "scenario": "Testing a timeout or interval"
+   },
+   {
+    "title": "Freeze the system clock",
+    "scenario": "Testing expiration, deadlines, or date formatting"
+   },
+   {
+    "title": "Advance scheduled retries deterministically",
+    "scenario": "Testing retry or polling logic"
+   }
+  ],
+  "related": [
+   "jest.useFakeTimers",
+   "jest.useRealTimers",
+   "jest.advanceTimersByTime",
+   "jest.runAllTimers",
+   "jest.runOnlyPendingTimers",
+   "jest.now",
+   "jest.getRealSystemTime"
+  ],
+  "since": "",
+  "keyPoints": [
+   "jest.useFakeTimers() makes clock-dependent and scheduled behavior deterministic without waiting in real time.",
+   "Jest's modern fake-timer implementation uses the Sinon fake-timers library.",
+   "jest.advanceTimersByTime(msToRun) moves the fake clock forward and processes timers reached during that interval.",
+   "jest.setSystemTime(now) changes the clock value observed by code using mocked dates.",
+   "jest.now() reads the current fake-clock timestamp in milliseconds."
+  ],
+  "gotchas": [
+   "Changing the fake system time does not run due timers; advance or run the timers separately.",
+   "Fake timers remain active for the file until real timers are explicitly restored.",
+   "Do not use Date.now() as an independent real-time reference while time is mocked."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Async testing::Testing rejected promises": {
+  "sourceUrl": "https://jestjs.io/docs/asynchronous",
+  "sourceTitle": "Testing Asynchronous Code - Jest",
+  "summary": "Test rejected promises with Jest’s `.rejects` matcher and explicitly return or await the assertion. This makes rejection expectations observable and prevents tests from passing before asynchronous work completes.",
+  "explanation": "Pass the promise to expect and chain .rejects with a matcher for its rejection reason. Return that assertion promise or await it in an async test; otherwise the test can finish before the rejection is checked. If using catch instead, expect.assertions verifies that the rejection path actually ran.",
+  "syntax": "expect(promise).rejects.<matcher>(expected)",
+  "parameters": [
+   {
+    "name": "promise",
+    "type": "Promise",
+    "description": "The promise whose rejection reason should be unwrapped and tested."
+   }
+  ],
+  "returns": "A promise representing the chained assertion; return it or await it so Jest waits for completion.",
+  "example": {
+   "title": "Assert a rejected promise",
+   "code": "test('rejects with an error', async () => {\n  await expect(Promise.reject(new Error('octopus'))).rejects.toThrow('octopus');\n});",
+   "language": "javascript",
+   "explanation": "The test awaits the rejection assertion, so Jest observes the promise and verifies its error."
+  },
+  "useCases": [
+   {
+    "title": "Validate rejected API requests",
+    "scenario": "An API call should reject for invalid input."
+   },
+   {
+    "title": "Check error details",
+    "scenario": "A service should reject with a specific Error message."
+   },
+   {
+    "title": "Verify catch-based error handling",
+    "scenario": "A fallback path is implemented with catch."
+   }
+  ],
+  "related": [
+   "expect.assertions",
+   "resolves",
+   "toThrow",
+   "toEqual",
+   "toMatch"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use .rejects when the expected outcome is promise rejection.",
+   "After .rejects, chain a normal matcher such as toThrow, toEqual, or toMatch against the rejection reason.",
+   "The assertion fails when the operation resolves instead of rejecting, ensuring the negative case is explicit.",
+   "Returning the assertion promise makes Jest wait for asynchronous completion.",
+   "An async test can await the .rejects assertion instead of returning it.",
+   "For a catch-based test, expect.assertions confirms that the rejection handler performed its assertion."
+  ],
+  "gotchas": [
+   "Always return the .rejects assertion or await it; omitting both can let the test finish before the asynchronous result is checked.",
+   "A .rejects test is specifically negative: fulfillment causes the assertion to fail.",
+   "When manually handling rejection with catch, add an assertion count so an unexpected fulfillment cannot produce a false pass."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Quality::Coverage": {
+  "sourceUrl": "https://jestjs.io/docs/configuration",
+  "sourceTitle": "Configuring Jest",
+  "summary": "Jest can collect and report code coverage during tests with --coverage or collectCoverage. Use file globs and thresholds to expose untested areas and enforce standards, while treating coverage as a guide rather than a replacement for meaningful assertions.",
+  "explanation": "Run Jest with coverage enabled to instrument executed code and produce reports. Use collectCoverageFrom when coverage should include matching files even if they are not imported or tested, and configure thresholds to fail the run when required coverage levels are not met.",
+  "syntax": "jest --coverage[=<boolean>]\ncollectCoverage: boolean\ncollectCoverageFrom: array<string>\ncoverageProvider: \"babel\" | \"v8\"",
+  "parameters": [
+   {
+    "name": "collectCoverage",
+    "type": "boolean",
+    "description": "Whether Jest collects coverage while executing tests."
+   },
+   {
+    "name": "collectCoverageFrom",
+    "type": "array<string>",
+    "description": "Glob patterns identifying files from which coverage should be collected."
+   },
+   {
+    "name": "coverageProvider",
+    "type": "string: babel or v8",
+    "description": "Provider used to instrument code for coverage."
+   },
+   {
+    "name": "coverageDirectory",
+    "type": "string",
+    "description": "Directory where Jest writes coverage files."
+   }
+  ],
+  "returns": "Coverage information is collected and reported; configured threshold failures cause Jest to fail.",
+  "example": {
+   "title": "Collect coverage",
+   "code": "npm test -- --coverage",
+   "language": "bash",
+   "explanation": "Runs the Jest test suite and collects and reports coverage in the output."
+  },
+  "useCases": [
+   {
+    "title": "Find test gaps",
+    "scenario": "Inspect which executed statements and branches lack tests during local development."
+   },
+   {
+    "title": "Measure untested files",
+    "scenario": "Include source files that are not imported or tested by the current suite."
+   },
+   {
+    "title": "Enforce coverage thresholds",
+    "scenario": "Prevent regressions by failing CI when configured coverage limits are missed."
+   }
+  ],
+  "related": [
+   "collectCoverage",
+   "collectCoverageFrom",
+   "coverageProvider",
+   "coverageDirectory",
+   "coverageThreshold",
+   "coverageReporters",
+   "coveragePathIgnorePatterns",
+   "--coverage"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Set collectCoverage to true, or use the coverage flag, to collect coverage during tests.",
+   "Jest supports Babel and V8 coverage providers; Babel is the default.",
+   "Configure coverageThreshold to enforce minimum coverage globally or for selected paths."
+  ],
+  "gotchas": [
+   "Enabling coverage can significantly slow tests because Jest instruments executed files.",
+   "collectCoverageFrom can include files with no tests and files never required by the suite.",
+   "Coverage thresholds are enforcement rules: failing to meet them fails Jest."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Quality::Jest configuration": {
+  "sourceUrl": "https://jestjs.io/docs/configuration",
+  "sourceTitle": "Configuring Jest",
+  "summary": "Configure Jest's project roots, test environment, code transforms, reporters, and coverage collection in a JavaScript, TypeScript, or JSON config file.",
+  "explanation": "Jest configuration can live in a dedicated JavaScript, TypeScript, or JSON file. Options define the project root and search directories, select the test environment, map file patterns to transformers, configure reporters, and control which files contribute to coverage and where reports are written.",
+  "syntax": "export default { rootDir, roots, testEnvironment, transform, reporters, collectCoverageFrom, coverageDirectory };",
+  "parameters": [
+   {
+    "name": "rootDir",
+    "type": "string",
+    "description": "Project base directory used for scanning and path-token resolution."
+   },
+   {
+    "name": "roots",
+    "type": "string[]",
+    "description": "Directories searched for test and source files."
+   },
+   {
+    "name": "testEnvironment",
+    "type": "string",
+    "description": "Runtime environment used by test files."
+   },
+   {
+    "name": "transform",
+    "type": "object",
+    "description": "Regular-expression patterns mapped to transformer modules and optional options."
+   },
+   {
+    "name": "reporters",
+    "type": "array",
+    "description": "Reporter modules or module-and-options tuples."
+   },
+   {
+    "name": "collectCoverageFrom",
+    "type": "string[]",
+    "description": "Glob patterns identifying files whose coverage should be collected."
+   },
+   {
+    "name": "coverageDirectory",
+    "type": "string",
+    "description": "Directory receiving coverage files."
+   }
+  ],
+  "returns": "Jest configuration consumed by the test runner.",
+  "example": {
+   "title": "Repository Jest configuration",
+   "code": "export default {\n  rootDir: \".\",\n  roots: [\"<rootDir>/src\", \"<rootDir>/tests\"],\n  testEnvironment: \"node\",\n  transform: {\"^.+\\\\.[jt]sx?$\": \"babel-jest\"},\n  reporters: [\"default\"],\n  collectCoverage: true,\n  collectCoverageFrom: [\"src/**/*.{js,ts}\"],\n  coverageDirectory: \"coverage\"\n};",
+   "language": "javascript",
+   "explanation": "This configuration limits Jest's search locations, selects the Node environment, transforms JavaScript and TypeScript-family files with Babel, enables coverage collection, and writes coverage output to a dedicated directory."
+  },
+  "useCases": [
+   {
+    "title": "Transform source files",
+    "scenario": "A TypeScript or JSX repository needs Jest to execute syntax that Node does not handle directly."
+   },
+   {
+    "title": "Select the test environment",
+    "scenario": "Tests need browser APIs or a server-oriented runtime."
+   },
+   {
+    "title": "Control file discovery",
+    "scenario": "A monorepo or repository has separate source and test directories."
+   },
+   {
+    "title": "Publish coverage reports",
+    "scenario": "CI needs consistent coverage artifacts and reporting formats."
+   }
+  ],
+  "related": [
+   "collectCoverage",
+   "coverageReporters",
+   "coverageThreshold",
+   "moduleNameMapper",
+   "testEnvironmentOptions",
+   "transformIgnorePatterns",
+   "testMatch",
+   "testRegex"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Keep repository-wide settings in a dedicated JavaScript, TypeScript, or JSON configuration file.",
+   "rootDir establishes the project base used when Jest scans and resolves path tokens.",
+   "Use roots to restrict Jest's file search to selected source and test directories.",
+   "testEnvironment selects the runtime context; Node is the default, while jsdom suits browser-like code.",
+   "transform maps matching file-path patterns to transformer modules such as babel-jest.",
+   "coverageReporters controls the formats Jest produces for coverage output."
+  ],
+  "gotchas": [
+   "Do not confuse rootDir with roots: rootDir is commonly reused as a path token, while roots controls Jest's search locations.",
+   "collectCoverageFrom can include untested files, so broad patterns may lower reported coverage."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Quality::Test isolation": {
+  "sourceUrl": "https://jestjs.io/docs/jest-object",
+  "sourceTitle": "The Jest Object",
+  "summary": "Isolate tests by resetting Jest’s module registry and mock state. Use isolateModules for a callback-scoped module sandbox when module-local state must not leak between tests.",
+  "explanation": "Jest normally gives each test file its own module registry, but state inside a module can still affect tests within that file. Reset the registry with jest.resetModules(), or use jest.isolateModules() to sandbox modules loaded by a callback; resetAllMocks() clears mock state separately.",
+  "syntax": "jest.resetModules();\njest.isolateModules(fn);\njest.resetAllMocks();",
+  "parameters": [
+   {
+    "name": "fn",
+    "type": "function",
+    "description": "Callback whose module loads should use an isolated sandbox registry."
+   }
+  ],
+  "returns": "jest.isolateModules() returns void; resetModules() and resetAllMocks() reset Jest state and do not return a documented value.",
+  "example": {
+   "title": "Isolating module and mock state",
+   "code": "beforeEach(() => {\n  jest.resetModules();\n  jest.resetAllMocks();\n});\n\ntest('uses fresh module state', () => {\n  jest.isolateModules(() => {\n    const counter = require('./counter');\n    expect(counter.get()).toBe(0);\n  });\n});",
+   "language": "javascript",
+   "explanation": "Each test starts with cleared mock state, while isolateModules loads the counter in a fresh sandbox registry."
+  },
+  "useCases": [
+   {
+    "title": "Fresh module instances",
+    "scenario": "A module stores mutable state at module scope and tests must begin with a fresh instance."
+   },
+   {
+    "title": "Clean mock state",
+    "scenario": "A test suite changes mock implementations and later tests must not inherit calls or implementations."
+   },
+   {
+    "title": "Scoped sandboxing",
+    "scenario": "Only selected module loads need isolation without resetting the entire suite’s module behavior."
+   }
+  ],
+  "related": [
+   "jest.resetModules()",
+   "jest.isolateModules(fn)",
+   "jest.resetAllMocks()",
+   "jest.restoreAllMocks()",
+   "resetMocks",
+   "resetModules"
+  ],
+  "since": "",
+  "keyPoints": [
+   "jest.resetModules() discards the cached module registry, so later imports or requires can create fresh module instances.",
+   "Use resetModules when module-local state could leak between tests.",
+   "jest.isolateModules(fn) provides narrower isolation by creating a sandbox registry for modules loaded in the callback.",
+   "jest.resetAllMocks() clears recorded state and resets every mock function.",
+   "resetAllMocks has the same effect as invoking mockReset on each mocked function.",
+   "The resetMocks configuration option can apply mock-state resetting automatically before each test."
+  ],
+  "gotchas": [
+   "resetMocks removes fake implementations but does not restore the original implementation; use restoreAllMocks for that purpose.",
+   "Do not assume modules are reset before every test: the default isolation boundary is the test file, not each individual test.",
+   "isolateModules only sandboxes modules loaded inside its callback."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test doubles::Manual mocks": {
+  "sourceUrl": "https://jestjs.io/docs/manual-mocks",
+  "sourceTitle": "Manual Mocks - Jest",
+  "summary": "Manual mocks provide deterministic, hand-written module behavior from a __mocks__ directory. User-module mocks require jest.mock; package mocks beside node_modules are automatically selected.",
+  "explanation": "A manual mock is a hand-written replacement module stored in a case-sensitive __mocks__ directory. For a user module, place the mock beside the real module and call jest.mock(moduleName) in the test; Node modules use a __mocks__ directory beside node_modules and are automatically mocked. With automock enabled, an available manual mock takes precedence over Jest's generated mock.",
+  "syntax": "jest.mock('./moduleName')",
+  "parameters": [
+   {
+    "name": "moduleName",
+    "type": "string",
+    "description": "Module path or module name whose implementation should be replaced."
+   }
+  ],
+  "returns": "The selected manual mock module is used in place of the real module; the page does not specify a distinct return value for manual mocks.",
+  "example": {
+   "title": "Mock a user module with __mocks__",
+   "code": "// format.js\nexport const format = value => `value:${value}`;\n\n// __mocks__/format.js\nexport const format = value => `mock:${value}`;\n\n// format.test.js\njest.mock('./format');\nimport {format} from './format';\n\ntest('uses the manual mock', () => {\n  expect(format('x')).toBe('mock:x');\n});",
+   "language": "javascript",
+   "explanation": "The test explicitly activates the adjacent manual mock, so the deterministic implementation is used instead of the real module."
+  },
+  "useCases": [
+   {
+    "title": "Replace an external dependency",
+    "scenario": "A unit test must avoid network, database, filesystem, or other external behavior."
+   },
+   {
+    "title": "Share a reusable module stub",
+    "scenario": "Several tests need the same controlled implementation of a module."
+   },
+   {
+    "title": "Mock a Node module",
+    "scenario": "A package dependency should be isolated consistently across tests."
+   },
+   {
+    "title": "Mock a scoped package",
+    "scenario": "A scoped package needs a predictable local replacement."
+   }
+  ],
+  "related": [
+   "jest.mock",
+   "jest.unmock",
+   "automock",
+   "__mocks__",
+   "mock functions",
+   "Node modules",
+   "scoped modules"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use a manual mock to replace real functionality with controlled data, such as avoiding a database or remote service.",
+   "For a user module, create the mock in a neighboring __mocks__ directory.",
+   "Activate a user-module manual mock in the test with jest.mock(moduleName).",
+   "Place manual mocks for package dependencies beside node_modules at the project root.",
+   "Scoped packages use a matching nested directory structure under __mocks__.",
+   "With automock enabled, Jest prefers the handwritten manual mock over its automatic mock."
+  ],
+  "gotchas": [
+   "User-module manual mocks are not selected unless the test explicitly calls jest.mock for that module.",
+   "Node modules in the adjacent __mocks__ directory do not require an explicit jest.mock call.",
+   "When automock is enabled, the manual implementation overrides Jest's generated mock."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test doubles::Mock functions": {
+  "sourceUrl": "https://jestjs.io/docs/mock-functions",
+  "sourceTitle": "Mock Functions - Jest",
+  "summary": "Jest mock functions replace an implementation while recording calls, arguments, instances, results, and contexts. Configure their behavior with implementations or return-value helpers to test interactions without depending on real collaborators.",
+  "explanation": "A mock function replaces a function's implementation while preserving a callable test double. Jest records each invocation, its arguments, constructed instances, results, and call context through the mock's metadata, while methods such as mockImplementation and mockReturnValue let a test define behavior for all calls or selected calls.",
+  "syntax": "jest.fn(implementation?)\nmockFn.mockImplementation(fn)\nmockFn.mockImplementationOnce(fn)\nmockFn.mockReturnValue(value)\nmockFn.mockReturnValueOnce(value)",
+  "parameters": [
+   {
+    "name": "implementation",
+    "type": "function",
+    "description": "Optional function used as the mock's implementation."
+   },
+   {
+    "name": "fn",
+    "type": "function",
+    "description": "Function used as the implementation for a mock call or calls."
+   }
+  ],
+  "returns": "jest.fn() returns a mock function. With no implementation, invoking it returns undefined; configured implementations and return-value helpers determine later results.",
+  "example": {
+   "title": "Record calls and configure a return value",
+   "code": "const notify = jest.fn();\n\nnotify(\"deploy\", {urgent: true});\n\nexpect(notify).toHaveBeenCalledTimes(1);\nexpect(notify).toHaveBeenCalledWith(\"deploy\", {urgent: true});\n\nconst fetchUser = jest.fn().mockResolvedValue({id: 7});\nawait expect(fetchUser()).resolves.toEqual({id: 7});",
+   "language": "typescript",
+   "explanation": "This test creates mocks, verifies the recorded call data, and configures an asynchronous return value without invoking a real dependency."
+  },
+  "useCases": [
+   {
+    "title": "Interaction testing",
+    "scenario": "Verify that a collaborator was called with the expected arguments."
+   },
+   {
+    "title": "Controlled behavior",
+    "scenario": "Supply deterministic synchronous or asynchronous outputs."
+   },
+   {
+    "title": "Sequential scenarios",
+    "scenario": "Use different behavior on successive invocations."
+   },
+   {
+    "title": "Module isolation",
+    "scenario": "Replace a module dependency with a reusable test implementation."
+   }
+  ],
+  "related": [
+   "jest.fn",
+   "mockImplementation",
+   "mockImplementationOnce",
+   "mockReturnValue",
+   "mockReturnValueOnce",
+   "mockResolvedValue",
+   "mockRejectedValue",
+   "mock.calls"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use a mock to test interactions with a dependency without running that dependency's real implementation.",
+   "Jest records every invocation and its arguments, so tests can assert how collaborators were used.",
+   "The .mock object exposes call, result, instance, and context data collected during execution.",
+   "Configure predictable outputs for a test instead of relying on external state or production behavior.",
+   "Create a mock with jest.fn(), then use per-call implementations when successive invocations need different behavior.",
+   "Choose an inline mock for local behavior or a manual mock when replacing a module dependency."
+  ],
+  "gotchas": [
+   "A bare jest.fn() returns undefined until you provide an implementation or return value.",
+   "mockImplementation executes the supplied function; it does not stop Jest from recording calls and instances.",
+   "mockRestore is for spies with an original implementation; resetting a standalone jest.fn() does not restore another function."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test doubles::Module mocking": {
+  "sourceUrl": "https://jestjs.io/docs/jest-object",
+  "sourceTitle": "The Jest Object",
+  "summary": "Module mocking replaces a dependency at the module boundary with an automatic mock or a custom factory. The mock is scoped to the file that calls jest.mock, restoring isolation from the real dependency.",
+  "explanation": "Module mocking replaces a dependency in the test file with Jest's generated mock or with the object returned by a factory. For CommonJS modules, call jest.mock with the module name before loading code that depends on it; the mock applies only in the file that declares it. The factory and options are optional.",
+  "syntax": "jest.mock(moduleName, factory?, options?)",
+  "parameters": [
+   {
+    "name": "moduleName",
+    "type": "string",
+    "description": "Module name or path passed to jest.mock."
+   },
+   {
+    "name": "factory",
+    "type": "function",
+    "description": "Optional function returning the replacement module."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Optional mocking configuration."
+   }
+  ],
+  "returns": "The documentation describes jest.mock as configuring module mocking; it does not specify a return value.",
+  "example": {
+   "title": "Mock a module dependency",
+   "code": "jest.mock('./currency', () => ({\n  convert: jest.fn(() => 42),\n}));\n\nimport { checkoutTotal } from './checkout';\nimport { convert } from './currency';\n\ntest('uses the mocked currency conversion', () => {\n  expect(checkoutTotal(10)).toBe(42);\n  expect(convert).toHaveBeenCalledWith(10);\n});",
+   "language": "typescript",
+   "explanation": "The test replaces the currency module before exercising checkout, so it verifies the boundary interaction without running the real converter."
+  },
+  "useCases": [
+   {
+    "title": "Isolate external dependencies",
+    "scenario": "Prevent network, filesystem, or other external behavior while testing a module."
+   },
+   {
+    "title": "Control dependency behavior",
+    "scenario": "Supply predictable exports for a dependency and assert how the code under test uses them."
+   },
+   {
+    "title": "Keep test-file scope",
+    "scenario": "Replace a module implementation only within one test file."
+   }
+  ],
+  "related": [
+   "jest.unmock",
+   "jest.doMock",
+   "jest.requireActual",
+   "jest.requireMock",
+   "jest.resetModules",
+   "jest.unstable_mockModule"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Call jest.mock(moduleName) to have Jest generate a replacement module.",
+   "The replacement is selected when the mocked module is required.",
+   "You can provide a factory for a custom replacement, while the options argument is optional.",
+   "Mock scope is limited to the test file that declares the mock."
+  ],
+  "gotchas": [
+   "Keep the mock declaration in the same scope as the import or require that should receive it.",
+   "A separate test file importing the same module still receives the original implementation."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test doubles::Spies and implementations": {
+  "sourceUrl": "https://jestjs.io/docs/mock-function-api",
+  "sourceTitle": "Mock Functions",
+  "summary": "Jest spies observe calls to existing methods and can temporarily replace their implementations. The mock records calls while the replacement runs, and spy-created mocks can restore the original method.",
+  "explanation": "Use jest.spyOn(object, methodName) to observe an existing method and optionally replace its behavior with mockImplementation. The returned mock records calls while the replacement runs; mockRestore or restoreAllMocks returns a spy-created method to its original implementation.",
+  "syntax": "jest.spyOn(object, methodName).mockImplementation(fn)\nmockFn.mockRestore()",
+  "parameters": [
+   {
+    "name": "object",
+    "type": "object",
+    "description": "Object containing the method to observe or replace."
+   },
+   {
+    "name": "methodName",
+    "type": "string",
+    "description": "Name of the method on object."
+   },
+   {
+    "name": "fn",
+    "type": "function",
+    "description": "Function used as the mock implementation."
+   }
+  ],
+  "returns": "jest.spyOn returns a Jest mock function; mockImplementation returns the mock function for chaining; mockRestore restores the original implementation.",
+  "example": {
+   "title": "Spy with a temporary implementation",
+   "code": "import { jest, test, expect, afterEach } from '@jest/globals';\n\nconst api = {\n  fetchUser: (id: string) => `user-${id}`,\n};\n\nafterEach(() => {\n  jest.restoreAllMocks();\n});\n\ntest('spies while using a temporary implementation', () => {\n  const fetchUser = jest\n    .spyOn(api, 'fetchUser')\n    .mockImplementation((id: string) => `stub-${id}`);\n\n  expect(api.fetchUser('42')).toBe('stub-42');\n  expect(fetchUser).toHaveBeenCalledWith('42');\n});",
+   "language": "typescript",
+   "explanation": "The spy records the call and substitutes behavior for the test; the cleanup hook restores the original method."
+  },
+  "useCases": [
+   {
+    "title": "Observe collaborator calls",
+    "scenario": "Verify that code called a real collaborator with expected arguments."
+   },
+   {
+    "title": "Replace an external operation",
+    "scenario": "Prevent a network, clock, filesystem, or other external operation during a unit test."
+   },
+   {
+    "title": "Control test behavior",
+    "scenario": "Return deterministic values or throw controlled errors for a test path."
+   },
+   {
+    "title": "Enforce isolation",
+    "scenario": "Restore every spy and replaced property between tests."
+   }
+  ],
+  "related": [
+   "jest.fn()",
+   "jest.spyOn()",
+   "mockFn.mockImplementation(fn)",
+   "mockFn.mockRestore()",
+   "jest.restoreAllMocks()",
+   "restoreMocks"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Jest calls mock functions spies because they observe indirectly invoked behavior, not only returned output.",
+   "jest.spyOn targets an existing object's method and returns a Jest mock that tracks its calls.",
+   "mockImplementation(fn) supplies the replacement behavior used when the mock is called.",
+   "Replacing the implementation does not stop the mock from recording calls and instances.",
+   "mockRestore resets the mock and reinstates the original non-mocked method.",
+   "jest.restoreAllMocks provides broad cleanup for spies and replaced properties."
+  ],
+  "gotchas": [
+   "mockRestore does not restore mocks created by manually assigning jest.fn(); restore those yourself.",
+   "Without explicit cleanup or restoreMocks, a temporary replacement can leak into later tests."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test foundations::Setup and teardown": {
+  "sourceUrl": "https://jestjs.io/docs/30.4/setup-teardown",
+  "sourceTitle": "Setup and Teardown",
+  "summary": "Jest lifecycle hooks make test setup and cleanup predictable. Use per-test hooks for isolated state and per-suite hooks for shared, one-time resources.",
+  "explanation": "Use beforeEach and afterEach for work that must happen around every test, such as creating and clearing mutable state. Use beforeAll and afterAll for one-time suite setup and cleanup. Hooks at file scope cover the file, while hooks inside describe apply only to that block; keep setup in hooks rather than describe callbacks.",
+  "syntax": "beforeEach(fn, timeout); afterEach(fn, timeout); beforeAll(fn, timeout); afterAll(fn, timeout);",
+  "parameters": [
+   {
+    "name": "fn",
+    "type": "function",
+    "description": "Callback function executed by the lifecycle hook; asynchronous callbacks may return a promise or generator."
+   },
+   {
+    "name": "timeout",
+    "type": "number",
+    "description": "Optional timeout for the hook."
+   }
+  ],
+  "returns": "The page describes lifecycle behavior rather than a separate return value; asynchronous hook callbacks are awaited before the relevant test or next phase continues.",
+  "example": {
+   "title": "Per-test and per-suite hooks",
+   "code": "describe('users', () => {\n  let users: string[];\n\n  beforeAll(() => {\n    users = [];\n  });\n\n  beforeEach(() => {\n    users.push('new test');\n  });\n\n  afterEach(() => {\n    users.length = 0;\n  });\n\n  afterAll(() => {\n    // release shared resources here\n  });\n\n  test('starts with test data', () => {\n    expect(users).toEqual(['new test']);\n  });\n});",
+   "language": "typescript",
+   "explanation": "This example uses suite-level initialization once, resets mutable state around every test, and reserves final cleanup for resources shared by the suite."
+  },
+  "useCases": [
+   {
+    "title": "Isolate test cases",
+    "scenario": "Reset databases, mocks, arrays, or other mutable state before and after every test."
+   },
+   {
+    "title": "Initialize suite resources",
+    "scenario": "Open a shared connection or construct expensive fixtures once for a suite."
+   },
+   {
+    "title": "Release suite resources",
+    "scenario": "Close connections, files, servers, or other shared resources after the suite finishes."
+   },
+   {
+    "title": "Scope setup with describe",
+    "scenario": "Limit lifecycle behavior to a related group of tests."
+   }
+  ],
+  "related": [
+   "beforeEach",
+   "afterEach",
+   "beforeAll",
+   "afterAll",
+   "describe",
+   "test"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use beforeEach for repeated preparation and afterEach for repeated cleanup around individual tests.",
+   "Use beforeAll and afterAll when setup or cleanup should happen once for the suite rather than once per test.",
+   "File-level hooks apply to every test in that file.",
+   "Put hooks inside describe when their scope should be limited to that group.",
+   "Keep executable setup and teardown in lifecycle hooks, not in describe callbacks.",
+   "After collection, Jest normally runs tests serially in their discovery order, awaiting each before moving on."
+  ],
+  "gotchas": [
+   "Do not perform setup in a describe callback: describe handlers run during test collection, before the tests execute.",
+   "Teardown order is not simply inner-first: enclosing-scope after hooks run before nested-scope after hooks.",
+   "When several hooks share a scope, declaration order determines their execution order."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test foundations::Test structure": {
+  "sourceUrl": "https://jestjs.io/docs/api",
+  "sourceTitle": "Globals · Jest",
+  "summary": "Structure Jest tests with describe suites, test cases, expect assertions, and lifecycle hooks. Use hooks to keep repeated setup and cleanup outside test bodies.",
+  "explanation": "Use describe to group related behavior, test to define an individual case, and expect with a matcher to verify the result. Put repeated preparation or cleanup in beforeEach, afterEach, beforeAll, or afterAll; hooks inside a suite affect only that suite's tests.",
+  "syntax": "describe(name, fn)\ntest(name, fn, timeout)\nexpect(value)\nbeforeEach(fn)\nafterEach(fn)\nbeforeAll(fn)\nafterAll(fn)",
+  "parameters": [
+   {
+    "name": "name",
+    "type": "string",
+    "description": "Suite or test name."
+   },
+   {
+    "name": "fn",
+    "type": "function",
+    "description": "Callback containing the suite or test body."
+   },
+   {
+    "name": "timeout",
+    "type": "number",
+    "description": "Optional timeout in milliseconds for a test."
+   }
+  ],
+  "returns": "describe and test register suites and tests; expect returns an assertion object with matchers.",
+  "example": {
+   "title": "A grouped test with setup",
+   "code": "describe('addition', () => {\n  beforeEach(() => {\n    // reset shared state for each test\n  });\n\n  test('adds two numbers', () => {\n    expect(1 + 2).toBe(3);\n  });\n});",
+   "language": "javascript",
+   "explanation": "A suite groups related tests, a lifecycle hook prepares each test, and an expectation checks the produced value."
+  },
+  "useCases": [
+   {
+    "title": "Organize related cases",
+    "scenario": "Group tests for one function, component, or behavior."
+   },
+   {
+    "title": "Isolate tests",
+    "scenario": "Reset mutable state before every test."
+   },
+   {
+    "title": "Manage suite resources",
+    "scenario": "Create and dispose shared resources once per suite."
+   }
+  ],
+  "related": [
+   "describe.each",
+   "test.each",
+   "it",
+   "beforeEach",
+   "afterEach",
+   "beforeAll",
+   "afterAll",
+   "expect"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use describe to organize tests around a shared behavior or subject.",
+   "Define each executable test with test, or its alias it.",
+   "Give each test a readable name and put its assertions in the callback.",
+   "Call expect with the produced value, then choose a matcher such as toBe or toEqual."
+  ],
+  "gotchas": [
+   "Return the promise from an asynchronous test so Jest waits for its completion."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

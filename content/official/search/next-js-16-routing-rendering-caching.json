@@ -1,0 +1,1599 @@
+{
+ "API routes::Authentication and authorization": {
+  "sourceUrl": "https://nextjs.org/docs/app/guides/authentication",
+  "sourceTitle": "Guides: Authentication",
+  "summary": "Authentication identifies the user; authorization controls which routes and data they can access. Centralize session and permission checks in a Data Access Layer, and repeat them at each data boundary, including pages, Server Functions, and Route Handlers.",
+  "explanation": "Authentication establishes the user's identity, while authorization determines which routes and data that user may access. Centralize session verification in a Data Access Layer, then call it from pages, Server Functions, and Route Handlers; each mutation or endpoint must independently confirm that the user has permission.",
+  "syntax": "async function verifySession() { /* validate session; redirect or return user */ }",
+  "parameters": [
+   {
+    "name": "—",
+    "type": "—",
+    "description": "The documentation does not define parameters for the recommended session-verification pattern."
+   }
+  ],
+  "returns": "The page does not prescribe a single return type; the verification function should redirect or return the user information needed for further requests.",
+  "example": {
+   "title": "Protect a Route Handler",
+   "code": "// app/api/account/route.ts\nimport { NextResponse } from \"next/server\";\nimport { verifySession } from \"@/app/lib/dal\";\n\nexport async function GET() {\n  const session = await verifySession();\n\n  if (!session?.userId) {\n    return NextResponse.json({ error: \"Unauthorized\" }, { status: 401 });\n  }\n\n  return NextResponse.json({ userId: session.userId });\n}",
+   "language": "typescript",
+   "explanation": "The Route Handler verifies the session at the data boundary before returning protected data."
+  },
+  "useCases": [
+   {
+    "title": "Protected pages",
+    "scenario": "Restrict access to authenticated pages and protected data."
+   },
+   {
+    "title": "Server Functions",
+    "scenario": "Authorize mutations invoked through client-facing server code."
+   },
+   {
+    "title": "Route Handlers",
+    "scenario": "Secure custom HTTP endpoints from unauthorized callers."
+   }
+  ],
+  "related": [
+   "Data Access Layer (DAL)",
+   "Server Actions",
+   "Route Handlers",
+   "Session Management",
+   "Authorization"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use a Data Access Layer as the single place for session checks, authorization decisions, and protected data access.",
+   "Expose a session-verification function that validates the current session whenever protected application data is accessed.",
+   "A verification function should either stop unauthenticated access or return the identity required for subsequent authorized work.",
+   "Call the shared session check from data access code, Server Functions, and Route Handlers rather than relying on a page-level check.",
+   "Protect Server Functions as public network entry points and verify that the caller may perform the requested mutation."
+  ],
+  "gotchas": [
+   "Route Handlers are public endpoints, so do not assume that reaching the page or UI is sufficient authorization.",
+   "Authentication alone is insufficient before writes; check the user's permission for the specific mutation."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Data & caching::Cache Components": {
+  "sourceUrl": "https://nextjs.org/docs/app/glossary",
+  "sourceTitle": "App Router: Glossary",
+  "summary": "Cache Components combines component- and function-level caching with streaming dynamic content. Use \"use cache\", cacheLife, and cacheTag to cache work, control its lifetime, and invalidate it.",
+  "explanation": "Cache Components lets a route combine prerendered, cached, and request-time content. Mark a function or component with \"use cache\", define its lifetime with cacheLife, and attach cacheTag values for later invalidation; uncached dynamic portions can stream separately.",
+  "syntax": "'use cache'\ncacheLife(profile)\ncacheTag(...tags)",
+  "parameters": [],
+  "returns": "Cached functions and components return their normal value or rendered output; Cache Components also produces a static HTML shell while dynamic content streams.",
+  "example": {
+   "title": "Cached server data",
+   "code": "// next.config.ts\nimport type { NextConfig } from 'next'\nconst nextConfig: NextConfig = { cacheComponents: true }\nexport default nextConfig\n\n// app/page.tsx\nimport { cacheLife, cacheTag } from 'next/cache'\n\nasync function getProduct(id: string) {\n  'use cache'\n  cacheLife('hours')\n  cacheTag(`product:${id}`)\n  return { id, name: 'Example product' }\n}\n\nexport default async function Page() {\n  const product = await getProduct('42')\n  return <h1>{product.name}</h1>\n}",
+   "language": "tsx",
+   "explanation": "Enables Cache Components and caches a server function with a time-based profile and an invalidation tag."
+  },
+  "useCases": [
+   {
+    "title": "Cached data access",
+    "scenario": "Cache database queries or computed server data that can be reused between requests."
+   },
+   {
+    "title": "Streaming mixed rendering",
+    "scenario": "Render a mostly stable page shell immediately while request-time content loads."
+   },
+   {
+    "title": "Tag-based revalidation",
+    "scenario": "Invalidate related cached entries after a content or data mutation."
+   }
+  ],
+  "related": [
+   "use cache",
+   "cacheLife",
+   "cacheTag",
+   "updateTag",
+   "revalidateTag",
+   "cacheComponents"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Cache Components caches individual components or functions through the \"use cache\" directive.",
+   "A route can combine prerendered static output, cached work, and dynamic request-time content.",
+   "The static shell can be delivered first while uncached dynamic content streams as it becomes available.",
+   "Use cacheLife to choose how long cached function or component output remains reusable.",
+   "Attach cacheTag values to cached data so an invalidation operation can target related entries."
+  ],
+  "gotchas": [
+   "A fetch inside a use-cache scope is cached automatically, so configure its lifetime and tags through the Cache Components APIs rather than fetch cache options."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Data & caching::cacheLife and cacheTag": {
+  "sourceUrl": "https://nextjs.org/docs/app/getting-started/revalidating",
+  "sourceTitle": "Revalidating",
+  "summary": "Use cacheLife to define how long cached data remains valid and cacheTag to group cached entries for on-demand invalidation. Both APIs are used inside a use cache scope.",
+  "explanation": "Place cacheLife and cacheTag inside a use cache scope. cacheLife selects a named freshness profile or accepts custom timing, controlling when the cached result is revalidated or expires; cacheTag associates the result with one or more tags that can later be invalidated with updateTag or revalidateTag.",
+  "syntax": "cacheLife(profile)\ncacheTag(...tags)",
+  "parameters": [
+   {
+    "name": "profile",
+    "type": "string | CacheLifeConfig",
+    "description": "A named cache-life profile or a custom configuration object for the cached entry's lifetime."
+   },
+   {
+    "name": "tags",
+    "type": "string[]",
+    "description": "One or more strings identifying related cached data."
+   }
+  ],
+  "returns": "cacheLife and cacheTag configure the current use cache scope; they do not return the cached value.",
+  "example": {
+   "title": "Cache data by lifetime and tag",
+   "code": "import { cacheLife, cacheTag } from 'next/cache'\n\nexport async function getProducts() {\n  'use cache'\n  cacheLife('hours')\n  cacheTag('products')\n\n  return db.product.findMany()\n}",
+   "language": "typescript",
+   "explanation": "This cached function keeps product data fresh according to the hours profile and associates it with the products tag for later invalidation."
+  },
+  "useCases": [
+   {
+    "title": "Time-based freshness",
+    "scenario": "Data with a predictable refresh interval, such as hourly metrics."
+   },
+   {
+    "title": "Mutation-driven invalidation",
+    "scenario": "A product or CMS record that must be refreshed after an edit."
+   },
+   {
+    "title": "Invalidate related content",
+    "scenario": "Several cached functions or components representing one domain entity."
+   }
+  ],
+  "related": [
+   "use cache",
+   "revalidateTag",
+   "updateTag",
+   "revalidatePath",
+   "CacheLifeConfig"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use cacheLife to choose how long a cached function or component remains valid before time-based revalidation.",
+   "Pass a named profile such as hours, or provide a custom cache-life configuration when the built-in profiles do not fit.",
+   "Attach one or more meaningful tags to cached data so a later mutation or administrative action can invalidate related entries.",
+   "Call cacheTag within the function or component marked with use cache.",
+   "Choose updateTag when an immediate fresh result is needed after a mutation, or revalidateTag for stale-while-revalidate behavior."
+  ],
+  "gotchas": [
+   "Both APIs must be called within a use cache scope; they configure the cached function or component rather than arbitrary uncached code."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Data & caching::Fetch caching": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/fetch",
+  "sourceTitle": "Fetch | Next.js",
+  "summary": "Next.js memoizes identical GET fetches during one server render, but this is distinct from persistent caching across requests. Use fetch cache options or a use cache scope with Cache Components to control persistence.",
+  "explanation": "During a server render, identical GET fetches are memoized so repeated calls share one result for that render pass. Persistent caching is separate: use fetch options such as force-cache for a response that can be reused across requests. With Cache Components enabled, fetches are uncached unless they execute inside a use cache scope, where caching is automatic.",
+  "syntax": "fetch(input, init?)",
+  "parameters": [
+   {
+    "name": "input",
+    "type": "URL or RequestInfo",
+    "description": "The resource URL and optional RequestInit settings, including cache behavior such as force-cache or no-store."
+   },
+   {
+    "name": "init",
+    "type": "RequestInit",
+    "description": "Optional request configuration; the cache property controls persistent fetch caching."
+   }
+  ],
+  "returns": "A Promise resolving to a Response; with force-cache, Next.js may return a matching cached response.",
+  "example": {
+   "title": "Cache a fetch response",
+   "code": "async function getPosts() {\n  const response = await fetch('https://api.example.com/posts', {\n    cache: 'force-cache',\n  })\n  if (!response.ok) throw new Error('Failed to fetch posts')\n  return response.json()\n}\n\nexport default async function Page() {\n  const posts = await getPosts()\n  return <pre>{JSON.stringify(posts, null, 2)}</pre>\n}",
+   "language": "tsx",
+   "explanation": "This Server Component caches the matching GET response persistently and reuses it across requests until revalidation or invalidation."
+  },
+  "useCases": [
+   {
+    "title": "Avoid duplicate requests",
+    "scenario": "Several Server Components need the same GET data during one render."
+   },
+   {
+    "title": "Persist stable data",
+    "scenario": "A response changes infrequently and can be reused across requests."
+   },
+   {
+    "title": "Cache selected component data",
+    "scenario": "A route mixes cached data with request-time content under Cache Components."
+   }
+  ],
+  "related": [
+   "use cache",
+   "cacheLife",
+   "cacheTag",
+   "Cache Components",
+   "request memoization",
+   "Data Cache"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Identical GET fetches in the Server Component tree are automatically memoized, so multiple components can request the same data without duplicate work during one render.",
+   "Memoization does not mean persistent caching: a fetch response is not retained across requests unless caching is explicitly enabled.",
+   "Set cache to force-cache on an individual fetch when its response should be stored and reused across server requests.",
+   "The persistent cache distinguishes requests by URL, method, headers, and body, so changing any of these can produce a separate cache entry."
+  ],
+  "gotchas": [
+   "Do not assume memoization makes a fetch persistent: fetch requests are uncached by default unless you opt into caching or use a Cache Components cache scope.",
+   "Request memoization is limited to one server render; it does not provide cross-request persistence."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Data & caching::Revalidation and invalidation": {
+  "sourceUrl": "https://nextjs.org/docs/app/getting-started/revalidating.md",
+  "sourceTitle": "Next.js",
+  "summary": "Deliberately refresh cached data after mutations with updateTag, revalidateTag, or refresh. Choose immediate fresh reads, stale-while-revalidate, or a route-only refresh respectively.",
+  "explanation": "Next.js provides three complementary post-mutation controls: updateTag immediately expires tagged data for read-your-own-writes, revalidateTag marks tagged data stale for stale-while-revalidate, and refresh refetches the current route without invalidating cached data.",
+  "syntax": "updateTag(tag)\nrevalidateTag(tag, profileOrExpire)\nrefresh()",
+  "parameters": [
+   {
+    "name": "tag",
+    "type": "string",
+    "description": "Cache tag identifying entries to invalidate."
+   },
+   {
+    "name": "profileOrExpire",
+    "type": "string | { expire?: number }",
+    "description": "Cache-life profile name or expiration configuration controlling stale-while-revalidate behavior."
+   },
+   {
+    "name": "refresh",
+    "type": "()",
+    "description": "No arguments."
+   }
+  ],
+  "returns": "updateTag and revalidateTag invalidate or expire matching tagged cache entries; refresh refreshes the current client router and returns void.",
+  "example": {
+   "title": "Update cached data and refresh the route",
+   "code": "import { refresh, updateTag } from 'next/cache'\n\nexport async function updateProfile(formData: FormData) {\n  'use server'\n  const userId = String(formData.get('userId'))\n  const name = String(formData.get('name'))\n\n  await db.user.update({ where: { id: userId }, data: { name } })\n  updateTag(`user:${userId}`)\n  refresh()\n}",
+   "language": "typescript",
+   "explanation": "A Server Action expires the changed user's tagged cache immediately, then refreshes the current client route so the UI reflects the mutation."
+  },
+  "useCases": [
+   {
+    "title": "Read-your-own-writes",
+    "scenario": "A form or Server Action changes data that the same user must see immediately."
+   },
+   {
+    "title": "Background revalidation",
+    "scenario": "A webhook or Route Handler updates shared content and brief staleness is acceptable."
+   },
+   {
+    "title": "Refresh dynamic UI",
+    "scenario": "A mutation changes dynamic, uncached route data without tagged entries."
+   }
+  ],
+  "related": [
+   "cacheLife",
+   "cacheTag",
+   "revalidatePath",
+   "Server Actions",
+   "Route Handlers"
+  ],
+  "since": "16.0.0",
+  "keyPoints": [
+   "Use updateTag after a user mutation when the next read must show the newly written value immediately.",
+   "Use revalidateTag when serving stale content briefly is acceptable while fresh data loads in the background.",
+   "Use refresh to rerun the current route and update its UI without invalidating cached data.",
+   "updateTag makes the action's subsequent read wait for fresh data, providing read-your-own-writes behavior.",
+   "refresh updates the current route while preserving existing cache entries."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Mutations::Cookies and sessions": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/cookies",
+  "sourceTitle": "Functions: cookies | Next.js",
+  "summary": "Use the asynchronous cookies() API to read request cookies and mutate response cookies in Server Functions or Route Handlers. Store session identifiers with protective options and never mutate cookies during Server Component rendering.",
+  "explanation": "The asynchronous cookies function reads incoming cookies in Server Components and reads or changes outgoing cookies in Server Functions and Route Handlers. Session mutations belong in a Server Function or Route Handler; cookie options such as HttpOnly, Secure, SameSite, expiration, and Path help protect and scope session state.",
+  "syntax": "const cookieStore = await cookies()\ncookieStore.get(name)\ncookieStore.set(name, value, options)\ncookieStore.delete(name)",
+  "parameters": [
+   {
+    "name": "name",
+    "type": "string",
+    "description": "Cookie name to read, set, or delete."
+   },
+   {
+    "name": "value",
+    "type": "string",
+    "description": "Value written by set."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Cookie configuration, such as HttpOnly, Secure, SameSite, Max-Age, Expires, and Path."
+   }
+  ],
+  "returns": "cookies() returns a cookie store; get reads a cookie, while set and delete mutate outgoing response cookies.",
+  "example": {
+   "title": "Set a session cookie",
+   "code": "import { cookies } from 'next/headers'\n\nexport async function createSession(userId: string) {\n  const cookieStore = await cookies()\n  cookieStore.set('session', userId, {\n    httpOnly: true,\n    secure: true,\n    sameSite: 'lax',\n    path: '/',\n    maxAge: 60 * 60 * 24 * 7,\n  })\n}\n",
+   "language": "typescript",
+   "explanation": "This server-side function stores a session identifier in a protected cookie."
+  },
+  "useCases": [
+   {
+    "title": "Create a session",
+    "scenario": "Persist an authenticated user's session identifier between requests."
+   },
+   {
+    "title": "Delete a session",
+    "scenario": "Remove authentication state during logout."
+   },
+   {
+    "title": "Check authentication",
+    "scenario": "Read a session cookie while rendering server-side UI."
+   },
+   {
+    "title": "Renew a session",
+    "scenario": "Refresh or rotate a session expiration after activity."
+   }
+  ],
+  "related": [
+   "Server Functions",
+   "Route Handlers",
+   "Server Components",
+   "Authentication",
+   "Session Management",
+   "NextResponse"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Await cookies() to obtain the cookie store and read cookies from the incoming request.",
+   "Use Server Functions or Route Handlers for cookie mutations such as setting or deleting session cookies.",
+   "cookieStore.set(name, value, options) writes a cookie with optional security and lifetime settings.",
+   "cookieStore.delete(name) removes a session cookie when called from an allowed server mutation context."
+  ],
+  "gotchas": [
+   "Do not set cookies while rendering a Server Component; call a Server Function or use a Route Handler instead.",
+   "Cookie mutations must happen before streaming begins, so perform them in a Server Function or Route Handler.",
+   "Delete cookies only from a Server Function or Route Handler, and ensure the domain and protocol match the cookie."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Mutations::CSRF and action security": {
+  "sourceUrl": "https://nextjs.org/docs/app/guides/data-security",
+  "sourceTitle": "Guides: Data Security | Next.js",
+  "summary": "Treat exported Server Functions as public POST endpoints. Enforce authentication, authorization, and server-side input validation, while relying on origin checks or configuring trusted proxy hosts with serverActions.allowedOrigins.",
+  "explanation": "Server Functions can be called through direct POST requests, so secure each one like a public API endpoint. Check the caller's identity and authorization inside the function, validate every input on the server, and rely on Next.js's origin check or explicitly configure trusted proxy hosts when needed.",
+  "syntax": "export async function action(args) { 'use server' }",
+  "parameters": [
+   {
+    "name": "arguments",
+    "type": "function-defined",
+    "description": "FormData or other arguments supplied to the Server Function; treat all values as untrusted and validate them on the server."
+   }
+  ],
+  "returns": "The function-defined result; the documentation does not prescribe a universal return type.",
+  "example": {
+   "title": "Authenticate and validate a mutation",
+   "code": "// app/actions.ts\n'use server'\n\nimport { z } from 'zod'\nimport { auth } from '@/auth'\n\nconst schema = z.object({\n  title: z.string().trim().min(1).max(100),\n})\n\nexport async function createPost(formData: FormData) {\n  const session = await auth()\n  if (!session?.user?.id) throw new Error('Unauthorized')\n\n  const parsed = schema.safeParse({ title: formData.get('title') })\n  if (!parsed.success) throw new Error('Invalid input')\n\n  // Persist only after authentication and validation.\n  return { ok: true, title: parsed.data.title }\n}",
+   "language": "typescript",
+   "explanation": "This Server Function authenticates the caller and validates untrusted form input before performing the mutation."
+  },
+  "useCases": [
+   {
+    "title": "Protect form mutations",
+    "scenario": "A form submits a create, update, or delete mutation."
+   },
+   {
+    "title": "Allow trusted proxy origins",
+    "scenario": "A reverse proxy or CDN uses a host different from the application host."
+   },
+   {
+    "title": "Enforce identity and authorization",
+    "scenario": "A function changes user-owned or organization-owned data."
+   }
+  ],
+  "related": [
+   "Server Functions",
+   "Server Actions",
+   "serverActions.allowedOrigins",
+   "Origin header",
+   "Host header",
+   "x-forwarded-host",
+   "authentication",
+   "authorization"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The invocation method is POST-only, which helps reduce common browser-based CSRF attack paths.",
+   "Next.js compares the request origin with the application host and aborts requests when they do not match.",
+   "If a proxy or CDN is the trusted caller host, configure its host explicitly rather than weakening checks globally.",
+   "Use serverActions.allowedOrigins with an array of trusted host patterns when deployment topology requires extra origins."
+  ],
+  "gotchas": [
+   "Do not assume an action is private because it is only used by a particular UI; callers can invoke exported Server Functions directly.",
+   "Origin validation is not an absolute substitute for application-level identity and authorization checks."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Mutations::Server Functions": {
+  "sourceUrl": "https://nextjs.org/docs/app/getting-started/mutating-data",
+  "sourceTitle": "Mutating Data",
+  "summary": "Server Functions are asynchronous server-side functions for mutations. Define them with 'use server', invoke them from forms or client events, and validate and authorize every public action.",
+  "explanation": "Server Functions are asynchronous server-side functions exposed through a network request. Define them with the 'use server' directive, invoke them from forms or Client Component event handlers, and treat every exposed function as a public mutation boundary that must validate input and authorize the caller.",
+  "syntax": "async function action(formData: FormData) {\n  'use server'\n  // validate, authorize, and mutate\n}",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Validated form mutation",
+   "code": "// app/actions.ts\n'use server'\n\nimport { revalidatePath } from 'next/cache'\nimport { redirect } from 'next/navigation'\n\nexport async function createPost(formData: FormData) {\n  const title = formData.get('title')\n  if (typeof title !== 'string' || !title.trim()) {\n    throw new Error('Title is required')\n  }\n\n  // Verify the current user and persist the validated data here.\n  await savePost({ title: title.trim() })\n  revalidatePath('/posts')\n  redirect('/posts')\n}\n\nasync function savePost(post: { title: string }) {\n  // Replace with a database write.\n  console.log(post)\n}\n",
+   "language": "typescript",
+   "explanation": "A module-level Server Function validates submitted form data, performs the mutation, refreshes the affected route, and redirects after success."
+  },
+  "useCases": [
+   {
+    "title": "Form mutations",
+    "scenario": "Create or update records from a form submission."
+   },
+   {
+    "title": "Event-driven updates",
+    "scenario": "Trigger a mutation from a button or other client interaction."
+   },
+   {
+    "title": "Client transitions",
+    "scenario": "Run a mutation while coordinating client-side pending or transition state."
+   },
+   {
+    "title": "Post-mutation revalidation",
+    "scenario": "Refresh affected UI or cached route data after a successful write."
+   }
+  ],
+  "related": [
+   "use server",
+   "Server Actions",
+   "FormData",
+   "revalidatePath",
+   "redirect",
+   "Event Handlers",
+   "useEffect"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Server Functions execute on the server and must be asynchronous because the client reaches them through a network request.",
+   "Client code can invoke a Server Function remotely; design it like a public endpoint and validate all received data.",
+   "Add 'use server' inside a function for an inline action, or at the top of a module to mark exported functions as server functions.",
+   "The documented invocation mechanisms are form actions and Client Component event handlers or useEffect.",
+   "Attach a Server Function to a form's action prop so React submits the form and supplies its FormData argument.",
+   "The term Server Action describes a Server Function when it is used for an action or mutation."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Navigation::Navigation and prefetching": {
+  "sourceUrl": "https://nextjs.org/docs/app/getting-started/linking-and-navigating",
+  "sourceTitle": "Linking and Navigating",
+  "summary": "Use <Link> for client-side navigation and automatic viewport-based prefetching. Dynamic routes can partially prefetch shared layouts and loading UI, while Partial Prefetching reuses one App Shell across links to the same route.",
+  "explanation": "Next.js prefetches linked routes in the background as links enter the viewport. With Partial Prefetching and Cache Components, a route's shared App Shell is prefetched once and reused across links, while dynamic or URL-dependent data can be loaded later or explicitly requested with per-link prefetching.",
+  "syntax": "<Link href=\"/destination\" prefetch={true}>Label</Link>",
+  "parameters": [
+   {
+    "name": "href",
+    "type": "Url",
+    "description": "Destination route or URL for the link."
+   },
+   {
+    "name": "prefetch",
+    "type": "boolean",
+    "description": "Controls whether the link prefetches route data; true enables per-link prefetching with Partial Prefetching."
+   }
+  ],
+  "returns": "A client-side navigation link that can prefetch its destination in the background.",
+  "example": {
+   "title": "Prefetch links",
+   "code": "import Link from 'next/link'\n\nexport default function Products() {\n  return (\n    <nav>\n      <Link href=\"/products/1\">Product 1</Link>\n      <Link href=\"/products/2\" prefetch={true}>Product 2</Link>\n    </nav>\n  )\n}",
+   "language": "tsx",
+   "explanation": "The first link uses the default route prefetch behavior; the second explicitly prefetches URL-dependent static or cached content."
+  },
+  "useCases": [
+   {
+    "title": "Viewport-based navigation",
+    "scenario": "Make navigation from visible menus and lists feel immediate."
+   },
+   {
+    "title": "Partial Prefetching",
+    "scenario": "Prefetch shared route UI without downloading every destination's dynamic data."
+   },
+   {
+    "title": "Per-link prefetching",
+    "scenario": "Prepare URL-dependent cached content before a user follows a specific link."
+   },
+   {
+    "title": "Streaming with loading.tsx",
+    "scenario": "Show an immediate loading state for dynamic routes during navigation."
+   }
+  ],
+  "related": [
+   "<Link>",
+   "loading.tsx",
+   "Partial Prefetching",
+   "Cache Components",
+   "App Shell",
+   "Streaming",
+   "partialPrefetching",
+   "searchParams"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Prefetching loads route resources before navigation so the transition can begin without waiting for the initial request.",
+   "Use next/link for automatic viewport-based route prefetching.",
+   "A dynamic route can receive partial prefetching when its route includes loading.tsx.",
+   "Streaming lets dynamic routes prefetch shared layouts and loading UI before the complete route is ready.",
+   "Partial Prefetching creates one App Shell per route and reuses it for links to that route.",
+   "Repeated links to one destination do not each require a separate App Shell prefetch.",
+   "Opt into per-link prefetching when params or searchParams-dependent cached content should resolve before navigation."
+  ],
+  "gotchas": [
+   "Dynamic routes may be skipped during prefetching unless they provide loading.tsx, which enables partial prefetching and an immediate loading experience.",
+   "Automatic prefetching occurs in production, so development behavior is not a reliable indicator of the production network pattern."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Navigation::useRouter and useSearchParams": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-search-params",
+  "sourceTitle": "useSearchParams | Next.js",
+  "summary": "Read query-string state with useSearchParams and navigate programmatically with useRouter in Client Components. Clone the read-only parameters before changing them, then pass the updated URL to router.push or replace.",
+  "explanation": "In a Client Component, useSearchParams reads the current URL query string through a read-only URLSearchParams interface. Clone it with toString() when changes are needed, then useRouter navigation methods such as push or replace with the resulting URL. These hooks are not for Server Components; wrap useSearchParams usage in Suspense when prerendering requires it.",
+  "syntax": "const searchParams = useSearchParams()\nconst router = useRouter()",
+  "parameters": [
+   {
+    "name": "useSearchParams",
+    "type": "none",
+    "description": "No parameters."
+   },
+   {
+    "name": "useRouter",
+    "type": "none",
+    "description": "No parameters."
+   }
+  ],
+  "returns": "useSearchParams returns a read-only URLSearchParams interface. useRouter returns a router instance for programmatic navigation, including push, replace, refresh, back, forward, and prefetch.",
+  "example": {
+   "title": "Update a query parameter",
+   "code": "'use client'\n\nimport { useRouter, useSearchParams } from 'next/navigation'\n\nexport default function LabelFilter() {\n  const router = useRouter()\n  const searchParams = useSearchParams()\n  const current = searchParams.get('label') ?? ''\n\n  function updateLabel(value: string) {\n    const params = new URLSearchParams(searchParams.toString())\n    if (value) params.set('label', value)\n    else params.delete('label')\n    router.push(`/?${params.toString()}`)\n  }\n\n  return (\n    <label>\n      Label\n      <select value={current} onChange={(e) => updateLabel(e.target.value)}>\n        <option value=\"\">All</option>\n        <option value=\"bug\">Bug</option>\n        <option value=\"feature\">Feature</option>\n      </select>\n    </label>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Reads the current label, clones the read-only search parameters, changes the label, and navigates with the updated query string."
+  },
+  "useCases": [
+   {
+    "title": "Keep filters in the URL",
+    "scenario": "Filter or search controls"
+   },
+   {
+    "title": "Navigate between query-based pages",
+    "scenario": "Pagination"
+   },
+   {
+    "title": "Redirect or replace routes after an action",
+    "scenario": "Client-side workflows"
+   },
+   {
+    "title": "React to pathname and query-string changes",
+    "scenario": "Navigation tracking"
+   }
+  ],
+  "related": [
+   "URLSearchParams",
+   "usePathname",
+   "Suspense",
+   "router.push",
+   "router.replace"
+  ],
+  "since": "",
+  "keyPoints": [
+   "useSearchParams exposes query parameters for reading, not direct mutation.",
+   "Call useSearchParams without arguments.",
+   "Use get to read the first value for a named query parameter."
+  ],
+  "gotchas": [
+   "Do not call useSearchParams in a Server Component.",
+   "In a prerendered route, place the component using useSearchParams beneath an appropriate Suspense boundary."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Performance::Bundle analysis": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/cli/next",
+  "sourceTitle": "next CLI",
+  "summary": "Use `next analyze` to inspect route-specific client and server bundle composition. Follow import chains across component boundaries to find browser costs and move unnecessary work back to the server.",
+  "explanation": "Run the analyzer to inspect route-specific client and server bundles, follow import chains, and identify large dependencies. Use those findings to reduce browser work by keeping server-only processing in Server Components, splitting client code, or loading code dynamically when appropriate.",
+  "syntax": "next analyze",
+  "parameters": [],
+  "returns": "Starts a local server for interactive bundle inspection; it does not produce an application build.",
+  "example": {
+   "title": "Analyze application bundles",
+   "code": "next analyze",
+   "language": "bash",
+   "explanation": "Runs the Turbopack bundle analyzer and opens a local interface for inspecting production bundle composition."
+  },
+  "useCases": [
+   {
+    "title": "Locate client bundle costs",
+    "scenario": "Find a large dependency in a route’s browser bundle."
+   },
+   {
+    "title": "Trace imports",
+    "scenario": "Determine why a module is present in a client bundle."
+   },
+   {
+    "title": "Check server boundaries",
+    "scenario": "Compare client and server output for a route."
+   },
+   {
+    "title": "Audit bundled assets",
+    "scenario": "Inspect JavaScript, CSS, and other generated assets."
+   }
+  ],
+  "related": [
+   "Turbopack",
+   "Server Components",
+   "Client Components",
+   "dynamic imports"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use `next analyze` to inspect the application’s bundle output with Turbopack.",
+   "The analysis covers JavaScript, CSS, and other bundled assets.",
+   "Compare bundles per route and switch between client-side and server-side views.",
+   "Follow the complete import chain to discover why a dependency entered a bundle.",
+   "Trace dependencies across Server/Client Component boundaries and dynamic imports."
+  ],
+  "gotchas": [
+   "`next analyze` examines bundle output but does not create a new application build.",
+   "The command normally launches a local server so the interactive analysis can be explored in a browser."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Performance::Images, fonts and metadata": {
+  "sourceUrl": "https://nextjs.org/docs/app/getting-started/metadata-and-og-images",
+  "sourceTitle": "Next.js",
+  "summary": "Next.js provides static and dynamic metadata APIs plus file conventions for icons and social images. Use these built-in features to ship complete route metadata and generated OG assets without manually editing every route.",
+  "explanation": "Use Next.js built-in image and font features for optimized assets, then export static metadata from a page or layout. Metadata can also be generated dynamically or supplied through special files for icons and social images.",
+  "syntax": "export const metadata: Metadata = { ... }\nexport async function generateMetadata(): Promise<Metadata> { ... }",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Optimized route assets and metadata",
+   "code": "import Image from 'next/image'\nimport { Inter } from 'next/font/google'\nimport type { Metadata } from 'next'\n\nconst inter = Inter({ subsets: ['latin'] })\n\nexport const metadata: Metadata = {\n  title: 'Products',\n  description: 'Browse products',\n}\n\nexport default function Page() {\n  return (\n    <main className={inter.className}>\n      <Image src=\"/product.jpg\" alt=\"Product\" width={800} height={600} />\n    </main>\n  )\n}",
+   "language": "tsx",
+   "explanation": "This route uses the built-in Image component, localizes a Google font through next/font, and exports static metadata."
+  },
+  "useCases": [
+   {
+    "title": "Static route metadata",
+    "scenario": "Set titles, descriptions, and other SEO fields for a route or shared layout."
+   },
+   {
+    "title": "Data-dependent metadata",
+    "scenario": "Build titles or descriptions from fetched product, article, or user data."
+   },
+   {
+    "title": "File-based metadata",
+    "scenario": "Provide favicons and social preview images through recognized route files."
+   },
+   {
+    "title": "Dynamic OG images",
+    "scenario": "Generate social images from JSX and CSS."
+   }
+  ],
+  "related": [
+   "Metadata",
+   "generateMetadata",
+   "ImageResponse",
+   "favicon.ico",
+   "opengraph-image.jpg",
+   "twitter-image.jpg"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Metadata APIs define page information that improves search presentation and social sharing.",
+   "Export a static metadata object when the route metadata is known without runtime data.",
+   "Use generateMetadata for metadata whose values depend on route parameters or fetched content.",
+   "Special metadata files support assets such as favicons and Open Graph images without manually constructing head tags.",
+   "ImageResponse can generate dynamic social images from JSX and CSS."
+  ],
+  "gotchas": [
+   "Static metadata belongs in a layout or page module; export a typed Metadata object rather than placing metadata logic in the rendered JSX.",
+   "Use generateMetadata when title or other fields depend on fetched route data instead of a fixed metadata object.",
+   "File-based metadata uses exact special filenames and locations, so placing an icon elsewhere will not activate that convention."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Performance::next/font": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/components/font",
+  "sourceTitle": "Font Module | Next.js",
+  "summary": "`next/font` optimizes and self-hosts Google or local fonts at build time. Applying its generated class helps avoid layout shift while eliminating external font requests.",
+  "explanation": "Import a font loader from `next/font/google` or `next/font/local`, call it with its options, and apply the returned `className` to the element that should use the font. Next.js downloads and self-hosts the required font assets during the build, so visitors do not need browser requests to an external font provider.",
+  "syntax": "import { Font } from 'next/font/google'\nimport localFont from 'next/font/local'\nconst font = Font(options)\nconst local = localFont(options)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Apply a Google font in the root layout",
+   "code": "import { Inter } from 'next/font/google'\n\nconst inter = Inter({ subsets: ['latin'] })\n\nexport default function RootLayout({\n  children,\n}: Readonly<{ children: React.ReactNode }>) {\n  return (\n    <html lang=\"en\" className={inter.className}>\n      <body>{children}</body>\n    </html>\n  )\n}",
+   "language": "tsx",
+   "explanation": "This loads Inter during the build and applies the generated font class to the application root."
+  },
+  "useCases": [
+   {
+    "title": "Self-host Google fonts",
+    "scenario": "Use a supported Google font without adding a runtime dependency on Google."
+   },
+   {
+    "title": "Load local fonts",
+    "scenario": "Bundle proprietary or custom `.woff`, `.woff2`, or similar files with the application."
+   },
+   {
+    "title": "Set an application-wide font",
+    "scenario": "Apply a consistent typeface across routes from the App Router root layout."
+   },
+   {
+    "title": "Optimize loading performance",
+    "scenario": "Improve font privacy and reduce layout movement during initial rendering."
+   }
+  ],
+  "related": [
+   "next/font/google",
+   "next/font/local",
+   "className",
+   "src",
+   "Root Layout"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The loader optimizes font delivery and avoids runtime requests to external font services.",
+   "Google and local font files are served as assets from your own deployment.",
+   "Using the loader helps prevent layout shift while fonts load.",
+   "Font resources are prepared during the build and deployed with the application.",
+   "Google fonts are packaged into the deployment and delivered from the application domain."
+  ],
+  "gotchas": [
+   "A font applied in one component is not automatically global; place the font in the root layout when the whole application should use it.",
+   "Local fonts require a local source path and the `localFont` loader rather than a Google font import."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Performance::Static and dynamic rendering": {
+  "sourceUrl": "https://nextjs.org/learn/dashboard-app/static-and-dynamic-rendering",
+  "sourceTitle": "Static and Dynamic Rendering",
+  "summary": "Static rendering builds or revalidates a page ahead of requests and serves its cached result. Dynamic rendering generates the page for each request, which suits personalized or frequently changing data but can be limited by slow fetches.",
+  "explanation": "Static rendering creates the response ahead of a request and reuses its cached result, making it suitable for shared, non-personalized data. Dynamic rendering generates content per request when the result depends on request-time information or data that cannot be cached.",
+  "syntax": "fetch(url, { next: { revalidate: seconds } })",
+  "parameters": [],
+  "returns": "A rendered page response, either reused from the cache or generated at request time.",
+  "example": {
+   "title": "A statically rendered product page",
+   "code": "export default async function Page() {\n  const res = await fetch('https://api.example.com/products', {\n    next: { revalidate: 3600 },\n  })\n  const products = await res.json()\n\n  return <ul>{products.map((p: { id: string; name: string }) => <li key={p.id}>{p.name}</li>)}</ul>\n}",
+   "language": "tsx",
+   "explanation": "The revalidated fetch lets Next.js render and cache the product page ahead of requests, refreshing its data periodically."
+  },
+  "useCases": [
+   {
+    "title": "Shared catalog content",
+    "scenario": "A blog post or product page is shared across users and can be generated before requests."
+   },
+   {
+    "title": "Personalized dashboards",
+    "scenario": "A dashboard displays user-specific information or data that must be current at request time."
+   },
+   {
+    "title": "Real-time views",
+    "scenario": "A page depends on frequently updated backend data and freshness matters more than cache reuse."
+   }
+  ],
+  "related": [
+   "Static Rendering",
+   "Dynamic Rendering",
+   "data fetching",
+   "revalidating data"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Static rendering performs data fetching and rendering during the build, or later when cached data is revalidated.",
+   "Subsequent visitors receive the cached rendered result rather than triggering rendering for every request.",
+   "Use static rendering for pages whose content is identical or broadly shareable between users.",
+   "Dynamic rendering produces the page when the user requests it, enabling request-specific output.",
+   "Use dynamic rendering when the page must show current data instead of a previously cached result."
+  ],
+  "gotchas": [
+   "A slow request-time fetch can delay the whole dynamic response."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Rendering::Metadata API": {
+  "sourceUrl": "https://nextjs.org/docs/app/getting-started/metadata-and-og-images",
+  "sourceTitle": "Getting Started: Metadata and OG images - Next.js",
+  "summary": "The Metadata API defines static or generated route metadata for SEO and social sharing. Configure it with a metadata object, generateMetadata, or metadata file conventions such as Open Graph images.",
+  "explanation": "The Metadata API lets an App Router layout or page export either a static Metadata object or a generateMetadata function. Next.js turns that configuration into the route's head elements; use generated metadata when values depend on fetched or route data, and use metadata file conventions for assets such as Open Graph images.",
+  "syntax": "export const metadata: Metadata = { ... }\n\nexport async function generateMetadata(): Promise<Metadata> { ... }",
+  "parameters": [],
+  "returns": "generateMetadata returns a Metadata object containing one or more metadata fields.",
+  "example": {
+   "title": "Static route metadata",
+   "code": "import type { Metadata } from 'next'\n\nexport const metadata: Metadata = {\n  title: 'Products',\n  description: 'Browse our products',\n  alternates: {\n    canonical: '/products',\n  },\n  openGraph: {\n    title: 'Products',\n    description: 'Browse our products',\n    images: ['/og-products.png'],\n  },\n}\n\nexport default function ProductsPage() {\n  return <main><h1>Products</h1></main>\n}",
+   "language": "tsx",
+   "explanation": "This server-component route exports static title, description, canonical, and Open Graph metadata."
+  },
+  "useCases": [
+   {
+    "title": "Static route metadata",
+    "scenario": "A page has fixed title, description, canonical URL, or social metadata."
+   },
+   {
+    "title": "Data-driven metadata",
+    "scenario": "A product or article page needs metadata from fetched content."
+   },
+   {
+    "title": "Social sharing images",
+    "scenario": "A route needs an Open Graph or Twitter image asset."
+   },
+   {
+    "title": "Layout and page composition",
+    "scenario": "A site needs metadata that varies by nested route segment."
+   }
+  ],
+  "related": [
+   "generateMetadata",
+   "Metadata object",
+   "Metadata file conventions",
+   "opengraph-image",
+   "twitter-image",
+   "alternates"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Metadata can be configured in code or supplied through special files in route segments.",
+   "Special route files support static or generated metadata assets, including social images.",
+   "Use metadata to improve search visibility and how pages appear when shared.",
+   "Keep metadata exports in server-rendered route modules."
+  ],
+  "gotchas": [
+   "Define metadata exports only in Server Components; they are not supported in Client Components.",
+   "Use generateMetadata rather than a static object when metadata depends on data.",
+   "Do not manually construct the corresponding head tags when using the API."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Rendering::Not-found handling": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/not-found",
+  "sourceTitle": "Functions: notFound",
+  "summary": "Use notFound() when a resource is missing to stop rendering the current route segment and show its nearest not-found UI. Next.js emits a 404 fallback and adds a noindex directive.",
+  "explanation": "Call notFound() from a render path when a resource cannot be found. It throws an internal 404 signal, stops rendering the current route segment, and selects the nearest not-found.tsx UI; Next.js also marks the response as not indexable.",
+  "syntax": "notFound()",
+  "parameters": [],
+  "returns": "never",
+  "example": {
+   "title": "Handle a missing resource",
+   "code": "import { notFound } from 'next/navigation'\n\nasync function getPost(id: string) {\n  const response = await fetch(`https://api.example.com/posts/${id}`)\n  if (!response.ok) return null\n  return response.json() as Promise<{ title: string }>\n}\n\nexport default async function Page({ params }: { params: Promise<{ id: string }> }) {\n  const { id } = await params\n  const post = await getPost(id)\n  if (!post) notFound()\n  return <h1>{post.title}</h1>\n}\n",
+   "language": "tsx",
+   "explanation": "The page stops when the requested post is missing and renders the nearest not-found UI."
+  },
+  "useCases": [
+   {
+    "title": "Missing database record",
+    "scenario": "A dynamic page cannot find the record identified by its route parameter."
+   },
+   {
+    "title": "Missing fetched resource",
+    "scenario": "An API or fetch request indicates that the requested resource does not exist."
+   },
+   {
+    "title": "Segment-specific not-found UI",
+    "scenario": "A route segment needs its own tailored 404 presentation."
+   }
+  ],
+  "related": [
+   "not-found.js",
+   "global-not-found.js",
+   "notFound()",
+   "error.js",
+   "unstable_rethrow"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use notFound() when a requested resource does not exist.",
+   "The function uses an internal 404 exception to stop route processing.",
+   "Only the route segment containing the call is terminated.",
+   "Add a not-found.tsx or not-found.js file to define custom missing-resource UI.",
+   "Missing-resource pages are automatically excluded from search indexing.",
+   "Invoke it from a component or a function awaited by a component."
+  ],
+  "gotchas": [
+   "Do not return the call: notFound() throws and terminates execution.",
+   "For streamed responses, the status code can remain 200 after streaming has begun."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Rendering::Server and Client Components": {
+  "sourceUrl": "https://nextjs.org/docs/app/getting-started/server-and-client-components",
+  "sourceTitle": "Server and Client Components | Next.js",
+  "summary": "Next.js uses Server Components by default for pages and layouts. Add a narrow \"use client\" boundary only where browser APIs or interactivity are required.",
+  "explanation": "In the App Router, pages and layouts are Server Components by default. They can fetch and render on the server, while a file beginning with \"use client\" establishes a boundary for components that need browser APIs or interaction. Keep that boundary near the interactive leaf so only the required subtree becomes part of the client graph.",
+  "syntax": "\"use client\"",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Server page with an interactive Client Component",
+   "code": "// app/page.tsx\nimport LikeButton from './like-button'\n\nexport default function Page() {\n  return (\n    <main>\n      <h1>Article</h1>\n      <LikeButton />\n    </main>\n  )\n}\n\n// app/like-button.tsx\n'use client'\n\nimport { useState } from 'react'\n\nexport default function LikeButton() {\n  const [liked, setLiked] = useState(false)\n  return <button onClick={() => setLiked(!liked)}>{liked ? 'Liked' : 'Like'}</button>\n}",
+   "language": "tsx",
+   "explanation": "The page remains a Server Component while the button opts into client execution for state and click handling."
+  },
+  "useCases": [
+   {
+    "title": "Server-rendered content",
+    "scenario": "Render data-fetching pages and layouts on the server with minimal browser JavaScript."
+   },
+   {
+    "title": "Interactive UI",
+    "scenario": "Add state, event handlers, or browser APIs to a focused interactive widget."
+   },
+   {
+    "title": "Mixed server/client composition",
+    "scenario": "Combine a server-rendered page with a small client-side control."
+   }
+  ],
+  "related": [
+   "Server Components",
+   "Client Components",
+   "React Server Component Payload (RSC Payload)",
+   "use client",
+   "Server and Client Composition Patterns"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Pages and layouts start as Server Components, so server rendering is the default without an opt-in directive.",
+   "Choose a Client Component when the UI needs interaction, state, event handlers, or browser-only APIs.",
+   "Put \"use client\" before imports to mark the file as a Client Component entry point.",
+   "Server and client modules form separate graphs connected by a network boundary.",
+   "The server sends an RSC Payload containing the rendered result and references needed to assemble the UI.",
+   "Keeping work on the server can reduce client JavaScript and improve application performance."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Rendering::Streaming with Suspense": {
+  "sourceUrl": "https://nextjs.org/docs/app/guides/streaming",
+  "sourceTitle": "Streaming - Next.js",
+  "summary": "Use Suspense boundaries to send a page's shell early and stream slower sections as their asynchronous work completes. Independent boundaries resolve separately, allowing unrelated UI to appear without waiting for the slowest region.",
+  "explanation": "Next.js can send the immediately renderable shell first, then progressively deliver content behind Suspense boundaries. Put slower asynchronous components inside boundaries with meaningful fallbacks; each boundary can resolve and stream independently, so unrelated sections do not wait for one another.",
+  "syntax": "<Suspense fallback={fallback}><AsyncComponent /></Suspense>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Stream a slow component independently",
+   "code": "import { Suspense } from \"react\";\nimport RevenueChart from \"./revenue-chart\";\nimport RevenueChartSkeleton from \"./revenue-chart-skeleton\";\n\nexport default function DashboardPage() {\n  return (\n    <main>\n      <h1>Dashboard</h1>\n      <Suspense fallback={<RevenueChartSkeleton />}>\n        <RevenueChart />\n      </Suspense>\n    </main>\n  );\n}",
+   "language": "tsx",
+   "explanation": "The heading renders as part of the shell, while the chart is replaced by its skeleton until its asynchronous work completes."
+  },
+  "useCases": [
+   {
+    "title": "Reveal dashboard regions independently",
+    "scenario": "A dashboard contains a slow chart and fast summary cards."
+   },
+   {
+    "title": "Stream asynchronous sections as ready",
+    "scenario": "A page has several database-backed sections with different response times."
+   },
+   {
+    "title": "Combine route and nested boundaries",
+    "scenario": "A route needs a layered loading experience with broad and fine-grained placeholders."
+   }
+  ],
+  "related": [
+   "loading.js",
+   "loading.tsx",
+   "Suspense boundary",
+   "Streaming",
+   "Server Components"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Treat every boundary as a separate point where Next.js can begin delivering completed UI.",
+   "Separate slow regions into separate boundaries so each can appear as soon as its own work finishes.",
+   "A slow component in one boundary does not delay content in another boundary.",
+   "Place boundaries near the sections that need granular loading behavior instead of wrapping the whole page unnecessarily.",
+   "Streaming starts once a fallback is available, such as from loading.tsx or a component suspended under Suspense.",
+   "Give independently asynchronous components their own boundaries to maximize progressive rendering.",
+   "Nested boundaries let broad page structure appear first while smaller regions reveal progressively."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Request handling::Middleware migration to Proxy": {
+  "sourceUrl": "https://nextjs.org/docs/app/guides/upgrading/version-16",
+  "sourceTitle": "Upgrading to Next.js 16",
+  "summary": "Next.js 16 deprecates the Middleware convention and renames it to Proxy. Migrate by renaming the file and export, or run the official codemod.",
+  "explanation": "Next.js 16 replaces the deprecated Middleware convention with Proxy. Rename the root-level file from middleware.ts to proxy.ts and rename the named middleware export to proxy; the request-interception behavior remains available, but Proxy uses the Node.js runtime by default.",
+  "syntax": "export function proxy(request: Request) {}",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Migrate with the codemod",
+   "code": "npx @next/codemod@latest middleware-to-proxy .",
+   "language": "bash",
+   "explanation": "Run this from the project directory to rename the Middleware convention and its exported function to Proxy."
+  },
+  "useCases": [
+   {
+    "title": "Automate a convention migration",
+    "scenario": "Migrating an existing Next.js 15 application to Next.js 16"
+   },
+   {
+    "title": "Rename Middleware to Proxy",
+    "scenario": "Updating request interception code while retaining its behavior"
+   },
+   {
+    "title": "Use Proxy with Node.js",
+    "scenario": "Adopting the Node.js runtime for request-bound logic"
+   }
+  ],
+  "related": [
+   "Proxy",
+   "middleware-to-proxy codemod",
+   "skipProxyUrlNormalize",
+   "proxyPrefetch",
+   "proxyClientMaxBodySize",
+   "externalProxyRewritesResolve"
+  ],
+  "since": "v16.0.0",
+  "keyPoints": [
+   "Rename middleware.ts or middleware.js to proxy.ts or proxy.js.",
+   "Change a named export called middleware to proxy.",
+   "Proxy uses Node.js and does not provide a runtime configuration option.",
+   "Use the middleware-to-proxy codemod to automate the file and export renames.",
+   "The migration codemod updates both the convention filename and the named function.",
+   "Rename the URL-normalization configuration flag when migrating."
+  ],
+  "gotchas": [
+   "Proxy does not support the Edge runtime. Keep the deprecated Middleware convention if the application still requires Edge runtime behavior.",
+   "Update configuration names that reference middleware, such as skipMiddlewareUrlNormalize, to their proxy equivalents."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Request handling::Proxy": {
+  "sourceUrl": "https://nextjs.org/docs/app/getting-started/proxy",
+  "sourceTitle": "Proxy - Next.js",
+  "summary": "Use the Next.js 16 `proxy.ts` convention to run code before a request completes and make request-time redirects, rewrites, header changes, or direct responses. Use `config.matcher` to limit which paths invoke Proxy.",
+  "explanation": "Create a single `proxy.ts` or `proxy.js` file at the project root, or under `src` beside `app` or `pages`. Export a `proxy` function that receives the incoming `NextRequest` and optionally an event, then return a response such as `NextResponse.next()`, `redirect`, `rewrite`, or a direct response. Use `config.matcher` to restrict which paths run through Proxy.",
+  "syntax": "export function proxy(request: NextRequest, event: NextFetchEvent): NextResponse | Response | undefined\n\nexport const config = { matcher: string | string[] }",
+  "parameters": [
+   {
+    "name": "request",
+    "type": "NextRequest",
+    "description": "The incoming HTTP request, provided as a `NextRequest` instance."
+   },
+   {
+    "name": "event",
+    "type": "NextFetchEvent",
+    "description": "The event associated with the request lifecycle."
+   }
+  ],
+  "returns": "A response, commonly `NextResponse.next()`, `NextResponse.redirect(...)`, `NextResponse.rewrite(...)`, or a direct `Response`; returning no response also allows the request to continue.",
+  "example": {
+   "title": "Redirect a legacy path",
+   "code": "import { NextResponse } from 'next/server'\nimport type { NextRequest } from 'next/server'\n\nexport function proxy(request: NextRequest) {\n  if (request.nextUrl.pathname === '/old-dashboard') {\n    return NextResponse.redirect(new URL('/dashboard', request.url))\n  }\n\n  return NextResponse.next()\n}\n\nexport const config = {\n  matcher: ['/old-dashboard'],\n}",
+   "language": "typescript",
+   "explanation": "Redirects the matched legacy path before the destination route is rendered."
+  },
+  "useCases": [
+   {
+    "title": "Programmatic redirects",
+    "scenario": "A legacy or unauthorized URL must send the user to another route before rendering."
+   },
+   {
+    "title": "URL rewrites",
+    "scenario": "The visible URL should remain stable while content is served from another path."
+   },
+   {
+    "title": "Request preprocessing",
+    "scenario": "A request requires lightweight authentication, logging, or header handling before a route runs."
+   },
+   {
+    "title": "Locale-aware routing",
+    "scenario": "Different locales or route variants must be selected from incoming request properties."
+   }
+  ],
+  "related": [
+   "Middleware",
+   "NextRequest",
+   "NextResponse",
+   "NextFetchEvent",
+   "config.matcher",
+   "redirect",
+   "rewrite",
+   "Route Handlers"
+  ],
+  "since": "Next.js 16",
+  "keyPoints": [
+   "In Next.js 16, the request-interception convention is named Proxy instead of Middleware.",
+   "Proxy executes request-time logic before the request finishes.",
+   "Put `proxy.ts` or `proxy.js` at the root, or in `src` when that is the project source directory.",
+   "Proxy can redirect, rewrite, change request or response headers, or return a response directly.",
+   "The function receives `request` first and `event` second.",
+   "The first argument is a `NextRequest` describing the incoming HTTP request.",
+   "Routing decisions made in Proxy happen before route rendering."
+  ],
+  "gotchas": [
+   "A broad Proxy matcher also affects prefetched routes, so keep request-time checks lightweight and avoid database lookups."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Request handling::Proxy matchers": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/file-conventions/proxy",
+  "sourceTitle": "Next.js |",
+  "summary": "Proxy matchers restrict Next.js Proxy execution to selected paths or request conditions. Use strings, arrays, regular-expression patterns, or matcher objects to target only routes requiring redirects, rewrites, or request policy.",
+  "explanation": "Export a `config` object beside the Proxy function and give its `matcher` property either one path, several paths, or structured matching rules. Next.js invokes Proxy only when the incoming request matches those rules, allowing redirects, rewrites, header changes, or direct responses to be restricted to relevant routes.",
+  "syntax": "export const config = {\n  matcher: string | string[] | MatcherConfig[],\n}",
+  "parameters": [
+   {
+    "name": "config.matcher",
+    "type": "string | string[] | MatcherConfig[]",
+    "description": "A pathname string, an array of pathname patterns, or an array of matcher objects describing paths and request conditions."
+   }
+  ],
+  "returns": "No matcher-specific return value; the configuration determines whether Proxy runs for a request.",
+  "example": {
+   "title": "Limit proxy execution to selected paths",
+   "code": "import { NextResponse } from 'next/server'\n\nexport function proxy(request: Request) {\n  return NextResponse.next()\n}\n\nexport const config = {\n  matcher: ['/about/:path*', '/dashboard/:path*'],\n}",
+   "language": "typescript",
+   "explanation": "This proxy runs only for requests whose paths begin with `/about` or `/dashboard`."
+  },
+  "useCases": [
+   {
+    "title": "Route-specific redirects",
+    "scenario": "Apply redirects only to a group of application routes."
+   },
+   {
+    "title": "Scoped rewrites",
+    "scenario": "Rewrite selected paths without affecting static files or unrelated pages."
+   },
+   {
+    "title": "Request policy filtering",
+    "scenario": "Run header or authorization policy only on protected route patterns."
+   },
+   {
+    "title": "Conditional request handling",
+    "scenario": "Combine path matching with headers, cookies, or query parameters."
+   }
+  ],
+  "related": [
+   "Proxy function",
+   "NextResponse",
+   "source",
+   "locale",
+   "has",
+   "missing",
+   "redirect",
+   "rewrite"
+  ],
+  "since": "v16.0.0",
+  "keyPoints": [
+   "Use `matcher` to constrain Proxy execution to only the routes that need request-level handling.",
+   "A single route can be selected with a string, such as `matcher: '/about'`.",
+   "An array lets one Proxy configuration cover several route patterns.",
+   "A wildcard segment such as `:path*` includes the matched route and its nested paths.",
+   "Use a regular-expression pattern when simple pathname matching cannot express the required exclusions or conditions.",
+   "Set `locale: false` on an object matcher when locale prefixes should not affect matching.",
+   "The `has` condition can require headers, query parameters, or cookies before Proxy runs.",
+   "The `missing` condition can restrict execution to requests lacking specified headers, query parameters, or cookies."
+  ],
+  "gotchas": [
+   "Regular-expression matchers can be powerful but require careful escaping and testing because an overly broad pattern may execute Proxy on unintended paths.",
+   "When using object matchers, provide supported keys such as source, locale, has, or missing rather than arbitrary configuration properties."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Routing::Dynamic routes": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes",
+  "sourceTitle": "Dynamic Routes | Next.js",
+  "summary": "Dynamic segments generate routes from URL data. Await the page's params, then use `[slug]`, `[...slug]`, or `[[...slug]]` for single, catch-all, or optional catch-all paths.",
+  "explanation": "Create a dynamic segment by placing a folder name in square brackets, such as `app/blog/[slug]/page.tsx`. Next.js supplies the captured path values through the page's `params` prop; in current App Router conventions, await that promise before reading it. Use `[...slug]` to capture one or more remaining segments, or `[[...slug]]` when the route should also match the path without those segments.",
+  "syntax": "app/[segment]/page.tsx\napp/[...segment]/page.tsx\napp/[[...segment]]/page.tsx",
+  "parameters": [
+   {
+    "name": "params",
+    "type": "Promise<{ [key: string]: string | string[] | undefined }>",
+    "description": "The captured dynamic route values; a single segment is a string, a catch-all is a string array, and an optional catch-all can be undefined. In current App Router pages, access it by awaiting the params promise."
+   }
+  ],
+  "returns": "A rendered page for each URL matched by the dynamic segment.",
+  "example": {
+   "title": "Read a catch-all dynamic route",
+   "code": "import { notFound } from 'next/navigation'\n\ntype PageProps = {\n  params: Promise<{ slug: string[] }>\n}\n\nexport default async function Page({ params }: PageProps) {\n  const { slug } = await params\n  if (!slug?.length) notFound()\n\n  return <main>Path: {slug.join('/')}</main>\n}",
+   "language": "tsx",
+   "explanation": "This page reads a catch-all path after awaiting the params promise and renders the captured segments."
+  },
+  "useCases": [
+   {
+    "title": "Data-driven detail pages",
+    "scenario": "Render blog posts, products, or profiles from an identifier in the URL."
+   },
+   {
+    "title": "Nested paths",
+    "scenario": "Handle nested documentation, category, or file-browser paths of unknown depth."
+   },
+   {
+    "title": "Optional base-and-descendant routes",
+    "scenario": "Serve a landing page and deeper paths from one route."
+   }
+  ],
+  "related": [
+   "generateStaticParams",
+   "params",
+   "Dynamic Segments",
+   "Catch-all Segments",
+   "Optional Catch-all Segments",
+   "notFound"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use a bracketed folder such as `[id]` or `[slug]` for one data-driven URL segment.",
+   "Dynamic segments let one page handle many URLs whose path values come from data.",
+   "The page receives captured values through params, whether the route is produced during a request or prerendered.",
+   "Use `[...slug]` when a route must capture multiple trailing path segments.",
+   "Use `[[...slug]]` when the route should accept both a trailing path and its parent path.",
+   "An optional catch-all can match the route's base path even when no captured segments exist."
+  ],
+  "gotchas": [
+   "A single dynamic segment is a string, a catch-all segment is an array, and an optional catch-all may be undefined.",
+   "A regular catch-all does not match its parent path; use the double-bracket form when that path must match too.",
+   "Read route values from the page params prop rather than treating the folder name as a literal value."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Routing::Intercepting routes": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/file-conventions/intercepting-routes",
+  "sourceTitle": "File-system conventions: Intercepting Routes | Next.js",
+  "summary": "Intercepting Routes render a destination inside the current layout, enabling patterns such as photo details in a modal over a feed. Parenthesized conventions select the target by route-segment depth, while direct visits and refreshes render the full destination page.",
+  "explanation": "Intercepting Routes let a navigation load a route from another part of the app inside the current layout. Use the parenthesized segment convention to identify the route relationship: `(.)` for the same level, `(..)` for one segment above, `(..)(..)` for two levels above, and `(...)` from the app root. Pair the intercepted route with a parallel route slot for modal UI; direct visits or refreshes render the normal full-page route instead.",
+  "syntax": "(.)segment, (..)segment, (..)(..)segment, (...)segment",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Intercept a photo route in a modal",
+   "code": "app/feed/page.tsx\napp/feed/[id]/page.tsx\napp/@modal/(..)photo/[id]/page.tsx\n\n// app/@modal/default.tsx\nexport default function Default() {\n  return null\n}\n\n// app/@modal/(..)photo/[id]/page.tsx\nimport PhotoModal from '@/app/ui/photo-modal'\n\nexport default function InterceptedPhoto({\n  params,\n}: {\n  params: Promise<{ id: string }>\n}) {\n  return <PhotoModal id={(await params).id} />\n}",
+   "language": "tsx",
+   "explanation": "This route structure intercepts the photo segment from the feed context and renders the photo UI in a modal slot while preserving the feed layout."
+  },
+  "useCases": [
+   {
+    "title": "Feed photo modal",
+    "scenario": "Open a photo detail over a feed without losing the feed context."
+   },
+   {
+    "title": "Context-preserving preview",
+    "scenario": "Show a detail or preview view while retaining the current page around it."
+   },
+   {
+    "title": "Modal plus full-page fallback",
+    "scenario": "Use a shareable destination URL that becomes a full page when opened directly."
+   }
+  ],
+  "related": [
+   "Parallel Routes",
+   "route segments",
+   "current layout",
+   "modal"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The destination renders inside the current layout, so the user keeps the surrounding page context.",
+   "A common pattern is opening a detail route as a modal over a list or feed.",
+   "Client-side navigation can show the intercepted content while the browser URL remains associated with the underlying context.",
+   "Use parenthesized conventions to express which route segment should be intercepted.",
+   "Use `(.)` when the target segment is at the same route level.",
+   "Use `(..)` when the target is one route segment above the interceptor.",
+   "Use `(..)(..)` when the target is two route segments above.",
+   "Use `(...)` to intercept a route relative to the app directory root."
+  ],
+  "gotchas": [
+   "Relationship markers count route segments, not physical folder depth; account for route groups and other filesystem folders accordingly.",
+   "Do not expect interception on a direct URL visit or refresh; those cases render the complete destination page.",
+   "A modal implementation generally combines interception with a parallel route slot rather than using interception alone."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Routing::Layouts and pages": {
+  "sourceUrl": "https://nextjs.org/docs/app/getting-started/layouts-and-pages",
+  "sourceTitle": "Layouts and Pages",
+  "summary": "Next.js uses folders and special page and layout files to build routes. Pages render route-specific UI, while layouts wrap shared UI and persist across navigation.",
+  "explanation": "In the App Router, folders represent URL segments. A page.tsx file exports the UI for a route, while layout.tsx exports shared UI that receives children and wraps pages or nested layouts. Layouts can persist across navigation, preserving state and avoiding rerenders.",
+  "syntax": "app/<segment>/page.tsx\napp/<segment>/layout.tsx\n\nexport default function Page() { /* ... */ }\nexport default function Layout({ children }: { children: React.ReactNode }) { /* ... */ }",
+  "parameters": [
+   {
+    "name": "children",
+    "type": "ReactNode",
+    "description": "The layout component receives the nested page or layout through `children`."
+   }
+  ],
+  "returns": "A page or layout component returns the React UI rendered for its route segment and descendants.",
+  "example": {
+   "title": "Root layout and nested page",
+   "code": "// app/layout.tsx\nimport type { ReactNode } from \"react\";\n\nexport default function RootLayout({ children }: { children: ReactNode }) {\n  return (\n    <html lang=\"en\">\n      <body>\n        <header>Site header</header>\n        {children}\n      </body>\n    </html>\n  );\n}\n\n// app/dashboard/page.tsx\nexport default function DashboardPage() {\n  return <main>Dashboard</main>;\n}",
+   "language": "tsx",
+   "explanation": "The root layout wraps every route, while the nested page makes /dashboard publicly accessible."
+  },
+  "useCases": [
+   {
+    "title": "Shared application chrome",
+    "scenario": "Build a site-wide shell with a header, navigation, and footer."
+   },
+   {
+    "title": "Persistent section layouts",
+    "scenario": "Keep a dashboard sidebar and its client state while switching dashboard pages."
+   },
+   {
+    "title": "Nested route composition",
+    "scenario": "Represent nested URLs by nesting folders and placing page files at the desired segments."
+   }
+  ],
+  "related": [
+   "Link component",
+   "page file",
+   "layout file",
+   "nested layouts",
+   "app directory"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Next.js maps the app directory's folders and files to URL routes.",
+   "Create route UI by default-exporting a React component from page.tsx, page.jsx, or another supported page file.",
+   "Use layout.tsx for navigation, headers, shells, or other UI shared by descendant pages.",
+   "A layout receives children containing the nested page or layout it surrounds.",
+   "Persistent layouts retain client-side state and interactivity while navigating within their segment."
+  ],
+  "gotchas": [
+   "Every application needs a root layout in app/layout.tsx; it is the top-most layout and must wrap the application.",
+   "Do not expect a layout to reset or rerender during navigation between routes beneath it.",
+   "A folder alone does not expose a route; add a page file inside the segment."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Routing::Nested layouts": {
+  "sourceUrl": "https://nextjs.org/docs/app/getting-started/layouts-and-pages",
+  "sourceTitle": "Layouts and Pages",
+  "summary": "Nested layouts let a route subtree share UI and state. Layout files automatically wrap child layouts and pages, while navigation preserves the layouts instead of rerendering them.",
+  "explanation": "Add a layout file to a route segment to provide UI shared by that segment's pages. Next.js passes the active child page or nested layout through children; parent and child layouts form a persistent hierarchy during navigation.",
+  "syntax": "export default function Layout({ children }: { children: React.ReactNode }) { return <>{children}</> }",
+  "parameters": [
+   {
+    "name": "children",
+    "type": "React.ReactNode",
+    "description": "The active child page or nested layout rendered inside the layout."
+   }
+  ],
+  "returns": "A React element containing shared UI and the rendered children.",
+  "example": {
+   "title": "A route-segment layout",
+   "code": "// app/dashboard/layout.tsx\nimport type { ReactNode } from 'react'\n\nexport default function DashboardLayout({\n  children,\n}: Readonly<{ children: ReactNode }>) {\n  return (\n    <section>\n      <nav>Dashboard navigation</nav>\n      <main>{children}</main>\n    </section>\n  )\n}\n\n// app/dashboard/settings/page.tsx\nexport default function SettingsPage() {\n  return <h1>Settings</h1>\n}",
+   "language": "tsx",
+   "explanation": "The dashboard layout wraps the settings page and remains shared across pages under the dashboard segment."
+  },
+  "useCases": [
+   {
+    "title": "Section navigation",
+    "scenario": "Keep section navigation visible while users move among pages in a dashboard."
+   },
+   {
+    "title": "Persistent section shell",
+    "scenario": "Place shared controls or branding around all pages in a route subtree."
+   },
+   {
+    "title": "Hierarchical UI",
+    "scenario": "Compose a global application frame with progressively more specific layouts."
+   }
+  ],
+  "related": [
+   "Layouts and Pages",
+   "Nested routes",
+   "layout file",
+   "page file",
+   "route segments",
+   "Root layout"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use a layout for navigation, shells, or other interface shared by several pages.",
+   "Parent layouts automatically wrap child layouts in the route hierarchy.",
+   "Add another layout file inside a route folder to create a more focused nested shell.",
+   "Persistent layouts retain client-side state and interactivity while navigating between pages."
+  ],
+  "gotchas": [
+   "Do not expect a layout to reset on ordinary navigation; state in the persistent layout is preserved."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Routing::Route groups and parallel routes": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/file-conventions/parallel-routes",
+  "sourceTitle": "File-system conventions: Parallel Routes",
+  "summary": "Route groups organize files without changing their URLs. Parallel routes use named @ slots so one layout can render multiple independently navigable UI regions together.",
+  "explanation": "Parenthesized folders organize route files but are omitted from the public pathname. Named @ folders create parallel slots, which the same-level layout receives as props and can render alongside children, allowing multiple independently navigable UI regions in one view.",
+  "syntax": "(groupName)\n@slotName\nlayout({ children, slotName })",
+  "parameters": [
+   {
+    "name": "children",
+    "type": "React.ReactNode",
+    "description": "The implicit default slot containing the segment's regular page content."
+   },
+   {
+    "name": "slot props",
+    "type": "React.ReactNode",
+    "description": "A named parallel-route slot passed to the same-level layout; the name matches an @folder."
+   }
+  ],
+  "returns": "A layout-rendered view composed from the regular children slot and any named parallel-route slots.",
+  "example": {
+   "title": "Organize a dashboard with a route group and slot",
+   "code": "// app/(dashboard)/dashboard/layout.tsx\nexport default function Layout({\n  children,\n  analytics,\n}: {\n  children: React.ReactNode\n  analytics: React.ReactNode\n}) {\n  return (\n    <>\n      <main>{children}</main>\n      <aside>{analytics}</aside>\n    </>\n  )\n}\n\n// app/(dashboard)/dashboard/@analytics/page.tsx\nexport default function Analytics() {\n  return <p>Analytics</p>\n}\n",
+   "language": "tsx",
+   "explanation": "The route group keeps dashboard files organized without adding a URL segment; the @analytics folder defines a named slot that the parent layout renders beside its implicit children slot."
+  },
+  "useCases": [
+   {
+    "title": "Multi-panel dashboards",
+    "scenario": "A dashboard needs main content and analytics visible together."
+   },
+   {
+    "title": "Independent slot states",
+    "scenario": "Different UI regions need their own loading or error behavior."
+   },
+   {
+    "title": "URL-neutral organization",
+    "scenario": "A section needs file organization without adding a pathname segment."
+   },
+   {
+    "title": "Independent navigation",
+    "scenario": "A slot should navigate independently within a shared layout."
+   }
+  ],
+  "related": [
+   "Route Groups",
+   "Parallel Routes",
+   "Slots",
+   "Layouts",
+   "Pages",
+   "Dynamic Segments",
+   "Intercepting Routes"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Create a route group with parentheses, such as (marketing) or (dashboard).",
+   "The group name is removed from the public URL.",
+   "Parallel routes let one layout render multiple pages at once or choose slots conditionally.",
+   "Named slots are the building blocks of parallel routes.",
+   "Name a slot directory with the @ prefix, such as @analytics.",
+   "A slot directory contributes UI but does not add a pathname segment.",
+   "Put a layout inside a slot when that slot needs independent navigation."
+  ],
+  "gotchas": [
+   "A folder alone does not expose a route; add page.js or route.js to make a route publicly accessible.",
+   "Parallel slots at the same level must agree on dynamic behavior: one dynamic slot makes all of them dynamic."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Toolchain::DevTools MCP": {
+  "sourceUrl": "https://nextjs.org/docs/app/guides/mcp",
+  "sourceTitle": "Guides: Next.js MCP Server",
+  "summary": "Next.js 16+ exposes `/_next/mcp` from the development server so coding agents can inspect routes, errors, logs, and compilation issues. The DevTools MCP integration also supports compiling individual routes without making an HTTP request.",
+  "explanation": "Next.js 16+ exposes an MCP endpoint from the development server at `/_next/mcp`. After connecting an MCP client with `next-devtools-mcp`, an agent can inspect the running application's routes, errors, logs, and compilation state, then compile individual routes or diagnose issues without requiring a full production build.",
+  "syntax": "next dev\n/_next/mcp",
+  "parameters": [
+   {
+    "name": "routeSpecifier or path",
+    "type": "string",
+    "description": "Route pattern returned by `get_routes`, such as `/blog/[slug]`, or a concrete path such as `/blog/hello-world`."
+   }
+  ],
+  "returns": "The tools return route information, current errors, compilation issues, or route-specific compilation results as described on the documentation page.",
+  "example": {
+   "title": "Start the development server",
+   "code": "next dev",
+   "language": "bash",
+   "explanation": "Starts the Next.js development server, which exposes the MCP endpoint for connected coding agents."
+  },
+  "useCases": [
+   {
+    "title": "Discover routes",
+    "scenario": "An agent needs to understand the application's filesystem routes, including dynamic segments and router type."
+   },
+   {
+    "title": "Inspect errors",
+    "scenario": "A development session has server, browser, validation, or build failures that need source-mapped context."
+   },
+   {
+    "title": "Find compilation issues",
+    "scenario": "A project has unresolved imports, missing modules, or transform failures across its route graph."
+   },
+   {
+    "title": "Compile one route",
+    "scenario": "A specific dynamic or concrete route needs checking without issuing a browser request."
+   }
+  ],
+  "related": [
+   "get_errors",
+   "get_routes",
+   "get_compilation_issues",
+   "compile_route",
+   "next-devtools-mcp",
+   "/_next/mcp"
+  ],
+  "since": "16",
+  "keyPoints": [
+   "Run the Next.js development server to expose the MCP endpoint that agents use to inspect application state.",
+   "The integration gives coding agents a framework-level view of key development signals instead of requiring manual inspection.",
+   "Connect an MCP client by installing the `next-devtools-mcp` package.",
+   "The `get_errors` tool reports current global, browser-runtime, and build errors with source-mapped stack traces.",
+   "The `get_routes` tool discovers filesystem-based routes and groups them by App Router or Pages Router.",
+   "The `get_compilation_issues` tool finds resolution, missing-module, and transformation problems across routes.",
+   "The `compile_route` tool checks one route directly, using either a route pattern or a concrete path."
+  ],
+  "gotchas": [
+   "The endpoint is available from the development server in Next.js 16 and later, not as a general production endpoint.",
+   "Compilation-issue inspection works without a browser session, but runtime and browser-related observations depend on the running development environment."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Toolchain::Turbopack": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/turbopack.md",
+  "sourceTitle": "Turbopack",
+  "summary": "Turbopack is Next.js’s default Rust-based incremental bundler in Next.js 16. It caches fine-grained work and persists compiler results to disk to speed up development and builds.",
+  "explanation": "Turbopack is Next.js’s Rust-based incremental bundler for JavaScript and TypeScript. It parallelizes and caches fine-grained work, then persists compiler artifacts in the .next directory so later development sessions and builds can reuse previous results instead of repeating unchanged work.",
+  "syntax": "next dev\nnext build",
+  "parameters": [
+   {
+    "name": "experimental.turbopackFileSystemCacheForDev",
+    "type": "boolean",
+    "description": "Boolean option controlling whether Turbopack caches work for next dev; defaults to true."
+   },
+   {
+    "name": "experimental.turbopackFileSystemCacheForBuild",
+    "type": "boolean",
+    "description": "Boolean option controlling whether Turbopack caches work for next build; defaults to true."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Start development with Turbopack",
+   "code": "npm run dev",
+   "language": "bash",
+   "explanation": "Starts the Next.js development server using Turbopack by default in Next.js 16."
+  },
+  "useCases": [
+   {
+    "title": "Development",
+    "scenario": "Run a Next.js application locally with fast incremental compilation and Fast Refresh."
+   },
+   {
+    "title": "Production builds",
+    "scenario": "Build production assets while reusing previously computed work."
+   },
+   {
+    "title": "Persistent development cache",
+    "scenario": "Speed up repeated local sessions by retaining compiler artifacts across restarts."
+   },
+   {
+    "title": "Cached CI builds",
+    "scenario": "Reduce repeated CI build work when .next/cache is restored between runs."
+   }
+  ],
+  "related": [
+   "turbopackFileSystemCache",
+   "turbopackFileSystemCacheForDev",
+   "turbopackFileSystemCacheForBuild",
+   "next dev",
+   "next build",
+   ".next/cache"
+  ],
+  "since": "v16.0.0",
+  "keyPoints": [
+   "Turbopack is a Rust-based incremental bundler integrated into Next.js and optimized for JavaScript and TypeScript.",
+   "It parallelizes computation and caches fine-grained results, reducing repeated work.",
+   "Unchanged work is reused rather than recomputed.",
+   "Compiler results can survive process restarts through filesystem caching."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ }
+}

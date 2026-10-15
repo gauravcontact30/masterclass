@@ -1,0 +1,762 @@
+{
+ "Async behavior::Async UI": {
+  "sourceUrl": "https://testing-library.com/docs/dom-testing-library/api-async/",
+  "sourceTitle": "Async Methods",
+  "summary": "Wait for asynchronous UI changes with awaited findBy queries and waitFor assertions. Use findBy when content should appear; use waitFor when an assertion must eventually pass.",
+  "explanation": "Async queries return promises and should be awaited. Use findBy when an element is expected to appear after a delayed UI change; use waitFor when an existing assertion must become true over time. The retry continues until the callback stops throwing or the timeout is reached.",
+  "syntax": "function waitFor<T>(callback: () => T | Promise<T>, options?: { container?: HTMLElement; timeout?: number; interval?: number; onTimeout?: (error: Error) => Error; mutationObserverOptions?: MutationObserverInit }): Promise<T>",
+  "parameters": [
+   {
+    "name": "callback",
+    "type": "() => T | Promise<T>",
+    "description": "The callback that returns a value or promise; waitFor retries it until it stops throwing."
+   },
+   {
+    "name": "options",
+    "type": "{ container?: HTMLElement; timeout?: number; interval?: number; onTimeout?: (error: Error) => Error; mutationObserverOptions?: MutationObserverInit }",
+    "description": "Optional container, timeout, interval, onTimeout, and mutation-observer settings."
+   }
+  ],
+  "returns": "A Promise resolving to the callback result.",
+  "example": {
+   "title": "Testing loading and success states",
+   "code": "import { render, screen, waitFor } from '@testing-library/react'\nimport App from './App'\n\ntest('shows success after loading', async () => {\n  render(<App />)\n\n  expect(screen.getByRole('status')).toHaveTextContent('Loading')\n  expect(await screen.findByRole('status')).toHaveTextContent('Success')\n\n  await waitFor(() => {\n    expect(screen.getByRole('button', { name: 'Retry' })).toBeEnabled()\n  })\n})",
+   "language": "tsx",
+   "explanation": "The test checks the initial loading state, awaits the eventual success state with findByRole, then retries an assertion until it passes with waitFor."
+  },
+  "useCases": [
+   {
+    "title": "Wait for content to appear",
+    "scenario": "A loading indicator is replaced by fetched content."
+   },
+   {
+    "title": "Assert an eventual state",
+    "scenario": "A status message changes after a user action."
+   },
+   {
+    "title": "Wait for disappearance",
+    "scenario": "A transient loading element is removed."
+   }
+  ],
+  "related": [
+   "findBy queries",
+   "findAllBy queries",
+   "waitForElementToBeRemoved",
+   "getBy queries"
+  ],
+  "since": "",
+  "keyPoints": [
+   "findBy combines an ordinary getBy query with waiting, making it suitable for elements that should appear later.",
+   "A findBy call can receive waitFor configuration after its query arguments.",
+   "Choose findBy for delayed loading, success, or error content that eventually appears in the DOM.",
+   "Use waitFor to retry an assertion rather than inserting a fixed sleep into the test.",
+   "Assertions inside waitFor should throw until the desired UI state is reached.",
+   "Use waitForElementToBeRemoved when testing that a loading or other transient element disappears."
+  ],
+  "gotchas": [
+   "Always await findBy and waitFor calls; otherwise the test can finish before the asynchronous assertion completes.",
+   "Keep the waitFor callback focused and make its assertion throw while the expected condition is not yet true.",
+   "An async waitFor callback is not retried until its returned promise rejects, so structure asynchronous callbacks deliberately."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Async behavior::findBy and waitFor": {
+  "sourceUrl": "https://testing-library.com/docs/dom-testing-library/api-async/",
+  "sourceTitle": "Async Methods",
+  "summary": "Use findBy queries to await an element that should appear asynchronously. Use waitFor to retry an assertion or callback until it succeeds or times out.",
+  "explanation": "findBy queries combine a getBy query with waitFor and return a promise that resolves when the matching element appears. Use waitFor to repeatedly run an assertion until it stops throwing or the timeout is reached; await either utility because both are asynchronous.",
+  "syntax": "function waitFor<T>(callback: () => T | Promise<T>, options?: { container?: HTMLElement; timeout?: number; interval?: number; onTimeout?: (error: Error) => Error; mutationObserverOptions?: MutationObserverInit }): Promise<T>",
+  "parameters": [
+   {
+    "name": "callback",
+    "type": "() => T | Promise<T>",
+    "description": "Callback returning a value or promise; it is retried while it throws."
+   },
+   {
+    "name": "options",
+    "type": "{container?: HTMLElement; timeout?: number; interval?: number; onTimeout?: (error: Error) => Error; mutationObserverOptions?: MutationObserverInit}",
+    "description": "Optional container, timeout, interval, timeout handler, and mutation observer settings."
+   }
+  ],
+  "returns": "waitFor returns a Promise<T>; findBy returns a Promise resolving to the matching element and rejects when no unique match is found within the timeout.",
+  "example": {
+   "title": "Wait for asynchronous UI updates",
+   "code": "import {render, screen, waitFor} from '@testing-library/react'\nimport userEvent from '@testing-library/user-event'\nimport App from './App'\n\ntest('shows the saved message', async () => {\n  const user = userEvent.setup()\n  render(<App />)\n\n  await user.click(screen.getByRole('button', {name: /save/i}))\n  expect(await screen.findByText('Saved')).toBeInTheDocument()\n\n  await waitFor(() => {\n    expect(screen.getByRole('status')).toHaveTextContent('Saved')\n  })\n})",
+   "language": "tsx",
+   "explanation": "Use findBy when waiting for an element to appear; use waitFor when retrying an assertion until it succeeds."
+  },
+  "useCases": [
+   {
+    "title": "Wait for an element to appear",
+    "scenario": "A click triggers a delayed component update."
+   },
+   {
+    "title": "Retry an assertion",
+    "scenario": "An asynchronous condition must eventually become true."
+   },
+   {
+    "title": "Wait for an async callback",
+    "scenario": "A check performs asynchronous work before completing."
+   }
+  ],
+  "related": [
+   "findByText",
+   "findAllBy",
+   "getBy",
+   "waitForElementToBeRemoved",
+   "queryBy"
+  ],
+  "since": "",
+  "keyPoints": [
+   "findBy is the convenient choice when an element should appear after an asynchronous change.",
+   "Pass query arguments first and waitFor configuration last when customizing findBy.",
+   "Use findBy for eventual appearance rather than an element that must already exist.",
+   "Use waitFor when the condition is an assertion or other callback result, not simply locating one element.",
+   "waitFor retries a throwing callback until it succeeds or the configured timeout expires.",
+   "Returning a promise lets waitFor handle checks that themselves are asynchronous."
+  ],
+  "gotchas": [
+   "Always await findBy and waitFor, or handle their returned promises.",
+   "An asynchronous waitFor callback is not retried until its promise rejects.",
+   "Keep waitFor callbacks free of side effects because they can execute repeatedly."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Async behavior::MSW and network boundaries": {
+  "sourceUrl": "https://testing-library.com/docs/react-testing-library/example-intro/",
+  "sourceTitle": "Example",
+  "summary": "Use MSW to mock HTTP at the network boundary while the component performs its real request. This lets tests verify realistic success and server-error UI states with async, user-facing queries.",
+  "explanation": "MSW intercepts the HTTP request at the server boundary, allowing the component to run its normal fetch logic. The test supplies a declarative handler, starts the mock server for the suite, resets handlers between tests, and closes it afterward; async queries then wait for the resulting UI.",
+  "syntax": "const server = setupServer(http.get(path, handler))",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Test a successful request",
+   "code": "import {http, HttpResponse} from 'msw'\nimport {setupServer} from 'msw/node'\nimport {render, fireEvent, screen} from '@testing-library/react'\nimport '@testing-library/jest-dom'\nimport Fetch from './Fetch'\n\nconst server = setupServer(\n  http.get('/greeting', () =>\n    HttpResponse.json({greeting: 'hello there'}),\n  ),\n)\n\nbeforeAll(() => server.listen())\nafterEach(() => server.resetHandlers())\nafterAll(() => server.close())\n\ntest('loads and displays greeting', async () => {\n  render(<Fetch url=\"/greeting\" />)\n  fireEvent.click(screen.getByText('Load Greeting'))\n  expect(await screen.findByRole('heading')).toHaveTextContent('hello there')\n})",
+   "language": "tsx",
+   "explanation": "This test intercepts the component's HTTP request with MSW and waits for the user-visible heading."
+  },
+  "useCases": [
+   {
+    "title": "Successful loading",
+    "scenario": "A component fetches data and should render the loaded result."
+   },
+   {
+    "title": "Server failures",
+    "scenario": "An endpoint returns a 500 response and the UI should show an error."
+   },
+   {
+    "title": "Per-test response overrides",
+    "scenario": "Different tests need different responses from the same endpoint."
+   }
+  ],
+  "related": [
+   "setupServer",
+   "http.get",
+   "HttpResponse.json",
+   "server.use",
+   "server.listen",
+   "server.resetHandlers",
+   "server.close",
+   "findBy queries"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Prefer MSW's declarative request handlers over stubbing fetch directly.",
+   "Create a server that intercepts the request made by the rendered component.",
+   "Define a handler for the HTTP method and request path your component calls.",
+   "Return a realistic JSON response so the component exercises its normal success path.",
+   "Use a dedicated test to verify the UI behavior when the server responds with an error.",
+   "Use an asynchronous user-facing query to wait for the response-driven UI update."
+  ],
+  "gotchas": [
+   "Reset handlers after each test so an error-specific override does not leak into later tests.",
+   "Close the mock server after the suite to release its interception resources."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Async behavior::waitForElementToBeRemoved": {
+  "sourceUrl": "https://testing-library.com/docs/dom-testing-library/api-async/",
+  "sourceTitle": "Async Methods",
+  "summary": "Wait for an existing element or group of elements to be removed from the DOM. It is useful for asserting that loading or temporary UI has disappeared after an asynchronous operation.",
+  "explanation": "Pass an existing element or a callback that returns an element or array of elements. The helper observes DOM mutations while waiting for removal and resolves when the target is gone; because the target must exist initially, use a non-throwing query such as queryByText inside a callback when the element may disappear.",
+  "syntax": "function waitForElementToBeRemoved<T>(callback: (() => T) | T, options?: { container?: HTMLElement; timeout?: number; interval?: number; onTimeout?: (error: Error) => Error; mutationObserverOptions?: MutationObserverInit }): Promise<void>",
+  "parameters": [
+   {
+    "name": "callback",
+    "type": "(() => T) | T",
+    "description": "An element, array of elements, or callback returning an element or array of elements. It must initially identify existing element(s)."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Options forwarded to waitFor, including container, timeout, interval, onTimeout, and mutationObserverOptions."
+   }
+  ],
+  "returns": "Promise<void>",
+  "example": {
+   "title": "Wait for a loading message to disappear",
+   "code": "import {render, screen, waitForElementToBeRemoved} from '@testing-library/react'\nimport Status from './Status'\n\ntest('removes the loading message', async () => {\n  render(<Status />)\n\n  await waitForElementToBeRemoved(() => screen.queryByText('Loading...'))\n\n  expect(screen.getByText('Ready')).toBeInTheDocument()\n})",
+   "language": "tsx",
+   "explanation": "Waits for the initially rendered loading message to leave the DOM, then checks the completed state."
+  },
+  "useCases": [
+   {
+    "title": "Wait for loading UI to clear",
+    "scenario": "A loading indicator is rendered before a request finishes and should disappear afterward."
+   },
+   {
+    "title": "Verify temporary feedback disappears",
+    "scenario": "A temporary success, error, or status message is removed after an action."
+   },
+   {
+    "title": "Assert transient components unmount",
+    "scenario": "A modal, toast, or transient DOM node is removed in response to user activity."
+   }
+  ],
+  "related": [
+   "waitFor",
+   "MutationObserver",
+   "queryByText"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use this helper when an element or group of elements should disappear from the DOM.",
+   "Provide a DOM node, an array of nodes, or a callback that returns either form.",
+   "Its behavior builds on the general waitFor utility.",
+   "A callback is reevaluated after DOM mutations and completes once the queried target is removed.",
+   "Mutation observation avoids regularly polling the DOM for this removal case."
+  ],
+  "gotchas": [
+   "The target must exist before waiting; passing null or an empty array fails immediately.",
+   "Do not use this helper to wait for something that has not appeared yet.",
+   "Changes to the target that do not remove it do not satisfy the wait."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Interactions::Testing forms": {
+  "sourceUrl": "https://testing-library.com/docs/example-react-formik/",
+  "sourceTitle": "Formik",
+  "summary": "Test forms from the user’s perspective: find accessible fields, enter values, submit through the visible button, and assert the submitted data.",
+  "explanation": "Use accessible role and name queries to locate form controls, interact with them through userEvent, and verify the submitted result. The documented example waits for the submission assertion because the form handler is asynchronous.",
+  "syntax": "const user = userEvent.setup()\nawait user.type(screen.getByRole('textbox', {name: /field name/i}), value)\nawait user.click(screen.getByRole('button', {name: /submit/i}))\nawait waitFor(() => expect(onSubmit).toHaveBeenCalledWith(expectedValues))",
+  "parameters": [],
+  "returns": "The test passes when the form submits the expected values to its callback.",
+  "example": {
+   "title": "Test a submitted form",
+   "code": "import React from 'react'\nimport {render, screen, waitFor} from '@testing-library/react'\nimport userEvent from '@testing-library/user-event'\nimport {MyForm} from './myForm'\n\ntest('submits entered form values', async () => {\n  const handleSubmit = jest.fn()\n  render(<MyForm onSubmit={handleSubmit} />)\n  const user = userEvent.setup()\n\n  await user.type(screen.getByRole('textbox', {name: /first name/i}), 'John')\n  await user.type(screen.getByRole('textbox', {name: /last name/i}), 'Dee')\n  await user.type(screen.getByRole('textbox', {name: /email/i}), 'john@example.com')\n  await user.click(screen.getByRole('button', {name: /submit/i}))\n\n  await waitFor(() => expect(handleSubmit).toHaveBeenCalledWith({\n    firstName: 'John', lastName: 'Dee', email: 'john@example.com',\n  }))\n})",
+   "language": "tsx",
+   "explanation": "Render the form, fill its accessible fields, submit it as a user would, and assert the callback receives the entered values."
+  },
+  "useCases": [
+   {
+    "title": "Verify successful submission",
+    "scenario": "A form accepts valid user input and passes the resulting object to an onSubmit callback."
+   },
+   {
+    "title": "Handle async submission",
+    "scenario": "A form uses asynchronous submission logic before invoking its callback."
+   },
+   {
+    "title": "Exercise accessible form controls",
+    "scenario": "A test should interact with fields using the same labels and controls a user sees."
+   }
+  ],
+  "related": [
+   "userEvent",
+   "userEvent.setup",
+   "screen.getByRole",
+   "render",
+   "waitFor",
+   "Formik"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Create a user with userEvent.setup() and await typing and clicking operations.",
+   "Fill each field by querying its textbox role and accessible name.",
+   "Submit through the visible button interaction, matching the user's workflow.",
+   "Assert the submitted outcome by checking the callback received the expected form values."
+  ],
+  "gotchas": [
+   "Wait for the submission assertion when the form's submit handler performs asynchronous work.",
+   "Prefer userEvent for realistic interactions rather than directly invoking component internals."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Interactions::userEvent interactions": {
+  "sourceUrl": "https://testing-library.com/docs/user-event/intro/",
+  "sourceTitle": "Introduction | Testing Library",
+  "summary": "Use user-event to test realistic browser interactions—typing, clicking, tabbing, and keyboard input—instead of firing isolated DOM events. Create a session with userEvent.setup() and await its interaction methods.",
+  "explanation": "user-event APIs describe user interactions rather than isolated DOM events. A setup-created instance maintains input-device state, and its asynchronous methods model browser-like checks and event sequences for actions such as typing, clicking, tabbing, and keyboard input.",
+  "syntax": "const user = userEvent.setup()\nawait user.click(element)\nawait user.type(element, text)\nawait user.keyboard(text)\nawait user.tab()",
+  "parameters": [
+   {
+    "name": "element",
+    "type": "Element",
+    "description": "The target element to interact with; required by APIs such as click(), type(), and tab() uses an options object."
+   },
+   {
+    "name": "text",
+    "type": "KeyboardInput/string",
+    "description": "Text or keyboard-action notation describing input for type() or keyboard()."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Optional configuration such as skipClick, skipHover, shift, or focusTrap, depending on the API."
+   }
+  ],
+  "returns": "Interaction methods return Promises; for example, click(element: Element): Promise<void> and tab(options: {shift?: boolean}): Promise<void>.",
+  "example": {
+   "title": "Model a complete user interaction",
+   "code": "import {render, screen} from '@testing-library/react'\nimport userEvent from '@testing-library/user-event'\nimport {expect, test} from 'vitest'\n\nfunction Form() {\n  return <>\n    <label htmlFor=\"name\">Name</label>\n    <input id=\"name\" />\n    <button onClick={() => document.body.dataset.sent = 'true'}>Send</button>\n  </>\n}\n\ntest('user can fill and submit the form', async () => {\n  const user = userEvent.setup()\n  render(<Form />)\n  await user.type(screen.getByLabelText('Name'), 'Ada')\n  await user.tab()\n  await user.click(screen.getByRole('button', {name: 'Send'}))\n  expect(document.body.dataset.sent).toBe('true')\n})",
+   "language": "tsx",
+   "explanation": "Creates a user-event session, then models typing, tabbing, and clicking as a real user would perform them."
+  },
+  "useCases": [
+   {
+    "title": "Form workflows",
+    "scenario": "Verify that a form accepts text and submits after realistic focus and click behavior."
+   },
+   {
+    "title": "Keyboard and focus behavior",
+    "scenario": "Check focus movement, keyboard shortcuts, and held modifier keys."
+   },
+   {
+    "title": "Interactive controls",
+    "scenario": "Validate controls whose state changes through browser-like pointer interactions."
+   }
+  ],
+  "related": [
+   "userEvent.setup()",
+   "click()",
+   "type()",
+   "keyboard()",
+   "tab()",
+   "pointer()",
+   "fireEvent"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use user-event to express browser-like interactions instead of dispatching isolated events.",
+   "A single interaction can produce several events and interaction checks.",
+   "Create one user-event session before rendering the component under test.",
+   "Use tab() to move focus through the document like browser tab navigation.",
+   "A click can include preceding hover behavior unless skipHover is enabled."
+  ],
+  "gotchas": [
+   "Create the user-event instance before rendering the component.",
+   "Prefer user-event for user behavior; use fireEvent only when a concrete event is specifically required.",
+   "Use keyboard when you need key actions without the implicit click and selection changes of type().",
+   "Remember that type() focuses the target by clicking it unless skipClick is enabled."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Interactions::userEvent keyboard flows": {
+  "sourceUrl": "https://testing-library.com/docs/user-event/keyboard/",
+  "sourceTitle": "Keyboard | Testing Library",
+  "summary": "Use userEvent.keyboard() to test realistic keyboard sequences, including typing keys, focus movement, shortcuts, modifiers, repetition, and selection-related key behavior.",
+  "explanation": "Use a configured user-event instance to model a keyboard flow: move focus with tab(), then send key descriptors with keyboard(). The keyboard API supports printable characters, KeyboardEvent.key descriptors, KeyboardEvent.code descriptors, held keys, repetition, and explicit release. Await each interaction because these APIs return promises.",
+  "syntax": "keyboard(input: KeyboardInput): Promise<void>",
+  "parameters": [
+   {
+    "name": "input",
+    "type": "KeyboardInput",
+    "description": "A string describing printable characters, KeyboardEvent.key descriptors, or KeyboardEvent.code descriptors and their key transitions."
+   }
+  ],
+  "returns": "Promise<void>",
+  "example": {
+   "title": "Keyboard navigation and shortcuts",
+   "code": "import { render, screen } from '@testing-library/react'\nimport userEvent from '@testing-library/user-event'\nimport '@testing-library/jest-dom'\nimport App from './App'\n\ntest('moves through controls with the keyboard', async () => {\n  const user = userEvent.setup()\n  render(<App />)\n\n  await user.tab()\n  expect(screen.getByRole('button', { name: 'Open menu' })).toHaveFocus()\n\n  await user.keyboard('{Enter}')\n  expect(screen.getByRole('menu')).toBeVisible()\n\n  await user.keyboard('{Escape}')\n  expect(screen.getByRole('menu')).not.toBeVisible()\n})",
+   "language": "tsx",
+   "explanation": "Creates one user-event session, moves focus with Tab, and exercises Enter and Escape as keyboard actions."
+  },
+  "useCases": [
+   {
+    "title": "Focus navigation",
+    "scenario": "Verify Tab and Shift+Tab focus order across interactive controls."
+   },
+   {
+    "title": "Keyboard shortcuts",
+    "scenario": "Check Enter, Escape, or arrow-key shortcuts and resulting UI changes."
+   },
+   {
+    "title": "Key combinations",
+    "scenario": "Model modifier combinations such as Shift plus another key."
+   },
+   {
+    "title": "Advanced keyboard input",
+    "scenario": "Exercise repeated keydown behavior or a localized keyboard layout."
+   }
+  ],
+  "related": [
+   "userEvent.setup()",
+   "tab()",
+   "type()",
+   "keyboardMap",
+   "KeyboardEvent.key",
+   "KeyboardEvent.code"
+  ],
+  "since": "",
+  "keyPoints": [
+   "keyboard() models keyboard interaction rather than dispatching one isolated DOM event.",
+   "Pass a KeyboardInput string that describes the intended sequence.",
+   "Use brace descriptors such as {Enter}, {Tab}, or {Shift} when naming keys by their key value.",
+   "Use bracket descriptors such as [ShiftLeft] or [KeyF] when the flow depends on physical key codes.",
+   "Keep a modifier active across actions with syntax such as {Shift>} and release it explicitly.",
+   "Add a repetition count to model repeated keydown events, for example {a>5/}.",
+   "Start a session with userEvent.setup() so consecutive interactions share input-device state."
+  ],
+  "gotchas": [
+   "A descriptor such as {Shift} is pressed and released within the action; use the held-key syntax when a modifier must span multiple actions.",
+   "Use keyboardMap when the tested flow depends on a non-US layout or localization.",
+   "Prefer keyboard() for shortcuts and key presses; use type() when the goal is convenient text insertion."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Queries::getByLabelText": {
+  "sourceUrl": "https://testing-library.com/docs/queries/bylabeltext/",
+  "sourceTitle": "ByLabelText - Testing Library",
+  "summary": "Find a form control through its associated label text. It helps tests reflect how users identify fields and exposes missing or incorrect labeling.",
+  "explanation": "The query first matches label text, then returns the form element associated with that label. With React Testing Library, use the screen-bound form and pass a string or regular expression; options can narrow the element or customize matching.",
+  "syntax": "getByLabelText(container: HTMLElement, text: TextMatch, options?: { selector?: string; exact?: boolean; normalizer?: NormalizerFn }): HTMLElement",
+  "parameters": [
+   {
+    "name": "container",
+    "type": "HTMLElement",
+    "description": "The DOM container to search; omit it when calling the screen-bound query."
+   },
+   {
+    "name": "text",
+    "type": "TextMatch",
+    "description": "Label text matcher; accepts the documented TextMatch forms such as a string or regular expression."
+   },
+   {
+    "name": "options",
+    "type": "{ selector?: string; exact?: boolean; normalizer?: NormalizerFn }",
+    "description": "Optional query configuration: selector, exact, and normalizer."
+   }
+  ],
+  "returns": "HTMLElement",
+  "example": {
+   "title": "Find a labeled form control",
+   "code": "import {render, screen} from '@testing-library/react'\nimport {expect, test} from 'vitest'\n\nfunction Login() {\n  return <label htmlFor=\"username\">Username<input id=\"username\" /></label>\n}\n\ntest('finds the username control by its label', () => {\n  render(<Login />)\n  expect(screen.getByLabelText('Username')).toBeInTheDocument()\n})",
+   "language": "tsx",
+   "explanation": "Renders a labeled control and retrieves the associated input through its accessible label."
+  },
+  "useCases": [
+   {
+    "title": "Check accessible form labels",
+    "scenario": "Verify that a login, signup, or checkout field is correctly labeled."
+   },
+   {
+    "title": "Narrow the matched control",
+    "scenario": "Retrieve a specific input among multiple controls associated with matching text."
+   },
+   {
+    "title": "Match flexible label text",
+    "scenario": "Use a case-insensitive regular expression when label wording varies slightly."
+   }
+  ],
+  "related": [
+   "getByRole",
+   "queryByLabelText",
+   "getAllByLabelText",
+   "findByLabelText",
+   "findAllByLabelText"
+  ],
+  "since": "",
+  "keyPoints": [
+   "It matches the supplied text against a label, then returns the associated form control.",
+   "With React Testing Library, screen.getByLabelText omits the container because the query is already bound to the rendered document.",
+   "Matching is exact by default; set exact to false for non-exact text matching."
+  ],
+  "gotchas": [
+   "Text split across nested elements may not match as expected; use getByRole with the control's accessible name when appropriate.",
+   "When several associated elements could match, provide a selector such as {selector: 'input'}."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Queries::getByText and getByTestId": {
+  "sourceUrl": "https://testing-library.com/docs/queries/about/",
+  "sourceTitle": "Text Match",
+  "summary": "Use getByText when the user can identify content by its visible text. Use getByTestId as an escape hatch only when role or text cannot express a stable, user-centered query.",
+  "explanation": "Use getByText to locate non-interactive content through its visible text. Use getByTestId only when the element cannot reasonably be matched by a role or text, such as dynamic or otherwise non-user-visible content; each get query returns one match and throws when none or multiple matches exist.",
+  "syntax": "screen.getByText(textOrMatcher, options?)\nscreen.getByTestId(testId, options?)",
+  "parameters": [
+   {
+    "name": "textOrMatcher",
+    "type": "string | RegExp | function",
+    "description": "Text or matcher used to identify the element; the page documents a string, regular expression, or function as the primary query argument."
+   },
+   {
+    "name": "testId",
+    "type": "string",
+    "description": "Test ID value from the element's data-testid attribute."
+   }
+  ],
+  "returns": "The matching node; getBy queries throw a descriptive error if no element matches or if more than one element matches.",
+  "example": {
+   "title": "Text first, test ID for a semantic gap",
+   "code": "import {render, screen} from '@testing-library/react'\nimport '@testing-library/jest-dom'\n\nfunction Status() {\n  return <div><p>Saved</p><span data-testid=\"sync-state\">idle</span></div>\n}\n\ntest('finds user-visible text and a semantic gap', () => {\n  render(<Status />)\n  expect(screen.getByText('Saved')).toBeInTheDocument()\n  expect(screen.getByTestId('sync-state')).toHaveTextContent('idle')\n})",
+   "language": "tsx",
+   "explanation": "The test uses visible text for content a user can read and a test ID only for the otherwise-unlabeled synchronization state."
+  },
+  "useCases": [
+   {
+    "title": "Locate visible content",
+    "scenario": "A paragraph, heading, or other non-interactive element has stable visible copy."
+   },
+   {
+    "title": "Handle a semantic gap",
+    "scenario": "An element exposes dynamic or otherwise non-user-visible state without a suitable role or text query."
+   },
+   {
+    "title": "Require a single match",
+    "scenario": "A test must assert one uniquely identified result."
+   }
+  ],
+  "related": [
+   "getAllByText",
+   "queryByText",
+   "findByText",
+   "getAllByTestId",
+   "queryByTestId",
+   "findByTestId",
+   "getByRole",
+   "screen"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Prefer getByText for non-form content that users identify by its displayed text.",
+   "getByText is suitable for content such as divs, spans, and paragraphs.",
+   "getByTestId targets implementation markup rather than something users directly perceive.",
+   "Reserve getByTestId for cases where stronger user-facing queries do not fit.",
+   "Both queries accept a string, regular expression, or function as their primary matcher.",
+   "The getBy family is for finding one matching element."
+  ],
+  "gotchas": [
+   "A test ID is invisible to users and should be an escape hatch rather than the default selector.",
+   "getByText and getByTestId throw when there is no match or when multiple elements match; use a getAllBy variant when multiple matches are expected."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Queries::within": {
+  "sourceUrl": "https://testing-library.com/docs/dom-testing-library/api-within/",
+  "sourceTitle": "Querying Within Elements",
+  "summary": "`within` binds Testing Library queries to a DOM element. Find a card, dialog, or repeated region first, then use the returned queries to search only inside it.",
+  "explanation": "Call `within` with a DOM element to receive query functions bound to that element. In React Testing Library, this lets a test identify a repeated or named region first and then search only within that region, avoiding matches elsewhere in the rendered document.",
+  "syntax": "within(node)",
+  "parameters": [
+   {
+    "name": "node",
+    "type": "HTMLElement",
+    "description": "The DOM element whose descendants the returned query functions will search."
+   }
+  ],
+  "returns": "An object containing query functions bound to the supplied DOM element.",
+  "example": {
+   "title": "Scope a query to a region",
+   "code": "import {render, within} from '@testing-library/react'\nimport {screen} from '@testing-library/react'\n\nfunction Cards() {\n  return <section aria-label=\"Messages\"><button>Archive</button></section>\n}\n\ntest('finds a control inside the messages region', () => {\n  render(<Cards />)\n  const messages = screen.getByRole('region', {name: 'Messages'})\n  expect(within(messages).getByRole('button', {name: 'Archive'})).toBeInTheDocument()\n})",
+   "language": "tsx",
+   "explanation": "The region is found first, then its bound queries locate the button only inside that region."
+  },
+  "useCases": [
+   {
+    "title": "Repeated cards",
+    "scenario": "A page contains several cards with the same button label; scope to one card before finding the button."
+   },
+   {
+    "title": "Dialogs",
+    "scenario": "A dialog has controls whose labels also appear elsewhere; scope queries to the dialog."
+   },
+   {
+    "title": "Named regions",
+    "scenario": "A named section or region contains repeated content; locate the region first and query its descendants."
+   }
+  ],
+  "related": [
+   "getQueriesForElement",
+   "screen",
+   "getByText",
+   "getByRole",
+   "render"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use `within` when a query should consider only descendants of a specific element.",
+   "It returns query functions already scoped to the supplied element, so the container does not need to be passed repeatedly.",
+   "React Testing Library uses this scoping approach internally, and the DOM API recommends it for libraries built on the API.",
+   "The returned object exposes normal query methods, such as `getByText`, which can be called directly on the scoped result.",
+   "`screen` is effectively a collection of queries pre-bound to `document.body`, using the same underlying scoping mechanism."
+  ],
+  "gotchas": [
+   "Pass an actual DOM element to `within`; it is an alias for `getQueriesForElement` and binds the raw queries to that element."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test design::Accessibility assertions": {
+  "sourceUrl": "https://testing-library.com/docs/queries/byrole/",
+  "sourceTitle": "ByRole",
+  "summary": "Test UI through semantic roles, accessible names, exposed states, and realistic keyboard interaction. Prefer role queries with name or state filters so component tests reflect how users and accessibility APIs find controls.",
+  "explanation": "Use user-facing queries to locate elements by semantic role and accessible name, assert relevant ARIA state, and exercise keyboard interaction with user-event. This keeps normal component tests aligned with browser accessibility APIs and real user behavior.",
+  "syntax": "getByRole(container, role, options?)",
+  "parameters": [
+   {
+    "name": "container",
+    "type": "HTMLElement",
+    "description": "The DOM container to search."
+   },
+   {
+    "name": "role",
+    "type": "string",
+    "description": "The semantic role to match."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Optional filters including accessible name, description, hidden status, and ARIA states such as selected, busy, checked, pressed, current, or expanded."
+   }
+  ],
+  "returns": "A matching element or elements, depending on the selected query variant; the accessibility page documents role inspection helpers, while ByRole documents role-query behavior.",
+  "example": {
+   "title": "Accessible toggle test",
+   "code": "import {render, screen} from '@testing-library/react'\nimport userEvent from '@testing-library/user-event'\nimport '@testing-library/jest-dom'\nimport Toggle from './Toggle'\n\ntest('toggle is keyboard accessible and exposes state', async () => {\n  const user = userEvent.setup()\n  render(<Toggle />)\n  const toggle = screen.getByRole('button', {name: /notifications/i})\n  expect(toggle).toHaveAttribute('aria-pressed', 'false')\n  await user.tab()\n  await user.keyboard('{Enter}')\n  expect(toggle).toHaveAttribute('aria-pressed', 'true')\n})",
+   "language": "tsx",
+   "explanation": "Renders a toggle, finds it by role and accessible name, then verifies its exposed state and keyboard interaction."
+  },
+  "useCases": [
+   {
+    "title": "Semantic discoverability",
+    "scenario": "Verify that buttons, links, headings, or form controls are discoverable through their semantic roles and names."
+   },
+   {
+    "title": "State assertions",
+    "scenario": "Check selected, checked, busy, pressed, current, or expanded states exposed by interactive components."
+   },
+   {
+    "title": "Keyboard behavior",
+    "scenario": "Confirm a control can be reached and operated through keyboard input."
+   }
+  ],
+  "related": [
+   "getRoles",
+   "isInaccessible",
+   "logRoles",
+   "getByRole",
+   "userEvent.keyboard"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use `getByRole` to locate an element through its semantic ARIA role.",
+   "Use the accessible name or description to distinguish elements sharing a role.",
+   "Accessible names commonly come from a form label, button text, or `aria-label`.",
+   "Assert selection through the `selected` option in a role query when the component exposes that state.",
+   "Use the `checked` option to target controls with a checked or unchecked state.",
+   "Use the `busy` option to query elements according to their busy state."
+  ],
+  "gotchas": [
+   "Prefer the element's implicit role; adding a redundant or incorrect role can make role-based queries misleading.",
+   "Hidden content is excluded by default; use `hidden: true` only when the test intentionally targets content outside the normal accessibility tree.",
+   "When an element has a semantic role, prefer a role query with its accessible name over a text-only query."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test design::Avoiding implementation details": {
+  "sourceUrl": "https://testing-library.com/docs/",
+  "sourceTitle": "Introduction",
+  "summary": "Write tests around what users can see and do, not component state, private methods, lifecycle methods, or child-component structure. User-centered DOM queries and assertions make tests more resilient to implementation-only refactors.",
+  "explanation": "Design React tests around the DOM and interactions available to users. Query controls by accessible roles or labels, perform realistic actions, and assert the resulting visible behavior instead of inspecting component internals.",
+  "syntax": "render(ui); screen.getByRole(role, options); screen.getByLabelText(text); userEvent interactions; expect(visibleOutput)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Test the visible login outcome",
+   "code": "import {render, screen} from '@testing-library/react'\nimport userEvent from '@testing-library/user-event'\nimport LoginForm from './LoginForm'\n\ntest('shows an error when login details are invalid', async () => {\n  const user = userEvent.setup()\n  render(<LoginForm />)\n\n  await user.type(screen.getByRole('textbox', {name: /email/i}), 'wrong@example.com')\n  await user.type(screen.getByLabelText(/password/i), 'bad-password')\n  await user.click(screen.getByRole('button', {name: /sign in/i}))\n\n  expect(await screen.findByRole('alert')).toHaveTextContent(/invalid/i)\n})",
+   "language": "tsx",
+   "explanation": "The test interacts through accessible controls and verifies the error visible to the user, without inspecting state, methods, lifecycle hooks, or child components."
+  },
+  "useCases": [
+   {
+    "title": "Verify form feedback",
+    "scenario": "A form should show validation feedback after a user submits invalid data."
+   },
+   {
+    "title": "Check interactive state through output",
+    "scenario": "A button should reveal or hide content when clicked."
+   },
+   {
+    "title": "Protect the public UI contract",
+    "scenario": "A component implementation is being refactored without changing its behavior."
+   }
+  ],
+  "related": [
+   "Guiding Principles",
+   "React Testing Library",
+   "DOM nodes",
+   "DOM queries",
+   "implementation details"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Model tests on real user interactions: locate what users can find, operate it as they would, and check the resulting behavior.",
+   "Prefer DOM queries that reflect how users find elements instead of selecting component instances or private implementation data.",
+   "Keep assertions focused on externally observable behavior so implementation-only refactors are less likely to break the suite.",
+   "A refactor that preserves functionality should normally leave these tests intact, because they target the user-facing contract."
+  ],
+  "gotchas": [
+   "Do not assert component state or other private data; users cannot directly interact with it.",
+   "Avoid calling component methods directly; verify the behavior produced through the UI.",
+   "Lifecycle methods are implementation details and are not user-observable contracts."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test design::Cleanup and isolation": {
+  "sourceUrl": "https://testing-library.com/docs/react-testing-library/api/",
+  "sourceTitle": "API | Testing Library",
+  "summary": "Call cleanup after each test when automatic teardown is unavailable. It unmounts trees rendered by React Testing Library, preventing leaks and cross-test interference.",
+  "explanation": "React Testing Library tracks trees created by render and cleanup unmounts them after a test. Test frameworks that provide a global afterEach register this automatically; otherwise, connect cleanup to the framework's after-test hook yourself. This prevents leftover DOM and mounted trees from affecting later tests and helps avoid leaks and non-idempotent tests.",
+  "syntax": "cleanup()",
+  "parameters": [],
+  "returns": "Unmounts React trees that were mounted with render.",
+  "example": {
+   "title": "Clean up after each test",
+   "code": "import { cleanup, render } from '@testing-library/react'\nimport test from 'ava'\nimport { Widget } from './Widget'\n\ntest.afterEach(cleanup)\n\ntest('renders the widget', () => {\n  render(<Widget />)\n})",
+   "language": "tsx",
+   "explanation": "Registers React Testing Library cleanup with AVA so each test unmounts rendered trees and starts with an isolated DOM."
+  },
+  "useCases": [
+   {
+    "title": "Manual teardown",
+    "scenario": "Using a test runner without a global afterEach hook."
+   },
+   {
+    "title": "DOM isolation",
+    "scenario": "Ensuring rendered components do not remain mounted between tests."
+   },
+   {
+    "title": "Reliable test suites",
+    "scenario": "Avoiding memory leaks and non-idempotent tests."
+   }
+  ],
+  "related": [
+   "render",
+   "afterEach",
+   "test.afterEach",
+   "@testing-library/react"
+  ],
+  "since": "",
+  "keyPoints": [
+   "cleanup removes the React trees created by render.",
+   "Jest, Mocha, and Jasmine-style environments generally invoke cleanup automatically when they expose afterEach.",
+   "For runners without automatic integration, attach cleanup to the runner's per-test teardown hook.",
+   "Skipping cleanup can cause memory leaks and allow one test's state or DOM to influence another."
+  ],
+  "gotchas": [
+   "If the test framework does not provide automatic cleanup, omitting cleanup after render can leak memory and make tests non-idempotent.",
+   "Do not assume cleanup is automatic: explicitly register it when the runner lacks a global afterEach hook."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

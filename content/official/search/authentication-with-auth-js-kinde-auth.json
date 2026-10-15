@@ -1,0 +1,1483 @@
+{
+ "Auth.js setup::Configuration": {
+  "sourceUrl": "https://authjs.dev/reference/core/providers/kinde",
+  "sourceTitle": "Kinde",
+  "summary": "Configure Auth.js by adding Kinde to the providers array and supplying its OAuth client ID, client secret, and issuer. Register the Kinde callback URL so the provider can return users to Auth.js.",
+  "explanation": "Auth.js receives a configuration object containing providers and creates the authentication response for the incoming request. Kinde is initialized with the OAuth client credentials and issuer, while the provider callback endpoint must be registered with Kinde.",
+  "syntax": "Kinde(config)",
+  "parameters": [
+   {
+    "name": "config",
+    "type": "OIDCUserConfig<KindeProfile>",
+    "description": "OIDC provider configuration containing Kinde connection settings."
+   }
+  ],
+  "returns": "An Auth.js response produced for the incoming Request.",
+  "example": {
+   "title": "Configure Auth.js with Kinde",
+   "code": "import { Auth } from \"@auth/core\"\nimport Kinde from \"@auth/core/providers/kinde\"\n\nconst response = await Auth(request, {\n  providers: [\n    Kinde({\n      clientId: process.env.KINDE_CLIENT_ID,\n      clientSecret: process.env.KINDE_CLIENT_SECRET,\n      issuer: process.env.KINDE_DOMAIN,\n    }),\n  ],\n})",
+   "language": "typescript",
+   "explanation": "Creates an Auth.js request handler configured with Kinde as its OAuth provider."
+  },
+  "useCases": [
+   {
+    "title": "Add Kinde login",
+    "scenario": "An application needs Kinde-based OAuth sign-in through Auth.js."
+   },
+   {
+    "title": "Process the callback",
+    "scenario": "A server must handle the OAuth return request from Kinde."
+   },
+   {
+    "title": "Supply issuer and credentials",
+    "scenario": "A project needs provider-specific OIDC settings."
+   }
+  ],
+  "related": [
+   "Auth",
+   "Kinde",
+   "OIDCUserConfig",
+   "KindeProfile"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you configure Kinde as an Auth.js provider?",
+    "answer": "The Kinde provider is added by placing Kinde(...) in the Auth.js providers array. Its configuration supplies the client ID, client secret, and issuer, allowing Auth.js to construct the OAuth integration.",
+    "followUp": "What must be configured outside the application? Add the callback URL to Kinde’s provider settings and ensure it matches the application’s Auth.js callback route."
+   },
+   {
+    "question": "What callback URL does the Kinde provider use?",
+    "answer": "The provider callback URL follows the pattern https://example.com/api/auth/callback/kinde. It identifies the route Kinde uses to return the authorization result to Auth.js.",
+    "followUp": "Why must the URL be registered with Kinde? OAuth providers reject redirects that are not included in their allowed redirect URI configuration."
+   },
+   {
+    "question": "What configuration type does the Kinde provider accept?",
+    "answer": "The Kinde configuration accepts an OIDCUserConfig<KindeProfile> object. In practice, the documented setup passes clientId, clientSecret, and issuer to Kinde.",
+    "followUp": "What does the issuer represent? It identifies the Kinde authorization server whose OpenID Connect metadata and endpoints Auth.js uses."
+   }
+  ],
+  "keyPoints": [
+   "Kinde’s callback endpoint uses the provider identifier kinde in the final path segment.",
+   "Import the Kinde provider from @auth/core/providers/kinde before adding it to the Auth.js configuration.",
+   "The provider configuration includes the Kinde OAuth client identifier.",
+   "The provider configuration includes the Kinde OAuth client secret.",
+   "The issuer is supplied as the Kinde domain used by the OpenID Connect provider."
+  ],
+  "gotchas": [
+   "Register the generated callback URL in Kinde before testing sign-in; an incorrect redirect URI prevents the OAuth flow from completing."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Auth.js setup::Custom pages": {
+  "sourceUrl": "https://authjs.dev/getting-started/session-management/custom-pages",
+  "sourceTitle": "Custom Pages",
+  "summary": "Replace Auth.js built-in authentication screens by mapping page types such as signIn and error to your own application routes. Implement each configured route in the application.",
+  "explanation": "Auth.js lets the configuration map page types to application routes through the pages object. Setting signIn and error replaces the corresponding built-in screens; the application must provide pages at those routes, and the error page can read the error query parameter to decide what to display.",
+  "syntax": "pages: { signIn: \"/login\", error: \"/error\" }",
+  "parameters": [
+   {
+    "name": "pages",
+    "type": "Partial<PagesOptions>",
+    "description": "Optional mapping of Auth.js page types to custom application routes, including signIn and error."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Configure custom sign-in and error routes",
+   "code": "import NextAuth from \"next-auth\";\nimport GitHub from \"next-auth/providers/github\";\n\nexport const { handlers, auth, signIn, signOut } = NextAuth({\n  providers: [GitHub],\n  pages: {\n    signIn: \"/login\",\n    error: \"/error\",\n  },\n});",
+   "language": "typescript",
+   "explanation": "This configuration sends sign-in requests to a custom login route and authentication failures to a custom error route. Create pages at both routes in the application."
+  },
+  "useCases": [
+   {
+    "title": "Use a product-specific login experience instead of Auth.js’s default sign-in screen.",
+    "scenario": "Branding"
+   },
+   {
+    "title": "Present tailored guidance when authentication fails.",
+    "scenario": "Error handling"
+   },
+   {
+    "title": "Keep authentication screens under the application’s preferred URL structure.",
+    "scenario": "Unified routing"
+   }
+  ],
+  "related": [
+   "PagesOptions",
+   "signIn",
+   "signOut",
+   "error",
+   "verifyRequest",
+   "newUser",
+   "AuthConfig"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you replace Auth.js's default sign-in page?",
+    "answer": "Add a pages object to the Auth.js configuration and set signIn to the route for the custom login page. Auth.js then uses that route instead of its built-in sign-in page.",
+    "followUp": "What must exist for this configuration to work? A real application page or route must be implemented at the configured path."
+   },
+   {
+    "question": "How do you configure a custom authentication error page?",
+    "answer": "Set error in the pages object to the route of the custom error page. Auth.js redirects authentication failures there instead of using /api/auth/error.",
+    "followUp": "How can the custom page distinguish failures? It reads the error query parameter forwarded in the URL."
+   },
+   {
+    "question": "What is the role of the pages object?",
+    "answer": "The pages object maps page types to paths, and configured paths override the corresponding built-in pages. Supported examples include signIn, signOut, error, verifyRequest, and newUser.",
+    "followUp": "What happens when a page type is omitted? Auth.js retains its built-in page for that page type."
+   }
+  ],
+  "keyPoints": [
+   "Configure the custom sign-in route with the signIn key inside Auth.js’s pages object.",
+   "Each pages entry pairs a page category with the route that serves it.",
+   "Custom error pages receive the failure category through a URL query parameter.",
+   "The Configuration error indicates an issue with the server-side authentication setup."
+  ],
+  "gotchas": [
+   "Defining a custom route does not create the page; implement the route yourself or navigation will fail.",
+   "The custom error page should inspect the error query parameter because Auth.js communicates the failure type through the URL."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Auth.js setup::Environment secrets": {
+  "sourceUrl": "https://authjs.dev/guides/environment-variables",
+  "sourceTitle": "Auth.js | Environment Variables",
+  "summary": "Configure AUTH_SECRET plus Kinde’s provider credentials as environment variables for each deployment. Auth.js can automatically map standard provider variable names to clientId and clientSecret.",
+  "explanation": "Auth.js requires a random AUTH_SECRET to protect its encrypted tokens and verification hashes. For an official OAuth provider such as Kinde, use the provider-specific environment-variable convention so Auth.js can discover the client ID and secret without putting credentials directly in the configuration.",
+  "syntax": "AUTH_SECRET=<random-secret>\nAUTH_KINDE_ID=<kinde-client-id>\nAUTH_KINDE_SECRET=<kinde-client-secret>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Auth.js with Kinde environment variables",
+   "code": "import NextAuth from \"next-auth\";\nimport Kinde from \"next-auth/providers/kinde\";\n\nexport const { handlers, auth } = NextAuth({\n  providers: [Kinde],\n});",
+   "language": "typescript",
+   "explanation": "With standard environment-variable names, Auth.js can supply the Kinde client credentials automatically; keep the values in each deployment environment."
+  },
+  "useCases": [
+   {
+    "title": "Run Kinde authentication without hard-coding credentials",
+    "scenario": "Local development"
+   },
+   {
+    "title": "Provide isolated environment-specific OAuth settings",
+    "scenario": "Preview deployments"
+   },
+   {
+    "title": "Keep signing and provider secrets in secure runtime configuration",
+    "scenario": "Production deployment"
+   }
+  ],
+  "related": [
+   "AUTH_SECRET",
+   "AUTH_[PROVIDER]_ID",
+   "AUTH_[PROVIDER]_SECRET",
+   "Kinde",
+   "clientId",
+   "clientSecret"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is AUTH_SECRET used for?",
+    "answer": "AUTH_SECRET is a random value Auth.js uses to encrypt tokens and email-verification hashes. It is the only strictly required Auth.js environment variable.",
+    "followUp": "How should it be generated? Use a cryptographically secure random string; the deployment guide recommends at least 32 characters and documents the Auth.js CLI or OpenSSL commands."
+   },
+   {
+    "question": "How are Kinde OAuth credentials supplied?",
+    "answer": "For official OAuth providers, Auth.js can infer clientId and clientSecret from environment variables. The convention is AUTH_[PROVIDER]_ID and AUTH_[PROVIDER]_SECRET, so Kinde credentials should follow the corresponding Kinde names.",
+    "followUp": "What is the benefit of the convention? It lets the provider configuration stay minimal because Auth.js automatically supplies the credentials."
+   },
+   {
+    "question": "How should secrets be managed across environments?",
+    "answer": "Environment variables should be configured separately for each deployment environment. Keep the Kinde client secret outside source control and provide it through the environment’s secure configuration.",
+    "followUp": "What must remain consistent for preview deployments that need OAuth support? The deployment guide says AUTH_SECRET must match the stable deployment and those preview deployments."
+   }
+  ],
+  "keyPoints": [
+   "Prefix Auth.js variables with AUTH_ so the library can recognize them consistently.",
+   "Official OAuth providers can obtain clientId and clientSecret from environment variables automatically.",
+   "Use AUTH_[PROVIDER]_ID for an OAuth client identifier.",
+   "Use AUTH_[PROVIDER]_SECRET for the corresponding OAuth client secret.",
+   "Generate AUTH_SECRET as a cryptographically secure random string with at least 32 characters."
+  ],
+  "gotchas": [
+   "Do not omit AUTH_SECRET: it protects Auth.js tokens and email-verification hashes.",
+   "AUTH_SECRET is the only mandatory Auth.js environment variable; provider credentials are additionally needed when enabling Kinde.",
+   "Use the documented AUTH_[PROVIDER]_ID and AUTH_[PROVIDER]_SECRET naming pattern rather than arbitrary variable names."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Auth.js setup::Route handlers": {
+  "sourceUrl": "https://authjs.dev/getting-started/installation",
+  "sourceTitle": "Auth.js | Installation",
+  "summary": "Configure Auth.js in `auth.ts`, then re-export its `GET` and `POST` handlers from the Next.js App Router catch-all route. This mounts the authentication endpoints while also exposing helpers such as sign-in and sign-out.",
+  "explanation": "Auth.js centralizes provider configuration in an `auth.ts` file and returns framework-specific handlers plus authentication helpers. In a Next.js App Router project, re-export the returned `GET` and `POST` handlers from `/app/api/auth/[...nextauth]/route.ts`; those handlers serve the authentication endpoints expected by the library.",
+  "syntax": "export const { handlers, signIn, signOut, auth } = NextAuth({ providers: [...] });\n\n// app/api/auth/[...nextauth]/route.ts\nexport const { GET, POST } = handlers;",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "NextAuthConfig",
+    "description": "Auth.js configuration object, including configured providers."
+   }
+  ],
+  "returns": "The initialized Auth.js exports, including `handlers`, `signIn`, `signOut`, and `auth`.",
+  "example": {
+   "title": "Configure Auth.js handlers",
+   "code": "import NextAuth from \"next-auth\";\nimport Kinde from \"next-auth/providers/kinde\";\n\nexport const { handlers, signIn, signOut, auth } = NextAuth({\n  providers: [Kinde],\n});",
+   "language": "typescript",
+   "explanation": "Define the Auth.js configuration in `auth.ts`, then expose its handlers from the App Router route file."
+  },
+  "useCases": [
+   {
+    "title": "Mount authentication routes",
+    "scenario": "A Next.js App Router application needs Auth.js endpoints."
+   },
+   {
+    "title": "Expose authentication helpers",
+    "scenario": "The application needs reusable authentication operations outside the route module."
+   },
+   {
+    "title": "Add Auth.js without migrating every page",
+    "scenario": "An existing application uses Pages Router pages but needs Auth.js."
+   }
+  ],
+  "related": [
+   "auth.ts",
+   "handlers",
+   "signIn",
+   "signOut",
+   "auth",
+   "NextAuth",
+   "App Router Route Handler"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you mount Auth.js in a Next.js App Router application?",
+    "answer": "Create `auth.ts` and initialize Auth.js there with the required providers. Export the returned handlers, then re-export `GET` and `POST` from `/app/api/auth/[...nextauth]/route.ts` so Next.js can serve the Auth.js endpoints.",
+    "followUp": "Why are both HTTP methods exported? The framework integration exposes the handler methods returned by Auth.js, and the route module must make both available to support the library's endpoint operations."
+   },
+   {
+    "question": "Where should the route handler be placed?",
+    "answer": "The catch-all route is placed under `app/api/auth/[...nextauth]/route.ts`. Its dynamic segment lets the Auth.js handler receive the different authentication paths through one route module.",
+    "followUp": "Can the rest of the application use the Pages Router? Yes. The documentation states that the authentication file must be an App Router Route Handler, while the rest of the application may remain under `page/`."
+   },
+   {
+    "question": "What does the Auth.js initialization export?",
+    "answer": "The configuration file exports more than endpoint handlers: Auth.js also returns helpers such as `signIn`, `signOut`, and `auth`. The route module only needs to re-export the HTTP handlers for Next.js routing.",
+    "followUp": "What belongs in the provider configuration? Add the providers supported by the application, such as Kinde, to the `providers` option passed to Auth.js."
+   }
+  ],
+  "keyPoints": [
+   "Keep the Auth.js initialization in a project-level `auth.ts` file.",
+   "Initialization can provide route handlers together with sign-in, sign-out, and other authentication helpers.",
+   "For Next.js App Router, mount the catch-all authentication route at `/app/api/auth/[...nextauth]/route.ts`.",
+   "Re-export both `GET` and `POST` from the configured `handlers` object in the route module.",
+   "Only the authentication endpoint must use an App Router Route Handler; other application pages may remain in the Pages Router."
+  ],
+  "gotchas": [
+   "The route file must use the App Router Route Handler convention; placing it elsewhere will not mount the expected Next.js endpoints."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Auth.js setup::Sign-in and sign-out": {
+  "sourceUrl": "https://authjs.dev/getting-started/session-management/login",
+  "sourceTitle": "Handling Signin and Signout",
+  "summary": "Use Auth.js signIn and signOut actions with the Kinde provider from client or server code. Sign-in returns to the starting page by default; provide redirectTo to choose another destination.",
+  "explanation": "Auth.js exposes sign-in and sign-out actions that can be triggered from the client or server. Sign-in normally returns the user to the page where the flow began; pass redirectTo when a different destination is required, while sign-out can likewise redirect to a chosen URL.",
+  "syntax": "signIn(provider?, options?)\nsignOut(options?)",
+  "parameters": [
+   {
+    "name": "provider",
+    "type": "string",
+    "description": "The configured Auth.js provider identifier, such as Kinde, used to begin authentication."
+   },
+   {
+    "name": "redirectTo",
+    "type": "string",
+    "description": "An optional destination supplied in the sign-in options for post-authentication navigation."
+   }
+  ],
+  "returns": "The authentication actions initiate the corresponding redirect flow and complete by navigating to the configured or requested destination.",
+  "example": {
+   "title": "Client sign-in and sign-out",
+   "code": "import { signIn, signOut } from \"@/auth\";\n\nexport function SignInButton() {\n  return <button onClick={() => signIn(\"kinde\")}>Sign in</button>;\n}\n\nexport function SignOutButton() {\n  return <button onClick={() => signOut()}>Sign out</button>;\n}",
+   "language": "tsx",
+   "explanation": "Use Auth.js client actions to start Kinde authentication and end the current session."
+  },
+  "useCases": [
+   {
+    "title": "Client login",
+    "scenario": "A browser button starts Kinde authentication from a login page."
+   },
+   {
+    "title": "Server-triggered login",
+    "scenario": "A server action or route initiates authentication without putting flow logic in a UI component."
+   },
+   {
+    "title": "Client logout",
+    "scenario": "An authenticated user clicks a control to end the current session."
+   }
+  ],
+  "related": [
+   "signIn",
+   "signOut",
+   "redirectTo",
+   "Kinde"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How are sign-in and sign-out initiated with Auth.js and Kinde?",
+    "answer": "Call Auth.js signIn with the Kinde provider to start authentication, and call signOut to end the session. These actions can be invoked from either client-side or server-side code.",
+    "followUp": "How would you send users to a dashboard after authentication? Pass the dashboard URL through the sign-in options as redirectTo."
+   },
+   {
+    "question": "How does Auth.js handle the post-sign-in redirect?",
+    "answer": "By default, successful sign-in returns the user to the page from which sign-in started. To choose another destination, provide that destination as redirectTo in the sign-in options.",
+    "followUp": "What must be checked when using a custom destination? Ensure the destination is an intended application route and is accepted by the authentication configuration."
+   },
+   {
+    "question": "Can these flows be triggered only from the browser?",
+    "answer": "The same flow can be started from server code or from a client interaction. Client buttons can call the imported Auth.js actions, while server handlers can invoke the corresponding actions directly.",
+    "followUp": "Why might server invocation be preferable? It can keep authentication orchestration in a server action or route handler instead of exposing flow logic in a browser component."
+   }
+  ],
+  "keyPoints": [
+   "A successful sign-in returns the user to the page where the flow was initiated unless a different destination is supplied.",
+   "Use the redirectTo sign-in option when the application should send the user to a specific route such as a dashboard.",
+   "The documented flow covers both establishing authentication and ending the current authenticated session."
+  ],
+  "gotchas": [
+   "A custom sign-in destination requires explicitly passing redirectTo; otherwise Auth.js returns the user to the page where sign-in began."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Auth.js setup::Trusted host and URL": {
+  "sourceUrl": "https://authjs.dev/getting-started/deployment",
+  "sourceTitle": "Auth.js | Deployment",
+  "summary": "Configure Auth.js's canonical host so OAuth redirects resolve correctly. Trust forwarded hosts behind a reverse proxy, and set AUTH_URL only when a custom authentication base path is required.",
+  "explanation": "Auth.js v5 normally derives the host from request headers. Enable trusted-host handling behind a reverse proxy, and use AUTH_URL when the authentication routes use a different base path; Kinde callback URLs must match the resulting application URL.",
+  "syntax": "AUTH_TRUST_HOST=true\nAUTH_URL=https://example.com/app1/auth\ntrustHost: true",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Configure Auth.js deployment URL",
+   "code": "export default { trustHost: true }\n\n// .env.local\nAUTH_URL=http://localhost:3000",
+   "language": "typescript",
+   "explanation": "Trust the deployment host when requests arrive through a proxy; set AUTH_URL when Auth.js uses a non-default base path."
+  },
+  "useCases": [
+   {
+    "title": "Trust the forwarded deployment host",
+    "scenario": "Reverse-proxied deployment"
+   },
+   {
+    "title": "Declare a non-default Auth.js base path",
+    "scenario": "Custom authentication route prefix"
+   },
+   {
+    "title": "Align the callback origin and route with Kinde",
+    "scenario": "Kinde OAuth integration"
+   }
+  ],
+  "related": [
+   "AUTH_TRUST_HOST",
+   "AUTH_URL",
+   "trustHost",
+   "X-Forwarded-Host",
+   "Kinde provider",
+   "Callback URL"
+  ],
+  "since": "v5",
+  "interview": [
+   {
+    "question": "When is AUTH_URL needed?",
+    "answer": "Auth.js v5 usually obtains the host from request headers, so AUTH_URL is not generally required. Set AUTH_URL when the application uses a different base path, such as /web/auth.",
+    "followUp": "What must be trusted behind a reverse proxy? The X-Forwarded-Host header, enabled with trustHost: true or AUTH_TRUST_HOST=true."
+   },
+   {
+    "question": "How do you configure a trusted host?",
+    "answer": "Set AUTH_TRUST_HOST=true, or configure trustHost: true, when the application is behind a reverse proxy. This allows Auth.js to use the proxy-provided host.",
+    "followUp": "Which hosting providers are automatically recognized? The page lists Vercel and Cloudflare Pages via their environment indicators."
+   },
+   {
+    "question": "What callback URL does the Kinde provider use?",
+    "answer": "Kinde's Auth.js provider uses a callback URL shaped like https://example.com/api/auth/callback/kinde. The URL registered with Kinde must correspond to the application's deployed authentication route.",
+    "followUp": "What should be checked if redirects fail? Verify that the registered callback URL uses the exact deployed origin and Auth.js route path."
+   }
+  ],
+  "keyPoints": [
+   "Set AUTH_TRUST_HOST=true when Auth.js runs behind a reverse proxy.",
+   "The setting permits Auth.js to derive the host from the proxy's X-Forwarded-Host header.",
+   "Use AUTH_URL when authentication is mounted under a non-default base path.",
+   "AUTH_URL includes both the origin and the custom authentication path.",
+   "Supported hosting environments can cause trusted-host behavior to be inferred automatically."
+  ],
+  "gotchas": [
+   "Only enable trusted-host handling when the forwarded host is supplied by a trusted reverse proxy.",
+   "Do not add AUTH_URL by default in v5; the request host is normally inferred automatically.",
+   "Docker deployments need trustHost: true or AUTH_TRUST_HOST=true when host inference depends on forwarded headers."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Kinde Auth::Feature flags": {
+  "sourceUrl": "https://docs.kinde.com/releases/feature-flags/edit-feature-flag/",
+  "sourceTitle": "Override feature flag values",
+  "summary": "Read the current organization context and evaluate feature flags for tenant-aware behavior. Organization overrides apply to every user in that organization.",
+  "explanation": "Kinde exposes the authenticated user, current organization, and feature-flag helpers through its Next.js server session. Read the active organization to establish tenant context, then retrieve the flag by key and use its typed value to choose behavior or presentation.",
+  "syntax": "getFlag(key, defaultValue)",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "string",
+    "description": "Feature flag key used to retrieve the value."
+   },
+   {
+    "name": "defaultValue",
+    "type": "boolean | string | number",
+    "description": "Fallback or default value supplied to the SDK flag accessor; exact overload depends on the SDK helper."
+   }
+  ],
+  "returns": "The effective, typed feature-flag value for the current user and organization context.",
+  "example": {
+   "title": "Read identity, organization, and flag",
+   "code": "import { getKindeServerSession } from \"@kinde-oss/kinde-auth-nextjs/server\";\n\nexport default async function Page() {\n  const { getUser, getOrganization, getFlag } = getKindeServerSession();\n  const user = await getUser();\n  const organization = await getOrganization();\n  const beta = await getFlag(\"beta_dashboard\", false);\n\n  if (!user) return <p>Sign in required</p>;\n  return <p>{organization?.orgCode}: {beta ? \"Beta enabled\" : \"Standard\"}</p>;\n}",
+   "language": "tsx",
+   "explanation": "This Next.js server component reads the signed-in user, active organization, and a feature flag for rendering organization-aware UI."
+  },
+  "useCases": [
+   {
+    "title": "Per-organization beta rollout",
+    "scenario": "Enable a beta workflow for one customer while leaving other tenants unchanged."
+   },
+   {
+    "title": "Tenant-specific kill switch",
+    "scenario": "Turn off a risky capability for a tenant without redeploying the application."
+   },
+   {
+    "title": "Multi-tenant personalization",
+    "scenario": "Render organization-specific UI or configuration after sign-in."
+   }
+  ],
+  "related": [
+   "getFlag",
+   "getBooleanFlag",
+   "getIntegerFlag",
+   "getStringFlag",
+   "getOrganization",
+   "getUser",
+   "organization",
+   "org_code"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you read an organization-aware feature flag alongside identity?",
+    "answer": "Use the server session helpers to obtain the authenticated user and current organization, then call the appropriate flag helper with the flag key. The organization determines the tenant context whose override should apply.",
+    "followUp": "How would you support typed values? Use the boolean, integer, or string-specific helper rather than treating every flag as an untyped value."
+   },
+   {
+    "question": "What is the effect of an organization override?",
+    "answer": "A flag value can be overridden at the organization level, and that override is applied to all users in the organization. The application should therefore evaluate the flag after establishing the active organization.",
+    "followUp": "What should happen when no organization override exists? The flag should resolve through Kinde's inheritance chain to the applicable default value."
+   },
+   {
+    "question": "Which flag accessors can an application use?",
+    "answer": "Feature flags are identified by keys and have typed values. The Next.js SDK documents helpers for generic, boolean, integer, and string flag reads, allowing application code to preserve the intended type.",
+    "followUp": "Why prefer typed helpers? They make the expected value explicit and reduce errors when rendering or enforcing feature-dependent behavior."
+   }
+  ],
+  "keyPoints": [
+   "Kinde supports flag overrides at environment, organization, and user scopes when enabled in the flag definition.",
+   "An organization-level value is shared by all users belonging to that organization.",
+   "Un overridden values inherit downward from broader settings, so the effective value depends on the configured hierarchy."
+  ],
+  "gotchas": [
+   "Organization-specific values are available only when the flag was configured to permit organization overrides.",
+   "An organization override affects every user in that organization, not just the person making the request."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Kinde Auth::Organizations": {
+  "sourceUrl": "https://docs.kinde.com/build/organizations/orgs-for-developers/",
+  "sourceTitle": "Kinde organizations for developers",
+  "summary": "Kinde organizations provide the tenant boundary for user groups. A person can belong to multiple organizations, with separate roles and permissions in each, and organization codes available through the ID token.",
+  "explanation": "Kinde models multi-tenancy with organizations that isolate user groups and their access settings. A person may belong to several organizations, with membership-specific roles and permissions; the active organization is selected during authentication or supplied explicitly.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Read a user's organizations",
+   "code": "const orgCodes = idToken.org_codes ?? [];\n\nfor (const orgCode of orgCodes) {\n  console.log(`User belongs to ${orgCode}`);\n}",
+   "language": "typescript",
+   "explanation": "Read the organization-code claim from a decoded ID token to discover the organizations available to the user."
+  },
+  "useCases": [
+   {
+    "title": "Company-based tenancy",
+    "scenario": "A SaaS product serves several customer companies and must isolate each company's users and access rules."
+   },
+   {
+    "title": "Multi-workspace membership",
+    "scenario": "A consultant or employee works with multiple customer workspaces."
+   },
+   {
+    "title": "Context-specific authorization",
+    "scenario": "The same person needs administrator access in one tenant but ordinary membership in another."
+   }
+  ],
+  "related": [
+   "org_code",
+   "org_codes",
+   "id_token",
+   "roles",
+   "permissions",
+   "default organization",
+   "multi-tenanting"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Kinde represent multi-tenant membership?",
+    "answer": "Organizations are Kinde's unit for separating user groups in a multi-tenant application. A user can belong to multiple organizations, and each membership can carry its own roles and permissions.",
+    "followUp": "How can an application discover all memberships?"
+   },
+   {
+    "question": "How can an application find a user's organizations?",
+    "answer": "Kinde includes organization codes in the ID token's org_codes claim. The application can decode that claim to obtain the organizations available to the user.",
+    "followUp": "What should the application use to authorize the current request?"
+   },
+   {
+    "question": "Why must authorization be organization-specific?",
+    "answer": "Authorization must use the organization context because the same person can have different roles and permissions in different organizations. For example, a user can be an admin in one organization and a member in another.",
+    "followUp": "What architectural limitation applies when modeling multiple products?"
+   }
+  ],
+  "keyPoints": [
+   "Treat organization membership as many-to-many: one person may be associated with several tenant organizations.",
+   "Resolve roles and permissions together with the organization context, not only from the user identity.",
+   "Kinde provides a default destination for new users when the target organization is unknown.",
+   "The decoded ID token exposes the user's organization memberships as organization codes.",
+   "Store or evaluate access at the organization-membership level."
+  ],
+  "gotchas": [
+   "The default organization has different suspension behavior from other organizations and cannot be suspended.",
+   "Without an explicit organization during sign-in, users with multiple memberships may see an organization picker."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Kinde Auth::Permissions and roles": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/guides/kinde-permissions-react-and-backend/",
+  "sourceTitle": "Use Kinde permissions in React and any backend",
+  "summary": "Define permissions in Kinde, group them into roles, assign them to users, and read the resulting permissions from the JWT access token. Use the claim for client-side visibility and enforce it again in backend API routes.",
+  "explanation": "Configure permissions in Kinde, group them into roles when useful, and assign roles or permissions to users. At sign-in, Kinde places the resulting permissions in the JWT access token; the frontend can inspect them for UI or page access, while the backend validates the bearer token and reads its permissions claim before allowing an API request.",
+  "syntax": "has({ permissions: [\"permission:key\"], roles: [\"role-id\"] });\nconst token = await getAccessToken();\nAuthorization: Bearer <token>",
+  "parameters": [
+   {
+    "name": "authorization",
+    "type": "object",
+    "description": "Object passed to has; includes required permission keys and may include role identifiers."
+   },
+   {
+    "name": "permissions",
+    "type": "string[]",
+    "description": "Permission keys configured in Kinde, represented in the token as an array."
+   },
+   {
+    "name": "roles",
+    "type": "string[]",
+    "description": "Optional role identifiers to include in the authorization check."
+   },
+   {
+    "name": "token",
+    "type": "string",
+    "description": "The authenticated user’s JWT access token returned by getAccessToken()."
+   }
+  ],
+  "returns": "The page describes a permissions array in the access token and boolean-style authorization checks through has; it does not specify a separate return type for the backend validation step.",
+  "example": {
+   "title": "Check a permission and pass the access token",
+   "code": "import { getAccessToken } from \"@kinde-oss/kinde-auth-react\";\nimport { has } from \"@kinde-oss/kinde-auth-react/utils\";\n\nexport function DeleteButton() {\n  const allowed = has({ permissions: [\"delete:todos\"] });\n  const { getAccessToken } = useKindeAuth();\n\n  async function removeTodo() {\n    const token = await getAccessToken();\n    await fetch(\"/api/todos/1\", {\n      method: \"DELETE\",\n      headers: { Authorization: `Bearer ${token}` },\n    });\n  }\n\n  return allowed ? <button onClick={removeTodo}>Delete</button> : null;\n}",
+   "language": "tsx",
+   "explanation": "Checks a configured permission in the UI, then sends the access token to the backend so the API can enforce the same authorization decision."
+  },
+  "useCases": [
+   {
+    "title": "Frontend feature visibility",
+    "scenario": "Hide or show pages and controls according to the signed-in user’s permissions."
+   },
+   {
+    "title": "Backend request authorization",
+    "scenario": "Protect API routes by validating the bearer token and checking its permissions claim."
+   },
+   {
+    "title": "Role-based administration",
+    "scenario": "Assign a reusable bundle of related permissions to many users."
+   }
+  ],
+  "related": [
+   "permissions",
+   "roles",
+   "permissions claim",
+   "access token",
+   "getAccessToken()",
+   "has",
+   "Authorization: Bearer <token>",
+   "JWT"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How are permissions and roles configured in Kinde?",
+    "answer": "Create permissions under Settings > User Management > Permissions, giving each one a unique key used by application code. Then create roles to bundle permissions and assign roles or direct permissions to users.",
+    "followUp": "How should a system model fine-grained access? Use permissions for feature-level decisions and roles as reusable groups of those permissions."
+   },
+   {
+    "question": "Where does application code read a user’s permissions?",
+    "answer": "Kinde includes a permissions array in the access token at sign-in. The array reflects permissions assigned directly or inherited through roles.",
+    "followUp": "What happens after an administrator changes a user’s permissions? The updated authorization data is applied when the user signs in again and receives a refreshed token."
+   },
+   {
+    "question": "How should frontend and backend authorization work together?",
+    "answer": "A frontend can inspect the token to control pages and UI elements, then obtain the token with getAccessToken() and send it as a Bearer token. The backend validates and decodes the JWT and reads the permissions claim to allow or reject the API request.",
+    "followUp": "Why enforce authorization on the backend too? Client-side checks only control presentation; the API must make the security decision for every protected request."
+   }
+  ],
+  "keyPoints": [
+   "Create permissions in Kinde’s user-management settings, then give each permission a human-readable name, a code-facing key, and an administrative description.",
+   "The permission key is the stable identifier application code should check, such as create:todos.",
+   "Roles package related permissions so administrators can assign a reusable access set instead of managing every permission separately.",
+   "A user can receive authorization through assigned roles, and role-derived permissions are included in the user’s access token.",
+   "The access token contains a permissions array that represents the permissions configured for the signed-in user.",
+   "Use the token’s permissions on the client for presentation and page-level access decisions, not as the sole protection for APIs.",
+   "Send the token in the Authorization Bearer header so the backend can validate it and evaluate the permissions claim."
+  ],
+  "gotchas": [
+   "Authorization data reflects the user’s assignments when the token is issued; changes require the user to sign in again before the new permissions appear.",
+   "The backend must validate the JWT before trusting its permissions claim; decoding an unvalidated token is not sufficient authorization."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Kinde Auth::SDK setup": {
+  "sourceUrl": "https://authjs.dev/reference/core/providers/kinde",
+  "sourceTitle": "Kinde",
+  "summary": "Configure Auth.js with Kinde by registering the Kinde provider and its application credentials, then expose the Auth.js handler for Kinde's callback URL. Register the provider-specific callback path with Kinde.",
+  "explanation": "Auth.js registers Kinde as an OAuth provider using the application credentials and issuer, then exposes the authentication handler for the callback endpoint together with the server helper used to read the session.",
+  "syntax": "Kinde({ clientId, clientSecret, issuer })",
+  "parameters": [
+   {
+    "name": "clientId",
+    "type": "string",
+    "description": "Kinde application client identifier."
+   },
+   {
+    "name": "clientSecret",
+    "type": "string",
+    "description": "Kinde application client secret."
+   },
+   {
+    "name": "issuer",
+    "type": "string",
+    "description": "Kinde domain used as the OAuth issuer."
+   }
+  ],
+  "returns": "The page's example returns an Auth.js response from the configured provider handler.",
+  "example": {
+   "title": "Auth.js with Kinde",
+   "code": "import NextAuth from \"next-auth\";\nimport Kinde from \"next-auth/providers/kinde\";\n\nexport const { handlers, auth } = NextAuth({\n  providers: [\n    Kinde({\n      clientId: process.env.KINDE_CLIENT_ID,\n      clientSecret: process.env.KINDE_CLIENT_SECRET,\n      issuer: process.env.KINDE_ISSUER,\n    }),\n  ],\n});",
+   "language": "typescript",
+   "explanation": "Configure the Kinde provider and export Auth.js handlers and server authentication helpers."
+  },
+  "useCases": [
+   {
+    "title": "OAuth sign-in",
+    "scenario": "Add Kinde login to an Auth.js application."
+   },
+   {
+    "title": "Callback integration",
+    "scenario": "Connect a Kinde application to an Auth.js callback endpoint."
+   },
+   {
+    "title": "Server authentication",
+    "scenario": "Use Kinde's authorization server with server-side Auth.js configuration."
+   }
+  ],
+  "related": [
+   "Auth",
+   "Kinde",
+   "Callback URL",
+   "providers"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Which settings are required to configure Kinde in Auth.js?",
+    "answer": "The Kinde provider needs the client ID, client secret, and issuer. Auth.js uses those values to discover and communicate with the Kinde authorization server.",
+    "followUp": "How would you verify the redirect configuration? Compare the configured Kinde callback URL with the provider's documented callback pattern and ensure the application host is correct."
+   },
+   {
+    "question": "What is the purpose of the Kinde callback route?",
+    "answer": "The callback endpoint is the Auth.js route whose provider suffix is `kinde`. Kinde redirects the browser there after authentication so Auth.js can complete the OAuth flow.",
+    "followUp": "What symptom suggests a callback mismatch? Kinde commonly rejects or fails the redirect when the registered URL does not exactly match the application's callback route."
+   },
+   {
+    "question": "Where does the Kinde provider configuration belong?",
+    "answer": "The provider configuration is passed to `Auth` through the `providers` array. The exported handler can then be connected to the framework's authentication route.",
+    "followUp": "Why keep provider configuration centralized? It gives the route and server-side helper the same provider and credential configuration, avoiding divergent OAuth behavior."
+   }
+  ],
+  "keyPoints": [
+   "Supply the Kinde application client ID to identify the OAuth client.",
+   "Supply the client secret so the server can authenticate when exchanging the authorization result.",
+   "Set the issuer to the Kinde domain so Auth.js can use the correct authorization server."
+  ],
+  "gotchas": [
+   "Register this exact callback pattern for the Kinde application, replacing the example host with your application host."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Providers::Account linking": {
+  "sourceUrl": "https://authjs.dev/concepts/database-models",
+  "sourceTitle": "Database models",
+  "summary": "Auth.js stores provider connections as Account records attached to User records. A signed-in user’s provider account can be linked automatically when the verified email matches, or manually through an adapter.",
+  "explanation": "Auth.js represents each provider connection as an Account belonging to a User. When the user is signed in, accounts can be associated automatically when their email addresses match; adapters can also expose linkAccount for manual linking.",
+  "syntax": "Adapter.linkAccount(account)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Configure multiple providers",
+   "code": "import NextAuth from \"next-auth\";\nimport Google from \"next-auth/providers/google\";\nimport GitHub from \"next-auth/providers/github\";\n\nexport const { handlers, auth, signIn, signOut } = NextAuth({\n  providers: [Google, GitHub],\n});",
+   "language": "typescript",
+   "explanation": "Configure multiple providers; when a signed-in user authenticates with another provider using the same email, Auth.js can associate the accounts."
+  },
+  "useCases": [
+   {
+    "title": "Multiple social providers",
+    "scenario": "Let users sign in with Google and GitHub without creating duplicate user records when their email matches."
+   },
+   {
+    "title": "Manual account connection",
+    "scenario": "Attach a newly authorized provider to a user who is already authenticated."
+   },
+   {
+    "title": "Account disconnection",
+    "scenario": "Remove a provider connection through an adapter-controlled account-management flow."
+   }
+  ],
+  "related": [
+   "Account",
+   "User",
+   "Adapter.linkAccount",
+   "unlinkAccount",
+   "OAuth provider",
+   "Adapters"
+  ],
+  "since": "",
+  "keyPoints": [
+   "One user record can own several provider accounts, while each provider account belongs to exactly one user.",
+   "Auth.js automatically links provider accounts only for a signed-in user whose email matches.",
+   "The first successful login through a provider creates the corresponding account record.",
+   "Adapters can create a linked account explicitly through linkAccount.",
+   "Manual unlinking is available when the adapter implements unlinkAccount."
+  ],
+  "gotchas": [
+   "Automatic linking requires matching email addresses and an already authenticated user.",
+   "Treat manual unlinking as a destructive operation and add safeguards before enabling it."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Providers::Credentials provider": {
+  "sourceUrl": "https://authjs.dev/getting-started/providers/credentials",
+  "sourceTitle": "Credentials provider - Auth.js",
+  "summary": "The Credentials provider forwards arbitrary sign-in fields to application-defined authorization logic. Use your own password hashing and lockout rules, return a user on success, and use JWT sessions because users are not persisted by this provider.",
+  "explanation": "Credentials defines sign-in inputs and passes their values to authorize, where the application performs its own credential checks. Returning a user succeeds; returning null rejects the attempt. Authenticated users are not persisted by this provider, so JWT sessions are required.",
+  "syntax": "Credentials({ credentials, authorize })",
+  "parameters": [
+   {
+    "name": "credentials",
+    "type": "Record<string, CredentialInput>",
+    "description": "Input-field definitions rendered by the default sign-in form and supplied to authorize."
+   },
+   {
+    "name": "authorize",
+    "type": "(credentials, request) => Awaitable<User | null>",
+    "description": "Custom callback that validates submitted values and returns a user or null."
+   }
+  ],
+  "returns": "A configured Credentials provider; authorize returns a user object on success or null on failure.",
+  "example": {
+   "title": "Credentials provider with application-controlled verification",
+   "code": "import Credentials from \"next-auth/providers/credentials\"\nimport { compare } from \"bcryptjs\"\n\nexport const { handlers, auth } = NextAuth({\n  providers: [\n    Credentials({\n      credentials: {\n        username: { label: \"Username\" },\n        password: { label: \"Password\", type: \"password\" },\n      },\n      async authorize({ username, password }) {\n        const user = await findUser(username)\n        if (!user || user.locked || !(await compare(password, user.passwordHash))) {\n          return null\n        }\n        return { id: user.id, name: user.name, email: user.email }\n      },\n    }),\n  ],\n})",
+   "language": "typescript",
+   "explanation": "The provider forwards submitted fields to custom authorization code, which verifies the password and lockout state before returning a user."
+  },
+  "useCases": [
+   {
+    "title": "Existing username-password system",
+    "scenario": "An existing user database stores password hashes and account status."
+   },
+   {
+    "title": "Custom credential flow",
+    "scenario": "A service requires custom factors or device credentials beyond OAuth."
+   },
+   {
+    "title": "Controlled security policy",
+    "scenario": "Authentication policy requires application-specific lockout and password verification."
+   }
+  ],
+  "related": [
+   "CredentialsConfig",
+   "authorize",
+   "credentials",
+   "JWT sessions"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use it for username/password and other custom credential flows.",
+   "It is suitable when an application already has an authentication service or user store.",
+   "Declare the fields users submit, including labels and input types.",
+   "Put password-hash comparison, account lookup, lockout checks, and other policy decisions in authorize.",
+   "Return null whenever validation fails so Auth.js rejects the sign-in."
+  ],
+  "gotchas": [
+   "The provider does not create or persist users in the database; user storage and credential security remain application responsibilities.",
+   "Configure JWT-based sessions when using this provider; database sessions are not supported for it.",
+   "authorize must explicitly return a user object for success or null for failed credentials."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Providers::Email and magic links": {
+  "sourceUrl": "https://authjs.dev/getting-started/authentication/email",
+  "sourceTitle": "Email Providers",
+  "summary": "Email magic links let users sign in by receiving a one-time verification link. The default token lifetime is 24 hours, and email authentication requires a database to store and look up verification tokens.",
+  "explanation": "The user submits an email address, and Auth.js sends a verification token inside a magic-link URL. Following the link consumes the token, signs in an existing account or creates a new one, and only works before the configured lifetime ends; email authentication requires a database-backed adapter.",
+  "syntax": "Email(options)",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "EmailConfig",
+    "description": "Email provider configuration, including delivery settings and optional token lifetime such as `maxAge`."
+   }
+  ],
+  "returns": "A configured Auth.js email provider that sends verification-token magic links and supports email-based sign-in.",
+  "example": {
+   "title": "Configure email magic links",
+   "code": "import NextAuth from \"next-auth\";\nimport Email from \"next-auth/providers/email\";\n\nexport const { handlers, auth } = NextAuth({\n  adapter,\n  providers: [\n    Email({\n      server: process.env.EMAIL_SERVER,\n      from: process.env.EMAIL_FROM,\n      maxAge: 60 * 60 * 24,\n    }),\n  ],\n});",
+   "language": "typescript",
+   "explanation": "This config enables email sign-in, stores verification tokens through the adapter, and sets the link lifetime to one day."
+  },
+  "useCases": [
+   {
+    "title": "Let users authenticate without creating or remembering a password.",
+    "scenario": "Passwordless sign-in"
+   },
+   {
+    "title": "Offer email sign-in alongside OAuth when users lose access to an external account.",
+    "scenario": "Account recovery fallback"
+   },
+   {
+    "title": "Verify an email address before creating the user's account record.",
+    "scenario": "New-user registration"
+   }
+  ],
+  "related": [
+   "Email Provider",
+   "Verification Token",
+   "VerificationToken",
+   "maxAge",
+   "JSON Web Tokens",
+   "database session",
+   "database adapter"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does email magic-link sign-in work?",
+    "answer": "Auth.js sends a verification token to the submitted email address. When the link is used within its lifetime, the token is consumed and the user is signed in; a first-time user gets an account.",
+    "followUp": "What happens if the token is used twice? It is deleted after successful verification, so it is usable only once."
+   },
+   {
+    "question": "Why must an email provider use a database?",
+    "answer": "The email provider requires a database to store verification tokens and find them when the link returns to the application. This requirement remains even if sessions use JSON Web Tokens.",
+    "followUp": "Why is a database still needed with JWT sessions? The database stores the short-lived verification-token record; it is separate from the session representation."
+   },
+   {
+    "question": "How is the magic-link expiry controlled?",
+    "answer": "The default verification-token lifetime is one day, and the provider's `maxAge` option can configure it. After expiry, the user must restart sign-in to receive another token.",
+    "followUp": "Can a user extend an issued link? No; changing configuration affects token lifetime rules, but an already issued token cannot be extended by the user."
+   }
+  ],
+  "keyPoints": [
+   "The flow begins with an email address rather than a password or external identity-provider account.",
+   "Auth.js sends a token-bearing magic link to the submitted address.",
+   "The default validity window is 24 hours, and clicking the link consumes the token.",
+   "Email authentication supports either JWT sessions or database-managed sessions.",
+   "A new user record is created only after the email link is successfully verified."
+  ],
+  "gotchas": [
+   "An email provider cannot function without a configured database adapter, even when the session strategy uses JSON Web Tokens."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Providers::OAuth providers": {
+  "sourceUrl": "https://authjs.dev/guides/configuring-oauth-providers",
+  "sourceTitle": "Auth.js | Configuring Oauth Providers",
+  "summary": "Add OAuth providers by placing them in Auth.js's `providers` array, then register each provider's complete callback URL in its dashboard. The callback path uses the integration's base path and provider ID.",
+  "explanation": "Auth.js enables OAuth sign-in by placing provider configurations in the `providers` array. Each provider receives an authorization request and returns the user through a provider-specific callback route, which must be registered in that provider's dashboard before sign-in can complete.",
+  "syntax": "NextAuth({ providers: [ProviderA, ProviderB] })",
+  "parameters": [
+   {
+    "name": "providers",
+    "type": "Provider[]",
+    "description": "Provider configurations passed to Auth.js; each configuration identifies and configures an OAuth provider."
+   },
+   {
+    "name": "redirectProxyUrl",
+    "type": "string",
+    "description": "The stable URL and Auth.js route path used as the redirect proxy when configured."
+   }
+  ],
+  "returns": "Auth.js authentication handlers and session/auth helpers configured with the selected OAuth providers.",
+  "example": {
+   "title": "Register OAuth providers",
+   "code": "import NextAuth from \"next-auth\";\nimport GitHub from \"next-auth/providers/github\";\nimport Google from \"next-auth/providers/google\";\n\nexport const { handlers, auth } = NextAuth({\n  providers: [GitHub, Google],\n});",
+   "language": "typescript",
+   "explanation": "Register the providers in Auth.js, then add each provider's callback URL to its developer dashboard."
+  },
+  "useCases": [
+   {
+    "title": "GitHub sign-in",
+    "scenario": "Users sign in with an existing GitHub account instead of creating a local password."
+   },
+   {
+    "title": "Multiple OAuth providers",
+    "scenario": "An application offers Google authentication alongside another provider."
+   },
+   {
+    "title": "Stable redirect proxy",
+    "scenario": "Preview deployments need OAuth while the provider permits only one redirect URI."
+   }
+  ],
+  "related": [
+   "basePath",
+   "callback URL",
+   "redirectProxyUrl",
+   "AUTH_REDIRECT_PROXY_URL",
+   "Provider",
+   "GitHub",
+   "Google",
+   "OAuth2Config.checks"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you add GitHub or Google OAuth to Auth.js?",
+    "answer": "Add provider configurations to Auth.js's `providers` array. For Next.js, a provider callback normally follows `/api/auth/callback/{id}`, and that full URL must be registered with the provider.",
+    "followUp": "How would you support preview deployments when the provider accepts only one redirect URI? Configure a stable `redirectProxyUrl` or `AUTH_REDIRECT_PROXY_URL` and register the stable callback URL."
+   },
+   {
+    "question": "What redirect URI should be registered?",
+    "answer": "The provider dashboard must contain the callback URL generated from the application's domain, base path, and provider ID. For example, Google uses `/api/auth/callback/google` in a standard Next.js setup.",
+    "followUp": "What changes outside Next.js? The default base path becomes `/auth`, so the registered callback URL must use that path unless the integration is configured differently."
+   },
+   {
+    "question": "When should redirect proxying be used?",
+    "answer": "Set `redirectProxyUrl` when a provider supports only one redirect URI or when preview URLs are not stable. Auth.js then bases the authorization request's `redirect_uri` on that value and automatically enables the OAuth state check.",
+    "followUp": "Why is a stable proxy useful? The stable endpoint receives the callback, validates the state, and can redirect the request to the originating preview deployment."
+   }
+  ],
+  "keyPoints": [
+   "For every OAuth provider, register a callback URL formed from the application origin, integration base path, and provider ID.",
+   "Use `/api/auth` as the default base path in Next.js; other Auth.js integrations default to `/auth`.",
+   "The provider ID distinguishes which OAuth provider handles a sign-in request.",
+   "Configuring a redirect proxy automatically adds the OAuth state check to help bind the callback to the initiating flow."
+  ],
+  "gotchas": [
+   "The callback path depends on the integration: Next.js normally uses `/api/auth`, while other integrations normally use `/auth`."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Providers::Provider profiles": {
+  "sourceUrl": "https://authjs.dev/guides/configuring-oauth-providers",
+  "sourceTitle": "Configuring an OAuth provider",
+  "summary": "Use a provider's `profile` callback to map OAuth profile fields into the user shape Auth.js creates. Return the standard fields plus any provider-specific data your application needs.",
+  "explanation": "A provider's profile callback receives the complete profile returned by the OAuth provider and returns the subset and field names that Auth.js uses for the user record. Returning additional properties lets the application's user shape retain provider-specific data.",
+  "syntax": "profile(profile: Profile): User",
+  "parameters": [
+   {
+    "name": "profile",
+    "type": "Profile",
+    "description": "The complete OAuth profile returned by the provider."
+   }
+  ],
+  "returns": "A subset of the provider profile used to create the user object in the database.",
+  "example": {
+   "title": "Map provider fields to a user",
+   "code": "import NextAuth from \"next-auth\"\nimport GitHub from \"next-auth/providers/github\"\n\nexport const { handlers, auth } = NextAuth({\n  providers: [\n    GitHub({\n      profile(profile) {\n        return {\n          id: profile.id,\n          name: profile.name,\n          email: profile.email,\n          image: profile.avatar_url,\n          username: profile.login,\n        }\n      },\n    }),\n  ],\n})",
+   "language": "typescript",
+   "explanation": "The callback keeps the provider identifier and maps the provider's avatar and login fields into the application user object."
+  },
+  "useCases": [
+   {
+    "title": "Normalize profile fields",
+    "scenario": "Normalize provider-specific field names such as `avatar_url` into Auth.js's `image` field."
+   },
+   {
+    "title": "Keep custom user data",
+    "scenario": "Persist an additional provider attribute, such as a username, on the created user."
+   },
+   {
+    "title": "Limit stored profile data",
+    "scenario": "Select only the fields required by the application instead of retaining the full provider response."
+   }
+  ],
+  "related": [
+   "profile callback",
+   "Profile",
+   "User",
+   "OAuth provider",
+   "database user"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The returned object defines the user data created during OAuth sign-in.",
+   "Provider defaults may expose a small set of mapped fields rather than the entire upstream profile.",
+   "Return extra provider fields when the application needs provider-specific attributes."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Sessions & authorization::Cookie security": {
+  "sourceUrl": "https://authjs.dev/concepts/session-strategies",
+  "sourceTitle": "Session strategies",
+  "summary": "Auth.js protects sessions by keeping JWTs or database-session identifiers in HttpOnly cookies, with encryption for JWTs. Secure and SameSite policies should ensure cookies travel only under the intended HTTPS and cross-site conditions.",
+  "explanation": "Auth.js stores either an encrypted JWT or an opaque database-session identifier in an HttpOnly cookie. Configure cookie options when overriding defaults, use Secure cookies over HTTPS, and retain SameSite protection to reduce cross-site request risks.",
+  "syntax": "Auth({ cookies?: Partial<CookiesOptions>; useSecureCookies?: boolean })",
+  "parameters": [
+   {
+    "name": "cookies",
+    "type": "Partial<CookiesOptions>",
+    "description": "Partial cookie-name and cookie-option overrides for Auth.js cookies."
+   },
+   {
+    "name": "useSecureCookies",
+    "type": "boolean",
+    "description": "Whether Auth.js cookies are restricted to HTTPS URLs."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Secure Auth.js session cookie",
+   "code": "export const { handlers, auth } = NextAuth({\n  providers: [],\n  useSecureCookies: process.env.NODE_ENV === \"production\",\n  cookies: {\n    sessionToken: {\n      name: \"__Secure-authjs.session-token\",\n      options: {\n        httpOnly: true,\n        sameSite: \"lax\",\n        path: \"/\",\n        secure: true\n      }\n    }\n  }\n});",
+   "language": "typescript",
+   "explanation": "This Auth.js configuration makes the session cookie inaccessible to browser JavaScript, limits cross-site sending, and requires HTTPS in production."
+  },
+  "useCases": [
+   {
+    "title": "Protect browser sessions over HTTPS",
+    "scenario": "Production web application"
+   },
+   {
+    "title": "Keep encrypted session tokens out of JavaScript",
+    "scenario": "JWT-based authentication"
+   },
+   {
+    "title": "Send only an opaque session identifier",
+    "scenario": "Database-backed authentication"
+   },
+   {
+    "title": "Override cookie names and attributes deliberately",
+    "scenario": "Custom deployment policy"
+   }
+  ],
+  "related": [
+   "CookiesOptions",
+   "AuthConfig.cookies",
+   "AuthConfig.useSecureCookies",
+   "JWT session",
+   "Database session",
+   "AUTH_SECRET"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Auth.js persist a session?",
+    "answer": "Auth.js supports JWT and database sessions. The default JWT strategy places an encrypted JWT in an HttpOnly cookie, while the database strategy places an opaque session identifier in one and looks up the session server-side.",
+    "followUp": "Which strategy avoids putting user data in the cookie? Database sessions: the cookie contains only an obscure value that points to a database record."
+   },
+   {
+    "question": "Why should the session cookie be HttpOnly?",
+    "answer": "HttpOnly prevents client-side JavaScript from reading the cookie through APIs such as `document.cookie`, reducing the chance that an attacker can steal its value through script access. The cookie is still sent by the browser to the appropriate server origin.",
+    "followUp": "Does HttpOnly alone prevent every cross-site request risk? No; request-sending and CSRF concerns require additional protections, including appropriate SameSite behavior and Auth.js’s CSRF mechanisms."
+   },
+   {
+    "question": "What does Secure protection do in Auth.js?",
+    "answer": "Setting `useSecureCookies` to true makes Auth.js cookies accessible only through HTTPS URLs. Auth.js defaults this to false for `http://` URLs for development convenience and true for HTTPS sites.",
+    "followUp": "Why should custom cookie policies be conditional? Customizing `cookies` opts out of the built-in dynamic policy, so development and production may need separate settings."
+   }
+  ],
+  "keyPoints": [
+   "With the JWT strategy, Auth.js keeps the signed-in token in an HttpOnly cookie rather than exposing it to browser scripts.",
+   "The HttpOnly flag blocks ordinary client-side JavaScript from reading the session cookie.",
+   "Auth.js adds server-only encryption to JWT sessions, so possession of the cookie does not reveal its contents without the secret.",
+   "Signing out removes the JWT cookie and thereby ends the JWT-backed session.",
+   "The `cookies` configuration allows explicit names and attributes for Auth.js cookies, including session-cookie security flags.",
+   "Secure-cookie behavior is dynamic by URL scheme unless you replace it with an explicit policy."
+  ],
+  "gotchas": [
+   "Overriding cookies opts out of Auth.js’s built-in dynamic policy, so use different development and production policies when needed.",
+   "Local HTTP development defaults to non-secure cookies; do not carry that setting into production."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Sessions & authorization::JWT versus database sessions": {
+  "sourceUrl": "https://authjs.dev/concepts/session-strategies",
+  "sourceTitle": "Session Strategies",
+  "summary": "Auth.js offers JWT sessions, which store an encrypted token in an HttpOnly cookie, and database sessions, which store a server-side record referenced by a cookie token. JWTs avoid session lookups; database sessions are easier to revoke server-side.",
+  "explanation": "Auth.js supports two ways to persist login state. With JWT sessions, an encrypted JWT is placed in an HttpOnly cookie and the session can be read without a session database. With database sessions, Auth.js stores the session server-side and puts only an opaque session token in the HttpOnly cookie; session access then looks up the database record, which makes server-side deletion possible.",
+  "syntax": "session: { strategy: \"jwt\" | \"database\" }",
+  "parameters": [
+   {
+    "name": "session.strategy",
+    "type": "\"jwt\" | \"database\"",
+    "description": "Controls how Auth.js persists the login session."
+   }
+  ],
+  "returns": "A session strategy configuration that determines whether Auth.js persists session state in an encrypted JWT cookie or in a database record referenced by a cookie token.",
+  "example": {
+   "title": "Select database sessions",
+   "code": "import NextAuth from \"next-auth\";\n\nexport const { handlers, auth } = NextAuth({\n  providers: [],\n  session: {\n    strategy: \"database\",\n  },\n});",
+   "language": "typescript",
+   "explanation": "This Auth.js configuration selects a database-backed session strategy; with a configured adapter, the database strategy is also the default."
+  },
+  "useCases": [
+   {
+    "title": "Stateless, horizontally scalable sessions",
+    "scenario": "Choose JWT when minimizing database dependencies and session reads is more important than immediate server-side revocation."
+   },
+   {
+    "title": "Revocable login sessions",
+    "scenario": "Choose database sessions when administrators need to invalidate sessions by deleting server-side records."
+   },
+   {
+    "title": "Database-backed authentication",
+    "scenario": "Use an adapter-backed application that needs Auth.js to persist session records in its database."
+   }
+  ],
+  "related": [
+   "session strategy",
+   "JWT",
+   "database sessions",
+   "HttpOnly cookie",
+   "database adapter",
+   "session callback",
+   "sign out"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do JWT and database sessions differ in where session state is stored?",
+    "answer": "Auth.js has JWT and database session strategies. JWT sessions keep an encrypted JWT in the session cookie, while database sessions keep only a session token in the cookie and retrieve the session from the database.",
+    "followUp": "What does configuring an adapter change? It makes database sessions the default, although strategy: \"jwt\" can explicitly force JWT sessions."
+   },
+   {
+    "question": "What is the main operational trade-off between the two strategies?",
+    "answer": "JWT sessions avoid a session lookup in a database and can be easier to scale because session state is carried in the cookie. Database sessions require a lookup, but the server can delete the database record to invalidate the session.",
+    "followUp": "What happens at sign-out? Auth.js deletes the JWT cookie for JWT sessions; for database sessions it deletes both the database session and the cookie token."
+   },
+   {
+    "question": "What does the database-session cookie contain?",
+    "answer": "With database sessions, the cookie contains an obscure session identifier rather than user data. Auth.js uses that identifier to find the active session record and its associated user.",
+    "followUp": "How can an application persist additional server-side session data? Save it elsewhere and retrieve it from the database in the session callback."
+   }
+  ],
+  "keyPoints": [
+   "JWT is a supported Auth.js session strategy.",
+   "JWT is the default when no database adapter is configured.",
+   "At sign-in, Auth.js stores the JWT in an HttpOnly cookie.",
+   "JWT sessions do not need a database session record, reducing infrastructure for session persistence.",
+   "Database sessions are the alternative Auth.js strategy.",
+   "Database sessions place a session identifier, rather than the full session data, in the cookie.",
+   "Reading a database session performs a database lookup.",
+   "Signing out removes the server-side database session record."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Sessions & authorization::Middleware protection": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/nextjs-prev-sdk/",
+  "sourceTitle": "Kinde Auth Data",
+  "summary": "Protect matched Next.js routes with Kinde's withAuth middleware. Unauthenticated users are redirected to login, and the original destination can be preserved.",
+  "explanation": "Next.js middleware runs before matched routes render. Kinde's withAuth helper checks authentication, redirects unauthenticated users to login, and can return them to the originally requested page; the matcher determines which routes are protected.",
+  "syntax": "withAuth(req, options)",
+  "parameters": [
+   {
+    "name": "req",
+    "type": "NextRequest",
+    "description": "The incoming Next.js request passed to the helper."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Middleware options, including return behavior, login page, public paths, and authorization criteria."
+   }
+  ],
+  "returns": "The middleware response returned by withAuth, typically allowing the request or redirecting it to authentication.",
+  "example": {
+   "title": "Protect a matched route with Kinde middleware",
+   "code": "import { withAuth } from \"@kinde-oss/kinde-auth-nextjs/middleware\";\n\nexport default function middleware(req) {\n  return withAuth(req, {\n    isReturnToCurrentPage: true,\n  });\n}\n\nexport const config = {\n  matcher: [\"/admin\"],\n};",
+   "language": "javascript",
+   "explanation": "This middleware applies Kinde authentication to the matched route and returns the user to that route after login."
+  },
+  "useCases": [
+   {
+    "title": "Protect admin pages",
+    "scenario": "Require sign-in for an administrative route before its page renders."
+   },
+   {
+    "title": "Return users to their original page",
+    "scenario": "Keep a requested destination through the login redirect."
+   },
+   {
+    "title": "Configure route authorization",
+    "scenario": "Apply different access rules to selected route patterns."
+   }
+  ],
+  "related": [
+   "withAuth",
+   "isReturnToCurrentPage",
+   "loginPage",
+   "publicPaths",
+   "isAuthorized",
+   "matcher",
+   "middleware"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you protect a route with Kinde middleware?",
+    "answer": "Use Kinde's withAuth helper in Next.js middleware, and export a config object whose matcher lists the protected routes. The helper redirects unauthenticated users to login.",
+    "followUp": "How can the post-login experience be improved? Set isReturnToCurrentPage to true so the user is sent back to the page they originally requested."
+   },
+   {
+    "question": "What determines which routes are protected?",
+    "answer": "The matcher selects the routes on which middleware runs. A route covered by that matcher receives the authentication check before the page is served.",
+    "followUp": "How would you protect several route patterns? Add each required pattern to the matcher configuration, while leaving intentionally public paths out."
+   },
+   {
+    "question": "Why is middleware alone insufficient for API security?",
+    "answer": "Frontend middleware protection is not the complete security boundary. The backend must still verify authentication independently because a client can bypass redirects and call an API directly.",
+    "followUp": "What should an API validate on each protected request? It should independently validate the supplied access token before granting access."
+   }
+  ],
+  "keyPoints": [
+   "Use Kinde's withAuth middleware helper together with a matcher to guard selected Next.js routes.",
+   "Unauthenticated requests are sent to the login flow instead of reaching the protected page.",
+   "The helper can preserve the requested destination so users return to the page they attempted to open.",
+   "Middleware behavior is configurable through options such as the return destination, login page, public paths, and authorization criteria.",
+   "Authentication and authorization can be separated by supplying an isAuthorized rule for access criteria."
+  ],
+  "gotchas": [
+   "The middleware redirects unauthenticated visitors, so the configured matcher must cover every route that requires this protection."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Sessions & authorization::Reading the session": {
+  "sourceUrl": "https://authjs.dev/getting-started/session-management/get-session",
+  "sourceTitle": "Get Session",
+  "summary": "Read the Auth.js session on the server with the exported auth function, or in a client component with useSession. Client-side access requires SessionProvider.",
+  "explanation": "Auth.js exposes an auth function from the NextAuth configuration. Call it with await in server code to obtain the session, or use useSession in a client component wrapped by SessionProvider. Server-side access is generally preferred because it supports rendering and avoids unnecessary client-side session retrieval.",
+  "syntax": "const session = await auth()",
+  "parameters": [],
+  "returns": "A session object, or null when no authenticated session is available.",
+  "example": {
+   "title": "Read a session in a Server Component",
+   "code": "import NextAuth from \"next-auth\"\nimport Kinde from \"next-auth/providers/kinde\"\n\nexport const { handlers, auth } = NextAuth({\n  providers: [Kinde],\n})\n\n// Server Component\nexport default async function Page() {\n  const session = await auth()\n  return <p>{session?.user?.email ?? \"Not signed in\"}</p>\n}",
+   "language": "tsx",
+   "explanation": "The server component reads the current session by calling the auth function exported from the Auth.js configuration."
+  },
+  "useCases": [
+   {
+    "title": "Read session data on the server",
+    "scenario": "A Server Component needs the signed-in user's identity or profile data."
+   },
+   {
+    "title": "Read session data in a client component",
+    "scenario": "A client-side interface needs to react to sign-in state without a full navigation."
+   },
+   {
+    "title": "Pass a session through page props",
+    "scenario": "A Pages Router component needs session data from its page."
+   }
+  ],
+  "related": [
+   "NextAuth()",
+   "auth",
+   "useSession",
+   "SessionProvider",
+   "session"
+  ],
+  "since": "",
+  "keyPoints": [
+   "In a server component, await auth() to retrieve the current session.",
+   "Prefer server-side session reads when possible to benefit from server rendering and improved security.",
+   "A client component can read the session with the useSession hook.",
+   "Wrap the relevant client-side application or page with SessionProvider before calling useSession.",
+   "With the Pages Router, obtain the session in the page and pass it to child components."
+  ],
+  "gotchas": [
+   "A client component using useSession must be below SessionProvider; otherwise client-side session access is not configured.",
+   "Client-side access is supported in both routers, but it is a separate approach from reading the session on the server."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Sessions & authorization::Role-based access": {
+  "sourceUrl": "https://authjs.dev/guides/role-based-access-control",
+  "sourceTitle": "Role-based access control",
+  "summary": "Auth.js supports role-based access control by attaching a role during authentication and making it available through the selected session strategy. Authorization then checks that role through the framework’s authorization function, rather than granting access merely because a session exists.",
+  "explanation": "Auth.js RBAC adds a role during provider profile processing, then carries it through either the JWT or database session strategy. Authorization reads the current session through the framework's exported authorization function and permits or denies access based on the role.",
+  "syntax": "callbacks: { profile(), jwt(), session(), authorized() }",
+  "parameters": [],
+  "returns": "An authorization decision based on the role stored in the current session.",
+  "example": {
+   "title": "Authorize by role",
+   "code": "import NextAuth from \"next-auth\";\nimport GitHub from \"next-auth/providers/github\";\n\nexport const { handlers, auth } = NextAuth({\n  providers: [GitHub],\n  callbacks: {\n    async jwt({ token, user }) {\n      if (user) token.role = user.role;\n      return token;\n    },\n    async session({ session, token }) {\n      session.user.role = token.role;\n      return session;\n    },\n    authorized({ auth }) {\n      return auth?.user?.role === \"admin\";\n    },\n  },\n});",
+   "language": "typescript",
+   "explanation": "Persist a user's role in the JWT, expose it through the session, and allow access only when the authorization callback sees the required role."
+  },
+  "useCases": [
+   {
+    "title": "Restrict routes by role",
+    "scenario": "Protect an admin dashboard from authenticated users who lack the administrator role."
+   },
+   {
+    "title": "Propagate claims through a JWT",
+    "scenario": "Expose authorization data consistently when the application uses JWT sessions."
+   },
+   {
+    "title": "Authorize with database sessions",
+    "scenario": "Load authorization attributes from persisted user records when using database sessions."
+   }
+  ],
+  "related": [
+   "profile() callback",
+   "jwt callback",
+   "session callback",
+   "authorization function",
+   "JWT session strategy",
+   "database session strategy"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Auth.js implement role-based access control?",
+    "answer": "Add the role in the provider's profile callback. With JWT sessions, copy it from the user into the token and then expose it on the session; with database sessions, persist the role in the user record and return it from the session callback.",
+    "followUp": "Why must the implementation differ by session strategy? JWT sessions carry claims in the token, while database sessions retrieve user data from the database, so the role must be propagated through the matching path."
+   },
+   {
+    "question": "Where should access decisions be made?",
+    "answer": "The authorization function exported by the framework-specific configuration can inspect the current session and its role. It should return an authorization decision based on the required role or permission, not simply on the existence of a session.",
+    "followUp": "How would permission-based authorization extend this? Store permissions alongside the role and test for the required permission in the authorization function."
+   },
+   {
+    "question": "How is a role exposed when using JWT sessions?",
+    "answer": "For JWT sessions, assign the role to the JWT in the `jwt` callback and copy it to `session.user` in the `session` callback. This makes the role available to authorization logic using the current session.",
+    "followUp": "What must change for database sessions? Persist the role on the user record and make it available through the session callback instead of relying on a JWT claim."
+   }
+  ],
+  "keyPoints": [
+   "Determine the initial role while processing the provider profile.",
+   "Use the framework's exported authorization function to read role data from the current session.",
+   "RBAC lets application access depend on assigned roles rather than on authentication alone."
+  ],
+  "gotchas": [
+   "Authorization must inspect the session through the framework's authorization function rather than merely checking whether a session exists."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Sessions & authorization::Session and JWT callbacks": {
+  "sourceUrl": "https://authjs.dev/guides/extending-the-session",
+  "sourceTitle": "Extending The Session - Auth.js",
+  "summary": "Use the jwt callback to persist a user ID or role in the JWT, then copy it in the session callback to expose it through the session.",
+  "explanation": "With JWT sessions, the jwt callback receives the user during sign-in and can persist an identifier or role on the token. The session callback then copies that value onto the session object; only fields returned there are exposed to the client.",
+  "syntax": "callbacks: { jwt({ token, user }) { ... return token }, session({ session, token }) { ... return session } }",
+  "parameters": [
+   {
+    "name": "jwt({ token, user })",
+    "type": "object",
+    "description": "Callback parameters including token and, during sign-in, user; used to modify and return the JWT."
+   },
+   {
+    "name": "session({ session, token })",
+    "type": "object",
+    "description": "Callback parameters including session and token; used to add token claims to the client-visible session."
+   }
+  ],
+  "returns": "Both callbacks return their updated objects: jwt returns token, and session returns session.",
+  "example": {
+   "title": "Persist and expose a user role",
+   "code": "import NextAuth from \"next-auth\"\n\nexport const { auth, handlers } = NextAuth({\n  providers: [],\n  callbacks: {\n    jwt({ token, user }) {\n      if (user) token.role = user.role\n      return token\n    },\n    session({ session, token }) {\n      session.user.role = token.role\n      return session\n    },\n  },\n})",
+   "language": "typescript",
+   "explanation": "The JWT callback stores the role during sign-in; the session callback explicitly copies it to the client-visible session."
+  },
+  "useCases": [
+   {
+    "title": "Expose a user ID",
+    "scenario": "Need a stable application identifier in server-side Auth.js calls."
+   },
+   {
+    "title": "Persist a role claim",
+    "scenario": "Authorization checks need a role available to authenticated application code."
+   },
+   {
+    "title": "Make a role available through useSession()",
+    "scenario": "Client components need a non-sensitive authorization attribute."
+   }
+  ],
+  "related": [
+   "jwt callback",
+   "session callback",
+   "JWT session strategy",
+   "auth()",
+   "useSession()",
+   "token.id",
+   "token.role"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you persist a role in a JWT session?",
+    "answer": "The jwt callback runs when a JWT is created or updated. During sign-in, user is available, so copy a role or ID onto token and return it.",
+    "followUp": "How does the value reach browser code? The session callback must explicitly copy token.role or token.id onto the returned session."
+   },
+   {
+    "question": "How do you expose a JWT claim on the session?",
+    "answer": "The session callback runs when a session is checked and controls what the client receives. Return the session after assigning the desired token property to it.",
+    "followUp": "What is the security concern? Returning a property from the session callback exposes it to the client, so avoid sensitive claims."
+   },
+   {
+    "question": "Which callback arguments differ between JWT and database sessions?",
+    "answer": "With JWT sessions, the token is available to the callbacks and the user is available during sign-in in the jwt callback. The session callback should read the persisted claim from token.",
+    "followUp": "What changes with database sessions? The user argument is available in the session callback, while token is specific to JWT session strategy."
+   }
+  ],
+  "keyPoints": [
+   "Use the sign-in-time user object in jwt to obtain provider profile data before persisting a custom claim.",
+   "Assign a user ID to token.id when the user object is available.",
+   "Returning the modified token makes the identifier available on later callback invocations.",
+   "Copy the persisted claim from token to session.user in the session callback.",
+   "After both callbacks are configured, server auth() and client useSession() can read the exposed identifier.",
+   "A role stored in the token is not client-visible until the session callback adds it to the returned session."
+  ],
+  "gotchas": [
+   "Anything returned by the session callback can reach the client, so do not expose sensitive token claims.",
+   "The token parameter is available in this callback flow only with the JWT session strategy.",
+   "Do not rely on user in the session callback for JWT sessions; use the token value instead."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

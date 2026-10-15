@@ -1,0 +1,1747 @@
+{
+ "Dynamic content::Grid virtualization": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/framework/marko/marko-virtual",
+  "sourceTitle": "Marko Virtual",
+  "summary": "Combine a vertical row virtualizer and a horizontal column virtualizer over the same scroll element. Render their visible-item intersections inside an inner surface sized by both total dimensions.",
+  "explanation": "A grid uses two virtualizers on the same scroll element: one estimates and positions rows vertically, while the other handles columns horizontally. A relative inner surface receives both total dimensions, and each visible row-column pair is absolutely positioned using its measured start and size.",
+  "syntax": "useVirtualizer({ count, getScrollElement, estimateSize, horizontal })",
+  "parameters": [
+   {
+    "name": "count (rows)",
+    "type": "number",
+    "description": "Number of rows to virtualize."
+   },
+   {
+    "name": "count (columns)",
+    "type": "number",
+    "description": "Number of columns to virtualize."
+   },
+   {
+    "name": "getScrollElement",
+    "type": "() => Element | null",
+    "description": "Function returning the scroll container."
+   },
+   {
+    "name": "estimateSize",
+    "type": "(index: number) => number",
+    "description": "Estimated item size for the relevant axis."
+   },
+   {
+    "name": "horizontal",
+    "type": "boolean",
+    "description": "Enables horizontal virtualization for the column axis."
+   }
+  ],
+  "returns": "Two virtualizer instances that expose visible items and total sizes for their respective axes.",
+  "example": {
+   "title": "Two-dimensional grid virtualizer",
+   "code": "import { useVirtualizer } from '@tanstack/react-virtual'\nimport { useRef } from 'react'\n\nexport function Grid() {\n  const ref = useRef<HTMLDivElement>(null)\n  const rows = useVirtualizer({ count: 10000, getScrollElement: () => ref.current, estimateSize: () => 35 })\n  const columns = useVirtualizer({ horizontal: true, count: 200, getScrollElement: () => ref.current, estimateSize: () => 100 })\n  return <div ref={ref} style={{ height: 500, width: 500, overflow: 'auto', position: 'relative' }}><div style={{ height: rows.getTotalSize(), width: columns.getTotalSize(), position: 'relative' }}>{rows.getVirtualItems().flatMap(row => columns.getVirtualItems().map(col => <div key={`${row.key}-${col.key}`} style={{ position: 'absolute', top: 0, left: 0, width: col.size, height: row.size, transform: `translateX(${col.start}px) translateY(${row.start}px)` }}>Cell {row.index}, {col.index}</div>))}</div></div>\n}",
+   "language": "tsx",
+   "explanation": "Creates independent vertical and horizontal virtualizers that share one scroll container, then renders only their visible row-column intersections."
+  },
+  "useCases": [
+   {
+    "title": "Data grids",
+    "scenario": "Large spreadsheet-like interfaces with many rows and columns."
+   },
+   {
+    "title": "Large spatial surfaces",
+    "scenario": "Canvas-like editors whose cells occupy a two-dimensional coordinate space."
+   },
+   {
+    "title": "Tile layouts",
+    "scenario": "Virtualized dashboards containing repeated tiles across both axes."
+   }
+  ],
+  "related": [
+   "useVirtualizer",
+   "getVirtualItems",
+   "getTotalSize",
+   "getScrollElement",
+   "estimateSize",
+   "horizontal"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you virtualize both dimensions of a grid?",
+    "answer": "Use one virtualizer for rows and another configured with horizontal scrolling for columns. Give both the same scroll element, then render the Cartesian product of their virtual items.",
+    "followUp": "How is the full scrollable geometry preserved? Set the inner surface height to the row virtualizer's total size and its width to the column virtualizer's total size."
+   },
+   {
+    "question": "How are visible cells positioned?",
+    "answer": "Each cell uses the row's height and vertical start together with the column's width and horizontal start. Absolute positioning places only visible intersections while preserving their coordinates.",
+    "followUp": "What changes for variable dimensions? Supply item-specific estimates or measurements to each virtualizer so its starts and total size reflect actual row and column dimensions."
+   },
+   {
+    "question": "What configuration does each axis need?",
+    "answer": "The row virtualizer receives the row count and row size estimate; the column virtualizer receives the column count, a horizontal flag, and column size estimate. Both resolve scrolling through the shared element.",
+    "followUp": "Why not use one virtualizer? A single axis cannot independently calculate visible ranges and total geometry for both vertical rows and horizontal columns."
+   }
+  ],
+  "keyPoints": [
+   "Model the grid as two independent virtualizers: a vertical row axis and a horizontal column axis.",
+   "Attach both axes to the same scrolling element so horizontal and vertical visibility are coordinated.",
+   "Size a positioned inner surface from both total virtual sizes to preserve the complete scroll geometry.",
+   "Place each rendered cell using the column's horizontal start and the row's vertical start.",
+   "Render cells from the intersection of the currently visible row and column items."
+  ],
+  "gotchas": [
+   "Both virtualizers must reference the same scrolling container so their visible ranges correspond to one two-dimensional viewport."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Dynamic content::Horizontal virtualization": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/framework/react/guide/virtualization",
+  "sourceTitle": "Virtualization (React) Guide | TanStack Table React Docs",
+  "summary": "Virtualize columns by configuring a horizontal virtualizer over the table’s visible leaf columns. Render its virtual items and use left/right spacer cells to preserve the full horizontal scroll geometry.",
+  "explanation": "Horizontal virtualization applies the same selective rendering idea to columns: use the visible-column list as the source, configure a horizontal virtualizer, and render only its virtual items. Preserve the table’s full horizontal geometry with left and right spacer cells while a row virtualizer independently handles vertical positioning and body height.",
+  "syntax": "useVirtualizer({ count, estimateSize, getScrollElement, horizontal: true, overscan })",
+  "parameters": [
+   {
+    "name": "count",
+    "type": "number",
+    "description": "Number of visible columns represented by the virtualizer."
+   },
+   {
+    "name": "estimateSize",
+    "type": "(index: number) => number",
+    "description": "Function returning the estimated size of a column."
+   },
+   {
+    "name": "getScrollElement",
+    "type": "() => Element | null",
+    "description": "Function returning the scroll container."
+   },
+   {
+    "name": "horizontal",
+    "type": "boolean",
+    "description": "Orient the virtualizer horizontally."
+   },
+   {
+    "name": "overscan",
+    "type": "number",
+    "description": "Number of extra columns rendered beyond the viewport."
+   }
+  ],
+  "returns": "A virtualizer instance whose virtual items identify the columns to render and provide the range and offsets needed for layout.",
+  "example": {
+   "title": "Horizontal column virtualizer",
+   "code": "import { useVirtualizer } from '@tanstack/react-virtual'\n\nconst columnVirtualizer = useVirtualizer({\n  count: visibleColumns.length,\n  estimateSize: (index) => visibleColumns[index].getSize(),\n  getScrollElement: () => tableContainerRef.current,\n  horizontal: true,\n  overscan: 3,\n})\n\nconst virtualColumns = columnVirtualizer.getVirtualItems()",
+   "language": "tsx",
+   "explanation": "Configure a virtualizer with the visible-column count, column-size estimate, scroll container, and horizontal orientation, then render the returned virtual columns."
+  },
+  "useCases": [
+   {
+    "title": "Large wide tables",
+    "scenario": "A table has many visible columns and horizontal scrolling."
+   },
+   {
+    "title": "Two-axis virtualization",
+    "scenario": "A data grid must keep both DOM size and scroll performance manageable."
+   },
+   {
+    "title": "Measured or variable-width columns",
+    "scenario": "Column widths vary or depend on rendered content."
+   }
+  ],
+  "related": [
+   "useVirtualizer",
+   "getVirtualItems",
+   "getVisibleLeafColumns",
+   "getRowModel",
+   "measureElement",
+   "overscan"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you configure horizontal column virtualization?",
+    "answer": "A horizontal virtualizer is configured with `horizontal: true`, the number of visible columns, and an estimate based on each column’s size. Its virtual items determine which columns are rendered for the current horizontal viewport.",
+    "followUp": "How does the table preserve off-screen width? It inserts left and right spacer cells around the rendered column range instead of absolutely positioning the columns."
+   },
+   {
+    "question": "What list should the column virtualizer represent?",
+    "answer": "Use `table.getVisibleLeafColumns()` as the source list and set `count` to its length. Map each virtual column index back to the corresponding visible column or cell.",
+    "followUp": "What must be coordinated in a fully virtualized table? The row virtualizer maps row indexes to rows, while the column virtualizer maps column indexes to visible cells."
+   },
+   {
+    "question": "How do row and column virtualizers divide responsibility?",
+    "answer": "The row virtualizer controls vertical placement and total body height. The column virtualizer controls horizontal header and cell rendering, including the left and right spacer cells.",
+    "followUp": "Why use separate virtualizers? Rows and columns have independent scroll axes and therefore need independent ranges and geometry calculations."
+   }
+  ],
+  "keyPoints": [
+   "Render only the column indexes that correspond to the current horizontal viewport rather than mounting every column.",
+   "For column virtualization, derive the virtualizer’s source from the table’s visible leaf columns.",
+   "Set the virtualizer’s horizontal orientation when virtualizing columns.",
+   "Provide the column count, a size estimate, and overscan; add measurement when the rendered dimensions need runtime correction.",
+   "Keep vertical row placement and total body height under the row virtualizer’s control.",
+   "Use the column virtualizer for horizontal headers and cells, including the layout spacers that surround the rendered range."
+  ],
+  "gotchas": [
+   "Do not assume columns should be absolutely positioned like rows; use left and right spacer cells to represent the omitted horizontal columns.",
+   "Keep the spacer cells in the layout so the scroll container retains the complete horizontal width."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Dynamic content::measureElement": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/api/virtualizer",
+  "sourceTitle": "Virtualizer | TanStack Virtual Docs",
+  "summary": "Use measureElement after rendering to report an item's actual size to TanStack Virtual. The virtualizer then recalculates measurements and offsets for dynamic item dimensions.",
+  "explanation": "After an item renders, pass its element to the virtualizer's measureElement callback. The virtualizer applies the configured measuring function, normally based on the element's bounding rectangle, and uses the resulting size to update item measurements and offsets; the rendered element must also expose its data index.",
+  "syntax": "measureElement: (el: TItemElement | null) => void",
+  "parameters": [
+   {
+    "name": "el",
+    "type": "TItemElement | null",
+    "description": "The rendered item element to measure; null is accepted when the element is unavailable."
+   },
+   {
+    "name": "element",
+    "type": "TItemElement",
+    "description": "The element being measured, passed to a custom measurement function."
+   },
+   {
+    "name": "entry",
+    "type": "ResizeObserverEntry | undefined",
+    "description": "Resize observer data when available."
+   },
+   {
+    "name": "instance",
+    "type": "Virtualizer<TScrollElement, TItemElement>",
+    "description": "The current virtualizer instance."
+   }
+  ],
+  "returns": "The instance method returns void. A custom virtualizer measureElement function returns the measured item size as a number.",
+  "example": {
+   "title": "Measure dynamically sized items",
+   "code": "import { useVirtualizer } from '@tanstack/react-virtual'\n\nexport function List({ items }: { items: string[] }) {\n  const virtualizer = useVirtualizer({\n    count: items.length,\n    getScrollElement: () => document.querySelector('#list'),\n    estimateSize: () => 48,\n  })\n\n  return virtualizer.getVirtualItems().map(item => (\n    <div\n      key={item.key}\n      data-index={item.index}\n      ref={virtualizer.measureElement}\n    >\n      {items[item.index]}\n    </div>\n  ))\n}",
+   "language": "tsx",
+   "explanation": "Attach the virtualizer's measureElement callback to each rendered item and include its index so dynamic sizes can be associated with the correct item."
+  },
+  "useCases": [
+   {
+    "title": "Variable-height lists",
+    "scenario": "Rows or cards have content-dependent heights."
+   },
+   {
+    "title": "Dynamic chat content",
+    "scenario": "Messages change size as text, media, or asynchronous content appears."
+   },
+   {
+    "title": "Unknown horizontal item sizes",
+    "scenario": "A horizontal virtualizer renders items whose widths are not known initially."
+   }
+  ],
+  "related": [
+   "estimateSize",
+   "resizeItem",
+   "VirtualItem.measureElement",
+   "getBoundingClientRect",
+   "ResizeObserverEntry",
+   "Virtualizer"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the virtualizer's measureElement method do?",
+    "answer": "measureElement is the instance method with signature `(el: TItemElement | null) => void`. It measures the element using the virtualizer's configured measureElement option, rather than requiring the caller to calculate a size.",
+    "followUp": "How can the measurement behavior be customized? Define the virtualizer's optional measureElement function, which receives the element, an optional ResizeObserverEntry, and the virtualizer instance, then returns a number."
+   },
+   {
+    "question": "How should measureElement be used in rendered markup?",
+    "answer": "Call the method for each item after rendering, typically through a ref callback, and place `data-index` on the element. This lets the virtualizer connect the measured DOM node to the corresponding virtual item.",
+    "followUp": "What happens if an item is not measured? Its size remains the estimated value until a measurement is supplied, so offsets may be less accurate for variable-size content."
+   },
+   {
+    "question": "How do you customize which size is returned?",
+    "answer": "The configurable measurement function has the signature `(element, entry, instance) => number`. It is called when the virtualizer needs to dynamically measure an item's width or height.",
+    "followUp": "How does a horizontal virtualizer choose the dimension? Inspect `instance.options.horizontal` to decide whether width or height should be measured."
+   }
+  ],
+  "keyPoints": [
+   "The instance method delegates size calculation to the virtualizer's configured measurement function.",
+   "The configuration hook is used when item dimensions must be determined dynamically.",
+   "The measurement target is an individual virtualized item, not the whole list.",
+   "Custom measurement logic can choose the dimension from the instance's horizontal setting.",
+   "The default strategy reads the element's bounding rectangle."
+  ],
+  "gotchas": [
+   "The callback is not invoked automatically by the virtualizer; call it from rendered markup, commonly through a framework ref callback.",
+   "Rendered elements need a data-index attribute so the virtualizer can associate each DOM measurement with its item."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Dynamic content::Sticky items": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/framework/react/examples/sticky",
+  "sourceTitle": "React TanStack Virtual Sticky Example",
+  "summary": "Keep the current group header visible in a virtualized list by injecting its index into the rendered range and applying sticky positioning only to that active header.",
+  "explanation": "Sticky items are implemented by marking group-header indexes, deriving the header at or above the visible range, and adding that index to the extracted virtual range. Only the active header is positioned sticky; other rows use their virtual offsets, so the label remains visible while its group scrolls.",
+  "syntax": "useVirtualizer({ count, getScrollElement, estimateSize, rangeExtractor })",
+  "parameters": [
+   {
+    "name": "range",
+    "type": "Range",
+    "description": "Virtualizer range object; its start index identifies the current scroll window."
+   }
+  ],
+  "returns": "The rangeExtractor returns the virtual item indexes to render, including the active sticky header.",
+  "example": {
+   "title": "Sticky grouped virtual list",
+   "code": "import { useMemo, useRef } from 'react'\nimport { useVirtualizer } from '@tanstack/react-virtual'\n\nconst groups = ['A', 'B', 'C']\nconst rows = groups.flatMap(group => [group, ...Array.from({ length: 4 }, (_, i) => `${group}${i + 1}`)])\nconst stickyIndexes = useMemo(() => groups.map(group => rows.indexOf(group)), [])\nconst activeStickyIndexRef = useRef(stickyIndexes[0])\nconst isSticky = (index: number) => stickyIndexes.includes(index)\nconst isActiveSticky = (index: number) => activeStickyIndexRef.current === index\n\nexport function StickyList() {\n  const parentRef = useRef<HTMLDivElement>(null)\n  const virtualizer = useVirtualizer({\n    count: rows.length,\n    getScrollElement: () => parentRef.current,\n    estimateSize: () => 36,\n    rangeExtractor: range => {\n      const active = [...stickyIndexes].reverse().find(index => index <= range.startIndex)\n      activeStickyIndexRef.current = active ?? stickyIndexes[0]\n      return Array.from(new Set([activeStickyIndexRef.current, ...virtualizer.getVirtualIndexes()])).sort((a, b) => a - b)\n    },\n  })\n\n  return <div ref={parentRef} style={{ height: 240, overflow: 'auto' }}><div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>{virtualizer.getVirtualItems().map(item => <div key={item.index} style={{ ...(isActiveSticky(item.index) ? { position: 'sticky' } : { position: 'absolute', transform: `translateY(${item.start}px)` }), top: 0, left: 0, width: '100%', height: item.size, background: '#fff', zIndex: 1 }}>{rows[item.index]}</div>)}</div></div>\n}",
+   "language": "tsx",
+   "explanation": "The virtualizer's range extractor keeps the current group header in the rendered set. The active header uses sticky positioning, while ordinary virtual rows remain absolutely positioned at their calculated offsets."
+  },
+  "useCases": [
+   {
+    "title": "Grouped contact lists",
+    "scenario": "A long contact list grouped by first letter needs its current letter visible during scrolling."
+   },
+   {
+    "title": "Categorized catalogs",
+    "scenario": "A large catalog is divided into categories and users need the current category context."
+   },
+   {
+    "title": "Date-grouped activity feeds",
+    "scenario": "Virtualized logs or events are grouped by date and each date label should remain visible."
+   }
+  ],
+  "related": [
+   "rangeExtractor",
+   "getVirtualItems",
+   "getVirtualIndexes",
+   "estimateSize",
+   "useVirtualizer",
+   "position: sticky",
+   "stickyIndexes",
+   "activeStickyIndex"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does the example keep a group header mounted while it sticks?",
+    "answer": "The example identifies each group header by index, finds the last header at or before the current range start, and includes it in the range extractor's output. That keeps the header mounted after its natural row has scrolled away; CSS sticky positioning then pins it.",
+    "followUp": "Why is the active header tracked separately? Because the range can contain several group headers, but only the one corresponding to the current scroll position should receive sticky positioning."
+   },
+   {
+    "question": "How are sticky and ordinary virtual rows positioned differently?",
+    "answer": "A sticky row is rendered with position: sticky, while other rows use position: absolute and their virtual start offset. The sticky row also needs a background and stacking order so underlying content does not show through it.",
+    "followUp": "What should change for multiple simultaneous sticky levels? Track and render each applicable header level, then assign distinct top offsets and stacking order rather than treating them as one active row."
+   },
+   {
+    "question": "How is the currently active group determined?",
+    "answer": "The active sticky index is derived from the virtual range's starting index by selecting the final sticky index that does not exceed it. This corresponds to the group containing the current window start.",
+    "followUp": "What if the data changes? Recompute the header-index collection from the updated rows and ensure the range extractor uses the current indexes."
+   }
+  ],
+  "keyPoints": [
+   "Use rangeExtractor to add the relevant group header to the virtualized range.",
+   "The active group is selected from the returned range's starting position.",
+   "Record header positions alongside the flattened row data so the virtualizer can recognize sticky rows."
+  ],
+  "gotchas": [
+   "The active header must be added to the extracted range; otherwise virtualization may remove it as soon as it leaves its normal position.",
+   "Apply sticky positioning only to the active group header and retain absolute positioning for all other virtual rows.",
+   "Choose the last sticky header whose index is at or before the current window start, not an arbitrary visible header."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Dynamic content::Variable heights": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/api/virtualizer.md",
+  "sourceTitle": "tanstack.com",
+  "summary": "Use estimateSize for an initial row dimension and attach measureElement to rendered items. TanStack Virtual then measures their actual heights and updates layout as dynamic content is discovered.",
+  "explanation": "For rows whose rendered height is unknown, configure an initial estimate and attach measureElement to each rendered row. TanStack Virtual measures the element and feeds the result back into the virtualizer, which recalculates item positions and total size as content is discovered.",
+  "syntax": "measureElement: (el: TItemElement | null) => void",
+  "parameters": [
+   {
+    "name": "el",
+    "type": "TItemElement | null",
+    "description": "The DOM element to measure, or null when no element is attached."
+   },
+   {
+    "name": "data-index",
+    "type": "attribute",
+    "description": "The item index used by the virtualizer to associate a rendered element with its virtual item; supplied through data-index in markup."
+   }
+  ],
+  "returns": "The item-level measureElement method returns void; the configurable measureElement option returns the measured number for the item's width or height.",
+  "example": {
+   "title": "Measuring dynamically sized rows",
+   "code": "import { useVirtualizer } from '@tanstack/react-virtual'\n\nexport function DynamicList({ items }: { items: string[] }) {\n  const parentRef = useRef<HTMLDivElement>(null)\n  const virtualizer = useVirtualizer({\n    count: items.length,\n    getScrollElement: () => parentRef.current,\n    estimateSize: () => 80,\n  })\n\n  return <div ref={parentRef} style={{ height: 400, overflow: 'auto' }}>\n    <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>\n      {virtualizer.getVirtualItems().map(item => (\n        <div key={item.key} data-index={item.index}\n          ref={virtualizer.measureElement}\n          style={{ position: 'absolute', top: 0, width: '100%', transform: `translateY(${item.start}px)` }}>\n          {items[item.index]}\n        </div>\n      ))}\n    </div>\n  </div>\n)",
+   "language": "tsx",
+   "explanation": "Render each virtual item with a data-index and pass its element to measureElement. The estimate provides an initial size; rendered elements are then measured and the virtualizer updates their actual heights."
+  },
+  "useCases": [
+   {
+    "title": "Wrapped text lists",
+    "scenario": "Rows contain text that wraps differently according to width."
+   },
+   {
+    "title": "Changing content",
+    "scenario": "Rendered content expands or contracts after loading or interaction."
+   },
+   {
+    "title": "Dynamic-height feeds",
+    "scenario": "A vertical list contains records with unpredictable rendered heights."
+   }
+  ],
+  "related": [
+   "estimateSize",
+   "getTotalSize",
+   "getVirtualItems",
+   "ResizeObserverEntry",
+   "Virtualizer",
+   "data-index"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you virtualize rows whose heights are unknown until rendering?",
+    "answer": "Use estimateSize to provide the initial height, then call the item-level measureElement ref for each rendered row. The virtualizer replaces estimates with measured dimensions as rows enter the rendered window.",
+    "followUp": "What happens if the list is horizontal? The measurement represents width rather than height; the direction follows the virtualizer's orientation."
+   },
+   {
+    "question": "What does measureElement do?",
+    "answer": "The item-level measureElement function measures a DOM element using the configured virtualizer measurement behavior. It accepts the element or null and is intended to be called from rendered markup.",
+    "followUp": "How can measurement behavior be customized? Supply the optional measureElement virtualizer option, which receives the element, ResizeObserverEntry, and virtualizer instance and returns a size."
+   },
+   {
+    "question": "What role does estimateSize play with dynamic rows?",
+    "answer": "estimateSize should return the actual size when it is knowable, or an estimated size when dynamic measurement will refine it. The returned dimension is height for vertical virtualization and width for horizontal virtualization.",
+    "followUp": "Why retain an estimate? It lets the virtualizer establish an initial scroll range before every item's DOM size is known."
+   }
+  ],
+  "keyPoints": [
+   "The configurable measureElement option runs when the virtualizer needs to discover an item's rendered dimension.",
+   "A measurement is interpreted as height in a vertical list and width in a horizontal one.",
+   "Calling the item method measures the supplied element with the virtualizer's configured measurement logic.",
+   "If row content changes after rendering, invoke measurement again so the virtualizer can refresh its stored size."
+  ],
+  "gotchas": [
+   "Attach measureElement in the rendered-item markup; configuring the option alone does not measure rows.",
+   "Include data-index on every measured element so the virtualizer can associate the DOM measurement with its item."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Dynamic content::Window scrolling": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/framework/react/react-virtual",
+  "sourceTitle": "React Virtual | TanStack Virtual React Docs",
+  "summary": "Virtualize a list against the browser window when the page itself is the scroll surface. useWindowVirtualizer supplies visible items and page coordinates while estimates and measurements handle dynamic row sizes.",
+  "explanation": "Window scrolling uses the browser window as the virtualizer's scroll element instead of requiring a bounded scrolling container. The virtualizer estimates each row's size, exposes the total page range, and supplies visible items; measured elements can refine estimates when content has dynamic heights.",
+  "syntax": "function useWindowVirtualizer<TItemElement = unknown>(options: PartialKeys<ReactVirtualizerOptions<Window, TItemElement>, 'getScrollElement' | 'observeElementRect' | 'observeElementOffset' | 'scrollToFn'>): Virtualizer<Window, TItemElement>",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "PartialKeys<ReactVirtualizerOptions<Window, TItemElement>, 'getScrollElement' | 'observeElementRect' | 'observeElementOffset' | 'scrollToFn'>",
+    "description": "Options for a window-based virtualizer; the API omits getScrollElement, observeElementRect, observeElementOffset, and scrollToFn because window behavior is supplied."
+   }
+  ],
+  "returns": "Virtualizer<Window, TItemElement>",
+  "example": {
+   "title": "Window-scrolled React list",
+   "code": "import { useWindowVirtualizer } from '@tanstack/react-virtual'\n\nexport function App() {\n  const virtualizer = useWindowVirtualizer({\n    count: 10000,\n    estimateSize: () => 36,\n    overscan: 5,\n  })\n\n  return (\n    <div\n      style={{\n        height: `${virtualizer.getTotalSize()}px`,\n        position: 'relative',\n      }}\n    >\n      {virtualizer.getVirtualItems().map((item) => (\n        <div\n          key={item.key}\n          ref={virtualizer.measureElement}\n          data-index={item.index}\n          style={{\n            position: 'absolute',\n            top: 0,\n            left: 0,\n            width: '100%',\n            transform: `translateY(${item.start}px)`,\n          }}\n        >\n          Row {item.index}\n        </div>\n      ))}\n    </div>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Creates a React virtualizer whose scroll element is the browser window, then positions only the currently virtualized rows within the page-sized total range."
+  },
+  "useCases": [
+   {
+    "title": "Full-page feed",
+    "scenario": "A long feed is laid out in the document and the browser window performs the scrolling."
+   },
+   {
+    "title": "Dynamic-height page list",
+    "scenario": "Rows have content-dependent heights and only rendered rows can be measured accurately."
+   },
+   {
+    "title": "Large document collection",
+    "scenario": "A page contains tens of thousands of items without a nested fixed-height scroll panel."
+   }
+  ],
+  "related": [
+   "useVirtualizer",
+   "Virtualizer",
+   "ReactVirtualizerOptions",
+   "estimateSize",
+   "measureElement",
+   "scrollMargin",
+   "overscan",
+   "getTotalSize"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When should you use useWindowVirtualizer?",
+    "answer": "useWindowVirtualizer creates a window-based Virtualizer and configures Window as its scroll element. It is appropriate when the page itself, rather than a nested element, owns scrolling.",
+    "followUp": "How would you handle a list that starts below a page header? Set scrollMargin to the list's offset from the top of the page so the virtual coordinates match the window."
+   },
+   {
+    "question": "How does window virtualization support dynamic row heights?",
+    "answer": "The virtualizer uses estimateSize to establish an initial scroll range, then can measure rendered elements to refine positions for content whose actual heights differ. Only virtual items are rendered, so offscreen rows do not become DOM nodes.",
+    "followUp": "Why is an estimate still needed for dynamic content? It provides an immediately available total range before every item has been rendered and measured."
+   },
+   {
+    "question": "How does the rendered layout preserve the page scroll range?",
+    "answer": "A window virtualizer does not create a bounded scrolling element; it treats the browser window as the scroll surface. The rendered items are placed within a page-sized element using the virtualizer's total size and item positions.",
+    "followUp": "What changes when the page has content above the list? Add the corresponding scroll margin rather than changing the window-based API."
+   }
+  ],
+  "keyPoints": [
+   "useWindowVirtualizer is the React API for virtualizing against the browser window rather than an element.",
+   "The virtualizer calculates coordinates and visible ranges, while your application remains responsible for rendering the row markup.",
+   "estimateSize supplies an initial size model so the page can expose its scroll range before all dynamic rows are measured.",
+   "Rendered dynamic items can be measured as they appear, allowing actual sizes to replace estimates without rendering the entire dataset."
+  ],
+  "gotchas": [
+   "This API is specifically window-based, so do not substitute it for an element-scrolling virtualizer when the list should scroll inside a fixed-height container."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::scrollToIndex and scrollToOffset": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/api/virtualizer",
+  "sourceTitle": "Virtualizer | TanStack Virtual Docs",
+  "summary": "Programmatically move a virtualizer to an item index or pixel offset. Choose an alignment and optional smooth behavior to control how the destination appears.",
+  "explanation": "The virtualizer exposes two imperative methods: scrollToIndex targets an item by its zero-based index, while scrollToOffset targets a pixel position on the scrolling axis. Both accept optional alignment and behavior settings, and both return nothing.",
+  "syntax": "scrollToIndex(index: number, options?: { align?: 'start' | 'center' | 'end' | 'auto'; behavior?: 'auto' | 'smooth' }): void\nscrollToOffset(toOffset: number, options?: { align?: 'start' | 'center' | 'end' | 'auto'; behavior?: 'auto' | 'smooth' }): void",
+  "parameters": [
+   {
+    "name": "index",
+    "type": "number",
+    "description": "Item index to target."
+   },
+   {
+    "name": "toOffset",
+    "type": "number",
+    "description": "Pixel offset to target along the scrolling axis."
+   },
+   {
+    "name": "options",
+    "type": "{ align?: 'start' | 'center' | 'end' | 'auto'; behavior?: 'auto' | 'smooth' }",
+    "description": "Optional scrolling options: align is start, center, end, or auto; behavior is auto or smooth."
+   }
+  ],
+  "returns": "void",
+  "example": {
+   "title": "Programmatic scrolling",
+   "code": "const virtualizer = useVirtualizer({\n  count: rows.length,\n  getScrollElement: () => parentRef.current,\n  estimateSize: () => 36,\n});\n\nvirtualizer.scrollToIndex(180, { align: \"center\" });\nvirtualizer.scrollToOffset(640, { align: \"start\" });",
+   "language": "typescript",
+   "explanation": "Use the virtualizer instance to jump to an item or pixel position; choose an alignment and optional scrolling behavior."
+  },
+  "useCases": [
+   {
+    "title": "Navigate to an item",
+    "scenario": "Jump to a selected, searched, or deep-linked row by its known index."
+   },
+   {
+    "title": "Restore scroll position",
+    "scenario": "Restore a saved pixel position when returning to the same layout."
+   },
+   {
+    "title": "Control a pixel destination",
+    "scenario": "Move to a precise coordinate for pagination, anchoring, or synchronized scrolling."
+   }
+  ],
+  "related": [
+   "scrollToFn",
+   "getOffsetForIndex",
+   "scrollOffset",
+   "initialOffset",
+   "takeSnapshot",
+   "initialMeasurementsCache"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between scrollToIndex and scrollToOffset?",
+    "answer": "scrollToIndex targets the item at the supplied index, whereas scrollToOffset targets a pixel offset along the scroll axis. Both methods accept optional align and behavior settings and return void.",
+    "followUp": "When would offset restoration be preferable? Use scrollToOffset when restoring a saved layout position in pixels; use scrollToIndex when the desired destination is a particular item."
+   },
+   {
+    "question": "What arguments do these methods accept?",
+    "answer": "The index method accepts a numeric item index. The offset method accepts a numeric pixel position, measured from the beginning of the scrollable area.",
+    "followUp": "How can alignment be controlled? Pass align as start, center, end, or auto in the options object."
+   },
+   {
+    "question": "How should smooth scrolling be handled with virtualized items?",
+    "answer": "behavior can be auto or smooth, allowing an immediate jump or animated movement. Smooth scrolling has special measurement behavior near the target.",
+    "followUp": "What layout approach does the documentation prefer for smooth scrolling? Translate the rendered block using the first item's start offset rather than independently absolute-positioning every item."
+   }
+  ],
+  "keyPoints": [
+   "Use scrollToOffset when the destination is a pixel position rather than a row.",
+   "Use scrollToIndex to move directly to an item identified by its index.",
+   "Both APIs support align values of start, center, end, and auto to choose the target's viewport anchoring.",
+   "Set behavior to auto for an immediate move or smooth for an animated move.",
+   "Offsets are pixel coordinates measured from the start of the scrolling area."
+  ],
+  "gotchas": [
+   "Smooth scrolling does not measure every item: only a buffer around the destination is measured, so distant size changes are skipped to protect the animation.",
+   "For smooth scrolling, block translation is preferred over independently positioning each item, because changing item sizes can otherwise disrupt the target position."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useWindowVirtualizer": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/framework/react/react-virtual",
+  "sourceTitle": "React Virtual | TanStack Virtual React Docs",
+  "summary": "useWindowVirtualizer creates a React virtualizer whose scroll element is the browser window. It lets long page-level lists render only the visible items plus overscan.",
+  "explanation": "In React, useWindowVirtualizer creates a Virtualizer whose scroll element is the browser window rather than a list container. Supply the item count and size estimate, render the returned virtual items, and use scrollMargin when the list begins below other page content so item coordinates align with the window scroll position.",
+  "syntax": "function useWindowVirtualizer<TItemElement = unknown>(options: PartialKeys<ReactVirtualizerOptions<Window, TItemElement>, 'getScrollElement' | 'observeElementRect' | 'observeElementOffset' | 'scrollToFn'>): Virtualizer<Window, TItemElement>",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "PartialKeys<ReactVirtualizerOptions<Window, TItemElement>, 'getScrollElement' | 'observeElementRect' | 'observeElementOffset' | 'scrollToFn'>",
+    "description": "A partial ReactVirtualizerOptions object specialized for Window; it includes the virtualizer's list settings while the window-specific callbacks are supplied by the hook."
+   }
+  ],
+  "returns": "Virtualizer<Window, TItemElement>",
+  "example": {
+   "title": "Window-scrolled virtual list",
+   "code": "import * as React from 'react'\nimport { useWindowVirtualizer } from '@tanstack/react-virtual'\n\nexport function WindowList() {\n  const rows = Array.from({ length: 10000 }, (_, index) => `Row ${index}`)\n  const listRef = React.useRef<HTMLDivElement>(null)\n  const virtualizer = useWindowVirtualizer({\n    count: rows.length,\n    estimateSize: () => 35,\n    overscan: 5,\n    scrollMargin: listRef.current?.offsetTop ?? 0,\n  })\n\n  return <div ref={listRef}>\n    <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>\n      {virtualizer.getVirtualItems().map(item => (\n        <div key={item.key} style={{\n          position: 'absolute', top: 0, left: 0, width: '100%',\n          height: item.size,\n          transform: `translateY(${item.start - virtualizer.options.scrollMargin}px)`,\n        }}>\n          {rows[item.index]}\n        </div>\n      ))}\n    </div>\n  </div>\n}",
+   "language": "tsx",
+   "explanation": "This component uses the browser window as the scrolling element, calculates only visible rows plus overscan, and positions those rows inside a spacer whose height represents the complete list."
+  },
+  "useCases": [
+   {
+    "title": "Virtualize page-level content",
+    "scenario": "A long feed or table that scrolls with the document body."
+   },
+   {
+    "title": "Account for list offset",
+    "scenario": "A list placed beneath a header, toolbar, or other fixed page content."
+   },
+   {
+    "title": "Use the window as the scroll source",
+    "scenario": "A React list needing window-driven measurement and scrolling without a custom scroll container."
+   }
+  ],
+  "related": [
+   "useVirtualizer",
+   "Virtualizer",
+   "ReactVirtualizerOptions",
+   "useFlushSync",
+   "scrollMargin",
+   "getVirtualItems",
+   "getTotalSize"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does useWindowVirtualizer solve?",
+    "answer": "useWindowVirtualizer is the React hook for a window-based Virtualizer. Its returned instance is configured to use window as the scrollElement, so the page—not a dedicated scrolling div—drives virtualization.",
+    "followUp": "How would you handle a list below a header? Set scrollMargin to the list's offset from the page start and subtract that margin when translating each virtual item."
+   },
+   {
+    "question": "What does the hook's signature return and specialize?",
+    "answer": "Its signature accepts PartialKeys<ReactVirtualizerOptions<Window, TItemElement>, 'getScrollElement' | 'observeElementRect' | 'observeElementOffset' | 'scrollToFn'> and returns Virtualizer<Window, TItemElement>. The omitted options are supplied by the window-specific hook.",
+    "followUp": "Why is the generic scroll-element type Window? Because this adapter specializes the core virtualizer for the browser window instead of an HTML element."
+   },
+   {
+    "question": "How is a window-virtualized list rendered?",
+    "answer": "Render virtualizer.getVirtualItems(), allocate virtualizer.getTotalSize() for the full list, and position each rendered item using its start and size. A size estimate and overscan determine efficient initial rendering.",
+    "followUp": "What setting controls synchronous React updates? useFlushSync is accepted by both hooks; it is boolean and defaults to true."
+   }
+  ],
+  "keyPoints": [
+   "The hook binds virtualization to window scrolling, so no getScrollElement callback for a container is needed.",
+   "The hook exposes one item-element generic parameter, which defaults to unknown.",
+   "The window adapter supplies these window-specific behaviors, so callers do not provide them in the options type.",
+   "useFlushSync can be used to control whether React flushSync participates in synchronous updates."
+  ],
+  "gotchas": [
+   "When the list starts below other page content, configure scrollMargin and subtract it from each item's translated position; otherwise window-relative coordinates can be offset.",
+   "Treat scrollMargin as the distance from the page start to the list, not as ordinary item spacing."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::Virtualizer in a dialog": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/api/virtualizer",
+  "sourceTitle": "Virtualizer | TanStack Virtual Docs",
+  "summary": "Re-measure a virtualizer after a dialog or other hidden scroll container becomes visible. Use measureElement for rendered variable-height items so their real dimensions replace estimates.",
+  "explanation": "A virtualizer can be created while a dialog is hidden, when its scroll element has no usable dimensions. Call measure after the dialog becomes visible so the virtualizer recalculates its measurements; attach measureElement to variable-height items so later ResizeObserver updates refine their sizes.",
+  "syntax": "useVirtualizer({ count, getScrollElement, estimateSize, measureElement })",
+  "parameters": [
+   {
+    "name": "count",
+    "type": "number",
+    "description": "Number of virtual items to manage."
+   },
+   {
+    "name": "getScrollElement",
+    "type": "() => TScrollElement | null",
+    "description": "Returns the scroll container element, or null when unavailable."
+   },
+   {
+    "name": "estimateSize",
+    "type": "(index: number) => number",
+    "description": "Initial size estimate for each item."
+   },
+   {
+    "name": "measureElement",
+    "type": "(element: TItemElement, entry: ResizeObserverEntry | undefined, instance: Virtualizer<TScrollElement, TItemElement>) => number",
+    "description": "Optional function that measures an item element and returns its width or height."
+   }
+  ],
+  "returns": "A virtualizer instance that calculates visible items, maintains scroll geometry, measures item sizes, and exposes methods including measureElement, measure, and resizeItem.",
+  "example": {
+   "title": "Re-measure a list when its dialog opens",
+   "code": "import { useEffect, useRef } from 'react'\nimport { useVirtualizer } from '@tanstack/react-virtual'\n\nexport function DialogList({ open }: { open: boolean }) {\n  const scrollRef = useRef<HTMLDivElement>(null)\n  const virtualizer = useVirtualizer({\n    count: 1000,\n    getScrollElement: () => scrollRef.current,\n    estimateSize: () => 36,\n  })\n\n  useEffect(() => {\n    if (open) virtualizer.measure()\n  }, [open, virtualizer])\n\n  return <div ref={scrollRef} style={{ height: 240, overflow: 'auto' }}>\n    <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>\n      {virtualizer.getVirtualItems().map(item => (\n        <div key={item.key} data-index={item.index}\n          ref={virtualizer.measureElement}\n          style={{ position: 'absolute', top: 0, transform: `translateY(${item.start}px)` }}>\n          Item {item.index}\n        </div>\n      ))}\n    </div>\n  </div>\n}",
+   "language": "tsx",
+   "explanation": "After the dialog opens, measure clears stale item measurements and recalculates layout for the now-visible scroll container. The item ref enables dynamic height measurement as rows render."
+  },
+  "useCases": [
+   {
+    "title": "Recalculate after dialog open",
+    "scenario": "The list is mounted while its dialog is closed and receives incorrect dimensions on first render."
+   },
+   {
+    "title": "Measure variable-height rows",
+    "scenario": "Rows contain wrapping text or content whose height is not predictable from the index."
+   },
+   {
+    "title": "Assign a known size directly",
+    "scenario": "A transition or other code knows an item's final size without reading the DOM."
+   }
+  ],
+  "related": [
+   "useVirtualizer",
+   "measureElement",
+   "measure",
+   "resizeItem",
+   "estimateSize",
+   "getScrollElement",
+   "Virtualizer",
+   "VirtualItem"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why should a virtualizer be re-measured when a dialog opens?",
+    "answer": "Call the virtualizer's measure method after the dialog becomes visible. A hidden scroll container can produce stale or unusable dimensions, so measuring on open lets the virtualizer recalculate its geometry.",
+    "followUp": "How are variable-height rows handled? Attach the measureElement ref callback to rendered rows and provide data-index so their actual dimensions can be observed."
+   },
+   {
+    "question": "How does measureElement support dynamic item sizes?",
+    "answer": "measureElement is the item-level measurement callback. It measures a rendered element using the configured measurement function and updates the item's size in the virtualizer.",
+    "followUp": "What happens before measurement? The item uses the estimateSize result; after measurement, its size becomes the value returned by the configured measurer."
+   },
+   {
+    "question": "When would resizeItem be preferable to measureElement?",
+    "answer": "resizeItem directly assigns a known size for one index. It is useful when code already knows the result, such as during a controlled transition, and can avoid DOM measurement for that item.",
+    "followUp": "Can it be combined with measureElement? Yes, but not for the same index; use one method per item to avoid conflicting updates."
+   }
+  ],
+  "keyPoints": [
+   "Use virtualizer.measureElement as a rendered row ref to measure that row with the configured item-size strategy.",
+   "The measureElement option customizes how dynamic item width or height is calculated.",
+   "A custom measurer must return height for vertical lists and width for horizontal lists.",
+   "estimateSize supplies the initial geometry before real row measurements are available.",
+   "resizeItem sets a specific item's size directly when the final value is known outside normal DOM measurement."
+  ],
+  "gotchas": [
+   "Attach measureElement to each rendered dynamic-size item; configuring the option alone does not invoke the measurement.",
+   "Do not use resizeItem and measureElement on the same item index; choose one sizing owner per item."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::Virtualizer instance methods": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/api/virtualizer",
+  "sourceTitle": "Virtualizer | TanStack Virtual Docs",
+  "summary": "A virtualizer instance exposes methods to retrieve the current virtual items, calculate total content size, and reset cached measurements.",
+  "explanation": "A virtualizer instance exposes methods for reading the current virtual window, calculating the virtualized content extent, and clearing cached item measurements. Use the first two during rendering; call measure when previously measured dimensions are no longer valid.",
+  "syntax": "getVirtualItems: () => VirtualItem[]; getTotalSize: () => number; measure: () => void",
+  "parameters": [],
+  "returns": "getVirtualItems: VirtualItem[]; getTotalSize: number; measure: void",
+  "example": {
+   "title": "Render a virtualized list",
+   "code": "import { useVirtualizer } from '@tanstack/react-virtual'\n\nexport function List({ rows }: { rows: string[] }) {\n  const virtualizer = useVirtualizer({\n    count: rows.length,\n    getScrollElement: () => document.querySelector('#list'),\n    estimateSize: () => 36,\n  })\n\n  return (\n    <div id=\"list\" style={{ height: 240, overflow: 'auto' }}>\n      <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>\n        {virtualizer.getVirtualItems().map((item) => (\n          <div\n            key={item.key}\n            style={{ position: 'absolute', transform: `translateY(${item.start}px)` }}\n          >\n            {rows[item.index]}\n          </div>\n        ))}\n      </div>\n    </div>\n  )\n}",
+   "language": "tsx",
+   "explanation": "The virtualizer supplies the currently needed items and the full scrollable extent; rendering those items at their reported offsets produces the windowed list."
+  },
+  "useCases": [
+   {
+    "title": "Window a large list",
+    "scenario": "Render only the currently needed records and place them using each VirtualItem's layout data."
+   },
+   {
+    "title": "Create the scrollable range",
+    "scenario": "Set the inner element's height or width from the computed extent to preserve scrolling space."
+   },
+   {
+    "title": "Refresh measurements",
+    "scenario": "Clear stale dimensions after a layout or item-size change so measurements can be recalculated."
+   }
+  ],
+  "related": [
+   "VirtualItem",
+   "measureElement",
+   "getVirtualIndexes",
+   "getVirtualItem",
+   "scrollToIndex"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does getVirtualItems provide?",
+    "answer": "getVirtualItems returns the VirtualItem array representing the virtualizer's current state. Render this collection rather than every item in the data set.",
+    "followUp": "How would you position the returned items? Use each item's reported layout fields, such as its index and start offset, while rendering only the returned collection."
+   },
+   {
+    "question": "What is the purpose of getTotalSize?",
+    "answer": "getTotalSize returns the total pixel size of the virtualized items. It is typically used as the size of the inner scrolling element so the container has the correct scroll range.",
+    "followUp": "Can that value change after initial rendering? Yes. With dynamic measurement, it is adjusted incrementally as elements are rendered and measured."
+   },
+   {
+    "question": "When would you call measure?",
+    "answer": "measure takes no arguments and resets the virtualizer's previous item measurements. It is useful when existing measurements are invalid because the layout or item dimensions changed.",
+    "followUp": "What should be expected after calling it? The old measurement cache is discarded, so the virtualizer recalculates item sizing as measurements become available."
+   }
+  ],
+  "keyPoints": [
+   "These APIs are methods on the virtualizer instance returned by the hook.",
+   "getVirtualItems reads the current virtual window as an array of VirtualItem objects.",
+   "getTotalSize supplies the aggregate pixel extent needed for the virtualized content.",
+   "Dynamic element measurement can progressively revise the total size during rendering.",
+   "measure clears the virtualizer's prior item measurements."
+  ],
+  "gotchas": [
+   "Do not assume getTotalSize is fixed when dynamic measurement is enabled; it can change as rendered elements are measured.",
+   "Calling measure clears previous item measurements, so subsequent layout calculations must be rebuilt."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::Virtualizer options": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/api/virtualizer.md",
+  "sourceTitle": "Virtualizer API",
+  "summary": "Configure TanStack Virtual with the item count, scroll element, size estimator, and overscan buffer. These options let it calculate which items to render and where to place them.",
+  "explanation": "These options define the virtualized collection, connect it to its scroll container, provide item-size information for positioning, and control how many extra items render around the viewport.",
+  "syntax": "useVirtualizer({ count, getScrollElement, estimateSize, overscan })",
+  "parameters": [
+   {
+    "name": "count",
+    "type": "number",
+    "description": "Total number of items to virtualize."
+   },
+   {
+    "name": "getScrollElement",
+    "type": "() => TScrollElement",
+    "description": "Callback returning the scrollable element; it may return null when unavailable."
+   },
+   {
+    "name": "estimateSize",
+    "type": "(index: number) => number",
+    "description": "Callback receiving an item index and returning its actual or estimated width/height."
+   },
+   {
+    "name": "overscan",
+    "type": "number (optional)",
+    "description": "Number of items rendered above and below the visible area; defaults to 1."
+   }
+  ],
+  "returns": "A virtualizer instance configured to calculate and expose the virtualized items for the supplied collection and scroll element.",
+  "example": {
+   "title": "Basic virtualizer options",
+   "code": "import { useRef } from 'react'\nimport { useVirtualizer } from '@tanstack/react-virtual'\n\nexport function List({ items }: { items: string[] }) {\n  const parentRef = useRef<HTMLDivElement>(null)\n  const virtualizer = useVirtualizer({\n    count: items.length,\n    getScrollElement: () => parentRef.current,\n    estimateSize: () => 36,\n    overscan: 4,\n  })\n\n  return <div ref={parentRef} style={{ height: 240, overflow: 'auto' }}>\n    <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>\n      {virtualizer.getVirtualItems().map(item => (\n        <div key={item.key} style={{ position: 'absolute', top: 0, transform: `translateY(${item.start}px)`, height: item.size }}>\n          {items[item.index]}\n        </div>\n      ))}\n    </div>\n  </div>\n}",
+   "language": "tsx",
+   "explanation": "Creates a virtualizer for a scroll container, tells it how many items exist, supplies an initial size estimate, and renders a small buffer beyond the visible range."
+  },
+  "useCases": [
+   {
+    "title": "Render only the visible portion of a large list while retaining scroll geometry.",
+    "scenario": "Long vertical lists"
+   },
+   {
+    "title": "Supply index-aware estimates and refine positions through element measurement.",
+    "scenario": "Variable-height items"
+   },
+   {
+    "title": "Use the same options for columns or other horizontally scrolling items, with estimates representing widths.",
+    "scenario": "Horizontal collections"
+   },
+   {
+    "title": "Increase overscan to reduce the chance of blank content at the viewport edges.",
+    "scenario": "Fast scrolling"
+   }
+  ],
+  "related": [
+   "useVirtualizer",
+   "virtualItem.measureElement",
+   "lanes",
+   "horizontal",
+   "getVirtualItems",
+   "getTotalSize"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What do count and getScrollElement configure?",
+    "answer": "count is the total number of items managed by the virtualizer. getScrollElement is a callback that supplies the scrollable element and may return null until that element exists.",
+    "followUp": "Why use a callback instead of passing the element directly? The callback lets the virtualizer obtain the element as component lifecycle state changes."
+   },
+   {
+    "question": "How does estimateSize work?",
+    "answer": "estimateSize receives an item index and returns its width or height, depending on orientation. It can return an estimated value when items will later be measured.",
+    "followUp": "What estimate is preferable for dynamically measured content? A reasonable estimate near the largest expected item size improves initial positioning."
+   },
+   {
+    "question": "What is the trade-off of overscan?",
+    "answer": "overscan controls how many items render before and after the visible area. Its default is 1; increasing it can avoid blank items but makes rendering more expensive.",
+    "followUp": "How does lanes affect overscan? With more than one lane, overscan is counted in complete rows, and each lane receives the same number of extra items."
+   }
+  ],
+  "keyPoints": [
+   "Set count to the current collection length so the virtualizer can calculate the complete scrollable range.",
+   "Use getScrollElement to identify the element whose scrolling drives virtualization.",
+   "estimateSize can vary by index and returns the item’s dimension, or a provisional dimension before measurement.",
+   "Return height for vertical virtualization and width for horizontal virtualization.",
+   "overscan adds a render buffer on both sides of the viewport.",
+   "If omitted, overscan defaults to one item.",
+   "In multi-lane layouts, overscan is applied as complete rows rather than independent item counts."
+  ],
+  "gotchas": [
+   "The scroll-element callback can temporarily return null, such as before a component has mounted.",
+   "A larger overscan can reduce blank gaps during fast scrolling, but it increases rendering work.",
+   "For dynamically measured items, use a comfortably high estimate to improve initial positions."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::Virtualizer with a ref": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/framework/react/react-virtual",
+  "sourceTitle": "React Virtual | TanStack Virtual React Docs",
+  "summary": "Connect TanStack Virtual to a React scroll container by returning its DOM node from a ref in getScrollElement. Keep the container’s main-axis size and overflow stable, and provide an item-size estimate for initial layout calculations.",
+  "explanation": "Create a React ref for the scroll container, return its current value from getScrollElement, and provide a stable estimated item size. The scroll element should have an explicit dimension and overflow behavior; the virtualizer then calculates the visible range and total scrollable size while your component renders only those items.",
+  "syntax": "const virtualizer = useVirtualizer({ count, getScrollElement: () => parentRef.current, estimateSize: () => 50 })",
+  "parameters": [
+   {
+    "name": "count",
+    "type": "number",
+    "description": "Number of items in the virtual collection."
+   },
+   {
+    "name": "getScrollElement",
+    "type": "() => Element | null",
+    "description": "Returns the element used for scrolling."
+   },
+   {
+    "name": "estimateSize",
+    "type": "(index: number) => number",
+    "description": "Returns the estimated size for an item at a given index."
+   }
+  ],
+  "returns": "A virtualizer instance used to retrieve visible items and the total scrollable size.",
+  "example": {
+   "title": "Virtualizer using a scroll-element ref",
+   "code": "import { useRef } from 'react'\nimport { useVirtualizer } from '@tanstack/react-virtual'\n\nexport function List() {\n  const parentRef = useRef<HTMLDivElement>(null)\n  const virtualizer = useVirtualizer({\n    count: 10000,\n    getScrollElement: () => parentRef.current,\n    estimateSize: () => 50,\n  })\n\n  return (\n    <div ref={parentRef} style={{ height: 400, overflow: 'auto' }}>\n      <div style={{ height: virtualizer.getTotalSize(), position: 'relative', width: '100%' }}>\n        {virtualizer.getVirtualItems().map((item) => (\n          <div key={item.key} style={{ position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${item.start}px)` }}>\n            Row {item.index}\n          </div>\n        ))}\n      </div>\n    </div>\n  )\n}",
+   "language": "tsx",
+   "explanation": "The ref identifies the element that owns scrolling. Passing a function lets the virtualizer read the current element after React attaches the ref; the container needs a predictable height and scrolling overflow so viewport measurements and virtual positions remain meaningful."
+  },
+  "useCases": [
+   {
+    "title": "Render only the visible rows while a fixed-height element owns scrolling.",
+    "scenario": "Large vertical lists"
+   },
+   {
+    "title": "Start with an estimate and refine item positions as rendered content is measured.",
+    "scenario": "Dynamic-height content"
+   },
+   {
+    "title": "Virtualize columns by switching to horizontal mode and stabilizing the scroll container's width.",
+    "scenario": "Horizontal collections"
+   }
+  ],
+  "related": [
+   "useVirtualizer",
+   "getVirtualItems",
+   "getTotalSize",
+   "measureElement",
+   "containerRef"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you connect a React scroll container to useVirtualizer?",
+    "answer": "Use a React ref for the scroll element and return parentRef.current from getScrollElement. This allows the virtualizer to resolve the element after rendering, while count and estimateSize describe the virtual collection.",
+    "followUp": "Why use a callback instead of passing parentRef.current directly? The callback is evaluated when the virtualizer needs the element, so it can observe the ref after React attaches it."
+   },
+   {
+    "question": "Why must the scroll container have stable sizing?",
+    "answer": "Give the scroll container a fixed height and overflow: auto, then place the virtual items inside a size container whose height comes from getTotalSize. This establishes the viewport and preserves the full scroll range without rendering every item.",
+    "followUp": "What changes for a horizontal list? Configure horizontal: true and provide a stable width and horizontal overflow instead of height and vertical overflow."
+   },
+   {
+    "question": "What role does estimateSize play?",
+    "answer": "Use estimateSize to provide an initial item dimension, such as 50 pixels. For dynamic content, the estimate supplies the initial model and measurements can refine it as items render.",
+    "followUp": "How can dynamic items be measured? Use measureElement on rendered item elements so their actual dimensions replace the estimate."
+   }
+  ],
+  "keyPoints": [
+   "Configure getScrollElement with a callback that returns the ref's current DOM element.",
+   "Attach the ref to the actual scrolling element and give it explicit main-axis sizing plus overflow.",
+   "Size the inner container from the virtualizer's total extent to preserve scrolling space for all items."
+  ],
+  "gotchas": [
+   "A scroll container without a fixed main-axis size or scrolling overflow cannot provide the stable viewport the virtualizer expects.",
+   "When using direct DOM updates, attach containerRef to the inner size container as documented; omitting it leaves positioning and container sizing to your code.",
+   "Do not rely on normal flow for virtual items; absolute positioning lets the virtualizer place each rendered item at its calculated coordinate."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Interaction & integration::Accessibility": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/introduction",
+  "sourceTitle": "Introduction | TanStack Virtual Docs",
+  "summary": "Preserve accessibility in a virtualized list by exposing the full collection size and each visible item's logical position, while using TanStack Virtual's geometry for layout. Render only visible items, but keep the accessibility tree informed about the real list length.",
+  "explanation": "TanStack Virtual calculates visible items and provides each item's index, start position, and measured size. Keep the container sized with getTotalSize(), position rows using their virtual geometry, and add ARIA collection metadata so virtualization does not hide the list's true length or item positions.",
+  "syntax": "useVirtualizer({ count, getScrollElement, estimateSize })",
+  "parameters": [],
+  "returns": "getTotalSize() returns the total size in pixels for the virtualized items; getVirtualItems() provides the currently rendered virtual items and their geometry.",
+  "example": {
+   "title": "Accessible virtual list with real collection metadata",
+   "code": "const rowVirtualizer = useVirtualizer({\n  count: items.length,\n  getScrollElement: () => parentRef.current,\n  estimateSize: () => 36,\n})\n\nreturn (\n  <div\n    role=\"list\"\n    aria-setsize={items.length}\n    style={{ height: rowVirtualizer.getTotalSize(), position: 'relative' }}\n  >\n    {rowVirtualizer.getVirtualItems().map((virtualItem) => (\n      <div\n        key={virtualItem.key}\n        role=\"listitem\"\n        aria-posinset={virtualItem.index + 1}\n        style={{\n          position: 'absolute',\n          top: 0,\n          left: 0,\n          width: '100%',\n          height: virtualItem.size,\n          transform: `translateY(${virtualItem.start}px)`,\n        }}\n      >\n        {items[virtualItem.index]}\n      </div>\n    ))}\n  </div>\n)",
+   "language": "tsx",
+   "explanation": "Use the virtualizer's total-size result to preserve the list's full layout while rendering only visible items. Add semantic list roles and expose the complete item count plus each rendered item's one-based position so assistive technologies can understand the virtualized collection."
+  },
+  "useCases": [
+   {
+    "title": "Expose the complete feed length while mounting only rows near the viewport.",
+    "scenario": "Long vertical feeds"
+   },
+   {
+    "title": "Keep logical item positions available as focus moves through a large result set.",
+    "scenario": "Keyboard-navigable result lists"
+   },
+   {
+    "title": "Use each virtual item's measured size and start offset while retaining semantic collection metadata.",
+    "scenario": "Variable-height records"
+   }
+  ],
+  "related": [
+   "useVirtualizer",
+   "getVirtualItems",
+   "getTotalSize",
+   "VirtualItem.index",
+   "VirtualItem.start",
+   "VirtualItem.size"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How can a virtualized list preserve its real length for assistive technology?",
+    "answer": "The virtualizer exposes getTotalSize() for the full scrollable extent and each virtual item exposes index, start, and size. Use those values for layout, then provide semantic list roles with aria-setsize and aria-posinset so the DOM communicates the complete collection.",
+    "followUp": "How would you preserve accessibility for a grid? Use grid, row, and gridcell semantics, expose the total row or item counts with the appropriate ARIA attributes, and derive coordinates from each virtual item's index."
+   },
+   {
+    "question": "What geometry does TanStack Virtual provide for rendering items?",
+    "answer": "getVirtualItems() returns the items currently selected for rendering, while getTotalSize() represents the total pixel size of the virtualized content. The example positions each item absolutely and translates it by virtualItem.start, using virtualItem.size for its height.",
+    "followUp": "What happens if item sizes are inaccurate? Scrolling and placement can become inaccurate; provide a better estimateSize implementation or measure actual elements so the virtualizer can refine its geometry."
+   },
+   {
+    "question": "How should visible virtual items be placed in the container?",
+    "answer": "The official introduction shows a relatively positioned container whose height comes from rowVirtualizer.getTotalSize(). Each visible item is absolutely positioned and placed with a translateY based on its start offset, while its height uses the item's size.",
+    "followUp": "Why is absolute positioning useful here? It lets the virtualizer keep visible rows at their calculated offsets without requiring all intervening rows to remain mounted."
+   }
+  ],
+  "keyPoints": [
+   "Use getTotalSize() for the container's total virtualized extent rather than sizing it only to the rows currently mounted.",
+   "Virtualization mounts a viewport-sized subset, so accessibility metadata must describe the complete logical collection rather than only the mounted nodes.",
+   "Move each visible row to its virtual start offset; use the corresponding item geometry instead of normal document flow.",
+   "Apply the virtual item's calculated size to its rendered element so the visual geometry matches the virtualizer's measurements."
+  ],
+  "gotchas": [
+   "Virtualization removes non-visible DOM nodes, so rendering only visible rows can make assistive technology perceive an incomplete collection unless the markup exposes the full set size and each item's position."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Interaction & integration::Combining with Table": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/framework/react/guide/virtualization",
+  "sourceTitle": "Virtualization (React) Guide",
+  "summary": "Combine TanStack Table with TanStack Virtual by virtualizing the table’s current row model. Table retains sorting, filtering, grouping, pagination, and selection logic while Virtual controls which rows are rendered.",
+  "explanation": "TanStack Table continues to produce the active row model, including sorting, filtering, grouping, pagination, and selection state. TanStack Virtual only determines which row indexes are rendered for the current scroll position; map each virtual index back to the corresponding row and preserve the full scroll geometry with offsets or spacer padding.",
+  "syntax": "const rows = table.getRowModel().rows\nconst rowVirtualizer = useVirtualizer({ count: rows.length, getScrollElement, estimateSize, overscan })",
+  "parameters": [
+   {
+    "name": "count",
+    "type": "number",
+    "description": "Number of rows in the current table row model."
+   },
+   {
+    "name": "estimateSize",
+    "type": "() => number",
+    "description": "Function estimating each row’s size."
+   },
+   {
+    "name": "getScrollElement",
+    "type": "() => HTMLElement | null",
+    "description": "Reference to the scroll container."
+   },
+   {
+    "name": "overscan",
+    "type": "number",
+    "description": "Number of additional items rendered beyond the viewport."
+   },
+   {
+    "name": "measureElement",
+    "type": "optional",
+    "description": "Optional element-measurement callback for variable-size items."
+   }
+  ],
+  "returns": "A virtualized rendering list whose indexes map to the current table row or column source list.",
+  "example": {
+   "title": "Virtualize the current table row model",
+   "code": "const rows = table.getRowModel().rows\nconst rowVirtualizer = useVirtualizer({\n  count: rows.length,\n  getScrollElement: () => parentRef.current,\n  estimateSize: () => 36,\n  overscan: 5,\n})\n\nreturn rowVirtualizer.getVirtualItems().map(virtualRow => {\n  const row = rows[virtualRow.index]\n  return <TableRow key={row.id} row={row} />\n})",
+   "language": "tsx",
+   "explanation": "Use the table’s current row model as the virtualizer’s source, then render only the rows represented by the virtual items."
+  },
+  "useCases": [
+   {
+    "title": "Keep the DOM small while displaying thousands of rows.",
+    "scenario": "Large datasets with many table rows"
+   },
+   {
+    "title": "Virtualize the final row-model result without moving table-state logic into the virtualizer.",
+    "scenario": "Tables with sorting, filtering, grouping, or pagination"
+   },
+   {
+    "title": "Apply the same source-list pattern to table.getVisibleLeafColumns() for column virtualization.",
+    "scenario": "Wide tables with many visible columns"
+   }
+  ],
+  "related": [
+   "TanStack Table",
+   "table.getRowModel().rows",
+   "table.getVisibleLeafColumns()",
+   "useVirtualizer",
+   "virtualRow.index",
+   "overscan",
+   "measureElement",
+   "Virtualization (React) Guide"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Which library owns sorting and which owns rendering decisions?",
+    "answer": "TanStack Table owns the row model and table state, while TanStack Virtual chooses the indexes rendered for the current scroll position. The renderer maps each virtual index back to the corresponding row.",
+    "followUp": "How should sorting affect virtualization? Re-read table.getRowModel().rows after sorting and use that current list as the virtualizer source."
+   },
+   {
+    "question": "What are the essential pieces of a virtualized table setup?",
+    "answer": "Configure a row virtualizer with count equal to the current row-model length, an estimated row size, the scroll element, and an overscan value. Render only its virtual items and preserve scroll geometry with offsets or spacer padding.",
+    "followUp": "Why is overscan useful? It renders nearby items outside the viewport, reducing visible gaps during scrolling at the cost of a somewhat larger DOM."
+   },
+   {
+    "question": "How do you keep virtual indexes aligned with table state?",
+    "answer": "Use virtualRow.index to access the row at the same index in the current table row list. If sorting, filtering, pagination, grouping, or column visibility changes, recompute the source rows or columns from the table state.",
+    "followUp": "What can go wrong with a stale list? A virtual index can resolve to the wrong row, causing incorrect displayed data or interaction behavior."
+   }
+  ],
+  "keyPoints": [
+   "Keep table concerns—such as row models, sorting, filtering, sizing, and selection—inside TanStack Table.",
+   "Use the virtualizer as a rendering coordinator: it limits the DOM to items near the viewport.",
+   "Feed the virtualizer the table’s current rows for row virtualization, or visible leaf columns for column virtualization.",
+   "The core configuration supplies item count, a size estimate, overscan, and optionally measurement for variable-sized items.",
+   "Maintain the apparent full table height or width even though only a subset of rows or columns is mounted.",
+   "Virtualize after the table has applied its row-model pipeline, so rendered rows reflect the table’s current result."
+  ],
+  "gotchas": [
+   "Do not index into a stale or different row list: virtual indexes must address the exact current table rows.",
+   "Refresh the virtualized source whenever table state changes so rendered indexes continue to match the table.",
+   "Keep server-side data operations when required; virtualization only changes which already-produced items are rendered."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Interaction & integration::Infinite loading": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/framework/react/examples/infinite-scroll",
+  "sourceTitle": "React TanStack Virtual Infinite Scroll Example",
+  "summary": "Fetch the next page when the last visible virtual item reaches the end of the loaded rows. Use a loader row, `hasNextPage`, and `isFetchingNextPage` to coordinate the trigger safely.",
+  "explanation": "Use an infinite query to manage pages and a virtualizer to detect when the reader reaches the final loaded item. Include a loader slot in the virtual count while another page exists, then call fetchNextPage only when the next-page request is not already running.",
+  "syntax": "fetchNextPage()",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Infinite loading with a virtualized list",
+   "code": "import * as React from 'react'\nimport { useVirtualizer } from '@tanstack/react-virtual'\nimport { useInfiniteQuery } from '@tanstack/react-query'\n\nasync function fetchServerPage(limit: number, offset = 0) {\n  const rows = Array.from({ length: limit }, (_, i) => `Row ${i + offset * limit}`)\n  return { rows, nextOffset: offset + 1 }\n}\n\nexport default function App() {\n  const query = useInfiniteQuery({\n    queryKey: ['rows'],\n    queryFn: ({ pageParam }) => fetchServerPage(20, pageParam),\n    getNextPageParam: lastPage => lastPage.nextOffset,\n    initialPageParam: 0,\n  })\n  const rows = query.data?.pages.flatMap(page => page.rows) ?? []\n  const parentRef = React.useRef<HTMLDivElement>(null)\n  const virtualizer = useVirtualizer({\n    count: query.hasNextPage ? rows.length + 1 : rows.length,\n    getScrollElement: () => parentRef.current,\n    estimateSize: () => 35,\n  })\n  React.useEffect(() => {\n    const last = virtualizer.getVirtualItems().at(-1)\n    if (last && last.index >= rows.length - 1 && query.hasNextPage && !query.isFetchingNextPage) query.fetchNextPage()\n  }, [virtualizer.getVirtualItems(), rows.length, query.hasNextPage, query.isFetchingNextPage])\n  return <div ref={parentRef} style={{ height: 400, overflow: 'auto' }}><div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>{virtualizer.getVirtualItems().map(item => <div key={item.key} style={{ position: 'absolute', transform: `translateY(${item.start}px)` }}>{rows[item.index] ?? 'Loading...'}</div>)}</div></div>\n}",
+   "language": "tsx",
+   "explanation": "A virtualizer watches the last rendered item; when it reaches the loaded rows and another page exists, it requests the next page while avoiding duplicate page fetches."
+  },
+  "useCases": [
+   {
+    "title": "Load rows incrementally without rendering the entire dataset.",
+    "scenario": "Large server-backed tables"
+   },
+   {
+    "title": "Append feed items as the reader reaches the current end.",
+    "scenario": "Social or activity feeds"
+   },
+   {
+    "title": "Fetch additional result pages while preserving a virtualized viewport.",
+    "scenario": "Search results"
+   }
+  ],
+  "related": [
+   "useVirtualizer",
+   "getVirtualItems",
+   "getTotalSize",
+   "useInfiniteQuery",
+   "fetchNextPage",
+   "hasNextPage",
+   "isFetchingNextPage"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Add one virtual item as a loader row while more data is available; otherwise size the virtual range to the loaded rows.",
+   "Inspect the final currently rendered virtual item to determine whether the reader is approaching the end.",
+   "Start loading when the final virtual item reaches the last loaded row."
+  ],
+  "gotchas": [
+   "The virtual count includes an extra loader row only while another page exists; omitting that row can remove the visible trigger at the end.",
+   "Triggering at the last loaded index means the request is based on the final currently loaded virtual item, not on total scroll height."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Interaction & integration::Performance measurement": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/api/virtualizer",
+  "sourceTitle": "Virtualizer | TanStack Virtual Docs",
+  "summary": "Profile scroll performance before changing overscan. More overscan can reduce blank items during fast scrolling, but it increases rendering work.",
+  "explanation": "TanStack Virtual renders items around the visible area rather than the entire collection. The overscan setting trades rendering work for fewer blank gaps during fast scrolling, so measure scroll behavior in a production-like build before tuning it; increasing overscan can itself make rendering slower.",
+  "syntax": "useVirtualizer({ count, getScrollElement, estimateSize, overscan })",
+  "parameters": [
+   {
+    "name": "count",
+    "type": "number",
+    "description": "Total number of items in the virtualized collection."
+   },
+   {
+    "name": "getScrollElement",
+    "type": "() => Element | null",
+    "description": "Returns the scrollable element used by the virtualizer."
+   },
+   {
+    "name": "estimateSize",
+    "type": "(index: number) => number",
+    "description": "Returns an item’s size estimate, or its size when items are not dynamically measured."
+   },
+   {
+    "name": "overscan",
+    "type": "number",
+    "description": "Number of items rendered above and below the visible area."
+   }
+  ],
+  "returns": "The virtualizer instance; getTotalSize() returns the total size in pixels for the virtualized items.",
+  "example": {
+   "title": "Configure overscan for profiling",
+   "code": "const virtualizer = useVirtualizer({\n  count: rows.length,\n  getScrollElement: () => parentRef.current,\n  estimateSize: () => 36,\n  overscan: 5,\n})",
+   "language": "typescript",
+   "explanation": "Create a virtualizer with a stable size estimate and a deliberately chosen overscan value, then profile scrolling before changing it."
+  },
+  "useCases": [
+   {
+    "title": "Tune fast-scroll coverage",
+    "scenario": "A long list shows blank gaps while users fling-scroll."
+   },
+   {
+    "title": "Separate DOM work from integration rerenders",
+    "scenario": "A table or list renders slowly during scrolling."
+   },
+   {
+    "title": "Combine estimates with measurement",
+    "scenario": "Dynamic-height cards change as content loads."
+   }
+  ],
+  "related": [
+   "estimateSize",
+   "measureElement",
+   "getScrollElement",
+   "count",
+   "getTotalSize",
+   "Virtualizer"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What performance trade-off does overscan introduce?",
+    "answer": "Overscan is the number of items rendered before and after the visible range. More overscan can reduce blank items during fast scrolling, but it also increases rendering time, so its value should be chosen from profiling rather than guesswork.",
+    "followUp": "How would you respond if increasing overscan did not fix slow scrolling? Profile the production bundle and check whether React render work during scroll is the bottleneck before considering experimental optimizations."
+   },
+   {
+    "question": "How does TanStack Virtual handle item sizing?",
+    "answer": "The virtualizer uses estimateSize to calculate item dimensions and can use measureElement for dynamic measurement. The estimate provides the initial geometry, while measured values can update the virtualizer as items render.",
+    "followUp": "What should be returned by a size estimator? It should return the item’s size, or an estimated size when dynamic measurement will provide the actual value."
+   },
+   {
+    "question": "Why can virtualization improve scrolling performance?",
+    "answer": "A virtualizer limits DOM work by rendering only the visible range plus overscan. Its count describes the complete collection, while the rendered subset preserves the scrollable geometry.",
+    "followUp": "What should be checked when a large virtualized UI still scrolls poorly? Avoid rerendering the full body, keep row, column, and data references stable, and inspect expensive item renderers."
+   }
+  ],
+  "keyPoints": [
+   "Overscan controls how many items appear outside the viewport on both sides.",
+   "Additional overscan can reduce visible blank gaps when scrolling quickly.",
+   "Treat overscan as a measured tuning parameter, not a value to increase by default.",
+   "Stable references help prevent unnecessary rerenders in integrations such as virtualized tables.",
+   "Scroll performance suffers if the integration rerenders the entire table body instead of only the virtualized content.",
+   "Benchmark production builds because development performance can misrepresent the real scrolling cost."
+  ],
+  "gotchas": [
+   "Increasing overscan adds rendering cost; do not increase it automatically without measuring whether blank items are actually the problem."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Interaction & integration::scrollToIndex": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/api/virtualizer",
+  "sourceTitle": "Virtualizer | TanStack Virtual Docs",
+  "summary": "Imperatively scrolls the virtualizer to a specified item index. Optional alignment controls the item's position, while behavior selects immediate or smooth scrolling.",
+  "explanation": "Call the virtualizer's imperative method with the zero-based item index. The optional options object controls where the item is anchored—start, center, end, or automatic minimal movement—and whether scrolling is immediate or smooth.",
+  "syntax": "scrollToIndex(index: number, options?: { align?: 'start' | 'center' | 'end' | 'auto'; behavior?: 'auto' | 'smooth' }): void",
+  "parameters": [
+   {
+    "name": "index",
+    "type": "number",
+    "description": "Zero-based index of the item to scroll to."
+   },
+   {
+    "name": "options",
+    "type": "{ align?: 'start' | 'center' | 'end' | 'auto'; behavior?: 'auto' | 'smooth' }",
+    "description": "Optional scrolling configuration."
+   },
+   {
+    "name": "options.align",
+    "type": "'start' | 'center' | 'end' | 'auto'",
+    "description": "Where to place the item in the scroll element."
+   },
+   {
+    "name": "options.behavior",
+    "type": "'auto' | 'smooth'",
+    "description": "Whether to scroll immediately or smoothly."
+   }
+  ],
+  "returns": "void",
+  "example": {
+   "title": "Scroll to an item with alignment",
+   "code": "import { Virtualizer } from '@tanstack/virtual-core'\n\nconst scrollElement = document.querySelector('#list')!\nconst virtualizer = new Virtualizer({\n  count: 1000,\n  getScrollElement: () => scrollElement,\n  estimateSize: () => 40,\n  observeElementRect: (instance, cb) => {\n    const observer = new ResizeObserver(() => cb({ width: scrollElement.clientWidth, height: scrollElement.clientHeight }))\n    observer.observe(scrollElement)\n    return () => observer.disconnect()\n  },\n  observeElementOffset: (instance, cb) => {\n    const onScroll = () => cb(scrollElement.scrollTop)\n    scrollElement.addEventListener('scroll', onScroll)\n    return () => scrollElement.removeEventListener('scroll', onScroll)\n  },\n  scrollToFn: (offset, options) => scrollElement.scrollTo({ top: offset, behavior: options.behavior }),\n})\n\nvirtualizer.scrollToIndex(180, { align: 'center', behavior: 'smooth' })",
+   "language": "typescript",
+   "explanation": "Creates a virtualizer and smoothly scrolls to item 180, positioning it near the center of the scroll element."
+  },
+  "useCases": [
+   {
+    "title": "Navigate to a known item",
+    "scenario": "Jumping to a selected row in a long virtualized list."
+   },
+   {
+    "title": "Reach list boundaries",
+    "scenario": "Moving to the first or last item after a user action."
+   },
+   {
+    "title": "Reveal an active item",
+    "scenario": "Bringing search results or focused records into view."
+   },
+   {
+    "title": "Smooth scrolling",
+    "scenario": "Animating navigation to a destination item."
+   }
+  ],
+  "related": [
+   "scrollToOffset",
+   "scrollToFn",
+   "scrollPaddingStart",
+   "getVirtualItems"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Pass the target item's numeric index to move the virtualizer to that item.",
+   "Use the optional alignment setting to anchor the target to a chosen part of the scroll container.",
+   "Alignment supports start, center, end, and auto modes.",
+   "Choose immediate or smooth scrolling with the behavior option."
+  ],
+  "gotchas": [
+   "Smooth scrolling may be inaccurate when item sizes are dynamic because measurement is limited to a buffer around the target."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Virtualization fundamentals::estimateSize": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/api/virtualizer",
+  "sourceTitle": "Virtualizer | TanStack Virtual Docs",
+  "summary": "Provides each virtual item’s initial size so the virtualizer can calculate usable positions and total geometry before measurement. Return height for vertical lists or width for horizontal ones.",
+  "explanation": "estimateSize supplies the virtualizer with a size for each item based on its index. The value represents height for vertical virtualization or width for horizontal virtualization, and it is used for initial positions until measured sizes are available.",
+  "syntax": "estimateSize: (index: number) => number",
+  "parameters": [
+   {
+    "name": "index",
+    "type": "number",
+    "description": "The zero-based item index supplied to the estimator."
+   }
+  ],
+  "returns": "A number representing the item's actual or estimated width or height, in pixels.",
+  "example": {
+   "title": "Provide an initial row-size estimate",
+   "code": "import { useVirtualizer } from '@tanstack/react-virtual'\n\nconst rowVirtualizer = useVirtualizer({\n  count: 1000,\n  getScrollElement: () => document.querySelector('#list'),\n  estimateSize: () => 36,\n})\n\nconst totalHeight = rowVirtualizer.getTotalSize()",
+   "language": "typescript",
+   "explanation": "Creates a vertical virtualizer that initially treats each row as 36 pixels tall, allowing total height and offsets to be calculated before measurement."
+  },
+  "useCases": [
+   {
+    "title": "Fixed-height lists",
+    "scenario": "All rows share a known height"
+   },
+   {
+    "title": "Deterministic variable-size items",
+    "scenario": "Items have predictable dimensions from their data"
+   },
+   {
+    "title": "Dynamic-size content",
+    "scenario": "Rendered items are measured after mounting"
+   },
+   {
+    "title": "Horizontal virtualization",
+    "scenario": "A horizontal virtualizer needs initial column widths"
+   }
+  ],
+  "related": [
+   "measureElement",
+   "virtualItem.measureElement",
+   "getTotalSize",
+   "horizontal"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The option is a function receiving an item index and returning a numeric size estimate.",
+   "The estimate lets the virtualizer compute more accurate item positions before measurements exist.",
+   "The callback can return a known size when item dimensions are deterministic.",
+   "When dimensions are measured later, the callback can provide the provisional size used beforehand.",
+   "The returned number must correspond to the virtualizer's scroll-axis dimension."
+  ],
+  "gotchas": [
+   "For dynamically measured items, prefer a comfortably large estimate so initial positions are more accurate.",
+   "Return height for vertical virtualization and width for horizontal virtualization."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Virtualization fundamentals::Item positioning": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/api/virtual-item",
+  "sourceTitle": "VirtualItem",
+  "summary": "Place each rendered virtual item at its computed pixel offset instead of leaving it in normal document flow. TanStack Virtual exposes that coordinate through the item’s `start` value, which can drive a CSS position or transform.",
+  "explanation": "A virtual item exposes a pixel offset through its `start` value. Rendered elements should be absolutely positioned and moved to that offset, commonly with a transform; the offset may be mapped to top/left or an equivalent transform along the scrolling axis.",
+  "syntax": "virtualItem.start",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Position virtual items with their start offset",
+   "code": "import { Virtualizer } from '@tanstack/virtual-core'\n\nconst virtualizer = new Virtualizer({\n  count: 100,\n  getScrollElement: () => document.querySelector('#list'),\n  estimateSize: () => 40,\n})\n\nfor (const item of virtualizer.getVirtualItems()) {\n  const element = document.createElement('div')\n  element.textContent = `Row ${item.index}`\n  Object.assign(element.style, {\n    position: 'absolute',\n    top: '0',\n    left: '0',\n    width: '100%',\n    height: `${item.size}px`,\n    transform: `translateY(${item.start}px)`,\n  })\n  document.querySelector('#list')?.append(element)\n}",
+   "language": "typescript",
+   "explanation": "Each rendered item is removed from normal flow and translated to its computed starting offset."
+  },
+  "useCases": [
+   {
+    "title": "Virtualized lists",
+    "scenario": "Render only the visible rows in a vertically scrolling list while preserving their calculated positions."
+   },
+   {
+    "title": "Horizontal virtualization",
+    "scenario": "Place columns horizontally using each item's offset along the horizontal axis."
+   },
+   {
+    "title": "Grids and masonry",
+    "scenario": "Position cells in a grid or masonry layout while supplying their cross-axis lane placement separately."
+   }
+  ],
+  "related": [
+   "VirtualItem",
+   "Virtualizer",
+   "start",
+   "end",
+   "directDomUpdates",
+   "directDomUpdatesMode",
+   "getVirtualItems"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How should a virtual item be positioned?",
+    "answer": "Use the virtual item's `start` offset as the item's position along the scrolling axis. In a typical vertical list, absolutely position the element and translate it vertically by that value.",
+    "followUp": "Why might a transform be preferred? The documentation identifies block translation as the preferred smooth-scrolling strategy, using the first item's start offset for the rendered block."
+   },
+   {
+    "question": "What do `start` and `end` represent?",
+    "answer": "`start` is the item's starting pixel offset, and it is generally mapped to a CSS position or transform such as `top`, `left`, `translateX`, or `translateY`. The item's size still determines its rendered extent.",
+    "followUp": "What is `end` for? It represents the ending pixel offset and can be useful in some layouts, but most layouts do not need it."
+   },
+   {
+    "question": "What requirements apply when direct DOM positioning is enabled?",
+    "answer": "In transform mode, item elements need absolute positioning with `top: 0` and `left: 0`; the transform then supplies the main-axis offset. In position mode, the virtualizer writes `top` or `left`, and the item still must be absolutely positioned.",
+    "followUp": "What changes for multi-lane layouts? The cross-axis position remains item-specific and must still be supplied by the application."
+   }
+  ],
+  "keyPoints": [
+   "Use `start` as the computed pixel coordinate where the item begins.",
+   "Map the offset to the scrolling-axis CSS property or a matching translation transform.",
+   "Absolute positioning takes items out of normal flow; transform mode additionally anchors them at the origin.",
+   "With direct DOM updates, the inner container reference enables the virtualizer to manage container dimensions.",
+   "In grids or masonry layouts, the application remains responsible for each item's cross-axis placement."
+  ],
+  "gotchas": [
+   "Do not assume `end` is required for positioning; use the item's starting offset for ordinary layouts.",
+   "When using direct DOM updates, let the virtualizer own the main-axis position instead of setting it yourself.",
+   "In transform mode, anchor each item at the origin before applying its translation."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Virtualization fundamentals::Overscan": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/api/virtualizer",
+  "sourceTitle": "Virtualizer | TanStack Virtual Docs",
+  "summary": "Overscan renders extra items above and below the visible area. It can reduce blank gaps during fast scrolling, but higher values increase rendering work.",
+  "explanation": "Overscan is the number of extra items the virtualizer renders beyond the visible region, both before and after it. Raising the value can reduce blank gaps during fast scrolling, but it also increases rendering work; with multiple lanes, the count applies to complete rows.",
+  "syntax": "overscan?: number",
+  "parameters": [
+   {
+    "name": "overscan",
+    "type": "number",
+    "description": "Number of items rendered above and below the visible area; defaults to 1."
+   }
+  ],
+  "returns": "Not applicable; overscan is a virtualizer configuration option.",
+  "example": {
+   "title": "Configure overscan",
+   "code": "import { useVirtualizer } from '@tanstack/react-virtual'\n\nconst virtualizer = useVirtualizer({\n  count: items.length,\n  getScrollElement: () => parentRef.current,\n  estimateSize: () => 36,\n  overscan: 4,\n})",
+   "language": "typescript",
+   "explanation": "Creates a virtualizer that renders four additional items above and below the visible area."
+  },
+  "useCases": [
+   {
+    "title": "Reduce scroll-time blanking",
+    "scenario": "A list contains expensive components and fast wheel or touch scrolling can reveal empty space."
+   },
+   {
+    "title": "Buffer a multi-lane grid",
+    "scenario": "A grid uses multiple lanes and needs a consistent buffer around the viewport."
+   },
+   {
+    "title": "Keep the DOM bounded",
+    "scenario": "A virtualized feed needs a small rendering cushion without mounting the entire dataset."
+   }
+  ],
+  "related": [
+   "lanes",
+   "Virtualizer",
+   "useVirtualizer",
+   "estimateSize",
+   "count"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does overscan control?",
+    "answer": "The overscan option is a number that adds rendered items above and below the visible area. Its default is 1, and it helps reduce the chance of blank items appearing during scrolling.",
+    "followUp": "What trade-off comes with increasing it? Rendering takes longer, although fast scrolling is less likely to expose blank regions."
+   },
+   {
+    "question": "Why would you increase overscan?",
+    "answer": "Use overscan when scrolling can outpace rendering and expose empty space at the viewport edges. It expands the rendered range without changing which items are visible.",
+    "followUp": "How should it be tuned? Increase it only as much as needed, because each additional item adds rendering work."
+   },
+   {
+    "question": "How does overscan behave with lanes?",
+    "answer": "If lanes is greater than 1, overscan counts whole rows containing the configured number of lanes. Consequently, every lane receives the same number of extra items.",
+    "followUp": "What does this imply for a two-lane grid? An overscan value of 3 adds three complete rows, not merely three total items."
+   }
+  ],
+  "keyPoints": [
+   "Set overscan to control how many additional items appear before and after the viewport.",
+   "If omitted, the virtualizer uses one extra item as its default buffer.",
+   "A larger buffer can hide blank regions when rendering cannot keep up with scrolling.",
+   "With lanes, the extra range is distributed evenly so each lane renders the same amount."
+  ],
+  "gotchas": [
+   "A larger value costs more render time, so increase it only when reducing scroll-time blanking justifies the overhead.",
+   "In a multi-lane layout, overscan is measured in complete rows rather than individual items."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Virtualization fundamentals::Scroll element": {
+  "sourceUrl": "https://tanstack.com/virtual/v3/docs/api/virtualizer.md",
+  "sourceTitle": "Virtualizer API | TanStack Virtual Docs",
+  "summary": "Set the virtualizer’s scroll-element getter to the container that actually scrolls. It may return null until that element is mounted.",
+  "explanation": "Configure the virtualizer with a function that returns the element whose scroll position and viewport should drive virtualization. The element can be unavailable initially, so returning a nullable ref is supported; for window scrolling, use the window-oriented adapter instead.",
+  "syntax": "getScrollElement: () => TScrollElement",
+  "parameters": [
+   {
+    "name": "getScrollElement",
+    "type": "() => TScrollElement | null",
+    "description": "Function returning the scrollable element, or null until it is available."
+   }
+  ],
+  "returns": "The getter returns the scrollable element, or null when it is not available yet.",
+  "example": {
+   "title": "Virtualize a scroll container",
+   "code": "import { useRef } from 'react'\nimport { useVirtualizer } from '@tanstack/react-virtual'\n\nexport function List() {\n  const parentRef = useRef<HTMLDivElement>(null)\n  const virtualizer = useVirtualizer({\n    count: 1000,\n    getScrollElement: () => parentRef.current,\n    estimateSize: () => 36,\n  })\n\n  return (\n    <div ref={parentRef} style={{ height: 400, overflow: 'auto' }}>\n      <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>\n        {virtualizer.getVirtualItems().map(item => (\n          <div key={item.key} style={{ position: 'absolute', top: 0, transform: `translateY(${item.start}px)` }}>\n            Row {item.index}\n          </div>\n        ))}\n      </div>\n    </div>\n  )\n}",
+   "language": "tsx",
+   "explanation": "The virtualizer reads scrolling and sizing information from the referenced container, then renders only the visible rows."
+  },
+  "useCases": [
+   {
+    "title": "Scrollable list",
+    "scenario": "A fixed-height list with overflow scrolling inside a page."
+   },
+   {
+    "title": "Element-based grid",
+    "scenario": "A grid or table whose viewport is an element rather than the browser window."
+   },
+   {
+    "title": "Deferred container",
+    "scenario": "A component whose scroll container is created after the first render."
+   }
+  ],
+  "related": [
+   "getScrollElement",
+   "scrollElement",
+   "Virtualizer",
+   "VirtualizerOptions"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Point the getter at the actual element that owns scrolling, not merely an outer wrapper.",
+   "The getter may return null during initial rendering before the scroll container is available.",
+   "The virtualizer exposes the currently resolved scroll element as a read-only property."
+  ],
+  "gotchas": [
+   "The scroll-element getter can temporarily return null while the container has not mounted; use a nullable ref rather than assuming the element exists immediately."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Virtualization fundamentals::Total size": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/introduction",
+  "sourceTitle": "Introduction | TanStack Virtual Docs",
+  "summary": "Set the inner container to the virtualizer's full calculated size so the scrollbar represents the entire list, even though only visible items render.",
+  "explanation": "Give the inner element the virtualizer's total measured size so the scroll container represents the complete virtual list. Render only visible items inside it, positioning each item at its virtual start offset; the total can change as items are measured.",
+  "syntax": "getTotalSize: () => number",
+  "parameters": [],
+  "returns": "A number representing the total size of the virtualized items in pixels.",
+  "example": {
+   "title": "Size the inner scrolling surface",
+   "code": "import { useVirtualizer } from '@tanstack/react-virtual'\nimport { useRef } from 'react'\n\nexport function List({ rows }: { rows: string[] }) {\n  const parentRef = useRef<HTMLDivElement>(null)\n  const virtualizer = useVirtualizer({\n    count: rows.length,\n    getScrollElement: () => parentRef.current,\n    estimateSize: () => 36,\n  })\n\n  return <div ref={parentRef} style={{ height: 300, overflow: 'auto' }}>\n    <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>\n      {virtualizer.getVirtualItems().map(item => (\n        <div key={item.key} style={{\n          position: 'absolute', top: 0, left: 0, width: '100%',\n          height: item.size, transform: `translateY(${item.start}px)`,\n        }}>{rows[item.index]}</div>\n      ))}\n    </div>\n  </div>\n}",
+   "language": "tsx",
+   "explanation": "The inner element uses the virtualizer's computed total height, while each visible row is positioned within that space."
+  },
+  "useCases": [
+   {
+    "title": "Preserve honest vertical scrolling",
+    "scenario": "Long vertical lists"
+   },
+   {
+    "title": "Reflect measured content size",
+    "scenario": "Variable-height rows"
+   },
+   {
+    "title": "Size the scroll surface along the active axis",
+    "scenario": "Horizontal virtualization"
+   }
+  ],
+  "related": [
+   "getTotalSize",
+   "getVirtualItems",
+   "estimateSize",
+   "measureElement",
+   "Virtualizer"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `getTotalSize` provide, and where is it used?",
+    "answer": "`getTotalSize` returns the virtualized items' total size in pixels. Assign that value to the inner container's height for vertical lists so scrolling spans the full virtual content.",
+    "followUp": "Why might the value change after initial rendering? Dynamic element measurement refines the estimate as items appear, so the total is updated incrementally."
+   },
+   {
+    "question": "Why does a virtualized list need a large inner element?",
+    "answer": "The inner element represents the complete scrollable area, while only virtual items are rendered inside it. In the documented pattern, its height comes from `rowVirtualizer.getTotalSize()` and its position is relative.",
+    "followUp": "How are visible items placed within that area? Give each item absolute positioning and translate it by its virtual start offset."
+   },
+   {
+    "question": "How does item-size estimation relate to total size?",
+    "answer": "For vertical virtualization, the total size is used as the inner container's height. The virtualizer calculates the value from item sizing information and can refine it when rendered elements are measured.",
+    "followUp": "What sizing function influences initial positioning? `estimateSize(index)` returns an item's expected width or height, depending on orientation."
+   }
+  ],
+  "keyPoints": [
+   "Call `getTotalSize()` to obtain the complete virtual content size in pixels.",
+   "Use an inner element as the coordinate space for the virtualized list.",
+   "For vertical lists, set the inner element's CSS height from `getTotalSize()`.",
+   "Place each visible row at its calculated start offset rather than relying on normal document flow."
+  ],
+  "gotchas": [
+   "With dynamic measurement, total size is provisional and updates as rendered items are measured; the scroll surface can therefore change."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Virtualization fundamentals::useVirtualizer": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/framework/react/react-virtual",
+  "sourceTitle": "React Virtual | TanStack Virtual React Docs",
+  "summary": "useVirtualizer computes which items to render from a collection count, a scroll element, and estimated item sizes. It returns a Virtualizer that exposes visible items and layout information for rendering a small DOM subset.",
+  "explanation": "useVirtualizer creates a framework-integrated Virtualizer for an HTML scroll element. Supply the total item count, a function that returns the scroll container, and an estimated item size; use the returned instance to obtain the visible items and total scrollable size.",
+  "syntax": "function useVirtualizer<TScrollElement, TItemElement = unknown>(options: PartialKeys<ReactVirtualizerOptions<TScrollElement, TItemElement>, 'observeElementRect' | 'observeElementOffset' | 'scrollToFn'>): Virtualizer<TScrollElement, TItemElement>",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "PartialKeys<ReactVirtualizerOptions<TScrollElement, TItemElement>, 'observeElementRect' | 'observeElementOffset' | 'scrollToFn'>",
+    "description": "Configuration object containing Virtualizer options; the React adapter supplies observeElementRect, observeElementOffset, and scrollToFn."
+   }
+  ],
+  "returns": "Virtualizer<TScrollElement, TItemElement>",
+  "example": {
+   "title": "Basic vertical list",
+   "code": "import * as React from 'react'\nimport { useVirtualizer } from '@tanstack/react-virtual'\n\nexport function List() {\n  const parentRef = React.useRef<HTMLDivElement>(null)\n  const virtualizer = useVirtualizer({\n    count: 10000,\n    getScrollElement: () => parentRef.current,\n    estimateSize: () => 35,\n  })\n\n  return <div ref={parentRef} style={{ height: 400, overflow: 'auto' }}>\n    <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>\n      {virtualizer.getVirtualItems().map(item => (\n        <div key={item.key} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: item.size, transform: `translateY(${item.start}px)` }}>\n          Row {item.index}\n        </div>\n      ))}\n    </div>\n  </div>\n}",
+   "language": "tsx",
+   "explanation": "Creates a scrollable container, configures the hook with the item count, scroll-element getter, and size estimate, then renders only the returned virtual items at their calculated positions."
+  },
+  "useCases": [
+   {
+    "title": "Render thousands of rows while mounting only the visible subset.",
+    "scenario": "Large vertical lists"
+   },
+   {
+    "title": "Configure the virtualizer for horizontal item layouts.",
+    "scenario": "Horizontally scrolling collections"
+   },
+   {
+    "title": "Start with estimates and update layout as rendered items reveal their actual dimensions.",
+    "scenario": "Variable-size content"
+   },
+   {
+    "title": "Combine horizontal and vertical virtualizer configurations for two-axis virtualization.",
+    "scenario": "Grid-like interfaces"
+   }
+  ],
+  "related": [
+   "Virtualizer",
+   "ReactVirtualizerOptions",
+   "useWindowVirtualizer",
+   "getVirtualItems",
+   "getTotalSize",
+   "estimateSize"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useVirtualizer return?",
+    "answer": "It is a React hook from the adapter that returns a standard Virtualizer configured for an HTML element as the scroll element. Its options include the item count, scroll-element getter, and size estimate.",
+    "followUp": "How would window scrolling differ? Use the window-specific adapter hook rather than configuring an ordinary element as the scroll container."
+   },
+   {
+    "question": "What are the core options for a basic list?",
+    "answer": "count tells the virtualizer how many logical items exist, getScrollElement supplies the scrolling element, and estimateSize provides an initial size for each item. Together they let it calculate the scroll range and which indexes should be rendered.",
+    "followUp": "Why can the estimate be inaccurate? Items may have dynamic dimensions, so the initial estimate can be replaced by measurements as elements render."
+   },
+   {
+    "question": "How are virtualized rows rendered?",
+    "answer": "The hook exposes virtual items through getVirtualItems(). Each item includes geometry such as index, start, and size, which the application uses to position its own rendered row. The surrounding element should use getTotalSize() to represent the full list height.",
+    "followUp": "Why use absolute positioning? It lets a small mounted subset occupy the correct locations inside the full virtual scroll range."
+   }
+  ],
+  "keyPoints": [
+   "In React, import useVirtualizer from the React adapter; it supplies React integration around TanStack Virtual's core engine.",
+   "The hook is generic over the scroll-element and item-element types, allowing TypeScript applications to describe both DOM elements precisely.",
+   "Pass a function that returns the current scroll container, commonly through a React ref.",
+   "Render the currently selected virtual items by mapping over getVirtualItems(), rather than mounting every item."
+  ],
+  "gotchas": [
+   "The value returned by getScrollElement must be the element that actually owns scrolling; placing overflow on another element prevents correct observation.",
+   "The hook does not render list rows for you. Render the virtual items yourself and position them using their calculated geometry."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

@@ -1,0 +1,1660 @@
+{
+ "Querying::Aggregations and grouping": {
+  "sourceUrl": "https://orm.drizzle.team/docs/cockroach/select",
+  "sourceTitle": "Aggregations Helpers",
+  "summary": "Use Drizzle's typed aggregate helpers with .groupBy() and .having() to count, sum, average, and filter grouped query results. Use core queries for aggregations rather than relational-query extras.",
+  "explanation": "Build an aggregate query by selecting ordinary columns alongside aggregate expressions, then group by the ordinary columns with .groupBy(). Use .having() to filter groups after aggregation. Drizzle provides typed helpers such as count, countDistinct, avg, sum, and their distinct variants; SQL templates remain available for custom expressions.",
+  "syntax": "db.select({ groupingColumn: table.column, aggregate: count(table.column) }).from(table).groupBy(table.column).having(({ aggregate }) => condition(aggregate, value))",
+  "parameters": [
+   {
+    "name": "select",
+    "type": "projection object",
+    "description": "Selected grouping columns and aggregate expressions."
+   },
+   {
+    "name": "from",
+    "type": "table",
+    "description": "Table or source supplying rows."
+   },
+   {
+    "name": "groupBy",
+    "type": "column(s)",
+    "description": "Columns defining groups."
+   },
+   {
+    "name": "having",
+    "type": "condition or callback",
+    "description": "Predicate evaluated on grouped results."
+   }
+  ],
+  "returns": "A typed array of grouped result rows, with aggregate values inferred from the selected expressions.",
+  "example": {
+   "title": "Group users and filter aggregate results",
+   "code": "import { count, gt } from \"drizzle-orm\";\nimport { users } from \"./schema\";\n\nconst result = await db\n  .select({\n    age: users.age,\n    userCount: count(users.id),\n  })\n  .from(users)\n  .groupBy(users.age)\n  .having(({ userCount }) => gt(userCount, 1));",
+   "language": "typescript",
+   "explanation": "Counts users in each age group and keeps only groups with more than one user."
+  },
+  "useCases": [
+   {
+    "title": "Produce counts or totals per category, age, status, or other column.",
+    "scenario": "Reporting"
+   },
+   {
+    "title": "Find groups whose aggregate exceeds or falls below a threshold.",
+    "scenario": "Data quality"
+   },
+   {
+    "title": "Count, average, or sum unique values with distinct aggregate helpers.",
+    "scenario": "Distinct metrics"
+   }
+  ],
+  "related": [
+   "count",
+   "countDistinct",
+   "avg",
+   "avgDistinct",
+   "sum",
+   "sumDistinct",
+   "groupBy",
+   "having"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you group rows and count each group?",
+    "answer": "Use .groupBy() after .from() to create groups, and select the grouping column together with an aggregate such as count(users.id). If the query selects an aggregate and another column, the other column must be grouped.",
+    "followUp": "How do you filter groups by an aggregate? Use .having(), for example .having(({ userCount }) => gt(userCount, 1)), rather than filtering those results with .where()."
+   },
+   {
+    "question": "Which aggregate helpers does Drizzle provide?",
+    "answer": "Drizzle exposes typed helpers including count, countDistinct, avg, avgDistinct, sum, and sumDistinct. They can be used directly in a select projection, while sql templates support equivalent or custom SQL expressions.",
+    "followUp": "When would you use sql instead of a helper? Use sql for an expression not covered by the common helpers or when you need explicit SQL typing or mapping."
+   },
+   {
+    "question": "How do you filter grouped aggregate results?",
+    "answer": "Use .having() to apply a condition after rows have been grouped and aggregates calculated. The callback can reference an aggregate selected in the projection, allowing the condition to remain aligned with the typed query shape.",
+    "followUp": "Can relational-query extras perform these aggregations? No; the documentation directs aggregate work to core queries."
+   }
+  ],
+  "keyPoints": [
+   "Use aggregate helpers such as count, sum, and avg directly in a select projection.",
+   "Chain .groupBy() to form groups and .having() to retain or discard complete groups.",
+   "If a query combines an aggregate with another selected column, group by the non-aggregate column.",
+   "The helpers have SQL-template equivalents, so custom SQL remains an option when a helper is insufficient."
+  ],
+  "gotchas": [
+   "When an aggregate and a non-aggregate column appear together, include that non-aggregate column in .groupBy()."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Querying::Joins": {
+  "sourceUrl": "https://orm.drizzle.team/docs/joins",
+  "sourceTitle": "Joins - Drizzle ORM",
+  "summary": "Drizzle joins combine related tables with SQL-like, type-safe methods. Choose inner, left, or full joins based on which unmatched rows must remain, then use partial selects when the default nested result shape is not appropriate.",
+  "explanation": "Drizzle exposes joins through methods on a select query. Pass the related table and an `eq` predicate to choose matching rows; the inferred result is grouped by table, with nullable joined-table values where the join can lack a match. Use a partial select when a flatter or narrower result is preferable.",
+  "syntax": "db.select().from(source).innerJoin(table, on)\ndb.select().from(source).leftJoin(table, on)\ndb.select().from(source).fullJoin(table, on)",
+  "parameters": [
+   {
+    "name": "source",
+    "type": "table",
+    "description": "The source table supplied to `.from(...)`."
+   },
+   {
+    "name": "table",
+    "type": "table",
+    "description": "The related table supplied to a join method."
+   },
+   {
+    "name": "on",
+    "type": "SQL<boolean>",
+    "description": "The predicate that determines matching rows, commonly built with `eq(...)`."
+   }
+  ],
+  "returns": "A promise of rows whose inferred shape follows the selected fields and join nullability; default selections are grouped by table, while joined tables can be nullable.",
+  "example": {
+   "title": "Preserve left-table rows",
+   "code": "import { eq } from 'drizzle-orm';\nimport { users, pets } from './schema';\n\nconst rows = await db\n  .select()\n  .from(users)\n  .leftJoin(pets, eq(users.id, pets.ownerId));\n\n// rows: { users: User; pets: Pet | null }[]\n",
+   "language": "typescript",
+   "explanation": "A left join keeps every user and makes the related pet value nullable when no matching pet exists."
+  },
+  "useCases": [
+   {
+    "title": "Required relationships",
+    "scenario": "Return only records having a related match."
+   },
+   {
+    "title": "Optional relationships",
+    "scenario": "Keep every source record while attaching optional related data."
+   },
+   {
+    "title": "Two-sided completeness",
+    "scenario": "Preserve unmatched records from both tables for reconciliation or comparison."
+   },
+   {
+    "title": "Custom result shapes",
+    "scenario": "Return a compact DTO rather than nested table objects."
+   }
+  ],
+  "related": [
+   "innerJoin",
+   "leftJoin",
+   "fullJoin",
+   "rightJoin",
+   "crossJoin",
+   "leftJoinLateral",
+   "innerJoinLateral",
+   "fullJoinLateral"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do inner and left joins differ in Drizzle?",
+    "answer": "`innerJoin` returns only rows with a match on both sides, while `leftJoin` retains every row from the source table. With a left join, the joined table is nullable when no match exists.",
+    "followUp": "How would you return only selected fields? Use `.select({ userId: users.id, petName: pets.name })` before `.from(users)` and the join; Drizzle infers that explicit shape."
+   },
+   {
+    "question": "When would you choose a full join?",
+    "answer": "`fullJoin` preserves unmatched rows from both tables. Its result type reflects that either table can be absent, so both nested table values may be nullable.",
+    "followUp": "What happens with a cross join? It produces the Cartesian product of the two tables and does not take an `on` predicate."
+   },
+   {
+    "question": "What arguments does a typical Drizzle join use?",
+    "answer": "A join call takes the table being joined and a condition such as `eq(users.id, pets.ownerId)`. Drizzle keeps the API close to SQL while inferring the returned row type from the join and select structure.",
+    "followUp": "How can you join a lateral subquery? Build an aliased subquery and pass it to `leftJoinLateral` with a SQL condition such as `sql\\`true\\``."
+   }
+  ],
+  "keyPoints": [
+   "Joins combine tables through a relationship between columns, allowing one query to return related records.",
+   "The fluent API resembles SQL while preserving compile-time information about the resulting rows.",
+   "Choose the join method according to whether unmatched source rows, unmatched related rows, or both should remain.",
+   "An inner join is expressed by chaining `innerJoin` after `from` and supplying a column equality condition.",
+   "A left join keeps source-table rows even when the related table has no matching record.",
+   "A full join retains unmatched records from either input table in addition to matching records.",
+   "A partial select lets you control which columns are returned and gives the result a deliberately chosen shape."
+  ],
+  "gotchas": [
+   "The default nested result shape may not suit consumers; use a partial select to explicitly define the returned fields and shape."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Querying::Operators": {
+  "sourceUrl": "https://orm.drizzle.team/docs/operators",
+  "sourceTitle": "Filters - Drizzle ORM",
+  "summary": "Build typed query conditions with operators such as eq and inArray, then compose them with and or or in where(). Drizzle parameterizes operator values automatically, avoiding string-concatenated SQL.",
+  "explanation": "Drizzle represents query predicates with typed operators rather than concatenated SQL text. Pass a column and value to operators such as eq or inArray, then combine predicates with and or or inside where(); supplied values are parameterized automatically.",
+  "syntax": "where(eq(table.column, value))\nwhere(and(condition1, condition2, ...conditions))\nwhere(or(condition1, condition2, ...conditions))\nwhere(inArray(table.column, values))",
+  "parameters": [
+   {
+    "name": "column",
+    "type": "SQL expression",
+    "description": "A column or expression to test."
+   },
+   {
+    "name": "value",
+    "type": "unknown | unknown[]",
+    "description": "The comparison value or values."
+   }
+  ],
+  "returns": "Filter expressions passed to query methods such as where().",
+  "example": {
+   "title": "Compose a parameterized filter",
+   "code": "import { and, eq, inArray, or } from \"drizzle-orm\";\nimport { users } from \"./schema\";\n\nconst rows = await db\n  .select()\n  .from(users)\n  .where(\n    and(\n      eq(users.active, true),\n      or(eq(users.role, \"admin\"), inArray(users.id, [1, 2, 3]))\n    )\n  );",
+   "language": "typescript",
+   "explanation": "Selects active users who are administrators or whose IDs are in the supplied list."
+  },
+  "useCases": [
+   {
+    "title": "Equality filtering",
+    "scenario": "Restrict rows by one exact field value."
+   },
+   {
+    "title": "Membership filtering",
+    "scenario": "Accept any identifier from a known collection."
+   },
+   {
+    "title": "Compound AND conditions",
+    "scenario": "Require several independent predicates together."
+   },
+   {
+    "title": "Alternative OR conditions",
+    "scenario": "Match one of several alternative predicates."
+   }
+  ],
+  "related": [
+   "eq",
+   "ne",
+   "gt",
+   "gte",
+   "lt",
+   "lte",
+   "inArray",
+   "notInArray"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you express an equality filter in Drizzle?",
+    "answer": "Use eq(column, value) to create an equality predicate, then pass it to where(), for example where(eq(users.id, 42)). The documentation also shows that an operator can compare one column with another.",
+    "followUp": "How should several predicates be combined? Use and() when every condition must match, or or() when at least one must match."
+   },
+   {
+    "question": "How do you combine filters?",
+    "answer": "Use and() or or() around filter expressions. For example, and(eq(users.id, 42), eq(users.name, \"Dan\")) requires both predicates to match.",
+    "followUp": "What alternative exists for unusual predicates? The page says operators are implemented with sql, which can also be used to write arbitrary filters or custom operators."
+   },
+   {
+    "question": "How do you filter against several possible values?",
+    "answer": "Use inArray(column, values), such as inArray(table.column, [1, 2, 3, 4]), to test membership in a list. It can also receive a query as the source of the values.",
+    "followUp": "How do you keep values safe when writing a custom filter? Use Drizzle's sql function, whose provided values are parameterized automatically."
+   }
+  ],
+  "keyPoints": [
+   "Import filter and conditional operators from drizzle-orm and use them across supported SQL dialects.",
+   "eq compares a column or expression with a supplied value.",
+   "inArray expresses membership in a list and can also use a subquery as its value source.",
+   "and() combines predicates with logical conjunction.",
+   "or() combines predicates with logical disjunction.",
+   "Place the resulting predicate in a select query's where() method to restrict returned rows."
+  ],
+  "gotchas": [
+   "Do not manually interpolate values into SQL strings; filter operators already parameterize their inputs.",
+   "or() succeeds when at least one supplied condition matches, unlike and(), which requires every condition."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Querying::Prepared statements": {
+  "sourceUrl": "https://orm.drizzle.team/docs/perf-queries",
+  "sourceTitle": "Drizzle ORM - Queries",
+  "summary": "Prepared statements build a query once and let the database driver reuse its precompiled SQL. Use named placeholders for values that change between executions.",
+  "explanation": "Drizzle prepares a query after building its SQL and lets the database driver reuse the resulting precompiled SQL. Put changing runtime values in sql.placeholder(name), then provide an object with matching names to execute the prepared query repeatedly.",
+  "syntax": "db.select().from(table).where(condition).prepare();",
+  "parameters": [
+   {
+    "name": "execute parameters",
+    "type": "Record<string, unknown>",
+    "description": "An object containing values keyed by the names passed to sql.placeholder(...)."
+   }
+  ],
+  "returns": "A prepared query object whose execute() method runs the query with bound placeholder values.",
+  "example": {
+   "title": "Reuse a prepared query",
+   "code": "import { eq } from 'drizzle-orm';\nimport { sql } from 'drizzle-orm';\n\nconst prepared = db\n  .select()\n  .from(customers)\n  .where(eq(customers.id, sql.placeholder('id')))\n  .prepare();\n\nconst first = await prepared.execute({ id: 10 });\nconst second = await prepared.execute({ id: 12 });",
+   "language": "typescript",
+   "explanation": "Create the query once, mark the runtime value with a placeholder, then execute it repeatedly with different parameter values."
+  },
+  "useCases": [
+   {
+    "title": "Hot-path lookups",
+    "scenario": "A frequently executed lookup uses the same SQL structure but receives a different identifier each time."
+   },
+   {
+    "title": "Parameterized repeated queries",
+    "scenario": "A service repeatedly runs a filter or search query with request-specific values."
+   }
+  ],
+  "related": [
+   "sql.placeholder(...)",
+   "sql template tag",
+   "prepare()",
+   "execute()",
+   "select()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you create and run a prepared statement?",
+    "answer": "Call prepare() after constructing the query, then call execute() on the returned object. Repeated executions can supply different values for named placeholders.",
+    "followUp": "How do you make a changing filter value reusable? Mark it with sql.placeholder('name') and pass the corresponding name-value object to execute()."
+   },
+   {
+    "question": "Why can prepared statements improve a hot path?",
+    "answer": "Prepared statements perform SQL concatenation once on the Drizzle side. The database driver can then reuse precompiled binary SQL instead of parsing the query each time.",
+    "followUp": "What work is avoided on later executions? Repeated SQL concatenation and query parsing are avoided; only the bound execution values change."
+   },
+   {
+    "question": "How are runtime parameters bound?",
+    "answer": "Use sql.placeholder with a name in the query, such as sql.placeholder('id'), and pass { id: value } to execute(). The placeholder name and execution-property name must correspond.",
+    "followUp": "Can one prepared query use multiple runtime values? Yes; define multiple named placeholders and provide all matching properties in the execute argument."
+   }
+  ],
+  "keyPoints": [
+   "prepare() moves SQL concatenation to query construction time instead of repeating it for every execution.",
+   "The driver can reuse compiled SQL, which is useful when the same query shape runs frequently.",
+   "Build a normal query and finish it with prepare() to obtain the reusable prepared-query object.",
+   "Run the prepared query through its execute() method.",
+   "Pass an object whose property matches the placeholder name when supplying a bound value."
+  ],
+  "gotchas": [
+   "Dynamic values must be represented with sql.placeholder(...) rather than embedded while constructing the prepared query."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Querying::Relational queries": {
+  "sourceUrl": "https://orm.drizzle.team/docs/rqb",
+  "sourceTitle": "Drizzle ORM - Query",
+  "summary": "Drizzle relational queries fetch nested related data through a typed query API. Use a table’s findMany or findFirst method with with to include related rows without manually assembling join results.",
+  "explanation": "Relational queries extend Drizzle’s query builder with a typed API for nested relational data. After registering the schema’s tables and relations when creating the database instance, call a table’s query object with findMany or findFirst and use with to include related records.",
+  "syntax": "await db.query.<table>.findMany({ with: { <relation>: true } });",
+  "parameters": [
+   {
+    "name": "with",
+    "type": "object",
+    "description": "Relations to include in the nested result."
+   },
+   {
+    "name": "columns",
+    "type": "object",
+    "description": "Columns to include or omit from the selected table."
+   },
+   {
+    "name": "where",
+    "type": "condition or callback",
+    "description": "Conditions and filters for the query."
+   }
+  ],
+  "returns": "Typed nested records from the selected table, optionally containing included related rows.",
+  "example": {
+   "title": "Include related rows",
+   "code": "const usersWithPosts = await db.query.users.findMany({\n  with: {\n    posts: true,\n  },\n});",
+   "language": "typescript",
+   "explanation": "Fetches users and their related posts as nested, typed data in one relational query."
+  },
+  "useCases": [
+   {
+    "title": "Nested one-to-many data",
+    "scenario": "Load parent records together with their child records, such as users and posts."
+   },
+   {
+    "title": "Detailed record views",
+    "scenario": "Retrieve a single record and its associated relations with one typed query."
+   },
+   {
+    "title": "Focused payloads",
+    "scenario": "Return only required scalar fields while still including selected relations."
+   }
+  ],
+  "related": [
+   "Drizzle Queries",
+   "Drizzle Relations",
+   "findMany",
+   "findFirst",
+   "with",
+   "columns",
+   "Select filters"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Which APIs retrieve relational-query results?",
+    "answer": "Use db.query.<table>.findMany() for multiple records or findFirst() for one record. Add a with object to include related rows as nested results, avoiding manual joins and result mapping.",
+    "followUp": "How would you limit the returned scalar fields? Use the columns option to include or omit selected columns."
+   },
+   {
+    "question": "How do you include related rows?",
+    "answer": "The with option combines data from related tables and aggregates it into the nested result shape. This lets the query return related records without manually assembling joined rows.",
+    "followUp": "How can an included relation be filtered? Apply relational-query filters and conditions using the documented operators and callback syntax."
+   },
+   {
+    "question": "What must be configured before using relational queries?",
+    "answer": "Relational queries are an extension of Drizzle’s query builder designed for nested relational data. The database must be initialized with the schema tables and relations so the query API can use them.",
+    "followUp": "What else can relational queries add besides relations? They can select partial fields and add custom additional fields."
+   }
+  ],
+  "keyPoints": [
+   "They return nested relational data through a typed API, reducing the need for manual result mapping.",
+   "The relational API is intended to avoid writing multiple joins and manually converting flat results into nested objects.",
+   "Choose findMany for a collection or findFirst when the query should return one matching record.",
+   "Use with to include one or more related tables and receive their data in an aggregated nested structure.",
+   "Use columns to control which fields from the queried table are selected.",
+   "The API also supports computed or otherwise custom fields alongside selected table data."
+  ],
+  "gotchas": [
+   "In relational-query callbacks, reference columns through the callback parameter rather than directly through the imported table object.",
+   "Register every table and relation during database initialization before using the relational query API."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Querying::Select builder": {
+  "sourceUrl": "https://orm.drizzle.team/docs/joins",
+  "sourceTitle": "Joins - Drizzle ORM",
+  "summary": "Compose typed SQL queries with `select`, `from`, `where`, and joins. Choose all columns or an explicit selection object; Drizzle infers the resulting row shape.",
+  "explanation": "Build a query by starting with `select`, choosing either all columns or a mapped subset, then adding `from`, `where`, and join clauses. Drizzle infers the result shape from the selected fields and represents joined records according to the join type.",
+  "syntax": "db.select(fields?).from(source).where(condition).leftJoin(table, on)",
+  "parameters": [
+   {
+    "name": "fields",
+    "type": "object | undefined",
+    "description": "Optional object mapping selected aliases to table columns or SQL expressions."
+   },
+   {
+    "name": "source",
+    "type": "table or subquery",
+    "description": "Source table or subquery for the query."
+   },
+   {
+    "name": "table, on",
+    "type": "table or subquery, SQL condition",
+    "description": "Join target and its matching SQL condition."
+   }
+  ],
+  "returns": "A promise resolving to rows whose inferred shape follows the selected fields and applied joins.",
+  "example": {
+   "title": "Compose a typed select query",
+   "code": "import { eq, and } from 'drizzle-orm';\n\nconst result = await db\n  .select({\n    id: users.id,\n    name: users.name,\n    petName: pets.name,\n  })\n  .from(users)\n  .leftJoin(pets, eq(users.id, pets.ownerId))\n  .where(and(eq(users.id, 1), eq(users.active, true)));",
+   "language": "typescript",
+   "explanation": "Selects chosen user fields, joins matching pets, and filters the result."
+  },
+  "useCases": [
+   {
+    "title": "Shape an API result",
+    "scenario": "Fetch records from one table with only the columns an endpoint needs."
+   },
+   {
+    "title": "Load related data",
+    "scenario": "Combine a primary table with optional related records."
+   },
+   {
+    "title": "Filter typed rows",
+    "scenario": "Apply several predicates while retaining typed results."
+   }
+  ],
+  "related": [
+   "where",
+   "leftJoin",
+   "innerJoin",
+   "rightJoin",
+   "fullJoin",
+   "crossJoin",
+   "$dynamic",
+   "eq"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between selecting all columns and a partial selection?",
+    "answer": "`db.select()` selects all columns from the source table, while `db.select({ ... })` lets you map the exact fields returned. The object form also drives the inferred result type.",
+    "followUp": "How would you keep a reusable query extensible? Call `.$dynamic()` before applying additional builder methods in helper functions."
+   },
+   {
+    "question": "How do you compose a select query with a filter and join?",
+    "answer": "Start with `db.select().from(users)`, then append clauses such as `.where(...)` and `.leftJoin(...)`. A join receives the table and an `eq(...)`-style condition connecting related columns.",
+    "followUp": "How do you combine multiple filters? Pass them together to `and()` or `or()` within the single `.where()` call."
+   },
+   {
+    "question": "Which join choices does the select builder support?",
+    "answer": "A left join preserves rows from the left table even when no matching right-side row exists. Drizzle exposes join methods such as inner, left, right, full, and cross joins, with lateral variants where supported.",
+    "followUp": "How can you flatten or narrow joined output? Use partial select with an explicit object so the result type follows that structure."
+   }
+  ],
+  "keyPoints": [
+   "The builder exposes typed methods for inner, full, left, right, and cross joins, including lateral forms where supported.",
+   "A join is composed directly after `from`, with the related-column predicate supplied as the join condition.",
+   "An explicit selection object narrows joined output and lets Drizzle infer the returned structure from that object.",
+   "Use joins to combine rows from multiple tables through related columns."
+  ],
+  "gotchas": [
+   "A regular query builder accepts only one `.where()` call; combine predicates with `and()` or use dynamic mode when composing reusable query fragments.",
+   "Use a partial object passed to `.select({ ... })` when you need a narrowed or flat result rather than every column."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Runtimes & operation::Connection management": {
+  "sourceUrl": "https://orm.drizzle.team/docs/perf-serverless",
+  "sourceTitle": "Serverless - Drizzle ORM",
+  "summary": "For serverless functions, initialize the database connection, Drizzle client, and prepared statements outside the handler so warm invocations can reuse them. Edge functions often clean up immediately, so retained connection state may provide little benefit.",
+  "explanation": "In serverless functions, initialize the database connection and Drizzle client outside the handler. Warm invocations can then reuse the connection rather than creating it for every request; prepared statements declared in the same outer scope can also be reused.",
+  "syntax": "const databaseConnection = ...;\nconst db = drizzle({ client: databaseConnection });\nconst prepared = db.select().from(...).prepare();\nexport const handler = async (event) => prepared.execute();",
+  "parameters": [],
+  "returns": "The page shows the handler returning the result of a prepared statement execution; no separate API return type is specified.",
+  "example": {
+   "title": "Reuse a module-scoped connection",
+   "code": "import { drizzle } from \"drizzle-orm/node-postgres\";\nimport { Pool } from \"pg\";\n\nconst pool = new Pool({ connectionString: process.env.DATABASE_URL });\nconst db = drizzle({ client: pool });\n\nexport const handler = async () => {\n  const result = await db.execute(\"select 1\");\n  return result;\n};",
+   "language": "typescript",
+   "explanation": "The pool and Drizzle instance are created at module scope, allowing reusable serverless invocations to share the connection."
+  },
+  "useCases": [
+   {
+    "title": "Reuse resources across Lambda invocations",
+    "scenario": "AWS Lambda handlers that receive repeated traffic on warm instances."
+   },
+   {
+    "title": "Avoid repeated server initialization",
+    "scenario": "Vercel Server Functions that may remain alive for multiple requests."
+   },
+   {
+    "title": "Reuse prepared statements",
+    "scenario": "Prepared, recurring database queries in serverless handlers."
+   }
+  ],
+  "related": [
+   "serverless functions",
+   "edge functions",
+   "database connections",
+   "prepared statements",
+   "handler scope",
+   "drizzle"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Where should a serverless database connection be initialized?",
+    "answer": "Create the database connection and Drizzle client outside the serverless handler. This lets warm invocations reuse the connection instead of rebuilding it for each request.",
+    "followUp": "What else can be reused in the same scope? Prepared statements can also be declared outside the handler and executed by later warm invocations."
+   },
+   {
+    "question": "Why can module-scoped connections improve serverless performance?",
+    "answer": "A serverless function can live long enough for subsequent invocations to reuse database connections and prepared statements. The reuse depends on the runtime retaining the execution environment between invocations.",
+    "followUp": "Does the same assumption hold for edge functions? Usually not: edge functions commonly clean up immediately after invocation, reducing the benefit of retained state."
+   },
+   {
+    "question": "How should prepared statements be managed alongside the connection?",
+    "answer": "Declare reusable resources outside the handler scope, including the connection and any prepared statements. The handler should execute queries using those existing objects.",
+    "followUp": "What operational difference matters most between serverless and edge runtimes? Serverless instances may remain warm, while edge execution contexts are more likely to be cleaned up immediately."
+   }
+  ],
+  "keyPoints": [
+   "Warm serverless invocations can reuse both the database connection and prepared statements.",
+   "Put reusable connection and prepared-statement initialization outside the request handler.",
+   "Create the Drizzle client once from the outer-scope connection, then use that client in the handler.",
+   "A handler can execute an outer-scope prepared statement instead of reconstructing it per request."
+  ],
+  "gotchas": [
+   "Edge runtimes may discard the execution context immediately, so declaring the connection outside the handler may provide little or no reuse benefit."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Runtimes & operation::Serverless drivers": {
+  "sourceUrl": "https://orm.drizzle.team/docs/connect-neon",
+  "sourceTitle": "Drizzle ORM - Neon",
+  "summary": "Drizzle supports serverless database access through HTTP or WebSocket-based drivers instead of TCP. Use HTTP for isolated, non-interactive work and a pooled WebSocket driver for sessions or interactive transactions.",
+  "explanation": "Serverless and edge runtimes may not provide durable TCP connections. Drizzle supports runtime-appropriate drivers such as Neon HTTP for short, independent operations and a pooled WebSocket driver when sessions or interactive transactions require a persistent connection abstraction.",
+  "syntax": "drizzle({ client: sql })\ndrizzle({ client: pool })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Use an HTTP driver in a serverless runtime",
+   "code": "import { neon } from '@neondatabase/serverless';\nimport { drizzle } from 'drizzle-orm/neon-http';\n\nconst sql = neon(process.env.DATABASE_URL!);\nconst db = drizzle({ client: sql });\n\nconst result = await db.execute('select 1');\nconsole.log(result);",
+   "language": "typescript",
+   "explanation": "This uses Drizzle’s Neon HTTP driver, which sends database work over HTTP and suits serverless or edge runtimes."
+  },
+  "useCases": [
+   {
+    "title": "HTTP-based edge access",
+    "scenario": "An edge function performs one query or a non-interactive transaction and cannot open a TCP connection."
+   },
+   {
+    "title": "Pooled WebSocket access",
+    "scenario": "A serverless application needs interactive transactions or session-oriented database features."
+   },
+   {
+    "title": "pg-compatible serverless integration",
+    "scenario": "An application expects a serverless transport with an interface compatible with node-postgres usage."
+   }
+  ],
+  "related": [
+   "neon-http",
+   "neon-websockets",
+   "neon-serverless",
+   "@neondatabase/serverless",
+   "drizzle({ client })",
+   "Pool"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When would you choose an HTTP serverless driver?",
+    "answer": "Use an HTTP driver when the runtime lacks TCP and requests mostly perform single queries or non-interactive transactions. Drizzle’s Neon HTTP integration sends those operations over HTTP.",
+    "followUp": "What changes for interactive transactions? Use the WebSocket-based serverless driver because it supports session and interactive transaction behavior."
+   },
+   {
+    "question": "How do you configure a pooled serverless driver?",
+    "answer": "A pooled serverless driver provides a pool-like interface while connecting through a serverless-compatible transport. In the documented Neon integration, Drizzle wraps a `Pool` from `@neondatabase/serverless` with `drizzle({ client: pool })`.",
+    "followUp": "Why not use HTTP for every workload? HTTP is optimized for independent operations, while session-oriented work needs the WebSocket approach."
+   },
+   {
+    "question": "How should runtime constraints influence driver selection?",
+    "answer": "The driver choice depends on both runtime and workload. Serverless environments can use HTTP or WebSockets instead of TCP; HTTP favors isolated work, while WebSockets handle session or interactive-transaction requirements.",
+    "followUp": "What runtime constraint motivates this design? Edge and serverless platforms may not support long-lived TCP sockets, so the transport must work within the platform’s connection model."
+   }
+  ],
+  "keyPoints": [
+   "Drizzle’s Neon HTTP and WebSocket integrations are built on the Neon serverless driver.",
+   "Serverless-compatible connections can use HTTP or WebSockets when TCP is unavailable.",
+   "HTTP is the preferred transport for quick, independent database operations.",
+   "Session-dependent and interactive transaction workloads should use the WebSocket variant.",
+   "The pooled WebSocket option is also appropriate when pg-style compatibility is needed."
+  ],
+  "gotchas": [
+   "Choose HTTP for isolated queries or non-interactive transactions; it is not the best fit when the operation needs an interactive transaction.",
+   "Use the WebSocket-based serverless driver when session behavior, interactive transactions, or pg-compatible pooling is required."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Runtimes & operation::Testing": {
+  "sourceUrl": "https://orm.drizzle.team/docs/migrations",
+  "sourceTitle": "Drizzle ORM - Migrations",
+  "summary": "Test migrations by generating SQL files, applying them to a disposable database, and asserting against real database behavior. This validates the schema changes and SQL execution path rather than relying on mocks.",
+  "explanation": "Generate SQL migration files from the Drizzle schema, apply them to a disposable test database, and execute queries against that database to verify the schema and migration behavior. This tests the actual database changes rather than only application-level mocks.",
+  "syntax": "npx drizzle-kit generate\nnpx drizzle-kit migrate",
+  "parameters": [
+   {
+    "name": "drizzle.config.ts",
+    "type": "configuration file",
+    "description": "Path to the Drizzle configuration file, which defines the schema, migrations directory, and database connection."
+   }
+  ],
+  "returns": "The migration commands create SQL migration files and apply unapplied migrations to the configured database; subsequent test queries return the database's actual results.",
+  "example": {
+   "title": "Apply migrations before integration assertions",
+   "code": "npx drizzle-kit generate\nnpx drizzle-kit migrate",
+   "language": "bash",
+   "explanation": "Generate migration files from the schema, apply them to a test database, then run assertions against the resulting database behavior."
+  },
+  "useCases": [
+   {
+    "title": "Validate migrations in continuous integration",
+    "scenario": "CI integration tests"
+   },
+   {
+    "title": "Catch invalid or incomplete SQL migrations",
+    "scenario": "Schema changes"
+   },
+   {
+    "title": "Verify real indexes, types, and constraints",
+    "scenario": "Database constraints"
+   }
+  ],
+  "related": [
+   "drizzle-kit generate",
+   "drizzle-kit migrate",
+   "drizzle-kit push",
+   "schema migrations",
+   "drizzle.config.ts"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use `drizzle-kit generate` to create SQL migration files from schema changes.",
+   "Use `drizzle-kit migrate` to apply generated migrations to the disposable test database.",
+   "Run tests against a real SQL database so schema constraints and database behavior are exercised.",
+   "Migration execution checks the database migration history and applies migrations that have not already run."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Runtimes & operation::Type inference helpers": {
+  "sourceUrl": "https://orm.drizzle.team/docs/goodies",
+  "sourceTitle": "Goodies - Drizzle ORM",
+  "summary": "Derive select-row and insert-value TypeScript types directly from a Drizzle table. Use table-bound `$inferSelect`/`$inferInsert` or the generic `InferSelectModel`/`InferInsertModel` helpers instead of repeating the schema.",
+  "explanation": "Drizzle derives both read and write models from a table definition. Use `$inferSelect` and `$inferInsert` on the table, or pass the table type to `InferSelectModel` and `InferInsertModel`, so schema changes flow into application types automatically.",
+  "syntax": "type SelectUser = typeof users.$inferSelect;\ntype InsertUser = typeof users.$inferInsert;\ntype SelectUserAlt = InferSelectModel<typeof users>;\ntype InsertUserAlt = InferInsertModel<typeof users>;",
+  "parameters": [
+   {
+    "name": "table",
+    "type": "typeof users (type argument to InferSelectModel)",
+    "description": "The Drizzle table type whose selected-row shape should be inferred."
+   },
+   {
+    "name": "table",
+    "type": "typeof users (type argument to InferInsertModel)",
+    "description": "The Drizzle table type whose insert-values shape should be inferred."
+   }
+  ],
+  "returns": "TypeScript types representing the table’s select-row and insert-values models.",
+  "example": {
+   "title": "Infer table models",
+   "code": "import { serial, text, pgTable } from 'drizzle-orm/pg-core';\nimport { type InferSelectModel, type InferInsertModel } from 'drizzle-orm';\n\nconst users = pgTable('users', {\n  id: serial().primaryKey(),\n  name: text().notNull(),\n});\n\ntype User = typeof users.$inferSelect;\ntype NewUser = typeof users.$inferInsert;\ntype UserAlt = InferSelectModel<typeof users>;\ntype NewUserAlt = InferInsertModel<typeof users>;\n\nconst newUser: NewUser = { name: 'Ada' };",
+   "language": "typescript",
+   "explanation": "The table-specific helpers and generic helpers derive equivalent select and insert types directly from the schema."
+  },
+  "useCases": [
+   {
+    "title": "Typed selected rows",
+    "scenario": "Defining a read model for query results"
+   },
+   {
+    "title": "Typed inserts",
+    "scenario": "Typing objects passed to `.values()`"
+   },
+   {
+    "title": "Avoid duplicated interfaces",
+    "scenario": "Keeping application aliases synchronized with schema changes"
+   }
+  ],
+  "related": [
+   "$inferSelect",
+   "$inferInsert",
+   "InferSelectModel",
+   "InferInsertModel"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you derive select and insert types from a Drizzle table?",
+    "answer": "Use `typeof users.$inferSelect` for the row shape returned by selects and `typeof users.$inferInsert` for values accepted during insertion. The generic equivalents are `InferSelectModel<typeof users>` and `InferInsertModel<typeof users>`.",
+    "followUp": "When would the insert and select types differ? An auto-increment primary key can be present in the selected row while remaining optional or omitted from insert values."
+   },
+   {
+    "question": "What are the two supported helper styles?",
+    "answer": "The table helpers are accessed as properties of the schema object, while the generic helpers are imported from `drizzle-orm` and receive the table type as a type argument. Both forms infer from the same table definition.",
+    "followUp": "Which form is preferable in a local schema? The table-specific form is concise; the generic form can be useful when expressing a reusable type alias around a table type."
+   },
+   {
+    "question": "Why use inference helpers instead of handwritten interfaces?",
+    "answer": "These helpers avoid manually duplicating the schema in application types. If the table definition changes, the inferred aliases update through TypeScript’s type system.",
+    "followUp": "What limitation remains? They infer static TypeScript models; they do not perform runtime validation of untrusted input."
+   }
+  ],
+  "keyPoints": [
+   "The helpers derive separate models for selecting rows and inserting values from a table schema.",
+   "`$inferSelect` is the table-bound syntax for deriving a selected-row type.",
+   "`$inferInsert` is the table-bound syntax for deriving an insert-values type.",
+   "`InferSelectModel` provides a generic alternative that accepts the table as its type argument.",
+   "`InferInsertModel` provides the corresponding generic alternative for insert values.",
+   "The generic inference helpers are type imports from the main `drizzle-orm` package."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema definition::Column types and modifiers": {
+  "sourceUrl": "https://orm.drizzle.team/docs/column-types",
+  "sourceTitle": "timestamp",
+  "summary": "Configure dialect-specific column builders with explicit nullability, defaults, generated values, and inferred application types. Chain modifiers such as `.notNull()`, `.default()`, and generation helpers to express schema behavior.",
+  "explanation": "Column builders are configured by chaining modifiers onto a dialect-specific type. Use `.notNull()` to emit `NOT NULL`, `.default()` or `.defaultNow()` to define insertion defaults, and generated-value methods such as `.generatedAlwaysAsIdentity()` when the database should produce values. A column without `NOT NULL` remains nullable.",
+  "syntax": "columnType(name).notNull().default(value).generatedAlwaysAsIdentity()",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Column modifiers in a PostgreSQL table",
+   "code": "import { integer, pgTable, text, timestamp } from \"drizzle-orm/pg-core\";\n\nexport const users = pgTable(\"users\", {\n  id: integer(\"id\").generatedAlwaysAsIdentity().primaryKey(),\n  email: text(\"email\").notNull(),\n  displayName: text(\"display_name\"),\n  createdAt: timestamp(\"created_at\").defaultNow().notNull(),\n});",
+   "language": "typescript",
+   "explanation": "This PostgreSQL schema combines a generated identity key, a required email, an optional display name, and a non-null timestamp with a database-side default."
+  },
+  "useCases": [
+   {
+    "title": "Enforce required fields",
+    "scenario": "A required attribute must never be stored as NULL."
+   },
+   {
+    "title": "Declare insertion defaults",
+    "scenario": "A timestamp or status should be filled when an insert omits it."
+   },
+   {
+    "title": "Model generated identifiers",
+    "scenario": "Primary keys or similar values should be produced by the database."
+   }
+  ],
+  "related": [
+   "$type()",
+   "notNull()",
+   "default()",
+   "defaultNow()",
+   "generatedAlwaysAsIdentity()",
+   "custom types"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do nullability and `.notNull()` work in Drizzle?",
+    "answer": "`.notNull()` adds a database `NOT NULL` constraint, so inserts cannot leave the column null. Without that modifier, the column is nullable by default.",
+    "followUp": "How would you represent an optional field with a fallback? Keep the column nullable and add `.default(...)`; the default applies when an insert omits the column, not when it explicitly supplies `NULL`."
+   },
+   {
+    "question": "What do column defaults do?",
+    "answer": "A default supplies a value when an insert does not explicitly provide one. Use `.default(value)` for a literal or SQL expression, and dialect-specific helpers such as `.defaultNow()` where supported.",
+    "followUp": "What is the distinction between a default and a generated value? A default fills an omitted insert value, while generated columns or identity mechanisms delegate value generation to database generation rules."
+   },
+   {
+    "question": "When should generated-value modifiers be used?",
+    "answer": "Generated-value modifiers describe values produced by the database rather than supplied by application inserts. For example, PostgreSQL identity columns can generate integer identifiers automatically.",
+    "followUp": "Why prefer an identity modifier over manually generating IDs? It expresses the database generation strategy in the schema and lets migrations maintain the corresponding database definition."
+   }
+  ],
+  "keyPoints": [
+   "A default is used only when an insert omits the column; it is not a general-purpose value transformation.",
+   "Apply `.notNull()` when the database must reject null values for that column.",
+   "Use `$type<T>()` to refine or brand the TypeScript type exposed by a column builder.",
+   "When built-in builders do not model a database type, define a custom type for the dialect."
+  ],
+  "gotchas": [
+   "An enum configuration narrows inferred TypeScript types but does not validate values at runtime.",
+   "`$type()` changes the inferred application type; it does not create database-level runtime validation."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema definition::Indexes and constraints": {
+  "sourceUrl": "https://orm.drizzle.team/docs/indexes-constraints",
+  "sourceTitle": "Indexes & Constraints - Drizzle ORM",
+  "summary": "Drizzle lets you define indexes and database constraints next to a table. Use constraints to enforce valid data and indexes to support efficient access, including regular, unique, and conditionally configured indexes.",
+  "explanation": "Define indexes and constraints in the table callback, alongside columns. Constraints enforce data rules such as non-null values, uniqueness, primary keys, and checks; indexes improve lookup organization, with Drizzle supporting regular and unique index declarations plus configurable index expressions and options.",
+  "syntax": "pgTable(\"table_name\", { ...columns }, (table) => [index(\"index_name\").on(table.column), uniqueIndex(\"unique_index_name\").on(table.column), check(\"check_name\", sql`...`)])",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Indexes and a check constraint",
+   "code": "import { integer, pgTable, text, check, index, uniqueIndex } from \"drizzle-orm/pg-core\";\nimport { sql } from \"drizzle-orm\";\n\nexport const users = pgTable(\"users\", {\n  id: integer(\"id\").primaryKey(),\n  email: text(\"email\").notNull(),\n  age: integer(\"age\").notNull(),\n}, (table) => [\n  uniqueIndex(\"users_email_idx\").on(table.email),\n  index(\"users_age_idx\").on(table.age),\n  check(\"users_age_check\", sql`${table.age} >= 18`),\n]);",
+   "language": "typescript",
+   "explanation": "Defines a table with a named unique index, a regular index, and a check constraint."
+  },
+  "useCases": [
+   {
+    "title": "Enforce uniqueness",
+    "scenario": "Prevent duplicate identifiers such as email addresses or external IDs."
+   },
+   {
+    "title": "Add query indexes",
+    "scenario": "Speed up lookups, sorting, or filtering on frequently queried columns."
+   },
+   {
+    "title": "Validate with checks",
+    "scenario": "Reject values outside a permitted range or condition at the database boundary."
+   }
+  ],
+  "related": [
+   "index",
+   "uniqueIndex",
+   "check",
+   "primaryKey",
+   "unique",
+   "notNull",
+   "foreignKey",
+   "on"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you declare regular and unique indexes in Drizzle?",
+    "answer": "Use `index(\"name\").on(table.column)` for a regular index and `uniqueIndex(\"name\").on(table.column)` for a unique index. The page also shows index options such as expressions and filtering through the index builder.",
+    "followUp": "How would you represent a filtered index? Use `.where(sql``)` on the index declaration, supplying the SQL predicate."
+   },
+   {
+    "question": "How do unique and primary-key constraints differ?",
+    "answer": "A `UNIQUE` constraint prevents duplicate values in a column or column set, while a primary key uniquely identifies records and cannot contain NULL values. A table can have multiple unique constraints but only one primary key.",
+    "followUp": "What is the relationship between a primary key and uniqueness? A primary key automatically has a unique constraint, while uniqueness alone does not make a column the table's primary key."
+   },
+   {
+    "question": "What does a CHECK constraint do, and how is it declared?",
+    "answer": "A check constraint limits the values allowed in a column or row according to a condition. In Drizzle, define it in the table-level callback with `check(name, sql``)` so the database enforces the condition.",
+    "followUp": "Why use a database check rather than only application validation? The database enforces it for every writer, preventing invalid values regardless of which application submits them."
+   }
+  ],
+  "keyPoints": [
+   "Constraints are database-enforced rules that protect the validity of table data.",
+   "Use NOT NULL when a field must always receive a value during inserts and updates.",
+   "Unique constraints reject duplicate values and can apply to one column or a set of columns.",
+   "Checks express allowed-value conditions, such as requiring an age to meet a minimum.",
+   "Drizzle exposes separate builders for ordinary indexes and unique indexes in schema definitions.",
+   "Index declarations can be customized with builder parameters, including ordering, expressions, predicates, and access-method settings."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema definition::Primary and composite keys": {
+  "sourceUrl": "https://orm.drizzle.team/docs/indexes-constraints",
+  "sourceTitle": "Indexes & Constraints - Drizzle ORM",
+  "summary": "Define database-enforced primary keys for one column or for a combination of columns. Drizzle supports column-level keys and table-level composite keys.",
+  "explanation": "A primary key identifies table records and must contain unique, non-null values. Drizzle uses a column's primaryKey method for a single-column key, while the standalone primaryKey operator declares one key across multiple columns.",
+  "syntax": "primaryKey({ columns: [table.columnA, table.columnB] })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Composite primary key",
+   "code": "import { integer, pgTable, primaryKey, text } from \"drizzle-orm/pg-core\";\n\nexport const booksToAuthors = pgTable(\n  \"books_to_authors\",\n  {\n    authorId: integer(\"author_id\").notNull(),\n    bookId: integer(\"book_id\").notNull(),\n    note: text(),\n  },\n  (table) => [\n    primaryKey({ columns: [table.bookId, table.authorId] }),\n  ],\n);",
+   "language": "typescript",
+   "explanation": "The table-level primaryKey declaration makes the pair of columns the identifier for each row."
+  },
+  "useCases": [
+   {
+    "title": "Single-column identity",
+    "scenario": "A table has one natural identifier column."
+   },
+   {
+    "title": "Many-to-many junction rows",
+    "scenario": "A junction table is uniquely identified by the two related record IDs."
+   },
+   {
+    "title": "Composite natural key",
+    "scenario": "A record's identity is the combination of several attributes."
+   }
+  ],
+  "related": [
+   "primaryKey",
+   "PRIMARY KEY",
+   "UNIQUE",
+   "NOT NULL",
+   "Composite Primary Key"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does a primary key guarantee, and how is a single-column key declared?",
+    "answer": "A primary key uniquely identifies each record and cannot contain NULL values. In Drizzle, a single-column key can be declared with the column's primaryKey method.",
+    "followUp": "How would you model a key spanning two fields? Use the standalone primaryKey operator in the table callback and pass both columns in its columns array."
+   },
+   {
+    "question": "How do you define a composite primary key in Drizzle?",
+    "answer": "Use primaryKey with a columns array in the table-level configuration callback. The database then enforces uniqueness for the combined column values.",
+    "followUp": "Can the table also have another primary key? No; the documentation allows only one primary key per table."
+   },
+   {
+    "question": "What is the difference between a single-column and composite primary key?",
+    "answer": "A composite primary key identifies a row using multiple fields together. It is suitable when the row's identity is the combination of columns, such as a book-author junction row.",
+    "followUp": "What constraint does the database generate? It creates a PRIMARY KEY constraint over the listed columns, enforcing the combined identity."
+   }
+  ],
+  "keyPoints": [
+   "A primary key gives every table record a database-enforced identity.",
+   "Key columns must be unique and non-null under the primary-key constraint.",
+   "Use Drizzle's standalone primaryKey operator for a composite primary key.",
+   "A composite key identifies records through the combined value of multiple fields."
+  ],
+  "gotchas": [
+   "Declare one primary key per table, even when that key contains several columns.",
+   "A composite key is one primary key made from multiple columns, not several independent primary keys."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema definition::Relations": {
+  "sourceUrl": "https://orm.drizzle.team/docs/relations",
+  "sourceTitle": "Drizzle Relations",
+  "summary": "Declare application-level relations with defineRelations so Drizzle’s relational query API can traverse one, many, and junction-table connections. Relations guide querying but do not create database foreign keys.",
+  "explanation": "Relations are application-level metadata used by Drizzle's relational query API. Define them together with defineRelations, choosing one or many, and connect endpoints with from and to; this enables nested traversal without changing the database schema or implicitly creating foreign keys.",
+  "syntax": "defineRelations(schema, (r) => ({\n  table: {\n    relationName: r.one.relatedTable({ from, to, optional }),\n  },\n}));",
+  "parameters": [
+   {
+    "name": "schema",
+    "type": "tables object",
+    "description": "An object containing the tables whose relations are being defined."
+   },
+   {
+    "name": "callback",
+    "type": "(r) => relation definitions",
+    "description": "A callback receiving the relation builder used to configure one and many mappings."
+   },
+   {
+    "name": "from",
+    "type": "column | column[]",
+    "description": "The source column or column array for an explicit relation."
+   },
+   {
+    "name": "to",
+    "type": "column | column[]",
+    "description": "The target column or column array for an explicit relation."
+   },
+   {
+    "name": "optional",
+    "type": "boolean",
+    "description": "Whether the one-side relation may be absent."
+   }
+  ],
+  "returns": "A relations configuration object consumed by Drizzle's relational query setup.",
+  "example": {
+   "title": "Define relations between users and posts",
+   "code": "import { integer, pgTable, serial, text } from \"drizzle-orm/pg-core\";\nimport { defineRelations } from \"drizzle-orm\";\n\nexport const users = pgTable(\"users\", {\n  id: serial(\"id\").primaryKey(),\n  name: text(\"name\").notNull(),\n});\n\nexport const posts = pgTable(\"posts\", {\n  id: serial(\"id\").primaryKey(),\n  ownerId: integer(\"owner_id\").notNull(),\n  title: text(\"title\").notNull(),\n});\n\nexport const relations = defineRelations({ users, posts }, (r) => ({\n  users: {\n    posts: r.many.posts(),\n  },\n  posts: {\n    author: r.one.users({\n      from: r.posts.ownerId,\n      to: r.users.id,\n      optional: false,\n    }),\n  },\n}));",
+   "language": "typescript",
+   "explanation": "Defines a required post-to-user relation and its corresponding user-to-post collection."
+  },
+  "useCases": [
+   {
+    "title": "One-to-many traversal",
+    "scenario": "A post belongs to one author and an author has multiple posts."
+   },
+   {
+    "title": "One-to-one or self-referential mapping",
+    "scenario": "A record references another record in the same table."
+   },
+   {
+    "title": "Many-to-many querying",
+    "scenario": "Users and groups are connected through an association table."
+   },
+   {
+    "title": "Concise relational reads",
+    "scenario": "Nested data should be loaded through Drizzle's relational query API."
+   }
+  ],
+  "related": [
+   "defineRelations",
+   "r.one",
+   "r.many",
+   "from",
+   "to",
+   "optional",
+   "alias",
+   "where"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the purpose of Drizzle relations?",
+    "answer": "Relations are a higher-level application abstraction for querying related data. They enable Drizzle's relational query API but do not alter the database schema or implicitly create foreign keys.",
+    "followUp": "How would database referential integrity be enforced? Define foreign keys separately in the table schema; relations and foreign keys can be used independently."
+   },
+   {
+    "question": "How do you model one-to-one or one-to-many relationships?",
+    "answer": "Use r.one for a single related record and r.many for a collection. For an explicit one relation, from identifies the source column and to identifies the target column.",
+    "followUp": "What does optional: false express? It marks the one-side relation as required rather than optional in the relation configuration."
+   },
+   {
+    "question": "How are many-to-many relations represented?",
+    "answer": "A many-to-many relationship uses a junction or join table that stores the associations. That table must be explicitly represented when defining the relationship.",
+    "followUp": "Why is a join table needed? It provides the two sets of links that connect records on both sides of the many-to-many relationship."
+   }
+  ],
+  "keyPoints": [
+   "Relations provide concise traversal of related records through Drizzle's relational query API.",
+   "Call defineRelations to configure one-to-one relationships.",
+   "The same defineRelations API supports one-to-many mappings.",
+   "Model many-to-many associations through a junction or join table.",
+   "The from option names the source endpoint for an explicit relation.",
+   "The to option identifies the target endpoint paired with from."
+  ],
+  "gotchas": [
+   "Defining a relation does not create or modify database foreign keys; declare foreign keys separately when database enforcement is required.",
+   "Many-to-many relationships need an explicit junction or join table; the relation declaration alone does not represent the association."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema definition::Schema organization": {
+  "sourceUrl": "https://orm.drizzle.team/docs/sql-schema-declaration",
+  "sourceTitle": "Schema - Drizzle ORM",
+  "summary": "Split a growing Drizzle schema across multiple TypeScript files, then export the models through a configured schema entry point. Drizzle Kit can use that organization when generating migration differences.",
+  "explanation": "Drizzle lets you place tables and other models in separate TypeScript files. Export every model through a schema entry point, then configure Drizzle Kit to read that entry point so migrations can discover the complete schema.",
+  "syntax": "export * from \"./users\";\n\nexport default defineConfig({\n  schema: \"./src/db/schema/index.ts\",\n});",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Split schema files and re-export them",
+   "code": "// src/db/schema/users.ts\nimport { integer, pgTable, serial, text } from \"drizzle-orm/pg-core\";\n\nexport const users = pgTable(\"users\", {\n  id: serial(\"id\").primaryKey(),\n  name: text(\"name\").notNull(),\n});\n\n// src/db/schema/index.ts\nexport * from \"./users\";\n\n// drizzle.config.ts\nimport { defineConfig } from \"drizzle-kit\";\nexport default defineConfig({\n  dialect: \"postgresql\",\n  schema: \"./src/db/schema/index.ts\",\n});",
+   "language": "typescript",
+   "explanation": "Define models in separate files, then re-export them from one schema entry point configured for Drizzle Kit."
+  },
+  "useCases": [
+   {
+    "title": "Separate tables by file",
+    "scenario": "A codebase has many database tables and a single schema file is difficult to navigate."
+   },
+   {
+    "title": "Group related models",
+    "scenario": "A team wants schema ownership to follow application domains."
+   },
+   {
+    "title": "Provide Drizzle Kit a schema path",
+    "scenario": "Migration generation must discover models distributed across a schema directory."
+   }
+  ],
+  "related": [
+   "drizzle.config.ts",
+   "Drizzle Kit",
+   "schema",
+   "tables",
+   "enums",
+   "sequences",
+   "migrations"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Can a Drizzle schema be split across multiple files?",
+    "answer": "Drizzle supports either one schema file or multiple files. With multiple files, export the models and point the schema configuration at the location Drizzle Kit should read.",
+    "followUp": "How would you organize a large schema? Group related models into directories or files, while keeping every model discoverable from the configured schema path."
+   },
+   {
+    "question": "What must be true of models in separate schema files?",
+    "answer": "Yes. Tables, enums, sequences, and other Drizzle models can be placed in any files you choose. The required part is making all those models available to Drizzle Kit.",
+    "followUp": "What failure can an omitted export cause? Drizzle Kit may not include that model when calculating migration differences."
+   },
+   {
+    "question": "How does Drizzle Kit discover a distributed schema?",
+    "answer": "Set the schema path in drizzle.config.ts. Drizzle Kit then reads the configured schema location and finds the schema files recursively when the configuration targets a folder.",
+    "followUp": "What organization strategy does the documentation suggest? Separate each table into its own file or group related tables, such as user, messaging, or product models."
+   }
+  ],
+  "keyPoints": [
+   "A schema may live in one TypeScript file or be distributed across several files.",
+   "The same multi-file approach applies to tables, enums, sequences, and other Drizzle models.",
+   "Export every model from its defining file so Drizzle Kit can import the complete set.",
+   "A straightforward organization is one table per file.",
+   "Alternatively, organize models into domain-oriented groups that fit the project."
+  ],
+  "gotchas": [
+   "Every model must be exported so Drizzle Kit can import it during migration diffing."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema definition::Table definitions": {
+  "sourceUrl": "https://orm.drizzle.team/docs/sql-schema-declaration",
+  "sourceTitle": "Schema - Drizzle ORM",
+  "summary": "Define database tables in TypeScript with a dialect-specific Drizzle table builder and typed column definitions. Add database constraints and naming mappings while keeping the schema aligned with the underlying database.",
+  "explanation": "Choose the database dialect first, then call its table builder with a database table name and an object of column definitions. Each column uses a dialect-specific builder and can be refined with constraints or defaults; TypeScript keys normally become database column names unless an explicit alias or casing strategy is used.",
+  "syntax": "export const table = pgTable(\"table_name\", {\n  columnName: columnType(),\n});",
+  "parameters": [
+   {
+    "name": "name",
+    "type": "string",
+    "description": "Database table name passed to the dialect-specific table builder."
+   },
+   {
+    "name": "columns",
+    "type": "object",
+    "description": "Object whose properties are dialect-specific column builders and definitions."
+   }
+  ],
+  "returns": "A typed table object representing the declared database table and its columns.",
+  "example": {
+   "title": "Define a PostgreSQL table",
+   "code": "import { integer, pgTable, varchar } from \"drizzle-orm/pg-core\";\n\nexport const users = pgTable(\"users\", {\n  id: integer().primaryKey().generatedAlwaysAsIdentity(),\n  name: varchar().notNull(),\n  email: varchar().notNull().unique(),\n});",
+   "language": "typescript",
+   "explanation": "Defines a PostgreSQL table with three typed columns and column constraints."
+  },
+  "useCases": [
+   {
+    "title": "Application schema modeling",
+    "scenario": "Create application tables such as users, posts, or orders with compile-time type information."
+   },
+   {
+    "title": "Constraint declaration",
+    "scenario": "Express primary keys, required fields, uniqueness, and generated values alongside columns."
+   },
+   {
+    "title": "Database naming interoperability",
+    "scenario": "Keep TypeScript property names ergonomic while mapping them to existing database naming conventions."
+   }
+  ],
+  "related": [
+   "Schema",
+   "Column types",
+   "Constraints",
+   "Schemas",
+   "Casing API",
+   "PostgreSQL table builders"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you define a table in Drizzle?",
+    "answer": "A table is declared with the dialect-specific table function, such as `pgTable`, followed by the database table name and a column-definition object. Each object property maps a TypeScript key to a dialect-specific column builder.",
+    "followUp": "How would you preserve a snake_case database column while using camelCase in TypeScript? Pass the database name to the column builder, or use the documented casing API for automatic mapping."
+   },
+   {
+    "question": "Why must the table builder match the database dialect?",
+    "answer": "Drizzle requires a dialect choice because column builders and table helpers are database-specific. PostgreSQL, MySQL, and SQLite schemas use their corresponding core packages and table functions.",
+    "followUp": "Why not use one common table object? The documentation states that Drizzle has no common table object, so the dialect determines the available builders and generated schema."
+   },
+   {
+    "question": "What does the table-definition object contain?",
+    "answer": "The object passed to the table builder describes columns, constraints, and related table details. A table must contain at least one column, and each column can use builder methods such as `primaryKey`, `notNull`, or `unique`.",
+    "followUp": "What happens if a TypeScript key differs from the desired database column name? Supply the database name as the builder's first argument or configure a casing strategy."
+   }
+  ],
+  "keyPoints": [
+   "Schema declarations live in TypeScript while expressing models and properties supported by the underlying database.",
+   "A table definition can include columns and constraints in the same schema declaration.",
+   "Place declarations in one `schema.ts` file or distribute them across multiple files.",
+   "Keeping tables together in one schema file is the documentation's common organization pattern.",
+   "The PostgreSQL casing builders can automatically map TypeScript column keys to a naming convention."
+  ],
+  "gotchas": [
+   "A table declaration cannot be empty; include at least one column.",
+   "There is no universal table builder; use the builder for the database dialect in your project.",
+   "Renaming a TypeScript property does not automatically preserve a different database column name; provide an alias when needed."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Writes & migrations::Applying migrations": {
+  "sourceUrl": "https://orm.drizzle.team/docs/migrations",
+  "sourceTitle": "Drizzle ORM - Migrations",
+  "summary": "Generate SQL migrations from the version-controlled Drizzle schema, commit the migration directory, and run `drizzle-kit migrate` during deployment. Drizzle checks database history and applies only migrations that have not yet been recorded.",
+  "explanation": "Drizzle Kit applies generated SQL migrations from the migration folder in order. It checks the database’s migration log, skips entries already recorded there, runs the remaining migrations, and records successful applications; keep the generated migration directory under version control so deployments use the same migration history.",
+  "syntax": "drizzle-kit migrate",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Apply pending migrations",
+   "code": "npx drizzle-kit migrate",
+   "language": "bash",
+   "explanation": "Run this command during deployment to apply generated SQL migrations that have not yet been recorded as applied."
+  },
+  "useCases": [
+   {
+    "title": "Repeatable deployment migrations",
+    "scenario": "Deploying schema changes to staging or production"
+   },
+   {
+    "title": "Version-controlled schema history",
+    "scenario": "Reviewing database evolution in pull requests"
+   },
+   {
+    "title": "Consistent environment upgrades",
+    "scenario": "Keeping multiple environments aligned"
+   }
+  ],
+  "related": [
+   "drizzle-kit generate",
+   "drizzle-kit migrate",
+   "drizzle-kit push",
+   "drizzle-kit pull",
+   "codebase first",
+   "drizzle.config.ts",
+   "__drizzle_migrations"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does `drizzle-kit migrate` decide what to execute?",
+    "answer": "The command is `drizzle-kit migrate`. It reads SQL files from the migration folder, compares them with the database migration log, runs only unapplied migrations, and records successful ones.",
+    "followUp": "What prevents a migration from running twice? Drizzle checks the recorded migration entries and selects only migrations that are not already present in the log."
+   },
+   {
+    "question": "How should migrations be handled in a deployment workflow?",
+    "answer": "Generated SQL files should be retained in the migration folder and included with the application’s version-controlled source. Deployments then apply the committed migration history rather than reconstructing it.",
+    "followUp": "Why not use `push` for deployment? `push` applies schema changes directly and is intended for rapid local iteration, whereas generated migrations provide deployable, reviewable history."
+   },
+   {
+    "question": "What configuration does migration application require?",
+    "answer": "The command needs a dialect and database connection credentials. These can be supplied through `drizzle.config.ts` or as CLI options.",
+    "followUp": "Where is successful application state stored? By default, Drizzle records it in `__drizzle_migrations` under the `drizzle` schema, with both configurable."
+   }
+  ],
+  "keyPoints": [
+   "A codebase-first workflow treats the TypeScript schema as the source of truth, then applies its changes to the database.",
+   "Create migration files from schema changes with `drizzle-kit generate` before applying them.",
+   "Use `drizzle-kit migrate` to execute generated SQL migrations against the target database.",
+   "Migration application begins by reading the SQL files in the configured migrations directory.",
+   "Drizzle consults database history to determine which migration records already exist.",
+   "Only migrations absent from the recorded history are selected for execution.",
+   "Selected migrations are applied to the database as part of the migration process."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Writes & migrations::drizzle-kit generate": {
+  "sourceUrl": "https://orm.drizzle.team/docs/drizzle-kit-generate",
+  "sourceTitle": "Drizzle ORM - `generate`",
+  "summary": "Generate SQL migration files from a Drizzle schema declaration or later schema changes. It compares the current schema snapshot with the latest migration snapshot and saves the resulting SQL and snapshot files.",
+  "explanation": "The command reads your Drizzle schema files, creates a JSON snapshot, compares it with the latest snapshot from the migration directory, and generates SQL from the differences. It writes migration.sql and snapshot.json under a timestamped migration folder; set required options in drizzle.config.ts or pass them on the command line.",
+  "syntax": "npx drizzle-kit generate [--dialect=<dialect>] [--schema=<path>] [--name=<name>] [--custom]",
+  "parameters": [
+   {
+    "name": "dialect",
+    "type": "string",
+    "description": "SQL database dialect, such as postgresql or sqlite; required either in configuration or on the command line."
+   },
+   {
+    "name": "schema",
+    "type": "string",
+    "description": "Path to the Drizzle schema file or files; required either in configuration or on the command line."
+   },
+   {
+    "name": "name",
+    "type": "string",
+    "description": "Optional custom name for the generated migration."
+   },
+   {
+    "name": "custom",
+    "type": "boolean",
+    "description": "Optional flag that creates an empty migration for custom SQL."
+   }
+  ],
+  "returns": "Timestamped migration files: migration.sql and snapshot.json.",
+  "example": {
+   "title": "Generate an initial PostgreSQL migration",
+   "code": "npx drizzle-kit generate --dialect=postgresql --schema=./src/schema.ts --name=init",
+   "language": "bash",
+   "explanation": "Reads the schema and existing migrations, compares snapshots, and writes a timestamped SQL migration."
+  },
+  "useCases": [
+   {
+    "title": "Initial schema migration",
+    "scenario": "Create the initial database migration from a newly declared Drizzle schema."
+   },
+   {
+    "title": "Incremental schema changes",
+    "scenario": "Capture table, column, index, or relation changes after editing the schema."
+   },
+   {
+    "title": "Custom SQL migration",
+    "scenario": "Create a named empty migration for seed data or DDL that Drizzle Kit does not generate."
+   }
+  ],
+  "related": [
+   "drizzle-kit migrate",
+   "drizzle-kit push",
+   "drizzle-kit pull",
+   "drizzle.config.ts",
+   "drizzle-orm migrate()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What happens when drizzle-kit generate runs?",
+    "answer": "It reads the Drizzle schema, builds a JSON snapshot, compares that snapshot with the latest snapshot in the previous migrations, and generates SQL from the differences. The output includes migration.sql and snapshot.json in a timestamped migration directory.",
+    "followUp": "How would you apply the generated SQL? Use drizzle-kit migrate, Drizzle ORM's migrate() function, an external migration tool, or execute it directly against the database."
+   },
+   {
+    "question": "What inputs must the command receive?",
+    "answer": "The command requires both a database dialect and a schema path. These can be configured in drizzle.config.ts or supplied as CLI options such as --dialect and --schema.",
+    "followUp": "What configuration alternative avoids repeating those flags? Put the dialect and schema path in drizzle.config.ts and invoke the command without the corresponding CLI options."
+   },
+   {
+    "question": "How can migration names or custom SQL migrations be handled?",
+    "answer": "Use the --name option to choose a custom migration name, for example --name=init. The command also supports --custom for creating an empty migration intended for handwritten SQL, such as data seeding or unsupported DDL.",
+    "followUp": "When is --custom preferable to ordinary generation? Choose it when Drizzle Kit cannot generate the required DDL or when the migration contains seed or other custom SQL."
+   }
+  ],
+  "keyPoints": [
+   "Use the command for the first migration and for later migrations after modifying the Drizzle schema.",
+   "The schema is converted into a JSON snapshot that represents the current declared database structure.",
+   "Existing migration history supplies the prior snapshot used as the comparison baseline.",
+   "Only the differences between the current and previous snapshots drive the generated SQL.",
+   "Each generated migration directory contains both the executable SQL file and the schema snapshot.",
+   "Generation creates files but does not apply them; run the migration command separately to update the database."
+  ],
+  "gotchas": [
+   "The command cannot determine how to generate migrations without both a SQL dialect and a schema path, supplied through configuration or CLI options.",
+   "Without --name, the generated migration uses the tool's default naming; use this option when a meaningful migration name is useful."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Writes & migrations::Insert and upsert": {
+  "sourceUrl": "https://orm.drizzle.team/docs/guides/upsert",
+  "sourceTitle": "Drizzle ORM - Upsert Query",
+  "summary": "Insert a row and update the existing row when a specified conflict target is hit. Drizzle provides dialect-specific upsert methods, with onConflictDoUpdate for PostgreSQL, CockroachDB, and SQLite.",
+  "explanation": "An insert can become an upsert by chaining onConflictDoUpdate. The target identifies the conflicting column or columns, while set describes values written to the existing row. PostgreSQL, CockroachDB, and SQLite support this form; MySQL uses onDuplicateKeyUpdate instead.",
+  "syntax": "db.insert(table).values(values).onConflictDoUpdate({ target, set, targetWhere?, setWhere? })",
+  "parameters": [
+   {
+    "name": "target",
+    "type": "Column | Column[]",
+    "description": "Column or array of columns used as the conflict target; dialect-specific APIs may infer or omit this."
+   },
+   {
+    "name": "set",
+    "type": "Record<string, SQL | value>",
+    "description": "Assignments applied when the target conflicts."
+   },
+   {
+    "name": "targetWhere",
+    "type": "SQL",
+    "description": "Condition attached to the conflict target, useful for partial indexes."
+   },
+   {
+    "name": "setWhere",
+    "type": "SQL",
+    "description": "Condition controlling whether the conflicting row is updated."
+   }
+  ],
+  "returns": "A database insert query builder that emits an upsert statement for the selected dialect.",
+  "example": {
+   "title": "Upsert a user by ID",
+   "code": "import { drizzle } from 'drizzle-orm/node-postgres';\nimport { users } from './schema';\n\nconst db = drizzle(process.env.DATABASE_URL!);\n\nawait db\n  .insert(users)\n  .values({ id: 1, name: 'John' })\n  .onConflictDoUpdate({\n    target: users.id,\n    set: { name: 'Super John' },\n  });",
+   "language": "typescript",
+   "explanation": "Inserts a user and, when the specified identifier conflicts, updates the existing row's name."
+  },
+  "useCases": [
+   {
+    "title": "Create or update a record",
+    "scenario": "Create-or-refresh records keyed by an ID or unique column without a separate read first."
+   },
+   {
+    "title": "Bulk upsert",
+    "scenario": "Write several candidate rows while copying proposed values into conflicting rows through excluded."
+   },
+   {
+    "title": "Conditional conflict handling",
+    "scenario": "Apply conditional updates or target partial-index conflicts."
+   }
+  ],
+  "related": [
+   "onConflictDoUpdate",
+   "onDuplicateKeyUpdate",
+   "targetWhere",
+   "setWhere",
+   "excluded",
+   "sql operator"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you perform an upsert with Drizzle?",
+    "answer": "Chain onConflictDoUpdate after insert and values. Set target to the conflicting column or columns, and set to the values that should replace fields on the existing row.",
+    "followUp": "How do you target a composite key? Pass an array of the relevant table columns as target."
+   },
+   {
+    "question": "How do setWhere and targetWhere differ?",
+    "answer": "Use setWhere for a condition on the update action and targetWhere for a condition associated with a partial-index conflict target. They represent different SQL WHERE locations.",
+    "followUp": "What should be used when the database is MySQL? Use onDuplicateKeyUpdate, because MySQL derives conflicts from primary keys and unique indexes."
+   },
+   {
+    "question": "How does the upsert API vary by SQL dialect?",
+    "answer": "For PostgreSQL, CockroachDB, and SQLite, onConflictDoUpdate expresses the upsert. MySQL uses onDuplicateKeyUpdate, while MSSQL needs transaction-based branching or MERGE.",
+    "followUp": "How can multiple inserted rows reuse proposed values? Reference the excluded row through sql, such as sql.raw(`excluded.${column.name}`)."
+   }
+  ],
+  "keyPoints": [
+   "PostgreSQL, CockroachDB, and SQLite use onConflictDoUpdate for this upsert pattern.",
+   "A conflict causes the existing row to be updated rather than inserting a second row.",
+   "target selects the column whose conflict identifies the row to update.",
+   "set supplies the assignments applied to the existing row.",
+   "Composite indexes and composite primary keys can be addressed by supplying multiple target columns.",
+   "The excluded reference exposes proposed values that lost the insert because of a conflict."
+  ],
+  "gotchas": [
+   "MySQL does not use an explicit target with this API; its conflict target is inferred from the primary key and unique indexes.",
+   "A conditional upsert can constrain either which conflicts qualify or whether the conflicting row is updated; these are separate conditions."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Writes & migrations::Returning clauses": {
+  "sourceUrl": "https://orm.drizzle.team/docs/update",
+  "sourceTitle": "Drizzle ORM - Update",
+  "summary": "Use PostgreSQL's returning() with Drizzle updates to read affected rows immediately. Return complete rows or project selected columns and aliases without a second query.",
+  "explanation": "A PostgreSQL update can append returning() to read values from the rows it changes. Call it without arguments for the complete returned row, or pass an object to project selected columns and aliases; the result is an array containing one object per affected row.",
+  "syntax": "db.update(table).set(values).where(condition).returning();\ndb.update(table).set(values).where(condition).returning({ alias: table.column });",
+  "parameters": [],
+  "returns": "An array of returned row objects; the selected fields and their inferred nullability determine each object's shape.",
+  "example": {
+   "title": "Return selected values from an update",
+   "code": "import { eq } from \"drizzle-orm\";\nimport { users } from \"./schema\";\n\nconst updatedUsers = await db\n  .update(users)\n  .set({ name: \"Mr. Dan\" })\n  .where(eq(users.name, \"Dan\"))\n  .returning({ updatedId: users.id });",
+   "language": "typescript",
+   "explanation": "Updates matching users and returns only each affected row's ID."
+  },
+  "useCases": [
+   {
+    "title": "Read updated values",
+    "scenario": "Capture database-generated or changed values from updated rows immediately."
+   },
+   {
+    "title": "Project a smaller result",
+    "scenario": "Return only identifiers or other fields needed by the application."
+   },
+   {
+    "title": "Return joined data",
+    "scenario": "Expose related-table data while updating through PostgreSQL from()."
+   }
+  ],
+  "related": [
+   "update",
+   "set",
+   "where",
+   "from",
+   "returning"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you read generated or changed values from a PostgreSQL update?",
+    "answer": "Use returning() after an update to read the affected rows in the same statement. Passing an object, such as { updatedId: users.id }, limits the returned shape and supports aliases.",
+    "followUp": "How can an update return a value from another table? Use from() with the joined table, then reference that table's column in returning()."
+   },
+   {
+    "question": "What is the difference between returning() and returning({ ... })?",
+    "answer": "Without a projection, returning() returns the updated row. With an object, it returns only the selected expressions under the specified property names.",
+    "followUp": "What does the result contain when multiple rows match? It is an array with one returned object for each affected row."
+   },
+   {
+    "question": "Can returning() include columns from a joined table?",
+    "answer": "PostgreSQL supports returning columns from joined tables. In Drizzle, add from(cities), then select fields from both users and cities in returning().",
+    "followUp": "How is the joined-table update represented in SQL? PostgreSQL emits an UPDATE with a FROM clause and a RETURNING list."
+   }
+  ],
+  "keyPoints": [
+   "PostgreSQL updates can return the rows they modify, avoiding a separate read query.",
+   "Pass an object to return a partial shape, including renamed fields such as updatedId.",
+   "A projected update result is an array of objects, and a nullable selected value can remain nullable in its inferred type.",
+   "Await the update query to obtain the returned rows.",
+   "A returning projection can combine columns from the updated table and a table supplied through from()."
+  ],
+  "gotchas": [
+   "Joined-table columns can also be included in PostgreSQL returning projections when the update uses from()."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Writes & migrations::Transactions": {
+  "sourceUrl": "https://orm.drizzle.team/docs/transactions",
+  "sourceTitle": "Transactions - Drizzle ORM",
+  "summary": "Use `db.transaction` to group dependent statements into one atomic unit. Successful work commits; an exception or explicit `tx.rollback()` undoes the transaction.",
+  "explanation": "Pass an async callback to `db.transaction`; use its transaction-scoped client for every dependent statement. If the callback completes, the transaction commits; throwing an error or calling `tx.rollback()` undoes the transaction. Nested transaction callbacks provide savepoints, and the callback may return a value.",
+  "syntax": "await db.transaction(async (tx) => { /* statements using tx */ });",
+  "parameters": [
+   {
+    "name": "db",
+    "type": "Drizzle database instance",
+    "description": "Database client on which the transaction is started."
+   },
+   {
+    "name": "callback",
+    "type": "(tx) => Promise<T>",
+    "description": "Async callback receiving a transaction-scoped client."
+   },
+   {
+    "name": "tx",
+    "type": "Transaction client",
+    "description": "Transaction-scoped client used for statements in the transaction."
+   }
+  ],
+  "returns": "The callback's returned value, or a rejected operation when the callback throws or rolls back.",
+  "example": {
+   "title": "Rollback a transfer when validation fails",
+   "code": "import { eq, sql } from \"drizzle-orm\";\nimport { accounts } from \"./schema\";\n\nawait db.transaction(async (tx) => {\n  const [account] = await tx\n    .select({ balance: accounts.balance })\n    .from(accounts)\n    .where(eq(accounts.owner, \"Dan\"));\n\n  if (account.balance < 100) tx.rollback();\n\n  await tx.update(accounts).set({\n    balance: sql`${accounts.balance} - 100.00`,\n  }).where(eq(accounts.owner, \"Dan\"));\n\n  await tx.update(accounts).set({\n    balance: sql`${accounts.balance} + 100.00`,\n  }).where(eq(accounts.owner, \"Andrew\"));\n});",
+   "language": "typescript",
+   "explanation": "The callback uses the transaction-scoped client for both balance updates, so an insufficient balance rolls back the grouped work."
+  },
+  "useCases": [
+   {
+    "title": "Atomic multi-statement writes",
+    "scenario": "Transfer funds between accounts while ensuring debit and credit succeed together."
+   },
+   {
+    "title": "Business-rule validation",
+    "scenario": "Check balances or permissions before applying changes, then abort if the rule fails."
+   },
+   {
+    "title": "Transactional relational queries",
+    "scenario": "Perform related reads through the transaction-scoped relational query API."
+   },
+   {
+    "title": "Nested transactional work",
+    "scenario": "Isolate a nested unit of work using a savepoint."
+   }
+  ],
+  "related": [
+   "savepoints",
+   "nested transactions",
+   "relational queries",
+   "tx.rollback()",
+   "transaction configuration APIs"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you run several dependent statements atomically?",
+    "answer": "Use `db.transaction(async (tx) => { ... })` and execute each dependent query through `tx`. Successful completion commits the grouped work, while an exception or `tx.rollback()` causes rollback.",
+    "followUp": "How can partial recovery be modeled? Nest another `tx.transaction(async (tx2) => { ... })` callback; Drizzle implements nested transactions as savepoints."
+   },
+   {
+    "question": "How do you cancel a transaction after a business-rule check?",
+    "answer": "Call `tx.rollback()` when business validation fails. The documentation’s example checks an account balance, and the rollback is implemented by throwing an exception.",
+    "followUp": "What happens if a later statement fails instead? The exception also aborts the enclosing transaction, undoing its earlier statements."
+   },
+   {
+    "question": "What else can a transaction callback do besides issue writes?",
+    "answer": "The transaction callback can return a value, so it can both perform grouped database work and produce a result for the caller. Queries can also use the transaction client for relational queries.",
+    "followUp": "Can relational queries run inside the transaction? Yes; the page shows `tx.query.users.findMany(...)` inside `db.transaction(...)`."
+   }
+  ],
+  "keyPoints": [
+   "A transaction groups one or more SQL statements into one unit of database work.",
+   "When all callback work succeeds, the database commits it as one logical unit.",
+   "Rollback removes the transaction’s changes as one unit instead of leaving earlier statements applied.",
+   "Validation and other application rules may run inside the callback before deciding whether to roll back.",
+   "The callback is allowed to return a value that the transaction call resolves with.",
+   "The transaction-scoped client supports relational query operations as well as ordinary SQL statements."
+  ],
+  "gotchas": [
+   "Calling `tx.rollback()` stops the callback by throwing and causes the complete transaction to roll back; do not treat it as a boolean result.",
+   "Nested `tx.transaction(...)` calls are savepoints, not unrelated top-level transactions; their behavior is scoped within the enclosing transaction."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Writes & migrations::Update and delete": {
+  "sourceUrl": "https://orm.drizzle.team/docs/data-querying",
+  "sourceTitle": "Query data",
+  "summary": "Use the update and delete builders with where conditions to restrict writes to matching rows. The same predicate style used for selecting rows can constrain these operations.",
+  "explanation": "Drizzle’s update and delete builders use a where clause to constrain affected rows. Build conditions with the same predicate helpers used by select queries, such as eq, and place the condition after set for updates or directly after the table for deletes.",
+  "syntax": "db.update(table).set(values).where(condition)\ndb.delete(table).where(condition)",
+  "parameters": [
+   {
+    "name": "table",
+    "type": "table",
+    "description": "The table whose rows are modified or removed."
+   },
+   {
+    "name": "values",
+    "type": "object",
+    "description": "An object mapping columns to replacement values for update."
+   },
+   {
+    "name": "condition",
+    "type": "SQL condition",
+    "description": "A SQL condition restricting affected rows."
+   }
+  ],
+  "returns": "The executed update or delete query result; delete can also return affected rows on supported dialects.",
+  "example": {
+   "title": "Restrict update and delete operations",
+   "code": "import { eq } from 'drizzle-orm';\nimport { users } from './schema';\n\nawait db.update(users)\n  .set({ email: 'new@example.com' })\n  .where(eq(users.id, 1));\n\nawait db.delete(users)\n  .where(eq(users.id, 1));",
+   "language": "typescript",
+   "explanation": "Both write builders accept a where condition, so only the matching user is updated or deleted."
+  },
+  "useCases": [
+   {
+    "title": "Conditional updates",
+    "scenario": "Change selected records without touching other rows."
+   },
+   {
+    "title": "Conditional deletes",
+    "scenario": "Remove records matching a predicate."
+   },
+   {
+    "title": "Shared filtering logic",
+    "scenario": "Apply reusable query predicates consistently across reads and writes."
+   }
+  ],
+  "related": [
+   "where",
+   "eq",
+   "select",
+   "update",
+   "delete",
+   "set"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Delete rows selectively with db.delete(table).where(condition).",
+   "A delete condition can compare a column with eq, just as in a select filter.",
+   "Start an update with db.update(table).",
+   "Attach the row restriction with where and a predicate such as eq."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ }
+}

@@ -49,6 +49,8 @@ export const SERVICE_HANDBOOKS = [
         "Store exhausted events with the reason and attempt history.",
         "Assign an owner to inspect and repair failed deliveries.",
         "Reprocess through the same idempotent business handler.",
+        "Capture the last error and relevant correlation identifiers.",
+        "Alert on growing dead-letter age as well as count.",
       ]],
       ["Replay endpoint", "Re-process a stored event on demand, using the same handler the live delivery used.", [
         "Authorize operators before allowing a stored event to be replayed.",
@@ -140,11 +142,6 @@ export const SERVICE_HANDBOOKS = [
         "Use exponential backoff with jitter for transient outbound failures.",
         "Honor Retry-After where the destination defines it.",
         "Stop retrying when the attempt or age budget is exhausted.",
-      ]],
-      ["Dead letter handling", "Capture events that keep failing instead of losing them.", [
-        "Keep unprocessable messages available for diagnosis and controlled replay.",
-        "Capture the last error and relevant correlation identifiers.",
-        "Alert on growing dead-letter age as well as count.",
       ]],
       ["Replay and backfill", "Reprocess a range of events safely after a bug is fixed.", [
         "Backfill missing events from an authoritative source when available.",
@@ -403,6 +400,8 @@ export const SERVICE_HANDBOOKS = [
         "Run new protections in DRY_RUN to observe proposed denials.",
         "Review false positives before changing enforcement to LIVE.",
         "Track dry-run findings separately from blocked traffic.",
+        "Test unusual clients before enabling blocking behavior.",
+        "Promote each tuned rule to enforcement deliberately.",
       ]],
     ],
     "Core model": [
@@ -415,11 +414,6 @@ export const SERVICE_HANDBOOKS = [
         "An allowed conclusion is distinct from a denial or evaluation error.",
         "Use the decision reason to select an appropriate HTTP response.",
         "Preserve the decision identifier for troubleshooting.",
-      ]],
-      ["Dry run mode", "Observe what a rule would do before enforcing it.", [
-        "Compare would-be denials with legitimate application traffic.",
-        "Test unusual clients before enabling blocking behavior.",
-        "Promote each tuned rule to enforcement deliberately.",
       ]],
       ["Rule composition", "Combine several rules and understand which decision wins.", [
         "Combine bot, rate-limit and Shield rules as needed.",

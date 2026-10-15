@@ -1,0 +1,2677 @@
+{
+ "Data loading::Integrating with Query": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/guide/external-data-loading",
+  "sourceTitle": "External Data Loading | TanStack Router Docs",
+  "summary": "Use TanStack Router loaders to await TanStack Query data while Query owns the cache. This coordinates navigation without maintaining a duplicate router cache.",
+  "explanation": "TanStack Router can coordinate TanStack Query by receiving a QueryClient through router context and awaiting its query-loading API in a route loader. The component then reads the same query options, so the query library owns caching and freshness instead of the router maintaining a second copy.",
+  "syntax": "loader: () => queryClient.query({ ...postsQueryOptions, staleTime: 'static' })",
+  "parameters": [],
+  "returns": "The route loader returns the promise from the QueryClient loading operation; the integration handles SSR dehydration, hydration, and streaming.",
+  "example": {
+   "title": "Await query data in a route loader",
+   "code": "import { QueryClient, queryOptions, useSuspenseQuery } from '@tanstack/react-query'\nimport { createFileRoute } from '@tanstack/react-router'\n\nconst postsQuery = (queryClient: QueryClient) =>\n  queryOptions({\n    queryKey: ['posts'],\n    queryFn: () => fetch('/api/posts').then((r) => r.json()),\n  })\n\nexport const Route = createFileRoute('/posts')({\n  loader: ({ context: { queryClient } }) =>\n    queryClient.ensureQueryData(postsQuery(queryClient)),\n  component: Posts,\n})\n\nfunction Posts() {\n  const query = useSuspenseQuery(postsQuery(Route.useRouteContext().queryClient))\n  return <pre>{JSON.stringify(query.data, null, 2)}</pre>\n}",
+   "language": "tsx",
+   "explanation": "The route loader ensures the query is available before rendering, while the component reads the same cache entry through TanStack Query."
+  },
+  "useCases": [
+   {
+    "title": "Navigation-gated data loading",
+    "scenario": "A route needs critical server data before its component renders."
+   },
+   {
+    "title": "Shared query cache",
+    "scenario": "Several routes share server state and need freshness, deduplication, or background updates."
+   },
+   {
+    "title": "SSR hydration and streaming",
+    "scenario": "An SSR application must transfer loaded query data to the browser."
+   }
+  ],
+  "related": [
+   "QueryClient",
+   "queryOptions",
+   "route.loaders",
+   "setupRouterSsrQueryIntegration",
+   "useSuspenseQuery",
+   "useQuery",
+   "dehydrateOptions",
+   "hydrateOptions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How should TanStack Router and TanStack Query be combined without duplicating a cache?",
+    "answer": "Use the route loader to await the QueryClient's query-loading method, then read that query in the component with the same query key and function. This lets Query own the cache while the router coordinates navigation readiness.",
+    "followUp": "How would you avoid duplicate providers? Pass wrapQueryClient: false to the integration and retain the application's existing QueryClientProvider."
+   },
+   {
+    "question": "What does the official SSR Query integration provide?",
+    "answer": "Install the integration package, create a QueryClient, put it in router context, and call setupRouterSsrQueryIntegration with the router and client. The integration handles SSR dehydration and hydration, and can also stream queries during initial rendering.",
+    "followUp": "What must change for SSR request isolation? Construct the QueryClient inside the per-request router factory rather than at module scope."
+   },
+   {
+    "question": "How do useSuspenseQuery and useQuery differ in SSR?",
+    "answer": "useSuspenseQuery can run during SSR when its data is required and stream the result as it resolves. Plain useQuery does not execute on the server and instead fetches after hydration on the client.",
+    "followUp": "How can serialization behavior be customized? Supply dehydrateOptions and hydrateOptions to the integration."
+   }
+  ],
+  "keyPoints": [
+   "Treat the router as the navigation coordinator and let TanStack Query remain responsible for server-state caching.",
+   "Use Query's prefetching or cache-reading API in place of a router-specific fetch implementation.",
+   "Read the result through the query library's hook or read-or-fetch API rather than creating a second router cache.",
+   "The dedicated integration connects the two libraries for server rendering, hydration, and streaming.",
+   "The integration can handle redirects thrown by query or mutation operations when redirect handling is enabled."
+  ],
+  "gotchas": [
+   "Create a new QueryClient for every server request; sharing one across requests can leak cached data between users.",
+   "If the application already supplies its own provider, disable the integration wrapper rather than mounting two providers.",
+   "Do not assume useQuery performs server-side loading during SSR; useSuspenseQuery is the documented server-rendered alternative."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Data loading::loaderDeps": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/RouteOptionsType",
+  "sourceTitle": "RouteOptions type",
+  "summary": "loaderDeps declares which validated search parameters identify a route's loaded data. When the returned dependencies change, TanStack Router reloads the route and exposes them to the loader as deps.",
+  "explanation": "Define loaderDeps as a pure function over validated search parameters, return the values that identify the loader's data, and read that returned object through the loader's deps argument. TanStack Router compares the returned dependencies deeply; a change triggers reloading even when staleTimes would otherwise keep the route fresh.",
+  "syntax": "loaderDeps: (opts: { search: TFullSearchSchema }) => Record<string, any>",
+  "parameters": [
+   {
+    "name": "opts",
+    "type": "{ search: TFullSearchSchema }",
+    "description": "Object containing the route's validated search values."
+   }
+  ],
+  "returns": "A serializable dependency value, typically an object, that uniquely identifies the route match and is supplied to the loader as deps.",
+  "example": {
+   "title": "Reload a paginated loader",
+   "code": "import { createFileRoute } from '@tanstack/react-router'\n\nexport const Route = createFileRoute('/posts')({\n  validateSearch: (search) => ({\n    pageIndex: Number(search.pageIndex) || 0,\n    pageSize: Number(search.pageSize) || 20,\n  }),\n  loaderDeps: ({ search: { pageIndex, pageSize } }) => ({\n    pageIndex,\n    pageSize,\n  }),\n  loader: ({ deps }) =>\n    fetch(`/api/posts?page=${deps.pageIndex}&size=${deps.pageSize}`)\n      .then((response) => response.json()),\n})",
+   "language": "typescript",
+   "explanation": "The validated pagination values become loader dependencies, so the route reloads and caches separately when either value changes."
+  },
+  "useCases": [
+   {
+    "title": "Paginated data",
+    "scenario": "A list endpoint changes its response for different page offsets or page sizes."
+   },
+   {
+    "title": "Filtered and sorted results",
+    "scenario": "The same route loads different records based on validated filter or sort values."
+   },
+   {
+    "title": "Search-specific caching",
+    "scenario": "A search-dependent resource must have separate route-cache identities for each query."
+   }
+  ],
+  "related": [
+   "loader",
+   "loaderFn",
+   "deps",
+   "validateSearch",
+   "staleTimes",
+   "RouteOptions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is loaderDeps and how does the loader use it?",
+    "answer": "loaderDeps is an optional callback receiving the route's validated search schema. It returns a serializable dependency object that identifies the route match and is exposed to the loader as deps.",
+    "followUp": "What happens when the returned object changes? The router compares dependencies with deep equality and reloads the route when they differ."
+   },
+   {
+    "question": "How should search parameters be connected to a loader?",
+    "answer": "Use loaderDeps to select search parameters that affect the loaded data, such as pagination, sorting, or filters. The loader then reads those selected values from its deps argument.",
+    "followUp": "Why not read arbitrary search values directly in the loader? Declaring them makes them part of route-match identity and cache behavior, so changes reliably trigger loading."
+   },
+   {
+    "question": "What constraints apply to a loaderDeps return value?",
+    "answer": "The callback should be deterministic, side-effect-free, and return a serializable value. Path parameters normally need not be returned because they already identify the route match.",
+    "followUp": "Can the dependency value be an arbitrary object? It may be any serializable value, provided it uniquely identifies the match and its serialization is also side-effect-free."
+   }
+  ],
+  "keyPoints": [
+   "loaderDeps runs before route matching and adds search-derived identity to the route match.",
+   "Nested dependency values are compared deeply rather than only by object reference.",
+   "Search parameters that distinguish the loaded resource must be returned so the loader can receive them through deps.",
+   "Include every search value that changes the fetched result to keep cached entries distinct."
+  ],
+  "gotchas": [
+   "Return a serializable identity for every search value that changes the loader's result; otherwise distinct data can share a route match or cache entry.",
+   "Do not duplicate path parameters in loaderDeps because the router already includes them in route-match identity.",
+   "Avoid timestamps, random values, mutations, and external effects: the same validated search input must produce the same dependencies."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Data loading::Pending and error components": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/guide/data-loading",
+  "sourceTitle": "Data Loading",
+  "summary": "Define pendingComponent and errorComponent on a route to keep loading and failure UI at the route's own data boundary. The router falls back through parent boundaries to its default error component when needed.",
+  "explanation": "A route can define pendingComponent for slow loader work and errorComponent for failures. During navigation, the router uses the route's boundary first; if it is absent, the corresponding parent or router-level default can handle the state.",
+  "syntax": "createFileRoute('/path')({ loader, pendingComponent, errorComponent, component })",
+  "parameters": [
+   {
+    "name": "routeOptions",
+    "type": "RouteOptions",
+    "description": "Route option containing the loader and optional pendingComponent/errorComponent boundaries."
+   }
+  ],
+  "returns": "The configured route components render the route's loading or error state during data loading.",
+  "example": {
+   "title": "Route-owned pending and error UI",
+   "code": "import { createFileRoute } from '@tanstack/react-router'\n\nexport const Route = createFileRoute('/reports')({\n  loader: async () => {\n    const response = await fetch('/api/reports')\n    if (!response.ok) throw new Error('Could not load reports')\n    return response.json()\n  },\n  pendingComponent: () => <p>Loading reports…</p>,\n  errorComponent: ({ error }) => <p role=\"alert\">{error.message}</p>,\n  component: Reports,\n})\n\nfunction Reports() {\n  const reports = Route.useLoaderData()\n  return <pre>{JSON.stringify(reports, null, 2)}</pre>\n}",
+   "language": "tsx",
+   "explanation": "The route supplies its own loading and failure UI while its loader is pending or throws."
+  },
+  "useCases": [
+   {
+    "title": "Show route-specific loading UI",
+    "scenario": "A route loader takes longer than the pending threshold."
+   },
+   {
+    "title": "Render local failure UI",
+    "scenario": "A route loader rejects or throws during navigation."
+   },
+   {
+    "title": "Keep boundaries close to route behavior",
+    "scenario": "Different route branches need distinct loading and error presentation."
+   }
+  ],
+  "related": [
+   "route.loader",
+   "route.onError",
+   "parentRoute.errorComponent",
+   "router.defaultErrorComponent",
+   "routeOptions.pendingMs",
+   "routerOptions.defaultPendingMs",
+   "routeOptions.pendingMinMs",
+   "routerOptions.defaultPendingMinMs"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does a route declare pending and error UI?",
+    "answer": "Define pendingComponent and errorComponent in the route options. The pending component is used when loading exceeds the pending threshold; an error component handles loader errors.",
+    "followUp": "What happens if the route has no local error component? The router falls back to the parent route's errorComponent and then the router default."
+   },
+   {
+    "question": "How are loader errors assigned to boundaries?",
+    "answer": "The router processes route loading in parallel and associates loader failures with the route error boundary chain. It renders the route's error component when configured, otherwise it searches ancestors and then the router default.",
+    "followUp": "Which settings control when pending UI appears? routeOptions.pendingMs or routerOptions.defaultPendingMs control the threshold."
+   },
+   {
+    "question": "Why might a pending component not appear immediately?",
+    "answer": "Pending UI is not necessarily immediate: the default pending threshold is one second, and the pending view has a default minimum display time of 500 milliseconds. Both values are configurable.",
+    "followUp": "How can an application avoid showing a fallback for a fast request? Increase pendingMs or use deferred data loading for non-critical slow work."
+   }
+  ],
+  "keyPoints": [
+   "Error handling checks the route boundary, then parent boundaries, and finally the router-wide default.",
+   "A route's pendingComponent is an optional loading boundary associated with its loader.",
+   "The local pending component renders only after the pending threshold is exceeded and only when configured.",
+   "The route can override the pending delay with routeOptions.pendingMs."
+  ],
+  "gotchas": [
+   "Pending UI is delayed until the configured optimistic threshold, which defaults to one second.",
+   "Once displayed, pending UI remains visible for at least the default 500 ms minimum."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Data loading::Preloading on intent": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/guide/preloading",
+  "sourceTitle": "Preloading | TanStack Router Solid Docs",
+  "summary": "Preloading on intent starts loading a link’s destination when the user focuses, hovers, or touches it. Configure it globally with defaultPreload: 'intent' or per link with preload=\"intent\".",
+  "explanation": "Intent preloading attaches to links and starts preparing the destination route when the user focuses, hovers, or touches the link. The router can enable it globally with defaultPreload, while an individual Link can choose its own strategy with preload; focus and hover use a short delay, whereas touch starts immediately.",
+  "syntax": "createRouter({ routeTree, defaultPreload: 'intent', defaultPreloadDelay: 50 })\n<Link to=\"/destination\" preload=\"intent\" preloadDelay={50}>Destination</Link>",
+  "parameters": [
+   {
+    "name": "defaultPreload",
+    "type": "false | 'intent' | 'viewport' | 'render'",
+    "description": "Router-wide default strategy; use 'intent' to preload links on user intent."
+   },
+   {
+    "name": "defaultPreloadDelay",
+    "type": "number",
+    "description": "Router-wide delay in milliseconds before focus/hover or viewport preloading."
+   },
+   {
+    "name": "preload",
+    "type": "false | 'intent' | 'viewport' | 'render'",
+    "description": "Per-link preloading strategy that overrides the router default."
+   },
+   {
+    "name": "preloadDelay",
+    "type": "number",
+    "description": "Per-link delay in milliseconds for focus, hover, or viewport preloading."
+   }
+  ],
+  "returns": "The destination route's dependencies are preloaded before navigation; the documentation does not specify a separate return value for the declarative Link configuration.",
+  "example": {
+   "title": "Enable intent preloading globally",
+   "code": "import { createRouter, createRootRoute, createRoute, Link } from '@tanstack/react-router'\n\nconst rootRoute = createRootRoute()\nconst aboutRoute = createRoute({\n  getParentRoute: () => rootRoute,\n  path: '/about',\n  component: () => <div>About</div>,\n})\nconst routeTree = rootRoute.addChildren([aboutRoute])\nconst router = createRouter({ routeTree, defaultPreload: 'intent' })\n\nexport function Navigation() {\n  return <Link to=\"/about\">About</Link>\n}",
+   "language": "tsx",
+   "explanation": "The router enables intent preloading for links by default, so this link begins preparing the destination when the user shows intent to visit it."
+  },
+  "useCases": [
+   {
+    "title": "Reduce perceived navigation latency",
+    "scenario": "Users commonly move the pointer over or tab to a link before activating it."
+   },
+   {
+    "title": "Prepare route dependencies",
+    "scenario": "A route contains code or loader dependencies that should be ready before the click."
+   },
+   {
+    "title": "Opt in per destination",
+    "scenario": "Only selected links should use proactive loading rather than the whole application."
+   }
+  ],
+  "related": [
+   "Link",
+   "createRouter",
+   "preloadRoute",
+   "defaultPreload",
+   "defaultPreloadDelay",
+   "preload",
+   "preloadDelay",
+   "viewport preloading"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you enable intent preloading?",
+    "answer": "Set defaultPreload to 'intent' in createRouter to enable the strategy for links throughout the application. An individual Link can override that router default with its preload prop.",
+    "followUp": "How can the delay be changed? Set defaultPreloadDelay on the router globally, or preloadDelay on a specific Link."
+   },
+   {
+    "question": "Which user interactions trigger intent preloading?",
+    "answer": "Intent preloading responds to focus, hover, and touch interaction on Link components. It preloads the dependencies for the destination route before navigation occurs.",
+    "followUp": "What happens on touch? Touch intent starts immediately rather than waiting for the focus or hover delay."
+   },
+   {
+    "question": "What timing and cancellation behavior does intent preloading have?",
+    "answer": "The default delay for focus and hover intent preloading is 50 milliseconds. A pending preload is cancelled when focus or hover ends before the preload begins.",
+    "followUp": "What independent behavior should be remembered for viewport preloading? Its queued preload is also cancelled if the link leaves the viewport before the delay expires."
+   }
+  ],
+  "keyPoints": [
+   "The intent strategy prepares a destination from user interaction rather than waiting for navigation.",
+   "Set defaultPreload to 'intent' on the router to apply intent preloading to links by default.",
+   "A link-level preload value can override the router-wide strategy.",
+   "Focus and hover intent uses a 50-millisecond default delay before beginning.",
+   "Use router.preloadRoute when preloading must be initiated explicitly rather than by link intent."
+  ],
+  "gotchas": [
+   "A focus or hover preload may be cancelled before it starts if the interaction ends.",
+   "Touch interaction bypasses the configured preload delay.",
+   "Focus and hover preloads do not begin instantly unless the delay is changed."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Data loading::Route loaders": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/guide/data-loading",
+  "sourceTitle": "Data Loading",
+  "summary": "Route loaders fetch a route's asynchronous requirements before its component renders. The router coordinates loaders, exposes their results through route hooks, and can cache or revalidate the data.",
+  "explanation": "A route's loader is an asynchronous data dependency managed by the router. When a match loads, the router runs eligible loaders as part of the loading lifecycle, waits for their results before rendering the route, and exposes the returned value through the route's loader-data hook. Loaders can receive route parameters and other typed dependencies, while the router's caching and revalidation behavior controls when they run again.",
+  "syntax": "createFileRoute('/path')({ loader: async (context) => data })",
+  "parameters": [
+   {
+    "name": "context",
+    "type": "LoaderContext",
+    "description": "The loader receives the route loader context, including route parameters and dependencies declared for the route."
+   }
+  ],
+  "returns": "The value returned by the route loader, exposed to the route component as loader data.",
+  "example": {
+   "title": "Load route data before rendering",
+   "code": "import { createFileRoute } from '@tanstack/react-router'\n\nexport const Route = createFileRoute('/posts/$postId')({\n  loader: async ({ params }) => {\n    const response = await fetch(`/api/posts/${params.postId}`)\n    if (!response.ok) throw new Error('Failed to load post')\n    return response.json() as Promise<{ title: string }>\n  },\n  component: PostPage,\n})\n\nfunction PostPage() {\n  const post = Route.useLoaderData()\n  return <h1>{post.title}</h1>\n}",
+   "language": "tsx",
+   "explanation": "The route loader fetches the post before the route renders, and the component reads the resolved result through the route's typed hook."
+  },
+  "useCases": [
+   {
+    "title": "Detail pages",
+    "scenario": "Fetch a record using a dynamic URL parameter before rendering its detail page."
+   },
+   {
+    "title": "Nested routes",
+    "scenario": "Load shared layout data and child-route data concurrently during navigation."
+   },
+   {
+    "title": "Fast navigation",
+    "scenario": "Preload critical content to avoid component-level loading flashes and request waterfalls."
+   },
+   {
+    "title": "Cached route data",
+    "scenario": "Reuse or refresh previously loaded route data through the router's caching and revalidation lifecycle."
+   }
+  ],
+  "related": [
+   "beforeLoad",
+   "useLoaderData",
+   "loaderDeps",
+   "staleTime",
+   "pendingComponent",
+   "Deferred Data Loading",
+   "External Data Loading"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The router invokes a route's loader as its match enters the loading lifecycle.",
+   "Eligible route loaders are designed to run in parallel, allowing independent route data to load concurrently.",
+   "The component can access the loader's returned value through the corresponding route hook.",
+   "Preloading critical render data helps the route appear with required data already available.",
+   "Route-level loading avoids serial requests that would otherwise begin only after component rendering.",
+   "Data available at render time can make route content more discoverable to search engines."
+  ],
+  "gotchas": [
+   "A previously successful match may render its existing loader data immediately while the router refreshes stale data in the background.",
+   "Keep critical route data in loaders rather than fetching it only inside components, so navigation avoids loading flashes and request waterfalls.",
+   "Read loader output through the route's generated hook instead of duplicating the request in the component."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Data loading::Stale-while-revalidate": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/guide/data-loading",
+  "sourceTitle": "Data Loading | TanStack Router Solid Docs",
+  "summary": "TanStack Router can serve cached route-loader data immediately and revalidate stale successful data in the background. Freshness and reload behavior are controlled with staleTime and staleReloadMode.",
+  "explanation": "TanStack Router caches route-loader results using a key derived from a route's dependencies. When a matching entry is stale, the router can render its existing loader data immediately and reload the loader in the background; use staleReloadMode: 'blocking' when navigation must wait for the refreshed result.",
+  "syntax": "staleReloadMode: 'background' | 'blocking'\nstaleTime: number",
+  "parameters": [
+   {
+    "name": "defaultStaleTime",
+    "type": "number",
+    "description": "Router-wide freshness duration for route-loader data, in milliseconds."
+   },
+   {
+    "name": "defaultStaleReloadMode",
+    "type": "'background' | 'blocking'",
+    "description": "Router-wide policy for stale successful loader data: 'background' or 'blocking'."
+   },
+   {
+    "name": "staleTime",
+    "type": "number",
+    "description": "Per-route freshness duration, overriding the router default."
+   },
+   {
+    "name": "staleReloadMode",
+    "type": "'background' | 'blocking'",
+    "description": "Per-route stale reload policy, overriding the router default."
+   }
+  ],
+  "returns": "A route loader's returned data is stored on the route match and may remain available in the in-memory cache after the match becomes inactive.",
+  "example": {
+   "title": "Configure background revalidation",
+   "code": "const router = createRouter({\n  routeTree,\n  defaultStaleTime: 10_000,\n  defaultStaleReloadMode: 'background',\n})",
+   "language": "typescript",
+   "explanation": "Configure a ten-second freshness window and keep stale successful loader data visible while it refreshes."
+  },
+  "useCases": [
+   {
+    "title": "Refresh without a loading flash",
+    "scenario": "A route has cached data that should remain visible while the server request runs again."
+   },
+   {
+    "title": "Reuse fresh route data",
+    "scenario": "A route should avoid repeated loader requests for a defined interval."
+   },
+   {
+    "title": "Use blocking reloads",
+    "scenario": "A route requires the newest loader result before navigation completes."
+   },
+   {
+    "title": "Cache dependency-specific data",
+    "scenario": "A loader depends on route parameters or search values that identify separate results."
+   }
+  ],
+  "related": [
+   "loader",
+   "loaderDeps",
+   "staleTime",
+   "staleReloadMode",
+   "defaultStaleTime",
+   "defaultStaleReloadMode",
+   "router.load()",
+   "router.invalidate()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does stale-while-revalidate work in TanStack Router?",
+    "answer": "The router stores loader results in a cache keyed by route dependencies. If reusable data exists, it can be returned immediately; stale successful data is then revalidated in the background by default.",
+    "followUp": "How would you make navigation wait for fresh data? Set staleReloadMode to 'blocking', which waits for the stale loader reload to finish."
+   },
+   {
+    "question": "What controls whether cached route data is considered fresh?",
+    "answer": "staleTime controls how long a route match's loader data is fresh. It defaults to routerOptions.defaultStaleTime, whose default is 0 milliseconds.",
+    "followUp": "What happens when a route is matched again within staleTime? Its loader data remains fresh and is not reloaded."
+   },
+   {
+    "question": "What is the difference between background and blocking stale reloads?",
+    "answer": "defaultStaleReloadMode controls the default behavior for stale successful loader data. 'background' preserves stale-while-revalidate, while 'blocking' waits for the reload before navigation resolves.",
+    "followUp": "How can one route override the router default? Set staleReloadMode on that route's options."
+   }
+  ],
+  "keyPoints": [
+   "Route loaders have built-in stale-while-revalidate caching, so applications do not need a separate cache just for this behavior.",
+   "A loader's dependency values determine the cache key for its returned data.",
+   "Cached data can render immediately, with background fetching determined by whether the entry is fresh or stale.",
+   "The default behavior keeps existing successful data available while the router refreshes it.",
+   "Choose background mode for immediate rendering or blocking mode when the stale reload must finish first.",
+   "staleTime expresses the freshness duration in milliseconds for a route match's loader result."
+  ],
+  "gotchas": [
+   "The default freshness period is zero, so successfully loaded data becomes eligible for revalidation immediately.",
+   "Changing the dependencies that form the loader key creates a distinct cache entry; without reusable data, that entry must load.",
+   "Set a route's staleTime to Infinity when it should not automatically perform stale reloads."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useBlocker": {
+  "sourceUrl": "https://tanstack.com/router/v1/docs/api/router/useBlockerHook",
+  "sourceTitle": "useBlocker hook | TanStack Router Docs",
+  "summary": "Blocks TanStack Router navigation when a condition is met, such as a dirty form. Use the returned resolver controls to let the user continue or cancel the pending navigation.",
+  "explanation": "useBlocker receives an options object whose shouldBlockFn decides whether the current navigation should stop. With withResolver enabled, the hook exposes status plus proceed and reset controls; enableBeforeUnload separately controls protection for reloads and tab closing.",
+  "syntax": "useBlocker(options)",
+  "parameters": [
+   {
+    "name": "shouldBlockFn",
+    "type": "ShouldBlockFn",
+    "description": "Required predicate returning whether the current navigation should be blocked; it may return a boolean or Promise<boolean> and receives transition details."
+   },
+   {
+    "name": "disabled",
+    "type": "boolean",
+    "description": "Disables the blocker entirely; defaults to false."
+   },
+   {
+    "name": "enableBeforeUnload",
+    "type": "boolean | (() => boolean)",
+    "description": "Controls browser beforeunload handling; defaults to true. May be a boolean or a function returning one."
+   },
+   {
+    "name": "withResolver",
+    "type": "boolean",
+    "description": "Uses the resolver returned by the hook for manual resolution; defaults to false."
+   }
+  ],
+  "returns": "An object containing status ('blocked' or 'idle'), transition details when blocked (next, current, action), and proceed/reset functions for manual resolution.",
+  "example": {
+   "title": "Block leaving a dirty editor",
+   "code": "import { useState } from 'react'\nimport { useBlocker } from '@tanstack/react-router'\n\nexport function Editor() {\n  const [dirty, setDirty] = useState(false)\n  const { proceed, reset, status } = useBlocker({\n    shouldBlockFn: () => dirty && !window.confirm('Discard changes?'),\n    enableBeforeUnload: dirty,\n    withResolver: true,\n  })\n\n  return (\n    <div>\n      <textarea onChange={() => setDirty(true)} />\n      {status === 'blocked' && (\n        <>\n          <button onClick={proceed}>Leave</button>\n          <button onClick={reset}>Stay</button>\n        </>\n      )}\n    </div>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Blocks navigation while the editor is dirty; the resolver controls whether the pending navigation continues or is cancelled."
+  },
+  "useCases": [
+   {
+    "title": "Protect unsaved form data",
+    "scenario": "A user edits a form and attempts to navigate away before saving."
+   },
+   {
+    "title": "Custom confirmation UI",
+    "scenario": "An editor should allow navigation only after an application-specific confirmation flow."
+   },
+   {
+    "title": "Conditional browser unload protection",
+    "scenario": "A page needs reload and tab-close protection only while its contents are dirty."
+   }
+  ],
+  "related": [
+   "ShouldBlockFn",
+   "ShouldBlockFnArgs",
+   "useBlocker",
+   "proceed",
+   "reset",
+   "enableBeforeUnload",
+   "withResolver"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does shouldBlockFn control?",
+    "answer": "The required shouldBlockFn returns a boolean or Promise<boolean>. Returning true blocks the current navigation, while false allows it.",
+    "followUp": "How can the decision inspect the transition? Use the function argument, which provides current and next route information plus the navigation action."
+   },
+   {
+    "question": "How do you resolve a blocked navigation?",
+    "answer": "withResolver enables manual resolution through the hook result. When blocked, proceed continues the navigation and reset cancels it and returns status to idle.",
+    "followUp": "What state indicates a pending block? The status field is 'blocked'; otherwise it is 'idle'."
+   },
+   {
+    "question": "How does browser unload protection differ from navigation blocking?",
+    "answer": "enableBeforeUnload controls whether the blocker handles the browser beforeunload event. It accepts a boolean or a function returning a boolean and defaults to true.",
+    "followUp": "Why might it be set to the dirty state? That limits reload and tab-close protection to periods when unsaved data exists."
+   }
+  ],
+  "keyPoints": [
+   "Call the hook with one options object rather than positional arguments.",
+   "The blocking predicate may make either synchronous or asynchronous decisions.",
+   "The predicate receives transition context, including the current route, destination route, and triggering action.",
+   "The disabled option is off by default and can turn the blocker off entirely.",
+   "Before-unload handling is enabled by default unless configured otherwise.",
+   "The hook result provides navigation-blocking controls for resolver-based flows."
+  ],
+  "gotchas": [
+   "A false navigation decision does not necessarily prevent the browser's beforeunload event; set enableBeforeUnload explicitly when that behavior must depend on form state.",
+   "After a user cancels, pending navigations remain blocked, so provide a clear reset or proceed path."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useLinkProps": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/useLinkPropsHook",
+  "sourceTitle": "useLinkProps hook | TanStack Router Docs",
+  "summary": "useLinkProps converts TanStack Router link options and anchor attributes into props for a custom native anchor. It preserves router navigation behavior while letting the component accept standard link features.",
+  "explanation": "Call useLinkProps with TanStack Router link options plus any supported anchor attributes. It produces the anchor props needed for navigation, including the generated href and router behavior, so a custom component can render a native <a> while retaining router link capabilities such as active-state and preload behavior.",
+  "syntax": "useLinkProps(options)",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "UseLinkPropsOptions",
+    "description": "Router link options and React anchor attributes; the documented options type is ActiveLinkOptions & React.AnchorHTMLAttributes<HTMLAnchorElement>."
+   }
+  ],
+  "returns": "A React.AnchorHTMLAttributes<HTMLAnchorElement> object that can be applied to an anchor for navigation.",
+  "example": {
+   "title": "Custom anchor link",
+   "code": "import { useLinkProps } from '@tanstack/react-router'\n\nexport function AppLink({ children, ...options }) {\n  const linkProps = useLinkProps(options)\n  return <a {...linkProps}>{children}</a>\n}",
+   "language": "tsx",
+   "explanation": "This component forwards navigation options and ordinary anchor attributes to useLinkProps, then applies the returned props to a native anchor."
+  },
+  "useCases": [
+   {
+    "title": "Wrap a native anchor while keeping TanStack Router navigation.",
+    "scenario": "Design-system links"
+   },
+   {
+    "title": "Forward standard anchor attributes alongside router link options.",
+    "scenario": "Accessible custom links"
+   },
+   {
+    "title": "Navigate with pathname, search parameters, hash, or state.",
+    "scenario": "Navigation with location data"
+   },
+   {
+    "title": "Build a custom link API from ActiveLinkOptions.",
+    "scenario": "Active-aware links"
+   }
+  ],
+  "related": [
+   "ActiveLinkOptions",
+   "LinkProps",
+   "Link",
+   "useNavigate"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useLinkProps return?",
+    "answer": "useLinkProps accepts an options object and returns React.AnchorHTMLAttributes<HTMLAnchorElement>. Apply that result to an anchor to create a navigable custom link.",
+    "followUp": "How can a custom component retain normal anchor behavior? Pass anchor attributes through the hook's options because it extends React.AnchorHTMLAttributes<HTMLAnchorElement> and merges additional props into the result."
+   },
+   {
+    "question": "What can be supplied to useLinkProps?",
+    "answer": "Its options combine ActiveLinkOptions with React anchor attributes. This lets the custom component use router navigation options while also accepting standard anchor properties.",
+    "followUp": "Why is this useful instead of manually building href values? The returned object contains the router-generated link behavior and location details, including pathname, search parameters, hash, and state."
+   },
+   {
+    "question": "How do you build a custom link with the hook?",
+    "answer": "Render an actual anchor and spread the hook result onto it. The resulting element can navigate to a new location and preserve the link behavior supplied by TanStack Router.",
+    "followUp": "What router location parts are covered? The hook supports changes to pathname, search params, hash, and location state through its link options."
+   }
+  ],
+  "keyPoints": [
+   "Call the hook with one options object.",
+   "The return value is typed as props for a native HTML anchor.",
+   "Spread the returned props onto the custom component's anchor element.",
+   "The resulting anchor performs TanStack Router navigation.",
+   "Link options can describe pathname, search, hash, and state changes.",
+   "The options include active-link behavior through ActiveLinkOptions.",
+   "Standard anchor attributes are part of the accepted options type."
+  ],
+  "gotchas": [
+   "The hook accepts anchor attributes as well as router options; avoid unintentionally overriding values when spreading or composing the returned object."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useLoaderData": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/useLoaderDataHook",
+  "sourceTitle": "useLoaderData hook | TanStack Router React Docs",
+  "summary": "Reads loader data from the closest route match after the loader has resolved. Use from for precise route typing, or select to return a derived value and tune re-render behavior.",
+  "explanation": "useLoaderData reads the resolved loader result associated with a route match. Pass the matching route ID through from for precise typing, or use select to derive a value; the selected value can also control shallow-equality re-render checks.",
+  "syntax": "useLoaderData({ from?, strict?, select?, structuralSharing? })",
+  "parameters": [
+   {
+    "name": "from",
+    "type": "string",
+    "description": "Route ID of the closest parent match; optional, but recommended for full type safety."
+   },
+   {
+    "name": "strict",
+    "type": "boolean",
+    "description": "Whether to enforce strict route typing; defaults to true."
+   },
+   {
+    "name": "select",
+    "type": "(loaderData: TLoaderData) => TSelected",
+    "description": "Transforms loader data into the value returned by the hook."
+   },
+   {
+    "name": "structuralSharing",
+    "type": "boolean",
+    "description": "Controls structural sharing for the value returned by select."
+   }
+  ],
+  "returns": "With select, returns the selector's value; otherwise returns the loader data, or a loosened version when strict is false.",
+  "example": {
+   "title": "Read route loader data",
+   "code": "import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router'\n\nconst rootRoute = createRootRoute()\nconst postsRoute = createRoute({\n  getParentRoute: () => rootRoute,\n  path: '/posts',\n  loader: async () => ({ posts: ['One', 'Two'] }),\n  component: Posts,\n})\n\nfunction Posts() {\n  const { posts } = postsRoute.useLoaderData()\n  return <ul>{posts.map((post) => <li key={post}>{post}</li>)}</ul>\n}\n\nconst routeTree = rootRoute.addChildren([postsRoute])\nexport const router = createRouter({ routeTree })",
+   "language": "tsx",
+   "explanation": "The route loader returns an object, and the route component reads that resolved object with the route-scoped hook."
+  },
+  "useCases": [
+   {
+    "title": "Render route-loaded data",
+    "scenario": "A route component needs the result produced by its own loader."
+   },
+   {
+    "title": "Consume parent-route data",
+    "scenario": "A shared child component needs typed data from a known ancestor route."
+   },
+   {
+    "title": "Select a focused value",
+    "scenario": "A component needs one field or computed slice instead of the entire loader result."
+   }
+  ],
+  "related": [
+   "RouteMatch",
+   "useLoaderData",
+   "select",
+   "structuralSharing",
+   "strict",
+   "from"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useLoaderData return?",
+    "answer": "It returns loader data from the closest RouteMatch in the component tree. With no select function, the result is the loader data, unless strict is false, in which case the type is loosened.",
+    "followUp": "How can a component consume only part of the loader result? Pass select, which receives the loader data and returns the derived value exposed by the hook."
+   },
+   {
+    "question": "Why use the from option?",
+    "answer": "The from option is a route ID identifying the closest parent match. It is optional, but recommended for full type safety; when strict is true, TypeScript warns if it is missing.",
+    "followUp": "What happens when strict is false? The from option is ignored and the returned loader-data type is loosened to cover possible loader data."
+   },
+   {
+    "question": "How does select affect the hook?",
+    "answer": "select is an optional function shaped like (loaderData: TLoaderData) => TSelected. Its return value becomes the hook result, and TanStack Router uses it for shallow-equality checks when deciding whether the parent component should re-render.",
+    "followUp": "What related option controls structural sharing for the selected value? structuralSharing configures whether structural sharing is enabled for the value returned by select."
+   }
+  ],
+  "keyPoints": [
+   "The hook reads data from the nearest matching route available in the component tree.",
+   "Configuration is supplied as one options object rather than positional arguments.",
+   "from identifies the route whose loader data should be typed and read.",
+   "strict defaults to true, preserving the normal strict typing behavior.",
+   "select transforms the complete loader result into the value returned by the hook.",
+   "structuralSharing controls structural sharing for values produced by select."
+  ],
+  "gotchas": [
+   "Omitting from can reduce type precision when strict mode is enabled; provide the closest parent route ID when possible.",
+   "Setting strict to false deliberately broadens the returned type and makes from ineffective.",
+   "A select function affects re-render behavior, so derive only the data the component needs."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useMatch and useMatches": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/useMatchHook",
+  "sourceTitle": "useMatch hook | TanStack Router Docs",
+  "summary": "useMatch reads one route match, while useMatches reads the complete presented chain of matches. Use selectors to derive only the data a component needs for breadcrumbs, layouts, or other route-aware UI.",
+  "explanation": "useMatch reads the RouteMatch identified by from, while useMatches returns the router's complete presented match array regardless of where the component sits in the tree. Both accept select to derive a smaller value and use shallow equality to help control re-renders; useMatch can return undefined when shouldThrow is false and no matching route is present.",
+  "syntax": "useMatch({ from, select?, shouldThrow?, structuralSharing? })\nuseMatches({ select?, structuralSharing? })",
+  "parameters": [
+   {
+    "name": "opts.from",
+    "type": "string",
+    "description": "The route ID of the match to read."
+   },
+   {
+    "name": "opts.select",
+    "type": "(match: RouteMatch) => TSelected",
+    "description": "Optional selector applied to the single RouteMatch; its result is returned."
+   },
+   {
+    "name": "opts.select",
+    "type": "(matches: RouteMatch[]) => TSelected",
+    "description": "Optional selector applied to the complete RouteMatch array; its result is returned."
+   },
+   {
+    "name": "opts.shouldThrow",
+    "type": "boolean",
+    "description": "Whether useMatch throws when the requested match is absent; defaults to true."
+   },
+   {
+    "name": "opts.structuralSharing",
+    "type": "boolean",
+    "description": "Whether structural sharing is enabled for the value returned by select."
+   }
+  ],
+  "returns": "useMatch returns the selected value, or the RouteMatch object when no selector is supplied; with shouldThrow: false, it can return undefined when no match is found. useMatches returns the selected value, or an array of RouteMatch objects when no selector is supplied.",
+  "example": {
+   "title": "Read a route match and the full match chain",
+   "code": "import { useMatch, useMatches } from '@tanstack/react-router'\n\nexport function Breadcrumbs() {\n  const current = useMatch({ from: '/posts/$postId', shouldThrow: false })\n  const matches = useMatches({\n    select: (items) => items.map((item) => item.routeId),\n  })\n\n  return (\n    <nav aria-label=\"Breadcrumb\">\n      <span>{current?.routeId ?? 'unknown'}</span>\n      <span> ({matches.join(' > ')})</span>\n    </nav>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Reads one known route match safely and derives the complete presented match chain for breadcrumb output."
+  },
+  "useCases": [
+   {
+    "title": "Read one route match",
+    "scenario": "A component needs params, loader data, context, or search from one known route."
+   },
+   {
+    "title": "Build breadcrumbs",
+    "scenario": "A navigation component renders ancestors and the active route."
+   },
+   {
+    "title": "Make layout decisions",
+    "scenario": "A shell chooses layout behavior from all currently presented routes."
+   },
+   {
+    "title": "Select route metadata",
+    "scenario": "A component needs a compact, derived value rather than full match objects."
+   }
+  ],
+  "related": [
+   "useParams",
+   "useLoaderData",
+   "useRouteContext",
+   "useSearch",
+   "useParentMatches",
+   "useChildMatches",
+   "RouteMatch"
+  ],
+  "since": "",
+  "keyPoints": [
+   "useMatch reads one RouteMatch associated with the route currently identified by the options.",
+   "A RouteMatch exposes the route-match data used by other hooks, including params, loader data, route context, and search.",
+   "Pass the target route ID through from; using a specific route ID improves type inference.",
+   "useMatches is suited to consumers such as breadcrumbs or layouts that need the entire presented match chain.",
+   "Both hooks support select, allowing a component to subscribe to a derived value instead of the entire match object or array.",
+   "Selecting a small derived value can reduce unnecessary parent re-renders through shallow-equality comparison."
+  ],
+  "gotchas": [
+   "By default, a missing match throws; set shouldThrow to false when the route may not be present, then handle the resulting undefined value.",
+   "useMatches is not limited to the caller's local tree position; it returns the complete presented chain, which can include matches below pending, error, or not-found boundaries.",
+   "Treat the full array as potentially containing descendants that are still loading, rather than assuming every entry is fully settled."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useNavigate": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/useNavigateHook",
+  "sourceTitle": "useNavigate hook",
+  "summary": "useNavigate returns a typed navigate function for imperative navigation. Use it in event handlers to change the route and optionally provide search parameters, a hash, or location state.",
+  "explanation": "Call useNavigate to obtain a navigate function, optionally anchoring its type context with from. Invoke that function with navigation options such as to, search, hash, or state; it returns a promise that resolves after navigation finishes. Registered route types provide checking for destinations and parameters.",
+  "syntax": "useNavigate(opts?: { from?: string }): (options: NavigateOptions) => Promise<void>",
+  "parameters": [
+   {
+    "name": "opts.from",
+    "type": "string",
+    "description": "Optional route location used as the navigation origin and type context."
+   },
+   {
+    "name": "navigate options",
+    "type": "NavigateOptions",
+    "description": "Navigation configuration, including destination and optional search, hash, or state."
+   }
+  ],
+  "returns": "useNavigate returns a navigate function. Calling that function returns a Promise that resolves when navigation is complete.",
+  "example": {
+   "title": "Navigate from an event handler",
+   "code": "import { useNavigate } from '@tanstack/react-router'\n\nexport function PostsButton() {\n  const navigate = useNavigate()\n\n  return (\n    <button onClick={() => navigate({ to: '/posts', search: { page: 2 } })}>\n      Open page 2\n    </button>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Clicking the button imperatively navigates to the posts route with a typed page search parameter."
+  },
+  "useCases": [
+   {
+    "title": "Navigate after an interaction",
+    "scenario": "A button or menu action needs to move the user to another route."
+   },
+   {
+    "title": "Update search parameters",
+    "scenario": "A control changes filtering or pagination in the URL."
+   },
+   {
+    "title": "Pass navigation metadata",
+    "scenario": "An action must preserve or set a hash or location state."
+   }
+  ],
+  "related": [
+   "NavigateOptions",
+   "RouteApi.useNavigate",
+   "Link",
+   "router.navigate"
+  ],
+  "since": "",
+  "keyPoints": [
+   "useNavigate returns an imperative navigate function for changing the current location.",
+   "A navigation can update the pathname, search parameters, hash, and location state.",
+   "Pass one options object to useNavigate; its from value supplies the navigation origin.",
+   "Invoke the returned function with one NavigateOptions object.",
+   "The navigation call returns a promise that settles after navigation completes.",
+   "from identifies the route context used when navigating from a specific location."
+  ],
+  "gotchas": [
+   "Use the optional from option when navigation should be typed relative to a specific route instead of the current location."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useParams": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/useParamsHook",
+  "sourceTitle": "useParams hook | TanStack Router Docs",
+  "summary": "Reads typed path parameters from the closest matched route and its parent matches. Use from for route-specific typing, select for a derived result, or strict: false when the location is ambiguous.",
+  "explanation": "useParams reads path parameters from the nearest route match and its parent matches. Provide from to target a route precisely, select to return a derived value, or strict: false when the calling location is ambiguous; the result is inferred from the registered route types.",
+  "syntax": "useParams<TSelected = TAllParams>(opts?: { from?: string; strict?: boolean; select?: (params: TAllParams) => TSelected }): TSelected",
+  "parameters": [
+   {
+    "name": "opts",
+    "type": "object",
+    "description": "Optional route and selection settings. Common fields are from, strict, and select."
+   },
+   {
+    "name": "opts.from",
+    "type": "string",
+    "description": "Route path used to identify the match whose parameter types should be read; ignored when strict is false."
+   },
+   {
+    "name": "opts.strict",
+    "type": "boolean",
+    "description": "When false, permits ambiguous usage and loosens the result to Partial<AllParams>. Defaults to true."
+   },
+   {
+    "name": "opts.select",
+    "type": "(params: AllParams) => TSelected",
+    "description": "Receives the parameter object and determines the hook's returned value."
+   }
+  ],
+  "returns": "An object containing the matched route's and parent matches' path parameters, or TSelected when select is provided.",
+  "example": {
+   "title": "Select one path parameter",
+   "code": "import { useParams } from '@tanstack/react-router'\n\nexport function PostTitle() {\n  const postId = useParams({\n    from: '/posts/$postId',\n    select: (params) => params.postId,\n  })\n\n  return <h1>Post {postId}</h1>\n}",
+   "language": "tsx",
+   "explanation": "Reads only the postId parameter from the matched /posts/$postId route."
+  },
+  "useCases": [
+   {
+    "title": "Read a dynamic route ID",
+    "scenario": "A route component needs an identifier encoded in its URL."
+   },
+   {
+    "title": "Handle ambiguous matches",
+    "scenario": "A shared component needs parameters without a single statically known route."
+   },
+   {
+    "title": "Select a focused value",
+    "scenario": "A component needs one parameter rather than the complete params object."
+   }
+  ],
+  "related": [
+   "getRouteApi",
+   "RouteApi.useParams",
+   "useSearch",
+   "useRouteContext",
+   "useNavigate",
+   "useLoaderData",
+   "useLoaderDeps"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useParams return?",
+    "answer": "useParams returns the path parameters from the closest match together with parameters from its parent matches. Its result is an object unless select is supplied, in which case it is the selector's return value.",
+    "followUp": "How can a component read parameters from an ambiguous location? Use strict: false, accepting the loosened Partial<AllParams> type."
+   },
+   {
+    "question": "How do from and select affect useParams?",
+    "answer": "The from option identifies the route whose parameter types should be used. The select callback receives the parameter object and lets the hook return a narrower or derived value.",
+    "followUp": "Why might select be preferable to destructuring in the component? It lets the hook return only the needed value and supports a focused subscription result."
+   },
+   {
+    "question": "What is the effect of strict: false?",
+    "answer": "By default, strict is true. With strict: false, from is ignored and the result uses Partial<AllParams>, reflecting parameters shared across possible matches.",
+    "followUp": "What trade-off comes with strict: false? The component can be used from an ambiguous location, but TypeScript can no longer guarantee that every parameter exists."
+   }
+  ],
+  "keyPoints": [
+   "The hook combines parameters from the closest matched route and every parent match.",
+   "Options control route targeting, strictness, and result selection.",
+   "select transforms the full parameter object into the value returned by the hook.",
+   "Without select the result is the parameter object; with select it is TSelected."
+  ],
+  "gotchas": [
+   "Setting strict to false ignores from and weakens the result to Partial<AllParams>, so parameter properties may be absent.",
+   "Calling the hook without options is supported, but route-specific typing and selection require the options object."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useRouteContext": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/useRouteContextHook",
+  "sourceTitle": "useRouteContext hook",
+  "summary": "useRouteContext reads the context associated with a route inside a component. Identify the route with from, and optionally use select to return only a derived value.",
+  "explanation": "Call the hook inside a component with an options object identifying the route through from. It returns that route's context; when select is supplied, it applies the function to the context and returns the selected value instead.",
+  "syntax": "useRouteContext({ from, select? })",
+  "parameters": [
+   {
+    "name": "opts.from",
+    "type": "string",
+    "description": "Required route identifier used to select the route context."
+   },
+   {
+    "name": "opts.select",
+    "type": "(context: RouteContext) => TSelected",
+    "description": "Optional function receiving the route context and returning the value exposed by the hook."
+   }
+  ],
+  "returns": "The current route context, or TSelected when a select function is supplied.",
+  "example": {
+   "title": "Select a route-context value",
+   "code": "import { useRouteContext } from '@tanstack/react-router'\n\nexport function PostDetails() {\n  const postId = useRouteContext({\n    from: '/posts/$postId',\n    select: (context) => context.postId,\n  })\n\n  return <p>Post: {postId}</p>\n}",
+   "language": "tsx",
+   "explanation": "Reads only postId from the context associated with the specified route."
+  },
+  "useCases": [
+   {
+    "title": "Read route-provided context",
+    "scenario": "A component needs data made available by its matched route."
+   },
+   {
+    "title": "Select a context value",
+    "scenario": "A component needs one context property rather than the complete context object."
+   },
+   {
+    "title": "Target a specific route",
+    "scenario": "A route-aware component must explicitly target a route in the route tree."
+   }
+  ],
+  "related": [
+   "useMatch",
+   "useLoaderData",
+   "useParams",
+   "useSearch"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useRouteContext do?",
+    "answer": "useRouteContext is a hook for obtaining the context belonging to the current route in a component. Its options object requires from, which identifies the route whose context is requested.",
+    "followUp": "How can a component avoid consuming the entire context? Pass select and return only the needed property; the hook then returns that selected value."
+   },
+   {
+    "question": "What is the purpose of from?",
+    "answer": "The from option is a string RouteID and is required. It tells TanStack Router which route context to match.",
+    "followUp": "What happens if from is omitted? The documented hook signature requires it, so the call is not a valid documented usage."
+   },
+   {
+    "question": "How does select change the hook's result?",
+    "answer": "select is optional and receives the route-context object. The hook returns the callback's result instead of the full context when select is provided.",
+    "followUp": "What type does the hook return with select? It returns the selected value, such as a string when the callback selects a string property."
+   }
+  ],
+  "keyPoints": [
+   "It reads the context associated with the route currently represented by the component.",
+   "Use it from a component that needs values supplied through route context.",
+   "The call is configured with an object rather than a positional route argument.",
+   "The optional selector receives the route context and can produce a different result type.",
+   "Its return value is either the complete context or the selector's output."
+  ],
+  "gotchas": [
+   "The from option is required, so the hook must identify which route's context it should read.",
+   "A select callback changes the result from the complete context to whatever value the callback returns."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useRouter": {
+  "sourceUrl": "https://tanstack.com/router/v1/docs/api/router/useRouterHook",
+  "sourceTitle": "useRouter hook | TanStack Router Docs",
+  "summary": "useRouter returns the current TanStack Router instance from context. Use it for imperative router work such as invalidation, while useRouterState is required for reactive router-state rendering.",
+  "explanation": "In a component, useRouter retrieves the current Router instance from context. The returned instance provides imperative APIs such as invalidate; its state can be read directly, but reading router.state does not subscribe the component to updates. Use useRouterState when rendered output must react to router-state changes.",
+  "syntax": "const router = useRouter()",
+  "parameters": [],
+  "returns": "The current Router instance from context.",
+  "example": {
+   "title": "Invalidate route data imperatively",
+   "code": "import { useRouter } from '@tanstack/react-router'\n\nexport function RefreshButton() {\n  const router = useRouter()\n\n  return (\n    <button onClick={() => router.invalidate()}>\n      Refresh route data\n    </button>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Gets the router from context and imperatively invalidates route data when the button is clicked."
+  },
+  "useCases": [
+   {
+    "title": "Invalidate route data",
+    "scenario": "A user action should refresh route loader data after a mutation."
+   },
+   {
+    "title": "Perform an imperative route match",
+    "scenario": "An event handler needs to inspect the current or pending route without subscribing the component to router state."
+   },
+   {
+    "title": "Access router operations",
+    "scenario": "A component needs direct access to router APIs exposed by the current application router."
+   }
+  ],
+  "related": [
+   "useRouterState",
+   "useMatchRoute",
+   "Router",
+   "router.invalidate",
+   "router.matchRoute"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useRouter return?",
+    "answer": "useRouter returns the current Router instance from context. It is intended for accessing the router from a component and performing imperative operations.",
+    "followUp": "How should a component reactively render from router state? Use useRouterState rather than reading router.state directly, because direct state access is not reactive."
+   },
+   {
+    "question": "Give one practical use of the router returned by useRouter.",
+    "answer": "The hook returns the router instance, which can be used for imperative APIs such as invalidation. For example, an event handler can call router.invalidate().",
+    "followUp": "When should matching be performed imperatively? In an event handler, use the router instance and call router.matchRoute rather than subscribing through a matching hook."
+   },
+   {
+    "question": "Where does useRouter obtain the router instance?",
+    "answer": "useRouter reads the router from context, so it is used inside a component rendered within the router's context. The returned Router instance is the current application router.",
+    "followUp": "What limitation applies to the router instance's state? router.state stays current but does not itself establish a reactive subscription."
+   }
+  ],
+  "keyPoints": [
+   "useRouter obtains the current Router instance through context.",
+   "Use it in components that need to call router APIs directly.",
+   "The instance exposes current state, but reading that state alone does not subscribe the component.",
+   "Choose useRouterState when rendered UI must update as router state changes."
+  ],
+  "gotchas": [
+   "Reading router.state gives current data but does not cause the component to re-render when that state changes.",
+   "Use useRouterState instead when the component needs router-state changes to trigger rendering."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useRouterState": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/useRouterStateHook",
+  "sourceTitle": "useRouterState hook | TanStack Router Docs",
+  "summary": "A hook for reactively reading TanStack Router's current internal state. Use select to subscribe to a derived value such as location or navigation status.",
+  "explanation": "Call the hook inside a router-connected component to subscribe to router state. Without options it returns the complete RouterState; supplying select derives a narrower value such as location or status, and structuralSharing can control reference reuse for that selected result.",
+  "syntax": "useRouterState(options?)",
+  "parameters": [
+   {
+    "name": "opts",
+    "type": "object",
+    "description": "Optional configuration object for selecting a value and configuring structural sharing."
+   },
+   {
+    "name": "opts.select",
+    "type": "(state: RouterState) => TSelected",
+    "description": "Optional function called with RouterState; its result becomes the hook result."
+   },
+   {
+    "name": "opts.structuralSharing",
+    "type": "boolean",
+    "description": "Optional setting controlling structural sharing for the selected value."
+   }
+  ],
+  "returns": "The current RouterState object, or TSelected when select is provided.",
+  "example": {
+   "title": "Read the router status",
+   "code": "import { useRouterState } from '@tanstack/react-router'\n\nexport function RouterStatus() {\n  const status = useRouterState({\n    select: (state) => state.status,\n  })\n\n  return <span aria-live=\"polite\">{status}</span>\n}",
+   "language": "tsx",
+   "explanation": "Selects the router's status so the component renders the current navigation state."
+  },
+  "useCases": [
+   {
+    "title": "Navigation progress UI",
+    "scenario": "Render a global loading indicator while navigation is pending."
+   },
+   {
+    "title": "Reactive router data",
+    "scenario": "Read a selected location or status value in a component that must update reactively."
+   },
+   {
+    "title": "Fine-grained state subscription",
+    "scenario": "Subscribe to a focused slice of router state to limit unnecessary component updates."
+   }
+  ],
+  "related": [
+   "useLocation",
+   "useMatches",
+   "useRouter",
+   "RouterState"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useRouterState return?",
+    "answer": "useRouterState is a hook that returns the router's current internal state. With no options, its result is a RouterState object.",
+    "followUp": "How would you avoid subscribing to more state than necessary? Use select to return only the value the component needs."
+   },
+   {
+    "question": "How do you select a derived router value?",
+    "answer": "Pass an options object with select, a function receiving RouterState and returning the selected value. The hook then returns that selected value instead of the whole state.",
+    "followUp": "What additional option affects selected results? structuralSharing configures whether structural sharing is enabled for the value returned by select."
+   },
+   {
+    "question": "Why use this hook instead of router.state?",
+    "answer": "It provides reactive router-state access for components, unlike directly reading router.state. A component using router.state does not re-render when router state changes.",
+    "followUp": "Which specialized hooks should be considered for common data? useLocation and useMatches are preferred for current location and matches."
+   }
+  ],
+  "keyPoints": [
+   "It exposes the router's internal state through a component hook.",
+   "The argument is optional, so the complete state can be read without configuration.",
+   "select receives RouterState and produces a selected value with type TSelected.",
+   "The hook returns the result of select rather than the original state when a selector is provided.",
+   "The return type depends on whether select is present."
+  ],
+  "gotchas": [
+   "Prefer useLocation or useMatches for location or match data; they are intended to be more ergonomic and performant than reading the entire router state.",
+   "Do not substitute router.state for this hook in a component when updates should trigger a re-render."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useSearch": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/useSearchHook",
+  "sourceTitle": "useSearch hook | TanStack Router React Docs",
+  "summary": "useSearch reads the current location’s validated search parameters as a typed object. It can scope types to a route, select a derived value, or use looser shared-search typing.",
+  "explanation": "useSearch accepts an options object and returns the current location’s search parameters as an object. Provide a route ID or path with from for route-specific type inference, optionally transform the result with select, or set strict to false when accessing shared search parameters without a route origin.",
+  "syntax": "useSearch(options)",
+  "parameters": [
+   {
+    "name": "opts.from",
+    "type": "string",
+    "description": "Route ID or path used to match the search parameters. Required for strict route-specific usage."
+   },
+   {
+    "name": "opts.shouldThrow",
+    "type": "boolean",
+    "description": "Whether missing route context should throw; defaults to true."
+   },
+   {
+    "name": "opts.select",
+    "type": "(search: SelectedSearchSchema) => TSelected",
+    "description": "Transforms the search object; the selected return value becomes the hook result."
+   },
+   {
+    "name": "opts.structuralSharing",
+    "type": "boolean",
+    "description": "Controls structural sharing for the selected result."
+   },
+   {
+    "name": "opts.strict",
+    "type": "boolean",
+    "description": "When false, ignores from and loosens the result to Partial<FullSearchSchema>; defaults to true."
+   }
+  ],
+  "returns": "With from, returns the current location’s search parameters for that route, or TSelected when select is supplied. With strict: false, returns the current search parameters typed as Partial<FullSearchSchema>, or TSelected when select is supplied.",
+  "example": {
+   "title": "Read typed search parameters",
+   "code": "import { useSearch } from '@tanstack/react-router'\n\nexport function ProductsSummary() {\n  const search = useSearch({ from: '/products' })\n  return <div>Current filters: {JSON.stringify(search)}</div>\n}",
+   "language": "tsx",
+   "explanation": "Reads the validated search object for the /products route and renders it."
+  },
+  "useCases": [
+   {
+    "title": "Read route search state",
+    "scenario": "A route component needs validated filters, pagination, or sorting from the URL."
+   },
+   {
+    "title": "Select a focused value",
+    "scenario": "A component depends on one search field or a computed projection."
+   },
+   {
+    "title": "Access shared search state",
+    "scenario": "A shared component reads search parameters without a known route origin."
+   }
+  ],
+  "related": [
+   "Route.useSearch",
+   "useParams",
+   "useLoaderData",
+   "useRouteContext",
+   "useRouterState"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useSearch return, and why use from?",
+    "answer": "useSearch returns the current location's search query parameters as an object. Passing from identifies the route whose search schema should provide the types.",
+    "followUp": "How can a component subscribe to only one search value? Use select, for example select: search => search.filter, so the hook returns only that selected value."
+   },
+   {
+    "question": "How does select change useSearch?",
+    "answer": "select receives the search object and its return value becomes the hook result. This lets a component read a derived value or a narrow subset instead of the entire search object.",
+    "followUp": "What additional option can preserve references for selected JSON-compatible results? Enable structuralSharing in the hook options."
+   },
+   {
+    "question": "What is the effect of strict: false?",
+    "answer": "By default strict is true. With strict false, from is ignored and the result is typed as Partial<FullSearchSchema>, reflecting shared search parameters across routes.",
+    "followUp": "When should strict remain enabled? Keep it enabled when the component has a known route origin and should receive the strongest route-specific types."
+   }
+  ],
+  "keyPoints": [
+   "The hook exposes the current location’s search state as an object rather than requiring manual query-string parsing.",
+   "Configuration is supplied through one options object.",
+   "Use from to anchor inference to a particular route ID or path.",
+   "select can project the full search object into a value tailored to the component.",
+   "structuralSharing controls reference reuse for values produced by select.",
+   "strict defaults to true, keeping route-aware typing as the normal behavior."
+  ],
+  "gotchas": [
+   "Setting strict to false ignores from and loosens the result to a partial full search schema, reducing route-specific type safety."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Production concerns::Devtools": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/devtools",
+  "sourceTitle": "Devtools | TanStack Router Docs",
+  "summary": "TanStack Router Devtools visualize the router's internal behavior during development. Install the separate package and mount the component in a root route for automatic connection, or pass the router explicitly when rendering it elsewhere.",
+  "explanation": "TanStack Router Devtools provide a live view of the router's internal behavior. Install the separate package, then render the devtools in a root route; this automatically connects them to the router, while passing an explicit router instance is an alternative when rendering elsewhere.",
+  "syntax": "<TanStackRouterDevtools router={router} />",
+  "parameters": [
+   {
+    "name": "router",
+    "type": "Router instance",
+    "description": "The router instance to inspect when the devtools are not rendered within the router's route tree."
+   }
+  ],
+  "returns": "A React devtools component that renders an inspector for TanStack Router's runtime state.",
+  "example": {
+   "title": "Mount TanStack Router Devtools",
+   "code": "import { createRootRoute, Outlet } from '@tanstack/react-router'\nimport { TanStackRouterDevtools } from '@tanstack/react-router-devtools'\n\nexport const Route = createRootRoute({\n  component: () => (\n    <>\n      <Outlet />\n      <TanStackRouterDevtools />\n    </>\n  ),\n})",
+   "language": "tsx",
+   "explanation": "Mount the devtools in the root route so they connect automatically to the router and expose its runtime state."
+  },
+  "useCases": [
+   {
+    "title": "Inspect router behavior",
+    "scenario": "Debugging a navigation whose route matching or loading behavior is unexpected."
+   },
+   {
+    "title": "Monitor route state",
+    "scenario": "Adding a development-only inspector to an application root."
+   },
+   {
+    "title": "Connect an external mount",
+    "scenario": "Using a custom application shell where the devtools cannot live inside a route."
+   }
+  ],
+  "related": [
+   "TanStackRouterDevtools",
+   "@tanstack/react-router-devtools",
+   "RouterProvider",
+   "Outlet",
+   "root route"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you add TanStack Router Devtools to a React application?",
+    "answer": "The devtools are installed separately and rendered with TanStackRouterDevtools. Placing them inside the root route automatically connects them to the router instance.",
+    "followUp": "How would you mount them outside a route? Pass the same router instance used by RouterProvider through the devtools' router prop."
+   },
+   {
+    "question": "Where should the devtools component be rendered?",
+    "answer": "Render TanStackRouterDevtools in a root or other route, typically alongside Outlet. The component then has access to the router and can show its runtime behavior for debugging.",
+    "followUp": "What setup avoids relying on route context? Render the component next to RouterProvider and provide router explicitly."
+   },
+   {
+    "question": "How can you configure the devtools outside the route tree?",
+    "answer": "When the component is not rendered inside RouterProvider's route tree, give it the router instance through its router prop. That instance should be the same one passed to RouterProvider.",
+    "followUp": "Why must the instances match? The devtools need the active router's state rather than a separately created router with unrelated navigation state."
+   }
+  ],
+  "keyPoints": [
+   "Use the panel to inspect the router's internal runtime behavior while diagnosing navigation.",
+   "Mounting in the root route is the recommended integration point.",
+   "The component can also be rendered from another route when that placement suits the application.",
+   "When mounted outside the route tree, configure the component with the router instance used by the application."
+  ],
+  "gotchas": [
+   "Install the dedicated devtools package before importing or rendering the component.",
+   "Rendering inside a route is the simplest setup; placing the component elsewhere requires explicitly supplying the router."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Production concerns::Lazy routes": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/guide/code-splitting",
+  "sourceTitle": "Code Splitting",
+  "summary": "Lazy routes keep non-critical route code out of the initial bundle and load it when its route is visited. TanStack Router supports automatic splitting, .lazy.tsx files, and Route.lazy() for code-based routing.",
+  "explanation": "Lazy routes separate non-critical route pieces from the configuration needed to match a URL and begin loading data. The bundler can create separate chunks for components and other supported properties, then resolve those pieces on demand when the route loads. File-based projects can use automatic splitting or a .lazy.tsx file; code-based projects can attach a lazy importer with Route.lazy().",
+  "syntax": "Route.lazy(() => import('./posts.lazy').then((m) => m.Route))",
+  "parameters": [
+   {
+    "name": "lazyImporter",
+    "type": "() => Promise<Partial<UpdatableRouteOptions>>",
+    "description": "A function returning a promise of partial route options that are applied when the route is loaded lazily."
+   }
+  ],
+  "returns": "Route instance (this) from Route.lazy; lazy route components return a component that can be preloaded.",
+  "example": {
+   "title": "Automatically split a file-based route",
+   "code": "import { createFileRoute } from '@tanstack/react-router'\n\nexport const Route = createFileRoute('/posts')({\n  component: PostsPage,\n})\n\nfunction PostsPage() {\n  return <h1>Posts</h1>\n}",
+   "language": "tsx",
+   "explanation": "With the bundler plugin configured for automatic splitting, the route component is emitted into a separate chunk and fetched when this route is loaded."
+  },
+  "useCases": [
+   {
+    "title": "Reduce the initial JavaScript bundle",
+    "scenario": "Large file-based application"
+   },
+   {
+    "title": "Enable automatic route chunking",
+    "scenario": "Projects using the bundler plugin"
+   },
+   {
+    "title": "Split a route with .lazy.tsx",
+    "scenario": "Manual file-based setup"
+   },
+   {
+    "title": "Attach a deferred route definition with Route.lazy()",
+    "scenario": "Code-based routing"
+   }
+  ],
+  "related": [
+   "autoCodeSplitting",
+   "createLazyFileRoute",
+   "createLazyRoute",
+   "Route.lazy",
+   "codeSplitGroupings",
+   "lazyRouteComponent"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you enable automatic lazy route splitting?",
+    "answer": "Automatic code splitting is enabled with autoCodeSplitting: true in the TanStack Router bundler plugin. The plugin transforms route files so supported properties can be placed in separate lazy-loaded chunks.",
+    "followUp": "Which route properties can be split? The documented properties are component, errorComponent, pendingComponent, notFoundComponent, and loader."
+   },
+   {
+    "question": "How can file-based routing split a route when automatic splitting is unavailable?",
+    "answer": "For file-based routing, put non-critical route code in a file ending with .lazy.tsx and use createLazyFileRoute instead of createFileRoute. The normal route file retains the critical configuration.",
+    "followUp": "What is the code-based equivalent? Create a lazy route with createLazyRoute, then attach it through the route definition's lazy method."
+   },
+   {
+    "question": "What does Route.lazy accept and when is it resolved?",
+    "answer": "The Route.lazy method accepts a function returning a promise of partial updatable route options: (lazyImporter: () => Promise<Partial<UpdatableRouteOptions>>) => this. The importer is resolved lazily while the route loads.",
+    "followUp": "How can chunk grouping be customized? Use codeSplitGroupings to place selected supported properties into the same generated bundle."
+   }
+  ],
+  "keyPoints": [
+   "Critical configuration stays in the eagerly available route definition so matching and initial data loading can start without waiting for the lazy chunk.",
+   "Components and other non-critical configuration can be deferred because they are unnecessary for identifying the route.",
+   "The manual file-based approach places lazy route implementation in a companion .lazy.tsx file.",
+   "Code-based routes connect their deferred implementation by calling lazy on the route definition.",
+   "Fine-grained grouping controls which supported route properties share a generated chunk."
+  ],
+  "gotchas": [
+   "Do not export split properties such as component or loader from the route file, because exporting them prevents code splitting."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Production concerns::Route guards": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/guide/authenticated-routes",
+  "sourceTitle": "Authenticated Routes | TanStack Router Docs",
+  "summary": "Use beforeLoad on a route, commonly a protected layout, to check authentication or roles and throw redirect() when access is denied. Treat this as route/UI control only; private data needs authorization in its server or API handler.",
+  "explanation": "A route's beforeLoad runs before the route loads and can inspect authentication or authorization data from context. If the check fails, throw redirect() to stop navigation and send the user to login or an unauthorized page; preserve location.href when returning the user afterward. Apply checks on parent layout routes to protect their descendants, but authorize private data separately in every server function, server route, or API endpoint.",
+  "syntax": "beforeLoad: ({ context, location }) => {\n  if (!condition) {\n    throw redirect({ to: '/login-or-unauthorized' })\n  }\n}",
+  "parameters": [
+   {
+    "name": "beforeLoad arguments",
+    "type": "{ context, location }",
+    "description": "Object passed to beforeLoad; examples use context for auth state and location for the current URL."
+   },
+   {
+    "name": "context",
+    "type": "Router context",
+    "description": "Authentication and authorization state exposed through the router context."
+   },
+   {
+    "name": "location",
+    "type": "Location",
+    "description": "The current route location, including href for preserving the requested destination."
+   }
+  ],
+  "returns": "A beforeLoad guard may return route context data or throw redirect() to interrupt navigation; the cited examples use redirects for failed checks.",
+  "example": {
+   "title": "Protect an admin route subtree",
+   "code": "import { createFileRoute, redirect } from '@tanstack/react-router'\n\nexport const Route = createFileRoute('/_authenticated/_admin')({\n  beforeLoad: ({ context, location }) => {\n    if (!context.auth.hasRole('admin')) {\n      throw redirect({\n        to: '/unauthorized',\n        search: { redirect: location.href },\n      })\n    }\n  },\n  component: AdminLayout,\n})",
+   "language": "typescript",
+   "explanation": "A layout route checks the authenticated user's role before its protected subtree loads and sends unauthorized users to an error page while preserving the intended location."
+  },
+  "useCases": [
+   {
+    "title": "Redirect unauthenticated users",
+    "scenario": "A visitor opens a private route without a valid session."
+   },
+   {
+    "title": "Enforce role-based UI access",
+    "scenario": "A signed-in user lacks the role required by an administrative subtree."
+   },
+   {
+    "title": "Guard permission-specific screens",
+    "scenario": "A user lacks one or more permissions needed by a route."
+   },
+   {
+    "title": "Preserve the post-login destination",
+    "scenario": "A login flow should return the user to the page they originally requested."
+   }
+  ],
+  "related": [
+   "beforeLoad",
+   "redirect",
+   "createFileRoute",
+   "authenticated layout routes",
+   "roles",
+   "permissions",
+   "router context",
+   "location.href"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you implement an authentication guard?",
+    "answer": "beforeLoad runs before a route is loaded and receives the same arguments as the route loader. Use it to inspect authentication or roles, then throw redirect() when access should be denied.",
+    "followUp": "Where should the actual data authorization happen? Every server function, server route, or API endpoint that reads or writes private data must authorize the request independently."
+   },
+   {
+    "question": "How would you protect an admin route subtree?",
+    "answer": "Put the guard on a parent layout route so its child routes inherit the protection. A failed role check can throw redirect({ to: '/unauthorized' }) and include the current location in search parameters.",
+    "followUp": "How can several routes share an authorization rule? Create a protected layout route for the subtree and perform the shared check in that layout's beforeLoad."
+   },
+   {
+    "question": "How do you preserve the intended destination after login?",
+    "answer": "Use the location argument supplied to beforeLoad and save location.href in the redirect search parameters. After authentication, that value can guide navigation back to the originally requested page.",
+    "followUp": "What location value should be avoided for this purpose? router.state.resolvedLocation may lag behind the actual current location, so it should not be used."
+   }
+  ],
+  "keyPoints": [
+   "beforeLoad is the route-level hook for running authentication and authorization checks before loading the route.",
+   "Unauthenticated users can be redirected to a login route instead of entering the protected screen.",
+   "Navigation is redirected by throwing redirect() from the guard, rather than merely returning a redirect object.",
+   "Route guards control navigation and UI; private data still requires authorization at its server/API boundary."
+  ],
+  "gotchas": [
+   "Do not treat beforeLoad as the security boundary: independently authorize every server function, server route, or API endpoint that accesses private data.",
+   "When storing a return destination, use location.href from beforeLoad rather than router.state.resolvedLocation."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Production concerns::Router context": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/guide/router-context",
+  "sourceTitle": "Router Context | TanStack Router Docs",
+  "summary": "Router context provides typed dependency injection through the matching route hierarchy. Supply shared clients, sessions, or services when creating the router; routes can extend the context for their descendants.",
+  "explanation": "Define the root context type with createRootRouteWithContext, then provide matching dependency values through createRouter's context option. Matching routes receive inherited context, and a route can extend or change it with beforeLoad for its descendants.",
+  "syntax": "createRootRouteWithContext<ContextType>()(routeOptions)\ncreateRouter({ routeTree, context })",
+  "parameters": [
+   {
+    "name": "routeTree",
+    "type": "RouteTree",
+    "description": "The route tree used by the router."
+   },
+   {
+    "name": "context",
+    "type": "Router context object",
+    "description": "The initial shared values supplied to matching routes."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Provide a shared client through router context",
+   "code": "import { createRootRouteWithContext, createRouter } from '@tanstack/react-router'\nimport { QueryClient } from '@tanstack/react-query'\n\ninterface RouterContext {\n  queryClient: QueryClient\n}\n\nconst rootRoute = createRootRouteWithContext<RouterContext>()({})\nconst routeTree = rootRoute.addChildren([])\nconst queryClient = new QueryClient()\n\nexport const router = createRouter({\n  routeTree,\n  context: { queryClient },\n})",
+   "language": "typescript",
+   "explanation": "Creates a typed root context and supplies the shared QueryClient when constructing the router."
+  },
+  "useCases": [
+   {
+    "title": "Shared data services",
+    "scenario": "Provide a QueryClient, API client, or mutation service to loaders without importing it in every route."
+   },
+   {
+    "title": "Authentication context",
+    "scenario": "Make authentication or session state available to route guards and descendant loaders."
+   },
+   {
+    "title": "Hierarchical route dependencies",
+    "scenario": "Add route-specific values in beforeLoad for nested routes."
+   }
+  ],
+  "related": [
+   "createRootRouteWithContext",
+   "createRouter",
+   "beforeLoad",
+   "loader",
+   "route match tree",
+   "Dependency Injection"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is router context used for?",
+    "answer": "Router context is a typed dependency-injection mechanism that flows through the router and matching route hierarchy. A route can read it in APIs such as beforeLoad and loader without importing or constructing the dependency itself.",
+    "followUp": "How would you make a required dependency type-safe? Use createRootRouteWithContext<ContextType>(), then pass an object satisfying that type in createRouter({ context })."
+   },
+   {
+    "question": "How do you supply a shared client or session?",
+    "answer": "Create a root route with createRootRouteWithContext and provide the resulting context object through the router's context option. Child routes inherit the values from their matched parents.",
+    "followUp": "What happens when a route changes context? Its beforeLoad result is merged into the route match tree, making the added or changed values available to descendants."
+   },
+   {
+    "question": "How does context behave across nested routes?",
+    "answer": "Context is hierarchical: the router supplies initial values, and each route may add to or modify them. Loaders and other route APIs receive the resulting context for their position in the tree.",
+    "followUp": "Why is this useful for authentication? A parent route can establish authentication-related context before descendants load, so those descendants can use the inherited value."
+   }
+  ],
+  "keyPoints": [
+   "Initial context travels only through routes that participate in the current match.",
+   "Routes can extend or replace inherited values for the portion of the tree below them.",
+   "Use context to inject reusable services instead of importing or constructing them inside route code.",
+   "beforeLoad can contribute route-specific context, and that contribution is merged for descendant routes.",
+   "The initial dependency object is supplied in createRouter when the router is instantiated.",
+   "Typed route definitions can consume context, including in loader functions."
+  ],
+  "gotchas": [
+   "Using createRootRoute alone does not constrain the root context type; use createRootRouteWithContext with the context interface.",
+   "Dependencies must be available when the router is created rather than being supplied later during navigation."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Production concerns::Scroll restoration": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/guide/scroll-restoration",
+  "sourceTitle": "Scroll Restoration | TanStack Router Solid Docs",
+  "summary": "TanStack Router can track and restore scroll positions across navigation, including back navigation, without custom browser-history code. Enable it at router creation and use per-navigation or element-level controls when needed.",
+  "explanation": "Set scrollRestoration to true when creating the router. TanStack Router monitors scroll events, records positions for registered scrollable areas—including the window and body—and restores them at the appropriate navigation point before the browser paints. Use resetScroll when an individual navigation should opt out.",
+  "syntax": "createRouter({ scrollRestoration: true })",
+  "parameters": [
+   {
+    "name": "scrollRestoration",
+    "type": "boolean",
+    "description": "Whether the router should enable built-in scroll position tracking and restoration."
+   },
+   {
+    "name": "resetScroll",
+    "type": "boolean",
+    "description": "Whether the next navigation should restore an existing position or reset a new history entry to the top."
+   },
+   {
+    "name": "getKey",
+    "type": "(location) => string",
+    "description": "A function that selects the cache key for a location; the default uses the unique history-entry key."
+   },
+   {
+    "name": "scrollRestorationBehavior",
+    "type": "\"smooth\" | \"instant\" | \"auto\"",
+    "description": "Controls transition behavior; supported values are smooth, instant, and auto."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Enable scroll restoration",
+   "code": "const router = createRouter({\n  routeTree,\n  scrollRestoration: true,\n})",
+   "language": "typescript",
+   "explanation": "Enable the router's built-in restoration so it tracks scrollable areas and restores their positions during navigation."
+  },
+  "useCases": [
+   {
+    "title": "History navigation",
+    "scenario": "A single-page app needs back/forward navigation to return users to the position they left."
+   },
+   {
+    "title": "Nested scroll containers",
+    "scenario": "A route contains a long, independently scrolling panel."
+   },
+   {
+    "title": "Virtualized content",
+    "scenario": "A virtualized list must resume at its previous offset after navigation."
+   },
+   {
+    "title": "Opt-out navigation",
+    "scenario": "A particular link should avoid restoring or resetting scroll during a transition."
+   }
+  ],
+  "related": [
+   "useElementScrollRestoration",
+   "data-scroll-restoration-id",
+   "resetScroll",
+   "scrollRestorationBehavior",
+   "hashScrollIntoView"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does TanStack Router restore scroll positions?",
+    "answer": "Enable scrollRestoration in the router configuration. The router then observes scroll activity, caches positions for scrollable areas, and restores them around router navigation rather than requiring application-level browser-history handling.",
+    "followUp": "How would you preserve the position of a virtualized element? Use useElementScrollRestoration with a unique id and the data-scroll-restoration-id attribute, then provide the returned scroll position to the virtualizer."
+   },
+   {
+    "question": "How can one navigation opt out of scroll handling?",
+    "answer": "Set resetScroll to false on a Link, navigate call, or redirect call. That suppresses restoration for the next navigation when returning to an existing history event, and suppresses the top reset for a new history event.",
+    "followUp": "How can navigation use a different cache identity? Configure getKey so the cache associates positions with the location identity your application needs instead of the default history-entry key."
+   },
+   {
+    "question": "Which built-in scroll behaviors and controls are available?",
+    "answer": "The router supports hash scrolling and top-of-page scrolling without extra configuration. For transitions, scrollRestorationBehavior accepts browser-style smooth, instant, or auto behavior.",
+    "followUp": "What should be checked when a nested scrolling container is not restored? Register the element with the restoration mechanism and give it a stable data-scroll-restoration-id for manual control."
+   }
+  ],
+  "keyPoints": [
+   "Hash targets and ordinary top-of-page movement work by default, so basic routes need no separate scroll setup.",
+   "The restoration system watches DOM scroll events to keep its position data current.",
+   "Scrollable elements must be registered with the cache so the router can track more than the main document.",
+   "The cache stores positions independently for each scrollable area, including window and body.",
+   "Restoration occurs after a successful navigation and before DOM painting, helping avoid a visible jump.",
+   "Use the element hook when an individual scroll container needs application-controlled restoration."
+  ],
+  "gotchas": [
+   "Setting resetScroll to false skips restoration for the next navigation; on a new history entry it also prevents the normal reset to the top.",
+   "The default cache key uses TanStack Router's unique history-entry key, so changing key generation changes which navigations share stored positions."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Production concerns::Server-side rendering": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/guide/ssr",
+  "sourceTitle": "SSR | TanStack Router Docs",
+  "summary": "TanStack Router renders the matched route on the server and hydrates the resulting HTML in the browser. Route loader data is automatically dehydrated and rehydrated when the standard SSR setup is used.",
+  "explanation": "TanStack Router supports SSR by rendering the matched application route on the server and sending HTML plus the serialized state needed by the browser. The client then uses RouterClient to hydrate that existing markup, while resolved loader data is automatically dehydrated and rehydrated when the standard SSR setup is followed.",
+  "syntax": "<RouterClient router={router} />",
+  "parameters": [],
+  "returns": "Server-rendered HTML for the matched route; client hydration produces a fully interactive application.",
+  "example": {
+   "title": "Render and hydrate a matched route",
+   "code": "import { renderRouterToString } from '@tanstack/react-router/ssr/server'\nimport { RouterClient } from '@tanstack/react-router/ssr/client'\nimport { hydrateRoot } from 'react-dom/client'\n\n// Server entry: render the matched route to HTML.\nconst html = await renderRouterToString({ router })\n\n// Client entry: hydrate the server output without fetching a second document.\nhydrateRoot(document, <RouterClient router={router} />)",
+   "language": "tsx",
+   "explanation": "The server renders the router's matched route into HTML, while the browser hydrates that output through RouterClient."
+  },
+  "useCases": [
+   {
+    "title": "Non-streaming SSR",
+    "scenario": "Deliver complete HTML for a route in one response before client JavaScript runs."
+   },
+   {
+    "title": "Streaming SSR",
+    "scenario": "Send the initial route content progressively as server rendering continues."
+   },
+   {
+    "title": "Loader-data hydration",
+    "scenario": "Reuse resolved route loader data during hydration instead of loading it again."
+   }
+  ],
+  "related": [
+   "RouterClient",
+   "defaultRenderHandler",
+   "RouterServer",
+   "renderRouterToString",
+   "renderRouterToStream",
+   "Scripts",
+   "dehydration",
+   "rehydration"
+  ],
+  "since": "",
+  "keyPoints": [
+   "SSR creates the initial route HTML on the server and sends it to the browser.",
+   "Hydration attaches client behavior to the HTML instead of requiring a second document render.",
+   "Non-streaming SSR returns the complete page in one response.",
+   "Streaming SSR can send the critical first paint while the server continues producing the rest.",
+   "Route loader results can cross the server-client boundary automatically when the documented SSR steps are complete.",
+   "The client-side SSR entry uses RouterClient to hydrate the router output."
+  ],
+  "gotchas": [
+   "Hydration requires the client output to correspond to the server-rendered markup; mismatches can prevent correct interactivity.",
+   "For streaming SSR, the root route must render Scripts inside body so route scripts and streamed hydration data can be inserted."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Routing fundamentals::Code-based routing": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/routing/code-based-routing",
+  "sourceTitle": "Code-Based Routing | TanStack Router Solid Docs",
+  "summary": "Code-based routing declares TanStack Router routes directly in code and assembles them into an explicit nested route tree. It is useful when route structure is dynamic or shared, though the documentation recommends file-based routing for most applications.",
+  "explanation": "Code-based routing declares TanStack Router routes with route APIs, then explicitly connects them into a nested route tree passed to the router. Each non-root route normally supplies a path; dynamic segments beginning with `$` become route parameters.",
+  "syntax": "createRoute({ getParentRoute: () => parentRoute, path: '/segment', component: Component })\nconst routeTree = rootRoute.addChildren([childRoutes])\nconst router = createRouter({ routeTree })",
+  "parameters": [
+   {
+    "name": "getParentRoute",
+    "type": "() => Route",
+    "description": "The parent route accessor used by a child route to identify its place in the route hierarchy."
+   },
+   {
+    "name": "path",
+    "type": "string",
+    "description": "The URL pattern used for matching; required for routes other than the root or a pathless layout route."
+   },
+   {
+    "name": "routeTree",
+    "type": "RouteTree",
+    "description": "The final nested route tree supplied when creating the router."
+   }
+  ],
+  "returns": "A configured router created from the explicitly assembled route tree.",
+  "example": {
+   "title": "Explicit code-based route tree",
+   "code": "import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router'\n\nconst rootRoute = createRootRoute()\nconst indexRoute = createRoute({\n  getParentRoute: () => rootRoute,\n  path: '/',\n  component: () => <div>Home</div>,\n})\nconst userRoute = createRoute({\n  getParentRoute: () => rootRoute,\n  path: '/users/$userId',\n  component: () => <div>User</div>,\n})\n\nconst routeTree = rootRoute.addChildren([indexRoute, userRoute])\nexport const router = createRouter({ routeTree })",
+   "language": "tsx",
+   "explanation": "This constructs a root route, declares child routes in code, assembles the route tree, and creates the router."
+  },
+  "useCases": [
+   {
+    "title": "Dynamic route structures",
+    "scenario": "The route hierarchy is generated or varies at runtime or build time."
+   },
+   {
+    "title": "Shared route configuration",
+    "scenario": "Several routes or route definitions need to be shared through ordinary code modules."
+   },
+   {
+    "title": "Explicit route-tree assembly",
+    "scenario": "A project needs direct control over how route definitions are composed into one tree."
+   }
+  ],
+  "related": [
+   "createRootRoute",
+   "createRoute",
+   "addChildren",
+   "createRouter",
+   "route tree",
+   "index routes",
+   "dynamic route segments",
+   "pathless layout routes"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Routes are organized through TypeScript or JavaScript declarations instead of a filesystem route structure.",
+   "Code-based and file-based routing share the same nested route-tree model and matching behavior.",
+   "Use `createRoute` for ordinary routes and `createRootRoute` for the root route.",
+   "Ordinary URL-matching routes require a `path` option; root and pathless layout routes are exceptions.",
+   "A route’s `path` determines whether its pattern matches the URL pathname.",
+   "Prefix a path segment with `$` to capture its value in the route parameters."
+  ],
+  "gotchas": [
+   "Defining a route's parent does not automatically include the route in the final tree; add each route to its parent’s children array.",
+   "Use `/` for an index route in code-based routing rather than an index filename convention.",
+   "The documentation recommends file-based routing for most applications, so choose code-based routing deliberately."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Routing fundamentals::File-based routing": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/routing/file-based-routing",
+  "sourceTitle": "File-Based Routing",
+  "summary": "File-based routing derives TanStack Router's route tree from files and directories. The filesystem layout exposes URL nesting, while the Router plugin or CLI generates the route configuration.",
+  "explanation": "TanStack Router can derive an application's nested route structure from files and directories rather than requiring the structure to be written entirely in code. A supported bundler plugin or the Router CLI scans the route directory and generates the route configuration, so moving or adding route files keeps the URL structure visible in the project layout.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A file-backed route",
+   "code": "// src/routes/posts.tsx\nimport { createFileRoute } from '@tanstack/react-router'\n\nexport const Route = createFileRoute('/posts')({\n  component: Posts,\n})\n\nfunction Posts() {\n  return <h1>Posts</h1>\n}",
+   "language": "tsx",
+   "explanation": "The file location represents the route hierarchy, while the generated route tree supplies the router with the resulting configuration."
+  },
+  "useCases": [
+   {
+    "title": "Filesystem-visible routes",
+    "scenario": "Organize a growing application by URL hierarchy."
+   },
+   {
+    "title": "Generated route configuration",
+    "scenario": "Avoid hand-maintaining route-tree declarations."
+   },
+   {
+    "title": "Flat route conventions",
+    "scenario": "Represent nesting without deeply nested folders."
+   }
+  ],
+  "related": [
+   "Flat Routes",
+   "Directories",
+   "Mixed Flat Routes and Directories",
+   "Virtual File Routes",
+   "TanStack Router Plugin",
+   "TanStack Router CLI"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does TanStack Router implement file-based routing?",
+    "answer": "File-based routing represents route hierarchy with files and directories. The TanStack Router plugin or CLI then generates the route configuration during development and builds.",
+    "followUp": "What happens after a route file is moved? The generated route tree is regenerated, reflecting the new filesystem-based hierarchy."
+   },
+   {
+    "question": "How do files and directories map to route hierarchy?",
+    "answer": "Directories represent nested route levels, and a dot in a filename can represent nesting in flat-route conventions. This lets the URL structure remain discoverable from the route directory.",
+    "followUp": "When would flat routes be useful? They can express nesting without creating nested directories, while retaining filename-based route discovery."
+   },
+   {
+    "question": "What setup is required to enable file-based routing?",
+    "answer": "A project must configure either the TanStack Router plugin or the TanStack Router CLI. With a supported bundler, the plugin automatically generates the route configuration in development and build processes.",
+    "followUp": "What is the trade-off with code-based routing? Code-based routing gives explicit route declarations, whereas file-based routing generally reduces the amount of route-structure code."
+   }
+  ],
+  "keyPoints": [
+   "Routes are configured from the filesystem instead of requiring the complete route hierarchy to be declared directly in application code.",
+   "A route file or directory placement communicates its position in the nested route hierarchy.",
+   "In flat-route naming, a dot in a filename expresses another nesting level.",
+   "Flat routing is an alternative convention that encodes nesting levels in filenames.",
+   "Enable the feature by configuring the bundler plugin or the Router CLI.",
+   "The bundler integration regenerates route configuration during development and production builds."
+  ],
+  "gotchas": [
+   "File-based routing requires React with a supported bundler when using the documented setup.",
+   "The automatic generation behavior depends on using one of the supported bundler integrations."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Routing fundamentals::Layout and pathless routes": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/routing/routing-concepts",
+  "sourceTitle": "Routing Concepts",
+  "summary": "Layout routes wrap child routes with shared UI or logic. Prefixing a file-based layout with `_` makes it pathless, so it contributes no URL segment while its children still render within the shared route tree.",
+  "explanation": "A layout route wraps its children with shared UI or route logic. In file-based routing, prefixing the route filename with `_` makes it pathless, so the route participates in nesting while contributing no URL segment; the text after `_` still identifies the route. Its children render through the layout's `Outlet`.",
+  "syntax": "createFileRoute('/_layout-id')({ component: LayoutComponent })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A pathless layout",
+   "code": "import { Outlet, createFileRoute } from '@tanstack/react-router'\n\nexport const Route = createFileRoute('/_app')({\n  component: AppLayout,\n})\n\nfunction AppLayout() {\n  return (\n    <div>\n      <nav>Shared navigation</nav>\n      <Outlet />\n    </div>\n  )\n}",
+   "language": "tsx",
+   "explanation": "The `_app` file creates a pathless layout; child routes render inside its `Outlet` without adding `app` to their URLs."
+  },
+  "useCases": [
+   {
+    "title": "Shared application chrome",
+    "scenario": "Several pages need the same navigation, shell, or visual wrapper while retaining distinct URLs."
+   },
+   {
+    "title": "Shared access and loading logic",
+    "scenario": "A group of routes must pass an authentication or loader check before rendering."
+   },
+   {
+    "title": "Shared route data and context",
+    "scenario": "Descendants need common search-parameter validation or route context."
+   }
+  ],
+  "related": [
+   "Layout Routes",
+   "File Naming Conventions",
+   "Outlet",
+   "Dynamic Route Segments",
+   "Search Params",
+   "Route Context"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What distinguishes a pathless layout route from an ordinary layout route?",
+    "answer": "A layout route wraps child routes with shared components or logic. A pathless layout does the same without requiring a matching URL segment, and file-based pathless layouts use an `_` prefix.",
+    "followUp": "How would you create one in code-based routing? Use a route with an `id` and no `path`; the filesystem `_` convention is unnecessary there."
+   },
+   {
+    "question": "How is a pathless layout represented in file-based routing?",
+    "answer": "The underscore prefix marks a file-based route as pathless. Its children still inherit the wrapper, but matching their URLs does not include that prefix or the identifier after it.",
+    "followUp": "What does the text after the underscore do? It forms the route ID, which uniquely identifies the route and supports TypeScript inference and autocomplete."
+   },
+   {
+    "question": "When would you choose a pathless layout?",
+    "answer": "Pathless layouts are useful when several routes need common UI or behavior without sharing a URL segment. Examples include shared navigation, authentication checks, search-parameter handling, loaders, error fallbacks, pending elements, and context.",
+    "followUp": "Can a pathless layout use a dynamic segment? No. Because it is not matched by URL segments, dynamic segments cannot be part of its path."
+   }
+  ],
+  "keyPoints": [
+   "Use a layout route to apply shared presentation or behavior to every nested child.",
+   "A pathless layout adds nesting and composition without adding a pathname segment.",
+   "In file-based routing, begin the route filename with `_` to declare it pathless.",
+   "The suffix after `_` supplies the route ID, so choose a unique descriptive name.",
+   "Layouts can validate search parameters and make them available to descendants.",
+   "A layout can expose shared context for all of its child routes."
+  ],
+  "gotchas": [
+   "The name after `_` is not discarded: it supplies the route ID, which must remain unique."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Routing fundamentals::Not-found and error routes": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/guide/not-found-errors",
+  "sourceTitle": "Not Found Errors | TanStack Router Docs",
+  "summary": "Configure notFoundComponent for missing matches and missing resources, and errorComponent for route failures. Fuzzy mode uses the nearest suitable not-found boundary; root mode sends all not-found errors to the root.",
+  "explanation": "TanStack Router handles missing matches with notFoundComponent and runtime route failures with errorComponent. A route can provide either boundary, while router defaults supply fallbacks; fuzzy mode chooses the nearest suitable not-found boundary and root mode always uses the root one.",
+  "syntax": "notFound(options?: NotFoundOptions): NotFoundError",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "NotFoundOptions",
+    "description": "Optional configuration for the notFound function, including routing behavior such as routeId and whether to throw the result."
+   }
+  ],
+  "returns": "The notFound function returns a NotFoundError object; with throw: true it throws that object instead.",
+  "example": {
+   "title": "Route-level not-found and error handling",
+   "code": "import { createRootRoute, createRoute, notFound } from '@tanstack/react-router'\n\nconst rootRoute = createRootRoute({\n  notFoundComponent: () => <p>Page not found</p>,\n  errorComponent: ({ error }) => <p>Failed: {error.message}</p>,\n})\n\nconst postRoute = createRoute({\n  getParentRoute: () => rootRoute,\n  path: 'posts/$postId',\n  loader: async ({ params }) => {\n    const post = await fetchPost(params.postId)\n    if (!post) throw notFound()\n    return post\n  },\n  component: Post,\n})\n\nfunction Post() {\n  return <div>Post loaded</div>\n}\n\nasync function fetchPost(id: string) {\n  return id === 'missing' ? undefined : { id }\n}",
+   "language": "tsx",
+   "explanation": "The root supplies global not-found and error boundaries, while the post loader raises a not-found result when its data is absent."
+  },
+  "useCases": [
+   {
+    "title": "Render a 404 boundary",
+    "scenario": "A URL matches no route or contains unmatched trailing segments."
+   },
+   {
+    "title": "Report a missing resource",
+    "scenario": "A loader cannot find the entity identified by route parameters."
+   },
+   {
+    "title": "Use fuzzy branch-level handling",
+    "scenario": "Different route branches need distinct missing-page experiences."
+   },
+   {
+    "title": "Centralize not-found handling",
+    "scenario": "The application requires one consistent 404 screen."
+   }
+  ],
+  "related": [
+   "notFound",
+   "notFoundComponent",
+   "errorComponent",
+   "defaultNotFoundComponent",
+   "defaultErrorComponent",
+   "notFoundMode",
+   "NotFoundError"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do not-found and ordinary errors differ?",
+    "answer": "Use notFoundComponent for a missing route or an explicitly missing resource, and errorComponent for an error encountered by a route. The corresponding route option determines the rendered boundary.",
+    "followUp": "How can a loader mark a resource as missing? Throw the object returned by notFound(), optionally supplying routeId when the not-found result should be handled at a chosen route."
+   },
+   {
+    "question": "How does notFoundMode affect boundary selection?",
+    "answer": "The default not-found mode is fuzzy: TanStack Router searches for the nearest matching route that has a suitable notFoundComponent. With root mode, the root route handles every not-found error.",
+    "followUp": "When would root mode be preferable? Use it when the application requires one consistent global 404 experience rather than branch-specific handling."
+   },
+   {
+    "question": "What configuration provides fallback boundaries?",
+    "answer": "A route-level notFoundComponent handles not-found errors for that route, while defaultNotFoundComponent provides a router-wide fallback. If no suitable route handles the error, the root route ultimately renders the fallback behavior.",
+    "followUp": "What happens if a route has no errorComponent? Its error handling uses the router's defaultErrorComponent unless a more specific configured boundary applies."
+   }
+  ],
+  "keyPoints": [
+   "Unknown paths are converted into not-found errors automatically, including paths with extra unmatched segments.",
+   "Configure a route boundary or a router default to replace the basic fallback experience.",
+   "Fuzzy mode selects the closest suitable boundary in the matched branch.",
+   "Root mode centralizes all not-found rendering at the root.",
+   "A route boundary can handle both unmatched paths and not-found results thrown during route processing.",
+   "notFoundComponent renders after a not-found error reaches the route responsible for handling it."
+  ],
+  "gotchas": [
+   "Do not build new implementations around NotFoundRoute; use notFoundComponent instead.",
+   "A missing boundary eventually falls back to the root route's default not-found handling.",
+   "The older NotFoundRoute API is deprecated."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Routing fundamentals::Path parameters": {
+  "sourceUrl": "https://tanstack.com/router/v1/docs/guide/path-params",
+  "sourceTitle": "Path Params",
+  "summary": "Define named URL segments with `$`, then read their inferred values from route params without casting. Parameters are available in loaders and route components, while the global hook supports access from ambiguous component locations.",
+  "explanation": "Prefix a route segment with `$` and give it a name, such as `$postId`. TanStack Router captures the matching URL segment and exposes it through the route’s typed params, including in loaders and components. For an ambiguous component location, the global `useParams` hook can read params with `strict: false`.",
+  "syntax": "$paramName",
+  "parameters": [
+   {
+    "name": "path parameter",
+    "type": "inferred from the route definition",
+    "description": "The named dynamic segment in the route path, such as `$postId`; its value is parsed from the matching URL segment."
+   }
+  ],
+  "returns": "A typed params object whose properties correspond to the named dynamic segments in the route.",
+  "example": {
+   "title": "Read a typed path parameter",
+   "code": "import { createFileRoute } from '@tanstack/react-router'\n\nexport const Route = createFileRoute('/posts/$postId')({\n  component: Post,\n})\n\nfunction Post() {\n  const { postId } = Route.useParams()\n  return <h1>Post {postId}</h1>\n}",
+   "language": "tsx",
+   "explanation": "The route declares a named dynamic segment, and the generated route hook returns its typed value."
+  },
+  "useCases": [
+   {
+    "title": "Resource detail routes",
+    "scenario": "A detail page such as `/posts/123` needs the post identifier to load and render the matching record."
+   },
+   {
+    "title": "Loader-driven data fetching",
+    "scenario": "A loader needs a route identifier to fetch data before the component renders."
+   },
+   {
+    "title": "Cross-route parameter access",
+    "scenario": "A shared component needs access to the matched parameters without being bound to one route."
+   },
+   {
+    "title": "Optional route segments",
+    "scenario": "A route should accept a URL segment only when it is present."
+   }
+  ],
+  "related": [
+   "useParams",
+   "Route.useParams",
+   "params",
+   "loaders",
+   "optional path parameters",
+   "prefixes and suffixes"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you define a path parameter in TanStack Router?",
+    "answer": "A dynamic path segment starts with `$` and names the parameter, for example `/posts/$postId`. The matched value is available as `postId` in the route params and is inferred by the router.",
+    "followUp": "How would you access a parameter from a component that is not tied to one route? Use the globally exported `useParams` hook with `strict: false`."
+   },
+   {
+    "question": "How are path parameters used in a loader?",
+    "answer": "A route loader receives path parameters through its `params` object. The object keys are the parameter names, and its values come from the corresponding URL segments.",
+    "followUp": "What happens with `/posts/123/comments` for `/posts/$postId`? The parameter captures `123`; a child route can then express the remaining hierarchy."
+   },
+   {
+    "question": "How can a component read a typed path parameter?",
+    "answer": "Use `Route.useParams()` in a route component to obtain the declared parameters without manually casting them. The route definition supplies the names and types to the generated hook.",
+    "followUp": "How can a parameter be made optional? Define it with the `{-$paramName}` form, which allows that URL segment to be omitted."
+   }
+  ],
+  "keyPoints": [
+   "Declare a parameter by prefixing its name with `$`, such as `$postId`.",
+   "Loaders receive captured values in their `params` object.",
+   "Each parameter key matches the variable name used in the route path.",
+   "Parameter values come from the URL that matched the route.",
+   "The global `useParams` hook can read parsed parameters from components outside the declaring route.",
+   "Optional parameters use `{-$paramName}` so the segment can be omitted."
+  ],
+  "gotchas": [
+   "A path parameter matches only one URL segment; it does not consume text across a slash.",
+   "When using the global hook outside a specific route, opt into the less-specific lookup with `strict: false`.",
+   "Use the optional-parameter syntax when the segment itself may be absent, rather than treating every parameter as required."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Routing fundamentals::Route trees": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/routing/route-trees",
+  "sourceTitle": "Route Trees",
+  "summary": "Route trees map URLs to nested component trees, allowing layouts and child routes to mirror the UI hierarchy. TanStack Router supports file-based and code-based construction, with file-based routing recommended for less configuration.",
+  "explanation": "A route tree is a nested structure that maps URL segments to a nested component tree. You can define it with file-based or code-based routing; code-based trees connect routes through parent relationships and are passed to the router.",
+  "syntax": "createRouter({ routeTree })",
+  "parameters": [
+   {
+    "name": "routeTree",
+    "type": "RouteTree",
+    "description": "The route tree used by the router for route matching and component rendering."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Code-based route tree",
+   "code": "import { createRootRoute, createRoute, createRouter, Outlet } from '@tanstack/react-router'\n\nconst rootRoute = createRootRoute({\n  component: () => <><header>App</header><Outlet /></>,\n})\n\nconst dashboardRoute = createRoute({\n  getParentRoute: () => rootRoute,\n  path: 'dashboard',\n  component: () => <main>Dashboard</main>,\n})\n\nconst routeTree = rootRoute.addChildren([dashboardRoute])\nconst router = createRouter({ routeTree })\n\nexport { router }",
+   "language": "tsx",
+   "explanation": "A root route owns a child route, and the router receives the resulting tree for URL matching and rendering."
+  },
+  "useCases": [
+   {
+    "title": "Compose nested layouts",
+    "scenario": "An application has shared shells such as navigation, headers, or settings panels."
+   },
+   {
+    "title": "Use file-based routing",
+    "scenario": "A team wants route structure to follow a routes directory and generate the tree."
+   },
+   {
+    "title": "Build routes in code",
+    "scenario": "Routes must be declared explicitly in TypeScript or assembled dynamically."
+   }
+  ],
+  "related": [
+   "File-Based Routing",
+   "Code-Based Routing",
+   "Flat Routes",
+   "Directories",
+   "Mixed Flat Routes and Directories",
+   "Virtual File Routes",
+   "Route Tree Configuration"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a route tree, and why is nesting useful?",
+    "answer": "A route tree is a nested route structure that TanStack Router uses to match a URL and render the corresponding nested component tree. The hierarchy lets parent layouts remain rendered while child routes render inside them.",
+    "followUp": "How can a code-based tree be assembled? Define routes with parent accessors such as getParentRoute, then attach them to a parent with addChildren before passing the result to createRouter."
+   },
+   {
+    "question": "What are the two ways to build a route tree?",
+    "answer": "TanStack Router supports both file-based and code-based routing. They provide the same core routing capabilities, but file-based routing usually needs less code and is the recommended configuration style.",
+    "followUp": "When might code-based routing be useful? It can be appropriate when routes need to be declared programmatically rather than derived from a route-file convention."
+   },
+   {
+    "question": "How does the router consume a route tree?",
+    "answer": "The router is created with a routeTree option. That option is the complete tree used to match routes and render components, whether the tree was generated from files or assembled in code.",
+    "followUp": "What should be checked if navigation cannot match a route? Verify that the intended route is included in the tree supplied to createRouter and that its parent relationship is correct."
+   }
+  ],
+  "keyPoints": [
+   "The tree connects URL matching with the component hierarchy that gets rendered.",
+   "File-based and code-based route trees expose the same core routing capabilities.",
+   "File-based routing is the recommended default because it reduces configuration work.",
+   "Nested routes let a URL produce a nested UI structure rather than a single isolated component.",
+   "A route tree may combine flat route files and directory-based organization."
+  ],
+  "gotchas": [
+   "For new applications, prefer file-based routing when it fits your project because it generally requires less configuration."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Search parameters::Links and active state": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/guide/navigation",
+  "sourceTitle": "Navigation",
+  "summary": "Build typed links from route definitions with to, params, and search. Control active matching with activeOptions and style matched links through activeProps.",
+  "explanation": "Define navigation with the Link component instead of constructing URLs manually: give it a route-relative or absolute to value and pass path parameters and search data through their dedicated options. Link determines activity from the destination pathname by default, can compare search parameters inclusively, and can apply activeProps when the current location matches.",
+  "syntax": "<Link to=\"/route\" params={...} search={...} activeOptions={{ exact, includeSearch, includeHash }} activeProps={...} />",
+  "parameters": [
+   {
+    "name": "to",
+    "type": "string",
+    "description": "Destination route path; do not place path, hash, or search parameters inside it."
+   },
+   {
+    "name": "params",
+    "type": "object | (prevParams) => newParams",
+    "description": "Path-parameter object or updater function."
+   },
+   {
+    "name": "search",
+    "type": "object | (prevSearch) => newSearch",
+    "description": "Search-parameter object or updater function."
+   },
+   {
+    "name": "activeOptions",
+    "type": "{ exact?: boolean; includeSearch?: boolean; includeHash?: boolean }",
+    "description": "Controls exactness and whether search or hash values participate in active matching."
+   }
+  ],
+  "returns": "A rendered navigation link that updates the URL and exposes active or inactive styling props based on the current location.",
+  "example": {
+   "title": "Typed link with search-aware active styling",
+   "code": "import { Link } from '@tanstack/react-router'\n\nexport function Navigation() {\n  return (\n    <nav>\n      <Link\n        to=\"/products\"\n        search={{ category: 'books' }}\n        activeOptions={{ includeSearch: true }}\n        activeProps={{ className: 'active' }}\n      >\n        Books\n      </Link>\n    </nav>\n  )\n}",
+   "language": "tsx",
+   "explanation": "This typed link targets the products route, supplies a search value, and applies activeProps when the current URL inclusively matches that search."
+  },
+  "useCases": [
+   {
+    "title": "Create route-safe links",
+    "scenario": "Application navigation"
+   },
+   {
+    "title": "Update query-string state",
+    "scenario": "Filtered lists and pagination"
+   },
+   {
+    "title": "Style the current route",
+    "scenario": "Menus and breadcrumbs"
+   },
+   {
+    "title": "Choose exact or inclusive activity",
+    "scenario": "Parent and child routes"
+   }
+  ],
+  "related": [
+   "Link",
+   "activeOptions",
+   "activeProps",
+   "inactiveProps",
+   "params",
+   "search",
+   "hash",
+   "useSearch"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you build a typed link with search parameters?",
+    "answer": "Use Link with a typed to destination and pass query data through search. Path parameters belong in params, while activeProps can add styling when the destination matches the current location.",
+    "followUp": "How would you preserve existing query values while changing one? Pass search a function that receives the previous search and returns a new object, typically by spreading the previous values before overriding one field."
+   },
+   {
+    "question": "What determines whether a Link is active?",
+    "answer": "The link is active when its resulting pathname matches the current route; by default, a pathname prefix is sufficient. If search values are supplied, they are checked as an inclusive match unless activeOptions changes that behavior.",
+    "followUp": "How can a link ignore query-string differences? Omit search from the link or configure activeOptions so search matching is disabled."
+   },
+   {
+    "question": "Which options control active-link behavior?",
+    "answer": "Use activeOptions to control matching details. The documented options include exact for child-route behavior, includeSearch for query matching, and includeHash for hash matching; activeProps and inactiveProps can style the result.",
+    "followUp": "When would exact be useful? It prevents a parent-route link from remaining active while a descendant route is displayed."
+   }
+  ],
+  "keyPoints": [
+   "Use activeOptions to customize the conditions under which a link is considered active.",
+   "Set exact to true when the link should be active only at the destination route, excluding child routes.",
+   "includeSearch enables active matching against the search object using inclusive comparison.",
+   "Explicit undefined search properties can require that those keys be absent from the current URL.",
+   "Use the search prop to create or update query parameters through a link."
+  ],
+  "gotchas": [
+   "Keep path parameters, search parameters, and hashes in params, search, and hash respectively; embedding them in to is unsupported.",
+   "Search matching is inclusive by default, so extra current search parameters do not make a link inactive. Configure activeOptions when exact search matching is required.",
+   "A differing hash does not affect active status unless includeHash is enabled."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Search parameters::Navigation blocking": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/guide/navigation-blocking",
+  "sourceTitle": "Navigation Blocking | TanStack Router Docs",
+  "summary": "Navigation blocking prevents transitions away from a route, such as when an editor has unsaved work. Use a blocker predicate to decide when to pause navigation and custom resolver UI to let the user leave or stay.",
+  "explanation": "TanStack Router can pause navigation through useBlocker when shouldBlockFn returns true. The predicate receives current and next locations, including route IDs, params, and search values; withResolver lets custom UI decide whether to proceed or reset. Browser unloads use the generic confirmation dialog, and confirmed unloads bypass blockers.",
+  "syntax": "useBlocker({ shouldBlockFn, withResolver, enableBeforeUnload })",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "UseBlockerOptions",
+    "description": "Required options object containing the blocking predicate and optional resolver and unload settings."
+   },
+   {
+    "name": "shouldBlockFn",
+    "type": "(location: ShouldBlockFnLocation) => boolean | Promise<boolean>",
+    "description": "Receives current and next locations and returns whether navigation should be blocked; may be asynchronous."
+   },
+   {
+    "name": "withResolver",
+    "type": "boolean",
+    "description": "Enables use of the resolver returned by the hook for custom confirmation UI."
+   }
+  ],
+  "returns": "A blocker object exposing navigation state and, when resolver mode is enabled, controls such as proceed and reset.",
+  "example": {
+   "title": "Block leaving an editor",
+   "code": "import { useBlocker } from '@tanstack/react-router'\n\nexport function Editor() {\n  const blocker = useBlocker({\n    shouldBlockFn: ({ current, next }) =>\n      current.routeId === '/editor' && current.search.dirty === true &&\n      next.routeId !== '/editor',\n    withResolver: true,\n  })\n\n  return blocker.status === 'blocked' ? (\n    <div role=\"dialog\">\n      <p>Unsaved changes. Leave this page?</p>\n      <button onClick={blocker.proceed}>Leave</button>\n      <button onClick={blocker.reset}>Stay</button>\n    </div>\n  ) : null\n}",
+   "language": "tsx",
+   "explanation": "Blocks leaving the editor when its validated search state marks the work as dirty, then lets the user continue or cancel."
+  },
+  "useCases": [
+   {
+    "title": "Protect unsaved work",
+    "scenario": "A form or editor has changes that have not been saved."
+   },
+   {
+    "title": "Protect an in-progress workflow",
+    "scenario": "A payment or other multi-step operation must finish before leaving."
+   },
+   {
+    "title": "Conditional destination blocking",
+    "scenario": "A route should block only selected destinations or search states."
+   }
+  ],
+  "related": [
+   "useBlocker",
+   "shouldBlockFn",
+   "withResolver",
+   "enableBeforeUnload",
+   "proceed",
+   "reset",
+   "blocker status",
+   "current"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you block navigation conditionally?",
+    "answer": "Use useBlocker with a shouldBlockFn predicate. Return true when the current and next locations match the condition that should pause navigation, such as leaving a dirty editor.",
+    "followUp": "How can the application present its own confirmation UI? Set withResolver so the hook exposes control for the UI to call proceed or reset."
+   },
+   {
+    "question": "What information can the blocking predicate use?",
+    "answer": "The predicate can inspect current and next location data, including routeId, fullPath, params, and search. This lets blocking depend on both the destination and search state.",
+    "followUp": "How would you block only one destination? Compare next.fullPath or next.search values inside shouldBlockFn rather than blocking every navigation."
+   },
+   {
+    "question": "How are multiple blockers and unloads handled?",
+    "answer": "Blockers are evaluated asynchronously and sequentially. A blocker that allows navigation lets later blockers run, while a blocker that cancels stops the remaining blocker functions.",
+    "followUp": "What happens during a browser refresh? The browser displays its generic leave dialog; confirming it bypasses all router blockers."
+   }
+  ],
+  "keyPoints": [
+   "Navigation blocking pauses a route transition before it completes.",
+   "A dirty form or editor is a standard reason to protect the current route.",
+   "Multiple blockers run asynchronously in sequence rather than all deciding independently at once.",
+   "The router adds blockers around the underlying history API, so protected transitions are paused.",
+   "TanStack Router supports both hook-based logic and component-based blocking approaches."
+  ],
+  "gotchas": [
+   "In-app blockers do not provide a custom dialog for browser unload actions; those actions use the browser's generic leave confirmation.",
+   "Returning false from a blocker cancels navigation, while a true result allows the remaining blockers to run."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Search parameters::Search middleware": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/guide/search-params",
+  "sourceTitle": "Search Params | TanStack Router Docs",
+  "summary": "Search middleware transforms query parameters before links are generated and after navigation validation. TanStack Router provides retainSearchParams for preserving keys and stripSearchParams for removing keys or default-valued entries.",
+  "explanation": "Search middleware transforms validated search parameters while generating links for a route or its descendants, and also runs during navigation. Use retainSearchParams to preserve selected or all keys, and stripSearchParams to remove selected keys or values matching defaults.",
+  "syntax": "search: { middlewares: [retainSearchParams(...), stripSearchParams(...)] }",
+  "parameters": [
+   {
+    "name": "retainSearchParams input",
+    "type": "true | string[]",
+    "description": "Whether to retain every search parameter or an array of parameter names to retain."
+   },
+   {
+    "name": "stripSearchParams input",
+    "type": "true | string[] | Partial<TSearchSchema>",
+    "description": "Whether to strip all parameters, an array of optional parameter names, or values matching a partial search object."
+   }
+  ],
+  "returns": "A transformed search-parameter object used to generate links and process navigation.",
+  "example": {
+   "title": "Retain selected parameters and strip defaults",
+   "code": "import { createFileRoute } from '@tanstack/react-router'\nimport { retainSearchParams, stripSearchParams } from '@tanstack/router-core'\n\nconst searchSchema = {\n  rootValue: '',\n  page: 1,\n}\n\nexport const Route = createFileRoute('/')({\n  validateSearch: searchSchema,\n  search: {\n    middlewares: [\n      retainSearchParams(['rootValue']),\n      stripSearchParams({ page: 1 }),\n    ],\n  },\n})",
+   "language": "typescript",
+   "explanation": "This route keeps rootValue in descendant links and removes page when it equals its default value."
+  },
+  "useCases": [
+   {
+    "title": "Retain shared context",
+    "scenario": "A root-level filter or tenant key must remain available when navigating to descendant routes."
+   },
+   {
+    "title": "Strip default values",
+    "scenario": "Pagination or sorting values should disappear from URLs when they equal schema defaults."
+   },
+   {
+    "title": "Chain transformations",
+    "scenario": "Several normalization rules must apply to every generated descendant link."
+   }
+  ],
+  "related": [
+   "search.middlewares",
+   "retainSearchParams",
+   "stripSearchParams",
+   "validateSearch",
+   "search parameters"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When does search middleware run?",
+    "answer": "Search middleware transforms search parameters when generating links for a route or its descendants. It also runs after search validation during navigation, so the resulting query string is consistently normalized.",
+    "followUp": "How are multiple middleware functions applied? They are chained in order; each middleware receives the current search or the result passed through by the preceding middleware."
+   },
+   {
+    "question": "How does retainSearchParams differ from stripSearchParams?",
+    "answer": "retainSearchParams accepts true or a list of keys. true keeps every search parameter, while a key list limits retention to the named parameters.",
+    "followUp": "How would you retain one parameter while removing a default page value? Chain retainSearchParams with stripSearchParams in the route's middleware array."
+   },
+   {
+    "question": "What forms can stripSearchParams accept?",
+    "answer": "stripSearchParams can receive true, a list of keys, or an object matching part of the input search schema. An object removes values that deeply equal the configured defaults, which is useful for compact URLs.",
+    "followUp": "What restriction applies to list-based stripping? Only optional search parameters may be named, because required parameters must remain valid."
+   }
+  ],
+  "keyPoints": [
+   "Middleware changes the search object used to generate links belonging to a route and its descendants.",
+   "The same transformations are applied during navigation after validation, keeping generated URLs consistent.",
+   "Retention can be global with true or selective with an array of parameter names.",
+   "Stripping supports a boolean, a list of keys, or an object describing values to remove.",
+   "Use object-based stripping to omit default-valued parameters and make URLs less verbose.",
+   "Several middleware operations can be composed in one route configuration."
+  ],
+  "gotchas": [
+   "A key-list passed to stripSearchParams can remove only optional search parameters; required keys cannot be listed.",
+   "retainSearchParams(true) preserves every search parameter, so use a key list when broad retention is undesirable.",
+   "Object-based stripping removes a parameter only when its value is deeply equal to the configured value."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Search parameters::Search validation": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/guide/search-params",
+  "sourceTitle": "Search Params | TanStack Router Docs",
+  "summary": "Validate route search parameters with validateSearch to turn parsed URL values into a typed object. Schemas can enforce constraints and provide defaults or fallbacks for missing or invalid input.",
+  "explanation": "Attach a schema to a route through validateSearch. TanStack Router passes the parsed search object through that schema; the resulting values become typed route search state, while schema defaults or fallbacks handle absent or invalid values. Read the validated result with the route’s useSearch hook.",
+  "syntax": "validateSearch: (rawSearchParams: unknown) => TSearchSchema",
+  "parameters": [
+   {
+    "name": "rawSearchParams",
+    "type": "Record<string, unknown>",
+    "description": "Raw, JSON-parsed search parameters supplied to the route validator."
+   },
+   {
+    "name": "validateSearch",
+    "type": "(rawSearchParams: unknown) => TSearchSchema",
+    "description": "The schema or validator configured on the route through validateSearch."
+   }
+  ],
+  "returns": "A validated, typed search object used as the route's search parameters; if validation throws, the route enters an error state.",
+  "example": {
+   "title": "Validated route search parameters",
+   "code": "import { createFileRoute } from '@tanstack/react-router'\nimport { z } from 'zod'\n\nconst searchSchema = z.object({\n  page: z.number().int().positive().catch(1),\n  category: z.string().default('all'),\n})\n\nexport const Route = createFileRoute('/products')({\n  validateSearch: searchSchema,\n  component: ProductsPage,\n})\n\nfunction ProductsPage() {\n  const { page, category } = Route.useSearch()\n  return <p>Page {page}: {category}</p>\n}",
+   "language": "tsx",
+   "explanation": "The route schema validates and types the search parameters while supplying safe values for missing or invalid input."
+  },
+  "useCases": [
+   {
+    "title": "Typed filtering and pagination",
+    "scenario": "A product listing needs typed page, category, sorting, and filter values from bookmarked URLs."
+   },
+   {
+    "title": "Runtime URL validation",
+    "scenario": "An application must reject malformed query values or replace them with safe values."
+   },
+   {
+    "title": "Shared route search state",
+    "scenario": "Several nested routes need consistent query state such as theme, locale, or debugging flags."
+   }
+  ],
+  "related": [
+   "validateSearch",
+   "useSearch",
+   "SearchSchemaInput",
+   "RouteOptions",
+   "JSON-first Search Params"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is validateSearch used for?",
+    "answer": "validateSearch receives the raw search parameters and returns the validated search object. Its return type is inferred through the router, so route consumers receive typed values.",
+    "followUp": "What happens when validation throws? The route enters an error state, and the error is thrown during rendering; recoverable URL input should use schema fallbacks where appropriate."
+   },
+   {
+    "question": "How should defaults and optional values differ?",
+    "answer": "A schema can enforce constraints such as numeric bounds, allowed enum values, and required fields. Defaults provide values for missing input, while fallbacks can also protect against invalid input.",
+    "followUp": "How would you preserve a truly absent value? Use an optional schema field instead of assigning a default, then handle its possible undefined value in consumers."
+   },
+   {
+    "question": "How do components consume validated search parameters?",
+    "answer": "Use the route’s useSearch hook to read the validated search state in its component. The values are typed according to the schema attached to that route.",
+    "followUp": "Can validated search values be used outside components? The documentation describes useSearch for route components and also for accessing validated search parameters elsewhere in the application."
+   }
+  ],
+  "keyPoints": [
+   "A route’s validateSearch option receives the already JSON-parsed search object before validation.",
+   "Validation returns the typed search shape that the route exposes to the rest of the application.",
+   "Define search validation directly in the route configuration with validateSearch.",
+   "The underlying search-parameter system supports JSON-serializable values, including structured data.",
+   "At the URL boundary, top-level search parameters remain flat and URLSearchParams-like.",
+   "Read the validated, typed values with the route’s useSearch hook."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Search parameters::Structural sharing of search": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/guide/render-optimizations",
+  "sourceTitle": "Render Optimizations",
+  "summary": "Structural sharing preserves references for unchanged search data. Combined with a `useSearch` selector, it helps avoid rerenders when unrelated query-string values change.",
+  "explanation": "Structural sharing reuses unchanged references in router state. With a fine-grained useSearch selector, changing one query parameter can replace only that parameter while preserving unrelated selected data, so components subscribed to the unchanged portion need not rerender. It is available globally through router configuration or locally on the hook.",
+  "syntax": "createRouter({ routeTree, defaultStructuralSharing: true })\nRoute.useSearch({ select: (search) => selected, structuralSharing: true })",
+  "parameters": [
+   {
+    "name": "defaultStructuralSharing",
+    "type": "boolean",
+    "description": "The router configuration option that enables structural sharing by default for fine-grained selectors."
+   },
+   {
+    "name": "select",
+    "type": "(search: TFullSearchSchema) => TSelected",
+    "description": "A function that selects the search subset returned by the hook."
+   },
+   {
+    "name": "structuralSharing",
+    "type": "boolean",
+    "description": "Whether structural sharing is enabled for the selected hook result."
+   }
+  ],
+  "returns": "A selected search value whose unchanged JSON-compatible portions can retain their references across rerenders.",
+  "example": {
+   "title": "Preserve selected search references",
+   "code": "import { createRouter } from '@tanstack/react-router'\n\nconst router = createRouter({\n  routeTree,\n  defaultStructuralSharing: true,\n})\n\nfunction Details() {\n  const search = Route.useSearch({\n    select: ({ foo }) => ({ foo }),\n    structuralSharing: true,\n  })\n\n  return <span>{search.foo}</span>\n}",
+   "language": "tsx",
+   "explanation": "Enable structural sharing and select only the search value this component needs. Changing another parameter can then preserve the selected reference and avoid an unnecessary rerender."
+  },
+  "useCases": [
+   {
+    "title": "Keep unrelated details stable",
+    "scenario": "A details view reads `foo` while pagination or another query parameter changes."
+   },
+   {
+    "title": "Subscribe to a focused search subset",
+    "scenario": "A component needs only a small part of a large route search schema."
+   },
+   {
+    "title": "Set a router-wide default",
+    "scenario": "An application wants consistent fine-grained selector behavior across routes."
+   }
+  ],
+  "related": [
+   "useSearch",
+   "select",
+   "defaultStructuralSharing",
+   "structuralSharing",
+   "partial subscriptions",
+   "RouterOptions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does structural sharing do for search parameters?",
+    "answer": "Structural sharing preserves references for unchanged portions of router state between renders. For example, changing only `bar` can keep `search.foo` referentially stable while replacing `search.bar`.",
+    "followUp": "How would you limit rerenders to one search subset? Use `select` on `Route.useSearch` and enable structural sharing for the selected result."
+   },
+   {
+    "question": "How can structural sharing be enabled?",
+    "answer": "Set `defaultStructuralSharing: true` in `createRouter` to enable it for fine-grained selectors throughout the router. Alternatively, pass `structuralSharing: true` to the relevant `useSearch` call.",
+    "followUp": "How can one route opt out when the global default is enabled? Pass `structuralSharing: false` for that hook usage."
+   },
+   {
+    "question": "What restriction applies to selected values?",
+    "answer": "The selected value must be JSON-compatible because structural sharing compares and reuses JSON-like data. Returning class instances from a selector is not supported when the option is enabled.",
+    "followUp": "What should be done if a selector needs a non-JSON value under a global default? Disable structural sharing for that specific hook call."
+   }
+  ],
+  "keyPoints": [
+   "The optimization reuses unchanged object or value references instead of recreating the whole search result on every navigation.",
+   "If navigation changes only `bar`, consumers of `foo` can retain the same reference while `bar` receives the new value.",
+   "Use `select` to subscribe a component to only the router-state subset it needs.",
+   "The feature can be configured as a router-wide default or enabled for an individual hook."
+  ],
+  "gotchas": [
+   "Structural sharing is disabled by default, so explicitly enable it globally or on the individual hook when relying on this optimization.",
+   "A selector using structural sharing must return JSON-compatible data; class instances and other non-JSON values are unsuitable."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Search parameters::Typed navigation": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/guide/navigation",
+  "sourceTitle": "Navigation",
+  "summary": "Navigate between TanStack Router routes with compiler-checked parameters. Supply query values through the typed `search` option instead of interpolating them into the destination.",
+  "explanation": "TanStack Router derives navigation types from the route tree. Define a route's validated search shape, then provide query values through the Link or navigation API's search option rather than embedding them in the destination string.",
+  "syntax": "<Link to=\"/target\" params={...} search={...} hash={...} />\nuseNavigate()({ to: '/target', params: ..., search: ..., hash: ... })",
+  "parameters": [
+   {
+    "name": "from",
+    "type": "string",
+    "description": "Optional route ID or path used to provide contextual type inference and autocomplete."
+   },
+   {
+    "name": "to",
+    "type": "string",
+    "description": "Destination route path; dynamic values must not be interpolated here."
+   },
+   {
+    "name": "params",
+    "type": "object | function",
+    "description": "Path parameters supplied as an object or updater function."
+   },
+   {
+    "name": "search",
+    "type": "object | function",
+    "description": "Query parameters supplied as an object or updater function."
+   },
+   {
+    "name": "hash",
+    "type": "string | function",
+    "description": "Hash value supplied separately from the destination path."
+   }
+  ],
+  "returns": "A typed navigation target that updates the URL and route state.",
+  "example": {
+   "title": "Typed search-parameter navigation",
+   "code": "import { createRootRoute, createRoute, createRouter, Link } from '@tanstack/react-router'\n\nconst rootRoute = createRootRoute()\nconst invoicesRoute = createRoute({\n  getParentRoute: () => rootRoute,\n  path: '/invoices',\n  validateSearch: (search: Record<string, unknown>) => ({\n    page: Number(search.page ?? 1),\n  }),\n  component: () => (\n    <Link to=\"/invoices\" search={{ page: 2 }}>\n      Page 2\n    </Link>\n  ),\n})\n\nconst routeTree = rootRoute.addChildren([invoicesRoute])\nconst router = createRouter({ routeTree })\ncreateRoot(document.getElementById('root')!).render(\n  <RouterProvider router={router} />,\n)",
+   "language": "tsx",
+   "explanation": "A typed Link supplies the validated search parameter through the route's search type."
+  },
+  "useCases": [
+   {
+    "title": "Pagination",
+    "scenario": "A paginated list keeps its current page in the URL while links change pages."
+   },
+   {
+    "title": "Filterable views",
+    "scenario": "A filtered view shares query state through bookmarks and browser navigation."
+   },
+   {
+    "title": "Incremental search updates",
+    "scenario": "A route changes one query field while preserving the rest of the current URL state."
+   }
+  ],
+  "related": [
+   "ToOptions",
+   "Link",
+   "useNavigate",
+   "router.navigate",
+   "validateSearch",
+   "useSearch",
+   "params",
+   "hash"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How are search parameters supplied during typed navigation?",
+    "answer": "Use the navigation API's `search` option to pass query values. It accepts either a search object or a function that receives the previous search state and returns the next state.",
+    "followUp": "How would you preserve existing query values while changing one field? Use a functional `search` update and return the previous search object with the changed property overwritten."
+   },
+   {
+    "question": "What makes search-parameter navigation type-safe?",
+    "answer": "The route's search configuration determines the expected query shape. TypeScript checks the values supplied to `search` and reports missing required parameters.",
+    "followUp": "What enables stronger checking for a route's search values? Define validation with the route's `validateSearch` option so the route exposes a typed search result."
+   },
+   {
+    "question": "How do you preserve or modify search state during navigation?",
+    "answer": "Use `search={true}` on a Link when all current search parameters should be carried into the destination. For selective updates, use an object or updater function instead.",
+    "followUp": "How can a parameter be removed rather than retained? Set that parameter to `undefined` in the navigation update."
+   }
+  ],
+  "keyPoints": [
+   "The `search` option accepts either a query object or an updater function based on the prior search state.",
+   "The required search values depend on the origin and destination routes.",
+   "Search parameters act as URL-backed application state and should be given the correct types.",
+   "For declarative navigation, update query state through a Link's `search` prop.",
+   "Set `search` to `true` on a Link to retain every current search parameter.",
+   "Assign a search parameter `undefined` when the navigation should remove it."
+  ],
+  "gotchas": [
+   "Do not place path, hash, or search parameters inside `to`; use the dedicated `params`, `search`, and `hash` options.",
+   "Required search parameters must be supplied when navigating to a route that declares them."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

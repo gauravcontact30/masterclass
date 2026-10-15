@@ -1,0 +1,1812 @@
+{
+ "Operating::Local development": {
+  "sourceUrl": "https://docs.github.com/en/apps/creating-github-apps/writing-code-for-a-github-app/building-a-github-app-that-responds-to-webhook-events",
+  "sourceTitle": "Building a GitHub App that responds to webhook events",
+  "summary": "Use a webhook proxy such as Smee.io to give GitHub a reachable URL while forwarding deliveries to your local webhook handler. Run the proxy client with the channel URL and your localhost endpoint.",
+  "explanation": "A webhook proxy gives GitHub a reachable URL while your application continues listening on localhost. Configure that proxy URL as the app's webhook URL, then run the proxy client with a target such as your local webhook route so incoming deliveries are forwarded to your development machine.",
+  "syntax": "npx smee -u WEBHOOK_PROXY_URL -t http://localhost:3000/api/webhook",
+  "parameters": [
+   {
+    "name": "WEBHOOK_PROXY_URL",
+    "type": "URL",
+    "description": "The Smee channel URL that receives forwarded GitHub webhook payloads."
+   },
+   {
+    "name": "target",
+    "type": "URL",
+    "description": "The local HTTP endpoint that should receive forwarded webhook requests."
+   }
+  ],
+  "returns": "Forwarded webhook HTTP requests are delivered to the local target endpoint.",
+  "example": {
+   "title": "Forward GitHub webhooks locally",
+   "code": "npx smee -u WEBHOOK_PROXY_URL -t http://localhost:3000/api/webhook",
+   "language": "bash",
+   "explanation": "Starts a proxy that forwards GitHub webhook deliveries from the Smee channel to the locally running webhook handler."
+  },
+  "useCases": [
+   {
+    "title": "Receive GitHub events on localhost",
+    "scenario": "Developing a GitHub App locally"
+   },
+   {
+    "title": "Forward test deliveries",
+    "scenario": "Testing webhook handlers before deployment"
+   },
+   {
+    "title": "Route events to a codespace",
+    "scenario": "Working in a codespace"
+   }
+  ],
+  "related": [
+   "Smee.io",
+   "webhook proxy URL",
+   "webhook payload delivery service",
+   "ngrok",
+   "localtunnel",
+   "Hookdeck Console"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use a webhook proxy URL to route GitHub deliveries to a local computer or codespace.",
+   "Smee.io can provide the public proxy endpoint and forward the webhook payloads.",
+   "Create a Smee channel and copy its complete Webhook Proxy URL.",
+   "Run the Smee client with the proxy URL and the localhost route that handles webhook requests."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Operating::Logging and correlation": {
+  "sourceUrl": "https://docs.github.com/en/webhooks/webhook-events-and-payloads",
+  "sourceTitle": "Webhook events and payloads",
+  "summary": "GitHub sends X-GitHub-Delivery as a globally unique delivery identifier. Log it with the event and hook identifiers, then propagate it through processing to trace one webhook delivery end to end.",
+  "explanation": "GitHub places a globally unique delivery identifier in the X-GitHub-Delivery request header. Capture that value when the webhook arrives and carry it through logs, processing, and troubleshooting so one delivery remains traceable.",
+  "syntax": "X-GitHub-Delivery: <GUID>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Log a GitHub webhook delivery ID",
+   "code": "import express from \"express\";\n\nconst app = express();\napp.use(express.json());\n\napp.post(\"/webhook\", (req, res) => {\n  const deliveryId = req.header(\"X-GitHub-Delivery\");\n  console.log({ deliveryId, event: req.header(\"X-GitHub-Event\") });\n  res.sendStatus(200);\n});\n\napp.listen(3000);",
+   "language": "typescript",
+   "explanation": "Logs GitHub’s delivery GUID with the event name so request handling and later troubleshooting can be correlated."
+  },
+  "useCases": [
+   {
+    "title": "End-to-end request tracing",
+    "scenario": "Correlate ingress logs, asynchronous jobs, and downstream effects for one webhook delivery."
+   },
+   {
+    "title": "Failure investigation",
+    "scenario": "Match an application error to the corresponding GitHub delivery record."
+   },
+   {
+    "title": "Redelivery troubleshooting",
+    "scenario": "Compare a received request with GitHub’s recent-delivery details before redelivery."
+   }
+  ],
+  "related": [
+   "X-GitHub-Delivery",
+   "X-GitHub-Hook-ID",
+   "X-GitHub-Event",
+   "delivery GUID",
+   "Recent deliveries"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Read X-GitHub-Delivery from every incoming request and record it as the delivery correlation ID.",
+   "Keep the hook ID alongside the delivery ID to distinguish the configured webhook from one particular delivery.",
+   "Log the event name with the delivery ID so operators can identify what triggered the request."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Operating::Monitoring delivery": {
+  "sourceUrl": "https://docs.github.com/en/webhooks/testing-and-troubleshooting-webhooks/troubleshooting-webhooks",
+  "sourceTitle": "Troubleshooting webhooks",
+  "summary": "Monitor webhook delivery records for non-OK statuses and unexpected missing events. Separate failed attempts from events for which GitHub made no delivery attempt.",
+  "explanation": "Monitor recent webhook delivery records, treating non-OK statuses as failures and an absent corresponding delivery as a possible event-delivery problem. Alerting thresholds and scheduling are application decisions.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Alert on webhook delivery health",
+   "code": "const recentDeliveries = await github.webhooks.listDeliveries({owner, repo, hook_id});\nconst failed = recentDeliveries.filter(d => d.status !== \"OK\");\nif (failed.length / recentDeliveries.length > 0.05 || recentDeliveries.length === 0) {\n  alert(\"Webhook delivery health degraded\");\n}",
+   "language": "typescript",
+   "explanation": "Inspect recent delivery records and alert when the failure ratio exceeds a chosen threshold or no deliveries are present."
+  },
+  "useCases": [
+   {
+    "title": "Failure-rate alerting",
+    "scenario": "Page an on-call engineer when the proportion of recent delivery records with non-OK status exceeds the service threshold."
+   },
+   {
+    "title": "Missing-event detection",
+    "scenario": "Detect an event that has no matching recent-delivery record and investigate configuration or platform timing."
+   },
+   {
+    "title": "Delivery troubleshooting",
+    "scenario": "Use delivery history during incident response to distinguish unsuccessful attempts from absent attempts."
+   }
+  ],
+  "related": [
+   "recent deliveries log",
+   "status",
+   "failed delivery",
+   "webhook event subscription"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you identify failed webhook deliveries?",
+    "answer": "Use the webhook's recent deliveries log and classify records whose status is not OK as failures. A delivery error means GitHub attempted delivery but it was unsuccessful.",
+    "followUp": "How would you distinguish a failed attempt from no attempt? A delivery record with an error shows an unsuccessful attempt; no corresponding record means GitHub did not attempt delivery."
+   },
+   {
+    "question": "How do you investigate a missing delivery?",
+    "answer": "Check whether the recent deliveries log contains a record corresponding to the event. If it does not, investigate timing, event location, and whether the webhook subscribes to that event.",
+    "followUp": "What should be checked before escalating? Wait briefly, confirm the event occurred where the webhook is configured, and verify the subscription includes that event."
+   },
+   {
+    "question": "How would you monitor webhook delivery health?",
+    "answer": "A monitoring system can calculate the proportion of recent records whose status is not OK and alert when that proportion rises. It should separately alert on an unexpected absence of corresponding delivery records.",
+    "followUp": "Why keep these alerts separate? A failure-rate alert covers attempted but unsuccessful deliveries, whereas an absence alert detects events for which no attempt was made."
+   }
+  ],
+  "keyPoints": [
+   "Treat a delivery as failed when its status is anything other than OK.",
+   "An error in the recent-deliveries log indicates that the platform attempted delivery but it did not succeed.",
+   "A missing matching record indicates no delivery attempt, which is distinct from an attempted delivery that failed.",
+   "When an expected event is absent, verify that the webhook subscription includes that event.",
+   "Recheck after a short delay because delivery records may not be visible immediately."
+  ],
+  "gotchas": [
+   "An absent delivery does not necessarily mean a failed request: first verify that the event was configured and allow time for the delivery log to update.",
+   "Avoid alerting immediately on a missing event; the documentation says delivery records may appear after a delay."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Operating::Outbound webhooks": {
+  "sourceUrl": "https://docs.stripe.com/webhooks?locale=en-GB",
+  "sourceTitle": "Receive Stripe events in your webhook endpoint",
+  "summary": "Receive signed Stripe events at an HTTPS endpoint, verify each request with the raw payload, Stripe-Signature header, and endpoint secret, then acknowledge it promptly. Stripe retries undelivered events automatically, so processing must tolerate duplicates.",
+  "explanation": "Stripe sends events to an HTTPS endpoint and signs each delivery in the Stripe-Signature header. Read the raw body, verify it with the endpoint secret through constructEvent(), process the event, and return a successful 2xx response promptly; failed or delayed deliveries are retried automatically.",
+  "syntax": "stripe.webhooks.constructEvent(requestBody, signature, endpointSecret)",
+  "parameters": [
+   {
+    "name": "requestBody",
+    "type": "string",
+    "description": "The exact raw request body sent by Stripe."
+   },
+   {
+    "name": "signature",
+    "type": "string",
+    "description": "The Stripe-Signature header value."
+   },
+   {
+    "name": "endpointSecret",
+    "type": "string",
+    "description": "The secret associated with the webhook endpoint."
+   }
+  ],
+  "returns": "A verified Stripe Event from constructEvent(); the endpoint should return a successful HTTP 2xx response after accepting it.",
+  "example": {
+   "title": "Verify and acknowledge a webhook",
+   "code": "import Stripe from \"stripe\";\n\nconst stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);\nconst endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;\n\nexport async function POST(request: Request) {\n  const body = await request.text();\n  const signature = request.headers.get(\"stripe-signature\");\n\n  if (!signature) return new Response(\"Missing signature\", { status: 400 });\n\n  try {\n    const event = stripe.webhooks.constructEvent(\n      body,\n      signature,\n      endpointSecret,\n    );\n    console.log(event.type);\n    return new Response(\"ok\", { status: 200 });\n  } catch {\n    return new Response(\"Invalid signature\", { status: 400 });\n  }\n}",
+   "language": "typescript",
+   "explanation": "Reads the unmodified request body, verifies the Stripe signature with the endpoint secret, then acknowledges a valid event."
+  },
+  "useCases": [
+   {
+    "title": "Receive event notifications",
+    "scenario": "A payment provider needs to notify an application about completed payments or other event types."
+   },
+   {
+    "title": "Recover from delivery failures",
+    "scenario": "An endpoint may be unavailable or slow during deployment or an incident."
+   },
+   {
+    "title": "Build idempotent consumers",
+    "scenario": "The same event can arrive more than once because of retries or operator resends."
+   },
+   {
+    "title": "Manually resend events",
+    "scenario": "A team needs to replay a specific event while diagnosing an integration."
+   }
+  ],
+  "related": [
+   "Stripe-Signature",
+   "constructEvent()",
+   "parseEventNotification()",
+   "endpoint secret",
+   "thin events",
+   "snapshot events",
+   "Stripe CLI",
+   "Webhook endpoint"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you verify an incoming webhook?",
+    "answer": "Read the request body as raw text, obtain the Stripe-Signature header, and call constructEvent() with the body, header, and endpoint secret. Reject verification failures rather than processing the event.",
+    "followUp": "Why can JSON parsing break verification? The signature is calculated over the original bytes, so serialization changes can make an otherwise valid event fail verification."
+   },
+   {
+    "question": "How should a webhook endpoint handle slow processing?",
+    "answer": "Return a successful 2xx response quickly after accepting the event. Stripe retries when the endpoint returns a non-2xx response or does not respond within a reasonable time, so longer work should be handled asynchronously.",
+    "followUp": "What should happen if processing fails after acknowledgement? Persist the event and use a durable worker or replay mechanism; acknowledging prematurely without durable storage can lose work."
+   },
+   {
+    "question": "How do you make webhook processing safe under retries?",
+    "answer": "Treat deliveries as potentially repeated. Store an event identifier or equivalent processing record, skip events already handled, and return 200 for duplicates so automatic retries stop.",
+    "followUp": "What changes on a retry? Stripe creates a new signature and timestamp for each delivery attempt, so verification must run for every received request."
+   }
+  ],
+  "keyPoints": [
+   "The signature header authenticates the event source and helps detect payload modification.",
+   "Unavailable endpoints receive automatic retries for undelivered events for up to three days.",
+   "Manually processing an event does not cancel its scheduled automatic retries.",
+   "Operators can manually resend events from the Dashboard or with the Stripe CLI.",
+   "For thin events in production, typed event notification handlers are preferred because they can handle signature verification automatically."
+  ],
+  "gotchas": [
+   "Design processing to be idempotent: recognize already-processed events and return 200 so Stripe stops retrying them.",
+   "A retry is a new delivery attempt with a newly generated timestamp and signature; do not assume the original signature remains valid."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Operating::Versioning": {
+  "sourceUrl": "https://docs.stripe.com/webhooks/versioning",
+  "sourceTitle": "Handle webhook versioning",
+  "summary": "Stripe assigns each webhook endpoint an API version that controls its event-payload schema. Migrate safely by creating a second versioned endpoint, routing deliveries explicitly, and switching processing only after validation.",
+  "explanation": "Stripe assigns each webhook endpoint an API version that determines the structure of delivered event payloads. To migrate safely, create a second endpoint with the target version, distinguish deliveries using a query parameter, process only the intended version, and acknowledge ignored deliveries with the status recommended by Stripe.",
+  "syntax": "POST /webhooks?version=2024-04-10",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "string",
+    "description": "Destination URL for the webhook endpoint; during migration, reuse the original URL with a distinguishing query parameter."
+   },
+   {
+    "name": "enabled_events",
+    "type": "array",
+    "description": "Event types enabled for the endpoint; keep them the same as the original endpoint during migration."
+   },
+   {
+    "name": "api_version",
+    "type": "string",
+    "description": "Target API version used to structure event payloads."
+   }
+  ],
+  "returns": "HTTP 200 acknowledges an intentionally ignored newer-version event and prevents delivery retries; HTTP 400 for an ignored older-version event asks Stripe to retry it.",
+  "example": {
+   "title": "Version-aware webhook migration",
+   "code": "import express from \"express\";\n\nconst app = express();\napp.use(express.json());\n\napp.post(\"/webhooks\", (req, res) => {\n  const version = req.query.version;\n  if (version === \"2024-04-10\") {\n    return res.status(200).send(\"ignored\");\n  }\n  res.status(200).send(\"processed\");\n});\n\napp.listen(3000);",
+   "language": "typescript",
+   "explanation": "Routes deliveries by a version query parameter, processing the old version and acknowledging the newer version without processing it during migration."
+  },
+  "useCases": [
+   {
+    "title": "Zero-gap endpoint migration",
+    "scenario": "A Stripe integration is upgrading its API version and must continue receiving events during the transition."
+   },
+   {
+    "title": "Schema compatibility testing",
+    "scenario": "A receiver needs to run old and new payload handlers side by side before cutover."
+   },
+   {
+    "title": "Using thin events",
+    "scenario": "An integration wants stable notification envelopes across API and SDK upgrades."
+   }
+  ],
+  "related": [
+   "thin events",
+   "snapshot events",
+   "event destination configuration",
+   "API version",
+   "Stripe library"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Stripe determine the payload format sent to a webhook endpoint?",
+    "answer": "Each webhook endpoint has its own API version, and Stripe structures event payloads according to that endpoint version. Upgrading the integration therefore requires upgrading the webhook endpoint as well.",
+    "followUp": "How would you migrate without a cutover gap? Create a second endpoint using the target version, distinguish the two deliveries with a query parameter, process only the selected version, then remove the old endpoint after validation."
+   },
+   {
+    "question": "What is a safe procedure for upgrading an existing webhook endpoint?",
+    "answer": "Create a new endpoint using the same events and a URL that includes a distinguishing query parameter. Set its api_version to the target version, update the SDK where required, and switch processing after testing.",
+    "followUp": "What should happen to the duplicate delivery during migration? The endpoint that should not process the event must return the status Stripe specifies, preventing retries while the intended endpoint handles it."
+   },
+   {
+    "question": "What alternative does Stripe document for avoiding webhook versioning?",
+    "answer": "Thin events avoid versioned notification payloads. Both API v1 and API v2 resources can generate them, and the integration can upgrade its API version or SDK without changing the event destination configuration.",
+    "followUp": "When should an integration prefer thin events? Use them when keeping notification envelopes stable across API-version or SDK upgrades is more valuable than receiving snapshot event payloads."
+   }
+  ],
+  "keyPoints": [
+   "Versioning is configured per endpoint, so two endpoints receiving similar events can produce differently shaped payloads.",
+   "The endpoint's API version controls the schema Stripe uses for delivered event payloads.",
+   "An API-version upgrade must include the webhook endpoints; changing only the client integration leaves delivery schemas out of sync.",
+   "A parallel endpoint is the documented migration mechanism, allowing the target payload version to be tested before replacing the original.",
+   "Reuse the destination URL with a version marker in its query string so the receiver can identify which endpoint version produced each delivery.",
+   "When the SDK deserializes events, upgrade its version to match the new endpoint's API version."
+  ],
+  "gotchas": [
+   "During migration, acknowledge deliveries for the newer endpoint with HTTP 200 even when intentionally ignoring them; otherwise Stripe retries them.",
+   "After switching traffic, ignore events arriving at the old-version path rather than processing both copies.",
+   "With the .NET, Java, or Go SDK, keep the endpoint API version aligned with the SDK version so event deserialization works."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Processing reliably::Dead letter handling": {
+  "sourceUrl": "https://docs.github.com/en/webhooks/using-webhooks/handling-failed-webhook-deliveries",
+  "sourceTitle": "Handling failed webhook deliveries",
+  "summary": "GitHub does not automatically retry failed webhook deliveries. Fetch attempted deliveries, detect non-OK statuses, and explicitly redeliver failures so events are not silently lost.",
+  "explanation": "GitHub records unsuccessful webhook attempts and exposes them through its REST API. A scheduled script can fetch deliveries since its previous run, identify entries whose status is not OK, and request redelivery. Repeated failures should be investigated rather than treated as successfully handled.",
+  "syntax": "POST /repos/{owner}/{repo}/hooks/{hook_id}/deliveries/{delivery_id}/attempts",
+  "parameters": [
+   {
+    "name": "owner",
+    "type": "path parameter",
+    "description": "Repository owner."
+   },
+   {
+    "name": "repo",
+    "type": "path parameter",
+    "description": "Repository name."
+   },
+   {
+    "name": "hook_id",
+    "type": "path parameter",
+    "description": "Webhook identifier."
+   },
+   {
+    "name": "delivery_id",
+    "type": "path parameter",
+    "description": "Delivery identifier."
+   }
+  ],
+  "returns": "A successful API request initiates redelivery of the selected failed webhook delivery.",
+  "example": {
+   "title": "Redeliver a failed delivery",
+   "code": "const response = await fetch(\n  `https://api.github.com/repos/${owner}/${repo}/hooks/${hookId}/deliveries/${deliveryId}/ Redeliveries`,\n  { method: \"POST\", headers: { Authorization: `Bearer ${token}` } }\n);",
+   "language": "typescript",
+   "explanation": "This requests GitHub to redeliver a previously failed webhook delivery."
+  },
+  "useCases": [
+   {
+    "title": "Replay missed events",
+    "scenario": "Recover webhook deliveries after a temporary outage."
+   },
+   {
+    "title": "Automated failure detection",
+    "scenario": "Run a scheduled reliability check."
+   },
+   {
+    "title": "Failure investigation",
+    "scenario": "Diagnose an endpoint returning errors or timing out."
+   }
+  ],
+  "related": [
+   "GitHub REST API",
+   "webhook deliveries",
+   "recent deliveries log",
+   "redeliver"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Failed deliveries require explicit handling, either manually or through automation.",
+   "A monitoring script can retrieve attempted deliveries since its previous execution.",
+   "Classify a delivery as failed when its status is anything other than OK.",
+   "After identifying failures, use the REST API's redelivery operation to retry them.",
+   "Inspect the failure reason to diagnose the endpoint or network problem before retrying."
+  ],
+  "gotchas": [
+   "Do not assume failed deliveries will be retried automatically; your application or an operator must initiate redelivery.",
+   "Repeated redelivery failures indicate an underlying problem that needs investigation.",
+   "Ensure the endpoint responds with a successful 2xx status within GitHub's response-time limit."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Processing reliably::Idempotency keys": {
+  "sourceUrl": "https://docs.stripe.com/webhooks/migrate-snapshot-to-thin-events?locale=en-GB",
+  "sourceTitle": "Migrate from snapshot events to thin events",
+  "summary": "Use a stable event-derived idempotency key to ensure repeated or concurrently delivered webhook representations produce one effect. Stripe’s migration guidance uses snapshot_event to let thin and snapshot handlers deduplicate against the same key.",
+  "explanation": "Treat the event identifier as the idempotency key and persist it in a database with a uniqueness constraint before applying the effect. When the same logical event arrives through different webhook representations or is retried, both deliveries resolve to the same stored key, so only the first processing attempt performs the side effect and later attempts acknowledge it.",
+  "syntax": "CREATE TABLE event_idempotency (\n  idempotency_key TEXT PRIMARY KEY,\n  event_type TEXT NOT NULL,\n  processed_at INTEGER NOT NULL\n);",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Deduplicate webhook events by event ID",
+   "code": "const seen = new Set<string>();\n\nexport async function handleWebhook(event: { id: string; type: string }) {\n  if (seen.has(event.id)) return { status: 200, duplicate: true };\n  seen.add(event.id);\n  await processEvent(event);\n  return { status: 200, duplicate: false };\n}\n\nasync function processEvent(event: { id: string; type: string }) {\n  console.log(`Process ${event.type}: ${event.id}`);\n}",
+   "language": "typescript",
+   "explanation": "A minimal in-memory demonstration records the event ID before processing and acknowledges repeats without applying the effect again. Use a durable database with a unique key in production."
+  },
+  "useCases": [
+   {
+    "title": "Retry-safe event handling",
+    "scenario": "A webhook provider retries a delivery after a timeout or transient failure."
+   },
+   {
+    "title": "Cross-format deduplication",
+    "scenario": "Snapshot and thin webhook handlers run during a migration overlap."
+   },
+   {
+    "title": "Concurrent consumer coordination",
+    "scenario": "Several workers may receive or claim the same logical event concurrently."
+   }
+  ],
+  "related": [
+   "snapshot_event",
+   "event.id",
+   "event_type",
+   "processed_at",
+   "idempotency_key"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How should a webhook consumer prevent duplicate processing?",
+    "answer": "Use the event ID as the idempotency key and store it in an idempotency table with a primary-key constraint. Before processing, claim the key atomically; if it already exists, acknowledge the delivery without repeating the side effect.",
+    "followUp": "How would you handle snapshot and thin events during migration? Use the thin event's snapshot_event value, which contains the original snapshot event ID, so both handlers use the same deduplication key."
+   },
+   {
+    "question": "Which identifier should be used when two webhook event formats represent one action?",
+    "answer": "The shared key must represent the same logical event across both delivery formats. For snapshot events, the key is the event ID; for thin interop events, use snapshot_event so both paths converge on one record.",
+    "followUp": "What database property makes this safe under concurrent deliveries? A unique or primary-key constraint, combined with an atomic insert or equivalent claim operation, allows only one consumer to win the processing claim."
+   },
+   {
+    "question": "What state should a webhook consumer persist?",
+    "answer": "Create an idempotency table containing the key, event type, and processing timestamp, with the idempotency key as the primary key. This gives the consumer durable state for recognizing a previously claimed event.",
+    "followUp": "What should happen after a crash between claiming and completing the side effect? Use a durable processing-state or transactional design that permits safe recovery; the page's basic table establishes the deduplication key but does not specify a complete crash-recovery protocol."
+   }
+  ],
+  "keyPoints": [
+   "Choose one stable key for every representation of the same logical event; this makes concurrent handlers converge instead of applying the effect twice.",
+   "For thin interop events, derive the key from snapshot_event because it identifies the corresponding original snapshot event.",
+   "For snapshot events, use event.id directly as the deduplication key.",
+   "Persist processed keys in a database rather than relying only on process memory, so deduplication survives restarts and multiple workers.",
+   "Make the key the table's primary key, ensuring that one key maps to at most one processing record.",
+   "Recording the event type alongside the key provides context for auditing and diagnosing which webhook was claimed.",
+   "Store a processing timestamp so the deduplication record can be inspected and managed operationally."
+  ],
+  "gotchas": [
+   "If two event representations can describe the same logical event, using separate identifiers will not deduplicate them; use the shared original event identifier instead.",
+   "Migration overlap can produce duplicate logical deliveries, so deduplicate before either handler applies its effect."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Processing reliably::Ordering assumptions": {
+  "sourceUrl": "https://docs.stripe.com/webhooks",
+  "sourceTitle": "How to ensure security in Stripe webhooks?",
+  "summary": "Webhook events can arrive in a different order from generation. Build order-independent handlers, deduplicate by event ID, and retrieve related objects through the API when needed.",
+  "explanation": "Stripe webhook deliveries may not follow event-generation order. Make handlers order-independent, use event IDs for duplicate detection, and retrieve missing or related objects through the API when an event arrives before its predecessors.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Order-independent event handling",
+   "code": "const seen = new Set();\n\nasync function handleWebhook(event) {\n  if (seen.has(event.id)) return;\n  seen.add(event.id);\n\n  if (event.type === \"invoice.paid\") {\n    const invoice = await fetch(`/api/invoices/${event.data.object.id}`).then(r => r.json());\n    const subscription = await fetch(`/api/subscriptions/${invoice.subscription}`).then(r => r.json());\n    await fulfill(subscription, invoice);\n  }\n}\n\nasync function fulfill(subscription, invoice) {\n  console.log(`Fulfill ${subscription.id} for invoice ${invoice.id}`);\n}",
+   "language": "javascript",
+   "explanation": "Deduplicate by event ID, then retrieve current related objects instead of relying on webhook arrival order."
+  },
+  "useCases": [
+   {
+    "title": "Recover from prerequisite events arriving late",
+    "scenario": "A payment workflow receives `invoice.paid` before subscription or invoice-created notifications."
+   },
+   {
+    "title": "Prevent duplicate side effects",
+    "scenario": "Stripe retries a delivery after a timeout or transient failure."
+   },
+   {
+    "title": "Avoid timestamp-based sequencing",
+    "scenario": "Several events are generated within the same second."
+   }
+  ],
+  "related": [
+   "Event delivery behaviors",
+   "Event ordering",
+   "Event object",
+   "event IDs",
+   "invoice.paid",
+   "customer.subscription.created",
+   "invoice.created",
+   "charge.created"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Can webhook events be assumed to arrive in generation order?",
+    "answer": "No. Stripe explicitly says event delivery is not guaranteed to match event-generation order. A handler must therefore work correctly when a later event arrives first.",
+    "followUp": "How can a handler recover when prerequisite data is absent? Retrieve the missing related object through the API using identifiers in the received event."
+   },
+   {
+    "question": "How should duplicate webhook deliveries be detected?",
+    "answer": "Use the event ID to recognize duplicate deliveries. The event's created timestamp should not be used for either ordering decisions or determining whether processing already occurred.",
+    "followUp": "What if two events have the same timestamp? Treat them independently and deduplicate only by their event IDs."
+   },
+   {
+    "question": "What should a consumer do when a related event has not arrived?",
+    "answer": "For example, if `invoice.paid` arrives first, use its information to retrieve the invoice, charge, and subscription objects. This avoids making processing depend on earlier webhook deliveries.",
+    "followUp": "How should the handler behave if a retrieved object has a newer state? Base processing on the current object data and make the operation idempotent."
+   }
+  ],
+  "keyPoints": [
+   "Treat webhook delivery order as arbitrary; event generation order is not a contract.",
+   "Design each event handler so it can process its event without requiring earlier event types.",
+   "A timestamp may be identical for multiple events, so it cannot establish a unique sequence."
+  ],
+  "gotchas": [
+   "Event timestamps are not a reliable ordering or deduplication mechanism; distinct events can share a timestamp. Track event IDs instead.",
+   "When an event arrives before related events, do not wait for a presumed sequence; fetch the needed current objects from the API."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Processing reliably::Queueing the work": {
+  "sourceUrl": "https://docs.github.com/en/webhooks/using-webhooks/best-practices-for-using-webhooks",
+  "sourceTitle": "Best practices for using webhooks",
+  "summary": "Put webhook payloads on a queue and process them asynchronously. Acknowledge the delivery promptly so slow work does not block later webhook deliveries.",
+  "explanation": "Receive the webhook, enqueue its payload, and acknowledge it promptly. Process the queued work asynchronously so slow application logic does not delay later deliveries or cause the provider to treat the request as failed.",
+  "syntax": "POST /webhook",
+  "parameters": [],
+  "returns": "A 2XX HTTP response acknowledging receipt of the webhook.",
+  "example": {
+   "title": "Queue a webhook payload for background processing",
+   "code": "import express from \"express\";\n\nconst app = express();\napp.use(express.json());\n\nconst queue = [];\n\napp.post(\"/webhook\", (req, res) => {\n  queue.push(req.body);\n  res.sendStatus(202);\n});\n\nsetInterval(() => {\n  const payload = queue.shift();\n  if (payload) console.log(\"Processing\", payload);\n}, 1000);\n\napp.listen(3000);",
+   "language": "typescript",
+   "explanation": "The handler places each payload into a queue and immediately returns success; a background loop processes queued payloads later."
+  },
+  "useCases": [
+   {
+    "title": "Offload slow processing",
+    "scenario": "Payload handling includes database work, API calls, or other operations that may exceed the response deadline."
+   },
+   {
+    "title": "Absorb delivery bursts",
+    "scenario": "The endpoint must remain responsive while multiple webhook deliveries arrive close together."
+   },
+   {
+    "title": "Route events to workers",
+    "scenario": "Different event types require different background handlers."
+   }
+  ],
+  "related": [
+   "X-GitHub-Event",
+   "action",
+   "Hookdeck",
+   "Resque",
+   "RQ",
+   "RabbitMQ"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why put webhook work on a queue?",
+    "answer": "Use a queue to process webhook payloads asynchronously. Acknowledge the request as soon as the payload is accepted, then let background processing handle the work without blocking future deliveries.",
+    "followUp": "What timing constraint must the handler satisfy? It should send a 2XX response within 10 seconds of receiving the delivery."
+   },
+   {
+    "question": "How quickly should the webhook handler respond?",
+    "answer": "The endpoint should respond with a 2XX status within 10 seconds. Processing in the background keeps the request fast and prevents long-running work from delaying the response.",
+    "followUp": "What should happen if processing takes longer? Keep it outside the request path and let the worker continue after acknowledgement."
+   },
+   {
+    "question": "What should the application inspect before processing a payload?",
+    "answer": "Before processing, inspect the webhook's event type and action. GitHub identifies the event type with the X-GitHub-Event header, while the action is a top-level payload field.",
+    "followUp": "Why perform this check before queue processing? It routes only supported event variants to the appropriate worker logic."
+   }
+  ],
+  "keyPoints": [
+   "Use an asynchronous queue when payload handling could make the request slow.",
+   "Separate acknowledgement from execution: accept the delivery first, then run the work in a background consumer.",
+   "Background processing prevents one slow payload from holding up subsequent deliveries.",
+   "A queue can be provided by a hosted service or a language/library ecosystem, such as Hookdeck, Resque, RQ, or RabbitMQ."
+  ],
+  "gotchas": [
+   "Return a successful 2XX response within 10 seconds; otherwise the delivery may fail.",
+   "Validate the event type and action before dispatching queued work."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Processing reliably::Replay and backfill": {
+  "sourceUrl": "https://docs.stripe.com/events/manage-webhook-endpoints?locale=en-GB",
+  "sourceTitle": "Handle webhook event generation failures",
+  "summary": "After fixing an outage or bug, query Stripe’s undelivered events, anchored before the last successful delivery, then process the backlog idempotently. Stripe limits this recovery query to events from the last 30 days.",
+  "explanation": "Stripe backfill uses the Events API to identify events that failed delivery, anchored immediately before the outage and filtered to the endpoint’s event types. Process each event with durable state that prevents duplicate work; Stripe may still retry manually processed events, so already-completed events should return HTTP 200.",
+  "syntax": "GET /v1/events?ending_before={event_id}&types[]={event_type}&delivery_success=false",
+  "parameters": [
+   {
+    "name": "ending_before",
+    "type": "string",
+    "description": "Event ID successfully delivered immediately before the outage; anchors the missed-event window."
+   },
+   {
+    "name": "types",
+    "type": "array of strings",
+    "description": "Event types listened for by the webhook endpoint."
+   },
+   {
+    "name": "delivery_success",
+    "type": "boolean",
+    "description": "When false, returns events that failed delivery to at least one endpoint."
+   }
+  ],
+  "returns": "A list of matching events from the last 30 days; processing-state helpers return whether an event is already being handled or handled.",
+  "example": {
+   "title": "Find undelivered events",
+   "code": "curl https://api.stripe.com/v1/events \\\n  -u \"sk_test_...:\" \\\n  -d ending_before=evt_001 \\\n  -d 'types[]=payment_intent.succeeded' \\\n  -d delivery_success=false",
+   "language": "bash",
+   "explanation": "Lists recently failed deliveries before a known successful event so the backlog can be processed again."
+  },
+  "useCases": [
+   {
+    "title": "Recover an outage backlog",
+    "scenario": "A webhook endpoint was temporarily unavailable and missed events."
+   },
+   {
+    "title": "Backfill after a bug fix",
+    "scenario": "A handler bug was fixed and affected events must be run again."
+   },
+   {
+    "title": "Accelerate delivery recovery",
+    "scenario": "Automatic retries are too slow for urgent recovery."
+   }
+  ],
+  "related": [
+   "List Events API",
+   "automatic retries",
+   "delivery_success",
+   "ending_before",
+   "types",
+   "is_processing_or_processed",
+   "mark_as_processing",
+   "mark_as_processed"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use the Events API to locate the backlog rather than relying only on automatic retries.",
+   "Set ending_before to the last event delivered successfully before the incident to define the recovery boundary.",
+   "Filter with delivery_success=false so the query focuses on failed deliveries.",
+   "Restrict the types filter to events handled by the affected webhook endpoint.",
+   "Persist processing state and skip events that are already in progress or complete.",
+   "Mark an event complete only after its handling succeeds."
+  ],
+  "gotchas": [
+   "The backfill window is limited to events created within the previous 30 days.",
+   "Manual processing does not cancel Stripe's retry schedule; deduplicate and acknowledge repeats with HTTP 200."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Processing reliably::Retry and backoff": {
+  "sourceUrl": "https://docs.stripe.com/webhooks/process-undelivered-events",
+  "sourceTitle": "Process undelivered webhook events",
+  "summary": "Stripe automatically retries undelivered webhook events for up to three days. Build an idempotent receiver, process the backlog after recovery, and return HTTP 200 for duplicates to stop further retries.",
+  "explanation": "Stripe retries undelivered webhook events for up to three days. Your receiver should process events idempotently, recognize duplicates, and return HTTP 200 for an already processed event so Stripe stops retrying it.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "Return an HTTP 200 response for an event that has already been processed to stop further retries.",
+  "example": {
+   "title": "Idempotent webhook receiver",
+   "code": "from flask import Flask, request\n\napp = Flask(__name__)\nprocessed = set()\n\n@app.post('/webhook')\ndef webhook():\n    event_id = request.headers.get('Stripe-Event-Id')\n    if event_id in processed:\n        return '', 200\n    processed.add(event_id)\n    # Process the event idempotently here.\n    return '', 200",
+   "language": "python",
+   "explanation": "The endpoint skips an event it has already handled and returns HTTP 200, preventing Stripe from continuing its automatic retries."
+  },
+  "useCases": [
+   {
+    "title": "Recover after downtime",
+    "scenario": "A temporary outage causes Stripe to accumulate undelivered events."
+   },
+   {
+    "title": "Avoid duplicate side effects",
+    "scenario": "A webhook event is delivered again after manual backlog processing."
+   },
+   {
+    "title": "Stop redundant retries",
+    "scenario": "A receiver must acknowledge an event that was already handled."
+   }
+  ],
+  "related": [
+   "undelivered events",
+   "automatic retries",
+   "manual backlog processing",
+   "HTTP 200",
+   "duplicate events"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Stripe retries undelivered events for up to three days after a temporary endpoint outage.",
+   "Make processing idempotent: recognize an already handled event, skip it, and acknowledge it with HTTP 200.",
+   "After recovery, manually process the backlog to catch up on events that were not delivered.",
+   "Manual backlog processing does not alter Stripe’s retry state, so duplicate deliveries can still arrive."
+  ],
+  "gotchas": [
+   "Processing an event manually does not cancel Stripe's automatic retries; duplicate detection is still required.",
+   "Return HTTP 200 for a duplicate only after confirming that the event was already processed."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Receiver pipeline::Acknowledge-then-work ordering": {
+  "sourceUrl": "https://docs.github.com/en/webhooks/using-webhooks/best-practices-for-using-webhooks",
+  "sourceTitle": "Best practices for using webhooks",
+  "summary": "A webhook receiver should acknowledge a delivery with 2xx within 10 seconds, then process its payload asynchronously. Queueing the payload keeps slow work from blocking future deliveries.",
+  "explanation": "Receive the webhook, place its payload into a queue, and return a successful 2xx response promptly. A separate worker then processes the queued event, keeping slow work out of the request path and preventing it from blocking later deliveries.",
+  "syntax": "HTTP POST webhook endpoint → queue payload → return 2XX → process asynchronously",
+  "parameters": [],
+  "returns": "A 2XX HTTP response to the webhook delivery.",
+  "example": {
+   "title": "Queue before acknowledgement",
+   "code": "app.post('/webhook', express.raw({type:'application/json'}), async (req,res)=>{const event=JSON.parse(req.body);await queue.publish(event);res.sendStatus(202);});",
+   "language": "javascript",
+   "explanation": "Queue the payload before returning a successful response; a worker handles it asynchronously."
+  },
+  "useCases": [
+   {
+    "title": "Slow downstream work",
+    "scenario": "A handler calls slow external APIs or performs lengthy computation."
+   },
+   {
+    "title": "Burst absorption",
+    "scenario": "A service receives bursts of webhook deliveries."
+   },
+   {
+    "title": "Heterogeneous handlers",
+    "scenario": "Several event types share one receiver but require different processing times."
+   }
+  ],
+  "related": [
+   "webhook delivery",
+   "2XX response",
+   "queue",
+   "asynchronous processing",
+   "background processing"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How should a webhook receiver handle slow processing?",
+    "answer": "The receiver should enqueue the payload and send a 2xx response within 10 seconds. Processing then continues in the background, outside the webhook request.",
+    "followUp": "Why use a queue? It separates acknowledgement latency from handler latency and helps prevent later deliveries from being blocked."
+   },
+   {
+    "question": "Why process webhook payloads asynchronously?",
+    "answer": "GitHub recommends asynchronous processing so the request can finish promptly while a background worker handles the payload.",
+    "followUp": "What should happen if the worker fails? Retain the queued payload and retry it according to an idempotent retry policy."
+   },
+   {
+    "question": "What is the consequence of a late response?",
+    "answer": "The receiver can acknowledge immediately after handing the payload to asynchronous processing. If it exceeds the documented response window, GitHub terminates the connection and marks the delivery as failed.",
+    "followUp": "What design protects against losing an event? Persist it durably before acknowledging it, rather than only storing it in memory."
+   }
+  ],
+  "keyPoints": [
+   "Return a 2xx response within 10 seconds of receiving the delivery.",
+   "Use a queue when handler work may take longer than the acknowledgement budget.",
+   "Acknowledge the request first, then run payload processing in the background.",
+   "Keep slow processing off the request path so future deliveries are not blocked.",
+   "Queue-based implementations can use a managed service or a language-specific queue library."
+  ],
+  "gotchas": [
+   "A slow response can make GitHub treat the delivery as failed."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Receiver pipeline::Dead-letter handling": {
+  "sourceUrl": "https://docs.github.com/en/webhooks/using-webhooks/handling-failed-webhook-deliveries",
+  "sourceTitle": "Handling failed webhook deliveries",
+  "summary": "Park failed webhook deliveries in a visible recovery workflow: inspect delivery records, identify failures, and manually or automatically redeliver them. GitHub does not retry failed deliveries automatically.",
+  "explanation": "GitHub records a delivery as failed when the receiver is unavailable or does not respond within the required time. A scheduled process can inspect delivery records, identify statuses other than OK, and request redelivery; repeated failures should be investigated rather than silently discarded.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Retry failed deliveries",
+   "code": "const failed = deliveries.filter(d => d.status !== \"OK\");\nfor (const delivery of failed) {\n  await redeliver(delivery.id);\n}",
+   "language": "typescript",
+   "explanation": "A scheduled worker finds failed deliveries and submits each one for redelivery."
+  },
+  "useCases": [
+   {
+    "title": "Scheduled recovery",
+    "scenario": "A receiver is temporarily unavailable and deliveries fail."
+   },
+   {
+    "title": "Manual redelivery",
+    "scenario": "An operator needs to recover one known failed event."
+   },
+   {
+    "title": "Failure investigation",
+    "scenario": "A delivery repeatedly fails and requires diagnosis."
+   }
+  ],
+  "related": [
+   "webhook delivery failures",
+   "GitHub REST API",
+   "failed deliveries",
+   "redeliver"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How would you recover failed webhook deliveries?",
+    "answer": "GitHub does not automatically retry failed webhook deliveries. Recovery is performed manually or by a scheduled script that lists deliveries, selects failures, and requests redelivery.",
+    "followUp": "What status identifies a failed delivery? The delivery record has a status value other than OK."
+   },
+   {
+    "question": "What should an automated recovery job do?",
+    "answer": "The script should fetch deliveries attempted since its previous run, inspect their statuses, and redeliver those that failed. Scheduling the script makes recovery repeatable.",
+    "followUp": "How should the script avoid missing events? Persist the time or cursor for the last checked attempt and use it when fetching the next range."
+   },
+   {
+    "question": "When should a failed delivery be investigated?",
+    "answer": "A delivery can fail when the server is unavailable or takes longer than 10 seconds to respond. Repeated failures should be investigated to find the receiver-side cause.",
+    "followUp": "What operational signal should guide diagnosis? Each failed delivery provides a reason for the failure."
+   }
+  ],
+  "keyPoints": [
+   "An operator can recover an individual failed delivery directly instead of rebuilding the event.",
+   "Automated recovery is supported through a script that periodically reviews delivery history.",
+   "Run the recovery worker periodically so failed deliveries are discovered without relying on a person to remember.",
+   "The recovery process obtains delivery records through GitHub's REST API.",
+   "Classify a delivery as failed when its recorded status differs from OK.",
+   "After identifying failures, use the API's redelivery operation to retry them."
+  ],
+  "gotchas": [
+   "Do not assume failed deliveries will be retried automatically; recovery requires a manual action or your own scheduled process.",
+   "Repeated redelivery attempts indicate an underlying receiver problem that needs diagnosis.",
+   "A receiver that exceeds GitHub's response-time limit causes the delivery to be recorded as failed."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Receiver pipeline::Failure classification": {
+  "sourceUrl": "https://docs.stripe.com/webhooks/quickstart",
+  "sourceTitle": "Set up and deploy a webhook",
+  "summary": "Classify webhook failures before selecting a response: reject malformed or unverifiable requests with 4xx, but acknowledge valid events quickly with 2xx so temporary receiver problems do not cause avoidable retries.",
+  "explanation": "Classify failures by cause: malformed input should receive a 4xx response, while temporary availability, timeout, or processing problems should be avoided by acknowledging valid requests quickly with a 2xx response. The receiver should defer complex work after acknowledgment so the sender does not treat a slow response as a failed delivery.",
+  "syntax": "HTTP POST webhook endpoint",
+  "parameters": [],
+  "returns": "Return an HTTP 4xx response for an invalid payload; return a successful 2xx response after accepting a valid event.",
+  "example": {
+   "title": "Classify payload and acknowledge quickly",
+   "code": "from flask import Flask, request\n\napp = Flask(__name__)\n\n@app.post(\"/webhook\")\ndef webhook():\n    try:\n        event = request.get_json(force=True)\n    except Exception:\n        return \"invalid payload\", 400\n\n    # Defer complex processing until after acknowledgment.\n    queue_event(event)\n    return \"\", 200\n\ndef queue_event(event):\n    print(event)\n",
+   "language": "python",
+   "explanation": "Parse the request first and return a client-error response when the payload cannot be parsed. For valid events, acknowledge quickly with a successful 2xx response and move complex processing out of the request path so temporary processing or availability problems do not trigger unnecessary delivery retries."
+  },
+  "useCases": [
+   {
+    "title": "Reject malformed input",
+    "scenario": "A request body cannot be parsed as the expected JSON structure."
+   },
+   {
+    "title": "Reject unverifiable requests",
+    "scenario": "Signature verification fails before event handling."
+   },
+   {
+    "title": "Acknowledge before complex work",
+    "scenario": "Valid event processing may take longer than the sender’s response window."
+   },
+   {
+    "title": "Stop duplicate retries",
+    "scenario": "The sender delivers an event that the receiver has already handled."
+   }
+  ],
+  "related": [
+   "Stripe-Signature",
+   "webhook endpoint",
+   "2xx status code",
+   "400 Bad Request",
+   "automatic retries",
+   "failed webhook deliveries"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you distinguish a bad payload from a temporary receiver failure?",
+    "answer": "Return a 4xx response when the request content is invalid, such as an unparsable payload or failed verification. Return a successful 2xx response for a valid event after accepting it, and avoid delaying that acknowledgment with complex work.",
+    "followUp": "What should happen if the event was already processed? Return 200 and skip duplicate processing so the sender stops retrying."
+   },
+   {
+    "question": "Which status-code classes represent the two main outcomes?",
+    "answer": "A malformed payload is a client-side request problem, so the receiver should reject it with 400. A server that is unavailable or too slow produces a delivery failure and may be retried by the sender.",
+    "followUp": "How can a receiver reduce timeout-related failures? Defer complex logic and return a successful response immediately."
+   },
+   {
+    "question": "Why should a webhook endpoint avoid redirects?",
+    "answer": "A 4xx response indicates that the request is unacceptable to the receiver, while a 2xx response indicates successful delivery. Redirects are not successful webhook acknowledgments in Stripe’s delivery model.",
+    "followUp": "Why is 3xx unsafe here? The sender treats redirects as failures instead of following them as a successful delivery."
+   }
+  ],
+  "keyPoints": [
+   "Verify the webhook before trusting or processing its contents; failed verification is an input-validation failure.",
+   "Use 200 when the receiver has accepted the event, including a duplicate that was already handled.",
+   "Move expensive processing after acknowledgment to keep the receiver within the sender’s response window."
+  ],
+  "gotchas": [
+   "Do not use a redirect as an acknowledgment; return a direct successful response from the configured endpoint.",
+   "Treat signature-verification failure as invalid input rather than processing the event."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Receiver pipeline::Idempotency check": {
+  "sourceUrl": "https://docs.stripe.com/events/manage-webhook-endpoints?locale=en-GB",
+  "sourceTitle": "Handle webhook event generation failures",
+  "summary": "Check a webhook event’s identifier against a durable record before processing it. Skip known events and return HTTP 200; for separate Event objects representing the same occurrence, use the underlying object ID together with the event type.",
+  "explanation": "A webhook receiver should record each processed event ID and check that record before doing work. If the ID is already present, skip the event and return HTTP 200 so the provider stops retrying; if distinct Event objects represent the same underlying object, combine the object ID with the event type for deduplication.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "For an already processed event, return HTTP 200; otherwise process the event and acknowledge successful delivery.",
+  "example": {
+   "title": "Skip a previously processed event",
+   "code": "from flask import Flask, request\n\napp = Flask(__name__)\nprocessed = set()\n\n@app.post('/webhook')\ndef webhook():\n    event = request.get_json()\n    event_id = event['id']\n    if event_id in processed:\n        return '', 200\n    processed.add(event_id)\n    process_event(event)\n    return '', 200\n\ndef process_event(event):\n    print(f\"Processing {event['type']}\")",
+   "language": "python",
+   "explanation": "This demonstrates the documented flow: read the event ID, check whether it has already been recorded, skip duplicate deliveries with a successful response, and process only new events. A production receiver should persist the IDs durably and make the check-and-record operation atomic."
+  },
+  "useCases": [
+   {
+    "title": "Suppress retry duplicates",
+    "scenario": "Automatic delivery retries after a timeout or failed response."
+   },
+   {
+    "title": "Coordinate manual recovery",
+    "scenario": "A recovery script replays events while normal deliveries continue."
+   },
+   {
+    "title": "Detect logical duplicates",
+    "scenario": "Distinct Event objects describe the same underlying resource change."
+   }
+  ],
+  "related": [
+   "Event object",
+   "event.id",
+   "data.object",
+   "event.type",
+   "webhook endpoint",
+   "automatic retries"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How should a receiver prevent processing the same webhook twice?",
+    "answer": "Use the event’s ID as the deduplication key: persist IDs after successful processing and consult that store when a delivery arrives. If the ID is already recorded, skip the work and return HTTP 200.",
+    "followUp": "How would you handle duplicates that have different event IDs? Use the ID of data.object together with event.type, as the documentation recommends for those cases."
+   },
+   {
+    "question": "Why is an idempotency check needed in a webhook pipeline?",
+    "answer": "A receiver can see the same event more than once because webhook delivery may be retried. Logging processed event IDs lets the handler recognize an already handled delivery and avoid repeating its side effects.",
+    "followUp": "What should happen if manual recovery overlaps automatic retries? Make the deduplication check shared and atomic so either path observes the same processed-event record."
+   },
+   {
+    "question": "What response should a handler return for a duplicate delivery?",
+    "answer": "After identifying a previously processed event, the handler should do no further business processing and respond with 200. That response tells the delivery system the event was handled and prevents additional retries.",
+    "followUp": "What key can help identify logically duplicated separate Event objects? Combine the underlying object ID from data.object with the event type."
+   }
+  ],
+  "keyPoints": [
+   "Design the receiver for repeated deliveries rather than assuming each event arrives once.",
+   "Keep a durable record of event IDs that completed processing.",
+   "Consult the record before invoking business logic, and stop when the ID is present.",
+   "The processed-ID record is specifically a deduplication mechanism for webhook events.",
+   "For separate Event objects describing the same underlying occurrence, use the object ID and event type together."
+  ],
+  "gotchas": [
+   "A duplicate must produce a successful response; otherwise the sender may continue retrying it.",
+   "An event ID alone may not catch duplicates represented by separate Event objects."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Receiver pipeline::Queue handoff": {
+  "sourceUrl": "https://docs.github.com/en/webhooks/using-webhooks/best-practices-for-using-webhooks",
+  "sourceTitle": "Best practices for using webhooks",
+  "summary": "Hand webhook events to an asynchronous queue, acknowledge the delivery promptly, and process the payload in the background. This keeps slow work from blocking later deliveries or exceeding the sender’s response deadline.",
+  "explanation": "A webhook receiver should acknowledge delivery quickly after placing the event in an asynchronous queue. A worker can then process queued payloads independently, preventing slow business logic from blocking the sender and causing a timeout.",
+  "syntax": "POST /webhook → enqueue(payload) → return 2XX",
+  "parameters": [
+   {
+    "name": "payload",
+    "type": "Webhook event payload",
+    "description": "The webhook payload to enqueue for asynchronous processing."
+   }
+  ],
+  "returns": "A 2XX HTTP response acknowledging receipt of the webhook.",
+  "example": {
+   "title": "Queue a webhook before processing",
+   "code": "import express from \"express\";\nimport { randomUUID } from \"node:crypto\";\n\nconst app = express();\napp.use(express.json());\n\napp.post(\"/webhook\", (req, res) => {\n  const job = { id: randomUUID(), payload: req.body };\n  queue.push(job);\n  res.sendStatus(202);\n});\n\nconst queue: Array<{ id: string; payload: unknown }> = [];\nsetInterval(() => {\n  const job = queue.shift();\n  if (job) processEvent(job.payload);\n}, 100);\n\nfunction processEvent(payload: unknown) {\n  console.log(\"Processing\", payload);\n}\n\napp.listen(3000);",
+   "language": "typescript",
+   "explanation": "The receiver enqueues the payload and responds immediately; background processing handles the slower work."
+  },
+  "useCases": [
+   {
+    "title": "Prevent delivery timeouts",
+    "scenario": "Business logic may take longer than the sender’s response deadline."
+   },
+   {
+    "title": "Absorb traffic spikes",
+    "scenario": "A burst of events could overwhelm the receiver."
+   },
+   {
+    "title": "Avoid receiver blocking",
+    "scenario": "Events must be processed without delaying subsequent deliveries."
+   }
+  ],
+  "related": [
+   "Asynchronous queue",
+   "Webhook payload",
+   "2XX response",
+   "Background processing",
+   "Webhook delivery"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Acknowledge the webhook with a 2XX response within 10 seconds.",
+   "Use an asynchronous queue to separate receipt from processing.",
+   "Return the acknowledgment first, then process the payload in the background.",
+   "Background processing prevents one slow event from blocking later deliveries.",
+   "Queue implementations can include managed services or libraries such as Hookdeck, Resque, RQ, and RabbitMQ."
+  ],
+  "gotchas": [
+   "Respond within the documented delivery window; otherwise GitHub terminates the connection and marks the delivery as failed.",
+   "Plan recovery for missed deliveries when the receiver is unavailable."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Receiver pipeline::Raw body capture": {
+  "sourceUrl": "https://docs.stripe.com/webhooks/signature?locale=en-GB",
+  "sourceTitle": "Retrieve the raw request body",
+  "summary": "Capture Stripe's untouched request body before parsing or other middleware changes it. Verify it with the Stripe-Signature header and endpoint secret so the SDK can validate the webhook.",
+  "explanation": "Webhook signatures are calculated from the provider's original payload, so the receiver must retain that payload before JSON parsing or other transformations. With Stripe, pass the untouched UTF-8 body, the Stripe-Signature header, and the endpoint secret to constructEvent().",
+  "syntax": "stripe.webhooks.constructEvent(requestBody, signature, endpointSecret)",
+  "parameters": [
+   {
+    "name": "requestBody",
+    "type": "string",
+    "description": "The exact UTF-8 request body sent by Stripe, without modifications."
+   },
+   {
+    "name": "signature",
+    "type": "string",
+    "description": "The value of the Stripe-Signature request header."
+   },
+   {
+    "name": "endpointSecret",
+    "type": "string",
+    "description": "The secret associated with the webhook endpoint."
+   }
+  ],
+  "returns": "A verified and constructed Stripe event; verification throws or fails when the supplied body, signature, or endpoint secret does not validate.",
+  "example": {
+   "title": "Verify a Stripe webhook from the untouched request body",
+   "code": "import express from \"express\";\nimport Stripe from \"stripe\";\n\nconst app = express();\nconst stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);\nconst endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;\n\napp.post(\"/webhook\", express.raw({ type: \"application/json\" }), (req, res) => {\n  const signature = req.headers[\"stripe-signature\"] as string;\n  try {\n    const event = stripe.webhooks.constructEvent(req.body, signature, endpointSecret);\n    res.json({ received: true, type: event.type });\n  } catch {\n    res.status(400).send(\"Invalid signature\");\n  }\n});\n\napp.listen(3000);",
+   "language": "typescript",
+   "explanation": "The route receives the body as raw bytes, then passes that untouched value, the Stripe signature header, and the endpoint secret to verification."
+  },
+  "useCases": [
+   {
+    "title": "Route-specific raw-body middleware",
+    "scenario": "An Express webhook route must verify Stripe deliveries while the rest of the application uses ordinary JSON parsing."
+   },
+   {
+    "title": "API Gateway body preservation",
+    "scenario": "An AWS Lambda integration receives a Stripe webhook through API Gateway."
+   },
+   {
+    "title": "Event-style-specific verification",
+    "scenario": "A receiver supports both Stripe snapshot and thin events."
+   }
+  ],
+  "related": [
+   "Stripe-Signature",
+   "constructEvent()",
+   "parseEventNotification()",
+   "endpoint secret",
+   "Body Mapping Template",
+   "event.rawBody",
+   "event.headers"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why must a webhook receiver capture the raw body?",
+    "answer": "Stripe verification requires three inputs: the raw request body, the Stripe-Signature header, and the endpoint secret. The body must remain the exact UTF-8 payload Stripe sent.",
+    "followUp": "What should happen if the framework parses JSON first? Preserve the original bytes through route-specific raw-body handling, or verification can fail because the signed representation was changed."
+   },
+   {
+    "question": "How should raw-body handling be arranged in an Express receiver?",
+    "answer": "Use route middleware that exposes the request as raw data, read the Stripe-Signature header, and call constructEvent() with the body, header value, and endpoint secret. Only after successful verification should the event be processed.",
+    "followUp": "How would you prevent unrelated routes from losing normal JSON parsing? Apply raw-body middleware only to the webhook endpoint and retain ordinary JSON middleware elsewhere."
+   },
+   {
+    "question": "What inputs are required by Stripe's event-construction verification?",
+    "answer": "The signature header identifies the signed request, while the endpoint secret lets the SDK verify it. Passing a parsed or modified object instead of the original body breaks the required input contract.",
+    "followUp": "What additional operational check is useful? Log the signature format and verify that the configured endpoint secret belongs to the intended webhook endpoint without exposing secrets."
+   }
+  ],
+  "keyPoints": [
+   "The receiver should authenticate every delivery with the provider's signature header before trusting its event data.",
+   "Stripe documents separate verification entry points for snapshot and thin events; choose the one matching the event style.",
+   "The body argument is the provider's original raw string, not an object produced by JSON parsing.",
+   "Read the complete Stripe-Signature header and provide it unchanged to the verification call.",
+   "Verification uses the signing secret assigned to the receiving endpoint, which must be supplied as the third argument.",
+   "API Gateway integrations need explicit raw-body mapping when the platform would otherwise provide only a transformed payload."
+  ],
+  "gotchas": [
+   "Do not parse, reserialize, trim, or otherwise alter the body before verification; even small changes can invalidate the signature."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Receiver pipeline::Signature verification step": {
+  "sourceUrl": "https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries",
+  "sourceTitle": "Validating webhook deliveries",
+  "summary": "Verify a webhook’s signature against a shared secret before parsing or processing its payload. Treat any mismatch as unauthenticated and reject it.",
+  "explanation": "The receiver uses the webhook secret and the raw request body to calculate an HMAC-SHA256 value, compares it with the X-Hub-Signature-256 header, and rejects a mismatch as unauthenticated before JSON parsing. Only a matching request proceeds to event handling.",
+  "syntax": "HMAC-SHA256(secret, raw_payload) → X-Hub-Signature-256",
+  "parameters": [
+   {
+    "name": "payload",
+    "type": "string",
+    "description": "The raw webhook payload used to calculate the expected HMAC."
+   },
+   {
+    "name": "secret",
+    "type": "string",
+    "description": "The shared webhook secret used as the HMAC key."
+   },
+   {
+    "name": "X-Hub-Signature-256",
+    "type": "string",
+    "description": "The X-Hub-Signature-256 request header containing GitHub’s signature."
+   }
+  ],
+  "returns": "A verified delivery may be processed; a non-matching signature must be rejected.",
+  "example": {
+   "title": "Verify before parsing",
+   "code": "import crypto from \"node:crypto\";\n\nexport function receive(req, secret) {\n  const raw = req.rawBody;\n  const received = req.headers[\"x-hub-signature-256\"];\n  const expected = \"sha256=\" + crypto\n    .createHmac(\"sha256\", secret)\n    .update(raw)\n    .digest(\"hex\");\n\n  if (!received || !crypto.timingSafeEqual(\n    Buffer.from(received), Buffer.from(expected)\n  )) return {status: 401};\n\n  return {status: 200, event: JSON.parse(raw)};\n}",
+   "language": "javascript",
+   "explanation": "This receiver computes GitHub’s HMAC-SHA256 signature from the raw payload, rejects mismatches before parsing, and parses only verified requests."
+  },
+  "useCases": [
+   {
+    "title": "GitHub event receiver",
+    "scenario": "Authenticating GitHub webhook deliveries before JSON parsing."
+   },
+   {
+    "title": "Integrity checking",
+    "scenario": "Detecting payload tampering in transit."
+   },
+   {
+    "title": "Unauthenticated request handling",
+    "scenario": "Rejecting forged requests that lack a valid signature."
+   }
+  ],
+  "related": [
+   "X-Hub-Signature-256",
+   "HMAC-SHA256",
+   "secret token",
+   "webhook deliveries"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Configure a secret shared by GitHub and the receiving server.",
+   "Keep the webhook secret out of source control and protect it like other credentials.",
+   "Use the secret to authenticate every incoming delivery before handling it.",
+   "GitHub signs each delivery with the configured secret.",
+   "The receiver obtains the supplied signature from the X-Hub-Signature-256 header.",
+   "Compute the expected HMAC-SHA256 digest and compare it with the received value.",
+   "Continue only when the received and calculated signatures are equal."
+  ],
+  "gotchas": [
+   "Do not parse or process a payload until its signature has been validated; otherwise forged or modified requests may reach application logic.",
+   "Read the signature from X-Hub-Signature-256 rather than assuming it is in the request body."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Receiving::Content types and encoding": {
+  "sourceUrl": "https://docs.github.com/en/webhooks/using-webhooks/creating-webhooks",
+  "sourceTitle": "Creating webhooks - GitHub Docs",
+  "summary": "Webhook payloads can arrive as JSON or as form-encoded data. Parse the request according to the sender’s actual Content-Type, and read the JSON from the payload field when form encoding is used.",
+  "explanation": "A webhook receiver must parse the request according to the media type selected by the sender. With application/json, the JSON document is the POST body; with application/x-www-form-urlencoded, the JSON document is placed in a form field named payload. Configure middleware and extraction logic to match the actual Content-Type rather than assuming JSON.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Receive a form-encoded webhook",
+   "code": "app.post('/webhook', express.urlencoded({ extended: false }), (req, res) => {\n  const payload = JSON.parse(req.body.payload);\n  res.sendStatus(204);\n});",
+   "language": "javascript",
+   "explanation": "Parses the form-encoded delivery, then reads the JSON document from its payload field."
+  },
+  "useCases": [
+   {
+    "title": "Direct JSON delivery",
+    "scenario": "A GitHub webhook is configured with application/json and the endpoint parses the raw POST body as JSON."
+   },
+   {
+    "title": "Form-encoded delivery",
+    "scenario": "A legacy integration sends application/x-www-form-urlencoded and the endpoint extracts and decodes its payload field."
+   },
+   {
+    "title": "Multi-format intake",
+    "scenario": "A receiver accepts deliveries from senders with different configurations and routes each request through the matching parser."
+   }
+  ],
+  "related": [
+   "Content type",
+   "application/json",
+   "application/x-www-form-urlencoded",
+   "payload",
+   "POST request"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How should a webhook receiver handle different content types?",
+    "answer": "Inspect the request Content-Type and choose a parser that matches it. For application/json, parse the body directly; for application/x-www-form-urlencoded, parse the payload form parameter as JSON.",
+    "followUp": "What changes when the sender switches formats? The receiver must change its middleware or extraction path, because the same JSON document is represented differently in the HTTP request."
+   },
+   {
+    "question": "Where is the payload located for GitHub's supported formats?",
+    "answer": "GitHub documents application/json as placing the JSON payload directly in the POST body. Form encoding instead puts that JSON into a parameter named payload.",
+    "followUp": "How would you test this? Send one request with a JSON body and another with a payload form field, then verify both produce the same application object."
+   },
+   {
+    "question": "Which content type should you prefer?",
+    "answer": "Use JSON when the sender lets you choose, because it avoids an additional form-field extraction step. If the sender is already configured for form encoding, parse that encoding rather than assuming JSON.",
+    "followUp": "What is the operational risk of assuming JSON? The receiver may reject valid deliveries or parse the body incorrectly when the sender uses form encoding."
+   }
+  ],
+  "keyPoints": [
+   "A webhook endpoint may receive the same logical event through more than one HTTP representation.",
+   "For application/json, the request body itself is the JSON payload.",
+   "For form encoding, retrieve the JSON text from the form parameter named payload.",
+   "If you configure the sender, select the representation your receiver is designed to parse."
+  ],
+  "gotchas": [
+   "Do not JSON-decode the entire request body when the sender uses form encoding; first read the payload form parameter."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Receiving::Endpoint design": {
+  "sourceUrl": "https://docs.stripe.com/webhooks?locale=en-GB",
+  "sourceTitle": "Receive Stripe events in your webhook endpoint",
+  "summary": "Expose an HTTPS POST route for webhook events, verify each request, and return a successful 2xx response quickly. Run complex or long-running work asynchronously so delivery does not time out or trigger retries.",
+  "explanation": "A webhook receiver is an HTTP POST route that accepts an event payload, validates its origin, acknowledges delivery with a successful 2xx response, and moves expensive processing outside the request path. This keeps the endpoint responsive and prevents avoidable delivery retries or timeouts.",
+  "syntax": "POST /webhooks/stripe",
+  "parameters": [
+   {
+    "name": "request body",
+    "type": "JSON",
+    "description": "The JSON webhook payload containing event information."
+   },
+   {
+    "name": "Stripe-Signature",
+    "type": "HTTP header",
+    "description": "The Stripe signature used with the endpoint secret to verify authenticity."
+   },
+   {
+    "name": "webhook signing secret",
+    "type": "secret",
+    "description": "The endpoint's signing secret used during signature verification."
+   }
+  ],
+  "returns": "A successful 2xx HTTP response, commonly 200, returned quickly after accepting the webhook.",
+  "example": {
+   "title": "Fast webhook acknowledgment",
+   "code": "import express from \"express\";\n\nconst app = express();\napp.use(express.json());\n\napp.post(\"/webhooks/stripe\", (req, res) => {\n  // Verify the signature before trusting req.body in production.\n  res.sendStatus(200);\n  void processEventAsync(req.body);\n});\n\nasync function processEventAsync(event: unknown) {\n  console.log(\"Process later\", event);\n}\n\napp.listen(3000);",
+   "language": "typescript",
+   "explanation": "The route acknowledges the webhook immediately, while longer work runs separately."
+  },
+  "useCases": [
+   {
+    "title": "Receive payment events",
+    "scenario": "A payment provider sends event notifications to an application."
+   },
+   {
+    "title": "Route multiple event types",
+    "scenario": "An application needs to react to several event types from one integration."
+   },
+   {
+    "title": "Verify webhook authenticity",
+    "scenario": "A receiver must prevent forged requests from reaching business logic."
+   }
+  ],
+  "related": [
+   "webhook endpoint",
+   "event object",
+   "event type",
+   "Stripe-Signature",
+   "webhook signing secret",
+   "2xx status code",
+   "asynchronous processing"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How should a webhook endpoint handle an incoming event?",
+    "answer": "Use an HTTP or HTTPS POST endpoint that accepts the JSON event, verifies its signature, and quickly returns a successful 2xx response. Expensive processing should happen asynchronously after acknowledgment.",
+    "followUp": "Why acknowledge before business processing? Stripe may retry when it does not receive a response within a reasonable time, so early acknowledgment reduces timeout-driven duplicates."
+   },
+   {
+    "question": "How can event routing be organized?",
+    "answer": "A dedicated endpoint can receive a webhook request and inspect the event type to decide what action applies. Stripe also allows one webhook to handle several event types or separate endpoints for specific events.",
+    "followUp": "When might separate endpoints help? They can isolate responsibilities and let each destination subscribe only to the events it needs."
+   },
+   {
+    "question": "How is webhook authenticity checked?",
+    "answer": "The receiver should validate that the request came from Stripe using the JSON payload, the Stripe-Signature header, and the endpoint's webhook signing secret. If verification fails, the request must not be trusted.",
+    "followUp": "What else is required for reliable delivery? Return a successful 2xx only after the request has been accepted, then process it asynchronously."
+   }
+  ],
+  "keyPoints": [
+   "Expose an HTTP(S) POST route specifically for webhook deliveries.",
+   "Acknowledge receipt with a 2xx response before running complex business logic.",
+   "Receive event information as a JSON payload over HTTPS.",
+   "A 200 response communicates successful delivery to the sender."
+  ],
+  "gotchas": [
+   "Verify the signature using the raw JSON payload and Stripe-Signature header before acting on the event."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Receiving::Fast acknowledgement": {
+  "sourceUrl": "https://docs.github.com/en/webhooks/using-webhooks/best-practices-for-using-webhooks",
+  "sourceTitle": "Best practices for using webhooks",
+  "summary": "A webhook receiver should acknowledge a delivery with a 2XX response quickly, then process its payload asynchronously. This keeps request handling responsive and avoids blocking later deliveries.",
+  "explanation": "Receive the webhook payload, return a 2XX response promptly, and hand the event to background work such as a queue. This ends the delivery request quickly while allowing processing to continue independently, so slow application logic does not hold the sender connection open.",
+  "syntax": "POST /webhook → 2XX response; process payload asynchronously",
+  "parameters": [],
+  "returns": "A 2XX HTTP response acknowledging receipt of the webhook delivery.",
+  "example": {
+   "title": "Acknowledge before processing",
+   "code": "import express from \"express\";\n\nconst app = express();\napp.use(express.json());\n\napp.post(\"/webhook\", (req, res) => {\n  const event = req.body;\n  res.sendStatus(202);\n  queueMicrotask(() => processEvent(event));\n});\n\nasync function processEvent(event: unknown) {\n  console.log(\"Processing\", event);\n}\n\napp.listen(3000);",
+   "language": "typescript",
+   "explanation": "The handler captures the payload, immediately returns a successful HTTP response, and performs processing after acknowledgement."
+  },
+  "useCases": [
+   {
+    "title": "Slow event processing",
+    "scenario": "A webhook handler performs database writes, API calls, or other work that may exceed the sender's response deadline."
+   },
+   {
+    "title": "High delivery concurrency",
+    "scenario": "A receiver must continue accepting deliveries while earlier events are still being handled."
+   },
+   {
+    "title": "Queue-backed ingestion",
+    "scenario": "The application needs a durable handoff between HTTP reception and business processing."
+   }
+  ],
+  "related": [
+   "webhook delivery",
+   "2XX response",
+   "queue",
+   "asynchronous processing",
+   "background processing"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How should a webhook receiver avoid blocking delivery processing?",
+    "answer": "Return a 2XX response as soon as the delivery is accepted, then process the payload asynchronously. A queue is a suitable boundary between request handling and background work.",
+    "followUp": "What happens if acknowledgement is delayed? GitHub terminates the connection after the documented limit and marks the delivery as a failure."
+   },
+   {
+    "question": "Why acknowledge a webhook before processing its payload?",
+    "answer": "The receiver should send its successful response immediately after accepting the event and perform application work in the background. This prevents that work from blocking later webhook deliveries.",
+    "followUp": "Why use a queue rather than only scheduling local work? A queue provides an explicit asynchronous processing mechanism and can decouple request completion from event handling."
+   },
+   {
+    "question": "What response deadline applies to GitHub webhook deliveries?",
+    "answer": "GitHub's current webhook guidance says the server should respond with a 2XX status within 10 seconds. A slower response causes GitHub to terminate the connection and classify the delivery as failed.",
+    "followUp": "How can the receiver meet that limit reliably? Keep the request path minimal and enqueue the payload before returning the response."
+   }
+  ],
+  "keyPoints": [
+   "Send a 2XX status within 10 seconds of receiving the delivery.",
+   "Use a queue to move payload handling out of the request path.",
+   "Acknowledge first, then process the payload in background work.",
+   "Background processing prevents the current event from holding up later deliveries.",
+   "Queueing can be implemented with a hosted service or a language-specific messaging library."
+  ],
+  "gotchas": [
+   "Exceeding GitHub's response deadline causes the delivery to be treated as failed."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Receiving::Payload validation": {
+  "sourceUrl": "https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries",
+  "sourceTitle": "Validating webhook deliveries",
+  "summary": "Validate a GitHub webhook by computing an HMAC-SHA-256 digest from the shared secret and exact payload contents, then comparing it with X-Hub-Signature-256 before trusting the body.",
+  "explanation": "GitHub webhook validation uses a shared secret and an HMAC-SHA-256 digest over the exact payload bytes. The receiver reads the X-Hub-Signature-256 header, computes its own digest, compares both values, and parses or trusts fields only after verification succeeds.",
+  "syntax": "HMAC-SHA-256(secret token, payload contents) → sha256=<hex digest>",
+  "parameters": [
+   {
+    "name": "secret token",
+    "type": "shared secret",
+    "description": "Secret token configured for the webhook and stored securely by the receiver."
+   },
+   {
+    "name": "payload contents",
+    "type": "request body",
+    "description": "Original incoming webhook payload contents."
+   },
+   {
+    "name": "X-Hub-Signature-256",
+    "type": "HTTP header",
+    "description": "Signature supplied with the delivery."
+   }
+  ],
+  "returns": "A validated webhook delivery when the calculated and received signatures match; otherwise the receiver should reject it.",
+  "example": {
+   "title": "Verify a GitHub webhook delivery",
+   "code": "import express from \"express\";\nimport crypto from \"node:crypto\";\n\nconst app = express();\napp.post(\"/webhook\", express.raw({ type: \"application/json\" }), (req, res) => {\n  const secret = process.env.WEBHOOK_SECRET!;\n  const received = req.header(\"X-Hub-Signature-256\") ?? \"\";\n  const expected = \"sha256=\" + crypto.createHmac(\"sha256\", secret).update(req.body).digest(\"hex\");\n  if (!crypto.timingSafeEqual(Buffer.from(received), Buffer.from(expected))) return res.sendStatus(401);\n  const payload = JSON.parse(req.body.toString(\"utf8\"));\n  console.log(payload.action);\n  res.sendStatus(204);\n});\napp.listen(3000);",
+   "language": "typescript",
+   "explanation": "Preserve the raw request bytes, compute the HMAC with the shared secret, compare the GitHub signature, and only then parse and use the JSON payload."
+  },
+  "useCases": [
+   {
+    "title": "Secure event ingestion",
+    "scenario": "Accepting GitHub push, issue, or deployment events only after authenticity and integrity checks succeed."
+   },
+   {
+    "title": "Tamper detection",
+    "scenario": "Rejecting forged requests whose signature does not match the configured webhook secret."
+   },
+   {
+    "title": "Unicode-safe verification",
+    "scenario": "Handling non-ASCII event data without changing the bytes used for verification."
+   }
+  ],
+  "related": [
+   "X-Hub-Signature-256",
+   "HMAC",
+   "sha256=",
+   "secret token",
+   "hash signature",
+   "payload contents"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does a receiver validate a GitHub webhook delivery?",
+    "answer": "GitHub sends the signature in the X-Hub-Signature-256 header. The receiver calculates an HMAC hex digest using the webhook secret and payload contents, then compares the received and expected values before processing the body.",
+    "followUp": "What must the digest prefix be? It must begin with sha256=, followed by the HMAC hex digest."
+   },
+   {
+    "question": "What role does the webhook secret play?",
+    "answer": "The secret token must be created for the webhook and stored securely on the server. It is then used to calculate the expected signature for each incoming payload.",
+    "followUp": "Why should the secret not be embedded in source code? Anyone who obtains it could generate valid signatures for forged deliveries."
+   },
+   {
+    "question": "What security properties does signature validation provide?",
+    "answer": "Validation confirms both that the request came from GitHub and that the payload was not tampered with. The receiver should compare the computed hash with the signature GitHub sent and reject mismatches.",
+    "followUp": "What should happen before application fields are trusted? The request should fail validation and its fields should not be processed."
+   }
+  ],
+  "keyPoints": [
+   "Read the delivery signature from the X-Hub-Signature-256 header.",
+   "Compute the expected value as an HMAC hex digest.",
+   "Require the signature value to use the sha256= prefix.",
+   "Generate the comparison value from the webhook secret and the complete payload contents.",
+   "Process the delivery only when the received and calculated hashes match.",
+   "Use validation to authenticate the sender and detect payload tampering."
+  ],
+  "gotchas": [
+   "Handle the payload as UTF-8 when the language or server specifies character encoding, because webhook payloads may contain Unicode."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Receiving::Raw body access": {
+  "sourceUrl": "https://docs.stripe.com/webhooks",
+  "sourceTitle": "How to ensure security in Stripe webhooks?",
+  "summary": "Read and retain the webhook’s original body before parsing it. Stripe needs those exact bytes, together with the Stripe-Signature header and endpoint secret, to verify authenticity.",
+  "explanation": "A webhook signature authenticates the exact bytes sent by the provider. Preserve the incoming body before JSON parsing or other middleware changes it, then give the unchanged body, signature header, and endpoint secret to the provider’s verification function; parse the verified event only afterward.",
+  "syntax": "stripe.webhooks.constructEvent(requestBody, signature, endpointSecret)",
+  "parameters": [
+   {
+    "name": "requestBody",
+    "type": "string or raw bytes",
+    "description": "The exact UTF-8 request body sent by Stripe, preserved without changes."
+   },
+   {
+    "name": "signature",
+    "type": "string",
+    "description": "The value of the Stripe-Signature HTTP header."
+   },
+   {
+    "name": "endpointSecret",
+    "type": "string",
+    "description": "The secret associated with the webhook endpoint."
+   }
+  ],
+  "returns": "A verified Stripe Event when signature verification succeeds; an error when verification fails.",
+  "example": {
+   "title": "Verify a Stripe webhook with the raw body",
+   "code": "import express from \"express\";\nimport Stripe from \"stripe\";\n\nconst app = express();\nconst stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);\n\napp.post(\"/webhook\", express.raw({ type: \"application/json\" }), (req, res) => {\n  const signature = req.headers[\"stripe-signature\"];\n  if (typeof signature !== \"string\") return res.sendStatus(400);\n\n  try {\n    const event = stripe.webhooks.constructEvent(\n      req.body,\n      signature,\n      process.env.STRIPE_WEBHOOK_SECRET!\n    );\n    console.log(event.type);\n    res.sendStatus(200);\n  } catch {\n    res.sendStatus(400);\n  }\n});\n\napp.listen(3000);",
+   "language": "typescript",
+   "explanation": "The route keeps the request body raw and passes it, the signature header, and endpoint secret to Stripe’s verifier."
+  },
+  "useCases": [
+   {
+    "title": "Authenticate incoming events",
+    "scenario": "A server receives Stripe event notifications and must reject forged or modified requests."
+   },
+   {
+    "title": "Preserve bytes through middleware",
+    "scenario": "A web framework normally parses JSON before the route handler runs."
+   },
+   {
+    "title": "Implement custom verification",
+    "scenario": "A service needs to verify signatures manually rather than using an SDK helper."
+   }
+  ],
+  "related": [
+   "Stripe-Signature",
+   "constructEvent()",
+   "webhook signing secret",
+   "official libraries",
+   "manual signature verification"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Signature verification requires the unparsed request body.",
+   "Provide the raw payload, signature header, and endpoint secret to the verification API.",
+   "Configure framework middleware so the body remains unchanged until verification finishes."
+  ],
+  "gotchas": [
+   "Do not parse, reserialize, reformat, or otherwise modify the body before verification; even seemingly harmless changes invalidate the signature."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Receiving::Status code semantics": {
+  "sourceUrl": "https://docs.stripe.com/webhooks?lang",
+  "sourceTitle": "Register events to your webhook endpoint",
+  "summary": "Return a 2xx response quickly to acknowledge a webhook before complex processing. Allow retries only for failures where another delivery attempt can help.",
+  "explanation": "Respond to a webhook with a successful 2xx status as soon as the request is accepted, before complex work that could time out. Use a non-success response only when the sender should try delivery again; otherwise, retries can duplicate processing or continue unnecessarily.",
+  "syntax": "HTTP response: 2xx (commonly 200 OK)",
+  "parameters": [],
+  "returns": "Return a successful HTTP 2xx status code to acknowledge delivery; the page specifically identifies HTTP 200 as successful delivery.",
+  "example": {
+   "title": "Acknowledge a webhook quickly",
+   "code": "import express from \"express\";\n\nconst app = express();\n\napp.post(\"/webhook\", express.raw({ type: \"application/json\" }), (req, res) => {\n  res.sendStatus(200);\n  // Perform complex processing asynchronously after acknowledging receipt.\n});\n\napp.listen(3000);",
+   "language": "typescript",
+   "explanation": "The endpoint immediately acknowledges receipt with HTTP 200 before doing potentially slow processing."
+  },
+  "useCases": [
+   {
+    "title": "Stop normal delivery retries",
+    "scenario": "Acknowledging a valid event"
+   },
+   {
+    "title": "Avoid webhook timeouts",
+    "scenario": "Deferring slow accounting or business operations"
+   },
+   {
+    "title": "Allow automatic redelivery",
+    "scenario": "Recovering from temporary endpoint unavailability"
+   }
+  ],
+  "related": [
+   "automatic retries",
+   "Event deliveries",
+   "destination",
+   "2xx",
+   "200 response"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Acknowledge receipt with a 2xx response before running complex or slow processing.",
+   "A 200 response tells the sender that delivery succeeded.",
+   "Retries may stop if the destination is disabled or deleted when the retry occurs.",
+   "Sandbox delivery failures are retried three times over several hours."
+  ],
+  "gotchas": [
+   "Do not perform slow business logic before sending the acknowledgement."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Verifying::IP allow lists": {
+  "sourceUrl": "https://docs.github.com/en/webhooks/using-webhooks/best-practices-for-using-webhooks",
+  "sourceTitle": "Best practices for using webhooks",
+  "summary": "Use an IP allow list to restrict webhook connections to GitHub's delivery addresses. Treat it as defence in depth: refresh the list from GitHub's metadata endpoint and keep separate request-authentication checks.",
+  "explanation": "An IP allow list lets a webhook receiver accept network connections only from the provider's known delivery addresses. For GitHub, obtain the current addresses through GET /meta and refresh the configured list periodically because GitHub can change its IP ranges; retain signature or payload verification as a separate control.",
+  "syntax": "GET /meta",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Apply an IP allow list before webhook processing",
+   "code": "const allowed = new Set((process.env.GITHUB_IPS ?? \"\").split(\",\").filter(Boolean));\n\nexport function handleWebhook(req, res) {\n  const sourceIp = req.socket.remoteAddress?.replace(/^::ffff:/, \"\");\n  if (!sourceIp || !allowed.has(sourceIp)) {\n    res.writeHead(403);\n    return res.end(\"forbidden\");\n  }\n  // Also verify the webhook signature and payload.\n  res.writeHead(204);\n  res.end();\n}",
+   "language": "typescript",
+   "explanation": "Replace GITHUB_IPS with the current addresses obtained from GitHub's metadata endpoint, and perform normal webhook authentication separately."
+  },
+  "useCases": [
+   {
+    "title": "Restrict inbound sources",
+    "scenario": "A public webhook endpoint receives GitHub deliveries."
+   },
+   {
+    "title": "Enforce network policy at the edge",
+    "scenario": "A firewall or load balancer sits before the webhook service."
+   },
+   {
+    "title": "Refresh provider addresses",
+    "scenario": "GitHub changes its delivery infrastructure."
+   }
+  ],
+  "related": [
+   "GET /meta",
+   "REST API endpoints for meta data",
+   "webhook deliveries"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How should a GitHub webhook IP allow list be maintained?",
+    "answer": "Configure the receiver to accept requests from GitHub's delivery addresses and obtain the current set through GET /meta. Refresh the allow list periodically because those addresses can change.",
+    "followUp": "What happens if the list is stale? Legitimate deliveries may be rejected after GitHub changes its addresses, so operational refreshes are required."
+   },
+   {
+    "question": "What security benefit does an IP allow list provide?",
+    "answer": "The allow list restricts which network sources can reach the endpoint and can block spoofed requests. It is a network control, so the webhook should still use an independent authenticity check.",
+    "followUp": "Why is IP filtering insufficient alone? A permitted source can still send an invalid or malicious payload, so request-level verification remains necessary."
+   },
+   {
+    "question": "Where do the current GitHub webhook addresses come from?",
+    "answer": "Use GitHub's GET /meta endpoint to discover the current IP addresses used for webhook deliveries. Configure those addresses in the server's network policy and keep the policy synchronized.",
+    "followUp": "What operational signal should be monitored? Track failed deliveries after address changes and verify that the refreshed policy includes the provider's current ranges."
+   }
+  ],
+  "keyPoints": [
+   "Configure the receiver's network policy with the addresses GitHub uses to deliver webhooks.",
+   "Filtering by source address helps prevent unsolicited spoofed traffic from reaching the webhook endpoint.",
+   "Use GitHub's metadata API to discover the provider's current address list.",
+   "The metadata REST API documentation is the relevant reference for obtaining the addresses."
+  ],
+  "gotchas": [
+   "A static list can become stale; refresh it periodically.",
+   "An allow list reduces spoofed traffic but does not replace webhook authentication."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Verifying::Replay protection": {
+  "sourceUrl": "https://docs.github.com/en/webhooks/using-webhooks/best-practices-for-using-webhooks",
+  "sourceTitle": "Best practices for using webhooks",
+  "summary": "Prevent webhook replay attacks by tracking GitHub’s X-GitHub-Delivery value and processing each unique delivery only once. A repeated value indicates that the one-time action should not run again.",
+  "explanation": "Replay protection makes webhook handling idempotent for a delivery: read the provider’s unique delivery identifier, check whether it has already been processed, and refuse to perform the action again. For GitHub, use X-GitHub-Delivery; requested redeliveries intentionally retain the original value, so they are recognized as duplicates.",
+  "syntax": "X-GitHub-Delivery: <delivery-id>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Reject a repeated GitHub delivery",
+   "code": "const seen = new Set<string>();\n\nexport function handleWebhook(req: Request): Response {\n  const deliveryId = req.headers.get(\"X-GitHub-Delivery\");\n  if (!deliveryId) return new Response(\"Missing delivery ID\", { status: 400 });\n  if (seen.has(deliveryId)) return new Response(\"Already processed\", { status: 200 });\n  seen.add(deliveryId);\n  // Perform the one-time action here.\n  return new Response(\"Accepted\", { status: 200 });\n}",
+   "language": "typescript",
+   "explanation": "Uses GitHub’s delivery identifier to reject duplicate processing. A production implementation should store identifiers in durable shared storage rather than an in-memory set."
+  },
+  "useCases": [
+   {
+    "title": "Block replayed deliveries",
+    "scenario": "An attacker resends a captured webhook request."
+   },
+   {
+    "title": "Prevent duplicate side effects",
+    "scenario": "A provider retries or redelivers an event after a timeout."
+   },
+   {
+    "title": "Coordinate one-time processing",
+    "scenario": "Several application instances receive webhook traffic."
+   }
+  ],
+  "related": [
+   "X-GitHub-Delivery",
+   "webhook delivery",
+   "replay attack",
+   "redelivery"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you protect a webhook handler from replayed deliveries?",
+    "answer": "A replay attack resends an intercepted webhook delivery. Read X-GitHub-Delivery and use it as a uniqueness key; if the key was already handled, skip the action and return success.",
+    "followUp": "How should a handler treat GitHub’s requested redelivery? It should recognize the same header value and avoid repeating a one-time side effect."
+   },
+   {
+    "question": "Where should processed delivery identifiers be stored?",
+    "answer": "Persist each successfully accepted delivery identifier in durable storage and check it before executing the side effect. The identifier must be shared across instances so horizontal scaling cannot process the same delivery twice.",
+    "followUp": "What failure remains if recording and acting are separate operations? A crash between them can cause ambiguity, so use an atomic claim or an idempotent downstream operation."
+   },
+   {
+    "question": "Is the delivery identifier alone sufficient security?",
+    "answer": "The delivery header identifies a delivery uniquely per event and is the value used to detect a repeat. It does not replace signature verification; authenticity and replay detection address different threats.",
+    "followUp": "What additional control prevents forged deliveries? Verify the webhook secret or signature before trusting and processing the request."
+   }
+  ],
+  "keyPoints": [
+   "Replay protection addresses an attacker re-sending a previously captured webhook request.",
+   "For GitHub webhooks, use X-GitHub-Delivery as the per-event uniqueness key.",
+   "The identifier remains stable across a requested redelivery, allowing duplicate detection."
+  ],
+  "gotchas": [
+   "A legitimate GitHub redelivery has the same identifier as the original, so do not treat it as a new one-time action."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Verifying::Signature verification": {
+  "sourceUrl": "https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries",
+  "sourceTitle": "Validating webhook deliveries",
+  "summary": "Verify a GitHub webhook by recomputing its HMAC-SHA256 signature from the payload and secret, then comparing it with X-Hub-Signature-256 using a timing-safe method. The expected value uses a sha256= prefix.",
+  "explanation": "GitHub signs the payload with the webhook secret using HMAC-SHA256 and sends the hexadecimal result in X-Hub-Signature-256 with a sha256= prefix. Recompute that value from the original request body, then compare equal-length byte representations with a constant-time comparison before processing the event.",
+  "syntax": "HMAC-SHA256(secret token, payload contents) → hexadecimal digest; compare `sha256=` + digest with `X-Hub-Signature-256`",
+  "parameters": [
+   {
+    "name": "payload",
+    "type": "string",
+    "description": "The unmodified request payload used as the HMAC message."
+   },
+   {
+    "name": "secret",
+    "type": "string",
+    "description": "The webhook secret configured for the sender."
+   },
+   {
+    "name": "signature",
+    "type": "string",
+    "description": "The X-Hub-Signature-256 header value."
+   }
+  ],
+  "returns": "A boolean indicating whether the received signature matches the computed signature.",
+  "example": {
+   "title": "Verify a GitHub webhook signature",
+   "code": "import crypto from \"node:crypto\";\n\nexport function verifyWebhook(rawBody: string, received: string, secret: string) {\n  const expected = \"sha256=\" + crypto\n    .createHmac(\"sha256\", secret)\n    .update(rawBody)\n    .digest(\"hex\");\n  const a = Buffer.from(received);\n  const b = Buffer.from(expected);\n  return a.length === b.length && crypto.timingSafeEqual(a, b);\n}",
+   "language": "typescript",
+   "explanation": "Computes GitHub's HMAC-SHA256 signature from the unchanged payload and compares it with the header using a timing-safe operation."
+  },
+  "useCases": [
+   {
+    "title": "Accept trusted deliveries",
+    "scenario": "Authenticating inbound GitHub events before dispatching them to application handlers."
+   },
+   {
+    "title": "Detect tampering",
+    "scenario": "Detecting changes to a webhook body while it travels to the receiver."
+   },
+   {
+    "title": "Harden comparisons",
+    "scenario": "Reducing timing side-channel exposure during signature checks."
+   }
+  ],
+  "related": [
+   "X-Hub-Signature-256",
+   "HMAC-SHA256",
+   "secret token",
+   "payload contents",
+   "crypto.timingSafeEqual"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does GitHub format a webhook signature?",
+    "answer": "GitHub uses HMAC-SHA256 with the webhook secret and payload contents. The resulting hexadecimal signature is sent in X-Hub-Signature-256 and begins with sha256=.",
+    "followUp": "What should the handler do before comparing signatures? It should obtain the raw payload, compute the expected prefixed digest, and compare it with a timing-safe method."
+   },
+   {
+    "question": "Describe the verification algorithm.",
+    "answer": "Read X-Hub-Signature-256, calculate an HMAC-SHA256 digest from the configured secret and the unchanged request payload, prepend sha256=, and compare the result with the header.",
+    "followUp": "Why does payload parsing matter? Parsing and reserializing can alter whitespace or formatting, so the bytes no longer represent the signed payload."
+   },
+   {
+    "question": "Why should the comparison be timing-safe?",
+    "answer": "A constant-time comparison reduces information leaked through timing differences that can occur with regular equality checks. In Node.js, crypto.timingSafeEqual is suitable after ensuring the buffers have the same length.",
+    "followUp": "What additional input validation is needed? Reject malformed or differently sized signatures before calling the byte comparison routine."
+   }
+  ],
+  "keyPoints": [
+   "The sender creates a signature from a shared webhook secret and includes it with every delivery.",
+   "Read the signature from the X-Hub-Signature-256 request header.",
+   "Interpret the generated HMAC as hexadecimal when constructing the value to compare.",
+   "Include the literal sha256= algorithm prefix before the hexadecimal digest.",
+   "Prefer the SHA-256 header and algorithm rather than older signature mechanisms."
+  ],
+  "gotchas": [
+   "Use the exact received payload when calculating the digest; changing its contents changes the signature.",
+   "Avoid ordinary string equality for the final check; use a timing-safe comparison and ensure both byte arrays have equal length."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

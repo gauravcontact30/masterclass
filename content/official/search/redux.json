@@ -1,0 +1,2408 @@
+{
+ "Hooks::Hooks and the store Provider": {
+  "sourceUrl": "https://redux.js.org/react-redux/api/hooks",
+  "sourceTitle": "Hooks | Redux",
+  "summary": "React Redux hooks access the store supplied by Provider through context. useSelector reads and subscribes to selected state, while useDispatch returns dispatch; without Provider above the component, the first hook access fails.",
+  "explanation": "React Redux hooks obtain the store through the context established by Provider. useSelector reads and subscribes to selected state, while useDispatch returns the store's dispatch function; calling either without an ancestor Provider fails because no store context is available.",
+  "syntax": "<Provider store={store}>...</Provider>\nconst value = useSelector(selector)\nconst dispatch = useDispatch()",
+  "parameters": [
+   {
+    "name": "selector",
+    "type": "function",
+    "description": "Selector function receiving the entire Redux store state and returning the value used by the component."
+   },
+   {
+    "name": "store",
+    "type": "Redux store",
+    "description": "The Redux store supplied to Provider."
+   }
+  ],
+  "returns": "useSelector returns the selector's result; useDispatch returns the Redux store's dispatch function.",
+  "example": {
+   "title": "Hooks inside a Provider",
+   "code": "import React from 'react'\nimport { Provider, useSelector, useDispatch } from 'react-redux'\nimport { configureStore, createSlice } from '@reduxjs/toolkit'\n\nconst counter = createSlice({\n  name: 'counter',\n  initialState: { value: 0 },\n  reducers: { increment: state => { state.value += 1 } }\n})\nconst store = configureStore({ reducer: counter.reducer })\n\nfunction Counter() {\n  const value = useSelector(state => state.value)\n  const dispatch = useDispatch()\n  return <button onClick={() => dispatch(counter.actions.increment())}>{value}</button>\n}\n\nexport default function App() {\n  return <Provider store={store}><Counter /></Provider>\n}",
+   "language": "tsx",
+   "explanation": "The Provider supplies the store through context, allowing the component hooks to read state and dispatch actions."
+  },
+  "useCases": [
+   {
+    "title": "Selecting state",
+    "scenario": "Read a slice of Redux state in a component."
+   },
+   {
+    "title": "Updating state",
+    "scenario": "Dispatch an action from an event handler."
+   },
+   {
+    "title": "Establishing store context",
+    "scenario": "Provide one store to the application component tree."
+   }
+  ],
+  "related": [
+   "Provider",
+   "useSelector()",
+   "useDispatch()",
+   "ReactReduxContext",
+   "connect()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Wrap the application tree in Provider before using the React Redux hooks.",
+   "Provider places the store where descendant components can access it.",
+   "useSelector applies a selector to the store state and returns the selected result.",
+   "useSelector subscribes the component to store updates and reevaluates the selector after dispatches.",
+   "useDispatch provides the store's dispatch function for sending actions."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::Hooks versus connect": {
+  "sourceUrl": "https://redux.js.org/react-redux/api/hooks",
+  "sourceTitle": "Hooks | Redux",
+  "summary": "useSelector is the hooks-based equivalent of mapStateToProps in concept. Unlike connect, each useSelector call creates its own Redux store subscription.",
+  "explanation": "The hooks API lets a function component read selected store data directly with useSelector and dispatch actions with useDispatch. Each useSelector call subscribes separately, whereas connect wraps a component and uses shallow comparison of mapped results to decide whether it should re-render.",
+  "syntax": "const selected = useSelector(selector, equalityFn?)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Hooks replacing connect",
+   "code": "import { Provider, useSelector, useDispatch } from 'react-redux'\nimport { store, increment } from './store'\n\nfunction Counter() {\n  const count = useSelector(state => state.counter.value)\n  const dispatch = useDispatch()\n  return <button onClick={() => dispatch(increment())}>{count}</button>\n}\n\nexport default function App() {\n  return <Provider store={store}><Counter /></Provider>\n}",
+   "language": "tsx",
+   "explanation": "The component reads a selected value with useSelector and dispatches an action with useDispatch."
+  },
+  "useCases": [
+   {
+    "title": "Read store data without a wrapper",
+    "scenario": "Function components need a small, selected slice of Redux state."
+   },
+   {
+    "title": "Use multiple selectors",
+    "scenario": "A component needs several independent values from the store."
+   },
+   {
+    "title": "Migrate from connect",
+    "scenario": "A codebase is adopting modern React-Redux patterns."
+   }
+  ],
+  "related": [
+   "useSelector",
+   "useDispatch",
+   "Provider",
+   "connect",
+   "mapStateToProps",
+   "shallow equality"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What replaced mapStateToProps in the hooks API?",
+    "answer": "useSelector is the hooks-based counterpart to mapStateToProps in concept: it selects the needed state inside a function component. Unlike connect, it does not inject mapped values as wrapper props.",
+    "followUp": "What happens if a component calls useSelector twice? Each call establishes its own subscription to the store."
+   },
+   {
+    "question": "How do hook subscriptions work?",
+    "answer": "Every useSelector call subscribes to the Redux store and runs its selector when an action is dispatched. A component may call it multiple times to read separate pieces of state.",
+    "followUp": "How does this differ from connect's comparison behavior? connect uses shallow equality on the result of mapState calls."
+   },
+   {
+    "question": "Why prefer hooks over connect for new code?",
+    "answer": "connect remains supported, but the hooks API is simpler and generally works better with TypeScript. connect creates a wrapper component, while hooks reduce that indirection by placing store access in the function component.",
+    "followUp": "When might connect still be useful? Existing connected components can continue using it, since the documentation says it remains supported."
+   }
+  ],
+  "keyPoints": [
+   "useSelector fills the conceptual role of mapStateToProps by selecting the state needed by a function component.",
+   "A function component can use several selectors when it needs values from different parts of the store.",
+   "Subscriptions are created per useSelector call, not once for the whole component.",
+   "connect is still available, so adopting hooks does not require treating existing connected components as invalid.",
+   "The documentation recommends hooks because they reduce complexity and provide a smoother TypeScript experience."
+  ],
+  "gotchas": [
+   "Calling useSelector multiple times creates multiple store subscriptions; combine calls only when that better matches the component's data needs.",
+   "useSelector compares its selected result differently from connect, so returning a new object from a selector can cause extra re-renders unless equality handling is considered."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::Reading state in handlers": {
+  "sourceUrl": "https://redux.js.org/usage/deriving-data-selectors",
+  "sourceTitle": "Deriving Data with Selectors | Redux",
+  "summary": "For a value needed only when an event occurs, dispatch a thunk and read the latest state with getState. This performs a one-time read rather than creating a subscription; use useSelector when later changes must update the caller.",
+  "explanation": "A click handler can dispatch a thunk that receives getState and reads the current store value when the thunk runs. Use a selector inside the thunk to keep state-reading logic reusable; use useSelector only when the caller must react to subsequent state changes.",
+  "syntax": "(dispatch, getState) => { /* read state or dispatch actions */ }",
+  "parameters": [
+   {
+    "name": "dispatch",
+    "type": "Dispatch",
+    "description": "Redux store dispatch method used to dispatch actions or thunks."
+   },
+   {
+    "name": "getState",
+    "type": "() => RootState",
+    "description": "Redux store method that returns the current root state."
+   }
+  ],
+  "returns": "A thunk may return the selected state value when dispatched; the value is read once and does not remain updated.",
+  "example": {
+   "title": "Read current state in a thunk",
+   "code": "import { configureStore, createSlice } from '@reduxjs/toolkit'\n\nconst counter = createSlice({\n  name: 'counter',\n  initialState: { value: 0 },\n  reducers: {\n    incremented: state => { state.value += 1 },\n    addIfAllowed: (state, action) => {\n      if (state.value < 5) state.value += action.payload\n    }\n  }\n})\n\nconst store = configureStore({ reducer: { counter: counter.reducer } })\nconst addIfAllowed = amount => (dispatch, getState) => {\n  if (getState().counter.value < 5) dispatch(counter.actions.incremented())\n}\n\nstore.dispatch(addIfAllowed(1))\nconsole.log(store.getState().counter.value)",
+   "language": "javascript",
+   "explanation": "Dispatch the thunk from a click handler when the latest state is needed once; the thunk reads it with getState instead of creating a subscription."
+  },
+  "useCases": [
+   {
+    "title": "Conditional click actions",
+    "scenario": "A button click needs the latest permission or feature flag before dispatching an action."
+   },
+   {
+    "title": "One-time reads outside components",
+    "scenario": "Non-React code has dispatch access and needs one selected value once."
+   },
+   {
+    "title": "Read updated state in a thunk",
+    "scenario": "An operation needs to inspect state after dispatching another action."
+   }
+  ],
+  "related": [
+   "useSelector",
+   "selector functions",
+   "dispatch",
+   "getState",
+   "thunk middleware",
+   "store.dispatch"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does a thunk read Redux state?",
+    "answer": "A thunk is dispatched as a function rather than called directly. Redux Thunk invokes it with dispatch and getState, so it can inspect the current root state and conditionally dispatch actions.",
+    "followUp": "How would you avoid coupling the thunk to nested state fields? Use a selector and call it with getState(), allowing the state-reading logic to be reused and kept separate from the thunk."
+   },
+   {
+    "question": "When should a click handler use a thunk instead of useSelector?",
+    "answer": "Use getState inside the dispatched thunk when the value is needed at action time, such as during a click-driven operation. This reads the current state when the thunk executes, without establishing a component subscription.",
+    "followUp": "What if the UI must update whenever that value changes? Use useSelector, because a one-time thunk read does not remain synchronized with later state changes."
+   },
+   {
+    "question": "Why use a selector inside a thunk?",
+    "answer": "Selectors accept the root state and return either a stored value or a derived value. A thunk can call a selector with getState(), which avoids reaching into nested state fields directly.",
+    "followUp": "What can be read after dispatching another action in the same thunk? Redux updates state synchronously during dispatch, so calling getState afterward returns the updated state."
+   }
+  ],
+  "keyPoints": [
+   "A thunk read captures the state for the operation's execution time, making it suitable for decisions triggered by a click or other one-off event.",
+   "When code has dispatch but no component subscription, dispatch a small thunk that returns the selected value for a single read.",
+   "Selectors work inside thunks because the thunk can provide the complete root state through getState()."
+  ],
+  "gotchas": [
+   "A value obtained through a one-time thunk read is a snapshot, not a live value; use a subscription when later changes must trigger updates."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::Selecting inside list rows": {
+  "sourceUrl": "https://redux.js.org/react-redux/api/hooks",
+  "sourceTitle": "Hooks | Redux",
+  "summary": "Select list IDs in the parent and pass each ID to a row. The row uses `useSelector` with that ID to read only its own item from Redux state.",
+  "explanation": "Use `useSelector` in the row component with the row's ID captured from props. The parent selects only item IDs and passes each ID down, so each row reads the data it needs instead of subscribing to the entire collection.",
+  "syntax": "useSelector(selector: (state: RootState) => Selected);",
+  "parameters": [
+   {
+    "name": "selector",
+    "type": "(state) => selectedValue",
+    "description": "The selector callback receives the complete Redux store state; the row ID is supplied through a closure or by invoking a selector inside the callback."
+   }
+  ],
+  "returns": "The value returned by the selector callback.",
+  "example": {
+   "title": "Select an item inside its list row",
+   "code": "import { useSelector } from 'react-redux'\n\nconst selectTodoIds = state => state.todos.map(todo => todo.id)\n\nexport function TodoList() {\n  const todoIds = useSelector(selectTodoIds)\n  return (\n    <ul>\n      {todoIds.map(id => <TodoListItem key={id} id={id} />)}\n    </ul>\n  )\n}\n\nfunction TodoListItem({ id }) {\n  const todo = useSelector(state => state.todos.find(todo => todo.id === id))\n  return <li>{todo?.text}</li>\n}",
+   "language": "tsx",
+   "explanation": "The parent subscribes only to the collection of IDs, while each row receives an ID and selects its own item from the store."
+  },
+  "useCases": [
+   {
+    "title": "Efficient list rendering",
+    "scenario": "A large todo or task list where the parent should not subscribe to every complete item object."
+   },
+   {
+    "title": "Normalized entity rows",
+    "scenario": "A normalized collection stored by ID, where each row already knows its entity key."
+   },
+   {
+    "title": "Independent row subscriptions",
+    "scenario": "Rows that update independently when their own Redux-backed data changes."
+   }
+  ],
+  "related": [
+   "useSelector",
+   "selector functions",
+   "TodoList",
+   "TodoListItem",
+   "selectTodoIds",
+   "selectTodoById"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How would you select one item by ID inside a row?",
+    "answer": "The parent selects an array of IDs and passes each ID to a row component. The row then uses `useSelector(state => selectTodoById(state, id))` to retrieve its item. This avoids making the parent subscribe to every item object.",
+    "followUp": "Why can this improve rendering? Each row selects one item, so a changed item can update its own row while unchanged rows can retain their selected references and avoid rerendering."
+   },
+   {
+    "question": "How does a row pass its ID to a selector?",
+    "answer": "`useSelector` invokes the selector with the complete Redux state and uses the selector result as the hook result. To supply an ID, capture the component prop in an inline callback or invoke a selector that accepts both state and ID inside that callback.",
+    "followUp": "What if the selector needs multiple arguments? Capture all required values in the component scope and pass them when invoking the real selector from the `useSelector` callback."
+   },
+   {
+    "question": "What determines whether a selected row rerenders?",
+    "answer": "The default equality check is strict reference equality, `===`. If the selected item reference is unchanged, the row does not rerender; if the selector creates a new reference, it is considered changed.",
+    "followUp": "How can a component select several values without creating one unstable object? Use multiple `useSelector` calls, each returning one value, or use an appropriate equality function when a combined result is necessary."
+   }
+  ],
+  "keyPoints": [
+   "Have the list parent select only item IDs rather than the full collection.",
+   "Pass each selected ID to its corresponding row as a prop.",
+   "Let the row use its ID to retrieve the matching object.",
+   "A row can capture its ID in a `useSelector` callback and index directly into state.",
+   "The row receives the selected item as the hook's returned value.",
+   "After actions, Redux compares the previous and current selected references."
+  ],
+  "gotchas": [
+   "Returning a newly created object or array from a row selector can trigger a re-render because the default comparison checks references, not shallow field equality.",
+   "Every row using `useSelector` subscribes and reevaluates its selector after dispatched actions, even when its item has not changed.",
+   "Because `useSelector` supplies only the root state, pass the row ID through a closure or call a two-argument selector from inside the callback."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::Selector identity in hooks": {
+  "sourceUrl": "https://redux.js.org/react-redux/api/hooks",
+  "sourceTitle": "Hooks | Redux",
+  "summary": "useSelector compares each selector result with the previous result using strict reference equality by default. Returning a freshly created object therefore causes a re-render after every dispatched action, even when its fields are unchanged.",
+  "explanation": "useSelector runs its selector after dispatched actions and compares the new result with the previous result using strict reference equality by default. A newly constructed object is a different reference even when its fields contain unchanged values, so it causes the component to re-render. Multiple useSelector calls can separate primitive selections, while memoization can preserve a derived object's identity until its inputs change.",
+  "syntax": "useSelector(selector, equalityFn?)",
+  "parameters": [
+   {
+    "name": "selector",
+    "type": "(state: RootState) => Selected",
+    "description": "A pure selector function that receives the Redux root state and returns the value to select."
+   }
+  ],
+  "returns": "The selected value returned by the selector; the component re-renders when its reference differs from the previous selected value.",
+  "example": {
+   "title": "A selector with unstable object identity",
+   "code": "const selectSummary = state => ({\n  count: state.todos.length,\n  completed: state.todos.filter(todo => todo.completed).length\n});\n\nfunction TodoSummary() {\n  const summary = useSelector(selectSummary);\n  return <p>{summary.completed} of {summary.count} completed</p>;\n}",
+   "language": "tsx",
+   "explanation": "This selector creates a new object whenever it runs, so the component can re-render after every dispatched action. Select primitive values separately or memoize derived results when stable identity matters."
+  },
+  "useCases": [
+   {
+    "title": "Split selections",
+    "scenario": "A component needs several independent primitive values from Redux state."
+   },
+   {
+    "title": "Memoized derivation",
+    "scenario": "A component needs a derived object or array without recreating it for unchanged inputs."
+   },
+   {
+    "title": "Reference-based updates",
+    "scenario": "A component should react only when the selected reference changes."
+   }
+  ],
+  "related": [
+   "useSelector()",
+   "Equality Comparisons and Updates",
+   "createSelector",
+   "React update batching",
+   "Selectors"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why does returning an object literal from a useSelector callback cause frequent re-renders?",
+    "answer": "useSelector runs the selector when an action is dispatched, then compares the new result with the previous result. By default it uses strict === reference equality, so a newly created object is treated as changed and causes a re-render.",
+    "followUp": "How can you avoid unnecessary renders while selecting several values? Use separate useSelector calls for the individual values, or use a memoized selector that returns a stable object until its inputs change."
+   },
+   {
+    "question": "What are two ways to select multiple values without an unstable object result?",
+    "answer": "Each useSelector call creates an individual store subscription. Multiple calls in one component can select separate values, and React Redux's batching means changes from one dispatch should normally produce one component render.",
+    "followUp": "What alternative preserves an object-shaped result? Supply an appropriate equality function or memoize the selector so unchanged inputs reuse the previous result reference."
+   },
+   {
+    "question": "Why can an unrelated action still trigger a component whose selected data did not change?",
+    "answer": "Selectors used with useSelector are run after every dispatched action, regardless of which part of the root state changed. Therefore, selectors that derive a new array or object on each run can trigger renders for unrelated actions.",
+    "followUp": "What is the performance-oriented fix for derived collections? Memoize the derivation, commonly with createSelector, so it returns a new reference only when its inputs change."
+   }
+  ],
+  "keyPoints": [
+   "After each dispatch, useSelector compares the previous selected result with the newly computed result by reference.",
+   "A changed result reference causes the component to render again.",
+   "Keeping the same result reference prevents a selector-driven re-render.",
+   "Separate useSelector calls are supported when a component needs several independent selected values.",
+   "Every useSelector invocation subscribes independently to the Redux store.",
+   "When several selections change in one dispatch, React Redux batching normally combines them into one render."
+  ],
+  "gotchas": [
+   "Returning a new object on every selector call forces a re-render by default, even when the object's contents are unchanged.",
+   "Do not assume useSelector compares object fields shallowly; its default comparison is strict reference equality."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::Stable dispatch identity": {
+  "sourceUrl": "https://redux.js.org/react-redux/api/hooks",
+  "sourceTitle": "Hooks | Redux",
+  "summary": "useDispatch returns the Redux store's dispatch function. Its stable reference makes it safe to include dispatch in a React effect's dependency array.",
+  "explanation": "useDispatch returns the store's dispatch function. React-Redux documents that this reference remains stable as long as the same store instance is supplied to the Provider, so adding dispatch to an effect's dependency array is safe and satisfies dependency checking.",
+  "syntax": "const dispatch = useDispatch()",
+  "parameters": [],
+  "returns": "A reference to the dispatch function from the Redux store.",
+  "example": {
+   "title": "Including dispatch in an effect",
+   "code": "import { useEffect } from 'react'\nimport { useDispatch } from 'react-redux'\nimport { fetchTodos } from './todosSlice'\n\nexport function Todos() {\n  const dispatch = useDispatch()\n\n  useEffect(() => {\n    dispatch(fetchTodos())\n  }, [dispatch])\n\n  return null\n}",
+   "language": "tsx",
+   "explanation": "The effect dispatches the fetch thunk and explicitly includes dispatch in its dependency list."
+  },
+  "useCases": [
+   {
+    "title": "Dispatching a startup thunk from an effect",
+    "scenario": "A component fetches data when it mounts."
+   },
+   {
+    "title": "Dispatching actions from event handlers",
+    "scenario": "A button or form needs to update Redux state."
+   },
+   {
+    "title": "Including dispatch with other effect dependencies",
+    "scenario": "An effect reacts to changing props and needs Redux state updates."
+   }
+  ],
+  "related": [
+   "useDispatch",
+   "useSelector",
+   "useEffect",
+   "Provider",
+   "Dispatch"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why is it safe to include dispatch in a dependency array?",
+    "answer": "useDispatch returns the dispatch function from the Redux store. Its reference is stable when the component continues using the same store, so listing it in an effect dependency array is safe.",
+    "followUp": "What would make the reference change? Replacing the Provider's store with a different store instance can produce a different dispatch function."
+   },
+   {
+    "question": "How do you obtain and use dispatch in a component?",
+    "answer": "Call useDispatch inside a function component, then use the returned function to dispatch actions or thunks. The hook obtains dispatch from the Redux store provided above the component.",
+    "followUp": "How should dispatch be typed for middleware? Derive AppDispatch from the configured store and expose a pre-typed useAppDispatch hook."
+   },
+   {
+    "question": "What is the practical effect of listing dispatch in useEffect dependencies?",
+    "answer": "The dependency array should contain dispatch because the effect uses it. React-Redux specifically shows dispatch included in the array, while the stable reference prevents unnecessary effect reruns under normal store usage.",
+    "followUp": "What else must be true for the effect to run? The component must be rendered under a Provider that supplies the intended store."
+   }
+  ],
+  "keyPoints": [
+   "useDispatch supplies the dispatch method associated with the Redux store available to the component.",
+   "Use the returned function to send actions whenever the component needs to request a state update.",
+   "An effect that calls dispatch should include dispatch in its dependency array.",
+   "The hook's result can be represented with Redux's Dispatch type when declaring the local variable."
+  ],
+  "gotchas": [
+   "The hook gives you the dispatch function belonging to the current Redux store; it is not an action creator or selector."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useSelector equality": {
+  "sourceUrl": "https://redux.js.org/react-redux/api/hooks",
+  "sourceTitle": "Hooks | Redux",
+  "summary": "useSelector uses strict reference equality by default. Pass shallowEqual or a custom equality function when a selector returns an object or array and you need different comparison behavior.",
+  "explanation": "useSelector runs the selector after store updates and compares its new result with the previous result. The default check is strict reference equality, so a newly created object or array is treated as changed. Pass shallowEqual as the second argument, or provide another equality function, to define when two selected results count as equivalent.",
+  "syntax": "useSelector(selector: SelectorFn, options?: EqualityFn | UseSelectorOptions)",
+  "parameters": [
+   {
+    "name": "selector",
+    "type": "SelectorFn",
+    "description": "Selector function receiving the Redux store state and returning the value for the component."
+   },
+   {
+    "name": "options",
+    "type": "EqualityFn | UseSelectorOptions",
+    "description": "Optional equality function, or an options object containing equalityFn, used to compare successive selector results."
+   }
+  ],
+  "returns": "The selected value returned by the selector; the component re-renders only when the comparison reports that the result changed.",
+  "example": {
+   "title": "Selecting an object with shallowEqual",
+   "code": "import { shallowEqual, useSelector } from 'react-redux'\n\nconst selectSummary = state => ({\n  count: state.counter.value,\n  status: state.counter.status,\n})\n\nexport function CounterSummary() {\n  const { count, status } = useSelector(selectSummary, shallowEqual)\n  return <p>{count}: {status}</p>\n}",
+   "language": "tsx",
+   "explanation": "The selector creates an object, while shallowEqual compares its fields so unchanged primitive values do not trigger a re-render."
+  },
+  "useCases": [
+   {
+    "title": "Compare object fields shallowly",
+    "scenario": "A selector returns a flat object containing several primitive fields."
+   },
+   {
+    "title": "Avoid updates for unchanged array entries",
+    "scenario": "A selector returns an array whose elements preserve stable references."
+   },
+   {
+    "title": "Apply a custom comparator",
+    "scenario": "A domain uses immutable data or requires value-based comparison."
+   }
+  ],
+  "related": [
+   "useSelector",
+   "shallowEqual",
+   "equalityFn",
+   "createSelector"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What equality check does useSelector use by default?",
+    "answer": "By default, useSelector compares the previous and current selector results with strict === reference equality. A component re-renders when the references differ and does not re-render when they match.",
+    "followUp": "What happens if a selector returns a new object on every call? The reference changes on each comparison, so useSelector can cause a re-render after every dispatch; use shallowEqual or memoize the selector result."
+   },
+   {
+    "question": "How can you prevent unnecessary re-renders when a selector returns an object?",
+    "answer": "Pass shallowEqual as the second argument: useSelector(selector, shallowEqual). It compares the selected object's fields rather than requiring the object itself to have the same reference.",
+    "followUp": "When is shallowEqual insufficient? It only compares at the shallow level, so nested objects or arrays still need stable references or a comparison strategy appropriate for their contents."
+   },
+   {
+    "question": "When would you use a custom equality function?",
+    "answer": "The second argument may be a custom equality function, or an options object containing equalityFn. The function receives the old and new selected values and determines whether they should be treated as equal.",
+    "followUp": "What alternatives can a custom equality function support? The documentation specifically notes that comparisons such as Lodash isEqual or Immutable.js capabilities can be used."
+   }
+  ],
+  "keyPoints": [
+   "After each dispatched action, useSelector compares the newly selected result with the previous result.",
+   "A comparator returning false means the selected value is considered changed and the component re-renders.",
+   "When the equality check considers the two results equal, useSelector skips the component re-render.",
+   "Use React-Redux's shallowEqual when a selection returns a flat object or array whose relevant entries retain stable references.",
+   "A custom equality function lets the selection define its own equivalence rule."
+  ],
+  "gotchas": [
+   "The default is not shallow equality: useSelector compares selected results by strict reference identity unless another equality function is supplied.",
+   "A custom comparator can perform deeper or library-specific comparisons, but its correctness and performance become your responsibility."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useStore": {
+  "sourceUrl": "https://redux.js.org/react-redux/api/hooks",
+  "sourceTitle": "Hooks",
+  "summary": "useStore returns the Redux store instance supplied to the surrounding Provider without subscribing the component to state. Use it only for uncommon imperative tasks; prefer useSelector for normal state access.",
+  "explanation": "Call useStore inside a component below Provider when uncommon imperative code needs the Redux store instance. It returns the exact store supplied to Provider, but does not subscribe the component to state changes; use useSelector for normal state reads.",
+  "syntax": "const store: Store = useStore()",
+  "parameters": [],
+  "returns": "A reference to the Redux store instance supplied to the surrounding Provider.",
+  "example": {
+   "title": "Access the provided store",
+   "code": "import { Provider, useStore } from 'react-redux'\nimport { configureStore } from '@reduxjs/toolkit'\nimport React from 'react'\nimport { createRoot } from 'react-dom/client'\n\nconst store = configureStore({ reducer: (state = { count: 0 }) => state })\n\nfunction Component() {\n  const store = useStore()\n  const increment = () => store.dispatch({ type: 'increment' })\n  return <button onClick={increment}>Use the store</button>\n}\n\ncreateRoot(document.getElementById('root')!).render(\n  <Provider store={store}><Component /></Provider>\n)",
+   "language": "tsx",
+   "explanation": "The component obtains the same store supplied to Provider and uses it for an imperative dispatch."
+  },
+  "useCases": [
+   {
+    "title": "Imperative store access",
+    "scenario": "A component must perform an uncommon imperative operation that needs the store object itself."
+   },
+   {
+    "title": "Replacing reducers",
+    "scenario": "Application logic needs to replace reducers at runtime."
+   }
+  ],
+  "related": [
+   "useSelector()",
+   "useDispatch()",
+   "<Provider>",
+   "ReactReduxContext",
+   "replacing reducers"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useStore return?",
+    "answer": "useStore returns a reference to the Redux store passed to the surrounding Provider. It gives imperative access to the store instance rather than selecting a reactive value.",
+    "followUp": "How should ordinary component state reads be implemented? Use useSelector, which is the preferred primary hook for reading state and subscribing to updates."
+   },
+   {
+    "question": "When is useStore appropriate?",
+    "answer": "The hook should be used infrequently, mainly when code genuinely needs the store itself, such as replacing reducers. It is not the normal choice for reading state.",
+    "followUp": "Why is direct store access usually avoided? Selector-based access better matches React-Redux's subscription model and keeps components focused on the data they need."
+   },
+   {
+    "question": "Which store does useStore provide?",
+    "answer": "The component must be rendered beneath a Provider that supplies the store. The returned reference is the same store instance given to that Provider.",
+    "followUp": "What happens with a custom context? The matching React-Redux context and corresponding hook setup must be used so the component accesses the intended store."
+   }
+  ],
+  "keyPoints": [
+   "useStore retrieves the current store from React-Redux's default context.",
+   "The result is the identical store instance supplied to Provider.",
+   "Use it for unusual imperative tasks, including reducer replacement.",
+   "Choose useSelector as the normal way to read Redux state from components."
+  ],
+  "gotchas": [
+   "Use useStore sparingly; it is intended for uncommon cases rather than routine component logic.",
+   "For reading store data in components, prefer useSelector instead of accessing the store directly."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Middleware & async::Async request lifecycle": {
+  "sourceUrl": "https://redux.js.org/toolkit/api/createAsyncThunk",
+  "sourceTitle": "createAsyncThunk - Redux Toolkit",
+  "summary": "createAsyncThunk runs a promise-based callback and emits pending, fulfilled, or rejected actions. Their request identity lets reducers ignore late results from older requests.",
+  "explanation": "createAsyncThunk generates pending, fulfilled, and rejected actions around a promise. Each lifecycle action includes a requestId, allowing reducer logic to accept only the result belonging to the currently tracked request.",
+  "syntax": "createAsyncThunk(type, payloadCreator, options?)",
+  "parameters": [
+   {
+    "name": "type",
+    "type": "string",
+    "description": "Prefix used to generate pending, fulfilled, and rejected action types."
+   },
+   {
+    "name": "payloadCreator",
+    "type": "function",
+    "description": "Callback that performs the asynchronous work and returns a promise."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Optional configuration for the thunk."
+   }
+  ],
+  "returns": "A standard Redux thunk action creator with pending, fulfilled, and rejected action creators attached.",
+  "example": {
+   "title": "Ignore stale request results",
+   "code": "import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'\n\ntype User = { id: string; name: string }\n\ntype State = { user?: User; status: string; currentRequestId?: string; error?: string }\nconst initialState: State = { status: 'idle' }\n\nexport const fetchUser = createAsyncThunk<User, string>(\n  'users/fetchUser',\n  async id => (await fetch(`/api/users/${id}`)).json()\n)\n\nconst users = createSlice({\n  name: 'users', initialState,\n  reducers: {},\n  extraReducers: builder => builder\n    .addCase(fetchUser.pending, (state, action) => {\n      state.status = 'pending'\n      state.currentRequestId = action.meta.requestId\n    })\n    .addCase(fetchUser.fulfilled, (state, action) => {\n      if (state.currentRequestId !== action.meta.requestId) return\n      state.status = 'fulfilled'; state.user = action.payload\n    })\n    .addCase(fetchUser.rejected, (state, action) => {\n      if (state.currentRequestId !== action.meta.requestId) return\n      state.status = 'rejected'; state.error = action.error.message\n    })\n})\n\nexport default users.reducer",
+   "language": "typescript",
+   "explanation": "The thunk emits lifecycle actions carrying request identity. The reducer records the active ID and ignores fulfilled or rejected results from older requests."
+  },
+  "useCases": [
+   {
+    "title": "Track request status",
+    "scenario": "A screen fetches data whenever its selected ID changes."
+   },
+   {
+    "title": "Prevent stale overwrites",
+    "scenario": "Users can trigger the same fetch repeatedly before an earlier call finishes."
+   },
+   {
+    "title": "Carry controlled rejection data",
+    "scenario": "An API returns validation or domain errors that the UI must display."
+   }
+  ],
+  "related": [
+   "createAsyncThunk",
+   "pending",
+   "fulfilled",
+   "rejected",
+   "extraReducers",
+   "rejectWithValue",
+   "requestId",
+   "configureStore"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What lifecycle does createAsyncThunk generate?",
+    "answer": "createAsyncThunk accepts an action-type prefix and a payload creator that returns a promise. It dispatches pending before running the callback, then fulfilled or rejected after the promise settles.",
+    "followUp": "How can a reducer prevent an old response from overwriting newer data? Store the pending action's requestId and process completion only when action.meta.requestId still matches it."
+   },
+   {
+    "question": "How do reducers respond to the lifecycle actions?",
+    "answer": "The thunk action creator exposes pending, fulfilled, and rejected action creators. Reducers can handle these in extraReducers to update loading, data, and error state.",
+    "followUp": "Why use the attached creators instead of hard-coded strings? They provide the generated action types and preserve a direct relationship to the thunk being handled."
+   },
+   {
+    "question": "What information distinguishes competing requests?",
+    "answer": "A pending action marks the request as started and supplies request metadata. A fulfilled action carries the resolved value, while a rejected action represents failure and can carry either an error or rejectWithValue payload.",
+    "followUp": "What should happen when two requests overlap? Compare each completion's requestId with the currently active ID and ignore stale completions."
+   }
+  ],
+  "keyPoints": [
+   "The supplied prefix determines the generated action types for the request lifecycle.",
+   "Dispatching the thunk starts the lifecycle with pending before the asynchronous callback runs.",
+   "The payload creator performs the asynchronous work, and the thunk waits for its promise to settle.",
+   "A successful promise resolution produces fulfilled and places the resolved value in action.payload.",
+   "rejectWithValue lets application-level rejection data be supplied as the rejected action's payload.",
+   "The result is dispatchable through Redux's normal thunk middleware as a standard thunk action creator."
+  ],
+  "gotchas": [
+   "Handle the generated lifecycle creators on the thunk, such as fetchUser.pending, rather than inventing separate action types.",
+   "A successful payload creator result becomes fulfilled with its resolved value in action.payload.",
+   "Use rejectWithValue when rejected domain data should be placed in action.payload instead of relying only on a serialized error."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Middleware & async::Middleware pipeline": {
+  "sourceUrl": "https://redux.js.org/api/applymiddleware",
+  "sourceTitle": "applyMiddleware",
+  "summary": "Redux middleware wraps dispatch in a composable pipeline. Each middleware can inspect, transform, delay, stop, or forward dispatched values before the original dispatch reaches reducers.",
+  "explanation": "Middleware forms a composable pipeline around Redux's dispatch method. Each middleware receives store access, can inspect or transform an action, and decides whether and when to pass a value to the next middleware; the final link invokes the original dispatch that reaches reducers.",
+  "syntax": "applyMiddleware(...middleware)",
+  "parameters": [
+   {
+    "name": "...middleware",
+    "type": "Middleware[]",
+    "description": "Middleware functions to compose around the store's dispatch method."
+   }
+  ],
+  "returns": "A store enhancer that applies the supplied middleware to the store's dispatch method.",
+  "example": {
+   "title": "Observe actions around dispatch",
+   "code": "import { applyMiddleware, createStore } from 'redux'\n\nconst observe = ({ getState }) => next => action => {\n  console.log('before', action.type, getState())\n  const result = next(action)\n  console.log('after', getState())\n  return result\n}\n\nconst reducer = (state = { count: 0 }, action) =>\n  action.type === 'increment' ? { count: state.count + 1 } : state\n\nconst store = createStore(reducer, applyMiddleware(observe))\nstore.dispatch({ type: 'increment' })",
+   "language": "javascript",
+   "explanation": "This runnable example logs state around the reducer by placing an observer in the dispatch pipeline."
+  },
+  "useCases": [
+   {
+    "title": "Observe actions and state for logging or crash reporting.",
+    "scenario": "Development diagnostics"
+   },
+   {
+    "title": "Intercept functions, promises, or other values and dispatch ordinary actions around asynchronous work.",
+    "scenario": "Async workflows"
+   },
+   {
+    "title": "Modify, delay, ignore, or conditionally forward actions.",
+    "scenario": "Action control"
+   },
+   {
+    "title": "Connect routing or external APIs to the store's dispatch flow.",
+    "scenario": "Integrations"
+   }
+  ],
+  "related": [
+   "dispatch",
+   "getState",
+   "next",
+   "applyMiddleware",
+   "Store",
+   "thunk middleware",
+   "async actions",
+   "createStore"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the Redux middleware signature?",
+    "answer": "Middleware wraps the store's dispatch function and is composed as nested functions. Each middleware receives dispatch and getState, then receives next and returns an action-handling function.",
+    "followUp": "Why can middleware dispatch values that reducers cannot handle? A middleware can intercept a non-plain value and prevent it from reaching reducers, then dispatch ordinary actions instead."
+   },
+   {
+    "question": "How does an action travel through the middleware pipeline?",
+    "answer": "The first middleware receives the dispatched value, and each middleware can inspect, modify, delay, ignore, or forward it. The last middleware receives the real store dispatch as next, completing the path to the reducer.",
+    "followUp": "What is the difference between next(action) and dispatch(action)? next continues from the current middleware, whereas dispatch sends the action through the complete middleware chain again."
+   },
+   {
+    "question": "What problems is Redux middleware intended to solve?",
+    "answer": "Middleware is commonly used for side effects such as logging, crash reporting, routing, API calls, and asynchronous actions. It can also extend what dispatch accepts, provided intercepted values do not reach reducers unchanged.",
+    "followUp": "How does thunk middleware use this mechanism? It intercepts a function, calls it with dispatch and getState, and lets that function dispatch actions."
+   }
+  ],
+  "keyPoints": [
+   "Middleware replaces or surrounds the store's dispatch entry point, so dispatched values can be observed or handled before reducers run.",
+   "Middleware is composable: multiple independent handlers can be assembled into one dispatch pipeline.",
+   "A middleware starts with store access, specifically dispatch and getState, and returns the next stage of its function chain.",
+   "The returned function receives next, which represents the following middleware's dispatch method.",
+   "The action handler can forward the received action to the next stage, or choose a different argument, timing, or no forwarding.",
+   "The final middleware hands the value to the original store dispatch, which sends the resulting action toward reducers."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Middleware & async::Persistence and rehydration": {
+  "sourceUrl": "https://redux.js.org/toolkit/rtk-query/usage/persistence-and-rehydration",
+  "sourceTitle": "Persistence and Rehydration",
+  "summary": "Redux can restore serialized state during store creation, while RTK Query supports extracting rehydration data from actions. Treat restored API cache entries as potentially stale rather than permanently valid.",
+  "explanation": "Hydration supplies existing serialized data as preloadedState when the store is created. Reducers provide defaults for missing data, while persisted API caches require special care because old entries can become stale; use cache behavior or refetching rather than assuming restored data remains valid.",
+  "syntax": "createApi({ ..., extractRehydrationInfo(action, { reducerPath }) { ... } })",
+  "parameters": [
+   {
+    "name": "preloadedState",
+    "type": "any",
+    "description": "Initial state used to hydrate or initialize the Redux store; it may be fully or partially populated."
+   },
+   {
+    "name": "extractRehydrationInfo",
+    "type": "function",
+    "description": "The createApi option that extracts rehydration data from dispatched actions."
+   }
+  ],
+  "returns": "A defined value returned by extractRehydrationInfo is used as rehydrated API state for fulfilled and errored queries.",
+  "example": {
+   "title": "Hydrate a Redux store from localStorage",
+   "code": "import { configureStore, createSlice } from '@reduxjs/toolkit'\n\nconst todos = createSlice({\n  name: 'todos',\n  initialState: [],\n  reducers: {\n    added: (state, action) => { state.push(action.payload) }\n  }\n})\n\nconst saved = localStorage.getItem('redux-state')\nconst preloadedState = saved ? JSON.parse(saved) : undefined\nconst store = configureStore({ reducer: { todos: todos.reducer }, preloadedState })\n\nstore.subscribe(() => {\n  localStorage.setItem('redux-state', JSON.stringify(store.getState()))\n})",
+   "language": "javascript",
+   "explanation": "Loads a previously serialized state as preloadedState and persists subsequent store updates."
+  },
+  "useCases": [
+   {
+    "title": "Session restoration",
+    "scenario": "Restore a serialized Redux session when an application starts."
+   },
+   {
+    "title": "Persisted API state",
+    "scenario": "Rehydrate RTK Query state from Redux Persist or another action-based persistence mechanism."
+   },
+   {
+    "title": "Native application caching",
+    "scenario": "Keep native-app data available when no browser cache is available."
+   }
+  ],
+  "related": [
+   "preloadedState",
+   "extractRehydrationInfo",
+   "createApi",
+   "Cache-Control",
+   "refetchOnMountOrArgChange",
+   "Redux Persist",
+   "REHYDRATE"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you hydrate a Redux store?",
+    "answer": "Use the store's preloadedState when creating it. It can contain all or part of previously serialized data, while reducers initialize anything that is absent.",
+    "followUp": "What happens when both preloadedState and reducer defaults exist? For a combined reducer, supplied preloaded state takes precedence for the reducers that receive it; missing slices receive undefined and use their defaults."
+   },
+   {
+    "question": "How does RTK Query support rehydration?",
+    "answer": "RTK Query exposes extractRehydrationInfo on createApi. It receives every dispatched action, and a non-undefined return value becomes rehydrated API state for fulfilled and errored queries.",
+    "followUp": "Why not persist every API cache? Restored entries can be very stale, so browser applications should generally rely on HTTP cache behavior instead."
+   },
+   {
+    "question": "How should persisted data be kept from becoming permanently valid?",
+    "answer": "Use serializable state and treat restored API data as a cache, not permanent truth. Browser cache-control is generally preferred for API persistence; persistence can be more appropriate in native apps without a browser cache.",
+    "followUp": "How can stale server-rendered data be refreshed? Configure refetchOnMountOrArgChange with a suitable age, such as 900 seconds, so access can trigger a refetch."
+   }
+  ],
+  "keyPoints": [
+   "RTK Query's extractRehydrationInfo examines each dispatched action.",
+   "A defined extractor result supplies the API state used for rehydration.",
+   "The documented RTK Query rehydration behavior covers fulfilled and errored query results."
+  ],
+  "gotchas": [
+   "Avoid persisting RTK Query API slices in browsers when HTTP cache-control can define appropriate cache behavior.",
+   "Rehydrated API data may be extremely stale after the application has not been opened for a while.",
+   "Keep persisted state serializable; non-serializable values can break persistence and rehydration."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Middleware & async::Redux DevTools": {
+  "sourceUrl": "https://redux.js.org/usage/debugging",
+  "sourceTitle": "Debugging Redux",
+  "summary": "Redux DevTools records dispatched actions and lets you inspect each action, the resulting state, and the exact state diff. Pure reducers enable time travel, but side effects or mutation can make replay diverge from the original behavior.",
+  "explanation": "Redux DevTools connects to a Redux store and records dispatched actions alongside the resulting state. Selecting an action exposes its payload, full state, and changed values; because reducers are pure, the tools can recompute earlier states for jump, skip, and related time-travel operations. Middleware may perform asynchronous or other external work, so replaying actions is reliable for state calculation but cannot reproduce those side effects.",
+  "syntax": "configureStore({ reducer })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Inspect a dispatched action",
+   "code": "import { configureStore, createSlice } from '@reduxjs/toolkit'\n\nconst counter = createSlice({\n  name: 'counter',\n  initialState: { value: 0 },\n  reducers: { increment: state => { state.value += 1 } }\n})\n\nconst store = configureStore({ reducer: { counter: counter.reducer } })\nstore.dispatch(counter.actions.increment())\nconsole.log(store.getState())",
+   "language": "javascript",
+   "explanation": "Run this development store and inspect the dispatched increment in the Redux DevTools Extension, including its action, resulting state, and diff."
+  },
+  "useCases": [
+   {
+    "title": "Debug state changes",
+    "scenario": "Trace an unexpected state value back through the action that produced it."
+   },
+   {
+    "title": "Inspect state diffs",
+    "scenario": "Compare before-and-after values for a single dispatch."
+   },
+   {
+    "title": "Time-travel debugging",
+    "scenario": "Jump to an earlier action or skip a suspected action to test a hypothesis."
+   }
+  ],
+  "related": [
+   "Redux DevTools Extension",
+   "Jump",
+   "Skip",
+   "Reset",
+   "Revert",
+   "Commit",
+   "configureStore",
+   "middleware"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The extension helps identify what was dispatched, which state resulted, and where the change originated.",
+   "The action-history panel presents dispatched actions chronologically by their type.",
+   "Selecting an entry lets you inspect the complete action object.",
+   "The State view shows the entire store tree after the reducer processed the selected action.",
+   "The Diff view isolates the values changed by the selected action.",
+   "Pure reducers allow DevTools to reconstruct state at arbitrary points in the recorded action history."
+  ],
+  "gotchas": [
+   "Time travel assumes replay only computes state; side effects must not occur during reducer execution.",
+   "Mutation and asynchronous behavior can make replay produce different behavior between history steps.",
+   "An unexpected empty diff often indicates a reducer failed to return a new state, commonly because of mutation."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Middleware & async::Store enhancers": {
+  "sourceUrl": "https://redux.js.org/usage/configuring-your-store",
+  "sourceTitle": "Configuring Your Store",
+  "summary": "Store enhancers extend the Redux store itself, whereas middleware extends dispatch processing. `applyMiddleware` turns middleware into a store enhancer, and modern `configureStore` accepts enhancer customization.",
+  "explanation": "A store enhancer is a higher-order function that changes how a store is created, allowing capabilities such as middleware, persistence, or time travel. Middleware is one particular enhancer-backed mechanism: it wraps dispatch so actions can be observed, transformed, delayed, or stopped before reducers process them.",
+  "syntax": "createStore => createStore",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Apply middleware as a store enhancer",
+   "code": "import { createStore, applyMiddleware } from \"redux\";\n\nconst reducer = (state = { count: 0 }, action) =>\n  action.type === \"increment\" ? { count: state.count + 1 } : state;\n\nconst logger = ({ getState }) => next => action => {\n  const result = next(action);\n  console.log(action.type, getState());\n  return result;\n};\n\nconst store = createStore(reducer, applyMiddleware(logger));\nstore.dispatch({ type: \"increment\" });",
+   "language": "javascript",
+   "explanation": "Creates a store whose dispatch is extended by middleware; the enhancer is passed as the final createStore argument."
+  },
+  "useCases": [
+   {
+    "title": "Intercept dispatch",
+    "scenario": "Add logging, crash reporting, analytics, or async handling around dispatched actions."
+   },
+   {
+    "title": "Extend the store",
+    "scenario": "Add persistence, time travel, or another capability that changes store behavior beyond one dispatch chain."
+   },
+   {
+    "title": "Compose enhancers",
+    "scenario": "Combine multiple store-level extensions into one enhancer before creating the store."
+   }
+  ],
+  "related": [
+   "Middleware",
+   "applyMiddleware",
+   "createStore",
+   "compose",
+   "configureStore"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do middleware and store enhancers differ?",
+    "answer": "Middleware changes the dispatch path, while an enhancer changes the store creator and therefore can alter the store interface or setup. Middleware is commonly used for logging, side effects, and asynchronous actions; enhancers can provide broader store capabilities.",
+    "followUp": "How does applyMiddleware relate to enhancers? applyMiddleware converts a middleware list into one store enhancer, which is then supplied during store creation."
+   },
+   {
+    "question": "What is the Redux middleware signature and flow?",
+    "answer": "The middleware signature is `({ getState, dispatch }) => next => action`. Each middleware can handle an action, pass it to `next`, or dispatch again from the beginning of the chain.",
+    "followUp": "What does the last middleware receive as `next`? It receives the real store dispatch method, which terminates the middleware chain."
+   },
+   {
+    "question": "What is the signature and application point of a store enhancer?",
+    "answer": "A store enhancer has the signature `createStore => createStore`. At the core API level, it is passed to `createStore` as the final enhancer argument; multiple enhancers can be combined with `compose`.",
+    "followUp": "How does modern store configuration usually avoid manual enhancer wiring? `configureStore` accepts middleware and enhancer options and performs the setup for you."
+   }
+  ],
+  "keyPoints": [
+   "Redux extension commonly uses either middleware or enhancers, with middleware being the more common choice.",
+   "The central distinction is dispatch-level interception versus broader store-level capability changes.",
+   "Enhancers wrap store creation and return another store creator.",
+   "The real enhancer declaration takes a store-creation function and returns a replacement store-creation function.",
+   "Use compose when several enhancer functions must be applied together."
+  ],
+  "gotchas": [
+   "When composing enhancers, place applyMiddleware before other enhancers because middleware may perform asynchronous work."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Middleware & async::Thunk middleware": {
+  "sourceUrl": "https://redux.js.org/usage/writing-logic-thunks",
+  "sourceTitle": "Writing Logic with Thunks",
+  "summary": "Thunk middleware lets Redux dispatch functions instead of only action objects. It invokes each thunk with dispatch and getState, enabling reusable synchronous or asynchronous logic that can dispatch actions and inspect current state.",
+  "explanation": "A thunk is a function sent through dispatch instead of a plain action object. The thunk middleware recognizes that function, invokes it with dispatch and getState, and lets it perform synchronous or asynchronous work, including dispatching multiple actions and inspecting current state. Redux Toolkit's configureStore adds this middleware automatically; manual Redux setup can add redux-thunk with applyMiddleware.",
+  "syntax": "(dispatch, getState) => { /* sync or async logic */ }",
+  "parameters": [
+   {
+    "name": "dispatch",
+    "type": "Dispatch",
+    "description": "Redux store dispatch method supplied to the thunk; it can dispatch actions or other thunks."
+   },
+   {
+    "name": "getState",
+    "type": "() => State",
+    "description": "Redux store getState method supplied to the thunk for reading current state."
+   }
+  ],
+  "returns": "The thunk's return value is returned by dispatch; a thunk may therefore return a promise for callers to await.",
+  "example": {
+   "title": "Dispatching an async thunk",
+   "code": "import { configureStore, createSlice } from '@reduxjs/toolkit';\n\nconst todos = createSlice({\n  name: 'todos',\n  initialState: [],\n  reducers: { loaded: (_, action) => action.payload }\n});\n\nconst store = configureStore({ reducer: { todos: todos.reducer } });\n\nconst loadTodos = () => async (dispatch, getState) => {\n  const response = await fetch('/api/todos');\n  dispatch(todos.actions.loaded(await response.json()));\n  console.log(getState().todos);\n};\n\nstore.dispatch(loadTodos());",
+   "language": "typescript",
+   "explanation": "The thunk performs asynchronous work, dispatches the result, and reads updated state."
+  },
+  "useCases": [
+   {
+    "title": "Data fetching",
+    "scenario": "A request needs to dispatch loading, success, and failure actions while reading state."
+   },
+   {
+    "title": "State-dependent logic",
+    "scenario": "A workflow must inspect existing state before deciding which actions to dispatch."
+   },
+   {
+    "title": "Multi-action workflows",
+    "scenario": "Several related dispatches and calculations should be packaged as reusable logic."
+   }
+  ],
+  "related": [
+   "redux-thunk",
+   "configureStore",
+   "applyMiddleware",
+   "dispatch",
+   "getState",
+   "createAsyncThunk"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Redux thunk and how does the middleware execute it?",
+    "answer": "A thunk is a function that receives dispatch and getState. The thunk middleware intercepts a function passed to dispatch and calls it with those two arguments, allowing reusable synchronous or asynchronous logic to interact with the store.",
+    "followUp": "How can a component await a thunk? A thunk can return a promise, and dispatch returns the thunk's return value, so the caller can await dispatch(thunk())."
+   },
+   {
+    "question": "How is thunk middleware configured?",
+    "answer": "Redux Toolkit's configureStore includes thunk middleware by default. In a manually configured store, redux-thunk must be supplied through applyMiddleware.",
+    "followUp": "What does thunk middleware do with ordinary action objects? It forwards them to the next middleware instead of invoking them as functions."
+   },
+   {
+    "question": "What problems do thunks solve?",
+    "answer": "A thunk receives dispatch and getState, so it can read current state and dispatch one or more actions around asynchronous work. It is commonly used for data fetching and other reusable logic that needs store access.",
+    "followUp": "When are thunks a good fit? They suit complex synchronous logic and moderate asynchronous operations, such as a one-shot request followed by dispatching its result."
+   }
+  ],
+  "keyPoints": [
+   "Thunks package reusable logic with direct access to the store's dispatch and state-reading capabilities.",
+   "The thunk contract supplies dispatch first and getState second.",
+   "A thunk may contain arbitrary asynchronous work rather than being limited to a particular request library.",
+   "Use thunks for reusable synchronous workflows too, not only network requests.",
+   "Redux Toolkit users normally receive thunk support without extra middleware configuration."
+  ],
+  "gotchas": [
+   "Call a thunk with store.dispatch rather than invoking it yourself.",
+   "With configureStore, do not manually add thunk middleware unless you are customizing store setup."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "React Redux & migration::connect and mapStateToProps": {
+  "sourceUrl": "https://redux.js.org/react-redux/using-react-redux/connect-mapstate",
+  "sourceTitle": "Connect: Extracting Data with mapStateToProps",
+  "summary": "mapStateToProps is the older React Redux binding for selecting store data and injecting it into a connected component. It remains useful when maintaining existing applications, although the current docs recommend hooks for new code.",
+  "explanation": "mapStateToProps receives the complete Redux state and may also receive the wrapped component's own props. It returns a plain object whose fields become props on the connected component; defining it makes connect subscribe to store updates and recalculate the mapping when state changes.",
+  "syntax": "connect(mapStateToProps)(Component)",
+  "parameters": [
+   {
+    "name": "mapStateToProps",
+    "type": "Function",
+    "description": "Optional function receiving the complete Redux state and optionally ownProps; returns the state-derived props object."
+   },
+   {
+    "name": "Component",
+    "type": "React component",
+    "description": "The React component to wrap after configuring connect."
+   }
+  ],
+  "returns": "connect(mapStateToProps)(Component) returns a connected wrapper component that receives the mapped state values as props.",
+  "example": {
+   "title": "Connect a component to selected state",
+   "code": "import { connect } from 'react-redux'\n\nconst selectUser = (state, userId) => state.users[userId]\n\nconst mapStateToProps = (state, ownProps) => ({\n  user: selectUser(state, ownProps.userId),\n})\n\nfunction UserCard({ user }) {\n  return <h2>{user?.name ?? 'Unknown user'}</h2>\n}\n\nexport default connect(mapStateToProps)(UserCard)",
+   "language": "tsx",
+   "explanation": "This runnable React Redux pattern selects a user using both store state and the component's own userId prop, then injects the result into the wrapped component."
+  },
+  "useCases": [
+   {
+    "title": "Maintain a connected legacy component",
+    "scenario": "An existing class or function component needs selected Redux state exposed as props without rewriting it to hooks."
+   },
+   {
+    "title": "Select state using ownProps",
+    "scenario": "A component displays one entity identified by a parent-provided ID."
+   },
+   {
+    "title": "Support gradual hooks migration",
+    "scenario": "A migration is being staged incrementally rather than replacing every connected component at once."
+   }
+  ],
+  "related": [
+   "connect()",
+   "useSelector",
+   "useDispatch",
+   "mapDispatchToProps",
+   "ownProps",
+   "ConnectedProps"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does connect do with mapStateToProps?",
+    "answer": "connect is a higher-order function that accepts mapping configuration and then a component, producing a wrapper that supplies selected store data as props. When mapStateToProps is present, the wrapper subscribes to Redux store updates.",
+    "followUp": "What if the component needs its own props to select state? Define mapStateToProps with state and ownProps, then use ownProps in the selector logic."
+   },
+   {
+    "question": "What are the inputs and output of mapStateToProps?",
+    "answer": "mapStateToProps receives the entire store state, equivalent to store.getState(), and returns a plain object containing the values the component needs. Those returned fields are passed to the connected component as props.",
+    "followUp": "Why should the function avoid side effects? It may run whenever the store changes, so it must be deterministic and synchronous."
+   },
+   {
+    "question": "Should new code use connect?",
+    "answer": "The older binding remains usable, but the current documentation recommends the hooks API, particularly useSelector, for new code. Existing connected components can therefore be maintained while migration proceeds incrementally.",
+    "followUp": "How does migration translate mapState fields? Replace each field returned by mapState with a corresponding useSelector call inside the function component."
+   }
+  ],
+  "keyPoints": [
+   "Pass mapStateToProps as connect's first argument to select the store data required by the wrapped component.",
+   "The mapping function runs after store state changes, allowing connected props to reflect current Redux data.",
+   "Its first parameter is the complete store state, not a reducer slice unless the function selects one.",
+   "Add ownProps as the second parameter when selection depends on props supplied by the parent.",
+   "Returned fields are merged into the wrapped component's props as state-derived inputs.",
+   "React Redux first checks whether the store state reference changed after dispatch before doing further update work."
+  ],
+  "gotchas": [
+   "Keep mapStateToProps pure and synchronous: read its inputs and return data without mutating state or ownProps.",
+   "Return a plain object; returning another shape does not satisfy the connected component contract.",
+   "Use null or undefined as the first connect argument when the component should not subscribe to store updates."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "React Redux & migration::Legacy createStore migration": {
+  "sourceUrl": "https://redux.js.org/usage/migrating-to-modern-redux",
+  "sourceTitle": "Migrating to Modern Redux",
+  "summary": "Replace the legacy createStore setup with Redux Toolkit's configureStore first, while keeping existing reducers and middleware intact. Then migrate reducers incrementally, one at a time, using modern Redux Toolkit APIs.",
+  "explanation": "Start by replacing the legacy createStore invocation with Redux Toolkit's configureStore. This is a one-time store-level change: existing reducers and middleware can remain in place, while configureStore supplies the usual reducer combination, thunk, development checks, and DevTools setup. Then migrate reducers incrementally, one slice at a time.",
+  "syntax": "configureStore({ reducer, middleware?, devTools?, preloadedState?, enhancers? })",
+  "parameters": [
+   {
+    "name": "reducer",
+    "type": "Reducer | Record<string, Reducer>",
+    "description": "A reducer function or an object of slice reducers used to create the store's root reducer."
+   },
+   {
+    "name": "preloadedState",
+    "type": "unknown",
+    "description": "Optional preloaded state for initializing the store."
+   },
+   {
+    "name": "middleware/enhancers",
+    "type": "configuration options",
+    "description": "Optional middleware and enhancer configuration handled through configureStore options."
+   }
+  ],
+  "returns": "A Redux store configured with the supplied reducers and modern Redux Toolkit defaults.",
+  "example": {
+   "title": "Modernize store setup first",
+   "code": "import { configureStore } from '@reduxjs/toolkit'\nimport todosReducer from './todosReducer'\nimport filtersReducer from './filtersReducer'\n\nexport const store = configureStore({\n  reducer: {\n    todos: todosReducer,\n    filters: filtersReducer,\n  },\n})",
+   "language": "typescript",
+   "explanation": "Replace the old createStore call with configureStore while retaining existing reducers; migrate individual reducers later."
+  },
+  "useCases": [
+   {
+    "title": "Modernize legacy store initialization",
+    "scenario": "An application has a hand-written createStore setup with reducers, thunk, custom middleware, and DevTools composition."
+   },
+   {
+    "title": "Migrate reducers incrementally",
+    "scenario": "A large codebase cannot safely convert every reducer during one release."
+   },
+   {
+    "title": "Add safer default store configuration",
+    "scenario": "A team wants development checks without manually wiring them into an existing store."
+   }
+  ],
+  "related": [
+   "configureStore",
+   "createSlice",
+   "createAsyncThunk",
+   "RTK Query",
+   "createListenerMiddleware",
+   "createEntityAdapter"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How would you begin migrating a legacy Redux application?",
+    "answer": "Replace the manual createStore setup with configureStore first. Existing reducers and middleware continue working, making this a focused, low-risk first migration step.",
+    "followUp": "What should happen next? Convert an existing slice reducer and its actions to createSlice, then repeat that process one reducer at a time."
+   },
+   {
+    "question": "What does configureStore improve over manual createStore setup?",
+    "answer": "configureStore replaces the usual collection of setup steps with one API call. It can combine slice reducers, add thunk, enable development checks, and connect Redux DevTools automatically.",
+    "followUp": "Why retain configureStore even if reducers are still written manually? It centralizes store setup and provides the modern defaults without requiring immediate reducer rewrites."
+   },
+   {
+    "question": "How can reducer migration proceed without a full rewrite?",
+    "answer": "The migration can be incremental: after the store change, select an existing slice reducer and its actions, replace them with createSlice, and repeat for each reducer.",
+    "followUp": "Which other Redux Toolkit features might be adopted later? Data fetching can move to RTK Query or createAsyncThunk, while listener middleware and entity adapters can be added as needed."
+   }
+  ],
+  "keyPoints": [
+   "The primary migration is from hand-built store configuration to configureStore.",
+   "Reducer modernization begins by selecting one existing reducer together with its actions.",
+   "Convert reducers incrementally rather than attempting a repository-wide rewrite.",
+   "Combining reducers, configuring middleware, composing DevTools, and creating the store can become one call.",
+   "The modern setup adds development checks that help expose common Redux errors.",
+   "configureStore remains compatible with the underlying Redux store mechanism."
+  ],
+  "gotchas": [
+   "The initial store migration does not require rewriting reducers or middleware.",
+   "Do not begin by converting every reducer; modernize the store boundary first.",
+   "The deprecation is not a runtime removal deadline, so migration can be incremental."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "React Redux & migration::Provider": {
+  "sourceUrl": "https://redux.js.org/react-redux/api/provider",
+  "sourceTitle": "Provider",
+  "summary": "Provider makes a chosen Redux store available to every nested React Redux component. Render it around the relevant subtree, normally near the application root; create the store per request during server rendering.",
+  "explanation": "Provider places the supplied Redux store into React context for its descendant components. Hooks such as useSelector and useDispatch, along with connect, retrieve that store through the context, so the application usually renders Provider near the root. For server rendering, create a separate store for each request rather than sharing a module-level singleton.",
+  "syntax": "<Provider store={store}>{children}</Provider>",
+  "parameters": [
+   {
+    "name": "store",
+    "type": "Store",
+    "description": "The Redux store instance made available to nested components."
+   },
+   {
+    "name": "context",
+    "type": "React.Context",
+    "description": "Optional custom context instance used instead of the default React Redux context."
+   },
+   {
+    "name": "serverState",
+    "type": "unknown",
+    "description": "Optional serialized server state used for the initial hydration render in React 18 SSR."
+   }
+  ],
+  "returns": "A React element that provides the Redux store to its descendant component tree.",
+  "example": {
+   "title": "Provide a Redux store to React components",
+   "code": "import { Provider } from 'react-redux'\nimport { createRoot } from 'react-dom/client'\nimport { store } from './app/store'\nimport App from './App'\n\ncreateRoot(document.getElementById('root')!).render(\n  <Provider store={store}>\n    <App />\n  </Provider>,\n)",
+   "language": "tsx",
+   "explanation": "Wrap the application subtree with Provider and pass the intended store so nested hooks and connected components can use it."
+  },
+  "useCases": [
+   {
+    "title": "Application-wide store access",
+    "scenario": "Wrap the application root so useSelector, useDispatch, and connect can access the store."
+   },
+   {
+    "title": "Scoped store access",
+    "scenario": "Wrap only an isolated subtree when multiple Redux stores or independently mounted applications are needed."
+   },
+   {
+    "title": "React 18 server hydration",
+    "scenario": "Pass a serialized server state during hydration to align the initial client render with server output."
+   },
+   {
+    "title": "Custom context integration",
+    "scenario": "Use a matching custom context with Provider and connected components when the default context is unsuitable."
+   }
+  ],
+  "related": [
+   "useSelector",
+   "useDispatch",
+   "connect",
+   "ReactReduxContext",
+   "useStore"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Provider exposes its supplied store to descendant React components.",
+   "Place Provider high in the component tree so the complete application subtree can access the store.",
+   "React Redux hooks and connect obtain the provided store through React context.",
+   "The normal configuration requires only the store prop.",
+   "A custom React context can be supplied when the application needs one."
+  ],
+  "gotchas": [
+   "When supplying a custom context, pass that exact context instance to every connected component that should use the same store."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "React Redux & migration::Reducer and integration tests": {
+  "sourceUrl": "https://redux.js.org/usage/writing-tests",
+  "sourceTitle": "Writing Tests",
+  "summary": "Test reducers directly for deterministic state transitions, but prefer integration tests for Redux-connected UI. Use a real store and Provider, simulate user interactions, mock only external API calls, and assert the resulting screen state.",
+  "explanation": "Reducer tests call a pure reducer with chosen state and action values and verify the resulting state. Integration tests instead render Redux-connected UI with a real store, exercise user behavior through the interface, and assert the visible result; use a fresh store per test to prevent state leakage.",
+  "syntax": "(state, action) => newState",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Reducer and integration test",
+   "code": "import { configureStore } from '@reduxjs/toolkit'\nimport { Provider, useDispatch, useSelector } from 'react-redux'\nimport { render, screen } from '@testing-library/react'\nimport userEvent from '@testing-library/user-event'\n\nconst counter = (state = 0, action: { type: string }) =>\n  action.type === 'increment' ? state + 1 : state\nconst store = configureStore({ reducer: counter })\nfunction App() {\n  const value = useSelector((state: number) => state)\n  const dispatch = useDispatch()\n  return <button onClick={() => dispatch({ type: 'increment' })}>{value}</button>\n}\ntest('increments through the UI', async () => {\n  render(<Provider store={store}><App /></Provider>)\n  await userEvent.click(screen.getByRole('button'))\n  expect(screen.getByRole('button')).toHaveTextContent('1')\n})",
+   "language": "tsx",
+   "explanation": "This integration test renders the component with a real Redux store, performs a user interaction, and checks the resulting UI."
+  },
+  "useCases": [
+   {
+    "title": "Connected component flow",
+    "scenario": "A component dispatches actions and reads Redux state."
+   },
+   {
+    "title": "Async user journey",
+    "scenario": "A feature displays initial, loading, and completed states around an API request."
+   },
+   {
+    "title": "Reducer transition unit test",
+    "scenario": "A slice contains deterministic state-transition logic."
+   }
+  ],
+  "related": [
+   "Writing Tests",
+   "React Testing Library",
+   "Provider",
+   "configureStore",
+   "reducers",
+   "integration tests",
+   "unit tests"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you test a reducer?",
+    "answer": "Reducers are pure functions, so test them by supplying a particular state and action, then asserting the returned state matches the expected transition. This isolates the reducer's state-update behavior.",
+    "followUp": "Why are integration tests still recommended? They verify the complete Redux-connected flow and the UI behavior users actually observe, rather than only an isolated function."
+   },
+   {
+    "question": "How should Redux-connected React components be tested?",
+    "answer": "Render the component under test inside a React-Redux Provider backed by a real store. Perform the interaction a user would perform and assert that the UI changes appropriately.",
+    "followUp": "How would you test asynchronous behavior? Keep the Redux and component logic real, mock the network request, and assert the visible loading and completed states."
+   },
+   {
+    "question": "Why prefer integration tests over mocked dispatch assertions?",
+    "answer": "Integration tests are preferred because they exercise the Redux logic together and check whether the application behaves correctly for a user interaction. Unit tests remain useful for individual functions, including reducers.",
+    "followUp": "When is a reducer unit test especially useful? When a state transition can be checked directly and does not require rendering or coordinating the rest of the application."
+   }
+  ],
+  "keyPoints": [
+   "Make integration tests the default for connected React components so the store, Redux logic, components, and UI are exercised together.",
+   "Wrap the rendered component tree in Provider and supply an actual store instance.",
+   "Verify the user-visible result of an interaction instead of merely checking that dispatch was called.",
+   "Reducer unit tests can directly validate deterministic state transitions without rendering React components.",
+   "Provide explicit state and action inputs, then compare the returned state with the expected value.",
+   "Model an integration scenario as a sequence of observable states, such as initial, loading, and completed UI."
+  ],
+  "gotchas": [
+   "Reuse of one store across tests can allow state from an earlier test to affect later tests; create a distinct store for each test.",
+   "Mock external API calls rather than replacing the Redux logic or changing application code for the test."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "React Redux & migration::Redux Toolkit adoption": {
+  "sourceUrl": "https://redux.js.org/usage/migrating-to-modern-redux",
+  "sourceTitle": "Migrating to Modern Redux",
+  "summary": "Migrate legacy Redux incrementally to Redux Toolkit: replace store setup with configureStore, convert reducers and actions to createSlice, and adopt RTK Query or createAsyncThunk for async work.",
+  "explanation": "Adopt Redux Toolkit incrementally: first replace manual store setup with configureStore, then convert reducers and their actions to createSlice. Use createAsyncThunk or RTK Query when migrating asynchronous data fetching, while old and new Redux code can coexist during the transition.",
+  "syntax": "configureStore({ reducer }); createSlice({ name, initialState, reducers, extraReducers }); createAsyncThunk(typePrefix, payloadCreator)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Modern Redux migration",
+   "code": "import { configureStore, createAsyncThunk, createSlice } from '@reduxjs/toolkit'\n\nconst fetchCount = createAsyncThunk('counter/fetchCount', async () => 42)\n\nconst counterSlice = createSlice({\n  name: 'counter',\n  initialState: { value: 0, status: 'idle' },\n  reducers: { increment: state => { state.value += 1 } },\n  extraReducers: builder => {\n    builder.addCase(fetchCount.fulfilled, (state, action) => {\n      state.value = action.payload\n      state.status = 'succeeded'\n    })\n  }\n})\n\nexport const store = configureStore({ reducer: counterSlice.reducer })\nexport const { increment } = counterSlice.actions",
+   "language": "typescript",
+   "explanation": "This replaces manual store, action, and reducer boilerplate with configureStore, createSlice, and createAsyncThunk."
+  },
+  "useCases": [
+   {
+    "title": "Incremental migration",
+    "scenario": "Modernizing an existing Redux application"
+   },
+   {
+    "title": "Slice-based feature logic",
+    "scenario": "Removing handwritten action types and creators"
+   },
+   {
+    "title": "Async logic migration",
+    "scenario": "Replacing custom asynchronous request workflows"
+   },
+   {
+    "title": "React-Redux hook adoption",
+    "scenario": "Migrating React components alongside Redux logic"
+   }
+  ],
+  "related": [
+   "configureStore",
+   "createSlice",
+   "createAsyncThunk",
+   "RTK Query",
+   "createListenerMiddleware",
+   "createEntityAdapter",
+   "useSelector",
+   "useDispatch"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use Redux Toolkit as the default foundation for new Redux code and modernization work.",
+   "The first migration step is replacing handwritten store creation with configureStore.",
+   "Migrate one reducer and its actions at a time instead of performing a risky all-at-once rewrite.",
+   "createSlice generates feature action creators and action types from reducer definitions.",
+   "Choose RTK Query for data fetching or createAsyncThunk for suitable request workflows.",
+   "Thunk-based async logic works without separately wiring thunk middleware when using configureStore."
+  ],
+  "gotchas": [
+   "Begin migration with configureStore rather than converting every reducer at once.",
+   "Migration can be incremental; legacy and modern implementations may coexist temporarily.",
+   "When converting actions, update reducers and callers to read payload data."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "React Redux & migration::Typed hooks": {
+  "sourceUrl": "https://redux.js.org/usage/usage-with-typescript",
+  "sourceTitle": "Usage with TypeScript",
+  "summary": "Typed hooks are application-specific versions of useDispatch and useSelector with RootState and AppDispatch built in. Export them from a hooks module and use them in components to avoid repeated annotations and correctly type middleware-aware dispatch.",
+  "explanation": "Derive RootState and AppDispatch from the configured store, then create application hooks with each React Redux hook's .withTypes() method. Export them from a separate hooks module and use those hooks in components; the dispatch type includes middleware such as thunk.",
+  "syntax": "export const useAppDispatch = useDispatch.withTypes<AppDispatch>()\nexport const useAppSelector = useSelector.withTypes<RootState>()",
+  "parameters": [
+   {
+    "name": "RootState",
+    "type": "typeof store.getState return type",
+    "description": "The state type inferred from the Redux store."
+   },
+   {
+    "name": "AppDispatch",
+    "type": "typeof store.dispatch",
+    "description": "The dispatch type inferred from the Redux store, including middleware."
+   }
+  ],
+  "returns": "useDispatch.withTypes<AppDispatch>() and useSelector.withTypes<RootState>() return pre-typed copies of the corresponding hooks.",
+  "example": {
+   "title": "Pre-typed Redux hooks",
+   "code": "// app/hooks.ts\nimport { useDispatch, useSelector } from 'react-redux'\nimport type { AppDispatch, RootState } from './store'\n\nexport const useAppDispatch = useDispatch.withTypes<AppDispatch>()\nexport const useAppSelector = useSelector.withTypes<RootState>()\n\n// Counter.tsx\nimport { useAppDispatch, useAppSelector } from './hooks'\nimport { increment } from './counterSlice'\n\nexport function Counter() {\n  const count = useAppSelector(state => state.counter.value)\n  const dispatch = useAppDispatch()\n  return <button onClick={() => dispatch(increment())}>{count}</button>\n}",
+   "language": "tsx",
+   "explanation": "The hooks are reusable, application-specific versions of React Redux's hooks. They embed the store's state and dispatch types, so components can select state and dispatch actions without repeating type annotations."
+  },
+  "useCases": [
+   {
+    "title": "Typed state selection",
+    "scenario": "Components read Redux state without annotating every selector parameter."
+   },
+   {
+    "title": "Middleware-aware dispatch",
+    "scenario": "Components dispatch thunks and actions with the configured store's dispatch type."
+   },
+   {
+    "title": "Centralized application hooks",
+    "scenario": "A shared hooks module provides consistent Redux typing across the application."
+   }
+  ],
+  "related": [
+   "useDispatch",
+   "useSelector",
+   "RootState",
+   "AppDispatch",
+   ".withTypes()",
+   "React Redux 9.1.0"
+  ],
+  "since": "React Redux 9.1.0",
+  "interview": [
+   {
+    "question": "How do you define typed React Redux hooks?",
+    "answer": "Create RootState and AppDispatch from the configured store, then apply them with useSelector.withTypes<RootState>() and useDispatch.withTypes<AppDispatch>(). Export those hooks and use them throughout components.",
+    "followUp": "Why is AppDispatch needed for dispatching thunks? The default Dispatch type does not include thunk middleware, while the store-derived AppDispatch does."
+   },
+   {
+    "question": "What do the two typed hooks provide?",
+    "answer": "useAppSelector embeds RootState, so selectors do not need to repeat a state annotation. useAppDispatch embeds the store's dispatch type, including middleware-aware dispatch behavior.",
+    "followUp": "Where should these hooks live? In a separate module such as app/hooks.ts, because they are runtime variables and separating them helps avoid circular dependencies."
+   },
+   {
+    "question": "What is the modern way to create typed hooks?",
+    "answer": "React Redux 9.1 added .withTypes() to its hooks. This method returns a copy of a hook with the supplied application types built in.",
+    "followUp": "What should components import? The pre-typed application hooks rather than the plain hooks, so the application types are applied consistently."
+   }
+  ],
+  "keyPoints": [
+   "Create application-specific versions of useDispatch and useSelector instead of repeating RootState and AppDispatch in every component.",
+   "A typed selector hook supplies the state type automatically, removing repeated state annotations from selector callbacks.",
+   "A typed dispatch hook preserves the middleware-aware dispatch type produced by the configured store.",
+   "Use .withTypes() on the React Redux hooks to produce typed copies for the application.",
+   "The resulting hooks retain the original hook behavior while carrying the specified application types.",
+   "Components should use the exported pre-typed hooks as the standard application interface to Redux."
+  ],
+  "gotchas": [
+   "Define the hooks in a separate module, such as app/hooks.ts, rather than in the store setup file; this helps avoid circular imports.",
+   "Using plain useDispatch can reject thunk dispatches because its default dispatch type does not include thunk middleware."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "React Redux & migration::useDispatch": {
+  "sourceUrl": "https://redux.js.org/react-redux/api/hooks",
+  "sourceTitle": "Hooks",
+  "summary": "useDispatch returns the Redux store's dispatch function for use in React components. Use a pre-typed wrapper with AppDispatch when dispatching thunks or other middleware-supported actions in TypeScript.",
+  "explanation": "Call useDispatch inside a React function component to obtain the Redux store's dispatch method. Use that method in event handlers or other component logic to send actions, including thunk actions when the dispatch function is typed for the store's middleware. In TypeScript applications, prefer a pre-typed wrapper created with useDispatch.withTypes<AppDispatch>().",
+  "syntax": "const dispatch = useDispatch()",
+  "parameters": [],
+  "returns": "A reference to the Redux store's dispatch function.",
+  "example": {
+   "title": "Dispatch an action from a component",
+   "code": "import { useDispatch } from 'react-redux'\nimport { increment } from './counterSlice'\n\nexport function IncrementButton() {\n  const dispatch = useDispatch()\n\n  return <button onClick={() => dispatch(increment())}>Increment</button>\n}",
+   "language": "tsx",
+   "explanation": "The component obtains the store's dispatch function and calls it from a button handler with an action creator result."
+  },
+  "useCases": [
+   {
+    "title": "Handle user interactions",
+    "scenario": "Dispatch a slice action from a button, form, or other UI event handler."
+   },
+   {
+    "title": "Start asynchronous work",
+    "scenario": "Send an asynchronous thunk from component logic using the application's typed dispatch."
+   },
+   {
+    "title": "Migrate connected components",
+    "scenario": "Replace connect and mapDispatchToProps while migrating a component to modern React Redux hooks."
+   }
+  ],
+  "related": [
+   "useSelector",
+   "useStore",
+   "useAppDispatch",
+   "AppDispatch",
+   "connect"
+  ],
+  "since": "",
+  "keyPoints": [
+   "useDispatch provides the store's dispatch function to a React component.",
+   "Call the returned function with an action whenever the component needs to update Redux state.",
+   "Type the hook with the store's AppDispatch when components dispatch thunks.",
+   "Create a typed hook with useDispatch.withTypes<AppDispatch>() and reuse it throughout the application.",
+   "A shared typed wrapper is the recommended TypeScript approach instead of importing the untyped hook in every component."
+  ],
+  "gotchas": [
+   "Define the pre-typed hook in a separate hooks module rather than alongside store setup."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "React Redux & migration::useSelector": {
+  "sourceUrl": "https://redux.js.org/react-redux/api/hooks",
+  "sourceTitle": "Hooks | Redux",
+  "summary": "useSelector subscribes a React component to a selected value from the Redux store. It re-renders only when the selected result changes by the configured equality check, using strict reference equality by default.",
+  "explanation": "Call useSelector with a selector that receives the entire Redux state and returns the value a component needs. React Redux subscribes the component to store updates, runs the selector after dispatches, and compares the result with the previous result using strict reference equality unless an equality function or options object changes that behavior.",
+  "syntax": "const selected = useSelector(selector, equalityFnOrOptions?)",
+  "parameters": [
+   {
+    "name": "selector",
+    "type": "(state: RootState) => Selected",
+    "description": "Selector function called with the complete Redux state; it returns the value needed by the component."
+   },
+   {
+    "name": "equalityFnOrOptions",
+    "type": "EqualityFn<Selected> | UseSelectorOptions<Selected>",
+    "description": "Optional equality function, or an options object containing equalityFn, used to compare successive selector results."
+   }
+  ],
+  "returns": "The selected value returned by the selector; its type is inferred from the selector's return type.",
+  "example": {
+   "title": "Read a selected value",
+   "code": "import { useSelector } from 'react-redux'\nimport { selectTodos } from './todosSlice'\n\nexport function TodoCount() {\n  const todos = useSelector(selectTodos)\n  return <p>{todos.length} todos</p>\n}",
+   "language": "tsx",
+   "explanation": "The component subscribes to the selected todos and re-renders when the selector returns a different reference."
+  },
+  "useCases": [
+   {
+    "title": "Read store data",
+    "scenario": "A component needs one slice or field from Redux state and should update when that selection changes."
+   },
+   {
+    "title": "Use shallow equality",
+    "scenario": "A selector returns a flat object of primitive values and field-level comparison is desired."
+   },
+   {
+    "title": "Select memoized results",
+    "scenario": "A component needs derived data without producing a new reference on every dispatch."
+   }
+  ],
+  "related": [
+   "shallowEqual",
+   "createSelector",
+   "useDispatch",
+   "useStore",
+   "Provider",
+   ".withTypes()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does useSelector decide whether to re-render?",
+    "answer": "useSelector subscribes the component to the Redux store, runs the selector against the state, and returns the selected value. After an action is dispatched, React Redux compares the new selector result with the previous result using strict === reference equality; a different reference causes a re-render.",
+    "followUp": "What happens if the selector returns a new object on every call? It appears changed on every dispatch, so the component can re-render unnecessarily; memoization or an appropriate equality function can avoid that."
+   },
+   {
+    "question": "How can equality behavior be changed?",
+    "answer": "By default, useSelector uses strict reference equality rather than shallow equality. If the selector returns a flat object of primitive fields, shallowEqual can be supplied as the equality function, either directly or through the options object.",
+    "followUp": "When is memoization preferable to shallowEqual? Use memoization when deriving data so the selector returns a stable cached reference until its inputs change."
+   },
+   {
+    "question": "What does the selector receive, and how can useSelector be typed?",
+    "answer": "The selector receives the complete Redux state and should return the specific data needed by the component. Its return type is inferred from the selector's return type when the state parameter is typed; applications can also create pre-typed hooks with .withTypes().",
+    "followUp": "Why should selectors be typed centrally? A pre-typed hook preserves the application's RootState and dispatch types across components without repeating those definitions."
+   }
+  ],
+  "keyPoints": [
+   "The default equality rule compares the previous and current selector results with strict === reference equality.",
+   "A changed selector result reference causes the component to re-render.",
+   "An unchanged selector result reference does not trigger a re-render from that store update.",
+   "Pass shallowEqual when a selector returns a suitable flat object and field-level comparison is more appropriate than one reference comparison."
+  ],
+  "gotchas": [
+   "Avoid constructing a new object or array on every selector call: strict reference comparison treats each new reference as changed and can cause re-renders after unrelated dispatches.",
+   "Reducers must return new references for changed data. Mutating an existing object and returning it can leave the selector result at the same reference, so the component may not update."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redux core::Actions and action creators": {
+  "sourceUrl": "https://redux.js.org/tutorials/fundamentals/part-7-standard-patterns",
+  "sourceTitle": "Redux Fundamentals, Part 7: Standard Redux Patterns",
+  "summary": "Actions are plain objects that describe events in an application, while action creators are functions that construct those objects. Use creators to consistently prepare payloads and centralize reusable creation logic.",
+  "explanation": "An action is a plain object describing an event, typically identified by a type and carrying data in payload. An action creator is a function that constructs such an object, making its shape and any preparation logic reusable; call it and pass the result to dispatch.",
+  "syntax": "const actionCreator = (input) => ({ type: 'domain/event', payload: input })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Create and dispatch an action",
+   "code": "const addTodo = (text) => ({\n  type: 'todos/todoAdded',\n  payload: { text }\n})\n\nconst action = addTodo('Learn Redux')\nstore.dispatch(action)",
+   "language": "javascript",
+   "explanation": "The creator prepares a serializable payload, returns an action object, and the caller dispatches that object."
+  },
+  "useCases": [
+   {
+    "title": "Centralize action structure",
+    "scenario": "Several callers need to produce the same event shape."
+   },
+   {
+    "title": "Prepare payloads",
+    "scenario": "Inputs require formatting or validation before dispatch."
+   },
+   {
+    "title": "Encapsulate creation logic",
+    "scenario": "Action creation includes reusable work or asynchronous logic."
+   }
+  ],
+  "related": [
+   "action",
+   "dispatch",
+   "payload",
+   "createAction",
+   "createSlice",
+   "prepare callback",
+   "Redux Thunk middleware"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What are actions and action creators?",
+    "answer": "An action is a plain object that describes what happened. An action creator is a function that creates and returns such an object, usually so callers do not repeat its shape.",
+    "followUp": "Why centralize creation? It provides one place to prepare data and keeps every instance of the action consistent."
+   },
+   {
+    "question": "How are action creators used?",
+    "answer": "Call the creator to obtain an action object, then pass that result directly to dispatch. The creator can format the payload or perform preparation work before dispatch.",
+    "followUp": "What if preparation is asynchronous? Extract the logic into a reusable creator, commonly using thunk middleware for more complex asynchronous behavior."
+   },
+   {
+    "question": "When should action creators be used?",
+    "answer": "Redux does not require action creators; an action object may be written inline. They are useful when an action needs preparation, additional logic, consistency, or a reusable definition.",
+    "followUp": "What is the modern preferred approach? Define reducers with createSlice so Redux Toolkit generates the action types and creators automatically."
+   }
+  ],
+  "keyPoints": [
+   "Actions represent events rather than commands, and their data should be carried in a predictable serializable shape.",
+   "The creator's return value is the action that can be dispatched.",
+   "A creator can turn caller inputs into the payload structure expected by reducers.",
+   "Centralizing preparation avoids duplicating event-construction logic across components.",
+   "The normal flow is to invoke the creator before dispatching.",
+   "Dispatch receives the object returned by the creator."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Redux core::combineReducers": {
+  "sourceUrl": "https://redux.js.org/api/combinereducers/",
+  "sourceTitle": "combineReducers",
+  "summary": "Compose independently owned slice reducers into one reducer whose state is a plain object keyed by the supplied reducer names. Each dispatched action is passed to every slice reducer.",
+  "explanation": "Pass an object of slice reducers to produce one reducer for a plain object state tree. For each dispatched action, the result invokes every slice reducer with its own current slice and the action, then assembles those results under the supplied keys.",
+  "syntax": "combineReducers(reducers)",
+  "parameters": [
+   {
+    "name": "reducers",
+    "type": "Object",
+    "description": "An object whose values are different slice reducer functions to combine."
+   }
+  ],
+  "returns": "A reducer function that calls the supplied reducers and constructs a state object with the same shape as the input object.",
+  "example": {
+   "title": "Combining independent slice reducers",
+   "code": "import { createStore, combineReducers } from 'redux'\n\nconst counter = (state = 0, action) =>\n  action.type === 'increment' ? state + 1 : state\n\nconst todos = (state = [], action) =>\n  action.type === 'add' ? [...state, action.text] : state\n\nconst rootReducer = combineReducers({ counter, todos })\nconst store = createStore(rootReducer)\n\nstore.dispatch({ type: 'increment' })\nstore.dispatch({ type: 'add', text: 'Read Redux docs' })\n\nconsole.log(store.getState())",
+   "language": "javascript",
+   "explanation": "The combined reducer keeps counter and todos under matching root-state keys and lets each slice respond independently to dispatched actions."
+  },
+  "useCases": [
+   {
+    "title": "Assemble a root reducer from domain slices",
+    "scenario": "A store has separate domains such as counters, todos, or filters, each with its own reducer."
+   },
+   {
+    "title": "Compose reducers at multiple levels",
+    "scenario": "A nested part of the state needs the same keyed reducer composition as the root."
+   },
+   {
+    "title": "Build a root reducer directly",
+    "scenario": "The root reducer must be constructed manually rather than generated by Redux Toolkit's store setup."
+   }
+  ],
+  "related": [
+   "configureStore",
+   "combineSlices",
+   "slice reducer",
+   "root reducer",
+   "higher-order reducer"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does combineReducers do?",
+    "answer": "combineReducers takes an object whose values are slice reducers and returns one reducer. On each action, that reducer invokes every slice reducer and builds a state object with the same key shape.",
+    "followUp": "What determines the root-state names? The keys of the object passed to combineReducers, independently of the reducer variable names."
+   },
+   {
+    "question": "How are actions processed across slices?",
+    "answer": "Each input reducer owns one state slice. The combined reducer passes that slice and the dispatched action to the corresponding reducer, then places the returned value under that reducer's key.",
+    "followUp": "Can multiple slices respond to one action? Yes; every slice reducer is called for every dispatched action, so several slices may update independently."
+   },
+   {
+    "question": "What limitations does combineReducers have?",
+    "answer": "It is designed for a plain JavaScript object state tree with one reducer per slice. It does not provide arbitrary sibling state to a slice reducer or control special ordering between slice-reducer calls.",
+    "followUp": "What should be considered when this pattern is insufficient? Use a custom root reducer or another composition approach when cross-slice coordination, extra arguments, or call ordering is required."
+   }
+  ],
+  "keyPoints": [
+   "It converts a keyed collection of slice reducers into one reducer suitable for supplying to a Redux store.",
+   "Every dispatched action is offered to every registered slice reducer rather than being routed to only one reducer.",
+   "Separate reducer functions can be maintained independently while the combined reducer coordinates their participation.",
+   "Choose the object keys deliberately to design the public shape of the root state.",
+   "The reducers argument is a keyed object whose values are the functions to compose.",
+   "The return value preserves the input object's key structure in the produced state."
+  ],
+  "gotchas": [
+   "The keys in the input object determine the corresponding names in the combined state, so changing a key changes the root-state shape."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redux core::dispatch and subscribe": {
+  "sourceUrl": "https://redux.js.org/api/store/",
+  "sourceTitle": "Store",
+  "summary": "Redux delivers actions through `dispatch`, which synchronously runs the reducer and commits its returned state. `subscribe` registers listeners that can read the committed state with `getState()`, and returns a function for unsubscribing.",
+  "explanation": "`dispatch(action)` synchronously gives an action to the reducer, stores the reducer's returned state, and then notifies listeners. `subscribe(listener)` registers a callback for dispatches that may change state; the callback can call `getState()`, and the returned function removes the subscription.",
+  "syntax": "dispatch(action)\nsubscribe(listener)",
+  "parameters": [
+   {
+    "name": "action",
+    "type": "object",
+    "description": "The action passed to the store; dispatch sends it to the reducer."
+   },
+   {
+    "name": "listener",
+    "type": "function",
+    "description": "A callback registered to observe store changes."
+   }
+  ],
+  "returns": "dispatch(action) returns the dispatched action; subscribe(listener) returns an unsubscribe function.",
+  "example": {
+   "title": "Dispatch and observe a state change",
+   "code": "import { createStore } from 'redux'\n\nconst store = createStore((state = { count: 0 }, action) => {\n  if (action.type === 'increment') return { count: state.count + 1 }\n  return state\n})\n\nconst unsubscribe = store.subscribe(() => {\n  console.log('state:', store.getState())\n})\n\nstore.dispatch({ type: 'increment' })\nunsubscribe()",
+   "language": "javascript",
+   "explanation": "Registers a listener, dispatches an action, reads the committed state, then removes the listener."
+  },
+  "useCases": [
+   {
+    "title": "Deliver an action",
+    "scenario": "Update application state in response to a user interaction."
+   },
+   {
+    "title": "Render from subscriptions",
+    "scenario": "Refresh a non-React UI after the store commits new state."
+   },
+   {
+    "title": "Bridge external consumers",
+    "scenario": "Integrate Redux state changes with an external observable or service."
+   }
+  ],
+  "related": [
+   "getState()",
+   "Store",
+   "root reducer",
+   "Observable"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The store's base state-changing operation is `dispatch(action)`.",
+   "Dispatch invokes the reducer synchronously with the current state and action.",
+   "The reducer's returned value becomes the store's next state.",
+   "After storing the new state, Redux immediately notifies subscribed listeners.",
+   "A subscriber runs after dispatches when state might have changed; the callback itself receives no state argument.",
+   "Subscribers should call `getState()` inside the callback to read the latest store state.",
+   "Calling the function returned by `subscribe` removes that listener."
+  ],
+  "gotchas": [
+   "A subscription may dispatch, but only in response to a user action or a narrowly defined condition to avoid dispatch loops.",
+   "Changes to subscriptions during an in-progress dispatch do not alter that dispatch's listener snapshot.",
+   "Do not dispatch from a reducer; reducers must remain free of side effects."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redux core::Immutable update patterns": {
+  "sourceUrl": "https://redux.js.org/usage/structuring-reducers/immutable-update-patterns",
+  "sourceTitle": "Immutable Update Patterns - Redux",
+  "summary": "Immutable updates copy every nesting level on the path to changed data and preserve references for unaffected branches. Redux Toolkit uses Immer to produce these updates from mutating-looking reducer code.",
+  "explanation": "For a manual immutable update, create new objects or arrays along the path being changed, while reusing branches that are unaffected. This preserves the original state and lets Redux detect changes through reference comparisons. Redux Toolkit reducers can instead use Immer-backed mutating syntax, which produces the immutable result automatically.",
+  "syntax": "(state, action) => newState",
+  "parameters": [],
+  "returns": "A new state value containing copied references along changed paths while retaining references for unchanged data.",
+  "example": {
+   "title": "Copy each changed nesting level",
+   "code": "const initialState = {\n  first: { second: { a: 1, b: 2 } },\n  untouched: { value: 10 }\n};\n\nfunction reducer(state = initialState, action) {\n  if (action.type !== \"setA\") return state;\n\n  return {\n    ...state,\n    first: {\n      ...state.first,\n      second: {\n        ...state.first.second,\n        a: action.payload\n      }\n    }\n  };\n}\n\nconst next = reducer(initialState, { type: \"setA\", payload: 3 });\nconsole.log(next.first.second.a); // 3\nconsole.log(next.untouched === initialState.untouched); // true",
+   "language": "javascript",
+   "explanation": "The reducer copies every object along the path to the changed value. The unrelated branch is reused, so its reference remains unchanged."
+  },
+  "useCases": [
+   {
+    "title": "Deeply nested updates",
+    "scenario": "A reducer changes a property inside nested objects or arrays without mutating prior state."
+   },
+   {
+    "title": "Efficient change detection",
+    "scenario": "Selectors or connected components rely on reference comparisons to identify changed data."
+   },
+   {
+    "title": "Immer-backed reducers",
+    "scenario": "A Redux Toolkit case reducer needs concise update logic while retaining immutable results."
+   }
+  ],
+  "related": [
+   "createSlice",
+   "createReducer",
+   "Immer",
+   "produce",
+   "object spreads",
+   "non-mutating array methods",
+   "combineReducers",
+   "shallow equality checking"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you manually update a deeply nested value immutably?",
+    "answer": "A reducer should return a new object for each nesting level that contains the changed value, while reusing unaffected branches. This preserves immutability and makes reference-based change detection effective.",
+    "followUp": "What happens if an unchanged nested object is copied anyway? It is still immutable, but its new reference can cause unnecessary updates for consumers that compare references."
+   },
+   {
+    "question": "What rule prevents accidental mutation during immutable updates?",
+    "answer": "The original state must not be changed in memory. Construct the result from copies, usually with object spread and non-mutating array methods, and return that result from the reducer.",
+    "followUp": "Why can a shallow top-level copy be insufficient? Nested objects remain shared, so changing one through the new top-level object would also mutate the old state."
+   },
+   {
+    "question": "How does Redux Toolkit simplify immutable updates?",
+    "answer": "Redux Toolkit's createSlice and createReducer use Immer internally. Their case reducers may use mutating-looking draft syntax, and Immer returns a safely immutable updated value.",
+    "followUp": "Where is that syntax unsafe? It is unsafe in ordinary hand-written reducers and other application code unless the code is running inside Immer's produce."
+   }
+  ],
+  "keyPoints": [
+   "For a nested change, copy each object or array from the root down to the changed value.",
+   "Immer preserves the same path-copying behavior automatically: changed levels receive new references, while untouched levels can be reused.",
+   "Manual updates may modify a newly created copy, provided the original state and its shared references are never changed.",
+   "Redux Toolkit's createSlice and createReducer provide Immer-backed case reducers, so immutable update bookkeeping is handled for you."
+  ],
+  "gotchas": [
+   "When updating nested data by hand, copying only the deepest object is insufficient; copy every containing level on the changed path.",
+   "Never mutate the existing state object or any object obtained from it; updates must leave the original reference untouched.",
+   "Mutating-style code is safe only in Redux Toolkit's Immer-enabled reducers or an explicit Immer produce callback, not in ordinary reducers."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redux core::Pure reducers": {
+  "sourceUrl": "https://redux.js.org/tutorials/essentials/part-1-overview-concepts",
+  "sourceTitle": "Redux Essentials, Part 1: Redux Overview and Concepts",
+  "summary": "Pure reducers calculate the next Redux state from the current state and an action. They must avoid mutation, randomness, asynchronous work, and other side effects.",
+  "explanation": "A pure reducer receives the previous state and an action, determines whether that action requires an update, and returns the next state. It must derive its result only from those arguments, avoid changing existing state, and perform no asynchronous work, randomness, API calls, or other side effects.",
+  "syntax": "(state, action) => newState",
+  "parameters": [
+   {
+    "name": "state",
+    "type": "any",
+    "description": "The current or previous state value."
+   },
+   {
+    "name": "action",
+    "type": "object",
+    "description": "An action object describing what happened."
+   }
+  ],
+  "returns": "The next state value; for an unrelated action, the existing state unchanged.",
+  "example": {
+   "title": "A pure counter reducer",
+   "code": "function counterReducer(state = 0, action) {\n  switch (action.type) {\n    case 'counter/increment':\n      return state + 1\n    default:\n      return state\n  }\n}\n\nconsole.log(counterReducer(0, { type: 'counter/increment' })) // 1\n",
+   "language": "javascript",
+   "explanation": "This reducer returns a new state value for a recognized action and the existing state for every other action."
+  },
+  "useCases": [
+   {
+    "title": "State transitions",
+    "scenario": "Handle an action that changes one state value."
+   },
+   {
+    "title": "Action filtering",
+    "scenario": "Return the current state for actions owned by other reducers."
+   },
+   {
+    "title": "Reducer composition",
+    "scenario": "Compose smaller reducers to manage separate state slices."
+   },
+   {
+    "title": "Deterministic state history",
+    "scenario": "Support predictable testing and time-travel debugging."
+   }
+  ],
+  "related": [
+   "Reducers",
+   "Actions",
+   "Immutable updates",
+   "combineReducers",
+   "Reducer composition",
+   "Time travel"
+  ],
+  "since": "",
+  "keyPoints": [
+   "A reducer maps the current state and action to the next state.",
+   "The result should depend only on the reducer's two inputs.",
+   "State updates must be immutable.",
+   "Purity excludes asynchronous operations, randomness, and side effects.",
+   "First determine whether the action belongs to this reducer.",
+   "For unrelated actions, return the current state unchanged."
+  ],
+  "gotchas": [
+   "Do not mutate the current state in place; create and return an immutable update instead.",
+   "Do not perform asynchronous work, calculate random values, or cause side effects inside a reducer.",
+   "Nested objects that change must also be copied rather than mutated in place."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redux core::Single state tree": {
+  "sourceUrl": "https://redux.js.org/understanding/thinking-in-redux/three-principles",
+  "sourceTitle": "Three Principles",
+  "summary": "Redux keeps global application state in one object tree managed by a single store. Organize that tree around domain data and app state, then update it through actions handled by reducers.",
+  "explanation": "Redux keeps the application’s shared state in one store as a single state tree. Organize that tree around domain or application data, divide it into slices with reducers, and update it only by dispatching actions; component-local values can remain outside Redux.",
+  "syntax": "(previousState, action) => newState",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "One store with a domain slice",
+   "code": "import { configureStore, createSlice } from '@reduxjs/toolkit'\n\nconst todos = createSlice({\n  name: 'todos',\n  initialState: [],\n  reducers: {\n    added: (state, action) => {\n      state.push({ id: action.payload, done: false })\n    }\n  }\n})\n\nconst store = configureStore({\n  reducer: { todos: todos.reducer }\n})\n\nstore.dispatch(todos.actions.added(1))\nconsole.log(store.getState())",
+   "language": "javascript",
+   "explanation": "Creates one store whose root state has a domain-oriented `todos` slice, then updates it by dispatching an action."
+  },
+  "useCases": [
+   {
+    "title": "Centralized state inspection",
+    "scenario": "Inspecting and debugging shared state"
+   },
+   {
+    "title": "Serialization and hydration",
+    "scenario": "Saving and restoring application state"
+   },
+   {
+    "title": "Undo and redo",
+    "scenario": "Reverting a sequence of updates"
+   },
+   {
+    "title": "Domain-oriented state organization",
+    "scenario": "Sharing related data across features"
+   }
+  ],
+  "related": [
+   "single source of truth",
+   "store",
+   "state tree",
+   "state shape",
+   "actions",
+   "reducers",
+   "combineReducers",
+   "normalized state"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does “single state tree” mean in Redux?",
+    "answer": "Redux stores the application’s global state as one object tree inside one store. This creates a single source of truth that can be inspected, serialized, hydrated, and persisted.",
+    "followUp": "Why can a Redux app still have multiple reducers? Reducers can be composed to manage separate parts of the same state tree while the application retains one store."
+   },
+   {
+    "question": "How should the single state tree be structured?",
+    "answer": "The tree should be organized around domain data and application state, with top-level keys commonly representing related slices. It should not mirror the component hierarchy.",
+    "followUp": "How should related entities be represented? Prefer normalized data: store each object once by ID and let references store IDs rather than duplicated objects."
+   },
+   {
+    "question": "How is the single state tree updated?",
+    "answer": "State changes happen by dispatching plain-object actions. Pure reducers receive the previous state and an action, then return the next state without mutating the previous state.",
+    "followUp": "How can update logic scale? Combine smaller reducers, each responsible for a particular portion of the state tree, into the root reducer."
+   }
+  ],
+  "keyPoints": [
+   "Redux represents shared application state as one tree held by one store.",
+   "Centralized state supports straightforward debugging and inspection.",
+   "The tree can be persisted during development to speed up iteration.",
+   "Whole-tree history makes features such as undo and redo easier to implement."
+  ],
+  "gotchas": [
+   "Do not create separate stores for different domains; combine reducers into one root reducer and keep one store.",
+   "Views and callbacks must not write directly to the state; dispatch actions instead.",
+   "A single tree does not require one giant reducer; split reducer logic as the application grows."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redux data modeling::Event-style actions": {
+  "sourceUrl": "https://redux.js.org/style-guide/",
+  "sourceTitle": "Style Guide",
+  "summary": "Model actions as events that describe what happened, rather than as setters for individual state fields. This produces clearer names, fewer dispatches, and more useful Redux DevTools history.",
+  "explanation": "Model actions as descriptions of events that occurred, such as an order being placed, rather than commands that directly set individual state fields. The action type communicates what happened, while the payload carries the additional facts reducers need to calculate the state update.",
+  "syntax": "{ type: 'domain/eventName', payload }",
+  "parameters": [
+   {
+    "name": "action",
+    "type": "object",
+    "description": "A plain JavaScript object with a required `type` field; additional event data is conventionally stored in `payload`."
+   },
+   {
+    "name": "action.type",
+    "type": "string",
+    "description": "A readable string commonly formatted as `domain/eventName`, identifying the event."
+   },
+   {
+    "name": "action.payload",
+    "type": "unknown",
+    "description": "Optional additional information describing the event; it may be a number, string, object, array, or another value."
+   }
+  ],
+  "returns": "No return value is specified for the modeling guideline; dispatching an action causes reducers to calculate updated state.",
+  "example": {
+   "title": "Model an action as an event",
+   "code": "import { configureStore, createSlice } from '@reduxjs/toolkit'\n\nconst ordersSlice = createSlice({\n  name: 'orders',\n  initialState: { pizzas: 0, pops: 0 },\n  reducers: {\n    pizzaAndPopOrdered(state, action) {\n      state.pizzas += action.payload.pizzas\n      state.pops += action.payload.pops\n    },\n  },\n})\n\nconst store = configureStore({ reducer: { orders: ordersSlice.reducer } })\nstore.dispatch(ordersSlice.actions.pizzaAndPopOrdered({ pizzas: 2, pops: 1 }))\nconsole.log(store.getState())",
+   "language": "typescript",
+   "explanation": "Dispatches one meaningful event describing an order, rather than separate setters for each resulting field."
+  },
+  "useCases": [
+   {
+    "title": "Represent one business occurrence",
+    "scenario": "A user completes a multi-field interaction and the resulting state changes belong to one business event."
+   },
+   {
+    "title": "Coordinate related updates",
+    "scenario": "Several state fields change because one action occurred."
+   },
+   {
+    "title": "Improve DevTools history",
+    "scenario": "Teams need an action log that explains application behavior during debugging."
+   },
+   {
+    "title": "Reduce setter proliferation",
+    "scenario": "A feature has many possible state fields but should avoid one action type per field."
+   }
+  ],
+  "related": [
+   "Action types",
+   "action.payload",
+   "Reducers",
+   "Redux DevTools",
+   "Write Action Types as domain/eventName"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What distinguishes an event-style action from a setter?",
+    "answer": "An event-style action describes something that happened in the application, while a setter tells Redux to assign a particular field value. Event-style modeling usually produces more meaningful names, fewer dispatches, and a clearer DevTools history.",
+    "followUp": "Why can one event replace several setters? A single event can carry the facts needed by a reducer, which then determines the resulting changes to state."
+   },
+   {
+    "question": "How should event-style action types and data be structured?",
+    "answer": "Use a readable type string, commonly shaped as `domain/eventName`, and choose a name that communicates the occurrence. Put additional information needed to describe the event in `payload`.",
+    "followUp": "What makes a payload design useful? It should contain the information the reducer needs to respond to the event without turning the action type into an implementation detail."
+   },
+   {
+    "question": "Why do action names matter beyond reducer matching?",
+    "answer": "Action types are inspected by reducers to decide whether to handle an action, and they appear in the Redux DevTools history. Descriptive event names therefore help both update logic and debugging.",
+    "followUp": "Why avoid `SET_DATA`? It does not reveal what occurred, so the action history provides little useful information about application behavior."
+   }
+  ],
+  "keyPoints": [
+   "Name actions after meaningful occurrences instead of exposing implementation-level field assignments.",
+   "Event-oriented names make the action log easier to read and communicate application behavior.",
+   "Event modeling can reduce dispatch noise and improve the usefulness of recorded Redux history.",
+   "An event tells the application what happened and leaves the reducer to determine how state should respond.",
+   "Choose action types that clearly summarize the application occurrence they represent.",
+   "A useful action history should communicate what happened without requiring inspection of every payload."
+  ],
+  "gotchas": [
+   "Generic setter-like names hide the event and make the action history difficult to understand.",
+   "Creating one setter action per field can produce excessive action types and dispatches.",
+   "Redux does not enforce event wording, so meaningful action design remains the application's responsibility."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redux data modeling::Local versus global state": {
+  "sourceUrl": "https://redux.js.org/faq/organizing-state",
+  "sourceTitle": "Organizing State",
+  "summary": "Keep isolated or non-critical UI details in component state. Prefer Redux for shared data or values that benefit from reuse, derivation, caching, time-travel debugging, or consistency across hot reloads.",
+  "explanation": "Choose ownership by asking who needs the data and what capabilities it must support. Put shared, reusable, cacheable, derivable, time-travel-debuggable, or hot-reload-consistent data in Redux; keep isolated UI details in component state.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Shared data in Redux, form state locally",
+   "code": "const initialState = {\n  posts: [],\n  draft: { title: '', body: '' }\n};\n\nconst store = configureStore({\n  reducer: { posts: postsReducer }\n});\n\nfunction AddPostForm() {\n  const [draft, setDraft] = useState({ title: '', body: '' });\n  // Keep draft local: only this form needs its current input values.\n  return <input value={draft.title} onChange={e => setDraft({ title: e.target.value, body: draft.body })} />;\n}",
+   "language": "tsx",
+   "explanation": "The posts collection belongs in Redux because it is shared application data, while the form draft remains component state because only the form uses it."
+  },
+  "useCases": [
+   {
+    "title": "Local form state",
+    "scenario": "A form's draft fields are used only by that form."
+   },
+   {
+    "title": "Shared application data",
+    "scenario": "Several screens need the same fetched records."
+   },
+   {
+    "title": "Normalized relational data",
+    "scenario": "Entities have IDs and relationships."
+   },
+   {
+    "title": "Cached data",
+    "scenario": "Previously fetched values should be reused."
+   }
+  ],
+  "related": [
+   "component state",
+   "Redux store",
+   "serializable objects",
+   "normalized state",
+   "createEntityAdapter",
+   "derived data",
+   "time travel debugging"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When should state be global Redux state rather than local component state?",
+    "answer": "Redux should hold data that other parts of the application need, especially when multiple components use it or when the app benefits from caching, derived data, time-travel debugging, or consistency during hot reload. State used in only one place can remain local.",
+    "followUp": "How would you decide where a dropdown's open flag belongs? Usually component state, unless other application areas need to observe or control that flag."
+   },
+   {
+    "question": "Is it wrong to keep UI state outside Redux?",
+    "answer": "There is no universal rule that every value belongs in Redux. Choose a practical balance based on the application's needs, keeping isolated or non-critical UI state local and shared application data in the store.",
+    "followUp": "What is a useful test for ownership? Ask whether another part of the application cares about the value or whether multiple components use it."
+   },
+   {
+    "question": "How should relational data be modeled in Redux?",
+    "answer": "Store related data in a normalized form when it has identifiers, nesting, or relationships: keep each object once by ID, and let references store IDs instead of duplicated objects. Redux Toolkit's createEntityAdapter is recommended for normalized collections in slices.",
+    "followUp": "Why avoid duplicated entities? Updating one canonical copy prevents inconsistent representations across the application."
+   }
+  ],
+  "keyPoints": [
+   "Start by checking whether another feature needs the value; cross-feature interest is evidence that Redux ownership may be appropriate.",
+   "Data consumed by several components is a strong candidate for the Redux store rather than one component's local state.",
+   "Prefer Redux when keeping the source data enables meaningful derived values elsewhere in the application.",
+   "State that benefits from restoring historical values can justify global ownership because Redux supports time-travel-oriented workflows.",
+   "Caching needs favor Redux when multiple parts of the app should reuse already-fetched data.",
+   "Redux is useful when data must survive UI component replacement during hot reload."
+  ],
+  "gotchas": [
+   "Do not move isolated UI state into Redux merely for uniformity; when the rest of the application does not use it, component state is usually the better home.",
+   "Avoid putting non-serializable values in Redux state unless there is a compelling, deliberate reason."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redux data modeling::Memoized selectors": {
+  "sourceUrl": "https://redux.js.org/usage/deriving-data-selectors",
+  "sourceTitle": "Deriving Data with Selectors | Redux",
+  "summary": "Memoized selectors cache derived results and reuse them when selector inputs are unchanged. Redux commonly uses Reselect’s `createSelector` to keep expensive calculations and result references stable.",
+  "explanation": "A memoized selector combines input selectors with a result function. It remembers prior arguments and input results, rerunning the derivation only when relevant values differ by reference; otherwise it returns the cached result, preserving referential stability.",
+  "syntax": "createSelector(inputSelectors, resultFunc)",
+  "parameters": [
+   {
+    "name": "inputSelectors",
+    "type": "Array of selector functions or separate selector-function arguments",
+    "description": "One or more selectors that receive the selector arguments and provide values for the derivation."
+   },
+   {
+    "name": "resultFunc",
+    "type": "Function",
+    "description": "The function that receives the input-selector results and computes the derived value."
+   }
+  ],
+  "returns": "A memoized selector function that returns the derived result and reuses the cached result when its inputs are unchanged.",
+  "example": {
+   "title": "Memoize a derived todo list",
+   "code": "import { createSelector } from '@reduxjs/toolkit';\n\ntype State = { todos: { id: number; done: boolean }[] };\n\nconst selectTodos = (state: State) => state.todos;\nconst selectCompletedTodos = createSelector(\n  [selectTodos],\n  (todos) => todos.filter((todo) => todo.done)\n);\n\nconst state: State = { todos: [{ id: 1, done: true }, { id: 2, done: false }] };\nconst first = selectCompletedTodos(state);\nconst second = selectCompletedTodos(state);\nconsole.log(first, first === second);",
+   "language": "typescript",
+   "explanation": "The selector filters completed todos once for unchanged input references and returns the cached array on the repeated call."
+  },
+  "useCases": [
+   {
+    "title": "Expensive derived collections",
+    "scenario": "Filtering, sorting, or transforming normalized state into data needed by a view."
+   },
+   {
+    "title": "Stable result references",
+    "scenario": "Returning a newly created object or array only when its source values change."
+   },
+   {
+    "title": "Composed selectors",
+    "scenario": "Combining several state fields into one reusable value for components."
+   }
+  ],
+  "related": [
+   "selectors",
+   "Reselect",
+   "Redux Toolkit",
+   "useSelector",
+   "input selectors",
+   "result function"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does `createSelector` decide whether to recompute?",
+    "answer": "`createSelector` receives input selectors and a result function, then returns a memoized selector. It runs the inputs, compares their results with the previous call, and reruns the result function only when an input result changes.",
+    "followUp": "Why can a selector still run input selectors after every dispatch? The root state argument commonly changes, so Reselect first checks selector arguments and then uses the input-selector results to decide whether the derivation must rerun."
+   },
+   {
+    "question": "When should a selector be memoized?",
+    "answer": "Memoization is useful when a selector returns a new object or array reference on each call, or when its calculation is expensive. Reusing the cached reference can prevent unnecessary React-Redux updates.",
+    "followUp": "When is memoization unnecessary? A selector returning an existing primitive or stable state reference usually gains little from caching."
+   },
+   {
+    "question": "Where should memoized selectors be declared?",
+    "answer": "Use the same memoized selector instance across calls, typically by declaring it outside a component. Recreating it loses the previous cache and prevents effective reuse.",
+    "followUp": "What if each component instance needs a different cache? Create a selector factory so each instance owns a stable selector, rather than constructing one on every render."
+   }
+  ],
+  "keyPoints": [
+   "Memoization stores prior inputs and their derived result so repeated calls can reuse work instead of calculating again.",
+   "Reselect is the standard Redux ecosystem library for building memoized selectors.",
+   "`createSelector` takes input selectors and a result function, producing the memoized selector.",
+   "Unchanged input results cause the derivation to be skipped and the previous result reference to be returned.",
+   "Caching limits expensive derivation work to calls where relevant inputs differ."
+  ],
+  "gotchas": [
+   "Do not memoize every selector automatically: prioritize selectors that create new object or array references, or perform expensive calculations.",
+   "Input selectors must return stable references when their underlying data is unchanged, or the result function will run again."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redux data modeling::Normalized state": {
+  "sourceUrl": "https://redux.js.org/usage/structuring-reducers/normalizing-state-shape",
+  "sourceTitle": "Normalizing State Shape",
+  "summary": "Normalized state stores each entity once in an ID-keyed table and represents relationships with IDs. Separate ID arrays preserve ordering, while Redux Toolkit can provide a standard normalized shape.",
+  "explanation": "Normalized Redux state models each entity type as an ID-keyed lookup table. Relationships store IDs rather than embedded copies, and separate ID arrays can preserve ordering when needed.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Normalized entity tables",
+   "code": "import { configureStore, createSlice } from '@reduxjs/toolkit'\n\ntype User = { id: string; name: string }\ntype Post = { id: string; authorId: string; title: string }\n\nconst usersSlice = createSlice({\n  name: 'users',\n  initialState: { byId: {} as Record<string, User> },\n  reducers: {\n    userAdded: (state, action: { payload: User }) => {\n      state.byId[action.payload.id] = action.payload\n    }\n  }\n})\n\nconst postsSlice = createSlice({\n  name: 'posts',\n  initialState: { byId: {} as Record<string, Post> },\n  reducers: {\n    postAdded: (state, action: { payload: Post }) => {\n      state.byId[action.payload.id] = action.payload\n    }\n  }\n})\n\nexport const store = configureStore({\n  reducer: { users: usersSlice.reducer, posts: postsSlice.reducer }\n})\n\nstore.dispatch(usersSlice.actions.userAdded({ id: 'u1', name: 'Ada' }))\nstore.dispatch(postsSlice.actions.postAdded({ id: 'p1', authorId: 'u1', title: 'Redux' }))",
+   "language": "typescript",
+   "explanation": "Users and posts are stored once in ID-keyed tables, while a post points to its author through authorId."
+  },
+  "useCases": [
+   {
+    "title": "Model relationships without duplication",
+    "scenario": "Relational application data such as users, posts, comments, or products with references between records."
+   },
+   {
+    "title": "Enable predictable item access",
+    "scenario": "Collections that need frequent direct reads or targeted updates by entity ID."
+   },
+   {
+    "title": "Represent relationships with join tables",
+    "scenario": "Many-to-many relationships or relationships that carry their own attributes."
+   }
+  ],
+  "related": [
+   "createEntityAdapter",
+   "createSlice",
+   "join table",
+   "lookup table",
+   "Normalizr",
+   "Updating Normalized Data"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is normalized state in Redux?",
+    "answer": "Normalization stores one copy of each entity in a lookup table keyed by its ID. Other records refer to that entity by ID, which avoids duplicated nested data and supports direct lookup.",
+    "followUp": "How should many-to-many relationships be represented? Use an intermediate join table containing the IDs of the related entities, especially when the relationship has its own data."
+   },
+   {
+    "question": "How would you design a normalized state shape?",
+    "answer": "Give each data type its own table, store entities as object values keyed by their IDs, and use IDs for references. Use arrays of IDs when the application must represent ordering.",
+    "followUp": "What standard Redux Toolkit shape supports this pattern? createEntityAdapter uses `{ ids: [], entities: {} }` and supplies reducers and selectors for the collection."
+   },
+   {
+    "question": "What benefits does normalization provide?",
+    "answer": "Normalization makes item retrieval and updates more consistent because a record can be found directly through its ID. It also ensures that changes to an entity do not require synchronizing duplicated nested copies.",
+    "followUp": "What should happen when an API returns deeply nested relational data? Transform it into normalized tables before adding it to the store; Normalizr is one option for complex schemas."
+   }
+  ],
+  "keyPoints": [
+   "Separate entity types into independent state tables, such as users, posts, and comments.",
+   "Represent each table as an object whose keys are entity IDs and whose values are the complete entities.",
+   "Store relationships as IDs instead of embedding the referenced object again.",
+   "Use an ID array alongside the lookup table when a collection needs an explicit sequence.",
+   "Treat relational or nested store data like database tables rather than deeply nested duplicated records.",
+   "ID-based access makes individual entity reads and writes predictable across slices.",
+   "Redux Toolkit can generate the conventional IDs-and-entities structure for normalized collections."
+  ],
+  "gotchas": [
+   "An ID-keyed object alone does not express list order, so keep a separate ID array when ordering matters."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redux data modeling::Selectors": {
+  "sourceUrl": "https://redux.js.org/usage/deriving-data-selectors",
+  "sourceTitle": "Deriving Data with Selectors | Redux",
+  "summary": "Selectors hide Redux state structure behind reusable functions and derive values from minimal source state. They can also improve performance by memoizing expensive calculations.",
+  "explanation": "A selector is a function that receives all or part of Redux state and returns data based on it. Use selectors to hide state-access details, calculate values such as filtered lists, and avoid storing redundant derived data; memoize expensive derivations when repeated recalculation matters.",
+  "syntax": "(state: RootState) => Result",
+  "parameters": [
+   {
+    "name": "state",
+    "type": "RootState or a state subsection",
+    "description": "The Redux store state, or the relevant part of it, from which the selector reads or derives data."
+   }
+  ],
+  "returns": "Data based on the supplied state, either a stored value or a newly derived value.",
+  "example": {
+   "title": "Basic selectors",
+   "code": "type Todo = { id: string; text: string; completed: boolean }\ntype RootState = { todos: Todo[] }\n\nexport const selectTodos = (state: RootState) => state.todos\nexport const selectCompletedTodos = (state: RootState) =>\n  state.todos.filter(todo => todo.completed)\n\nconst state: RootState = {\n  todos: [\n    { id: \"1\", text: \"Learn Redux\", completed: true },\n    { id: \"2\", text: \"Write selectors\", completed: false }\n  ]\n}\n\nconsole.log(selectCompletedTodos(state))",
+   "language": "typescript",
+   "explanation": "The selectors hide the state layout from callers and derive a filtered list without storing that duplicate data."
+  },
+  "useCases": [
+   {
+    "title": "Read state through a stable access API",
+    "scenario": "A component needs one field or nested value without depending directly on the store's layout."
+   },
+   {
+    "title": "Derive presentation data",
+    "scenario": "A UI needs a filtered, sorted, counted, or aggregated view of stored data."
+   },
+   {
+    "title": "Share data-selection logic",
+    "scenario": "Several components need the same state lookup or calculation."
+   },
+   {
+    "title": "Memoize expensive derivations",
+    "scenario": "A calculation is repeated and should reuse its previous result when inputs are unchanged."
+   }
+  ],
+  "related": [
+   "createSelector",
+   "useSelector",
+   "Reselect",
+   "Redux Toolkit",
+   "derived data",
+   "memoization"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a selector?",
+    "answer": "A selector is a function that accepts the Redux state, or part of it, and returns data based on that state. It may simply read a stored value or compute a derived result.",
+    "followUp": "Why keep derived values out of Redux state? Keeping only source data avoids duplicated state and reduces synchronization problems; compute the result when needed."
+   },
+   {
+    "question": "How do selectors encapsulate state shape?",
+    "answer": "Selectors centralize knowledge of the state layout and provide reusable access or derivation logic. If the state shape changes, callers can continue using the selector while its implementation is updated.",
+    "followUp": "Where should reusable selectors live? A slice file is a practical location, because the selector can remain near the state structure it knows about."
+   },
+   {
+    "question": "When should a selector be memoized?",
+    "answer": "Memoized selectors cache derived results and recalculate only when their inputs change. Reselect's createSelector is the documented Redux ecosystem API for building them.",
+    "followUp": "What should a selector return when used with useSelector? Prefer a stable reference when the underlying selected data has not changed, otherwise reference comparison may trigger a re-render."
+   }
+  ],
+  "keyPoints": [
+   "Store the smallest useful source state; calculate additional values with selectors instead of persisting duplicate derived data.",
+   "Selectors receive state, or a state subsection, and return a value computed from it.",
+   "Selectors provide one place for state lookup and derivation logic, so components do not need to know the store's internal layout."
+  ],
+  "gotchas": [
+   "A selector that creates a new result object or array on every call can cause unnecessary React-Redux updates; use memoization for derived results when appropriate."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Redux data modeling::State machines": {
+  "sourceUrl": "https://redux.js.org/style-guide/",
+  "sourceTitle": "Redux Style Guide",
+  "summary": "Represent a workflow with one explicit finite status, such as `idle`, `loading`, `success`, or `failure`, rather than contradictory booleans. Reducers use the current status and action together to allow valid transitions and make impossible states impossible.",
+  "explanation": "Model a finite workflow with an explicit status value such as `idle`, `loading`, `succeeded`, or `failed`. The reducer uses both the current status and the dispatched action to decide whether a transition is valid, preventing contradictory combinations such as simultaneous loading and failure flags.",
+  "syntax": "(state, action) => newState",
+  "parameters": [
+   {
+    "name": "state",
+    "type": "object",
+    "description": "The current finite workflow state and associated data."
+   },
+   {
+    "name": "action",
+    "type": "object",
+    "description": "An object describing the event that may cause a transition."
+   }
+  ],
+  "returns": "A new state value calculated from the current state and dispatched action.",
+  "example": {
+   "title": "Explicit request state machine",
+   "code": "const initialState = { status: 'idle', data: null, error: null }\n\nfunction reducer(state = initialState, action) {\n  switch (action.type) {\n    case 'requestStarted':\n      return { ...state, status: 'loading', error: null }\n    case 'requestSucceeded':\n      return { status: 'succeeded', data: action.payload, error: null }\n    case 'requestFailed':\n      return { ...state, status: 'failed', error: action.error }\n    default:\n      return state\n  }\n}\n\nlet state = reducer(undefined, {})\nstate = reducer(state, { type: 'requestStarted' })\nstate = reducer(state, { type: 'requestSucceeded', payload: ['Ada'] })\nconsole.log(state)",
+   "language": "javascript",
+   "explanation": "This reducer models request progress with one status value and keeps related data and errors consistent."
+  },
+  "useCases": [
+   {
+    "title": "Request lifecycle",
+    "scenario": "Fetching data from an API"
+   },
+   {
+    "title": "Form workflow",
+    "scenario": "Multi-step form submission"
+   },
+   {
+    "title": "Session transitions",
+    "scenario": "Authentication or authorization flow"
+   },
+   {
+    "title": "Finite workflow modeling",
+    "scenario": "Any process with mutually exclusive phases"
+   }
+  ],
+  "related": [
+   "Reducers Should Own the State Shape",
+   "Finite state machine",
+   "Reducers",
+   "Redux Style Guide"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use a finite state machine when a workflow must occupy exactly one state from a known set.",
+   "Represent mutually exclusive conditions with a single finite-state field instead of several potentially contradictory flags.",
+   "A request commonly begins in `idle`, then moves through loading, success, or failure.",
+   "The `loading` state explicitly indicates that the operation is currently in progress.",
+   "A `success` state records that the operation completed and produced usable data.",
+   "A `failure` state records an unsuccessful operation and can be paired with error details.",
+   "Reducers should validate transitions using both current state and action, not just the action type."
+  ],
+  "gotchas": [
+   "Do not represent mutually exclusive workflow states with independent booleans; use one finite status value so impossible combinations cannot occur.",
+   "A transition should consider the current state as well as the action, rather than handling every action unconditionally."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

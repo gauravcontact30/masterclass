@@ -1,0 +1,1126 @@
+{
+ "Connecting::Connection limits": {
+  "sourceUrl": "https://neon.com/docs/connect/connection-pooling",
+  "sourceTitle": "Connection pooler Thousands of connections",
+  "summary": "Neon’s direct endpoint is limited by the compute’s PostgreSQL connection capacity, while the pooled endpoint uses PgBouncer to accept up to 10,000 client connections. Use the -pooler endpoint for serverless or connection-per-request traffic, and the direct endpoint for session-dependent operations.",
+  "explanation": "Neon’s direct endpoint is constrained by the compute’s PostgreSQL connection limit. The pooled endpoint routes clients through PgBouncer, which accepts many client connections and reuses a smaller set of database connections. Choose the pooled hostname for serverless or connection-per-request workloads; retain the direct hostname for migrations and operations that require session state.",
+  "syntax": "postgresql://USER:PASSWORD@ENDPOINT-pooler.REGION.aws.neon.tech/DATABASE?sslmode=require",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Select the pooled endpoint",
+   "code": "const directUrl = process.env.DATABASE_URL;\nconst pooledUrl = directUrl.replace(\n  /ep-[^.]+(\\.[^.]+\\.aws\\.neon\\.tech)/,\n  (match, suffix) => `${match.replace(suffix, \"-pooler\" + suffix)}`\n);\nconsole.log(pooledUrl);",
+   "language": "typescript",
+   "explanation": "Derive the pooled endpoint by adding -pooler to the Neon endpoint hostname, then use it for high-concurrency application traffic."
+  },
+  "useCases": [
+   {
+    "title": "Handle bursty application traffic",
+    "scenario": "Serverless functions, edge functions, or other connection-per-request applications"
+   },
+   {
+    "title": "Use a direct database session",
+    "scenario": "Migrations, pg_dump, or operations that require session state"
+   },
+   {
+    "title": "Correct endpoint selection",
+    "scenario": "Diagnosing too many connections or pool waits"
+   }
+  ],
+  "related": [
+   "PgBouncer",
+   "transaction mode",
+   "max_connections",
+   "default_pool_size",
+   "query_wait_timeout",
+   "pooled connection string",
+   "direct connection"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do direct and pooled Neon endpoints differ?",
+    "answer": "A direct endpoint connects straight to PostgreSQL, so its concurrency is limited by the compute’s max_connections setting. A pooled endpoint goes through PgBouncer and can accept up to 10,000 client connections while multiplexing them onto fewer PostgreSQL connections.",
+    "followUp": "Which endpoint should handle migrations? Use the direct endpoint, because migrations may require session state that transaction-mode pooling does not preserve."
+   },
+   {
+    "question": "How should a serverless application avoid exhausting connections?",
+    "answer": "Use the pooled connection string for serverless functions and other connection-per-request workloads. Its hostname contains the -pooler suffix, which selects Neon’s PgBouncer endpoint.",
+    "followUp": "How can you recognize the selected endpoint in a connection string? Check whether -pooler appears in the endpoint hostname."
+   },
+   {
+    "question": "What determines Neon’s connection capacity?",
+    "answer": "The direct limit is determined by the compute size and PostgreSQL’s max_connections setting. With pooling, each user/database pair receives a smaller reusable pool, while many client connections can share those database connections.",
+    "followUp": "What happens when all pooled slots are occupied? New queries wait in a queue for up to query_wait_timeout, documented as two minutes, before failing."
+   }
+  ],
+  "keyPoints": [
+   "Select pooling by adding -pooler to the endpoint ID in the hostname.",
+   "Pooling prevents short-lived client traffic from consuming one permanent PostgreSQL connection per client.",
+   "Direct connection capacity increases with the Neon compute size, so a small compute supports fewer simultaneous database connections."
+  ],
+  "gotchas": [
+   "Creating a fresh direct connection for every serverless invocation can rapidly exhaust the available connections."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Connecting::Connection strings": {
+  "sourceUrl": "https://neon.com/docs/connect/connect-from-any-app",
+  "sourceTitle": "Connect from any application - Neon Docs",
+  "summary": "Generate a Neon connection string for a selected branch and store it in an environment variable such as DATABASE_URL. Read that variable in application code so branch credentials are not hardcoded.",
+  "explanation": "Neon builds a connection string for a selected branch, compute, database, and role. Store that value in an environment variable such as DATABASE_URL, then read it in application code and pass it to a PostgreSQL driver; this keeps branch credentials out of source code and allows each deployment environment to supply its own branch-specific value.",
+  "syntax": "DATABASE_URL=<Neon connection string>",
+  "parameters": [],
+  "returns": "A PostgreSQL connection string for the selected branch, compute, database, and role.",
+  "example": {
+   "title": "Use an environment-stored connection string",
+   "code": "import { neon } from '@neondatabase/serverless';\n\nconst sql = neon(process.env.DATABASE_URL!);\nconst result = await sql`SELECT now()`;\nconsole.log(result);",
+   "language": "typescript",
+   "explanation": "Reads the branch-specific connection string from DATABASE_URL instead of embedding credentials in source code."
+  },
+  "useCases": [
+   {
+    "title": "Connect to a development branch",
+    "scenario": "Local development"
+   },
+   {
+    "title": "Use isolated branch credentials in test environments",
+    "scenario": "Testing"
+   },
+   {
+    "title": "Supply each preview environment with its branch-specific database URL",
+    "scenario": "Preview deployments"
+   }
+  ],
+  "related": [
+   "DATABASE_URL",
+   "Connect modal",
+   "Postgres driver",
+   "environment variable"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The Neon Console generates a connection string after you select a branch, compute, database, and role.",
+   "The generated value contains the information a PostgreSQL client needs to identify and authenticate against the selected database.",
+   "DATABASE_URL is the conventional environment-variable name, although your framework or deployment can use another name.",
+   "The value copied from Neon’s Connect modal can be assigned directly to DATABASE_URL.",
+   "Put the value in environment configuration and read it at runtime rather than hardcoding branch credentials.",
+   "Application code should retrieve the environment value and provide it to the PostgreSQL client or driver."
+  ],
+  "gotchas": [
+   "Do not embed a connection string or credentials directly in application source; use an environment variable instead."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Connecting::Direct connections": {
+  "sourceUrl": "https://neon.com/docs/connect/choose-connection",
+  "sourceTitle": "Choosing your connection method - Neon Docs",
+  "summary": "A direct connection goes straight to Postgres without PgBouncer. Reserve it for migrations, long-lived sessions, and features that require a persistent session; use pooling for high-concurrency application traffic.",
+  "explanation": "A direct connection goes straight to Neon Postgres instead of through PgBouncer. Use it when a task needs one stable session across operations or depends on session-specific behavior; ordinary applications with many concurrent short-lived connections should use the pooled endpoint instead.",
+  "syntax": "postgresql://user:password@direct-host/dbname?sslmode=require",
+  "parameters": [],
+  "returns": "A PostgreSQL connection endpoint suitable for stable, long-lived sessions and session-dependent operations.",
+  "example": {
+   "title": "Connect directly with psycopg",
+   "code": "import os\nimport psycopg\n\nwith psycopg.connect(os.environ[\"DATABASE_URL_UNPOOLED\"]) as conn:\n    with conn.cursor() as cur:\n        cur.execute(\"SELECT 1\")\n        print(cur.fetchone()[0])",
+   "language": "python",
+   "explanation": "Opens a direct PostgreSQL connection from the unpooled environment variable and runs a simple query."
+  },
+  "useCases": [
+   {
+    "title": "Schema migrations",
+    "scenario": "Run Prisma Migrate, Drizzle Kit, or django-admin migrate against the database."
+   },
+   {
+    "title": "Concurrent index creation",
+    "scenario": "Execute CREATE INDEX CONCURRENTLY without transaction-pooler limitations."
+   },
+   {
+    "title": "Session-dependent PostgreSQL features",
+    "scenario": "Use LISTEN/NOTIFY or maintain temporary tables and prepared statements across queries."
+   },
+   {
+    "title": "Persistent sessions",
+    "scenario": "Run a long-lived database session that should not be multiplexed through PgBouncer."
+   }
+  ],
+  "related": [
+   "Pooled connections",
+   "PgBouncer",
+   "max_connections",
+   "Schema migrations",
+   "CREATE INDEX CONCURRENTLY",
+   "LISTEN / NOTIFY",
+   "Temporary tables",
+   "Prepared statements"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The direct endpoint connects straight to Postgres and bypasses PgBouncer.",
+   "Use a direct connection for schema migration commands such as Prisma Migrate, Drizzle Kit, and django-admin migrate.",
+   "Direct connections support PostgreSQL operations such as CREATE INDEX CONCURRENTLY that require a stable session.",
+   "Choose direct connections when temporary tables or prepared statements must remain available across multiple queries.",
+   "Direct connections are constrained by max_connections, whose approximate range depends on the Neon compute size."
+  ],
+  "gotchas": [
+   "Direct connections consume the database's max_connections capacity, so avoid using them for large numbers of concurrent application connections."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Connecting::Pooled connections": {
+  "sourceUrl": "https://neon.com/docs/connect/connection-pooling",
+  "sourceTitle": "Connection pooling - Neon Docs",
+  "summary": "Use Neon’s pooled endpoint for serverless functions and other connection-per-request workloads. Add `-pooler` to the endpoint hostname so PgBouncer can multiplex many short-lived client connections over fewer PostgreSQL connections.",
+  "explanation": "Neon’s built-in PgBouncer pooler lets many client connections share a smaller set of PostgreSQL connections. For serverless functions or other connection-per-request workloads, use a connection string whose endpoint hostname includes -pooler. Pooling operates in transaction mode, so a connection returns to the pool when its transaction ends.",
+  "syntax": "postgresql://user:password@<endpoint-id>-pooler.<region>.aws.neon.tech/<database>?sslmode=require",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Use the pooled endpoint in a short-lived function",
+   "code": "import postgres from 'postgres';\n\nconst sql = postgres(process.env.DATABASE_URL);\n\nexport async function handler() {\n  const rows = await sql`select now()`;\n  return { statusCode: 200, body: JSON.stringify(rows) };\n}",
+   "language": "typescript",
+   "explanation": "Create the client with a pooled DATABASE_URL; the hostname should contain the -pooler suffix."
+  },
+  "useCases": [
+   {
+    "title": "Serverless functions",
+    "scenario": "Each serverless invocation opens a database connection."
+   },
+   {
+    "title": "Connection-per-request workloads",
+    "scenario": "The application creates a connection for every request."
+   },
+   {
+    "title": "Elastic workloads",
+    "scenario": "Many idle or short-lived clients must connect concurrently."
+   }
+  ],
+  "related": [
+   "PgBouncer",
+   "pooled connection string",
+   "direct connection",
+   "serverless functions",
+   "connection-per-request workloads",
+   "max_connections"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Pooling prevents short-lived clients from consuming one dedicated PostgreSQL connection each time.",
+   "PgBouncer multiplexes client connections onto fewer database connections.",
+   "Enable pooling by using the pooled endpoint rather than changing application code or deploying a separate pooler.",
+   "The pooled hostname is identified by adding -pooler to the endpoint ID.",
+   "The high client limit suits elastic serverless workloads with frequent connection creation and closure."
+  ],
+  "gotchas": [
+   "Session-level state does not persist across transactions, so use a direct endpoint for features that require session state."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Connecting::Serverless driver": {
+  "sourceUrl": "https://neon.com/docs/serverless/serverless-driver",
+  "sourceTitle": "Neon serverless driver",
+  "summary": "Neon's serverless driver queries Postgres over HTTP or WebSockets instead of TCP. Use its HTTP neon() function for one-shot queries and non-interactive transactions in serverless or edge runtimes.",
+  "explanation": "The package provides a JavaScript and TypeScript Postgres driver for runtimes that cannot maintain TCP connections. Calling neon() creates an HTTP query function; each tagged-template query is sent with fetch, making it suitable for one-shot statements and non-interactive transactions without maintaining a database session.",
+  "syntax": "neon(connectionString)",
+  "parameters": [
+   {
+    "name": "connectionString",
+    "type": "string",
+    "description": "Neon database connection string, typically supplied through an environment variable."
+   }
+  ],
+  "returns": "The neon() query function returns query results as a promise; the documented example uses the resolved rows directly.",
+  "example": {
+   "title": "Query Neon over HTTP",
+   "code": "import { neon } from \"@neondatabase/serverless\";\n\nconst sql = neon(process.env.DATABASE_URL!);\nconst rows = await sql`SELECT now() AS server_time`;\nconsole.log(rows);",
+   "language": "typescript",
+   "explanation": "Creates an HTTP-backed query function and runs a single tagged-template SQL query."
+  },
+  "useCases": [
+   {
+    "title": "One-shot edge queries",
+    "scenario": "An edge function executes an independent SELECT or mutation and cannot keep a TCP socket open."
+   },
+   {
+    "title": "Non-interactive transactions",
+    "scenario": "A short-lived serverless handler needs several database statements without interactive session behavior."
+   },
+   {
+    "title": "Serverless application database access",
+    "scenario": "An application needs a JavaScript or TypeScript Postgres driver in a serverless runtime."
+   }
+  ],
+  "related": [
+   "@neondatabase/serverless",
+   "neon()",
+   "HTTP",
+   "WebSockets",
+   "Pool",
+   "Client",
+   "transaction()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does the Neon serverless driver solve?",
+    "answer": "The serverless driver is a JavaScript and TypeScript Postgres driver that replaces TCP with HTTP or WebSockets. Its HTTP mode is designed for serverless and edge environments where a TCP socket may not remain available.",
+    "followUp": "When should HTTP be preferred? Prefer it for independent one-shot queries and non-interactive transactions; use WebSockets when an interactive session is required."
+   },
+   {
+    "question": "How does HTTP querying work?",
+    "answer": "The neon() function sends each query as an HTTP fetch request. This avoids maintaining a persistent connection and is optimized for single queries and multiple queries in one non-interactive transaction.",
+    "followUp": "What transport supports interactive transactions? The driver's WebSocket mode supports interactive transactions and session-oriented use."
+   },
+   {
+    "question": "Why is HTTP useful in edge runtimes?",
+    "answer": "HTTP is the default transport for the driver. It fits short-lived serverless or edge handlers because each query is sent as a request instead of relying on a TCP connection that must survive the runtime.",
+    "followUp": "What alternative API is available over WebSockets? Pool and Client provide the node-postgres-compatible API over the WebSocket transport."
+   }
+  ],
+  "keyPoints": [
+   "The driver targets JavaScript and TypeScript applications running in serverless or edge environments.",
+   "It uses HTTP or WebSockets instead of TCP, which helps when the runtime cannot preserve a TCP socket.",
+   "HTTP is the recommended starting transport for ordinary serverless-driver queries.",
+   "The HTTP function is optimized for isolated, one-shot database operations.",
+   "HTTP can send several queries together when the transaction does not require interactive session control.",
+   "A tagged-template call through neon() becomes an HTTP fetch request to Neon."
+  ],
+  "gotchas": [
+   "HTTP queries are stateless requests rather than a persistent database session, so this mode is not the choice for interactive transaction workflows.",
+   "For one-shot queries or non-interactive transactions, use the HTTP neon() function instead of a WebSocket connection."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Connecting::SSL requirements": {
+  "sourceUrl": "https://neon.com/docs/connect/connect-securely",
+  "sourceTitle": "Connect to Neon securely - Neon Docs",
+  "summary": "Neon requires SSL/TLS for every database connection and rejects unencrypted clients. Set sslmode in the connection string; Neon recommends verify-full for the strongest certificate and hostname checks.",
+  "explanation": "Neon accepts only SSL/TLS connections. Add an sslmode parameter to the PostgreSQL connection string to choose the protection level; verify-full checks the certificate, trusted CA, hostname, expiration, and revocation, and is Neon’s recommended setting.",
+  "syntax": "postgresql://user:password@host/dbname?sslmode=verify-full",
+  "parameters": [
+   {
+    "name": "sslmode",
+    "type": "string: require | verify-ca | verify-full",
+    "description": "Controls SSL/TLS encryption and certificate verification for the PostgreSQL connection."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Use full SSL verification",
+   "code": "psql \"postgresql://user:password@ep-example.us-east-2.aws.neon.tech/dbname?sslmode=verify-full\"",
+   "language": "bash",
+   "explanation": "Connects with encryption and full certificate and hostname verification; configure PGSSLROOTCERT when the client needs an explicit system CA bundle."
+  },
+  "useCases": [
+   {
+    "title": "Require strict server identity verification",
+    "scenario": "Production database connections"
+   },
+   {
+    "title": "Connect with verify-full and an explicit CA bundle",
+    "scenario": "psql command-line access"
+   },
+   {
+    "title": "Reduce man-in-the-middle attack risk",
+    "scenario": "Security-sensitive applications"
+   }
+  ],
+  "related": [
+   "SSL/TLS",
+   "channel_binding=require",
+   "SCRAM-SHA-256-PLUS",
+   "PGSSLROOTCERT"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What SSL requirement applies to every Neon connection?",
+    "answer": "Neon rejects unencrypted connections, so clients must use SSL/TLS. The connection string can include sslmode to select the verification level.",
+    "followUp": "Which mode provides the strongest protection? verify-full, because it also verifies the trusted CA, hostname, certificate expiration, and revocation."
+   },
+   {
+    "question": "What does sslmode=require do?",
+    "answer": "require encrypts the connection and verifies the server certificate. If that verification fails, the connection is refused.",
+    "followUp": "How does verify-ca add protection? It additionally checks that the certificate was issued by a trusted certificate authority."
+   },
+   {
+    "question": "Why is verify-full recommended?",
+    "answer": "verify-full performs the strictest verification: it checks the certificate, trusted CA, hostname, expiration, and revocation. Neon recommends it for the highest security level.",
+    "followUp": "What configuration can psql need for this mode? Set PGSSLROOTCERT to the location of the system root certificates."
+   }
+  ],
+  "keyPoints": [
+   "Every connection to Neon must be encrypted with SSL/TLS; an unencrypted client is rejected.",
+   "Use the sslmode connection-string parameter to choose how strongly the server certificate is checked.",
+   "verify-ca adds a trusted-CA check beyond encryption and basic certificate verification.",
+   "verify-full validates the hostname and also checks whether the certificate is expired or revoked.",
+   "Choose verify-full for the strongest protection and the setting Neon recommends."
+  ],
+  "gotchas": [
+   "With psql, verify-full may require setting PGSSLROOTCERT to the path containing your system root certificates."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Platform model::Autoscaling": {
+  "sourceUrl": "https://neon.com/docs/introduction/autoscaling",
+  "sourceTitle": "Autoscaling Automatic instance sizing",
+  "summary": "Neon Autoscaling automatically adjusts a compute's capacity to match workload. Set minimum and maximum compute sizes, and Neon scales between them without manual resizing or restarts.",
+  "explanation": "Autoscaling changes a compute's allocated capacity as workload changes. You choose minimum and maximum compute sizes, and Neon adjusts the compute between those bounds without requiring a restart or manual resizing; the feature applies to primary computes and read replicas.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Configure a compute range",
+   "code": "# Configure Autoscaling in the Neon Console:\n# Edit compute -> Autoscale -> set minimum and maximum CU.",
+   "language": "text",
+   "explanation": "Enable Autoscaling in the compute editor, then choose the lower and upper compute sizes Neon may use."
+  },
+  "useCases": [
+   {
+    "title": "Match capacity to demand",
+    "scenario": "Traffic varies substantially during the day."
+   },
+   {
+    "title": "Reduce overprovisioning",
+    "scenario": "A database serves both quiet and busy periods."
+   },
+   {
+    "title": "Scale a read replica",
+    "scenario": "A read-heavy workload needs elastic capacity."
+   },
+   {
+    "title": "Absorb workload spikes",
+    "scenario": "An application grows unpredictably."
+   }
+  ],
+  "related": [
+   "Compute Units (CU)",
+   "primary compute",
+   "read replica",
+   "Edit compute",
+   "compute size",
+   "scale to zero",
+   "compute cache"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Neon Autoscaling do?",
+    "answer": "Autoscaling lets Neon change compute capacity in response to current workload. It operates between a user-selected minimum and maximum, and the adjustment does not require a restart.",
+    "followUp": "What resources are monitored? Neon evaluates CPU load, memory usage, and compute-cache activity when determining the target size."
+   },
+   {
+    "question": "How is Autoscaling configured?",
+    "answer": "You configure a lower and upper compute size in the Edit compute drawer. The same feature can be enabled for either a primary compute or a read replica.",
+    "followUp": "What constraint applies to the configured range? The maximum-minus-minimum spread may be no more than 8 CU."
+   },
+   {
+    "question": "What are the sizing boundaries?",
+    "answer": "Compute Units, or CU, represent the compute resources allocated to the database. Neon supports autoscaling from 0.25 CU through 16 CU, subject to plan and range limits.",
+    "followUp": "What happens when a workload becomes idle? If scale to zero is enabled, an idle compute can suspend and stop accruing compute charges."
+   }
+  ],
+  "keyPoints": [
+   "Neon automatically changes the compute resources assigned to a database as its workload changes.",
+   "Capacity changes happen without manually resizing the compute or restarting it.",
+   "Autoscaling can be enabled on any compute instance.",
+   "Both primary computes and read replicas are eligible.",
+   "The configuration establishes the smallest and largest sizes Neon may select.",
+   "Neon increases or decreases capacity while staying inside the configured bounds."
+  ],
+  "gotchas": [
+   "The difference between the selected maximum and minimum cannot exceed 8 CU."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Platform model::Compute endpoints": {
+  "sourceUrl": "https://neon.com/docs/manage/computes",
+  "sourceTitle": "computes",
+  "summary": "A Neon compute endpoint is the Postgres compute instance attached to a branch. Choose a fixed size or configure autoscaling to match workload demand.",
+  "explanation": "A compute endpoint is the Postgres compute instance attached to a branch. Each branch can have one primary read-write compute and additional read-only computes; its size can be fixed or configured with minimum and maximum Compute Units for autoscaling.",
+  "syntax": "POST /projects/{project_id}/endpoints",
+  "parameters": [
+   {
+    "name": "project_id",
+    "type": "string",
+    "description": "Neon project containing the branch and compute."
+   },
+   {
+    "name": "branch_id",
+    "type": "string",
+    "description": "Branch to which the compute is attached."
+   },
+   {
+    "name": "type",
+    "type": "string",
+    "description": "Compute role, such as `read_write` or `read_only`."
+   },
+   {
+    "name": "autoscaling_limit_min_cu",
+    "type": "number",
+    "description": "Minimum autoscaling size in Compute Units; at least 0.25."
+   },
+   {
+    "name": "autoscaling_limit_max_cu",
+    "type": "number",
+    "description": "Maximum autoscaling size in Compute Units."
+   }
+  ],
+  "returns": "A created compute endpoint, including its identifier, branch association, type, size, and configuration status.",
+  "example": {
+   "title": "Create a branch compute",
+   "code": "curl -X POST \"https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/endpoints\" \\\n  -H \"Authorization: Bearer $NEON_API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"endpoint\": {\n      \"branch_id\": \"br-example\",\n      \"type\": \"read_write\",\n      \"autoscaling_limit_min_cu\": 0.25,\n      \"autoscaling_limit_max_cu\": 2\n    }\n  }'",
+   "language": "bash",
+   "explanation": "Creates a read-write compute for a branch and allows it to autoscale between 0.25 and 2 Compute Units."
+  },
+  "useCases": [
+   {
+    "title": "Attach primary compute",
+    "scenario": "A branch needs database execution capacity for application reads and writes."
+   },
+   {
+    "title": "Add read replicas",
+    "scenario": "Read-heavy traffic needs independent database processing capacity."
+   },
+   {
+    "title": "Autoscale compute size",
+    "scenario": "Demand varies during the day or across deployments."
+   },
+   {
+    "title": "Reduce idle usage with scale-to-zero",
+    "scenario": "A development branch is inactive for long periods."
+   }
+  ],
+  "related": [
+   "branch",
+   "read replica",
+   "Compute Units",
+   "autoscaling",
+   "scale to zero",
+   "endpoint ID"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a compute endpoint in Neon, and how does it relate to a branch?",
+    "answer": "A compute endpoint is Neon’s Postgres compute instance associated with a branch. A branch supports one primary read-write compute and can also have multiple read-only computes.",
+    "followUp": "How can read replicas avoid duplicating database storage? They read from the same storage as the primary compute."
+   },
+   {
+    "question": "How do you size a compute for changing workload demand?",
+    "answer": "Compute size is expressed in Compute Units. You can use a fixed size or configure autoscaling with minimum and maximum Compute Unit limits, depending on the workload.",
+    "followUp": "What constraint applies to the lower autoscaling bound? The minimum allowed value is 0.25 Compute Units."
+   },
+   {
+    "question": "What happens when a compute becomes idle?",
+    "answer": "A compute can scale to zero after inactivity and wakes when a new connection arrives. The default inactivity period is five minutes, and the timeout can be configured.",
+    "followUp": "What operational trade-off does scale-to-zero introduce? It reduces idle usage but means the first connection after suspension must wait for the compute to wake."
+   }
+  ],
+  "keyPoints": [
+   "The endpoint is the branch’s Postgres execution resource, rather than an HTTP endpoint.",
+   "Use one primary compute for writes and add read-only computes when read traffic needs separate capacity.",
+   "Read replicas share the primary’s storage, so creating one does not copy the database data.",
+   "The available compute sizes depend on the Neon plan attached to the project.",
+   "On the Free plan, a compute can reach at most 2 Compute Units, equivalent to 8 GB of RAM."
+  ],
+  "gotchas": [
+   "Choosing a larger compute increases compute-hour consumption while it is active.",
+   "An idle compute may suspend automatically unless its scale-to-zero behavior is adjusted."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Platform model::Copy-on-write branching": {
+  "sourceUrl": "https://neon.com/docs/introduction/branching",
+  "sourceTitle": "Branching",
+  "summary": "Neon branches are copy-on-write clones of database data. They initially share the parent’s data, then store branch-specific writes separately so the branch can diverge without duplicating the dataset up front.",
+  "explanation": "Neon creates a branch by referencing the parent branch’s existing data rather than duplicating it. The branch initially shares that data, while subsequent writes are stored as deltas, allowing the branch to diverge independently without adding load to the parent’s compute.",
+  "syntax": "neon branches create --name <branch-name> --parent <parent-branch>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Create a copy-on-write test branch",
+   "code": "neon branches create --name migration-test --parent production\nneon connection-string migration-test",
+   "language": "bash",
+   "explanation": "Creates an isolated branch from production, then retrieves its connection string for testing."
+  },
+  "useCases": [
+   {
+    "title": "Development environments",
+    "scenario": "Create an isolated environment preloaded with production data for application development."
+   },
+   {
+    "title": "Safe database testing",
+    "scenario": "Run destructive or schema-changing queries without modifying the source database."
+   },
+   {
+    "title": "CI/CD isolation",
+    "scenario": "Run parallel pipelines with separate database states."
+   }
+  ],
+  "related": [
+   "branch",
+   "parent branch",
+   "current state",
+   "past state",
+   "delta",
+   "isolated development environments",
+   "test environments"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Neon copy-on-write branching work?",
+    "answer": "A Neon branch is a copy-on-write clone of database data. It can start from the current state or a past state, shares data with its parent initially, and stores later writes as deltas.",
+    "followUp": "What happens to production performance when a branch is created? Creating the branch does not increase load on the parent or affect its performance."
+   },
+   {
+    "question": "How can a branch share data while remaining independently changeable?",
+    "answer": "The branch and parent can reference the same data at creation time. Once the branch changes, those changes are stored separately, so the two branches can diverge without duplicating the original dataset up front.",
+    "followUp": "Why is this useful for large databases? Branch creation remains fast because Neon avoids copying the full dataset before the branch is usable."
+   },
+   {
+    "question": "What source states can a Neon branch use?",
+    "answer": "A branch can be created from the database’s current state or from a past state. This supports isolated development and testing against a selected version of the data.",
+    "followUp": "What kind of testing benefits from this? Destructive, schema-altering, and migration tests can run on the branch without changing the live parent branch."
+   }
+  ],
+  "keyPoints": [
+   "A branch represents the parent database without requiring an immediate full storage copy.",
+   "Branch creation can target either the parent’s present state or an earlier available state.",
+   "The parent and branch initially reference common data, then follow separate histories after branching.",
+   "Only changes made after branching are recorded separately for that branch.",
+   "Branch creation does not add workload or performance impact to the source branch."
+  ],
+  "gotchas": [
+   "Isolation applies to changes: modifying or deleting the branch does not modify the originating branch, but the branch should still be treated as a real database environment."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Platform model::Projects and branches": {
+  "sourceUrl": "https://neon.com/docs/manage/projects",
+  "sourceTitle": "Manage projects",
+  "summary": "A Neon project is the top-level workspace for branches, databases, roles, and compute. Its default root branch contains the initial database, while child branches provide isolated environments with copy-on-write storage.",
+  "explanation": "A Neon project is the workspace that contains branches and their Postgres resources. Its default root branch holds the initial database, while child branches provide separate environments; each branch has its own compute, databases, and roles, while branch storage uses copy-on-write.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Create a preview branch",
+   "code": "neonctl branches create --project-id \"$NEON_PROJECT_ID\" --name preview",
+   "language": "bash",
+   "explanation": "Creates a child branch named preview in the selected Neon project."
+  },
+  "useCases": [
+   {
+    "title": "Environment isolation",
+    "scenario": "Create development and staging environments without provisioning separate database systems."
+   },
+   {
+    "title": "Preview workflows",
+    "scenario": "Give each pull request or feature its own database state for testing."
+   },
+   {
+    "title": "Efficient parallel development",
+    "scenario": "Run branch-specific queries independently while sharing unchanged underlying data."
+   }
+  ],
+  "related": [
+   "root branch",
+   "child branch",
+   "compute endpoint",
+   "Postgres storage",
+   "databases",
+   "roles",
+   "replicas"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Neon project?",
+    "answer": "A project is Neon’s top-level workspace. It groups branches, databases, roles, and computes, and establishes shared project settings such as the region.",
+    "followUp": "How are branches related to projects? Every branch belongs to exactly one project, and the project contains the branch-level resources and settings."
+   },
+   {
+    "question": "What resources are created with a new project?",
+    "answer": "Creating a project provisions a root branch, a primary read-write compute, and a Postgres database on the default branch. The default database is named neondb when no custom name is supplied.",
+    "followUp": "What is the distinction between a root branch and a child branch? The root branch is the project’s default branch; child branches are created from it or another branch for isolated workflows."
+   },
+   {
+    "question": "How does Neon branching work?",
+    "answer": "A child branch starts from a parent’s schema and data, then records later changes separately through copy-on-write. Each branch has its own compute endpoint, so queries can run independently.",
+    "followUp": "Why is branching efficient? The initial branch does not duplicate the parent’s data; additional storage is used as the branch diverges."
+   }
+  ],
+  "keyPoints": [
+   "Every project begins with a root branch that acts as its default branch.",
+   "Child branches support separate development, testing, staging, and similar workflows.",
+   "Branch-scoped resources include databases, roles, computes, and replicas.",
+   "Branches in one project use a shared storage backend rather than isolated storage systems.",
+   "Compute is independent per branch, allowing branch workloads to run separately."
+  ],
+  "gotchas": [
+   "Free-plan Postgres storage is shared by every branch in the project, so creating branches does not give each one a separate storage allowance.",
+   "Postgres storage and Object Storage have separate allowances; do not treat the project’s Postgres quota as an Object Storage quota."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Platform model::Regions": {
+  "sourceUrl": "https://neon.com/docs/introduction/regions",
+  "sourceTitle": "Regions | Neon",
+  "summary": "Neon projects run in a single AWS region, and the database uses that region. Choose a region near the application server to reduce cross-region latency; changing it later requires a new project and data migration.",
+  "explanation": "A Neon project is deployed to one AWS region, and its database runs there. Select the region nearest your application server to reduce network latency. The choice is permanent for that project; moving the data requires creating another project in the desired region and migrating the database.",
+  "syntax": "neonctl projects create --region-id <region-id>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Create a project in a region",
+   "code": "# Create a project in a chosen AWS region\nneonctl projects create --region-id aws-us-east-1",
+   "language": "bash",
+   "explanation": "Creates a new Neon project in the selected AWS region; replace the region ID with one available for your account."
+  },
+  "useCases": [
+   {
+    "title": "Place a database near the application",
+    "scenario": "Selecting an initial deployment location"
+   },
+   {
+    "title": "Migrate to another region",
+    "scenario": "Moving an existing workload geographically"
+   },
+   {
+    "title": "Find regional NAT gateway addresses",
+    "scenario": "Allowlisting Neon outbound traffic"
+   }
+  ],
+  "related": [
+   "AWS regions",
+   "application server",
+   "project",
+   "database migration",
+   "NAT gateway IP addresses",
+   "outbound connection allowlists"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Choose the AWS region geographically closest to the application server to reduce network latency.",
+   "A project has a single region, and its database runs in that region.",
+   "The database location follows the project's selected region.",
+   "Region selection is permanent for an existing project.",
+   "Relocating data means creating a project in the destination region and migrating the database."
+  ],
+  "gotchas": [
+   "One project cannot span multiple regions; create separate projects if you need deployments in multiple regions."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Platform model::Scale to zero": {
+  "sourceUrl": "https://neon.com/docs/introduction/compute-lifecycle",
+  "sourceTitle": "Compute lifecycle",
+  "summary": "Neon suspends inactive computes after a default five-minute period, reducing idle compute usage. The next connection activates the compute, usually adding only a few hundred milliseconds of resume latency.",
+  "explanation": "Neon suspends a compute after its configured inactivity period, stopping compute usage while durable database storage remains available. A later connection or query activates the compute automatically, so the trade-off is lower idle cost in exchange for a possible cold-start delay on the first request.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Wake an idle compute with a query",
+   "code": "import { neon } from '@neondatabase/serverless';\n\nconst sql = neon(process.env.DATABASE_URL!);\nconst result = await sql`SELECT now()`;\nconsole.log(result[0]);",
+   "language": "typescript",
+   "explanation": "The query wakes an idle compute automatically when it is accessed."
+  },
+  "useCases": [
+   {
+    "title": "Reduce non-production idle usage",
+    "scenario": "Development and preview environments that are idle for long periods."
+   },
+   {
+    "title": "Run bursty workloads economically",
+    "scenario": "Intermittent APIs whose first request can tolerate a short wake-up delay."
+   },
+   {
+    "title": "Keep compute always active",
+    "scenario": "Latency-sensitive production services that need consistently warm compute."
+   }
+  ],
+  "related": [
+   "compute lifecycle",
+   "Scale to zero setting",
+   "Active state",
+   "Idle state",
+   "idle-in-transaction connection"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Neon scale to zero work?",
+    "answer": "Scale to zero places a compute into an idle state after no active queries for the configured period. The default period is five minutes, and connecting to the idle compute activates it automatically, generally within a few hundred milliseconds.",
+    "followUp": "What could prevent suspension? An idle-in-transaction connection counts as active, so the compute does not become idle while that connection remains in that state."
+   },
+   {
+    "question": "What is the cost and latency trade-off?",
+    "answer": "It reduces compute cost by suspending an inactive compute, while the database remains available to wake on demand. The first request after suspension may incur activation latency.",
+    "followUp": "How can a workload avoid frequent cold starts? On paid plans, adjust the scale-to-zero setting or disable it to keep the compute always active."
+   },
+   {
+    "question": "Which settings and limits matter?",
+    "answer": "The default inactivity threshold is five minutes. Paid plans can disable scale to zero, and the Scale plan can configure the timeout; the Free plan keeps the setting fixed.",
+    "followUp": "What size limitation applies? Scale to zero is available only for computes up to 16 CU; larger computes remain active."
+   }
+  ],
+  "keyPoints": [
+   "With no active queries, the default five-minute inactivity period moves the compute to Idle.",
+   "A new connection or query wakes the compute without manual intervention.",
+   "Expect a short resume delay when the first request reaches a suspended compute.",
+   "Paid plans can trade idle savings for consistently active compute.",
+   "Configure the behavior through the compute's Scale to zero setting."
+  ],
+  "gotchas": [
+   "Computes larger than 16 CU do not scale to zero and remain continuously active.",
+   "An idle transaction prevents suspension, so an apparently inactive application can continue accruing compute usage.",
+   "Long-project inactivity can make activation slower than the usual resume time."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Workflows::Branch cleanup": {
+  "sourceUrl": "https://neon.com/docs/guides/branch-expiration",
+  "sourceTitle": "Branch expiration - Neon Docs",
+  "summary": "Neon branch expiration automatically deletes ephemeral branches at a configured future time. Set the deadline in the Console, CLI, or API to keep short-lived environments from accumulating.",
+  "explanation": "Neon treats expiration as a time-to-live setting: assign a future expiration timestamp to a branch, and a background process deletes it after that time is reached. You can configure expiration in the Console, with the CLI, or through the API; CLI and API timestamps use RFC 3339 and can be no more than 30 days ahead.",
+  "syntax": "neon branches create --project-id <project-id> --name <branch-name> --expires-at <RFC3339-timestamp>",
+  "parameters": [
+   {
+    "name": "<id|name>",
+    "type": "string",
+    "description": "Branch identifier or name to create or update."
+   },
+   {
+    "name": "--expires-at",
+    "type": "string",
+    "description": "RFC 3339 expiration timestamp, including a timezone; maximum 30 days in the future."
+   }
+  ],
+  "returns": "The branch is automatically and permanently deleted when the expiration time is reached; associated data and compute endpoints are also deleted.",
+  "example": {
+   "title": "Create an expiring CI branch",
+   "code": "neon branches create --project-id \"$NEON_PROJECT_ID\" --name \"ci-pr-123\" --expires-at \"2025-08-15T18:00:00Z\"",
+   "language": "bash",
+   "explanation": "Creates a branch that Neon automatically deletes at the specified RFC 3339 timestamp."
+  },
+  "useCases": [
+   {
+    "title": "Expire previews automatically",
+    "scenario": "Preview environments for pull requests"
+   },
+   {
+    "title": "Bound CI branch lifetime",
+    "scenario": "CI databases created for a test run"
+   },
+   {
+    "title": "Clean up short-lived branches",
+    "scenario": "Temporary development or experiment branches"
+   }
+  ],
+  "related": [
+   "Branch expiration",
+   "neon branches create",
+   "neon branches set-expiration",
+   "expires_at",
+   "RFC 3339",
+   "branch deletion"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Neon branch expiration work?",
+    "answer": "Expiration uses a TTL-style timestamp. After the timestamp is reached, a background process deletes the branch automatically, including its associated data and compute endpoints.",
+    "followUp": "What happens if deletion is delayed? The deletion job may run after the configured timestamp rather than exactly at it."
+   },
+   {
+    "question": "How would you configure expiration programmatically?",
+    "answer": "Use the Console expiration controls, the CLI `--expires-at` option, or the API `expires_at` field. CLI and API values must be RFC 3339 timestamps, and the expiration must be no more than 30 days in the future.",
+    "followUp": "How would you prevent an API-created preview branch from persisting? Set `expires_at` during branch creation because API-created branches have no default expiration."
+   },
+   {
+    "question": "Which branches cannot be assigned an expiration?",
+    "answer": "Expiration is unavailable for protected branches, default branches, and branches that have child branches. A branch with children must be handled carefully because its descendants constrain branch operations.",
+    "followUp": "What cleanup order is required when deleting a branch tree? Delete child branches before deleting their parent."
+   }
+  ],
+  "keyPoints": [
+   "Assign a deletion deadline to a branch instead of relying on a separate cleanup job.",
+   "Neon removes the branch automatically once its configured deadline is reached.",
+   "The expiration timestamp defines how long the branch is intended to exist.",
+   "Choose the lifetime based on the workflow, such as a short preview or CI run.",
+   "You can revise a branch's deadline later or remove expiration when its lifetime changes."
+  ],
+  "gotchas": [
+   "Expiration is irreversible: once the branch is deleted, it cannot be restored.",
+   "Branches created through the CLI or API do not receive an expiration unless you provide one."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Workflows::Environment separation": {
+  "sourceUrl": "https://neon.com/docs/guides/flyway-multiple-environments",
+  "sourceTitle": "Manage multiple database environments",
+  "summary": "Use separate Neon branches for development, staging, preview, and production. Each branch is an isolated Postgres environment with its own connection string, allowing migrations and testing to progress without sharing production credentials.",
+  "explanation": "Neon represents environments with database branches. Create development, preview, or staging branches from an appropriate parent; each branch is isolated, has independent compute, and uses its own connection string, while production remains separate.",
+  "syntax": "flyway migrate -configFiles=flyway.<environment>.conf",
+  "parameters": [],
+  "returns": "Each environment has an isolated Neon branch and its own JDBC connection string.",
+  "example": {
+   "title": "Use a separate preview branch and connection string",
+   "code": "neonctl branches create --name preview-pr-123 --parent main\nexport DATABASE_URL=\"$(neonctl connection-string preview-pr-123)\"",
+   "language": "bash",
+   "explanation": "Creates a preview branch from the production branch and uses that branch’s connection string for the preview deployment."
+  },
+  "useCases": [
+   {
+    "title": "Development and staging separation",
+    "scenario": "A team needs isolated databases for ongoing development and release validation."
+   },
+   {
+    "title": "Per-PR preview environments",
+    "scenario": "A pull request needs a disposable database for integration testing."
+   },
+   {
+    "title": "Progressive migrations",
+    "scenario": "Schema changes must be promoted safely through multiple environments."
+   }
+  ],
+  "related": [
+   "Neon branching",
+   "development environment",
+   "staging environment",
+   "production environment",
+   "preview branch",
+   "Flyway"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Map each environment to its own Neon branch; branches are isolated Postgres instances with independent compute.",
+   "Use environment-oriented branch names such as development or staging so the database layout is easy to understand.",
+   "Apply schema changes progressively from development to staging and finally production."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Workflows::Migration testing": {
+  "sourceUrl": "https://neon.com/faqs/managed-postgres-platforms-test-migration-snapshots",
+  "sourceTitle": "Which managed Postgres platforms let you create a database from a production snapshot to test a migration before deploying?",
+  "summary": "Test a migration safely by running it on an isolated Neon branch created from a current or historical production state. Validate the result there, then apply the same migration to production only if it succeeds.",
+  "explanation": "Create a Neon branch from production, apply the migration to that isolated branch, and run application checks against it. Because the branch is copy-on-write and uses its own compute, the test exercises production-shaped data without changing production; apply the migration to production only after validation.",
+  "syntax": "neon branches create --name migration-test\nneon connection-string migration-test\nDATABASE_URL=$TEST_DB npx prisma migrate deploy\nneon branches delete migration-test",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Test a migration on a production-data branch",
+   "code": "neon branches create --name migration-test --parent production\nexport TEST_DB=$(neon connection-string migration-test)\nDATABASE_URL=$TEST_DB npx prisma migrate deploy\nneon branches delete migration-test",
+   "language": "bash",
+   "explanation": "Creates an isolated branch from production, runs Prisma migrations against its connection, then removes the test branch."
+  },
+  "useCases": [
+   {
+    "title": "Validate indexes, alters, and full migrations against production-shaped data before release.",
+    "scenario": "Risky schema changes"
+   },
+   {
+    "title": "Give a deployment or test suite an isolated branch with a realistic database baseline.",
+    "scenario": "CI or staging verification"
+   },
+   {
+    "title": "Branch from a prior production point to investigate or reproduce a migration failure.",
+    "scenario": "Historical reproduction"
+   }
+  ],
+  "related": [
+   "Branching",
+   "history window",
+   "snapshots",
+   "direct connection string",
+   "instant restore"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the recommended migration-testing workflow?",
+    "answer": "Create a branch from the production branch, run the migration using that branch's connection string, validate the application, and apply the same migration to production only if it succeeds. Delete the temporary branch afterward.",
+    "followUp": "How can the test be made repeatable? Create a reusable snapshot or branch from a chosen production point, then run each migration test from that fixed baseline."
+   },
+   {
+    "question": "Why is a Neon branch suitable for testing against production-shaped data?",
+    "answer": "Neon branches use copy-on-write storage, so the branch starts with production's data shape without duplicating the entire dataset. The branch has separate compute, which keeps migration work from affecting production load.",
+    "followUp": "What should be used when production rows must not be exposed? Use a schema-only branch and load test or anonymized data instead."
+   },
+   {
+    "question": "Which connection should migration tooling use, and what happens after testing?",
+    "answer": "Use a direct connection string without the pooler when running migrations. After the migration, run the test suite against the branch, then delete it if the result is unsuitable.",
+    "followUp": "What recovery option exists if a migration already reaches production and causes trouble? Use a pre-migration point within the history window to inspect or restore the production branch."
+   }
+  ],
+  "keyPoints": [
+   "Start the test by branching from production, then direct staging or validation traffic to that branch.",
+   "The useful test target preserves production's schema, indexes, and row-count characteristics rather than using a small synthetic database.",
+   "A branch can represent either the current production state or a selected historical state while remaining isolated.",
+   "Heavy DDL and complete migrations run on branch compute and do not alter production data or its compute workload.",
+   "Promote the identical migration to production only after the branch test passes."
+  ],
+  "gotchas": [
+   "Use a direct, non-pooled connection for migration commands rather than a pooled endpoint.",
+   "A failed migration on the test branch does not modify production, but the branch should still be deleted after the test."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Workflows::Preview branches": {
+  "sourceUrl": "https://neon.com/docs/guides/neon-github-integration.md",
+  "sourceTitle": "The Neon GitHub integration",
+  "summary": "Neon’s GitHub integration can create an isolated database branch for every pull request and remove it when the request closes. This gives preview and test workflows a temporary database without changing the parent environment.",
+  "explanation": "A GitHub Actions workflow can provision a Neon database branch for each pull request, use that branch for migrations and tests, and remove it when the pull request closes. The branch is isolated from its parent, so preview changes do not alter the main database.",
+  "syntax": "neondatabase/create-branch-action@v6",
+  "parameters": [
+   {
+    "name": "project_id",
+    "type": "string",
+    "description": "Neon project identifier supplied to the GitHub Action."
+   },
+   {
+    "name": "api_key",
+    "type": "string",
+    "description": "Neon API credential stored as a repository secret."
+   },
+   {
+    "name": "branch_name",
+    "type": "string",
+    "description": "Pull-request-specific branch name, conventionally using the preview/pr- prefix."
+   },
+   {
+    "name": "username",
+    "type": "string",
+    "description": "Database username used when obtaining the branch connection URL."
+   }
+  ],
+  "returns": "The action exposes the newly created branch database URL for subsequent workflow steps; closing the pull request removes the branch.",
+  "example": {
+   "title": "GitHub Actions preview branch",
+   "code": "name: Neon preview branch\non:\n  pull_request:\n    types: [opened, synchronize, reopened, closed]\njobs:\n  neon:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: neondatabase/create-branch-action@v6\n        id: branch\n        with:\n          project_id: ${{ vars.NEON_PROJECT_ID }}\n          api_key: ${{ secrets.NEON_API_KEY }}\n          branch_name: preview/pr-${{ github.event.pull_request.number }}\n          username: ${{ secrets.NEON_DATABASE_USERNAME }}\n      - run: echo \"DATABASE_URL=${{ steps.branch.outputs.db_url }}\"",
+   "language": "yaml",
+   "explanation": "This workflow creates a Neon branch for a pull request and exposes its connection URL for later preview or test steps."
+  },
+  "useCases": [
+   {
+    "title": "Review migrations safely",
+    "scenario": "A pull request changes database schema or application behavior."
+   },
+   {
+    "title": "Back preview environments with isolated databases",
+    "scenario": "A team deploys temporary application versions for pull requests."
+   },
+   {
+    "title": "Run isolated pull-request tests",
+    "scenario": "Continuous integration needs database-backed tests for each change."
+   }
+  ],
+  "related": [
+   "GitHub Actions",
+   "Neon GitHub integration",
+   "database branching",
+   "preview deployments",
+   "pull requests",
+   "NEON_API_KEY",
+   "NEON_PROJECT_ID"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Neon provide an isolated database for each pull request?",
+    "answer": "The workflow listens for pull-request lifecycle events and invokes the Neon branch action. The action creates an isolated branch that the preview or test job can use through its connection URL.",
+    "followUp": "How is cleanup handled? The workflow handles the close event and deletes the branch associated with the pull request."
+   },
+   {
+    "question": "What does the Neon GitHub integration configure?",
+    "answer": "The GitHub integration installs a GitHub App and configures repository credentials. A workflow then creates a branch when a pull request opens and removes it when the pull request closes.",
+    "followUp": "What naming convention helps identify these branches? The documented workflow uses a `preview/pr-` prefix followed by the pull-request information."
+   },
+   {
+    "question": "Why use a database branch for preview deployments?",
+    "answer": "A preview branch starts from the parent database state and keeps schema changes and test records separate from other environments. This lets migrations and application changes be tested without modifying production.",
+    "followUp": "Why is this useful during review? Migration problems can be detected against production-like data before the change is merged."
+   }
+  ],
+  "keyPoints": [
+   "Use GitHub Actions to make branch creation part of the pull-request delivery workflow.",
+   "Each pull request can receive a temporary database for validation against isolated state.",
+   "The documented integration identifies pull-request branches with the `preview/pr-` naming prefix.",
+   "Branch lifetime follows the pull request, with deletion triggered by merge or closure."
+  ],
+  "gotchas": [
+   "The workflow must receive the pull-request close event if automatic cleanup is expected; otherwise, the preview branch can remain."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Workflows::Schema-only branches": {
+  "sourceUrl": "https://neon.com/docs/guides/branching-schema-only",
+  "sourceTitle": "Schema-only branches - Neon Docs",
+  "summary": "Neon schema-only branches copy a source branch's database structure without copying its rows. They are useful for testing and development with sensitive data, followed by loading synthetic or anonymized fixtures.",
+  "explanation": "A schema-only branch copies the database structure from a chosen source branch while leaving its data behind. Neon creates it as an independent root branch, so later changes and inserted test data do not share history with the source; the new branch can then be populated with synthetic or anonymized data.",
+  "syntax": "neon branch create --schema-only --name <branch-name> --parent <source-branch>",
+  "parameters": [
+   {
+    "name": "parent",
+    "type": "branch ID or name",
+    "description": "The source branch whose schema is copied."
+   },
+   {
+    "name": "--schema-only",
+    "type": "boolean",
+    "description": "A flag selecting schema-only initialization."
+   },
+   {
+    "name": "--name",
+    "type": "string",
+    "description": "Optional branch name."
+   }
+  ],
+  "returns": "A new independent root branch containing the source schema and no source rows.",
+  "example": {
+   "title": "Create a schema-only branch",
+   "code": "neon branch create --schema-only --name test-schema --parent br-prod-123",
+   "language": "bash",
+   "explanation": "Creates an independent branch containing the selected source branch's schema but no rows."
+  },
+  "useCases": [
+   {
+    "title": "Sensitive-data testing",
+    "scenario": "Create a test environment that matches production tables and constraints without exposing production records."
+   },
+   {
+    "title": "Migration testing",
+    "scenario": "Validate migrations against the structure of an existing branch before applying them elsewhere."
+   },
+   {
+    "title": "Synthetic-data development",
+    "scenario": "Load controlled fixtures after creating the branch."
+   }
+  ],
+  "related": [
+   "Schema-only branch",
+   "Neon Console",
+   "Neon CLI",
+   "Neon API",
+   "Create branch"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use this branch type when you need tables, views, roles, and related structure without production rows.",
+   "It supports development and testing workflows that must avoid exposing confidential records.",
+   "After creation, load anonymized fixtures or synthetic test data into the new branch.",
+   "The feature is available through both the Console and programmatic workflows.",
+   "In the Console, choose the schema-only initialization mode during branch creation."
+  ],
+  "gotchas": [
+   "The resulting branch has no parent and does not share data history with the source branch.",
+   "Rows inserted after creation are independent and increase storage usage.",
+   "They still count against the project's branch limit."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

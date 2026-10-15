@@ -1,0 +1,1875 @@
+{
+ "Data & mutations::Caching and revalidation": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/guide/isr",
+  "sourceTitle": "Incremental Static Regeneration (ISR) | TanStack Start React Docs",
+  "summary": "TanStack Start caching spans Router loaders, TanStack Query, server data, generated pages, and CDN responses. Define freshness and retention per layer, then invalidate the layer that owns the changed data.",
+  "explanation": "TanStack Start can cache navigation data through TanStack Router loaders, with freshness controlled by staleTime and retention controlled by gcTime. For server-rendered or public responses, use HTTP Cache-Control directives; when data changes, invalidate the cache that owns it, such as router.invalidate(), Query invalidation, or CDN invalidation.",
+  "syntax": "Cache-Control: public, max-age=<seconds>, s-maxage=<seconds>, stale-while-revalidate=<seconds>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Configure router loader caching",
+   "code": "import { createFileRoute } from '@tanstack/react-router'\n\nexport const Route = createFileRoute('/posts')({\n  loader: async () => fetch('/api/posts').then((r) => r.json()),\n  staleTime: 30_000,\n  gcTime: 5 * 60_000,\n})",
+   "language": "typescript",
+   "explanation": "This route reuses loader data for 30 seconds and retains unused cached data for five minutes."
+  },
+  "useCases": [
+   {
+    "title": "Reuse route loader data",
+    "scenario": "A route repeatedly loads the same navigation data during a user session."
+   },
+   {
+    "title": "Coordinate a Query cache",
+    "scenario": "Several routes share server-fetched data and mutations must refresh it."
+   },
+   {
+    "title": "Cache generated HTML at a CDN",
+    "scenario": "Public pages should remain fast while content updates periodically."
+   },
+   {
+    "title": "Refresh the owning cache after mutation",
+    "scenario": "A write changes data that is already cached."
+   }
+  ],
+  "related": [
+   "TanStack Router loader cache",
+   "staleTime",
+   "gcTime",
+   "TanStack Query",
+   "queryClient.invalidateQueries",
+   "router.invalidate()",
+   "Cache-Control",
+   "max-age"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Which caching layers can a TanStack Start application use?",
+    "answer": "TanStack Start has several cache layers. Router loader data is governed by Router options such as staleTime and gcTime, while TanStack Query can own query data and mutation invalidation; HTTP headers control response or CDN caching.",
+    "followUp": "How would you invalidate data after a mutation? Call router.invalidate() for Router-owned loader data, or invalidate the relevant Query key when Query owns the data; CDN invalidation is a separate operation."
+   },
+   {
+    "question": "What do staleTime and gcTime control?",
+    "answer": "staleTime controls how long cached loader data is considered fresh, while gcTime controls how long unused cached data is retained before garbage collection. They answer different lifecycle questions.",
+    "followUp": "Why might a Query staleTime be useful after SSR? It can prevent an immediate duplicate browser fetch when the hydrated data is still fresh."
+   },
+   {
+    "question": "How does HTTP caching support revalidation?",
+    "answer": "For public generated content, HTTP Cache-Control can specify freshness and shared-cache behavior with directives such as max-age, s-maxage, and stale-while-revalidate. After expiration, a request can trigger regeneration while stale content may remain servable during background revalidation.",
+    "followUp": "What must be checked before relying on this in production? Inspect the final headers and behavior through the deployed host and CDN, because providers do not guarantee identical semantics."
+   }
+  ],
+  "keyPoints": [
+   "Use the Router loader cache for navigation data when route-level reuse is sufficient.",
+   "Choose TanStack Query when data must live in a separate cache shared across routes.",
+   "Treat browser, Router, server, generated-page, and CDN caches as separate systems.",
+   "Set response Cache-Control directives to define public HTML freshness at the CDN.",
+   "stale-while-revalidate can keep expired public content available while refreshing it."
+  ],
+  "gotchas": [
+   "Deployment hosts may implement cache and regeneration behavior differently, so verify the final behavior with the actual provider."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Data & mutations::Forms and progressive enhancement": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/guide/server-functions.md",
+  "sourceTitle": "Server Functions",
+  "summary": "Use a POST server function's `.url` as an HTML form action so submission works without JavaScript. The same function can then be enhanced with client-side behavior after hydration.",
+  "explanation": "A POST server function can accept FormData and expose a URL for a native HTML form. Pointing the form's action at that URL preserves submission through the browser's normal request behavior, while JavaScript can later enhance the interaction.",
+  "syntax": "createServerFn({ method: 'POST' }).validator((data) => data).handler(async ({ data }) => result)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "FormData",
+    "description": "The submitted native form payload, represented as FormData and passed as the server function's data value."
+   }
+  ],
+  "returns": "The handler returns a serializable value; the documentation's form example returns the server function result to the caller.",
+  "example": {
+   "title": "Progressively enhanced form",
+   "code": "import { createServerFn } from '@tanstack/react-start'\n\nexport const submitForm = createServerFn({ method: 'POST' })\n  .validator((data) => {\n    if (!(data instanceof FormData)) throw new Error('Expected FormData')\n    return data\n  })\n  .handler(async ({ data }) => {\n    const name = data.get('name')?.toString() || ''\n    return { name }\n  })\n\nexport function ContactForm() {\n  return (\n    <form action={submitForm.url} method=\"post\">\n      <label>\n        Name <input name=\"name\" required />\n      </label>\n      <button type=\"submit\">Send</button>\n    </form>\n  )\n}",
+   "language": "tsx",
+   "explanation": "The form posts directly to the server function URL, so the submission can reach the server even before client JavaScript loads."
+  },
+  "useCases": [
+   {
+    "title": "Progressive enhancement",
+    "scenario": "A form must submit reliably while JavaScript is still loading."
+   },
+   {
+    "title": "FormData submission",
+    "scenario": "The server receives browser-native form fields."
+   },
+   {
+    "title": "Server-side mutation",
+    "scenario": "A submission needs database access or other server-only operations."
+   },
+   {
+    "title": "Post-hydration enhancement",
+    "scenario": "A hydrated client should enhance a native form workflow."
+   }
+  ],
+  "related": [
+   "createServerFn()",
+   "Server functions",
+   "HTML forms",
+   "FormData",
+   "server routes"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Give a native form the server function's URL as its action to preserve submission before JavaScript loads.",
+   "Create the operation with createServerFn and choose POST for form submissions.",
+   "Read submitted values from the handler's single data argument.",
+   "Validate native form submissions as FormData inside the server function validator.",
+   "Once hydrated, client-side calls use fetch requests while the same server function remains the backend operation.",
+   "Keep persistence and other server-only work in the handler while invoking it from the application."
+  ],
+  "gotchas": [
+   "Use FormData only with a POST server function when submitting native form data.",
+   "Keep validator inputs serializable unless the input is FormData, which the documentation explicitly permits."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Data & mutations::Mutations with server functions": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/migrate-from-next-js",
+  "sourceTitle": "Migrate from Next.js",
+  "summary": "Write changes in a POST server function, invoke it with useServerFn, and await router.invalidate() to refresh active route data. Use Query invalidation too when the mutation updates Query-owned data.",
+  "explanation": "A mutation is implemented as a POST server function that performs the write. The client calls it with useServerFn and then awaits router.invalidate(), causing active route data owned by Router loaders to reload so the UI reflects the change.",
+  "syntax": "const fn = createServerFn({ method: 'POST' }).handler(async (input) => result)\nconst call = useServerFn(fn)\nawait call({ data: input })\nawait router.invalidate()",
+  "parameters": [],
+  "returns": "The server function returns its handler result; router.invalidate() returns a promise that can be awaited until route invalidation completes.",
+  "example": {
+   "title": "Write and revalidate",
+   "code": "import { createServerFn } from '@tanstack/react-start'\nimport { useRouter } from '@tanstack/react-router'\nimport { useServerFn } from '@tanstack/react-start'\n\nconst saveFlag = createServerFn({ method: 'POST' })\n  .handler(async () => {\n    // Persist the change on the server.\n    return { saved: true }\n  })\n\nexport function SaveButton() {\n  const router = useRouter()\n  const save = useServerFn(saveFlag)\n\n  return (\n    <button onClick={async () => {\n      await save()\n      await router.invalidate()\n    }}>\n      Save\n    </button>\n  )\n}",
+   "language": "tsx",
+   "explanation": "The event handler invokes the POST server function, then waits for route-owned loader data to refresh."
+  },
+  "useCases": [
+   {
+    "title": "Refresh route-loader data after a write",
+    "scenario": "A button or form changes server state and the current page displays that state through a route loader."
+   },
+   {
+    "title": "Coordinate Router and Query caches",
+    "scenario": "A mutation updates both route context and a TanStack Query cache."
+   },
+   {
+    "title": "Enforce server-side validation and authorization",
+    "scenario": "A privileged operation accepts user-controlled values or changes a protected record."
+   }
+  ],
+  "related": [
+   "createServerFn",
+   "useServerFn",
+   "router.invalidate()",
+   "queryClient.invalidateQueries",
+   "useMutation",
+   "revalidatePath"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you implement a mutation that refreshes the current route?",
+    "answer": "Define the write as a POST server function, call it from the client with useServerFn, and await router.invalidate() afterward. This reloads active route data managed by Router loaders.",
+    "followUp": "What if the mutation changes both route context and Query data? Use router.invalidate() for Router-owned data and invalidateQueries() for the affected Query keys."
+   },
+   {
+    "question": "What security checks belong in the server function?",
+    "answer": "useServerFn returns a callable function, so the component can invoke the server function from an event handler. The function should still authorize the caller and validate input on the server.",
+    "followUp": "Why is route authorization insufficient? A caller can invoke the mutation without visiting the page, so the mutation boundary must independently enforce permissions."
+   },
+   {
+    "question": "What does router.invalidate() not invalidate?",
+    "answer": "router.invalidate() reloads Router-owned loader data and route context. It does not clear CDN or database caches, nor does it revalidate all statically generated pages.",
+    "followUp": "How should a system handle data cached outside Router? Identify the cache that owns the changed data and use that layer's invalidation mechanism."
+   }
+  ],
+  "keyPoints": [
+   "The standard flow is: invoke a POST server function with useServerFn, then await router.invalidate() to refresh active route data.",
+   "useServerFn gives the component a callable client-side handle for the server function.",
+   "Router invalidation and Query invalidation target different caches, so choose the API according to the data owner."
+  ],
+  "gotchas": [
+   "Route invalidation only affects Router loader data; it does not purge a CDN, database cache, or every statically generated page.",
+   "Type inference is not a security boundary: validate inputs and enforce authorization inside the server function.",
+   "When the mutation changes Query-owned data, invalidate the relevant Query keys in addition to route data."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Data & mutations::Optimistic UI": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/optimistic-updates",
+  "sourceTitle": "Optimistic Updates",
+  "summary": "Show the expected UI result before a mutation finishes by rendering its variables or updating cached data. Reconcile with the server after settlement and recover from failures with refetching or rollback.",
+  "explanation": "Optimistic UI can be implemented by rendering mutation variables immediately while a request is pending, or by changing cached query data in onMutate. Afterward, invalidate the affected query so the UI reconciles with the server; if the mutation fails, refetch or roll back using the context returned from onMutate.",
+  "syntax": "useMutation({ mutationFn, onMutate, onError, onSettled })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Pending mutation state",
+   "code": "import { useMutation, useQueryClient } from '@tanstack/react-query'\n\nexport function AddTodo() {\n  const queryClient = useQueryClient()\n  const mutation = useMutation({\n    mutationFn: (text: string) =>\n      fetch('/api/todos', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ text }),\n      }),\n    onSettled: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),\n  })\n\n  return <button onClick={() => mutation.mutate('Write docs')}>\n    {mutation.isPending ? 'Adding…' : 'Add todo'}\n  </button>\n}",
+   "language": "tsx",
+   "explanation": "Starts a mutation and shows a pending state while the request runs; invalidating the todos query refreshes the server-backed list afterward."
+  },
+  "useCases": [
+   {
+    "title": "Instant list additions",
+    "scenario": "Add a todo immediately while the create request is pending."
+   },
+   {
+    "title": "Pending mutation rendering",
+    "scenario": "Show a just-submitted value in a list without waiting for refetch."
+   },
+   {
+    "title": "Cache-level optimistic updates",
+    "scenario": "Update cached query data before a server response arrives."
+   },
+   {
+    "title": "Rollback on failure",
+    "scenario": "Undo a temporary change when the server rejects it."
+   }
+  ],
+  "related": [
+   "useMutation",
+   "onMutate",
+   "onError",
+   "onSettled",
+   "invalidateQueries",
+   "useMutationState"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use either mutation variables for a local pending item or onMutate for a cache-level optimistic update.",
+   "onMutate lets the mutation update cached query data before the server response.",
+   "Mutation variables can render the expected item without modifying the cache.",
+   "Refetch the affected query after failure to restore authoritative server data.",
+   "Return rollback context from onMutate so error and settled handlers can undo the optimistic change."
+  ],
+  "gotchas": [
+   "The displayed result can be wrong if the mutation fails; provide refetch or rollback behavior.",
+   "Return the invalidation promise when the pending state should last until refreshed data arrives."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::Hooks and the client boundary": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/guide/execution-model",
+  "sourceTitle": "Execution Model",
+  "summary": "Hooks run as application code in the browser after hydration, while server functions execute protected handlers on the server. In TanStack Start, the file and import boundary determines what can cross environments.",
+  "explanation": "TanStack Start code is isomorphic by default, so a hook and component may participate in both environments. A server function creates the server-only execution boundary: client code can import its wrapper and call it, but the handler executes on the server and the actual server code is not sent to the browser.",
+  "syntax": "const serverFn = useServerFn(createServerFn({ method: 'GET' }).handler(async () => result))",
+  "parameters": [],
+  "returns": "A server-function call returns the handler result through the client/server transport; useServerFn provides the callable client-side wrapper.",
+  "example": {
+   "title": "Calling a server function from a component",
+   "code": "import { createServerFn } from '@tanstack/react-start'\nimport { useServerFn } from '@tanstack/react-start'\n\nconst getUser = createServerFn({ method: 'GET' }).handler(async () => {\n  return { name: 'Ada' }\n})\n\nexport function UserButton() {\n  const serverFn = useServerFn(getUser)\n\n  return <button onClick={() => serverFn()}>Load user</button>\n}",
+   "language": "tsx",
+   "explanation": "The wrapper can be imported by client code, while invoking it sends a request and keeps the handler on the server."
+  },
+  "useCases": [
+   {
+    "title": "Browser interaction hooks",
+    "scenario": "A hydrated component needs browser APIs or responds to user interaction."
+   },
+   {
+    "title": "Server-backed component action",
+    "scenario": "A client component needs database access or another server-only capability."
+   },
+   {
+    "title": "Explicit environment protection",
+    "scenario": "A module contains code that must never enter the opposite bundle."
+   }
+  ],
+  "related": [
+   "createServerFn",
+   "useServerFn",
+   "createServerOnlyFn",
+   "createClientOnlyFn",
+   "ClientOnly",
+   "useHydrated",
+   ".server.*",
+   ".client.*"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What distinguishes a hook from a server function in TanStack Start?",
+    "answer": "A hook is ordinary application code that can run in the browser after hydration, while a server function is an RPC-style boundary whose handler executes on the server. The client may call the server function through its generated wrapper.",
+    "followUp": "How can a client component use server-only logic safely? Import the server-function wrapper and invoke it, rather than importing the server-only helper or database code directly."
+   },
+   {
+    "question": "Why must environment be considered at the file and import boundary?",
+    "answer": "TanStack Start is isomorphic by default: code can be included in both server and client bundles unless constrained. Client-only behavior belongs in the browser environment, while server-only operations should use a server function or an explicit server-only utility.",
+    "followUp": "What happens if a server-only utility is used directly in client code? The code may violate the import boundary; isolate it behind a server function or protect the module with a .server.* suffix."
+   },
+   {
+    "question": "How does a component invoke a server function?",
+    "answer": "A component can call a server function with the useServerFn hook. Start serializes the call across the client/server boundary, and the server function handler performs the protected operation on the server.",
+    "followUp": "When is a server route preferable? Use one when the endpoint must be callable from outside the TanStack Start application; server functions are intended for the Start app itself."
+   }
+  ],
+  "keyPoints": [
+   "Unless constrained, code is treated as usable in both server and client environments.",
+   "Hooks and event-driven UI behavior can use browser capabilities after hydration.",
+   "Use createServerFn for server-side RPC calls and mutations; client execution becomes a network request.",
+   "A component can obtain a callable server-function client through useServerFn.",
+   "Start transports arguments and results between the browser and the server for server-function calls.",
+   "Only the callable wrapper is client-importable; the server implementation remains excluded from browser code."
+  ],
+  "gotchas": [
+   "Do not assume a file is browser-only or server-only merely because of where it is imported; explicitly constrain environment-specific code.",
+   "A client-importable server-function wrapper is safe, but server-only helpers must remain behind the server function handler.",
+   "Use the filename suffixes when a module must be protected from the opposite environment."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::Server functions in mutations": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/guide/tanstack-query",
+  "sourceTitle": "TanStack Query | TanStack Start React Docs",
+  "summary": "Call a server function for the write, then invalidate the cache that owns the changed data. For Router-owned loader data, use router.invalidate(); for Query-owned data, use queryClient.invalidateQueries().",
+  "explanation": "A server function performs the mutation on the server. After it resolves, call router.invalidate() so route-loader data that depends on the changed resource becomes stale and reloads; await router.invalidate({ sync: true }) when the mutation flow must wait for loaders to finish.",
+  "syntax": "await serverFn({ data });\nawait router.invalidate();\nawait router.invalidate({ sync: true });",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "{ sync?: boolean }",
+    "description": "Optional invalidation behavior; use sync to wait for all loaders to finish."
+   }
+  ],
+  "returns": "router.invalidate() returns a promise; with { sync: true }, awaiting it waits until all loaders have finished.",
+  "example": {
+   "title": "Write, then invalidate",
+   "code": "import { createServerFn } from '@tanstack/react-start';\nimport { useRouter } from '@tanstack/react-router';\n\nconst addTodo = createServerFn({ method: 'POST' })\n  .validator((todo: { title: string }) => todo)\n  .handler(async ({ data }) => {\n    await db.todos.create(data);\n    return { ok: true };\n  });\n\nexport function AddTodo() {\n  const router = useRouter();\n  return <button onClick={async () => {\n    await addTodo({ data: { title: 'Learn Start' } });\n    await router.invalidate();\n  }}>Add todo</button>;\n}",
+   "language": "tsx",
+   "explanation": "The server function performs the write, then router invalidation refreshes Router-owned loader data."
+  },
+  "useCases": [
+   {
+    "title": "Refresh route data after a write",
+    "scenario": "A server function changes data read by a route loader."
+   },
+   {
+    "title": "Refresh Query-owned data",
+    "scenario": "A mutation changes a TanStack Query cache entry."
+   },
+   {
+    "title": "Coordinate multiple caches",
+    "scenario": "A mutation affects both route context and Query data."
+   }
+  ],
+  "related": [
+   "createServerFn",
+   "useServerFn",
+   "router.invalidate",
+   "useRouter",
+   "queryClient.invalidateQueries",
+   "TanStack Router loaders"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do server functions and router invalidation work together in a mutation?",
+    "answer": "A server function executes the write on the server, and router.invalidate() tells TanStack Router that route-loader data may now be stale. The affected route data is then revalidated through the router's normal loading behavior.",
+    "followUp": "What if the caller must wait for refreshed data? Await router.invalidate({ sync: true }); this waits until the loaders have completed."
+   },
+   {
+    "question": "What happens to active and cached route data after invalidation?",
+    "answer": "The default invalidation behavior revalidates stale successful loader data in the background, so existing data remains visible until refreshed data is available. Inactive cached matches are marked stale and reload when reused.",
+    "followUp": "How can a mutation avoid a stale inactive route? Invalidate after the write so cached matches are marked stale before they are visited again."
+   },
+   {
+    "question": "When should router.invalidate be used instead of Query invalidation?",
+    "answer": "Choose invalidation based on who owns the data. router.invalidate() refreshes Router-owned loader data and route context, whereas queryClient.invalidateQueries refreshes TanStack Query data.",
+    "followUp": "When are both appropriate? Use both when one mutation changes router-owned state and Query-owned state, such as authentication context plus private queries."
+   }
+  ],
+  "keyPoints": [
+   "TanStack Router's mutation role is to invalidate loader data rather than manage mutation state itself.",
+   "A write can stale currently rendered route data and cached matches that are not mounted.",
+   "router.invalidate covers committed, cached, and in-flight loader generations affected by the mutation.",
+   "Invalidation retires matching active preload lanes before normal loading resumes.",
+   "Inactive cached matches do not necessarily reload immediately; they reload when reused.",
+   "When integrating with a mutation lifecycle, return the invalidation promise so pending state lasts through refetch."
+  ],
+  "gotchas": [
+   "Default invalidation keeps existing successful loader data visible while the refresh happens in the background.",
+   "Use the sync option when subsequent code must wait for every loader to finish.",
+   "Do not use router invalidation as a substitute for invalidating TanStack Query data."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::Streaming and pending state": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/examples/kitchen-sink-react-query",
+  "sourceTitle": "React TanStack Start Kitchen Sink React Query Example",
+  "summary": "Use `useRouterState` to reactively read whether the router is pending, so a component can show progress during a slow foreground route transition.",
+  "explanation": "In a React component, call useRouterState with a selector that derives whether the router status is pending. The selected boolean updates reactively, so the component can show progress while the requested route is still loading or its framework transition is settling. Selecting only the needed value keeps the component focused on this state.",
+  "syntax": "useRouterState({ select: (state) => state.status === 'pending' })",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "UseRouterStateOptions",
+    "description": "An options object containing a selector that derives the value the component should subscribe to."
+   },
+   {
+    "name": "select",
+    "type": "(state: RouterState) => TSelected",
+    "description": "A function receiving router state and returning the selected value."
+   }
+  ],
+  "returns": "The value returned by the selector, reactively updated when the selected router state changes.",
+  "example": {
+   "title": "Show a navigation spinner",
+   "code": "import { useRouterState } from '@tanstack/react-router'\n\nexport function RouterSpinner() {\n  const isPending = useRouterState({\n    select: (state) => state.status === 'pending',\n  })\n\n  return isPending ? <span>Loading…</span> : null\n}",
+   "language": "tsx",
+   "explanation": "Selects the router's foreground pending status and renders a progress indicator during navigation."
+  },
+  "useCases": [
+   {
+    "title": "Global navigation spinner",
+    "scenario": "A destination route has a slow loader and the existing UI should remain visible while navigation progresses."
+   },
+   {
+    "title": "Selective pending subscription",
+    "scenario": "A layout needs a compact progress indicator without subscribing to unrelated router-state fields."
+   },
+   {
+    "title": "Loading-state classification",
+    "scenario": "An application needs to distinguish foreground navigation from background data refreshes."
+   }
+  ],
+  "related": [
+   "RouterState",
+   "useRouter",
+   "useRouterState",
+   "RouteMatch",
+   "isFetching"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you show a spinner while a route transition is pending?",
+    "answer": "useRouterState returns a reactive view of router state. A selector such as `state.status === 'pending'` produces a boolean that can drive a spinner during foreground navigation.",
+    "followUp": "How would you observe loader work that includes background refreshes? Inspect each route match's `isFetching` field rather than relying only on the router's foreground status."
+   },
+   {
+    "question": "What does the pending status represent?",
+    "answer": "The router status is `pending` while the requested route is still loading or its framework transition has not settled. It becomes `idle` after that foreground transition settles.",
+    "followUp": "What does `isLoading` mean here? It is true when the router status is pending, while background loader refreshes do not change it."
+   },
+   {
+    "question": "Why not read `router.state` directly?",
+    "answer": "Use a selector with `useRouterState` instead of reading `router.state` in render. The hook provides reactive updates, whereas the router instance's state is current but does not itself cause component re-renders.",
+    "followUp": "Why select a boolean instead of the whole state? Selecting the relevant derived value limits the component's subscription to the information it needs."
+   }
+  ],
+  "keyPoints": [
+   "Router state exposes navigation status and match information for reactive UI.",
+   "The status distinguishes an active foreground transition from a settled router.",
+   "Pending covers a requested route whose loading work has not completed.",
+   "The `isLoading` field is true whenever the router status is pending.",
+   "Use each route match's `isFetching` value when you need finer-grained loading information."
+  ],
+  "gotchas": [
+   "The selected pending value represents foreground navigation only; background loader refreshes do not make it true."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useLoaderData with server loaders": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/solid/tutorial/fetching-external-api",
+  "sourceTitle": "Calling an external API using TanStack Start",
+  "summary": "Use a route loader to obtain data on the server before rendering, then read its result with Route.useLoaderData(). This supports server-side API access while avoiding a separate client fetch for the initial page.",
+  "explanation": "A route loader can call server-only work before the route renders. The component then reads the loader's returned value through the route-specific hook, so the initial page can render with server-fetched data; the documented external-API pattern also keeps credentials on the server.",
+  "syntax": "const data = Route.useLoaderData()",
+  "parameters": [],
+  "returns": "The route loader's returned data, exposed to the component through Route.useLoaderData().",
+  "example": {
+   "title": "Server-loaded movies",
+   "code": "import { createFileRoute } from '@tanstack/react-router'\nimport { createServerFn } from '@tanstack/start'\n\nconst getMovies = createServerFn().handler(async () => {\n  const response = await fetch('https://example.com/movies')\n  return response.json() as Promise<{ title: string }[]>\n})\n\nexport const Route = createFileRoute('/movies')({\n  loader: () => getMovies(),\n  component: Movies,\n})\n\nfunction Movies() {\n  const movies = Route.useLoaderData()\n  return <ul>{movies.map((movie) => <li key={movie.title}>{movie.title}</li>)}</ul>\n}",
+   "language": "tsx",
+   "explanation": "The server function obtains data securely, the route loader invokes it before rendering, and the component reads the resulting data through the route's loader-data hook."
+  },
+  "useCases": [
+   {
+    "title": "Server-rendered route data",
+    "scenario": "A page needs records available before its first render."
+   },
+   {
+    "title": "Protected API access",
+    "scenario": "An external service requires credentials that must stay private."
+   },
+   {
+    "title": "Loader-driven rendering",
+    "scenario": "A component needs loading results without owning fetch logic."
+   }
+  ],
+  "related": [
+   "createFileRoute",
+   "createServerFn",
+   "getRouteApi",
+   "loader",
+   "Route.useLoaderData"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does a component receive data loaded by a route?",
+    "answer": "The route loader runs before rendering and returns the data consumed by the route component through Route.useLoaderData(). In the documented flow, the loader calls a server function, and the rendered component receives that result.",
+    "followUp": "How would you protect an API token? Put the authenticated request in createServerFn(), then invoke that function from the loader so the token remains server-only."
+   },
+   {
+    "question": "What is the purpose of Route.useLoaderData()?",
+    "answer": "Define a loader on the route and read its result with Route.useLoaderData(). The hook exposes the loader output to the component without requiring a separate initial client fetch.",
+    "followUp": "What if the component is not close to the route object? Use the route API pattern documented for deep components, such as getRouteApi, to access the equivalent hook."
+   },
+   {
+    "question": "How would you load data from an external API securely?",
+    "answer": "A server function can make the external request, while the route loader calls it and returns the relevant data. This separates protected server work from UI rendering and lets the page render with fetched data.",
+    "followUp": "How can failures be represented? Catch the server-function error in the loader and return a typed result containing fallback data and an error message, as shown by the documented pattern."
+   }
+  ],
+  "keyPoints": [
+   "The route-specific hook exposes exactly what the loader returned, preserving the loader's result shape for the component.",
+   "A route loader is executed on the server during the route visit, before the page's component renders.",
+   "Server-side loading reduces client work because the initial data request is handled before the UI renders in the browser.",
+   "After the component receives loader data, it can directly use that value to render the route's UI.",
+   "Use createServerFn for protected operations such as authenticated API calls that must not execute in the browser."
+  ],
+  "gotchas": [
+   "Keep secrets and authenticated external requests inside a server function; the function is intended to run exclusively on the server.",
+   "The loader executes on the server for the route visit, rather than being a component-side fetch."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useNavigate after a form action": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/guide/navigation",
+  "sourceTitle": "Navigation",
+  "summary": "After a form action completes successfully, call the function returned by useNavigate to perform client-side navigation. Await the action first so the destination is not entered before the server operation resolves.",
+  "explanation": "Call the function returned by useNavigate inside the form submission side effect, but only after awaiting the server operation and confirming it succeeded. Pass a NavigateOptions object to select the destination and route parameters; the navigation call itself returns a promise that resolves when navigation finishes.",
+  "syntax": "const navigate = useNavigate(options?)\nnavigate(navigateOptions)",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "NavigateOptions",
+    "description": "Navigation options, including destination and optional route parameters, search parameters, hash, and state."
+   }
+  ],
+  "returns": "A navigate function; calling it returns a Promise that resolves when navigation is complete.",
+  "example": {
+   "title": "Navigate after a successful form action",
+   "code": "import { useNavigate } from '@tanstack/react-router'\n\nexport function CreatePostForm() {\n  const navigate = useNavigate({ from: '/posts/new' })\n\n  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {\n    event.preventDefault()\n    const response = await fetch('/api/posts', {\n      method: 'POST',\n      body: new FormData(event.currentTarget),\n    })\n    if (!response.ok) return\n    const { id } = await response.json()\n    await navigate({ to: '/posts/$postId', params: { postId: id } })\n  }\n\n  return <form onSubmit={handleSubmit}><button>Create</button></form>\n}",
+   "language": "tsx",
+   "explanation": "Waits for the asynchronous form operation and checks its result before imperatively navigating to the created post."
+  },
+  "useCases": [
+   {
+    "title": "Post-submit resource navigation",
+    "scenario": "A form creates or updates a resource, and the UI should open the resulting route only after the server confirms success."
+   },
+   {
+    "title": "Success-driven navigation",
+    "scenario": "An asynchronous mutation determines whether the application should move to another route."
+   },
+   {
+    "title": "Imperative route updates",
+    "scenario": "A side effect needs to change route, search parameters, hash, or location state imperatively."
+   }
+  ],
+  "related": [
+   "Link",
+   "Navigate",
+   "NavigateOptions",
+   "router.navigate",
+   "useNavigate"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How should navigation happen after a form action?",
+    "answer": "useNavigate returns a navigate function for imperative client-side navigation. Call it after awaiting the asynchronous form or server operation, typically inside the success branch.",
+    "followUp": "When should a server-side redirect be used instead? Use one when the redirect must occur before the application mounts, because client-side navigation is not a substitute for it."
+   },
+   {
+    "question": "What does the navigate function accept and return?",
+    "answer": "Pass one options object to navigate, such as { to: '/posts/$postId', params: { postId } }. The returned promise resolves when navigation is complete.",
+    "followUp": "What other URL state can the options object change? It can specify pathname-related destination data along with search parameters, hash, and location state."
+   },
+   {
+    "question": "When should useNavigate be preferred over Link?",
+    "answer": "useNavigate is appropriate when navigation follows a side effect, including a successful asynchronous action. For a normal link interaction, the documentation recommends using Link when possible.",
+    "followUp": "Why not navigate immediately on submit? Immediate navigation can occur before the asynchronous action has succeeded, so await the action and condition navigation on its result."
+   }
+  ],
+  "keyPoints": [
+   "useNavigate supplies an imperative navigate function rather than rendering a navigation element.",
+   "A completed asynchronous form action is an appropriate trigger for calling navigate.",
+   "Provide navigation details as one NavigateOptions object.",
+   "The navigation call is awaitable and resolves after the route transition completes.",
+   "Navigation options can update the destination and associated URL or location state."
+  ],
+  "gotchas": [
+   "Do not use client-side navigation when the redirect must happen before the application mounts; use a server-side redirect instead.",
+   "Prefer Link for ordinary user-triggered navigation; use useNavigate when navigation is the result of an imperative side effect such as a successful asynchronous action."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useRouteContext for request data": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/useRouteContextHook",
+  "sourceTitle": "useRouteContext hook",
+  "summary": "Use useRouteContext to read request-derived values, such as a session or user, that a route returns from beforeLoad. Pass the route ID with from, and use select when only one context value is needed.",
+  "explanation": "A route's beforeLoad can obtain request-dependent data and return it as route context. Descendant components use useRouteContext with the route ID in from, optionally selecting only the needed value.",
+  "syntax": "useRouteContext<TSelected = TAllContext>({ from: string, select?: (context: RouteContext) => TSelected })",
+  "parameters": [
+   {
+    "name": "from",
+    "type": "string",
+    "description": "Required route ID used to identify the route context."
+   },
+   {
+    "name": "select",
+    "type": "(context: RouteContext) => TSelected",
+    "description": "Optional projection that receives the route context and returns the value exposed by the hook."
+   }
+  ],
+  "returns": "The current route context, or the value returned by select when select is provided.",
+  "example": {
+   "title": "Read request-derived user data from route context",
+   "code": "import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'\nimport { getRequest } from '@tanstack/start/server'\nimport { useRouteContext } from '@tanstack/react-router'\n\ntype RouterContext = { user: { email: string } | null }\n\nconst loadUser = async () => {\n  const request = getRequest()\n  return request.headers.get('x-user-email')\n    ? { email: request.headers.get('x-user-email')! }\n    : null\n}\n\nexport const Route = createRootRouteWithContext<RouterContext>()({\n  beforeLoad: async () => ({ user: await loadUser() }),\n  component: () => <Outlet />,\n})\n\nexport function UserStatus() {\n  const { user } = useRouteContext({ from: '/' })\n  return <span>{user?.email ?? 'Signed out'}</span>\n}",
+   "language": "tsx",
+   "explanation": "Loads request-derived user data in the root route's beforeLoad and reads it from a descendant component."
+  },
+  "useCases": [
+   {
+    "title": "Expose the current session or user to descendant routes.",
+    "scenario": "Authentication"
+   },
+   {
+    "title": "Pass request-derived preferences or tenant data through the route tree.",
+    "scenario": "Request-scoped personalization"
+   },
+   {
+    "title": "Read common context in layouts and child components without prop drilling.",
+    "scenario": "Shared route state"
+   }
+  ],
+  "related": [
+   "beforeLoad",
+   "createRootRouteWithContext",
+   "Route.useRouteContext",
+   "createFileRoute",
+   "getRequest"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use the hook in a component to read values made available by the current route's context.",
+   "Set from to the route ID whose context you want to access.",
+   "Use select to derive one value, such as user, instead of consuming the complete context object."
+  ],
+  "gotchas": [
+   "Pass the required from route ID; omitting it does not match the documented hook signature."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useRouter in Start": {
+  "sourceUrl": "https://tanstack.com/router/v1/docs/api/router/useRouterHook",
+  "sourceTitle": "useRouter hook | TanStack Router Docs",
+  "summary": "useRouter returns the current TanStack Router instance from context. In TanStack Start, use it for imperative actions such as invalidating loaders after a server call or navigating.",
+  "explanation": "In TanStack Start, useRouter comes from TanStack Router and returns the router instance available through context. Use that instance inside a component to coordinate router operations, such as invalidating loaders after a server function finishes or navigating programmatically.",
+  "syntax": "const router = useRouter()",
+  "parameters": [],
+  "returns": "The current Router instance from context.",
+  "example": {
+   "title": "Invalidate loaders after a server call",
+   "code": "import { useRouter } from '@tanstack/react-router'\nimport { createServerFn } from '@tanstack/react-start'\nimport { createFileRoute } from '@tanstack/react-router'\n\nconst updateCount = createServerFn({ method: 'POST' })\n  .handler(async () => {\n    // Persist the change on the server.\n    return true\n  })\n\nexport const Route = createFileRoute('/')({\n  component: Home,\n})\n\nfunction Home() {\n  const router = useRouter()\n\n  return (\n    <button onClick={() => updateCount().then(() => router.invalidate())}>\n      Update\n    </button>\n  )\n}",
+   "language": "tsx",
+   "explanation": "The component obtains the router and invalidates route loaders after the server function completes."
+  },
+  "useCases": [
+   {
+    "title": "Invalidate loaders",
+    "scenario": "Refresh route loader data after a mutation or server function completes."
+   },
+   {
+    "title": "Programmatic navigation",
+    "scenario": "Move the user to another route in response to an event or server result."
+   },
+   {
+    "title": "Imperative routing",
+    "scenario": "Access router APIs from a component."
+   }
+  ],
+  "related": [
+   "useRouterState",
+   "router.invalidate",
+   "navigate",
+   "createServerFn"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Call useRouter inside a component to obtain the current router instance.",
+   "Use the returned instance for imperative router operations such as invalidation and navigation.",
+   "Import the hook from the React TanStack Router package used by TanStack Start."
+  ],
+  "gotchas": [
+   "Reading router.state directly does not make a component rerender when router state changes; use useRouterState for reactive state."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useServerFn": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/guide/server-functions",
+  "sourceTitle": "Server Functions",
+  "summary": "useServerFn adapts a TanStack Start server function for client-component calls while preserving its input and output types. Invoke the returned callable with a data payload and receive the server result.",
+  "explanation": "useServerFn accepts a server function and returns a callable function for use in a client component. Calling that function with the server function's input shape performs the server request and returns its typed result; loading and refetch state are not supplied by the hook.",
+  "syntax": "useServerFn(serverFn)",
+  "parameters": [
+   {
+    "name": "serverFn",
+    "type": "Server function",
+    "description": "The server function to adapt for invocation from a client component; its input and output types are preserved."
+   }
+  ],
+  "returns": "A callable function that invokes the supplied server function and resolves to its typed result.",
+  "example": {
+   "title": "Call a server function from a component",
+   "code": "import { createServerFn, useServerFn } from '@tanstack/react-start'\n\nconst greet = createServerFn({ method: 'GET' })\n  .validator((name: string) => name)\n  .handler(({ data }) => `Hello, ${data}!`)\n\nexport function Greeting() {\n  const callGreet = useServerFn(greet)\n  const handleClick = async () => {\n    const message = await callGreet({ data: 'Ada' })\n    console.log(message)\n  }\n\n  return <button onClick={handleClick}>Greet</button>\n}",
+   "language": "tsx",
+   "explanation": "The hook turns a server function into a callable client-side function; invoking it sends the validated input to the server and preserves the typed result."
+  },
+  "useCases": [
+   {
+    "title": "Interactive mutations",
+    "scenario": "A button or form event needs to run validated server-side logic without exposing implementation details to the browser."
+   },
+   {
+    "title": "On-demand data fetching",
+    "scenario": "A component needs server-owned data in response to a user action rather than during route loading."
+   },
+   {
+    "title": "Type-safe client/server calls",
+    "scenario": "A client component should call shared server logic while retaining compile-time input and result types."
+   }
+  ],
+  "related": [
+   "createServerFn()",
+   "Server Functions",
+   "server routes",
+   "validator",
+   "handler"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useServerFn return?",
+    "answer": "useServerFn is a hook that adapts a TanStack Start server function for client-component use. The returned value is callable and retains the server function's input and output types.",
+    "followUp": "How should pending state be handled? Track it separately in the component, because useServerFn does not return isLoading state."
+   },
+   {
+    "question": "How do you call the function returned by useServerFn?",
+    "answer": "Invoke the returned function with an object containing data. The data value must match the server function's declared or validated input, and the promise resolves to its typed result.",
+    "followUp": "What happens if the function needs no input? Use the invocation shape required by that server function and keep the call aligned with its generated type."
+   },
+   {
+    "question": "Where does the actual server-side work run?",
+    "answer": "The server function handler runs on the server, while client code invokes it through Start's client/server boundary. Start serializes the call and result, preserving the function's types across that boundary.",
+    "followUp": "When should an outside system call instead? Expose a server route for external callers; server functions are intended for calls from the TanStack Start application."
+   }
+  ],
+  "keyPoints": [
+   "The handler executes server-side even when the invocation originates in a client component.",
+   "TanStack Start transports the request and response across the boundary for you.",
+   "Components can invoke server functions through the useServerFn hook.",
+   "A component event handler can use the returned callable for submissions and other interactions.",
+   "The server function passed to the hook is created with createServerFn and may declare an HTTP method."
+  ],
+  "gotchas": [
+   "Treat the hook result as a function. It does not provide query-style data, loading, or refetch properties.",
+   "Pass the payload inside a data property when invoking the returned function.",
+   "This RPC-style API is intended for calls from the Start application, not as a general public endpoint for outside callers."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Server behaviour::API routes": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/guide/server-routes",
+  "sourceTitle": "Server Routes | TanStack Start React Docs",
+  "summary": "API routes in TanStack Start expose plain HTTP endpoints for callers outside the application. Define them as file-based routes with a server property and method-specific handlers.",
+  "explanation": "Create a file-based route with a server property and HTTP method handlers. TanStack Start matches incoming requests to that route and runs the selected handler, making the endpoint available to callers outside the application.",
+  "syntax": "createFileRoute('/path')({ server: { handlers: { GET: handler, POST: handler } } })",
+  "parameters": [
+   {
+    "name": "handler context",
+    "type": "TanStack Start handler context",
+    "description": "HTTP request context supplied to a route handler, including the incoming request."
+   }
+  ],
+  "returns": "A handler response, such as a Response object, for the incoming HTTP request.",
+  "example": {
+   "title": "A simple API route",
+   "code": "import { createFileRoute } from '@tanstack/react-router'\n\nexport const Route = createFileRoute('/api/hello')({\n  server: {\n    handlers: {\n      GET: () => new Response('Hello, world!'),\n    },\n  },\n})",
+   "language": "typescript",
+   "explanation": "This route exposes GET /api/hello as a plain HTTP endpoint that returns a response."
+  },
+  "useCases": [
+   {
+    "title": "External API endpoint",
+    "scenario": "An external frontend, mobile app, or third-party service needs to call the application over HTTP."
+   },
+   {
+    "title": "Form submission",
+    "scenario": "A browser form or client submits data to the server."
+   },
+   {
+    "title": "Authentication and middleware",
+    "scenario": "An endpoint must authenticate users or apply request middleware."
+   },
+   {
+    "title": "Raw HTTP handling",
+    "scenario": "A route must accept arbitrary raw HTTP requests."
+   }
+  ],
+  "related": [
+   "server functions",
+   "createFileRoute",
+   "createHandlers",
+   "middleware",
+   "createStartHandler",
+   "wildcard parameters"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use API routes when an external client or service needs to call your application over HTTP.",
+   "Add server to createFileRoute to turn a route file into an API route.",
+   "The route URL is derived from the file path under the routes directory.",
+   "A route file such as src/routes/users.ts maps to the corresponding /users endpoint.",
+   "Define handlers as HTTP-method functions, or use createHandlers when advanced middleware composition is needed.",
+   "Route-level middleware can be supplied as an array and applies to every handler on that route."
+  ],
+  "gotchas": [
+   "Use server functions for internal application calls; server routes are intended for external HTTP callers.",
+   "The request must match the file-based route, and the corresponding method handler and middleware are then executed."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Server behaviour::Error handling": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/guide/server-entry-point",
+  "sourceTitle": "Server Entry Point",
+  "summary": "TanStack Start's built-in server entry converts uncaught server errors into HTTP responses. A custom entry can report an error, delegate to handleStartError, rethrow it, or return a custom Response.",
+  "explanation": "TanStack Start's built-in server entry catches errors that escape the Start handler and converts them into HTTP responses. A custom entry can catch an error itself, report it, then return the standard result with handleStartError, rethrow it for the built-in path, or construct a completely custom Response.",
+  "syntax": "createServerEntry({ fetch(request, options) { ... } })",
+  "parameters": [],
+  "returns": "An HTTP Response for the uncaught error; a custom entry may instead return its own Response or rethrow the error.",
+  "example": {
+   "title": "Report and convert a server error",
+   "code": "import { createServerEntry, handleStartError } from '@tanstack/react-start/server-entry'\n\nexport default createServerEntry({\n  async fetch(request, options) {\n    try {\n      return await options.handler(request)\n    } catch (error) {\n      console.error(error)\n      return handleStartError(error)\n    }\n  },\n})",
+   "language": "typescript",
+   "explanation": "A custom server entry can report an error and then delegate conversion to TanStack Start's standard error response."
+  },
+  "useCases": [
+   {
+    "title": "Default server error conversion",
+    "scenario": "An uncaught exception escapes a route or server handler and must become a client-visible HTTP response."
+   },
+   {
+    "title": "Error reporting with standard responses",
+    "scenario": "An application needs to report failures to an observability service before preserving TanStack Start's normal error response."
+   },
+   {
+    "title": "Custom error responses",
+    "scenario": "An API endpoint requires an application-specific error body, status, or headers."
+   }
+  ],
+  "related": [
+   "createServerEntry",
+   "handleStartError",
+   "setResponseStatus",
+   "setResponseHeader",
+   "setCookie",
+   "route error components",
+   "Response"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does TanStack Start turn an uncaught server error into a response?",
+    "answer": "The built-in entry catches errors escaping the Start handler and calls handleStartError inside the active request context. It then produces an HTTP response, normally using status 500 and a generic JSON body.",
+    "followUp": "How can custom reporting be added? Catch the error in createServerEntry, report it, and either return handleStartError(error), rethrow it, or return a custom Response."
+   },
+   {
+    "question": "Which status and response metadata can influence error handling?",
+    "answer": "Response helpers such as setResponseStatus, setResponseHeader, and setCookie affect the generated error response. An HTTP-style error status can also replace the default 500 status.",
+    "followUp": "What if the application needs a different body as well as a different status? Return a Response from the custom catch with the desired body, status, and headers."
+   },
+   {
+    "question": "What happens when server code throws a Response?",
+    "answer": "A thrown Response keeps its body and response metadata, while response helpers are applied to it. The body is removed for HEAD requests and statuses 204, 205, and 304.",
+    "followUp": "Does a route error component use this same top-level catch? No; errors handled by Router through route error components do not reach it."
+   }
+  ],
+  "keyPoints": [
+   "With no custom server entry, the built-in entry automatically turns uncaught server failures into HTTP responses.",
+   "The standard conversion occurs through handleStartError while the request context remains active.",
+   "An otherwise unclassified uncaught error receives a generic JSON body and a 500 status.",
+   "Response helpers or an HTTP-style error status can override the default status.",
+   "A custom server entry can take full control by returning its own Response."
+  ],
+  "gotchas": [
+   "Route error components handle some failures before the server entry's top-level catch, so do not expect this conversion path for those errors.",
+   "Server functions use a distinct response path that preserves RPC serialization rather than the ordinary top-level response handling.",
+   "A thrown Response does not retain its body for HEAD or body-forbidden status codes."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Server behaviour::Middleware": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/guide/middleware",
+  "sourceTitle": "Middleware | TanStack Start React Docs",
+  "summary": "TanStack Start middleware adds reusable behavior around requests and server functions. It supports composition and global or targeted application for concerns such as authentication, logging, and observability.",
+  "explanation": "Middleware wraps requests or server functions and runs shared logic around them. Create it with createMiddleware, define server behavior with server(), and attach it locally or configure it globally; middleware can call next() to continue and pass context to downstream code.",
+  "syntax": "createMiddleware({ type: 'request' | 'function' })\n  .server(async ({ next }) => next())",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Authentication middleware",
+   "code": "import { createMiddleware } from '@tanstack/react-start'\n\nconst authMiddleware = createMiddleware({ type: 'function' })\n  .server(async ({ next }) => {\n    const user = await getUser()\n    if (!user) throw new Error('Unauthorized')\n    return next({ context: { user } })\n  })\n\nexport const getSecret = createServerFn()\n  .middleware([authMiddleware])\n  .handler(({ context }) => ({ message: `Hello ${context.user.name}` }))",
+   "language": "typescript",
+   "explanation": "This server-function middleware checks authentication before the function runs and passes the user through typed context."
+  },
+  "useCases": [
+   {
+    "title": "Authentication and authorization",
+    "scenario": "Protect server functions by checking identity or permissions before execution."
+   },
+   {
+    "title": "Logging and observability",
+    "scenario": "Record request, response, error, or performance information across handlers."
+   },
+   {
+    "title": "Security headers and policy",
+    "scenario": "Apply security policy such as Content Security Policy to requests."
+   },
+   {
+    "title": "Global cross-cutting behavior",
+    "scenario": "Install behavior for every request or every server function from application configuration."
+   }
+  ],
+  "related": [
+   "createMiddleware",
+   "createStart",
+   "createServerFn",
+   "functionMiddleware",
+   "request middleware",
+   "server function middleware"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What are the two middleware types in TanStack Start?",
+    "answer": "Middleware can target all requests or only server functions. Request middleware handles any request that passes through it, while server-function middleware is specific to server functions.",
+    "followUp": "How would you apply middleware to every server function? Add the middleware to the functionMiddleware array returned by the createStart configuration in src/start.ts."
+   },
+   {
+    "question": "How do you create request and server-function middleware?",
+    "answer": "Create request middleware with createMiddleware; request is the default type, so the type option can be omitted. For server-function middleware, set type to 'function'.",
+    "followUp": "Why might request middleware be broader than expected? It also applies to requests used to invoke server functions, not only ordinary route requests."
+   },
+   {
+    "question": "How is global middleware configured?",
+    "answer": "Global request middleware runs automatically for every request, while global server-function middleware applies to every server function. Configure these in src/start.ts using createStart and either the request middleware configuration or functionMiddleware.",
+    "followUp": "When should middleware be local instead? Attach it to a particular server function or route when the behavior should not affect the whole application."
+   }
+  ],
+  "keyPoints": [
+   "Middleware can wrap server routes, including requests used to render the application on the server.",
+   "Middleware can be composed into dependency chains, enabling reusable layers of shared behavior.",
+   "Request middleware is created with createMiddleware; its default type is request.",
+   "Use type: 'function' when the middleware should specifically wrap server functions.",
+   "Global request middleware is suitable for cross-cutting behavior that must run throughout the application.",
+   "Put middleware in functionMiddleware to apply it to every server function."
+  ],
+  "gotchas": [
+   "Execution order is dependency-first: global middleware runs before server-function middleware.",
+   "Global middleware configuration requires creating src/start.ts when that file is absent."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Server behaviour::Request context": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/guide/server-functions",
+  "sourceTitle": "Server Functions | TanStack Start React Docs",
+  "summary": "Server functions can inspect the incoming Request, read individual headers, and set response headers. Cookies are read from the Request, while session loading is an application or middleware responsibility.",
+  "explanation": "Inside a TanStack Start server function, request-context utilities expose the incoming Request and individual headers. Cookies are available through the Request headers, while session data must be loaded by application code or authentication middleware; the function can also modify the outgoing response through response-header utilities.",
+  "syntax": "getRequest()\ngetRequestHeader(name)\nsetResponseHeader(name, value)\nsetResponseHeaders(headers)",
+  "parameters": [
+   {
+    "name": "name",
+    "type": "string",
+    "description": "The request-header name to read, such as authorization or cookie."
+   }
+  ],
+  "returns": "getRequest returns the full Request object; getRequestHeader returns the selected header value; response-header utilities configure the outgoing response.",
+  "example": {
+   "title": "Read request metadata in a server function",
+   "code": "import { createServerFn } from '@tanstack/react-start'\nimport { getRequestHeader, getRequest } from '@tanstack/react-start/server'\n\nexport const getRequestInfo = createServerFn({ method: 'GET' }).handler(\n  async () => {\n    const authorization = getRequestHeader('authorization')\n    const cookie = getRequest().headers.get('cookie')\n    return { authorization, cookie }\n  },\n)",
+   "language": "typescript",
+   "explanation": "This server function reads a named header with the convenience helper and accesses the complete incoming Request to inspect cookies."
+  },
+  "useCases": [
+   {
+    "title": "Read request headers",
+    "scenario": "Inspect an authorization or content-negotiation header before performing server-side work."
+   },
+   {
+    "title": "Read cookies",
+    "scenario": "Parse the incoming Cookie header to identify an application session."
+   },
+   {
+    "title": "Set response headers",
+    "scenario": "Apply cache, content, or custom metadata to a server-function response."
+   },
+   {
+    "title": "Share session context",
+    "scenario": "Resolve authentication once and make the resulting session available to protected handlers."
+   }
+  ],
+  "related": [
+   "createServerFn",
+   "getRequest",
+   "getRequestHeader",
+   "setResponseHeader",
+   "setResponseHeaders",
+   "createMiddleware",
+   "request context"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you read request headers and cookies inside a server function?",
+    "answer": "Use getRequest() when the complete Web Request is needed, or getRequestHeader(name) for one header. Cookie values can be obtained from the incoming Request's headers.",
+    "followUp": "How should authentication state reach downstream handlers? Load the session in middleware and pass it through server context so protected handlers receive a typed session."
+   },
+   {
+    "question": "Does TanStack Start provide a built-in session object in request context?",
+    "answer": "A session is not automatically supplied by TanStack Start. The application or an authentication library reads the session cookie and resolves the session before authorization-dependent work.",
+    "followUp": "Why is middleware useful here? It centralizes session loading and lets every protected handler authorize consistently."
+   },
+   {
+    "question": "What caching concern applies when a server function reads session data?",
+    "answer": "A response that varies by identity, session, cookie, or authorization data should use private caching. Public caching can allow a shared cache to replay one user's response to another user.",
+    "followUp": "What should be authorized? Every server function, route, or API endpoint that reads or mutates private data must authorize the request itself."
+   }
+  ],
+  "keyPoints": [
+   "Use getRequest to obtain the complete incoming Web Request.",
+   "Use getRequestHeader with a header name when only one request header is needed.",
+   "Use setResponseHeader to add or replace one outgoing response header.",
+   "Use setResponseHeaders to apply several response headers from a Headers object.",
+   "Authentication middleware can resolve the session once and expose typed session data to protected handlers through context."
+  ],
+  "gotchas": [
+   "Do not mark a response public when it depends on a session, cookie, authorization header, or user identity; use private caching instead to prevent one user's response being served to another.",
+   "Browser-origin checks reject requests lacking the expected Fetch Metadata, Origin, or Referer headers."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Server behaviour::Streaming responses": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/guide/streaming-data-from-server-functions",
+  "sourceTitle": "Streaming Data from Server Functions",
+  "summary": "TanStack Start server functions can stream typed chunks using a ReadableStream or an async generator. This enables progressive delivery instead of waiting for the complete result.",
+  "explanation": "A TanStack Start server function can progressively send typed values instead of waiting for one completed result. Implement the handler as an async generator and yield each chunk as it becomes ready, or return a typed ReadableStream and enqueue values before closing it.",
+  "syntax": "createServerFn().handler(async function* () { yield chunk })",
+  "parameters": [],
+  "returns": "A typed ReadableStream or an async generator that yields typed chunks.",
+  "example": {
+   "title": "Streaming with an async generator",
+   "code": "import { createServerFn } from '@tanstack/react-start'\n\nconst sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))\n\nexport const messagesFn = createServerFn().handler(\n  async function* () {\n    for (const message of ['Hello', 'from', 'TanStack Start']) {\n      await sleep(500)\n      yield { message }\n    }\n  },\n)",
+   "language": "typescript",
+   "explanation": "This server function yields typed message chunks over time, allowing the client to receive each item as it becomes available."
+  },
+  "useCases": [
+   {
+    "title": "Deliver partial output as it becomes available",
+    "scenario": "AI and other incremental generation"
+   },
+   {
+    "title": "Show progress or intermediate results before completion",
+    "scenario": "Long-running server work"
+   },
+   {
+    "title": "Send a sequence of structured values with a shared chunk type",
+    "scenario": "Typed event or message feeds"
+   }
+  ],
+  "related": [
+   "ReadableStream",
+   "async generator function",
+   "createServerFn",
+   "Message"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Which mechanisms can a server function use to stream data?",
+    "answer": "TanStack Start supports streaming from server functions with either a typed ReadableStream or an async generator. An async generator is often simpler because each yielded value becomes a streamed chunk.",
+    "followUp": "How would you model delayed production? Use an async generator and await the asynchronous work before each yield, so chunks are emitted progressively rather than all at once."
+   },
+   {
+    "question": "How does the ReadableStream approach work?",
+    "answer": "A ReadableStream is created with a chunk type such as `ReadableStream<Message>`. Its controller enqueues each message and calls `close()` after the final item.",
+    "followUp": "What must happen if production fails? Propagate or handle the error consistently instead of closing the stream as though all chunks were delivered successfully."
+   },
+   {
+    "question": "What does type-safe streaming mean here?",
+    "answer": "The streamed data is typed, so the chunk type is known to the server-function consumer. With an async generator, each yielded value must match the intended message shape.",
+    "followUp": "Why is this useful for application design? It combines progressive delivery with compile-time contracts between the server function and its client."
+   }
+  ],
+  "keyPoints": [
+   "Streaming lets applications deliver server-produced data progressively, which is especially useful for incremental or AI-generated output.",
+   "Server functions can stream through either a Web ReadableStream or an async generator.",
+   "A handler may return a ReadableStream directly rather than assembling the complete result first.",
+   "Declare the stream's value type, such as `ReadableStream<Message>`, to preserve typed chunks.",
+   "Async generators provide a concise alternative when values are naturally produced one after another.",
+   "Await asynchronous work between yields when each chunk depends on a delayed operation."
+  ],
+  "gotchas": [
+   "Choose either an async generator or a ReadableStream; the documentation presents these as the two supported approaches.",
+   "Keep the yielded values aligned with the declared chunk type so the client retains type safety."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Server behaviour::Validation and authorization": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/guide/server-functions.md",
+  "sourceTitle": "Server Functions",
+  "summary": "Treat every server-function argument as untrusted: validate its single data value at runtime. Authorize private-data access in the endpoint or middleware, not only in the route that calls it.",
+  "explanation": "A server function receives one network-crossing data value, so validate it at runtime before use. Authorization must also happen in the function or its middleware because the endpoint can be called independently of the UI route that invokes it.",
+  "syntax": "createServerFn({ method: 'GET' | 'POST' })\n  .validator((data) => validatedData)\n  .handler(async ({ data }) => result)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "unknown input validated by the function's validator",
+    "description": "The single serializable value supplied to the server function and passed through its validator."
+   }
+  ],
+  "returns": "The handler's serializable return value; Response objects are also allowed.",
+  "example": {
+   "title": "Validate and authorize a server function",
+   "code": "import { createServerFn } from '@tanstack/react-start'\nimport { z } from 'zod'\n\nconst updateProfileSchema = z.object({\n  displayName: z.string().min(1).max(80),\n})\n\nexport const updateProfile = createServerFn({ method: 'POST' })\n  .validator((data) => updateProfileSchema.parse(data))\n  .handler(async ({ data, context }) => {\n    const user = context.user\n    if (!user) throw new Error('Unauthorized')\n    await saveProfile(user.id, data.displayName)\n    return { ok: true }\n  })",
+   "language": "typescript",
+   "explanation": "The validator checks the request payload at runtime, while the handler authorizes the authenticated user before changing private data."
+  },
+  "useCases": [
+   {
+    "title": "Validate submitted data",
+    "scenario": "A form or browser request supplies fields that must satisfy runtime constraints before persistence."
+   },
+   {
+    "title": "Protect private data",
+    "scenario": "A server function reads or changes records belonging to a signed-in user or tenant."
+   },
+   {
+    "title": "Centralize authorization middleware",
+    "scenario": "Several server functions need the same authentication or request checks."
+   }
+  ],
+  "related": [
+   "createServerFn",
+   "validator",
+   "handler",
+   "createCsrfMiddleware",
+   "authMiddleware",
+   "server function middleware"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How should a server function validate and authorize input?",
+    "answer": "Use the server function's validator to check the single data argument at runtime, then use the handler or middleware to establish authorization before accessing private data. The validator protects input correctness; authorization protects the data boundary.",
+    "followUp": "Why is a protected route insufficient? The server function is independently reachable, so authorization must be enforced at the endpoint itself."
+   },
+   {
+    "question": "What does the validator apply to?",
+    "answer": "Server functions accept one data parameter. A validator transforms or checks that value before the handler receives it, while the handler can reject unauthenticated or unauthorized requests.",
+    "followUp": "What should be validated? Any value crossing the network boundary, including structure and constraints required by the operation."
+   },
+   {
+    "question": "Where should authorization checks live?",
+    "answer": "Private-data authorization belongs in middleware or an equivalent in-handler check on every relevant server function. A route guard protects navigation, not an independently callable API endpoint.",
+    "followUp": "Can shared middleware reduce duplication? Yes; compose server functions with authentication middleware while retaining endpoint-level enforcement."
+   }
+  ],
+  "keyPoints": [
+   "Design each server function around one input value named data.",
+   "Use a runtime validator to check untrusted input before the handler operates on it.",
+   "Validation handles caller-controlled values; server-side authorization controls access to private records and mutations.",
+   "Middleware is a reusable place for authentication and other cross-cutting server behavior.",
+   "Same-origin protections can verify browser requests using fetch metadata or origin-related headers."
+  ],
+  "gotchas": [
+   "A route guard alone does not protect private data; enforce authorization in the server function or middleware that serves or mutates it.",
+   "Every function touching private data needs an authorization check, even when its calling route is protected.",
+   "TypeScript types alone are insufficient for incoming values; add a runtime validator."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Shipping::Build output": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/overview",
+  "sourceTitle": "TanStack Start Overview",
+  "summary": "TanStack Start builds separate client and server artifacts for full-stack applications. Vite or Rsbuild and the selected deployment target determine how those artifacts are packaged.",
+  "explanation": "A production build separates code according to where it runs: browser code becomes client assets, while server code becomes a deployable server artifact. TanStack Start supports these full-stack builds through its Vite and Rsbuild integrations, with the exact deployment shape depending on the selected hosting provider or runtime.",
+  "syntax": "npm run build",
+  "parameters": [],
+  "returns": "Client and server deployment artifacts suitable for the selected hosting provider or runtime.",
+  "example": {
+   "title": "Build the application",
+   "code": "npm run build",
+   "language": "bash",
+   "explanation": "Runs the configured production build, producing optimized artifacts for both browser and server execution."
+  },
+  "useCases": [
+   {
+    "title": "Create deployable client and server artifacts",
+    "scenario": "Production deployment"
+   },
+   {
+    "title": "Package SSR-capable output",
+    "scenario": "Server-rendered applications"
+   },
+   {
+    "title": "Adapt output to a selected hosting provider or runtime",
+    "scenario": "Multiple runtimes"
+   }
+  ],
+  "related": [
+   "TanStack Router",
+   "Vite",
+   "Rsbuild",
+   "Full-document SSR",
+   "Streaming",
+   "Server functions",
+   "Railway"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What artifacts does a TanStack Start build produce?",
+    "answer": "A TanStack Start build produces optimized artifacts for both client and server code. The client artifact hydrates and handles browser navigation, while the server artifact performs server-side work such as SSR and server functions.",
+    "followUp": "How does the deployment target affect these artifacts? The target determines the deployment output and configuration, while the application’s routes and server boundaries remain the same."
+   },
+   {
+    "question": "Why does TanStack Start need separate client and server builds?",
+    "answer": "Start supports full-stack builds rather than only a browser bundle. Its build layers package code for both sides of the client/server boundary, allowing server rendering and browser hydration to work together.",
+    "followUp": "Why is this different from a client-only TanStack Router application? Start adds the server and build layers around the route tree, enabling server execution and deployment artifacts."
+   },
+   {
+    "question": "How does the deployment target influence build output?",
+    "answer": "The framework supports Vite and Rsbuild, and it is designed for different hosting providers and runtimes. The selected target determines the deployment configuration and output format, such as a Node service.",
+    "followUp": "Does choosing another target require rewriting routes? No; deployment configuration changes, while route authoring and server boundaries do not."
+   }
+  ],
+  "keyPoints": [
+   "The framework explicitly supports builds for both the client and the server alongside SSR, streaming, and server functions.",
+   "Builds can use either Vite or Rsbuild and can target the hosting provider or runtime selected for deployment.",
+   "TanStack Router’s route tree remains central; Start surrounds it with server and build layers.",
+   "Deployment output is associated with the selected target, so the artifact shape depends on where the application will run."
+  ],
+  "gotchas": [
+   "Changing the deployment target changes configuration and output shape, but does not require changing route authoring or server boundaries."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Shipping::Observability": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/guide/observability",
+  "sourceTitle": "Observability | TanStack Start React Docs",
+  "summary": "Instrument TanStack Start applications with server-function logs, middleware, and tracing integrations. Track execution time and errors so production failures are easier to diagnose.",
+  "explanation": "TanStack Start supports observability by adding logging inside server functions, request and response middleware, and tracing integrations. Logging execution duration and failures makes production errors diagnosable, while external tools can collect traces and metrics; the documented OpenTelemetry approach is experimental and requires manual setup.",
+  "syntax": "createServerFn({ method: 'GET' }).handler(async ({ data }) => { /* log, trace, and return */ })",
+  "parameters": [],
+  "returns": "The page does not specify a distinct return value for observability itself; instrumented server functions retain their normal return values.",
+  "example": {
+   "title": "Log a server function",
+   "code": "import { createServerFn } from '@tanstack/react-start'\n\nconst getUserWithLogging = createServerFn({ method: 'GET' })\n  .handler(async () => {\n    const start = performance.now()\n    try {\n      const user = await loadUser()\n      console.log('getUser completed', { duration: performance.now() - start })\n      return user\n    } catch (error) {\n      console.error('getUser failed', { error })\n      throw error\n    }\n  })\n\nasync function loadUser() {\n  return { id: 'user-1' }\n}\n",
+   "language": "typescript",
+   "explanation": "This server function records duration on success and logs the error before rethrowing it."
+  },
+  "useCases": [
+   {
+    "title": "Diagnose server-function failures",
+    "scenario": "Record execution duration and failures for server functions in production."
+   },
+   {
+    "title": "Audit request lifecycles",
+    "scenario": "Add consistent logging around incoming requests and outgoing responses."
+   },
+   {
+    "title": "Correlate traces and errors",
+    "scenario": "Integrate an external tracing or error-monitoring platform."
+   },
+   {
+    "title": "Tune environment observability",
+    "scenario": "Compare logging, tracing, and metrics settings between development and production."
+   }
+  ],
+  "related": [
+   "createServerFn",
+   "createMiddleware",
+   "OpenTelemetry",
+   "server functions",
+   "middleware",
+   "route loaders"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Add logs inside server functions to record execution, timing, and failures.",
+   "Use middleware when you need consistent request and response logging across the application.",
+   "Start offers built-in observability patterns that do not inherently require an external service.",
+   "Track server-function execution time to identify slow operations.",
+   "Observability helps monitor, trace, and debug application performance and errors."
+  ],
+  "gotchas": [
+   "OpenTelemetry support is not automatic in this documented approach; integration requires manual setup.",
+   "Do not assume server functions, middleware, and route loaders receive automatic OpenTelemetry instrumentation."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Shipping::Performance": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/guide/observability",
+  "sourceTitle": "Observability | TanStack Start React Docs",
+  "summary": "Measure server functions, route loaders, client rendering, database queries, and external API calls to locate real performance bottlenecks. TanStack Start’s observability guidance favors timing and monitoring over performance guesses.",
+  "explanation": "TanStack Start supports performance checks at several layers. Time server functions and route loaders, inspect client render timing, and log slow dependencies such as database queries or external APIs. These measurements reveal where work occurs instead of relying on bundle-size or bottleneck guesses.",
+  "syntax": "createMiddleware().server(async ({ request, next }) => { /* measure request work */ })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Measure a route loader",
+   "code": "export const Route = createFileRoute('/dashboard')({\n  loader: async () => {\n    const startTime = Date.now()\n    const data = await loadDashboardData()\n    console.log(`[SERVER] loader: ${Date.now() - startTime}ms`)\n    return data\n  },\n  component: Dashboard,\n})",
+   "language": "tsx",
+   "explanation": "This route measures server-side loader duration so slow route data work can be identified."
+  },
+  "useCases": [
+   {
+    "title": "Time server-function execution",
+    "scenario": "A server function intermittently responds slowly."
+   },
+   {
+    "title": "Separate loading from rendering",
+    "scenario": "A route feels slow even when its data request is fast."
+   },
+   {
+    "title": "Find database and API latency",
+    "scenario": "A dashboard depends on several services."
+   },
+   {
+    "title": "Combine timing with errors",
+    "scenario": "Production requests need correlated diagnostics."
+   }
+  ],
+  "related": [
+   "Observability",
+   "Server Function Logging",
+   "Route Performance Monitoring",
+   "Performance Monitoring Checklist"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you measure performance in a TanStack Start application?",
+    "answer": "Instrument server functions and route loaders with start and end timestamps, then record the elapsed duration. Also measure client rendering when the user-visible result may be delayed after data arrives.",
+    "followUp": "How would you locate a slow dashboard? Record loader duration, database-query timing, external-API latency, and client render timing, then optimize the slowest measured segment."
+   },
+   {
+    "question": "Why measure route performance on both sides?",
+    "answer": "Route performance should be observed on both the client and server. Server timing shows request and data-loading cost, while client timing shows rendering cost after the route data is available.",
+    "followUp": "Why is server-only instrumentation insufficient? A fast server response can still be followed by slow client rendering, so both phases need separate measurements."
+   },
+   {
+    "question": "What should a performance-monitoring checklist include?",
+    "answer": "The observability checklist calls out server-function execution, route loading, database queries, external API calls, memory usage, and error rates. Together these metrics help distinguish application-code, dependency, resource, and reliability problems.",
+    "followUp": "Which dependency should be investigated first? Start with the slowest measured query or external call, because its latency directly contributes to the route's critical path."
+   }
+  ],
+  "keyPoints": [
+   "Use observability to find slow transactions and guide optimization instead of guessing which part of the application is responsible.",
+   "Server-function logs can combine execution timing with error information, making failures and slow calls easier to correlate.",
+   "Instrument route work in both environments so server data loading and browser rendering are measured as separate phases.",
+   "Client-side render timing reveals delay after route data has reached the browser.",
+   "Slow database queries deserve dedicated logging because database latency can dominate a server function or route loader.",
+   "Measure third-party calls separately to expose latency that originates outside the application."
+  ],
+  "gotchas": [
+   "Measure only one side of a route and you can miss latency introduced by either the server loader or the client render."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Shipping::Static and prerendered routes": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/guide/static-prerendering",
+  "sourceTitle": "Static Prerendering",
+  "summary": "TanStack Start can generate static HTML for routes during the build, allowing those pages to be served without request-time rendering. Static routes are discovered automatically, and link crawling can include additional linked pages.",
+  "explanation": "During the build, TanStack Start renders selected routes into static HTML files that can be served directly. Static paths are discovered automatically, while explicit configuration handles selected paths and options such as output locations; link crawling can extend prerendering to linked pages.",
+  "syntax": "tanstackStart({ prerender: { enabled: true, routes: [{ path: '/my-page', prerender: { outputPath: '/my-page/index.html' } }], crawlLinks: true } })",
+  "parameters": [
+   {
+    "name": "enabled",
+    "type": "boolean",
+    "description": "Whether the prerendering process is active."
+   },
+   {
+    "name": "path",
+    "type": "string",
+    "description": "A route path to prerender, with optional per-route prerender settings."
+   },
+   {
+    "name": "outputPath",
+    "type": "string",
+    "description": "The generated HTML file location, such as /my-page/index.html."
+   },
+   {
+    "name": "crawlLinks",
+    "type": "boolean",
+    "description": "Whether links in prerendered pages should be crawled for additional routes."
+   }
+  ],
+  "returns": "Static HTML files generated during the application build.",
+  "example": {
+   "title": "Prerender a static route",
+   "code": "import { defineConfig } from '@tanstack/react-start/config'\nimport { tanstackStart } from '@tanstack/react-start/plugin/vite'\n\nexport default defineConfig({\n  plugins: [\n    tanstackStart({\n      prerender: {\n        enabled: true,\n        routes: [\n          { path: '/about', prerender: { outputPath: '/about/index.html' } },\n        ],\n        crawlLinks: true,\n      },\n    }),\n  ],\n})",
+   "language": "typescript",
+   "explanation": "Enable prerendering in the TanStack Start configuration and specify a static route whose generated HTML is written to an explicit output path."
+  },
+  "useCases": [
+   {
+    "title": "Fast static delivery",
+    "scenario": "A documentation or marketing site needs fast first loads and can serve generated files from a CDN."
+   },
+   {
+    "title": "Static-only hosting",
+    "scenario": "An application must deploy to hosting that serves static files but does not support server-side rendering."
+   },
+   {
+    "title": "Crawled page generation",
+    "scenario": "Several stable pages link to one another and should be generated together during the build."
+   }
+  ],
+  "related": [
+   "Automatic Static Route Discovery",
+   "Crawling Links",
+   "prerender",
+   "outputPath",
+   "crawlLinks",
+   "pages"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is static prerendering in TanStack Start?",
+    "answer": "Static prerendering generates HTML during the build, so requests can receive files without server-side generation. It is useful for faster delivery and for hosts that do not provide server-side rendering.",
+    "followUp": "What happens when a static route links to another route? With crawlLinks enabled, TanStack Start extracts links from prerendered pages and prerenders the linked pages too."
+   },
+   {
+    "question": "Which routes are automatically discovered?",
+    "answer": "Static paths are automatically discovered and merged with the configured pages. Automatic discovery skips parameterized routes, layout routes, and routes without components.",
+    "followUp": "Can a dynamic route still be prerendered? Yes, if it is linked from another page while crawlLinks is enabled."
+   },
+   {
+    "question": "How do you configure a route for prerendering?",
+    "answer": "The prerender configuration enables generation and can specify a route path together with an outputPath such as /my-page/index.html. The resulting file is intended to be served as static HTML.",
+    "followUp": "Why provide an explicit outputPath? It controls where the generated HTML file is placed, allowing the deployment layout to match the requested URL."
+   }
+  ],
+  "keyPoints": [
+   "The build produces HTML files ahead of requests rather than rendering those pages on demand.",
+   "A deployed static host or CDN can serve the generated document directly.",
+   "You do not need to list every ordinary static route manually when automatic discovery applies.",
+   "Layout files are omitted from automatic discovery because they provide structure rather than independent documents.",
+   "Link crawling can discover additional pages starting from the routes already being prerendered."
+  ],
+  "gotchas": [
+   "Parameterized routes are not automatically discovered because the build needs concrete parameter values.",
+   "A dynamic route may still be included through link crawling, so enabling crawling can broaden the generated output.",
+   "API-style routes without components are excluded from automatic static-route discovery."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Start fundamentals::Client and server boundaries": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/guide/execution-model",
+  "sourceTitle": "Execution Model | TanStack Start React Docs",
+  "summary": "TanStack Start code is isomorphic by default, so it can enter both server and client bundles. Constrain sensitive work to server functions or server-only modules, and never expose secrets to the browser.",
+  "explanation": "TanStack Start treats code as shared between server and browser unless you constrain it. Keep database access, environment variables, API keys, and other sensitive work in server functions or server-only utilities; use client-prefixed variables only for values intended for the browser.",
+  "syntax": "createServerFn().handler(async () => { /* server-only work */ })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Keep secrets inside a server function",
+   "code": "import { createServerFn } from '@tanstack/react-start'\n\nexport const getSecretStatus = createServerFn({ method: 'GET' }).handler(\n  async () => ({ configured: Boolean(process.env.API_SECRET) }),\n)",
+   "language": "typescript",
+   "explanation": "The server function reads the unprefixed secret only on the server and returns a non-sensitive result to the client."
+  },
+  "useCases": [
+   {
+    "title": "Protect secrets",
+    "scenario": "Reading API keys, database URLs, or private environment variables"
+   },
+   {
+    "title": "Run server-side resources",
+    "scenario": "Executing database queries or filesystem operations"
+   },
+   {
+    "title": "Use typed server functions",
+    "scenario": "Calling server logic from a hydrated browser UI"
+   },
+   {
+    "title": "Enforce boundaries",
+    "scenario": "Preventing accidental cross-environment imports"
+   }
+  ],
+  "related": [
+   "createServerFn()",
+   "createServerOnlyFn()",
+   ".server.* files",
+   ".client.* files",
+   "Import protection",
+   "Environment Variables"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Assume ordinary code may ship to both environments unless you explicitly constrain it.",
+   "Use .server.* for server-only modules and .client.* for browser-only modules.",
+   "Use createServerFn() for RPC-style operations and mutations that must run on the server.",
+   "Server-only execution is appropriate for secrets and environment configuration.",
+   "Only deliberately public variables should use the build tool's client prefix."
+  ],
+  "gotchas": [
+   "Unconstrained code can be included in both bundles, so importing a secret-bearing module from client code can expose it.",
+   "Bundle analysis is still a necessary production check even when code is intended to be server-only.",
+   "Do not put these values in client-visible environment variables or browser code."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Start fundamentals::Environment configuration": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/guide/environment-variables",
+  "sourceTitle": "Environment Variables | TanStack Start React Docs",
+  "summary": "TanStack Start loads .env files and separates configuration by runtime. Keep secrets in unprefixed server variables; expose only deliberately public, build-tool-prefixed values to client code.",
+  "explanation": "TanStack Start loads .env files while applying separate access rules: server code can read unprefixed process.env values, whereas client code should use variables exposed through the build tool’s public prefix. Keep secrets unprefixed and server-only, and expose only deliberately public configuration.",
+  "syntax": "process.env.NAME\nimport.meta.env.VITE_NAME\nserver: { build: { staticNodeEnv: false } }",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Separate private and public configuration",
+   "code": "import { createServerOnlyFn } from '@tanstack/react-start'\n\nconst getServerConfig = createServerOnlyFn(() => ({\n  apiUrl: process.env.API_URL,\n  jwtSecret: process.env.JWT_SECRET,\n}))\n\nexport function getPublicConfig() {\n  return { appName: import.meta.env.VITE_APP_NAME }\n}\n\nexport { getServerConfig }",
+   "language": "typescript",
+   "explanation": "Keep secrets behind a server-only function and read only prefixed public values in client code."
+  },
+  "useCases": [
+   {
+    "title": "Server-only secrets",
+    "scenario": "Database credentials, JWT signing keys, and private API keys"
+   },
+   {
+    "title": "Public client configuration",
+    "scenario": "Application name or feature flags rendered in the browser"
+   },
+   {
+    "title": "Environment-specific .env files",
+    "scenario": "Local development overrides"
+   },
+   {
+    "title": "Startup validation",
+    "scenario": "Preventing deployment failures"
+   }
+  ],
+  "related": [
+   "createServerOnlyFn",
+   "createServerFn",
+   "process.env",
+   "import.meta.env",
+   "VITE_",
+   "PUBLIC_",
+   "server.build.staticNodeEnv"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Start loads dotenv files automatically, but availability depends on whether code runs on the server or client.",
+   "Use unprefixed process.env variables for server configuration; client code receives only explicitly public variables.",
+   "For Vite, prefix client-readable variables with VITE_; Rsbuild uses PUBLIC_.",
+   "Secrets must remain unprefixed and must not be imported into client-facing code.",
+   "The server.build.staticNodeEnv setting controls replacement behavior for environment values during the build."
+  ],
+  "gotchas": [
+   "Do not add a public prefix to secrets such as database credentials, API keys, or signing secrets.",
+   "Keep local environment files out of version control.",
+   "Validate required configuration when the application starts so missing values fail early."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Start fundamentals::Loaders with server data": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/guide/server-functions",
+  "sourceTitle": "Server Functions | TanStack Start React Docs",
+  "summary": "Use a server function for privileged data access, then call it from a route loader. The loader receives the serialized result without exposing the query implementation to the browser.",
+  "explanation": "A route loader normally runs during server rendering and browser navigation, so sensitive reads should not be placed directly in it. Define the read with createServerFn, invoke that function from the loader, and render the returned serializable data with Route.useLoaderData().",
+  "syntax": "createServerFn({ method: 'GET' }).handler(async () => { /* server-only work */ })",
+  "parameters": [],
+  "returns": "A serializable value returned by the server function and exposed to the route through loader data.",
+  "example": {
+   "title": "Server-backed route loader",
+   "code": "import { createFileRoute } from '@tanstack/react-router'\nimport { createServerFn } from '@tanstack/start'\n\nconst getPosts = createServerFn({ method: 'GET' }).handler(async () => {\n  return [{ id: 1, title: 'Hello' }]\n})\n\nexport const Route = createFileRoute('/posts')({\n  loader: () => getPosts(),\n  component: Posts,\n})\n\nfunction Posts() {\n  const posts = Route.useLoaderData()\n  return <ul>{posts.map((post) => <li key={post.id}>{post.title}</li>)}</ul>\n}",
+   "language": "tsx",
+   "explanation": "The route loader invokes a server function, so the data access remains on the server while the route receives the serializable result."
+  },
+  "useCases": [
+   {
+    "title": "Protected route data",
+    "scenario": "A route needs records from a database or protected service during SSR and navigation."
+   },
+   {
+    "title": "Server-only resources",
+    "scenario": "A loader must use secrets, environment variables, or filesystem access."
+   },
+   {
+    "title": "Reusable server function",
+    "scenario": "Several application entry points need the same server-side read."
+   }
+  ],
+  "related": [
+   "createServerFn",
+   "createFileRoute",
+   "Route.useLoaderData",
+   "server routes",
+   "route loaders"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why should sensitive data access not be written directly in a route loader?",
+    "answer": "A route loader is isomorphic: it runs on the server for SSR and can run in the browser during navigation. Therefore, a privileged database or secret-backed read should be implemented with createServerFn and called by the loader.",
+    "followUp": "What should be used for a public external API? Use a server route rather than a server function, because server routes are intended for endpoints callable from outside the Start app."
+   },
+   {
+    "question": "How does createServerFn keep a loader's data access on the server?",
+    "answer": "createServerFn defines server-only logic that loaders can invoke through a typed network boundary. Start handles serialization so the loader can receive the function's result without bundling the implementation into browser code.",
+    "followUp": "Where else can a server function be called? It can also be used from components, hooks, other server functions, and event handlers."
+   },
+   {
+    "question": "How does the component consume data loaded through a server function?",
+    "answer": "The loader returns the server function's serializable result, and the route component reads it with Route.useLoaderData(). This gives the route data during SSR and navigation without exposing the privileged query implementation.",
+    "followUp": "When would TanStack Query be preferable? Use it when the application needs a query cache across routes, background updates, or mutation-driven invalidation."
+   }
+  ],
+  "keyPoints": [
+   "Put database queries, secret-dependent reads, and other privileged work inside createServerFn rather than directly in the route loader.",
+   "A server function can be invoked by a route loader, component, hook, another server function, or an event handler.",
+   "Use a route loader as the route-level caller that obtains server-backed data before rendering the page.",
+   "Return data that can cross the server boundary through Start's serialization mechanism.",
+   "The browser-facing caller uses the server function transparently, while its implementation executes on the server."
+  ],
+  "gotchas": [
+   "Calling a server function from a loader creates a server-side boundary; the caller can use it normally while the implementation stays server-side.",
+   "Server functions are intended for application-internal calls; choose a server route when external clients need the endpoint."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Start fundamentals::Project structure": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/build-from-scratch",
+  "sourceTitle": "Build a Project from Scratch | TanStack Start React Docs",
+  "summary": "TanStack Start projects center on a router, an application root, and file-based routes. Server functions handle server-only data operations, while the framework produces client and server builds around the same route tree.",
+  "explanation": "TanStack Start builds on a route tree whose files describe the application, while adding separate server and client build layers. The router and root route are central files; route components participate in the application UI, and server functions or server routes mark work intended for the server.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Define server-only work",
+   "code": "import { createServerFn } from '@tanstack/react-start'\n\nexport const getMessage = createServerFn({ method: 'GET' }).handler(\n  async () => 'Hello from the server',\n)",
+   "language": "typescript",
+   "explanation": "A server function keeps its implementation on the server while remaining callable from application code."
+  },
+  "useCases": [
+   {
+    "title": "Bootstrap a project",
+    "scenario": "Create the minimum TanStack Start application structure."
+   },
+   {
+    "title": "Define routes",
+    "scenario": "Add pages using filesystem-based routing."
+   },
+   {
+    "title": "Run server functions",
+    "scenario": "Keep database or file operations off the client."
+   },
+   {
+    "title": "Customize the router",
+    "scenario": "Configure routing behavior and caching."
+   }
+  ],
+  "related": [
+   "TanStack Router",
+   "server functions",
+   "server routes",
+   "routeTree.gen.ts",
+   "src/routes",
+   "__root.tsx",
+   "router.tsx",
+   "Vite"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The project uses TanStack Router and can be built with either Vite or Rsbuild.",
+   "The essential application files are the router configuration and the application's root.",
+   "routeTree.gen.ts is generated during the first Start run rather than authored as normal application code.",
+   "File-based routes are added by creating route files inside src/routes.",
+   "Put data operations in server functions when they must execute on the server."
+  ],
+  "gotchas": [
+   "A basic Start project requires both router configuration and an application root; omitting either prevents the expected setup.",
+   "Do not create the generated route tree manually; Start creates it when the application first runs."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Start fundamentals::Routing integration": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/guide/routing",
+  "sourceTitle": "Routing | TanStack Start React Docs",
+  "summary": "TanStack Start builds on TanStack Router, reusing its file-based route tree and type-safe routing model. Define routes in src/routes with typed paths, parameters, and search state while Start adds the framework layer.",
+  "explanation": "TanStack Start uses TanStack Router as its routing foundation. Routes are declared through the generated file-based route tree, while Router supplies typed paths, parameters, validated search state, loaders, links, and navigation behavior.",
+  "syntax": "export const Route = createFileRoute('/path')({ ... })",
+  "parameters": [
+   {
+    "name": "path",
+    "type": "string literal",
+    "description": "The file-based route path, including static or dynamic segments."
+   },
+   {
+    "name": "options",
+    "type": "RouteOptions",
+    "description": "A route configuration object containing options such as validateSearch and component."
+   }
+  ],
+  "returns": "A file-based route definition exported as Route.",
+  "example": {
+   "title": "Typed path and search state",
+   "code": "import { createFileRoute } from '@tanstack/react-router'\n\nexport const Route = createFileRoute('/posts/$postId')({\n  validateSearch: (search: Record<string, unknown>) => ({\n    tab: search.tab === 'comments' ? 'comments' : 'overview',\n  }),\n  component: PostPage,\n})\n\nfunction PostPage() {\n  const { postId } = Route.useParams()\n  const { tab } = Route.useSearch()\n  return <h1>{postId}: {tab}</h1>\n}",
+   "language": "tsx",
+   "explanation": "This route uses TanStack Router's file-based route declaration, typed path parameter, and validated search state inside TanStack Start."
+  },
+  "useCases": [
+   {
+    "title": "File-based route organization",
+    "scenario": "Organizing application screens into nested URL segments."
+   },
+   {
+    "title": "Typed URL navigation",
+    "scenario": "Keeping path parameters and navigation aligned with route definitions."
+   },
+   {
+    "title": "Typed search state",
+    "scenario": "Representing filters, tabs, or other URL-backed state."
+   },
+   {
+    "title": "Route-level code splitting",
+    "scenario": "Splitting route code and loading only the matched branch."
+   }
+  ],
+  "related": [
+   "TanStack Router",
+   "router.tsx",
+   "src/routes",
+   "createFileRoute",
+   "Root Route",
+   "Index Routes",
+   "Dynamic Routes",
+   "Wildcard Routes"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How is routing integrated into TanStack Start?",
+    "answer": "TanStack Start is built on TanStack Router, so routing features from Router remain available. Start uses Router's file-based routes and generated route tree, then adds the framework's server capabilities.",
+    "followUp": "How does Start preserve type safety across navigation? The generated route tree supplies inferred route information so paths, parameters, search state, and links can be checked together."
+   },
+   {
+    "question": "Where are routes defined, and what does the generated route tree do?",
+    "answer": "Routes live under src/routes and use file-based routing. The route tree is generated automatically, enabling code splitting and inferred type safety across the application.",
+    "followUp": "Why use a generated route tree? It gives the router a complete nested structure and provides TypeScript utilities for fast inference."
+   },
+   {
+    "question": "How does TanStack Start match and define routes?",
+    "answer": "TanStack Router uses nested routing to match a URL to the component tree that should render. Route files can represent index, dynamic, wildcard, and splat routes, and a route is declared with createFileRoute.",
+    "followUp": "How do dynamic routes expose captured values? A dynamic segment becomes a path parameter that the route can read through Router APIs."
+   }
+  ],
+  "keyPoints": [
+   "Start reuses TanStack Router rather than defining a separate routing model, so Router capabilities are available in Start applications.",
+   "Route filenames form the file-based route structure, supporting code splitting and type inference.",
+   "Application route files belong in src/routes.",
+   "Nested routes let a URL select a composed component tree instead of only one isolated component.",
+   "Use createFileRoute and export the result as Route when declaring a route module."
+  ],
+  "gotchas": [
+   "Do not edit the generated route tree directly; it is regenerated by the development or start command.",
+   "Router-wide behavior belongs in src/router.tsx, while individual route definitions belong in the routes directory."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Start fundamentals::Server functions": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/guide/server-functions",
+  "sourceTitle": "Server Functions | TanStack Start React Docs",
+  "summary": "Server functions define server-only logic that application code can call with type-safe transport across the client/server boundary. Create them with createServerFn and provide the implementation through handler.",
+  "explanation": "A server function is created with createServerFn and finalized with handler. The handler runs on the server, while application code can invoke the resulting function from loaders, components, hooks, event handlers, or other server functions; Start manages serialization across the client/server boundary.",
+  "syntax": "createServerFn(options?).handler(handler)",
+  "parameters": [],
+  "returns": "A callable server-function wrapper whose handler result is transferred across the client/server boundary.",
+  "example": {
+   "title": "Basic server function",
+   "code": "import { createServerFn } from '@tanstack/react-start'\n\nexport const getGreeting = createServerFn()\n  .handler(async () => {\n    return { message: 'Hello from the server!' }\n  })\n\nconst result = await getGreeting()",
+   "language": "typescript",
+   "explanation": "Defines a server-only function and invokes its typed client-facing wrapper."
+  },
+  "useCases": [
+   {
+    "title": "Route data loading",
+    "scenario": "Load data for a route before rendering."
+   },
+   {
+    "title": "Server-only capabilities",
+    "scenario": "Run database or filesystem logic without exposing it to the browser."
+   },
+   {
+    "title": "Event handling",
+    "scenario": "Process a form submission or click-driven mutation."
+   },
+   {
+    "title": "Server-side composition",
+    "scenario": "Compose reusable backend logic from another server function."
+   }
+  ],
+  "related": [
+   "createServerFn",
+   "handler",
+   "useServerFn",
+   "server routes",
+   "middleware"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you define a server function?",
+    "answer": "Use createServerFn to construct the function, then call handler with the server-side implementation. The resulting function can be invoked from application code while the implementation remains server-only.",
+    "followUp": "How would you expose the capability to a third-party client? Use a server route rather than a server function, because server functions are intended for calls from the TanStack Start application."
+   },
+   {
+    "question": "How can a server function's HTTP method be selected?",
+    "answer": "The default HTTP method is GET. Pass an options object such as { method: 'POST' } to createServerFn when the operation should use POST.",
+    "followUp": "Which method is appropriate for saving data? POST, as shown by the documented mutation-style example."
+   },
+   {
+    "question": "Where can server functions be called?",
+    "answer": "Server functions can be called from route loaders, components, hooks, other server functions, and event handlers. Components can use the useServerFn hook, while other contexts can invoke the function according to their integration.",
+    "followUp": "What does Start handle when client code invokes one? It handles serialization across the client/server boundary."
+   }
+  ],
+  "keyPoints": [
+   "They keep the implementation on the server while making it callable throughout the application.",
+   "Client-side code can invoke the server implementation without manually creating the transport.",
+   "They are suitable for database, environment, and filesystem work while preserving type safety over the boundary.",
+   "Create one with createServerFn; its options can select the HTTP method.",
+   "Route loaders are a natural place to use server functions for data retrieval.",
+   "Components can integrate server functions through the useServerFn hook."
+  ],
+  "gotchas": [
+   "Use server functions for calls made by the TanStack Start application; use a server route when external callers need an endpoint.",
+   "Choose the HTTP method explicitly when needed, such as POST for a mutation; GET is the default."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

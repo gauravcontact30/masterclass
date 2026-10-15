@@ -1,0 +1,135 @@
+{
+ "Hooks::authClient.useSession": {
+  "sourceUrl": "https://better-auth.com/docs/concepts/session-management.md",
+  "sourceTitle": "Session Management | Better Auth",
+  "summary": "Read the current Better Auth session reactively in a component. The result includes session data plus loading and error state, and it updates when authentication changes.",
+  "explanation": "Calling authClient.useSession() subscribes the component to the current session. The returned result exposes session data, a pending state while it loads, and an error state when retrieval fails; updates are reflected reactively after authentication changes.",
+  "syntax": "authClient.useSession()",
+  "parameters": [],
+  "returns": "An object containing reactive session data, isPending, and error; when a session is available, the data includes user and session objects.",
+  "example": {
+   "title": "Reactive session status",
+   "code": "import { authClient } from \"@/lib/auth-client\";\n\nexport function SessionStatus() {\n  const { data, isPending, error } = authClient.useSession();\n\n  if (isPending) return <p>Loading session…</p>;\n  if (error) return <p>Could not load the session.</p>;\n  return <p>{data ? `Welcome, ${data.user.name}` : \"Signed out\"}</p>;\n}",
+   "language": "tsx",
+   "explanation": "This component reads the current session reactively and renders loading, error, authenticated, or signed-out states."
+  },
+  "useCases": [
+   {
+    "title": "Reactive navigation",
+    "scenario": "Render authenticated UI that should update immediately after sign-in or sign-out."
+   },
+   {
+    "title": "Session status",
+    "scenario": "Show loading and failure states while the current session is retrieved."
+   },
+   {
+    "title": "Nuxt SSR",
+    "scenario": "Load a session during Nuxt server rendering and reuse it during client hydration."
+   }
+  ],
+  "related": [
+   "getSession",
+   "customSession",
+   "signIn",
+   "signOut"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does authClient.useSession provide?",
+    "answer": "useSession is the reactive session action. It returns an object whose data contains the user and session objects, while isPending and error let the component represent loading and failure states.",
+    "followUp": "How does it differ from getSession? getSession retrieves the active session once, whereas useSession is intended for reactive access that updates when authentication changes."
+   },
+   {
+    "question": "How should useSession be used with Nuxt?",
+    "answer": "In a client-only component, call authClient.useSession() and read the returned data. In Nuxt SSR, pass useFetch so cookies are included in the server request and the result is reused during hydration.",
+    "followUp": "Why does SSR need useFetch? Without the SSR-aware fetch function, the server-side request cannot use the incoming request context in the documented Nuxt pattern."
+   },
+   {
+    "question": "What data does useSession return?",
+    "answer": "The session result contains user and session objects when a session exists. The customSession plugin can customize this response, so consumers should use the shape configured by the application rather than assuming only default fields.",
+    "followUp": "What should a component do when data is absent? Treat it as unauthenticated and render the signed-out or login state instead of dereferencing user fields."
+   }
+  ],
+  "keyPoints": [
+   "Use this action when a component should stay synchronized with the current authentication session rather than reading it only once.",
+   "The session payload is organized into user information and session metadata.",
+   "Authentication transitions update consumers automatically, so components do not need to manually refetch after sign-in or sign-out.",
+   "The hook relies on Better Auth's cookie-based session mechanism to identify the current user.",
+   "Install and configure customSession when the default user/session response does not contain the fields the application needs."
+  ],
+  "gotchas": [
+   "When using Nuxt SSR, pass Nuxt's useFetch rather than calling the hook without an argument, so the server request receives incoming cookies and its result can hydrate on the client."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::Server hooks: before": {
+  "sourceUrl": "https://better-auth.com/docs/concepts/hooks",
+  "sourceTitle": "Hooks | Better Auth",
+  "summary": "Run a single `createAuthMiddleware` callback before a matched Better Auth endpoint. Inspect the context, reject invalid requests with an API error, or return updated context to rewrite request data.",
+  "explanation": "A before hook is a single createAuthMiddleware callback registered in the server hooks.before option. It runs before the selected endpoint, can inspect ctx.path and request data, stop processing by throwing an APIError, or return a context object containing modified request data.",
+  "syntax": "before: createAuthMiddleware(async (ctx) => { /* logic */ })",
+  "parameters": [],
+  "returns": "The page documents returning a context object to modify request state; otherwise the middleware may return without a value. Throw APIError to reject the request.",
+  "example": {
+   "title": "Validate and rewrite a sign-up request",
+   "code": "import { betterAuth } from \"better-auth\";\nimport { createAuthMiddleware } from \"better-auth/api\";\nimport { APIError } from \"better-auth/api\";\n\nexport const auth = betterAuth({\n  hooks: {\n    before: createAuthMiddleware(async (ctx) => {\n      if (ctx.path !== \"/sign-up/email\") return;\n      if (!ctx.body?.email?.endsWith(\"@example.com\")) {\n        throw new APIError(\"BAD_REQUEST\", {\n          message: \"Email must use the example.com domain\",\n        });\n      }\n      return {\n        context: {\n          ...ctx,\n          body: { ...ctx.body, name: \"Invited user\" },\n        },\n      };\n    }),\n  },\n});",
+   "language": "typescript",
+   "explanation": "This validates matching sign-up requests and rewrites the context to add a name before the endpoint runs."
+  },
+  "useCases": [
+   {
+    "title": "Pre-validate input",
+    "scenario": "A sign-up request must satisfy a domain or policy rule before account creation."
+   },
+   {
+    "title": "Rewrite request context",
+    "scenario": "An application needs to add trusted defaults or normalize fields before endpoint handling."
+   },
+   {
+    "title": "Block unauthorized requests",
+    "scenario": "A route requires authorization or custom access checks before execution."
+   }
+  ],
+  "related": [
+   "createAuthMiddleware",
+   "APIError",
+   "ctx.path",
+   "ctx.body",
+   "hooks.before",
+   "hooks.after",
+   "context"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you define a Better Auth before hook?",
+    "answer": "Register `before` under the `hooks` option and assign it a `createAuthMiddleware(async (ctx) => ...)` callback. The callback runs before endpoint execution, where it can inspect the path and request data.",
+    "followUp": "How can the hook apply only to sign-up? Check `ctx.path` for the sign-up route and return immediately for other paths."
+   },
+   {
+    "question": "How can a before hook reject a request?",
+    "answer": "Throw an `APIError` from the callback when validation fails. This rejects the request before the matched endpoint executes.",
+    "followUp": "Why use an API error instead of returning a normal value? The documented validation example uses `APIError` to produce a request failure with a specific error code and message."
+   },
+   {
+    "question": "How can a before hook modify the request?",
+    "answer": "Return an object with a `context` property containing the current context and the desired request changes. Spreading `ctx` and `ctx.body` preserves existing values while replacing selected fields.",
+    "followUp": "What must be preserved when rewriting context? Retain the existing context fields and body properties unless intentionally replacing them."
+   }
+  ],
+  "keyPoints": [
+   "The callback runs before the matched endpoint, making it suitable for authorization and pre-validation.",
+   "A before hook supports request rewriting, validation, and early exit behavior.",
+   "The documented registration uses `createAuthMiddleware` directly as the `before` hook value.",
+   "Inspect `ctx.path` to limit behavior to a particular endpoint.",
+   "Throw `APIError` to reject invalid input with an HTTP-oriented error code.",
+   "Spread the existing body before adding or replacing a request field."
+  ],
+  "gotchas": [
+   "Register before as one middleware function rather than an array. For multiple endpoints, branch inside the callback.",
+   "A callback without a path check can affect every endpoint, so explicitly return for paths it should ignore."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

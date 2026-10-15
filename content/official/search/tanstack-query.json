@@ -1,0 +1,2602 @@
+{
+ "Caching & invalidation::Dependent queries": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/dependent-queries",
+  "sourceTitle": "Dependent Queries | TanStack Query React Docs",
+  "summary": "Gate a query on data returned by another query with enabled. This prevents the dependent query from running until its required input exists.",
+  "explanation": "Run the first query normally, derive the value needed by the second query, and set the second query's enabled option to a boolean that becomes true only when that value exists. The dependent query therefore waits instead of invoking its query function with undefined input; once enabled, it fetches under a key containing the resolved identifier.",
+  "syntax": "useQuery({ queryKey, queryFn, enabled: Boolean(prerequisite) })",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "UseQueryOptions",
+    "description": "Options object containing queryKey, queryFn, and enabled; enabled controls when the query is ready to run."
+   }
+  ],
+  "returns": "A query result containing status, fetchStatus, data, and other state fields.",
+  "example": {
+   "title": "Gate a query on another query's result",
+   "code": "import { useQuery } from '@tanstack/react-query'\n\nasync function getUserByEmail(email: string) {\n  const response = await fetch(`/api/users?email=${encodeURIComponent(email)}`)\n  return response.json() as Promise<{ id: string }>\n}\n\nasync function getProjectsByUser(userId: string) {\n  const response = await fetch(`/api/users/${userId}/projects`)\n  return response.json() as Promise<unknown[]>\n}\n\nexport function Projects({ email }: { email: string }) {\n  const userQuery = useQuery({\n    queryKey: ['user', email],\n    queryFn: () => getUserByEmail(email),\n  })\n  const userId = userQuery.data?.id\n  const projectsQuery = useQuery({\n    queryKey: ['projects', userId],\n    queryFn: () => getProjectsByUser(userId!),\n    enabled: !!userId,\n  })\n  return <pre>{JSON.stringify(projectsQuery.data ?? [], null, 2)}</pre>\n}",
+   "language": "tsx",
+   "explanation": "The second query remains inactive until the first query supplies a user ID, then fetches projects using that ID."
+  },
+  "useCases": [
+   {
+    "title": "User-dependent resources",
+    "scenario": "Fetch a user's projects only after resolving the user from an email address."
+   },
+   {
+    "title": "Selection-dependent details",
+    "scenario": "Load details after a list query provides the selected record ID."
+   },
+   {
+    "title": "Authentication-dependent data",
+    "scenario": "Fetch permissions or settings after authentication returns an account identifier."
+   }
+  ],
+  "related": [
+   "useQuery",
+   "useQueries",
+   "enabled",
+   "queryKey",
+   "queryFn",
+   "Request Waterfalls"
+  ],
+  "since": "",
+  "keyPoints": [
+   "A dependent query waits for an earlier query to finish before it can run.",
+   "Use enabled to express the readiness condition for the dependent query.",
+   "Set enabled to a truthy check of the prerequisite value so the query function is not called prematurely.",
+   "When the first result supplies the identifier, the dependent query becomes eligible and starts fetching."
+  ],
+  "gotchas": [
+   "Serializing requests creates a request waterfall, which can hurt performance; flatten the API or combine requests when that is feasible."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Caching & invalidation::invalidateQueries": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/lit/reference/classes/QueryClient",
+  "sourceTitle": "QueryClient | TanStack Query Lit Docs",
+  "summary": "invalidateQueries marks matching cached queries invalid and keeps them in the cache. Active matches refetch by default; filters and refetchType let you choose the targets and refetch scope.",
+  "explanation": "The QueryClient method selects cached queries with filters, marks each match invalid, and normally refetches active matches. Invalidated entries remain cached; use refetchType to choose whether active, inactive, all, or no matching queries refetch.",
+  "syntax": "invalidateQueries<TTaggedQueryKey>(filters?: InvalidateQueryFilters<TTaggedQueryKey>, options?: InvalidateOptions): Promise<void>;",
+  "parameters": [
+   {
+    "name": "filters",
+    "type": "InvalidateQueryFilters<TTaggedQueryKey>",
+    "description": "Optional filters identifying queries to invalidate and controlling refetch behavior, including queryKey and refetchType."
+   },
+   {
+    "name": "options",
+    "type": "InvalidateOptions",
+    "description": "Optional settings for the invalidation operation."
+   }
+  ],
+  "returns": "Promise<void>",
+  "example": {
+   "title": "Invalidate active todo queries",
+   "code": "import { QueryClient } from '@tanstack/query-core'\n\nconst queryClient = new QueryClient()\n\nawait queryClient.invalidateQueries({\n  queryKey: ['todos'],\n  refetchType: 'active',\n})",
+   "language": "typescript",
+   "explanation": "Marks matching todo queries stale and refetches the currently active ones while retaining their cache entries."
+  },
+  "useCases": [
+   {
+    "title": "Refresh related cached data",
+    "scenario": "After a successful mutation changes data represented by cached queries."
+   },
+   {
+    "title": "Refetch active observers",
+    "scenario": "When only currently displayed results should update immediately."
+   },
+   {
+    "title": "Invalidate without refetching",
+    "scenario": "When freshness should be reset without an immediate network request."
+   }
+  ],
+  "related": [
+   "QueryClient#removeQueries",
+   "QueryClient#refetchQueries",
+   "InvalidateQueryFilters",
+   "InvalidateOptions",
+   "refetchType"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does invalidateQueries do?",
+    "answer": "It marks matching queries invalid and, by default, refetches active matches. The entries remain in the cache rather than being deleted.",
+    "followUp": "How would you invalidate without fetching? Set refetchType to 'none'."
+   },
+   {
+    "question": "How do you control which queries are refetched?",
+    "answer": "Pass query filters such as queryKey to select the entries, then set refetchType to control which matches refetch. The default refetch behavior is active queries.",
+    "followUp": "How can every matching query refetch? Use refetchType: 'all'."
+   },
+   {
+    "question": "How does invalidation interact with staleTime?",
+    "answer": "Invalidation overrides the query's staleTime and marks it stale immediately. An active observer can therefore refetch in the background.",
+    "followUp": "How can matching be made more precise? Add exact matching or a predicate to the filters."
+   }
+  ],
+  "keyPoints": [
+   "Use query filters to target one query family or another supported subset of cached queries.",
+   "The method changes freshness state and does not clear the stored result.",
+   "Refetch selection follows refetchType first, then type, and otherwise defaults to active matches.",
+   "The filters object both identifies targets and determines the subsequent refetch scope.",
+   "The method returns a promise, so callers can await completion of the invalidation workflow."
+  ],
+  "gotchas": [
+   "Invalidation does not remove cached data; use removeQueries when removal is the intended operation.",
+   "Setting refetchType to 'none' prevents the post-invalidation refetch.",
+   "Calling invalidateQueries without filters affects the entire cache, not just a selected key."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Caching & invalidation::Query filters": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/filters",
+  "sourceTitle": "Filters | TanStack Query React Docs",
+  "summary": "Query filters target a subset of cached queries by key prefix, exact key, activity, staleness, fetch status, or a predicate. Use them with cancellation, invalidation, removal, and refetching methods.",
+  "explanation": "A query filter is an object passed to query-management methods to select matching cache entries. Combine a partial queryKey with exact, type, stale, fetchStatus, or a predicate to control which queries are affected; invalidateQueries additionally supports refetchType for deciding which matched queries refetch.",
+  "syntax": "queryClient.cancelQueries(filters)\nqueryClient.invalidateQueries({ ...filters, refetchType })\nqueryClient.removeQueries(filters)\nqueryClient.refetchQueries(filters)",
+  "parameters": [
+   {
+    "name": "filters",
+    "type": "QueryFilters",
+    "description": "Optional filter object containing queryKey, exact, type, stale, fetchStatus, and predicate matching conditions."
+   },
+   {
+    "name": "refetchType",
+    "type": "QueryTypeFilter",
+    "description": "For invalidateQueries, controls refetching of matched invalidated queries: active, inactive, all, or none."
+   }
+  ],
+  "returns": "The page demonstrates these filters with query-management methods; the result is method-specific, and invalidateQueries may refetch matched queries according to refetchType.",
+  "example": {
+   "title": "Cancel a filtered subset",
+   "code": "const queryClient = new QueryClient()\n\nawait queryClient.cancelQueries({\n  queryKey: ['posts'],\n  type: 'inactive',\n  stale: true,\n})",
+   "language": "typescript",
+   "explanation": "Cancels only stale, inactive queries whose keys start with `posts`."
+  },
+  "useCases": [
+   {
+    "title": "Cancel a request subset",
+    "scenario": "Cancel only matching requests before replacing or editing related data."
+   },
+   {
+    "title": "Refresh related resources",
+    "scenario": "Invalidate all queries under a resource prefix after a mutation."
+   },
+   {
+    "title": "Prune inactive cache entries",
+    "scenario": "Remove inactive entries to reduce cache memory."
+   },
+   {
+    "title": "Target background refetching",
+    "scenario": "Refetch only active or otherwise selected queries."
+   }
+  ],
+  "related": [
+   "QueryFilters",
+   "InvalidateQueryFilters",
+   "queryClient.cancelQueries",
+   "queryClient.invalidateQueries",
+   "queryClient.removeQueries",
+   "queryClient.refetchQueries"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Query filters select cache entries by supplying matching conditions to query-management methods.",
+   "A partial `queryKey` matches keys beginning with that key prefix, so `['posts']` can target multiple related queries.",
+   "The `type` filter can restrict matching to inactive queries; use the corresponding active setting to target observed queries."
+  ],
+  "gotchas": [
+   "The `inactive` type excludes queries that currently have active observers."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Caching & invalidation::setQueryData": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/solid/reference/classes/QueryClient",
+  "sourceTitle": "QueryClient | TanStack Query Solid Docs",
+  "summary": "Writes a known value directly into one query's cache, or derives a new value from the current cached data. It updates synchronously and can create a missing query when the result is defined.",
+  "explanation": "Call setQueryData on a QueryClient with a query key and either a replacement value or updater function. The updater receives the current cached value, and returning undefined leaves the cache unchanged; otherwise the query is created when absent or updated immediately. Return a new object rather than mutating cached data in place.",
+  "syntax": "queryClient.setQueryData<TQueryFnData, TTaggedQueryKey, TInferredQueryFnData>(queryKey, updater, options?): NoInfer<TInferredQueryFnData> | undefined",
+  "parameters": [
+   {
+    "name": "queryKey",
+    "type": "TTaggedQueryKey",
+    "description": "The query key identifying the cached query to write."
+   },
+   {
+    "name": "updater",
+    "type": "Updater<NoInfer<TInferredQueryFnData> | undefined, NoInfer<TInferredQueryFnData> | undefined>",
+    "description": "A replacement value or function receiving the previous value and returning the next value; undefined leaves the cache unchanged."
+   },
+   {
+    "name": "options",
+    "type": "SetDataOptions",
+    "description": "Optional settings controlling how the cache write is performed."
+   }
+  ],
+  "returns": "The resulting cached data, or undefined.",
+  "example": {
+   "title": "Write and update a cached todo",
+   "code": "import { QueryClient } from '@tanstack/query-core'\n\ntype Todo = { id: number; title: string }\n\nconst queryClient = new QueryClient()\nconst todo: Todo = { id: 5, title: 'Draft' }\n\nqueryClient.setQueryData(['todo', { id: todo.id }], todo)\nqueryClient.setQueryData<Todo>(['todo', { id: todo.id }], (old) =>\n  old ? { ...old, title: 'Published' } : undefined,\n)\n\nconsole.log(queryClient.getQueryData<Todo>(['todo', { id: todo.id }]))",
+   "language": "typescript",
+   "explanation": "Creates a client, writes a known todo into the cache, then immutably updates the cached title."
+  },
+  "useCases": [
+   {
+    "title": "Apply mutation responses",
+    "scenario": "A mutation returns the updated entity, so the matching detail query can be updated without another network request."
+   },
+   {
+    "title": "Seed known data",
+    "scenario": "Data is already available synchronously and should be placed into the cache rather than prefetched."
+   },
+   {
+    "title": "Optimistically update one query",
+    "scenario": "A local edit changes one cached record and the cache should reflect it immediately."
+   }
+  ],
+  "related": [
+   "QueryClient#setQueriesData",
+   "QueryClient#getQueryData",
+   "QueryClient#invalidateQueries",
+   "Updater",
+   "SetDataOptions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does setQueryData do?",
+    "answer": "setQueryData synchronously updates one query's cached data. It accepts a query key and either a value or updater; if the query is missing and the result is defined, a cache entry is created.",
+    "followUp": "What happens when the updater returns undefined? The cache remains untouched and no query is created."
+   },
+   {
+    "question": "How should cached objects be updated safely?",
+    "answer": "The updater receives the current cached value, which may be undefined. Return a new value derived from it, commonly by spreading an object or mapping an array, rather than mutating the original.",
+    "followUp": "Why avoid mutation? In-place changes can cause subtle bugs because cached references may be shared and change detection can be affected."
+   },
+   {
+    "question": "When would you choose setQueryData over setQueriesData?",
+    "answer": "setQueryData addresses one query key and is useful when a mutation response already contains the authoritative result, avoiding an unnecessary refetch. For multiple queries selected by filters or partial keys, use setQueriesData.",
+    "followUp": "Does setQueriesData create missing entries? No; it updates only existing matching queries."
+   }
+  ],
+  "keyPoints": [
+   "The operation is synchronous and updates the selected query cache immediately.",
+   "A defined replacement or updater result can create the query when its key is not already cached.",
+   "An undefined input result is treated as a no-op rather than as a cached undefined value.",
+   "Bulk updates through setQueriesData apply the single-query operation to every matching existing query."
+  ],
+  "gotchas": [
+   "Returning undefined does not clear or create the query; it leaves the existing cache state untouched.",
+   "Create new arrays or objects when changing cached data instead of modifying the object received from the cache.",
+   "Use setQueriesData for partial-key bulk updates; setQueryData targets one exact query key."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Caching & invalidation::Structural sharing": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/render-optimizations",
+  "sourceTitle": "Render Optimizations",
+  "summary": "Structural sharing keeps unchanged query-data references stable across refetches. Unchanged results reuse the old reference, while partial updates replace only changed parts, reducing needless downstream work.",
+  "explanation": "TanStack Query compares successive query results and preserves the previous data reference when the result is unchanged. For partial changes, it reuses unchanged nested references and replaces only changed portions. This helps derived consumers avoid unnecessary work, but the optimization expects JSON-compatible data; disable it for large responses when comparison costs more than it saves, or provide a custom function for non-JSON data.",
+  "syntax": "structuralSharing: true | false | ((oldData: unknown, newData: unknown) => unknown)",
+  "parameters": [
+   {
+    "name": "structuralSharing",
+    "type": "boolean | ((oldData: unknown, newData: unknown) => unknown)",
+    "description": "Set to false to disable structural sharing between query results, or provide a function receiving old and new data to return resolved data of the same type."
+   }
+  ],
+  "returns": "When enabled, query data retains unchanged references across query results; a custom function returns the resolved data used by the query.",
+  "example": {
+   "title": "Enable structural sharing",
+   "code": "import { QueryClient, useQuery } from '@tanstack/react-query'\n\nconst queryClient = new QueryClient({\n  defaultOptions: {\n    queries: {\n      structuralSharing: true,\n    },\n  },\n})\n\nexport function Todos() {\n  const { data } = useQuery({\n    queryKey: ['todos'],\n    queryFn: () => fetch('/api/todos').then((r) => r.json()),\n  })\n\n  return <pre>{JSON.stringify(data, null, 2)}</pre>\n}",
+   "language": "tsx",
+   "explanation": "The query keeps reusable references when refetched data is unchanged or only partly changed."
+  },
+  "useCases": [
+   {
+    "title": "Stabilize unchanged results",
+    "scenario": "A refetch returns the same JSON data and consumers should avoid seeing a new data reference."
+   },
+   {
+    "title": "Limit partial-update churn",
+    "scenario": "A response changes only one nested item and derived consumers should retain references to unaffected items."
+   },
+   {
+    "title": "Provide custom sharing logic",
+    "scenario": "Query data contains custom non-JSON values and reference reuse needs application-specific rules."
+   }
+  ],
+  "related": [
+   "useQuery",
+   "useInfiniteQuery",
+   "useMutation",
+   "useQueries",
+   "structuralSharing",
+   "queryFn"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Structural sharing preserves as many existing object and array references as possible after a refetch.",
+   "An unchanged result reuses the complete previous data reference.",
+   "When only part of the response differs, unchanged nested values remain referentially stable.",
+   "Use false globally or in an individual query when the default comparison is undesirable.",
+   "A function can define custom reuse behavior for data shapes the default algorithm cannot handle."
+  ],
+  "gotchas": [
+   "Non-JSON-compatible values are treated as changed, so built-in structural sharing cannot preserve their references.",
+   "Do not expect the hook result object itself to keep the same identity; inspect its data property instead."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::Hook-level select": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/reference/interfaces/UseBaseQueryOptions",
+  "sourceTitle": "useQuery",
+  "summary": "The hook-level `select` option transforms or narrows query data for one hook consumer. It changes the returned value without changing the query cache, and reruns when data or the selector reference changes.",
+  "explanation": "The hook-level `select` option transforms or narrows the query function's result for one hook consumer. The transformed value is returned to that consumer, while the cache retains the original data; the selector runs again when the source data or selector function reference changes.",
+  "syntax": "select?: (data: TQueryData) => TData",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "UseQueryOptions",
+    "description": "Query options, including the optional selector `(data: TQueryData) => TData` used to transform or select part of the cached query data."
+   }
+  ],
+  "returns": "UseQueryResult whose `data` value has the selector's `TData` type; the cache retains the original query data.",
+  "example": {
+   "title": "Select a value in useQuery",
+   "code": "import { useQuery } from '@tanstack/react-query'\n\ntype Group = { id: number; groupName: string }\n\nexport function GroupName({ id }: { id: number }) {\n  const query = useQuery<Group[], Error, string>({\n    queryKey: ['groups'],\n    queryFn: async () =>\n      (await fetch('/api/groups')).json() as Promise<Group[]>,\n    select: (groups) =>\n      groups.find((group) => group.id === id)?.groupName ?? 'Unknown',\n  })\n\n  return <span>{query.data}</span>\n}",
+   "language": "tsx",
+   "explanation": "The hook receives the full cached group list, while the component gets only the selected group name."
+  },
+  "useCases": [
+   {
+    "title": "Project a small view",
+    "scenario": "A component needs one property from a cached object or array and should not receive the entire result."
+   },
+   {
+    "title": "Create per-consumer projections",
+    "scenario": "Different consumers need different derived representations of the same query."
+   },
+   {
+    "title": "Transform returned data",
+    "scenario": "A hook should expose formatted or computed data while preserving the original cache shape."
+   }
+  ],
+  "related": [
+   "useQuery",
+   "UseBaseQueryOptions",
+   "TQueryData",
+   "TData",
+   "queryOptions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the `select` option do in `useQuery`?",
+    "answer": "`select` accepts a function from the cached query data to the hook's returned data. It can transform the result or return a portion of it, without changing the cached value.",
+    "followUp": "What triggers the selector to execute again? The source data changing or the selector function reference changing."
+   },
+   {
+    "question": "Does `select` modify cached query data?",
+    "answer": "The query cache keeps the query function's data, while the hook exposes the selector's result. This allows different consumers to derive different views from the same cached query.",
+    "followUp": "Can two hooks use different selections over one query? Yes; each hook can define its own returned projection while sharing the underlying cache entry."
+   },
+   {
+    "question": "When does a selector run, and how can it be optimized?",
+    "answer": "The selector runs when its input data changes or when its function reference changes. Keeping the function reference stable avoids unnecessary selector execution.",
+    "followUp": "How can a component keep an inline selector stable? Define it outside the component or memoize it with the dependencies required by the selection."
+   }
+  ],
+  "keyPoints": [
+   "Use `select` to derive a transformed value or a smaller slice from the query function's result.",
+   "The hook returns the selected value, whereas the query cache continues to hold the unselected result.",
+   "Selector execution is tied to changes in its input data or in the selector function identity.",
+   "Memoize a selector when needed so repeated renders preserve its function reference."
+  ],
+  "gotchas": [
+   "An unstable selector reference can cause the transformation to run again; memoize the function when its identity would otherwise change.",
+   "Do not expect `select` to change or narrow the value stored in the cache; it only changes this hook's returned data."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::Hooks in tests": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/testing",
+  "sourceTitle": "Testing | TanStack Query React Docs",
+  "summary": "Test TanStack Query hooks beneath a QueryClientProvider backed by a test-specific QueryClient. Disable query retries in that client’s defaults so failure tests do not wait through retry backoff.",
+  "explanation": "Test a hook beneath a QueryClientProvider backed by a newly created QueryClient. Configure the client’s query defaults with retry: false so failed queries finish promptly; an explicit retry setting on an individual useQuery still overrides that fallback.",
+  "syntax": "new QueryClient({ defaultOptions: { queries: { retry: false } } })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Testing a query hook",
+   "code": "import { renderHook, waitFor } from '@testing-library/react';\nimport { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';\n\nfunction createWrapper() {\n  const queryClient = new QueryClient({\n    defaultOptions: { queries: { retry: false } },\n  });\n  return function Wrapper({ children }: { children: React.ReactNode }) {\n    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;\n  };\n}\n\ntest('loads data', async () => {\n  const { result } = renderHook(\n    () => useQuery({ queryKey: ['message'], queryFn: async () => 'ok' }),\n    { wrapper: createWrapper() },\n  );\n  await waitFor(() => expect(result.current.isSuccess).toBe(true));\n  expect(result.current.data).toBe('ok');\n});",
+   "language": "tsx",
+   "explanation": "The test creates an isolated client and provider, disables retries through client defaults, then renders and awaits the hook."
+  },
+  "useCases": [
+   {
+    "title": "Isolated hook tests",
+    "scenario": "Testing a custom hook that calls useQuery"
+   },
+   {
+    "title": "Async state assertions",
+    "scenario": "Asserting loading, success, or error transitions"
+   },
+   {
+    "title": "Fast failure-path tests",
+    "scenario": "Testing rejected query functions"
+   }
+  ],
+  "related": [
+   "QueryClient",
+   "QueryClientProvider",
+   "renderHook",
+   "waitFor",
+   "useQuery",
+   "defaultOptions",
+   "retry"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How should a query hook be tested?",
+    "answer": "Render the hook inside a QueryClientProvider and pass it a QueryClient created for the test. Configure defaultOptions.queries.retry as false to prevent failed queries from retrying and delaying assertions.",
+    "followUp": "What happens if the hook sets retry explicitly? The hook-level setting wins because client defaults are only fallback values."
+   },
+   {
+    "question": "Why turn retries off in tests?",
+    "answer": "The library normally retries failed queries three times with exponential backoff. Disabling retries through the provider makes error-path tests complete without waiting for those attempts.",
+    "followUp": "Why configure this on the provider rather than only in the assertion? Because the retry policy controls query execution before the final state can be asserted."
+   },
+   {
+    "question": "What role does QueryClientProvider play?",
+    "answer": "A QueryClientProvider supplies the QueryClient through context to the hook’s component tree. The test wrapper creates the client and renders children beneath that provider.",
+    "followUp": "How can the test isolate query state? Construct the client inside the wrapper or test setup so the test does not reuse another test’s cache."
+   }
+  ],
+  "keyPoints": [
+   "The documentation recommends a hooks testing library for unit-testing custom hooks in older React setups.",
+   "Create a QueryClient for the test and use it as the provider’s client.",
+   "Use a wrapper component that places rendered hook children under QueryClientProvider.",
+   "Wait for the hook to reach its successful state before checking asynchronous results.",
+   "Failed queries ordinarily retry three times with exponential backoff."
+  ],
+  "gotchas": [
+   "The setting applies to queries in the provider’s component tree, not beyond that provider.",
+   "A retry value specified directly on useQuery takes precedence over the client default.",
+   "Leaving the default retry behavior enabled can make failing-query tests wait through backoff."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::Query options factories": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/reference/functions/queryOptions",
+  "sourceTitle": "queryOptions",
+  "summary": "Use queryOptions to create a reusable, typed query configuration. Share its key and behavior across query hooks and imperative QueryClient APIs so they stay consistent.",
+  "explanation": "Define a function that passes a query key and fetch behavior to queryOptions. Its result can be supplied to useQuery and reused with imperative QueryClient APIs, while the branded key carries query-function data and error types through those APIs.",
+  "syntax": "function queryOptions<TQueryFnData, TError, TData, TQueryKey>(options: DefinedInitialDataOptions<TQueryFnData, TError, TData, TQueryKey> | UnusedSkipTokenOptions<TQueryFnData, TError, TData, TQueryKey> | UndefinedInitialDataOptions<TQueryFnData, TError, TData, TQueryKey>): corresponding options type & QueryKeyWithDataTag<TQueryKey, TQueryFnData, TError>",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "DefinedInitialDataOptions<TQueryFnData, TError, TData, TQueryKey> | UnusedSkipTokenOptions<TQueryFnData, TError, TData, TQueryKey> | UndefinedInitialDataOptions<TQueryFnData, TError, TData, TQueryKey>",
+    "description": "The query configuration, including a required queryKey and the options accepted by useQuery."
+   }
+  ],
+  "returns": "The supplied query options, augmented so queryKey carries the query function's data and error types.",
+  "example": {
+   "title": "Reusable typed query options",
+   "code": "import { queryOptions, useQuery, useQueryClient } from '@tanstack/react-query'\n\ntype Todo = { id: number; title: string }\n\nconst todosOptions = () =>\n  queryOptions({\n    queryKey: ['todos'],\n    queryFn: async (): Promise<Todo[]> =>\n      fetch('/api/todos').then((response) => response.json()),\n  })\n\nexport function Todos() {\n  const query = useQuery(todosOptions())\n  const queryClient = useQueryClient()\n  const cached = queryClient.getQueryData(todosOptions().queryKey)\n\n  return <pre>{JSON.stringify(cached ?? query.data, null, 2)}</pre>\n}",
+   "language": "tsx",
+   "explanation": "The factory centralizes the key and fetch function, then the hook and client reuse the same typed options and key."
+  },
+  "useCases": [
+   {
+    "title": "Centralize query configuration",
+    "scenario": "Several components need the same key and fetch behavior."
+   },
+   {
+    "title": "Align declarative and imperative APIs",
+    "scenario": "A hook and QueryClient operation access the same cached query."
+   },
+   {
+    "title": "Preserve type inference",
+    "scenario": "TypeScript consumers need inferred cache data from a query key."
+   }
+  ],
+  "related": [
+   "useQuery",
+   "QueryClient",
+   "queryClient.query",
+   "QueryKeyWithDataTag",
+   "DefinedInitialDataOptions",
+   "UnusedSkipTokenOptions",
+   "UndefinedInitialDataOptions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does queryOptions solve?",
+    "answer": "queryOptions is a helper that receives query options and returns an options object suitable for query hooks and QueryClient operations. The queryKey is required, and the returned key carries the query function's data and error types.",
+    "followUp": "Why can getQueryData infer a result type from the returned key? The helper brands the queryKey with the query function's data and error types, allowing those types to flow into TanStack Query APIs."
+   },
+   {
+    "question": "How would you share query configuration between a hook and the QueryClient?",
+    "answer": "Put the queryKey and queryFn in one reusable factory, then pass the factory result to useQuery. The same result or its queryKey can be used with imperative QueryClient APIs, keeping consumers aligned.",
+    "followUp": "How would you avoid sharing one mutable options object? Return a fresh queryOptions result from a factory function, especially when parameters belong in the key."
+   },
+   {
+    "question": "What type information does queryOptions preserve?",
+    "answer": "The function is generic over query-function data, error, selected data, and query-key types. Its return combines the relevant option type with a QueryKeyWithDataTag, preserving useful type information across APIs.",
+    "followUp": "What should change for a parameterized query? Include the parameter in queryKey and use it in queryFn, so cache identity and fetched data remain consistent."
+   }
+  ],
+  "keyPoints": [
+   "A single returned configuration can serve both hook-based reads and imperative QueryClient calls.",
+   "The helper packages core query settings such as the key, fetcher, retry policy, cache lifetime, initial data, and metadata.",
+   "Its generic parameters represent the fetched value, error, selected value, and query-key types.",
+   "The returned query key is tagged with data and error types so downstream APIs can infer them.",
+   "An overload supports options whose initialData guarantees a defined query result."
+  ],
+  "gotchas": [
+   "A query key is mandatory; omitting it prevents queryOptions from generating the options object.",
+   "queryOptions is not a separate reduced configuration format: its accepted properties follow the useQuery options."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useMutationState": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/reference/functions/useMutationState",
+  "sourceTitle": "useMutationState | TanStack Query React Docs",
+  "summary": "Observe mutations in the shared MutationCache, including mutations started in other components. Filter them by mutation properties and optionally map each match to a custom value.",
+  "explanation": "useMutationState subscribes to matching entries in the shared MutationCache, so a component can observe mutations created elsewhere. Filters select which mutations are included, while select maps each matched mutation to the value exposed in the returned array; an explicit QueryClient can override the nearest context client.",
+  "syntax": "useMutationState<TResult, TMutation>(options?: MutationStateOptions<TResult, TMutation>, queryClient?: QueryClient): TResult[]",
+  "parameters": [
+   {
+    "name": "options?",
+    "type": "MutationStateOptions<TResult, TMutation>",
+    "description": "Filters mutations to include and optionally selects the value returned for each matching mutation."
+   },
+   {
+    "name": "queryClient?",
+    "type": "QueryClient",
+    "description": "The QueryClient to observe; otherwise the nearest context client is used."
+   }
+  ],
+  "returns": "An array containing the value produced by select for each matching mutation; without select, the mutation state is returned.",
+  "example": {
+   "title": "Read successful mutations elsewhere",
+   "code": "import { useMutation, useMutationState } from '@tanstack/react-query'\n\nfunction Posts() {\n  const mutationKey = ['posts']\n  const mutation = useMutation({\n    mutationKey,\n    mutationFn: async (title: string) =>\n      fetch('/api/posts', {\n        method: 'POST',\n        body: JSON.stringify({ title }),\n      }),\n  })\n  const savedPosts = useMutationState({\n    filters: { mutationKey, status: 'success' },\n    select: (mutation) => mutation.state.data,\n  })\n\n  return <button onClick={() => mutation.mutate('New Post')}>\n    Saved: {savedPosts.length}\n  </button>\n}",
+   "language": "tsx",
+   "explanation": "The hook observes successful mutations matching the same mutation key and returns their stored data."
+  },
+  "useCases": [
+   {
+    "title": "Track pending mutations",
+    "scenario": "Show a count or status indicator while background operations are running."
+   },
+   {
+    "title": "Coordinate cross-component UI",
+    "scenario": "Read variables from an operation initiated in another component."
+   },
+   {
+    "title": "Inspect successful results",
+    "scenario": "Collect results for a keyed mutation family after completion."
+   }
+  ],
+  "related": [
+   "useMutation",
+   "MutationCache",
+   "MutationFilters",
+   "QueryClient",
+   "mutationKey"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useMutationState do?",
+    "answer": "It is a React hook that provides access to all mutations in the MutationCache. Use filters to narrow the matches and select to transform each mutation into the value returned by the hook.",
+    "followUp": "How would you observe only pending work from another component? Add a mutationKey and status: 'pending' filter, then select mutation.state.variables."
+   },
+   {
+    "question": "How do filters and select work together?",
+    "answer": "The filters property identifies which mutations to include, and select maps each matching mutation to a result. If select is omitted, the mutation state is used by default.",
+    "followUp": "How can you obtain successful mutation results for one operation? Filter by its mutationKey and status: 'success', then select mutation.state.data."
+   },
+   {
+    "question": "Which QueryClient does the hook observe?",
+    "answer": "The optional queryClient parameter lets the hook use a custom QueryClient. Without it, the client from the nearest context is used.",
+    "followUp": "Why is a shared mutationKey useful? It lets a separate component identify mutations initiated elsewhere and inspect their variables or results."
+   }
+  ],
+  "keyPoints": [
+   "It observes the shared MutationCache, including mutations initiated outside the component using the hook.",
+   "Use MutationFilters to limit the mutation entries returned by the hook.",
+   "The optional select function projects each matching mutation into a value suited to the consuming component.",
+   "The options object combines matching criteria with an optional result transformation.",
+   "select runs separately for every matching mutation and contributes one array element per match.",
+   "To observe a particular mutation family, use the same mutationKey when creating and filtering mutations."
+  ],
+  "gotchas": [
+   "A mutationKey filter only matches mutations using the corresponding mutation key.",
+   "The result is an array, so multiple matching mutations can be returned rather than a single latest value."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useQueries": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/reference/functions/useQueries",
+  "sourceTitle": "useQueries | TanStack Query React Docs",
+  "summary": "Fetch a dynamically sized collection of queries in one hook call. Results follow input order unless combine transforms them into a single value.",
+  "explanation": "Pass an options object whose queries property is an array of query-option objects. The hook runs the variable-sized set and returns results aligned with that array, or a different value when combine is supplied; a custom QueryClient is passed as the hook's second argument.",
+  "syntax": "function useQueries<T, TCombinedResult>(options: object, queryClient?: QueryClient): TCombinedResult;",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "object",
+    "description": "An object containing the queries array to execute and optional combine and subscribed settings."
+   },
+   {
+    "name": "queryClient",
+    "type": "QueryClient",
+    "description": "Optional custom client used by the hook; provide it once at the top level."
+   }
+  ],
+  "returns": "TCombinedResult: without combine, an array of query results in input order; with combine, the value returned by combine.",
+  "example": {
+   "title": "Fetch a dynamic set of posts",
+   "code": "import { useQueries } from '@tanstack/react-query'\n\nasync function getPost(id: number) {\n  const response = await fetch(`/api/posts/${id}`)\n  if (!response.ok) throw new Error('Request failed')\n  return response.json() as Promise<{ id: number; title: string }>\n}\n\nexport function Posts({ ids }: { ids: number[] }) {\n  const results = useQueries({\n    queries: ids.map((id) => ({\n      queryKey: ['post', id],\n      queryFn: () => getPost(id),\n    })),\n  })\n\n  return <ul>{results.map(({ data, isPending }, index) => (\n    <li key={ids[index]}>{isPending ? 'Loading…' : data?.title}</li>\n  ))}</ul>\n}",
+   "language": "tsx",
+   "explanation": "Build one query-options object per post ID, then render the corresponding result in the input order."
+  },
+  "useCases": [
+   {
+    "title": "Dynamic parallel fetching",
+    "scenario": "A screen receives a variable-length list of IDs and must load one resource per ID."
+   },
+   {
+    "title": "Dependent dynamic queries",
+    "scenario": "A query first obtains IDs, after which one query is generated for each ID."
+   },
+   {
+    "title": "Combined result projection",
+    "scenario": "Several query states need to be exposed as one derived view model."
+   }
+  ],
+  "related": [
+   "useQuery",
+   "useInfiniteQuery",
+   "QueryClient",
+   "combine",
+   "subscribed",
+   "placeholderData"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why use useQueries instead of mapping useQuery calls?",
+    "answer": "useQueries accepts an object with a queries array, so the array can be created from changing input without calling hooks in a loop. Each element uses query options similar to useQuery, and the returned array preserves input order.",
+    "followUp": "How can the result avoid being an array? Supply combine in the top-level options; its returned value becomes the hook result."
+   },
+   {
+    "question": "What does useQueries return?",
+    "answer": "Without combine, the hook returns one result for every query, in the same order as the input queries. This makes each result addressable by the corresponding input item's position.",
+    "followUp": "What happens if combine is present? The hook returns combine's value rather than the individual result array."
+   },
+   {
+    "question": "How do you use a custom QueryClient with useQueries?",
+    "answer": "A custom QueryClient is provided once as the second argument to useQueries. It is not configured separately on each query.",
+    "followUp": "Where should subscribed be configured? At the top-level useQueries options, because it is not accepted per query."
+   }
+  ],
+  "keyPoints": [
+   "Use the hook when the number of queries is determined dynamically.",
+   "Each array element is a query-options object with the familiar useQuery-style configuration.",
+   "Set combine to project the collection of query results into one application-specific value.",
+   "The combined result uses structural sharing where possible to improve referential stability.",
+   "The top-level options contain queries plus optional combine and subscribed settings.",
+   "Without a combiner, consume the returned results by their original query position."
+  ],
+  "gotchas": [
+   "Do not put the top-level subscribed option inside an individual query; configure it at the useQueries options level.",
+   "Pass a custom QueryClient only as the hook's second argument, not inside each query object."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useQueryClient": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/reference/functions/useQueryClient",
+  "sourceTitle": "useQueryClient | TanStack Query React Docs",
+  "summary": "useQueryClient returns the active QueryClient for a component. Use it to invalidate queries or read and update cached data.",
+  "explanation": "Call useQueryClient inside a component to obtain the QueryClient supplied by the nearest QueryClientProvider, or pass a custom client explicitly. The returned client exposes cache operations such as invalidating queries, reading cached values, and writing cached values.",
+  "syntax": "function useQueryClient(queryClient?: QueryClient): QueryClient;",
+  "parameters": [
+   {
+    "name": "queryClient",
+    "type": "QueryClient",
+    "description": "Optional custom QueryClient. If omitted, the client from the nearest context is used."
+   }
+  ],
+  "returns": "QueryClient — the current QueryClient instance.",
+  "example": {
+   "title": "Invalidate cached posts",
+   "code": "import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query'\n\nconst queryClient = new QueryClient()\n\nfunction RefreshPosts() {\n  const client = useQueryClient()\n\n  return (\n    <button onClick={() => client.invalidateQueries({ queryKey: ['posts'] })}>\n      Refresh posts\n    </button>\n  )\n}\n\nexport function App() {\n  return (\n    <QueryClientProvider client={queryClient}>\n      <RefreshPosts />\n    </QueryClientProvider>\n  )\n}",
+   "language": "tsx",
+   "explanation": "The component obtains the nearest QueryClient and uses it to invalidate queries whose keys begin with posts."
+  },
+  "useCases": [
+   {
+    "title": "Refresh related data",
+    "scenario": "After a successful mutation, invalidate matching queries so active views can refresh."
+   },
+   {
+    "title": "Read cached data",
+    "scenario": "Inspect a cached value before deciding whether to fetch or update it."
+   },
+   {
+    "title": "Update cached data",
+    "scenario": "Apply an optimistic update or write a known server response into the cache."
+   },
+   {
+    "title": "Use a custom client",
+    "scenario": "Choose a particular cache when more than one QueryClient is available."
+   }
+  ],
+  "related": [
+   "QueryClient",
+   "QueryClientProvider",
+   "invalidateQueries",
+   "getQueryData",
+   "setQueryData"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useQueryClient return?",
+    "answer": "useQueryClient returns the current QueryClient instance. With no argument, it resolves the client from the nearest QueryClientProvider.",
+    "followUp": "What happens when the provider is absent? The hook throws unless a custom QueryClient is supplied."
+   },
+   {
+    "question": "What is the optional parameter used for?",
+    "answer": "Its optional argument is a QueryClient. Passing one selects that client; omitting it uses the nearest provider's client.",
+    "followUp": "Why pass a client explicitly? It lets a component operate on a deliberately selected cache rather than the context-resolved one."
+   },
+   {
+    "question": "How can the returned client be used?",
+    "answer": "The returned QueryClient can invalidate queries, read cached data, and update cached data through its cache-management methods. For example, invalidateQueries can target queries by queryKey.",
+    "followUp": "How would you refresh posts after a mutation? Call client.invalidateQueries({ queryKey: ['posts'] }) using the client returned by the hook."
+   }
+  ],
+  "keyPoints": [
+   "The hook gives a component the active QueryClient.",
+   "The signature accepts an optional QueryClient and returns a QueryClient.",
+   "Provide a client argument when the component must use a specific cache.",
+   "Without an argument, resolution comes from the nearest QueryClientProvider context.",
+   "The return value is the client instance itself, not query data or a query result."
+  ],
+  "gotchas": [
+   "Calling the hook without an explicit client requires a QueryClientProvider somewhere above the component; otherwise it throws."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useSuspenseInfiniteQuery": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/reference/functions/useSuspenseInfiniteQuery",
+  "sourceTitle": "useSuspenseInfiniteQuery | TanStack Query React Docs",
+  "summary": "Pages through infinite-query data with React Suspense. The initial fetch suspends until data is ready; later pages use standard infinite-query pagination controls.",
+  "explanation": "useSuspenseInfiniteQuery is the Suspense variant of useInfiniteQuery. It accepts the infinite-query configuration except enabled, throwOnError, and placeholderData; the initial unresolved request suspends, while the returned data is guaranteed to exist once the component renders.",
+  "syntax": "function useSuspenseInfiniteQuery<TQueryFnData, TError, TData, TQueryKey, TPageParam>(options: UseSuspenseInfiniteQueryOptions<TQueryFnData, TError, TData, TQueryKey, TPageParam>, queryClient?: QueryClient): UseSuspenseInfiniteQueryResult<TData, TError>;",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "UseSuspenseInfiniteQueryOptions<TQueryFnData, TError, TData, TQueryKey, TPageParam>",
+    "description": "Options matching useInfiniteQuery except enabled, throwOnError, and placeholderData."
+   },
+   {
+    "name": "queryClient",
+    "type": "QueryClient",
+    "description": "Optional custom client; otherwise the nearest context QueryClient is used."
+   }
+  ],
+  "returns": "UseSuspenseInfiniteQueryResult<TData, TError>: the useInfiniteQuery result with defined data, no isPlaceholderData, and status restricted to success or error.",
+  "example": {
+   "title": "Suspense infinite pagination",
+   "code": "import { useSuspenseInfiniteQuery } from '@tanstack/react-query'\n\nexport function Posts() {\n  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =\n    useSuspenseInfiniteQuery({\n      queryKey: ['posts'],\n      queryFn: async ({ pageParam }) => {\n        const response = await fetch(`/api/posts?page=${pageParam}`)\n        return response.json() as Promise<{ items: string[]; next?: number }>\n      },\n      initialPageParam: 1,\n      getNextPageParam: (lastPage) => lastPage.next,\n    })\n\n  return (\n    <>\n      {data.pages.flatMap((page) => page.items).map((item) => <p key={item}>{item}</p>)}\n      {hasNextPage && <button disabled={isFetchingNextPage} onClick={() => fetchNextPage()}>More</button>}\n    </>\n  )\n}",
+   "language": "tsx",
+   "explanation": "The initial request is handled by Suspense, so rendering proceeds with defined data after the boundary resolves. Subsequent pages use the normal infinite-query pagination controls and do not need an undefined-data branch."
+  },
+  "useCases": [
+   {
+    "title": "Suspense-backed feeds",
+    "scenario": "A feed initially needs a loading boundary but should append later pages through a Load more control."
+   },
+   {
+    "title": "Type-safe infinite data",
+    "scenario": "A paginated resource should expose defined data inside the rendered component."
+   },
+   {
+    "title": "Cached pagination",
+    "scenario": "Several pages should share one cache entry and be fetched through next-page parameters."
+   }
+  ],
+  "related": [
+   "useInfiniteQuery",
+   "useSuspenseQuery",
+   "useSuspenseQueries",
+   "UseSuspenseInfiniteQueryOptions",
+   "UseSuspenseInfiniteQueryResult",
+   "QueryClient"
+  ],
+  "since": "v5",
+  "interview": [
+   {
+    "question": "What does useSuspenseInfiniteQuery do?",
+    "answer": "It provides infinite-query pagination integrated with React Suspense. The first unresolved fetch suspends rendering, and the result exposes the usual infinite-query page data and pagination controls once available.",
+    "followUp": "What options are unavailable? The hook omits enabled, throwOnError, and placeholderData because Suspense owns loading and error-boundary behavior and cannot represent disabled or placeholder states."
+   },
+   {
+    "question": "How does its return value differ from useInfiniteQuery?",
+    "answer": "Its result resembles useInfiniteQuery, but data is guaranteed to be defined. isPlaceholderData is absent, and status is limited to success or error with corresponding derived flags.",
+    "followUp": "Why can data be treated as defined? The hook suspends before rendering while the initial data is unavailable, so the component renders only after a usable result exists."
+   },
+   {
+    "question": "How is the hook configured?",
+    "answer": "Use the same pagination configuration as useInfiniteQuery, including queryKey, queryFn, initialPageParam, and getNextPageParam. A queryClient argument may be supplied to target a custom client; otherwise the nearest context client is used.",
+    "followUp": "What concurrency limitation applies? Multiple suspenseful query calls suspend serially, and multiple infinite queries cannot be parallelized under Suspense."
+   }
+  ],
+  "keyPoints": [
+   "Configure it like useInfiniteQuery, but omit enabled, throwOnError, and placeholderData.",
+   "After suspension resolves, data is defined; the result omits isPlaceholderData and exposes only success or error status.",
+   "Pagination methods and page-oriented data follow the regular infinite-query result shape.",
+   "Pass a QueryClient as the optional second argument when the hook should use a client other than the nearest context client."
+  ],
+  "gotchas": [
+   "Request cancellation is not supported for this hook.",
+   "Multiple Suspense queries in one component run serially, so separate infinite-query calls can create a request waterfall.",
+   "Do not expect multiple infinite queries in one component to fetch in parallel under Suspense."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useSuspenseQuery": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/reference/functions/useSuspenseQuery",
+  "sourceTitle": "useSuspenseQuery | TanStack Query React Docs",
+  "summary": "Suspends rendering while a query is pending, letting Suspense and error boundaries handle loading and errors. Once rendering continues, the hook provides defined data without a pending status.",
+  "explanation": "useSuspenseQuery runs a query through React Suspense rather than exposing a disabled or loading state for component branching. The hook accepts the useQuery-style configuration with a few exclusions, suspends until data is available, and returns a result whose data is defined; errors are intended to be handled by an error boundary.",
+  "syntax": "function useSuspenseQuery<TQueryFnData, TError, TData, TQueryKey>(options: UseSuspenseQueryOptions<TQueryFnData, TError, TData, TQueryKey>, queryClient?: QueryClient): UseSuspenseQueryResult<TData, TError>;",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "UseSuspenseQueryOptions<TQueryFnData, TError, TData, TQueryKey>",
+    "description": "Configuration object following useQuery, except for throwOnError, enabled, and placeholderData; queryFn cannot be skipToken unless a default query function is defined."
+   },
+   {
+    "name": "queryClient",
+    "type": "QueryClient",
+    "description": "Optional client used to execute the query."
+   }
+  ],
+  "returns": "UseSuspenseQueryResult<TData, TError>: the useQuery result shape with defined data, no isPlaceholderData, and status limited to success or error.",
+  "example": {
+   "title": "Suspense query with guaranteed data",
+   "code": "import { QueryClient, QueryClientProvider, useSuspenseQuery } from '@tanstack/react-query'\n\nconst queryClient = new QueryClient()\n\nfunction Todos() {\n  const { data } = useSuspenseQuery({\n    queryKey: ['todos'],\n    queryFn: async () => {\n      const response = await fetch('/api/todos')\n      if (!response.ok) throw new Error('Request failed')\n      return response.json() as Promise<{ id: number; title: string }[]>\n    },\n  })\n\n  return <ul>{data.map(todo => <li key={todo.id}>{todo.title}</li>)}</ul>\n}\n\nexport function App() {\n  return (\n    <QueryClientProvider client={queryClient}>\n      <Todos />\n    </QueryClientProvider>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Reads guaranteed data directly while a surrounding Suspense boundary handles the pending state."
+  },
+  "useCases": [
+   {
+    "title": "Data-dependent rendering",
+    "scenario": "A component should render only when its required remote data is ready."
+   },
+   {
+    "title": "Suspense-based loading",
+    "scenario": "A screen needs centralized pending UI rather than local loading branches."
+   },
+   {
+    "title": "Boundary-managed errors",
+    "scenario": "Query failures should be routed to a shared recovery boundary."
+   }
+  ],
+  "related": [
+   "useQuery",
+   "useSuspenseInfiniteQuery",
+   "useSuspenseQueries",
+   "Suspense",
+   "QueryClient",
+   "QueryClientProvider"
+  ],
+  "since": "v5",
+  "interview": [
+   {
+    "question": "How does useSuspenseQuery change loading-state handling?",
+    "answer": "useSuspenseQuery is the Suspense-specific query hook. Instead of requiring the component to branch on pending status, it suspends rendering until the query can provide data; a Suspense fallback handles that pending UI.",
+    "followUp": "What does the hook return after rendering resumes? Its data is guaranteed to be defined, while the result omits isPlaceholderData and has only success or error status."
+   },
+   {
+    "question": "Which useQuery options are unavailable?",
+    "answer": "Its options largely match useQuery, but throwOnError, enabled, and placeholderData are excluded. The query must therefore be configured as an active Suspense query rather than conditionally disabled through enabled.",
+    "followUp": "Can skipToken be used as queryFn? No. Suspense hooks cannot render a disabled state, so a query function must be supplied, unless a default query function exists."
+   },
+   {
+    "question": "Where are loading and error states handled?",
+    "answer": "Pending and error handling move outside the component: React Suspense supplies the fallback for pending work, and an error boundary catches errors. The component can consequently focus on rendering its successful data.",
+    "followUp": "What limitation applies to request cancellation? Cancellation does not work with useSuspenseQuery, so abort-dependent query behavior should not be assumed."
+   }
+  ],
+  "keyPoints": [
+   "Configuration follows useQuery in general, with documented exceptions for throwOnError, enabled, and placeholderData.",
+   "After the component renders, the returned data has a defined value, so success-path code does not need a loading-based data guard.",
+   "The result does not expose a pending status; its status is limited to success or error, with corresponding derived flags.",
+   "Suspense replaces in-component pending and error branching with a Suspense fallback and an error boundary.",
+   "A parent Suspense component supplies pending UI through fallback, while an error boundary handles query failures."
+  ],
+  "gotchas": [
+   "A disabled query function is not supported: the query function cannot be skipToken, because Suspense hooks cannot represent a disabled state.",
+   "Do not rely on aborting an in-flight request through this hook; the documentation explicitly notes that cancellation is unavailable."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Mutations::Invalidation after a write": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/invalidations-from-mutations",
+  "sourceTitle": "Invalidations from Mutations",
+  "summary": "After a mutation succeeds, invalidate only the related query keys through onSuccess. This marks matching cached data stale and can refetch active queries without refreshing unrelated data.",
+  "explanation": "Register an onSuccess callback on the mutation and call queryClient.invalidateQueries with the query key whose cached data the write makes outdated. The key filters which queries are affected; matching active queries may refetch in the background, while invalidation also marks them stale regardless of staleTime. Await the call when mutation completion should wait for the refresh work.",
+  "syntax": "queryClient.invalidateQueries({ queryKey: ['todos'] })",
+  "parameters": [
+   {
+    "name": "filters",
+    "type": "InvalidateQueryFilters",
+    "description": "Options object containing queryKey and optional matching controls, passed to QueryClient.invalidateQueries."
+   }
+  ],
+  "returns": "invalidateQueries returns a Promise; awaiting it coordinates completion of the invalidation and any resulting refetch work.",
+  "example": {
+   "title": "Invalidate the affected query after a mutation",
+   "code": "import { useMutation, useQueryClient } from '@tanstack/react-query'\n\nasync function addTodo(title: string) {\n  const response = await fetch('/api/todos', {\n    method: 'POST',\n    headers: { 'content-type': 'application/json' },\n    body: JSON.stringify({ title }),\n  })\n  return response.json()\n}\n\nexport function AddTodo() {\n  const queryClient = useQueryClient()\n  const mutation = useMutation({\n    mutationFn: addTodo,\n    onSuccess: async () => {\n      await queryClient.invalidateQueries({ queryKey: ['todos'] })\n    },\n  })\n\n  return <button onClick={() => mutation.mutate('Write docs')}>Add</button>\n}",
+   "language": "tsx",
+   "explanation": "After the mutation succeeds, only the related todos queries are invalidated, and awaiting the callback keeps the mutation pending until that work finishes."
+  },
+  "useCases": [
+   {
+    "title": "Refresh a changed collection",
+    "scenario": "A create, update, or delete operation changes the list displayed by a todos query."
+   },
+   {
+    "title": "Invalidate several related resources",
+    "scenario": "One write affects multiple server-backed resources, such as todos and reminders."
+   },
+   {
+    "title": "Coordinate mutation completion",
+    "scenario": "The mutation result should not be considered complete until dependent data is refreshed."
+   }
+  ],
+  "related": [
+   "useMutation",
+   "useQueryClient",
+   "QueryClient.invalidateQueries",
+   "queryKey",
+   "onSuccess",
+   "Promise.all"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How should a successful mutation update related cached queries?",
+    "answer": "Use the mutation's onSuccess callback and call queryClient.invalidateQueries with the related query key. This marks matching cached queries stale and can refetch active observers in the background.",
+    "followUp": "How do you ensure mutation completion waits for invalidation? Return or await the invalidateQueries promise from an async onSuccess callback."
+   },
+   {
+    "question": "How do you choose which queries to invalidate?",
+    "answer": "Pass a queryKey filter such as { queryKey: ['todos'] } to target the todo queries made stale by the write. Separate calls can target multiple related keys.",
+    "followUp": "How would you invalidate two resources together? Await Promise.all of the two invalidateQueries calls so both operations are coordinated."
+   },
+   {
+    "question": "What does query invalidation do beyond triggering a refetch?",
+    "answer": "Invalidation marks matching queries stale even if staleTime would otherwise keep them fresh. Active matching queries may refetch in the background, so the UI can receive updated data without refetching every query.",
+    "followUp": "What should happen to inactive matching queries? They are marked stale, but the page does not need an immediate active-observer refetch."
+   }
+  ],
+  "keyPoints": [
+   "A successful write commonly leaves related cached queries outdated, so connect mutation success to targeted invalidation.",
+   "The standard integration point is the mutation's onSuccess option calling the QueryClient's invalidateQueries method.",
+   "Use query keys to select the resource views affected by the mutation instead of refreshing the entire cache.",
+   "Return the invalidation promise when callers should observe mutation completion only after related data has been refreshed.",
+   "Invalidation can be attached to any available mutation callback when that lifecycle point matches the application's consistency needs."
+  ],
+  "gotchas": [
+   "If onSuccess returns a promise, the mutation remains pending until the invalidation work completes.",
+   "Invalidate each affected key explicitly, or coordinate several invalidation promises with Promise.all rather than invalidating unrelated queries."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Mutations::Mutation keys and scoping": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/reference/interfaces/MutationOptions",
+  "sourceTitle": "MutationOptions",
+  "summary": "Use mutationKey to identify and observe related writes or inherit mutation defaults. Use a shared scope.id when those writes must execute one at a time in start order.",
+  "explanation": "Set mutationKey to a serializable array when a write must be identifiable for defaults, state lookup, or activity counting. Add the same scope.id to mutations that must not run concurrently; mutations without a scope start immediately, while mutations sharing an ID queue serially in the order they were started.",
+  "syntax": "useMutation({ mutationKey?: readonly unknown[], scope?: MutationScope, mutationFn: (variables, context) => Promise<TData> })",
+  "parameters": [
+   {
+    "name": "mutationKey",
+    "type": "readonly unknown[] | undefined",
+    "description": "Serializable array identifying the mutation; used for matching defaults and locating mutations."
+   },
+   {
+    "name": "scope",
+    "type": "MutationScope | undefined",
+    "description": "Execution-control object; mutations with the same id run serially."
+   }
+  ],
+  "returns": "A mutation configured with an optional identity key and optional execution scope; the mutation function itself must return a promise resolving to the mutation data.",
+  "example": {
+   "title": "Identify and serialize saves",
+   "code": "const savePost = useMutation({\n  mutationKey: ['posts', 'save'],\n  scope: { id: 'posts-save' },\n  mutationFn: async (post: Post) => {\n    const response = await fetch(`/api/posts/${post.id}`, {\n      method: 'PUT',\n      headers: { 'content-type': 'application/json' },\n      body: JSON.stringify(post),\n    })\n    if (!response.ok) throw new Error('Save failed')\n    return response.json()\n  },\n})",
+   "language": "typescript",
+   "explanation": "The key makes this mutation identifiable to mutation-state and activity queries; the shared scope ID makes concurrent saves wait and execute in start order."
+  },
+  "useCases": [
+   {
+    "title": "Track related mutations",
+    "scenario": "Show a global saving indicator or count related in-flight writes."
+   },
+   {
+    "title": "Inherit mutation defaults",
+    "scenario": "Apply shared behavior to a family of mutations through registered defaults."
+   },
+   {
+    "title": "Serialize writes",
+    "scenario": "Prevent overlapping updates to the same resource or workflow."
+   },
+   {
+    "title": "Preserve concurrency",
+    "scenario": "Allow unrelated writes to proceed immediately without waiting."
+   }
+  ],
+  "related": [
+   "MutationKey",
+   "MutationOptions",
+   "useMutationState",
+   "queryClient.isMutating",
+   "queryClient.setMutationDefaults",
+   "MutationScope"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is mutationKey used for?",
+    "answer": "mutationKey is a serializable array used to identify and filter mutations. It enables matching with useMutationState or queryClient.isMutating and is also needed to inherit matching defaults.",
+    "followUp": "How would you inspect only mutations for one operation? Use a mutation-key filter with the relevant key, through APIs such as queryClient.isMutating or useMutationState."
+   },
+   {
+    "question": "How does scope change mutation execution?",
+    "answer": "scope controls whether a mutation can run alongside others. Mutations with the same scope.id execute serially, preserving their start order; a mutation without a scope starts immediately.",
+    "followUp": "What happens when two different operations share a scope ID? They are serialized together, so scope IDs should represent exactly the writes that must be ordered."
+   },
+   {
+    "question": "What is the difference between mutationKey and scope?",
+    "answer": "A key and a scope solve different problems. mutationKey provides identity for defaults and observation, while scope.id controls execution ordering and serialization.",
+    "followUp": "Can assigning the same mutationKey serialize concurrent calls? No; the documentation assigns serialization behavior to shared scope.id, not to mutationKey."
+   }
+  ],
+  "keyPoints": [
+   "mutationKey identifies a mutation with a serializable array.",
+   "A key lets application code find related mutations for state inspection or in-flight counts.",
+   "Mutation options place identity and execution control alongside the mutation function and lifecycle settings.",
+   "scope determines whether a mutation runs concurrently or waits.",
+   "A shared scope ID creates a FIFO-like execution order for those mutation attempts."
+  ],
+  "gotchas": [
+   "A mutation key is not required for every mutation, but omitting it prevents inheritance of matching mutation defaults.",
+   "Scope serialization is based on the scope ID, so accidentally reusing an ID can queue unrelated writes.",
+   "Naming a mutation with mutationKey alone does not serialize it; serialization requires scope."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Mutations::onMutate, onError, onSettled": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/optimistic-updates",
+  "sourceTitle": "Optimistic Updates | TanStack Query React Docs",
+  "summary": "Use onMutate for an optimistic cache update and return rollback context. Restore it in onError, then use onSettled to invalidate the query and resynchronize after success or failure.",
+  "explanation": "Use onMutate before the mutation to stop conflicting reads, capture the previous cache value, and apply an optimistic change. Its returned result is supplied to onError for rollback, while onSettled runs after success or failure to invalidate and resynchronize the query.",
+  "syntax": "useMutation({ mutationFn, onMutate, onError, onSettled })",
+  "parameters": [
+   {
+    "name": "variables",
+    "type": "TVariables",
+    "description": "Mutation variables passed to mutate and mutationFn."
+   },
+   {
+    "name": "error",
+    "type": "TError",
+    "description": "The error produced when the mutation fails."
+   },
+   {
+    "name": "data",
+    "type": "TData",
+    "description": "The successful mutation result, or undefined on failure."
+   },
+   {
+    "name": "onMutateResult",
+    "type": "unknown",
+    "description": "The value returned by onMutate, used for rollback context."
+   }
+  ],
+  "returns": "onMutate may return a rollback value; onError and onSettled receive that value. The callbacks may return void or an awaited value.",
+  "example": {
+   "title": "Optimistic todo update with rollback",
+   "code": "import { useMutation, useQueryClient } from '@tanstack/react-query'\n\ntype Todo = { id: number; title: string }\n\nasync function updateTodo(todo: Todo): Promise<Todo> {\n  const response = await fetch(`/api/todos/${todo.id}`, {\n    method: 'PUT',\n    headers: { 'content-type': 'application/json' },\n    body: JSON.stringify(todo),\n  })\n  if (!response.ok) throw new Error('Update failed')\n  return response.json()\n}\n\nexport function useUpdateTodo() {\n  const queryClient = useQueryClient()\n  return useMutation({\n    mutationFn: updateTodo,\n    onMutate: async (todo) => {\n      await queryClient.cancelQueries({ queryKey: ['todos'] })\n      const previous = queryClient.getQueryData<Todo[]>(['todos'])\n      queryClient.setQueryData<Todo[]>(['todos'], (items = []) =>\n        items.map(item => item.id === todo.id ? todo : item),\n      )\n      return { previous }\n    },\n    onError: (_error, _todo, context) => {\n      queryClient.setQueryData(['todos'], context?.previous)\n    },\n    onSettled: () => {\n      queryClient.invalidateQueries({ queryKey: ['todos'] })\n    },\n  })\n}",
+   "language": "typescript",
+   "explanation": "This mutation cancels competing todo reads, snapshots and updates the cached list, restores the snapshot on failure, and invalidates the list after either outcome."
+  },
+  "useCases": [
+   {
+    "title": "Optimistic UI",
+    "scenario": "A mutation updates cached data immediately while the server request is pending."
+   },
+   {
+    "title": "Rollback on error",
+    "scenario": "A failed mutation must restore the exact cache snapshot captured before the update."
+   },
+   {
+    "title": "Resynchronize after settlement",
+    "scenario": "Queries should reflect authoritative server data after either outcome."
+   },
+   {
+    "title": "Cancel competing reads",
+    "scenario": "A read could overwrite an optimistic cache change while the mutation is active."
+   }
+  ],
+  "related": [
+   "useMutation",
+   "mutationFn",
+   "onSuccess",
+   "invalidateQueries",
+   "refetching queries",
+   "optimistic updates",
+   "queryClient.setQueryData"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Return rollback context from onMutate; TanStack Query passes it to onError and onSettled.",
+   "For cache-based optimistic updates, use onMutate; alternatively, render the mutation variables while the request is pending.",
+   "Use onSettled for shared cleanup or resynchronization instead of duplicating logic in onError and onSuccess.",
+   "onSettled receives either the resulting data or error and is suitable for final cache synchronization."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Mutations::Optimistic updates": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/optimistic-updates",
+  "sourceTitle": "Optimistic Updates | TanStack Query React Docs",
+  "summary": "Optimistic updates show the expected mutation result immediately. Snapshot the cache first so a failed mutation can restore it, then invalidate the query after settlement.",
+  "explanation": "An optimistic mutation updates the query cache before the server confirms the write. In onMutate, cancel related refetches, capture the previous value, and write the expected result; return that snapshot as context. If the mutation fails, onError restores it, while onSettled invalidates the query so the cache can reconcile with the server.",
+  "syntax": "useMutation({ mutationFn, onMutate, onError, onSettled })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Optimistic cache update with rollback",
+   "code": "import { useMutation, useQueryClient } from '@tanstack/react-query'\n\ntype Todo = { id: number; title: string }\n\nasync function addTodo(todo: Todo) {\n  const response = await fetch('/api/todos', {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify(todo),\n  })\n  if (!response.ok) throw new Error('Request failed')\n  return response.json()\n}\n\nexport function AddTodo() {\n  const queryClient = useQueryClient()\n  const mutation = useMutation({\n    mutationFn: addTodo,\n    onMutate: async (newTodo) => {\n      await queryClient.cancelQueries({ queryKey: ['todos'] })\n      const previousTodos = queryClient.getQueryData<Todo[]>(['todos'])\n      queryClient.setQueryData<Todo[]>(['todos'], (old = []) => [...old, newTodo])\n      return { previousTodos }\n    },\n    onError: (_error, _newTodo, context) => {\n      queryClient.setQueryData(['todos'], context?.previousTodos)\n    },\n    onSettled: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),\n  })\n\n  return <button onClick={() => mutation.mutate({ id: Date.now(), title: 'Learn Query' })}>Add</button>\n}",
+   "language": "tsx",
+   "explanation": "Cancels competing refetches, snapshots the cached list, applies the new item immediately, restores the snapshot on failure, and invalidates the query after settlement."
+  },
+  "useCases": [
+   {
+    "title": "Instant list additions",
+    "scenario": "A user adds an item to a cached list and should see it immediately while the server request runs."
+   },
+   {
+    "title": "Rollback on rejection",
+    "scenario": "A write may fail and the previous cached state must be restored without losing the user's current view."
+   },
+   {
+    "title": "Cross-component optimistic UI",
+    "scenario": "The mutation and query are in separate components and the UI needs mutation state elsewhere."
+   }
+  ],
+  "related": [
+   "useMutation",
+   "onMutate",
+   "onError",
+   "onSettled",
+   "queryClient.cancelQueries",
+   "queryClient.getQueryData",
+   "queryClient.setQueryData",
+   "queryClient.invalidateQueries"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you implement an optimistic cache update?",
+    "answer": "Use onMutate to cancel relevant queries, snapshot the current cached value, and write the expected result with setQueryData. Return the snapshot as context, restore it in onError, and invalidate the query in onSettled.",
+    "followUp": "Why cancel refetches first? An in-flight refetch can finish after the optimistic write and overwrite it with older data."
+   },
+   {
+    "question": "How does rollback context flow through the mutation lifecycle?",
+    "answer": "The value returned by onMutate is passed to onError and onSettled as the last argument. It commonly contains the previous query data needed for rollback.",
+    "followUp": "What if the snapshot is undefined? Guard the rollback context and let the final invalidation reconcile the cache with the server."
+   },
+   {
+    "question": "Why invalidate after an optimistic mutation?",
+    "answer": "After success or failure, invalidate the affected query in onSettled. This triggers synchronization with the server and corrects differences between the optimistic cache and authoritative data.",
+    "followUp": "When might invalidation alone be insufficient? If the server cannot be refetched after an error, restore the snapshot directly in onError."
+   }
+  ],
+  "keyPoints": [
+   "The documented approaches are updating the cache through onMutate or rendering returned mutation variables directly in the UI.",
+   "Use onMutate for cache-based optimism and return rollback data from the callback.",
+   "Capture the existing query data before applying the optimistic change.",
+   "Write the expected post-mutation value into the cache immediately.",
+   "Restore the captured value in onError when the server rejects the mutation.",
+   "Invalidate the affected query after settlement to reconcile the optimistic cache with server data."
+  ],
+  "gotchas": [
+   "Cancel active refetches before changing the cache, or a competing response can replace the optimistic result.",
+   "A refetch is usually enough to restore the server state, but rollback is needed when refetching cannot reliably recover from the failure.",
+   "Return the snapshot from onMutate so it is available as context to the error and settlement callbacks."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Mutations::Retry semantics for writes": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/mutations",
+  "sourceTitle": "Mutations | TanStack Query React Docs",
+  "summary": "TanStack Query does not retry mutations by default because writes can create server-side effects. Enable bounded retries only when repeating the specific write is safe.",
+  "explanation": "Mutations perform server-side effects such as creating, updating, or deleting data, so TanStack Query leaves mutation retries disabled by default. Enable retry only when repeating the operation is safe for the specific write, and use a bounded policy rather than treating it like an ordinary read.",
+  "syntax": "useMutation({ mutationFn, retry })",
+  "parameters": [
+   {
+    "name": "retry",
+    "type": "boolean | number | function",
+    "description": "Controls whether a failed mutation is retried; the page demonstrates a finite numeric value."
+   }
+  ],
+  "returns": "A mutation object/function with mutation state and execution methods; the page does not specify a standalone return signature.",
+  "example": {
+   "title": "Disable retries for a non-idempotent write",
+   "code": "const mutation = useMutation({\n  mutationFn: addTodo,\n  retry: 0,\n})\n\nmutation.mutate({ title: \"Ship docs\" })",
+   "language": "typescript",
+   "explanation": "Disables automatic retries for a write whose repeated execution could create duplicate server-side effects."
+  },
+  "useCases": [
+   {
+    "title": "Keep retries disabled for non-idempotent writes",
+    "scenario": "Creating a record or triggering an external action where a second request could duplicate the effect."
+   },
+   {
+    "title": "Enable bounded retries for retry-safe writes",
+    "scenario": "A write endpoint is designed to tolerate repeated requests, such as through idempotency keys."
+   },
+   {
+    "title": "Replay offline writes in order",
+    "scenario": "A queued mutation fails while the device is offline and must resume after reconnection."
+   }
+  ],
+  "related": [
+   "useMutation",
+   "mutationFn",
+   "retry",
+   "offline mutations"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why does TanStack Query not retry mutations by default?",
+    "answer": "Mutations default to no retries because they commonly create, update, or delete data and can cause server-side effects. Retrying such an operation is only appropriate when repeating it is safe for that API.",
+    "followUp": "How would you configure a bounded retry? Set retry to a finite number, such as 3, and ensure the mutation endpoint tolerates duplicate attempts."
+   },
+   {
+    "question": "How can mutation retries be enabled selectively?",
+    "answer": "Set the mutation's retry option to a number, boolean, or function. A finite number limits attempts, while a function can decide based on the failure count and error.",
+    "followUp": "What should the function consider? It should distinguish transient failures from permanent validation or authorization errors and return false for the latter."
+   },
+   {
+    "question": "What happens to failed offline mutations after reconnecting?",
+    "answer": "Mutations that fail while offline can be retried after reconnection, and TanStack Query preserves their execution order. This matters when later writes depend on earlier writes.",
+    "followUp": "Why can order matter? Replaying an update before its creation or preceding state change could produce an invalid or inconsistent result."
+   }
+  ],
+  "keyPoints": [
+   "A mutation is a write-oriented operation: it commonly creates, updates, or deletes data and may trigger effects on the server.",
+   "Mutation retries are opt-in, unlike the usual retry behavior associated with reads.",
+   "Use the retry option when the particular write is safe to execute again.",
+   "Offline failures are replayed in submission order after connectivity is restored."
+  ],
+  "gotchas": [
+   "Do not assume a failed mutation will be retried automatically; the default is no retry.",
+   "Offline mutations are a separate case: when retries are configured and connectivity returns, queued mutations preserve their original order."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Pagination & streaming::Bidirectional infinite lists": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/infinite-queries",
+  "sourceTitle": "Infinite Queries",
+  "summary": "TanStack Query supports infinite lists that load pages at both ends. Configure boundary-specific page-parameter callbacks, then use the matching fetch functions and state flags.",
+  "explanation": "An infinite query can grow in both directions by deriving a cursor from the first page for older data and from the last page for newer data. TanStack Query passes the selected page parameter to the query function; direction-specific availability flags and fetching states let the UI decide when and how to load each side.",
+  "syntax": "useInfiniteQuery({ queryKey, queryFn, initialPageParam, getNextPageParam, getPreviousPageParam })",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "UseInfiniteQueryOptions",
+    "description": "Options object containing queryKey, queryFn, initialPageParam, getNextPageParam, and getPreviousPageParam."
+   },
+   {
+    "name": "firstPage, allPages",
+    "type": "unknown, unknown[]",
+    "description": "The first cached page and all pages, used to derive the preceding cursor."
+   },
+   {
+    "name": "lastPage, allPages",
+    "type": "unknown, unknown[]",
+    "description": "The last cached page and all pages, used to derive the following cursor."
+   }
+  ],
+  "returns": "An infinite-query result containing cached pages, direction-specific fetch functions, availability booleans, and fetching-state booleans.",
+  "example": {
+   "title": "Bidirectional infinite query",
+   "code": "import { useInfiniteQuery } from '@tanstack/react-query'\n\nconst query = useInfiniteQuery({\n  queryKey: ['projects'],\n  queryFn: ({ pageParam }) => fetch(`/api/projects?cursor=${pageParam}`).then(r => r.json()),\n  initialPageParam: 0,\n  getNextPageParam: (lastPage) => lastPage.nextCursor,\n  getPreviousPageParam: (firstPage) => firstPage.prevCursor,\n})\n\nquery.fetchPreviousPage()\nquery.fetchNextPage()",
+   "language": "typescript",
+   "explanation": "Configure both cursor directions, then call the corresponding fetch function to extend the cached list at either end."
+  },
+  "useCases": [
+   {
+    "title": "Growing timeline",
+    "scenario": "A chat or activity timeline where users scroll backward into history while new entries arrive at the newest end."
+   },
+   {
+    "title": "Two-sided cursor navigation",
+    "scenario": "A cursor-based catalog that supports loading earlier and later result windows from a central page."
+   },
+   {
+    "title": "Live log exploration",
+    "scenario": "A log viewer that appends recent records while allowing historical records to be retrieved on demand."
+   }
+  ],
+  "related": [
+   "useInfiniteQuery",
+   "fetchNextPage",
+   "fetchPreviousPage",
+   "getNextPageParam",
+   "getPreviousPageParam",
+   "hasNextPage",
+   "hasPreviousPage",
+   "isFetchingNextPage"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you configure a bidirectional infinite query?",
+    "answer": "Define both getNextPageParam and getPreviousPageParam. The first derives the cursor from the first cached page, while the second derives it from the last cached page; fetchPreviousPage and fetchNextPage then load in those directions.",
+    "followUp": "How should a UI avoid offering unavailable actions? Use hasPreviousPage and hasNextPage, and pair them with the matching fetching-state flags before triggering another request."
+   },
+   {
+    "question": "How does TanStack Query know which page to request?",
+    "answer": "The query function receives the page parameter selected by the pagination callbacks. Each callback returns the information needed for its respective next request, commonly a cursor from the boundary page.",
+    "followUp": "What happens when a callback returns no cursor? TanStack Query treats undefined or null as the end of that direction, so no additional page is available there."
+   },
+   {
+    "question": "Which state should control older-page controls?",
+    "answer": "Use hasPreviousPage to determine whether an earlier page can be loaded and isFetchingPreviousPage to represent that operation in progress. The analogous forward properties are hasNextPage and isFetchingNextPage.",
+    "followUp": "Why track the fetching state separately from availability? A direction may be available but already loading, so the UI can disable duplicate actions and show the correct progress indicator."
+   }
+  ],
+  "keyPoints": [
+   "Older-page loading uses getPreviousPageParam to calculate the cursor, fetchPreviousPage to request it, and the matching state properties to drive controls.",
+   "The two page-parameter callbacks both report whether another page exists and provide the value needed to fetch it.",
+   "The cursor returned by a pagination callback is delivered to the query function through its page parameter.",
+   "hasPreviousPage becomes true when the previous-page callback returns a defined value.",
+   "hasNextPage indicates that the forward callback supplied another page parameter."
+  ],
+  "gotchas": [
+   "Use the direction-specific fetch function; do not treat a bidirectional list as a single forward-only operation.",
+   "A bidirectional setup still needs forward pagination; configuring only the previous-page callback is insufficient."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Pagination & streaming::Cancellation": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/query-cancellation",
+  "sourceTitle": "Query Cancellation | TanStack Query React Docs",
+  "summary": "TanStack Query gives each query function an AbortSignal. Pass it to fetch or another abort-aware client so a superseded or inactive request can stop and the query returns to its previous state.",
+  "explanation": "TanStack Query supplies each query function with an AbortSignal. When a query becomes out-of-date or inactive, the signal is aborted; pass it to an abort-aware operation such as fetch so the underlying request is cancelled and the query can revert to its previous state.",
+  "syntax": "queryFn: async ({ signal }) => fetch(url, { signal })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Abort a superseded page request",
+   "code": "import { useQuery } from '@tanstack/react-query'\n\nexport function Todos({ page }: { page: number }) {\n  const query = useQuery({\n    queryKey: ['todos', page],\n    queryFn: async ({ signal }) => {\n      const response = await fetch(`/api/todos?page=${page}`, { signal })\n      if (!response.ok) throw new Error('Request failed')\n      return response.json()\n    },\n  })\n\n  return <pre>{JSON.stringify(query.data ?? null)}</pre>\n}",
+   "language": "tsx",
+   "explanation": "Passing the received signal to fetch lets TanStack Query abort the request when the query becomes out-of-date or inactive."
+  },
+  "useCases": [
+   {
+    "title": "Stop stale pagination requests",
+    "scenario": "A user changes page or filter before the previous response arrives."
+   },
+   {
+    "title": "Release work for inactive queries",
+    "scenario": "A component becomes inactive while its network operation is still pending."
+   },
+   {
+    "title": "Cancel from application code",
+    "scenario": "An application needs an explicit cancel action for a query."
+   }
+  ],
+  "related": [
+   "AbortSignal",
+   "queryFn",
+   "queryClient.cancelQueries",
+   "fetch",
+   "useQuery"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you cancel a superseded request?",
+    "answer": "The query function receives an AbortSignal in its context. Passing that signal to fetch connects TanStack Query's cancellation lifecycle to the network request, so an out-of-date query can abort it.",
+    "followUp": "What happens if the signal is ignored? The promise is not automatically cancelled; the result may still be stored in the cache after resolution."
+   },
+   {
+    "question": "When is the signal aborted, and what must the query function do?",
+    "answer": "TanStack Query aborts the signal when the query becomes out-of-date or inactive. An abort-aware client, such as fetch, must receive that signal for the request itself to stop.",
+    "followUp": "Why might cancellation appear ineffective? The request client may not consume AbortSignal, or the code may use a Suspense hook for which the documented cancellation behavior does not work."
+   },
+   {
+    "question": "How can a query be cancelled manually?",
+    "answer": "Manual cancellation uses queryClient.cancelQueries({ queryKey }). If the query function consumed the supplied signal, TanStack Query also cancels the promise and reverts the query to its previous state.",
+    "followUp": "What is the state consequence? Cancellation restores the query's previous state rather than treating the cancelled result as a successful new value."
+   }
+  ],
+  "keyPoints": [
+   "Read signal from the query-function context.",
+   "A superseded or inactive query triggers the signal's abort state.",
+   "Cancellation is opt-in at the operation level: handle the signal within the query function.",
+   "Using the signal makes the underlying promise and query participate in cancellation.",
+   "After cancellation, query state returns to its prior state.",
+   "Use cancelQueries with the query key for imperative cancellation."
+  ],
+  "gotchas": [
+   "Unmounting or losing observers does not cancel the operation unless the query function consumes the signal.",
+   "Do not rely on this cancellation behavior with the documented Suspense hooks."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Pagination & streaming::Paginated queries": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/paginated-queries",
+  "sourceTitle": "Paginated / Lagged Queries | TanStack Query React Docs",
+  "summary": "Use placeholderData: keepPreviousData to keep the last successful page visible while a changed page query loads. When the new result arrives, TanStack Query swaps it in without an empty-state flash.",
+  "explanation": "Include the page in the query key so each page is cached separately, then set placeholderData to keepPreviousData. TanStack Query supplies the last successful page as placeholder data during the transition and replaces it when the requested page arrives; isPlaceholderData identifies that temporary state.",
+  "syntax": "useQuery({ queryKey: ['projects', page], queryFn: () => fetchProjects(page), placeholderData: keepPreviousData })",
+  "parameters": [
+   {
+    "name": "page",
+    "type": "number or cursor",
+    "description": "The page or cursor that identifies the requested page and forms part of the query key."
+   },
+   {
+    "name": "queryFn",
+    "type": "QueryFunction",
+    "description": "The function that retrieves data for the selected page."
+   },
+   {
+    "name": "placeholderData",
+    "type": "PlaceholderDataFunction or keepPreviousData",
+    "description": "Placeholder value or function; use keepPreviousData to retain the prior page during a key transition."
+   }
+  ],
+  "returns": "A query result containing the current page data, loading or error state, fetching state, and isPlaceholderData indicator.",
+  "example": {
+   "title": "Keep the current page visible",
+   "code": "import { keepPreviousData, useQuery } from '@tanstack/react-query'\n\nfunction Projects({ page }: { page: number }) {\n  const query = useQuery({\n    queryKey: ['projects', page],\n    queryFn: () => fetch(`/api/projects?page=${page}`).then(r => r.json()),\n    placeholderData: keepPreviousData,\n    staleTime: 5000,\n  })\n\n  return <pre>{JSON.stringify(query.data, null, 2)}</pre>\n}",
+   "language": "tsx",
+   "explanation": "The page remains rendered while the query for the changed page is in flight."
+  },
+  "useCases": [
+   {
+    "title": "Page-number navigation",
+    "scenario": "A numbered project list loads another page without clearing the current rows."
+   },
+   {
+    "title": "Cursor pagination",
+    "scenario": "A cursor-based feed changes its query key while retaining visible results until the next cursor response arrives."
+   },
+   {
+    "title": "Fast back-navigation",
+    "scenario": "Users revisit pages that were already fetched and see cached content immediately while it refreshes."
+   }
+  ],
+  "related": [
+   "placeholderData",
+   "keepPreviousData",
+   "isPlaceholderData",
+   "useInfiniteQuery",
+   "queryKey",
+   "staleTime"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you prevent a pagination UI from flashing empty content between pages?",
+    "answer": "Put the page number in queryKey and use placeholderData: keepPreviousData. The previous successful result stays visible while the new key is being fetched, then the new result replaces it.",
+    "followUp": "How can the UI distinguish old data from the requested page? Check isPlaceholderData; it indicates that the currently displayed result is placeholder data."
+   },
+   {
+    "question": "What does changing the page query key accomplish?",
+    "answer": "Each page is represented by a distinct query key, so TanStack Query caches pages independently. Returning to a cached page can therefore display that page immediately while it is refreshed in the background.",
+    "followUp": "Why is including page in queryKey necessary? Without it, different pages would share one query identity and could not be independently cached or fetched."
+   },
+   {
+    "question": "What happens while the next page request is pending?",
+    "answer": "placeholderData: keepPreviousData preserves the prior successful page during the transition. The query still fetches the newly keyed page, and the result changes when that request completes.",
+    "followUp": "Can the same approach work with infinite queries? The documentation says placeholderData also works with infinite-query usage when query keys change over time."
+   }
+  ],
+  "keyPoints": [
+   "keepPreviousData exposes the last successful page during the request for the newly selected page.",
+   "The previous result remains visible across a page change rather than resetting because the new page has a different key.",
+   "Once fetching finishes, the placeholder result is replaced by the newly fetched page.",
+   "Pagination can keep the current page rendered while the following page loads.",
+   "Page-specific query keys allow previously fetched pages to be reused from the cache."
+  ],
+  "gotchas": [
+   "Treat displayed data as temporary while isPlaceholderData is true; use that state to avoid advancing pagination based on incomplete page information.",
+   "Do not enable forward navigation until the response provides enough information to determine that another page exists."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Pagination & streaming::placeholderData": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/solid/guides/placeholder-query-data",
+  "sourceTitle": "Placeholder Query Data | TanStack Query Solid Docs",
+  "summary": "placeholderData supplies temporary data so a query can render while the real request runs. The temporary value is not persisted to the cache and can be derived from a previous successful query.",
+  "explanation": "placeholderData lets a query expose a temporary value while its real result is fetched. The query begins in a successful state for rendering, but the supplied value is not persisted in the cache; a function can derive it from the previous successful query and its metadata.",
+  "syntax": "placeholderData: TData | ((previousData: TData | undefined, previousQuery: Query) => TData | undefined)",
+  "parameters": [
+   {
+    "name": "placeholderData",
+    "type": "TData | ((previousData: TData | undefined, previousQuery: Query) => TData | undefined)",
+    "description": "A value or function used as temporary query data; the function may receive previous data and the previous query."
+   }
+  ],
+  "returns": "The query exposes the placeholder as its current data and reports a successful state while it is being used; the placeholder itself is not cached.",
+  "example": {
+   "title": "Keep the previous page during pagination",
+   "code": "import { keepPreviousData, useQuery } from '@tanstack/react-query'\n\nfunction Projects({ page }: { page: number }) {\n  const query = useQuery({\n    queryKey: ['projects', page],\n    queryFn: () => fetch(`/api/projects?page=${page}`).then(r => r.json()),\n    placeholderData: keepPreviousData,\n  })\n\n  return <pre>{JSON.stringify(query.data, null, 2)}</pre>\n}",
+   "language": "tsx",
+   "explanation": "Keeps the prior page visible while the query for the new page is loading; isPlaceholderData can identify when the displayed value is still the stand-in."
+  },
+  "useCases": [
+   {
+    "title": "Keep the previous page visible",
+    "scenario": "A paginated query changes its page key and the next response is still loading."
+   },
+   {
+    "title": "Render partial or fake data",
+    "scenario": "A detail query has enough partial or fabricated fields to render immediately."
+   },
+   {
+    "title": "Bridge related queries",
+    "scenario": "One query can provide a useful temporary value for another query."
+   }
+  ],
+  "related": [
+   "initialData",
+   "keepPreviousData",
+   "isPlaceholderData",
+   "useInfiniteQuery",
+   "Paginated / Lagged Queries"
+  ],
+  "since": "",
+  "keyPoints": [
+   "It makes a query behave as though data is already available while the actual request runs.",
+   "The stand-in remains outside the cache and does not become stored query data.",
+   "A callback can compute the stand-in rather than supplying one fixed value.",
+   "The callback can receive the previous successful result and query metadata.",
+   "For changing query keys, previous data can remain visible during the transition.",
+   "Once fetching completes, the temporary result is replaced by the newly fetched result."
+  ],
+  "gotchas": [
+   "Unlike initialData, placeholderData is only a temporary display value and is never written to the cache.",
+   "Because placeholder data counts as available data, loading-state checks based on pending status will not behave as if no data exists.",
+   "Use isPlaceholderData when UI behavior must distinguish the temporary value from fetched data."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Pagination & streaming::Prefetching": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/prefetching",
+  "sourceTitle": "Prefetching & Router Integration",
+  "summary": "Prefetching warms TanStack Query's cache before data is needed, allowing a paginated destination to render from cached data instead of starting with a loading spinner. Use the destination's query key and query function ahead of navigation.",
+  "explanation": "Prefetching runs a query before the result is needed and stores its result in the Query cache. For pagination, prefetch the likely next page with a distinct query key; when the destination uses that key, cached data can render immediately if it remains fresh.",
+  "syntax": "await queryClient.prefetchQuery({ queryKey, queryFn, staleTime })",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "QueryOptions",
+    "description": "The query configuration, including queryKey, queryFn, and optionally staleTime."
+   },
+   {
+    "name": "queryClient",
+    "type": "QueryClient",
+    "description": "A QueryClient instance whose query method runs and caches the query."
+   }
+  ],
+  "returns": "The query result; the method throws if the query encounters an error.",
+  "example": {
+   "title": "Prefetch the next pagination page",
+   "code": "import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'\nimport { useEffect } from 'react'\n\nconst queryClient = new QueryClient()\nconst fetchProjects = (page: number) =>\n  fetch(`/api/projects?page=${page}`).then((r) => r.json())\n\nfunction Projects({ page }: { page: number }) {\n  const nextPage = page + 1\n  const { data } = useQuery({\n    queryKey: ['projects', page],\n    queryFn: () => fetchProjects(page),\n  })\n\n  useEffect(() => {\n    if (data?.hasMore) {\n      queryClient.prefetchQuery({\n        queryKey: ['projects', nextPage],\n        queryFn: () => fetchProjects(nextPage),\n      })\n    }\n  }, [data, nextPage])\n\n  return <button>Next page</button>\n}",
+   "language": "tsx",
+   "explanation": "After the current page reveals another page, the next page is fetched into the cache so navigation can reuse it."
+  },
+  "useCases": [
+   {
+    "title": "Warm the next pagination page",
+    "scenario": "A user is viewing page N and the response indicates page N+1 exists."
+   },
+   {
+    "title": "Prepare data before route navigation",
+    "scenario": "A likely destination has a known query key and fetch function."
+   },
+   {
+    "title": "Prefetch a likely detail view",
+    "scenario": "A detail screen is likely to open after a list selection."
+   }
+  ],
+  "related": [
+   "query",
+   "infiniteQuery",
+   "usePrefetchQuery",
+   "usePrefetchInfiniteQuery",
+   "staleTime",
+   "getNextPageParam",
+   "pages"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How would you prefetch the next page of a paginated list?",
+    "answer": "Use queryClient.prefetchQuery with the destination page's queryKey and queryFn. It runs the query and caches its result before navigation; the destination query can then read that cache entry.",
+    "followUp": "How does freshness affect this? The configured staleTime determines whether an existing cached result is fresh or whether the query should run again."
+   },
+   {
+    "question": "How should pagination pages be identified in the cache?",
+    "answer": "Use a query key that includes the page, such as ['projects', page + 1]. Each page is therefore represented by its own cache entry, allowing the next screen to reuse the prefetched result.",
+    "followUp": "What prevents prefetching an irrelevant page? Trigger it only when the current response indicates another page exists, such as a hasMore flag or next cursor."
+   },
+   {
+    "question": "How do you prefetch multiple pages of an infinite query?",
+    "answer": "Infinite queries can be prefetched through the infinite-query API. The default behavior fetches only the first page; use pages together with getNextPageParam to prefetch a sequence.",
+    "followUp": "When does the sequence stop? If getNextPageParam returns undefined, prefetching stops because there is no next page to request."
+   }
+  ],
+  "keyPoints": [
+   "Prefetch when you know or reasonably expect data will be needed, so the cache is populated before the user reaches that screen.",
+   "A query prefetch actually executes the configured query function; it is not merely a cache declaration.",
+   "The fetched value is stored in the Query cache and can be consumed later by a matching query.",
+   "The query method resolves with the fetched result, so callers can await the prefetch when they need completion before proceeding.",
+   "Errors from the prefetch are surfaced to the caller, allowing navigation or other flow control to handle failure.",
+   "For an infinite query, a basic prefetch warms only page one unless additional pages are explicitly requested."
+  ],
+  "gotchas": [
+   "Prefetching is freshness-aware: the QueryClient's default staleTime determines whether cached data is reused or fetched again.",
+   "For infinite queries, requesting several pages requires the pages option rather than assuming every page is prefetched.",
+   "When prefetching multiple infinite-query pages, provide getNextPageParam so TanStack Query can determine each subsequent page."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Pagination & streaming::useInfiniteQuery": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/infinite-queries",
+  "sourceTitle": "Infinite Queries",
+  "summary": "useInfiniteQuery manages paginated data as an ordered set of pages. Derive the next page parameter with getNextPageParam, call fetchNextPage, and render the accumulated data.pages.",
+  "explanation": "useInfiniteQuery models a sequence of related requests. The query function receives pageParam, initialPageParam supplies the first value, and getNextPageParam derives the next one. Calling fetchNextPage appends the result to data.pages, while hasNextPage and isFetchingNextPage describe whether more data is available and currently loading.",
+  "syntax": "useInfiniteQuery({ queryKey, queryFn: ({ pageParam }) => fetchPage(pageParam), initialPageParam, getNextPageParam, ...options })",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "UseInfiniteQueryOptions",
+    "description": "Options share useQuery's options, with infinite-query additions including initialPageParam, getNextPageParam, getPreviousPageParam, and maxPages."
+   },
+   {
+    "name": "pageParam",
+    "type": "unknown",
+    "description": "The parameter for the current page; the first value comes from initialPageParam and later values come from the pagination callbacks."
+   }
+  ],
+  "returns": "An infinite-query result with the usual query properties plus data.pages, data.pageParams, fetchNextPage, fetchPreviousPage, hasNextPage, hasPreviousPage, isFetchingNextPage, and isFetchingPreviousPage.",
+  "example": {
+   "title": "Cursor-based load-more list",
+   "code": "import { useInfiniteQuery } from '@tanstack/react-query'\n\nasync function fetchPage({ pageParam }: { pageParam: number }) {\n  const response = await fetch(`/api/items?cursor=${pageParam}`)\n  return response.json() as Promise<{ items: string[]; nextCursor?: number }>\n}\n\nexport function Items() {\n  const query = useInfiniteQuery({\n    queryKey: ['items'],\n    queryFn: fetchPage,\n    initialPageParam: 0,\n    getNextPageParam: (lastPage) => lastPage.nextCursor,\n  })\n\n  return (\n    <>\n      {query.data?.pages.flatMap((page) => page.items).map((item) => (\n        <div key={item}>{item}</div>\n      ))}\n      <button\n        disabled={!query.hasNextPage || query.isFetchingNextPage}\n        onClick={() => query.fetchNextPage()}\n      >\n        {query.isFetchingNextPage ? 'Loading…' : 'Load more'}\n      </button>\n    </>\n  )\n}",
+   "language": "tsx",
+   "explanation": "The query starts with an initial cursor, derives the next cursor from each response, and renders items from every accumulated page."
+  },
+  "useCases": [
+   {
+    "title": "Load more",
+    "scenario": "A user clicks a control to append another batch of results without replacing the existing list."
+   },
+   {
+    "title": "Infinite scrolling",
+    "scenario": "Additional results appear automatically as the user approaches the end of a scrollable feed."
+   },
+   {
+    "title": "Cursor pagination",
+    "scenario": "A cursor-based API returns a continuation token for each response."
+   },
+   {
+    "title": "Sequential page refetching",
+    "scenario": "A paginated query becomes stale and needs its stored pages refreshed in order."
+   }
+  ],
+  "related": [
+   "useQuery",
+   "fetchNextPage",
+   "fetchPreviousPage",
+   "getNextPageParam",
+   "getPreviousPageParam",
+   "hasNextPage",
+   "hasPreviousPage",
+   "isFetchingNextPage"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does useInfiniteQuery determine which page to fetch next?",
+    "answer": "It supplies the first page parameter, and getNextPageParam returns the parameter for the following page. That value is passed to the query function as pageParam.",
+    "followUp": "How do you detect exhaustion? Use hasNextPage, which is true when getNextPageParam returns a non-null, non-undefined value."
+   },
+   {
+    "question": "How is accumulated page data represented?",
+    "answer": "Fetched results are stored in data.pages, while the corresponding request parameters are stored in data.pageParams. A UI can flatten or iterate over data.pages to render the accumulated list.",
+    "followUp": "What should a component use to distinguish loading more from another fetch? Check isFetchingNextPage rather than only the general fetching state."
+   },
+   {
+    "question": "How would you implement a load-more control safely?",
+    "answer": "Call fetchNextPage to request another page. A load-more control can disable itself while isFetchingNextPage is true and when hasNextPage is false.",
+    "followUp": "What happens during stale refetching? Pages are refetched sequentially, beginning with the first page."
+   }
+  ],
+  "keyPoints": [
+   "Use it for lists that grow by loading additional result groups, such as load-more and infinite-scroll interfaces.",
+   "The returned data keeps each fetched response in the pages array rather than merging responses into one implicit page.",
+   "pageParams records the parameter associated with each stored page, which helps inspect or reproduce pagination state.",
+   "Set initialPageParam to define the parameter used for the initial query-function call.",
+   "Use getNextPageParam to derive the next request parameter and to signal whether another page exists.",
+   "The derived page parameter reaches queryFn as pageParam, allowing the request to use the server's cursor or page number.",
+   "hasNextPage indicates whether the next-page callback produced a usable continuation value.",
+   "Use isFetchingNextPage to show loading-more feedback without confusing it with background refreshes."
+  ],
+  "gotchas": [
+   "Provide initialPageParam; the current API requires it to establish the first request's page parameter.",
+   "A stale refetch replays pages sequentially from the beginning, so it is not equivalent to independently refreshing only the last page.",
+   "A load-more flow must expose fetchNextPage; without invoking it, later pages are not requested."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Query fundamentals::Query functions": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/query-functions",
+  "sourceTitle": "Query Functions | TanStack Query React Docs",
+  "summary": "A query function returns a promise that resolves defined data on success and throws or rejects on failure. TanStack Query uses that rejection to distinguish an errored query.",
+  "explanation": "A query function is an asynchronous function whose promise must resolve with defined data or fail by throwing or rejecting. TanStack Query uses that rejected state to mark the query as errored and exposes the thrown error through the query result. For fetch, explicitly inspect response.ok because HTTP failures do not automatically reject.",
+  "syntax": "queryFn: (context: QueryFunctionContext) => Promise<TData>",
+  "parameters": [],
+  "returns": "A Promise that resolves query data, but never undefined; it should throw or reject when the operation fails.",
+  "example": {
+   "title": "Reject failed HTTP requests",
+   "code": "import { useQuery } from '@tanstack/react-query'\n\ntype Todo = { id: number; title: string }\n\nexport function Todos() {\n  const query = useQuery<Todo[]>({\n    queryKey: ['todos'],\n    queryFn: async () => {\n      const response = await fetch('/api/todos')\n      if (!response.ok) {\n        throw new Error('Failed to fetch todos')\n      }\n      return response.json() as Promise<Todo[]>\n    },\n  })\n\n  if (query.isError) return <p>{query.error.message}</p>\n  if (query.isPending) return <p>Loading…</p>\n  return <ul>{query.data.map(todo => <li key={todo.id}>{todo.title}</li>)}</ul>\n}",
+   "language": "tsx",
+   "explanation": "The function checks the HTTP response because fetch does not reject for HTTP error statuses, then returns parsed data on success."
+  },
+  "useCases": [
+   {
+    "title": "Fetching asynchronous data",
+    "scenario": "Load server data with useQuery and expose loading, data, and error states."
+   },
+   {
+    "title": "Normalizing request failures",
+    "scenario": "Wrap fetch or another promise-based client so unsuccessful operations become query errors."
+   },
+   {
+    "title": "Representing an empty success",
+    "scenario": "Return null when the server successfully represents an empty result."
+   }
+  ],
+  "related": [
+   "useQuery",
+   "queryKey",
+   "QueryFunctionContext",
+   "QueryClient",
+   "error state"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What contract does a query function have?",
+    "answer": "A query function must return a promise. That promise should resolve the data on success, and it must throw or return a rejected promise when the operation fails so the query enters its error state.",
+    "followUp": "What must a fetch-based query function do for a 404 response? Check response.ok and throw an Error, because fetch does not reject solely because the HTTP status is unsuccessful."
+   },
+   {
+    "question": "Can a query function resolve undefined?",
+    "answer": "TanStack Query treats a resolved undefined value as a failed query, so successful query functions must resolve a value other than undefined. If the intended successful result is no value, resolve null instead.",
+    "followUp": "Why is null preferable to undefined here? Null is an explicit successful value, whereas undefined is reserved by the query contract as an invalid result."
+   },
+   {
+    "question": "How does TanStack Query recognize query-function failure?",
+    "answer": "Both throwing an error and returning Promise.reject(error) communicate failure to TanStack Query. The resulting error is persisted in the query's error state and can be read from the query result.",
+    "followUp": "How should a query function handle HTTP errors from fetch? Inspect response.ok and throw an error before parsing the response."
+   }
+  ],
+  "keyPoints": [
+   "The implementation can be any function shape, provided its result is promise-based.",
+   "Successful execution supplies data; unsuccessful execution signals failure instead of returning an ordinary value.",
+   "Throwing is one supported way to transition the query into its error state.",
+   "Returning a rejected promise is the alternative failure signal.",
+   "Errors thrown during execution remain available through the query's error state."
+  ],
+  "gotchas": [
+   "Do not resolve undefined; TanStack Query treats a query resolving to undefined as failed. Use null when a successful result represents no value."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Query fundamentals::Query keys": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/query-keys",
+  "sourceTitle": "Query Keys",
+  "summary": "Query keys are top-level arrays that uniquely and serializably describe requested data. Include every changing value used by the query function so TanStack Query can separate cache entries and refetch the correct request.",
+  "explanation": "A query key is a top-level array that identifies the data requested by a query. It may contain constants, serializable values, and nested objects; variables used by the query function belong in the key so differing requests receive separate cache entries and can refetch when those variables change.",
+  "syntax": "useQuery({ queryKey: ['resource', variables], queryFn })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A variable-dependent query key",
+   "code": "import { useQuery } from '@tanstack/react-query'\n\nfunction Todos({ status, page }: { status: string; page: number }) {\n  const query = useQuery({\n    queryKey: ['todos', { status, page }],\n    queryFn: fetchTodos,\n  })\n\n  return <pre>{JSON.stringify(query.data)}</pre>\n}\n\nasync function fetchTodos() {\n  return fetch('/api/todos').then((response) => response.json())\n}",
+   "language": "tsx",
+   "explanation": "The object contains every value that distinguishes the requested todo list, so TanStack Query caches each variant separately."
+  },
+  "useCases": [
+   {
+    "title": "Cache a simple list",
+    "scenario": "A generic collection has one stable identity and no request-changing inputs."
+   },
+   {
+    "title": "Cache an individual resource",
+    "scenario": "A resource is selected by an identifier such as a todo ID."
+   },
+   {
+    "title": "Separate parameterized requests",
+    "scenario": "Filters, pagination, or other inputs alter the returned data."
+   },
+   {
+    "title": "Refetch when dependencies change",
+    "scenario": "A query depends on reactive or changing state."
+   }
+  ],
+  "related": [
+   "queryKey",
+   "queryFn",
+   "QueryFunctionContext",
+   "staleTime"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a query key?",
+    "answer": "Query keys must be arrays at the top level. Their contents should be serializable and uniquely describe the data returned by the query, ranging from a single constant to nested objects.",
+    "followUp": "How should a paginated or filtered query be keyed? Include the page, filter, or other request-defining values as serializable elements in the array so each request is cached independently."
+   },
+   {
+    "question": "Why must query-function variables be included in the key?",
+    "answer": "Include every variable that the query function uses when that variable changes the requested data. The key then acts as a dependency: changing the variable selects a different cache entry and can trigger a refetch, subject to stale-time settings.",
+    "followUp": "What happens if a changing filter is omitted? Different responses can share one cache entry, so the cache identity no longer matches the request; add the filter to the key."
+   },
+   {
+    "question": "How are query keys compared?",
+    "answer": "TanStack Query hashes query keys deterministically. Object key order is therefore ignored, so objects with the same properties and values in a different order represent the same query.",
+    "followUp": "Does array order work the same way? No: the key is an array, and its ordered elements describe the query, so changing their arrangement changes the key."
+   }
+  ],
+  "keyPoints": [
+   "Always start the key with an array, even when a query needs only one identifying value.",
+   "Keys can combine a resource label with multiple values and nested objects when the request needs richer identification.",
+   "Use a constant array key for data whose identity does not depend on request variables, such as a generic list.",
+   "Add serializable objects after a resource string to represent filters, pagination, or other request details.",
+   "Treat the key as the dependency description for the query function, not merely as an arbitrary cache label.",
+   "When a key variable changes, TanStack Query can refetch the newly identified request, depending on stale-time configuration."
+  ],
+  "gotchas": [
+   "Do not use values that cannot be serialized with JSON.stringify, and do not reuse a key for different data.",
+   "Object property order does not distinguish keys; changing the order of properties in an object does not create a separate cache entry."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Query fundamentals::QueryClient and provider": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/reference/functions/QueryClientProvider",
+  "sourceTitle": "QueryClientProvider | TanStack Query React Docs",
+  "summary": "Create a QueryClient once and pass it to QueryClientProvider at the app boundary. Descendants can then access that same client and cache with useQueryClient.",
+  "explanation": "Create a QueryClient and give it to QueryClientProvider at the application boundary. Descendant components can then obtain the nearest client with useQueryClient, while the provider manages the client lifecycle and connects focus and online events.",
+  "syntax": "function QueryClientProvider(props: QueryClientProviderProps): Element;",
+  "parameters": [
+   {
+    "name": "client",
+    "type": "QueryClient",
+    "description": "The QueryClient instance to provide."
+   },
+   {
+    "name": "children",
+    "type": "React.ReactNode",
+    "description": "React nodes that receive access to the provided client."
+   }
+  ],
+  "returns": "An Element containing the provided children, which can read the QueryClient via useQueryClient.",
+  "example": {
+   "title": "Share one client through the React provider",
+   "code": "import { QueryClient, QueryClientProvider } from '@tanstack/react-query'\nimport { useQueryClient } from '@tanstack/react-query'\n\nconst queryClient = new QueryClient()\n\nfunction CacheInspector() {\n  const client = useQueryClient()\n  return <p>Cached queries: {client.getQueryCache().getAll().length}</p>\n}\n\nexport default function App() {\n  return (\n    <QueryClientProvider client={queryClient}>\n      <CacheInspector />\n    </QueryClientProvider>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Create one client outside the component tree and pass it to the provider so descendants can access that client and its cache."
+  },
+  "useCases": [
+   {
+    "title": "Provide one shared cache to the component tree",
+    "scenario": "Application setup"
+   },
+   {
+    "title": "Obtain the current client inside a descendant",
+    "scenario": "Cache inspection or invalidation"
+   },
+   {
+    "title": "Let client lifecycle respond to focus and online events",
+    "scenario": "Offline or refocus recovery"
+   }
+  ],
+  "related": [
+   "QueryClient",
+   "useQueryClient",
+   "QueryClientProviderProps",
+   "QueryCache"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you make a QueryClient available to React Query components?",
+    "answer": "Create a QueryClient, then pass that instance to QueryClientProvider. Components below the provider can read the same client through useQueryClient, so they share its cache.",
+    "followUp": "How can a component use a different client? Pass that client as the optional queryClient argument to useQueryClient; otherwise the nearest provider supplies it."
+   },
+   {
+    "question": "What does QueryClientProvider provide?",
+    "answer": "The provider exposes its client to descendant components through context. Its children are the components that gain access to the provided QueryClient.",
+    "followUp": "What happens when providers are nested? The nearest context is used unless a hook call explicitly supplies another QueryClient."
+   },
+   {
+    "question": "What lifecycle behavior does the provider add?",
+    "answer": "The provider mounts the client when it mounts and unmounts it when it is removed. This subscribes the client to focus and online events, allowing paused mutations to resume and refetching to occur when connectivity or focus returns.",
+    "followUp": "Why should the client instance be stable? Recreating it changes the cache and lifecycle-managed client instead of preserving the shared application cache."
+   }
+  ],
+  "keyPoints": [
+   "QueryClientProvider is the application boundary that makes a QueryClient available to descendant components.",
+   "The provider accepts a client and children; those children are the part of the tree that can access it.",
+   "Only descendants inside the provider receive access through its context.",
+   "Provider lifecycle connects the client to focus and online events."
+  ],
+  "gotchas": [
+   "The provider manages mounting and unmounting the client; do not treat it as merely a value-passing wrapper."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Query fundamentals::staleTime and gcTime": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/reference/functions/useQuery",
+  "sourceTitle": "useQuery",
+  "summary": "staleTime determines how long query data is fresh; gcTime determines how long unused or inactive cache data remains in memory. They govern freshness and retention independently.",
+  "explanation": "staleTime controls how long fetched data remains fresh, while gcTime controls how long inactive cache data stays in memory after a query is no longer used. Fresh data can be served from the cache; inactive data is eventually garbage collected. Both options accept durations, and staleTime can also be dynamic or set to special values.",
+  "syntax": "useQuery({ queryKey, queryFn, staleTime?, gcTime? })",
+  "parameters": [
+   {
+    "name": "staleTime",
+    "type": "number | 'static' | ((query) => number | 'static') | undefined",
+    "description": "Milliseconds until data is considered stale; may be a number, Infinity, 'static', or a function returning a number or 'static'."
+   },
+   {
+    "name": "gcTime",
+    "type": "number | undefined",
+    "description": "Milliseconds that unused or inactive cache data remains in memory; Infinity disables garbage collection."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Configure freshness and cache retention",
+   "code": "import { QueryClient, useQuery } from '@tanstack/react-query'\n\nconst queryClient = new QueryClient({\n  defaultOptions: {\n    queries: {\n      staleTime: 60_000,\n      gcTime: 5 * 60_000,\n    },\n  },\n})\n\nfunction Todos() {\n  const { data } = useQuery({\n    queryKey: ['todos'],\n    queryFn: () => fetch('/api/todos').then((r) => r.json()),\n  })\n\n  return <pre>{JSON.stringify(data, null, 2)}</pre>\n}",
+   "language": "tsx",
+   "explanation": "This query treats cached data as fresh for one minute and retains unused cache data for five minutes."
+  },
+  "useCases": [
+   {
+    "title": "Control freshness",
+    "scenario": "Reduce refetching for data that changes infrequently by choosing a suitable staleTime."
+   },
+   {
+    "title": "Retain inactive cache",
+    "scenario": "Keep recently unused results available for quick reuse by extending gcTime."
+   },
+   {
+    "title": "Persist inactive data",
+    "scenario": "Prevent automatic removal of selected cache entries with gcTime: Infinity."
+   }
+  ],
+  "related": [
+   "QueryClient",
+   "useQuery",
+   "queryKey",
+   "queryFn",
+   "timeoutManager.setTimeoutProvider",
+   "initialDataUpdatedAt"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does staleTime control?",
+    "answer": "staleTime is the duration for which query data is considered fresh. While fresh, cached data is returned instead of treating it as stale and fetching again.",
+    "followUp": "How can staleness vary per query? Set staleTime to a function; it receives the query and returns the duration, or use the special value 'static' when the data should never be considered stale."
+   },
+   {
+    "question": "What does gcTime control?",
+    "answer": "gcTime controls how long unused or inactive cache data remains in memory. After that period, the cache data is eligible for garbage collection.",
+    "followUp": "What happens if two configurations specify different gcTime values? The longest configured garbage-collection time is used."
+   },
+   {
+    "question": "What are the defaults and practical limit for gcTime?",
+    "answer": "The default gcTime is five minutes, while SSR defaults to Infinity. The documented timer limit is about 24 days, although a custom timeout provider can work around that limitation.",
+    "followUp": "Does gcTime determine freshness? No; freshness is controlled by staleTime, while gcTime concerns retention after the query becomes unused."
+   }
+  ],
+  "keyPoints": [
+   "staleTime expresses the freshness window in milliseconds.",
+   "Fresh cached data can be used without treating the query as needing a refetch.",
+   "gcTime measures inactive-cache retention rather than data freshness.",
+   "Garbage collection starts after the cache entry is no longer active and the configured interval elapses.",
+   "Use Infinity for gcTime when automatic removal of inactive cache data should be disabled.",
+   "The static staleTime option keeps data permanently fresh according to the documented staleness rules."
+  ],
+  "gotchas": [
+   "Multiple observers or configurations can result in the longest applicable gcTime determining retention.",
+   "Very large gcTime values are limited by the platform timer unless a custom timeout provider is used.",
+   "The default retention differs during server-side rendering.",
+   "Infinity prevents staleTime-based staleness, but it does not by itself disable garbage collection."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Query fundamentals::Status and fetchStatus": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/queries",
+  "sourceTitle": "Queries",
+  "summary": "status describes whether query data exists or an attempt failed; fetchStatus describes whether the query function is fetching, paused, or idle. Keeping them separate distinguishes available cached data from current network activity.",
+  "explanation": "TanStack Query exposes two independent dimensions. status describes the query's data state: pending means no data yet, error means the last attempt failed, and success means data is available. fetchStatus describes query-function activity: fetching, paused, or idle. Therefore, cached data can remain available while a background refetch runs, and an initial query can be pending while paused rather than actively fetching.",
+  "syntax": "const { status, fetchStatus } = useQuery({ queryKey, queryFn })",
+  "parameters": [
+   {
+    "name": "status",
+    "type": "'pending' | 'error' | 'success'",
+    "description": "Identifies the query's data state: pending, error, or success."
+   },
+   {
+    "name": "fetchStatus",
+    "type": "'fetching' | 'paused' | 'idle'",
+    "description": "Identifies query-function activity: fetching, paused, or idle."
+   }
+  ],
+  "returns": "The query result includes status and fetchStatus, which separately describe data availability and query-function activity.",
+  "example": {
+   "title": "Render data separately from network activity",
+   "code": "import { useQuery } from '@tanstack/react-query'\n\nexport function Todos() {\n  const query = useQuery({\n    queryKey: ['todos'],\n    queryFn: async () => (await fetch('/api/todos')).json(),\n  })\n\n  if (query.status === 'pending') return <p>Loading data…</p>\n  if (query.status === 'error') return <p>Could not load todos.</p>\n\n  return (\n    <>\n      {query.fetchStatus === 'fetching' && <p>Refreshing…</p>}\n      <ul>{query.data.map((todo: { id: number; title: string }) => <li key={todo.id}>{todo.title}</li>)}</ul>\n    </>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Use status to decide whether data is available, and fetchStatus to show activity such as a background refresh."
+  },
+  "useCases": [
+   {
+    "title": "Choose the data-rendering state",
+    "scenario": "Render the main view only when status is success, and handle pending or error states separately."
+   },
+   {
+    "title": "Indicate background refetching",
+    "scenario": "Show a subtle refresh indicator when fetchStatus is fetching while existing data remains visible."
+   },
+   {
+    "title": "Explain unavailable network activity",
+    "scenario": "Distinguish a paused request from active fetching so the UI can explain that work is waiting rather than running."
+   }
+  ],
+  "related": [
+   "isPending",
+   "isError",
+   "isSuccess",
+   "isFetching",
+   "networkMode",
+   "background refetching"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the distinction between status and fetchStatus?",
+    "answer": "status describes the data state, while fetchStatus describes what the query function is doing. status can be pending, error, or success; fetchStatus can be fetching, paused, or idle.",
+    "followUp": "Can a successful query be fetching? Yes. A background refetch can leave status as success while fetchStatus becomes fetching."
+   },
+   {
+    "question": "Which field should control a loading or refresh indicator?",
+    "answer": "Use status when deciding whether data can be rendered, because it indicates whether data exists. Use fetchStatus when deciding whether to show request activity, such as a refresh indicator.",
+    "followUp": "What should an initial paused query display? It has no data and is pending, but it is not actively fetching because fetchStatus is paused."
+   },
+   {
+    "question": "Give examples of valid combinations of the two states.",
+    "answer": "A query with no data usually starts as pending and fetching, but it may instead be pending and paused when the network is unavailable. A query with cached data can be success and idle or success and fetching during a refetch.",
+    "followUp": "Why are these states modeled independently? Data availability and query-function execution are different concerns, so one status cannot represent both accurately."
+   }
+  ],
+  "keyPoints": [
+   "status answers the data-availability question. Its main states are pending for no data, error for a failed attempt, and success when data is available.",
+   "fetchStatus tracks query-function activity independently of data: fetching means execution is underway, paused means it was deferred, and idle means no activity.",
+   "Use fetchStatus === 'fetching' to detect active fetching, including activity that occurs after data has already been loaded.",
+   "A paused fetch represents a wanted request that cannot currently proceed, commonly because the configured network conditions prevent it.",
+   "idle means the query is not currently performing fetch work; it does not by itself say whether cached data exists.",
+   "The common settled combination is success plus idle, but the two fields remain independent and can form other valid combinations."
+  ],
+  "gotchas": [
+   "Do not equate pending with an active network request: a query may have no data while its fetch is paused."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Query fundamentals::useQuery": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/queries",
+  "sourceTitle": "Queries",
+  "summary": "useQuery declaratively subscribes a component to asynchronous server data identified by a unique key. Render from its returned status, data, and error instead of maintaining manual loading flags.",
+  "explanation": "Call useQuery with a unique queryKey and a queryFn that returns a promise. TanStack Query manages the request and exposes a result containing status, data, errors, and fetch-related state, so the component renders directly from that result instead of maintaining separate loading flags.",
+  "syntax": "useQuery({ queryKey, queryFn, ...options })",
+  "parameters": [
+   {
+    "name": "queryKey",
+    "type": "unknown[]",
+    "description": "Required array used to identify the query; it is hashed into a stable hash."
+   },
+   {
+    "name": "queryFn",
+    "type": "(context: QueryFunctionContext) => Promise<TData>",
+    "description": "Required unless a default query function exists; receives QueryFunctionContext and returns a promise resolving data or throwing an error."
+   }
+  ],
+  "returns": "The current query result, including data, error, status, and fetch-state properties such as isFetching and isLoading.",
+  "example": {
+   "title": "Read and render a query",
+   "code": "import { useQuery } from '@tanstack/react-query'\n\nasync function fetchTodos() {\n  const response = await fetch('/api/todos')\n  if (!response.ok) throw new Error('Request failed')\n  return response.json()\n}\n\nexport function TodoList() {\n  const { data, error, status } = useQuery({\n    queryKey: ['todos'],\n    queryFn: fetchTodos,\n  })\n\n  if (status === 'pending') return <p>Loading…</p>\n  if (status === 'error') return <p>{error.message}</p>\n  return <ul>{data.map((todo: { id: number; title: string }) => <li key={todo.id}>{todo.title}</li>)}</ul>\n}",
+   "language": "tsx",
+   "explanation": "The hook requests and subscribes to the todos query; rendering branches on its returned status, error, and data."
+  },
+  "useCases": [
+   {
+    "title": "Server-backed UI",
+    "scenario": "Fetch a list or detail resource and render pending, error, or successful states from the query result."
+   },
+   {
+    "title": "Shared cached data",
+    "scenario": "Reuse the same keyed request across components while letting each component subscribe to the query result."
+   },
+   {
+    "title": "Parameter-driven fetching",
+    "scenario": "Represent dependent or parameterized data by including the relevant identifier in queryKey."
+   }
+  ],
+  "related": [
+   "useInfiniteQuery",
+   "useMutation",
+   "useQueryClient",
+   "QueryFunctionContext",
+   "QueryResult"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you define a basic useQuery call?",
+    "answer": "question",
+    "followUp": "What does the query function need to do?"
+   },
+   {
+    "question": "What does useQuery return?",
+    "answer": "Provide a unique queryKey and a queryFn. The queryFn requests the data and returns a promise that resolves with the data or throws an error.",
+    "followUp": "Why is the key required? Because it identifies the query and is converted into a stable hash for query matching and caching."
+   },
+   {
+    "question": "How does declarative query rendering differ from manual loading state?",
+    "answer": "It returns the current query result, including data, error, status, and fetch-state indicators such as isFetching. Components can use those values for rendering.",
+    "followUp": "How should rendering handle an unsuccessful request? Check the result's error status and render an error state rather than assuming data exists."
+   },
+   {
+    "question": "What must a query function return?",
+    "answer": "The component subscribes to a query and renders from the result supplied by useQuery. The result carries the query's status, data, and error information, removing the need for a separately maintained loading flag.",
+    "followUp": "What determines which cached query a component observes? The queryKey; changing the key describes a different query and can trigger fetching for that key."
+   }
+  ],
+  "keyPoints": [
+   "A query describes an asynchronous data dependency through a unique key.",
+   "Call useQuery in a component or custom hook to subscribe to the query.",
+   "The queryKey is required and should uniquely identify the data being requested.",
+   "The queryFn supplies the asynchronous operation and must produce a promise for the result.",
+   "The returned result provides the query information needed for templates and other data use."
+  ],
+  "gotchas": [
+   "The query function must resolve with data or throw when the request fails; returning an ordinary non-promise value does not satisfy the documented contract.",
+   "Use a key that uniquely identifies the requested data; TanStack Query hashes it to identify the query consistently."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Server rendering & testing::Devtools": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/devtools",
+  "sourceTitle": "Devtools | TanStack Query React Docs",
+  "summary": "TanStack Query Devtools visualize query internals so you can investigate unexpected refetches. In v5, they also support observing mutations.",
+  "explanation": "TanStack Query Devtools provide a visual view of query internals, helping you inspect cached queries while investigating unexpected refetches. In React Query v5, the devtools also support observing mutations.",
+  "syntax": "<ReactQueryDevtools initialIsOpen={false} />",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Add React Query Devtools",
+   "code": "import { QueryClient, QueryClientProvider } from '@tanstack/react-query'\nimport { ReactQueryDevtools } from '@tanstack/react-query-devtools'\n\nconst queryClient = new QueryClient()\n\nexport function App() {\n  return (\n    <QueryClientProvider client={queryClient}>\n      <YourApp />\n      <ReactQueryDevtools initialIsOpen={false} />\n    </QueryClientProvider>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Install the devtools package, render the component inside the query-client provider, and inspect query state while debugging."
+  },
+  "useCases": [
+   {
+    "title": "Diagnose unexpected refetches",
+    "scenario": "A query refetches after navigation or focus and the cause is unclear."
+   },
+   {
+    "title": "Inspect query internals",
+    "scenario": "You need to inspect cached query state during local development."
+   },
+   {
+    "title": "Observe mutations",
+    "scenario": "You are debugging mutation behavior in a v5 application."
+   }
+  ],
+  "related": [
+   "QueryClientProvider",
+   "QueryClient",
+   "ReactQueryDevtools",
+   "@tanstack/react-query-devtools",
+   "Floating Mode"
+  ],
+  "since": "5",
+  "interview": [
+   {
+    "question": "How do you add TanStack Query Devtools to a React application?",
+    "answer": "Install @tanstack/react-query-devtools and render ReactQueryDevtools within the QueryClientProvider. The devtools then expose the query internals needed for debugging.",
+    "followUp": "What additional object can v5 devtools observe? They can observe mutations as well as queries."
+   },
+   {
+    "question": "What problem do the devtools solve?",
+    "answer": "Use the devtools to visualize the internal state of queries while debugging. This makes it possible to inspect the cache and understand behavior such as an unexpected refetch.",
+    "followUp": "How would you validate that the inspected query belongs to the intended client? Confirm that the devtools and application are under the same QueryClientProvider."
+   },
+   {
+    "question": "Which package and component are used for React Query Devtools?",
+    "answer": "The package is @tanstack/react-query-devtools, and the component is ReactQueryDevtools. A typical setup renders the component alongside the application inside QueryClientProvider.",
+    "followUp": "How can you keep the panel unobtrusive during normal development? Configure the component's initial visibility, such as initialIsOpen={false}."
+   }
+  ],
+  "keyPoints": [
+   "Devtools are particularly useful when a refetch appears surprising and ordinary logging does not reveal the cause.",
+   "The React integration exposes ReactQueryDevtools as the component to import from the dedicated package.",
+   "Floating mode places the panel in a fixed overlay, allowing inspection without adding a permanent layout region."
+  ],
+  "gotchas": [
+   "Install the devtools package separately; it is not included automatically with the core React adapter.",
+   "Mutation inspection is available in the current major version; older documentation should not be used to assume mutations are unsupported."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Server rendering & testing::Error boundaries": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/suspense",
+  "sourceTitle": "Suspense",
+  "summary": "Use throwOnError to send a query failure to the nearest React error boundary when the UI cannot render without data. By default, TanStack Query throws only when no cached data is available.",
+  "explanation": "On the client, queries normally expose failures through isError and error. Setting throwOnError to true makes failures propagate to the nearest error boundary; the default behavior throws only when no cached data exists, preserving previously rendered data during background failures. Suspense or throwOnError flows can be reset with QueryErrorResetBoundary or its hook.",
+  "syntax": "useQuery({ queryKey, queryFn, throwOnError: true })",
+  "parameters": [
+   {
+    "name": "throwOnError",
+    "type": "boolean | ((error, query) => boolean)",
+    "description": "Controls whether query errors are thrown to the nearest error boundary; the documented default throws when query.state.data is undefined."
+   }
+  ],
+  "returns": "A query whose failure can be propagated to the nearest React error boundary instead of being exposed only as query error state.",
+  "example": {
+   "title": "Throw a query error to an error boundary",
+   "code": "import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'\nimport { ErrorBoundary } from 'react-error-boundary'\n\nconst queryClient = new QueryClient()\n\nfunction User() {\n  const { data } = useQuery({\n    queryKey: ['user'],\n    queryFn: () => fetch('/api/user').then(r => r.json()),\n    throwOnError: true,\n  })\n  return <div>{data.name}</div>\n}\n\nexport default function App() {\n  return <QueryClientProvider client={queryClient}>\n    <ErrorBoundary fallback={<p>Could not load user.</p>}>\n      <User />\n    </ErrorBoundary>\n  </QueryClientProvider>\n}",
+   "language": "tsx",
+   "explanation": "Set throwOnError to true so a failed query reaches the nearest React error boundary instead of only exposing query error state."
+  },
+  "useCases": [
+   {
+    "title": "Fail the screen when required data is unavailable",
+    "scenario": "A page cannot render meaningful content without its initial query result."
+   },
+   {
+    "title": "Keep stale data visible during background failure",
+    "scenario": "A query has previously loaded data and later fails during refetch."
+   },
+   {
+    "title": "Propagate mutation errors",
+    "scenario": "A mutation failure should be handled by the same UI boundary as query failures."
+   }
+  ],
+  "related": [
+   "Suspense",
+   "QueryErrorResetBoundary",
+   "useQueryErrorResetBoundary",
+   "throwOnError"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you send query failures to an error boundary?",
+    "answer": "Set throwOnError to true on the query. A failed query then propagates to the nearest React error boundary rather than remaining only in query error state.",
+    "followUp": "What is the default predicate? It throws when query.state.data is undefined, so background failures do not replace already available data."
+   },
+   {
+    "question": "What does the default throwOnError behavior protect?",
+    "answer": "By default, errors are thrown only when there is no data to show. If the cache contains successfully fetched data, the component continues rendering even when that data is stale.",
+    "followUp": "How can every error be handled by a boundary? In non-configurable suspense behavior, manually throw the error after checking the error and fetching state."
+   },
+   {
+    "question": "How are error boundaries reset for another attempt?",
+    "answer": "After an error, use QueryErrorResetBoundary or useQueryErrorResetBoundary to tell queries to retry when the component renders again. These APIs coordinate resetting query errors with the boundary retry flow.",
+    "followUp": "What does the hook scope cover? It resets query errors within the closest QueryErrorResetBoundary."
+   }
+  ],
+  "keyPoints": [
+   "Suspense replaces query status and error handling with React Suspense and error boundaries.",
+   "Mutations can also use throwOnError: true to propagate failures to the nearest boundary.",
+   "The default query policy throws when the query has no cached data.",
+   "Use the boundary component or hook to reset query errors before retrying."
+  ],
+  "gotchas": [
+   "The default does not throw every failure: if cached data exists, the query can continue rendering it.",
+   "With suspense, the default throw behavior cannot be changed; manually throw the error when all failures must reach the boundary."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Server rendering & testing::Hydration boundaries": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/ssr",
+  "sourceTitle": "Server Rendering & Hydration",
+  "summary": "Hydration boundaries transfer prefetched TanStack Query data from server to client. Dehydrate the server cache, pass it through the loader, and provide it to HydrationBoundary to avoid an unnecessary initial client fetch.",
+  "explanation": "A server-side QueryClient first prefetches the queries needed for rendering. Its cache is converted to serializable state with dehydrate, returned through the framework loader, and supplied to a client-side HydrationBoundary, which restores the state into the browser QueryClient so the initial render can use prefetched data instead of issuing a duplicate fetch.",
+  "syntax": "<HydrationBoundary state={dehydratedState}>...</HydrationBoundary>",
+  "parameters": [
+   {
+    "name": "state",
+    "type": "DehydratedState",
+    "description": "The serialized query-cache snapshot produced by dehydrate(queryClient) and supplied by the framework loader."
+   }
+  ],
+  "returns": "The page subtree wrapped by HydrationBoundary is rendered with the transferred query cache restored on the client.",
+  "example": {
+   "title": "Prefetch, dehydrate, and hydrate",
+   "code": "import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query'\nimport { Posts } from './Posts'\n\nexport async function loader() {\n  const queryClient = new QueryClient()\n  await queryClient.prefetchQuery({\n    queryKey: ['posts'],\n    queryFn: () => fetch('/api/posts').then((r) => r.json()),\n  })\n  return dehydrate(queryClient)\n}\n\nexport function Page({ dehydratedState }) {\n  return (\n    <HydrationBoundary state={dehydratedState}>\n      <Posts />\n    </HydrationBoundary>\n  )\n}",
+   "language": "tsx",
+   "explanation": "The server loader prefetches and dehydrates the cache; the rendered tree passes that state to HydrationBoundary so the client can reuse it."
+  },
+  "useCases": [
+   {
+    "title": "SSR route data",
+    "scenario": "A server-rendered route needs query data immediately on its first HTML render."
+   },
+   {
+    "title": "Loader-based prefetching",
+    "scenario": "A framework loader can fetch route queries before rendering and expose serialized loader data to the client."
+   },
+   {
+    "title": "Multiple hydrated subtrees",
+    "scenario": "A page contains independently rendered query-driven subtrees that can receive separate prefetched state."
+   }
+  ],
+  "related": [
+   "QueryClient",
+   "dehydrate",
+   "prefetchQuery",
+   "HydrationBoundary",
+   "dehydratedState",
+   "Server Rendering & Hydration"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does server rendering avoid refetching prefetched data on the client?",
+    "answer": "On the server, create a QueryClient, prefetch the required queries, and call dehydrate(queryClient). Return that state from the framework loader, then pass it to HydrationBoundary on the client. The boundary hydrates the cache so the browser can avoid a new initial fetch.",
+    "followUp": "Why is a per-request QueryClient preferable? It isolates one request's prefetched cache from another request and prevents cross-request data contamination."
+   },
+   {
+    "question": "How should multiple server queries be prefetched efficiently?",
+    "answer": "The loader should prefetch every query needed for the rendered route before markup generation. Each query can be awaited explicitly, and independent queries should be started together with Promise.all when possible to reduce server-side latency.",
+    "followUp": "What changes when query dependencies are sequential? Start the dependent query only after its prerequisite data exists; parallelize only independent work."
+   },
+   {
+    "question": "What is framework-specific in a hydration-boundary implementation?",
+    "answer": "The dehydrated state is not obtained through one universal API shape: frameworks differ in how loader data is returned and supplied to the rendered tree. The stable integration point is dehydrate on the server and HydrationBoundary state on the client.",
+    "followUp": "Can one application use more than one boundary? Yes, the advanced guidance documents multiple HydrationBoundary instances and separate dehydrated clients as valid patterns."
+   }
+  ],
+  "keyPoints": [
+   "Prefetch route data before generating or rendering server markup.",
+   "Dehydration turns the server cache into state that can cross the server-to-browser boundary.",
+   "Client hydration restores the transferred state into the React Query cache.",
+   "A successfully hydrated prefetched query can supply the initial client data without an immediate duplicate request.",
+   "Create the QueryClient inside the framework loader used for the request.",
+   "Return the dehydrated cache from the loader so the framework can make it available to the client.",
+   "Place the rendered subtree inside HydrationBoundary and provide the loader's dehydrated state."
+  ],
+  "gotchas": [
+   "Prefetch independent queries in parallel when the framework and data dependencies allow it, rather than awaiting each one sequentially.",
+   "The mechanism for obtaining the dehydrated state is framework-specific, so adapt the loader return syntax to the framework in use."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Server rendering & testing::Per-request clients": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/ssr",
+  "sourceTitle": "hydration",
+  "summary": "Create a QueryClient within each server-rendering request or app lifecycle, never at module scope, to keep users' cached data isolated. Prefetch, dehydrate, and hydrate the cache to transfer server-fetched data to the browser.",
+  "explanation": "During server rendering, construct QueryClient inside the request or application lifecycle rather than at module scope. Prefetch the required data, serialize the cache with dehydrate, and hydrate it into a client-side cache so the browser can reuse the server result without sharing cached data between users.",
+  "syntax": "new QueryClient(options)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Per-request server client",
+   "code": "import { QueryClient, dehydrate } from '@tanstack/react-query'\n\nexport async function loader() {\n  const queryClient = new QueryClient()\n  await queryClient.prefetchQuery({\n    queryKey: ['user'],\n    queryFn: fetchUser,\n  })\n  return dehydrate(queryClient)\n}\n\nasync function fetchUser() {\n  const response = await fetch('/api/user')\n  if (!response.ok) throw new Error('Request failed')\n  return response.json()\n}",
+   "language": "typescript",
+   "explanation": "The loader constructs a client for this request, prefetches the required query, and returns a dehydrated cache for framework-specific hydration."
+  },
+  "useCases": [
+   {
+    "title": "Isolated SSR requests",
+    "scenario": "A server-rendered route needs user-specific queries without risking cache leakage between visitors."
+   },
+   {
+    "title": "SSR hydration",
+    "scenario": "A framework loader fetches route data before rendering and passes the cache to the browser."
+   },
+   {
+    "title": "Isolated test state",
+    "scenario": "A test needs a clean query cache for each test case or isolated render."
+   }
+  ],
+  "related": [
+   "QueryClient",
+   "QueryClientProvider",
+   "prefetchQuery",
+   "dehydrate",
+   "hydrate",
+   "Promise.all"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why must a QueryClient be created per server request?",
+    "answer": "Create the QueryClient inside the application or request lifecycle, not as a module-level singleton. This prevents cached data from one user or request being exposed to another while still allowing one client instance throughout that component lifecycle.",
+    "followUp": "What is the server-rendering sequence? Prefetch the required queries, dehydrate the cache into serializable data, return it through the framework, and hydrate a browser cache."
+   },
+   {
+    "question": "What are the main server-rendering steps before the browser receives HTML?",
+    "answer": "The server must prefetch data before generating the markup. After prefetching, dehydrate the query cache into a serializable form that can be embedded in the rendered response.",
+    "followUp": "How can multiple independent queries be prefetched efficiently? Start them in parallel with Promise.all when the framework loader allows it."
+   },
+   {
+    "question": "What does dehydration and hydration accomplish?",
+    "answer": "The client hydrates the dehydrated state into its React Query cache, which avoids an unnecessary new client-side fetch for data already obtained on the server. The exact way the dehydrated value is returned depends on the framework.",
+    "followUp": "What must be preserved when transferring the state? It must remain serializable, and the client must hydrate it before relying on the prefetched cache."
+   }
+  ],
+  "keyPoints": [
+   "Instantiate QueryClient inside the request-handling application lifecycle rather than at module scope.",
+   "A fresh server client isolates each request's cache from every other user's cache.",
+   "Prefetch queries before producing server-rendered markup so the initial response can include their results.",
+   "Dehydrate the populated cache into serializable state that can cross from server-rendered output to the browser.",
+   "Hydrate the transferred state into the browser cache to reuse server-fetched query data."
+  ],
+  "gotchas": [
+   "Do not create the server QueryClient at module scope: that can share cached data across users and requests.",
+   "Dehydration alone is insufficient; the client must hydrate the serialized state to reuse the prefetched data."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Server rendering & testing::Suspense mode": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/suspense",
+  "sourceTitle": "Suspense",
+  "summary": "Suspense mode lets React render pending UI through a Suspense boundary instead of making the query component branch on status. Use suspense-specific hooks and handle failures with an error boundary.",
+  "explanation": "Suspense mode moves pending-state rendering out of the query component. A suspense-specific hook suspends while data is unavailable, allowing React.Suspense to show its fallback; errors are handled through an error boundary. For server rendering, queries using this approach must be prefetched so the server and client hydrate consistently.",
+  "syntax": "useSuspenseQuery({ queryKey, queryFn })",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "UseSuspenseQueryOptions",
+    "description": "The same query options as useQuery, except throwOnError, enabled, and placeholderData."
+   },
+   {
+    "name": "queryFn",
+    "type": "QueryFunction",
+    "description": "A query function that returns the requested data; it cannot be skipToken."
+   }
+  ],
+  "returns": "The suspense hooks return query data without requiring a pending-state branch; the component suspends until the data is available.",
+  "example": {
+   "title": "Render pending UI with Suspense",
+   "code": "import { Suspense } from 'react'\nimport { useSuspenseQuery } from '@tanstack/react-query'\n\nasync function fetchPosts() {\n  const response = await fetch('/api/posts')\n  if (!response.ok) throw new Error('Request failed')\n  return response.json() as Promise<{ title: string }[]>\n}\n\nfunction Posts() {\n  const { data } = useSuspenseQuery({\n    queryKey: ['posts'],\n    queryFn: fetchPosts,\n  })\n\n  return <ul>{data.map((post) => <li key={post.title}>{post.title}</li>)}</ul>\n}\n\nexport default function App() {\n  return (\n    <Suspense fallback={<p>Loading posts…</p>}>\n      <Posts />\n    </Suspense>\n  )\n}",
+   "language": "tsx",
+   "explanation": "The query suspends while fetching, so the surrounding boundary displays its fallback until data is available."
+  },
+  "useCases": [
+   {
+    "title": "Boundary-driven loading UI",
+    "scenario": "A component needs a loading fallback without inline isPending logic."
+   },
+   {
+    "title": "Coordinated pending states",
+    "scenario": "Several nested components should share a pending fallback."
+   },
+   {
+    "title": "Streaming server rendering",
+    "scenario": "A streamed server-rendered route uses Suspense boundaries."
+   },
+   {
+    "title": "Suspense-aware component testing",
+    "scenario": "A test renders the component and asserts the boundary fallback before resolving the query."
+   }
+  ],
+  "related": [
+   "useSuspenseQuery",
+   "useSuspenseInfiniteQuery",
+   "useSuspenseQueries",
+   "React.Suspense",
+   "React error boundaries",
+   "@tanstack/react-query-next-experimental",
+   "useQuery"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The component does not branch on query status or inspect the usual error object for pending rendering.",
+   "Wrap the query consumer in React.Suspense and provide a fallback for the pending UI.",
+   "Pair Suspense with an error boundary to catch query failures.",
+   "Without additional configuration, the suspense hook fetches when the component mounts and suspends during the request.",
+   "With the documented experimental Next.js integration, server-fetched Suspense results can stream as boundaries resolve."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Server rendering & testing::Testing queries": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/testing",
+  "sourceTitle": "Testing | TanStack Query React Docs",
+  "summary": "Test TanStack Query code with a fresh QueryClient for every test and disable retries by default. This isolates caches and makes failure tests finish promptly.",
+  "explanation": "For each test, create a separate QueryClient and configure its query defaults with retry: false. Provide that client to the tested component or hook. This prevents cache sharing between tests and avoids the default retry delay when testing failures; an explicit retry option on a query still overrides the client default.",
+  "syntax": "new QueryClient({ defaultOptions: { queries: { retry: false } } })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Isolated test client",
+   "code": "import { QueryClient, QueryClientProvider } from '@tanstack/react-query'\n\nexport function createTestClient() {\n  return new QueryClient({\n    defaultOptions: {\n      queries: { retry: false },\n    },\n  })\n}\n\nexport function TestWrapper({ children }: { children: React.ReactNode }) {\n  const client = createTestClient()\n  return (\n    <QueryClientProvider client={client}>\n      {children}\n    </QueryClientProvider>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Create the client inside each test setup so its cache is isolated and failed queries do not wait for retries."
+  },
+  "useCases": [
+   {
+    "title": "Isolate successful query tests",
+    "scenario": "Testing a hook or component that succeeds after fetching data."
+   },
+   {
+    "title": "Fail fast on query errors",
+    "scenario": "Testing an error state without waiting through automatic retry delays."
+   },
+   {
+    "title": "Prevent cache leakage",
+    "scenario": "Running a suite where cached data from one test must not affect another."
+   }
+  ],
+  "related": [
+   "QueryClient",
+   "QueryClientProvider",
+   "defaultOptions",
+   "queries.retry"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Configure retry: false in the QueryClient defaults supplied to the provider.",
+   "Failing queries normally retry three times with backoff, which can make error tests time out.",
+   "A distinct QueryClient per test keeps query caches and test outcomes isolated.",
+   "A query-level retry option takes precedence over the client-wide default."
+  ],
+  "gotchas": [
+   "Client defaults apply throughout the component tree, but they do not override an explicit retry setting on an individual query.",
+   "If a client is shared, clear it before every test and avoid parallel execution, or use a fresh client per test."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

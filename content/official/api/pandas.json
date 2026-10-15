@@ -1,0 +1,4089 @@
+{
+ "DataFrame": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html",
+  "sourceTitle": "pandas.DataFrame",
+  "summary": "pandas.DataFrame is a two-dimensional, size-mutable table with labeled rows and columns. It supports heterogeneous column types and label-aligned operations.",
+  "explanation": "DataFrame constructs a two-dimensional table whose rows and columns have labels. It can hold columns with different data types, aligns arithmetic by both axes, and accepts common inputs such as dictionaries, arrays, Series, or another DataFrame.",
+  "syntax": "class pandas.DataFrame(*data=None*, *index=None*, *columns=None*, *dtype=None*, *copy=None*)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "array-like, dict, or DataFrame, optional",
+    "description": "Input data used to construct the table; the page supports values such as dictionaries, arrays, Series, and DataFrames."
+   },
+   {
+    "name": "index",
+    "type": "Index or array-like, optional",
+    "description": "Labels for the resulting rows; defaults to a generated RangeIndex when no index information is available."
+   },
+   {
+    "name": "columns",
+    "type": "Index or array-like, optional",
+    "description": "Labels for columns, or selection and ordering of existing labeled columns."
+   },
+   {
+    "name": "dtype",
+    "type": "dtype, optional",
+    "description": "A single data type to force across the constructed DataFrame."
+   },
+   {
+    "name": "copy",
+    "type": "bool or None, optional",
+    "description": "Whether to copy input data; the default is context-dependent in the documented signature."
+   }
+  ],
+  "returns": "A pandas DataFrame containing labeled rows and columns.",
+  "example": {
+   "title": "Create and select a DataFrame",
+   "code": "import pandas as pd\n\npeople = pd.DataFrame(\n    {\"name\": [\"Ada\", \"Linus\"], \"age\": [36, 54]},\n    index=[\"a\", \"l\"],\n)\npeople[\"adult\"] = people[\"age\"] >= 18\nprint(people.loc[\"a\", [\"name\", \"adult\"]])",
+   "language": "python",
+   "explanation": "Creates a labeled DataFrame from column data, adds a derived column, and selects values by labels."
+  },
+  "useCases": [
+   {
+    "title": "Construct tabular data",
+    "scenario": "Build a table from Python dictionaries, arrays, Series, or existing DataFrames."
+   },
+   {
+    "title": "Manipulate datasets",
+    "scenario": "Select, add, rename, and transform labeled rows and columns."
+   },
+   {
+    "title": "Represent heterogeneous data",
+    "scenario": "Combine columns with different data types in one table."
+   },
+   {
+    "title": "Label-aware analysis",
+    "scenario": "Perform calculations that align matching row and column labels."
+   }
+  ],
+  "related": [
+   "DataFrame.from_records",
+   "DataFrame.from_dict",
+   "read_csv",
+   "read_table",
+   "read_clipboard"
+  ],
+  "since": "",
+  "keyPoints": [
+   "A DataFrame is a two-dimensional, resizable table that may contain columns with different data types.",
+   "Both row labels and column labels are first-class axes, enabling label-based selection and alignment.",
+   "DataFrame arithmetic matches values by their row and column labels instead of relying only on position.",
+   "Conceptually, each named column behaves like a Series stored in a dictionary-like table.",
+   "DataFrame is the central pandas object for tabular data manipulation.",
+   "The index argument supplies row labels for the resulting DataFrame."
+  ],
+  "gotchas": [
+   "The dtype argument cannot specify a separate type for each column; use column-level conversions when different types are needed.",
+   "When columns are supplied and the input already has column labels, columns select and order existing columns rather than merely naming new ones."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.agg": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.agg",
+  "sourceTitle": "pandas.DataFrame.agg",
+  "summary": "Aggregate a DataFrame with one or more operations along an axis. By default, each operation runs independently on each column; use axis=\"columns\" to aggregate rows.",
+  "explanation": "DataFrame.agg applies one or more aggregation operations along an axis. By default it processes each column; passing axis=\"columns\" processes each row. A single operation generally produces a Series, while multiple operations produce a DataFrame, with the operation labels represented in the result.",
+  "syntax": "DataFrame.agg(func=None, axis=0, *args, **kwargs)",
+  "parameters": [
+   {
+    "name": "func",
+    "type": "function, str, list or dict; default None",
+    "description": "Function, string, list, or dictionary specifying the aggregation operation or operations."
+   },
+   {
+    "name": "axis",
+    "type": "{0 or 'index', 1 or 'columns'}; default 0",
+    "description": "Axis along which to aggregate: 0 or \"index\" for columns, 1 or \"columns\" for rows."
+   },
+   {
+    "name": "*args",
+    "type": "tuple",
+    "description": "Additional positional arguments passed to the aggregation function."
+   },
+   {
+    "name": "**kwargs",
+    "type": "dict",
+    "description": "Additional keyword arguments passed to the aggregation function."
+   }
+  ],
+  "returns": "scalar, Series or DataFrame",
+  "example": {
+   "title": "Aggregate columns with multiple operations",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame({\"A\": [1, 2, 3], \"B\": [4, 5, 6]})\nresult = df.agg([\"sum\", \"min\"])\nprint(result)",
+   "language": "python",
+   "explanation": "Computes the sum and minimum independently for each column and returns them as rows."
+  },
+  "useCases": [
+   {
+    "title": "Column summaries",
+    "scenario": "Compute several summary statistics for every numeric column."
+   },
+   {
+    "title": "Row-wise reduction",
+    "scenario": "Apply a custom reduction to each row."
+   },
+   {
+    "title": "Per-column aggregation",
+    "scenario": "Select different aggregation operations for different columns."
+   }
+  ],
+  "related": [
+   "DataFrame.aggregate",
+   "DataFrame.apply",
+   "Series.agg"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use agg to compute one or several reductions over a DataFrame axis.",
+   "func accepts a callable, a function name string, a list of operations, or a dictionary mapping labels to operations.",
+   "The default axis=0, or axis=\"index\", applies the aggregation independently to every column.",
+   "Set axis=1, or axis=\"columns\", to aggregate across the values in each row.",
+   "The result type depends on the input object and number of aggregations: it can be a scalar, Series, or DataFrame.",
+   "DataFrame.aggregate is the longer alias for DataFrame.agg."
+  ],
+  "gotchas": [
+   "Choose the axis deliberately: the default aggregates each column, whereas axis=\"columns\" aggregates each row.",
+   "A callable supplied as func must be compatible with a DataFrame or with DataFrame.apply."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.apply": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.apply.html",
+  "sourceTitle": "pandas.DataFrame.apply",
+  "summary": "Applies a function independently to each DataFrame column or row. The axis, input representation, and handling of list-like results control how pandas constructs the returned Series or DataFrame.",
+  "explanation": "DataFrame.apply invokes a callable separately for each selected column or row. By default, each object is a Series; choose the axis, optionally receive raw arrays, control list-like row results, and pass extra arguments or keyword arguments to the callable.",
+  "syntax": "DataFrame.apply(func, axis=0, raw=False, result_type=None, args=(), by_row='compat', engine=None, engine_kwargs=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "func",
+    "type": "function",
+    "description": "Function to apply to each column or row."
+   },
+   {
+    "name": "axis",
+    "type": "{0 or ‘index’, 1 or ‘columns’}, default 0",
+    "description": "Axis along which the function is applied: 0 or ‘index’ applies to each column; 1 or ‘columns’ applies to each row."
+   },
+   {
+    "name": "raw",
+    "type": "bool, default False",
+    "description": "Determines whether each row or column is passed as a Series or ndarray object."
+   },
+   {
+    "name": "result_type",
+    "type": "{‘expand’, ‘reduce’, ‘broadcast’, None}, default None",
+    "description": "Controls interpretation of list-like results when axis=1: ‘expand’, ‘reduce’, ‘broadcast’, or None."
+   },
+   {
+    "name": "args",
+    "type": "tuple, default ()",
+    "description": "Positional arguments passed to func."
+   },
+   {
+    "name": "by_row",
+    "type": "False, ‘compat’, True, default ‘compat’",
+    "description": "Controls compatibility handling when func is list-like or callable."
+   },
+   {
+    "name": "engine",
+    "type": "{None, ‘python’, ‘numba’}, default None",
+    "description": "Execution engine for the function."
+   },
+   {
+    "name": "engine_kwargs",
+    "type": "dict, default None",
+    "description": "Additional keyword arguments for the execution engine."
+   },
+   {
+    "name": "kwargs",
+    "type": "dict",
+    "description": "Additional keyword arguments passed to func."
+   }
+  ],
+  "returns": "Series or DataFrame: Result of applying func along the given axis of the DataFrame.",
+  "example": {
+   "title": "Apply functions by column or row",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame({\"a\": [1, 2], \"b\": [10, 20]})\ncolumn_totals = df.apply(lambda column: column.sum())\nrow_totals = df.apply(lambda row: row.sum(), axis=\"columns\")\nprint(column_totals.to_dict())\nprint(row_totals.tolist())",
+   "language": "python",
+   "explanation": "The first call applies a function to each column; setting axis to columns applies it to each row."
+  },
+  "useCases": [
+   {
+    "title": "Column-wise aggregation",
+    "scenario": "Compute per-column statistics such as totals, means, or custom summaries."
+   },
+   {
+    "title": "Row-wise computation",
+    "scenario": "Calculate a derived value from multiple fields in each record."
+   },
+   {
+    "title": "Expand list-like row results",
+    "scenario": "Return multiple values per row as separate columns."
+   }
+  ],
+  "related": [
+   "DataFrame.aggregate",
+   "DataFrame.transform",
+   "DataFrame.map"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use apply to run one callable over every column or every row.",
+   "With the default raw=False, the callable receives labeled Series objects.",
+   "For axis 0 the callable processes columns; for axis 1 it processes rows.",
+   "Set raw=False when the function should work with pandas Series and their labels.",
+   "Set raw=True when the callable should receive NumPy arrays rather than Series.",
+   "For row-wise list-like results, broadcast preserves the DataFrame shape and labels."
+  ],
+  "gotchas": [
+   "The result_type options expand, reduce, and broadcast affect list-like results only when applying across rows.",
+   "When results vary, pandas infers the output based on the first computed result, so later results may not determine the structure."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.applymap": {
+  "sourceUrl": "https://pandas.pydata.org/pandas-docs/version/2.3/reference/api/pandas.DataFrame.applymap.html",
+  "sourceTitle": "pandas.DataFrame.applymap",
+  "summary": "Applies a scalar-returning function to every DataFrame element and returns the transformed DataFrame. Deprecated since pandas 2.1.0; use DataFrame.map instead.",
+  "explanation": "DataFrame.applymap calls a function for each individual DataFrame value and returns a transformed DataFrame. The callable must accept one scalar and return one scalar; use na_action='ignore' to leave missing values unchanged, and pass extra callable arguments through keyword arguments.",
+  "syntax": "DataFrame.applymap(func, na_action=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "func",
+    "type": "callable",
+    "description": "Callable that accepts one scalar value and returns one scalar value."
+   },
+   {
+    "name": "na_action",
+    "type": "{None, 'ignore'}, default None",
+    "description": "Whether to skip missing values; accepted values are None or 'ignore', with None as the default."
+   },
+   {
+    "name": "**kwargs",
+    "type": "optional keyword arguments",
+    "description": "Additional keyword arguments forwarded to func."
+   }
+  ],
+  "returns": "DataFrame — transformed DataFrame.",
+  "example": {
+   "title": "Transform every element",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame([[1, 2.12], [3.356, 4.567]])\nresult = df.applymap(lambda value: round(value, 1))\nprint(result)",
+   "language": "python",
+   "explanation": "Applies a scalar rounding function independently to every DataFrame element."
+  },
+  "useCases": [
+   {
+    "title": "Elementwise conversion",
+    "scenario": "Convert or normalize every cell with a scalar transformation."
+   },
+   {
+    "title": "Cell formatting",
+    "scenario": "Apply a custom formatting or parsing rule to all values."
+   },
+   {
+    "title": "NA-aware transformation",
+    "scenario": "Skip missing values while transforming populated cells."
+   }
+  ],
+  "related": [
+   "DataFrame.map",
+   "DataFrame.apply"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Runs the supplied callable independently on every DataFrame element.",
+   "The callable receives one scalar and must produce one scalar for each cell.",
+   "func is a Python callable mapping each input value to one output value.",
+   "Use kwargs to provide named arguments to the callable."
+  ],
+  "gotchas": [
+   "This method is deprecated since pandas 2.1.0; use DataFrame.map instead.",
+   "Prefer a vectorized operation when one is available because elementwise Python calls are slower.",
+   "With na_action='ignore', missing values bypass the callable and remain missing."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.assign": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.assign.html",
+  "sourceTitle": "pandas.DataFrame.assign",
+  "summary": "Adds or replaces DataFrame columns and returns a new DataFrame. Column values can be direct objects or callables computed from the DataFrame, with assignments processed in keyword order.",
+  "explanation": "Call assign with keyword arguments whose names become columns. Each value may be computed from the DataFrame with a callable or supplied directly; the method returns a new DataFrame, and keyword assignments are evaluated in order so later expressions can use columns created earlier.",
+  "syntax": "DataFrame.assign(**kwargs)",
+  "parameters": [
+   {
+    "name": "**kwargs",
+    "type": "callable or Series",
+    "description": "Column names are supplied as keywords. Values may be callables, Series, scalars, or arrays; callables receive the DataFrame."
+   }
+  ],
+  "returns": "DataFrame: a new DataFrame containing the original and assigned columns.",
+  "example": {
+   "title": "Create dependent derived columns",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame({\"temp_c\": [17.0, 25.0]})\nresult = df.assign(\n    temp_f=lambda frame: frame[\"temp_c\"] * 9 / 5 + 32,\n    label=lambda frame: frame[\"temp_f\"].round(0).astype(str) + \"°F\",\n)\n\nprint(result)",
+   "language": "python",
+   "explanation": "Creates two derived columns while leaving the original DataFrame unchanged."
+  },
+  "useCases": [
+   {
+    "title": "Derived columns",
+    "scenario": "Create columns from existing data without mutating the source DataFrame."
+   },
+   {
+    "title": "Batch column creation",
+    "scenario": "Add several related columns in one expression."
+   },
+   {
+    "title": "Ordered column pipelines",
+    "scenario": "Build dependent transformations where later columns use earlier assigned columns."
+   }
+  ],
+  "related": [
+   "pandas.DataFrame.eval",
+   "pandas.DataFrame.insert",
+   "pandas.DataFrame.pipe"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use assign to add or replace columns through keyword arguments.",
+   "The original columns are retained and the result is a separate DataFrame.",
+   "Pass a function when a column should be derived from the current DataFrame.",
+   "Direct values such as Series, scalars, or arrays can populate columns without a callable.",
+   "Several columns can be added in one call.",
+   "Keyword order matters: later assignments can reference columns created or changed earlier in the same call."
+  ],
+  "gotchas": [
+   "Callable values should only compute results; mutating the input DataFrame is unsupported.",
+   "Using an existing column name replaces that column in the returned DataFrame."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.at": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.at.html",
+  "sourceTitle": "pandas.DataFrame.at",
+  "summary": "`DataFrame.at` reads or writes one DataFrame value using a row-label and column-label pair. It is intended for single-cell label-based access.",
+  "explanation": "`DataFrame.at` provides label-based access to one DataFrame cell. Supply a scalar row label and scalar column label to read the value or assign a replacement; use `iat` instead when addressing by integer position.",
+  "syntax": "property DataFrame.at",
+  "parameters": [],
+  "returns": "The selected single value when reading; assignment updates the addressed DataFrame cell.",
+  "example": {
+   "title": "Read and set one labeled cell",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame(\n    [[0, 2, 3], [0, 4, 1], [10, 20, 30]],\n    index=[0, 1, 4],\n    columns=[\"A\", \"B\", \"C\"],\n)\n\nvalue = df.at[4, \"B\"]\ndf.at[4, \"B\"] = 10\n\nprint(value)\nprint(df.at[4, \"B\"])",
+   "language": "python",
+   "explanation": "Reads one cell by its row and column labels, then updates that same cell."
+  },
+  "useCases": [
+   {
+    "title": "Single-cell lookup",
+    "scenario": "Retrieve one known cell from a DataFrame by its row and column labels."
+   },
+   {
+    "title": "Single-cell update",
+    "scenario": "Replace one existing cell without selecting a broader slice."
+   },
+   {
+    "title": "Series label access",
+    "scenario": "Work with a Series element after selecting a DataFrame row."
+   }
+  ],
+  "related": [
+   "DataFrame.iat",
+   "DataFrame.loc",
+   "DataFrame.iloc"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use `at` to access exactly one value using row and column labels.",
+   "Like `loc`, `at` selects by labels rather than integer positions.",
+   "Choose `at` for a single-cell read or assignment, not multi-cell selection.",
+   "Use `iat` instead when the lookup should use integer positions."
+  ],
+  "gotchas": [
+   "Reading a missing row or column label raises `KeyError`.",
+   "The DataFrame lookup must use a row/column pair, and both labels must be scalar values."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.describe": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.describe.html",
+  "sourceTitle": "pandas.DataFrame.describe — pandas 3.0.6 documentation",
+  "summary": "Generate descriptive statistics for DataFrame columns, excluding missing values. By default, numeric columns are summarized, with optional dtype filters and custom percentiles.",
+  "explanation": "Call this method on a DataFrame to produce per-column descriptive statistics. By default it summarizes numeric columns; customize the analyzed columns with include or exclude, and customize percentile rows with percentiles.",
+  "syntax": "DataFrame.describe(percentiles=None, include=None, exclude=None)",
+  "parameters": [
+   {
+    "name": "percentiles",
+    "type": "list-like of numbers, optional",
+    "description": "List-like values between 0 and 1 identifying the percentiles to include. None uses the 25th, 50th, and 75th percentiles."
+   },
+   {
+    "name": "include",
+    "type": "scalar or list-like, optional",
+    "description": "A dtype or list of dtypes to include in the analysis."
+   },
+   {
+    "name": "exclude",
+    "type": "scalar or list-like, optional",
+    "description": "A dtype or list of dtypes to exclude from the analysis."
+   }
+  ],
+  "returns": "DataFrame — summary statistics of the DataFrame’s columns.",
+  "example": {
+   "title": "Summarize numeric and object columns",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"age\": [21, 35, 42],\n    \"score\": [88, 91, 76],\n    \"team\": [\"A\", \"B\", \"A\"],\n})\n\nprint(df.describe())\nprint(df.describe(include=\"object\"))",
+   "language": "python",
+   "explanation": "The first call summarizes numeric columns; the second summarizes the object column."
+  },
+  "useCases": [
+   {
+    "title": "Initial dataset profiling",
+    "scenario": "Quickly inspect numeric columns during exploratory data analysis."
+   },
+   {
+    "title": "Distribution summary",
+    "scenario": "Review distributions using quartiles, mean, and standard deviation."
+   },
+   {
+    "title": "Non-numeric column analysis",
+    "scenario": "Summarize string or mixed-type columns with dtype selection."
+   }
+  ],
+  "related": [
+   "DataFrame.info"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Returns descriptive statistics for the DataFrame's analyzed columns.",
+   "Missing values are omitted when calculating the statistics.",
+   "The method can summarize numeric and object columns.",
+   "Without a custom percentile list, the output includes the 25th, 50th, and 75th percentiles.",
+   "Filter the columns considered by passing dtype selectors through include or exclude."
+  ],
+  "gotchas": [
+   "Every value supplied in percentiles must be between 0 and 1.",
+   "Use include or exclude to control which dtypes are summarized; otherwise the default column selection applies."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.drop": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.drop.html",
+  "sourceTitle": "pandas.DataFrame.drop",
+  "summary": "Remove selected row or column labels from a DataFrame. Use `index` or `columns` for explicit axis selection, and receive a new DataFrame unless `inplace=True`.",
+  "explanation": "Call `drop` with labels and an axis, or use the clearer `index` and `columns` arguments. By default it returns a new DataFrame and raises an error when a requested label is absent; `inplace=True` instead changes the existing object and returns `None`. MultiIndex labels can be removed from a chosen level.",
+  "syntax": "DataFrame.drop(*labels=None, axis=0, index=None, columns=None, level=None, inplace=False, errors='raise')",
+  "parameters": [
+   {
+    "name": "labels",
+    "type": "single label or list-like, optional",
+    "description": "Index or column labels to drop; a single label or list-like value."
+   },
+   {
+    "name": "axis",
+    "type": "{0 or 'index', 1 or 'columns'}, default 0",
+    "description": "Select rows with 0 or 'index', or columns with 1 or 'columns'."
+   },
+   {
+    "name": "index",
+    "type": "single label or iterable of labels, optional",
+    "description": "Labels to remove from the index; alternative to labels with axis=0."
+   },
+   {
+    "name": "columns",
+    "type": "single label or iterable of labels, optional",
+    "description": "Labels to remove from columns; alternative to labels with axis=1."
+   },
+   {
+    "name": "level",
+    "type": "int or level name, optional",
+    "description": "For MultiIndex, the level from which labels are removed."
+   },
+   {
+    "name": "inplace",
+    "type": "bool, default False",
+    "description": "If True, modify the DataFrame in place."
+   },
+   {
+    "name": "errors",
+    "type": "{'ignore', 'raise'}, default 'raise'",
+    "description": "Controls behavior when a requested label is missing."
+   }
+  ],
+  "returns": "DataFrame or None: a DataFrame with the specified index or column labels removed, or None when inplace=True.",
+  "example": {
+   "title": "Drop a column",
+   "code": "import pandas as pd\n\norders = pd.DataFrame({\n    \"customer\": [\"Ada\", \"Lin\", \"Sam\"],\n    \"status\": [\"paid\", \"pending\", \"paid\"],\n    \"total\": [25, 40, 18],\n})\n\nresult = orders.drop(columns=\"status\")\nprint(result)\n",
+   "language": "python",
+   "explanation": "Creates a new DataFrame without the status column; the original remains unchanged."
+  },
+  "useCases": [
+   {
+    "title": "Column selection",
+    "scenario": "Remove columns that are not needed for analysis or export."
+   },
+   {
+    "title": "Row removal",
+    "scenario": "Exclude rows identified by their index labels."
+   },
+   {
+    "title": "MultiIndex cleanup",
+    "scenario": "Remove labels from a specific level of hierarchical index data."
+   }
+  ],
+  "related": [
+   "DataFrame.pop",
+   "DataFrame.drop_duplicates",
+   "DataFrame.dropna",
+   "DataFrame.reindex"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Removes selected row-index or column labels from a DataFrame.",
+   "Use `axis=0` or `axis=\"index\"` for rows, and `axis=1` or `axis=\"columns\"` for columns.",
+   "The `index` argument is a direct alternative to supplying labels with the row axis.",
+   "The `columns` argument directly identifies columns to remove.",
+   "For MultiIndex data, provide `level` to target labels at a particular index level.",
+   "The default result is a new DataFrame containing the remaining labels."
+  ],
+  "gotchas": [
+   "A tuple passed as a label is interpreted as one label rather than a collection of labels.",
+   "With `inplace=True`, the method returns `None` rather than the modified DataFrame."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.drop_duplicates": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.drop_duplicates.html",
+  "sourceTitle": "pandas.DataFrame.drop_duplicates — pandas 3.0.6 documentation",
+  "summary": "Returns a DataFrame with duplicate rows removed. You can define duplicates using selected columns, choose which occurrence to retain, and optionally reset the result index.",
+  "explanation": "Call this method to return a DataFrame without duplicate rows. By default, all columns determine duplication and the first occurrence is retained; choose subset to compare selected columns, keep to control which occurrence survives, and ignore_index to create a fresh integer index.",
+  "syntax": "DataFrame.drop_duplicates(*subset=None*, ***, *keep='first'*, *inplace=False*, *ignore_index=False*)",
+  "parameters": [
+   {
+    "name": "subset",
+    "type": "label or iterable of labels, optional",
+    "description": "Column label or iterable of labels used to identify duplicates; defaults to all columns."
+   },
+   {
+    "name": "keep",
+    "type": "{'first', 'last', False}, default 'first'",
+    "description": "Which duplicate occurrence to retain: 'first', 'last', or False."
+   },
+   {
+    "name": "inplace",
+    "type": "bool, default False",
+    "description": "Whether to modify the existing DataFrame instead of returning a new one."
+   },
+   {
+    "name": "ignore_index",
+    "type": "bool, default False",
+    "description": "Whether to use a new default integer index in the result."
+   }
+  ],
+  "returns": "DataFrame or None: a DataFrame with duplicates removed, or None when inplace=True.",
+  "example": {
+   "title": "Remove duplicate records",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"user\": [\"ana\", \"bob\", \"ana\"],\n    \"score\": [10, 20, 10],\n})\n\nunique_users = df.drop_duplicates(subset=[\"user\"], ignore_index=True)\nprint(unique_users)",
+   "language": "python",
+   "explanation": "Keeps the first row for each distinct user and resets the resulting index."
+  },
+  "useCases": [
+   {
+    "title": "Deduplicate complete rows",
+    "scenario": "Remove repeated records while retaining the earliest occurrence."
+   },
+   {
+    "title": "Deduplicate by selected columns",
+    "scenario": "Keep one record per business key such as user ID or email."
+   },
+   {
+    "title": "Keep the last occurrence",
+    "scenario": "Retain the latest version of each entity."
+   },
+   {
+    "title": "Reset the result index",
+    "scenario": "Produce clean zero-based output after filtering duplicates."
+   }
+  ],
+  "related": [
+   "DataFrame.duplicated",
+   "DataFrame.dropna",
+   "DataFrame.merge"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The method removes repeated rows and returns the deduplicated DataFrame.",
+   "Use subset when duplicate identity should depend on selected columns rather than the complete row.",
+   "The keep argument selects the retained occurrence: first, last, or none.",
+   "keep='first' retains the earliest row in each duplicate group.",
+   "keep='last' retains the final row in each duplicate group.",
+   "keep=False removes every row belonging to a duplicated group."
+  ],
+  "gotchas": [
+   "The index is not used when deciding whether rows are duplicates.",
+   "With inplace=True, the original DataFrame is changed and the method returns None.",
+   "If subset is omitted, every column participates in duplicate detection."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.dropna": {
+  "sourceUrl": "https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.dropna.html",
+  "sourceTitle": "pandas.DataFrame.dropna",
+  "summary": "Remove rows or columns containing missing values from a DataFrame. Configure which axis to inspect, whether any or all values must be missing, or a minimum count of non-missing values.",
+  "explanation": "Call dropna on a DataFrame to remove rows or columns containing missing values. By default it removes rows when any value is missing; use how=\"all\", thresh, subset, axis, inplace, or ignore_index to adjust the selection and result behavior.",
+  "syntax": "DataFrame.dropna(*, axis=0, how=<no_default>, thresh=<no_default>, subset=None, inplace=False, ignore_index=False)",
+  "parameters": [
+   {
+    "name": "axis",
+    "type": "{0 or ‘index’, 1 or ‘columns’}, default 0",
+    "description": "Axis whose rows or columns are evaluated: 0 or 'index' removes rows; 1 or 'columns' removes columns. Default is 0."
+   },
+   {
+    "name": "how",
+    "type": "{‘any’, ‘all’}, default ‘any’",
+    "description": "Remove an item if any or all values are missing. Options are 'any' and 'all'; default is 'any'."
+   },
+   {
+    "name": "thresh",
+    "type": "int, optional",
+    "description": "Minimum number of non-missing values required."
+   },
+   {
+    "name": "subset",
+    "type": "column label or iterable of labels, optional",
+    "description": "Column labels or an iterable of labels to inspect when dropping rows."
+   },
+   {
+    "name": "inplace",
+    "type": "bool, default False",
+    "description": "Whether to modify the DataFrame in place. Default is False."
+   },
+   {
+    "name": "ignore_index",
+    "type": "bool, default False",
+    "description": "Whether to relabel the resulting axis with 0, 1, 2, …; default is False."
+   }
+  ],
+  "returns": "DataFrame with missing entries removed, or None when inplace=True.",
+  "example": {
+   "title": "Remove rows missing a required value",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"name\": [\"Ava\", \"Ben\", \"Cara\"],\n    \"score\": [91, None, 84],\n    \"team\": [\"red\", \"blue\", None],\n})\n\nclean = df.dropna(subset=[\"score\"])\nprint(clean)",
+   "language": "python",
+   "explanation": "Creates a new DataFrame containing only rows whose score is present."
+  },
+  "useCases": [
+   {
+    "title": "Clean rows with missing data",
+    "scenario": "Remove incomplete records before analysis or modeling."
+   },
+   {
+    "title": "Drop incomplete columns",
+    "scenario": "Discard fields that contain missing values."
+   },
+   {
+    "title": "Enforce a completeness threshold",
+    "scenario": "Keep records with enough populated fields."
+   },
+   {
+    "title": "Restrict checks with subset",
+    "scenario": "Check required columns while preserving unrelated missing values."
+   }
+  ],
+  "related": [
+   "DataFrame.isna",
+   "DataFrame.notna",
+   "DataFrame.fillna",
+   "Series.dropna"
+  ],
+  "since": "",
+  "keyPoints": [
+   "dropna removes entries containing missing values from a DataFrame.",
+   "axis selects whether the operation evaluates and removes rows or columns.",
+   "how=\"any\" removes an item when at least one missing value is found.",
+   "how=\"all\" removes an item only when every value is missing.",
+   "thresh keeps items meeting a minimum number of non-missing values.",
+   "subset limits the missing-value check to selected labels on the opposite axis.",
+   "The result is a new DataFrame unless inplace=True, in which case the return value is None."
+  ],
+  "gotchas": [
+   "thresh and how cannot be supplied together; choose either a minimum count of non-missing values or an any/all rule.",
+   "Pass one axis at a time when choosing whether to remove rows or columns.",
+   "With inplace=True, the method returns None rather than the modified DataFrame."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.fillna": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.fillna.html",
+  "sourceTitle": "pandas.DataFrame.fillna",
+  "summary": "Replaces missing values in a DataFrame with a scalar or column-specific values. It returns a new DataFrame by default, or can modify the original in place.",
+  "explanation": "Call fillna on a DataFrame to replace missing entries with one scalar or with values matched by column. By default it returns a new DataFrame; use inplace=True to modify the existing object, and limit to cap how many missing entries are filled along the selected axis.",
+  "syntax": "DataFrame.fillna(*value*, ***, *axis=None*, *inplace=False*, *limit=None*)",
+  "parameters": [
+   {
+    "name": "value",
+    "type": "scalar, dict, Series, or DataFrame",
+    "description": "Replacement for missing values: a scalar, dict, Series, or DataFrame. A mapping or aligned object can provide column-specific values."
+   },
+   {
+    "name": "axis",
+    "type": "{0 or 'index', 1 or 'columns'}, default None",
+    "description": "Axis along which missing values are filled: 0 or 'index', or 1 or 'columns'."
+   },
+   {
+    "name": "inplace",
+    "type": "bool, default False",
+    "description": "Whether to modify the DataFrame in place."
+   },
+   {
+    "name": "limit",
+    "type": "int, default None",
+    "description": "Maximum number of entries along the entire axis to fill; must be greater than 0 when provided."
+   }
+  ],
+  "returns": "DataFrame or None. With inplace=False, returns a filled DataFrame; with inplace=True, returns None.",
+  "example": {
+   "title": "Fill missing values by column",
+   "code": "import pandas as pd\n\nframe = pd.DataFrame({\"score\": [10, None, 30], \"label\": [\"a\", \"b\", None]})\nfilled = frame.fillna({\"score\": 0, \"label\": \"unknown\"})\nprint(filled)",
+   "language": "python",
+   "explanation": "Fills missing values with column-specific replacements and returns a new DataFrame."
+  },
+  "useCases": [
+   {
+    "title": "Complete numeric data",
+    "scenario": "Prepare numeric features for calculations by replacing missing measurements with a neutral value."
+   },
+   {
+    "title": "Column-specific defaults",
+    "scenario": "Apply different defaults to different columns, such as 0 for counts and a label for text."
+   },
+   {
+    "title": "Bounded filling",
+    "scenario": "Fill only a bounded number of missing entries when limiting imputation is required."
+   }
+  ],
+  "related": [
+   "DataFrame.dropna",
+   "DataFrame.replace",
+   "Series.fillna",
+   "DataFrame.isna"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The method replaces missing DataFrame values with a supplied replacement.",
+   "value may be a scalar or a mapping-like object that supplies replacements by column.",
+   "axis controls whether filling operates down rows or across columns.",
+   "limit restricts the number of missing entries filled along an axis."
+  ],
+  "gotchas": [
+   "If limit is supplied, it must be a positive integer.",
+   "inplace=True mutates the DataFrame instead of returning a separate filled result."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.filter": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.filter.html",
+  "sourceTitle": "pandas.DataFrame.filter — pandas 3.0.6 documentation",
+  "summary": "Select DataFrame rows or columns by their labels, using explicit labels, substring matching, or regular expressions. It does not inspect cell contents.",
+  "explanation": "DataFrame.filter returns a same-type object containing labels selected from one axis. Use items for an explicit label list, like for substring matching, or regex for regular-expression matching; axis chooses rows or columns and defaults to the DataFrame’s columns.",
+  "syntax": "DataFrame.filter(*items=None*, *like=None*, *regex=None*, *axis=None*)",
+  "parameters": [
+   {
+    "name": "items",
+    "type": "list-like, optional",
+    "description": "List-like labels to retain from the selected axis."
+   },
+   {
+    "name": "like",
+    "type": "str, optional",
+    "description": "Substring used to retain labels containing it."
+   },
+   {
+    "name": "regex",
+    "type": "str, optional",
+    "description": "Regular expression used to match labels."
+   },
+   {
+    "name": "axis",
+    "type": "{0 or ‘index’, 1 or ‘columns’, None}, default None",
+    "description": "Axis to filter: 0 or index for rows, 1 or columns for columns; defaults to None."
+   }
+  ],
+  "returns": "DataFrame or Series of the same type as the input object, containing labels selected from the specified axis.",
+  "example": {
+   "title": "Filter labels on columns and rows",
+   "code": "import pandas as pd\n\nsales = pd.DataFrame(\n    {\"product\": [\"A\", \"B\"], \"sales\": [10, 20], \"cost\": [6, 12]},\n    index=[\"north\", \"south\"],\n)\n\nselected = sales.filter(items=[\"product\", \"sales\"])\nby_pattern = sales.filter(regex=\"^s\", axis=\"columns\")\nby_row = sales.filter(like=\"south\", axis=\"index\")\n\nprint(selected)\nprint(by_pattern)\nprint(by_row)",
+   "language": "python",
+   "explanation": "Selects columns by explicit labels, columns matching a regular expression, and rows whose index labels contain a substring."
+  },
+  "useCases": [
+   {
+    "title": "Explicit column selection",
+    "scenario": "Retain a known subset of columns by name."
+   },
+   {
+    "title": "Pattern-based column selection",
+    "scenario": "Select columns sharing a naming convention."
+   },
+   {
+    "title": "Index-label filtering",
+    "scenario": "Find rows whose index labels contain a particular identifier."
+   }
+  ],
+  "related": [
+   "pandas.DataFrame.loc",
+   "pandas.DataFrame.select_dtypes",
+   "pandas.Series.filter"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Selects a subset using labels from the chosen axis.",
+   "Set axis to index or 0 for rows, or columns or 1 for columns.",
+   "items performs explicit membership selection using a list-like collection of labels.",
+   "like keeps labels containing the supplied substring.",
+   "regex keeps labels matched by the supplied regular expression.",
+   "When axis is omitted on a DataFrame, filtering applies to columns.",
+   "The result preserves the input object's type."
+  ],
+  "gotchas": [
+   "Filtering examines index labels, not cell values; use a value-based selection method when filtering by data content."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.groupby": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.groupby.html",
+  "sourceTitle": "pandas.DataFrame.groupby — pandas 3.0.6 documentation",
+  "summary": "Groups DataFrame rows using one or more grouping specifications and returns a DataFrameGroupBy object. Aggregate, transform, filter, or iterate over the groups to perform group-wise operations.",
+  "explanation": "DataFrame.groupby partitions rows according to one or more grouping specifications and returns a DataFrameGroupBy object. Apply an aggregation or transformation to that object to combine results, while options control group labels, ordering, categorical handling, and missing-key inclusion.",
+  "syntax": "DataFrame.groupby(by=None, level=None, *, as_index=True, sort=True, group_keys=True, observed=True, dropna=True)",
+  "parameters": [
+   {
+    "name": "by",
+    "type": "mapping, function, label, pd.Grouper, or list",
+    "description": "Mapping, function, label, pd.Grouper, or list of such; determines the groups."
+   },
+   {
+    "name": "level",
+    "type": "int, level name, or sequence; default None",
+    "description": "Level name or sequence of levels when grouping a MultiIndex."
+   },
+   {
+    "name": "as_index",
+    "type": "bool; default True",
+    "description": "Whether group labels are returned as the index."
+   },
+   {
+    "name": "sort",
+    "type": "bool; default True",
+    "description": "Whether to sort group keys."
+   },
+   {
+    "name": "group_keys",
+    "type": "bool; default True",
+    "description": "Whether to include group keys when applying functions."
+   },
+   {
+    "name": "observed",
+    "type": "bool; default True",
+    "description": "Whether to include observed values for categorical groupers."
+   },
+   {
+    "name": "dropna",
+    "type": "bool; default True",
+    "description": "Whether to include rows whose grouping key is missing."
+   }
+  ],
+  "returns": "DataFrameGroupBy",
+  "example": {
+   "title": "Group rows and aggregate a column",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"team\": [\"A\", \"A\", \"B\"],\n    \"points\": [10, 15, 7],\n})\n\nresult = df.groupby(\"team\", as_index=False)[\"points\"].sum()\nprint(result)",
+   "language": "python",
+   "explanation": "Groups rows by team and computes the sum of points for each team."
+  },
+  "useCases": [
+   {
+    "title": "Grouped aggregation",
+    "scenario": "Summarize numeric or categorical data by one or more dimensions."
+   },
+   {
+    "title": "Group-wise processing",
+    "scenario": "Run a custom operation independently on each group."
+   },
+   {
+    "title": "Group-wise transformation",
+    "scenario": "Create transformed values aligned with the original rows."
+   },
+   {
+    "title": "Group inspection",
+    "scenario": "Select or inspect individual groups after grouping."
+   }
+  ],
+  "related": [
+   "DataFrameGroupBy",
+   "pandas.Grouper",
+   "DataFrameGroupBy.aggregate",
+   "DataFrameGroupBy.apply",
+   "DataFrameGroupBy.transform",
+   "DataFrameGroupBy.filter",
+   "DataFrameGroupBy.__iter__"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use a column label, mapping, callable, Grouper, or list of grouping specifications to define groups.",
+   "The operation follows a split–apply–combine workflow: form groups, process each group, then assemble the output.",
+   "The `by` argument identifies how rows are assigned to groups.",
+   "With `as_index=True`, group labels are placed in the resulting object's index; set it to false to retain them as columns.",
+   "Use `level` to group by one or more levels of a MultiIndex.",
+   "The method returns a DataFrameGroupBy object, which can then be aggregated, transformed, filtered, or iterated."
+  ],
+  "gotchas": [
+   "Use either `by` or `level` to define the grouping; passing both is invalid.",
+   "A callable groups by transformed index values, not by the values in a selected column.",
+   "The `as_index` option affects DataFrame grouping; it controls whether group labels become the result index."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.head": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.head.html",
+  "sourceTitle": "pandas.DataFrame.head",
+  "summary": "Returns the first `n` rows of a DataFrame by position. The default is five rows; zero returns an empty object and negative values exclude rows from the end.",
+  "explanation": "Call `head` on a DataFrame to obtain a new DataFrame containing rows from the beginning, selected by position. It defaults to five rows; a positive value limits the result, zero produces an empty DataFrame, and a negative value excludes that many rows from the end.",
+  "syntax": "DataFrame.head(n=5)",
+  "parameters": [
+   {
+    "name": "n",
+    "type": "int, default 5",
+    "description": "Number of rows to select."
+   }
+  ],
+  "returns": "Same type as caller: the first n rows of the caller object.",
+  "example": {
+   "title": "Inspect the first rows",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame({\"animal\": [\"alligator\", \"bee\", \"falcon\", \"lion\"]})\nprint(df.head(2))",
+   "language": "python",
+   "explanation": "Creates a DataFrame and displays its first two rows."
+  },
+  "useCases": [
+   {
+    "title": "Preview imported data",
+    "scenario": "Quickly inspect whether a DataFrame loaded from a file has the expected columns and values."
+   },
+   {
+    "title": "Inspect transformed data",
+    "scenario": "Check the output of a transformation without printing the entire DataFrame."
+   },
+   {
+    "title": "Explore a dataset",
+    "scenario": "Display a small leading sample in an exploratory analysis workflow."
+   }
+  ],
+  "related": [
+   "DataFrame.tail",
+   "DataFrame.iloc"
+  ],
+  "since": "",
+  "keyPoints": [
+   "`DataFrame.head` selects rows from the start of the DataFrame.",
+   "Selection is positional, so the method takes the beginning rows regardless of index labels.",
+   "Use it as a quick inspection step when validating loaded or transformed data.",
+   "Positive `n` specifies the maximum number of leading rows to return.",
+   "Negative `n` omits that many rows from the end instead of counting from the beginning."
+  ],
+  "gotchas": [
+   "Passing zero returns an empty object rather than the first row.",
+   "A count larger than the DataFrame length is safe and returns every row."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.iat": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.iat.html",
+  "sourceTitle": "pandas.DataFrame.iat",
+  "summary": "`DataFrame.iat` gets or sets one DataFrame value by zero-based row and column position. It is the scalar counterpart to positional `iloc` access.",
+  "explanation": "`DataFrame.iat` performs scalar indexing using zero-based integer positions: provide a row position and a column position to retrieve one cell, or assign through the same accessor to update it. It is intended for single-value access rather than selecting groups of rows or columns.",
+  "syntax": "DataFrame.iat",
+  "parameters": [],
+  "returns": "A single value at the specified row/column integer positions.",
+  "example": {
+   "title": "Read and update one cell",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame([[0, 2, 3], [0, 4, 1]], columns=[\"A\", \"B\", \"C\"])\nvalue = df.iat[1, 2]\ndf.iat[1, 2] = 10\nprint(value)\nprint(df.iat[1, 2])",
+   "language": "python",
+   "explanation": "Reads the value at row position 1 and column position 2, then replaces that single cell."
+  },
+  "useCases": [
+   {
+    "title": "Scalar lookup",
+    "scenario": "Read one known cell efficiently by its row and column positions."
+   },
+   {
+    "title": "Scalar assignment",
+    "scenario": "Update one cell without selecting a larger subset."
+   },
+   {
+    "title": "Single-value Series access",
+    "scenario": "Access a single value after selecting a DataFrame row as a Series."
+   }
+  ],
+  "related": [
+   "DataFrame.at",
+   "DataFrame.loc",
+   "DataFrame.iloc"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use `iat` to access exactly one DataFrame cell through its integer row and column positions.",
+   "Its indexing model is positional, like `iloc`, rather than label-based.",
+   "Choose `iat` for scalar reads or writes; use broader indexers for groups of cells.",
+   "A pair of integer positions retrieves the value at that row and column.",
+   "Assigning to the same positional expression updates the selected cell.",
+   "Use `iloc` instead when the operation needs a group of rows or columns."
+  ],
+  "gotchas": [
+   "Using a row or column position outside the DataFrame dimensions raises IndexError."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.iloc": {
+  "sourceUrl": "https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.iloc.html",
+  "sourceTitle": "pandas.DataFrame.iloc",
+  "summary": "`DataFrame.iloc` selects DataFrame rows and columns by zero-based integer position. It supports scalar positions, integer lists, slices, boolean arrays, callables, and row-column tuples.",
+  "explanation": "`DataFrame.iloc` indexes a DataFrame by zero-based integer positions rather than labels. It accepts a single positional indexer or a row-and-column tuple, including integers, integer lists, integer slices, boolean arrays, and callables that return valid indexers.",
+  "syntax": "DataFrame.iloc[器]",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Select rows and columns by position",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ada\", \"Grace\", \"Linus\"], \"score\": [10, 20, 30]})\n\nfirst_row = df.iloc[0]\nselected = df.iloc[0:2, [0, 1]]\nprint(first_row[\"name\"])\nprint(selected)",
+   "language": "python",
+   "explanation": "Selects the first row and then the first two rows with both columns by integer position."
+  },
+  "useCases": [
+   {
+    "title": "Single-position access",
+    "scenario": "Select the first or another specific row or column by its numeric position."
+   },
+   {
+    "title": "Positional slicing",
+    "scenario": "Extract a rectangular subset without depending on row or column labels."
+   },
+   {
+    "title": "Position lists",
+    "scenario": "Reorder or sample selected positions using an integer list."
+   },
+   {
+    "title": "Boolean selection",
+    "scenario": "Use a boolean mask when selection is naturally represented by positional truth values."
+   }
+  ],
+  "related": [
+   "pandas.DataFrame.loc",
+   "pandas.Series.iloc"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use `.iloc` when selection should depend on row and column positions, not their labels.",
+   "Positions are zero-based, so the first row or column is at position 0.",
+   "Pass an integer list or array to select positions in the requested order.",
+   "Integer slices select a positional range and follow Python-style slice behavior.",
+   "A boolean array can select rows or columns positionally when its length matches the relevant axis.",
+   "Use `df.iloc[row_indexer, column_indexer]` to specify row and column selections together."
+  ],
+  "gotchas": [
+   "Integer indexers outside the DataFrame bounds raise IndexError; slice indexers are the exception and may go out of bounds.",
+   "In pandas 3.0, a callable returning a tuple is deprecated; return a supported single indexer instead."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.isin": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.isin.html",
+  "sourceTitle": "pandas.DataFrame.isin",
+  "summary": "Tests each DataFrame element for membership in supplied values and returns a same-shaped boolean DataFrame. Use a dictionary for column-specific value sets, or aligned Series/DataFrame inputs for label-aware comparisons.",
+  "explanation": "DataFrame.isin compares every cell with permitted values and returns a same-shaped boolean DataFrame. Lists or other iterables apply across the frame, while dictionaries select allowed values by column; Series and DataFrame inputs use label alignment.",
+  "syntax": "DataFrame.isin(values)",
+  "parameters": [
+   {
+    "name": "values",
+    "type": "iterable, Series, DataFrame or dict",
+    "description": "Values to test against; accepted forms are an iterable, Series, DataFrame, or dict. Alignment rules depend on the input type."
+   }
+  ],
+  "returns": "DataFrame of booleans showing whether each element in the DataFrame is contained in values.",
+  "example": {
+   "title": "Check membership with column-specific values",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"num_legs\": [2, 4],\n    \"num_wings\": [2, 0],\n}, index=[\"falcon\", \"dog\"])\n\nmatches = df.isin({\"num_legs\": [2], \"num_wings\": [0, 2]})\nprint(matches)\nprint(df[\"num_legs\"].isin([2]).to_numpy())",
+   "language": "python",
+   "explanation": "Creates a boolean DataFrame using separate allowed values for each column, then demonstrates column-level membership."
+  },
+  "useCases": [
+   {
+    "title": "Filter by membership",
+    "scenario": "Filter rows containing allowed categorical or numeric values across one or more columns."
+   },
+   {
+    "title": "Column-specific validation",
+    "scenario": "Apply different accepted values to different columns with a dictionary."
+   },
+   {
+    "title": "Aligned comparison",
+    "scenario": "Compare a DataFrame against another labeled object while preserving index and column alignment."
+   }
+  ],
+  "related": [
+   "DataFrame",
+   "Series",
+   "DataFrame.loc",
+   "DataFrame.notna"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The method performs an element-wise membership test over the entire DataFrame.",
+   "The result is a boolean DataFrame with the same layout as the input.",
+   "The membership source may be an iterable, Series, DataFrame, or dictionary.",
+   "A Series input is matched according to its index labels.",
+   "A dictionary lets each column use its own membership values.",
+   "A DataFrame input requires both axes to align with the target."
+  ],
+  "gotchas": [
+   "Series and DataFrame inputs are label-aligned, so matching values alone are insufficient when their labels differ.",
+   "Dictionary keys must correspond to existing column names; misspelled or extra keys do not provide a valid column-specific check."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.loc": {
+  "sourceUrl": "https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.loc.html",
+  "sourceTitle": "pandas.DataFrame.loc#",
+  "summary": "DataFrame.loc selects and assigns DataFrame rows and columns by label, with optional boolean-array filtering. Label slices include both endpoints, and numeric keys remain labels rather than positions.",
+  "explanation": "DataFrame.loc is a label-oriented indexer for selecting or assigning rows and columns. It accepts individual labels, label collections, inclusive label slices, boolean masks, callable indexers, and alignable objects.",
+  "syntax": "df.loc[row_indexer, column_indexer]",
+  "parameters": [
+   {
+    "name": "indexer",
+    "type": "label, list-like, slice, boolean array, alignable Series/Index, or callable",
+    "description": "Row and column indexers supplied inside df.loc[row_indexer, column_indexer]. Supported forms include labels, lists or arrays of labels, inclusive label slices, boolean arrays, alignable boolean Series, alignable Index objects, and callables."
+   }
+  ],
+  "returns": "A cross-section consisting of selected row(s) or column(s) from the DataFrame; the exact result type depends on the indexers.",
+  "example": {
+   "title": "Select and update by labels",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame(\n    {\"name\": [\"Ada\", \"Linus\", \"Grace\"], \"score\": [95, 82, 91]},\n    index=[\"a\", \"b\", \"c\"],\n)\n\nselected = df.loc[[\"a\", \"c\"], [\"name\", \"score\"]]\nhigh_scores = df.loc[df[\"score\"] >= 90, \"name\"]\ndf.loc[\"b\", \"score\"] = 88\n\nprint(selected)\nprint(high_scores)",
+   "language": "python",
+   "explanation": "Uses label lists, a boolean condition, and a label pair to select and update DataFrame values."
+  },
+  "useCases": [
+   {
+    "title": "Label-based selection",
+    "scenario": "Retrieve specific records or fields by their index and column labels."
+   },
+   {
+    "title": "Boolean filtering",
+    "scenario": "Keep rows satisfying a condition and optionally select particular columns."
+   },
+   {
+    "title": "Label-based assignment",
+    "scenario": "Change selected cells or ranges without relying on positional offsets."
+   },
+   {
+    "title": "Inclusive label slicing",
+    "scenario": "Select an inclusive range of ordered index or column labels."
+   }
+  ],
+  "related": [
+   "DataFrame.iloc",
+   "DataFrame.at",
+   "DataFrame.iat",
+   "Series.loc"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use loc to retrieve or assign groups of rows and columns using labels or boolean selection.",
+   "Its main indexing model is labels, with boolean arrays also supported.",
+   "Pass a list or array when selecting multiple, explicitly named labels.",
+   "Use label slices to select a contiguous label range.",
+   "A positional boolean mask must have the same length as the axis it filters.",
+   "A boolean Series can filter rows while pandas aligns its index to the target.",
+   "When an alignable Index is used, the result retains that Index as its selection index."
+  ],
+  "gotchas": [
+   "Label-based slices include both boundary labels, unlike ordinary Python slices.",
+   "Numeric keys are still treated as index labels, not positional offsets; use iloc for integer-position access.",
+   "An alignable boolean Series is matched to the DataFrame index before it filters rows."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.mask": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.mask.html",
+  "sourceTitle": "pandas.DataFrame.mask",
+  "summary": "Replace DataFrame values wherever a condition is true. Keep values where the condition is false, or supply replacements through `other`.",
+  "explanation": "Call `DataFrame.mask` to apply an if-then rule element by element: values whose condition is true are replaced by `other`, while false-condition values remain unchanged. The condition and replacement may be aligned Series/DataFrames or callables evaluated against the DataFrame; omitting `other` fills selected entries with the dtype-appropriate missing value.",
+  "syntax": "DataFrame.mask(cond, other=<no_default>, *, inplace=False, axis=None, level=None)",
+  "parameters": [
+   {
+    "name": "cond",
+    "type": "bool Series/DataFrame, array-like, or callable",
+    "description": "Boolean Series/DataFrame, array-like, or callable determining which entries are replaced; false entries are retained."
+   },
+   {
+    "name": "other",
+    "type": "scalar, Series/DataFrame, or callable",
+    "description": "Scalar, Series/DataFrame, or callable supplying replacement values; omitted values become dtype-appropriate nulls."
+   },
+   {
+    "name": "inplace",
+    "type": "bool, default False",
+    "description": "Whether to modify the caller in place."
+   },
+   {
+    "name": "axis",
+    "type": "int, default None",
+    "description": "Alignment axis when alignment is needed."
+   },
+   {
+    "name": "level",
+    "type": "int, default None",
+    "description": "Alignment level when alignment is needed."
+   }
+  ],
+  "returns": "Series or DataFrame. A DataFrame input returns a DataFrame; a Series input returns a Series.",
+  "example": {
+   "title": "Replace values meeting a condition",
+   "code": "import pandas as pd\n\nscores = pd.DataFrame({\"alice\": [82, 47], \"bob\": [91, 63]})\nmasked = scores.mask(scores < 60, other=0)\nprint(masked)\n",
+   "language": "python",
+   "explanation": "Replaces scores below 60 with zero while preserving all other values."
+  },
+  "useCases": [
+   {
+    "title": "Clean invalid data",
+    "scenario": "Replace invalid or out-of-range measurements with a sentinel or missing value."
+   },
+   {
+    "title": "Conditional recoding",
+    "scenario": "Apply a scalar or aligned replacement to selected rows or columns."
+   },
+   {
+    "title": "Callable transformations",
+    "scenario": "Compute replacement values dynamically from the current DataFrame."
+   }
+  ],
+  "related": [
+   "DataFrame.where"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Selects entries whose condition evaluates to true and replaces those entries.",
+   "False-condition entries remain unchanged.",
+   "`other` can provide a scalar or aligned replacement value for selected entries.",
+   "A condition callable receives the DataFrame and must produce boolean-shaped output.",
+   "A replacement callable is evaluated against the DataFrame and returns a scalar or replacement object.",
+   "Without `other`, selected entries receive the missing-value representation appropriate to their dtype."
+  ],
+  "gotchas": [
+   "Misaligned replacement and condition axes cause unmatched condition positions to be treated as true, so inspect alignment before masking.",
+   "Callables for `cond` must not mutate the DataFrame they receive, even though pandas does not enforce this.",
+   "The caller's dtype controls how replacement values are represented."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.merge": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.merge.html",
+  "sourceTitle": "pandas.DataFrame.merge",
+  "summary": "Merge a DataFrame or named Series with another object using database-style joins. Choose column or index keys and control retained keys, ordering, suffixes, provenance, and key validation.",
+  "explanation": "Call this method on the left DataFrame and provide the right DataFrame plus join settings. Pandas matches rows through shared column names, explicitly paired columns, or indexes, then returns a new DataFrame whose included keys depend on the selected join type; overlapping non-key columns receive suffixes unless renamed or otherwise configured.",
+  "syntax": "DataFrame.merge(right, how='inner', on=None, left_on=None, right_on=None, left_index=False, right_index=False, sort=False, suffixes=('_x', '_y'), copy=<no_default>, indicator=False, validate=None)",
+  "parameters": [
+   {
+    "name": "right",
+    "type": "DataFrame or named Series",
+    "description": "DataFrame or named Series to merge with the calling object."
+   },
+   {
+    "name": "how",
+    "type": "{‘left’, ‘right’, ‘outer’, ‘inner’, ‘cross’}",
+    "description": "Join strategy: left, right, outer, inner, or cross; defaults to inner."
+   },
+   {
+    "name": "on",
+    "type": "label or list",
+    "description": "Column or index-level names shared by both objects."
+   },
+   {
+    "name": "left_on",
+    "type": "label, list, or array-like",
+    "description": "Keys from the left object, including arrays or index-level names."
+   },
+   {
+    "name": "right_on",
+    "type": "label, list, or array-like",
+    "description": "Keys from the right object, including arrays or index-level names."
+   },
+   {
+    "name": "left_index",
+    "type": "bool",
+    "description": "Use the left index as the join key."
+   },
+   {
+    "name": "right_index",
+    "type": "bool",
+    "description": "Use the right index as the join key."
+   },
+   {
+    "name": "sort",
+    "type": "bool",
+    "description": "Sort join keys lexicographically in the result."
+   },
+   {
+    "name": "suffixes",
+    "type": "2-length sequence",
+    "description": "Suffixes appended to overlapping non-key column names."
+   },
+   {
+    "name": "copy",
+    "type": "bool or None",
+    "description": "Whether to copy data; the default is pandas' no_default sentinel."
+   },
+   {
+    "name": "indicator",
+    "type": "bool or str",
+    "description": "Add a column identifying the source of each row."
+   },
+   {
+    "name": "validate",
+    "type": "str or None",
+    "description": "Check whether merge keys satisfy an expected multiplicity."
+   }
+  ],
+  "returns": "A DataFrame containing the joined rows and columns from the two inputs.",
+  "example": {
+   "title": "Join orders with customer data",
+   "code": "import pandas as pd\n\norders = pd.DataFrame({\"customer_id\": [1, 2], \"amount\": [10, 25]})\ncustomers = pd.DataFrame({\"customer_id\": [1, 2], \"name\": [\"Ada\", \"Linus\"]})\n\nresult = orders.merge(customers, on=\"customer_id\", how=\"left\", validate=\"many_to_one\")\nprint(result)",
+   "language": "python",
+   "explanation": "Joins customer names onto orders using the shared key and verifies that each customer key appears at most once on the right."
+  },
+  "useCases": [
+   {
+    "title": "Combine related tables",
+    "scenario": "Enrich fact or transaction rows with attributes from a related lookup table."
+   },
+   {
+    "title": "Left join with optional matches",
+    "scenario": "Retain every row from a primary dataset while adding matching optional data."
+   },
+   {
+    "title": "Join on explicit or index keys",
+    "scenario": "Combine datasets with different key-column names or index-based identifiers."
+   },
+   {
+    "title": "Validate merge relationships",
+    "scenario": "Audit and enforce expected key cardinality during data integration."
+   }
+  ],
+  "related": [
+   "pandas.merge",
+   "DataFrame.join",
+   "DataFrame.concat"
+  ],
+  "since": "",
+  "keyPoints": [
+   "DataFrame.merge combines the calling DataFrame with another DataFrame or named Series using database-style join semantics.",
+   "Keys may come from columns, indexes, or a combination of column and index levels.",
+   "The how argument selects which keys survive: left, right, outer, inner, or Cartesian cross join; inner is the default.",
+   "Use on for common key names, left_on and right_on for different key names or array-like keys, and index flags for index-based joins.",
+   "An outer join keeps the union of keys and sorts them lexicographically.",
+   "An inner join keeps only matching key combinations and preserves the left-key order.",
+   "A cross join pairs every left row with every right row while preserving left-row order."
+  ],
+  "gotchas": [
+   "Null keys match each other in this operation, unlike the usual SQL behavior; account for this when joining missing values.",
+   "The suffixes argument must provide a suffix for at least one side when overlapping columns need disambiguation."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.nlargest": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.nlargest.html",
+  "sourceTitle": "pandas.DataFrame.nlargest",
+  "summary": "Returns the top n rows ranked by one or more columns in descending order. It keeps all DataFrame columns and supports configurable handling of duplicate values.",
+  "explanation": "Call nlargest with the number of rows to select and one or more ordering columns. It returns the complete rows ranked by those columns from largest to smallest, while keep controls which duplicate boundary values are retained.",
+  "syntax": "DataFrame.nlargest(n, columns, keep='first')",
+  "parameters": [
+   {
+    "name": "n",
+    "type": "int",
+    "description": "Number of rows to return."
+   },
+   {
+    "name": "columns",
+    "type": "Hashable or a sequence of Hashable",
+    "description": "Column label or sequence of column labels to order by."
+   },
+   {
+    "name": "keep",
+    "type": "'first', 'last', or 'all'",
+    "description": "Duplicate handling: 'first' prioritizes first occurrences, 'last' prioritizes last occurrences, and 'all' keeps ties at the boundary. Default: 'first'."
+   }
+  ],
+  "returns": "DataFrame containing the first n rows ordered by the specified columns in descending order.",
+  "example": {
+   "title": "Select the top rows",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"name\": [\"A\", \"B\", \"C\", \"D\"],\n    \"score\": [91, 87, 95, 95],\n})\n\nresult = df.nlargest(2, \"score\")\nprint(result)",
+   "language": "python",
+   "explanation": "Selects the two rows with the highest scores; equal values retain their original order with the default keep='first'."
+  },
+  "useCases": [
+   {
+    "title": "Top-N selection",
+    "scenario": "Extract the highest-scoring records from a table."
+   },
+   {
+    "title": "Multi-column ranking",
+    "scenario": "Rank rows by multiple numeric columns while retaining complete records."
+   },
+   {
+    "title": "Tie-preserving selection",
+    "scenario": "Include every record tied at the cutoff."
+   }
+  ],
+  "related": [
+   "DataFrame.sort_values"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Returns up to n rows sorted from largest to smallest according to the requested columns.",
+   "The result preserves every DataFrame column, although only the listed columns determine ranking.",
+   "Use nlargest as the optimized top-n equivalent of descending sort followed by head.",
+   "The n argument specifies the requested maximum number of rows.",
+   "The keep argument determines how duplicate ranking values are handled."
+  ],
+  "gotchas": [
+   "Only some column dtypes are supported; using unsupported types such as object or category can raise TypeError.",
+   "With keep='all', ties at the selection boundary can make the result contain more than n rows."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.nsmallest": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.nsmallest.html",
+  "sourceTitle": "pandas.DataFrame.nsmallest — pandas 3.0.6 documentation",
+  "summary": "Returns the first n rows ordered ascending by one or more columns. It preserves every column and supports configurable handling of ties.",
+  "explanation": "DataFrame.nsmallest returns up to n rows ordered ascending by one or more columns. It keeps all original columns, uses additional specified columns to resolve ordering, and lets keep control which duplicate boundary values are retained.",
+  "syntax": "DataFrame.nsmallest(n, columns, keep='first')",
+  "parameters": [
+   {
+    "name": "n",
+    "type": "int",
+    "description": "Number of items to retrieve."
+   },
+   {
+    "name": "columns",
+    "type": "list or str",
+    "description": "Column name or names to order by."
+   },
+   {
+    "name": "keep",
+    "type": "{'first', 'last', 'all'}, default 'first'",
+    "description": "Duplicate handling: 'first', 'last', or 'all'; default is 'first'."
+   }
+  ],
+  "returns": "DataFrame with the first n rows ordered by columns in ascending order.",
+  "example": {
+   "title": "Select the smallest rows",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"city\": [\"A\", \"B\", \"C\", \"D\"],\n    \"population\": [120, 80, 80, 200],\n    \"area\": [10, 7, 6, 20],\n})\n\nresult = df.nsmallest(2, [\"population\", \"area\"])\nprint(result)",
+   "language": "python",
+   "explanation": "Selects the two rows with the smallest population, breaking ties by area."
+  },
+  "useCases": [
+   {
+    "title": "Find minimum-valued rows",
+    "scenario": "Retrieve the least expensive or smallest records without sorting the complete DataFrame."
+   },
+   {
+    "title": "Apply multi-column ordering",
+    "scenario": "Rank by a primary column and use additional columns to break ties."
+   },
+   {
+    "title": "Preserve boundary ties",
+    "scenario": "Include every row tied at the cutoff value."
+   }
+  ],
+  "related": [
+   "DataFrame.nlargest",
+   "DataFrame.sort_values",
+   "DataFrame.head"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Returns the first n rows after ascending ordering by the requested columns.",
+   "All DataFrame columns remain in the result, although only columns listed in columns determine order.",
+   "It provides a more efficient alternative to sorting the entire DataFrame and taking its head.",
+   "n specifies how many rows to request.",
+   "columns accepts one column name or multiple names used for ascending ordering.",
+   "The keep argument determines how duplicate ordering values are handled."
+  ],
+  "gotchas": [
+   "With keep='all', the result can contain more than n rows when the boundary value is tied.",
+   "keep='last' selects the last occurrence among rows with tied ordering values."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.pivot": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.pivot.html",
+  "sourceTitle": "pandas.DataFrame.pivot",
+  "summary": "Reshapes a DataFrame by turning unique values from one field into columns and another into rows. It places selected values in the resulting cells but does not aggregate duplicate combinations.",
+  "explanation": "DataFrame.pivot reshapes long-form data into a wider DataFrame. It uses distinct values from the chosen index and columns fields as axes, and places the selected values at their intersections without aggregating duplicate combinations.",
+  "syntax": "DataFrame.pivot(*, columns, index=<no_default>, values=<no_default>)",
+  "parameters": [
+   {
+    "name": "columns",
+    "type": "Hashable or a sequence of the previous",
+    "description": "Column to use to make new frame’s columns."
+   },
+   {
+    "name": "index",
+    "type": "Hashable or a sequence of the previous, optional",
+    "description": "Column to use to make new frame’s index. If not given, uses existing index."
+   },
+   {
+    "name": "values",
+    "type": "Hashable or a sequence of the previous, optional",
+    "description": "Column(s) to use for populating new frame’s values. If not specified, all remaining columns will be used."
+   }
+  ],
+  "returns": "DataFrame: Reshaped DataFrame.",
+  "example": {
+   "title": "Reshape long data",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"date\": [\"2024-01-01\", \"2024-01-01\", \"2024-01-02\"],\n    \"kind\": [\"sales\", \"returns\", \"sales\"],\n    \"amount\": [100, 5, 80],\n})\n\nwide = df.pivot(index=\"date\", columns=\"kind\", values=\"amount\")\nprint(wide)",
+   "language": "python",
+   "explanation": "Reshapes each date into a row and each distinct kind into a column, placing amount values at their intersections."
+  },
+  "useCases": [
+   {
+    "title": "Wide-format conversion",
+    "scenario": "Convert event or transaction records from long format into a wide table for analysis."
+   },
+   {
+    "title": "Category cross-tabulation",
+    "scenario": "Create one row per entity and one column per category."
+   },
+   {
+    "title": "Report layout",
+    "scenario": "Select one or several measures for a structured report."
+   }
+  ],
+  "related": [
+   "pandas.pivot",
+   "pandas.pivot_table",
+   "DataFrame.pivot_table"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Returns a reshaped DataFrame organized around the selected index and column values.",
+   "Converts long-form records into a pivot-style layout based on column values.",
+   "Distinct values in the specified index and columns define the result's axes.",
+   "The required columns argument identifies the source field whose values become output columns.",
+   "The optional index argument identifies the source field used for output rows; if omitted, the existing index is used.",
+   "The optional values argument selects the field or fields placed inside the reshaped table."
+  ],
+  "gotchas": [
+   "pivot does not aggregate records. Duplicate index-and-column combinations are not combined; multiple value columns can instead produce hierarchical columns.",
+   "Leaving values unspecified includes every remaining column and can produce MultiIndex columns."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.query": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.query.html",
+  "sourceTitle": "pandas.DataFrame.query",
+  "summary": "Filter a DataFrame by evaluating a boolean expression against its columns. It can return a filtered copy or mutate the original DataFrame with inplace=True.",
+  "explanation": "DataFrame.query evaluates a string expression against the DataFrame and returns the rows for which that expression is true. Its parser, evaluation engine, variable namespaces, and mutation behavior can be adjusted with keyword arguments.",
+  "syntax": "DataFrame.query(expr, *, parser='pandas', engine=None, local_dict=None, global_dict=None, resolvers=None, level=0, inplace=False)",
+  "parameters": [
+   {
+    "name": "expr",
+    "type": "str",
+    "description": "Query string to evaluate."
+   },
+   {
+    "name": "parser",
+    "type": "{'pandas', 'python'}",
+    "description": "Parser used to construct the expression syntax tree; 'pandas' or 'python', default 'pandas'."
+   },
+   {
+    "name": "engine",
+    "type": "{'python', 'numexpr'}",
+    "description": "Evaluation engine; 'python' or 'numexpr', default None."
+   },
+   {
+    "name": "local_dict",
+    "type": "dict or None",
+    "description": "Dictionary of local variables used during evaluation, or None."
+   },
+   {
+    "name": "global_dict",
+    "type": "dict or None",
+    "description": "Dictionary of global variables used during evaluation, or None."
+   },
+   {
+    "name": "resolvers",
+    "type": "list of dict-like or None",
+    "description": "List of dict-like namespaces used for variable lookup, or None."
+   },
+   {
+    "name": "level",
+    "type": "int",
+    "description": "Namespace level used for variable lookup."
+   },
+   {
+    "name": "inplace",
+    "type": "bool",
+    "description": "Whether to modify the DataFrame instead of creating a new one."
+   }
+  ],
+  "returns": "DataFrame containing rows matching the expression, or None when inplace=True.",
+  "example": {
+   "title": "Filter rows with a boolean expression",
+   "code": "import pandas as pd\n\norders = pd.DataFrame({\n    \"item\": [\"book\", \"pen\", \"book\"],\n    \"amount\": [25, 8, 40],\n})\n\nresult = orders.query(\"item == 'book' and amount > 20\")\nprint(result)",
+   "language": "python",
+   "explanation": "Selects rows whose item is book and amount exceeds 20."
+  },
+  "useCases": [
+   {
+    "title": "Boolean row filtering",
+    "scenario": "Select records meeting multiple column conditions."
+   },
+   {
+    "title": "Concise data selection",
+    "scenario": "Use readable expressions instead of combining boolean Series manually."
+   },
+   {
+    "title": "Parameterized filtering",
+    "scenario": "Reference external thresholds or variables in a query."
+   }
+  ],
+  "related": [
+   "DataFrame.eval",
+   "eval",
+   "DataFrame.loc",
+   "DataFrame.iloc"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use query to filter DataFrame rows with a boolean expression written as a string.",
+   "expr is the expression passed to the query evaluator.",
+   "parser selects either pandas or Python expression syntax.",
+   "engine controls expression evaluation; supported choices include Python and numexpr.",
+   "local_dict supplies names available from the local namespace.",
+   "Set inplace=True to modify the existing DataFrame instead of returning a new result."
+  ],
+  "gotchas": [
+   "When inplace=True, the method mutates the DataFrame and returns None."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.rank": {
+  "sourceUrl": "https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.rank.html",
+  "sourceTitle": "pandas.DataFrame.rank — pandas 3.0.6 documentation",
+  "summary": "Compute numerical ranks for DataFrame values along an axis. Configure tie handling, missing values, direction, numeric-column selection, and percentile output.",
+  "explanation": "DataFrame.rank computes numerical ranks along rows or columns. You can choose tie handling, control how missing values are ranked, reverse the order, restrict ranking to numeric columns, or return percentile-style ranks.",
+  "syntax": "DataFrame.rank(*axis=0*, *method='average'*, *numeric_only=False*, *na_option='keep'*, *ascending=True*, *pct=False*)",
+  "parameters": [
+   {
+    "name": "axis",
+    "type": "{0 or ‘index’, 1 or ‘columns’}, default 0",
+    "description": "Axis to rank over: 0 or 'index' for columns, or 1 or 'columns' for rows."
+   },
+   {
+    "name": "method",
+    "type": "{‘average’, ‘min’, ‘max’, ‘first’, ‘dense’}, default ‘average’",
+    "description": "Tie-ranking strategy: average, min, max, first, or dense."
+   },
+   {
+    "name": "numeric_only",
+    "type": "bool, default False",
+    "description": "If True, rank only numeric columns."
+   },
+   {
+    "name": "na_option",
+    "type": "{‘keep’, ‘top’, ‘bottom’}, default ‘keep’",
+    "description": "How to handle NaN values: keep, top, or bottom."
+   },
+   {
+    "name": "ascending",
+    "type": "bool, default True",
+    "description": "Rank in ascending order when True; descending when False."
+   },
+   {
+    "name": "pct",
+    "type": "bool, default False",
+    "description": "Return percentile-form rankings when True."
+   }
+  ],
+  "returns": "A Series or DataFrame of ranks, with the same type as the caller.",
+  "example": {
+   "title": "Rank values in a DataFrame",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame({\"score\": [80, 95, 95, 70]})\ndf[\"rank\"] = df[\"score\"].rank(method=\"dense\", ascending=False)\nprint(df)",
+   "language": "python",
+   "explanation": "Adds descending dense ranks, so tied scores share a rank and the next distinct score advances by one."
+  },
+  "useCases": [
+   {
+    "title": "Leaderboards",
+    "scenario": "Create leaderboard positions from scores, with ties handled consistently."
+   },
+   {
+    "title": "Feature engineering",
+    "scenario": "Add within-column or within-row order features for analysis."
+   },
+   {
+    "title": "Percentile analysis",
+    "scenario": "Compare observations by relative percentile rather than raw rank."
+   }
+  ],
+  "related": [
+   "DataFrameGroupBy.rank",
+   "Series.rank"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Ranks values from 1 through n along the selected axis.",
+   "axis=0 or 'index' ranks down each column; axis=1 or 'columns' ranks across each row.",
+   "method controls ties: average, min, max, first, or dense.",
+   "Set numeric_only=True to exclude nonnumeric DataFrame columns.",
+   "ascending=False makes larger values receive better, lower-numbered ranks.",
+   "pct=True returns rankings as proportions relative to the ranked values."
+  ],
+  "gotchas": [
+   "The default tie method averages the positions occupied by equal values; choose another method when deterministic integer ranks are required.",
+   "With the default missing-value policy, NaN entries remain unranked instead of receiving a numeric position.",
+   "Dense ranking differs from minimum ranking by avoiding gaps between groups of tied values."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.rename": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.rename.html",
+  "sourceTitle": "pandas.DataFrame.rename — pandas 2.3.3 documentation",
+  "summary": "Rename DataFrame column or index labels using mappings or functions. It returns a renamed DataFrame by default, or modifies the original when inplace=True.",
+  "explanation": "DataFrame.rename returns a DataFrame whose column or index labels are changed by a mapping or callable. Use index and columns for clarity; unmatched labels remain unchanged unless errors='raise' is requested, and inplace=True updates the original object instead of returning the renamed DataFrame.",
+  "syntax": "DataFrame.rename(*mapper=None, **, index=None, columns=None, axis=None, copy=None, inplace=False, level=None, errors='ignore')",
+  "parameters": [
+   {
+    "name": "mapper",
+    "type": "dict-like or function, optional",
+    "description": "Dict-like or function applied to the selected axis labels."
+   },
+   {
+    "name": "index",
+    "type": "dict-like or function, optional",
+    "description": "Mapping or function for index labels; equivalent to mapper with axis=0."
+   },
+   {
+    "name": "columns",
+    "type": "dict-like or function, optional",
+    "description": "Mapping or function for column labels; equivalent to mapper with axis=1."
+   },
+   {
+    "name": "axis",
+    "type": "{0 or 'index', 1 or 'columns'}, optional",
+    "description": "Axis targeted by mapper: 0 or 'index', or 1 or 'columns'."
+   },
+   {
+    "name": "copy",
+    "type": "bool, optional",
+    "description": "Whether to copy underlying data; ignored when inplace=True."
+   },
+   {
+    "name": "inplace",
+    "type": "bool, default False",
+    "description": "Modify the DataFrame rather than returning a new one."
+   },
+   {
+    "name": "level",
+    "type": "int or level name, optional",
+    "description": "For MultiIndex labels, level to rename."
+   },
+   {
+    "name": "errors",
+    "type": "{'ignore', 'raise'}, default 'ignore'",
+    "description": "Raise an error if a label is missing from the mapping when set to 'raise'."
+   }
+  ],
+  "returns": "DataFrame with renamed axis labels, or None when inplace=True.",
+  "example": {
+   "title": "Rename columns and index labels",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame({\"first_name\": [\"Ada\"], \"score\": [100]})\nrenamed = df.rename(columns={\"first_name\": \"name\"}, index={0: \"row_1\"})\nprint(renamed)",
+   "language": "python",
+   "explanation": "This creates a new DataFrame with one column label and one index label changed."
+  },
+  "useCases": [
+   {
+    "title": "Normalize column names",
+    "scenario": "Standardize inconsistent input field names before analysis."
+   },
+   {
+    "title": "Relabel index entries",
+    "scenario": "Give records meaningful labels for display or lookup."
+   },
+   {
+    "title": "Update MultiIndex labels",
+    "scenario": "Rename one level of a hierarchical index or columns."
+   }
+  ],
+  "related": [
+   "DataFrame.rename_axis",
+   "DataFrame.add_prefix",
+   "DataFrame.set_axis"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use rename to change labels on either axis without changing the underlying cell values.",
+   "Prefer index= and columns= when changing different axes or when making the target explicit.",
+   "A mapping only changes labels it contains; all other labels are preserved.",
+   "When using mapper, axis accepts either an axis name or its numeric position.",
+   "If mapper is supplied without an explicit axis, it targets the index.",
+   "The normal result is a renamed DataFrame; inplace=True returns None."
+  ],
+  "gotchas": [
+   "A mapping must produce unique replacement labels; duplicate target labels are not supported.",
+   "By default, labels absent from a mapping are ignored rather than treated as errors.",
+   "When inplace=True, the copy setting has no effect and the original DataFrame is modified."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.sample": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.sample.html",
+  "sourceTitle": "pandas.DataFrame.sample",
+  "summary": "DataFrame.sample returns a random subset of rows or columns. Choose an exact count with n or a proportion with frac, and use random_state for reproducible sampling.",
+  "explanation": "Call sample() on a DataFrame to randomly select rows by count or fraction. By default sampling is without replacement; use weights for unequal probabilities, random_state for repeatable results, axis to sample columns, and ignore_index to create a fresh sequential index.",
+  "syntax": "DataFrame.sample(n=None, frac=None, replace=False, weights=None, random_state=None, axis=None, ignore_index=False)",
+  "parameters": [
+   {
+    "name": "n",
+    "type": "int, optional",
+    "description": "Number of items from the selected axis; cannot be combined with frac. Defaults to 1 when frac is None."
+   },
+   {
+    "name": "frac",
+    "type": "float, optional",
+    "description": "Fraction of items from the selected axis; cannot be combined with n."
+   },
+   {
+    "name": "replace",
+    "type": "bool, default False",
+    "description": "Whether an item may be selected more than once; default False."
+   },
+   {
+    "name": "weights",
+    "type": "str or ndarray-like, optional",
+    "description": "Sampling probabilities, supplied as a column label or array-like values; default None gives equal probabilities."
+   },
+   {
+    "name": "random_state",
+    "type": "int, array-like, BitGenerator, np.random.RandomState, np.random.Generator, optional",
+    "description": "Seed or random generator used to make sampling reproducible."
+   },
+   {
+    "name": "axis",
+    "type": "{0 or ‘index’, 1 or ‘columns’, None}, default None",
+    "description": "Axis to sample: 0 or index for rows, 1 or columns for columns, or None for the default statistical axis."
+   },
+   {
+    "name": "ignore_index",
+    "type": "bool, default False",
+    "description": "Whether to relabel the result index from 0 through n - 1; default False."
+   }
+  ],
+  "returns": "A new Series or DataFrame of the same type as the caller containing the randomly sampled items.",
+  "example": {
+   "title": "Sample rows reproducibly",
+   "code": "import pandas as pd\n\norders = pd.DataFrame({\n    \"order_id\": [101, 102, 103, 104],\n    \"amount\": [25, 80, 40, 120],\n})\n\nsample = orders.sample(n=2, random_state=42, ignore_index=True)\nprint(sample)",
+   "language": "python",
+   "explanation": "Selects two reproducible random rows and resets the result index."
+  },
+  "useCases": [
+   {
+    "title": "Reproducible row sampling",
+    "scenario": "Create a reproducible train/test subset or inspection sample during data analysis."
+   },
+   {
+    "title": "Weighted sampling",
+    "scenario": "Choose observations according to a probability column or array of weights."
+   },
+   {
+    "title": "Column sampling",
+    "scenario": "Randomly select a subset of DataFrame columns for exploratory analysis."
+   },
+   {
+    "title": "Sampling with replacement",
+    "scenario": "Draw repeated observations when bootstrap-style resampling is required."
+   }
+  ],
+  "related": [
+   "DataFrame",
+   "Series.sample",
+   "DataFrame.head",
+   "DataFrame.take"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The method returns a new random subset from the selected DataFrame axis.",
+   "Set random_state when repeated runs must produce the same sample.",
+   "Use n to request an exact number of rows or columns.",
+   "Use frac to sample a proportion of the selected axis.",
+   "Without weights, each candidate receives equal sampling probability.",
+   "The axis argument chooses whether rows or columns are sampled.",
+   "Set ignore_index=True when the sampled result should have a new sequential index."
+  ],
+  "gotchas": [
+   "Do not provide n and frac together; choose either an item count or a fraction.",
+   "Sampling does not repeat rows unless replace=True."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.stack": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.stack.html",
+  "sourceTitle": "pandas.DataFrame.stack — pandas 3.0.6 documentation",
+  "summary": "Reshapes a DataFrame by moving selected column levels into the index. The result is a Series for single-level columns or a DataFrame when columns have multiple levels.",
+  "explanation": "Call `stack` to reshape columns into one or more innermost index levels. With one column level, the result is a Series; with multiple column levels, it is a DataFrame, and missing-valued rows may be removed according to the selected options.",
+  "syntax": "DataFrame.stack(*level=-1*, *dropna=<no_default>*, *sort=<no_default>*, *future_stack=True*)",
+  "parameters": [
+   {
+    "name": "level",
+    "type": "int, str, or list; default -1",
+    "description": "Column level(s) to move to the index, specified by position, label, or a list of either. Default: -1."
+   },
+   {
+    "name": "dropna",
+    "type": "bool; default True",
+    "description": "Whether to remove rows containing missing values from the result. Default: True."
+   },
+   {
+    "name": "sort",
+    "type": "bool; default True",
+    "description": "Whether to sort levels in the resulting MultiIndex. Default: True."
+   },
+   {
+    "name": "future_stack",
+    "type": "bool; default True",
+    "description": "Whether to use the newer implementation. Default: True in pandas 3.0.6."
+   }
+  ],
+  "returns": "DataFrame or Series — stacked DataFrame or Series.",
+  "example": {
+   "title": "Stack columns into the index",
+   "code": "import pandas as pd\n\nsales = pd.DataFrame({\"Jan\": [10, 20], \"Feb\": [12, 18]}, index=[\"A\", \"B\"])\nstacked = sales.stack()\nprint(stacked)",
+   "language": "python",
+   "explanation": "This moves the month columns into an inner index level, producing a Series indexed by the original row labels and month names."
+  },
+  "useCases": [
+   {
+    "title": "Wide-to-long reshaping",
+    "scenario": "Convert wide tabular data into a long, index-oriented Series for analysis or aggregation."
+   },
+   {
+    "title": "Flatten column dimensions",
+    "scenario": "Move one or more levels of MultiIndex columns into row-index levels."
+   },
+   {
+    "title": "Build a MultiIndex",
+    "scenario": "Prepare data for operations that expect hierarchical row indexes."
+   }
+  ],
+  "related": [
+   "DataFrame.unstack",
+   "DataFrame.melt",
+   "DataFrame.pivot",
+   "DataFrame.transpose"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Moves selected column levels onto the index.",
+   "Produces a reshaped Series or DataFrame with additional inner index levels.",
+   "Single-level columns produce a Series.",
+   "For MultiIndex columns, selected column levels become new index levels and the result remains a DataFrame.",
+   "`level` accepts an integer, label, or list identifying column levels to move.",
+   "`dropna` controls whether missing-valued rows are omitted."
+  ],
+  "gotchas": [
+   "Sorting is controlled by `sort`; check the resulting MultiIndex order when row order matters.",
+   "The `future_stack` option selects the newer implementation; use the stable-version default unless compatibility requires otherwise."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.tail": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.tail.html",
+  "sourceTitle": "pandas.DataFrame.tail",
+  "summary": "Returns the final rows of a DataFrame by position. It defaults to five rows and supports positive, negative, and oversized values of `n`.",
+  "explanation": "Call `tail` on a DataFrame to select rows from its end by position. With no argument it selects five rows; a positive value selects that many rows, a negative value omits that many rows from the beginning, and a value larger than the DataFrame returns every row.",
+  "syntax": "DataFrame.tail(n=5)",
+  "parameters": [
+   {
+    "name": "n",
+    "type": "int, default 5",
+    "description": "Number of rows to select."
+   }
+  ],
+  "returns": "The last n rows of the caller object.",
+  "example": {
+   "title": "Select the last rows",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame({\"value\": [10, 20, 30, 40, 50]})\nprint(df.tail(2))",
+   "language": "python",
+   "explanation": "Prints the final two rows of the DataFrame."
+  },
+  "useCases": [
+   {
+    "title": "Inspect trailing rows",
+    "scenario": "Quickly inspect the newest or final records in a DataFrame."
+   },
+   {
+    "title": "Verify transformations",
+    "scenario": "Check the result after sorting or appending rows."
+   },
+   {
+    "title": "Limit a preview",
+    "scenario": "Preview a chosen number of rows from the DataFrame end."
+   }
+  ],
+  "related": [
+   "DataFrame.head"
+  ],
+  "since": "",
+  "keyPoints": [
+   "`DataFrame.tail` selects rows from the end of the DataFrame.",
+   "Selection is positional, so it uses row order rather than matching index labels.",
+   "Use it as a quick check after transformations such as sorting or adding records.",
+   "The `n` argument controls how many rows are requested.",
+   "With the default argument, `tail()` displays the final five rows.",
+   "Pass an integer such as `3` to inspect a specified number of final rows."
+  ],
+  "gotchas": [
+   "A negative `n` does not mean “last |n| rows”; it excludes that many rows from the start instead.",
+   "Requesting more rows than exist returns the complete DataFrame."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.to_csv": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_csv.html",
+  "sourceTitle": "pandas.DataFrame.to_csv",
+  "summary": "Writes a DataFrame to CSV or returns CSV text. It supports custom delimiters, selected columns, headers, indexes, encodings, compression, quoting, and other output options.",
+  "explanation": "Call this method on a DataFrame to serialize its contents as CSV. Pass a path or writable file-like object to save the output; leave the destination as None to receive the CSV as a string, and configure delimiters, columns, headers, indexes, encoding, compression, and formatting with keyword arguments.",
+  "syntax": "DataFrame.to_csv(path_or_buf=None, *, sep=',', na_rep='', float_format=None, columns=None, header=True, index=True, index_label=None, mode='w', encoding=None, compression='infer', quoting=None, quotechar='\"', lineterminator=None, chunksize=None, date_format=None, doublequote=True, escapechar=None, decimal='.', errors='strict', storage_options=None)",
+  "parameters": [
+   {
+    "name": "path_or_buf",
+    "type": "str, path-like, file-like, or None",
+    "description": "String, path object, or writable file-like object; None returns the CSV string."
+   },
+   {
+    "name": "sep",
+    "type": "str",
+    "description": "One-character field delimiter."
+   },
+   {
+    "name": "na_rep",
+    "type": "str",
+    "description": "String used for missing values."
+   },
+   {
+    "name": "float_format",
+    "type": "str or callable",
+    "description": "Format string or callable for floating-point values."
+   },
+   {
+    "name": "columns",
+    "type": "sequence or None",
+    "description": "Columns to write, in the requested order."
+   },
+   {
+    "name": "header",
+    "type": "bool or list of str",
+    "description": "Whether to write column names."
+   },
+   {
+    "name": "index",
+    "type": "bool",
+    "description": "Whether to write row names."
+   },
+   {
+    "name": "index_label",
+    "type": "str or sequence or False or None",
+    "description": "Column label for the index."
+   },
+   {
+    "name": "mode",
+    "type": "str",
+    "description": "File-opening mode: w, x, or a."
+   },
+   {
+    "name": "encoding",
+    "type": "str or None",
+    "description": "Output encoding; defaults to utf-8 when writing a file."
+   },
+   {
+    "name": "compression",
+    "type": "str or dict or None",
+    "description": "Compression setting or inferred compression from the destination."
+   },
+   {
+    "name": "quoting",
+    "type": "int or None",
+    "description": "CSV quoting behavior."
+   }
+  ],
+  "returns": "None when path_or_buf is supplied; otherwise a CSV string.",
+  "example": {
+   "title": "Return CSV text without an index",
+   "code": "import pandas as pd\n\nframe = pd.DataFrame({\"name\": [\"Ada\", \"Linus\"], \"score\": [10, 9]})\ncsv_text = frame.to_csv(index=False)\nprint(csv_text)",
+   "language": "python",
+   "explanation": "Creates a DataFrame and returns CSV text without writing the row index."
+  },
+  "useCases": [
+   {
+    "title": "CSV file export",
+    "scenario": "Export a DataFrame for use by another program or spreadsheet."
+   },
+   {
+    "title": "In-memory serialization",
+    "scenario": "Generate CSV content for an HTTP response, test, or in-memory pipeline."
+   },
+   {
+    "title": "Customized tabular output",
+    "scenario": "Produce a delimited file with selected columns and controlled headers or indexes."
+   }
+  ],
+  "related": [
+   "pandas.read_csv",
+   "DataFrame"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Serializes a DataFrame in CSV format.",
+   "With path_or_buf=None, returns the generated CSV text instead of writing it.",
+   "Use sep to choose the one-character field delimiter.",
+   "index controls whether DataFrame row labels appear in the output.",
+   "encoding selects the text encoding used when producing the file.",
+   "mode controls whether the destination is written, created exclusively, or appended to."
+  ],
+  "gotchas": [
+   "The row index and column names are included unless you explicitly disable them with index=False or header=False.",
+   "sep must contain exactly one character, so it cannot be used for multi-character delimiters.",
+   "When writing to a path or buffer, the method returns None rather than the serialized CSV text."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.transform": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.transform.html",
+  "sourceTitle": "pandas.DataFrame.transform — pandas 3.0.6 documentation",
+  "summary": "Apply a transformation to a DataFrame along columns or rows while preserving its axis shape. Functions, function names, lists, and mappings are supported.",
+  "explanation": "DataFrame.transform applies a function to a DataFrame, or along its columns or rows, and returns a DataFrame whose length matches the input. It supports functions, function names, lists, and mappings, while extra positional and keyword arguments are forwarded to the function.",
+  "syntax": "DataFrame.transform(func, axis=0, *args, **kwargs)",
+  "parameters": [
+   {
+    "name": "func",
+    "type": "function, str, list-like or dict-like",
+    "description": "Function, function name, list-like collection, or dict-like mapping used to transform the data. A callable must work with a DataFrame or with DataFrame.apply."
+   },
+   {
+    "name": "axis",
+    "type": "{0 or 'index', 1 or 'columns'}, default 0",
+    "description": "Selects columns with 0 or 'index', or rows with 1 or 'columns'. Defaults to 0."
+   },
+   {
+    "name": "*args",
+    "type": "tuple",
+    "description": "Extra positional arguments passed to func."
+   },
+   {
+    "name": "**kwargs",
+    "type": "dict",
+    "description": "Extra keyword arguments passed to func."
+   }
+  ],
+  "returns": "A DataFrame that must have the same length as self.",
+  "example": {
+   "title": "Increment every column",
+   "code": "import pandas as pd\n\n\ndf = pd.DataFrame({\"A\": range(3), \"B\": range(1, 4)})\nresult = df.transform(lambda column: column + 1)\nprint(result)",
+   "language": "python",
+   "explanation": "Adds one to every column while preserving the DataFrame's shape and labels."
+  },
+  "useCases": [
+   {
+    "title": "Column-wise feature transformations",
+    "scenario": "Normalize or rescale each column while retaining the original DataFrame structure."
+   },
+   {
+    "title": "Row-wise transformations",
+    "scenario": "Apply the same row-level operation across records using axis=1."
+   },
+   {
+    "title": "Label-specific transformations",
+    "scenario": "Use different transformation functions for selected axis labels."
+   }
+  ],
+  "related": [
+   "DataFrame.aggregate",
+   "DataFrame.apply"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The result keeps the input DataFrame's axis shape.",
+   "The function argument defines the transformation applied to the data.",
+   "You can provide a callable, a function name, a list-like collection, or a label-to-function mapping.",
+   "The default axis applies the function independently to each column.",
+   "Use axis=1, or axis='columns', to transform row by row.",
+   "Additional positional arguments are forwarded to the transformation function."
+  ],
+  "gotchas": [
+   "Do not mutate the object supplied to the transformation function; mutation is unsupported and can cause errors or unexpected results.",
+   "A transformation that returns a DataFrame with a different length raises ValueError."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.unstack": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.unstack.html",
+  "sourceTitle": "pandas.DataFrame.unstack",
+  "summary": "Pivots selected levels of a DataFrame’s hierarchical index into columns. It can fill newly missing combinations and optionally sort the resulting column levels.",
+  "explanation": "`DataFrame.unstack` pivots one or more levels of a hierarchical row index onto the column axis. With a MultiIndex it returns a DataFrame; otherwise it returns a Series, and missing combinations can be replaced with `fill_value`.",
+  "syntax": "DataFrame.unstack(*level=-1, fill_value=None, sort=True)",
+  "parameters": [
+   {
+    "name": "level",
+    "type": "int, str, or list of these, default -1",
+    "description": "Index level or levels to move to columns; accepts an integer, string level name, or list of these. Defaults to the last level."
+   },
+   {
+    "name": "fill_value",
+    "type": "scalar",
+    "description": "Scalar used to replace missing values produced by unstacking."
+   },
+   {
+    "name": "sort",
+    "type": "bool, default True",
+    "description": "Whether to sort levels in the resulting MultiIndex columns."
+   }
+  ],
+  "returns": "Series or DataFrame. With a MultiIndex, returns a DataFrame with pivoted index labels as the innermost column level; otherwise returns a Series.",
+  "example": {
+   "title": "Unstack a named index level",
+   "code": "import pandas as pd\n\nindex = pd.MultiIndex.from_tuples(\n    [(\"Alice\", \"Q1\"), (\"Alice\", \"Q2\"), (\"Bob\", \"Q1\")],\n    names=[\"person\", \"quarter\"],\n)\ndf = pd.DataFrame({\"sales\": [10, 12, 8]}, index=index)\nprint(df.unstack(level=\"quarter\", fill_value=0))",
+   "language": "python",
+   "explanation": "Moves the named quarter index level into columns and fills the missing Bob–Q2 combination with zero."
+  },
+  "useCases": [
+   {
+    "title": "Reshape hierarchical data",
+    "scenario": "Convert long, MultiIndex-indexed measurements into a wider table with one index level represented as columns."
+   },
+   {
+    "title": "Fill sparse combinations",
+    "scenario": "Provide defaults for combinations absent from the input index."
+   },
+   {
+    "title": "Manage column ordering",
+    "scenario": "Control whether resulting hierarchical columns are ordered or retain appearance order."
+   }
+  ],
+  "related": [
+   "DataFrame.stack"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The operation moves selected row-index levels to the column axis.",
+   "Select the level with an integer position, a level name, or a list of either.",
+   "`sort` controls ordering of the resulting hierarchical columns and defaults to `True`.",
+   "A MultiIndex yields a DataFrame whose moved labels become the innermost column level; a simple index yields a Series.",
+   "`fill_value` supplies values for missing combinations introduced by the reshape."
+  ],
+  "gotchas": [
+   "A non-MultiIndex input produces a Series rather than a DataFrame.",
+   "Use `fill_value` to replace missing combinations created during reshaping; it does not generally replace every pre-existing missing value.",
+   "The default `sort=True` orders the resulting MultiIndex columns; use `sort=False` to preserve first-appearance ordering."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "df.value_counts": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.value_counts.html",
+  "sourceTitle": "pandas.DataFrame.value_counts",
+  "summary": "Counts the frequency of each distinct DataFrame row or selected-column combination. It can return frequencies or proportions and can control sorting and missing-value handling.",
+  "explanation": "Call this method on a DataFrame to count how often each distinct row, or each distinct combination in selected columns, occurs. It returns a Series indexed by those combinations; options control whether results are proportions, how they are ordered, and whether rows containing missing values participate.",
+  "syntax": "DataFrame.value_counts(subset=None, normalize=False, sort=True, ascending=False, dropna=True)",
+  "parameters": [
+   {
+    "name": "subset",
+    "type": "label or sequence of labels, optional",
+    "description": "Columns to use when counting unique combinations. Defaults to all columns."
+   },
+   {
+    "name": "normalize",
+    "type": "bool, default False",
+    "description": "Return proportions instead of frequencies."
+   },
+   {
+    "name": "sort",
+    "type": "bool, default True",
+    "description": "Sort by frequencies when True; when False, sort by DataFrame column values."
+   },
+   {
+    "name": "ascending",
+    "type": "bool, default False",
+    "description": "Sort in ascending order."
+   },
+   {
+    "name": "dropna",
+    "type": "bool, default True",
+    "description": "Do not include counts of rows that contain NA values."
+   }
+  ],
+  "returns": "Series containing the frequency of each distinct row; it uses a MultiIndex for multiple input columns and an Index for a single label.",
+  "example": {
+   "title": "Count values as proportions",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"color\": [\"red\", \"blue\", \"red\", \"red\"],\n    \"size\": [\"S\", \"M\", \"S\", \"L\"],\n})\n\ncounts = df.value_counts(subset=[\"color\"], normalize=True)\nprint(counts)",
+   "language": "python",
+   "explanation": "Counts each distinct color and returns its share of the rows."
+  },
+  "useCases": [
+   {
+    "title": "Find repeated rows",
+    "scenario": "Profile duplicate records by counting complete row combinations."
+   },
+   {
+    "title": "Summarize categorical data",
+    "scenario": "Measure the distribution of categories or category combinations."
+   },
+   {
+    "title": "Compute proportions",
+    "scenario": "Calculate shares instead of raw totals for reporting."
+   }
+  ],
+  "related": [
+   "DataFrameGroupBy.value_counts",
+   "Series.value_counts",
+   "DataFrame.count"
+  ],
+  "since": "1.3.0",
+  "keyPoints": [
+   "Counts occurrences of distinct complete rows and returns the counts as a Series.",
+   "Use subset to restrict counting to one column or a selected set of columns.",
+   "Set normalize=True to receive relative proportions instead of integer counts.",
+   "With sort=True, results are ordered by frequency; the default order is descending.",
+   "Set ascending=True to place the least frequent combinations first when frequency sorting is enabled.",
+   "dropna controls whether rows containing missing values are included."
+  ],
+  "gotchas": [
+   "Rows containing an NA value in any counted column are excluded unless dropna=False.",
+   "Counting multiple columns produces a MultiIndex; counting one column produces a regular Index."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Index": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.Index.html",
+  "sourceTitle": "pandas.Index",
+  "summary": "pandas.Index is an immutable sequence of labels used for indexing and alignment across pandas objects. Construct it from one-dimensional data and optionally specify its dtype, name, copying behavior, or tuple handling.",
+  "explanation": "pandas.Index represents an immutable sequence of labels used by pandas objects for indexing and alignment. Construct it from one-dimensional data, optionally specifying its dtype, name, copying behavior, and whether tuple-like columns should become a MultiIndex.",
+  "syntax": "class pandas.Index(data=None, dtype=None, copy=None, name=None, tupleize_cols=True)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "array-like, 1-dimensional",
+    "description": "An array-like structure containing the index data, such as a list, NumPy array, or pandas Series."
+   },
+   {
+    "name": "dtype",
+    "type": "str, numpy.dtype, or ExtensionDtype, optional",
+    "description": "Data type for the output Index."
+   },
+   {
+    "name": "copy",
+    "type": "bool, optional",
+    "description": "Whether to copy the input data."
+   },
+   {
+    "name": "name",
+    "type": "object, optional",
+    "description": "Name stored in the index."
+   },
+   {
+    "name": "tupleize_cols",
+    "type": "bool, default True",
+    "description": "Whether to attempt creating a MultiIndex from suitable tuple-like data."
+   }
+  ],
+  "returns": "An Index object containing the supplied labels, with the requested or inferred dtype and name.",
+  "example": {
+   "title": "Create and use an Index",
+   "code": "import pandas as pd\n\nlabels = pd.Index([\"alice\", \"bob\", \"carol\"], name=\"user\")\nframe = pd.DataFrame({\"score\": [10, 20, 30]}, index=labels)\n\nprint(frame.loc[\"bob\", \"score\"])\nprint(labels.union(pd.Index([\"dave\"], name=\"user\")))",
+   "language": "python",
+   "explanation": "Creates a named Index, uses it as DataFrame row labels, and returns a new Index from a union operation."
+  },
+  "useCases": [
+   {
+    "title": "Label axes",
+    "scenario": "Give DataFrame or Series rows stable, meaningful labels for selection and alignment."
+   },
+   {
+    "title": "Set-like label operations",
+    "scenario": "Combine or compare label sets using Index operations such as union and intersection."
+   },
+   {
+    "title": "Named indexes",
+    "scenario": "Preserve a named axis while constructing or transforming pandas data."
+   }
+  ],
+  "related": [
+   "pandas.MultiIndex",
+   "pandas.RangeIndex",
+   "pandas.Index.union",
+   "pandas.Index.intersection",
+   "pandas.Index.get_indexer"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Index is an immutable label sequence that pandas uses to select, align, and organize data.",
+   "DataFrame and Series axes are represented by Index objects or Index subclasses.",
+   "Pass one-dimensional data such as a list, NumPy array, or Series through data.",
+   "Use dtype to request the resulting Index data type; pandas can infer it when omitted.",
+   "Set name to label the index itself, which is useful when displaying or aligning named axes.",
+   "tupleize_cols controls whether suitable tuple-like input is converted into a MultiIndex."
+  ],
+  "gotchas": [
+   "Index values must be hashable; mutable containers such as lists cannot be used as individual labels.",
+   "NumPy float16 is not supported as an Index dtype."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "MultiIndex": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.MultiIndex.html",
+  "sourceTitle": "pandas.MultiIndex",
+  "summary": "MultiIndex is pandas’ hierarchical index type for labeling one axis with multiple levels. Each position is represented by a unique tuple of level labels, enabling structured selection in Series and DataFrames.",
+  "explanation": "MultiIndex represents hierarchical labels for a pandas object, with each position identified by one label from every level. Build one directly or use factory methods such as from_product, then use tuples or partial keys to select data along the indexed axis.",
+  "syntax": "pandas.MultiIndex(levels=None, codes=None, sortorder=None, names=None, dtype=None, copy=False, name=None, verify_integrity=True)",
+  "parameters": [
+   {
+    "name": "levels",
+    "type": "sequence of arrays",
+    "description": "The unique labels for each level."
+   },
+   {
+    "name": "codes",
+    "type": "sequence of arrays",
+    "description": "Integers for each level designating which label at each location."
+   },
+   {
+    "name": "sortorder",
+    "type": "int, optional",
+    "description": "Level of sortedness; must be lexicographically sorted by that level."
+   },
+   {
+    "name": "names",
+    "type": "list-like, optional",
+    "description": "Names for each level."
+   },
+   {
+    "name": "verify_integrity",
+    "type": "bool, default True",
+    "description": "Whether to validate that levels and codes are consistent."
+   }
+  ],
+  "returns": "A MultiIndex object.",
+  "example": {
+   "title": "Create and index a MultiIndex",
+   "code": "import pandas as pd\n\nindex = pd.MultiIndex.from_product(\n    [[\"east\", \"west\"], [\"Q1\", \"Q2\"]],\n    names=[\"region\", \"quarter\"],\n)\n\nsales = pd.Series([10, 12, 8, 9], index=index)\nprint(sales.loc[\"east\"])\n",
+   "language": "python",
+   "explanation": "Creates a two-level index from the Cartesian product of regions and quarters, then selects one region."
+  },
+  "useCases": [
+   {
+    "title": "Hierarchical grouping",
+    "scenario": "Represent data grouped by several categorical dimensions, such as region and quarter."
+   },
+   {
+    "title": "Multi-key selection",
+    "scenario": "Index a Series or DataFrame using combinations of multiple labels."
+   },
+   {
+    "title": "Cartesian-product indexes",
+    "scenario": "Generate all combinations of categorical values for a structured axis."
+   }
+  ],
+  "related": [
+   "MultiIndex.from_arrays",
+   "MultiIndex.from_tuples",
+   "MultiIndex.from_product",
+   "MultiIndex.from_frame",
+   "MultiIndex.to_frame",
+   "MultiIndex.get_level_values",
+   "Index",
+   "Series"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use MultiIndex when one axis needs hierarchical labels rather than a single flat label.",
+   "Multiple keys let a Series or DataFrame expose multidimensional-style selection on one axis.",
+   "Conceptually, each index entry is a unique tuple containing one value per level.",
+   "The levels argument supplies the distinct labels available at each hierarchy level.",
+   "The codes argument maps every position to a label position in each corresponding level.",
+   "MultiIndex.from_product is convenient when every combination of supplied iterables should become an index entry."
+  ],
+  "gotchas": [
+   "If you provide sortorder, the levels must be lexicographically sorted through the specified level.",
+   "Labels considered equal by comparison cannot coexist as distinct labels within one level."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "pd.crosstab": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.crosstab.html",
+  "sourceTitle": "pandas.crosstab",
+  "summary": "Computes a cross-tabulation of two or more factors as a pandas DataFrame. It counts combinations by default or aggregates supplied values with an aggregation function.",
+  "explanation": "Pass one or more row factors through index and one or more column factors through columns. Without values and aggfunc, the function counts combinations; with both, it aggregates values. Optional margins add totals, while normalize converts counts or aggregates to proportions.",
+  "syntax": "pandas.crosstab(index, columns, values=None, rownames=None, colnames=None, aggfunc=None, margins=False, margins_name='All', dropna=True, normalize=False)",
+  "parameters": [
+   {
+    "name": "index",
+    "type": "array-like, Series, or list of arrays/Series",
+    "description": "Row grouping values; an array-like object, Series, or list of arrays/Series."
+   },
+   {
+    "name": "columns",
+    "type": "array-like, Series, or list of arrays/Series",
+    "description": "Column grouping values; an array-like object, Series, or list of arrays/Series."
+   },
+   {
+    "name": "values",
+    "type": "array-like, optional",
+    "description": "Values to aggregate; requires aggfunc."
+   },
+   {
+    "name": "rownames",
+    "type": "sequence, default None",
+    "description": "Names for the row levels; must match the number of row arrays."
+   },
+   {
+    "name": "colnames",
+    "type": "sequence, default None",
+    "description": "Names for the column levels."
+   },
+   {
+    "name": "aggfunc",
+    "type": "function, optional",
+    "description": "Aggregation function; requires values."
+   },
+   {
+    "name": "margins",
+    "type": "bool, default False",
+    "description": "Whether to add row and column margins."
+   },
+   {
+    "name": "margins_name",
+    "type": "str, default 'All'",
+    "description": "Label for totals when margins is enabled."
+   },
+   {
+    "name": "dropna",
+    "type": "bool, default True",
+    "description": "Whether to omit columns whose entries are all NaN."
+   },
+   {
+    "name": "normalize",
+    "type": "bool, {'all', 'index', 'columns'}, or {0, 1}, default False",
+    "description": "Normalization mode: overall, by index, by columns, or disabled."
+   }
+  ],
+  "returns": "DataFrame — cross tabulation of the data.",
+  "example": {
+   "title": "Count combinations",
+   "code": "import pandas as pd\n\nsegments = pd.Series([\"new\", \"returning\", \"new\", \"returning\"])\nchannels = pd.Series([\"email\", \"search\", \"search\", \"email\"])\n\ncounts = pd.crosstab(segments, channels)\nprint(counts)",
+   "language": "python",
+   "explanation": "Counts observations for each segment and channel combination."
+  },
+  "useCases": [
+   {
+    "title": "Frequency tables",
+    "scenario": "Summarize how often categories occur together."
+   },
+   {
+    "title": "Row or column proportions",
+    "scenario": "Compare distributions across row groups."
+   },
+   {
+    "title": "Aggregated cross-tabs",
+    "scenario": "Calculate grouped sums or other statistics."
+   },
+   {
+    "title": "Subtotals and margins",
+    "scenario": "Include grand totals in a report."
+   }
+  ],
+  "related": [
+   "pandas.DataFrame.pivot_table",
+   "pandas.pivot_table",
+   "pandas.factorize"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Builds a DataFrame that summarizes combinations of categorical or other grouping factors.",
+   "With only index and columns, each cell contains the number of observations in that combination.",
+   "The index argument supplies the row grouping factor or factors.",
+   "The columns argument supplies the column grouping factor or factors.",
+   "values supplies data for aggregation instead of simple frequency counting.",
+   "Set margins=True to include row and column subtotals.",
+   "normalize can express results as proportions, including overall, row-wise, or column-wise normalization."
+  ],
+  "gotchas": [
+   "Providing values without an aggregation function is invalid.",
+   "An aggregation function must be accompanied by values.",
+   "rownames must contain one name for every row factor.",
+   "margins adds totals, so the output includes an additional totals row and column."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "pd.date_range": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.date_range.html",
+  "sourceTitle": "pandas.date_range — pandas 3.0.6 documentation",
+  "summary": "Generates a fixed-frequency `DatetimeIndex` from date bounds, a period count, or both. Exactly three of `start`, `end`, `periods`, and `freq` must be specified.",
+  "explanation": "Use `date_range` to generate evenly spaced timestamps as a `DatetimeIndex`. Provide exactly three of `start`, `end`, `periods`, and `freq`; the function uses the supplied frequency to determine the spacing and applies boundary inclusion through `inclusive`.",
+  "syntax": "pandas.date_range(*start=None, end=None, periods=None, freq=None, tz=None, normalize=False, name=None, inclusive='both', **, unit=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "start",
+    "type": "str or datetime-like, optional",
+    "description": "Left bound for generating dates."
+   },
+   {
+    "name": "end",
+    "type": "str or datetime-like, optional",
+    "description": "Right bound for generating dates."
+   },
+   {
+    "name": "periods",
+    "type": "int, optional",
+    "description": "Number of periods to generate."
+   },
+   {
+    "name": "freq",
+    "type": "str, Timedelta, datetime.timedelta, or DateOffset, default 'D'",
+    "description": "Frequency of the generated timestamps; defaults to calendar-day frequency."
+   },
+   {
+    "name": "tz",
+    "type": "str, optional",
+    "description": "Timezone for the returned index."
+   },
+   {
+    "name": "normalize",
+    "type": "bool, default False",
+    "description": "Normalize start and end to midnight before generating dates."
+   },
+   {
+    "name": "name",
+    "type": "Hashable, default None",
+    "description": "Name of the resulting index."
+   },
+   {
+    "name": "inclusive",
+    "type": "str, default 'both'",
+    "description": "Boundary inclusion rule; options include 'both', 'neither', 'left', and 'right'."
+   },
+   {
+    "name": "unit",
+    "type": "str, optional",
+    "description": "Unit for the generated timestamps."
+   }
+  ],
+  "returns": "DatetimeIndex — a DatetimeIndex object containing the generated dates.",
+  "example": {
+   "title": "Create an inclusive daily date index",
+   "code": "import pandas as pd\n\nidx = pd.date_range(\n    start=\"2024-01-01\",\n    end=\"2024-01-05\",\n    freq=\"D\",\n    inclusive=\"both\",\n)\nprint(idx)",
+   "language": "python",
+   "explanation": "Creates one daily timestamp for each date from January 1 through January 5, 2024, including both boundaries."
+  },
+  "useCases": [
+   {
+    "title": "Build regular time axes",
+    "scenario": "Create a regular daily, hourly, or multi-hour timeline for time-series data."
+   },
+   {
+    "title": "Create fixed-length schedules",
+    "scenario": "Generate a known number of equally spaced timestamps from a starting point."
+   },
+   {
+    "title": "Create localized indexes",
+    "scenario": "Produce timezone-localized timestamps for regional or timezone-aware processing."
+   },
+   {
+    "title": "Apply boundary rules",
+    "scenario": "Control whether the first and last boundary timestamps are included."
+   }
+  ],
+  "related": [
+   "pandas.bdate_range",
+   "pandas.period_range",
+   "pandas.timedelta_range",
+   "pandas.DatetimeIndex"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Returns a `DatetimeIndex` whose timestamps follow a fixed frequency.",
+   "Use `periods` to request a specific number of timestamps.",
+   "`freq` accepts frequency strings, including multiplied intervals such as `5H`.",
+   "Pass `tz` to create a localized `DatetimeIndex`.",
+   "Use `name` to label the resulting index.",
+   "`start` defines the left boundary for generated dates."
+  ],
+  "gotchas": [
+   "Exactly three of `start`, `end`, `periods`, and `freq` must be supplied.",
+   "The result is timezone-naive by default unless timezone-aware datetime-like inputs are used.",
+   "Set `normalize=True` when the input boundaries should be reduced to midnight first."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "pd.factorize": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.factorize.html",
+  "sourceTitle": "pandas.factorize",
+  "summary": "Encode a one-dimensional sequence as integer codes and unique values. Missing values use -1 by default, and sorting can reorder uniques while preserving the code-to-value mapping.",
+  "explanation": "Pass a one-dimensional sequence to receive two aligned results: integer codes and the unique values they index. By default, distinct values are labeled in encounter order, while missing values receive -1 and are omitted from the uniques; sorting changes the unique-value order and adjusts the codes accordingly.",
+  "syntax": "pandas.factorize(values, sort=False, use_na_sentinel=True, size_hint=None)",
+  "parameters": [
+   {
+    "name": "values",
+    "type": "sequence",
+    "description": "A one-dimensional sequence; non-pandas sequences are coerced to ndarrays."
+   },
+   {
+    "name": "sort",
+    "type": "bool, default False",
+    "description": "Whether to sort unique values and adjust codes to preserve their mapping."
+   },
+   {
+    "name": "use_na_sentinel",
+    "type": "bool, default True",
+    "description": "Controls missing-value encoding: True uses -1; False assigns non-negative codes and keeps missing values in uniques."
+   },
+   {
+    "name": "size_hint",
+    "type": "int, optional",
+    "description": "Optional hint for sizing the internal hashtable."
+   }
+  ],
+  "returns": "A tuple of codes and uniques. codes is an integer ndarray indexing uniques; uniques is an ndarray, Index, or Categorical depending on the input.",
+  "example": {
+   "title": "Factorize values",
+   "code": "import pandas as pd\n\ncodes, uniques = pd.factorize([\"b\", \"a\", \"b\", None])\nprint(codes)   # [ 0  1  0 -1]\nprint(uniques) # ['b' 'a']",
+   "language": "python",
+   "explanation": "The function returns integer codes and the corresponding unique values; missing input receives code -1 by default."
+  },
+  "useCases": [
+   {
+    "title": "Numeric encoding",
+    "scenario": "Convert repeated labels into compact integer identifiers for downstream numerical processing."
+   },
+   {
+    "title": "Categorical preprocessing",
+    "scenario": "Create label codes and a separate vocabulary of distinct values."
+   },
+   {
+    "title": "Missing-value handling",
+    "scenario": "Represent missing entries consistently while retaining the original value mapping."
+   },
+   {
+    "title": "Sorted factorization",
+    "scenario": "Obtain sorted unique labels with corresponding remapped codes."
+   }
+  ],
+  "related": [
+   "pandas.Series.factorize",
+   "pandas.Index.factorize"
+  ],
+  "since": "",
+  "keyPoints": [
+   "factorize converts one-dimensional values into integer labels plus a collection of unique values.",
+   "Use it when values need compact numeric identifiers and only equality of distinct values matters.",
+   "The values argument accepts a one-dimensional sequence.",
+   "sort=True returns uniques in sorted order and updates codes consistently.",
+   "The codes result is an integer NumPy array whose entries index the uniques result.",
+   "Applying uniques.take(codes) reconstructs the original values, apart from the default missing-value sentinel.",
+   "Categorical input produces categorical unique values.",
+   "For other pandas-object inputs, the unique values are returned as an Index."
+  ],
+  "gotchas": [
+   "With the default missing-value behavior, missing entries are represented by code -1.",
+   "Set use_na_sentinel=False when missing values should receive their own non-negative code.",
+   "sort=True changes the unique-value order, so codes are rearranged to continue pointing to the correct values.",
+   "Non-pandas sequences are converted to NumPy arrays before processing."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "pd.get_dummies": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.get_dummies.html",
+  "sourceTitle": "pandas.get_dummies",
+  "summary": "Converts categorical data into binary indicator columns. It accepts array-like, Series, or DataFrame input and supports prefixing, missing-value indicators, sparse output, first-level omission, and dtype selection.",
+  "explanation": "pd.get_dummies converts categorical values into one indicator column per distinct value. For DataFrame input, selected categorical columns are expanded and their original names are used when constructing output column names; options control missing-value handling, prefixes, sparsity, and whether to omit the first level.",
+  "syntax": "pandas.get_dummies(data, prefix=None, prefix_sep='_', dummy_na=False, columns=None, sparse=False, drop_first=False, dtype=None)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "array-like, Series, or DataFrame",
+    "description": "Array-like, Series, or DataFrame to encode."
+   },
+   {
+    "name": "prefix",
+    "type": "str, list of str, or dict of str; default None",
+    "description": "Prefix or prefixes to append to DataFrame column names."
+   },
+   {
+    "name": "prefix_sep",
+    "type": "str; default '_'",
+    "description": "Separator used when appending a prefix."
+   },
+   {
+    "name": "dummy_na",
+    "type": "bool; default False",
+    "description": "Whether to add an indicator column for missing values."
+   },
+   {
+    "name": "columns",
+    "type": "list-like; default None",
+    "description": "DataFrame columns to encode; if omitted, eligible categorical columns are selected."
+   },
+   {
+    "name": "sparse",
+    "type": "bool; default False",
+    "description": "Whether generated columns use SparseArray backing."
+   },
+   {
+    "name": "drop_first",
+    "type": "bool; default False",
+    "description": "Whether to remove the first category level."
+   },
+   {
+    "name": "dtype",
+    "type": "dtype; default None",
+    "description": "Data type for the generated dummy columns."
+   }
+  ],
+  "returns": "DataFrame containing dummy-coded data.",
+  "example": {
+   "title": "Encode a categorical DataFrame column",
+   "code": "import pandas as pd\n\norders = pd.DataFrame({\"color\": [\"red\", \"blue\", \"red\"], \"quantity\": [2, 1, 3]})\nencoded = pd.get_dummies(orders, columns=[\"color\"], dtype=int)\nprint(encoded)",
+   "language": "python",
+   "explanation": "Encodes the selected categorical column into integer indicator columns while retaining the numeric column."
+  },
+  "useCases": [
+   {
+    "title": "Feature encoding",
+    "scenario": "Prepare categorical features for algorithms that require numeric columns."
+   },
+   {
+    "title": "DataFrame transformation",
+    "scenario": "Expand selected DataFrame categories while retaining other columns."
+   },
+   {
+    "title": "Missingness indicators",
+    "scenario": "Represent missing categorical values explicitly."
+   }
+  ],
+  "related": [
+   "pandas.from_dummies"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use the function to turn categorical values into indicator columns for modeling or other numeric workflows.",
+   "Each distinct category produces its own binary indicator column.",
+   "Generated columns use category values as names; DataFrame inputs also incorporate the source column name.",
+   "data may be an array-like object, Series, or DataFrame.",
+   "Set dummy_na=True when missingness should receive its own indicator column.",
+   "Use sparse=True when sparse-backed dummy columns are appropriate."
+  ],
+  "gotchas": [
+   "When columns is omitted for a DataFrame, every column with object, string, or category dtype is encoded.",
+   "drop_first=True removes one indicator from each categorical variable, producing k−1 columns for k levels.",
+   "The dtype option accepts only one dtype for the generated dummy columns."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "pd.melt": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.melt.html",
+  "sourceTitle": "pandas.melt — pandas 3.0.6 documentation",
+  "summary": "Reshapes a DataFrame from wide to long format. Identifier columns remain, while selected measurement columns become variable and value rows.",
+  "explanation": "pandas.melt reshapes a DataFrame from wide form into long form. Columns selected as identifiers remain in place, while measured columns become rows represented by a variable column and a value column.",
+  "syntax": "pandas.melt(frame, id_vars=None, value_vars=None, var_name=None, value_name='value', col_level=None, ignore_index=True)",
+  "parameters": [
+   {
+    "name": "frame",
+    "type": "DataFrame",
+    "description": "DataFrame to reshape."
+   },
+   {
+    "name": "id_vars",
+    "type": "tuple, list, or ndarray, optional",
+    "description": "Columns to keep as identifier variables."
+   },
+   {
+    "name": "value_vars",
+    "type": "scalar, tuple, list, or ndarray, optional",
+    "description": "Columns to unpivot; if omitted, all columns not in id_vars are used."
+   },
+   {
+    "name": "var_name",
+    "type": "scalar, default None",
+    "description": "Output name for the variable column; if None, uses frame.columns.name or 'variable'."
+   },
+   {
+    "name": "value_name",
+    "type": "scalar, default 'value'",
+    "description": "Output name for the value column; it cannot already be a column label."
+   },
+   {
+    "name": "col_level",
+    "type": "scalar, optional",
+    "description": "Column level to melt when columns are a MultiIndex."
+   },
+   {
+    "name": "ignore_index",
+    "type": "bool, default True",
+    "description": "Whether to discard the original index."
+   }
+  ],
+  "returns": "DataFrame",
+  "example": {
+   "title": "Convert wide data to long format",
+   "code": "import pandas as pd\n\nwide = pd.DataFrame({\n    \"city\": [\"Oslo\", \"Paris\"],\n    \"2023\": [4, 7],\n    \"2024\": [5, 9],\n})\nlong = pd.melt(\n    wide,\n    id_vars=[\"city\"],\n    value_vars=[\"2023\", \"2024\"],\n    var_name=\"year\",\n    value_name=\"sales\",\n)\nprint(long)",
+   "language": "python",
+   "explanation": "Converts year columns into rows while retaining city as the identifier."
+  },
+  "useCases": [
+   {
+    "title": "Visualization-ready data",
+    "scenario": "Preparing tabular data for plotting libraries that expect one observation per row."
+   },
+   {
+    "title": "Normalize measurements",
+    "scenario": "Converting repeated measurement columns into a normalized observation table."
+   },
+   {
+    "title": "Selective wide-to-long conversion",
+    "scenario": "Reshaping selected columns while preserving entity or group identifiers."
+   }
+  ],
+  "related": [
+   "DataFrame.melt",
+   "pandas.pivot",
+   "pandas.pivot_table"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use melt to turn columns representing measurements into rows while preserving selected identifier columns.",
+   "id_vars identifies columns that stay attached to every resulting measurement row.",
+   "value_vars selects the measurement columns to convert; when omitted, all non-identifier columns are used.",
+   "var_name controls the output column containing the original measurement-column labels.",
+   "value_name controls the output column containing measurement values and must be unique.",
+   "col_level lets you choose which MultiIndex column level is reshaped."
+  ],
+  "gotchas": [
+   "value_name must not duplicate an existing column label.",
+   "Set ignore_index=False when retaining the original index matters; repeated rows receive repeated index labels."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "pd.pivot_table": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.pivot_table.html",
+  "sourceTitle": "pandas.DataFrame.pivot_table",
+  "summary": "Creates a spreadsheet-style pivot table from a DataFrame by grouping rows and columns and aggregating selected values. The result may use MultiIndex objects for its index and columns.",
+  "explanation": "Call this method on a DataFrame to group records by index and column keys, aggregate selected values, and return the result with hierarchical indexes when needed. The default aggregation is the mean; optional margins add partial totals, while fill_value replaces missing results after aggregation.",
+  "syntax": "DataFrame.pivot_table(values=None, index=None, columns=None, aggfunc='mean', fill_value=None, margins=False, dropna=True, margins_name='All', observed=True, sort=True, **kwargs)",
+  "parameters": [
+   {
+    "name": "values",
+    "type": "list-like or scalar, optional",
+    "description": "Column or columns to aggregate."
+   },
+   {
+    "name": "index",
+    "type": "column, Grouper, array, or sequence, optional",
+    "description": "Keys to group by on the pivot table index. Lists may contain columns, Groupers, arrays, or sequences."
+   },
+   {
+    "name": "columns",
+    "type": "column, Grouper, array, or sequence",
+    "description": "Keys to group by on the pivot table column."
+   },
+   {
+    "name": "aggfunc",
+    "type": "function, list of functions, or dict, default 'mean'",
+    "description": "Function, list of functions, or dictionary mapping columns to functions; default is mean."
+   },
+   {
+    "name": "fill_value",
+    "type": "scalar, default None",
+    "description": "Value replacing missing values in the resulting pivot table after aggregation."
+   },
+   {
+    "name": "margins",
+    "type": "bool, default False",
+    "description": "Add partial aggregates when true."
+   },
+   {
+    "name": "dropna",
+    "type": "bool, default True",
+    "description": "Exclude columns whose entries are all NaN when true."
+   },
+   {
+    "name": "margins_name",
+    "type": "str, default 'All'",
+    "description": "Name of the margins row or column."
+   },
+   {
+    "name": "observed",
+    "type": "bool, default True",
+    "description": "Whether to include observed categorical combinations; default is true."
+   },
+   {
+    "name": "sort",
+    "type": "bool, default True",
+    "description": "Sort the result levels when true."
+   },
+   {
+    "name": "**kwargs",
+    "type": "dict",
+    "description": "Additional keyword arguments passed to the underlying aggregation."
+   }
+  ],
+  "returns": "DataFrame — an Excel-style pivot table.",
+  "example": {
+   "title": "Aggregate sales into a pivot table",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"city\": [\"Paris\", \"Paris\", \"Rome\"],\n    \"kind\": [\"A\", \"B\", \"A\"],\n    \"sales\": [10, 20, 15],\n})\n\nresult = df.pivot_table(\n    values=\"sales\",\n    index=\"city\",\n    columns=\"kind\",\n    aggfunc=\"sum\",\n    fill_value=0,\n)\nprint(result)",
+   "language": "python",
+   "explanation": "Groups sales by city and kind, computes sums, and replaces missing combinations with zero."
+  },
+  "useCases": [
+   {
+    "title": "Cross-tabulated summaries",
+    "scenario": "Summarize numeric measures across two or more categorical dimensions."
+   },
+   {
+    "title": "Grouped reporting",
+    "scenario": "Compute totals or averages for grouped business metrics."
+   },
+   {
+    "title": "Category comparison",
+    "scenario": "Create a matrix for comparison across categories."
+   }
+  ],
+  "related": [
+   "pandas.pivot_table",
+   "DataFrame.pivot",
+   "DataFrame.groupby",
+   "MultiIndex"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Produces a DataFrame organized like a spreadsheet pivot table.",
+   "Use index to define the row-grouping keys.",
+   "Use columns to define categories that become result columns.",
+   "values selects the data columns that aggregation operates on.",
+   "aggfunc accepts a callable, function list, or column-to-function mapping; its default is mean.",
+   "A dictionary lets each selected value column use its own aggregation function or function list.",
+   "fill_value supplies the replacement for missing values in the completed pivot table."
+  ],
+  "gotchas": [
+   "The resulting index and columns can be MultiIndex objects, so select or flatten levels deliberately.",
+   "fill_value is applied after aggregation and replaces missing cells in the resulting table.",
+   "Passing multiple aggregation functions creates hierarchical columns whose top level contains function names."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "pd.qcut": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.qcut.html",
+  "sourceTitle": "pandas.qcut",
+  "summary": "Discretizes one-dimensional data into quantile-based buckets. It can return interval categories, custom labels, integer bin codes, and optionally the computed bin edges.",
+  "explanation": "pd.qcut ranks one-dimensional data and assigns observations to quantile-based intervals, producing groups intended to contain similar numbers of observations. Pass an integer for evenly spaced quantiles or an explicit sequence of quantile boundaries; labels can replace interval categories, and retbins can additionally return the computed numeric edges.",
+  "syntax": "pandas.qcut(x, q, labels=None, retbins=False, precision=3, duplicates='raise')",
+  "parameters": [
+   {
+    "name": "x",
+    "type": "1d ndarray or Series",
+    "description": "One-dimensional NumPy array or pandas Series to discretize."
+   },
+   {
+    "name": "q",
+    "type": "int or list-like of float",
+    "description": "Number of quantiles, or a list-like sequence of quantile probabilities."
+   },
+   {
+    "name": "labels",
+    "type": "array or False, default None",
+    "description": "Labels for the resulting bins, or False for integer indicators; defaults to None."
+   },
+   {
+    "name": "retbins",
+    "type": "bool, optional",
+    "description": "Whether to return bin edges together with the result; defaults to False."
+   },
+   {
+    "name": "precision",
+    "type": "int, optional",
+    "description": "Precision used for storing and displaying bin labels; defaults to 3."
+   },
+   {
+    "name": "duplicates",
+    "type": "{default ‘raise’, ‘drop’}, optional",
+    "description": "Duplicate-edge policy: raise an error or drop non-unique edges; defaults to raise."
+   }
+  ],
+  "returns": "By default, returns a Categorical for array-like input or a categorical Series when x is a Series. With labels=False, returns integer indicators; with retbins=True, also returns an ndarray of float bin edges.",
+  "example": {
+   "title": "Create labeled quartiles",
+   "code": "import pandas as pd\n\nvalues = pd.Series([10, 20, 30, 40, 50, 60, 70, 80])\nbins = pd.qcut(values, q=4, labels=[\"low\", \"medium\", \"high\", \"very high\"])\nprint(bins)",
+   "language": "python",
+   "explanation": "This divides the values into four quantile-based groups and assigns a readable label to each group."
+  },
+  "useCases": [
+   {
+    "title": "Quantile-based segmentation",
+    "scenario": "Divide customer spending into quartiles for segmentation."
+   },
+   {
+    "title": "Feature discretization",
+    "scenario": "Convert a continuous feature into ranked ordinal categories for modeling."
+   },
+   {
+    "title": "Ordinal encoding",
+    "scenario": "Return integer bucket codes for compact downstream processing."
+   }
+  ],
+  "related": [
+   "pandas.cut",
+   "pandas.Categorical",
+   "pandas.Series"
+  ],
+  "since": "",
+  "keyPoints": [
+   "pd.qcut converts one-dimensional data into quantile-based bins.",
+   "The buckets are based on ranks or sample quantiles, so each normally contains a similar number of observations.",
+   "q accepts an integer count such as 4 for quartiles or a sequence of explicit quantile probabilities.",
+   "Set labels=False to receive integer bin codes instead of categorical labels.",
+   "Set retbins=True to also obtain the numeric bin edges.",
+   "precision controls the precision used for storing and displaying interval labels."
+  ],
+  "gotchas": [
+   "When labels are supplied, their number must match the number of generated bins.",
+   "The labels argument cannot be set to True.",
+   "Repeated values can create duplicate edges; choose whether to raise an error or remove duplicate edges with duplicates."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "pd.read_excel": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.read_excel.html",
+  "sourceTitle": "pandas.read_excel — pandas 3.0.6 documentation",
+  "summary": "Reads one or more worksheets from an Excel or OpenDocument workbook into a DataFrame or a dictionary of DataFrames. Use sheet_name and parsing options to select sheets, columns, types, and rows.",
+  "explanation": "Pass an Excel path, URL, file-like object, or ExcelFile as io. By default, the first worksheet is read and its first row supplies column labels; sheet_name can select another sheet or return several sheets, while options such as usecols, dtype, skiprows, and nrows control the imported data.",
+  "syntax": "pandas.read_excel(io, sheet_name=0, *, header=0, names=None, index_col=None, usecols=None, dtype=None, engine=None, converters=None, true_values=None, false_values=None, skiprows=None, nrows=None, na_values=None, keep_default_na=True, na_filter=True, verbose=False, parse_dates=False, date_format=None, thousands=None, decimal='.', comment=None, skipfooter=0, storage_options=None, dtype_backend=<no_default>, engine_kwargs=None)",
+  "parameters": [
+   {
+    "name": "io",
+    "type": "str, path-like, file-like, or ExcelFile",
+    "description": "Excel path, URL, file-like object, or pandas ExcelFile containing the workbook."
+   },
+   {
+    "name": "sheet_name",
+    "type": "str, int, list-like, or None",
+    "description": "Worksheet name or index, a list of worksheet names or indexes, or None for all worksheets."
+   },
+   {
+    "name": "header",
+    "type": "int, list-like, or None",
+    "description": "Row containing column labels; use None for no header."
+   },
+   {
+    "name": "names",
+    "type": "array-like, optional",
+    "description": "Column labels to use instead of inferred labels."
+   },
+   {
+    "name": "index_col",
+    "type": "int, list-like, or None",
+    "description": "Column or columns to use as the DataFrame index."
+   },
+   {
+    "name": "usecols",
+    "type": "str, list-like, or callable, optional",
+    "description": "Columns selected by labels, positions, Excel ranges, or a callable."
+   },
+   {
+    "name": "dtype",
+    "type": "Type name or dict, optional",
+    "description": "Data type for all columns or a per-column type mapping."
+   },
+   {
+    "name": "engine",
+    "type": "str, optional",
+    "description": "Reader engine such as xlrd, openpyxl, odf, or pyxlsb."
+   },
+   {
+    "name": "converters",
+    "type": "dict, optional",
+    "description": "Per-column conversion functions."
+   },
+   {
+    "name": "true_values",
+    "type": "list, optional",
+    "description": "Values interpreted as true."
+   },
+   {
+    "name": "false_values",
+    "type": "list, optional",
+    "description": "Values interpreted as false."
+   },
+   {
+    "name": "skiprows",
+    "type": "list-like, int, or callable, optional",
+    "description": "Rows to skip at the start, by number or predicate."
+   }
+  ],
+  "returns": "DataFrame or dict of DataFrames, depending on whether one worksheet or multiple worksheets are selected.",
+  "example": {
+   "title": "Read selected Excel columns",
+   "code": "import pandas as pd\nfrom io import BytesIO\n\nwith open(\"workbook.xlsx\", \"rb\") as file:\n    workbook = BytesIO(file.read())\n\ndf = pd.read_excel(workbook, sheet_name=\"Sales\", usecols=\"A:C\")\nprint(df)",
+   "language": "python",
+   "explanation": "Loads columns A through C from the Sales worksheet into a DataFrame."
+  },
+  "useCases": [
+   {
+    "title": "Load spreadsheet data",
+    "scenario": "Import a worksheet for analysis or reporting."
+   },
+   {
+    "title": "Subset columns",
+    "scenario": "Select only required columns from a wide workbook."
+   },
+   {
+    "title": "Load several sheets",
+    "scenario": "Read multiple worksheets into a named collection of DataFrames."
+   },
+   {
+    "title": "Customize parsing",
+    "scenario": "Control missing-value, date, and dtype interpretation during ingestion."
+   }
+  ],
+  "related": [
+   "pandas.ExcelFile",
+   "pandas.DataFrame",
+   "pandas.read_csv"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The function imports worksheet data and returns it as a pandas DataFrame.",
+   "It handles several spreadsheet formats, including legacy Excel, modern Excel, binary Excel, and OpenDocument files.",
+   "Use sheet_name for one worksheet, a list of worksheets, or None to load all worksheets.",
+   "The default selects the first worksheet; a name or index can select a specific worksheet.",
+   "Restrict imported columns with Excel ranges, column labels, integer positions, or a predicate.",
+   "Set a common type for imported columns or map individual column names to types."
+  ],
+  "gotchas": [
+   "An appropriate optional engine dependency must be installed for the workbook format; engine selection can be explicit when automatic selection is insufficient."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "pd.read_feather": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.read_feather.html",
+  "sourceTitle": "pandas.read_feather",
+  "summary": "Reads a Feather-format table into a pandas DataFrame. It supports column selection, threaded loading, storage connection options, and selectable dtype backends.",
+  "explanation": "pandas.read_feather loads a Feather-format table from a local path, URL, or binary file-like object. It can select columns, parallelize reading, pass connection options, and choose the resulting DataFrame's dtype backend.",
+  "syntax": "pandas.read_feather(path, columns=None, use_threads=True, storage_options=None, dtype_backend=<no_default>)",
+  "parameters": [
+   {
+    "name": "path",
+    "type": "str, path object, or file-like object",
+    "description": "String, path object implementing os.PathLike[str], or binary file-like object with read(). May also be a supported URL."
+   },
+   {
+    "name": "columns",
+    "type": "sequence, default None",
+    "description": "Columns to read; None reads all columns."
+   },
+   {
+    "name": "use_threads",
+    "type": "bool, default True",
+    "description": "Whether to parallelize reading with multiple threads."
+   },
+   {
+    "name": "storage_options",
+    "type": "dict, optional",
+    "description": "Additional options for the storage connection."
+   },
+   {
+    "name": "dtype_backend",
+    "type": "{‘numpy_nullable’, ‘pyarrow’}, default behavior when unspecified",
+    "description": "Backend for resulting DataFrame dtypes: numpy_nullable or pyarrow."
+   }
+  ],
+  "returns": "DataFrame containing the data stored in the Feather file.",
+  "example": {
+   "title": "Read selected Feather columns",
+   "code": "import pandas as pd\n\n# Read only the columns needed by the analysis.\ndf = pd.read_feather(\"data/table.feather\", columns=[\"user_id\", \"score\"])\nprint(df)",
+   "language": "python",
+   "explanation": "Loads the selected columns from a local Feather file into a pandas DataFrame."
+  },
+  "useCases": [
+   {
+    "title": "Read a local table",
+    "scenario": "Load a complete local Feather dataset for analysis."
+   },
+   {
+    "title": "Select columns",
+    "scenario": "Reduce I/O and memory use by loading only required fields."
+   },
+   {
+    "title": "Load remote data",
+    "scenario": "Read data from supported cloud or web URLs."
+   },
+   {
+    "title": "Choose a dtype backend",
+    "scenario": "Preserve or control nullable and Arrow-backed dtypes."
+   }
+  ],
+  "related": [
+   "DataFrame.to_feather",
+   "pyarrow"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Reads a Feather table and returns it as a DataFrame.",
+   "Leave columns as None to load every column, or provide a sequence to project only the needed ones.",
+   "use_threads controls whether reading is parallelized; it defaults to True.",
+   "The input can reference supported local or remote URL schemes in addition to ordinary paths.",
+   "dtype_backend selects the DataFrame dtype backend, including numpy_nullable or pyarrow.",
+   "storage_options passes connection-specific settings such as credentials or request options."
+  ],
+  "gotchas": [
+   "Install the pyarrow dependency before calling the function.",
+   "Omitting dtype_backend keeps the default non-nullable dtype behavior rather than opting into nullable dtypes.",
+   "A string path may identify a remote resource; use storage_options when the connection requires additional settings."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "pd.read_html": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.read_html.html",
+  "sourceTitle": "pandas.read_html — pandas 3.0.6 documentation",
+  "summary": "Reads HTML tables from a URL, path, or file-like object and returns the parsed tables as a list of pandas DataFrames. Use matching, parser, and parsing options to control which tables and values are imported.",
+  "explanation": "Pass an HTML source as a URL, path, or file-like object. The function locates matching table elements, parses rows and columns, and returns every selected table as a DataFrame in a list; parsing requires a supported HTML backend.",
+  "syntax": "pandas.read_html(io, *, match='. +', flavor=None, header=None, index_col=None, skiprows=None, attrs=None, parse_dates=False, thousands=',', encoding=None, decimal='.', converters=None, na_values=None, keep_default_na=True, displayed_only=True, extract_links=None, dtype_backend=<no_default>, storage_options=None)",
+  "parameters": [
+   {
+    "name": "io",
+    "type": "str, path object, or file-like object",
+    "description": "String, path object, or file-like object containing HTML; a string may be a URL."
+   },
+   {
+    "name": "match",
+    "type": "str or compiled regular expression, optional",
+    "description": "String or compiled regular expression used to select tables by contained text."
+   },
+   {
+    "name": "flavor",
+    "type": "{“lxml”, “html5lib”, “bs4”} or list-like, optional",
+    "description": "HTML parser or list of parsers: lxml, html5lib, or bs4."
+   },
+   {
+    "name": "header",
+    "type": "int or list-like, optional",
+    "description": "Column label or labels to use as the header."
+   },
+   {
+    "name": "index_col",
+    "type": "int or list-like, optional",
+    "description": "Column or columns to use as the row index."
+   },
+   {
+    "name": "skiprows",
+    "type": "int, list-like, or slice, optional",
+    "description": "Rows to skip while parsing."
+   },
+   {
+    "name": "attrs",
+    "type": "dict, optional",
+    "description": "HTML table attributes used to identify tables."
+   },
+   {
+    "name": "parse_dates",
+    "type": "bool, optional",
+    "description": "Whether to attempt date parsing."
+   },
+   {
+    "name": "thousands",
+    "type": "str, optional",
+    "description": "Thousands separator for numeric parsing."
+   },
+   {
+    "name": "encoding",
+    "type": "str, optional",
+    "description": "Character encoding used to decode the input."
+   },
+   {
+    "name": "decimal",
+    "type": "str, optional",
+    "description": "Decimal separator for numeric parsing."
+   },
+   {
+    "name": "converters",
+    "type": "dict, optional",
+    "description": "Column-specific conversion functions."
+   }
+  ],
+  "returns": "list of DataFrame objects, one for each selected HTML table.",
+  "example": {
+   "title": "Read a matching HTML table",
+   "code": "import pandas as pd\nfrom io import StringIO\n\nhtml = \"\"\"\n<table><tr><th>name</th><th>score</th></tr>\n<tr><td>Ada</td><td>98</td></tr>\n<tr><td>Linus</td><td>95</td></tr>\n</table>\n\"\"\"\n\ntables = pd.read_html(StringIO(html), match=\"score\")\ndf = tables[0]\nprint(df)",
+   "language": "python",
+   "explanation": "Parses the matching HTML table and accesses the first resulting DataFrame."
+  },
+  "useCases": [
+   {
+    "title": "Web-table ingestion",
+    "scenario": "Import tabular data embedded in a website."
+   },
+   {
+    "title": "Targeted table selection",
+    "scenario": "Extract one table from a page containing many tables."
+   },
+   {
+    "title": "Report processing",
+    "scenario": "Convert saved HTML reports into DataFrames."
+   },
+   {
+    "title": "Controlled parsing",
+    "scenario": "Choose parsing and missing-value behavior for messy HTML."
+   }
+  ],
+  "related": [
+   "pandas.DataFrame",
+   "pandas.DataFrame.to_html",
+   "pandas.read_xml",
+   "pandas.read_csv"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use this function to convert HTML tables into pandas DataFrames collected in a list.",
+   "It targets table elements rather than arbitrary HTML content.",
+   "Table rows and columns become the corresponding DataFrame structure.",
+   "The input can be a web URL in addition to local or file-like sources.",
+   "Use match to select tables whose text matches a string or regular expression.",
+   "Use flavor to choose one parser or provide parser alternatives."
+  ],
+  "gotchas": [
+   "Handle the result as a list even when the input contains only one table; the function does not normally return an empty list.",
+   "Install a supported HTML parsing library before calling the function.",
+   "The default match expression may be too broad for complex pages, so provide a meaningful table-text pattern."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "pd.read_parquet": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.read_parquet.html",
+  "sourceTitle": "pandas.read_parquet",
+  "summary": "Read a Parquet file, URL, directory, or file-like object into a pandas DataFrame. It can select columns, choose a Parquet engine, and apply supported row-group filters.",
+  "explanation": "Pass a path, URL, file-like object, or supported filesystem location to load Parquet data. pandas chooses a Parquet engine automatically unless one is specified, can select columns and row groups through filters, and returns the result as a DataFrame.",
+  "syntax": "pandas.read_parquet(path, engine='auto', columns=None, storage_options=None, dtype_backend=<no_default>, filesystem=None, filters=None, to_pandas_kwargs=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "path",
+    "type": "str, path-like, or file-like",
+    "description": "String, path object implementing `os.PathLike[str]`, or binary file-like object; may also be a URL or directory path."
+   },
+   {
+    "name": "engine",
+    "type": "{‘auto’, ‘pyarrow’, ‘fastparquet’} or None",
+    "description": "Parquet library to use; `auto`, `pyarrow`, or `fastparquet`. Defaults to `auto`."
+   },
+   {
+    "name": "columns",
+    "type": "list, optional",
+    "description": "Column names to read; defaults to all columns."
+   },
+   {
+    "name": "storage_options",
+    "type": "dict, optional",
+    "description": "Extra options for the storage connection."
+   },
+   {
+    "name": "dtype_backend",
+    "type": "{‘numpy_nullable’, ‘pyarrow’}, optional",
+    "description": "Back-end dtype representation for the resulting DataFrame."
+   },
+   {
+    "name": "filesystem",
+    "type": "fsspec or pyarrow filesystem, optional",
+    "description": "Filesystem object used to access the path."
+   },
+   {
+    "name": "filters",
+    "type": "list or tuple, optional",
+    "description": "Predicates used to filter row groups."
+   },
+   {
+    "name": "to_pandas_kwargs",
+    "type": "dict, optional",
+    "description": "Additional keyword arguments passed to `pyarrow.Table.to_pandas`."
+   },
+   {
+    "name": "**kwargs",
+    "type": "dict",
+    "description": "Additional keyword arguments accepted by the selected Parquet engine."
+   },
+   {
+    "name": "returns",
+    "type": "DataFrame",
+    "description": "DataFrame containing the loaded Parquet data."
+   }
+  ],
+  "returns": "A DataFrame containing the Parquet data.",
+  "example": {
+   "title": "Read selected Parquet columns",
+   "code": "import pandas as pd\n\n# Requires pyarrow or fastparquet to be installed.\ndf = pd.read_parquet(\"events.parquet\", columns=[\"timestamp\", \"event\"])\nprint(df)",
+   "language": "python",
+   "explanation": "Reads only the selected columns from a local Parquet file into a DataFrame."
+  },
+  "useCases": [
+   {
+    "title": "Read local analytical data",
+    "scenario": "Load a complete local Parquet dataset into a DataFrame."
+   },
+   {
+    "title": "Project selected columns",
+    "scenario": "Read only fields needed for a transformation or report."
+   },
+   {
+    "title": "Read remote data",
+    "scenario": "Access Parquet data in cloud or remote storage with backend-specific settings."
+   },
+   {
+    "title": "Filter row groups",
+    "scenario": "Reduce input work by applying supported row-group predicates."
+   }
+  ],
+  "related": [
+   "DataFrame.to_parquet",
+   "read_feather",
+   "read_orc",
+   "read_pickle"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Loads Parquet data and produces a pandas DataFrame.",
+   "The engine parameter accepts `auto`, `pyarrow`, or `fastparquet`.",
+   "Use columns to project a subset of fields during loading.",
+   "Use storage_options for connection-specific settings such as authentication or endpoint details."
+  ],
+  "gotchas": [
+   "With the default engine selection, pandas consults the `io.parquet.engine` option; ensure a supported engine is installed.",
+   "A columns list excludes every other column from the read, so omit it when the complete table is needed.",
+   "A string path may identify a remote resource, so configure storage options when the backend requires credentials or connection settings."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "pd.read_pickle": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.read_pickle.html",
+  "sourceTitle": "pandas.read_pickle",
+  "summary": "Loads a pickled pandas object—or any other pickled object—from a file, URL, or binary file-like source. Compression can be inferred from supported filename extensions or configured explicitly.",
+  "explanation": "Provide a path, URL, or binary file-like object to load a pickle. Pandas can infer compression from supported filename extensions unless configured otherwise, and returns the object stored in the pickle.",
+  "syntax": "pandas.read_pickle(filepath_or_buffer, compression='infer', storage_options=None)",
+  "parameters": [
+   {
+    "name": "filepath_or_buffer",
+    "type": "str, path object, or file-like object",
+    "description": "Path, URL, or binary file-like object containing the pickle."
+   },
+   {
+    "name": "compression",
+    "type": "str or dict, default 'infer'",
+    "description": "Compression method or configuration; defaults to inferring it from a path extension."
+   },
+   {
+    "name": "storage_options",
+    "type": "dict, optional",
+    "description": "Additional options for the storage connection."
+   }
+  ],
+  "returns": "object — The unpickled pandas object, or any object stored in the file.",
+  "example": {
+   "title": "Save and load a DataFrame",
+   "code": "import pandas as pd\n\noriginal = pd.DataFrame({\"name\": [\"Ada\", \"Linus\"], \"score\": [10, 9]})\noriginal.to_pickle(\"scores.pkl\")\nloaded = pd.read_pickle(\"scores.pkl\")\nprint(loaded)",
+   "language": "python",
+   "explanation": "This writes a DataFrame with pandas and loads the serialized object back from the local pickle file."
+  },
+  "useCases": [
+   {
+    "title": "Restore pandas objects",
+    "scenario": "Reload a DataFrame or Series previously written with pandas pickle serialization."
+   },
+   {
+    "title": "Handle compressed files",
+    "scenario": "Read compressed pickle files without manually decompressing them."
+   },
+   {
+    "title": "Read remote objects",
+    "scenario": "Load pickled data from supported remote storage or URLs with connection settings."
+   }
+  ],
+  "related": [
+   "pandas.DataFrame.to_pickle",
+   "pandas.Series.to_pickle"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Loads a pandas object or another Python object from a pickle and returns the deserialized value.",
+   "The input can be a string path, an os.PathLike object, or a binary file-like object.",
+   "URLs are accepted as input, including remote storage URLs.",
+   "The compression option enables decompression while reading the stored data.",
+   "With compression set to infer, pandas detects compression from supported path extensions.",
+   "storage_options passes connection-specific settings such as authentication or host details."
+  ],
+  "gotchas": [
+   "Do not load pickle files from untrusted sources because unpickling can execute unsafe operations.",
+   "A ZIP or TAR archive used as compressed input must contain exactly one data file.",
+   "Backward compatibility is guaranteed only to pandas 0.20.3 when the object was serialized with to_pickle."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "pd.to_datetime": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.to_datetime.html",
+  "sourceTitle": "pandas.to_datetime — pandas documentation",
+  "summary": "Converts scalar, array-like, Series, or DataFrame-like values into pandas datetime objects. Options control parsing formats, errors, timezone handling, numeric units, origin, and caching.",
+  "explanation": "Pass a scalar, sequence, Series, or DataFrame-like value to parse it into pandas datetime objects. Control parsing errors, timezone localization, date ordering, units, origin, format matching, and caching with the optional arguments; the result type follows the input shape.",
+  "syntax": "pandas.to_datetime(arg, errors='raise', dayfirst=False, yearfirst=False, utc=False, format=None, exact=<no_default>, unit=None, origin='unix', cache=True)",
+  "parameters": [
+   {
+    "name": "arg",
+    "type": "int, float, str, datetime, list, tuple, 1-d array, Series, DataFrame/dict-like",
+    "description": "Value to convert: int, float, str, datetime, list, tuple, one-dimensional array, Series, or DataFrame/dict-like."
+   },
+   {
+    "name": "errors",
+    "type": "{'raise', 'coerce', 'ignore'}, default 'raise'",
+    "description": "Parsing error behavior: raise an exception, coerce invalid values to NaT, or ignore errors."
+   },
+   {
+    "name": "dayfirst",
+    "type": "bool, default False",
+    "description": "Prefer day-first interpretation for ambiguous dates."
+   },
+   {
+    "name": "yearfirst",
+    "type": "bool, default False",
+    "description": "Prefer year-first interpretation for ambiguous dates."
+   },
+   {
+    "name": "utc",
+    "type": "bool, default False",
+    "description": "Convert or localize results to UTC."
+   },
+   {
+    "name": "format",
+    "type": "str, default None",
+    "description": "Parsing format, such as '%d/%m/%Y', or 'mixed' for per-element inference."
+   },
+   {
+    "name": "exact",
+    "type": "bool, default <no_default>",
+    "description": "Require the format to match exactly when not using a special format."
+   },
+   {
+    "name": "unit",
+    "type": "str, default None",
+    "description": "Unit for numeric values, such as 's', 'ms', 'us', or 'ns'."
+   },
+   {
+    "name": "origin",
+    "type": "scalar, default 'unix'",
+    "description": "Reference point for numeric timestamps; defaults to Unix epoch."
+   },
+   {
+    "name": "cache",
+    "type": "bool, default True",
+    "description": "Cache unique parsed date strings to improve repeated conversions."
+   }
+  ],
+  "returns": "Return type follows the input: scalar returns Timestamp (or datetime.datetime fallback); array-like returns DatetimeIndex (or object-dtype Series fallback); Series returns Series; DataFrame/dict-like returns a Series. Invalid or out-of-range timezone parsing may use object dtype fallbacks.",
+  "example": {
+   "title": "Parse date strings",
+   "code": "import pandas as pd\n\nvalues = pd.to_datetime(\n    [\"2024-01-15\", \"15/02/2024\"],\n    dayfirst=True,\n    format=\"mixed\",\n)\nprint(values)",
+   "language": "python",
+   "explanation": "Converts strings with mixed date formats into a DatetimeIndex; dayfirst=True interprets ambiguous numeric dates with the day before the month."
+  },
+  "useCases": [
+   {
+    "title": "Parse external date data",
+    "scenario": "Convert date strings from CSV or API responses into datetime-aware pandas values."
+   },
+   {
+    "title": "Convert epoch numbers",
+    "scenario": "Build timestamps from numeric epoch values using a specified unit and origin."
+   },
+   {
+    "title": "Standardize timezones",
+    "scenario": "Normalize mixed timezone inputs before comparisons or time-series operations."
+   },
+   {
+    "title": "Create dates from columns",
+    "scenario": "Assemble dates from year, month, and day columns in tabular data."
+   }
+  ],
+  "related": [
+   "pandas.Timestamp",
+   "pandas.DatetimeIndex",
+   "pandas.to_timedelta"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Accepts individual values, array-like data, Series, and DataFrame or dictionary-like inputs.",
+   "The required arg value is the data that should be parsed.",
+   "Use format to specify a strftime parsing pattern when the input follows a known layout.",
+   "Set utc=True to normalize results to timezone-aware UTC values.",
+   "Scalars return Timestamp-like values, array-like inputs return DatetimeIndex, and Series or DataFrame inputs preserve their corresponding structure.",
+   "When assembling dates from DataFrame-like columns, provide a four-digit year."
+  ],
+  "gotchas": [
+   "dayfirst=True prefers day-before-month interpretation, but it is not a strict validation rule for date formats.",
+   "utc=True converts timezone-aware inputs to UTC and localizes naive inputs to UTC.",
+   "The default errors='raise' reports invalid date strings with a parsing exception; use errors='coerce' to produce missing values instead."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "pd.to_numeric": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.to_numeric.html",
+  "sourceTitle": "pandas.to_numeric",
+  "summary": "Converts a scalar or one-dimensional collection to numeric data. Invalid values raise by default or can become NaN with errors='coerce'; downcast can request smaller compatible dtypes.",
+  "explanation": "pandas.to_numeric parses a scalar or one-dimensional collection into numeric values. By default, invalid text raises an exception; choose coercion to produce missing values, and optionally request a smaller compatible dtype with downcast.",
+  "syntax": "pandas.to_numeric(arg, errors='raise', downcast=None, dtype_backend=<no_default>)",
+  "parameters": [
+   {
+    "name": "arg",
+    "type": "scalar, list, tuple, 1-d array, or Series",
+    "description": "Value or one-dimensional collection to convert to numeric data."
+   },
+   {
+    "name": "errors",
+    "type": "{'ignore', 'raise', 'coerce'}, default 'raise'",
+    "description": "Controls invalid parsing: raise an exception or replace invalid values with NaN."
+   },
+   {
+    "name": "downcast",
+    "type": "str, default None",
+    "description": "Requests a smaller compatible numeric dtype; accepted categories are integer, signed, unsigned, and float."
+   },
+   {
+    "name": "dtype_backend",
+    "type": "dtype_backend, default <no_default>",
+    "description": "Controls the nullable dtype backend used for the result."
+   }
+  ],
+  "returns": "Numeric value or collection; return type depends on input, with Series input producing a Series and other supported inputs producing an ndarray.",
+  "example": {
+   "title": "Convert mixed values safely",
+   "code": "import pandas as pd\n\nvalues = pd.to_numeric([\"10\", \"2.5\", \"invalid\"], errors=\"coerce\")\nprint(values.tolist())  # [10.0, 2.5, nan]",
+   "language": "python",
+   "explanation": "Converts parseable strings to numbers and replaces the invalid value with NaN."
+  },
+  "useCases": [
+   {
+    "title": "Parse numeric text",
+    "scenario": "A CSV column contains numbers represented as strings and must be used in arithmetic."
+   },
+   {
+    "title": "Coerce invalid values",
+    "scenario": "A data-cleaning pipeline should preserve rows while marking malformed entries as missing."
+   },
+   {
+    "title": "Downcast converted data",
+    "scenario": "Memory usage matters and values can fit smaller numeric dtypes."
+   }
+  ],
+  "related": [
+   "pandas.to_datetime",
+   "pandas.to_timedelta"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Converts a scalar or one-dimensional input into numeric data.",
+   "Without downcasting, the resulting dtype is generally float64 or int64 as appropriate.",
+   "Use downcast when a smaller integer, unsigned integer, or floating dtype is suitable.",
+   "The argument may be a scalar, list, tuple, one-dimensional array, or Series.",
+   "The output type follows the input: a Series remains a Series, while other supported collection inputs produce an ndarray."
+  ],
+  "gotchas": [
+   "Using errors='coerce' changes invalid values into NaN rather than reporting them.",
+   "The default errors='raise' can stop conversion when any value cannot be parsed.",
+   "Very large numbers may lose precision during conversion."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "pivot_table": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.pivot_table.html",
+  "sourceTitle": "pandas.pivot_table",
+  "summary": "Creates a spreadsheet-style DataFrame by grouping input rows along index and column keys, then aggregating selected values. The output may use MultiIndex objects for its row and column axes.",
+  "explanation": "Pass a DataFrame to pandas.pivot_table, choose grouping keys for the result index and columns, and specify the values and aggregation function. The result is a DataFrame whose grouped axes can be hierarchical indexes; optional margins, sorting, missing-value filling, and categorical-observation settings further control its layout.",
+  "syntax": "pandas.pivot_table(data, values=None, index=None, columns=None, aggfunc='mean', fill_value=None, margins=False, dropna=True, margins_name='All', observed=True, sort=True, **kwargs)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "DataFrame",
+    "description": "Input pandas DataFrame object."
+   },
+   {
+    "name": "values",
+    "type": "list-like or scalar, optional",
+    "description": "Column or columns to aggregate."
+   },
+   {
+    "name": "index",
+    "type": "column, Grouper, array, or sequence of the previous",
+    "description": "Keys to group by on the pivot table index."
+   },
+   {
+    "name": "columns",
+    "type": "column, Grouper, array, or sequence of the previous",
+    "description": "Keys to group by on the pivot table column."
+   },
+   {
+    "name": "aggfunc",
+    "type": "function, list of functions, dict, default “mean”",
+    "description": "Aggregation function or functions; defaults to mean."
+   },
+   {
+    "name": "fill_value",
+    "type": "scalar, default None",
+    "description": "Value used to replace missing results after aggregation."
+   },
+   {
+    "name": "margins",
+    "type": "bool, default False",
+    "description": "Whether to add row and column partial aggregates."
+   },
+   {
+    "name": "dropna",
+    "type": "bool, default True",
+    "description": "Whether to omit rows with missing values before aggregation."
+   },
+   {
+    "name": "margins_name",
+    "type": "str, default “All”",
+    "description": "Label for the margins row and column."
+   },
+   {
+    "name": "observed",
+    "type": "bool, default True",
+    "description": "Whether to include unobserved categorical groups."
+   },
+   {
+    "name": "sort",
+    "type": "bool, default True",
+    "description": "Whether to sort the resulting index and columns."
+   },
+   {
+    "name": "**kwargs",
+    "type": "dict",
+    "description": "Additional keyword arguments passed to the aggregation operation."
+   }
+  ],
+  "returns": "DataFrame — an Excel-style pivot table.",
+  "example": {
+   "title": "Summarize grouped values",
+   "code": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"region\": [\"East\", \"East\", \"West\"],\n    \"product\": [\"A\", \"B\", \"A\"],\n    \"sales\": [10, 20, 15],\n})\n\nsummary = pd.pivot_table(\n    df,\n    values=\"sales\",\n    index=\"region\",\n    columns=\"product\",\n    aggfunc=\"sum\",\n    fill_value=0,\n)\nprint(summary)",
+   "language": "python",
+   "explanation": "Groups sales by region and product, sums each group, and replaces missing combinations with zero."
+  },
+  "useCases": [
+   {
+    "title": "Grouped reporting",
+    "scenario": "Create cross-tabular summaries of numeric data by two or more categorical dimensions."
+   },
+   {
+    "title": "Aggregated metrics",
+    "scenario": "Compute totals or averages for combinations of row and column categories."
+   },
+   {
+    "title": "Totals and margins",
+    "scenario": "Produce spreadsheet-like reports with optional subtotal and grand-total margins."
+   }
+  ],
+  "related": [
+   "pandas.DataFrame.pivot_table",
+   "pandas.pivot",
+   "pandas.DataFrame.pivot",
+   "pandas.MultiIndex"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The function turns grouped and aggregated data into a spreadsheet-like DataFrame.",
+   "Grouping levels are represented with MultiIndex objects on the output axes.",
+   "Use values to select one column or several columns for aggregation.",
+   "Use index to define row-grouping keys.",
+   "Use columns to define column-grouping keys.",
+   "aggfunc accepts one function, multiple functions, or a mapping, and defaults to mean."
+  ],
+  "gotchas": [
+   "A list supplied to index or columns may contain supported key types, but not another list.",
+   "An array used as an index or column key must align one-for-one with the input rows.",
+   "Multiple aggregation functions create hierarchical result columns."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "read_json": {
+  "sourceUrl": "https://pandas.pydata.org/docs/reference/api/pandas.read_json.html",
+  "sourceTitle": "pandas.read_json",
+  "summary": "Read JSON strings, files, URLs, or file-like objects into pandas Series or DataFrame objects. It supports several JSON orientations, line-delimited data, compression, and optional chunked reading.",
+  "explanation": "Pass a JSON string, path, URL, or file-like object to read_json. Pandas interprets the data using the selected orient and returns a DataFrame or Series; setting chunksize returns a JsonReader for incremental processing.",
+  "syntax": "pandas.read_json(path_or_buf, *, orient=None, typ='frame', dtype=None, convert_axes=None, convert_dates=True, keep_default_dates=True, precise_float=False, date_unit=None, encoding=None, encoding_errors='strict', lines=False, chunksize=None, compression='infer', nrows=None, storage_options=None, dtype_backend=<no_default>, engine='ujson')",
+  "parameters": [
+   {
+    "name": "path_or_buf",
+    "type": "str, path object, or file-like object",
+    "description": "JSON string, path, URL, or file-like object to read."
+   },
+   {
+    "name": "orient",
+    "type": "str, optional",
+    "description": "JSON representation to expect, such as columns, records, index, values, or table."
+   },
+   {
+    "name": "typ",
+    "type": "{‘frame’, ‘series’}, default ‘frame’",
+    "description": "Object type to reconstruct."
+   },
+   {
+    "name": "dtype",
+    "type": "bool or dict, optional",
+    "description": "Whether to infer dtypes or apply a dtype mapping."
+   },
+   {
+    "name": "lines",
+    "type": "bool, default False",
+    "description": "Read newline-delimited JSON records."
+   },
+   {
+    "name": "chunksize",
+    "type": "int, optional",
+    "description": "Number of rows per iteration; enables chunked reading."
+   },
+   {
+    "name": "compression",
+    "type": "str or dict, default ‘infer’",
+    "description": "Compression handling for the input."
+   },
+   {
+    "name": "nrows",
+    "type": "int, optional",
+    "description": "Maximum number of rows to read."
+   }
+  ],
+  "returns": "Series, DataFrame, or pandas.api.typing.JsonReader. A JsonReader is returned when chunksize is not 0 or None.",
+  "example": {
+   "title": "Read JSON into a DataFrame",
+   "code": "import pandas as pd\n\npayload = '{\"name\":{\"0\":\"Ada\",\"1\":\"Grace\"},\"score\":{\"0\":98,\"1\":95}}'\ndf = pd.read_json(payload)\nprint(df)\n",
+   "language": "python",
+   "explanation": "Reads a JSON string in the default column-oriented format into a DataFrame."
+  },
+  "useCases": [
+   {
+    "title": "Import structured JSON",
+    "scenario": "Load a JSON document or JSON-like string into a DataFrame for analysis."
+   },
+   {
+    "title": "Read JSON Lines",
+    "scenario": "Process newline-delimited records using lines=True."
+   },
+   {
+    "title": "Stream in chunks",
+    "scenario": "Handle datasets too large for one in-memory load with chunksize."
+   },
+   {
+    "title": "Round-trip pandas JSON",
+    "scenario": "Restore data written with a compatible DataFrame.to_json orient."
+   }
+  ],
+  "related": [
+   "pandas.DataFrame.to_json",
+   "pandas.Series.to_json",
+   "pandas.read_table",
+   "pandas.read_csv"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Converts JSON data into a pandas object.",
+   "Accepts JSON files and JSON-like input, including strings and file-like objects.",
+   "Supports line-delimited input, compression, and multiple JSON representations.",
+   "Path-like string inputs can use HTTP, FTP, S3, or file URLs.",
+   "Returns a Series or DataFrame normally, or a JsonReader when chunked reading is requested."
+  ],
+  "gotchas": [
+   "Setting chunksize changes the return value to an iterator, so consume it in chunks rather than treating it as a DataFrame.",
+   "A string input can identify a URL as well as a local path; ensure the URL scheme and access method are supported.",
+   "The input structure must match the chosen orient; use a matching to_json orient when producing data for round trips."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Series": {
+  "sourceUrl": "https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html",
+  "sourceTitle": "pandas.Series",
+  "summary": "pandas.Series is a one-dimensional labeled data structure, including support for time-series data. It supports label- and integer-based indexing plus index-aware operations.",
+  "explanation": "Use Series for one-dimensional labeled data. Construct it from array-like data, a mapping, or a scalar, optionally supplying labels, a dtype, and a name; indexing and arithmetic use those labels.",
+  "syntax": "class pandas.Series(data=None, index=None, dtype=None, name=None, copy=None)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "array-like, Iterable, dict, or scalar value",
+    "description": "Data stored in the Series; accepts array-like data, an iterable, a dictionary, or a scalar value."
+   },
+   {
+    "name": "index",
+    "type": "array-like or Index (1d)",
+    "description": "Labels for the data. Labels must be hashable and have the same length as data; defaults to a RangeIndex."
+   },
+   {
+    "name": "dtype",
+    "type": "str, numpy.dtype, or ExtensionDtype, optional",
+    "description": "Output data type; inferred from data when omitted."
+   },
+   {
+    "name": "name",
+    "type": "Hashable, default None",
+    "description": "Name assigned to the Series."
+   },
+   {
+    "name": "copy",
+    "type": "bool, default False",
+    "description": "Whether to copy the input data."
+   }
+  ],
+  "returns": "A pandas Series object containing the supplied data and index labels.",
+  "example": {
+   "title": "Create and align Series values",
+   "code": "import pandas as pd\n\nscores = pd.Series([80, 95, 70], index=[\"ana\", \"bo\", \"cy\"], name=\"score\")\nprint(scores.loc[\"bo\"])\nprint((scores + pd.Series({\"ana\": 5, \"bo\": 0, \"cy\": 10})).to_dict())",
+   "language": "python",
+   "explanation": "Creates a named Series with custom labels, retrieves one value by label, and demonstrates index-aligned arithmetic."
+  },
+  "useCases": [
+   {
+    "title": "Labeled observations",
+    "scenario": "Represent one labeled measurement per entity, such as scores keyed by user ID."
+   },
+   {
+    "title": "Time-series data",
+    "scenario": "Store and analyze values indexed by dates or times."
+   },
+   {
+    "title": "Index-aware calculations",
+    "scenario": "Perform arithmetic between labeled datasets while preserving label alignment."
+   }
+  ],
+  "related": [
+   "pandas.DataFrame",
+   "pandas.Index",
+   "Series.loc",
+   "Series.iloc",
+   "Series.items"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Series stores one-dimensional data together with an index, making it suitable for labeled columns or time-series values.",
+   "Values can be accessed using positional indexing or labels, depending on the indexing method used.",
+   "The constructor accepts sequence-like data, mappings, iterables, or a scalar.",
+   "When an index is supplied, its labels must be hashable and match the data length.",
+   "Omitting the index creates a default integer RangeIndex.",
+   "Binary operations combine the operand indexes into their sorted union."
+  ],
+  "gotchas": [
+   "Labels may repeat, but every label must be hashable, so duplicate or unsuitable labels can affect selection behavior.",
+   "Arithmetic aligns operands by index labels rather than by position; missing labels can therefore produce missing results."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

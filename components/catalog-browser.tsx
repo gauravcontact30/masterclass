@@ -82,7 +82,10 @@ function cardCandidates(item: CatalogItem, technology: string) {
   const answer = prepared?.answer;
   // A syllabus row leads with its class ("Class 6 · Order large numbers…"),
   // which the card already shows as the category.
-  const full = (answer?.definition || item.summary).replace(/^.*? · /, "").trim();
+  // A generated answer's definition is the summary's first sentence only; the
+  // card still wants the whole summary, whose later sentences become points.
+  const whole = answer?.definition && !item.summary.startsWith(answer.definition) ? answer.definition : item.summary;
+  const full = whole.replace(/^.*? · /, "").trim();
   const facts = full.split(/(?<=[.;])\s+|\s+—\s+/).map(fact => fact.trim()).filter(Boolean);
   const definition = facts[0] || prepared?.focus || full;
   const points = [...(item.points ?? []), ...(answer?.keyPoints ?? []), ...facts.slice(1), ...essentialPoints(technology, item.category)];

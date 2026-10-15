@@ -1,0 +1,1710 @@
+{
+ "Connectivity hooks::useOffline": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-offline",
+  "sourceTitle": "useOffline | Next.js",
+  "summary": "Reads whether the app is currently offline. This experimental hook is available in Client Components when experimental.useOffline is enabled.",
+  "explanation": "Call useOffline in a Client Component to read Next.js's connectivity state. With experimental.useOffline enabled, it reports offline conditions from browser events or failed supported requests; Next.js changes it back when connectivity is restored. Without the configuration flag, it always returns false.",
+  "syntax": "useOffline()",
+  "parameters": [],
+  "returns": "boolean: true when the app is offline; false when it is online or rendering on the server.",
+  "example": {
+   "title": "Show connectivity status",
+   "code": "'use client'\n\nimport { useOffline } from 'next/offline'\n\nexport function OfflineStatus() {\n  const isOffline = useOffline()\n\n  return <p>{isOffline ? 'Offline' : 'Online'}</p>\n}",
+   "language": "tsx",
+   "explanation": "This Client Component displays the current connectivity state."
+  },
+  "useCases": [
+   {
+    "title": "Connectivity feedback",
+    "scenario": "Show a banner or status label when connectivity is lost."
+   },
+   {
+    "title": "Offline-aware loading UI",
+    "scenario": "Provide an offline-specific Suspense fallback while dynamic content waits."
+   },
+   {
+    "title": "Retry status",
+    "scenario": "Indicate that a navigation, prefetch, or Server Action is waiting to retry."
+   }
+  ],
+  "related": [
+   "experimental.useOffline",
+   "next/offline",
+   "Offline support"
+  ],
+  "since": "v16.x.0",
+  "keyPoints": [
+   "The hook gives a boolean offline indicator.",
+   "Use the result for banners, status indicators, or other connectivity-aware UI.",
+   "The hook has no arguments.",
+   "Its return type is boolean.",
+   "A true result means the app is considered offline.",
+   "A false result means online or server rendering, and is also the initial hydrated value.",
+   "When the connection returns, supported blocked requests are retried automatically."
+  ],
+  "gotchas": [
+   "The hook is experimental and should not be relied on as a production-stable API.",
+   "If experimental.useOffline is not enabled, the hook always reports false.",
+   "During server rendering and before hydration finishes, false is expected even if the device is offline."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Connectivity hooks::useOffline and hydration": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-offline",
+  "sourceTitle": "useOffline | Next.js",
+  "summary": "useOffline returns whether a Next.js App Router application is offline. Its initial false value during server rendering and hydration makes connectivity UI a progressive enhancement.",
+  "explanation": "Enable the experimental configuration option to activate connectivity tracking and retries, then call useOffline in a Client Component. The hook returns false while rendering on the server and during initial hydration, so the browser’s first reliable value arrives after mounting; this conservative start supports hydration-safe progressive enhancement.",
+  "syntax": "const isOffline = useOffline()",
+  "parameters": [],
+  "returns": "boolean: true when the app is offline; false when online, rendering on the server, or before hydration completes.",
+  "example": {
+   "title": "Offline-aware fallback",
+   "code": "'use client'\n\nimport { useOffline } from 'next/offline'\n\nexport function ConnectivityFallback() {\n  const isOffline = useOffline()\n\n  return (\n    <p>\n      {isOffline ? 'Waiting for connection...' : 'Loading...'}\n    </p>\n  )\n}",
+   "language": "tsx",
+   "explanation": "A Client Component changes its fallback message when the browser reports an offline state."
+  },
+  "useCases": [
+   {
+    "title": "Connectivity status",
+    "scenario": "Show a banner when the browser loses connectivity."
+   },
+   {
+    "title": "Loading feedback",
+    "scenario": "Provide an offline-aware Suspense fallback while dynamic content waits."
+   },
+   {
+    "title": "Pending requests",
+    "scenario": "Explain that a soft navigation or Server Action is waiting for reconnection."
+   }
+  ],
+  "related": [
+   "experimental.useOffline",
+   "next/offline",
+   "Suspense",
+   "useTransition"
+  ],
+  "since": "v16.x.0",
+  "keyPoints": [
+   "useOffline reports the application’s current offline state as a boolean.",
+   "The hook is available only with the experimental configuration enabled; otherwise it remains false.",
+   "Call the hook without arguments.",
+   "The initial false value is conservative and should be treated as progressive enhancement for hydration safety.",
+   "After connectivity returns, blocked navigation or content requests can retry and continue automatically.",
+   "Use the post-mount value for connectivity-specific UI rather than relying on the server-rendered result."
+  ],
+  "gotchas": [
+   "The feature is experimental and may change, so avoid depending on it in production without accepting that risk.",
+   "Do not assume the first returned value reflects the browser’s actual connectivity; it is false until hydration progresses.",
+   "Offline handling applies to supported soft navigations and requests, not an offline full-page reload."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hook patterns::Active links from usePathname": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/file-conventions/layout",
+  "sourceTitle": "File-system conventions: layout.js",
+  "summary": "Use usePathname in a small Client Component to compare the current pathname with each link's href. Import that component into a shared layout so only the navigation depends on the URL.",
+  "explanation": "Put the pathname-dependent navigation in a small Client Component and render that component from the shared layout. usePathname updates after client-side navigation, letting each link compare its href with the current path without making the entire layout request-dependent.",
+  "syntax": "const pathname = usePathname()",
+  "parameters": [],
+  "returns": "The usePathname hook returns the current URL pathname as a string.",
+  "example": {
+   "title": "Highlight the active navigation link",
+   "code": "'use client'\n\nimport Link from 'next/link'\nimport { usePathname } from 'next/navigation'\n\nexport function NavLinks() {\n  const pathname = usePathname()\n\n  return (\n    <nav aria-label=\"Main navigation\">\n      <Link className={pathname === '/' ? 'active' : ''} href=\"/\">\n        Home\n      </Link>\n      <Link className={pathname === '/about' ? 'active' : ''} href=\"/about\">\n        About\n      </Link>\n    </nav>\n  )\n}",
+   "language": "tsx",
+   "explanation": "This client component reads the current pathname and adds an active class when each link's href matches it. Import it into a shared layout so the layout itself remains independent of the current URL."
+  },
+  "useCases": [
+   {
+    "title": "Active top-level navigation",
+    "scenario": "Highlight Home, About, or other navigation items according to the current route."
+   },
+   {
+    "title": "Shared layout navigation",
+    "scenario": "Keep a persistent header or sidebar in a shared layout while its links update during navigation."
+   },
+   {
+    "title": "Current-route indication",
+    "scenario": "Provide a visual current-location indicator in a client-rendered navigation component."
+   }
+  ],
+  "related": [
+   "usePathname",
+   "next/link",
+   "useSelectedLayoutSegment"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Read the current pathname and use it to decide whether each navigation link should receive its active styling.",
+   "Compare pathname with the link's href and conditionally assign a class such as active.",
+   "Keep pathname access in a focused Client Component rather than reading it directly in a server layout.",
+   "The active state stays synchronized as users navigate with Next.js client-side links."
+  ],
+  "gotchas": [
+   "The component that calls usePathname must be a Client Component, so add 'use client' and keep the hook out of the server layout.",
+   "The navigation component re-renders during navigation; the shared layout does not need to become a Client Component."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hook patterns::Pending UI thresholds": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-link-status",
+  "sourceTitle": "Functions: useLinkStatus | Next.js",
+  "summary": "Use useLinkStatus inside a Link descendant to track pending navigation. Add an initially invisible animation with a short delay, such as 100ms, so fast navigations do not flash a loading hint.",
+  "explanation": "useLinkStatus exposes whether a descendant Link navigation is pending. Combine that state with an initially invisible, delayed CSS animation so very fast navigations finish without briefly flashing feedback.",
+  "syntax": "const { pending } = useLinkStatus()",
+  "parameters": [],
+  "returns": "An object with a single boolean property, pending: true before history updates and false after.",
+  "example": {
+   "title": "Delayed pending hint",
+   "code": "'use client'\n\nimport Link from 'next/link'\nimport { useLinkStatus } from 'next/link'\n\nfunction PendingHint() {\n  const { pending } = useLinkStatus()\n  return <span className={pending ? 'link-hint is-pending' : 'link-hint'} aria-hidden />\n}\n\nexport default function NavigationLink() {\n  return (\n    <Link href=\"/dashboard\" prefetch={false}>\n      Dashboard\n      <PendingHint />\n    </Link>\n  )\n}",
+   "language": "tsx",
+   "explanation": "The descendant observes the link's pending state; CSS can keep the hint invisible initially and reveal it only after a short animation delay."
+  },
+  "useCases": [
+   {
+    "title": "Show inline navigation feedback",
+    "scenario": "A link has prefetching disabled or incomplete and needs localized feedback."
+   },
+   {
+    "title": "Cover slow dynamic transitions",
+    "scenario": "A dynamic destination lacks loading.js and may take time to render."
+   },
+   {
+    "title": "Suppress fast-navigation flashes",
+    "scenario": "A navigation indicator should appear only when a transition exceeds a short threshold."
+   }
+  ],
+  "related": [
+   "useLinkStatus",
+   "Link",
+   "loading.js",
+   "prefetch"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use a delayed visual hint to avoid showing feedback for navigations that complete immediately.",
+   "A short initial delay acts as the threshold before the pending hint becomes visible.",
+   "Begin the hint at zero opacity so the delay does not display an unwanted flash.",
+   "The effective threshold is the configured animation delay.",
+   "Read the hook result through its single pending property."
+  ],
+  "gotchas": [
+   "Call the hook only from a component rendered inside the relevant Link.",
+   "Do not assume pending becomes true when the destination is already prefetched.",
+   "Rapid clicks replace the earlier link's pending indication.",
+   "This pattern applies to App Router navigation, not Pages Router pages."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hook patterns::Search params are read-only": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-search-params",
+  "sourceTitle": "useSearchParams | Next.js",
+  "summary": "useSearchParams returns a read-only view of the URL query string. Copy it into a new URLSearchParams object, modify the copy, and navigate with useRouter or Link.",
+  "explanation": "useSearchParams provides the current URL query parameters through a read-only URLSearchParams interface. To change them, serialize the current value into a new URLSearchParams object, modify that copy, and use useRouter or Link to navigate to the updated URL.",
+  "syntax": "const searchParams = useSearchParams()",
+  "parameters": [],
+  "returns": "A read-only URLSearchParams interface for the current URL's query string.",
+  "example": {
+   "title": "Copy, update, and navigate",
+   "code": "\"use client\"\n\nimport { useRouter, useSearchParams } from \"next/navigation\"\n\nexport default function SortControl() {\n  const router = useRouter()\n  const searchParams = useSearchParams()\n\n  function updateSorting(sort: string) {\n    const params = new URLSearchParams(searchParams.toString())\n    params.set(\"sort\", sort)\n    router.push(`?${params.toString()}`)\n  }\n\n  return <button onClick={() => updateSorting(\"price\")}>Sort by price</button>\n}",
+   "language": "tsx",
+   "explanation": "Copies the current parameters into a mutable URLSearchParams instance, changes the copy, and navigates to the resulting query string."
+  },
+  "useCases": [
+   {
+    "title": "Read query parameters",
+    "scenario": "Reading filters or sorting state from the URL in a Client Component."
+   },
+   {
+    "title": "Change one parameter",
+    "scenario": "Updating a filter while preserving the other current query parameters."
+   },
+   {
+    "title": "Navigate with updated params",
+    "scenario": "Generating a new URL for client-side navigation after editing query state."
+   }
+  ],
+  "related": [
+   "useRouter",
+   "Link",
+   "URLSearchParams",
+   "searchParams prop"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use the hook to read query parameters in a Client Component.",
+   "The returned object is for reading, not direct mutation.",
+   "Navigate with useRouter or Link when query parameters need to change.",
+   "Create a mutable copy by serializing the hook result and passing it to URLSearchParams.",
+   "Navigation updates the URL state and the page's searchParams prop."
+  ],
+  "gotchas": [
+   "Call this hook only from a Client Component; it cannot be used in a Server Component.",
+   "Do not try to mutate the object returned by the hook; create a new URLSearchParams instance first.",
+   "The hook reflects the new URL after navigation rather than changing the current route by itself."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hook patterns::Segment hooks at the root": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-selected-layout-segment",
+  "sourceTitle": "useSelectedLayoutSegment",
+  "summary": "useSelectedLayoutSegment reads the active route segment one level below the layout where its Client Component is called. At the root, it returns null for the root state, so navigation should define a fallback for null.",
+  "explanation": "In a Client Component rendered from a root layout, the hook reads the active segment immediately below that layout. It returns that segment as a string, or null when no child segment exists, so root-level navigation should explicitly handle null as its fallback state. Pass a parallel route key when reading a named slot instead.",
+  "syntax": "const segment = useSelectedLayoutSegment(parallelRouteKey?: string)",
+  "parameters": [
+   {
+    "name": "parallelRouteKey",
+    "type": "string | undefined",
+    "description": "Optional key identifying the parallel-route slot whose active segment should be read."
+   }
+  ],
+  "returns": "A string containing the active segment one level below the calling layout, or null when no segment exists.",
+  "example": {
+   "title": "Root navigation with a fallback",
+   "code": "'use client'\n\nimport Link from 'next/link'\nimport { useSelectedLayoutSegment } from 'next/navigation'\n\nexport default function RootNav() {\n  const segment = useSelectedLayoutSegment()\n\n  return (\n    <nav>\n      <Link href=\"/\" aria-current={segment === null ? 'page' : undefined}>\n        Home\n      </Link>\n      <Link href=\"/dashboard\" aria-current={segment === 'dashboard' ? 'page' : undefined}>\n        Dashboard\n      </Link>\n    </nav>\n  )\n}",
+   "language": "tsx",
+   "explanation": "A root-layout navigation component treats null as the root fallback and compares each link's slug with the first matched child segment."
+  },
+  "useCases": [
+   {
+    "title": "Mark the home link active when the returned segment is null.",
+    "scenario": "Root navigation"
+   },
+   {
+    "title": "Style tabs according to the active child segment.",
+    "scenario": "Layout tabs"
+   },
+   {
+    "title": "Read the active segment inside a named slot.",
+    "scenario": "Parallel routes"
+   }
+  ],
+  "related": [
+   "useSelectedLayoutSegments",
+   "usePathname",
+   "parallelRouteKey",
+   "Suspense"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use it inside a Client Component to inspect the first active child segment relative to the layout containing the component.",
+   "At the root, treat null as the explicit fallback for the home or root state.",
+   "Compare the returned value with each navigation item's segment to style the active item.",
+   "Pass a slot key when the segment belongs to a named parallel route rather than the default route.",
+   "Choose the plural hook when the navigation needs the full active segment path."
+  ],
+  "gotchas": [
+   "Do not expect this hook to provide the complete active route; use useSelectedLayoutSegments when all active segments are needed.",
+   "A catch-all match is not returned as separate segment values.",
+   "Add or plan a Suspense boundary when prerendering cannot resolve the active segment."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hook patterns::Typed useParams": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-params",
+  "sourceTitle": "Functions: useParams",
+  "summary": "useParams is a Client Component hook for reading dynamic route values. Supply a TypeScript shape for the segment names and value types so the returned record is used directly without casting.",
+  "explanation": "In a Client Component, call useParams with a type argument matching the route's dynamic segments. The hook returns the current URL's filled-in parameter record, so named properties can be used without casting the returned value. For catch-all segments, type the property as string[].",
+  "syntax": "useParams<T>(): T",
+  "parameters": [
+   {
+    "name": "T",
+    "type": "object",
+    "description": "Optional generic object describing the route parameter names and their value types."
+   }
+  ],
+  "returns": "An object containing the current route's filled-in dynamic parameters.",
+  "example": {
+   "title": "Read a typed dynamic segment",
+   "code": "\"use client\";\n\nimport { useParams } from \"next/navigation\";\n\nexport default function ProductName() {\n  const params = useParams<{ id: string }>();\n\n  return <p>Product: {params.id}</p>;\n}",
+   "language": "tsx",
+   "explanation": "Reads the current dynamic route value with a generic type describing the segment."
+  },
+  "useCases": [
+   {
+    "title": "Read one dynamic segment",
+    "scenario": "A client-side product page needs the [id] segment to fetch or display a product."
+   },
+   {
+    "title": "Handle a catch-all segment",
+    "scenario": "A route uses [...slug] and the component needs every path segment."
+   },
+   {
+    "title": "Read several named segments",
+    "scenario": "A component reads multiple nested dynamic segments from the current URL."
+   }
+  ],
+  "related": [
+   "useParams",
+   "dynamic segments",
+   "PageProps",
+   "LayoutProps",
+   "RouteContext",
+   "next/navigation"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use useParams in a Client Component to read values captured by dynamic route segments.",
+   "The return value is a record whose properties are the current route's populated dynamic parameters.",
+   "Type each named parameter according to its route segment: string, string[], or undefined.",
+   "Provide a TypeScript shape that mirrors the route's configured dynamic segments instead of casting the result afterward.",
+   "Keep the generated parameter possibilities in mind because runtime URLs can contain values not known during development."
+  ],
+  "gotchas": [
+   "useParams must be used from a Client Component.",
+   "Choose the property type from the segment shape: string for a single segment, string[] for catch-all, and possibly undefined for optional catch-all."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hook patterns::useRouter in event handlers": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-router",
+  "sourceTitle": "useRouter",
+  "summary": "useRouter enables programmatic navigation in App Router Client Components. Call the hook at the component’s top level, then invoke a router method from an event handler.",
+  "explanation": "In an App Router Client Component, import useRouter from next/navigation and call it at the component’s top level. Keep the returned router object available to an event handler, where methods such as push or replace perform programmatic navigation.",
+  "syntax": "const router = useRouter()",
+  "parameters": [
+   {
+    "name": "href, options",
+    "type": "string, object",
+    "description": "Destination route and optional navigation settings such as scroll behavior and transition types."
+   }
+  ],
+  "returns": "A router object with push, replace, refresh, back, forward, and prefetch navigation methods.",
+  "example": {
+   "title": "Navigate from a click handler",
+   "code": "'use client'\n\nimport { useRouter } from 'next/navigation'\n\nexport default function DashboardButton() {\n  const router = useRouter()\n\n  function handleClick() {\n    router.push('/dashboard')\n  }\n\n  return (\n    <button type=\"button\" onClick={handleClick}>\n      Dashboard\n    </button>\n  )\n}",
+   "language": "tsx",
+   "explanation": "The Client Component obtains the router during rendering, then the click handler uses its push method to navigate."
+  },
+  "useCases": [
+   {
+    "title": "Post-action navigation",
+    "scenario": "A button submits a form and then navigates to a result page."
+   },
+   {
+    "title": "Interactive URL updates",
+    "scenario": "A filter or search control changes the URL without a full page reload."
+   },
+   {
+    "title": "Back navigation",
+    "scenario": "A successful client-side action should return the user to a previous page."
+   }
+  ],
+  "related": [
+   "usePathname",
+   "useSearchParams",
+   "Link",
+   "redirect"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use useRouter when navigation must be initiated by component code rather than a declarative link.",
+   "Import the App Router hook from next/navigation.",
+   "Call router.push in the event handler to navigate and add a browser-history entry.",
+   "Use replace when navigation should not create a new history entry.",
+   "Use refresh to request the current route again and update its rendered server data.",
+   "Compose pathname and search-parameter hooks when observing URL changes."
+  ],
+  "gotchas": [
+   "Use the App Router import path; next/router belongs to the Pages Router.",
+   "The hook is for Client Components, so add the client directive when the component needs it.",
+   "Do not use router.events for navigation events in the App Router; compose usePathname and useSearchParams instead."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hook patterns::useServerInsertedHTML": {
+  "sourceUrl": "https://nextjs.org/docs/app/guides/css-in-js",
+  "sourceTitle": "CSS-in-JS | Next.js",
+  "summary": "useServerInsertedHTML lets a CSS-in-JS registry place collected styles into server-rendered HTML. A Client Component wraps the app, extracts styles in the callback, flushes the registry, and returns the styles for insertion before dependent content.",
+  "explanation": "useServerInsertedHTML registers a callback whose returned React content is inserted into the server-rendered HTML. For CSS-in-JS, a client provider owns a style registry, the callback extracts its collected styles, clears the registry, and returns those styles so they appear before markup that depends on them.",
+  "syntax": "useServerInsertedHTML(callback)",
+  "parameters": [],
+  "returns": "The callback returns React content, such as style elements, that Next.js inserts into the server-rendered HTML.",
+  "example": {
+   "title": "Styled-jsx registry",
+   "code": "'use client'\n\nimport { useState } from 'react'\nimport { useServerInsertedHTML } from 'next/navigation'\nimport { StyleRegistry, createStyleRegistry } from 'styled-jsx'\n\nexport default function StyledJsxRegistry({\n  children,\n}: {\n  children: React.ReactNode\n}) {\n  const [registry] = useState(() => createStyleRegistry())\n\n  useServerInsertedHTML(() => {\n    const styles = registry.styles()\n    registry.flush()\n    return <>{styles}</>\n  })\n\n  return <StyleRegistry registry={registry}>{children}</StyleRegistry>\n}",
+   "language": "tsx",
+   "explanation": "Collects styled-jsx rules during server rendering, inserts them into the generated HTML, then clears the registry."
+  },
+  "useCases": [
+   {
+    "title": "Collect and insert styled-jsx rules",
+    "scenario": "styled-jsx with the App Router"
+   },
+   {
+    "title": "Insert styles extracted from a global registry",
+    "scenario": "styled-components with the App Router"
+   },
+   {
+    "title": "Place CSS before markup that depends on it",
+    "scenario": "Initial server-side rendering"
+   }
+  ],
+  "related": [
+   "StyleRegistry",
+   "createStyleRegistry",
+   "styled-jsx",
+   "styled-components",
+   "next/navigation"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use a registry to gather CSS rules produced during rendering.",
+   "The hook inserts collected rules before dependent content is emitted.",
+   "Put the registry in a Client Component that wraps the application during the initial server render.",
+   "Read the registry's collected style elements inside the insertion callback.",
+   "Render children through StyleRegistry so generated styled-jsx rules are collected."
+  ],
+  "gotchas": [
+   "The documented styled-jsx pattern requires styled-jsx v5.1.0 when used in Client Components.",
+   "During server rendering, styles are extracted into a global registry and flushed into the document head.",
+   "The insertion order matters: styles must precede content that uses those rules."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Layout hooks::Segment-aware navigation": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-selected-layout-segments",
+  "sourceTitle": "useSelectedLayoutSegments",
+  "summary": "useSelectedLayoutSegments is a Client Component hook for reading active route segments below a layout. Use it to build segment-aware UI such as breadcrumbs, including within a selected parallel-route slot.",
+  "explanation": "Call this Client Component hook from a layout to obtain the active segments immediately below that layout. The optional parallel route key selects a slot; the result can include route groups, so filter those when they should not appear in navigation.",
+  "syntax": "const segments = useSelectedLayoutSegments(parallelRouteKey?: string)",
+  "parameters": [
+   {
+    "name": "parallelRouteKey",
+    "type": "string | undefined",
+    "description": "Optional key for the parallel route slot whose active segment should be read."
+   }
+  ],
+  "returns": "An array of strings containing the active segments one level down from the layout, or an empty array when none exist.",
+  "example": {
+   "title": "Breadcrumbs from active layout segments",
+   "code": "\"use client\"\n\nimport Link from \"next/link\"\nimport { useSelectedLayoutSegments } from \"next/navigation\"\n\nexport default function Breadcrumbs() {\n  const segments = useSelectedLayoutSegments()\n  const visible = segments.filter((segment) => !segment.startsWith(\"[\"))\n\n  return (\n    <nav aria-label=\"Breadcrumb\">\n      <Link href=\"/\">Home</Link>\n      {visible.map((segment, index) => {\n        const href = \"/\" + visible.slice(0, index + 1).join(\"/\")\n        return <span key={href}> / <Link href={href}>{segment}</Link></span>\n      })}\n    </nav>\n  )\n}",
+   "language": "tsx",
+   "explanation": "A Client Component reads active segments below its parent layout, removes route-group entries, and builds breadcrumb links."
+  },
+  "useCases": [
+   {
+    "title": "Breadcrumbs",
+    "scenario": "A parent layout needs to render breadcrumbs for the current nested route."
+   },
+   {
+    "title": "Active navigation",
+    "scenario": "A shared layout highlights or changes controls based on active child segments."
+   },
+   {
+    "title": "Parallel-route navigation",
+    "scenario": "A dashboard slot has independently navigable content whose active segment must be identified."
+   }
+  ],
+  "related": [
+   "useSelectedLayoutSegment",
+   "Parallel Routes",
+   "Route Groups"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The hook returns active segments below the layout where the calling Client Component is rendered.",
+   "Use it for layout-level navigation such as breadcrumbs that reflect the current child route.",
+   "The signature accepts an optional string identifying a parallel-route slot.",
+   "Pass a parallel route key to inspect navigation state inside a named slot.",
+   "The return value is an array containing the active segments one level below the calling layout.",
+   "When no child segment is active below the layout, the hook returns an empty array."
+  ],
+  "gotchas": [
+   "Route groups can appear in the returned array even though they are often implementation details; filter entries that begin with a bracket before displaying them.",
+   "The hook must be used in a Client Component, so add the client directive to the component that calls it."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Layout hooks::useSelectedLayoutSegment": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-selected-layout-segment",
+  "sourceTitle": "useSelectedLayoutSegment",
+  "summary": "Reads the active route segment one level below the layout containing the hook. It is a Client Component hook commonly used to drive active navigation UI.",
+  "explanation": "This Client Component hook reads the active route segment immediately below the layout where it runs. It returns the segment name, or null when no child segment exists; an optional parallel-route key limits the lookup to a named slot.",
+  "syntax": "const segment = useSelectedLayoutSegment(parallelRouteKey?: string)",
+  "parameters": [
+   {
+    "name": "parallelRouteKey",
+    "type": "string | undefined",
+    "description": "Optional name of the parallel route slot whose active segment should be read."
+   }
+  ],
+  "returns": "A string containing the active child segment, or null if no active segment exists.",
+  "example": {
+   "title": "Highlighting an active child route",
+   "code": "'use client'\n\nimport Link from 'next/link'\nimport { useSelectedLayoutSegment } from 'next/navigation'\n\nexport default function Tabs() {\n  const segment = useSelectedLayoutSegment()\n\n  return (\n    <nav aria-label=\"Sections\">\n      <Link href=\"/overview\" aria-current={segment === 'overview' ? 'page' : undefined}>\n        Overview\n      </Link>\n      {' | '}\n      <Link href=\"/settings\" aria-current={segment === 'settings' ? 'page' : undefined}>\n        Settings\n      </Link>\n    </nav>\n  )\n}",
+   "language": "tsx",
+   "explanation": "This Client Component marks the link whose route segment is active."
+  },
+  "useCases": [
+   {
+    "title": "Active navigation tabs",
+    "scenario": "A parent layout contains tabs for child routes and needs to highlight the current tab."
+   },
+   {
+    "title": "Parallel-route navigation",
+    "scenario": "A layout renders navigation for a named parallel route slot."
+   },
+   {
+    "title": "Active-link styling",
+    "scenario": "A navigation component must distinguish whether a child route is currently selected."
+   }
+  ],
+  "related": [
+   "useSelectedLayoutSegments",
+   "usePathname",
+   "useParams"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Reads the active child route segment directly below the containing layout.",
+   "Use it to style tabs, links, or other navigation controls according to the active child route.",
+   "Pass a parallel-route key to inspect the active segment within a specific slot.",
+   "The return value is a segment string, or null when the layout has no active child segment."
+  ],
+  "gotchas": [
+   "It does not return every active segment; use useSelectedLayoutSegments when you need the complete list.",
+   "A catch-all route produces one joined string rather than separate segment values.",
+   "Call it from a Client Component, not directly in a Server Component."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Layout hooks::useSelectedLayoutSegment in tabs": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-selected-layout-segment",
+  "sourceTitle": "Functions: useSelectedLayoutSegment",
+  "summary": "useSelectedLayoutSegment is a Client Component hook for reading the active route segment directly below a layout. Compare it with tab route names to mark the active tab.",
+  "explanation": "Call the hook inside a Client Component rendered by the layout that owns the tabs. It reads the active route segment immediately below that layout, so comparing the returned string with each tab's segment identifies the active tab. It returns null when no child segment exists; an optional parallel-route key reads a segment from a named slot.",
+  "syntax": "const segment = useSelectedLayoutSegment(parallelRouteKey?: string)",
+  "parameters": [
+   {
+    "name": "parallelRouteKey",
+    "type": "string | undefined",
+    "description": "Optional name of the parallel route slot whose active child segment should be read."
+   }
+  ],
+  "returns": "A string containing the active child segment, or null when no segment exists.",
+  "example": {
+   "title": "Mark the active tab",
+   "code": "'use client'\n\nimport Link from 'next/link'\nimport { useSelectedLayoutSegment } from 'next/navigation'\n\nexport default function Tabs() {\n  const segment = useSelectedLayoutSegment()\n\n  return (\n    <nav aria-label=\"Sections\">\n      <Link href=\"/overview\" aria-current={segment === 'overview' ? 'page' : undefined}>\n        Overview\n      </Link>{' '}\n      <Link href=\"/settings\" aria-current={segment === 'settings' ? 'page' : undefined}>\n        Settings\n      </Link>\n    </nav>\n  )\n}",
+   "language": "tsx",
+   "explanation": "This Client Component reads the child route segment and marks the matching tab as current."
+  },
+  "useCases": [
+   {
+    "title": "Highlight the active tab",
+    "scenario": "A parent layout renders tabs for child routes such as overview and settings."
+   },
+   {
+    "title": "Style active navigation",
+    "scenario": "A navigation component needs to know which immediate child route is selected."
+   },
+   {
+    "title": "Read a slot's active segment",
+    "scenario": "A layout contains a named parallel-route slot with independently navigable content."
+   }
+  ],
+  "related": [
+   "useSelectedLayoutSegments",
+   "usePathname",
+   "useRouter",
+   "Layout"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use it in a Client Component, typically a small tab or navigation component imported by a layout.",
+   "The returned value is the child segment directly below the layout containing the hook.",
+   "Compare the returned segment with each tab's route segment to style or identify the active tab.",
+   "The no-argument form reads the active segment from the current layout's route tree.",
+   "Pass an optional parallel-route key when the segment belongs to a named slot.",
+   "Handle null for the layout's index route or whenever no child segment is active."
+  ],
+  "gotchas": [
+   "The hook does not report deeper active segments; use useSelectedLayoutSegments when all active segments are needed.",
+   "A catch-all route produces one joined string rather than a separate value for each matched segment.",
+   "For routes whose active segment is unavailable during prerendering, wrap the component or a parent in Suspense."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Layout hooks::useSelectedLayoutSegments": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-selected-layout-segments",
+  "sourceTitle": "useSelectedLayoutSegments",
+  "summary": "A Client Component hook that reads active route segments below the layout where it is called. Use it for breadcrumbs, section navigation, and other parent-layout UI; optionally target a parallel-route slot.",
+  "explanation": "Call this Client Component hook from a layout to obtain the active route segments beneath that layout. It returns one string per active segment, optionally scoped to a parallel-route slot; an empty array means no child segments are active.",
+  "syntax": "const segments = useSelectedLayoutSegments(parallelRouteKey?: string)",
+  "parameters": [
+   {
+    "name": "parallelRouteKey",
+    "type": "string | undefined",
+    "description": "Optional name of a parallel-route slot whose active segment should be read."
+   }
+  ],
+  "returns": "An array of strings containing the active route segments one level down from the calling layout, or an empty array when none exist.",
+  "example": {
+   "title": "Render breadcrumbs from child segments",
+   "code": "'use client'\n\nimport Link from 'next/link'\nimport { useSelectedLayoutSegments } from 'next/navigation'\n\nexport default function Breadcrumbs() {\n  const segments = useSelectedLayoutSegments()\n  const href = (index: number) => '/' + segments.slice(0, index + 1).join('/')\n\n  return (\n    <nav aria-label=\"Breadcrumb\">\n      <Link href=\"/\">Home</Link>\n      {segments.map((segment, index) => (\n        <span key={href(index)}> / <Link href={href(index)}>{segment}</Link></span>\n      ))}\n    </nav>\n  )\n}",
+   "language": "tsx",
+   "explanation": "This Client Component renders breadcrumb links from the active segments below its layout."
+  },
+  "useCases": [
+   {
+    "title": "Breadcrumbs",
+    "scenario": "A parent layout displays the current route hierarchy."
+   },
+   {
+    "title": "Section navigation",
+    "scenario": "A layout highlights navigation based on active child routes."
+   },
+   {
+    "title": "Parallel-route-aware UI",
+    "scenario": "A layout reads navigation state from a named parallel route."
+   }
+  ],
+  "related": [
+   "useSelectedLayoutSegment",
+   "usePathname",
+   "useParams",
+   "parallelRouteKey"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use this Client Component hook to read every active route segment beneath the layout where it runs.",
+   "It supports parent-layout UI such as breadcrumbs and section navigation that reflects the active child route.",
+   "The optional parallelRouteKey argument scopes the result to a named parallel-route slot.",
+   "Pass a parallel-route key when navigation state should come from a specific slot rather than the default route.",
+   "The return value is an array of strings representing the active segments immediately below the calling layout.",
+   "If the layout has no active child segments, the hook returns an empty array."
+  ],
+  "gotchas": [
+   "With cacheComponents enabled, unresolved active segments can suspend during prerendering, so wrap the component or a parent in Suspense when required.",
+   "Dynamic segments that are unavailable during prerendering require a Suspense fallback; otherwise the build fails."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Layout hooks::useSelectedLayoutSegments and route groups": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-selected-layout-segments",
+  "sourceTitle": "useSelectedLayoutSegments",
+  "summary": "`useSelectedLayoutSegments` reads active child route segments from a layout. Filter route-group entries before using the result in breadcrumbs or section labels.",
+  "explanation": "This Client Component hook returns the active route segments below the layout where it runs. Because route-group names are included in the result, filter out entries beginning with `(` before using the remaining segments for breadcrumbs or section labels; an optional parallel-route key can target a specific slot.",
+  "syntax": "const segments = useSelectedLayoutSegments(parallelRouteKey?: string)",
+  "parameters": [
+   {
+    "name": "parallelRouteKey",
+    "type": "string | undefined",
+    "description": "Optional parallel route key used to read the active route segment within a specific slot."
+   }
+  ],
+  "returns": "An array of strings containing the active segments one level below the calling layout, or an empty array when none exist.",
+  "example": {
+   "title": "Filter route groups from breadcrumbs",
+   "code": "'use client'\n\nimport { useSelectedLayoutSegments } from 'next/navigation'\n\nexport default function Breadcrumbs() {\n  const segments = useSelectedLayoutSegments()\n  const visibleSegments = segments.filter((segment) => !segment.startsWith('('))\n\n  return <nav aria-label=\"Breadcrumb\">{visibleSegments.join(' / ')}</nav>\n}",
+   "language": "tsx",
+   "explanation": "A Client Component reads segments below its parent layout and removes route-group entries before rendering a breadcrumb label."
+  },
+  "useCases": [
+   {
+    "title": "Build breadcrumb labels from active child segments",
+    "scenario": "Breadcrumbs"
+   },
+   {
+    "title": "Highlight or label the active section in a parent layout",
+    "scenario": "Section navigation"
+   },
+   {
+    "title": "Read segments from a particular slot with parallelRouteKey",
+    "scenario": "Parallel routes"
+   }
+  ],
+  "related": [
+   "useSelectedLayoutSegment",
+   "usePathname",
+   "Route Groups",
+   "Parallel Routes"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use this hook in a Client Component to inspect active segments beneath the layout containing it.",
+   "The optional parallelRouteKey selects the active segment within a particular parallel-route slot.",
+   "The result is an array of active segment strings from the next level below the calling layout.",
+   "When no active child segment exists, the hook returns an empty array.",
+   "Route groups are included even though their names are not part of the URL, so filter them for UI output.",
+   "The documentation recommends filtering entries that begin with a bracket to omit route-group segments."
+  ],
+  "gotchas": [
+   "Route groups appear in the returned array, so remove them before displaying navigation labels.",
+   "With Cache Components, unresolved dynamic parameters can make the hook suspend; provide a Suspense boundary when the route cannot be prerendered."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Navigation hooks::router.push": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-router",
+  "sourceTitle": "useRouter",
+  "summary": "`router.push` performs client-side navigation to a specified route and adds a new browser-history entry. Use it from a Client Component through the `useRouter` hook.",
+  "explanation": "Call `useRouter` in a Client Component, then invoke `router.push` in an event handler with the destination URL. Next.js performs client-side navigation without a full page reload and records the destination as a new browser-history entry; pass `scroll: false` to preserve the current scroll position.",
+  "syntax": "router.push(href: string, { scroll: boolean, transitionTypes: string[] })",
+  "parameters": [
+   {
+    "name": "href",
+    "type": "string",
+    "description": "Destination route or URL for the client-side navigation."
+   },
+   {
+    "name": "options",
+    "type": "{ scroll?: boolean; transitionTypes?: string[] }",
+    "description": "Optional navigation settings. `scroll` controls scroll restoration; `transitionTypes` supplies transition-type strings."
+   }
+  ],
+  "returns": "A router method that performs client-side navigation and adds a new browser-history entry.",
+  "example": {
+   "title": "Navigate from a button",
+   "code": "'use client'\n\nimport { useRouter } from 'next/navigation'\n\nexport default function DashboardButton() {\n  const router = useRouter()\n\n  return (\n    <button type=\"button\" onClick={() => router.push('/dashboard')}>\n      Dashboard\n    </button>\n  )\n}",
+   "language": "tsx",
+   "explanation": "A client component navigates to `/dashboard` when the button is clicked and adds that destination to browser history."
+  },
+  "useCases": [
+   {
+    "title": "Event-driven navigation",
+    "scenario": "Navigate after a button click or other client-side event."
+   },
+   {
+    "title": "Add history entries",
+    "scenario": "Change the URL while retaining browser Back-button behavior."
+   },
+   {
+    "title": "Client-side route changes",
+    "scenario": "Update the route without forcing a full-page reload."
+   }
+  ],
+  "related": [
+   "useRouter",
+   "router.replace",
+   "router.back",
+   "router.forward",
+   "router.refresh",
+   "router.prefetch"
+  ],
+  "since": "",
+  "keyPoints": [
+   "`router.push` navigates to the supplied route on the client.",
+   "Unlike replacement navigation, `router.push` preserves the destination as a new browser-history entry.",
+   "The options object can include `transitionTypes`, which Next.js forwards to React during the navigation transition.",
+   "Set `scroll: false` in the options object when navigation should not reset the scroll position."
+  ],
+  "gotchas": [
+   "Validate or sanitize dynamic URLs before passing them to `router.push`; unsafe values can create an XSS vulnerability.",
+   "Use the App Router import from `next/navigation` and mark the component with `'use client'`; do not use the legacy `next/router` import."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Navigation hooks::router.refresh": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-router",
+  "sourceTitle": "useRouter",
+  "summary": "`router.refresh()` requests a new server render of the current route while preserving unaffected client state and browser state such as scroll position. It refreshes route data without invalidating the server-side cache.",
+  "explanation": "Call `router.refresh()` from a Client Component when the current route should receive newly rendered server data without a full browser reload. Next.js requests the route again, fetches its data, re-renders Server Components, and merges the result while preserving unaffected client state and the browser position.",
+  "syntax": "router.refresh()",
+  "parameters": [],
+  "returns": "Not specified on the documentation page.",
+  "example": {
+   "title": "Refresh the current route",
+   "code": "'use client'\n\nimport { useRouter } from 'next/navigation'\n\nexport default function RefreshButton() {\n  const router = useRouter()\n\n  return (\n    <button type=\"button\" onClick={() => router.refresh()}>\n      Refresh data\n    </button>\n  )\n}",
+   "language": "tsx",
+   "explanation": "A Client Component button requests a fresh render of the current route while retaining unaffected client and browser state."
+  },
+  "useCases": [
+   {
+    "title": "Update the current view",
+    "scenario": "Refresh data after a client-side action changes information displayed by the current route."
+   },
+   {
+    "title": "Preserve client state",
+    "scenario": "Re-render Server Components while retaining local React state."
+   },
+   {
+    "title": "Refresh in place",
+    "scenario": "Fetch the current route again without losing the user's scroll position."
+   }
+  ],
+  "related": [
+   "useRouter",
+   "revalidatePath",
+   "revalidateTag"
+  ],
+  "since": "",
+  "keyPoints": [
+   "`router.refresh()` requests a fresh render of the route currently being viewed.",
+   "The refresh makes a server request, re-fetches data, and renders the route's Server Components again.",
+   "Next.js merges the updated React Server Component payload into the existing client view.",
+   "Unaffected React client state and browser state, including scroll position, remain intact.",
+   "The operation clears the client cache associated with the current route."
+  ],
+  "gotchas": [
+   "Refreshing clears the current route's client cache, but it does not invalidate server-side cached data.",
+   "Use `revalidatePath` or `revalidateTag` when the server-side cache must be invalidated; `router.refresh()` alone is insufficient."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Navigation hooks::router.replace": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-router",
+  "sourceTitle": "useRouter | Next.js",
+  "summary": "Navigate to a route on the client without adding a new browser-history entry. Use options to control scrolling and transition types.",
+  "explanation": "Call this Client Component hook when an interaction should navigate to a route while replacing the current browser-history entry. The destination is passed as a string, and an options object can control scrolling and transition types. Use a safe, application-generated URL.",
+  "syntax": "router.replace(href: string, { scroll: boolean, transitionTypes: string[] })",
+  "parameters": [
+   {
+    "name": "href",
+    "type": "string",
+    "description": "The route or URL to navigate to."
+   },
+   {
+    "name": "options",
+    "type": "{ scroll: boolean, transitionTypes: string[] }",
+    "description": "Optional navigation settings: scroll controls scroll restoration behavior; transitionTypes supplies transition type names."
+   }
+  ],
+  "returns": "No return value is documented.",
+  "example": {
+   "title": "Replace the current route",
+   "code": "'use client'\n\nimport { useRouter } from 'next/navigation'\n\nexport default function FilterButton() {\n  const router = useRouter()\n\n  function showOpen() {\n    router.replace('/invoices?status=open')\n  }\n\n  return <button onClick={showOpen}>Open invoices</button>\n}",
+   "language": "tsx",
+   "explanation": "Clicking the button updates the current route client-side without creating another browser-history entry."
+  },
+  "useCases": [
+   {
+    "title": "Replace query-driven UI state",
+    "scenario": "Update filters or search parameters without making every change a separate Back-button step."
+   },
+   {
+    "title": "Canonicalize navigation",
+    "scenario": "Send a user to a canonical route after an interaction while keeping the current history position."
+   },
+   {
+    "title": "Disable automatic scrolling",
+    "scenario": "Navigate while preserving the current scroll position."
+   }
+  ],
+  "related": [
+   "useRouter",
+   "router.push",
+   "router.back",
+   "router.forward",
+   "router.refresh",
+   "router.prefetch"
+  ],
+  "since": "",
+  "keyPoints": [
+   "router.replace navigates on the client while replacing the current history entry rather than adding another one.",
+   "Its documented signature accepts a destination string and an options object containing scroll and transitionTypes.",
+   "Set scroll to false when navigation should not automatically move the viewport to the top.",
+   "transitionTypes are optional and are passed into React's transition mechanism during navigation."
+  ],
+  "gotchas": [
+   "Only pass trusted, sanitized destinations; an unsafe URL can create an XSS vulnerability.",
+   "If supplied, transitionTypes are forwarded to React's transition API and should match the intended navigation transition types."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Navigation hooks::useLinkStatus": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-link-status",
+  "sourceTitle": "useLinkStatus",
+  "summary": "Tracks the pending state of a Next.js Link navigation so a descendant can show inline feedback while the destination loads. It is intended for localized indicators, especially when prefetching is disabled or unavailable.",
+  "explanation": "useLinkStatus is a client hook for showing localized feedback during a Link transition. Place it in a descendant component of Link and use its pending value to control an inline indicator.",
+  "syntax": "const { pending } = useLinkStatus()",
+  "parameters": [],
+  "returns": "An object with one property, pending: boolean. It is true before history updates and false after.",
+  "example": {
+   "title": "Inline pending indicator",
+   "code": "'use client'\n\nimport Link, { useLinkStatus } from 'next/link'\n\nfunction LinkHint() {\n  const { pending } = useLinkStatus()\n  return <span aria-hidden className={pending ? 'is-pending' : ''} />\n}\n\nexport default function Navigation() {\n  return (\n    <Link href=\"/dashboard\" prefetch={false}>\n      Dashboard\n      <LinkHint />\n    </Link>\n  )\n}",
+   "language": "tsx",
+   "explanation": "A client component nested inside the Link reads pending and adds a visual state while navigation is underway."
+  },
+  "useCases": [
+   {
+    "title": "Inline navigation feedback",
+    "scenario": "Show a shimmer or spinner directly inside the clicked link while navigation completes."
+   },
+   {
+    "title": "Unprefetched destinations",
+    "scenario": "Provide feedback when prefetching is disabled or still in progress."
+   },
+   {
+    "title": "Dynamic routes without loading.js",
+    "scenario": "Indicate progress for a dynamic destination without a loading.js fallback."
+   }
+  ],
+  "related": [
+   "Link",
+   "loading.js",
+   "Prefetching"
+  ],
+  "since": "15.3.0",
+  "keyPoints": [
+   "It exposes whether a Link navigation is currently pending.",
+   "Use it for localized indicators such as a shimmer, spinner, or text effect.",
+   "It is particularly useful when Link prefetching is disabled.",
+   "The returned pending boolean is true before the history update and false afterward.",
+   "Call the hook without arguments."
+  ],
+  "gotchas": [
+   "The hook only works from a component rendered below the corresponding Link.",
+   "A prefetched destination can navigate without exposing a pending phase.",
+   "Rapid clicks replace earlier pending feedback with the most recently clicked link.",
+   "Use it with the App Router, not the Pages Router."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Navigation hooks::useLinkStatus pending UI": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-link-status",
+  "sourceTitle": "Functions: useLinkStatus | Next.js",
+  "summary": "useLinkStatus exposes a Link’s pending navigation state. Use it in a descendant component to add a small inline indicator while navigation completes, without replacing the shared navigation shell.",
+  "explanation": "useLinkStatus exposes whether its enclosing Link is navigating. Render a small descendant indicator instead of replacing the shared navigation shell; the indicator can be styled to appear only while pending.",
+  "syntax": "const { pending } = useLinkStatus()",
+  "parameters": [],
+  "returns": "An object with one property: pending, a boolean that is true before history updates and false after.",
+  "example": {
+   "title": "Inline pending hint",
+   "code": "'use client'\n\nimport Link from 'next/link'\nimport { useLinkStatus } from 'next/link'\n\nfunction LinkHint() {\n  const { pending } = useLinkStatus()\n  return (\n    <span\n      aria-hidden\n      className={`link-hint ${pending ? 'is-pending' : ''}`}\n    />\n  )\n}\n\nexport default function Navigation() {\n  return (\n    <nav>\n      <Link href=\"/dashboard\" prefetch={false}>\n        Dashboard\n        <LinkHint />\n      </Link>\n    </nav>\n  )\n}",
+   "language": "tsx",
+   "explanation": "A client component nested inside the Link reads pending and adds a class to an inline hint, leaving the surrounding navigation shell intact."
+  },
+  "useCases": [
+   {
+    "title": "Inline navigation feedback",
+    "scenario": "Show a shimmer, dot, or spinner inside a Link while its destination is loading."
+   },
+   {
+    "title": "Unprefetched destinations",
+    "scenario": "Use with prefetch={false} when navigation may be blocked until route data arrives."
+   },
+   {
+    "title": "Dynamic routes",
+    "scenario": "Provide localized feedback for dynamic destinations without a loading.js fallback."
+   },
+   {
+    "title": "Persistent navigation shell",
+    "scenario": "Keep a shared header or navigation structure rendered while only the clicked Link displays progress."
+   }
+  ],
+  "related": [
+   "Link",
+   "loading.js",
+   "prefetch"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Track navigation progress for one Link and show localized feedback.",
+   "Disabling per-link prefetch makes the inline pending state more likely to be visible.",
+   "The hook has no arguments.",
+   "The pending property is true before the history update and false afterward.",
+   "Dynamic routes without a loading.js fallback are a primary situation where this indicator helps."
+  ],
+  "gotchas": [
+   "Call the hook only from a component rendered inside the associated Link.",
+   "A prefetched destination may navigate without exposing a pending phase.",
+   "Rapid clicks do not provide independent pending states for every link.",
+   "Use this hook only with the App Router."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Navigation hooks::useRouter": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-router",
+  "sourceTitle": "useRouter",
+  "summary": "`useRouter` enables imperative navigation from Next.js App Router Client Components. Its router object can push or replace routes, refresh data, prefetch routes, and traverse browser history.",
+  "explanation": "Import `useRouter` from `next/navigation` inside a Client Component to obtain an imperative router object. Use its methods for client-side navigation, history traversal, prefetching, or refreshing the current route; use the separate pathname, search-parameter, and dynamic-parameter hooks for URL data.",
+  "syntax": "const router = useRouter()",
+  "parameters": [
+   {
+    "name": "href",
+    "type": "string",
+    "description": "Destination route, typically an internal path."
+   },
+   {
+    "name": "options",
+    "type": "{ scroll?: boolean; transitionTypes?: string[] }",
+    "description": "Optional navigation settings: `scroll` controls scroll restoration; `transitionTypes` supplies transition types."
+   }
+  ],
+  "returns": "A router object exposing `push`, `replace`, `refresh`, `prefetch`, `back`, and `forward` methods.",
+  "example": {
+   "title": "Refresh after saving",
+   "code": "\"use client\"\n\nimport { useRouter } from \"next/navigation\"\n\nexport default function SaveButton() {\n  const router = useRouter()\n\n  async function save() {\n    await fetch(\"/api/settings\", { method: \"POST\" })\n    router.refresh()\n  }\n\n  return <button onClick={save}>Save</button>\n}",
+   "language": "tsx",
+   "explanation": "Submits a client-side request, then refreshes the current route so server-rendered data is fetched again."
+  },
+  "useCases": [
+   {
+    "title": "Imperative navigation",
+    "scenario": "A button or event handler must navigate after client-side logic completes."
+   },
+   {
+    "title": "Refresh route data",
+    "scenario": "A successful mutation should update the current server-rendered data."
+   },
+   {
+    "title": "Prefetch a route",
+    "scenario": "A destination is likely to be visited soon and should load faster."
+   },
+   {
+    "title": "History traversal",
+    "scenario": "A custom control needs browser-style back or forward behavior."
+   }
+  ],
+  "related": [
+   "Link",
+   "usePathname",
+   "useSearchParams",
+   "useParams"
+  ],
+  "since": "",
+  "keyPoints": [
+   "It provides imperative route changes from client-side React code.",
+   "`router.push(href, options)` navigates without a full page reload and adds a browser-history entry.",
+   "`router.replace(href, options)` navigates while replacing the current history entry.",
+   "`router.refresh()` requests the current route again and updates server-rendered output.",
+   "`router.back()` moves backward through browser history.",
+   "`router.forward()` moves forward through browser history.",
+   "`router.prefetch(href)` loads route data ahead of navigation to improve responsiveness."
+  ],
+  "gotchas": [
+   "Prefer `<Link>` for ordinary navigation; reserve this hook for cases needing imperative client logic.",
+   "Do not import the App Router hook from `next/router`.",
+   "Validate destinations before passing them to navigation methods, because unsafe URL schemes can create security problems."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Navigation hooks::useRouter back and forward": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-router",
+  "sourceTitle": "useRouter",
+  "summary": "Use the App Router useRouter hook to move backward or forward through the browser history stack. These methods navigate to existing history entries rather than accepting a destination URL.",
+  "explanation": "In an App Router Client Component, call useRouter from next/navigation to obtain the router object. router.back() moves to the previous entry in the browser history, while router.forward() moves to the next entry, avoiding a newly supplied destination URL.",
+  "syntax": "const router = useRouter()\nrouter.back()\nrouter.forward()",
+  "parameters": [],
+  "returns": "useRouter() returns a router object; this card uses its back() and forward() methods.",
+  "example": {
+   "title": "Browser-history controls",
+   "code": "'use client'\n\nimport { useRouter } from 'next/navigation'\n\nexport default function HistoryControls() {\n  const router = useRouter()\n\n  return (\n    <nav aria-label=\"History navigation\">\n      <button type=\"button\" onClick={() => router.back()}>\n        Back\n      </button>\n      <button type=\"button\" onClick={() => router.forward()}>\n        Forward\n      </button>\n    </nav>\n  )\n}",
+   "language": "tsx",
+   "explanation": "A Client Component gets the router instance and invokes back or forward in response to button clicks."
+  },
+  "useCases": [
+   {
+    "title": "Custom browser-history controls",
+    "scenario": "Provide Back and Forward controls in a custom navigation toolbar."
+   },
+   {
+    "title": "Dismiss a modal route",
+    "scenario": "Close an intercepted or modal route by returning to the previous entry."
+   },
+   {
+    "title": "History-based navigation",
+    "scenario": "Let users move through previously visited routes without constructing URLs."
+   }
+  ],
+  "related": [
+   "useRouter()",
+   "router.back()",
+   "router.forward()",
+   "usePathname()",
+   "useSearchParams()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "router.back() returns to the previous route recorded in browser history.",
+   "router.forward() advances to the next available history entry.",
+   "Use the hook for imperative navigation initiated by component code, such as a button handler.",
+   "The App Router version uses the next/navigation import path."
+  ],
+  "gotchas": [
+   "Import the App Router hook from next/navigation, not the Pages Router module next/router.",
+   "Add the 'use client' directive to the component that calls useRouter."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Navigation hooks::useRouter hard navigation safety": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-router",
+  "sourceTitle": "useRouter",
+  "summary": "useRouter enables programmatic navigation in Client Components. For safety, pass only trusted internal paths and never unsanitized user input to router.push or router.replace.",
+  "explanation": "In a Client Component, useRouter provides imperative navigation methods. Pass only a trusted internal path to push or replace; never forward raw user-controlled URL text, because a value such as a javascript: URL can execute in the page context and create an XSS vulnerability.",
+  "syntax": "const router = useRouter()",
+  "parameters": [
+   {
+    "name": "href",
+    "type": "string",
+    "description": "Destination route or URL; use a trusted internal path."
+   },
+   {
+    "name": "options",
+    "type": "{ scroll: boolean, transitionTypes: string[] }",
+    "description": "Optional navigation settings shown in the documented signature."
+   }
+  ],
+  "returns": "A router object with imperative navigation methods.",
+  "example": {
+   "title": "Navigate to a trusted internal route",
+   "code": "'use client'\n\nimport { useRouter } from 'next/navigation'\n\nexport default function AccountButton() {\n  const router = useRouter()\n\n  function openAccount() {\n    router.push('/account')\n  }\n\n  return <button onClick={openAccount}>Account</button>\n}",
+   "language": "tsx",
+   "explanation": "Navigates to a trusted, hard-coded internal route when the button is activated."
+  },
+  "useCases": [
+   {
+    "title": "Button-driven navigation",
+    "scenario": "Open a known internal page after a button click."
+   },
+   {
+    "title": "Post-action routing",
+    "scenario": "Navigate after a client-side action completes."
+   },
+   {
+    "title": "Client-side route changes",
+    "scenario": "Move between trusted application routes without a full page navigation."
+   }
+  ],
+  "related": [
+   "usePathname",
+   "useSearchParams",
+   "router.push",
+   "router.replace",
+   "router.back",
+   "router.forward",
+   "router.refresh"
+  ],
+  "since": "",
+  "keyPoints": [
+   "useRouter is for imperative route changes from Client Components.",
+   "push accepts a destination href and navigation options.",
+   "push performs client-side navigation to the supplied route.",
+   "push creates a new browser history entry.",
+   "Navigation destinations must be trusted or safely validated before use.",
+   "Scheme-based executable URLs are especially dangerous navigation inputs."
+  ],
+  "gotchas": [
+   "Do not pass user-controlled or otherwise unsanitized URLs to push or replace.",
+   "A javascript: URL can execute code in the context of the current page."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Observability hooks::useReportWebVitals analytics": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-report-web-vitals",
+  "sourceTitle": "Functions: useReportWebVitals | Next.js",
+  "summary": "useReportWebVitals invokes a callback with available Web Vitals metrics so a Client Component can forward them to an analytics endpoint. Keep the callback reference stable to avoid duplicate reports.",
+  "explanation": "Place the hook in a Client Component and pass it a stable callback. Next.js invokes the callback with metric data as it becomes available, allowing the complete object to be forwarded to an endpoint for real-user performance tracking.",
+  "syntax": "useReportWebVitals(callback)",
+  "parameters": [
+   {
+    "name": "callback",
+    "type": "(metric: Metric) => void",
+    "description": "Callback invoked with the available Web Vitals metric object; the object includes fields such as id, name, delta, entries, navigationType, value, and rating."
+   }
+  ],
+  "returns": "No return value; the hook registers the reporting callback.",
+  "example": {
+   "title": "Report Web Vitals to an endpoint",
+   "code": "'use client'\n\nimport { useReportWebVitals } from 'next/web-vitals'\n\nexport function WebVitals() {\n  useReportWebVitals((metric) => {\n    const body = JSON.stringify(metric)\n    const url = '/api/analytics'\n\n    if (navigator.sendBeacon) {\n      navigator.sendBeacon(url, body)\n    } else {\n      fetch(url, { body, method: 'POST', keepalive: true })\n    }\n  })\n}",
+   "language": "tsx",
+   "explanation": "A Client Component serializes each metric and sends it to an analytics endpoint, preferring sendBeacon with a keepalive fetch fallback."
+  },
+  "useCases": [
+   {
+    "title": "Custom performance analytics",
+    "scenario": "Send serialized metric objects to a first-party analytics API."
+   },
+   {
+    "title": "Real-user monitoring",
+    "scenario": "Track Core Web Vitals and custom performance metrics for real users."
+   },
+   {
+    "title": "Metric attribution",
+    "scenario": "Use the metric fields to segment performance by page load context."
+   }
+  ],
+  "related": [
+   "Metric",
+   "Core Web Vitals",
+   "Web Vitals",
+   "Performance Entries",
+   "navigator.sendBeacon"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use the hook to report Core Web Vitals and connect them to an analytics service.",
+   "The supplied callback receives metrics available at the time it runs.",
+   "The callback argument is a metric object containing the reported performance data.",
+   "Each metric includes an identifier scoped to the current page load.",
+   "The name identifies the performance metric, such as a Web Vital.",
+   "Delta records how much the metric changed from its previous value.",
+   "Forward serialized results to an endpoint for real-user performance measurement."
+  ],
+  "gotchas": [
+   "The component must be client-side; put 'use client' before imports.",
+   "Keep the callback reference stable to avoid duplicate reports."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Rules and boundaries::Hooks in Client Components": {
+  "sourceUrl": "https://nextjs.org/docs/app/getting-started/server-and-client-components.md",
+  "sourceTitle": "Next.js",
+  "summary": "Navigation and browser hooks such as useRouter, usePathname, and useSearchParams must run in Client Components. Place \"use client\" at the top of the module that uses them, creating the Server–Client boundary.",
+  "explanation": "In the App Router, navigation hooks belong in Client Components rather than Server Components. Put \"use client\" before imports in the module that uses them; its imported module graph becomes client-side, while a Server Component can render that client component and pass serializable data to it.",
+  "syntax": "\"use client\"",
+  "parameters": [
+   {
+    "name": "href, options",
+    "type": "string, { scroll?: boolean, transitionTypes?: string[] }",
+    "description": "`href` is the destination route; `options` may configure scrolling and transition types for navigation methods such as `router.push`."
+   }
+  ],
+  "returns": "useRouter returns a router object with methods including push, replace, refresh, prefetch, back, and forward; usePathname returns the current pathname; useSearchParams returns the current URL search parameters.",
+  "example": {
+   "title": "Use navigation hooks below a client boundary",
+   "code": "\"use client\"\n\nimport { usePathname, useRouter, useSearchParams } from \"next/navigation\"\n\nexport default function NavigationControls() {\n  const router = useRouter()\n  const pathname = usePathname()\n  const searchParams = useSearchParams()\n\n  function refreshWithFilter() {\n    const params = new URLSearchParams(searchParams.toString())\n    params.set(\"filter\", \"active\")\n    router.replace(`${pathname}?${params.toString()}`)\n  }\n\n  return <button onClick={refreshWithFilter}>Show active</button>\n}",
+   "language": "tsx",
+   "explanation": "The directive makes this module a Client Component, allowing App Router hooks to read URL state and perform client-side navigation."
+  },
+  "useCases": [
+   {
+    "title": "Imperative navigation",
+    "scenario": "A button needs to navigate programmatically after an event."
+   },
+   {
+    "title": "Read pathname or query parameters",
+    "scenario": "A component displays or reacts to the current route."
+   },
+   {
+    "title": "Add client-side interactivity",
+    "scenario": "Interactive controls need browser APIs or event handlers."
+   }
+  ],
+  "related": [
+   "useRouter",
+   "usePathname",
+   "useSearchParams",
+   "<Link>",
+   "Suspense",
+   "next/navigation"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use the directive to mark the boundary where interactive navigation logic begins.",
+   "Choose a Client Component for navigation hooks and browser-dependent behavior.",
+   "Client navigation works with the App Router's prefetched and cached server-rendered payload.",
+   "A client-only component does not receive server-rendered HTML on subsequent navigations."
+  ],
+  "gotchas": [
+   "useRouter cannot be called from a Server Component, and the App Router import is `next/navigation`, not `next/router`.",
+   "Adding the directive creates a module-graph boundary, so avoid placing it higher than necessary.",
+   "A client boundary does not remove the need for Suspense when useSearchParams participates in static rendering."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Rules and boundaries::Next.js hook migration from Pages Router": {
+  "sourceUrl": "https://nextjs.org/docs/pages/guides/migrating/app-router-migration",
+  "sourceTitle": "How to migrate from Pages to the App Router",
+  "summary": "When moving a screen into the App Router, replace next/router with navigation hooks from next/navigation. Use separate hooks for navigation, pathname, search parameters, and dynamic route parameters.",
+  "explanation": "When a screen moves into the app directory, replace next/router usage with hooks from next/navigation. Use useRouter for programmatic navigation, usePathname for the current pathname, useSearchParams for query-string values, and useParams for dynamic route parameters. These hooks are Client Component APIs, so add the client directive and do not call them from Server Components.",
+  "syntax": "import { useRouter, usePathname, useSearchParams, useParams } from 'next/navigation'",
+  "parameters": [
+   {
+    "name": "",
+    "type": "",
+    "description": "No parameters are documented for useRouter, usePathname, or useSearchParams."
+   }
+  ],
+  "returns": "useRouter provides imperative navigation methods; usePathname provides the current pathname; useSearchParams provides read-only URL search parameters.",
+  "example": {
+   "title": "Replace Pages Router hooks",
+   "code": "'use client'\n\nimport { usePathname, useRouter, useSearchParams } from 'next/navigation'\n\nexport default function SearchButton() {\n  const router = useRouter()\n  const pathname = usePathname()\n  const searchParams = useSearchParams()\n\n  function clearSearch() {\n    const params = new URLSearchParams(searchParams.toString())\n    params.delete('query')\n    router.replace(`${pathname}?${params.toString()}`)\n  }\n\n  return <button onClick={clearSearch}>Clear search</button>\n}",
+   "language": "tsx",
+   "explanation": "A Client Component uses App Router hooks for navigation, pathname access, and query-string access."
+  },
+  "useCases": [
+   {
+    "title": "Migrate routing APIs",
+    "scenario": "A page is moved from pages/ into app/."
+   },
+   {
+    "title": "Perform programmatic navigation",
+    "scenario": "A component needs to navigate after a client-side action."
+   },
+   {
+    "title": "Read search parameters",
+    "scenario": "A component reads filters from the URL."
+   },
+   {
+    "title": "Bridge an incremental migration",
+    "scenario": "A shared component temporarily runs under both routers."
+   }
+  ],
+  "related": [
+   "useRouter",
+   "usePathname",
+   "useSearchParams",
+   "useParams",
+   "next/compat/router"
+  ],
+  "since": "",
+  "keyPoints": [
+   "For App Router screens, use useRouter, usePathname, and useSearchParams from next/navigation.",
+   "Use usePathname when the component needs the current URL pathname.",
+   "Use useSearchParams for URL search parameters and useParams for dynamic segments.",
+   "These navigation hooks belong in Client Components.",
+   "During an incremental migration, next/compat/router can support shared components."
+  ],
+  "gotchas": [
+   "Do not read pathname from the App Router's useRouter; use usePathname instead.",
+   "Do not expect a query object; use useSearchParams for search parameters and useParams for dynamic route parameters.",
+   "The migrated hooks cannot be used in Server Components.",
+   "Import the App Router hook from next/navigation, not next/router."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "URL hooks::URL hooks and Suspense": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-search-params",
+  "sourceTitle": "useSearchParams | Next.js",
+  "summary": "On a prerendered route, isolate the Client Component that calls useSearchParams inside Suspense. This preserves a prerendered shell while the query-dependent subtree renders on the client.",
+  "explanation": "On a prerendered route, useSearchParams makes the Client Component subtree up to the nearest Suspense boundary render on the client. Put the smallest component that reads the hook inside Suspense so the surrounding route can remain in the prerendered HTML and the fallback can display until query data is available.",
+  "syntax": "const searchParams = useSearchParams()",
+  "parameters": [],
+  "returns": "A read-only URLSearchParams object containing the current query parameters.",
+  "example": {
+   "title": "Isolate query reading",
+   "code": "// app/dashboard/search.tsx\n'use client'\n\nimport { useSearchParams } from 'next/navigation'\n\nexport function Search() {\n  const searchParams = useSearchParams()\n  return <p>Search: {searchParams.get('q') ?? 'none'}</p>\n}\n\n// app/dashboard/page.tsx\nimport { Suspense } from 'react'\nimport { Search } from './search'\n\nexport default function Page() {\n  return (\n    <main>\n      <h1>Dashboard</h1>\n      <Suspense fallback={<p>Loading search...</p>}>\n        <Search />\n      </Suspense>\n    </main>\n  )\n}",
+   "language": "tsx",
+   "explanation": "A Client Component reads the query, while the page keeps that component behind a local Suspense boundary."
+  },
+  "useCases": [
+   {
+    "title": "Query-aware search UI",
+    "scenario": "A static dashboard needs to display a query-driven search term."
+   },
+   {
+    "title": "Client-side filtering",
+    "scenario": "A prerendered listing filters already-loaded client data from the URL."
+   },
+   {
+    "title": "Partial client rendering",
+    "scenario": "A route should retain its static shell while a small URL-dependent widget loads."
+   }
+  ],
+  "related": [
+   "useSearchParams",
+   "Suspense",
+   "useRouter",
+   "usePathname"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The hook limits client rendering to the subtree between its component and the nearest Suspense boundary.",
+   "Keep URL-independent content outside the boundary to preserve prerendered output.",
+   "Wrap the component that calls the hook rather than unnecessarily wrapping the entire route.",
+   "A local boundary lets eligible components above it appear in the initial HTML."
+  ],
+  "gotchas": [
+   "Development may hide a missing boundary because routes render on demand; verify the production build.",
+   "A prerendered static page without Suspense fails during a production build."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "URL hooks::useParams": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-params",
+  "sourceTitle": "useParams",
+  "summary": "`useParams` is a Client Component hook for reading dynamic parameters from the active URL. It returns the matched segments as an object, with strings for ordinary segments and string arrays for catch-all segments.",
+  "explanation": "Import `useParams` from `next/navigation` inside a Client Component. It returns the active route's dynamic segments as an object: a single segment is a string, while catch-all segments are arrays of strings. Routes without dynamic segments produce an empty object.",
+  "syntax": "useParams<T>(): T",
+  "parameters": [],
+  "returns": "An object containing the current route's filled dynamic parameters. Each key is an active dynamic segment; each value is a string or an array of strings based on the segment type. With no dynamic parameters, it returns an empty object.",
+  "example": {
+   "title": "Read a dynamic segment",
+   "code": "\"use client\"\n\nimport { useParams } from \"next/navigation\"\n\nexport default function ProductPage() {\n  const params = useParams<{ id: string }>()\n\n  return <h1>Product {params.id}</h1>\n}",
+   "language": "tsx",
+   "explanation": "This client component reads the `id` value from a route such as `/products/42`."
+  },
+  "useCases": [
+   {
+    "title": "Load a resource by route ID",
+    "scenario": "A product route such as `app/products/[id]/page.tsx` needs the selected product identifier."
+   },
+   {
+    "title": "Handle nested path segments",
+    "scenario": "A catch-all route needs to render content for each path segment."
+   },
+   {
+    "title": "Show active context",
+    "scenario": "A navigation-aware client component needs to display the current workspace or account segment."
+   }
+  ],
+  "related": [
+   "usePathname",
+   "useRouter",
+   "useSearchParams",
+   "dynamic routes"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use it to read dynamic parameters from the active URL.",
+   "Call the hook without arguments; use TypeScript generics only to describe the expected shape.",
+   "Each returned property corresponds to a dynamic route segment currently matched.",
+   "The property name comes from the bracketed route segment, and its value comes from the URL.",
+   "普通 dynamic segments return strings; catch-all segments return string arrays.",
+   "A route with no dynamic segments yields `{}`."
+  ],
+  "gotchas": [
+   "This hook must be used in a Client Component.",
+   "A parameter's value can be a string or an array, depending on the dynamic segment type.",
+   "Do not assume that the returned object always contains a parameter."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "URL hooks::useParams with catch-all routes": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-params",
+  "sourceTitle": "Functions: useParams | Next.js",
+  "summary": "useParams reads dynamic route parameters in an App Router Client Component. Regular segments return strings; catch-all and optional catch-all segments return string arrays when matched.",
+  "explanation": "Call useParams in a Client Component to read dynamic values from the current URL. A normal dynamic segment produces a string, while catch-all and optional catch-all segments produce string arrays; an optional catch-all route can also have no captured value.",
+  "syntax": "useParams<T>(): T",
+  "parameters": [],
+  "returns": "An object containing the current route's filled dynamic parameters. Each property corresponds to an active dynamic segment; values are strings or arrays of strings based on the segment type, and a route with no dynamic parameters returns an empty object.",
+  "example": {
+   "title": "Read catch-all path segments",
+   "code": "// app/shop/[...slug]/page.tsx\n'use client'\n\nimport { useParams } from 'next/navigation'\n\nexport default function ShopPage() {\n  const params = useParams<{ slug: string[] }>()\n  return <p>Path: {params.slug.join(' / ')}</p>\n}",
+   "language": "tsx",
+   "explanation": "In a catch-all route, the captured path segments are available as a string array."
+  },
+  "useCases": [
+   {
+    "title": "Read catch-all paths",
+    "scenario": "Display or process every path segment in a documentation, catalog, or file-browser route."
+   },
+   {
+    "title": "Handle nested paths",
+    "scenario": "Build a page at app/shop/[...slug]/page.tsx where /shop/a/b exposes slug as ['a','b']."
+   },
+   {
+    "title": "Handle optional catch-all routes",
+    "scenario": "Support both /shop and deeper paths with app/shop/[[...slug]]/page.tsx."
+   }
+  ],
+  "related": [
+   "usePathname",
+   "useSearchParams",
+   "useRouter",
+   "Dynamic Segments",
+   "Catch-all Segments",
+   "Optional Catch-all Segments"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Import useParams from next/navigation and use it inside a Client Component to read values captured by the current route.",
+   "The hook is called without arguments; use a TypeScript generic only to describe the expected shape.",
+   "The returned object contains one property for each dynamic segment currently matched by the URL.",
+   "A segment named slug is exposed as params.slug, containing the value captured from the URL.",
+   "Single dynamic segments yield strings; catch-all and optional catch-all segments yield string arrays when populated."
+  ],
+  "gotchas": [
+   "A route without dynamic segments returns an empty object, not a parameter value.",
+   "Do not assume every parameter is a string; catch-all forms require array handling."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "URL hooks::usePathname": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-pathname",
+  "sourceTitle": "usePathname",
+  "summary": "Read the current URL pathname from a Client Component with usePathname. The hook takes no arguments and returns the pathname as a string.",
+  "explanation": "Call this Client Component hook to obtain the current URL pathname during client-side navigation. It returns a string such as \"/dashboard\" and updates when navigation changes the route, while query strings are excluded.",
+  "syntax": "const pathname = usePathname()",
+  "parameters": [],
+  "returns": "A string containing the current URL's pathname.",
+  "example": {
+   "title": "Read the current pathname",
+   "code": "'use client'\n\nimport { usePathname } from 'next/navigation'\n\nexport default function CurrentPath() {\n  const pathname = usePathname()\n\n  return <p>Current pathname: {pathname}</p>\n}",
+   "language": "tsx",
+   "explanation": "Displays the pathname currently represented by the browser URL; query parameters are not included."
+  },
+  "useCases": [
+   {
+    "title": "Active navigation state",
+    "scenario": "Highlight the active navigation link based on the current route."
+   },
+   {
+    "title": "Breadcrumbs",
+    "scenario": "Render breadcrumbs or route-aware UI from pathname segments."
+   },
+   {
+    "title": "React to navigation",
+    "scenario": "Run client-side logic when the route pathname changes."
+   }
+  ],
+  "related": [
+   "useSearchParams",
+   "useRouter",
+   "useSelectedLayoutSegment",
+   "useSelectedLayoutSegments"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use it in a Client Component when UI needs to know which pathname is active.",
+   "Client-side navigation re-renders the component from client state rather than fetching the component again.",
+   "The component is sent to the browser once and then responds to navigation with client-side rendering.",
+   "The hook has no arguments.",
+   "Its result is the pathname only, without the URL query string."
+  ],
+  "gotchas": [
+   "It can only be called from a Client Component, so add the client directive before importing and using the hook.",
+   "With static prerendering plus rewrites or Proxy, the server-rendered pathname may differ from the browser pathname and cause hydration mismatches.",
+   "Do not use this hook to read the current URL from a Server Component."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "URL hooks::usePathname with rewrites": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-pathname",
+  "sourceTitle": "usePathname | Next.js",
+  "summary": "Use `usePathname` in a Client Component to read the current URL pathname. With rewrites, isolate pathname-dependent UI and defer its update until after mount to prevent hydration mismatches.",
+  "explanation": "`usePathname` is a Client Component hook that reads the current URL pathname. With a statically prerendered page reached through a rewrite, the server may render the source pathname while the browser exposes the rewritten pathname, so isolate the dependent UI and update it after mounting.",
+  "syntax": "usePathname()",
+  "parameters": [],
+  "returns": "`usePathname` returns a string of the current URL's pathname.",
+  "example": {
+   "title": "Defer rewritten pathname UI until mount",
+   "code": "'use client'\n\nimport { useEffect, useState } from 'react'\nimport { usePathname } from 'next/navigation'\n\nexport function PathnameLabel() {\n  const pathname = usePathname()\n  const [mounted, setMounted] = useState(false)\n\n  useEffect(() => setMounted(true), [])\n\n  return <span>{mounted ? pathname : 'Loading…'}</span>\n}",
+   "language": "tsx",
+   "explanation": "The server and initial client render use the same fallback; the pathname-dependent text appears after mount."
+  },
+  "useCases": [
+   {
+    "title": "Active navigation state",
+    "scenario": "Highlighting the active navigation link when the displayed URL is rewritten."
+   },
+   {
+    "title": "Localized pathname UI",
+    "scenario": "Showing a pathname-specific label or control without making the whole page client-dependent."
+   },
+   {
+    "title": "Rewrite-safe progressive UI",
+    "scenario": "Rendering a stable prerendered shell and updating a small URL-dependent region after hydration."
+   }
+  ],
+  "related": [
+   "useRouter",
+   "useSearchParams",
+   "rewrites",
+   "Proxy"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Call this Client Component hook to read the current URL pathname.",
+   "After a rewrite, the server's initial pathname can differ from the browser pathname.",
+   "Static prerendering generates HTML for the source route before a rewrite is applied.",
+   "The browser can show the rewritten URL, which the hook reads on the client.",
+   "Keep pathname-dependent rendering limited to a small isolated Client Component.",
+   "The hook returns the current pathname as a string."
+  ],
+  "gotchas": [
+   "A statically prerendered page using rewrites can produce a hydration mismatch because server and browser pathname values differ.",
+   "Use identical server and initial-client fallback output, then reveal pathname-dependent UI after mount.",
+   "Deferring the pathname can briefly display the fallback before the actual pathname is available."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "URL hooks::useSearchParams": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-search-params",
+  "sourceTitle": "Functions: useSearchParams | Next.js",
+  "summary": "`useSearchParams` is a Client Component hook for reading the current URL's query string. It returns a read-only URLSearchParams interface and must not be used in Server Components.",
+  "explanation": "Import the hook from `next/navigation` inside a Client Component. Calling it gives a read-only URLSearchParams-compatible object for the current URL, so methods such as `get` can retrieve query values. It updates when navigation changes the URL. Server Components cannot use it because partial rendering could otherwise expose stale values.",
+  "syntax": "const searchParams = useSearchParams()",
+  "parameters": [],
+  "returns": "A read-only URLSearchParams interface containing methods for reading the URL query string. In applications that include the `/pages` directory, it may be `null`.",
+  "example": {
+   "title": "Read a query parameter",
+   "code": "'use client'\n\nimport { useSearchParams } from 'next/navigation'\n\nexport default function SearchResults() {\n  const searchParams = useSearchParams()\n  const query = searchParams.get('q')\n\n  return <p>Search: {query ?? 'none'}</p>\n}",
+   "language": "tsx",
+   "explanation": "This Client Component reads the current URL's `q` query parameter and displays it."
+  },
+  "useCases": [
+   {
+    "title": "Client-side filtering",
+    "scenario": "Read a search term or filter from the current URL in a Client Component."
+   },
+   {
+    "title": "Search and pagination state",
+    "scenario": "Keep a search input or pagination control synchronized with URL query parameters."
+   },
+   {
+    "title": "Navigation-aware UI",
+    "scenario": "Read changing query parameters after client-side navigation."
+   }
+  ],
+  "related": [
+   "URLSearchParams.get()",
+   "URLSearchParams.getAll()",
+   "URLSearchParams.has()",
+   "URLSearchParams.keys()",
+   "URLSearchParams.values()",
+   "usePathname",
+   "useRouter"
+  ],
+  "since": "",
+  "keyPoints": [
+   "It reads the current URL query string from a Client Component.",
+   "The returned object supports reading but not directly modifying query parameters.",
+   "Call the hook with no arguments.",
+   "Use `get(name)` to retrieve the first value for a query key."
+  ],
+  "gotchas": [
+   "Use the hook only in Client Components; Server Components cannot call it.",
+   "Projects containing a `/pages` directory must handle a possible `null` return value."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "URL hooks::useSearchParams values": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-search-params",
+  "sourceTitle": "useSearchParams | Next.js",
+  "summary": "useSearchParams reads the current URL query string in a Client Component through a read-only URLSearchParams interface. Use getAll() for repeated keys and get() or has() for optional values without mutating the returned object.",
+  "explanation": "In a Client Component, call useSearchParams() to obtain a read-only URLSearchParams-like object for the current query string. Use get() for the first matching value, getAll() for repeated values, has() to test presence, and entries or toString() when needed; create a separate URLSearchParams instance before changing query data.",
+  "syntax": "const searchParams = useSearchParams()",
+  "parameters": [
+   {
+    "name": "none",
+    "type": "—",
+    "description": "No arguments; call the hook inside a Client Component."
+   }
+  ],
+  "returns": "A read-only URLSearchParams interface representing the current URL query string; its methods include get(), getAll(), has(), keys(), values(), entries(), and toString().",
+  "example": {
+   "title": "Read query values",
+   "code": "'use client'\n\nimport { useSearchParams } from 'next/navigation'\n\nexport default function Filters() {\n  const params = useSearchParams()\n  const tags = params.getAll('tag')\n  const page = params.get('page') ?? '1'\n  const optional = params.get('missing')\n\n  return (\n    <p>\n      page={page}; tags={tags.join(', ')}; missing={optional ?? 'none'}\n    </p>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Reads a required-or-default page value, every repeated tag value, and an absent optional value from the current URL."
+  },
+  "useCases": [
+   {
+    "title": "Read repeated filters",
+    "scenario": "A URL contains the same key multiple times, such as tag=js&tag=react."
+   },
+   {
+    "title": "Handle optional values",
+    "scenario": "A parameter may be omitted, such as an optional sort or page setting."
+   },
+   {
+    "title": "Render URL-driven state",
+    "scenario": "A Client Component needs to display or react to the current query string."
+   }
+  ],
+  "related": [
+   "URLSearchParams.get()",
+   "URLSearchParams.getAll()",
+   "URLSearchParams.has()",
+   "URLSearchParams.keys()",
+   "URLSearchParams.values()",
+   "URLSearchParams.entries()",
+   "URLSearchParams.toString()",
+   "useRouter"
+  ],
+  "since": "",
+  "keyPoints": [
+   "It exposes the query string for the current URL inside a Client Component.",
+   "Treat the returned value as read-only when reading query parameters.",
+   "Use get(name) when a parameter has one expected value or when only its first value is needed."
+  ],
+  "gotchas": [
+   "Only use the hook in Client Components; it is unavailable in Server Components.",
+   "For Server Component data fetching, read the Page's searchParams prop instead.",
+   "Do not mutate the returned object directly; make a new URLSearchParams from its string when updating values."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

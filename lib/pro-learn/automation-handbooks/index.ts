@@ -6,6 +6,7 @@ import { N8N_TOPICS } from "./n8n";
 import { DOCKER_TOPICS } from "./docker";
 import { AWS_DEVOPS_TOPICS } from "./aws-devops";
 import { AGENTIC_AI_TOPICS } from "./agentic-ai";
+import { AGENTIC_AI_CONCEPTS } from "./agentic-ai-concepts";
 
 const official = (title: string, url: string) => ({ title, url, reviewedAt: "2026-09-20" });
 const create = (title: string, description: string, topics: TechnologyHandbook["topics"], sources: NonNullable<TechnologyHandbook["sources"]>): TechnologyHandbook => {
@@ -49,7 +50,7 @@ export const AUTOMATION_HANDBOOKS: TechnologyHandbook[] = [
     official("CodePipeline concepts", "https://docs.aws.amazon.com/codepipeline/latest/userguide/concepts.html"),
     official("ECR and ECS deployment tutorial", "https://docs.aws.amazon.com/codepipeline/latest/userguide/tutorials-ecs-ecr-codedeploy.html"),
   ]),
-  create("Agentic AI", "Eight learning paths: Generative AI, LangChain and LangGraph agents, RAG, Vectorless RAG, Deep Agents, Guardrails, LLM Evaluation and LLM Gateways.", AGENTIC_AI_TOPICS, [
+  create("Agentic AI", "Twelve learning paths: Generative AI, LangChain and LangGraph agents, RAG, Vectorless RAG, Deep Agents, Guardrails, LLM Evaluation, LLM Gateways, agent design patterns, agent protocols and tools, agent memory and context, and production agents.", [...AGENTIC_AI_TOPICS, ...AGENTIC_AI_CONCEPTS], [
     official("Agent foundations", "https://docs.langchain.com/oss/python/langchain/agents"),
     official("Retrieval", "https://docs.langchain.com/oss/python/deepagents/retrieval"),
     official("Deep Agents", "https://docs.langchain.com/oss/python/deepagents/overview"),
@@ -57,5 +58,9 @@ export const AUTOMATION_HANDBOOKS: TechnologyHandbook[] = [
     official("Evaluation", "https://docs.langchain.com/langsmith/evaluation"),
     official("Full-text retrieval", "https://www.elastic.co/docs/solutions/search/full-text"),
     official("LLM Gateway", "https://docs.litellm.ai/docs/simple_proxy"),
+    official("Building effective agents", "https://www.anthropic.com/engineering/building-effective-agents"),
+    official("Model Context Protocol", "https://modelcontextprotocol.io/docs/getting-started/intro"),
+    official("Agent2Agent protocol", "https://a2a-protocol.org/latest/"),
+    official("LangGraph memory", "https://docs.langchain.com/oss/python/concepts/memory"),
   ]),
 ];

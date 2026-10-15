@@ -1,0 +1,1471 @@
+{
+ "Compiler::Compiler API compatibility": {
+  "sourceUrl": "https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/",
+  "sourceTitle": "Announcing TypeScript 7.0 - TypeScript",
+  "summary": "TypeScript 7.0 does not ship a compiler API. Use @typescript/typescript6 so API-dependent tools can keep using the TypeScript 6 API while TypeScript 7 runs through the normal tsc command.",
+  "explanation": "TypeScript 7.0 does not provide a compiler API yet. Install the compatibility package to obtain the TypeScript 6 API and its separate tsc6 executable, while the normal tsc command remains TypeScript 7.",
+  "syntax": "npm install @typescript/typescript6\nnpx tsc\nnpx tsc6",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Run TypeScript 7 and TypeScript 6 side by side",
+   "code": "npm install typescript @typescript/typescript6\nnpx tsc --version\nnpx tsc6 --version",
+   "language": "bash",
+   "explanation": "Installs TypeScript 7 and the compatibility package, then runs the TypeScript 7 and TypeScript 6 command-line tools separately."
+  },
+  "useCases": [
+   {
+    "title": "Keep API-dependent tooling working",
+    "scenario": "A tool such as typescript-eslint still requires programmatic compiler access."
+   },
+   {
+    "title": "Run both compiler generations side by side",
+    "scenario": "A project is adopting TypeScript 7 while retaining TypeScript 6 API consumers."
+   },
+   {
+    "title": "Use the transitional tsc6 command",
+    "scenario": "A build needs the TypeScript 6 command-line executable during migration."
+   }
+  ],
+  "related": [
+   "@typescript/typescript6",
+   "tsc6",
+   "tsc",
+   "typescript-eslint",
+   "TypeScript 6.0 API",
+   "TypeScript 7.1"
+  ],
+  "since": "TypeScript 7.0",
+  "keyPoints": [
+   "TypeScript 7.0 has no compiler API yet, so API-dependent tools need the compatibility arrangement.",
+   "The eventual TypeScript API is expected to arrive in TypeScript 7.1 and may differ from the TypeScript 6 API.",
+   "Run TypeScript 7 and TypeScript 6 concurrently during the transition.",
+   "Tools such as typescript-eslint can continue using the older API while TypeScript 7 matures.",
+   "The package providing the transitional API is @typescript/typescript6.",
+   "The compatibility package adds a tsc6 executable so the TypeScript 6 command can coexist with TypeScript 7's tsc.",
+   "API consumers can import the re-exported TypeScript 6 API from the compatibility package."
+  ],
+  "gotchas": [
+   "Compatibility covers type-checking and command-line behavior, not the missing TypeScript 7 compiler API.",
+   "The compatibility expectation applies to code that already compiles cleanly under TypeScript 6.0 with the documented conditions."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Compiler::Parallel builds": {
+  "sourceUrl": "https://devblogs.microsoft.com/typescript/announcing-typescript-7-0-beta/",
+  "sourceTitle": "Announcing TypeScript 7.0 Beta",
+  "summary": "TypeScript 7 parallelizes parsing, checking, emitting, and project-reference builds. Tune checker workers with --checkers and concurrent project builders with --builders; use --singleThreaded to disable parallel execution.",
+  "explanation": "TypeScript 7 parallelizes parsing, checking, emitting, and project-reference builds. The --checkers option controls type-checker workers, while --builders controls concurrent project builders; --singleThreaded disables parallel execution when resources are limited or debugging requires deterministic single-threaded behavior.",
+  "syntax": "tsc --build [options] --checkers <number> --builders <number>\n\ntsc --build [options] --singleThreaded",
+  "parameters": [
+   {
+    "name": "--checkers",
+    "type": "integer",
+    "description": "Number of type-checker workers."
+   },
+   {
+    "name": "--builders",
+    "type": "integer",
+    "description": "Number of parallel project-reference builders when running under --build."
+   },
+   {
+    "name": "--singleThreaded",
+    "type": "flag",
+    "description": "Disables parallel execution and uses one thread for checking, parsing, and emitting."
+   }
+  ],
+  "returns": "Compiler build and emitted output; the page does not specify a distinct return value.",
+  "example": {
+   "title": "Tune parallel project builds",
+   "code": "tsc --build --checkers 4 --builders 2",
+   "language": "bash",
+   "explanation": "Runs a project-reference build with four type-checker workers and two project builders; adjust values to match available resources."
+  },
+  "useCases": [
+   {
+    "title": "Large project checks",
+    "scenario": "Speed up type-checking in a large single project by increasing checker worker concurrency."
+   },
+   {
+    "title": "Monorepo builds",
+    "scenario": "Build independent project references concurrently in a monorepo."
+   },
+   {
+    "title": "Resource-constrained environments",
+    "scenario": "Avoid excessive memory or CPU pressure on constrained CI or developer machines."
+   },
+   {
+    "title": "Debugging",
+    "scenario": "Reproduce or diagnose behavior without multithreaded execution."
+   }
+  ],
+  "related": [
+   "--build",
+   "type-checker workers",
+   "project reference builders",
+   "shared-memory parallelism",
+   "parsing",
+   "emitting"
+  ],
+  "since": "7.0",
+  "keyPoints": [
+   "Parallelism covers the main compiler pipeline, including parsing, checking, and output generation.",
+   "Type-checking uses four workers by default, and --checkers lets you tune that count.",
+   "Project-reference builds can run concurrently both within a project and across multiple projects.",
+   "Use --builders to set how many project-reference builders may operate simultaneously under --build.",
+   "Checker workers can repeat shared work, but identical inputs produce consistent work partitioning and results.",
+   "Parallel execution is especially beneficial for large repositories because it scales with relatively low overhead."
+  ],
+  "gotchas": [
+   "Combining checker and builder counts multiplies concurrency, so high values can create excessive resource use.",
+   "Use --singleThreaded when debugging or when the environment has limited resources; it disables parallelism across these stages."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Compiler::tsc and project references": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/project-references.html",
+  "sourceTitle": "Documentation - Project References - TypeScript",
+  "summary": "Project references let you split a TypeScript repository into smaller, independently buildable projects. The tsc --build mode follows their dependency graph, reuses up-to-date outputs, and rebuilds stale projects in the right order.",
+  "explanation": "A project reference connects one tsconfig.json project to another through a references array. Referenced projects should be composite, and tsc -b uses the resulting graph to find dependencies, skip up-to-date work, and build outdated projects in dependency order; emitted declaration files provide the referenced project’s type surface.",
+  "syntax": "tsc --build [projects...]\n// shorthand:\ntsc -b [projects...]",
+  "parameters": [
+   {
+    "name": "projects",
+    "type": "string[]",
+    "description": "One or more project directories or tsconfig.json paths to build; configuration filenames may be omitted when named tsconfig.json."
+   }
+  ],
+  "returns": "Builds referenced projects that are out of date and their dependencies, in dependency order.",
+  "example": {
+   "title": "A referenced composite project",
+   "code": "{\n  \"compilerOptions\": {\n    \"composite\": true,\n    \"declaration\": true,\n    \"outDir\": \"dist\"\n  },\n  \"references\": [{ \"path\": \"../shared\" }]\n}\n\n# Build the referenced projects in dependency order\ntsc -b packages/app",
+   "language": "json",
+   "explanation": "The app project references shared, and build mode finds dependencies, checks freshness, and builds projects in the required order."
+  },
+  "useCases": [
+   {
+    "title": "Organize a large repository",
+    "scenario": "A monorepo contains shared libraries and applications with clear dependency boundaries."
+   },
+   {
+    "title": "Speed up incremental builds",
+    "scenario": "Only a few packages changed between builds."
+   },
+   {
+    "title": "Improve editor performance and navigation",
+    "scenario": "Editors need project boundaries and cross-project type information."
+   }
+  ],
+  "related": [
+   "references",
+   "composite",
+   "declaration",
+   "declarationMap",
+   "tsc -b",
+   "--verbose",
+   "--dry",
+   "--clean"
+  ],
+  "since": "TypeScript 3.0",
+  "keyPoints": [
+   "Use references to divide a large TypeScript repository into smaller projects with explicit boundaries.",
+   "Build mode follows the reference graph and builds dependencies when their outputs are missing or stale.",
+   "Use tsc -b as the dependency-aware entry point for compiling a project graph.",
+   "The build starts by discovering every project reachable through references.",
+   "Before emitting, build mode determines which projects can safely be reused.",
+   "Only stale projects are rebuilt, and dependencies are emitted before projects that consume them."
+  ],
+  "gotchas": [
+   "Running plain tsc does not build referenced dependencies; use tsc -b when you want dependency-aware builds.",
+   "A referenced project must enable composite in its compiler options."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Compiler::TypeScript language service": {
+  "sourceUrl": "https://devblogs.microsoft.com/typescript/progress-on-typescript-7-december-2025/",
+  "sourceTitle": "Progress on TypeScript 7 – December 2025",
+  "summary": "TypeScript 7’s native language service powers editor features through LSP, while the native compiler provides a tsgo command that is similar to tsc. Migration should account for rewritten tooling behavior and version selection.",
+  "explanation": "TypeScript 7’s native language-service architecture powers editor features such as completions, hover information, navigation, and diagnostics through the Language Server Protocol. The native compiler is available through the TypeScript toolchain, while editor integrations may select a workspace or built-in version; migration can therefore change behavior where language-service features or protocol implementations differ.",
+  "syntax": "npm install -D @typescript/native-preview\nnpx tsgo",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Read compiler diagnostics",
+   "code": "import ts from \"typescript\";\n\nconst program = ts.createProgram([\"src/index.ts\"], {\n  strict: true,\n});\n\nfor (const diagnostic of ts.getPreEmitDiagnostics(program)) {\n  const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, \"\\n\");\n  console.log(message);\n}",
+   "language": "typescript",
+   "explanation": "This runnable TypeScript example uses the compiler API to create a program and print its diagnostics."
+  },
+  "useCases": [
+   {
+    "title": "Run native and existing compilers side by side",
+    "scenario": "Evaluating TypeScript 7 in an existing repository before changing the default compiler."
+   },
+   {
+    "title": "Power modern editor tooling",
+    "scenario": "Supporting editor completions, hovers, navigation, and other TypeScript or JavaScript features."
+   },
+   {
+    "title": "Adopt native build workflows",
+    "scenario": "Migrating builds that use incremental compilation, project references, or build mode."
+   }
+  ],
+  "related": [
+   "Language Server Protocol (LSP)",
+   "TSServer protocol",
+   "tsgo",
+   "tsc",
+   "completions",
+   "hover tooltips",
+   "navigation",
+   "incremental compilation"
+  ],
+  "since": "7.0",
+  "keyPoints": [
+   "The language service supplies the TypeScript and JavaScript capabilities used by editors and is included in the native-port work.",
+   "TypeScript 7 substantially rewrites the implementation behind common editor features.",
+   "The native language service communicates through the standard Language Server Protocol rather than TSServer.",
+   "The native-preview package exposes tsgo as a command-line compiler analogous to tsc.",
+   "Important build workflows, including incremental compilation, project references, and build mode, are supported.",
+   "The LSP-based foundation can use multiple threads to handle simultaneous editor requests."
+  ],
+  "gotchas": [
+   "Because TypeScript 7 uses LSP instead of the former custom TSServer protocol, editor-specific behavior may differ after migration.",
+   "Rewritten language-service internals can produce changed behavior in completions, hovers, and navigation.",
+   "The native compiler can be evaluated alongside the existing compiler during migration."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Compiler::What TypeScript 7 is": {
+  "sourceUrl": "https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/",
+  "sourceTitle": "Announcing TypeScript 7.0 - TypeScript",
+  "summary": "TypeScript 7 is the native version of the TypeScript compiler and tools. It keeps the familiar tsc workflow while adding native speed and shared-memory parallelism, with compatibility options for projects that still need TypeScript 6.",
+  "explanation": "TypeScript 7 is a native implementation of the compiler and language-service tooling. It keeps the established command-line workflow while using native execution and shared-memory parallelism to improve build and editor performance; projects that need the older API or behavior can keep TypeScript 6 alongside it.",
+  "syntax": "npx tsc [options]",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Run TypeScript 7 type-checking",
+   "code": "npm install -D typescript\nnpx tsc --noEmit",
+   "language": "bash",
+   "explanation": "Install TypeScript 7 locally, then use the familiar npx tsc command to type-check the project without emitting files."
+  },
+  "useCases": [
+   {
+    "title": "Keep the familiar tsc workflow",
+    "scenario": "Run routine project type-checking and compilation with the standard CLI."
+   },
+   {
+    "title": "Improve compiler and language-service performance",
+    "scenario": "Speed up large builds and editor operations through native execution and parallelism."
+   },
+   {
+    "title": "Migrate incrementally from TypeScript 6",
+    "scenario": "Adopt the native compiler while retaining older API consumers during migration."
+   },
+   {
+    "title": "Scale multi-project builds",
+    "scenario": "Use incremental builds, project references, or build mode in a native toolchain."
+   }
+  ],
+  "related": [
+   "tsc",
+   "tsgo",
+   "@typescript/native",
+   "@typescript/typescript6",
+   "--incremental",
+   "--build",
+   "project references",
+   "language service"
+  ],
+  "since": "7.0",
+  "keyPoints": [
+   "TypeScript 7 replaces the JavaScript-based implementation with a native port of the compiler and related tools.",
+   "Its native implementation targets faster execution and shared-memory parallelism for both builds and editor language services.",
+   "The native compiler is designed to make full builds substantially faster, with reported typical gains of roughly 8x to 12x.",
+   "A compatibility package can preserve access to the TypeScript 6 API while TypeScript 7 supplies the main compiler executable."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Configuration::exactOptionalPropertyTypes": {
+  "sourceUrl": "https://www.typescriptlang.org/tsconfig/exactOptionalPropertyTypes.html",
+  "sourceTitle": "TypeScript: TSConfig Option: exactOptionalPropertyTypes",
+  "summary": "Makes TypeScript distinguish an omitted optional property from one explicitly assigned undefined. Optional properties accept only the values written in their types unless undefined is included explicitly.",
+  "explanation": "Enable this option to make an optional property mean either that the property is absent or that it contains only the values written in its type. An assignment of undefined is rejected unless undefined is explicitly included. The option requires strictNullChecks and is not automatically enabled by strict.",
+  "syntax": "\"exactOptionalPropertyTypes\": true",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Distinguishing omission from undefined",
+   "code": "interface UserDefaults {\n  colorThemeOverride?: \"dark\" | \"light\";\n}\n\nconst settings: UserDefaults = {};\nsettings.colorThemeOverride = \"dark\";\n// @ts-expect-error: undefined is not an allowed assigned value\nsettings.colorThemeOverride = undefined;",
+   "language": "typescript",
+   "explanation": "The property may be omitted or assigned one of its declared string values, but explicit undefined requires adding | undefined to the property type."
+  },
+  "useCases": [
+   {
+    "title": "Default configuration",
+    "scenario": "Represent configuration defaults where omission means “use the system default”."
+   },
+   {
+    "title": "Patch and update objects",
+    "scenario": "Prevent APIs from confusing an absent field with an explicitly cleared field."
+   },
+   {
+    "title": "Stricter migration checks",
+    "scenario": "Catch assignments that rely on TypeScript’s implicit undefined widening."
+   }
+  ],
+  "related": [
+   "strictNullChecks",
+   "optional properties",
+   "tsconfig.json",
+   "--exactOptionalPropertyTypes"
+  ],
+  "since": "TypeScript 4.4",
+  "keyPoints": [
+   "The flag tightens checking for optional properties declared with ?.",
+   "An optional property can model a meaningful omitted state.",
+   "Without the flag, an optional property effectively accepts its declared values plus undefined.",
+   "Assigning undefined and omitting the property are distinct object states.",
+   "With the flag enabled, TypeScript follows the written optional-property type exactly."
+  ],
+  "gotchas": [
+   "The option is not enabled by strict; configure it explicitly.",
+   "Enable strictNullChecks before relying on this option.",
+   "Explicit undefined can behave differently from an absent property in runtime existence checks."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Configuration::Modules and resolution": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/modules/theory.html",
+  "sourceTitle": "Documentation - Modules - Theory - TypeScript",
+  "summary": "TypeScript’s module and moduleResolution settings tell the compiler how a runtime or bundler interprets and locates imports. Use Node modes for Node.js and bundler with esnext or preserve when a bundler controls resolution.",
+  "explanation": "TypeScript uses module information to model how the target runtime or bundler interprets imports and exports. The moduleResolution setting then determines how those module specifiers map to files, packages, and package.json conditions. Choose matching Node.js modes for Node, or pair bundler resolution with esnext or preserve when a bundler owns resolution.",
+  "syntax": "{\"module\":\"nodenext\",\"moduleResolution\":\"nodenext\"}",
+  "parameters": [
+   {
+    "name": "module",
+    "type": "compiler option",
+    "description": "Module output and runtime interpretation mode, such as node18, nodenext, esnext, or preserve."
+   },
+   {
+    "name": "moduleResolution",
+    "type": "compiler option",
+    "description": "Algorithm used to resolve module specifiers, such as node16, nodenext, or bundler."
+   }
+  ],
+  "returns": "The compiler resolves module specifiers to files according to the selected runtime or bundler algorithm and emits module output consistent with the module setting.",
+  "example": {
+   "title": "Modern Node.js configuration",
+   "code": "{\n  \"compilerOptions\": {\n    \"module\": \"nodenext\",\n    \"moduleResolution\": \"nodenext\",\n    \"target\": \"es2022\"\n  }\n}",
+   "language": "json",
+   "explanation": "This configuration models modern Node.js resolution and aligns the module and resolution modes."
+  },
+  "useCases": [
+   {
+    "title": "Configure Node.js modules",
+    "scenario": "A modern Node.js application needs runtime-compatible imports and exports."
+   },
+   {
+    "title": "Configure bundler resolution",
+    "scenario": "A project is compiled or transformed by a JavaScript bundler."
+   },
+   {
+    "title": "Resolve package conditions",
+    "scenario": "A package uses package.json conditional exports and imports."
+   }
+  ],
+  "related": [
+   "module",
+   "moduleResolution",
+   "resolvePackageJsonExports",
+   "resolvePackageJsonImports",
+   "package.json exports",
+   "package.json imports",
+   "node16",
+   "node18"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Module resolution maps an import, export, or require specifier to the file it references.",
+   "The moduleResolution option selects the resolver algorithm and can be supplemented by related options.",
+   "Use bundler resolution when a bundler, rather than Node.js, determines runtime module lookup.",
+   "Bundler mode understands package exports and imports conditions by default.",
+   "The bundler resolver is also the documented choice for Bun.",
+   "Node-oriented settings enforce stricter, runtime-compatible module specifiers.",
+   "Node 16-style and NodeNext resolution require a compatible Node module setting."
+  ],
+  "gotchas": [
+   "Bundler resolution cannot be combined with arbitrary module settings; pair it with esnext or preserve.",
+   "Bundler mode is intended for bundlers, Bun, and tsx, not Node.js.",
+   "Do not use bundler resolution to model a Node.js application."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Configuration::noUncheckedIndexedAccess": {
+  "sourceUrl": "https://www.typescriptlang.org/tsconfig/noUncheckedIndexedAccess.html",
+  "sourceTitle": "TSConfig Option: noUncheckedIndexedAccess",
+  "summary": "Adds undefined to indexed lookups for keys not explicitly declared, reflecting that the property may be absent at runtime. This also makes array indexing stricter.",
+  "explanation": "When enabled, this option adds undefined to accesses whose keys are not explicitly declared but are covered by an index signature. Code must account for the possibility that such a property is absent at runtime, including indexed array access.",
+  "syntax": "\"noUncheckedIndexedAccess\": true",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Guard an indexed lookup",
+   "code": "interface EnvironmentVars {\n  NAME: string;\n  OS: string;\n  [propName: string]: string;\n}\n\ndeclare const env: EnvironmentVars;\n\nconst nodeEnv = env.NODE_ENV;\n\nif (nodeEnv !== undefined) {\n  console.log(nodeEnv.toUpperCase());\n}",
+   "language": "typescript",
+   "explanation": "The indexed lookup may be undefined, so the guard must run before using the value."
+  },
+  "useCases": [
+   {
+    "title": "Validate dynamic property reads",
+    "scenario": "Record-like objects with index signatures"
+   },
+   {
+    "title": "Handle missing configuration keys",
+    "scenario": "Environment-variable maps"
+   },
+   {
+    "title": "Catch possible out-of-bounds reads",
+    "scenario": "Arrays and tuples accessed by numeric indexes"
+   }
+  ],
+  "related": [
+   "index signatures",
+   "strict",
+   "undefined",
+   "array indexing"
+  ],
+  "since": "TypeScript 4.1",
+  "keyPoints": [
+   "The option adds undefined to values obtained through undeclared properties covered by an index signature.",
+   "Explicitly declared properties retain their declared type, while other keys use the index-signature behavior.",
+   "An index signature describes the value type assumed for keys not individually declared on the object type.",
+   "An undeclared property accessed through the index signature becomes potentially undefined when the option is enabled.",
+   "The resulting type visibly records that the lookup might not find a value.",
+   "The setting can help detect array lookups whose indexes fall outside the valid bounds."
+  ],
+  "gotchas": [
+   "Enabling this option can expose many errors, because strict mode does not enable it automatically.",
+   "Array access is affected too, so a numeric lookup can require handling an absent element."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Configuration::Strict compiler checks": {
+  "sourceUrl": "https://www.typescriptlang.org/tsconfig/strict.html",
+  "sourceTitle": "TSConfig Option: strict",
+  "summary": "Enable `strict` to activate TypeScript’s strict-checking family and get stronger compile-time guarantees. Individual strict checks can still be disabled when needed.",
+  "explanation": "Set `strict` to true in compiler options to enable the complete strict-checking family. TypeScript then exposes issues such as unsafe null handling and implicit `any` types; individual strict checks can still be disabled when compatibility requires it.",
+  "syntax": "{\"compilerOptions\":{\"strict\":true}}",
+  "parameters": [
+   {
+    "name": "strict",
+    "type": "boolean",
+    "description": "Boolean compiler option that enables the strict mode family."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Enable strict checking",
+   "code": "// tsconfig.json\n{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"es2020\",\n    \"module\": \"node18\"\n  }\n}\n\n// index.ts\nfunction greet(name: string) {\n  return `Hello, ${name}`;\n}\n\ngreet(undefined); // Compile-time error with strictNullChecks",
+   "language": "typescript",
+   "explanation": "Compile with `tsc`; strict mode rejects passing `undefined` where a string is required."
+  },
+  "useCases": [
+   {
+    "title": "Catch invalid states early",
+    "scenario": "Starting a new TypeScript application"
+   },
+   {
+    "title": "Validate declarations under strict consumers",
+    "scenario": "Maintaining a shared library"
+   },
+   {
+    "title": "Surface newly introduced type errors",
+    "scenario": "Upgrading TypeScript"
+   },
+   {
+    "title": "Adopt checks incrementally",
+    "scenario": "Migrating an existing codebase"
+   }
+  ],
+  "related": [
+   "strictNullChecks",
+   "noImplicitAny",
+   "noImplicitThis",
+   "alwaysStrict"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The `strict` compiler option turns on a broad set of checks that provide stronger compile-time correctness guarantees.",
+   "Enabling strict activates the complete family of strict-mode compiler options.",
+   "Use individual compiler options to opt out of selected strict checks without abandoning strict mode entirely.",
+   "The strict family can grow in later TypeScript releases, so stricter upgrades may require fixing newly reported errors."
+  ],
+  "gotchas": [
+   "Enabling strict can make a TypeScript upgrade reveal new errors, because future releases may add checks to the strict family.",
+   "Strict mode is not all-or-nothing: disable a particular strict option when a migration or compatibility constraint requires it."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Configuration::tsconfig migration": {
+  "sourceUrl": "https://www.typescriptlang.org/tsconfig/",
+  "sourceTitle": "TSConfig Reference - Docs on every TSConfig option - TypeScript",
+  "summary": "Migrate tsconfig settings by replacing deprecated options and explicitly selecting a JavaScript target. Target controls which features TypeScript downlevels and influences the default lib setting.",
+  "explanation": "During a tsconfig migration, replace deprecated settings with their documented alternatives and choose an explicit JavaScript target based on the environments your project supports. The target controls which language features TypeScript preserves or downlevels and also influences the default library declarations.",
+  "syntax": "{\n  \"compilerOptions\": {\n    \"target\": \"es2022\"\n  }\n}",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Explicit target in tsconfig.json",
+   "code": "{\n  \"compilerOptions\": {\n    \"target\": \"es2022\",\n    \"module\": \"nodenext\"\n  }\n}",
+   "language": "json",
+   "explanation": "A migrated configuration explicitly selects the emitted JavaScript target and module behavior."
+  },
+  "useCases": [
+   {
+    "title": "Replace deprecated settings",
+    "scenario": "Upgrading a project whose tsconfig contains deprecated compiler options."
+   },
+   {
+    "title": "Choose a compatible target",
+    "scenario": "Supporting older browsers or runtimes with controlled emitted syntax."
+   },
+   {
+    "title": "Align target and lib",
+    "scenario": "Building for modern runtimes while preserving the intended library declarations."
+   }
+  ],
+  "related": [
+   "tsconfig.json",
+   "compilerOptions",
+   "target",
+   "lib",
+   "verbatimModuleSyntax",
+   "module",
+   "moduleResolution"
+  ],
+  "since": "",
+  "keyPoints": [
+   "When a configuration option is deprecated, migrate to the documented replacement rather than preserving the old setting.",
+   "Target determines whether emitted JavaScript transforms newer language features or leaves them in the output.",
+   "Choose a lower target when the runtime environment requires older JavaScript syntax.",
+   "A higher target is appropriate only when supported by every runtime that executes the emitted code.",
+   "Set lib independently when the runtime APIs and emitted JavaScript target need different choices.",
+   "ESNext tracks the highest language version supported by the installed TypeScript release."
+  ],
+  "gotchas": [
+   "Avoid relying on ESNext when predictable upgrades matter; its meaning changes as TypeScript adds support for newer JavaScript versions.",
+   "Changing target can alter the ambient library declarations, so review lib behavior after migration."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "JavaScript interop::Declaration files": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html",
+  "sourceTitle": "Documentation - Publishing",
+  "summary": "Declaration files describe a package’s public TypeScript types without shipping implementation code. Publish them inside the npm package and reference them with package.json’s types field, or submit them to DefinitelyTyped for an @types package.",
+  "explanation": "A declaration file describes an existing library’s public types without containing its implementation. For an npm package, bundle the generated or handwritten .d.ts file and point package.json at it with the types field, or contribute declarations to DefinitelyTyped for publication under @types.",
+  "syntax": "// package.json\n{\n  \"main\": \"./dist/index.js\",\n  \"types\": \"./dist/index.d.ts\"\n}",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Type an existing JavaScript package",
+   "code": "// index.d.ts\nexport function slugify(input: string): string;\n\n// app.ts\nimport { slugify } from \"untyped-slugify\";\n\nconst slug = slugify(\"Hello, TypeScript\");\nconsole.log(slug);",
+   "language": "typescript",
+   "explanation": "The declaration describes the JavaScript package’s exported function, enabling typed imports without implementing the function in the declaration file."
+  },
+  "useCases": [
+   {
+    "title": "Add types to an untyped package",
+    "scenario": "A JavaScript npm package needs editor completions and compile-time checking for TypeScript consumers."
+   },
+   {
+    "title": "Bundle generated declarations",
+    "scenario": "A TypeScript library is compiled for npm and needs to distribute its generated public API types."
+   },
+   {
+    "title": "Publish through DefinitelyTyped",
+    "scenario": "A package author does not maintain bundled declarations and wants the community to provide them."
+   }
+  ],
+  "related": [
+   ".d.ts files",
+   "package.json types field",
+   "DefinitelyTyped",
+   "@types",
+   "declaration compiler option",
+   "main"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use .d.ts files for type descriptions only; they do not contain executable implementation code.",
+   "Declaration files support checking and editor tooling but emit no JavaScript.",
+   "An npm package with JavaScript should identify its declaration entry point in package.json.",
+   "Use package.json's types field to connect consumers with the bundled .d.ts file.",
+   "For packages whose authors do not bundle declarations, contribute the definitions to DefinitelyTyped so they can be published as @types.",
+   "The compiler can generate declaration files from either TypeScript or JavaScript projects when declaration generation is enabled."
+  ],
+  "gotchas": [
+   "Runtime consumers need declaration dependencies installed, so place required declaration packages in dependencies rather than only development dependencies."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "JavaScript interop::Decorators and classes": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-0.html",
+  "sourceTitle": "Documentation - TypeScript 5.0",
+  "summary": "Standard decorators customize classes and members with reusable functions. A method decorator receives the original method and a context object, and may return a replacement or register initialization logic.",
+  "explanation": "Standard decorators use an at-sign expression before a class element. A decorator can inspect the original value and a context object, then return a replacement value; method contexts can also register constructor-time initialization with addInitializer. This standard model differs from the older experimental implementation controlled by experimentalDecorators.",
+  "syntax": "function decorator(value: Function, context: ClassMethodDecoratorContext) { /* optionally return a replacement */ }",
+  "parameters": [
+   {
+    "name": "value",
+    "type": "Function",
+    "description": "The original method value passed to a standard method decorator."
+   },
+   {
+    "name": "context",
+    "type": "ClassMethodDecoratorContext",
+    "description": "Context information for the decorated method."
+   }
+  ],
+  "returns": "A replacement method function, or no replacement when the decorator returns nothing.",
+  "example": {
+   "title": "A standard method decorator",
+   "code": "function logged(value: Function, context: ClassMethodDecoratorContext) {\n  const name = String(context.name);\n  return function (this: unknown, ...args: unknown[]) {\n    console.log(`enter ${name}`);\n    const result = value.apply(this, args);\n    console.log(`exit ${name}`);\n    return result;\n  };\n}\n\nclass Greeter {\n  @logged\n  greet(name: string) {\n    return `Hello, ${name}`;\n  }\n}\n\nconsole.log(new Greeter().greet(\"Ada\"));",
+   "language": "typescript",
+   "explanation": "The decorator receives the original method and its context, then returns a replacement method that logs around the original call."
+  },
+  "useCases": [
+   {
+    "title": "Method instrumentation",
+    "scenario": "Log method entry and exit without changing each method body."
+   },
+   {
+    "title": "Reusable class customization",
+    "scenario": "Attach reusable behavior to class members while preserving a typed public surface."
+   },
+   {
+    "title": "Initialization hooks",
+    "scenario": "Run setup when an instance or static class is initialized."
+   }
+  ],
+  "related": [
+   "Decorators",
+   "ClassMethodDecoratorContext",
+   "addInitializer",
+   "experimentalDecorators",
+   "context object",
+   "ECMAScript"
+  ],
+  "since": "5.0",
+  "keyPoints": [
+   "Decorators customize classes and class members through reusable functions.",
+   "Apply a decorator by placing its expression immediately before the class member, such as @loggedMethod.",
+   "A method decorator receives the original method and a context object describing the declaration.",
+   "A decorator may replace the original method by returning a new function.",
+   "The context object exposes declaration details, including whether a member is private or static and its name.",
+   "Use ClassMethodDecoratorContext to type the context passed to a standard method decorator.",
+   "Method contexts provide addInitializer for work at instance-construction or static-class initialization time."
+  ],
+  "gotchas": [
+   "Returning a function replaces the decorated method, so preserve its behavior and compatible typing."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "JavaScript interop::JSDoc checking": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/intro-to-js-ts.html",
+  "sourceTitle": "Js Projects Utilizing TypeScript",
+  "summary": "Use TypeScript's checker on JavaScript files without renaming them to .ts. Enable checking per file with // @ts-check or across a project with checkJs, and add JSDoc types when inference is insufficient.",
+  "explanation": "Add // @ts-check to a JavaScript file to enable TypeScript diagnostics, then use JSDoc comments where inference is insufficient or a declaration needs an explicit type. This supplies static checking while keeping the file as JavaScript; project-wide checking can instead be enabled with checkJs.",
+  "syntax": "// @ts-check\n\n/** @type {Type} */",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Check a JavaScript file",
+   "code": "// @ts-check\n\n/** @type {number} */\nlet count = 0;\n\ncount = \"one\";",
+   "language": "javascript",
+   "explanation": "Save this as a JavaScript file and run TypeScript with checking enabled to report the invalid assignment."
+  },
+  "useCases": [
+   {
+    "title": "Incremental adoption",
+    "scenario": "A JavaScript codebase needs diagnostics without converting every file to TypeScript."
+   },
+   {
+    "title": "Clarify types with JSDoc",
+    "scenario": "A file contains values whose types cannot be inferred reliably."
+   },
+   {
+    "title": "Project-wide JavaScript checking",
+    "scenario": "A project wants consistent checking across many JavaScript files."
+   }
+  ],
+  "related": [
+   "allowJs",
+   "checkJs",
+   "jsconfig.json",
+   "// @ts-check",
+   "// @ts-nocheck",
+   "JSDoc Reference"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Put // @ts-check at the top of a JavaScript file to turn on TypeScript error reporting for that file.",
+   "Use a jsconfig.json with checkJs when checking should apply across many JavaScript files.",
+   "JSDoc annotations provide explicit types for values, parameters, returns, and reusable declarations when inference is not enough.",
+   "Place a supported JSDoc annotation immediately before the relevant declaration so TypeScript associates the stated type with it.",
+   "TypeScript checks ordinary JavaScript using inferred types where possible, so annotations are needed only for ambiguous or otherwise unexpressed types."
+  ],
+  "gotchas": [
+   "A file-level // @ts-nocheck directive disables checking for that JavaScript file."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "JavaScript interop::Module augmentation": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/declaration-merging.html",
+  "sourceTitle": "Declaration Merging",
+  "summary": "Module augmentation lets an application extend the declarations of an existing module locally. TypeScript merges the additions with the original types, while any runtime patch must be implemented separately.",
+  "explanation": "A module augmentation uses `declare module` with the target module’s specifier to add declarations to types that already exist there. TypeScript merges those declarations with the originals, but the augmentation does not implement runtime behavior; import the patch module so its JavaScript changes are executed.",
+  "syntax": "declare module \"module-specifier\" {\n  // declarations that patch existing named exports\n}",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Adding a method to an existing module class",
+   "code": "// observable.ts\nexport class Observable<T> {\n  constructor(public value: T) {}\n}\n\n// map.ts\nimport { Observable } from \"./observable\";\ndeclare module \"./observable\" {\n  interface Observable<T> {\n    map<U>(f: (value: T) => U): Observable<U>;\n  }\n}\nObservable.prototype.map = function <U>(f: (value: T) => U) {\n  return new Observable(f(this.value));\n};\n\n// consumer.ts\nimport { Observable } from \"./observable\";\nimport \"./map\";\nconst result = new Observable(3).map(String);\nconsole.log(result.value);\n",
+   "language": "typescript",
+   "explanation": "The augmentation adds a typed method to the existing class, while the imported patch supplies its runtime implementation."
+  },
+  "useCases": [
+   {
+    "title": "Extending a third-party class type",
+    "scenario": "Add an application-specific method to a class exported by a dependency."
+   },
+   {
+    "title": "Enriching library interfaces",
+    "scenario": "Add fields or methods to an existing interface from a package."
+   },
+   {
+    "title": "Documenting runtime extensions",
+    "scenario": "Pair a type declaration with a prototype or object patch."
+   }
+  ],
+  "related": [
+   "declaration merging",
+   "interface merging",
+   "global augmentations",
+   "module specifiers"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use `declare module` to describe an application-specific addition to an existing module’s types.",
+   "The added declarations behave as though they were written alongside the original declarations.",
+   "Type augmentation changes compile-time knowledge; update the object or prototype separately for runtime behavior.",
+   "Target the package or module using the same resolution rules used by normal imports and exports."
+  ],
+  "gotchas": [
+   "An augmentation cannot introduce a new top-level export; it can only modify declarations already provided by the target module.",
+   "Default exports are unsupported for augmentation, so augment a named export instead.",
+   "The module specifier must resolve exactly as an import or export specifier would."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Migration::Migration from TypeScript 6": {
+  "sourceUrl": "https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/",
+  "sourceTitle": "Announcing TypeScript 7.0",
+  "summary": "Migrate by removing TypeScript 6 deprecations, enabling stable type ordering, and validating the TypeScript 7 compiler. Keep API-dependent tools on the TypeScript 6 compatibility package until they support the TypeScript 7 API.",
+  "explanation": "Treat TypeScript 6 as the migration bridge: remove deprecated options and enable stable type ordering, then install TypeScript 7 and validate builds. If tools depend on the TypeScript 6 API, keep the compatibility package and invoke its tsc6 entry point while the main tsc command uses TypeScript 7.",
+  "syntax": "npm install -D typescript@npm:@typescript/typescript6\nnpx tsc6\nnpx tsc",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Run TypeScript 6 tooling alongside TypeScript 7",
+   "code": "npm install -D typescript@npm:@typescript/typescript6\nnpx tsc6 --version\nnpx tsc --noEmit",
+   "language": "bash",
+   "explanation": "Installs the TypeScript 6 compatibility package, checks the legacy compiler entry point, then runs the TypeScript 7 compiler without emitting files."
+  },
+  "useCases": [
+   {
+    "title": "Compiler upgrade",
+    "scenario": "A project is moving its command-line compiler from TypeScript 6 to TypeScript 7."
+   },
+   {
+    "title": "API compatibility",
+    "scenario": "A build or editor integration still consumes the TypeScript 6 API."
+   },
+   {
+    "title": "Side-by-side adoption",
+    "scenario": "A team wants to test TypeScript 7 without removing its existing TypeScript 6 toolchain."
+   }
+  ],
+  "related": [
+   "@typescript/typescript6",
+   "tsc6",
+   "stableTypeOrdering",
+   "ignoreDeprecations",
+   "TypeScript 6.0 API",
+   "TypeScript 7.0"
+  ],
+  "since": "7.0",
+  "keyPoints": [
+   "Use a clean TypeScript 6 build as the baseline before upgrading.",
+   "Enable stableTypeOrdering and remove ignoreDeprecations before testing TypeScript 7.",
+   "A TypeScript 6 baseline prepared this way should preserve type-checking and command-line behavior on TypeScript 7.",
+   "The compatibility package supplies a separate tsc6 executable for legacy compiler workflows.",
+   "Install TypeScript 7 alongside the compatibility package when older tools still require TypeScript 6.",
+   "Keep API-dependent tooling on TypeScript 6 until it supports the TypeScript 7 API."
+  ],
+  "gotchas": [
+   "Do not rely on ignoreDeprecations to preserve TypeScript 6-deprecated compiler options; TypeScript 7 removes their support.",
+   "API-dependent tools may need the compatibility package instead of switching all integrations directly to the TypeScript 7 API.",
+   "Some framework integrations may not yet work with TypeScript 7, so verify editor and build-tool compatibility before completing the migration."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Type manipulation::Conditional and mapped types": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/mapped-types.html",
+  "sourceTitle": "Mapped Types - TypeScript",
+  "summary": "Conditional and mapped types let you inspect an existing type and generate a transformed type from its keys. Combine mapped iteration with conditional tests to classify, reshape, rename, or filter properties.",
+  "explanation": "A mapped type iterates over the keys of an existing type and creates a corresponding property for each key. A conditional type then tests each property value with extends and selects one of two result types, while keyof and indexed access connect the test to the current property.",
+  "syntax": "type Mapped<Type> = {\n  [Property in keyof Type]: Type[Property] extends OtherType ? TrueType : FalseType;\n};",
+  "parameters": [
+   {
+    "name": "Type",
+    "type": "type",
+    "description": "Type to iterate over and transform."
+   }
+  ],
+  "returns": "A new object type whose properties are generated from the source type's keys and whose values are selected by the conditional test.",
+  "example": {
+   "title": "Conditional inspection inside a mapped type",
+   "code": "type ExtractPII<Type> = {\n  [Property in keyof Type]: Type[Property] extends { pii: true }\n    ? true\n    : false;\n};\n\ntype DBFields = {\n  id: { format: \"incrementing\" };\n  name: { type: string; pii: true };\n};\n\ntype ObjectsNeedingGDPRDeletion = ExtractPII<DBFields>;\n\nconst fields: ObjectsNeedingGDPRDeletion = {\n  id: false,\n  name: true,\n};",
+   "language": "typescript",
+   "explanation": "This mapped type inspects each property and conditionally produces a boolean based on whether that property's value includes the literal pii: true."
+  },
+  "useCases": [
+   {
+    "title": "Property-wide transformations",
+    "scenario": "Convert every property to a common representation such as boolean flags."
+   },
+   {
+    "title": "Conditional property analysis",
+    "scenario": "Classify properties according to the structure of their values."
+   },
+   {
+    "title": "Key remapping and filtering",
+    "scenario": "Rename selected keys or omit keys whose remapped names become never."
+   },
+   {
+    "title": "Modifier control",
+    "scenario": "Add or remove readonly and optional modifiers while generating a new type."
+   }
+  ],
+  "related": [
+   "keyof",
+   "PropertyKey",
+   "indexed access types",
+   "conditional types",
+   "key remapping in mapped types",
+   "readonly",
+   "optional properties",
+   "never"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Mapped types iterate over a key union, commonly obtained with keyof, to construct corresponding properties.",
+   "A mapped type can transform every property value into one consistent type.",
+   "Use + or - before readonly or ? to add or remove those property modifiers.",
+   "Mapped types can combine with conditional types to inspect each property's value and produce different results."
+  ],
+  "gotchas": [
+   "A mapped key remapping that evaluates to never removes that property from the resulting type.",
+   "Mapped types preserve or change property mutability and optionality through readonly and ? modifiers.",
+   "Key remapping with as is available from TypeScript 4.1 onward."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Type manipulation::Indexed access types": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/indexed-access-types.html",
+  "sourceTitle": "TypeScript: Documentation - Indexed Access Types",
+  "summary": "Indexed access types derive a property or array-element type from an existing type using Type[Key]. Keys can be literal types, unions, keyof expressions, or number for array elements.",
+  "explanation": "An indexed access type uses Type[Key] to retrieve a property type from another type. The key can be a literal, a union, keyof Type, or number for an array element; combining lookups lets you derive nested property types.",
+  "syntax": "Type[Key]",
+  "parameters": [
+   {
+    "name": "Type",
+    "type": "type",
+    "description": "The type being inspected, such as an object, array, tuple, or array-literal type obtained with typeof."
+   },
+   {
+    "name": "Key",
+    "type": "type",
+    "description": "A type-level property key, key union, keyof expression, or number for array elements."
+   }
+  ],
+  "returns": "The property type selected by Key; for a union key, the union of the selected property types; for number indexing an array, its element type.",
+  "example": {
+   "title": "Look up property and element types",
+   "code": "type Product = {\n  id: string;\n  price: number;\n  tags: string[];\n};\n\ntype Price = Product[\"price\"];\ntype Tag = Product[\"tags\"][number];\n\ndeclare const product: Product;\nconst price: Price = product.price;\nconst tag: Tag = product.tags[0];",
+   "language": "typescript",
+   "explanation": "The property lookup produces the property type, while indexing the array type with number produces its element type."
+  },
+  "useCases": [
+   {
+    "title": "Reuse model property types",
+    "scenario": "Keep a property type synchronized with an interface or object model."
+   },
+   {
+    "title": "Derive collection element types",
+    "scenario": "Extract the element type from an array or array literal."
+   },
+   {
+    "title": "Build unions of property types",
+    "scenario": "Select several related properties through a union of keys."
+   },
+   {
+    "title": "Constrain reusable lookups",
+    "scenario": "Create type-safe generic property access patterns."
+   }
+  ],
+  "related": [
+   "keyof",
+   "typeof",
+   "union types",
+   "array types",
+   "type aliases"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Write Type[Key] to obtain the type of one property from an existing model.",
+   "The key expression can be a union or keyof Type, producing the corresponding union of property types.",
+   "Use ArrayType[number] to derive an array's element type.",
+   "typeof values[number] derives the element type from an array value, including an array literal.",
+   "A derived intermediate type can be indexed again to select a nested or related property."
+  ],
+  "gotchas": [
+   "The index must be a type, not a value-level const. Use a type alias or another type expression instead.",
+   "The selected property name must exist on the indexed type."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Type manipulation::Infer in conditional types": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/conditional-types.html",
+  "sourceTitle": "Conditional Types",
+  "summary": "The `infer` keyword lets a conditional type capture a type from the pattern it matches. The captured type can then be reused in the true branch to build utilities such as element- and return-type extractors.",
+  "explanation": "Within the true branch of a conditional type, infer introduces a type variable by matching the checked type against a pattern. That variable can then be used in the branch result, letting reusable utilities extract parts such as array elements or function return values without manually indexing into the matched type.",
+  "syntax": "T extends U ? X : Y",
+  "parameters": [
+   {
+    "name": "Type",
+    "type": "type parameter",
+    "description": "The input type to inspect and match against the conditional pattern."
+   }
+  ],
+  "returns": "The type from the true branch, using inferred variables captured by the pattern; otherwise the false-branch type.",
+  "example": {
+   "title": "Extracting an element type",
+   "code": "type ElementOf<T> = T extends readonly (infer Item)[] ? Item : never;\n\ntype Names = ElementOf<readonly [\"Ada\", \"Linus\"]>;\n\nconst name: Names = \"Ada\";",
+   "language": "typescript",
+   "explanation": "ElementOf infers the array or tuple element type and returns it; a non-array input would produce never."
+  },
+  "useCases": [
+   {
+    "title": "Array and tuple element extraction",
+    "scenario": "Extract the item type from an array or tuple without manually indexing it."
+   },
+   {
+    "title": "Function return-type utilities",
+    "scenario": "Capture the result type of a function-shaped type."
+   },
+   {
+    "title": "Shape-based type decomposition",
+    "scenario": "Match structured types and reuse multiple captured pieces in a transformation."
+   }
+  ],
+  "related": [
+   "Conditional types",
+   "Flatten",
+   "ReturnType",
+   "extends",
+   "Array"
+  ],
+  "since": "TypeScript 2.8",
+  "keyPoints": [
+   "Use infer in the extends pattern to capture a type only when the conditional check succeeds.",
+   "The inferred variable is a local type name that represents the matched part of the input.",
+   "Use the captured variable in the true branch to produce the extracted result.",
+   "A reusable transformation can extract an array element type while leaving non-array inputs unchanged.",
+   "A conditional pattern may capture the same inferred variable in more than one location.",
+   "For overloaded functions, return-type inference follows the final signature."
+  ],
+  "gotchas": [
+   "For overloaded function types, inference uses the last call signature rather than selecting an overload from argument types.",
+   "Do not place infer in a generic parameter constraint; put it inside the conditional type's extends pattern instead."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Type manipulation::satisfies and as const": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html",
+  "sourceTitle": "Documentation - TypeScript 4.9",
+  "summary": "Combine `as const` with `satisfies` to validate a configuration against a required shape while retaining precise readonly literal types for later use.",
+  "explanation": "Use `as const` to keep literal values precise and readonly, then apply `satisfies` to validate compatibility without replacing the expression’s inferred type.",
+  "syntax": "const value = expression as const satisfies Type;",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Validate while preserving literals",
+   "code": "type RGB = readonly [number, number, number];\ntype Colors = \"red\" | \"green\" | \"blue\";\n\ntype Palette = Record<Colors, string | RGB>;\n\nconst palette = {\n  red: [255, 0, 0],\n  green: \"#00ff00\",\n  blue: [0, 0, 255],\n} as const satisfies Palette;\n\nconst firstRedComponent: 255 = palette.red[0];\nconst greenUpper: string = palette.green.toUpperCase();\nconsole.log(firstRedComponent, greenUpper);",
+   "language": "typescript",
+   "explanation": "The assertion preserves literal and readonly information, while satisfies checks that every palette entry conforms to the required shape."
+  },
+  "useCases": [
+   {
+    "title": "Typed configuration",
+    "scenario": "Configuration objects need required keys and value-shape checking without losing literal inference."
+   },
+   {
+    "title": "Key-set validation",
+    "scenario": "A fixed set of string keys must be checked for omissions or unexpected properties."
+   },
+   {
+    "title": "Precise APIs",
+    "scenario": "Literal strings, numbers, tuples, and readonly properties should remain available to downstream code."
+   }
+  ],
+  "related": [
+   "satisfies operator",
+   "const assertions",
+   "Record",
+   "readonly tuples"
+  ],
+  "since": "TypeScript 4.9",
+  "keyPoints": [
+   "`satisfies` checks that an expression is compatible with a target type.",
+   "Unlike a type annotation, `satisfies` preserves the expression’s inferred type.",
+   "Use `satisfies` to detect incompatible values and missing or extra keys in configuration objects."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Type manipulation::Utility types": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/utility-types.html",
+  "sourceTitle": "Documentation - Utility Types - TypeScript",
+  "summary": "TypeScript utility types are globally available helpers for transforming existing types. Partial, Pick, Omit, Record, ReturnType, and Awaited cover optional updates, property selection, key-value maps, function results, and promise unwrapping.",
+  "explanation": "Utility types are globally available generic type transformations. Partial makes every property optional, Pick selects properties, Omit removes properties, Record maps keys to a value type, ReturnType extracts a function's result, and Awaited recursively unwraps promise-like results.",
+  "syntax": "Awaited<Type>\nPartial<Type>\nRequired<Type>\nReadonly<Type>\nRecord<Keys, Type>\nPick<Type, Keys>\nOmit<Type, Keys>\nExclude<UnionType, ExcludedMembers>\nExtract<Type, Union>\nNonNullable<Type>\nParameters<Type>\nConstructorParameters<Type>\nReturnType<Type>\nInstanceType<Type>\nThisParameterType<Type>\nOmitThisParameter<Type>\nThisType<Type>\nNoInfer<Type>",
+  "parameters": [
+   {
+    "name": "Type",
+    "type": "type",
+    "description": "The source type whose properties are transformed."
+   },
+   {
+    "name": "Keys",
+    "type": "string literal or union of string literals",
+    "description": "The property keys selected or excluded by Pick and Omit."
+   },
+   {
+    "name": "Keys",
+    "type": "property-key type",
+    "description": "The keys supplied to Record."
+   },
+   {
+    "name": "Type",
+    "type": "type",
+    "description": "The value type assigned to each Record key."
+   },
+   {
+    "name": "Type",
+    "type": "function type",
+    "description": "The function type whose return type is extracted."
+   }
+  ],
+  "returns": "A transformed type determined by the selected utility: optional properties, selected or removed properties, a key-value record, a function return type, or recursively unwrapped promise result.",
+  "example": {
+   "title": "Composing utility types",
+   "code": "interface User {\n  id: number;\n  name: string;\n  email: string;\n  active: boolean;\n}\n\ntype UserUpdate = Partial<Pick<User, \"name\" | \"active\">>;\ntype PublicUser = Omit<User, \"email\">;\ntype UserById = Record<User[\"id\"], User>;\ntype UserResult = ReturnType<() => Promise<User>>;\ntype ResolvedUser = Awaited<UserResult>;\n\nconst update: UserUpdate = { active: false };\nconst users: UserById = { 1: { id: 1, name: \"Ada\", email: \"ada@example.com\", active: true } };\nconsole.log(update, users);\n",
+   "language": "typescript",
+   "explanation": "The example combines utility types to define a constrained update shape, remove a private field, map keys to values, and unwrap a function's promise result."
+  },
+  "useCases": [
+   {
+    "title": "Partial updates",
+    "scenario": "Define request payloads where callers may send only fields being changed."
+   },
+   {
+    "title": "Model views",
+    "scenario": "Expose a safe subset of a larger model or hide selected fields."
+   },
+   {
+    "title": "Typed dictionaries",
+    "scenario": "Guarantee that every known key has a consistently typed value."
+   },
+   {
+    "title": "Inferred results",
+    "scenario": "Derive API result types from functions and async operations."
+   }
+  ],
+  "related": [
+   "Required<Type>",
+   "Readonly<Type>",
+   "Record<Keys, Type>",
+   "Exclude<UnionType, ExcludedMembers>",
+   "Extract<Type, Union>",
+   "NonNullable<Type>",
+   "Parameters<Type>",
+   "ConstructorParameters<Type>"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The documented utility types can be used without importing them.",
+   "Partial makes every property optional, useful for patch or update objects.",
+   "Pick creates a type containing only the requested keys from an existing type.",
+   "Omit keeps the source properties except for the specified keys.",
+   "Required is the inverse of Partial and is also documented on the page.",
+   "ReturnType extracts what a function returns.",
+   "Awaited models await-like promise resolution, including recursively nested promises."
+  ],
+  "gotchas": [
+   "ReturnType uses the last overload signature when the input function has overloads.",
+   "Awaited recursively unwraps nested Promises rather than removing only one layer."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Type system::Function overloads": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/functions.html?ref=localhost",
+  "sourceTitle": "More on Functions",
+  "summary": "Function overloads expose several checked call signatures for one function while keeping a single implementation body. Callers are validated against the overloads, and the hidden implementation signature must be compatible with them.",
+  "explanation": "Declare two or more overload signatures before one implementation. Callers are checked against only the overloads; the implementation signature is hidden externally and must be compatible with every overload.",
+  "syntax": "function name(parameters): returnType;\nfunction name(otherParameters): otherReturnType;\nfunction name(implementationParameters) {\n  // implementation\n}",
+  "parameters": [],
+  "returns": "Each overload can declare the return type for its supported call form; the implementation return type must be compatible with those overloads.",
+  "example": {
+   "title": "Overloaded date factory",
+   "code": "function makeDate(timestamp: number): Date;\nfunction makeDate(month: number, day: number, year: number): Date;\nfunction makeDate(monthOrTimestamp: number, day?: number, year?: number): Date {\n  if (day !== undefined && year !== undefined) {\n    return new Date(year, monthOrTimestamp, day);\n  }\n  return new Date(monthOrTimestamp);\n}\n\nconst fromTimestamp = makeDate(1700000000000);\nconst fromParts = makeDate(10, 20, 2023);",
+   "language": "typescript",
+   "explanation": "The two public overloads describe the supported calls, while the implementation accepts the combined internal input shape and handles both cases."
+  },
+  "useCases": [
+   {
+    "title": "Model multiple call forms",
+    "scenario": "An API supports distinct argument counts or shapes with different return types."
+   },
+   {
+    "title": "Keep implementation logic centralized",
+    "scenario": "A function needs runtime branching while presenting precise caller-facing types."
+   },
+   {
+    "title": "Constrain the public API",
+    "scenario": "A public library function should expose only supported invocation patterns."
+   }
+  ],
+  "related": [
+   "overload signatures",
+   "implementation signature",
+   "union types",
+   "More on Functions"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Overload signatures describe the different call forms that a function publicly supports.",
+   "Place at least two overload declarations before the implementation body.",
+   "The signatures before the body are the externally visible overload signatures.",
+   "The implementation must accept inputs compatible with all declared overloads and contain the runtime branching.",
+   "The implementation signature exists for checking the body, not as another caller-facing option.",
+   "Make the implementation parameter and return types broad enough to satisfy every overload."
+  ],
+  "gotchas": [
+   "Callers cannot use the implementation signature as an additional overload.",
+   "A call whose argument type could match multiple distinct overload cases may fail to resolve; use a union parameter when that better models the API.",
+   "Overloads are not always the best choice when only the parameter type varies."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Type system::Generics": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/generics.html",
+  "sourceTitle": "TypeScript: Documentation - Generics",
+  "summary": "Generics let reusable code work across multiple types while preserving relationships between inputs and outputs. TypeScript can infer type arguments or accept them explicitly, avoiding an `any` fallback.",
+  "explanation": "A generic declares a type parameter and reuses it across a function, interface, class, or type alias. The compiler can infer that parameter from arguments, or callers can provide it explicitly, preserving relationships between values without using any.",
+  "syntax": "function identity<Type>(arg: Type): Type",
+  "parameters": [
+   {
+    "name": "items",
+    "type": "Type[]",
+    "description": "`Type` is the element type of the input array and the successful result."
+   }
+  ],
+  "returns": "`Type | undefined`",
+  "example": {
+   "title": "Preserve an input-output relationship",
+   "code": "function first<Type>(items: Type[]): Type | undefined {\n  return items[0];\n}\n\nconst number = first([1, 2, 3]);\nconst text = first([\"a\", \"b\"]);",
+   "language": "typescript",
+   "explanation": "The type parameter connects each array’s element type to the returned element type, while inference chooses the type argument at each call."
+  },
+  "useCases": [
+   {
+    "title": "Input-output relationships",
+    "scenario": "Write reusable functions whose return type depends on an input type."
+   },
+   {
+    "title": "Generic interfaces and classes",
+    "scenario": "Build reusable containers and APIs parameterized by the data they hold."
+   },
+   {
+    "title": "Constrained generics",
+    "scenario": "Limit acceptable type arguments while retaining useful type information."
+   },
+   {
+    "title": "Inference and defaults",
+    "scenario": "Provide ergonomic APIs where callers can omit predictable type arguments."
+   }
+  ],
+  "related": [
+   "type argument inference",
+   "type parameter",
+   "generic interface",
+   "generic class",
+   "constraints",
+   "default type parameters",
+   "type aliases"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Generics create types or functions that operate over a range of types instead of being tied to one concrete type.",
+   "A type parameter captures an input type so the same type information can describe related outputs.",
+   "TypeScript often infers the type argument from the call, so explicit type arguments are unnecessary when the inputs provide enough information.",
+   "Callers may explicitly provide a type argument in angle brackets when inference is unclear or a particular type is desired.",
+   "Generic classes and interfaces place their type parameter list after the declaration name and use it throughout the declaration.",
+   "Constraints restrict which types are valid for a parameter, allowing the implementation to use operations guaranteed by the constraint."
+  ],
+  "gotchas": [
+   "A generic parameter is not an unrestricted escape hatch: its implementation must work for every type that the parameter could represent.",
+   "Defaults make a type argument optional, but they do not replace the relationship established by the parameter."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Type system::Literal and primitive types": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html",
+  "sourceTitle": "Documentation - Everyday Types - TypeScript",
+  "summary": "Use primitive types for broad categories and literal types for exact strings, numbers, or booleans. Object types describe the required properties and types of structured values.",
+  "explanation": "Literal types represent specific string, number, or boolean values, while primitive types such as string and number describe broader sets of values. Object types list properties together with their types, allowing APIs and data structures to express both exact values and required shapes.",
+  "syntax": "type Name = \"exact\" | 42 | true;\ntype Shape = { property: Type };",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Exact values and object shapes",
+   "code": "type Status = \"loading\" | \"success\" | \"error\";\n\ntype Result = {\n  status: Status;\n  message: string;\n};\n\nfunction describe(result: Result): string {\n  if (result.status === \"success\") return result.message;\n  return `Request is ${result.status}`;\n}\n\nconsole.log(describe({ status: \"success\", message: \"Ready\" }));",
+   "language": "typescript",
+   "explanation": "The union restricts status to three exact strings, while the object type describes the required properties."
+  },
+  "useCases": [
+   {
+    "title": "Finite string options",
+    "scenario": "Restricting a status, mode, or command to a known set of string values."
+   },
+   {
+    "title": "Exact numeric and boolean values",
+    "scenario": "Encoding numeric constants or boolean states in a type."
+   },
+   {
+    "title": "Object shapes",
+    "scenario": "Describing configuration objects, records, and API payloads."
+   }
+  ],
+  "related": [
+   "string",
+   "number",
+   "boolean",
+   "object type",
+   "union types",
+   "const",
+   "var",
+   "let"
+  ],
+  "since": "",
+  "keyPoints": [
+   "A literal type is narrower than its corresponding primitive type: the exact string \"Hello World\" is a string, but not every string is \"Hello World\".",
+   "TypeScript supports string, numeric, and boolean literal types.",
+   "Use literals when a value must be one precise string, number, or boolean.",
+   "Specific string and number values can be used directly in type annotations.",
+   "Object types describe JavaScript values that have properties.",
+   "Write an object shape by listing each property and its required type."
+  ],
+  "gotchas": [
+   "A const declaration can preserve a literal type, while mutable variables are generally widened to broader primitive types."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Type system::Type guards": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/narrowing.html",
+  "sourceTitle": "Documentation - Narrowing",
+  "summary": "Type guards are runtime checks that guide TypeScript's control-flow analysis. Built-in checks and user-defined predicates narrow a value from a broad type, such as a union, to the more specific type valid in a branch.",
+  "explanation": "A type guard is a runtime check that TypeScript uses during control-flow analysis to refine a value from a broader declared type to a more specific type. Built-in checks such as typeof, instanceof, equality, and in can narrow unions; a user-defined guard communicates the result with a return type written as parameterName is Type.",
+  "syntax": "function predicate(parameterName: ParameterType): parameterName is NarrowedType { ... }",
+  "parameters": [
+   {
+    "name": "parameterName",
+    "type": "The parameter's declared type, commonly a union or unknown",
+    "description": "The value tested by the guard; its parameter name must appear on the left side of the predicate."
+   },
+   {
+    "name": "Type",
+    "type": "Any TypeScript type",
+    "description": "The type asserted when the predicate evaluates to true."
+   }
+  ],
+  "returns": "A boolean runtime result annotated as a type predicate: parameterName is Type. When true, TypeScript narrows the named parameter to Type.",
+  "example": {
+   "title": "A user-defined type guard",
+   "code": "type Fish = { swim: () => void };\ntype Bird = { fly: () => void };\n\ndefunction isFish(pet: Fish | Bird): pet is Fish {\n  return \"swim\" in pet;\n}\n\nfunction move(pet: Fish | Bird) {\n  if (isFish(pet)) {\n    pet.swim();\n  } else {\n    pet.fly();\n  }\n}",
+   "language": "typescript",
+   "explanation": "The predicate tells the checker that a true result means the argument is a Fish."
+  },
+  "useCases": [
+   {
+    "title": "Narrow discriminated or structural unions",
+    "scenario": "A value may be one of several object shapes and each shape has different properties."
+   },
+   {
+    "title": "Validate unknown values",
+    "scenario": "A value arrives from an API, storage layer, or JavaScript code with an uncertain static type."
+   },
+   {
+    "title": "Reuse a user-defined predicate",
+    "scenario": "Several functions need the same runtime check and the same narrowed type."
+   }
+  ],
+  "related": [
+   "type predicates",
+   "narrowing",
+   "typeof type guards",
+   "instanceof narrowing",
+   "equality narrowing",
+   "in operator",
+   "control flow analysis"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The checker uses control-flow paths to determine the most specific type available at each point.",
+   "typeof checks narrow values according to JavaScript's runtime typeof result.",
+   "Equality comparisons and switch cases can narrow union types.",
+   "Declare a guard with a return type such as value is SpecificType.",
+   "When a predicate returns true, the checked argument is treated as the predicate's target type if compatible with its original type.",
+   "Use in to distinguish union members by whether they contain a named property."
+  ],
+  "gotchas": [
+   "A type predicate must name a parameter from the guard function's signature; it cannot refer to an arbitrary expression.",
+   "With the in operator on a union, the true branch keeps members having the tested property, including optional properties.",
+   "The false branch is not necessarily the complement of required properties: optional or missing-property members can remain."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Type system::Unions and narrowing": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/unions-and-intersections.html",
+  "sourceTitle": "Handbook - Unions and Intersection Types",
+  "summary": "Unions model values that can take one of several types. Narrowing with shared properties, literal discriminants, comparisons, and switch statements lets TypeScript expose only the safe branch.",
+  "explanation": "A union describes a value that may belong to several types, but only members shared by every alternative are immediately available. Runtime checks such as typeof, equality comparisons, in, or a discriminant property let control-flow analysis select a more specific member. A switch over a literal discriminant can also support exhaustive checking with never.",
+  "syntax": "type Union = TypeA | TypeB;",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Narrow a discriminated union",
+   "code": "type Shape =\n  | { kind: \"circle\"; radius: number }\n  | { kind: \"square\"; side: number };\n\nfunction area(shape: Shape): number {\n  switch (shape.kind) {\n    case \"circle\":\n      return Math.PI * shape.radius ** 2;\n    case \"square\":\n      return shape.side ** 2;\n  }\n}",
+   "language": "typescript",
+   "explanation": "The literal kind property identifies the union member, so each switch branch exposes only the fields valid for that shape."
+  },
+  "useCases": [
+   {
+    "title": "Represent mutually exclusive states",
+    "scenario": "Modeling state machines"
+   },
+   {
+    "title": "Distinguish success and failure variants",
+    "scenario": "Handling API results"
+   },
+   {
+    "title": "Dispatch by a discriminant field",
+    "scenario": "Processing shape or command objects"
+   },
+   {
+    "title": "Detect unhandled alternatives with never",
+    "scenario": "Maintaining exhaustive logic"
+   }
+  ],
+  "related": [
+   "Union Types",
+   "Discriminated unions",
+   "The never type",
+   "Exhaustiveness checking",
+   "strictNullChecks"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use a union when one value may validly have one of several alternative types.",
+   "Write union alternatives with |, such as string | number | boolean.",
+   "Before narrowing, code may use only properties and operations available on every member.",
+   "Give object alternatives a shared literal-valued field to make their active variant identifiable.",
+   "Equality checks against a discriminant narrow the object to the corresponding union member.",
+   "A switch on the discriminant provides separate control-flow branches for each alternative.",
+   "A never-based fallback lets the compiler detect when a newly added union member lacks handling."
+  ],
+  "gotchas": [
+   "Do not access a property that exists on only one union member before narrowing.",
+   "For exhaustive handling of nullable or union cases, strictNullChecks and an explicit return type help expose missing branches.",
+   "Use never in a default or helper branch when you want the compiler to reject an unhandled union member."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Type system::Variance and assignability": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/type-compatibility.html",
+  "sourceTitle": "Type Compatibility",
+  "summary": "TypeScript uses directional, structural assignability. Function parameters are normally bivariant, but strictFunctionTypes checks ordinary function parameters contravariantly; generic variance follows how type parameters are used.",
+  "explanation": "TypeScript decides assignability directionally. Function returns are covariant, while parameter types are checked contravariantly under strictFunctionTypes; generic variance emerges from how a type parameter is used, although method parameters retain bivariant behavior.",
+  "syntax": "type Consumer<T> = (value: T) => void;",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Contravariant function parameter assignment",
+   "code": "interface Animal { name: string }\ninterface Dog extends Animal { breed: string }\n\ntype Consumer<T> = (value: T) => void;\n\nconst animalConsumer: Consumer<Animal> = animal => {\n  console.log(animal.name);\n};\n\nconst dogConsumer: Consumer<Dog> = animalConsumer;\ndogConsumer({ name: \"Rex\", breed: \"collie\" });",
+   "language": "typescript",
+   "explanation": "With strictFunctionTypes enabled, a consumer accepting any Animal can safely consume a Dog, so the assignment is valid."
+  },
+  "useCases": [
+   {
+    "title": "Ensure callback parameters accept every value the caller may provide.",
+    "scenario": "Passing callbacks"
+   },
+   {
+    "title": "Predict whether Producer<T>, Consumer<T>, or mixed-use types can substitute for one another.",
+    "scenario": "Designing generic containers"
+   },
+   {
+    "title": "Use strictFunctionTypes to reject function assignments that are only possibly sound.",
+    "scenario": "Enabling strict checking"
+   }
+  ],
+  "related": [
+   "assignability",
+   "structural typing",
+   "strictFunctionTypes",
+   "covariance",
+   "contravariance",
+   "bivariance",
+   "variance annotations",
+   "generic types"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Function compatibility begins by comparing the source and target parameter lists.",
+   "Without strictFunctionTypes, function parameters are compared bivariantly, allowing either assignment direction.",
+   "strictFunctionTypes makes ordinary function parameters contravariant, preventing assignments that are not demonstrably safe.",
+   "Generic variance is inferred from how each type parameter is used rather than declared by default.",
+   "A generic type parameter used only as a function input is contravariant.",
+   "Method exclusion preserves useful covariance for common generic classes and interfaces such as Array."
+  ],
+  "gotchas": [
+   "strictFunctionTypes does not apply the same contravariant checking to methods and constructors; their parameter types remain bivariant.",
+   "Variance annotations must agree with the variance produced by the type's actual structure.",
+   "Variance annotations affect instantiation-based comparisons only, not structural comparisons."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

@@ -1,0 +1,2788 @@
+{
+ "Action hooks::useActionState": {
+  "sourceUrl": "https://react.dev/reference/react/useActionState",
+  "sourceTitle": "useActionState – React",
+  "summary": "useActionState connects a form action to its latest returned state and pending status. It returns a wrapped action for forms or buttons, making async submission results easy to render.",
+  "explanation": "Call useActionState at the top level with an action and initial state. React supplies the previous state to the action, returns the action's latest result, and exposes a wrapped action for a form plus a pending flag.",
+  "syntax": "const [state, formAction, isPending] = useActionState(fn, initialState, permalink?);",
+  "parameters": [
+   {
+    "name": "fn",
+    "type": "function",
+    "description": "The function called on form submission or button activation. It receives previous state first, followed by the usual form-action arguments."
+   },
+   {
+    "name": "initialState",
+    "type": "any serializable value",
+    "description": "The initial state value. It may be any serializable value and is ignored after the action is first invoked."
+   },
+   {
+    "name": "permalink",
+    "type": "string | undefined",
+    "description": "Optional URL used for progressive enhancement when the form is submitted before hydration."
+   }
+  ],
+  "returns": "An array containing the current state, a wrapped form action, and an isPending flag.",
+  "example": {
+   "title": "Display form action state",
+   "code": "import { useActionState } from 'react';\n\ntype State = { error: string | null };\n\nasync function submitName(previousState: State, formData: FormData): Promise<State> {\n  const name = formData.get('name');\n  if (typeof name !== 'string' || !name.trim()) {\n    return { error: 'Enter a name.' };\n  }\n  return { error: null };\n}\n\nexport default function NameForm() {\n  const [state, formAction, isPending] = useActionState(\n    submitName,\n    { error: null }\n  );\n\n  return (\n    <form action={formAction}>\n      <input name=\"name\" disabled={isPending} />\n      <button disabled={isPending}>\n        {isPending ? 'Saving…' : 'Save'}\n      </button>\n      {state.error && <p>{state.error}</p>}\n    </form>\n  );\n}",
+   "language": "tsx",
+   "explanation": "The action receives the previous state and submitted FormData, while the component renders the latest result and pending status."
+  },
+  "useCases": [
+   {
+    "title": "Form validation",
+    "scenario": "Show validation errors returned by an async form action."
+   },
+   {
+    "title": "Pending feedback",
+    "scenario": "Disable inputs and display progress during submission."
+   },
+   {
+    "title": "Action result UI",
+    "scenario": "Render the latest response from a server or client action."
+   }
+  ],
+  "related": [
+   "useFormStatus",
+   "useOptimistic",
+   "startTransition"
+  ],
+  "since": "React 19",
+  "keyPoints": [
+   "Use it when a form action should produce state that the component can render.",
+   "The action receives the previous state as its first argument, enabling stateful validation or result handling.",
+   "After submission, state represents the action's most recent returned value.",
+   "Use the returned formAction as the form's action or as a button's formAction.",
+   "Use isPending to disable controls or show progress while the action is running."
+  ],
+  "gotchas": [
+   "It is a Hook, so call it only at the top level of a component or custom Hook; do not put it in loops or conditions.",
+   "The initialState value is used only before the first invocation; later renders use the action's previous return value.",
+   "Choose an initial state that can be serialized, especially when the action is used with server-rendered forms."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Action hooks::useActionState server actions": {
+  "sourceUrl": "https://react.dev/reference/react/useActionState",
+  "sourceTitle": "useActionState",
+  "summary": "useActionState wraps a form or server action and exposes its latest returned state plus pending status. Return structured validation data from the server action to render field-specific errors in the form.",
+  "explanation": "Pass a server function and an initial result to useActionState, then attach the returned action to a form. The function receives the previous state before the submitted form data, and its returned value becomes the next state, allowing field errors and success data to render. The hook also supplies pending status and can support progressive enhancement with a permalink.",
+  "syntax": "const [state, dispatchAction, isPending] = useActionState(reducerAction, initialState, permalink?);",
+  "parameters": [
+   {
+    "name": "reducerAction",
+    "type": "function",
+    "description": "The function called when the Action runs; it receives previous state first and the action payload second."
+   },
+   {
+    "name": "initialState",
+    "type": "any",
+    "description": "The state used during the first render."
+   },
+   {
+    "name": "permalink",
+    "type": "string",
+    "description": "Optional unique URL for the form's modified page, used for progressive enhancement."
+   }
+  ],
+  "returns": "A three-item array: the current state, a dispatchAction function, and a boolean isPending indicating whether the Action is pending.",
+  "example": {
+   "title": "Server-backed form validation",
+   "code": "\"use client\";\n\nimport { useActionState } from \"react\";\n\nasync function updateProfile(previousState, formData) {\n  const email = formData.get(\"email\");\n  if (typeof email !== \"string\" || !email.includes(\"@\")) {\n    return { errors: { email: \"Enter a valid email.\" } };\n  }\n  return { errors: {}, message: \"Saved\" };\n}\n\nexport default function ProfileForm() {\n  const [state, formAction, isPending] = useActionState(\n    updateProfile,\n    { errors: {} }\n  );\n\n  return (\n    <form action={formAction}>\n      <input name=\"email\" disabled={isPending} />\n      {state.errors.email && <p>{state.errors.email}</p>}\n      <button disabled={isPending}>Save</button>\n      {state.message && <p>{state.message}</p>}\n    </form>\n  );\n}",
+   "language": "tsx",
+   "explanation": "The wrapped action validates the submitted email and returns structured errors or a success message, which the component renders."
+  },
+  "useCases": [
+   {
+    "title": "Server-side field validation",
+    "scenario": "Validate submitted fields on the server and return an object containing field-to-message mappings."
+   },
+   {
+    "title": "Render action results",
+    "scenario": "Display the latest server response, such as a success message or a rejected submission."
+   },
+   {
+    "title": "Pending form state",
+    "scenario": "Disable controls while the submitted Action is running."
+   },
+   {
+    "title": "Progressive enhancement",
+    "scenario": "Support submissions before client JavaScript loads on dynamic Server Component pages."
+   }
+  ],
+  "related": [
+   "Actions",
+   "Server Function",
+   "React Server Components",
+   "startTransition",
+   "useFormStatus"
+  ],
+  "since": "React 19",
+  "keyPoints": [
+   "It stores the latest value returned by an Action and exposes that value to the component.",
+   "Use the hook at component top level rather than inside conditions, loops, or nested functions.",
+   "The action receives previous state first, followed by the payload supplied by the returned dispatcher.",
+   "The second tuple item is the wrapped action to provide to a form or invoke within an Action.",
+   "The first tuple item starts as the initial state and changes to the action's latest returned result.",
+   "The optional permalink supports form submissions before JavaScript loads on compatible Server Component pages."
+  ],
+  "gotchas": [
+   "Call the returned action through a form action or another Action; invoking it as an ordinary event callback does not satisfy this requirement.",
+   "Showing the response before hydration requires a framework and setup that support React Server Components and Server Functions.",
+   "Use the optional permalink for dynamic pages so a pre-hydration submission navigates to the intended page."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Action hooks::useFormStatus": {
+  "sourceUrl": "https://react.dev/reference/react-dom/hooks/useFormStatus",
+  "sourceTitle": "useFormStatus – React",
+  "summary": "useFormStatus lets a component rendered inside a form read the latest submission status of its parent form. Use its pending value to update nested submit controls while submission is active.",
+  "explanation": "Call useFormStatus from a component rendered inside the form. It reads the nearest parent form's latest submission status, including whether submission is pending and, when available, the submitted data, method, and action function.",
+  "syntax": "const { pending, data, method, action } = useFormStatus();",
+  "parameters": [],
+  "returns": "An object with pending, data, method, and action properties. pending is boolean; data is FormData or null; method is 'get' or 'post'; action is the parent form's action function or null.",
+  "example": {
+   "title": "Disable a nested submit button while submitting",
+   "code": "import { useFormStatus } from 'react-dom';\n\nfunction SubmitButton() {\n  const { pending } = useFormStatus();\n  return (\n    <button disabled={pending} type=\"submit\">\n      {pending ? 'Submitting...' : 'Submit'}\n    </button>\n  );\n}\n\nexport default function Form() {\n  return (\n    <form action={async (formData) => {\n      await new Promise(resolve => setTimeout(resolve, 1000));\n      console.log(formData.get('email'));\n    }}>\n      <input name=\"email\" type=\"email\" required />\n      <SubmitButton />\n    </form>\n  );\n}",
+   "language": "tsx",
+   "explanation": "The nested submit button disables itself and changes its label while its parent form action is pending."
+  },
+  "useCases": [
+   {
+    "title": "Pending submit control",
+    "scenario": "Disable a submit button and change its label while the parent form is submitting."
+   },
+   {
+    "title": "Submission details",
+    "scenario": "Inspect the FormData currently being submitted to display contextual feedback."
+   },
+   {
+    "title": "Method-aware form UI",
+    "scenario": "Adapt nested UI to whether the parent form uses GET or POST."
+   }
+  ],
+  "related": [
+   "<form>",
+   "FormData",
+   "useActionState",
+   "useOptimistic"
+  ],
+  "since": "React 19",
+  "keyPoints": [
+   "It lets nested controls observe the latest submission state of their parent form.",
+   "Use it for submission-aware UI such as disabling a submit button or showing progress text.",
+   "Read pending to determine whether the parent form is currently submitting.",
+   "The return value is a status object containing pending, data, method, and action.",
+   "data exposes the current submission's FormData, or null when no submission is active or no parent form exists.",
+   "method identifies whether the parent form submits with GET or POST.",
+   "action refers to the parent form's function action; it is null when the form has no applicable function action."
+  ],
+  "gotchas": [
+   "Calling the Hook in the same component that returns the form does not read that form's status; put it in a nested component.",
+   "The Hook reports only a parent form's status, not a form rendered by the component itself or by a descendant."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Action hooks::useOptimistic": {
+  "sourceUrl": "https://react.dev/reference/react/useOptimistic",
+  "sourceTitle": "useOptimistic",
+  "summary": "useOptimistic lets a component display an expected state while an Action is awaiting its real result. React uses the confirmed value again after the Action completes or fails.",
+  "explanation": "Call the Hook at component top level with the confirmed value and optionally a pure reducer. It returns the value to render plus a setter; calling that setter inside an Action temporarily applies the optimistic value, then React returns to the confirmed value when the Action finishes or fails.",
+  "syntax": "const [optimisticState, setOptimistic] = useOptimistic(value, reducer?);",
+  "parameters": [
+   {
+    "name": "value",
+    "type": "any",
+    "description": "The confirmed value used when no Action is pending."
+   },
+   {
+    "name": "reducer",
+    "type": "(currentState, action) => nextState",
+    "description": "Optional pure function receiving current state and an action, returning the next optimistic state."
+   },
+   {
+    "name": "optimisticState",
+    "type": "any",
+    "description": "The temporary value to display during an Action; with a reducer, it becomes the reducer's action argument."
+   }
+  ],
+  "returns": "An array containing the current optimistic state and a setter that temporarily changes it during an Action.",
+  "example": {
+   "title": "Optimistic like count",
+   "code": "import { useOptimistic } from 'react';\n\nexport default function LikeButton({ likes, saveLike }) {\n  const [optimisticLikes, addLike] = useOptimistic(\n    likes,\n    (currentLikes, amount) => currentLikes + amount\n  );\n\n  async function likeAction() {\n    addLike(1);\n    await saveLike();\n  }\n\n  return (\n    <button formAction={likeAction}>\n      Likes: {optimisticLikes}\n    </button>\n  );\n}",
+   "language": "tsx",
+   "explanation": "The button runs an Action that immediately displays the incremented count while the save request is pending."
+  },
+  "useCases": [
+   {
+    "title": "Instant mutation feedback",
+    "scenario": "Show a changed count, label, or status immediately while a server mutation is pending."
+   },
+   {
+    "title": "Responsive form submission",
+    "scenario": "Render a submitted item with a temporary pending indicator before the server confirms it."
+   },
+   {
+    "title": "Reducer-based collection updates",
+    "scenario": "Apply an optimistic list insertion, deletion, or update using an action payload."
+   }
+  ],
+  "related": [
+   "useActionState",
+   "startTransition",
+   "Action"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use it to show an expected result immediately while an asynchronous Action is still running.",
+   "The Hook accepts a confirmed value and an optional reducer, returning state and an optimistic setter.",
+   "Declare it at the component's top level, not inside conditions, loops, or nested functions.",
+   "The first argument is the authoritative value shown when no Action is pending.",
+   "A reducer computes the temporary state from the current state and the action payload.",
+   "Destructure the result into the currently rendered optimistic state and its setter.",
+   "An in-Action setter call re-renders immediately with the temporary state.",
+   "Outside a pending Action, rendering falls back to the confirmed input value."
+  ],
+  "gotchas": [
+   "Calling the setter outside an Action warns and only briefly renders the optimistic state.",
+   "Do not invoke the optimistic setter during ordinary event handling unless that handler starts an Action.",
+   "Keep the reducer pure and return the next optimistic state from its current state and action."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Action hooks::useOptimistic rollback": {
+  "sourceUrl": "https://react.dev/reference/react/useOptimistic",
+  "sourceTitle": "useOptimistic – React",
+  "summary": "When an optimistic Action fails, React renders the unchanged source value, making the UI automatically return to its pre-update state. The optimistic setter must run inside an Action.",
+  "explanation": "useOptimistic overlays a temporary result while an Action is running. If the Action fails, React ends the Transition and renders the current source value; because that value normally changes only after success, the UI automatically returns to its pre-update state.",
+  "syntax": "const [optimisticState, addOptimistic] = useOptimistic(value, updateFn);",
+  "parameters": [
+   {
+    "name": "value",
+    "type": "any",
+    "description": "The current, non-optimistic value used as the source of truth after the Action finishes."
+   },
+   {
+    "name": "updateFn",
+    "type": "(currentState, optimisticValue) => newState",
+    "description": "A function that receives the current state and the optimistic action argument, returning the temporary state."
+   }
+  ],
+  "returns": "An array containing the current optimistic state and a setter that schedules an optimistic update.",
+  "example": {
+   "title": "Automatic rollback after a failed Action",
+   "code": "import { useOptimistic, useState } from \"react\";\n\nexport default function Todo() {\n  const [items, setItems] = useState([\"Read docs\"]);\n  const [optimisticItems, removeOptimistic] = useOptimistic(\n    items,\n    (current, item) => current.filter((value) => value !== item)\n  );\n\n  async function remove(item) {\n    removeOptimistic(item);\n    await new Promise((resolve, reject) =>\n      setTimeout(() => reject(new Error(\"Delete failed\")), 500)\n    );\n    setItems((current) => current.filter((value) => value !== item));\n  }\n\n  return (\n    <button onClick={() => remove(\"Read docs\")}>\n      {optimisticItems.join(\", \") || \"Empty\"}\n    </button>\n  );\n}",
+   "language": "tsx",
+   "explanation": "The optimistic item disappears during the Action; when the request fails and the source state remains unchanged, React renders the item again."
+  },
+  "useCases": [
+   {
+    "title": "Optimistic deletion",
+    "scenario": "Remove an item immediately while a delete request runs, then show it again if deletion fails."
+   },
+   {
+    "title": "Optimistic editing",
+    "scenario": "Display an edited label before the server confirms the update, reverting when the update fails."
+   },
+   {
+    "title": "Fast feedback for mutations",
+    "scenario": "Show a pending reaction or vote instantly while the mutation is submitted."
+   }
+  ],
+  "related": [
+   "useOptimistic",
+   "Actions",
+   "startTransition",
+   "useActionState",
+   "Error Boundary"
+  ],
+  "since": "19",
+  "keyPoints": [
+   "The optimistic value is displayed only while its Action is pending.",
+   "Outside an active Action, the hook returns the source value rather than the temporary optimistic result.",
+   "Rollback is driven by the current source value supplied as the hook’s first argument.",
+   "If the server mutation fails and the parent leaves the source state unchanged, the previous UI reappears automatically.",
+   "React converges the optimistic and real state without requiring a separate reset render."
+  ],
+  "gotchas": [
+   "Call the optimistic setter inside an Action; otherwise React warns and the optimistic state only appears briefly before reverting.",
+   "A failed Action does not restore an old snapshot independently; rollback comes from rendering the current `value`, so keep that source of truth unchanged on failure.",
+   "Automatic rollback does not provide user-facing error feedback; catch the failure when the interface should explain what happened."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Async hooks::use": {
+  "sourceUrl": "https://react.dev/reference/react/use",
+  "sourceTitle": "use",
+  "summary": "Read a Promise or context value during rendering with use. Promises integrate with Suspense: pending reads suspend, and the resolved value is returned when ready.",
+  "explanation": "use reads a Promise or context during rendering. For a Promise, React suspends the component while it is pending and resumes it with the resolved value; a surrounding Suspense boundary displays a fallback during that wait.",
+  "syntax": "use(resource)",
+  "parameters": [
+   {
+    "name": "resource",
+    "type": "Promise<T> | Context<T>",
+    "description": "A Promise whose resolved value you want to read, or a context whose value you want to read."
+   }
+  ],
+  "returns": "The resource's value: the resolved Promise value or the context value.",
+  "example": {
+   "title": "Read a Promise with use",
+   "code": "import { Suspense, use } from \"react\";\n\nfunction Message({ messagePromise }: { messagePromise: Promise<string> }) {\n  const message = use(messagePromise);\n  return <p>{message}</p>;\n}\n\nexport default function App({\n  messagePromise,\n}: {\n  messagePromise: Promise<string>;\n}) {\n  return (\n    <Suspense fallback={<p>Loading…</p>}>\n      <Message messagePromise={messagePromise} />\n    </Suspense>\n  );\n}",
+   "language": "tsx",
+   "explanation": "The component reads a cached Promise with use; it suspends until the Promise resolves, while Suspense renders the fallback."
+  },
+  "useCases": [
+   {
+    "title": "Suspense-enabled data reading",
+    "scenario": "Read data supplied as a cached Promise and show loading UI with Suspense."
+   },
+   {
+    "title": "Asynchronous context values",
+    "scenario": "Share a Promise through context without passing it through every component."
+   },
+   {
+    "title": "Conditional context access",
+    "scenario": "Read context conditionally or inside a loop where useContext cannot be called."
+   }
+  ],
+  "related": [
+   "Suspense",
+   "useContext",
+   "Error Boundary"
+  ],
+  "since": "19",
+  "keyPoints": [
+   "use reads a Promise or context resource during render.",
+   "Passing a context returns its current context value.",
+   "Passing a Promise returns its resolved value once available.",
+   "A pending Promise suspends the component that called use.",
+   "Suspense shows its fallback while the Promise remains pending.",
+   "A rejected Promise is handled by the nearest Error Boundary."
+  ],
+  "gotchas": [
+   "Pass a cached Promise rather than creating a new Promise during rendering; React needs the same instance across re-renders.",
+   "Conditional and loop calls are allowed, but the Promise itself must always be passed to use.",
+   "Do not inspect Promise internals to avoid suspension; pass the Promise to use."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Async hooks::use with conditional context": {
+  "sourceUrl": "https://react.dev/reference/react/use",
+  "sourceTitle": "use",
+  "summary": "Use reads a context value during rendering and may be called conditionally or inside loops. This makes it suitable when useContext's top-level-only rule would prevent a context read.",
+  "explanation": "Use the React use API with a context object to read its current value during rendering. Unlike useContext, use may appear after an early return or inside a conditional or loop, but the calling function must still be a component or Hook. React applies the nearest provider's value, or the context default when no provider exists.",
+  "syntax": "use(resource)",
+  "parameters": [
+   {
+    "name": "resource",
+    "type": "resource, such as a Promise or context",
+    "description": "A context object created with createContext; use reads the context value available to the calling component."
+   }
+  ],
+  "returns": "The value of the supplied resource; for a context, this is the current context value.",
+  "example": {
+   "title": "Conditional context read",
+   "code": "import { createContext, use } from 'react';\n\nconst ThemeContext = createContext('light');\n\nfunction HorizontalRule({ show }: { show: boolean }) {\n  if (show) {\n    const theme = use(ThemeContext);\n    return <hr className={theme} />;\n  }\n  return null;\n}\n\nexport default function App() {\n  return (\n    <ThemeContext.Provider value=\"dark\">\n      <HorizontalRule show={true} />\n    </ThemeContext.Provider>\n  );\n}",
+   "language": "tsx",
+   "explanation": "Reads the context only when the condition is true, which is allowed for use but not for useContext."
+  },
+  "useCases": [
+   {
+    "title": "Read context after an early return",
+    "scenario": "A component returns early unless a prop or child is present, then needs context."
+   },
+   {
+    "title": "Conditional styling or rendering",
+    "scenario": "A context is needed only for one conditional rendering branch."
+   },
+   {
+    "title": "Context access in a loop",
+    "scenario": "A component needs context while iterating over conditionally processed items."
+   }
+  ],
+  "related": [
+   "useContext",
+   "createContext",
+   "Context",
+   "Promise"
+  ],
+  "since": "React 19",
+  "keyPoints": [
+   "Pass a context object to use to obtain that context's value during render.",
+   "use supports context reads inside conditionals and loops, unlike useContext's top-level restriction.",
+   "For context, use follows the same provider-based reading behavior as useContext.",
+   "The function calling use must be a React component or a custom Hook.",
+   "use is a React API rather than a Hook, so the standard top-level Hook call restriction does not apply to it."
+  ],
+  "gotchas": [
+   "Do not bypass use for Promise resources by reading their internal status or value directly; pass the Promise to use."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Async hooks::use with promises": {
+  "sourceUrl": "https://react.dev/reference/react/use",
+  "sourceTitle": "use – React",
+  "summary": "Read a stable Promise during rendering with use. React suspends while it is pending, renders the resolved value afterward, and sends rejections to the nearest Error Boundary.",
+  "explanation": "Pass a cached Promise to use during component rendering. React suspends the component while the Promise is pending, returns its resolved value after completion, and sends a rejection to the nearest Error Boundary.",
+  "syntax": "use(promise)",
+  "parameters": [
+   {
+    "name": "promise",
+    "type": "Promise",
+    "description": "A Promise whose resolved value you want to read. The Promise must be cached so that the same instance is reused across re-renders."
+   }
+  ],
+  "returns": "The value read from the resource, such as the resolved value of the Promise.",
+  "example": {
+   "title": "Read a promise with use",
+   "code": "import { Suspense, use } from \"react\";\n\nfunction Message({ messagePromise }: { messagePromise: Promise<string> }) {\n  const message = use(messagePromise);\n  return <p>{message}</p>;\n}\n\nexport default function App({\n  messagePromise,\n}: {\n  messagePromise: Promise<string>;\n}) {\n  return (\n    <Suspense fallback={<p>Loading...</p>}>\n      <Message messagePromise={messagePromise} />\n    </Suspense>\n  );\n}",
+   "language": "tsx",
+   "explanation": "Reads a cached promise during rendering, showing Suspense content while it is pending."
+  },
+  "useCases": [
+   {
+    "title": "Render async data",
+    "scenario": "A component receives a cached data Promise from a Suspense-enabled framework."
+   },
+   {
+    "title": "Read streamed server data",
+    "scenario": "A Client Component needs to consume a Promise passed from a Server Component."
+   },
+   {
+    "title": "Suspend with a fallback",
+    "scenario": "A component needs loading UI while resource data is pending."
+   }
+  ],
+  "related": [
+   "Suspense",
+   "Error Boundary",
+   "use",
+   "Server Components",
+   "rules-of-hooks"
+  ],
+  "since": "React 19",
+  "keyPoints": [
+   "use reads a Promise resource while the component renders.",
+   "Pending work suspends the component until the Promise settles.",
+   "Wrap the reading component in Suspense to provide loading UI."
+  ],
+  "gotchas": [
+   "Do not create a new Promise during each render; reuse a cached Promise instance.",
+   "A rejected Promise is handled by an Error Boundary, not by a returned error value.",
+   "Although use may be conditional or inside a loop, do not skip the call merely because the Promise may already be settled."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Concurrency hooks::useDeferredValue": {
+  "sourceUrl": "https://react.dev/reference/react/useDeferredValue",
+  "sourceTitle": "useDeferredValue | React",
+  "summary": "useDeferredValue lets a slower part of the UI lag behind an urgent value. React keeps urgent updates responsive, then renders the deferred value in the background.",
+  "explanation": "Call the Hook at the top level with a value whose updates should be deprioritized. React returns the previous value first during an update, then attempts a background render with the new value; the background work can catch up without holding up more urgent UI. An optional initial value can replace the value only for the first render.",
+  "syntax": "const deferredValue = useDeferredValue(value, initialValue?)",
+  "parameters": [
+   {
+    "name": "value",
+    "type": "any",
+    "description": "The value whose update should be deferred; it may have any type."
+   },
+   {
+    "name": "initialValue",
+    "type": "any",
+    "description": "Optional value returned during the initial render. Without it, the current value is returned initially."
+   }
+  ],
+  "returns": "The deferred value: initialValue or value on the first render, the previous value during the initial update render, and eventually the new value after the background render.",
+  "example": {
+   "title": "Keep search results behind the input",
+   "code": "import { useDeferredValue, useState } from 'react';\n\nfunction SearchResults({ query }: { query: string }) {\n  return <p>Results for: {query || 'all items'}</p>;\n}\n\nexport default function SearchPage() {\n  const [query, setQuery] = useState('');\n  const deferredQuery = useDeferredValue(query);\n\n  return (\n    <>\n      <label>\n        Search: <input value={query} onChange={e => setQuery(e.target.value)} />\n      </label>\n      <SearchResults query={deferredQuery} />\n    </>\n  );\n}",
+   "language": "tsx",
+   "explanation": "The input responds immediately while the results receive the deferred query and may temporarily display the previous value."
+  },
+  "useCases": [
+   {
+    "title": "Responsive search",
+    "scenario": "A text field updates immediately while a costly filtered list catches up."
+   },
+   {
+    "title": "Stale content during loading",
+    "scenario": "A Suspense-backed result view should keep showing previous results while new data loads."
+   },
+   {
+    "title": "Defer expensive rendering",
+    "scenario": "A non-critical visualization or large list should not block urgent controls."
+   }
+  ],
+  "related": [
+   "useTransition",
+   "Suspense",
+   "useState"
+  ],
+  "since": "19",
+  "keyPoints": [
+   "Call it at component top level and use the returned value for the slower UI path.",
+   "The urgent render can keep the previous deferred value while React starts the update with the latest value in the background.",
+   "React later retries the slower path using the new value when rendering capacity is available.",
+   "The input may be any type, although stable primitives or objects created outside rendering are the practical choice.",
+   "Pass initialValue when the first render should use a placeholder rather than the current value."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Concurrency hooks::useDeferredValue initialValue": {
+  "sourceUrl": "https://react.dev/reference/react/useDeferredValue",
+  "sourceTitle": "useDeferredValue",
+  "summary": "useDeferredValue(value, initialValue?) lets a component show a chosen fallback on its initial render, then defer rendering the supplied value. It is useful for starting a loading or filtered view with an intentionally simple value.",
+  "explanation": "Pass an optional second argument to useDeferredValue when the initial render should use a deliberate fallback instead of the current value. React uses that fallback initially and later renders the supplied value in the background.",
+  "syntax": "const deferredValue = useDeferredValue(value, initialValue?)",
+  "parameters": [
+   {
+    "name": "value",
+    "type": "any",
+    "description": "The value to defer; it can have any type."
+   },
+   {
+    "name": "initialValue",
+    "type": "any",
+    "description": "Optional value used during the component’s initial render. If omitted, the initial render is not deferred."
+   }
+  ],
+  "returns": "currentValue: the initialValue during the initial render when supplied, otherwise value; during updates, the previous value may be returned first and the new value is attempted in the background.",
+  "example": {
+   "title": "Defer an initially empty filtered view",
+   "code": "import { useDeferredValue, useState } from 'react';\n\nfunction Search({ results }: { results: string[] }) {\n  const [query, setQuery] = useState('');\n  const deferredQuery = useDeferredValue(query, '');\n  const visibleResults = results.filter((result) =>\n    result.toLowerCase().includes(deferredQuery.toLowerCase())\n  );\n\n  return (\n    <>\n      <input value={query} onChange={(e) => setQuery(e.target.value)} />\n      <ul>{visibleResults.map((result) => <li key={result}>{result}</li>)}</ul>\n    </>\n  );\n}",
+   "language": "tsx",
+   "explanation": "Uses an empty query for the initial render, then lets React update the filtered view with the current query in the background."
+  },
+  "useCases": [
+   {
+    "title": "Initial empty filtered view",
+    "scenario": "A search or filter view should begin with no filter, then populate from the current query."
+   },
+   {
+    "title": "Initial loading view",
+    "scenario": "A costly results component should show a lightweight initial state before rendering current data."
+   },
+   {
+    "title": "Defer secondary content",
+    "scenario": "A non-critical UI section should update after more urgent content has rendered."
+   }
+  ],
+  "related": [
+   "useDeferredValue(value, initialValue?)",
+   "useTransition",
+   "startTransition"
+  ],
+  "since": "React 19",
+  "keyPoints": [
+   "Call the Hook at the component’s top level and use its result wherever the non-critical UI should lag.",
+   "The deferred source and initial value are not restricted to strings; they can represent any value type.",
+   "With initialValue, the first render receives that fallback; without it, the first render receives value.",
+   "On later updates, React first renders with the previous deferred value before attempting the newer one.",
+   "React schedules a background render that eventually applies the current value."
+  ],
+  "gotchas": [
+   "Without initialValue, the initial render is not deferred because React has no earlier value to display.",
+   "The deferred result can temporarily lag behind the current value during updates.",
+   "Do not assume the deferred value updates synchronously with the source value."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Concurrency hooks::useTransition pending state": {
+  "sourceUrl": "https://react.dev/reference/react/useTransition",
+  "sourceTitle": "useTransition",
+  "summary": "useTransition provides isPending for feedback while a Transition is active and startTransition for marking non-urgent updates. Use the flag to disable duplicate interactions or show progress.",
+  "explanation": "Call the Hook in a component, then wrap non-urgent state updates in its startTransition function. React sets isPending to true while the Transition is processing and keeps it true until the Actions finish and the final state is displayed, allowing feedback or duplicate-interaction prevention.",
+  "syntax": "const [isPending, startTransition] = useTransition();",
+  "parameters": [],
+  "returns": "An array containing [isPending, startTransition].",
+  "example": {
+   "title": "Show pending feedback for a tab transition",
+   "code": "import { useState, useTransition } from 'react';\n\nexport default function Tabs() {\n  const [tab, setTab] = useState('about');\n  const [isPending, startTransition] = useTransition();\n\n  function selectTab(nextTab: string) {\n    startTransition(() => {\n      setTab(nextTab);\n    });\n  }\n\n  return (\n    <div>\n      <button disabled={isPending} onClick={() => selectTab('about')}>About</button>\n      <button disabled={isPending} onClick={() => selectTab('posts')}>Posts</button>\n      {isPending && <p>Loading…</p>}\n      <p>Selected tab: {tab}</p>\n    </div>\n  );\n}",
+   "language": "tsx",
+   "explanation": "Use the returned boolean to disable tab buttons and display feedback while the transition is active."
+  },
+  "useCases": [
+   {
+    "title": "Prevent duplicate navigation",
+    "scenario": "Disable navigation or tab controls while a Transition is pending."
+   },
+   {
+    "title": "Show progress feedback",
+    "scenario": "Render a spinner or loading message during an in-progress Transition."
+   },
+   {
+    "title": "Preserve responsive interactions",
+    "scenario": "Keep the current interface interactive while non-urgent content updates."
+   }
+  ],
+  "related": [
+   "startTransition",
+   "useOptimistic",
+   "Suspense"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The Hook returns isPending and startTransition in a fixed two-item array.",
+   "Read isPending to determine whether a Transition is still active.",
+   "Call startTransition around non-urgent state updates so React can process them as a Transition.",
+   "Pending feedback begins when the first startTransition call starts the Transition.",
+   "The pending flag remains true until all Actions finish and React displays the final state.",
+   "Use the boolean for a spinner, loading message, disabled control, or another in-progress visual state."
+  ],
+  "gotchas": [
+   "Keep the function passed to startTransition synchronous; for async work, updates after each await need another startTransition call.",
+   "Call useTransition only at the top level of a component or custom Hook, not from arbitrary functions."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Context hooks::use as context": {
+  "sourceUrl": "https://react.dev/reference/react/use",
+  "sourceTitle": "use",
+  "summary": "Read a context with use when the read must occur conditionally or inside a loop. It behaves like useContext for context lookup but permits these placements.",
+  "explanation": "React's use API reads a context's current value during rendering. Pass the context object to use; unlike useContext, this call may appear in conditionals or loops, while still needing to run inside a component or Hook and observing use's restrictions.",
+  "syntax": "use(context)",
+  "parameters": [
+   {
+    "name": "context",
+    "type": "React context",
+    "description": "The context object whose current value should be read."
+   }
+  ],
+  "returns": "The current value from the nearest matching context provider above the calling component.",
+  "example": {
+   "title": "Conditionally read a context",
+   "code": "import { createContext, use } from 'react';\n\nconst ThemeContext = createContext('light');\n\nfunction HorizontalRule({ show }: { show: boolean }) {\n  if (show) {\n    const theme = use(ThemeContext);\n    return <hr className={theme} />;\n  }\n  return null;\n}\n\nexport default function App() {\n  return (\n    <ThemeContext value=\"dark\">\n      <HorizontalRule show={true} />\n    </ThemeContext>\n  );\n}",
+   "language": "tsx",
+   "explanation": "This component reads the nearest theme context only when the rule should be rendered."
+  },
+  "useCases": [
+   {
+    "title": "Conditional rendering",
+    "scenario": "A component may return early before it needs context, then read it only for the rendered branch."
+   },
+   {
+    "title": "Loop-based reads",
+    "scenario": "A component processes multiple context-dependent items or resources in a loop."
+   },
+   {
+    "title": "Flexible context access",
+    "scenario": "A component needs ordinary context semantics but more flexible call placement than useContext provides."
+   }
+  ],
+  "related": [
+   "useContext",
+   "createContext"
+  ],
+  "since": "React 19",
+  "keyPoints": [
+   "use reads a resource during render; for this card, the resource is a context.",
+   "Pass the context object directly to use to obtain its current value.",
+   "Use is useful when context access must happen conditionally or while iterating.",
+   "Context lookup and reading behave like useContext, but the call placement is more flexible.",
+   "The returned value comes from the nearest matching provider above the component."
+  ],
+  "gotchas": [
+   "Do not bypass use for Promises by reading their status or value directly; pass the Promise to use instead.",
+   "A provider returned by the component itself does not affect a use call in that same component; the provider must be above it."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Effect hooks::Hook dependency arrays": {
+  "sourceUrl": "https://react.dev/reference/react/useEffect",
+  "sourceTitle": "useEffect – React",
+  "summary": "An Effect dependency array lists every reactive value read by the Effect’s setup code. React re-runs the Effect after the initial commit and when any listed dependency changes.",
+  "explanation": "An Effect’s dependency array lists every reactive value its setup code reads, including props, state, and variables or functions declared in the component. React compares the dependencies between commits and re-runs the Effect after the initial commit and when a dependency changes. Keep the list inline with a constant number of items; use [] only when the code reads no reactive values.",
+  "syntax": "useEffect(setup, dependencies?)",
+  "parameters": [
+   {
+    "name": "setup",
+    "type": "function",
+    "description": "Function that runs the synchronization logic and may return a cleanup function."
+   },
+   {
+    "name": "dependencies",
+    "type": "array",
+    "description": "Optional inline list of every reactive value referenced by setup; it must have a constant number of items."
+   }
+  ],
+  "returns": "useEffect returns undefined.",
+  "example": {
+   "title": "Synchronize with a user ID",
+   "code": "import { useEffect, useState } from 'react';\n\nexport default function UserGreeting({ userId }: { userId: string }) {\n  const [name, setName] = useState('');\n\n  useEffect(() => {\n    let ignore = false;\n    fetch(`/api/users/${userId}`)\n      .then(response => response.json())\n      .then(user => {\n        if (!ignore) setName(user.name);\n      });\n    return () => { ignore = true; };\n  }, [userId]);\n\n  return <p>Hello, {name}</p>;\n}",
+   "language": "tsx",
+   "explanation": "The Effect reads userId, so userId appears in the dependency array and triggers re-synchronization when it changes."
+  },
+  "useCases": [
+   {
+    "title": "External synchronization",
+    "scenario": "Connect to or synchronize with an external system when a prop or state value changes."
+   },
+   {
+    "title": "Data synchronization",
+    "scenario": "Re-fetch or update displayed data when an identifier changes."
+   },
+   {
+    "title": "Non-reactive setup",
+    "scenario": "Run setup once after mounting when the Effect reads no reactive values."
+   }
+  ],
+  "related": [
+   "useEffect",
+   "useMemo",
+   "useCallback",
+   "exhaustive-deps"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The array contains every reactive value read by the Effect’s setup function.",
+   "Props, state, and component-body variables or functions are reactive values.",
+   "With an array, the Effect runs after the initial commit and when a dependency changes.",
+   "Use an inline array with a constant length.",
+   "The code used inside the Effect determines its dependency list; it is not an arbitrary optimization choice."
+  ],
+  "gotchas": [
+   "Do not construct the array dynamically or change its length; write the dependencies inline.",
+   "Do not omit a reactive value to suppress re-runs; revise the surrounding code instead.",
+   "Leaving out the array makes the Effect run after every commit.",
+   "Use [] only when the Effect reads no reactive values."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Effect hooks::useEffect": {
+  "sourceUrl": "https://react.dev/reference/react/useEffect",
+  "sourceTitle": "useEffect",
+  "summary": "useEffect synchronizes a component with an external system after it commits. React reruns the setup when dependencies change and invokes cleanup before resynchronizing or unmounting.",
+  "explanation": "Call useEffect at the top level to run setup after a component commits. React reruns it when listed dependencies change, invoking the previous cleanup first; cleanup also runs when the component is removed.",
+  "syntax": "useEffect(setup, dependencies?)",
+  "parameters": [
+   {
+    "name": "setup",
+    "type": "function",
+    "description": "Function containing the Effect logic. It may optionally return a cleanup function. React runs setup after commit, reruns cleanup then setup when dependencies change, and runs cleanup on removal."
+   },
+   {
+    "name": "dependencies",
+    "type": "array",
+    "description": "Optional inline array with a constant number of dependencies. React compares each dependency with its previous value using Object.is."
+   }
+  ],
+  "returns": "undefined",
+  "example": {
+   "title": "Synchronize after rendering",
+   "code": "import { useEffect, useState } from 'react';\n\nexport default function Status({ online }: { online: boolean }) {\n  const [message, setMessage] = useState('Checking…');\n\n  useEffect(() => {\n    const timer = setTimeout(\n      () => setMessage(online ? 'Online' : 'Offline'),\n      500,\n    );\n    return () => clearTimeout(timer);\n  }, [online]);\n\n  return <p>{message}</p>;\n}",
+   "language": "tsx",
+   "explanation": "This Effect synchronizes displayed status with the online prop and clears the pending timer before resynchronizing or unmounting."
+  },
+  "useCases": [
+   {
+    "title": "Manage connections",
+    "scenario": "Subscribe to or disconnect from an external service when a prop changes."
+   },
+   {
+    "title": "Manage resources",
+    "scenario": "Start a timer or browser subscription and clean it up when dependencies change or the component unmounts."
+   },
+   {
+    "title": "Synchronize external widgets",
+    "scenario": "Control a non-React widget or browser API after the UI has committed."
+   }
+  ],
+  "related": [
+   "useLayoutEffect",
+   "useInsertionEffect",
+   "useEffectEvent",
+   "useState"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use it to connect a component with something outside React, such as a browser API, widget, connection, or timer.",
+   "The setup function runs after the component commits, rather than during rendering.",
+   "When dependencies change, React cleans up the previous synchronization before starting the new one.",
+   "A returned cleanup function runs when the component unmounts, which is where subscriptions, timers, and connections should be stopped.",
+   "Declare every reactive value used by the Effect in a fixed inline dependency list.",
+   "The Hook itself has no useful return value; its behavior comes from setup and optional cleanup."
+  ],
+  "gotchas": [
+   "Call useEffect only at the top level of a component or custom Hook, never inside loops or conditions.",
+   "Avoid Effects for ordinary calculations or state transformations that do not synchronize with an external system.",
+   "Write a fixed-length dependency array inline; do not construct it dynamically.",
+   "Dependencies are compared with Object.is, so unstable object or function values can cause extra reruns."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Effect hooks::useEffect cleanup": {
+  "sourceUrl": "https://react.dev/reference/react/useEffect",
+  "sourceTitle": "Controlling a non-React widget",
+  "summary": "useEffect cleanup undoes work started by an Effect. React runs it before re-running the Effect when dependencies change and when the component unmounts.",
+  "explanation": "A cleanup function is the optional function returned by an Effect's setup function. React runs it before setup runs again after dependency changes and when the component is removed, so it can undo subscriptions, listeners, connections, or pending work started by the Effect.",
+  "syntax": "useEffect(setup, dependencies?)",
+  "parameters": [
+   {
+    "name": "setup",
+    "type": "() => void | (() => void)",
+    "description": "Function containing the Effect setup logic; it may return a cleanup function."
+   },
+   {
+    "name": "dependencies",
+    "type": "Array",
+    "description": "Optional list of reactive values used by the setup and cleanup functions."
+   }
+  ],
+  "returns": "No return value is documented for the cleanup function itself; the setup function may return a cleanup function that React invokes during Effect resynchronization and unmount.",
+  "example": {
+   "title": "Disconnect a changing subscription",
+   "code": "import { useEffect, useState } from 'react';\n\nexport default function Status({ roomId }: { roomId: string }) {\n  const [online, setOnline] = useState(false);\n\n  useEffect(() => {\n    const connection = createConnection(roomId);\n    connection.connect();\n    connection.onStatusChange(setOnline);\n\n    return () => {\n      connection.disconnect();\n    };\n  }, [roomId]);\n\n  return <p>{online ? 'Online' : 'Offline'}</p>;\n}\n\n// Example API supplied by the application.\ndeclare function createConnection(roomId: string): {\n  connect(): void;\n  disconnect(): void;\n  onStatusChange(callback: (online: boolean) => void): void;\n};",
+   "language": "tsx",
+   "explanation": "The Effect connects to the selected room and returns the matching disconnection logic. React runs cleanup before reconnecting for a changed roomId and when the component is removed."
+  },
+  "useCases": [
+   {
+    "title": "Disconnect a connection",
+    "scenario": "An Effect opens a chat or other external connection."
+   },
+   {
+    "title": "Unsubscribe listeners",
+    "scenario": "An Effect subscribes to an external store or event source."
+   },
+   {
+    "title": "Abort or ignore fetch work",
+    "scenario": "An Effect starts a request whose result may become stale."
+   }
+  ],
+  "related": [
+   "useEffect",
+   "setup function",
+   "dependencies",
+   "Lifecycle of Reactive Effects",
+   "StrictMode"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Return a function from the Effect setup when the Effect starts work that must later be stopped or undone.",
+   "When dependencies change, React cleans up using the previous render's values before running setup with the new ones.",
+   "React performs the final cleanup when the component unmounts.",
+   "For external systems, pair operations such as connect/disconnect or subscribe/unsubscribe.",
+   "For fetching, cleanup should cancel the request when possible or prevent a stale response from being used."
+  ],
+  "gotchas": [
+   "Cleanup is not an unmount-only hook; it runs before an Effect re-synchronizes with new dependency values.",
+   "Development may perform an extra setup-cleanup cycle after mounting, so setup and cleanup must tolerate this.",
+   "Make cleanup undo the specific work performed by setup rather than adding unrelated behavior."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Effect hooks::useEffectEvent": {
+  "sourceUrl": "https://react.dev/reference/react/useEffectEvent",
+  "sourceTitle": "useEffectEvent",
+  "summary": "useEffectEvent creates an Effect Event that can read the latest props and state without making its surrounding Effect reactive to those values. Call the returned function from an Effect or another Effect Event.",
+  "explanation": "useEffectEvent creates an Effect Event whose callback reads the latest committed props and state when called. Unlike reactive Effect code, it does not cause the surrounding Effect to re-synchronize, so it is useful for non-reactive logic triggered by an Effect.",
+  "syntax": "const event = useEffectEvent(callback)",
+  "parameters": [
+   {
+    "name": "callback",
+    "type": "function",
+    "description": "A callback containing the logic for the Effect Event; it may accept any number of arguments and return any value."
+   }
+  ],
+  "returns": "An Effect Event function with the same type signature as the callback.",
+  "example": {
+   "title": "Read current values without re-synchronizing",
+   "code": "import { useEffect, useEffectEvent, useState } from 'react';\n\nfunction ChatRoom({ roomId, theme }: { roomId: string; theme: string }) {\n  const [connected, setConnected] = useState(false);\n\n  const onConnected = useEffectEvent(() => {\n    console.log(`Connected with ${theme} theme`);\n    setConnected(true);\n  });\n\n  useEffect(() => {\n    const connection = createConnection(roomId);\n    connection.on('connected', onConnected);\n    connection.connect();\n    return () => connection.disconnect();\n  }, [roomId]);\n\n  return <p>{connected ? 'Connected' : 'Connecting...'}</p>;\n}\n\nfunction createConnection(roomId: string) {\n  return {\n    on: (_event: string, handler: () => void) => ({ handler }),\n    connect: () => {},\n    disconnect: () => {},\n  };\n}",
+   "language": "tsx",
+   "explanation": "The Effect reconnects only when roomId changes, while the Effect Event reads the latest theme and state-related values when invoked."
+  },
+  "useCases": [
+   {
+    "title": "External connections",
+    "scenario": "A connection setup should react to roomId changes but use the current theme when connected."
+   },
+   {
+    "title": "Notifications and logging",
+    "scenario": "An Effect needs to log or notify using current state without restarting its synchronization."
+   },
+   {
+    "title": "Latest values in Effect logic",
+    "scenario": "An Effect-triggered callback needs fresh props or state while remaining non-reactive."
+   }
+  ],
+  "related": [
+   "useEffect",
+   "useLayoutEffect",
+   "useInsertionEffect",
+   "Effect Events"
+  ],
+  "since": "",
+  "keyPoints": [
+   "It extracts event-like, non-reactive logic from an Effect.",
+   "Its callback reads the latest committed props and state without making the surrounding Effect re-run.",
+   "Do not put the returned Effect Event in the Effect dependency array.",
+   "Declare it at the top level of the component or inside a custom Hook.",
+   "The callback may take arbitrary arguments and return any value.",
+   "Invoke the returned function from supported Effect Hooks or another Effect Event."
+  ],
+  "gotchas": [
+   "Call the returned function only from an Effect or another Effect Event—not during rendering.",
+   "Do not invoke an Effect Event while rendering or pass it to another component or Hook.",
+   "Because it is a Hook, call useEffectEvent only at the top level of a component or custom Hook."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Effect hooks::useEffectEvent limitations": {
+  "sourceUrl": "https://react.dev/reference/react/useEffectEvent",
+  "sourceTitle": "useEffectEvent",
+  "summary": "useEffectEvent extracts non-reactive logic from an Effect while still reading the latest props and state. It is only for Effect-triggered events, not a general replacement for event handlers or callbacks.",
+  "explanation": "useEffectEvent extracts non-reactive logic that an Effect triggers. The returned function sees current props and state without causing the surrounding Effect to re-run, but it is restricted to Effect-related use: define it alongside the Effect, call it only from an Effect or another Effect Event, and do not pass it to components or Hooks.",
+  "syntax": "const event = useEffectEvent(callback);",
+  "parameters": [
+   {
+    "name": "callback",
+    "type": "function",
+    "description": "A function containing non-reactive logic to be triggered by an Effect."
+   }
+  ],
+  "returns": "A function that can be called from an Effect or another Effect Event and reads the latest render values.",
+  "example": {
+   "title": "Use an Effect Event only from its local Effect",
+   "code": "import { useEffect, useEffectEvent } from 'react';\n\nexport default function ChatRoom({ roomId, theme }: { roomId: string; theme: string }) {\n  const onConnected = useEffectEvent(() => {\n    console.log(`Connected using ${theme} theme`);\n  });\n\n  useEffect(() => {\n    const connection = createConnection(roomId);\n    connection.on('connected', onConnected);\n    connection.connect();\n    return () => connection.disconnect();\n  }, [roomId]);\n\n  return null;\n}\n\ndeclare function createConnection(roomId: string): {\n  on(event: string, handler: () => void): void;\n  connect(): void;\n  disconnect(): void;\n};",
+   "language": "tsx",
+   "explanation": "This keeps the connection reactive to roomId while the Effect Event reads the latest theme without making the connection re-synchronize."
+  },
+  "useCases": [
+   {
+    "title": "Read latest values without reconnecting",
+    "scenario": "A subscription or connection should remain active while a notification uses current props or state."
+   },
+   {
+    "title": "Handle Effect-triggered events",
+    "scenario": "An Effect emits a callback-like event after synchronization or an external notification."
+   },
+   {
+    "title": "Use a regular function or useCallback instead",
+    "scenario": "A callback must be passed to a button, child component, or custom Hook."
+   }
+  ],
+  "related": [
+   "useEffect",
+   "useCallback",
+   "Effect Events",
+   "eslint-plugin-react-hooks"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use an Effect Event for non-reactive logic that conceptually represents an event emitted by an Effect.",
+   "The callback reads current props and state while the surrounding Effect remains synchronized only to its own dependencies.",
+   "Declare useEffectEvent at the top level, never inside a loop or conditional.",
+   "The Hooks linter checks the restriction that Effect Events are called only from Effects or other Effect Events.",
+   "Define the Effect Event next to the Effect that uses it; for a child callback or event handler, use a regular function or useCallback instead."
+  ],
+  "gotchas": [
+   "Do not invoke an Effect Event during rendering or from an ordinary event handler; it is restricted to an Effect or another Effect Event.",
+   "Do not use it merely to silence dependency warnings, because that can hide bugs and make the code harder to understand.",
+   "Do not rely on the returned function having stable identity; its identity intentionally changes on every render.",
+   "Keep the Effect Event local to the component or Hook containing the Effect instead of passing it elsewhere."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Effect hooks::useInsertionEffect": {
+  "sourceUrl": "https://react.dev/reference/react/useInsertionEffect",
+  "sourceTitle": "useInsertionEffect – React",
+  "summary": "`useInsertionEffect` lets CSS-in-JS libraries insert styles before layout effects run. It runs only on the client and returns `undefined`.",
+  "explanation": "`useInsertionEffect` runs setup when the component enters the DOM, before layout effects, and repeats cleanup/setup when dependencies change. It is intended mainly for CSS-in-JS libraries; effects run only on the client, state updates are forbidden inside it, refs are not attached yet, and the DOM may or may not have been updated when it runs.",
+  "syntax": "useInsertionEffect(setup, dependencies?)",
+  "parameters": [
+   {
+    "name": "setup",
+    "type": "function",
+    "description": "Function containing the effect logic; it may optionally return a cleanup function."
+   },
+   {
+    "name": "dependencies",
+    "type": "array | undefined",
+    "description": "Optional list of every reactive value referenced by setup. It must have a constant number of items and be written inline."
+   }
+  ],
+  "returns": "undefined",
+  "example": {
+   "title": "Insert a style before layout effects",
+   "code": "import { useInsertionEffect } from 'react';\n\nfunction useCSS(rule: string) {\n  useInsertionEffect(() => {\n    const style = document.createElement('style');\n    style.textContent = rule;\n    document.head.appendChild(style);\n    return () => style.remove();\n  }, [rule]);\n\n  return rule;\n}\n\nexport default function Card() {\n  useCSS('.card { color: rebeccapurple; }');\n  return <div className=\"card\">Hello</div>;\n}",
+   "language": "tsx",
+   "explanation": "A minimal CSS-in-JS-style hook inserts a style element and removes it when the rule changes or the component unmounts."
+  },
+  "useCases": [
+   {
+    "title": "Inject generated styles",
+    "scenario": "A CSS-in-JS library must add or update a style tag before layout effects measure or read layout."
+   },
+   {
+    "title": "Clean up dynamic styles",
+    "scenario": "A library needs to remove an old style rule when its reactive inputs change or the component unmounts."
+   }
+  ],
+  "related": [
+   "useEffect",
+   "useLayoutEffect"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use it primarily inside CSS-in-JS libraries rather than ordinary application components.",
+   "It provides an early client-side phase for inserting style elements before layout effects.",
+   "Its main purpose is making styles available before effects that may inspect layout run.",
+   "Setup may return cleanup logic for removing or undoing inserted styles.",
+   "When dependencies change, React cleans up the previous setup before running the new one.",
+   "The hook has no useful return value."
+  ],
+  "gotchas": [
+   "Do not update state from this hook.",
+   "Do not rely on refs being attached inside the hook.",
+   "Do not assume a fixed relationship to DOM updates.",
+   "The hook does not run during server rendering."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Effect hooks::useLayoutEffect": {
+  "sourceUrl": "https://react.dev/reference/react/useLayoutEffect",
+  "sourceTitle": "useLayoutEffect – React",
+  "summary": "useLayoutEffect runs an effect before the browser repaints. Use it to measure or adjust layout for a visual result that must not flicker.",
+  "explanation": "Call this Hook when an effect must read layout or make a visual adjustment before the browser paints. React runs its setup after the component commits but before repainting, and cleanup before a later setup when dependencies change or when the component unmounts. State updates scheduled inside it are processed before repaint, so use it sparingly and prefer useEffect when painting first is acceptable.",
+  "syntax": "useLayoutEffect(setup, dependencies?)",
+  "parameters": [
+   {
+    "name": "setup",
+    "type": "() => void | (() => void)",
+    "description": "A setup function that runs after the component commits and before repaint; it may return a cleanup function."
+   },
+   {
+    "name": "dependencies",
+    "type": "Array<unknown> | undefined",
+    "description": "Optional reactive values used by setup. React compares them with Object.is and reruns the effect when one changes."
+   }
+  ],
+  "returns": "undefined",
+  "example": {
+   "title": "Measure an element before paint",
+   "code": "import { useLayoutEffect, useRef, useState } from 'react';\n\nexport default function Tooltip() {\n  const ref = useRef<HTMLDivElement>(null);\n  const [height, setHeight] = useState(0);\n\n  useLayoutEffect(() => {\n    setHeight(ref.current?.getBoundingClientRect().height ?? 0);\n  }, []);\n\n  return <div ref={ref}>Tooltip height: {height}px</div>;\n}",
+   "language": "tsx",
+   "explanation": "Measures the rendered tooltip before the browser repaints, then stores its height for rendering."
+  },
+  "useCases": [
+   {
+    "title": "Measure and position visual UI",
+    "scenario": "A tooltip or popover must be positioned from its measured dimensions before it becomes visible."
+   },
+   {
+    "title": "Read layout before paint",
+    "scenario": "A component needs DOM geometry to choose its final rendered layout without showing an incorrect intermediate position."
+   },
+   {
+    "title": "Synchronize DOM presentation",
+    "scenario": "A browser-only visual adjustment must happen synchronously after commit and before repaint."
+   }
+  ],
+  "related": [
+   "useEffect",
+   "useRef",
+   "useState"
+  ],
+  "since": "",
+  "keyPoints": [
+   "It is the layout-sensitive counterpart to useEffect and runs before the browser repaints.",
+   "Use it to measure an element's layout before the user sees the painted result.",
+   "A state update from the Hook is applied before repaint, enabling a corrected visual render without a visible intermediate state."
+  ],
+  "gotchas": [
+   "Call it only at the top level of a component or custom Hook, never inside loops or conditions.",
+   "It does not run during server rendering; effects run only in the browser.",
+   "Because it blocks repainting, use it only when the visual result must be ready before paint."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "External store hooks::useDebugValue": {
+  "sourceUrl": "https://react.dev/reference/react/useDebugValue",
+  "sourceTitle": "useDebugValue",
+  "summary": "useDebugValue adds a readable label for a custom Hook in React DevTools. It affects debugging display only, not the Hook's runtime behavior.",
+  "explanation": "Call useDebugValue inside a custom Hook to provide a value that React DevTools can show while inspecting a component. An optional formatter transforms that value when inspection occurs, so formatting work is deferred until needed; the Hook itself has no runtime return value.",
+  "syntax": "useDebugValue(value, format?)",
+  "parameters": [
+   {
+    "name": "value",
+    "type": "any",
+    "description": "The value to display in React DevTools; it can have any type."
+   },
+   {
+    "name": "format",
+    "type": "(value: any) => any",
+    "description": "Optional formatter called with value when the component is inspected; its result is displayed and may have any type."
+   }
+  ],
+  "returns": "Nothing.",
+  "example": {
+   "title": "Label a custom Hook",
+   "code": "import { useDebugValue, useState } from 'react';\n\nfunction useOnlineStatus() {\n  const [isOnline, setIsOnline] = useState(true);\n  useDebugValue(isOnline ? 'Online' : 'Offline');\n  return { isOnline, setIsOnline };\n}\n\nexport default function App() {\n  const { isOnline, setIsOnline } = useOnlineStatus();\n  return (\n    <button onClick={() => setIsOnline(value => !value)}>\n      {isOnline ? 'Online' : 'Offline'}\n    </button>\n  );\n}",
+   "language": "tsx",
+   "explanation": "This custom Hook exposes a readable Online or Offline label for inspection in React DevTools."
+  },
+  "useCases": [
+   {
+    "title": "Show readable status",
+    "scenario": "A custom Hook exposes a status such as online or offline."
+   },
+   {
+    "title": "Improve library diagnostics",
+    "scenario": "A reusable Hook library needs clearer labels in React DevTools."
+   },
+   {
+    "title": "Defer formatting until inspection",
+    "scenario": "A debug value is expensive to convert to a display string."
+   }
+  ],
+  "related": [
+   "React DevTools",
+   "Rules of Hooks",
+   "Custom Hooks"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Adds a developer-facing label for a custom Hook in React DevTools.",
+   "Invoke it at the top level of the custom Hook, following the Rules of Hooks.",
+   "The first argument is the debug value shown by DevTools and may be any type.",
+   "The optional second argument formats the debug value for display.",
+   "The formatter runs when the component is inspected, rather than during every render.",
+   "Without a formatter, DevTools displays the original value directly.",
+   "The Hook has no return value and is used only to improve debugging information."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "External store hooks::useDebugValue formatter": {
+  "sourceUrl": "https://react.dev/reference/react/useDebugValue",
+  "sourceTitle": "useDebugValue - React",
+  "summary": "useDebugValue adds a custom Hook label to React DevTools. Its optional formatter runs when the component is inspected, so potentially expensive display formatting is deferred.",
+  "explanation": "Pass the custom Hook's debug value as the first argument and a formatter as the optional second argument. React DevTools invokes that formatter when inspecting the component, then displays its result; without a formatter, it displays the original value. Calling the Hook at the custom Hook's top level keeps the diagnostic available to DevTools.",
+  "syntax": "useDebugValue(value, format?)",
+  "parameters": [
+   {
+    "name": "value",
+    "type": "any",
+    "description": "The value to display in React DevTools; it can have any type."
+   },
+   {
+    "name": "format",
+    "type": "(value: any) => any",
+    "description": "Optional function that receives value and returns the formatted display value."
+   }
+  ],
+  "returns": "Nothing.",
+  "example": {
+   "title": "Lazily format a custom Hook label",
+   "code": "import { useDebugValue } from 'react';\n\nfunction useOnlineStatus(isOnline: boolean) {\n  useDebugValue(isOnline, value => (value ? 'Online' : 'Offline'));\n  return isOnline;\n}\n\nexport default function Status() {\n  useOnlineStatus(true);\n  return <p>Open React DevTools and inspect this component.</p>;\n}",
+   "language": "tsx",
+   "explanation": "The custom Hook passes its state to React DevTools and formats it only when the component is inspected."
+  },
+  "useCases": [
+   {
+    "title": "Status diagnostics",
+    "scenario": "Expose a readable online/offline or connection-status label for a custom Hook."
+   },
+   {
+    "title": "Readable formatting",
+    "scenario": "Convert dates, objects, or other internal state into a concise DevTools display value."
+   },
+   {
+    "title": "Lazy diagnostics",
+    "scenario": "Keep expensive debug-label formatting out of ordinary renders until inspection."
+   }
+  ],
+  "related": [
+   "useDebugValue",
+   "React DevTools",
+   "custom Hook"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use it to expose a readable label for a custom Hook in React DevTools.",
+   "Call it at the custom Hook's top level.",
+   "The first argument is the value DevTools should display or pass to the formatter.",
+   "The second argument is an optional formatter.",
+   "The formatter receives the debug value as its argument.",
+   "DevTools displays whatever value the formatter returns.",
+   "Use the second argument to provide lazy formatting."
+  ],
+  "gotchas": [
+   "The formatter is not a general render-time callback; React DevTools calls it during component inspection.",
+   "Omitting the formatter displays the unformatted debug value."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "External store hooks::useSyncExternalStore browser subscriptions": {
+  "sourceUrl": "https://react.dev/reference/react/useSyncExternalStore",
+  "sourceTitle": "useSyncExternalStore - React",
+  "summary": "Subscribe to an external store, such as a browser API, while React manages updates safely during concurrent rendering. Provide subscription cleanup and, when needed, a matching server snapshot for rendering and hydration.",
+  "explanation": "At the top level of a component, pass a stable subscription function and a snapshot reader to useSyncExternalStore. When the browser source changes, the subscription callback prompts React to read the snapshot again and render if needed; an optional server snapshot supports server rendering and hydration.",
+  "syntax": "const snapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot?)",
+  "parameters": [
+   {
+    "name": "subscribe",
+    "type": "(callback: () => void) => () => void",
+    "description": "Subscribes a callback to the external store; must return cleanup that unsubscribes it."
+   },
+   {
+    "name": "getSnapshot",
+    "type": "() => snapshot",
+    "description": "Returns the current snapshot required by the component."
+   },
+   {
+    "name": "getServerSnapshot",
+    "type": "() => snapshot",
+    "description": "Optional initial snapshot used during server rendering and client hydration."
+   }
+  ],
+  "returns": "The current snapshot returned by getSnapshot.",
+  "example": {
+   "title": "Subscribe to browser online status",
+   "code": "import { useSyncExternalStore } from 'react';\n\nfunction subscribe(callback: () => void) {\n  window.addEventListener('online', callback);\n  window.addEventListener('offline', callback);\n  return () => {\n    window.removeEventListener('online', callback);\n    window.removeEventListener('offline', callback);\n  };\n}\n\nexport function OnlineStatus() {\n  const isOnline = useSyncExternalStore(\n    subscribe,\n    () => navigator.onLine,\n    () => true\n  );\n  return <p>{isOnline ? 'Online' : 'Offline'}</p>;\n}",
+   "language": "tsx",
+   "explanation": "Subscribes to browser online/offline events, reads navigator.onLine, and supplies a server snapshot for rendering and hydration."
+  },
+  "useCases": [
+   {
+    "title": "Browser connectivity status",
+    "scenario": "Track navigator.onLine changes using online and offline events."
+   },
+   {
+    "title": "Browser API subscriptions",
+    "scenario": "Integrate a mutable value and event source exposed by a browser API."
+   },
+   {
+    "title": "External store integration",
+    "scenario": "Connect a component to a third-party external state store."
+   }
+  ],
+  "related": [
+   "useEffect",
+   "useOnlineStatus",
+   "navigator.onLine",
+   "online",
+   "offline"
+  ],
+  "since": "18.0",
+  "keyPoints": [
+   "Use this Hook when a component reads mutable data maintained outside React, including browser APIs.",
+   "Do not call it conditionally or inside nested functions.",
+   "Attach the callback to the source and return cleanup that removes the same listener.",
+   "Return the current value needed by the component from the external source.",
+   "The callback tells React to call getSnapshot again and re-render when the snapshot changed.",
+   "A browser value such as navigator.onLine is a suitable external source for this Hook."
+  ],
+  "gotchas": [
+   "Keep subscribe stable, preferably by declaring it outside the component, or React will unsubscribe and subscribe again when its identity changes.",
+   "Browser-only sources need a getServerSnapshot when the component can be server-rendered.",
+   "Ensure the server snapshot matches the client’s initial snapshot during hydration."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "External store hooks::useSyncExternalStore server snapshot": {
+  "sourceUrl": "https://react.dev/reference/react/useSyncExternalStore",
+  "sourceTitle": "useSyncExternalStore",
+  "summary": "Provide getServerSnapshot as the third useSyncExternalStore argument when an external store participates in server rendering. It must return the same initial data on the server and during client hydration.",
+  "explanation": "Pass getServerSnapshot as the third argument when an external store is rendered on the server. React uses it on the server and during client hydration, so it must produce the same initial value on both sides; commonly, that value is serialized from server to client.",
+  "syntax": "const snapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot?)",
+  "parameters": [
+   {
+    "name": "subscribe",
+    "type": "function",
+    "description": "Registers a listener and returns an unsubscribe function."
+   },
+   {
+    "name": "getSnapshot",
+    "type": "function",
+    "description": "Returns the current store snapshot for client renders."
+   },
+   {
+    "name": "getServerSnapshot",
+    "type": "function",
+    "description": "Optional function returning the initial store snapshot for server rendering and client hydration."
+   }
+  ],
+  "returns": "The current snapshot returned by getSnapshot, or the server snapshot during server rendering and hydration.",
+  "example": {
+   "title": "Providing a hydration-safe server snapshot",
+   "code": "import { useSyncExternalStore } from 'react';\n\nlet online = true;\nconst listeners = new Set<() => void>();\n\nfunction subscribe(listener: () => void) {\n  listeners.add(listener);\n  return () => listeners.delete(listener);\n}\nfunction getSnapshot() {\n  return online;\n}\nfunction getServerSnapshot() {\n  return true;\n}\n\nexport function Status() {\n  const isOnline = useSyncExternalStore(\n    subscribe,\n    getSnapshot,\n    getServerSnapshot,\n  );\n  return <p>{isOnline ? 'Online' : 'Offline'}</p>;\n}",
+   "language": "tsx",
+   "explanation": "The third argument supplies the value used to render HTML on the server and to hydrate that HTML on the client."
+  },
+  "useCases": [
+   {
+    "title": "SSR hydration",
+    "scenario": "An external store is rendered with server-side rendering and must hydrate without a mismatch."
+   },
+   {
+    "title": "Serialized initial state",
+    "scenario": "The server knows initial store data that the client must use before becoming interactive."
+   },
+   {
+    "title": "Server-safe fallback",
+    "scenario": "A browser-only external source needs a deterministic value during server rendering."
+   }
+  ],
+  "related": [
+   "useSyncExternalStore",
+   "subscribe",
+   "getSnapshot",
+   "hydrateRoot"
+  ],
+  "since": "",
+  "keyPoints": [
+   "getServerSnapshot supplies the store's initial server snapshot.",
+   "React calls it only while generating server output and hydrating that output in the browser.",
+   "The value must match between server rendering and client hydration.",
+   "A typical implementation serializes the snapshot and transfers it to the browser.",
+   "The function runs during server HTML generation.",
+   "The function also runs on the client as server HTML becomes interactive."
+  ],
+  "gotchas": [
+   "Omitting getServerSnapshot while server-rendering the component causes an error.",
+   "Return exactly the same initial snapshot during the client's first render as on the server."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hook patterns::Callback refs": {
+  "sourceUrl": "https://es.react.dev/reference/react-dom/components/common",
+  "sourceTitle": "Componentes comunes (p. ej. <div>) - React",
+  "summary": "A callback ref is a function passed to ref that runs when a node attaches. In React 19, it can return cleanup logic for detachment, making it useful for managing node collections without an Effect.",
+  "explanation": "A callback ref receives the DOM node when React attaches it. In React 19, the callback may return cleanup logic that runs when the node is removed; without a returned cleanup function, React retains the older null-callback fallback. This pattern can manage collections of nodes without an Effect.",
+  "syntax": "<div ref={(node) => { /* setup */ return () => { /* cleanup */ }; }} />",
+  "parameters": [
+   {
+    "name": "node",
+    "type": "T | null",
+    "description": "The attached DOM node, class component instance, or null for the backwards-compatible detach path."
+   }
+  ],
+  "returns": "An optional cleanup function, called when the ref is detached; if none is returned, React calls the callback with null for backwards compatibility.",
+  "example": {
+   "title": "Tracking nodes with callback refs",
+   "code": "import { useState } from 'react';\n\nexport default function CatList({ cats }: { cats: string[] }) {\n  const [nodes, setNodes] = useState(new Map<string, HTMLLIElement>());\n\n  return (\n    <ul>\n      {cats.map((cat) => (\n        <li\n          key={cat}\n          ref={(node) => {\n            if (node) {\n              setNodes((current) => new Map(current).set(cat, node));\n            } else {\n              setNodes((current) => {\n                const next = new Map(current);\n                next.delete(cat);\n                return next;\n              });\n            }\n          }}\n        >\n          {cat}\n        </li>\n      ))}\n    </ul>\n  );\n}",
+   "language": "tsx",
+   "explanation": "Each list item registers its DOM node when attached and removes it when detached."
+  },
+  "useCases": [
+   {
+    "title": "Maintain a Map of nodes by ID",
+    "scenario": "Registering many rendered elements"
+   },
+   {
+    "title": "Attach behavior when a DOM node appears",
+    "scenario": "Running node-specific setup"
+   },
+   {
+    "title": "Clean up when the node is removed",
+    "scenario": "Undoing node-specific setup"
+   }
+  ],
+  "related": [
+   "useRef",
+   "useImperativeHandle",
+   "StrictMode",
+   "ref callback",
+   "Map"
+  ],
+  "since": "React 19",
+  "keyPoints": [
+   "The callback receives the concrete DOM node during attachment.",
+   "Return a cleanup function to undo registration or other node-specific setup on removal.",
+   "React 19 introduced cleanup returns for callback refs."
+  ],
+  "gotchas": [
+   "In TypeScript, avoid implicit returns that return a node or other value; a callback ref may return only cleanup logic or nothing.",
+   "If no cleanup function is returned, account for the legacy-compatible null invocation when detaching."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hook patterns::Custom Hook naming": {
+  "sourceUrl": "https://react.dev/learn/reusing-logic-with-custom-hooks",
+  "sourceTitle": "Reusing Logic with Custom Hooks",
+  "summary": "Custom Hook names must start with `use` followed by a capital letter. Use this prefix when the function calls at least one Hook; otherwise, keep it as a regular function.",
+  "explanation": "A custom Hook is a JavaScript function whose name begins with `use` followed by a capital letter when it calls one or more Hooks. This naming convention lets React’s tooling recognize it as a Hook and lets it follow Hook-call rules. Functions that call no Hooks should remain ordinary functions without the `use` prefix.",
+  "syntax": "function useHookName(/* parameters */) { /* Hook calls and reusable logic */ }",
+  "parameters": [],
+  "returns": "Hooks may return arbitrary values.",
+  "example": {
+   "title": "A correctly named custom Hook",
+   "code": "import { useState } from 'react';\n\nfunction useOnlineStatus() {\n  const [isOnline, setIsOnline] = useState(true);\n  return isOnline;\n}\n\nexport default function Status() {\n  const isOnline = useOnlineStatus();\n  return <p>{isOnline ? 'Online' : 'Offline'}</p>;\n}",
+   "language": "tsx",
+   "explanation": "The custom Hook starts with `use`, calls a Hook internally, and returns a value for the component to render."
+  },
+  "useCases": [
+   {
+    "title": "Reuse stateful logic",
+    "scenario": "Share stateful behavior such as online-status tracking across components."
+   },
+   {
+    "title": "Compose Hooks",
+    "scenario": "Expose a composed result built from built-in Hooks."
+   },
+   {
+    "title": "Avoid a misleading Hook name",
+    "scenario": "Keep a rendering helper that calls no Hooks as an ordinary function."
+   }
+  ],
+  "related": [
+   "useState",
+   "useOnlineStatus",
+   "Custom Hooks",
+   "Rules of Hooks"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Name a custom Hook with `use` and then an uppercase letter, such as `useOnlineStatus`.",
+   "A function that calls at least one Hook should use the `use` prefix, making it a custom Hook.",
+   "A custom Hook is not restricted to returning state; it can return any value useful to its caller.",
+   "Use custom Hooks to package reusable stateful logic for multiple components."
+  ],
+  "gotchas": [
+   "Do not add `use` to a function merely because it is called during rendering; reserve the prefix for functions that call Hooks."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hook patterns::Deriving instead of storing": {
+  "sourceUrl": "https://react.dev/learn/choosing-the-state-structure",
+  "sourceTitle": "Choosing the State Structure",
+  "summary": "Derive values from props and existing state during render instead of storing redundant copies. This keeps one source of truth and avoids synchronization bugs.",
+  "explanation": "Keep state to the minimal changing information the component must remember. If a value can be calculated from current props or existing state during render, derive it there instead of creating another state variable; use a memoization Hook only when recomputation is actually a concern.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Derive the selected item",
+   "code": "import { useState } from 'react';\n\ntype Product = { id: number; name: string };\n\nexport default function ProductPicker({ products }: { products: Product[] }) {\n  const [selectedId, setSelectedId] = useState<number | null>(null);\n  const selectedProduct = products.find(({ id }) => id === selectedId);\n\n  return (\n    <>\n      <select\n        value={selectedId ?? ''}\n        onChange={(event) => setSelectedId(Number(event.target.value))}\n      >\n        <option value=\"\">Choose a product</option>\n        {products.map((product) => (\n          <option key={product.id} value={product.id}>{product.name}</option>\n        ))}\n      </select>\n      {selectedProduct && <p>Selected: {selectedProduct.name}</p>}\n    </>\n  );\n}",
+   "language": "tsx",
+   "explanation": "Store only the selected ID; derive the selected product from the current props during rendering, so there is no duplicated state to synchronize."
+  },
+  "useCases": [
+   {
+    "title": "Combine existing state",
+    "scenario": "Displaying a full name from first and last name fields"
+   },
+   {
+    "title": "Derive selected data",
+    "scenario": "Showing the selected product from a selected ID and a products prop"
+   },
+   {
+    "title": "Read props directly",
+    "scenario": "Using a prop that should continue updating"
+   },
+   {
+    "title": "Memoize selectively",
+    "scenario": "Expensive derived calculations"
+   }
+  ],
+  "related": [
+   "useState",
+   "useMemo",
+   "props",
+   "state",
+   "rendering"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Compute values from current props and state during render instead of storing copies in state.",
+   "A derivable value is redundant state and creates another value that must remain synchronized.",
+   "For example, concatenate two stored name fields when rendering rather than storing fullName separately.",
+   "Removing duplicate state reduces synchronization work and prevents stale derived values.",
+   "Read a prop directly when the component should reflect its latest value."
+  ],
+  "gotchas": [
+   "Mirroring a prop into state makes the state stop following later prop changes. Use the prop directly unless intentionally keeping an initial or otherwise fixed snapshot."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hook patterns::Effect race conditions": {
+  "sourceUrl": "https://react.dev/reference/react/useEffect",
+  "sourceTitle": "useEffect",
+  "summary": "Prevent stale asynchronous responses from updating state after an Effect is no longer current. Capture an `ignore` flag and set it during cleanup before checking it when the response arrives.",
+  "explanation": "An Effect that starts a request can receive responses out of order. Keep an ignore flag inside the Effect, check it before applying the response, and set it during cleanup so only the still-active Effect updates state.",
+  "syntax": "useEffect(setup, dependencies?)",
+  "parameters": [
+   {
+    "name": "setup",
+    "type": "function",
+    "description": "A setup function containing the Effect logic; it may return a cleanup function."
+   },
+   {
+    "name": "dependencies",
+    "type": "array",
+    "description": "Optional reactive values read by the setup function; changed values cause cleanup followed by a new setup."
+   }
+  ],
+  "returns": "Returns nothing; the setup function may return a cleanup function.",
+  "example": {
+   "title": "Ignore stale Effect responses",
+   "code": "import { useEffect, useState } from 'react';\n\nexport default function Bio({ person }: { person: string }) {\n  const [bio, setBio] = useState<string | null>(null);\n\n  useEffect(() => {\n    let ignore = false;\n    setBio(null);\n\n    fetchBio(person).then(result => {\n      if (!ignore) setBio(result);\n    });\n\n    return () => {\n      ignore = true;\n    };\n  }, [person]);\n\n  return <p>{bio ?? 'Loading…'}</p>;\n}\n\nasync function fetchBio(person: string) {\n  const response = await fetch(`/api/bio/${person}`);\n  return response.text();\n}",
+   "language": "tsx",
+   "explanation": "Each Effect run owns its local flag. Cleanup marks that run inactive, so a later response cannot overwrite state for the current person."
+  },
+  "useCases": [
+   {
+    "title": "Profile or detail fetching",
+    "scenario": "A person or record changes while the previous profile request is still pending."
+   },
+   {
+    "title": "Type-ahead search",
+    "scenario": "Search terms change rapidly and earlier requests finish after newer ones."
+   },
+   {
+    "title": "Filtered or paginated data",
+    "scenario": "Pagination or filters trigger overlapping requests whose completion order is unpredictable."
+   }
+  ],
+  "related": [
+   "useEffect",
+   "cleanup function",
+   "Strict Mode",
+   "fetch"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Initialize a flag for each Effect run and flip it in cleanup to mark that run obsolete.",
+   "Requests can finish out of order; guarding the state update prevents an older response from winning.",
+   "Fetching data is a valid Effect use case when the request synchronizes the component with an external system."
+  ],
+  "gotchas": [
+   "Cleanup happens when dependencies change, not only when the component unmounts; use it to invalidate the previous request.",
+   "Development Strict Mode performs an extra setup and cleanup cycle, so the Effect must tolerate being started and stopped immediately."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hook patterns::eslint-plugin-react-hooks": {
+  "sourceUrl": "https://react.dev/reference/eslint-plugin-react-hooks",
+  "sourceTitle": "eslint-plugin-react-hooks – React",
+  "summary": "`eslint-plugin-react-hooks` provides ESLint rules that enforce React’s Hook conventions. Its recommended rules check stable Hook call order, complete dependency arrays, and additional React or Compiler constraints.",
+  "explanation": "The plugin analyzes React components and Hooks during linting. Its `rules-of-hooks` rule checks that Hooks run in a stable order, while `exhaustive-deps` checks that dependency arrays include values used by the Hook. The recommended preset also exposes additional React and compiler-related diagnostics, so linting can catch correctness and optimization issues before runtime.",
+  "syntax": "import reactHooks from 'eslint-plugin-react-hooks';\nimport { defineConfig } from 'eslint/config';\n\nexport default defineConfig([\n  reactHooks.configs.flat.recommended,\n]);",
+  "parameters": [],
+  "returns": "The ESLint plugin reports lint diagnostics; it does not return a runtime value.",
+  "example": {
+   "title": "Enable the recommended React Hooks rules",
+   "code": "import { defineConfig } from 'eslint/config';\nimport reactHooks from 'eslint-plugin-react-hooks';\n\nexport default defineConfig([\n  reactHooks.configs.flat.recommended,\n]);",
+   "language": "javascript",
+   "explanation": "This flat ESLint configuration enables the plugin’s recommended rules, including checks for Hook call order and dependency arrays."
+  },
+  "useCases": [
+   {
+    "title": "Enforce Hook call order",
+    "scenario": "Prevent conditional, loop-based, callback, or early-return Hook calls from breaking state association."
+   },
+   {
+    "title": "Check dependency completeness",
+    "scenario": "Catch missing values in dependency arrays before Effects, memoization, or callbacks use stale data."
+   },
+   {
+    "title": "Find optimization blockers",
+    "scenario": "Surface React Compiler diagnostics in projects that are not yet using the Compiler."
+   },
+   {
+    "title": "Configure custom Effect Hooks",
+    "scenario": "Lint custom Effect Hooks consistently with the built-in dependency checks."
+   }
+  ],
+  "related": [
+   "rules-of-hooks",
+   "exhaustive-deps",
+   "recommended",
+   "additionalEffectHooks",
+   "additionalHooks"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use the plugin to enforce React’s rules at build time rather than relying only on manual review.",
+   "The `rules-of-hooks` rule protects the call order React uses to associate state with Hook calls.",
+   "Hooks should be called unconditionally and in the same sequence on every render.",
+   "The `exhaustive-deps` rule checks dependency arrays for `useEffect`, `useMemo`, `useCallback`, and related Hooks.",
+   "The plugin can report Compiler diagnostics even when the application has not adopted React Compiler.",
+   "The recommended preset enables the plugin’s standard lint rules without requiring each rule to be configured separately."
+  ],
+  "gotchas": [
+   "Do not call Hooks conditionally or inside loops: changing their order between renders can associate state with the wrong Hook.",
+   "Leaving a referenced value out of a dependency array can create a stale closure and prevent an Effect from reacting to changes.",
+   "If configuring custom Effect Hooks, avoid conflicting shared and rule-level settings because the rule-level option wins."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hook patterns::Hooks and StrictMode": {
+  "sourceUrl": "https://react.dev/reference/react/StrictMode",
+  "sourceTitle": "<StrictMode> – React",
+  "summary": "StrictMode adds development-only checks that replay Effects and remount components to expose impure rendering and missing cleanup. Effects should fully undo their setup so the extra cycle is harmless.",
+  "explanation": "StrictMode performs an additional development-only Effect setup and cleanup cycle, and development remounting preserves state and DOM. Treat this as a test that each Effect can fully undo its setup; production behavior is unchanged.",
+  "syntax": "<StrictMode>{children}</StrictMode>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Cleanup-safe Effect in StrictMode",
+   "code": "import { StrictMode, useEffect, useState } from 'react';\nimport { createRoot } from 'react-dom/client';\n\nfunction ChatConnection() {\n  const [connected, setConnected] = useState(false);\n\n  useEffect(() => {\n    const connection = { connect: () => setConnected(true), disconnect: () => setConnected(false) };\n    connection.connect();\n    return () => connection.disconnect();\n  }, []);\n\n  return <p>{connected ? 'Connected' : 'Disconnected'}</p>;\n}\n\ncreateRoot(document.getElementById('root')!).render(\n  <StrictMode><ChatConnection /></StrictMode>\n);",
+   "language": "tsx",
+   "explanation": "The cleanup reverses the setup, so StrictMode’s extra development cycle does not leave duplicate work behind."
+  },
+  "useCases": [
+   {
+    "title": "Find missing cleanup",
+    "scenario": "Detecting Effects that create subscriptions, connections, timers, or other external resources without undoing them."
+   },
+   {
+    "title": "Test remount resilience",
+    "scenario": "Checking whether components remain correct when React remounts them while preserving state and DOM."
+   },
+   {
+    "title": "Detect render side effects",
+    "scenario": "Surfacing impure rendering logic during development."
+   },
+   {
+    "title": "Validate Effect lifecycle",
+    "scenario": "Verifying that setup and cleanup are symmetrical before production deployment."
+   }
+  ],
+  "related": [
+   "StrictMode",
+   "useEffect",
+   "Effect cleanup",
+   "setup function",
+   "<StrictMode>"
+  ],
+  "since": "18.0.0",
+  "keyPoints": [
+   "StrictMode’s checks are development-only and do not change production behavior.",
+   "Effects receive an additional setup-and-cleanup cycle so incomplete cleanup becomes visible.",
+   "Write setup for the external synchronization and return cleanup that reverses it when necessary.",
+   "An Effect’s lifecycle starts at mount and ends with cleanup at unmount.",
+   "The development sequence is setup, cleanup, then the normal setup.",
+   "The simulated remount preserves state and DOM while testing whether component Effects tolerate remounting."
+  ],
+  "gotchas": [
+   "Do not interpret the extra Effect execution as a production duplicate; it is a development-only cleanup check.",
+   "Initial-mount Effect replay depends on StrictMode wrapping the application root."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hook patterns::Hooks and the React Compiler": {
+  "sourceUrl": "https://react.dev/learn/react-compiler/introduction",
+  "sourceTitle": "Introduction",
+  "summary": "React Compiler automatically memoizes React components and Hooks at build time. Code that follows the Rules of React can be optimized; code that violates them is skipped for optimization rather than silently changing behavior.",
+  "explanation": "The React Compiler optimizes components and Hooks during the build when they follow React’s rules. Keep Hook calls static, pure, and inside React components or custom Hooks; when the compiler detects a violation, it skips optimizing the affected component or Hook rather than changing its behavior.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A compiler-friendly Hook component",
+   "code": "import { useState } from 'react';\n\nfunction Counter() {\n  const [count, setCount] = useState(0);\n\n  return (\n    <button onClick={() => setCount(count + 1)}>\n      Clicked {count} times\n    </button>\n  );\n}\n\nexport default function App() {\n  return <Counter />;\n}",
+   "language": "tsx",
+   "explanation": "This component follows the Rules of React, so the compiler can optimize the component and its Hook without manually adding memoization."
+  },
+  "useCases": [
+   {
+    "title": "Let the compiler handle routine memoization",
+    "scenario": "Writing new function components and custom Hooks"
+   },
+   {
+    "title": "Simplify compiler-compatible code",
+    "scenario": "Removing unnecessary useMemo and useCallback usage"
+   },
+   {
+    "title": "Keep behavior while affected code opts out",
+    "scenario": "Maintaining components with legacy rule violations"
+   },
+   {
+    "title": "Use manual memoization as an escape hatch",
+    "scenario": "Controlling optimization for a specific value or callback"
+   }
+  ],
+  "related": [
+   "Rules of React",
+   "React Compiler",
+   "useMemo",
+   "useCallback",
+   "Custom Hooks"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The compiler performs optimization during the build rather than requiring runtime wrapper code.",
+   "Existing JavaScript can be compiled when it follows React’s documented rules.",
+   "Its automatic memoization is intended to reduce unnecessary updates in compiled React code.",
+   "Compiler-friendly code can avoid manual useCallback patterns in common cases.",
+   "Prefer compiler-managed memoization for new code, adding useMemo or useCallback only when specific control is required."
+  ],
+  "gotchas": [
+   "Do not call Hooks inside loops, conditions, nested functions, or after an early return; call them at the top level of a component or custom Hook.",
+   "A Hook may be called from a function component or custom Hook, but not from an ordinary JavaScript function.",
+   "Do not assume every helper function receives compiler memoization; the compiler targets React components and Hooks.",
+   "Manual memoization remains available when precise control over a particular value or callback is needed."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hook patterns::Selector Hooks over external stores": {
+  "sourceUrl": "https://react.dev/reference/react/useSyncExternalStore",
+  "sourceTitle": "useSyncExternalStore",
+  "summary": "Use useSyncExternalStore with a snapshot reader that returns only the store data a component needs. React rechecks that selected value after notifications and re-renders when it changes.",
+  "explanation": "Pass a stable subscription function and a snapshot reader that returns only the data the component needs. React calls the reader after store notifications and re-renders when the selected result changes according to Object.is; the selected snapshot must remain referentially stable while the underlying data is unchanged.",
+  "syntax": "const snapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot?)",
+  "parameters": [
+   {
+    "name": "subscribe",
+    "type": "(callback: () => void) => () => void",
+    "description": "Subscribes a callback to the external store and returns an unsubscribe cleanup function."
+   },
+   {
+    "name": "getSnapshot",
+    "type": "() => snapshot",
+    "description": "Returns the stable snapshot, or selected slice, needed by the component."
+   },
+   {
+    "name": "getServerSnapshot",
+    "type": "() => snapshot",
+    "description": "Optional function returning the initial store snapshot for server rendering and hydration."
+   }
+  ],
+  "returns": "The current snapshot of the external store, or the selected slice returned by getSnapshot.",
+  "example": {
+   "title": "Subscribe to one store slice",
+   "code": "import { useSyncExternalStore } from 'react';\n\nconst store = {\n  state: { online: true, user: 'Ada' },\n  listeners: new Set<() => void>(),\n  subscribe(listener: () => void) {\n    this.listeners.add(listener);\n    return () => this.listeners.delete(listener);\n  },\n  getSnapshot() {\n    return this.state;\n  },\n  setOnline(online: boolean) {\n    this.state = { ...this.state, online };\n    this.listeners.forEach(listener => listener());\n  }\n};\n\nfunction useOnlineStatus() {\n  return useSyncExternalStore(\n    store.subscribe,\n    () => store.getSnapshot().online\n  );\n}\n\nexport function Status() {\n  return <p>{useOnlineStatus() ? 'Online' : 'Offline'}</p>;\n}",
+   "language": "tsx",
+   "explanation": "The snapshot reader selects only the online field, so the component observes that slice rather than the entire store object."
+  },
+  "useCases": [
+   {
+    "title": "Read a focused slice",
+    "scenario": "A component needs one field from a shared browser or application store."
+   },
+   {
+    "title": "Avoid unrelated updates",
+    "scenario": "Several components consume different parts of one external store."
+   },
+   {
+    "title": "Provide React-compatible subscriptions",
+    "scenario": "A library integrates an external state source with React rendering."
+   }
+  ],
+  "related": [
+   "useSyncExternalStore",
+   "useEffect",
+   "Object.is",
+   "external store"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use this hook when the source of truth lives outside React state or context.",
+   "The hook accepts subscription and snapshot-reading functions, plus an optional server snapshot function.",
+   "Implement the snapshot reader around the component’s needed slice rather than returning unrelated store data.",
+   "React compares the selected snapshot with Object.is and updates the component only when that result changes.",
+   "The store must notify subscribers whenever a change might affect the selected snapshot.",
+   "React manages the subscription lifecycle and rechecks the selected snapshot after notifications."
+  ],
+  "gotchas": [
+   "Return a cached or otherwise stable selected value when the relevant store data has not changed; creating a fresh object on every read can trigger unnecessary renders.",
+   "Do not call the hook conditionally or inside loops; use it at component top level.",
+   "Ensure unsubscription removes the listener so discarded components do not keep receiving store updates."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hook patterns::useContext default values": {
+  "sourceUrl": "https://react.dev/reference/react/useContext",
+  "sourceTitle": "useContext – React",
+  "summary": "useContext returns the closest matching provider value. If no matching provider exists above the consumer, it returns the static defaultValue supplied to createContext; an explicit undefined provider value is not replaced by that default.",
+  "explanation": "Pass a fallback to createContext when defining the context. useContext returns that fallback only when no matching provider exists above the consumer; a provider whose value is undefined still supplies undefined. Because the fallback is static, use state and a provider value when the context must change. A null fallback can be checked and turned into a clear error when the provider is required.",
+  "syntax": "const value = useContext(SomeContext)",
+  "parameters": [],
+  "returns": "The value from the closest matching provider above the calling component, or the createContext defaultValue if no such provider exists.",
+  "example": {
+   "title": "Fallback that exposes a missing provider",
+   "code": "import { createContext, useContext } from 'react';\n\nconst ThemeContext = createContext<string | null>(null);\n\nfunction ThemeLabel() {\n  const theme = useContext(ThemeContext);\n  if (theme === null) throw new Error('ThemeLabel needs ThemeContext');\n  return <p>Theme: {theme}</p>;\n}\n\nexport default function App() {\n  return (\n    <ThemeContext value=\"dark\">\n      <ThemeLabel />\n    </ThemeContext>\n  );\n}",
+   "language": "tsx",
+   "explanation": "The context uses null as a fallback, while the consumer rejects that fallback so a missing provider fails immediately."
+  },
+  "useCases": [
+   {
+    "title": "Provide a standalone fallback",
+    "scenario": "A component can render safely in tests, previews, or isolated environments without a provider."
+   },
+   {
+    "title": "Fail fast on a missing provider",
+    "scenario": "A required provider should be detected close to the consuming component."
+   },
+   {
+    "title": "Define a static baseline",
+    "scenario": "A context needs a stable initial value before a provider is introduced."
+   },
+   {
+    "title": "Handle explicit undefined",
+    "scenario": "A provider may intentionally pass undefined and consumers must distinguish that from no provider."
+   }
+  ],
+  "related": [
+   "createContext",
+   "useContext",
+   "Context provider",
+   "defaultValue"
+  ],
+  "since": "",
+  "keyPoints": [
+   "useContext returns the context's createContext fallback when no matching provider is above the consumer.",
+   "Treat the fallback as a fixed baseline, not reactive context state.",
+   "A context may use null when there is no meaningful standalone fallback.",
+   "The fallback applies only when the entire parent tree lacks a provider for that context.",
+   "The relevant provider must be above the component reading the context.",
+   "A matching provider explicitly passing undefined overrides the fallback."
+  ],
+  "gotchas": [
+   "The createContext fallback is static; it is not a mechanism for updating context.",
+   "A provider with undefined does not trigger the fallback; consumers receive undefined."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Performance hooks::useCallback": {
+  "sourceUrl": "https://react.dev/reference/react/useCallback",
+  "sourceTitle": "useCallback – React",
+  "summary": "useCallback caches a function definition between re-renders. React keeps the same function identity while its dependencies remain unchanged, which can help memoized children or Hook dependencies.",
+  "explanation": "Call useCallback at the top level with a function and every reactive value it reads. React returns the cached function while dependencies remain Object.is-equal; otherwise it returns the function from the current render. It caches identity, not execution, and is useful when a stable function matters to a memoized child or another Hook.",
+  "syntax": "const cachedFn = useCallback(fn, dependencies)",
+  "parameters": [
+   {
+    "name": "fn",
+    "type": "function",
+    "description": "The function definition to cache. React returns it without calling it."
+   },
+   {
+    "name": "dependencies",
+    "type": "array",
+    "description": "A constant list of reactive values used by fn, compared with Object.is on later renders."
+   }
+  ],
+  "returns": "Returns the fn passed during the initial render. On later renders, returns the previously cached function when dependencies are unchanged; otherwise returns the current fn.",
+  "example": {
+   "title": "Stable callback for a memoized child",
+   "code": "import { memo, useCallback, useState } from 'react';\n\nconst Button = memo(function Button({ onClick }: { onClick: () => void }) {\n  return <button onClick={onClick}>Add</button>;\n});\n\nexport default function Counter() {\n  const [count, setCount] = useState(0);\n  const handleClick = useCallback(() => {\n    setCount(c => c + 1);\n  }, []);\n\n  return (\n    <>\n      <p>{count}</p>\n      <Button onClick={handleClick} />\n    </>\n  );\n}",
+   "language": "tsx",
+   "explanation": "The callback keeps the same identity between renders, allowing the memoized Button to skip renders caused only by an unchanged callback prop."
+  },
+  "useCases": [
+   {
+    "title": "Memoized child props",
+    "scenario": "Pass a callback prop to a component wrapped in memo so unchanged callback identity can support skipped renders."
+   },
+   {
+    "title": "Hook dependencies",
+    "scenario": "Provide a stable function value used by another Hook's dependency list."
+   },
+   {
+    "title": "Stable integration callback",
+    "scenario": "Keep a callback reference stable when an external API or subscription requires setup and cleanup tied to function identity."
+   }
+  ],
+  "related": [
+   "memo",
+   "useMemo",
+   "useEffect",
+   "useState",
+   "exhaustive-deps"
+  ],
+  "since": "",
+  "keyPoints": [
+   "It memoizes a function definition so repeated renders can reuse the same function object.",
+   "Use it directly at component or custom-Hook top level, not in control-flow branches.",
+   "Provide the function definition first and its dependency list second.",
+   "Include every reactive value read by the callback, including props, state, and local declarations.",
+   "React compares dependencies with Object.is and preserves identity when all comparisons remain equal.",
+   "A dependency change replaces the cached identity with the current render's function."
+  ],
+  "gotchas": [
+   "Do not call it inside loops, conditions, or nested functions; use a consistent top-level call.",
+   "Do not treat the cached function as durable application state."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Performance hooks::useCallback and memo": {
+  "sourceUrl": "https://react.dev/reference/react/useCallback",
+  "sourceTitle": "useCallback – React",
+  "summary": "useCallback caches a function definition between renders. Pair it with memo when a stable function prop prevents a measured child-rendering cost.",
+  "explanation": "useCallback caches a function definition between renders and returns the cached function until a dependency changes. Its main performance use is passing a stable function prop to a child wrapped in memo, so that child can skip re-rendering when its other props are unchanged.",
+  "syntax": "const cachedFn = useCallback(fn, dependencies);",
+  "parameters": [
+   {
+    "name": "fn",
+    "type": "function",
+    "description": "The function definition to cache between renders."
+   },
+   {
+    "name": "dependencies",
+    "type": "array",
+    "description": "A list containing every reactive value referenced by fn; dependencies are compared with Object.is."
+   }
+  ],
+  "returns": "Returns the cached function. On the first render it returns the supplied function; later it returns the previous function until a dependency changes.",
+  "example": {
+   "title": "Stable callback for a memoized child",
+   "code": "import { memo, useCallback, useState } from 'react';\n\nconst ShippingForm = memo(function ShippingForm({ onSubmit }: { onSubmit: () => void }) {\n  console.log('ShippingForm rendered');\n  return <button onClick={onSubmit}>Submit</button>;\n});\n\nexport default function ProductPage({ productId, referrer }: { productId: string; referrer: string }) {\n  const [theme, setTheme] = useState('light');\n  const handleSubmit = useCallback(() => {\n    console.log(productId, referrer);\n  }, [productId, referrer]);\n\n  return (\n    <div className={theme}>\n      <ShippingForm onSubmit={handleSubmit} />\n      <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>Toggle theme</button>\n    </div>\n  );\n}",
+   "language": "tsx",
+   "explanation": "The callback remains stable while its dependencies remain unchanged, allowing the memoized child to skip parent-triggered re-renders."
+  },
+  "useCases": [
+   {
+    "title": "Stabilize a function prop",
+    "scenario": "A memoized child receives a callback prop and should skip re-rendering when the callback’s dependencies are unchanged."
+   },
+   {
+    "title": "Avoid measured child work",
+    "scenario": "A callback is passed to a component whose rendering is demonstrably expensive."
+   },
+   {
+    "title": "Apply precise memoization",
+    "scenario": "A component needs explicit control over which function identities remain stable when React Compiler is not providing that control."
+   }
+  ],
+  "related": [
+   "memo",
+   "useMemo",
+   "React Compiler"
+  ],
+  "since": "",
+  "keyPoints": [
+   "useCallback returns a cached function definition across renders.",
+   "Include every reactive value used by the callback in the dependency array.",
+   "React returns the same cached function while all dependencies remain the same.",
+   "useCallback and memo work together when a child’s rendering cost makes avoiding re-renders worthwhile.",
+   "Unlike useMemo, useCallback caches the function rather than calling it and caching its result.",
+   "React Compiler can automatically memoize functions, reducing routine manual use of this Hook."
+  ],
+  "gotchas": [
+   "Call useCallback only at the top level of a component or custom Hook; do not place it in loops or conditions.",
+   "useCallback caches the function itself; it does not execute the supplied function.",
+   "With the React Compiler, manual useCallback is often unnecessary unless precise memoization control is needed."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Performance hooks::useMemo": {
+  "sourceUrl": "https://react.dev/reference/react/useMemo",
+  "sourceTitle": "useMemo",
+  "summary": "useMemo caches the result of a pure calculation between renders. Use it for costly recomputations when measurement shows the optimization is worthwhile.",
+  "explanation": "useMemo runs a pure, argument-free calculation during rendering and stores its result. On later renders, React compares the inline dependency list with the previous one using Object.is; unchanged dependencies reuse the stored value, while changed dependencies trigger recalculation.",
+  "syntax": "const cachedValue = useMemo(calculateValue, dependencies)",
+  "parameters": [
+   {
+    "name": "calculateValue",
+    "type": "function",
+    "description": "Pure function with no arguments that computes the value to cache; it runs during the initial render and when dependencies change."
+   },
+   {
+    "name": "dependencies",
+    "type": "array",
+    "description": "Inline list containing every reactive value used by calculateValue; it must have a constant number of items."
+   }
+  ],
+  "returns": "The calculated value on the initial render or when dependencies change; otherwise, the previously cached value.",
+  "example": {
+   "title": "Memoize a filtered list",
+   "code": "import { useMemo, useState } from 'react';\n\nfunction TodoList({ todos, filter }) {\n  const visibleTodos = useMemo(\n    () => todos.filter(todo => todo.status === filter),\n    [todos, filter]\n  );\n\n  return <ul>{visibleTodos.map(todo => <li key={todo.id}>{todo.text}</li>)}</ul>;\n}\n\nexport default function App() {\n  const [filter, setFilter] = useState('active');\n  const todos = [\n    { id: 1, text: 'Learn React', status: 'active' },\n    { id: 2, text: 'Ship feature', status: 'done' }\n  ];\n  return <><button onClick={() => setFilter('done')}>Done</button><TodoList todos={todos} filter={filter} /></>;\n}",
+   "language": "tsx",
+   "explanation": "Filters the todos and reuses the previous result until the todo list or filter changes."
+  },
+  "useCases": [
+   {
+    "title": "Skip expensive recalculations",
+    "scenario": "A component repeatedly renders while the inputs to an expensive calculation remain unchanged."
+   },
+   {
+    "title": "Stabilize a derived value",
+    "scenario": "A derived array or object should retain its identity until its source values change."
+   },
+   {
+    "title": "Cache client-side computation",
+    "scenario": "A client component needs to reuse the latest expensive computation across renders."
+   }
+  ],
+  "related": [
+   "useCallback",
+   "memo",
+   "cache",
+   "React Compiler"
+  ],
+  "since": "",
+  "keyPoints": [
+   "useMemo caches a calculation result across renders.",
+   "Provide a pure function with no arguments that returns the value to cache.",
+   "Dependencies must include every reactive value referenced by the calculation.",
+   "React checks dependencies on each later render.",
+   "Unchanged dependencies, compared with Object.is, reuse the previous result.",
+   "A changed dependency causes the calculation to run again."
+  ],
+  "gotchas": [
+   "Call useMemo only at the top level of a component or custom Hook—not inside loops or conditions.",
+   "Keep the dependency list inline with a constant number of entries.",
+   "The calculation runs on the initial render even when no cached value exists yet."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Performance hooks::useMemo and the React Compiler": {
+  "sourceUrl": "https://react.dev/reference/react/useMemo",
+  "sourceTitle": "useMemo",
+  "summary": "useMemo caches a calculation between renders until its dependencies change. With the React Compiler, automatic memoization usually removes the need for manual useMemo, but it remains an escape hatch for precise control.",
+  "explanation": "useMemo caches a pure, argument-free calculation between renders and recalculates it when an Object.is comparison detects a changed dependency. The React Compiler can perform memoization automatically, so new code should generally rely on the compiler and keep useMemo when precise manual control is needed.",
+  "syntax": "useMemo(calculateValue, dependencies)",
+  "parameters": [
+   {
+    "name": "calculateValue",
+    "type": "() => any",
+    "description": "A pure, argument-free function that computes the value to cache."
+   },
+   {
+    "name": "dependencies",
+    "type": "Array<any>",
+    "description": "An inline dependency array with a constant number of items; every value used by the calculation must be included."
+   }
+  ],
+  "returns": "The cached calculation result; it is recomputed when dependencies change.",
+  "example": {
+   "title": "Caching a filtered result",
+   "code": "import { useMemo } from 'react';\n\nexport default function ProductList({ products, query }) {\n  const visibleProducts = useMemo(\n    () => products.filter(product => product.name.includes(query)),\n    [products, query]\n  );\n\n  return <ul>{visibleProducts.map(product => <li key={product.id}>{product.name}</li>)}</ul>;\n}",
+   "language": "tsx",
+   "explanation": "This component caches the filtered list until products or query changes; with the React Compiler enabled, the manual useMemo may usually be removed."
+  },
+  "useCases": [
+   {
+    "title": "Cache expensive calculations",
+    "scenario": "A calculation is expensive and its inputs change less often than the component renders."
+   },
+   {
+    "title": "Control referential stability",
+    "scenario": "A memoized value must remain stable for an effect dependency or another explicitly controlled boundary."
+   },
+   {
+    "title": "Integrate with the React Compiler",
+    "scenario": "An existing codebase uses manual memoization and needs to preserve a deliberate optimization while adopting the compiler."
+   }
+  ],
+  "related": [
+   "useCallback",
+   "React Compiler",
+   "React.memo"
+  ],
+  "since": "",
+  "keyPoints": [
+   "With the React Compiler enabled, automatic memoization often makes manually adding useMemo unnecessary.",
+   "Prefer compiler-managed memoization for new code unless manual control is needed.",
+   "useMemo remains available when you need an explicit memoization boundary or precise control.",
+   "React reuses the cached result when all dependencies remain unchanged.",
+   "A dependency change causes the calculation to run again and replaces the cached result."
+  ],
+  "gotchas": [
+   "Call useMemo only at the top level of a component or custom Hook—not inside loops, conditions, or nested functions.",
+   "Keep the dependency list inline, with a constant number of entries, and include every value used by the calculation.",
+   "The calculation must be pure and accept no arguments."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Performance hooks::useMemo cache semantics": {
+  "sourceUrl": "https://react.dev/reference/react/useMemo",
+  "sourceTitle": "useMemo",
+  "summary": "`useMemo` caches a pure calculation's result between renders when its dependencies are unchanged. Use it only as a performance optimization, never as storage for required application state.",
+  "explanation": "`useMemo` runs a pure, argument-free calculation during the initial render, then compares its inline dependency list with the previous one using `Object.is`. If dependencies are unchanged, React returns the previously calculated value; otherwise it recalculates and stores the new result. The cache is an optimization between renders, so required application state must not depend on it.",
+  "syntax": "useMemo(calculateValue, dependencies)",
+  "parameters": [
+   {
+    "name": "calculateValue",
+    "type": "() => T",
+    "description": "A pure function with no arguments that returns the value to calculate."
+   },
+   {
+    "name": "dependencies",
+    "type": "Array<unknown>",
+    "description": "An inline, fixed-length list containing every reactive value used by the calculation."
+   }
+  ],
+  "returns": "The calculated value on the initial render; on later renders, either the stored value when dependencies are unchanged or a newly calculated value.",
+  "example": {
+   "title": "Cache an expensive derived value",
+   "code": "import { useMemo, useState } from 'react';\n\nexport default function TodoList({ todos, filter }) {\n  const [count, setCount] = useState(0);\n  const visibleTodos = useMemo(\n    () => todos.filter(todo => todo.status === filter),\n    [todos, filter]\n  );\n\n  return (\n    <>\n      <button onClick={() => setCount(count + 1)}>Unrelated: {count}</button>\n      <ul>{visibleTodos.map(todo => <li key={todo.id}>{todo.text}</li>)}</ul>\n    </>\n  );\n}",
+   "language": "tsx",
+   "explanation": "The filtered list is recalculated only when `todos` or `filter` changes; unrelated state updates can reuse the cached result."
+  },
+  "useCases": [
+   {
+    "title": "Avoid repeated expensive calculations",
+    "scenario": "A component repeatedly filters, sorts, or transforms a large collection."
+   },
+   {
+    "title": "Stabilize props for optimized children",
+    "scenario": "A memoized child should receive a stable derived object while its inputs stay unchanged."
+   },
+   {
+    "title": "Compute pure derived data",
+    "scenario": "A component derives display data from props and state during rendering."
+   }
+  ],
+  "related": [
+   "useCallback",
+   "memo",
+   "cache"
+  ],
+  "since": "",
+  "keyPoints": [
+   "It memoizes a calculation result across renders for performance.",
+   "The calculation receives no arguments, returns the derived value, and must be pure.",
+   "Unchanged dependencies let React reuse the previous result.",
+   "A dependency change causes recalculation, followed by caching of the new result.",
+   "Dependency comparisons use `Object.is` semantics.",
+   "The cache normally lasts until a dependency changes or React chooses to discard it."
+  ],
+  "gotchas": [
+   "The calculation runs during rendering, so keep it pure and free of side effects.",
+   "Provide a fixed-length dependency array inline; do not construct it dynamically.",
+   "Call the Hook at the top level of the component or a custom Hook."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Ref hooks::useImperativeHandle": {
+  "sourceUrl": "https://react.dev/reference/react/useImperativeHandle",
+  "sourceTitle": "useImperativeHandle",
+  "summary": "useImperativeHandle customizes the value exposed through a ref, allowing a component to publish a narrow imperative API instead of its underlying DOM node or implementation.",
+  "explanation": "Call the Hook at the top level of a component to replace the ref's default value with a custom handle. The handle is created by a no-argument function and can contain only the methods or value the parent should use. Keep the underlying DOM node in a separate ref; list every reactive value used by the factory in dependencies.",
+  "syntax": "useImperativeHandle(ref, createHandle, dependencies?)",
+  "parameters": [
+   {
+    "name": "ref",
+    "type": "Ref",
+    "description": "The ref received as a prop by the component; this is the ref whose exposed value is customized."
+   },
+   {
+    "name": "createHandle",
+    "type": "() => any",
+    "description": "A no-argument function returning the value to expose through the ref."
+   },
+   {
+    "name": "dependencies",
+    "type": "any[]",
+    "description": "Optional inline dependency list for reactive values referenced by createHandle; it must have a constant length."
+   }
+  ],
+  "returns": "undefined",
+  "example": {
+   "title": "Expose a narrow input API",
+   "code": "import { useImperativeHandle, useRef } from 'react';\n\nfunction MyInput({ ref }) {\n  const inputRef = useRef(null);\n\n  useImperativeHandle(ref, () => ({\n    focus() {\n      inputRef.current?.focus();\n    },\n    clear() {\n      if (inputRef.current) inputRef.current.value = '';\n    },\n  }), []);\n\n  return <input ref={inputRef} />;\n}\n\nexport default function App() {\n  const inputRef = useRef(null);\n  return <><MyInput ref={inputRef} /><button onClick={() => inputRef.current?.focus()}>Focus</button></>;\n}",
+   "language": "tsx",
+   "explanation": "The component keeps the DOM ref private and exposes only focus and clear methods to its parent."
+  },
+  "useCases": [
+   {
+    "title": "Controlled DOM actions",
+    "scenario": "Expose focus or scrolling without exposing the entire DOM node."
+   },
+   {
+    "title": "Narrow component API",
+    "scenario": "Publish a small set of methods for a complex child component."
+   },
+   {
+    "title": "Encapsulated imperative operations",
+    "scenario": "Keep implementation refs private while allowing parent-triggered imperative behavior."
+   }
+  ],
+  "related": [
+   "useRef",
+   "forwardRef",
+   "ref"
+  ],
+  "since": "19",
+  "keyPoints": [
+   "It replaces the value exposed through a ref with a custom handle.",
+   "A handle commonly contains a small object of intentionally public methods.",
+   "The exposed handle may be any type, not only an object.",
+   "Include every reactive value used by the handle factory in the dependency list.",
+   "Props, state, and component-scope declarations count as reactive dependencies.",
+   "The signature accepts the target ref, a handle factory, and optional dependencies."
+  ],
+  "gotchas": [
+   "Call it at the top level of the component; do not call it conditionally or inside nested functions.",
+   "Dependencies must be an inline list with a constant length."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Ref hooks::useImperativeHandle dependency list": {
+  "sourceUrl": "https://react.dev/reference/react/useImperativeHandle.md",
+  "sourceTitle": "useImperativeHandle",
+  "summary": "useImperativeHandle recreates the handle exposed through a ref when a listed reactive dependency changes. Include every reactive value used by createHandle in a constant-length inline list.",
+  "explanation": "Pass every reactive value read by createHandle in an inline, constant-length dependency list. React compares each dependency with Object.is; when one changes—or when the list is omitted—it reruns createHandle and assigns the newly created handle to the ref.",
+  "syntax": "useImperativeHandle(ref, createHandle, dependencies?)",
+  "parameters": [
+   {
+    "name": "ref",
+    "type": "ref",
+    "description": "The ref received by the component; this is the ref whose exposed handle is customized."
+   },
+   {
+    "name": "createHandle",
+    "type": "function",
+    "description": "A no-argument function that returns the handle to expose. The handle may have any type, commonly an object containing methods."
+   },
+   {
+    "name": "dependencies",
+    "type": "array",
+    "description": "Optional inline list of every reactive value referenced by createHandle. It must have a constant number of items."
+   }
+  ],
+  "returns": "No return value is documented; the Hook customizes the handle exposed through ref.",
+  "example": {
+   "title": "Recreate a ref handle when its dependency changes",
+   "code": "import { forwardRef, useImperativeHandle, useRef } from 'react';\n\nconst TextInput = forwardRef(function TextInput({ initialValue }, ref) {\n  const inputRef = useRef<HTMLInputElement>(null);\n\n  useImperativeHandle(ref, () => ({\n    focus() {\n      inputRef.current?.focus();\n    },\n    reset() {\n      if (inputRef.current) inputRef.current.value = initialValue;\n    }\n  }), [initialValue]);\n\n  return <input ref={inputRef} defaultValue={initialValue} />;\n});\n\nexport default TextInput;",
+   "language": "tsx",
+   "explanation": "The exposed handle is recreated when the reactive initialValue prop changes."
+  },
+  "useCases": [
+   {
+    "title": "Custom imperative API",
+    "scenario": "Expose selected methods instead of the entire DOM node."
+   },
+   {
+    "title": "Dependency-aware handle updates",
+    "scenario": "Refresh methods or values in the handle when props or state change."
+   },
+   {
+    "title": "Imperative input controls",
+    "scenario": "Let a parent call focused actions on a child input."
+   }
+  ],
+  "related": [
+   "useRef",
+   "forwardRef",
+   "ref"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The dependency list must include every reactive value read by createHandle.",
+   "Props, state, and component-body variables or functions count as reactive dependencies.",
+   "A changed dependency causes React to recreate the exposed handle.",
+   "After recreation, React assigns the new handle to the ref."
+  ],
+  "gotchas": [
+   "Keep the dependency list inline and constant in length; do not construct it dynamically.",
+   "Omitting the dependency list makes createHandle run again on re-renders, rather than limiting recreation to selected dependencies."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Ref hooks::useRef": {
+  "sourceUrl": "https://react.dev/reference/react/useRef",
+  "sourceTitle": "useRef",
+  "summary": "useRef stores a mutable value or DOM reference in a stable ref object without triggering a re-render when current changes. Use it for information that does not affect the rendered output.",
+  "explanation": "Call useRef with an initial value to obtain a stable object whose mutable current property can hold any value, including a DOM node. React preserves that object between renders, but changing current does not trigger a render, so use refs for information that does not affect the rendered output.",
+  "syntax": "const ref = useRef(initialValue)",
+  "parameters": [
+   {
+    "name": "initialValue",
+    "type": "any",
+    "description": "The initial value for the ref object's current property; it may be any type and is ignored after the initial render."
+   }
+  ],
+  "returns": "An object with one current property, initially set to initialValue. React returns the same object on subsequent renders; current can later be changed.",
+  "example": {
+   "title": "Focus a DOM element",
+   "code": "import { useRef } from 'react';\n\nexport default function Form() {\n  const inputRef = useRef<HTMLInputElement>(null);\n\n  function handleClick() {\n    inputRef.current?.focus();\n  }\n\n  return (\n    <>\n      <input ref={inputRef} placeholder=\"Name\" />\n      <button onClick={handleClick}>Focus input</button>\n    </>\n  );\n}",
+   "language": "tsx",
+   "explanation": "Stores the input DOM node in the ref so the click handler can focus it without causing a render."
+  },
+  "useCases": [
+   {
+    "title": "Access a DOM element",
+    "scenario": "Keep a DOM node reference and call browser methods such as focus from an event handler."
+   },
+   {
+    "title": "Retain non-rendering data",
+    "scenario": "Store a timeout ID or another mutable value that must survive re-renders but does not affect the UI."
+   },
+   {
+    "title": "Persist mutable information",
+    "scenario": "Keep a value between renders without using state when changing it should not update the component."
+   }
+  ],
+  "related": [
+   "useImperativeHandle",
+   "createRef",
+   "ref attribute",
+   "useState"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use useRef for mutable information that does not participate in the component’s rendered result.",
+   "Call the Hook at the component’s top level, not conditionally or inside nested functions.",
+   "The standard form accepts one initial value and returns the ref object.",
+   "The returned object exposes its stored value through current.",
+   "The ref object remains stable across re-renders, so its identity can be retained safely.",
+   "Passing the ref to a JSX element lets React place the associated DOM node in current."
+  ],
+  "gotchas": [
+   "Avoid reading or writing current during rendering except when initializing it; use event handlers or effects for later access.",
+   "Changing current will not update the UI; use state when the changed value must affect rendered output.",
+   "Prefer event handlers for interacting with mutable ref values after rendering."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Ref hooks::useRef instance values": {
+  "sourceUrl": "https://react.dev/reference/react/useRef",
+  "sourceTitle": "useRef – React",
+  "summary": "useRef stores a value that survives re-renders without triggering a re-render when changed. Use it for non-visual data such as timer IDs, previous values, and mutable handles.",
+  "explanation": "Call useRef with an initial value to obtain a stable ref object. React preserves that object across renders, and its mutable current property can hold values such as timer IDs or previous values. Updating current does not schedule a render, so use refs for information needed by event handlers or effects but not for displayed output. Avoid reading or writing current during rendering except for initialization.",
+  "syntax": "const ref = useRef(initialValue)",
+  "parameters": [
+   {
+    "name": "initialValue",
+    "type": "any",
+    "description": "The initial value for the ref object's current property; it may be any type and is ignored after the initial render."
+   }
+  ],
+  "returns": "Returns a ref object with a mutable current property. The same object is returned on subsequent renders.",
+  "example": {
+   "title": "Store a timer handle",
+   "code": "import { useRef, useState } from 'react';\n\nexport default function Stopwatch() {\n  const timerId = useRef<number | null>(null);\n  const [running, setRunning] = useState(false);\n\n  function start() {\n    if (timerId.current !== null) return;\n    timerId.current = window.setInterval(() => {}, 1000);\n    setRunning(true);\n  }\n\n  function stop() {\n    if (timerId.current === null) return;\n    window.clearInterval(timerId.current);\n    timerId.current = null;\n    setRunning(false);\n  }\n\n  return <button onClick={running ? stop : start}>{running ? 'Stop' : 'Start'}</button>;\n}",
+   "language": "tsx",
+   "explanation": "The ref keeps the interval handle between renders without causing a render when the handle changes."
+  },
+  "useCases": [
+   {
+    "title": "Timer handles",
+    "scenario": "Keep an interval or timeout ID so event handlers can start and cancel it."
+   },
+   {
+    "title": "Previous values",
+    "scenario": "Remember a value from an earlier render without making it part of rendered state."
+   },
+   {
+    "title": "Mutable handles",
+    "scenario": "Retain an imperative object or handle that should persist for the component's lifetime."
+   }
+  ],
+  "related": [
+   "useState",
+   "useEffect",
+   "ref.current",
+   "Referencing Values With Refs"
+  ],
+  "since": "",
+  "keyPoints": [
+   "useRef is for retaining non-rendering information inside a component.",
+   "The ref object remains stable across renders.",
+   "Assign to current to update the stored value.",
+   "Ref updates do not trigger rendering.",
+   "Refs preserve values that ordinary local variables would lose after each render.",
+   "Each mounted component instance receives its own ref storage.",
+   "The initial argument matters only during the first render."
+  ],
+  "gotchas": [
+   "Reading or writing current during render can make component behavior unpredictable; use state when the value is needed for rendering.",
+   "Changing current is invisible to React, so a ref cannot update displayed UI by itself.",
+   "Do not mutate through a ref an object that also supplies rendered state."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "State hooks::useReducer": {
+  "sourceUrl": "https://react.dev/reference/react/useReducer",
+  "sourceTitle": "useReducer",
+  "summary": "useReducer manages component state through a pure reducer and explicit action objects. It returns the current state and a dispatch function for requesting transitions.",
+  "explanation": "Call useReducer with a pure reducer and an initial argument. It returns the current state and a dispatch function; dispatching an action causes React to calculate the next state and re-render when that state changes.",
+  "syntax": "const [state, dispatch] = useReducer(reducer, initialArg, init?)",
+  "parameters": [
+   {
+    "name": "reducer",
+    "type": "function",
+    "description": "Pure function receiving the current state and action and returning the next state. State and action may have any types."
+   },
+   {
+    "name": "initialArg",
+    "type": "any",
+    "description": "Value used to calculate the initial state."
+   },
+   {
+    "name": "init",
+    "type": "function | undefined",
+    "description": "Optional initializer receiving initialArg and returning the initial state. Without it, initialArg is used directly."
+   }
+  ],
+  "returns": "An array containing exactly two values: the current state and a dispatch function.",
+  "example": {
+   "title": "Counter with useReducer",
+   "code": "import { useReducer } from 'react';\n\ntype State = { count: number };\ntype Action = { type: 'increment' } | { type: 'decrement' };\n\nfunction reducer(state: State, action: Action): State {\n  switch (action.type) {\n    case 'increment':\n      return { count: state.count + 1 };\n    case 'decrement':\n      return { count: state.count - 1 };\n  }\n}\n\nexport default function Counter() {\n  const [state, dispatch] = useReducer(reducer, { count: 0 });\n  return (\n    <button onClick={() => dispatch({ type: 'increment' })}>\n      Count: {state.count}\n    </button>\n  );\n}",
+   "language": "tsx",
+   "explanation": "The component dispatches an action, and the pure reducer calculates the next state."
+  },
+  "useCases": [
+   {
+    "title": "Coordinate related state transitions",
+    "scenario": "Several related values change together in response to named events."
+   },
+   {
+    "title": "Move transition logic into a reducer",
+    "scenario": "Event handlers contain complicated update logic."
+   },
+   {
+    "title": "Dispatch action objects",
+    "scenario": "State updates should be expressed as explicit user or application actions."
+   },
+   {
+    "title": "Use a lazy initializer",
+    "scenario": "Initial state requires computation from an input value."
+   }
+  ],
+  "related": [
+   "useState",
+   "dispatch",
+   "reducer",
+   "action",
+   "Strict Mode"
+  ],
+  "since": "",
+  "keyPoints": [
+   "useReducer centralizes related state transitions in a reducer function.",
+   "Invoke the Hook at component or custom-Hook top level.",
+   "A reducer receives current state and an action, then returns the next state without side effects.",
+   "The first returned value is the state for the current render.",
+   "The second returned value dispatches actions that request state updates.",
+   "Represent user events as action objects and pass them to dispatch."
+  ],
+  "gotchas": [
+   "Call useReducer only at the top level of a component or custom Hook—not inside loops or conditions.",
+   "Reducers and initializers must tolerate an extra development-only call, which helps reveal accidental impurities."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "State hooks::useReducer lazy initialization": {
+  "sourceUrl": "https://react.dev/reference/react/useReducer",
+  "sourceTitle": "useReducer – React",
+  "summary": "Use the optional third useReducer argument to derive initial state with init(initialArg). Reuse that initializer from a reset action when you need predictable resetting.",
+  "explanation": "Pass an initializer as the third argument to useReducer. React computes the first state with init(initialArg), while a reducer action can call the same initializer to reset predictably; React then ignores the initial-state arguments on later renders.",
+  "syntax": "const [state, dispatch] = useReducer(reducer, initialArg, init?)",
+  "parameters": [
+   {
+    "name": "reducer",
+    "type": "function",
+    "description": "Reducer function that receives the current state and an action and returns the next state."
+   },
+   {
+    "name": "initialArg",
+    "type": "any",
+    "description": "Value from which the initial state is calculated; it may have any type."
+   },
+   {
+    "name": "init",
+    "type": "function | undefined",
+    "description": "Optional function that receives initialArg and returns the initial state."
+   }
+  ],
+  "returns": "An array containing the current state and the dispatch function.",
+  "example": {
+   "title": "Lazy initialization and reset",
+   "code": "import { useReducer } from 'react';\n\ntype State = { count: number };\ntype Action = { type: 'increment' } | { type: 'reset' };\n\nconst initialCount = 5;\n\nfunction init(count: number): State {\n  return { count };\n}\n\nfunction reducer(state: State, action: Action): State {\n  switch (action.type) {\n    case 'increment':\n      return { count: state.count + 1 };\n    case 'reset':\n      return init(initialCount);\n  }\n}\n\nexport default function Counter() {\n  const [state, dispatch] = useReducer(reducer, initialCount, init);\n  return <button onClick={() => dispatch({ type: 'reset' })}>{state.count}</button>;\n}",
+   "language": "tsx",
+   "explanation": "The third argument supplies the initializer, and the reset action reuses it to create the same initial state."
+  },
+  "useCases": [
+   {
+    "title": "Compute initial state",
+    "scenario": "Derive state from a compact input such as an ID, count, or configuration value."
+   },
+   {
+    "title": "Initialize from a function",
+    "scenario": "Avoid repeating expensive initial-state construction on every render."
+   },
+   {
+    "title": "Predictable reset",
+    "scenario": "Return the reducer to the same derived baseline after a reset action."
+   }
+  ],
+  "related": [
+   "useReducer",
+   "dispatch",
+   "reducer",
+   "initializer function",
+   "initialArg"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The Hook accepts a reducer, an initial argument, and an optional initializer.",
+   "init receives initialArg and must produce the initial reducer state.",
+   "When init is supplied, React derives the first state by calling it with initialArg.",
+   "The first render uses the initializer result, or initialArg directly when no initializer is provided.",
+   "Initialization is not repeated merely because the component renders again.",
+   "Use the third argument when initial-state calculation should be separated from the reducer call."
+  ],
+  "gotchas": [
+   "Changing initialArg after the first render does not reset the reducer state; handle resetting explicitly in the reducer or remount the component."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "State hooks::useState functional updates": {
+  "sourceUrl": "https://react.dev/learn/queueing-a-series-of-state-updates",
+  "sourceTitle": "Queueing a Series of State Updates",
+  "summary": "Use a functional state update when the next value depends on the previous one. React queues these updaters and applies them in order during the next render.",
+  "explanation": "Pass an updater function to the state setter when the next value depends on the pending state. React queues the function and applies queued updaters in order during the next render, allowing each update to use the result of the previous one.",
+  "syntax": "setState(prevState => nextState)",
+  "parameters": [
+   {
+    "name": "nextState",
+    "type": "state value | (pendingState => nextState)",
+    "description": "The next state value, or a pure updater function receiving the pending state and returning the next state."
+   }
+  ],
+  "returns": "The state setter returned by useState accepts either a replacement value or an updater function; the setter schedules a re-render and does not return the updated state.",
+  "example": {
+   "title": "Queue several increments",
+   "code": "import { useState } from 'react';\n\nexport default function Counter() {\n  const [count, setCount] = useState(0);\n\n  function handleClick() {\n    setCount(c => c + 1);\n    setCount(c => c + 1);\n    setCount(c => c + 1);\n  }\n\n  return <button onClick={handleClick}>Count: {count}</button>;\n}",
+   "language": "tsx",
+   "explanation": "Each updater receives the pending state produced by the preceding update, so one click increments the counter three times."
+  },
+  "useCases": [
+   {
+    "title": "Queue repeated updates",
+    "scenario": "Several increments or other updates occur in one event handler."
+   },
+   {
+    "title": "Avoid stale state values",
+    "scenario": "An update must derive its value from the latest pending state."
+   },
+   {
+    "title": "Compose state transitions",
+    "scenario": "Multiple components or callbacks schedule updates before the next render."
+   }
+  ],
+  "related": [
+   "useState",
+   "set function",
+   "updater function",
+   "Queueing a Series of State Updates"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Passing a function as the setter argument selects functional-update behavior instead of replacing state with a function value.",
+   "An updater receives the pending state and computes the next state without side effects.",
+   "React queues the updater and schedules a re-render.",
+   "Queued updaters are applied in order during the next render, each receiving the result produced so far.",
+   "Use a functional update when several updates depend on the same state's current or pending value.",
+   "The updater is processed after the event handler's remaining code has finished."
+  ],
+  "gotchas": [
+   "Keep updater functions pure, accept only the pending state, and return the next state.",
+   "The update is queued and applied during a later render rather than changing the current render's state immediately."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "State hooks::useState lazy initialization": {
+  "sourceUrl": "https://react.dev/reference/react/useState.md",
+  "sourceTitle": "useState – React",
+  "summary": "Use an initializer function with useState to compute an expensive initial value only during component initialization. React stores the result and ignores the initial-state argument on later renders.",
+  "explanation": "Pass a pure, argument-free initializer function as the first argument to useState. React calls it while initializing the component, stores its returned value as state, and ignores the initial-state argument on later renders. In development Strict Mode, React may call the initializer twice to help detect impurities.",
+  "syntax": "const [state, setState] = useState(initialState)",
+  "parameters": [
+   {
+    "name": "initialState",
+    "type": "S | (() => S)",
+    "description": "The initial state value, or a pure, argument-free initializer function that returns the initial state. React ignores this argument after the initial render."
+   }
+  ],
+  "returns": "An array containing exactly two values: the current state and the set function used to update the state and trigger a re-render.",
+  "example": {
+   "title": "Lazy initial state",
+   "code": "import { useState } from 'react';\n\nfunction TodoList() {\n  const [todos, setTodos] = useState(createInitialTodos);\n\n  function addTodo() {\n    setTodos([...todos, { id: todos.length + 1, title: 'New todo' }]);\n  }\n\n  return (\n    <>\n      <button onClick={addTodo}>Add todo</button>\n      <ul>{todos.map(todo => <li key={todo.id}>{todo.title}</li>)}</ul>\n    </>\n  );\n}\n\nfunction createInitialTodos() {\n  return [{ id: 1, title: 'Learn React' }];\n}",
+   "language": "tsx",
+   "explanation": "Passing the function itself makes React call it to produce the initial todos instead of recalculating them on every render."
+  },
+  "useCases": [
+   {
+    "title": "Expensive collection creation",
+    "scenario": "Build an initial todo list or other collection with nontrivial setup work."
+   },
+   {
+    "title": "One-time synchronous setup",
+    "scenario": "Read and parse initial data from a synchronous browser source during initialization."
+   },
+   {
+    "title": "Costly default computation",
+    "scenario": "Create a derived default value whose construction is costly but does not need recalculation on every render."
+   }
+  ],
+  "related": [
+   "useState",
+   "set function",
+   "Strict Mode",
+   "initializer function"
+  ],
+  "since": "",
+  "keyPoints": [
+   "A function passed as the initialState argument is evaluated lazily to create the first state value.",
+   "The initializer runs during component initialization, and its returned value becomes the stored state.",
+   "Write the initializer with no parameters, no side effects, and any desired return type.",
+   "The initial state is saved once; subsequent renders reuse the current state instead of recomputing it.",
+   "Use the function form when constructing the initial value is expensive."
+  ],
+  "gotchas": [
+   "Do not call the initializer yourself: useState(createInitialTodos), not useState(createInitialTodos()).",
+   "Keep the initializer free of side effects and external mutations.",
+   "Development Strict Mode may invoke the initializer twice; its result must be consistent and side-effect-free.",
+   "Changing the initializer or its inputs does not reset existing state on later renders."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Testing Hooks::Hook testing": {
+  "sourceUrl": "https://react.dev/reference/react/act",
+  "sourceTitle": "act",
+  "summary": "Test Hook behavior through a component’s visible UI instead of coupling tests to Hook internals. Use await act() around rendering and interactions so assertions run after React applies updates.",
+  "explanation": "Test Hooks indirectly by rendering a component that uses them, interacting with its visible UI, and asserting the resulting output. Wrap rendering and interactions in await act() so React processes updates before assertions.",
+  "syntax": "await act(async actFn)",
+  "parameters": [
+   {
+    "name": "actFn",
+    "type": "async function",
+    "description": "An async function wrapping renders or interactions for components being tested."
+   }
+  ],
+  "returns": "A thenable; await it to ensure the wrapped React updates have completed.",
+  "example": {
+   "title": "Testing behavior through a component",
+   "code": "import { act, useState } from 'react';\nimport { createRoot } from 'react-dom/client';\n\nfunction Counter() {\n  const [count, setCount] = useState(0);\n  return <button onClick={() => setCount(count + 1)}>{count}</button>;\n}\n\nconst container = document.createElement('div');\nconst root = createRoot(container);\nawait act(async () => {\n  root.render(<Counter />);\n});\n\nconst button = container.querySelector('button');\nawait act(async () => {\n  button.click();\n});\n\nconsole.assert(button.textContent === '1');",
+   "language": "tsx",
+   "explanation": "This renders a component, performs a user-facing interaction, and asserts the resulting DOM output."
+  },
+  "useCases": [
+   {
+    "title": "Stateful interactions",
+    "scenario": "Verify state updates after clicking a control."
+   },
+   {
+    "title": "Effect behavior",
+    "scenario": "Check an Effect-driven UI update after rendering or data changes."
+   },
+   {
+    "title": "Action feedback",
+    "scenario": "Assert an Action’s pending, success, or error state through rendered output."
+   }
+  ],
+  "related": [
+   "act",
+   "useState",
+   "createRoot"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use act to flush pending React work before checking the UI.",
+   "Treat rendering, user events, and data fetching as user-interface interaction units.",
+   "act ensures interaction-related updates reach the DOM before assertions run.",
+   "Wrap component rendering in act when testing its rendered output.",
+   "Wrap dispatched user events in act before checking their effects."
+  ],
+  "gotchas": [
+   "Wrap both rendering and updates in await act() before asserting.",
+   "Prefer user-visible behavior over inspecting Hook internals or implementation details.",
+   "Configure the test environment when act warns that the React act environment is unavailable."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Utility hooks::useId": {
+  "sourceUrl": "https://react.dev/reference/react/useId",
+  "sourceTitle": "useId – React",
+  "summary": "useId generates unique IDs for accessibility attributes. It supports consistent IDs across server rendering and hydration when the server and client render identical component trees.",
+  "explanation": "Call useId at the top level of a component to obtain a stable ID string for that call. Apply it to related accessibility attributes, such as aria-describedby and the referenced element's id. React can coordinate these IDs across server rendering and client hydration when both sides render the same component tree.",
+  "syntax": "const id = useId();",
+  "parameters": [],
+  "returns": "A unique ID string associated with the particular useId call in the component.",
+  "example": {
+   "title": "Link an input to its accessibility hint",
+   "code": "import { useId } from 'react';\n\nexport default function PasswordField() {\n  const passwordHintId = useId();\n\n  return (\n    <>\n      <label htmlFor=\"password\">Password</label>\n      <input id=\"password\" type=\"password\" aria-describedby={passwordHintId} />\n      <p id={passwordHintId}>Use at least 12 characters.</p>\n    </>\n  );\n}",
+   "language": "tsx",
+   "explanation": "Connects the input to its hint with the generated ID through aria-describedby."
+  },
+  "useCases": [
+   {
+    "title": "Accessible form relationships",
+    "scenario": "Associate a form control with descriptive or error text."
+   },
+   {
+    "title": "ARIA references",
+    "scenario": "Give related elements stable IDs for ARIA attributes."
+   },
+   {
+    "title": "Component-library identifiers",
+    "scenario": "Build reusable components that need instance-specific DOM IDs."
+   },
+   {
+    "title": "Server-rendered accessibility markup",
+    "scenario": "Render components on the server and hydrate them on the client."
+   }
+  ],
+  "related": [
+   "use()",
+   "aria-describedby",
+   "id",
+   "React server rendering"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use useId to create unique identifiers for relationships between accessible elements.",
+   "Invoke the Hook at component top level, alongside other unconditional Hook calls.",
+   "The Hook has no arguments.",
+   "Each call returns an ID string associated with that specific call in its component.",
+   "Reuse the returned ID across attributes such as aria-describedby and id.",
+   "Matching server and client trees allow the generated identifiers to remain consistent through hydration."
+  ],
+  "gotchas": [
+   "Call useId only at the top level of a component or custom Hook; do not place it in loops or conditions.",
+   "Server-rendered and client-rendered component trees must be identical for generated IDs to match during hydration."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Utility hooks::useId accessibility": {
+  "sourceUrl": "https://react.dev/reference/react/useId",
+  "sourceTitle": "useId – React",
+  "summary": "useId generates unique IDs for accessibility relationships such as connecting a form control with its label or descriptive text. Call it at the component’s top level and reuse the returned ID in related attributes.",
+  "explanation": "Call useId at the component’s top level, then reuse its returned unique string in related accessibility attributes such as aria-describedby, or in matching id and htmlFor values. React keeps the ID associated with that hook call, including across server and client rendering when their component trees match.",
+  "syntax": "const id = useId()",
+  "parameters": [],
+  "returns": "A unique ID string associated with the particular useId call in the component.",
+  "example": {
+   "title": "Associate an input with help text",
+   "code": "import { useId } from 'react';\n\nfunction PasswordField() {\n  const passwordHintId = useId();\n\n  return (\n    <>\n      <label htmlFor=\"password\">Password</label>\n      <input id=\"password\" type=\"password\" aria-describedby={passwordHintId} />\n      <p id={passwordHintId}>Use at least 12 characters.</p>\n    </>\n  );\n}",
+   "language": "tsx",
+   "explanation": "The generated ID links the input to its descriptive paragraph through aria-describedby."
+  },
+  "useCases": [
+   {
+    "title": "Connect help text with aria-describedby",
+    "scenario": "A form control needs descriptive help text."
+   },
+   {
+    "title": "Match label and control IDs",
+    "scenario": "A label and control cannot be nested together."
+   },
+   {
+    "title": "Avoid duplicate IDs",
+    "scenario": "A reusable component is rendered multiple times."
+   },
+   {
+    "title": "Keep server and client IDs aligned",
+    "scenario": "An application uses server rendering."
+   }
+  ],
+  "related": [
+   "aria-describedby",
+   "htmlFor",
+   "id",
+   "use()",
+   "useId"
+  ],
+  "since": "",
+  "keyPoints": [
+   "useId creates unique IDs intended for relationships between controls and accessibility attributes.",
+   "Invoke the Hook unconditionally at the component’s top level.",
+   "The result is a string tied to that specific Hook call and component instance.",
+   "Reuse the result in attributes such as aria-describedby and id to connect related elements.",
+   "Use aria-describedby when one element, such as an input, is described by another element.",
+   "Generated IDs avoid collisions when multiple instances of the same component appear on a page."
+  ],
+  "gotchas": [
+   "Do not call useId inside loops or conditions; move repeated behavior into a separate component or custom Hook.",
+   "Server-rendered and client-rendered trees must match exactly, or the generated IDs will not match.",
+   "Do not use the generated ID as a cache key; derive cache keys from the underlying data instead."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

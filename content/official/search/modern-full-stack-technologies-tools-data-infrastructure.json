@@ -1,0 +1,1927 @@
+{
+ "Authentication::Authentication with Auth.js & Kinde Auth": {
+  "sourceUrl": "https://authjs.dev/reference/core/providers/kinde",
+  "sourceTitle": "Kinde",
+  "summary": "Auth.js has a built-in Kinde integration based on OIDC. Configure the Kinde client credentials and issuer, then pass the provider to Auth.js to enable Kinde sign-in.",
+  "explanation": "Auth.js integrates Kinde through its built-in OIDC provider. Configure Kinde with a client ID, client secret, and issuer, then pass that provider to Auth.js; the provider handles Kinde's OAuth sign-in flow and returns an OIDC configuration for the authentication handler.",
+  "syntax": "Kinde({ clientId, clientSecret, issuer })",
+  "parameters": [
+   {
+    "name": "config",
+    "type": "OIDCUserConfig<KindeProfile>",
+    "description": "Kinde provider configuration, including OAuth/OIDC settings such as client credentials and issuer."
+   }
+  ],
+  "returns": "OIDCConfig<KindeProfile>",
+  "example": {
+   "title": "Configure Kinde with Auth.js",
+   "code": "import { Auth } from \"@auth/core\"\nimport Kinde from \"@auth/core/providers/kinde\"\n\nconst response = await Auth(new Request(\"https://example.com\"), {\n  providers: [\n    Kinde({\n      clientId: process.env.KINDE_CLIENT_ID,\n      clientSecret: process.env.KINDE_CLIENT_SECRET,\n      issuer: process.env.KINDE_DOMAIN,\n    }),\n  ],\n})",
+   "language": "typescript",
+   "explanation": "Creates an Auth.js request handler configured with Kinde's OIDC provider and the required provider credentials."
+  },
+  "useCases": [
+   {
+    "title": "Add Kinde sign-in",
+    "scenario": "A web application needs OAuth-based sign-in through Kinde without implementing the OIDC provider from scratch."
+   },
+   {
+    "title": "Customize provider defaults",
+    "scenario": "An application needs to adapt the built-in Kinde behavior for provider-specific requirements."
+   },
+   {
+    "title": "Verify the Kinde callback",
+    "scenario": "A team is diagnosing an OAuth redirect configuration problem."
+   }
+  ],
+  "related": [
+   "Auth",
+   "OIDCUserConfig",
+   "KindeProfile",
+   "OIDCConfig",
+   "customizing a built-in OAuth provider"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you configure Kinde in Auth.js?",
+    "answer": "Auth.js includes Kinde as a built-in provider. Configure it with `clientId`, `clientSecret`, and `issuer`, then include the resulting provider in the `providers` array.",
+    "followUp": "What does the provider return? It returns an `OIDCConfig<KindeProfile>` configuration used by Auth.js."
+   },
+   {
+    "question": "Why is the issuer needed?",
+    "answer": "Kinde uses an OIDC configuration, and its issuer identifies the Kinde domain used by the authentication flow. The provider accepts an `OIDCUserConfig<KindeProfile>` configuration object.",
+    "followUp": "How would you change provider defaults? Use the documented customization mechanism for a built-in OAuth provider."
+   },
+   {
+    "question": "What callback URL does Kinde use?",
+    "answer": "The callback endpoint is provider-specific: `https://example.com/api/auth/callback/kinde`. That URL must be registered with Kinde for the OAuth redirect to complete.",
+    "followUp": "What should be checked if the redirect fails? Verify the registered callback path and the configured issuer and credentials."
+   }
+  ],
+  "keyPoints": [
+   "Auth.js provides Kinde as a built-in sign-in integration, so no custom provider implementation is required.",
+   "The provider configuration accepts a client ID, client secret, and issuer for connecting Auth.js to Kinde.",
+   "Kinde exposes a returned user profile through the provider's profile callback.",
+   "Built-in provider behavior can be overridden through Auth.js's built-in OAuth-provider customization guidance."
+  ],
+  "gotchas": [
+   "The provider already supplies defaults; customize them only when the use case requires overriding the built-in configuration.",
+   "Register the Kinde callback using the provider-specific `/api/auth/callback/kinde` path."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Authentication::BetterAuth": {
+  "sourceUrl": "https://better-auth.com/docs/basic-usage",
+  "sourceTitle": "Basic Usage | Better Auth",
+  "summary": "Configure Better Auth with built-in social providers, session access, and server/client plugins. The same auth setup supports application-ready sign-in flows across server and client code.",
+  "explanation": "Better Auth centralizes authentication configuration in a server instance. Add built-in social providers through socialProviders, extend the server and client with plugins, and read session data from server or client APIs after sign-in.",
+  "syntax": "betterAuth({ socialProviders, plugins })",
+  "parameters": [],
+  "returns": "An initialized Better Auth authentication instance.",
+  "example": {
+   "title": "Configure an auth instance",
+   "code": "import { betterAuth } from \"better-auth\";\n\nexport const auth = betterAuth({\n  socialProviders: {\n    github: {\n      clientId: process.env.GITHUB_CLIENT_ID!,\n      clientSecret: process.env.GITHUB_CLIENT_SECRET!,\n    },\n  },\n  plugins: [],\n});",
+   "language": "typescript",
+   "explanation": "Creates a Better Auth server instance with GitHub OAuth configured and an empty plugin list ready for extensions."
+  },
+  "useCases": [
+   {
+    "title": "Social sign-in",
+    "scenario": "Add GitHub, Google, or another built-in OAuth provider to a full-stack application."
+   },
+   {
+    "title": "Session-aware UI",
+    "scenario": "Display the current user and react immediately when authentication state changes."
+   },
+   {
+    "title": "Plugin-based features",
+    "scenario": "Extend authentication with server and client capabilities supplied by a Better Auth plugin."
+   },
+   {
+    "title": "Generic OAuth",
+    "scenario": "Connect an OAuth 2.0 or OIDC provider without a built-in integration."
+   }
+  ],
+  "related": [
+   "betterAuth",
+   "socialProviders",
+   "useSession",
+   "plugins",
+   "Generic OAuth Plugin",
+   "createAuthClient",
+   "signIn.social"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you add a social provider?",
+    "answer": "Configure a provider inside the server instance's socialProviders option, supplying its clientId and clientSecret. The client then uses Better Auth's social sign-in flow.",
+    "followUp": "How would you support a provider that is not built in? Use the Generic OAuth Plugin and configure its provider details, such as discoveryUrl, clientId, and clientSecret."
+   },
+   {
+    "question": "How is session data accessed?",
+    "answer": "Session data is available from both server and client sides. On the client, the useSession hook exposes session state and updates the UI when session changes occur.",
+    "followUp": "Why can client session state stay current after sign-out? The hook is implemented with nanostore and reflects session changes in supported frameworks and the vanilla client."
+   },
+   {
+    "question": "How are plugins configured?",
+    "answer": "Import a plugin and pass it to the auth instance's plugins option. If the plugin has client functionality, register its client counterpart in the auth client as well.",
+    "followUp": "What is the consequence of omitting the client registration? Client-side functionality supplied by that plugin will not be available even though the server plugin is configured."
+   }
+  ],
+  "keyPoints": [
+   "The built-in social-provider configuration supports common providers such as Google, GitHub, Apple, and Discord.",
+   "Application code can obtain session information on either the server or the client.",
+   "Client applications can use useSession to consume authentication state.",
+   "The client session hook is designed to work across supported frameworks and the vanilla client.",
+   "Server plugins are enabled by importing them and placing them in the auth instance's plugins option.",
+   "Generic OAuth extends provider coverage to OAuth 2.0 and OIDC services that lack a built-in integration."
+  ],
+  "gotchas": [
+   "A plugin may require separate registration in the authentication client; server configuration alone is not sufficient.",
+   "Social providers must be explicitly configured on the auth object rather than assumed to be available."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Authentication::Clerk user management": {
+  "sourceUrl": "https://clerk.com/docs/nextjs/guides/organizations/getting-started",
+  "sourceTitle": "Get started with Organizations",
+  "summary": "Clerk Organizations group users into tenant contexts with roles and permissions. The organization switcher manages context, while organization data and authorization checks support profile management and protected routes.",
+  "explanation": "Clerk's organization features group users into tenant contexts, while the organization switcher lets users create, select, and manage those contexts. Organization data is available through the active organization hook, and route access can be enforced with membership, role, and permission checks.",
+  "syntax": "<OrganizationSwitcher />",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Render organization and profile controls",
+   "code": "import { ClerkProvider, OrganizationSwitcher, UserProfile } from '@clerk/nextjs'\n\nexport default function App({ children }) {\n  return (\n    <ClerkProvider>\n      <header>\n        <OrganizationSwitcher />\n        <UserProfile />\n      </header>\n      {children}\n    </ClerkProvider>\n  )\n}",
+   "language": "tsx",
+   "explanation": "This renders Clerk's organization and profile management UI inside a provider."
+  },
+  "useCases": [
+   {
+    "title": "Multi-tenant workspaces",
+    "scenario": "A SaaS product needs separate workspaces for each customer while allowing users to belong to multiple workspaces."
+   },
+   {
+    "title": "Role-based route protection",
+    "scenario": "An application needs administrators to access settings while regular members use the main product."
+   },
+   {
+    "title": "Self-service organization management",
+    "scenario": "Users need to create organizations, invite teammates, and change their active team."
+   }
+  ],
+  "related": [
+   "OrganizationSwitcher",
+   "useOrganization()",
+   "Roles",
+   "Permissions",
+   "Organization membership",
+   "has()",
+   "UserProfile"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem do Clerk Organizations solve?",
+    "answer": "Organizations group users into roles and permissions for multi-tenant applications. Users can switch between team contexts, and application code can inspect the active organization and membership.",
+    "followUp": "How would you restrict an administrative route? Check authentication, the required organization, and the `org:admin` role with an authorization check."
+   },
+   {
+    "question": "How do users manage their organization context?",
+    "answer": "`<OrganizationSwitcher />` provides UI for creating, switching between, and managing organizations. The `useOrganization()` hook exposes the active organization, including the current user's membership and role.",
+    "followUp": "Where should the switcher usually appear? In persistent application navigation such as the header, so it remains available while users work."
+   },
+   {
+    "question": "How can routes be protected?",
+    "answer": "Authorization checks can restrict content or entire routes using organization membership, roles, and permissions. A route can therefore reject unauthenticated users, users outside a specified organization, or users lacking a required role.",
+    "followUp": "What role is used in the documented example? The example checks the `org:admin` role, together with authentication and organization membership."
+   }
+  ],
+  "keyPoints": [
+   "Organizations model users in role- and permission-aware groups, which supports tenant-based applications.",
+   "Render the organization switcher to give users built-in organization lifecycle and context-selection controls.",
+   "The active-organization hook supplies organization context together with membership information.",
+   "The organization hook can expose the signed-in user's membership and role in the active organization.",
+   "Authorization can be applied at either component level or whole-route level.",
+   "The setup flow requires signing in before creating the initial user and organization."
+  ],
+  "gotchas": [
+   "Organization features require an authenticated user before they can be used.",
+   "Keep the organization switcher in persistent navigation so users can change context easily.",
+   "Use the authorization helper for role checks rather than assuming that an active organization grants administrative access."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Automation::n8n Automation": {
+  "sourceUrl": "https://docs.n8n.io/build/understand-workflows/create-and-run-workflows",
+  "sourceTitle": "Create and run workflows",
+  "summary": "n8n workflows connect nodes on a visual canvas to automate processes. A workflow can start manually or through a trigger, then execute connected steps sequentially; publishing enables automatic runs.",
+  "explanation": "An n8n workflow is assembled visually from connected nodes on the workflow canvas. A trigger starts execution either from an external event, a configured schedule, or a manual action; subsequent nodes run in sequence to perform the automated process, and published trigger-based workflows run when their conditions are met.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "An executed workflow that performs the actions defined by its connected nodes.",
+  "example": {
+   "title": "Minimal n8n workflow definition",
+   "code": "{\n  \"nodes\": [\n    {\n      \"parameters\": {},\n      \"name\": \"When clicking ‘Execute Workflow’\",\n      \"type\": \"n8n-nodes-base.manualTrigger\",\n      \"typeVersion\": 1,\n      \"position\": [260, 300]\n    },\n    {\n      \"parameters\": {\n        \"url\": \"https://example.com/api/items\",\n        \"options\": {}\n      },\n      \"name\": \"Fetch items\",\n      \"type\": \"n8n-nodes-base.httpRequest\",\n      \"typeVersion\": 4,\n      \"position\": [480, 300]\n    }\n  ],\n  \"connections\": {\n    \"When clicking ‘Execute Workflow’\": {\n      \"main\": [[{\"node\":\"Fetch items\",\"type\":\"main\",\"index\":0}]]\n    }\n  }\n}",
+   "language": "json",
+   "explanation": "This workflow starts manually and sends the resulting execution through an HTTP Request node."
+  },
+  "useCases": [
+   {
+    "title": "Scheduled jobs",
+    "scenario": "Run recurring operational tasks at fixed times or intervals."
+   },
+   {
+    "title": "Event-driven integrations",
+    "scenario": "Start processing when an external service sends an event."
+   },
+   {
+    "title": "API orchestration",
+    "scenario": "Call an API and pass its output into later workflow steps."
+   },
+   {
+    "title": "Manual testing",
+    "scenario": "Test a workflow interactively before enabling automatic execution."
+   }
+  ],
+  "related": [
+   "Workflow canvas",
+   "Nodes",
+   "Trigger node",
+   "Schedule Trigger",
+   "Webhook node",
+   "Manual Trigger",
+   "HTTP Request node",
+   "Publish"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is an n8n workflow?",
+    "answer": "A workflow is a collection of connected nodes built on the workflow canvas. It begins when a trigger condition occurs and then executes sequentially to complete the process.",
+    "followUp": "How can a workflow run on a recurring schedule? Add a Schedule Trigger and configure its interval or a custom cron expression, then publish the workflow."
+   },
+   {
+    "question": "How do triggers differ from ordinary workflow nodes?",
+    "answer": "A trigger node starts a workflow in response to an external event or configured condition. A Schedule Trigger is one example and can run workflows at fixed intervals or times.",
+    "followUp": "What must be done after configuring a Schedule Trigger? Save and publish the workflow so scheduled executions can occur."
+   },
+   {
+    "question": "What controls whether a workflow runs automatically?",
+    "answer": "Automatic execution requires a trigger node or Webhook node and a published workflow. If the workflow is not published, it must be started manually.",
+    "followUp": "How would you test an automatic workflow before publishing it? Use manual execution, such as the Manual Trigger or the Execute Workflow action."
+   }
+  ],
+  "keyPoints": [
+   "Workflows model an automated process as connected nodes.",
+   "The visual workflow canvas is where you assemble and connect nodes.",
+   "Workflows can start manually or automatically.",
+   "Automatic workflows place a trigger node first.",
+   "Triggers respond to external events or configured settings."
+  ],
+  "gotchas": [
+   "Trigger- or Webhook-started workflows do not run automatically until you publish them.",
+   "An unpublished workflow requires manual execution."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Background jobs::Inngest services": {
+  "sourceUrl": "https://www.inngest.com/docs/learn/inngest-functions.md",
+  "sourceTitle": "Inngest Functions",
+  "summary": "Inngest functions are durable, retryable background units triggered by events, schedules, or webhooks. They checkpoint steps, recover from failures, and expose run traces without requiring a separate queue or workflow engine.",
+  "explanation": "An Inngest function is ordinary application code augmented with trigger and execution metadata. An event, schedule, or webhook starts a run; Inngest records completed steps, retries failed work from the last checkpoint, and exposes the run trace for observing progress and failures.",
+  "syntax": "inngest.createFunction({ id }, { event | cron | webhook }, async ({ event, step }) => { ... })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Event-triggered background function",
+   "code": "import { Inngest } from \"inngest\";\n\nconst inngest = new Inngest({ id: \"background-jobs\" });\n\nexport const sendEmail = inngest.createFunction(\n  { id: \"send-email\" },\n  { event: \"app/email.requested\" },\n  async ({ event, step }) => {\n    await step.run(\"send\", async () => {\n      console.log(`Sending email to ${event.data.to}`);\n    });\n  },\n);",
+   "language": "typescript",
+   "explanation": "This function starts when the matching event arrives and puts the email work in a named durable step."
+  },
+  "useCases": [
+   {
+    "title": "Background jobs",
+    "scenario": "A request should return quickly while email, image processing, exports, or webhook ingestion continue asynchronously."
+   },
+   {
+    "title": "Scheduled work",
+    "scenario": "A recurring task must run automatically on a cron schedule."
+   },
+   {
+    "title": "Durable workflows",
+    "scenario": "A multi-step process must survive failures and resume without repeating completed work."
+   },
+   {
+    "title": "Event fan-out",
+    "scenario": "Several independent handlers should react to the same incoming event."
+   }
+  ],
+  "related": [
+   "Inngest functions",
+   "Durable Execution",
+   "Durable Workflows",
+   "Steps",
+   "Events",
+   "Schedules",
+   "Webhooks",
+   "Serve"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is an Inngest function and how does it run?",
+    "answer": "An Inngest function is a regular function with trigger and execution metadata. A matching event, schedule, or webhook starts its run, while Inngest records steps, persists results, retries failures, and provides a trace.",
+    "followUp": "How does it avoid repeating successful work? It checkpoints completed steps and resumes from the last successful checkpoint after a retry."
+   },
+   {
+    "question": "How would you move heavy work out of an API request?",
+    "answer": "Use an event-triggered function for asynchronous work such as email, exports, or image processing. The caller can send the event and return while the function performs the heavy work with retries and observability.",
+    "followUp": "When is this especially useful? When the caller does not need the result immediately or the work may exceed the request’s time limit."
+   },
+   {
+    "question": "Why are steps central to durable execution?",
+    "answer": "Steps divide a function into named units of work. Inngest stores each successful step’s result, retries a failed step, and lets later steps reuse earlier results.",
+    "followUp": "What happens during a wait? The run can pause without idle compute and resume when the delay or external event completes."
+   }
+  ],
+  "keyPoints": [
+   "A function can start from an event, a cron schedule, or a webhook, allowing both reactive and time-based background work.",
+   "The platform supplies retries, persisted step state, and run visibility without requiring a separately managed queue or workflow engine.",
+   "Successful steps act as checkpoints, so recovery retries only the unfinished portion rather than replaying the entire function.",
+   "Functions use ordinary TypeScript, Python, or Go rather than requiring a specialized workflow language.",
+   "Run traces show completed work, waiting periods, and failures for operational inspection."
+  ],
+  "gotchas": [
+   "Functions execute on your application’s compute, so deployment and runtime availability remain part of operating the service.",
+   "A function does not run merely because it is defined; it needs a supported trigger."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Configuration::T3 environment": {
+  "sourceUrl": "https://env.t3.gg/docs/core",
+  "sourceTitle": "Core ⋅ T3 Env",
+  "summary": "T3 Env validates environment variables against schemas and safely separates server-only values from client-exposed values. It supports Standard Schema-compatible validators and provides a typed env object for application use.",
+  "explanation": "T3 Env creates a schema for server and client variables, validates values at runtime with a Standard Schema-compatible validator, and returns a typed env object for safe access. Client variables must use the framework's required prefix; server variables remain unavailable on the client, where accidental access produces a descriptive error.",
+  "syntax": "createEnv({ server, clientPrefix, client, runtimeEnv, runtimeEnvStrict })",
+  "parameters": [
+   {
+    "name": "server",
+    "type": "object",
+    "description": "Schema for variables available only on the server."
+   },
+   {
+    "name": "clientPrefix",
+    "type": "string",
+    "description": "Prefix required for variables exposed to client code."
+   },
+   {
+    "name": "client",
+    "type": "object",
+    "description": "Schema for variables safe to expose to the client."
+   },
+   {
+    "name": "runtimeEnv",
+    "type": "object",
+    "description": "Runtime object containing the environment values."
+   },
+   {
+    "name": "runtimeEnvStrict",
+    "type": "object",
+    "description": "Explicit runtime mapping for all declared variables when required by the bundler."
+   }
+  ],
+  "returns": "A typed env object containing validated environment variables.",
+  "example": {
+   "title": "Validated environment configuration",
+   "code": "import { createEnv } from \"@t3-oss/env-core\";\nimport * as z from \"zod\";\n\nexport const env = createEnv({\n  server: {\n    DATABASE_URL: z.url(),\n    OPEN_AI_API_KEY: z.string().min(1),\n  },\n  clientPrefix: \"PUBLIC_\",\n  client: {\n    PUBLIC_PUBLISHABLE_KEY: z.string().min(1),\n  },\n  runtimeEnv: {\n    DATABASE_URL: process.env.DATABASE_URL,\n    OPEN_AI_API_KEY: process.env.OPEN_AI_API_KEY,\n    PUBLIC_PUBLISHABLE_KEY: process.env.PUBLIC_PUBLISHABLE_KEY,\n  },\n});\n",
+   "language": "typescript",
+   "explanation": "Defines validated server and client environment variables, then exposes them through a typed env object."
+  },
+  "useCases": [
+   {
+    "title": "Validate configuration",
+    "scenario": "A full-stack application needs required database URLs, API keys, and public browser settings checked at startup."
+   },
+   {
+    "title": "Control client exposure",
+    "scenario": "A frontend build exposes only variables with a framework-specific public prefix."
+   },
+   {
+    "title": "Use a preferred validator",
+    "scenario": "A project uses Zod, Valibot, ArkType, Typia, or another Standard Schema validator."
+   }
+  ],
+  "related": [
+   "@t3-oss/env-core",
+   "createEnv",
+   "Standard Schema",
+   "runtimeEnvStrict",
+   "clientPrefix",
+   "server",
+   "client"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does T3 Env solve?",
+    "answer": "T3 Env validates variables against declared server and client schemas and exposes a typed env object with autocomplete. It uses Standard Schema-compatible validators, including Zod, Valibot, ArkType, and Typia.",
+    "followUp": "Why are client prefixes required? They identify variables intended for browser exposure, and T3 Env enforces the prefix at both the type and runtime levels."
+   },
+   {
+    "question": "How does T3 Env protect server variables?",
+    "answer": "Server variables belong in server, while browser-exposed variables belong in client and must use clientPrefix. The separation prevents accidental exposure of server values to browser code.",
+    "followUp": "What happens when browser code accesses a server-only variable? The proxy-based implementation throws a descriptive error rather than returning the secret."
+   },
+   {
+    "question": "What is the purpose of runtimeEnv and runtimeEnvStrict?",
+    "answer": "runtimeEnv maps schema keys to the runtime source, typically process.env or import.meta.env. When a framework does not automatically include every variable, runtimeEnvStrict explicitly lists all server and client accesses.",
+    "followUp": "Why might a framework need explicit destructuring? Some bundlers include only variables that are statically accessed, so omission can make a declared variable unavailable at runtime."
+   }
+  ],
+  "keyPoints": [
+   "Declare an environment schema instead of handling missing-variable checks throughout application code.",
+   "The resulting env object supplies editor completion and compile-time checking for declared names.",
+   "Validator choice is flexible as long as the library implements Standard Schema.",
+   "Separate server and client schemas so secrets are not intentionally exposed to browser bundles.",
+   "Set clientPrefix to the framework's public-variable prefix, such as PUBLIC_ or VITE_.",
+   "Point runtimeEnv at the environment object supplied by the framework or runtime."
+  ],
+  "gotchas": [
+   "Treat raw environment values as strings before converting or transforming them.",
+   "A shared schema file can ship server-variable schema names to the client; split the schemas when those names are sensitive.",
+   "Use runtimeEnvStrict when the bundler requires every variable to be explicitly referenced."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Data & caching::Redis caching solutions": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/use-cases/cache-aside/index.html.md",
+  "sourceTitle": "Redis cache-aside",
+  "summary": "Redis cache-aside checks Redis before the primary store, caches misses with a TTL, and deletes cached entries after writes. This reduces read latency while bounding staleness and preserving the primary store as the source of truth.",
+  "explanation": "Cache-aside keeps Redis as a disposable read optimization rather than a synchronized copy. Reads try the cache first, retrieve the primary record on a miss, and store it with a TTL; writes update the primary first and delete the cache entry, allowing the next read to repopulate it. The TTL bounds staleness, while explicit deletion handles writes that require fresher results.",
+  "syntax": "GET cache:{entity}:{id}\nSET cache:{entity}:{id} value EX seconds\nDEL cache:{entity}:{id}\nTTL cache:{entity}:{id}",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Cache-aside read and invalidation",
+   "code": "import redis\n\nr = redis.Redis(decode_responses=True)\n\n\ndef get_product(product_id):\n    key = f\"cache:product:{product_id}\"\n    cached = r.hgetall(key)\n    if cached:\n        return cached\n\n    product = load_from_primary(product_id)\n    if product is None:\n        return None\n\n    r.hset(key, mapping=product)\n    r.expire(key, 60)\n    return product\n\n\ndef update_product(product_id, fields):\n    save_to_primary(product_id, fields)\n    r.delete(f\"cache:product:{product_id}\")\n",
+   "language": "python",
+   "explanation": "The application checks Redis before the primary store. A miss loads the entity, writes it to Redis with a time limit, and returns it; a successful write to the primary deletes the corresponding cache key so the next read fetches current data."
+  },
+  "useCases": [
+   {
+    "title": "Reduce primary-store reads",
+    "scenario": "Read-heavy APIs where many requests repeatedly retrieve the same records."
+   },
+   {
+    "title": "Bound stale data",
+    "scenario": "Applications that can tolerate bounded staleness between writes and expiration."
+   },
+   {
+    "title": "Invalidate on write",
+    "scenario": "Systems requiring fresh values after selected updates without synchronizing two stores."
+   }
+  ],
+  "related": [
+   "GET",
+   "SET",
+   "EX",
+   "PX",
+   "DEL",
+   "TTL",
+   "HSET",
+   "HGETALL"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does cache-aside work on a read miss?",
+    "answer": "Cache-aside checks Redis first and queries the primary only after a miss. The returned value is then stored in Redis with a TTL, so subsequent reads can avoid the primary.",
+    "followUp": "What should a write do? Update the primary first, then delete the related Redis key so the next read repopulates it from the authoritative source."
+   },
+   {
+    "question": "What does the TTL control?",
+    "answer": "A TTL sets the maximum period for which a cached value can remain available, which bounds possible staleness. Longer TTLs generally improve hit rates but allow stale data to persist longer; shorter TTLs do the reverse.",
+    "followUp": "How can strict freshness be improved? Pair a TTL chosen for the business tolerance with explicit invalidation after writes."
+   },
+   {
+    "question": "How should cache invalidation be handled after an update?",
+    "answer": "The safe invalidation sequence is to persist the change in the primary store and then delete the cache key. The next read misses and retrieves the new primary value instead of requiring the application to synchronize two copies.",
+    "followUp": "Why avoid directly updating both stores? A cache is not assumed to contain the latest value, so deleting it leaves one authoritative source and a simple recovery path."
+   }
+  ],
+  "keyPoints": [
+   "Use Redis as the first read destination; consult the primary store only when the requested key is absent.",
+   "After a miss, cache the primary result with an expiration so later requests can be served without another primary lookup.",
+   "A predictable entity-and-ID key namespace makes entries addressable and gives every cached record a defined staleness limit.",
+   "Perform primary persistence before deleting the cache entry during updates.",
+   "Use TTL inspection to observe how much lifetime remains on a cached key."
+  ],
+  "gotchas": [
+   "TTL selection trades freshness for efficiency: shortening it increases primary traffic and can reduce cache hits, while lengthening it can serve stale values longer.",
+   "Do not rewrite the cache as part of the write path; invalidate it and let a later read reconstruct the value from the primary."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Data & infrastructure::Upstash": {
+  "sourceUrl": "https://upstash.com/docs/redis/sdks/ts/overview",
+  "sourceTitle": "Overview",
+  "summary": "Upstash provides a connectionless HTTP/REST Redis client for serverless and edge applications. Its global databases route reads to nearby replicas, process writes through a primary, and support usage-based billing.",
+  "explanation": "Upstash Redis provides an HTTP/REST client that sends Redis commands through the Upstash REST API, avoiding persistent TCP connections. Global databases route reads to nearby replicas while writes go through the primary and are replicated; billing can use request-based pricing, so infrastructure follows application traffic.",
+  "syntax": "new Redis({ url: \"UPSTASH_REDIS_REST_URL\", token: \"UPSTASH_REDIS_REST_TOKEN\" })",
+  "parameters": [],
+  "returns": "Redis command results, such as the value returned by get().",
+  "example": {
+   "title": "Use Upstash Redis from a serverless function",
+   "code": "import { Redis } from \"@upstash/redis\";\n\nconst redis = new Redis({\n  url: process.env.UPSTASH_REDIS_REST_URL!,\n  token: process.env.UPSTASH_REDIS_REST_TOKEN!,\n});\n\nawait redis.set(\"greeting\", \"hello\");\nconsole.log(await redis.get(\"greeting\"));",
+   "language": "typescript",
+   "explanation": "Creates the official HTTP-based Redis client from environment credentials, stores a value, and reads it back."
+  },
+  "useCases": [
+   {
+    "title": "Serverless application data",
+    "scenario": "A serverless function needs shared state without managing persistent connections."
+   },
+   {
+    "title": "Globally low-latency reads",
+    "scenario": "Users are distributed globally and read latency matters."
+   },
+   {
+    "title": "Usage-based infrastructure",
+    "scenario": "Traffic varies widely or the application scales to zero."
+   },
+   {
+    "title": "Edge application storage",
+    "scenario": "An edge runtime needs a data layer accessible over HTTP."
+   }
+  ],
+  "related": [
+   "@upstash/redis",
+   "Upstash REST API",
+   "Redis API",
+   "Global Database",
+   "Primary Region",
+   "Read Regions",
+   "redis-cli"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the purpose of @upstash/redis?",
+    "answer": "@upstash/redis is an HTTP/REST-based Redis client built on the Upstash REST API. Its connectionless design suits serverless functions, edge runtimes, and other environments where HTTP is preferable to TCP.",
+    "followUp": "Why can it be preferable to a TCP client in serverless workloads? The documentation notes that highly concurrent serverless workloads can encounter TCP connection issues, while the HTTP client avoids persistent connection management."
+   },
+   {
+    "question": "How does Upstash global replication route reads and writes?",
+    "answer": "A global database has one primary region and multiple read regions. Writes are processed by the primary and replicated to read regions, while reads are served by the nearest replica to reduce latency.",
+    "followUp": "What trade-off follows from adding read regions? Replicated writes add command usage and therefore can increase billing."
+   },
+   {
+    "question": "How does usage-based pricing work?",
+    "answer": "Upstash offers a pay-as-you-go Redis plan billed per request, so cost follows command volume rather than requiring a fixed server allocation. The service is designed so unused capacity does not require continuously provisioned servers.",
+    "followUp": "How can spending be bounded on PAYG? Set a monthly budget; when reached, the database is rate-limited instead of continuing to bill."
+   }
+  ],
+  "keyPoints": [
+   "Redis data can be served globally with low latency while scaling alongside the application's compute.",
+   "Reads are routed automatically to the closest available read replica.",
+   "The replication model primarily optimizes read latency across regions.",
+   "Read regions can be changed without taking the database offline.",
+   "The official TypeScript client uses HTTP rather than requiring a persistent connection."
+  ],
+  "gotchas": [
+   "Global replication does not make writes local to every region; writes are processed by the primary."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Data & persistence::Drizzle ORM": {
+  "sourceUrl": "https://orm.drizzle.team/docs/overview",
+  "sourceTitle": "Drizzle ORM",
+  "summary": "Drizzle ORM is a headless TypeScript ORM for defining schemas and accessing relational data through SQL-like or relational APIs. Drizzle Kit supports schema push, SQL migration generation, migration execution, and schema introspection.",
+  "explanation": "Drizzle lets applications declare database schemas in TypeScript, query relational data through SQL-like or relational APIs, and use Drizzle Kit to generate and apply SQL migrations. The schema can serve as the codebase source of truth, while the generated SQL remains explicit and reviewable.",
+  "syntax": "drizzle-kit generate\n driz zle-kit migrate",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Schema and SQL-like access",
+   "code": "import { drizzle } from 'drizzle-orm/libsql';\nimport { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';\n\nconst users = sqliteTable('users', {\n  id: integer('id').primaryKey(),\n  name: text('name').notNull(),\n});\n\nconst db = drizzle({ connection: { url: ':memory:' } });\n\nawait db.insert(users).values({ name: 'Ada' });\nconst rows = await db.select().from(users);\nconsole.log(rows);",
+   "language": "typescript",
+   "explanation": "Defines a TypeScript schema, creates a Drizzle database handle, inserts a row, and reads it with a SQL-like query API."
+  },
+  "useCases": [
+   {
+    "title": "Codebase-first migrations",
+    "scenario": "An application keeps its database model in a version-controlled TypeScript schema and reviews generated SQL changes before deployment."
+   },
+   {
+    "title": "Type-safe relational access",
+    "scenario": "A service needs concise, SQL-shaped queries while retaining TypeScript type checking."
+   },
+   {
+    "title": "Database introspection",
+    "scenario": "An existing database must become the basis for application entities."
+   },
+   {
+    "title": "Direct schema push",
+    "scenario": "A developer wants to apply a schema directly during rapid local iteration."
+   }
+  ],
+  "related": [
+   "Drizzle Kit",
+   "SQL-like query API",
+   "relational query API",
+   "TypeScript schema",
+   "drizzle-kit generate",
+   "drizzle-kit migrate",
+   "schema migrations",
+   "Drizzle Studio"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is Drizzle ORM, and how does it expose data?",
+    "answer": "Drizzle is a headless TypeScript ORM that supports both SQL-like and relational query APIs. It emphasizes SQL-shaped schemas and queries while retaining type safety.",
+    "followUp": "Why use its SQL-like API? It keeps familiar SQL concepts and provides access to SQL’s expressive power without requiring a separate query language."
+   },
+   {
+    "question": "How does Drizzle handle schema migrations?",
+    "answer": "Drizzle supports a codebase-first workflow in which a TypeScript schema is version-controlled as the source of truth. Drizzle Kit can generate SQL migration files from schema changes and apply them with the migration command.",
+    "followUp": "How can teams use the opposite workflow? They can manage the database schema first and pull that schema into application-level entities."
+   },
+   {
+    "question": "What does Drizzle Kit provide beyond query building?",
+    "answer": "Drizzle Kit is the migration CLI associated with Drizzle. It can generate and run SQL migration files, push a schema directly, pull a schema from a database, and provide utility commands such as Drizzle Studio.",
+    "followUp": "When is direct push useful? It applies the schema directly and is an alternative to generating migration files, whereas generated migrations preserve a file-based change history."
+   }
+  ],
+  "keyPoints": [
+   "Drizzle is designed as a TypeScript ORM rather than a database server or a full application framework.",
+   "Applications can choose between relational querying and an API shaped closely around SQL.",
+   "Schemas can live in TypeScript, enabling the application codebase to describe database structure.",
+   "The API intentionally preserves SQL concepts, reducing the conceptual distance from handwritten SQL.",
+   "Drizzle supports direct schema push, SQL migration generation, and importing a schema from an existing database.",
+   "In a codebase-first workflow, Drizzle Kit derives migration files from changes to the TypeScript schema.",
+   "The generated migration files are applied with the Drizzle Kit migrate command."
+  ],
+  "gotchas": [
+   "A SQL database expects a defined schema before storing entities; changing that shape requires migrations."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Data & persistence::Prisma": {
+  "sourceUrl": "https://www.prisma.io/docs/orm",
+  "sourceTitle": "What is Prisma ORM?",
+  "summary": "Prisma ORM is a typed data layer for TypeScript that models relational data and provides type-safe queries, migrations, and transactions. A central data contract drives generated types and database changes.",
+  "explanation": "Prisma ORM uses a central data contract to describe models and relationships. Prisma Client turns that contract into type-safe database operations, Prisma Migrate records and applies schema changes, and transactions group multiple operations into one atomic unit.",
+  "syntax": "const result = await prisma.model.findMany({ where, orderBy });\nawait prisma.$transaction(async (tx) => { /* operations through tx */ });",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Typed query and transaction",
+   "code": "import { PrismaClient } from \"@prisma/client\";\n\nconst prisma = new PrismaClient();\n\nconst users = await prisma.user.findMany({\n  where: { email: { endsWith: \"@example.com\" } },\n  orderBy: { name: \"asc\" },\n});\n\nawait prisma.$transaction(async (tx) => {\n  const user = await tx.user.create({ data: { name: \"Ada\", email: \"ada@example.com\" } });\n  await tx.profile.create({ data: { userId: user.id, bio: \"Engineer\" } });\n});\n\nawait prisma.$disconnect();",
+   "language": "typescript",
+   "explanation": "Prisma Client provides typed reads and writes, while the transaction callback groups related changes so they commit or roll back together."
+  },
+  "useCases": [
+   {
+    "title": "Model relational data",
+    "scenario": "Define entities, scalar fields, primary keys, and relations in one application data contract."
+   },
+   {
+    "title": "Run type-safe queries",
+    "scenario": "Read and write database records with generated TypeScript operations and compile-time checking."
+   },
+   {
+    "title": "Manage migrations",
+    "scenario": "Turn reviewed contract changes into reproducible database schema updates."
+   },
+   {
+    "title": "Coordinate transactions",
+    "scenario": "Group dependent writes so a business operation is committed or rolled back as one unit."
+   }
+  ],
+  "related": [
+   "Prisma Client",
+   "Prisma Migrate",
+   "Prisma Schema",
+   "Prisma Studio",
+   "Prisma ORM transactions",
+   "Data modeling",
+   "Migration histories"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is Prisma ORM and what problem does it solve?",
+    "answer": "Prisma ORM is a typed data layer for TypeScript. You describe models in its data contract, and it provides typed queries and migrations for supported databases.",
+    "followUp": "How does the contract help beyond runtime querying? It is also used to derive TypeScript types and migration changes."
+   },
+   {
+    "question": "How does Prisma provide type-safe database access?",
+    "answer": "Prisma Client exposes database access through generated, type-safe operations based on the data contract. This gives compile-time checking and editor completion while returning ordinary data objects.",
+    "followUp": "What must change when the model changes? Update the contract, regenerate the types, create a migration, review it, and apply it."
+   },
+   {
+    "question": "When should you use a transaction, and how is it written?",
+    "answer": "Use a transaction when several writes form one business operation. The transaction callback receives `tx`; query through that transaction client so the grouped work commits together or rolls back together.",
+    "followUp": "Why review migrations before deployment? Generated SQL can be inspected before it changes the database, allowing unsafe or unexpected operations to be caught."
+   }
+  ],
+  "keyPoints": [
+   "It combines typed database access and migration tooling for PostgreSQL, MongoDB, and SQLite.",
+   "The data contract is the central declaration of application models.",
+   "Data modeling captures entities, their stored fields, and relationships.",
+   "The declared contract drives both query typing and migration generation.",
+   "Transactions provide all-or-nothing behavior for grouped writes."
+  ],
+  "gotchas": [
+   "Treat a transaction as atomic: its operations succeed together or the entire transaction fails."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "DevOps::GitHub Actions": {
+  "sourceUrl": "https://docs.github.com/en/actions/get-started/understand-github-actions",
+  "sourceTitle": "Understanding GitHub Actions",
+  "summary": "GitHub Actions automates build, test, release, and deployment pipelines. YAML workflows respond to repository events, schedules, or manual triggers and coordinate jobs running commands or reusable actions.",
+  "explanation": "GitHub Actions runs YAML-defined workflows in response to repository events, schedules, or manual requests. Each workflow coordinates jobs on hosted or self-hosted runners; jobs contain steps that execute commands or reusable actions, enabling automated build, test, release, and deployment pipelines.",
+  "syntax": "name: <workflow-name>\non: <event-or-trigger>\njobs:\n  <job-id>:\n    runs-on: <runner>\n    steps:\n      - run: <command>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A minimal CI workflow",
+   "code": "name: CI\n\non:\n  push:\n    branches: [main]\n  pull_request:\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 22\n      - run: npm ci\n      - run: npm test",
+   "language": "yaml",
+   "explanation": "This workflow runs for pushes to main and for pull requests, checks out the repository, installs Node.js, installs dependencies, and executes tests."
+  },
+  "useCases": [
+   {
+    "title": "Continuous integration",
+    "scenario": "Validate changes before integration"
+   },
+   {
+    "title": "Release automation",
+    "scenario": "Publish a new application version"
+   },
+   {
+    "title": "Continuous deployment",
+    "scenario": "Deliver verified changes to staging or production"
+   },
+   {
+    "title": "Repository automation",
+    "scenario": "Run repository maintenance in response to events or schedules"
+   }
+  ],
+  "related": [
+   "workflow",
+   "event",
+   "job",
+   "step",
+   "action",
+   "runner",
+   "environment",
+   "concurrency"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a GitHub Actions workflow?",
+    "answer": "A workflow is a YAML-defined automated process containing one or more jobs. It starts from an event, schedule, or manual trigger and is stored under `.github/workflows`.",
+    "followUp": "How can deployments be gated? Use environments for approvals, branch restrictions, deployment protection rules, and secret access limits."
+   },
+   {
+    "question": "How are jobs and steps different?",
+    "answer": "Jobs group steps and run on GitHub-hosted or self-hosted machines. Steps either execute shell commands or invoke reusable actions for common tasks.",
+    "followUp": "How do jobs depend on one another? Declare dependencies explicitly with the `needs` key so a job waits for the required jobs."
+   },
+   {
+    "question": "How does GitHub Actions support CI/CD?",
+    "answer": "A CI workflow can build repository code and run tests whenever a relevant event occurs, while a CD workflow can deploy after verification. Triggers may include pushes, schedules, manual dispatches, or external repository-dispatch events.",
+    "followUp": "How can production deployments avoid overlap? Use a concurrency group and limit the pipeline to one in-progress deployment."
+   }
+  ],
+  "keyPoints": [
+   "GitHub Actions provides one platform for automating continuous integration and continuous delivery.",
+   "A workflow coordinates one or more jobs as a single automated process.",
+   "Workflow configuration is versioned as YAML alongside the project source.",
+   "Events such as pull requests, pushes, schedules, or manual requests can start workflows.",
+   "Actions package repeatable tasks that workflows can call instead of reimplementing them."
+  ],
+  "gotchas": [
+   "A workflow file must be stored in the repository's `.github/workflows` directory."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "DevOps::Kubernetes": {
+  "sourceUrl": "https://kubernetes.io/docs/tasks/run-application/update-deployment-rolling/",
+  "sourceTitle": "Update a Deployment Without Downtime - Kubernetes",
+  "summary": "Kubernetes declaratively runs containerized workloads, exposes selected Pods through Services, and uses probes to control traffic and container recovery. Deployments replace Pods incrementally during rolling updates to reduce or avoid downtime.",
+  "explanation": "Kubernetes declaratively manages containerized workloads through resources such as Deployments, Pods, and Services. A Deployment maintains the requested replicas and replaces Pods during updates, Services select matching Pods for traffic, and kubelet probes determine readiness or whether containers need restarting.",
+  "syntax": "kubectl rollout status deployment/<deployment-name>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Deployment with probes and Service",
+   "code": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: web\n  template:\n    metadata:\n      labels:\n        app: web\n    spec:\n      containers:\n        - name: web\n          image: nginx:1.27\n          ports:\n            - containerPort: 80\n          readinessProbe:\n            httpGet:\n              path: /\n              port: 80\n          livenessProbe:\n            httpGet:\n              path: /\n              port: 80\n---\napiVersion: v1\nkind: Service\nmetadata:\n  name: web\nspec:\n  selector:\n    app: web\n  ports:\n    - port: 80\n      targetPort: 80",
+   "language": "yaml",
+   "explanation": "This manifest runs three replicated web Pods and exposes them through a Service. Readiness controls whether Pods receive traffic, while liveness lets Kubernetes restart unhealthy containers; changing the Pod template causes a Deployment rolling update."
+  },
+  "useCases": [
+   {
+    "title": "Zero-downtime application updates",
+    "scenario": "Release a new container image while keeping an application available."
+   },
+   {
+    "title": "Health-aware traffic routing",
+    "scenario": "Keep traffic away from Pods that are still initializing or unhealthy."
+   },
+   {
+    "title": "Automatic container recovery",
+    "scenario": "Restart containers that fail their health checks without manual intervention."
+   },
+   {
+    "title": "Service-based workload access",
+    "scenario": "Expose replicated application Pods through a stable access point."
+   }
+  ],
+  "related": [
+   "Deployment",
+   "Pod",
+   "ReplicaSet",
+   "Service",
+   "EndpointSlice",
+   "Container probes",
+   "Readiness probe",
+   "Liveness probe"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does a Deployment perform a rolling update?",
+    "answer": "A Deployment manages replicated Pods through ReplicaSets and replaces old Pods with new ones during an update. RollingUpdate is the default strategy and gradually scales down the old ReplicaSet while scaling up the new one.",
+    "followUp": "How can rollout capacity be controlled? Set maxUnavailable to limit unavailable Pods and maxSurge to limit additional Pods during the update."
+   },
+   {
+    "question": "What are readiness and liveness probes used for?",
+    "answer": "A readiness probe determines when a container can accept traffic. When it fails, the matching Pod is removed from Service EndpointSlices, while a liveness failure can cause Kubernetes to restart the unhealthy container.",
+    "followUp": "What problem does a startup probe solve? It delays liveness and readiness checks until initialization completes, preventing slow-starting applications from being treated as unhealthy."
+   },
+   {
+    "question": "How does a Service route traffic during a Deployment update?",
+    "answer": "A Service selects Pods using labels and provides stable access to the selected workload. During a rolling update, traffic can continue to reach Pods that are ready to serve requests.",
+    "followUp": "Why do labels matter? The Service selector must match the Pod labels; otherwise the Service has no matching endpoints and cannot route traffic to those Pods."
+   }
+  ],
+  "keyPoints": [
+   "RollingUpdate replaces Pods incrementally, allowing the application to remain available while a new version is deployed.",
+   "Deployments support RollingUpdate and Recreate strategies; RollingUpdate is the default, while Recreate replaces all existing Pods first.",
+   "During a rolling update, Kubernetes schedules replacement Pods and waits for them to start before removing old instances.",
+   "Default rollout limits allow at most one unavailable Pod and one extra new Pod, unless configured otherwise."
+  ],
+  "gotchas": [
+   "Choosing Recreate instead of the default RollingUpdate causes downtime because all existing Pods are terminated first.",
+   "Only changes to the Deployment Pod template trigger a rolling update; changing unrelated Deployment fields does not."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Infrastructure::Terraform": {
+  "sourceUrl": "https://developer.hashicorp.com/terraform/docs",
+  "sourceTitle": "Terraform Documentation",
+  "summary": "Terraform is an infrastructure-as-code tool for building, changing, and versioning infrastructure safely. Modules provide reuse, state tracks managed infrastructure, and plans let you review changes before applying them.",
+  "explanation": "Terraform compares configuration with refreshed remote state, records infrastructure-to-configuration bindings in state, and creates an execution plan describing actions needed to reconcile differences. Review the plan before applying it; reusable modules organize shared configuration, while state tracks managed objects between operations.",
+  "syntax": "terraform plan [options]",
+  "parameters": [
+   {
+    "name": "terraform plan options",
+    "type": "CLI options",
+    "description": "Optional planning arguments such as -out to save a plan for later application."
+   }
+  ],
+  "returns": "An execution plan describing actions Terraform proposes; with -out, a saved plan file is produced.",
+  "example": {
+   "title": "Review and apply a saved plan",
+   "code": "terraform plan -out=tfplan\nterraform apply tfplan",
+   "language": "bash",
+   "explanation": "Preview the proposed infrastructure changes, then apply exactly the saved plan."
+  },
+  "useCases": [
+   {
+    "title": "Safe change review",
+    "scenario": "Preview infrastructure changes before deployment."
+   },
+   {
+    "title": "Reusable modules",
+    "scenario": "Share standardized infrastructure patterns across projects."
+   },
+   {
+    "title": "Stateful infrastructure management",
+    "scenario": "Track and reconcile managed cloud resources over time."
+   }
+  ],
+  "related": [
+   "terraform apply",
+   "terraform state",
+   "terraform show",
+   "modules",
+   "terraform.tfstate"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Modules package reusable infrastructure configuration so teams can share consistent building blocks.",
+   "Use terraform plan to inspect intended changes before modifying real infrastructure.",
+   "Planning is non-destructive; changes occur only when a plan is applied."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Security::Arcjet": {
+  "sourceUrl": "https://docs.arcjet.com/bot-protection/",
+  "sourceTitle": "Introduction to Arcjet bot protection",
+  "summary": "Arcjet bot protection detects, verifies, allows, or blocks automated clients before they reach an application. Combine it with rate limiting and filters for route-specific traffic and abuse control.",
+  "explanation": "Arcjet evaluates rules inside application code, where each route can apply different bot policies and rate limits using request context. Bot detection identifies or verifies automated clients, while rate limiting controls request volume; the resulting decision determines whether the handler continues or rejects the request.",
+  "syntax": "detectBot({ mode: \"LIVE\", allow: [\"CATEGORY:SEARCH_ENGINE\"] })",
+  "parameters": [],
+  "returns": "A protection decision that can be used to allow or deny the request.",
+  "example": {
+   "title": "Protect a route with bot detection and rate limiting",
+   "code": "import arcjet, { detectBot, fixedWindow } from \"@arcjet/next\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [\n    detectBot({ mode: \"LIVE\", allow: [\"CATEGORY:SEARCH_ENGINE\"] }),\n    fixedWindow({ mode: \"LIVE\", window: \"1m\", max: 60 }),\n  ],\n});\n\nexport async function GET(request: Request) {\n  const decision = await aj.protect(request);\n  if (decision.isDenied()) {\n    return new Response(\"Forbidden\", { status: 403 });\n  }\n  return Response.json({ ok: true });\n}",
+   "language": "typescript",
+   "explanation": "This route evaluates bot detection and rate limiting before returning a response."
+  },
+  "useCases": [
+   {
+    "title": "Block abusive bots",
+    "scenario": "A public API receives unwanted automated traffic."
+   },
+   {
+    "title": "Allow trusted crawlers",
+    "scenario": "A site depends on legitimate search indexing."
+   },
+   {
+    "title": "Apply route-specific rules",
+    "scenario": "Different endpoints need different automation policies."
+   },
+   {
+    "title": "Combine bot detection with rate limiting",
+    "scenario": "An AI feature needs both access and cost controls."
+   }
+  ],
+  "related": [
+   "bot protection",
+   "rate limiting",
+   "filters",
+   "detectBot",
+   "allow",
+   "deny",
+   "managed categories"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why use Arcjet bot protection inside the application?",
+    "answer": "Arcjet bot protection runs in application code, so policies can vary by route and use request context such as identity or subscription level. It can allow or deny individual bots or managed categories.",
+    "followUp": "How would you combine bot protection with traffic controls? Add rate limiting and filters so access decisions and request volume are controlled together."
+   },
+   {
+    "question": "How are bot rules configured?",
+    "answer": "A bot rule selects one policy mode, either allow or deny, and targets named bots or categories. An empty allow list blocks every detected bot.",
+    "followUp": "What configuration fits a route that permits only trusted search crawlers? Use allow mode with the relevant managed category or named bots."
+   },
+   {
+    "question": "What does bot protection provide beyond rate limiting?",
+    "answer": "Bot detection identifies bad automation, verifies legitimate bots, and reduces unwanted automated requests before they reach the application. Rate limiting complements it by controlling how much traffic an allowed client can send.",
+    "followUp": "Why is route-specific configuration useful? Different endpoints can require different automation policies and can use application context to make those decisions."
+   }
+  ],
+  "keyPoints": [
+   "It distinguishes unwanted automation from legitimate crawlers and can stop bad bots before application processing.",
+   "Pair bot detection with rate limiting when both caller eligibility and request or usage volume matter.",
+   "Policies are evaluated in application code rather than being limited to one global traffic rule.",
+   "Different endpoints can use distinct bot policies instead of sharing a single application-wide configuration.",
+   "Configure each rule in one direction: permit selected bots or reject selected bots."
+  ],
+  "gotchas": [
+   "A bot rule cannot combine allow and deny modes; choose exactly one.",
+   "Using `allow: []` rejects all detected bots, so only use it when no bot traffic is legitimate.",
+   "User-agent matching alone is not sufficient for authenticity; Arcjet also uses IP and reverse-DNS data."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "State management::Redux": {
+  "sourceUrl": "https://redux.js.org/tutorials/fundamentals/part-2-concepts-data-flow",
+  "sourceTitle": "Core Concepts and Principles",
+  "summary": "Redux uses a centralized store and one-way data flow: UI events dispatch actions, reducers calculate updated state, and the UI reads the result. Selectors provide focused access to state without exposing its structure.",
+  "explanation": "Redux keeps application state in a store and changes it through dispatched actions. Reducers calculate the next state, while selectors read derived values, producing a predictable one-way flow from UI events to state updates and back to rendering.",
+  "syntax": "(state, action) => newState",
+  "parameters": [],
+  "returns": "Reducers return the next state; selectors return a selected or derived value; getState returns the current state.",
+  "example": {
+   "title": "A minimal Redux Toolkit store",
+   "code": "import { configureStore, createSlice } from '@reduxjs/toolkit'\n\nconst counter = createSlice({\n  name: 'counter',\n  initialState: { value: 0 },\n  reducers: {\n    increment: state => { state.value += 1 },\n  },\n})\n\nconst store = configureStore({ reducer: { counter: counter.reducer } })\nstore.dispatch(counter.actions.increment())\nconsole.log(store.getState().counter.value)",
+   "language": "typescript",
+   "explanation": "Creates a store with a slice reducer, dispatches its generated action, and reads the updated state."
+  },
+  "useCases": [
+   {
+    "title": "Centralized application state",
+    "scenario": "Many screens need consistent access to shared client state."
+   },
+   {
+    "title": "Event-driven updates",
+    "scenario": "An interaction must produce a traceable, predictable update."
+   },
+   {
+    "title": "Encapsulated state reads",
+    "scenario": "Components should consume state without coupling to its storage layout."
+   },
+   {
+    "title": "Slice-based feature organization",
+    "scenario": "A feature owns state, update logic, and action creators as one unit."
+   }
+  ],
+  "related": [
+   "Redux Toolkit",
+   "configureStore",
+   "createSlice",
+   "dispatch",
+   "getState",
+   "useSelector",
+   "useDispatch",
+   "extraReducers"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does a Redux reducer do?",
+    "answer": "A reducer receives the previous state and an action, then returns the next state. It must calculate from those inputs and update immutably.",
+    "followUp": "How can one store use multiple reducers? Combine slice reducers into a root reducer; the store still invokes one root reducer for each dispatch."
+   },
+   {
+    "question": "What is an action, and how does it reach the reducer?",
+    "answer": "An action is a plain object describing an event or intended state change. Dispatch sends it to the store, which invokes the reducer.",
+    "followUp": "Can a slice respond to actions created elsewhere? Yes; action types are not exclusive to one slice, and extraReducers can handle them."
+   },
+   {
+    "question": "Why use selectors?",
+    "answer": "Selectors accept Redux state and return a value derived from it. They hide the state tree's structure from components and other consumers.",
+    "followUp": "Where should selectors live? The documentation generally recommends colocating them with the reducers that understand the state shape."
+   }
+  ],
+  "keyPoints": [
+   "Redux state is a snapshot describing the application's condition at a particular moment.",
+   "User or UI events initiate updates by dispatching action objects.",
+   "The store delegates the dispatched event to reducers, which calculate the next state.",
+   "After an update, subscribers are notified so the UI can refresh."
+  ],
+  "gotchas": [
+   "Reducers must not mutate the existing state; they must return an immutable update."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "State management::Redux Toolkit": {
+  "sourceUrl": "https://cn.redux-toolkit.js.org/tutorials/quick-start/",
+  "sourceTitle": "Redux Toolkit Quick Start",
+  "summary": "Redux Toolkit structures Redux apps around configureStore and createSlice. It supplies default store setup, generated actions and reducers, and Immer-powered immutable update logic.",
+  "explanation": "Redux Toolkit combines store configuration and slice creation into a concise Redux setup. createSlice generates a reducer and action creators, while Immer lets reducer logic express updates with mutation-like syntax that produces immutable state; configureStore also installs standard middleware unless its middleware option replaces the defaults.",
+  "syntax": "configureStore({ reducer, middleware? })\ncreateSlice({ name, initialState, reducers })",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "ConfigureStoreOptions",
+    "description": "Store options including the reducer configuration and optional middleware settings."
+   }
+  ],
+  "returns": "A configured Redux store from configureStore; createSlice also produces a slice reducer and generated action creators.",
+  "example": {
+   "title": "Counter slice and store",
+   "code": "import { configureStore, createSlice } from '@reduxjs/toolkit'\n\nconst counterSlice = createSlice({\n  name: 'counter',\n  initialState: { value: 0 },\n  reducers: {\n    increment: state => { state.value += 1 },\n    decrement: state => { state.value -= 1 }\n  }\n})\n\nconst store = configureStore({\n  reducer: { counter: counterSlice.reducer }\n})\n\nstore.dispatch(counterSlice.actions.increment())\nconsole.log(store.getState().counter.value)",
+   "language": "javascript",
+   "explanation": "A slice defines state and update logic, while configureStore registers its reducer and supplies standard Redux setup."
+  },
+  "useCases": [
+   {
+    "title": "Create and register feature slices",
+    "scenario": "Application-wide state"
+   },
+   {
+    "title": "Write concise immutable updates",
+    "scenario": "Reducer authoring"
+   },
+   {
+    "title": "Start with default middleware and configuration",
+    "scenario": "Store setup"
+   }
+  ],
+  "related": [
+   "configureStore",
+   "createSlice",
+   "createReducer",
+   "getDefaultMiddleware",
+   "Immutability Middleware",
+   "Immer"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does configureStore provide beyond creating a store?",
+    "answer": "configureStore creates the Redux store and accepts a reducer configuration. It also applies useful default settings and middleware automatically.",
+    "followUp": "What happens when middleware is supplied explicitly? The supplied list becomes the complete middleware configuration, so defaults are not added automatically."
+   },
+   {
+    "question": "What does createSlice generate?",
+    "answer": "createSlice takes a slice name, initial state, and reducer functions. It generates the slice reducer and action creators, reducing repetitive Redux code.",
+    "followUp": "Why can a reducer appear to mutate state? Immer transforms that mutation-like logic into an immutable update."
+   },
+   {
+    "question": "How does Redux Toolkit support immutable updates?",
+    "answer": "Redux state updates must be immutable, but createSlice and createReducer use Immer internally. This permits mutation-style reducer code while preserving immutable state semantics.",
+    "followUp": "How are accidental mutations outside reducer logic detected? The immutability-check middleware can detect mutations during dispatch and between dispatches, then throws an error."
+   }
+  ],
+  "keyPoints": [
+   "Use configureStore as the standard entry point for creating a Redux store with sensible defaults.",
+   "A slice is defined by its identifying name, initial state, and case reducers.",
+   "createSlice and createReducer use Immer to turn mutation-like reducer code into immutable updates.",
+   "A created slice exposes both action creators and the reducer needed to connect its state to the store.",
+   "Register each slice reducer under the store's reducer configuration so it handles that state branch.",
+   "configureStore includes default middleware without requiring manual middleware assembly."
+  ],
+  "gotchas": [
+   "Providing a middleware option replaces the default middleware list, so include every middleware the store should use.",
+   "The immutability middleware reports detected state mutations by throwing an error."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "State management::Zustand": {
+  "sourceUrl": "https://zustand.docs.pmnd.rs/reference/apis/create",
+  "sourceTitle": "create - Zustand Docs",
+  "summary": "Zustand creates small React-connected stores containing state and actions. Components read them through selectors, while actions update state with set and can derive changes from the current state.",
+  "explanation": "A Zustand store is created from a state creator that receives update utilities and returns state plus actions. React components call the resulting hook with selectors, so each component subscribes only to the selected data; actions update state through set using the current state when needed.",
+  "syntax": "create<T>()(stateCreatorFn)",
+  "parameters": [
+   {
+    "name": "stateCreatorFn",
+    "type": "StateCreator<T, [], []>",
+    "description": "Function receiving set, get, and store, normally returning the state and methods exposed by the store."
+   }
+  ],
+  "returns": "A React hook with attached setState, getState, getInitialState, and subscribe API utilities.",
+  "example": {
+   "title": "Typed counter store",
+   "code": "import { create } from \"zustand\"\n\ntype CounterState = {\n  count: number\n  increment: (by: number) => void\n}\n\nconst useCounterStore = create<CounterState>()((set) => ({\n  count: 0,\n  increment: (by) => set((state) => ({ count: state.count + by })),\n}))\n\nexport function Counter() {\n  const count = useCounterStore((state) => state.count)\n  const increment = useCounterStore((state) => state.increment)\n\n  return <button onClick={() => increment(1)}>{count}</button>\n}",
+   "language": "tsx",
+   "explanation": "Creates a typed store and subscribes the component to separate state and action selectors."
+  },
+  "useCases": [
+   {
+    "title": "Local client interaction state",
+    "scenario": "A component needs a small counter or form state without adding a provider or reducer."
+   },
+   {
+    "title": "Shared client state",
+    "scenario": "Several components need to share lightweight UI state through one store hook."
+   },
+   {
+    "title": "Derived state",
+    "scenario": "A value can be calculated from existing state and should not be duplicated."
+   }
+  ],
+  "related": [
+   "createStore",
+   "useStore",
+   "useShallow",
+   "selectors",
+   "TypeScript"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does create return and what does its state creator do?",
+    "answer": "create takes a state creator and returns a React hook with store API utilities attached. The state creator receives set, get, and store, and normally returns the exposed state and methods.",
+    "followUp": "How can a component limit updates? Pass a selector to the hook, such as state => state.count, so it subscribes to only the required value."
+   },
+   {
+    "question": "Why use selectors with a Zustand store?",
+    "answer": "Selectors let a component read data derived from current state while subscribing to the selected result. Selecting one property avoids subscribing to the whole store.",
+    "followUp": "How should multiple properties be selected safely? Return the needed values and use useShallow when shallow equality should prevent updates for unchanged selected values."
+   },
+   {
+    "question": "How are predictable updates implemented?",
+    "answer": "An action can call set with a function that receives the current state and returns the changed property. This keeps an update such as incrementing a counter based on the latest value.",
+    "followUp": "How can derived values be handled? Compute them with selectors instead of duplicating them in stored state, keeping the store minimal."
+   }
+  ],
+  "keyPoints": [
+   "A store can hold state and actions without requiring reducer functions, React context, or provider setup.",
+   "In TypeScript, the curried create form lets the store declare its state-and-actions type explicitly.",
+   "Use a selector for the exact property or action a component needs, limiting its subscription scope.",
+   "Keep computed values out of the store when a selector can derive them from existing state.",
+   "Deriving values rather than storing duplicates reduces synchronization concerns and keeps state small."
+  ],
+  "gotchas": [
+   "Do not invoke set, get, or store synchronously while the store is being initialized; call them after creation, such as inside an action.",
+   "Selecting a newly returned object and destructuring it can cause unnecessary re-renders; use shallow comparison for multi-value selections."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "TanStack::TanStack Form": {
+  "sourceUrl": "https://tanstack.com/form/latest/docs/framework/react/guides/validation",
+  "sourceTitle": "Form and Field Validation | TanStack Form React Docs",
+  "summary": "TanStack Form supports explicit validation at either field or form scope. Validators can run on selected events and may be synchronous or asynchronous, including API-backed checks.",
+  "explanation": "TanStack Form models values and validation separately from the rendered controls. A field receives validation callbacks such as onChange or onBlur; each callback gets the current value and field API, and can return an error string. Validation may also be attached to the form, and can run synchronously or asynchronously.",
+  "syntax": "useForm({ defaultValues, validators, onSubmit })",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "FormOptions",
+    "description": "Options passed to the React useForm hook, including default values, validators, and submission behavior."
+   }
+  ],
+  "returns": "A form API used to render fields, update values, validate state, and submit the form.",
+  "example": {
+   "title": "Field-level validation with useForm",
+   "code": "import { useForm } from '@tanstack/react-form'\n\nexport default function SignupForm() {\n  const form = useForm({\n    defaultValues: { email: '' },\n    onSubmit: async ({ value }) => console.log(value),\n  })\n\n  return (\n    <form.Field\n      name=\"email\"\n      validators={{\n        onChange: ({ value }) =>\n          value.includes('@') ? undefined : 'Enter a valid email',\n      }}\n    >\n      {(field) => (\n        <label>\n          Email\n          <input\n            value={field.state.value}\n            onChange={(e) => field.handleChange(e.target.value)}\n            onBlur={field.handleBlur}\n          />\n          {field.state.meta.errors.join(', ')}\n        </label>\n      )}\n    </form.Field>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Creates a typed form and validates the email field whenever its value changes."
+  },
+  "useCases": [
+   {
+    "title": "Immediate field feedback",
+    "scenario": "Validate an input as the user edits it, such as checking an email format."
+   },
+   {
+    "title": "Asynchronous validation",
+    "scenario": "Run a server or API check before accepting a value."
+   },
+   {
+    "title": "Cross-field rules",
+    "scenario": "Check relationships among multiple values, such as matching password fields."
+   },
+   {
+    "title": "Server-backed submission validation",
+    "scenario": "Apply one submit-time endpoint check and map failures back to fields."
+   }
+  ],
+  "related": [
+   "useForm",
+   "Field",
+   "onChange",
+   "onBlur",
+   "onSubmit",
+   "fieldAPI",
+   "field.state.meta.errors"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does TanStack Form support field validation?",
+    "answer": "Validation can be attached to individual fields through callbacks such as onChange and onBlur, or to the form through corresponding form-level callbacks. The callbacks receive the current field value and field API, and they may perform synchronous or asynchronous checks.",
+    "followUp": "How can validation timing be customized? Use event-specific callbacks such as onChange, onInput, onBlur, and onSubmit to choose when checks run."
+   },
+   {
+    "question": "How does a field expose validation failures?",
+    "answer": "A field defines its own rules through callbacks supplied to the field component. When a rule detects invalid input, it returns an error string that becomes part of the field's validation errors.",
+    "followUp": "How would you handle a rule shared by several fields? Move the shared or cross-field rule to a form-level validator, where validation can operate across the form."
+   },
+   {
+    "question": "Can validators perform asynchronous checks?",
+    "answer": "Validation is not limited to synchronous functions. TanStack Form supports asynchronous validation, such as checking a value through an API call, and also allows form-level validation in addition to field-level rules.",
+    "followUp": "When is a form-level validator useful? It is suitable for checks involving multiple fields or a single submit-time API validation."
+   }
+  ],
+  "keyPoints": [
+   "Validation timing can be selected for change, input, blur, submit, or other supported form events.",
+   "Rules may live beside an individual field or be centralized on the form for broader checks.",
+   "A validator can finish immediately or await external work such as an API request.",
+   "Event validators receive both the current field value and the field API, enabling validation based on state and field operations.",
+   "Form-level validators can assign errors to particular fields when a whole-form check identifies field-specific problems."
+  ],
+  "gotchas": [
+   "A validator reports failure by returning an error message string; returning no error indicates success.",
+   "Invalid form state prevents submission, so submission handlers should not assume every submitted value passed validation."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "TanStack::TanStack Query": {
+  "sourceUrl": "https://tanstack.com/query/latest",
+  "sourceTitle": "TanStack Query",
+  "summary": "TanStack Query fetches, caches, synchronizes, and mutates server state for client applications. Its declarative APIs and shared cache coordinate asynchronous data, freshness, retries, background updates, and targeted refreshes.",
+  "explanation": "TanStack Query manages remote data through a QueryClient-backed cache and declarative observers. A query identifies data with a unique key and obtains it from a promise-returning function; shared observers reuse cache entries, while freshness rules allow background refetching. Mutations handle server writes, after which targeted invalidation can refresh affected queries.",
+  "syntax": "useQuery({ queryKey, queryFn })",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "UseQueryOptions",
+    "description": "Options object containing at least a unique query key and a promise-returning query function."
+   },
+   {
+    "name": "queryKey",
+    "type": "QueryKey",
+    "description": "Unique identifier used to cache, share, and refetch the query."
+   },
+   {
+    "name": "queryFn",
+    "type": "QueryFunction",
+    "description": "Function that returns a promise resolving data or throwing an error."
+   }
+  ],
+  "returns": "A query result containing the fetched data, loading and error state, and fetch status.",
+  "example": {
+   "title": "A basic React query",
+   "code": "import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'\n\nconst queryClient = new QueryClient()\n\nfunction Todos() {\n  const { data, isPending, error } = useQuery({\n    queryKey: ['todos'],\n    queryFn: () => fetch('/api/todos').then((r) => r.json()),\n  })\n\n  if (isPending) return <p>Loading…</p>\n  if (error) return <p>Could not load todos</p>\n  return <pre>{JSON.stringify(data, null, 2)}</pre>\n}\n\nexport default function App() {\n  return (\n    <QueryClientProvider client={queryClient}>\n      <Todos />\n    </QueryClientProvider>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Creates a client, supplies it to the component tree, and subscribes to a uniquely keyed asynchronous query."
+  },
+  "useCases": [
+   {
+    "title": "Share server data without duplicate requests",
+    "scenario": "Several screens need the same remote resource."
+   },
+   {
+    "title": "Refresh stale data in the background",
+    "scenario": "Cached data may become outdated while the user remains on a page."
+   },
+   {
+    "title": "Perform writes with mutations and refresh affected queries",
+    "scenario": "A client creates or updates remote records."
+   },
+   {
+    "title": "Prefetch data into the cache",
+    "scenario": "A route or interaction is expected to need data soon."
+   }
+  ],
+  "related": [
+   "QueryClient",
+   "QueryClientProvider",
+   "useQuery",
+   "useMutation",
+   "invalidateQueries",
+   "setQueryData",
+   "queryKey",
+   "queryFn"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a query in TanStack Query?",
+    "answer": "A query is a declarative dependency on an asynchronous data source identified by a unique key. The query function returns a promise that resolves to data or throws an error, and the key lets Query cache, share, and refetch that data.",
+    "followUp": "What should represent a server-side write? Use a mutation rather than a query, then invalidate or otherwise update the affected cached queries."
+   },
+   {
+    "question": "How does TanStack Query reduce redundant network work?",
+    "answer": "The cache lets multiple observers read one shared entry instead of issuing duplicate requests. Query also coordinates freshness, retries, background updates, and garbage collection.",
+    "followUp": "How can an application avoid showing stale data during refresh? Keep stale data visible while a background request revalidates it."
+   },
+   {
+    "question": "How should a mutation affect cached queries?",
+    "answer": "Use a mutation for a server write, then target related cached data with invalidation, such as invalidateQueries with the relevant query key. This causes affected queries to refresh according to their normal query behavior.",
+    "followUp": "When data is already available synchronously, what is a more direct alternative to prefetching? Write it into the cache with the Query Client's setQueryData method."
+   }
+  ],
+  "keyPoints": [
+   "It provides a cache and lifecycle for asynchronous server data through declarative APIs.",
+   "The cache coordinates observers and network behavior, including retries and background refreshes.",
+   "Components observing identical data can reuse one cache entry rather than making separate requests.",
+   "The query function supplies data, while Query manages cancellation, retry policy, and request deduplication.",
+   "Previously fetched data can remain rendered while a background request obtains a newer result.",
+   "After a write, invalidate a focused query key to mark related cached data for refresh."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "TanStack::TanStack Router": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/overview",
+  "sourceTitle": "Overview | TanStack Router Solid Docs",
+  "summary": "TanStack Router provides type-safe routing for React and Solid applications, including nested routes, loaders, navigation, and structured search parameters. Its route tree carries path, parameter, context, and search-state types through links, loaders, components, and navigation calls.",
+  "explanation": "TanStack Router builds a typed route tree that carries paths, parameters, search state, context, loaders, and navigation information through the application. Route definitions validate and expose search parameters, while navigation APIs use the route tree to provide type-safe destinations and parameter values.",
+  "syntax": "createRouter({ routeTree })",
+  "parameters": [
+   {
+    "name": "from",
+    "type": "string",
+    "description": "Origin route path used to resolve relative navigation and provide contextual type checking."
+   },
+   {
+    "name": "to",
+    "type": "string",
+    "description": "Destination route path or route reference."
+   },
+   {
+    "name": "params",
+    "type": "object | function",
+    "description": "Object or updater function for path parameters."
+   },
+   {
+    "name": "search",
+    "type": "object | function",
+    "description": "Object or updater function for search parameters."
+   },
+   {
+    "name": "hash",
+    "type": "string | function",
+    "description": "Hash value for the destination URL."
+   }
+  ],
+  "returns": "A configured route tree and type-safe routing APIs for rendering routes, loading data, validating URL state, and navigating between destinations.",
+  "example": {
+   "title": "Typed route with search parameters",
+   "code": "import { createRootRoute, createRoute, createRouter, Link, Outlet } from '@tanstack/react-router'\n\nconst rootRoute = createRootRoute({ component: () => <Outlet /> })\nconst searchRoute = createRoute({\n  getParentRoute: () => rootRoute,\n  path: '/search',\n  validateSearch: (search: Record<string, unknown>) => ({\n    q: typeof search.q === 'string' ? search.q : '',\n  }),\n  component: () => <Link to=\"/search\" search={{ q: 'router' }}>Search</Link>,\n})\nconst routeTree = rootRoute.addChildren([searchRoute])\nexport const router = createRouter({ routeTree })",
+   "language": "tsx",
+   "explanation": "Defines a route tree with validated search state and a type-safe link that supplies the query value."
+  },
+  "useCases": [
+   {
+    "title": "Type-safe application navigation",
+    "scenario": "Build applications whose links and programmatic navigation must remain aligned with a statically known route tree."
+   },
+   {
+    "title": "Typed search state",
+    "scenario": "Represent filters, pagination, tabs, and other bookmarkable URL state as validated structured data."
+   },
+   {
+    "title": "Loader-driven data fetching",
+    "scenario": "Fetch route-owned data and coordinate it with route transitions and caching."
+   },
+   {
+    "title": "Nested layouts and route composition",
+    "scenario": "Organize shared layouts, context, validation, and pending or error boundaries across nested pages."
+   }
+  ],
+  "related": [
+   "createFileRoute",
+   "createRootRoute",
+   "createRoute",
+   "createRouter",
+   "Link",
+   "useSearch",
+   "useNavigate",
+   "Route Loaders"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does TanStack Router provide type-safe navigation?",
+    "answer": "TanStack Router derives navigation types from the route tree, including paths, path parameters, search parameters, and route configuration. This lets links and navigation calls be checked against the known routes.",
+    "followUp": "How should dynamic values be supplied during navigation? Use dedicated `params` and `search` options instead of interpolating them into `to`."
+   },
+   {
+    "question": "How are search parameters modeled?",
+    "answer": "Search parameters are parsed and serialized as JSON, validated and typed, inherited from parent routes, and available in loaders, components, and hooks. They can be changed through links, navigation APIs, and search hooks.",
+    "followUp": "How can a route define the shape of its search state? Add a `validateSearch` option that validates and returns the route's search object."
+   },
+   {
+    "question": "What role do route loaders play?",
+    "answer": "A route loader supplies data associated with a route before its component renders, and the router provides built-in loader support with stale-while-revalidate caching. Loader dependencies can be tied to typed route inputs such as parameters and search state.",
+    "followUp": "What route information can be shared with child routes? Parent layouts can validate and provide search parameters and shared context to their descendants."
+   }
+  ],
+  "keyPoints": [
+   "Route definitions can infer TypeScript information throughout routing, reducing the need to duplicate route-related types.",
+   "Routes form a hierarchy, and layout routes can wrap children without requiring their own URL path.",
+   "Route loaders coordinate route data fetching and support stale-while-revalidate caching.",
+   "Search state is managed as structured JSON rather than only as manually parsed strings.",
+   "Routes can validate both URL path values and search parameters before application code consumes them.",
+   "Navigation APIs support changing search state alongside route transitions.",
+   "Search parameters are parsed, serialized, validated, typed, inherited, and accessible across route-related application code."
+  ],
+  "gotchas": [
+   "Keep path parameters, hash values, and search parameters in their dedicated `params`, `hash`, and `search` options rather than constructing them inside `to`.",
+   "Navigation without `from` is interpreted from the root and therefore only offers absolute-path completion."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "TanStack::TanStack Start": {
+  "sourceUrl": "https://tanstack.com/start/latest/docs/framework/react/overview",
+  "sourceTitle": "TanStack Start Overview",
+  "summary": "TanStack Start is a full-stack React framework powered by TanStack Router. It combines typed file-based routing, SSR, streaming, server functions, and client/server builds.",
+  "explanation": "TanStack Start builds on TanStack Router's file-based route tree. Routes provide typed navigation, parameters, search state, loaders, and context, while server functions keep server-only operations such as data access behind a typed client/server boundary; Start handles the call and serialization.",
+  "syntax": "createFileRoute(path)({ loader, component })\ncreateServerFn({ method: 'GET' | 'POST' }).validator(fn).handler(fn)",
+  "parameters": [
+   {
+    "name": "path",
+    "type": "string",
+    "description": "The route path pattern supplied to createFileRoute, such as a static or parameterized file-based path."
+   },
+   {
+    "name": "data",
+    "type": "serializable value",
+    "description": "Optional server-function input passed through the validator to the handler."
+   }
+  ],
+  "returns": "Typed route definitions and server-function results; server-function handler outputs must be serializable.",
+  "example": {
+   "title": "Typed route with a server function",
+   "code": "import { createFileRoute } from '@tanstack/react-router'\nimport { createServerFn } from '@tanstack/start'\n\nconst getProject = createServerFn({ method: 'GET' })\n  .validator((id: string) => id)\n  .handler(({ data }) => ({ id: data, name: 'Demo' }))\n\nexport const Route = createFileRoute('/projects/$projectId')({\n  loader: ({ params }) => getProject({ data: params.projectId }),\n  component: Project,\n})\n\nfunction Project() {\n  const project = Route.useLoaderData()\n  return <h1>{project.name}</h1>\n}",
+   "language": "tsx",
+   "explanation": "A typed file-based route loads data through a server function using the URL parameter."
+  },
+  "useCases": [
+   {
+    "title": "Full-stack React applications",
+    "scenario": "Build React applications with server-rendered initial documents and hydrated client navigation."
+   },
+   {
+    "title": "Server functions",
+    "scenario": "Load or mutate application data through typed calls that execute on the server."
+   },
+   {
+    "title": "Type-safe routing",
+    "scenario": "Model nested pages with typed parameters, search state, loaders, links, and route context."
+   },
+   {
+    "title": "Server routes and APIs",
+    "scenario": "Expose endpoints intended for callers outside the Start application."
+   }
+  ],
+  "related": [
+   "TanStack Router",
+   "createFileRoute",
+   "createServerFn",
+   "Server Functions",
+   "Server Routes",
+   "Middleware & Context",
+   "Execution Model",
+   "Full-document SSR"
+  ],
+  "since": "",
+  "keyPoints": [
+   "It combines a React full-stack framework with TanStack Router's typed routing model.",
+   "The framework supports document-level SSR, streaming, server functions, and separate client/server builds.",
+   "Routes are organized as files, enabling code splitting and inferred route types.",
+   "The root route contains the rest of the application's nested route hierarchy.",
+   "A route module exports a route created with createFileRoute.",
+   "Server functions expose server-side operations to loaders, components, hooks, and other server functions.",
+   "Client code can call them while execution remains on the server.",
+   "Use createServerFn with an HTTP method, then add validation and a handler."
+  ],
+  "gotchas": [
+   "Use server functions for calls from the Start application; use server routes for public or cross-origin endpoints.",
+   "Inputs and returned values must be serializable; validate untrusted input at runtime."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "TanStack::TanStack Table": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/overview",
+  "sourceTitle": "Overview",
+  "summary": "TanStack Table is a headless engine for building sortable, filterable, paginated data tables. Pair it with TanStack Virtual to render only visible rows or columns for large datasets.",
+  "explanation": "TanStack Table is a headless table engine: it manages table state and row models for capabilities such as sorting, filtering, pagination, and selection, while the application supplies markup and interaction UI. For virtualization, pair the table with TanStack Virtual; virtualization determines which indexes to render, whereas TanStack Table continues producing the current row and column models.",
+  "syntax": "useReactTable({ data, columns, getCoreRowModel: getCoreRowModel() })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Minimal headless table",
+   "code": "import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table'\n\ntype Person = { name: string; age: number }\nconst data: Person[] = [{ name: 'Ada', age: 36 }]\nconst columnHelper = createColumnHelper<Person>()\nconst columns = [\n  columnHelper.accessor('name', { header: 'Name' }),\n  columnHelper.accessor('age', { header: 'Age' }),\n]\n\nexport function PeopleTable() {\n  const table = useReactTable({ data, columns, getCoreRowModel: getCoreRowModel() })\n  return <table><tbody>{table.getRowModel().rows.map(row => <tr key={row.id}>\n    {row.getVisibleCells().map(cell => <td key={cell.id}>{String(cell.getValue())}</td>)}\n  </tr>)}</tbody></table>\n}",
+   "language": "tsx",
+   "explanation": "Creates a headless React table whose renderer controls the HTML while TanStack Table supplies rows and visible cells."
+  },
+  "useCases": [
+   {
+    "title": "Custom data tables",
+    "scenario": "Build a framework-specific data grid with custom markup, styling, and interaction controls."
+   },
+   {
+    "title": "Controlled table state",
+    "scenario": "Keep sorting, filtering, or pagination synchronized with application state or URL parameters."
+   },
+   {
+    "title": "Large virtualized datasets",
+    "scenario": "Render large row or column sets efficiently by combining table row models with TanStack Virtual."
+   }
+  ],
+  "related": [
+   "TanStack Virtual",
+   "Row Pagination",
+   "Row Sorting",
+   "Filtering",
+   "Row Models"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does headless mean in TanStack Table?",
+    "answer": "TanStack Table is headless, so it provides table logic rather than a visual component. The application renders headers, rows, cells, controls, and styles using the table's state and row models.",
+    "followUp": "How would you virtualize a large table? Use TanStack Virtual to select visible item indexes, then map those indexes to the current rows or visible columns produced by TanStack Table."
+   },
+   {
+    "question": "How do TanStack Table and TanStack Virtual divide responsibilities?",
+    "answer": "TanStack Table handles row models for operations such as sorting, filtering, and pagination. TanStack Virtual separately decides which indexes should be rendered for the scroll position.",
+    "followUp": "Why should virtualization be recomputed after filtering? Filtering changes the table's current row model, so the virtualizer must consume the updated rows rather than stale indexes."
+   },
+   {
+    "question": "When should a table use virtualization?",
+    "answer": "Virtualization is useful when a table contains very many rows, columns, or both. It keeps the DOM smaller by rendering visible items plus an overscan buffer.",
+    "followUp": "What does virtualization not solve? It does not perform server-side pagination, filtering, or sorting; those remain separate data-loading concerns."
+   }
+  ],
+  "keyPoints": [
+   "Its core responsibilities include deriving table structures and processing state for common data-table features.",
+   "Sorting, filters, and pagination can be controlled externally in framework state, a global store, or a URL.",
+   "Virtualization can be added as a rendering layer without replacing the table's row-model logic."
+  ],
+  "gotchas": [
+   "Virtualization is not included in the table package; add the appropriate TanStack Virtual adapter and implement the rendering integration.",
+   "Virtualization reduces rendered DOM work but does not replace server-side data operations."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "TanStack::TanStack Virtual": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/introduction",
+  "sourceTitle": "Introduction",
+  "summary": "TanStack Virtual is a headless utility for efficiently rendering long lists and grids by calculating the visible range and exposing only the rows or columns your UI needs to mount. It supports vertical, horizontal, and combined two-axis virtualization.",
+  "explanation": "TanStack Virtual is a headless utility: a virtualizer calculates which items belong in the viewport, estimates or measures their sizes, and exposes virtual items for your UI to render. The framework adapter supplies the virtualizer, while the application provides the scroll element, layout, markup, and styles.",
+  "syntax": "useVirtualizer({ count, getScrollElement, estimateSize, horizontal?, overscan? })",
+  "parameters": [
+   {
+    "name": "count",
+    "type": "number",
+    "description": "Number of logical items to virtualize."
+   },
+   {
+    "name": "getScrollElement",
+    "type": "() => TScrollElement",
+    "description": "Returns the scrollable element, or null while it is unavailable."
+   },
+   {
+    "name": "estimateSize",
+    "type": "(index: number) => number",
+    "description": "Returns an estimated or known size for an item by index."
+   },
+   {
+    "name": "horizontal",
+    "type": "boolean",
+    "description": "Whether to virtualize horizontally instead of using the default vertical orientation."
+   },
+   {
+    "name": "overscan",
+    "type": "number",
+    "description": "Number of extra items rendered before and after the visible range."
+   }
+  ],
+  "returns": "A framework-configured Virtualizer instance; getVirtualItems() returns the current virtual items and getTotalSize() returns the total virtualized size.",
+  "example": {
+   "title": "Virtualized React list",
+   "code": "import * as React from 'react'\nimport { useVirtualizer } from '@tanstack/react-virtual'\n\nexport default function List() {\n  const parentRef = React.useRef<HTMLDivElement>(null)\n  const virtualizer = useVirtualizer({\n    count: 10000,\n    getScrollElement: () => parentRef.current,\n    estimateSize: () => 35,\n    overscan: 5,\n  })\n\n  return (\n    <div ref={parentRef} style={{ height: 400, overflow: 'auto' }}>\n      <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>\n        {virtualizer.getVirtualItems().map(item => (\n          <div key={item.key} style={{\n            position: 'absolute', top: 0, left: 0,\n            width: '100%', height: item.size,\n            transform: `translateY(${item.start}px)`,\n          }}>\n            Row {item.index}\n          </div>\n        ))}\n      </div>\n    </div>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Creates a scrollable React list with 10,000 logical rows while mounting only the current virtual window plus overscan."
+  },
+  "useCases": [
+   {
+    "title": "Long vertical lists",
+    "scenario": "Feeds, logs, search results, menus, or admin indexes with many rows."
+   },
+   {
+    "title": "Horizontal lists",
+    "scenario": "Timelines or horizontally scrolling collections."
+   },
+   {
+    "title": "Two-dimensional grids",
+    "scenario": "Galleries, calendars, tables, spreadsheets, or board-like surfaces."
+   },
+   {
+    "title": "Dynamic-size items",
+    "scenario": "Rows whose content expands or cannot be predicted precisely."
+   }
+  ],
+  "related": [
+   "Virtualizer",
+   "useVirtualizer",
+   "useWindowVirtualizer",
+   "getVirtualItems",
+   "getTotalSize",
+   "measureElement",
+   "React Virtual",
+   "horizontal"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does TanStack Virtual solve?",
+    "answer": "TanStack Virtual is headless, so it calculates the visible range and item geometry but does not render a component, markup, or styles. The application maps getVirtualItems to its own rows, cells, or cards.",
+    "followUp": "How would you virtualize a grid? Configure separate vertical and horizontal virtualizers, then combine their visible row and column items; the documentation describes grid-like virtualization by combining the two axis configurations."
+   },
+   {
+    "question": "What are the core inputs and outputs of a virtualizer?",
+    "answer": "A virtualizer needs the item count, a scroll-element accessor, and an estimateSize function. getVirtualItems returns the items for the current virtual state, while getTotalSize supplies the spacer size needed to preserve the scroll range.",
+    "followUp": "What if row heights vary? Start with estimates and measure actual item sizes as they become available, allowing the model to refine without mounting every offscreen row."
+   },
+   {
+    "question": "How does TanStack Virtual support lists and grids?",
+    "answer": "The default orientation is vertical, and the horizontal option enables horizontal virtualization. Using two axis configurations supports two-dimensional grids while leaving the actual DOM and presentation under application control.",
+    "followUp": "How can scrolling remain smooth during fast movement? Add overscan so nearby items beyond the visible area are rendered, balancing blank-space avoidance against extra work."
+   }
+  ],
+  "keyPoints": [
+   "It is a headless cross-framework utility for virtualizing long collections.",
+   "The Virtualizer is the central calculation object, normally created through a framework adapter.",
+   "Choose vertical or horizontal orientation; combining both enables grid-like virtualization.",
+   "count tells the virtualizer how many logical items exist, including items that are not mounted.",
+   "overscan renders a buffer around the viewport to reduce blank areas during scrolling.",
+   "estimateSize provides a per-item size estimate, and it can represent dynamic items before measurement."
+  ],
+  "gotchas": [
+   "The library does not create list markup or styling; your application must render and position the virtual items.",
+   "The scroll element must be supplied through getScrollElement, and it can be unavailable initially, such as before a ref is attached.",
+   "When using direct DOM updates, items must be absolutely positioned and anchored correctly for transform mode."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Tooling::uv package manager": {
+  "sourceUrl": "https://docs.astral.sh/uv/guides/projects/",
+  "sourceTitle": "Working on projects",
+  "summary": "uv manages Python projects through pyproject.toml, an isolated .venv environment, and the cross-platform uv.lock lockfile. Commands such as uv add, uv sync, and uv run keep dependencies reproducible and usable.",
+  "explanation": "uv manages a Python project's declared dependencies, isolated environment, and exact resolved versions. Dependencies are declared in pyproject.toml, while uv.lock records the resolution; project commands keep the environment synchronized with those declarations.",
+  "syntax": "uv add <package>\nuv sync\nuv run <command>",
+  "parameters": [
+   {
+    "name": "project",
+    "type": "path",
+    "description": "Project directory containing pyproject.toml; defaults to the current directory for project commands."
+   },
+   {
+    "name": "package",
+    "type": "package requirement",
+    "description": "Dependency specification passed to uv add, such as a package name or version requirement."
+   }
+  ],
+  "returns": "Commands update the project metadata, lockfile, and environment, or execute a command in the project environment.",
+  "example": {
+   "title": "Create and run a project",
+   "code": "uv init example-project\ncd example-project\nuv add requests\nuv run python -c \"import requests; print(requests.__version__)\"",
+   "language": "bash",
+   "explanation": "Creates a project, adds a dependency, and runs Python in uv's managed environment."
+  },
+  "useCases": [
+   {
+    "title": "Create a project",
+    "scenario": "Start a new Python application with managed metadata and dependencies."
+   },
+   {
+    "title": "Reproduce dependencies",
+    "scenario": "Keep development environments consistent across machines and platforms."
+   },
+   {
+    "title": "Execute project commands",
+    "scenario": "Run scripts and tools without manually activating the project environment."
+   },
+   {
+    "title": "Maintain dependencies",
+    "scenario": "Change declared dependencies while automatically refreshing the lockfile and environment."
+   }
+  ],
+  "related": [
+   "pyproject.toml",
+   ".venv",
+   "uv.lock",
+   "uv init",
+   "uv add",
+   "uv sync",
+   "uv run",
+   "uv remove"
+  ],
+  "since": "",
+  "keyPoints": [
+   "A uv project uses pyproject.toml as the primary declaration file for its dependencies and project metadata.",
+   "uv keeps project packages isolated in a local .venv environment rather than mixing them with the system installation.",
+   "The lockfile captures an exact, cross-platform dependency resolution for repeatable installs.",
+   "Use uv add package-name to declare a dependency and update the project environment.",
+   "Adding a dependency updates both the lockfile and the installed project environment.",
+   "Prefix project commands with uv run so they execute inside the managed project environment."
+  ],
+  "gotchas": [
+   "Do not treat pyproject.toml as the complete reproducibility record: commit uv.lock so collaborators and platforms use the exact resolved dependency versions."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Validation::Conform - Validation libraries": {
+  "sourceUrl": "https://conform.guide/validation",
+  "sourceTitle": "Validation",
+  "summary": "Conform supports client, server, and asynchronous validation modes for progressively enhanced forms. Server validation can keep rules out of the client bundle while returning structured errors for accessible field feedback.",
+  "explanation": "Conform validates submitted FormData through an adapter for the chosen schema library. The adapter returns a submission containing either parsed data or validation errors, which can be sent back to the form so field metadata exposes accessible error information without requiring validation logic in the client bundle.",
+  "syntax": "parseWithZod(formData, { schema })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Server-side schema validation",
+   "code": "import { parseWithZod } from \"@conform-to/zod\";\nimport { z } from \"zod\";\n\nconst schema = z.object({\n  email: z.string().email(),\n});\n\nexport async function action({ request }: { request: Request }) {\n  const submission = parseWithZod(await request.formData(), { schema });\n  if (submission.status !== \"success\") return submission.reply();\n  return { ok: true };\n}",
+   "language": "typescript",
+   "explanation": "Parse submitted FormData with a Zod schema on the server and return Conform's structured validation result."
+  },
+  "useCases": [
+   {
+    "title": "Server-only validation",
+    "scenario": "A form whose validation rules must not be shipped to the browser."
+   },
+   {
+    "title": "Interactive remote validation",
+    "scenario": "A field that needs availability or uniqueness checks against server data."
+   },
+   {
+    "title": "Schema-based validation",
+    "scenario": "A form using a schema library such as Zod, Valibot, or Yup."
+   }
+  ],
+  "related": [
+   "parseWithZod",
+   "parseWithValibot",
+   "parseWithYup",
+   "useForm",
+   "Validation"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why use server-side validation with Conform?",
+    "answer": "Conform can validate a form entirely on the server, including validation triggered while typing or when a field loses focus. This can keep validation code out of the browser bundle.",
+    "followUp": "What trade-off does server validation introduce during interactive validation? Network latency can make feedback slower, especially while the user is typing."
+   },
+   {
+    "question": "What does a schema adapter do?",
+    "answer": "The adapter receives FormData and a schema, then produces a submission object containing parsed data when valid or errors when invalid. For Zod, the helper is parseWithZod.",
+    "followUp": "How would you support another schema library? Install its Conform adapter and use the corresponding parser, such as parseWithValibot or parseWithYup."
+   },
+   {
+    "question": "Which validation modes does Conform document?",
+    "answer": "Conform supports multiple validation modes, including server, client, and asynchronous validation. The mode should match whether rules must stay server-only, need immediate local feedback, or require server fallback.",
+    "followUp": "Why might client validation still be useful? Reusing validation logic in the client can provide immediate feedback before a server request."
+   }
+  ],
+  "keyPoints": [
+   "Choose among validation approaches based on where validation runs and when feedback is required.",
+   "Server-only validation lets the server remain the authority for submitted form data.",
+   "Server validation can be invoked for more than final submission, including typing and blur interactions.",
+   "Keeping rules on the server can reduce the validation code shipped to browsers.",
+   "Asynchronous validation is handled as a distinct Conform validation mode."
+  ],
+  "gotchas": [
+   "Server-side validation keeps rules out of the client bundle, but validating during typing can introduce network latency.",
+   "Async validation falls back to server validation rather than requiring a separate validation endpoint."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Validation::Zod validation libraries": {
+  "sourceUrl": "https://zod.dev/basics?id=parsing-data",
+  "sourceTitle": "Basic usage",
+  "summary": "Zod lets you define reusable schemas for runtime validation and derive matching TypeScript types. Parse data directly for exceptions or use safeParse for an explicit success/error result.",
+  "explanation": "Define a schema that describes the accepted shape and constraints, then parse unknown input through it. Successful parsing returns typed data, while invalid input can either throw a ZodError or produce a success/error result with safeParse. The same schema can also provide a TypeScript type through z.infer.",
+  "syntax": "const schema = z.object({ field: z.string() });\nschema.parse(data);\nschema.safeParse(data);\ntype Output = z.infer<typeof schema>;",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "unknown",
+    "description": "The value to validate against the schema."
+   },
+   {
+    "name": "schema",
+    "type": "Zod schema",
+    "description": "The schema describing the accepted value and its constraints."
+   }
+  ],
+  "returns": "parse returns the validated, strongly typed deep clone on success and throws ZodError on failure; safeParse returns a result object containing parsed data or a ZodError.",
+  "example": {
+   "title": "Reusable object schema",
+   "code": "import { z } from \"zod\";\n\nconst User = z.object({\n  name: z.string().min(1),\n  email: z.email(),\n});\n\ntype User = z.infer<typeof User>;\n\nconst result = User.safeParse({ name: \"Ada\", email: \"ada@example.com\" });\n\nif (result.success) {\n  console.log(result.data.email);\n} else {\n  console.error(result.error.issues);\n}",
+   "language": "typescript",
+   "explanation": "This defines one reusable object schema, derives its TypeScript type, and validates unknown input without requiring exception handling."
+  },
+  "useCases": [
+   {
+    "title": "API boundaries",
+    "scenario": "Validate request bodies, query values, or other untrusted application input before business logic runs."
+   },
+   {
+    "title": "Forms",
+    "scenario": "Reuse a schema to validate submitted form values and present structured issues to users."
+   },
+   {
+    "title": "Environment configuration",
+    "scenario": "Define one contract for configuration values and validate them when an application starts."
+   },
+   {
+    "title": "Database and domain boundaries",
+    "scenario": "Validate values crossing persistence or domain boundaries before they enter application code."
+   }
+  ],
+  "related": [
+   "Defining schemas",
+   "Parsing data",
+   "Handling errors",
+   "Inferring types",
+   "z.coerce",
+   "z.infer",
+   "safeParse",
+   "ZodError"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Call parse with unknown data when invalid input should raise a validation error.",
+   "Use safeParse to receive a result object containing either parsed data or a ZodError.",
+   "A schema can serve as the runtime validator and the source for a corresponding static TypeScript type.",
+   "Use z.infer<typeof Schema> to derive the TypeScript type represented by a schema."
+  ],
+  "gotchas": [
+   "Use safeParse when the caller should handle validation failure as data instead of catching an exception.",
+   "Parsing does not return the original object reference; account for the deep-clone behavior."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

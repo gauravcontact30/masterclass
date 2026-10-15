@@ -1,0 +1,1455 @@
+{
+ "Browser basics::Browser contexts": {
+  "sourceUrl": "https://playwright.dev/docs/browser-contexts",
+  "sourceTitle": "Isolation",
+  "summary": "Browser contexts are isolated, incognito-like sessions for Playwright scenarios. Use a fresh context to separate cookies, storage, cache, permissions, and other session state, then close it when finished.",
+  "explanation": "A browser context is an independent, incognito-like session created inside a browser. Its pages do not share cookies, storage, or cache with other contexts; create pages through it, configure options such as permissions or locale, and close it when finished.",
+  "syntax": "browser.newContext(options?) → Promise<BrowserContext>",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "Browser.NewContextOptions",
+    "description": "Options controlling the new isolated browser context, such as permissions, locale, and color scheme."
+   }
+  ],
+  "returns": "A new BrowserContext.",
+  "example": {
+   "title": "Create and close an isolated context",
+   "code": "import { chromium } from '@playwright/test';\n\nconst browser = await chromium.launch();\nconst context = await browser.newContext({\n  permissions: ['clipboard-read']\n});\nconst page = await context.newPage();\nawait page.goto('https://example.com');\nawait context.close();\nawait browser.close();",
+   "language": "typescript",
+   "explanation": "Creates a fresh isolated session with a permission setting, opens a page, and closes the context and browser."
+  },
+  "useCases": [
+   {
+    "title": "Test isolation",
+    "scenario": "Run each test with clean cookies and storage so one test cannot affect another."
+   },
+   {
+    "title": "Multi-user workflows",
+    "scenario": "Create separate contexts for two logged-in users interacting in one scenario."
+   },
+   {
+    "title": "Environment emulation",
+    "scenario": "Configure permissions, locale, color scheme, or mobile emulation per scenario."
+   }
+  ],
+  "related": [
+   "Browser",
+   "Page",
+   "browser.newContext()",
+   "browserContext.close()",
+   "browser.contexts()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The Playwright test runner normally creates one isolated context and a default page for each test.",
+   "Contexts are lightweight enough for per-scenario isolation, including when several run inside one browser.",
+   "Context options can model device, permission, locale, and color-scheme conditions.",
+   "Create multiple contexts in one scenario to test interactions between separate users or sessions."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Browser basics::Downloads and uploads": {
+  "sourceUrl": "https://playwright.dev/docs/downloads",
+  "sourceTitle": "Downloads",
+  "summary": "Coordinate uploads through the file chooser and downloads through the download event. Set input files, wait for the download before clicking, then save it using the suggested filename.",
+  "explanation": "Playwright exposes file chooser and download events so tests can coordinate with browser file interactions. Set files on the chooser, wait for the download event before activating the download, then persist it with the suggested filename; downloaded files otherwise live in temporary storage and are removed with the browser context.",
+  "syntax": "const downloadPromise = page.waitForEvent('download');\nawait page.getByText('Download file').click();\nconst download = await downloadPromise;\nawait download.saveAs('/path/to/save/' + download.suggestedFilename());\n\nconst chooserPromise = page.waitForEvent('filechooser');\nawait page.getByText('Upload file').click();\nconst chooser = await chooserPromise;\nawait chooser.setFiles('path/to/file');",
+  "parameters": [
+   {
+    "name": "files",
+    "type": "string | string[] | FilePayload | FilePayload[]",
+    "description": "Path or paths of files to assign to the file input."
+   },
+   {
+    "name": "path",
+    "type": "string",
+    "description": "Destination path where the downloaded file is copied."
+   }
+  ],
+  "returns": "Download event yields a Download object; saveAs waits for completion and copies the file to the specified path.",
+  "example": {
+   "title": "Upload and save a downloaded file",
+   "code": "import { test, expect } from '@playwright/test';\n\n test('uploads and downloads a file', async ({ page }) => {\n  const chooserPromise = page.waitForEvent('filechooser');\n  await page.getByText('Upload file').click();\n  const chooser = await chooserPromise;\n  await chooser.setFiles('tests/fixtures/report.pdf');\n\n  const downloadPromise = page.waitForEvent('download');\n  await page.getByText('Download file').click();\n  const download = await downloadPromise;\n  await download.saveAs(`artifacts/${download.suggestedFilename()}`);\n  expect(download.suggestedFilename()).toMatch(/\\.pdf$/);\n});",
+   "language": "typescript",
+   "explanation": "Wait for the file chooser before triggering the upload, then wait for the download event before clicking its initiator and save the completed file."
+  },
+  "useCases": [
+   {
+    "title": "Test downloads",
+    "scenario": "Verify that an export or report download starts and produces the expected filename."
+   },
+   {
+    "title": "Test uploads",
+    "scenario": "Attach one or more fixture files to a file input during a workflow test."
+   },
+   {
+    "title": "Save test artifacts",
+    "scenario": "Persist downloaded artifacts for later assertions or CI inspection."
+   }
+  ],
+  "related": [
+   "page.waitForEvent('download')",
+   "page.waitForEvent('filechooser')",
+   "FileChooser.setFiles()",
+   "Download.saveAs()",
+   "Download.suggestedFilename()",
+   "browserType.launch({ downloadsPath })"
+  ],
+  "since": "",
+  "keyPoints": [
+   "A page emits a download event whenever an attachment begins downloading.",
+   "The Download object provides access to download metadata and content operations.",
+   "Configure a browser launch downloads path when downloads need a controlled temporary location.",
+   "Uploads are handled through the related file-upload APIs rather than by manually controlling an operating-system picker."
+  ],
+  "gotchas": [
+   "Register the download wait before the click that triggers it; otherwise the event can be missed.",
+   "Save the download to a durable location before closing its browser context."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Browser basics::Network interception": {
+  "sourceUrl": "https://playwright.dev/docs/network",
+  "sourceTitle": "Network | Playwright",
+  "summary": "Intercept matching browser requests to observe, continue, mock, modify, or fail them. Routing makes network-dependent tests deterministic by controlling what reaches the server and what response the page receives.",
+  "explanation": "Playwright places a route handler between the page and the browser network stack. Matching requests pause until the handler continues them, fulfills them with a response, or aborts them; separate request and response events let you observe traffic without changing it.",
+  "syntax": "await page.route(url, handler);",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "string",
+    "description": "URL glob pattern selecting requests handled by the route."
+   },
+   {
+    "name": "handler",
+    "type": "RouteHandler",
+    "description": "Handler invoked for each matching request; it receives a Route object."
+   }
+  ],
+  "returns": "The routing methods return a Promise that resolves when the route handler is registered.",
+  "example": {
+   "title": "Mock an API response",
+   "code": "import { test, expect } from '@playwright/test';\n\ntest('mocks the API response', async ({ page }) => {\n  await page.route('**/api/fetch_data', route =>\n    route.fulfill({ status: 200, body: JSON.stringify({ ok: true }) })\n  );\n\n  await page.goto('https://example.com');\n});",
+   "language": "typescript",
+   "explanation": "The route handler intercepts matching API requests and returns deterministic test data without contacting the server."
+  },
+  "useCases": [
+   {
+    "title": "Mock API responses",
+    "scenario": "Return stable API data without depending on a live backend."
+   },
+   {
+    "title": "Test failure states",
+    "scenario": "Exercise offline, timeout, or server-error UI paths."
+   },
+   {
+    "title": "Observe network traffic",
+    "scenario": "Inspect request methods, URLs, and response statuses during a test."
+   },
+   {
+    "title": "Modify outgoing requests",
+    "scenario": "Forward a request after changing its headers, URL, or payload."
+   }
+  ],
+  "related": [
+   "page.on('request')",
+   "page.on('response')",
+   "page.waitForResponse()",
+   "page.route()",
+   "browserContext.route()",
+   "route.continue()",
+   "route.fulfill()",
+   "route.abort()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Network interception supports both observing and changing HTTP or HTTPS traffic.",
+   "Page requests include XHR and fetch traffic, which can be observed, altered, or handled.",
+   "A route handler runs at the boundary between page activity and the browser network stack.",
+   "Continue sends the request onward, fulfill supplies a local response, and abort makes the request fail.",
+   "A response can be modified by obtaining the original response through APIRequestContext and supplying it to fulfill."
+  ],
+  "gotchas": [
+   "Do not rely on a fulfilled redirect being intercepted again; browser behavior differs and WebKit rejects that call."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Browser basics::Pages and popups": {
+  "sourceUrl": "https://playwright.dev/docs/pages",
+  "sourceTitle": "Pages",
+  "summary": "Playwright represents tabs and popup windows as Page objects within a BrowserContext. Coordinate new-page events by registering the wait before the action, then interact with the returned page after it is ready.",
+  "explanation": "A browser context can contain multiple Page objects, representing tabs or popup windows. Use the context's page event for any newly created page, or a specific page's popup event when the new window belongs to that page; start waiting before the triggering action and then interact with the resulting Page.",
+  "syntax": "const popupPromise = page.waitForEvent('popup');\nawait triggerAction();\nconst popup = await popupPromise;",
+  "parameters": [
+   {
+    "name": "event",
+    "type": "string",
+    "description": "Event name identifying the event to wait for, such as `popup`."
+   },
+   {
+    "name": "predicate",
+    "type": "function",
+    "description": "Optional predicate used to accept a matching event payload."
+   }
+  ],
+  "returns": "page.waitForEvent('popup') resolves to the newly opened Page; the context page event and page popup event provide the new Page to their handlers.",
+  "example": {
+   "title": "Capture a popup without a race condition",
+   "code": "import { test, expect } from '@playwright/test';\n\ntest('handles a popup', async ({ page }) => {\n  await page.goto('https://example.com');\n  const popupPromise = page.waitForEvent('popup');\n  await page.getByText('open the popup').click();\n  const popup = await popupPromise;\n  await popup.waitForLoadState();\n  await expect(popup).toHaveTitle(/Example/);\n});",
+   "language": "typescript",
+   "explanation": "Wait for the popup event before performing the action that opens the new window, then use the returned Page normally."
+  },
+  "useCases": [
+   {
+    "title": "Handle an action-triggered popup",
+    "scenario": "A click opens a new tab or window and the test must interact with it."
+   },
+   {
+    "title": "Track all new pages",
+    "scenario": "Tests need to observe any pages created in a browser context."
+   },
+   {
+    "title": "Listen for page-specific popups",
+    "scenario": "A page has several possible popup sources and each should be handled as it appears."
+   }
+  ],
+  "related": [
+   "BrowserContext",
+   "browserContext.on('page')",
+   "page.on('popup')",
+   "page.waitForEvent('popup')",
+   "page.waitForLoadState",
+   "Page"
+  ],
+  "since": "",
+  "keyPoints": [
+   "A BrowserContext groups multiple tabs and popup windows, allowing related pages to share one isolated browser session.",
+   "Use Page as the handle for navigation and interactions in either a tab or popup.",
+   "Subscribe to the context page event when you need to observe every newly created page, including popups.",
+   "Context-level page handling covers pages opened by links targeting a new browsing context.",
+   "Listen on the originating page when you only need popups associated with that page.",
+   "A popup can trigger both the specific page popup event and the broader context page event."
+  ],
+  "gotchas": [
+   "Register the popup wait before clicking the control that opens the window; waiting afterward can miss the event.",
+   "Do not add focus-management steps merely to interact with another Page; Playwright treats each page as active."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Configuration::Playwright Test configuration": {
+  "sourceUrl": "https://playwright.dev/docs/test-configuration",
+  "sourceTitle": "Configuration | Playwright",
+  "summary": "Configure Playwright Test in one file by setting test discovery, timeouts, reporters, projects, device profiles, and development servers. Shared options apply broadly, while projects provide browser- or environment-specific settings.",
+  "explanation": "A Playwright Test configuration exports options that control test discovery and execution. Set shared values such as the test directory and timeout, select reporters, define projects for browsers or device profiles, and use webServer to launch or wait for an application before tests run. Project-level settings can specialize the shared configuration.",
+  "syntax": "export default defineConfig({ ... });",
+  "parameters": [
+   {
+    "name": "testDir",
+    "type": "string",
+    "description": "Directory containing test files."
+   },
+   {
+    "name": "timeout",
+    "type": "number",
+    "description": "Maximum duration of each test in milliseconds; defaults to 30 seconds."
+   },
+   {
+    "name": "globalTimeout",
+    "type": "number",
+    "description": "Maximum duration of the complete test suite in milliseconds."
+   },
+   {
+    "name": "reporter",
+    "type": "string | ReporterDescription[]",
+    "description": "Reporter or reporters used for test output."
+   },
+   {
+    "name": "projects",
+    "type": "Project[]",
+    "description": "Logical test configurations, such as browsers or devices."
+   },
+   {
+    "name": "webServer",
+    "type": "WebServerConfig | WebServerConfig[]",
+    "description": "Development server process and readiness settings."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Configure Playwright Test",
+   "code": "import { defineConfig, devices } from '@playwright/test';\n\nexport default defineConfig({\n  testDir: './tests',\n  timeout: 30_000,\n  reporter: 'html',\n  projects: [\n    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },\n    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },\n  ],\n  webServer: {\n    command: 'npm run start',\n    url: 'http://localhost:3000',\n    reuseExistingServer: !process.env.CI,\n  },\n});",
+   "language": "typescript",
+   "explanation": "This configuration runs tests in two browser projects, uses an HTML reporter, sets a test timeout, and starts a local server before execution."
+  },
+  "useCases": [
+   {
+    "title": "Cross-browser testing",
+    "scenario": "Run a suite against Chromium, Firefox, and WebKit."
+   },
+   {
+    "title": "Device emulation",
+    "scenario": "Apply mobile or desktop device profiles to separate test projects."
+   },
+   {
+    "title": "Local web-server orchestration",
+    "scenario": "Start the application automatically before tests."
+   },
+   {
+    "title": "Environment-specific reporting",
+    "scenario": "Produce different output locally and in continuous integration."
+   }
+  ],
+  "related": [
+   "TestConfig",
+   "TestProject",
+   "testConfig.projects",
+   "testConfig.reporter",
+   "testConfig.timeout",
+   "testConfig.globalTimeout",
+   "testConfig.webServer",
+   "Reporters"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Export configuration options from the Playwright configuration file.",
+   "Use projects to run the same suite across browsers, devices, or other configurations.",
+   "Choose a built-in or custom reporter through the reporter option.",
+   "Set timeout to control the maximum duration of each test.",
+   "Use globalTimeout to cap the complete test run.",
+   "Use webServer to start a local development server before tests execute."
+  ],
+  "gotchas": [
+   "The configured test timeout applies to each test and defaults to 30 seconds.",
+   "A web server configuration must specify either a port or a URL."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Configuration::Projects and browsers": {
+  "sourceUrl": "https://playwright.dev/docs/test-projects",
+  "sourceTitle": "Projects",
+  "summary": "Playwright projects group tests by shared configuration, letting one suite run across browsers, devices, and other environments. Configure projects in playwright.config.ts and run all projects or select one by name.",
+  "explanation": "A project groups tests that share configuration. Define browser, device, or other settings under separate projects in playwright.config.ts, then Playwright can execute every project or select named projects from the command line.",
+  "syntax": "projects: [{ name: string, use: ProjectUseOptions }]",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Run a suite across browser projects",
+   "code": "import { defineConfig, devices } from '@playwright/test';\n\nexport default defineConfig({\n  projects: [\n    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },\n    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },\n    { name: 'webkit', use: { ...devices['Desktop Safari'] } },\n  ],\n});",
+   "language": "typescript",
+   "explanation": "This configuration defines three projects so the same test suite runs with Chromium, Firefox, and WebKit."
+  },
+  "useCases": [
+   {
+    "title": "Run Chromium, Firefox, and WebKit",
+    "scenario": "Cross-browser regression testing"
+   },
+   {
+    "title": "Test desktop and mobile device profiles",
+    "scenario": "Responsive UI coverage"
+   },
+   {
+    "title": "Vary project-specific configuration",
+    "scenario": "Environment matrices"
+   },
+   {
+    "title": "Run one named project",
+    "scenario": "Focused debugging"
+   }
+  ],
+  "related": [
+   "defineConfig",
+   "devices",
+   "use",
+   "playwright.config.ts",
+   "--project"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Treat each project as a named test configuration, such as a browser or device combination.",
+   "Projects let one suite cover multiple browser and device targets without duplicating tests.",
+   "Configure separate browser projects for Chromium, WebKit, and Firefox.",
+   "Projects can also target branded Chromium browsers, including Chrome and Edge."
+  ],
+  "gotchas": [
+   "Running without a project selector executes the configured projects; use --project when you need to target only one.",
+   "Project definitions belong in the Playwright configuration file, not inside individual test files."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Debugging::Trace viewer": {
+  "sourceUrl": "https://playwright.dev/docs/trace-viewer",
+  "sourceTitle": "Trace viewer - Playwright",
+  "summary": "Trace Viewer replays a recorded Playwright run for debugging. It exposes action timing, DOM snapshots, network requests, logs, errors, and console output through a timeline.",
+  "explanation": "Trace Viewer reads a recorded Playwright trace and presents a timeline of test actions. Selecting an action lets you inspect the page state through DOM snapshots, along with logs, source, network activity, errors, and console output; the CLI can open local or remote trace archives.",
+  "syntax": "npx playwright show-trace path/to/trace.zip\nnpx playwright test --trace on",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Record and open a trace",
+   "code": "npx playwright test --trace on\nnpx playwright show-trace path/to/trace.zip",
+   "language": "bash",
+   "explanation": "Runs tests with tracing enabled, then opens the saved trace in Trace Viewer."
+  },
+  "useCases": [
+   {
+    "title": "CI failure investigation",
+    "scenario": "Diagnose a failed CI test by reviewing the recorded timeline and error location."
+   },
+   {
+    "title": "DOM-state debugging",
+    "scenario": "Compare the page before and after a click, fill, navigation, or other action."
+   },
+   {
+    "title": "Network debugging",
+    "scenario": "Inspect requests and responses made during a test step."
+   },
+   {
+    "title": "Browser-side diagnostics",
+    "scenario": "Review console messages, logs, and source alongside a failing action."
+   }
+  ],
+  "related": [
+   "Actions tab",
+   "Network tab",
+   "DOM snapshot",
+   "HTML report",
+   "UI Mode",
+   "--trace",
+   "playwright show-trace"
+  ],
+  "since": "",
+  "keyPoints": [
+   "It is a graphical interface for examining a completed Playwright run.",
+   "Open a saved trace with the CLI or the hosted browser viewer.",
+   "Enable tracing during test execution with the `--trace on` option.",
+   "The Actions tab shows each locator-based action and its duration.",
+   "Hovering actions reveals DOM changes captured around that step.",
+   "Use the Network tab to inspect requests generated by the test."
+  ],
+  "gotchas": [
+   "When opening a local archive, provide its complete path.",
+   "The hosted viewer processes uploaded traces in the browser rather than sending them elsewhere."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Debugging::Tracing and debugging": {
+  "sourceUrl": "https://playwright.dev/docs/trace-viewer",
+  "sourceTitle": "Trace viewer | Playwright",
+  "summary": "Record Playwright traces to preserve action timelines, screenshots, DOM snapshots, and network activity for diagnosing failures. Use local tracing during development and first-retry tracing in CI, then inspect the saved trace in Trace Viewer.",
+  "explanation": "Playwright records a trace while the test runs and saves it for Trace Viewer. The viewer presents each action on a timeline with screenshots, DOM snapshots, source, console output, and network requests, making it possible to reconstruct what happened during a failure. Configure tracing through Playwright Test for complete test-failure context, especially on CI retries.",
+  "syntax": "npx playwright test --trace on\nnpx playwright show-trace path/to/trace.zip",
+  "parameters": [],
+  "returns": "A saved Playwright trace, typically opened from the generated trace.zip file in Trace Viewer.",
+  "example": {
+   "title": "Run a traced test",
+   "code": "import { test, expect } from '@playwright/test';\n\ntest('checkout', async ({ page }) => {\n  await page.goto('https://example.com');\n  await expect(page).toHaveTitle(/Example/);\n});",
+   "language": "typescript",
+   "explanation": "Run this test with --trace on or configure tracing on the first retry, then open the generated trace in Trace Viewer to inspect actions, screenshots, DOM snapshots, and network requests."
+  },
+  "useCases": [
+   {
+    "title": "Reconstruct local failures",
+    "scenario": "A test fails locally and the page state at each action is unclear."
+   },
+   {
+    "title": "Capture first-retry evidence",
+    "scenario": "A CI test fails intermittently."
+   },
+   {
+    "title": "Inspect network behavior",
+    "scenario": "An assertion or action may be caused by an unexpected request or response."
+   },
+   {
+    "title": "Review screenshots and snapshots",
+    "scenario": "A failure depends on transient visual or DOM state."
+   }
+  ],
+  "related": [
+   "Trace Viewer",
+   "--trace",
+   "trace: 'on-first-retry'",
+   "context.tracing",
+   "screenshots",
+   "snapshots",
+   "sources",
+   "Network tab"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use --trace on during local debugging to record a trace for each test run.",
+   "Set trace to on-first-retry in the test configuration to collect evidence when a CI test fails.",
+   "The timeline film strip lets you inspect visual page state around each action.",
+   "Use the Network tab to investigate requests, responses, status codes, headers, bodies, timing, and sizes.",
+   "Open a saved trace with the Playwright CLI or in the browser-based Trace Viewer."
+  ],
+  "gotchas": [
+   "The low-level context.tracing API does not include assertions such as expect calls; use Playwright Test configuration when assertion context is needed.",
+   "For CI, prefer first-retry tracing so successful runs do not generate unnecessary traces.",
+   "Screenshot capture is enabled by default in the viewer-oriented tracing flow and supplies the timeline film strip."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Fixtures::Authentication state": {
+  "sourceUrl": "https://playwright.dev/docs/auth",
+  "sourceTitle": "Authentication - Playwright",
+  "summary": "Save authenticated browser state once and reuse it to start tests signed in. Playwright keeps each test in an isolated context while avoiding repeated login flows.",
+  "explanation": "Playwright saves cookies and other authenticated browser data from a setup context into a file. Configure that file as the test project's storageState, so each test receives a fresh browser context that starts authenticated while remaining isolated from other tests.",
+  "syntax": "await browserContext.storageState({ path: 'playwright/.auth/user.json' });",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Save authenticated state",
+   "code": "import { test as setup, expect } from '@playwright/test';\n\nsetup('authenticate', async ({ page }) => {\n  await page.goto('https://example.com/login');\n  await page.getByLabel('Username').fill(process.env.USERNAME!);\n  await page.getByLabel('Password').fill(process.env.PASSWORD!);\n  await page.getByRole('button', { name: 'Sign in' }).click();\n  await expect(page).toHaveURL(/dashboard/);\n  await page.context().storageState({ path: 'playwright/.auth/user.json' });\n});",
+   "language": "typescript",
+   "explanation": "A setup test signs in once and saves the browser context state for dependent tests to reuse."
+  },
+  "useCases": [
+   {
+    "title": "Shared authenticated account",
+    "scenario": "A suite has many tests that require the same signed-in account."
+   },
+   {
+    "title": "Worker-specific authentication",
+    "scenario": "Parallel workers need separate accounts or state files."
+   },
+   {
+    "title": "Multiple signed-in roles",
+    "scenario": "Tests cover different permissions or user roles."
+   }
+  ],
+  "related": [
+   "storageState",
+   "test.use",
+   "setup project",
+   "project dependencies",
+   "browserContext.storageState"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Tests can begin with a previously saved login instead of repeating authentication.",
+   "Reusing state reduces repeated login work and can shorten the suite.",
+   "A setup routine persists the authenticated browser context to a state file.",
+   "Subsequent tests load the file and open already signed-in contexts.",
+   "A setup project is the recommended place to create shared authentication state.",
+   "Each test still runs in its own browser context, preserving isolation despite shared initial state."
+  ],
+  "gotchas": [
+   "Keep the authentication-state directory out of version control because the saved state can contain sensitive credentials.",
+   "Remove and regenerate the state file when the session or credentials expire.",
+   "The setup project must run before dependent projects, and those projects must configure the generated state as storageState."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Fixtures::Test hooks": {
+  "sourceUrl": "https://playwright.dev/docs/test-fixtures",
+  "sourceTitle": "Fixtures - Playwright",
+  "summary": "Use beforeEach and afterEach for per-test setup and cleanup, and compose reusable fixtures with test.extend. Fixture dependencies control setup and teardown order while preserving test isolation.",
+  "explanation": "Hooks register setup and cleanup around tests in their file or describe block. Fixtures provide reusable, isolated setup and teardown; fixture composition lets one fixture depend on another, with teardown occurring after the dependent fixture.",
+  "syntax": "test.beforeEach(hookFunction)\ntest.afterEach(hookFunction)\ntest.extend(fixtures)\nfixture: async ({ dependencies }, use) => { await use(value); }",
+  "parameters": [
+   {
+    "name": "hookFunction",
+    "type": "function(Fixtures, TestInfo)",
+    "description": "Hook callback receiving the requested fixtures and optionally TestInfo."
+   },
+   {
+    "name": "fixtureFunction",
+    "type": "function(Fixtures, use, TestInfo)",
+    "description": "Fixture callback receives dependencies and use; code after await use() performs teardown."
+   }
+  ],
+  "returns": "Hooks and fixtures register test lifecycle behavior; the fixture callback's post-use code performs teardown.",
+  "example": {
+   "title": "Composing a fixture with test hooks",
+   "code": "import { test, expect } from '@playwright/test';\n\nconst testWithFixtures = test.extend<{\n  signedInPage: void;\n}>({\n  signedInPage: async ({ page }, use) => {\n    await page.goto('https://example.com/login');\n    await use();\n  },\n});\n\ntestWithFixtures.beforeEach(async ({ page }) => {\n  await page.goto('https://example.com');\n});\n\ntestWithFixtures.afterEach(async ({ page }) => {\n  await page.screenshot({ path: 'after-test.png' });\n});\n\ntestWithFixtures('uses composed setup', async ({ signedInPage }) => {\n  expect(signedInPage).toBeUndefined();\n});",
+   "language": "typescript",
+   "explanation": "The custom fixture performs setup around the test, while hooks add predictable per-test navigation and cleanup."
+  },
+  "useCases": [
+   {
+    "title": "Repeatable per-test setup",
+    "scenario": "Navigate to a common starting page before each test."
+   },
+   {
+    "title": "Predictable cleanup",
+    "scenario": "Capture screenshots or remove temporary state after each test."
+   },
+   {
+    "title": "Fixture composition",
+    "scenario": "Build higher-level test resources from lower-level fixtures."
+   },
+   {
+    "title": "Reusable lifecycle behavior",
+    "scenario": "Share global setup or cleanup across tests with automatic fixtures."
+   }
+  ],
+  "related": [
+   "test.describe",
+   "test.beforeAll",
+   "test.afterAll",
+   "test.extend",
+   "test.use",
+   "TestInfo"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use describe to scope hooks and tests as a group.",
+   "beforeEach runs before each matching test; afterEach runs afterward.",
+   "beforeAll and afterAll run once per worker rather than around every test.",
+   "Put fixture setup before await use() and cleanup after it.",
+   "Fixture dependencies determine order: dependencies initialize first and clean up last.",
+   "Hooks apply to tests in the same file and describe block."
+  ],
+  "gotchas": [
+   "Do not call test.use inside beforeEach or beforeAll; configure it in the global scope or a test.describe block.",
+   "A regular fixture is not initialized unless the test or hook actually requests it.",
+   "Test-scoped fixture cleanup runs after every test, whereas worker-scoped cleanup waits for the worker to finish."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Locators::Locator filtering": {
+  "sourceUrl": "https://playwright.dev/docs/locators",
+  "sourceTitle": "Locators",
+  "summary": "Use locator.filter() to narrow repeated components by contained text or by the presence or absence of a matching descendant locator. Chain further locator methods to act on the intended component.",
+  "explanation": "Start with a broad locator for repeated elements, then call locator.filter() to retain only matches based on contained text or a descendant locator. The resulting locator remains scoped to the original matches, so descendant actions target the intended component.",
+  "syntax": "locator.filter({ hasText, hasNotText, has, hasNot, visible })",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "Locator.FilterOptions",
+    "description": "Filter options such as hasText, hasNotText, has, hasNot, and visible; text may be a string or regular expression, while has and hasNot accept a relative locator."
+   }
+  ],
+  "returns": "A new locator narrowed according to the supplied filter options.",
+  "example": {
+   "title": "Filter a repeated list item",
+   "code": "import { test, expect } from '@playwright/test';\n\ntest('adds an item from the matching product', async ({ page }) => {\n  await page.setContent(`\n    <ul>\n      <li><span>Product 1</span><button>Add to cart</button></li>\n      <li><span>Product 2</span><button>Add to cart</button></li>\n    </ul>`);\n\n  const product = page.getByRole('listitem').filter({ hasText: 'Product 2' });\n  await product.getByRole('button', { name: 'Add to cart' }).click();\n  await expect(product).toContainText('Product 2');\n});",
+   "language": "typescript",
+   "explanation": "Selects the list item containing the target text, then finds and clicks its descendant button."
+  },
+  "useCases": [
+   {
+    "title": "Choose one repeated component",
+    "scenario": "A page renders multiple cards, rows, or list items with the same structure."
+   },
+   {
+    "title": "Match descendant text",
+    "scenario": "The identifying label appears inside a nested element."
+   },
+   {
+    "title": "Filter by descendant state",
+    "scenario": "A component is distinguished by whether it contains a button, icon, or status element."
+   }
+  ],
+  "related": [
+   "locator.filter()",
+   "locator.getByRole()",
+   "locator.getByText()",
+   "locator.getByTestId()",
+   "locator.and()"
+  ],
+  "since": "v1.22",
+  "keyPoints": [
+   "Use locator.filter() to narrow a repeated-component locator by text.",
+   "A string text filter checks contained content, including descendants, and ignores letter case.",
+   "Use a regular expression when text matching needs a pattern rather than a fixed string.",
+   "Filter components by whether a descendant locator exists or does not exist.",
+   "The descendant criterion can use role, test-id, text, or another locator strategy.",
+   "After filtering, chain locator methods to reach the specific control inside the matched component."
+  ],
+  "gotchas": [
+   "A has/hasNot locator is scoped to the original locator; do not construct it as though it searches from the page root.",
+   "Visibility is not the default filtering criterion; explicitly set visible to false when invisible matches are required."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Locators::Role and text locators": {
+  "sourceUrl": "https://playwright.dev/docs/locators",
+  "sourceTitle": "Locators | Playwright",
+  "summary": "Prefer role locators for interactive elements and accessible semantics, usually supplying an accessible name. Use text locators for non-interactive content, with substring, exact, or regular-expression matching as needed.",
+  "explanation": "Use `page.getByRole()` to find elements as users and assistive technologies perceive them, usually including an accessible name for precision. Use `page.getByText()` to match visible text by substring, exact string, or regular expression; prefer it for non-interactive elements, while role locators suit buttons, links, inputs, and similar controls.",
+  "syntax": "page.getByRole(role, options)\npage.getByText(text, options)",
+  "parameters": [
+   {
+    "name": "role",
+    "type": "string",
+    "description": "ARIA role, such as `button`, `checkbox`, or `heading`."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Options including the accessible `name`; text matching may use substring, exact, or regular-expression matching."
+   }
+  ],
+  "returns": "Locator objects representing matching elements; actions and assertions use them with Playwright's auto-waiting and retryability.",
+  "example": {
+   "title": "Role and text locators",
+   "code": "import { test, expect } from '@playwright/test';\n\ntest('uses role and text locators', async ({ page }) => {\n  await page.goto('https://example.com');\n  await expect(page.getByRole('heading', { name: 'Example Domain' })).toBeVisible();\n  await expect(page.getByText('This domain is for use in illustrative examples')).toBeVisible();\n});",
+   "language": "typescript",
+   "explanation": "The test locates an interactive or semantic element by its accessible role and a non-interactive element by visible text."
+  },
+  "useCases": [
+   {
+    "title": "Accessible interaction",
+    "scenario": "Find a uniquely named button, checkbox, heading, or other semantic control."
+   },
+   {
+    "title": "Text-based content checks",
+    "scenario": "Assert or interact with a paragraph, span, div, or other non-interactive text element."
+   },
+   {
+    "title": "Maintainable locators",
+    "scenario": "Make tests resilient to DOM restructuring by targeting user-visible semantics instead of brittle implementation selectors."
+   }
+  ],
+  "related": [
+   "page.getByRole()",
+   "page.getByText()",
+   "accessible name",
+   "CSS selectors",
+   "XPath selectors"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Role locators use explicit and implicit accessibility information, reflecting how users and assistive technology perceive elements.",
+   "Role-based locators align tests with the page's accessible semantics rather than implementation details.",
+   "Text locators find elements using their text content.",
+   "Use text locators for non-interactive content such as paragraphs, spans, and divs.",
+   "`getByText()` can locate an element based on text contained within it."
+  ],
+  "gotchas": [
+   "A role alone can match multiple elements; provide the accessible name when possible to make the locator specific.",
+   "Text matching is configurable; choose exact or regular-expression matching when a substring would be ambiguous.",
+   "Do not use text locators as the primary strategy for interactive controls when a role locator expresses the intent."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Projects and browsers::Parallel workers": {
+  "sourceUrl": "https://playwright.dev/docs/test-parallel",
+  "sourceTitle": "Parallelism | Playwright",
+  "summary": "Playwright runs tests concurrently in independent worker processes, each with its own browser and isolated state. Design test data and shared-resource access so workers do not collide.",
+  "explanation": "Playwright distributes concurrent tests across independent worker processes. Each worker starts its own browser and isolated BrowserContext, so tests cannot rely on shared globals or state. Use separate data per test or worker, and named locks when a shared external resource must not be accessed concurrently.",
+  "syntax": "test.describe.configure({ mode: 'parallel' })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Run tests in parallel",
+   "code": "import { test, expect } from '@playwright/test';\n\ntest.describe.configure({ mode: 'parallel' });\n\ntest('parallel check A', async ({ page }) => {\n  await page.goto('https://playwright.dev/');\n  await expect(page).toHaveTitle(/Playwright/);\n});\n\ntest('parallel check B', async ({ page }) => {\n  await page.goto('https://playwright.dev/');\n  await expect(page).toHaveURL(/playwright\\.dev/);\n});",
+   "language": "typescript",
+   "explanation": "This configures the tests in the file to run concurrently in separate worker processes."
+  },
+  "useCases": [
+   {
+    "title": "Concurrent test execution",
+    "scenario": "Speed up a suite containing independent tests."
+   },
+   {
+    "title": "Protect shared resources",
+    "scenario": "Prevent tests using one external account or service from overlapping."
+   },
+   {
+    "title": "Partition test data",
+    "scenario": "Give each worker isolated database users or records."
+   },
+   {
+    "title": "Generate unique data",
+    "scenario": "Avoid collisions when multiple tests create or edit records."
+   }
+  ],
+  "related": [
+   "test.describe.configure({ mode: 'parallel' })",
+   "test.describe.parallel()",
+   "testInfo.workerIndex",
+   "process.env.TEST_WORKER_INDEX",
+   "testProject.workers",
+   "testConfig.workers",
+   "named locks"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Playwright Test supports parallel execution through multiple worker processes.",
+   "Each worker is an independent operating-system process with its own browser.",
+   "Workers should be treated as isolated; do not coordinate them through in-memory communication.",
+   "Browser contexts isolate cookies, storage, and other per-test browser state.",
+   "Generate unique test data from the test identifier to prevent collisions.",
+   "Use the worker index to assign separate database users or datasets to workers."
+  ],
+  "gotchas": [
+   "Parallel tests cannot share state or global variables; setup and teardown hooks run independently for each test.",
+   "Shared external resources can race; use named locks for tests that must not overlap.",
+   "Tests modifying the same record need unique identifiers or another isolation strategy."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Projects and browsers::Retries and sharding": {
+  "sourceUrl": "https://playwright.dev/docs/test-retries",
+  "sourceTitle": "Retries",
+  "summary": "Use retries to re-run failed tests and expose flaky behavior, then shard the suite across CI jobs to reduce runtime. Enable fullyParallel for more even distribution across shards.",
+  "explanation": "Configure limited retries to identify intermittent failures as flaky while preserving genuine failures, then split the suite across CI jobs with one-based shard coordinates. Enabling fullyParallel helps distribute individual tests more evenly between shards.",
+  "syntax": "retries: number; shard: { total: number, current: number }; npx playwright test --shard=x/y",
+  "parameters": [
+   {
+    "name": "retries",
+    "type": "number",
+    "description": "Maximum number of retry attempts for each failed test."
+   },
+   {
+    "name": "fullyParallel",
+    "type": "boolean",
+    "description": "Whether to run individual tests in parallel across shards for even distribution."
+   },
+   {
+    "name": "shard",
+    "type": "{ total: number, current: number }",
+    "description": "Shard index and total shard count; the index is one-based."
+   }
+  ],
+  "returns": "Tests are categorized as passed, flaky, or failed; the selected shard runs the tests assigned to it.",
+  "example": {
+   "title": "Retry failures and run one shard",
+   "code": "import { defineConfig } from '@playwright/test';\n\nexport default defineConfig({\n  retries: process.env.CI ? 2 : 0,\n  fullyParallel: true,\n});\n\n// CI command for shard 2 of 4:\n// npx playwright test --shard=2/4",
+   "language": "typescript",
+   "explanation": "This configuration retries failures only in CI and enables balanced distribution when the suite is split across four CI jobs."
+  },
+  "useCases": [
+   {
+    "title": "Detect flaky tests",
+    "scenario": "CI runs where intermittent infrastructure or timing issues can occur."
+   },
+   {
+    "title": "Speed up CI with sharding",
+    "scenario": "Large suites that exceed a single CI job's practical runtime."
+   },
+   {
+    "title": "Scale browser coverage",
+    "scenario": "Cross-browser pipelines with enough CI workers to run jobs concurrently."
+   }
+  ],
+  "related": [
+   "testConfig.retries",
+   "testConfig.shard",
+   "testConfig.fullyParallel",
+   "testInfo.retry",
+   "test.describe.serial()",
+   "Blob reporter"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Retries rerun failed tests automatically, which helps distinguish intermittent flakiness from persistent failures.",
+   "Results are classified as passed, flaky, or failed, making transient evidence visible without hiding real failures.",
+   "A test that succeeds only after retry is reported as flaky."
+  ],
+  "gotchas": [
+   "Without setting retries, a failed test is not rerun.",
+   "A failure causes the worker and its browser to be discarded before testing continues in a new worker."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test design::Assertions": {
+  "sourceUrl": "https://playwright.dev/docs/api/class-playwrightassertions",
+  "sourceTitle": "PlaywrightAssertions",
+  "summary": "Use web-first assertions to verify eventual browser state. They automatically retry until the condition passes or the assertion timeout is reached.",
+  "explanation": "Web-first assertions describe the browser state a test expects rather than checking it only once. Playwright repeatedly re-tests the locator and its condition until it passes or the assertion timeout expires, so the test can handle asynchronous UI updates without manual sleeps.",
+  "syntax": "expect(locator).toHaveText(text[, options]); expect(locator).toBeVisible([options]);",
+  "parameters": [
+   {
+    "name": "locator",
+    "type": "Locator",
+    "description": "Locator object to use for assertions."
+   },
+   {
+    "name": "page",
+    "type": "Page",
+    "description": "Page object to use for assertions."
+   },
+   {
+    "name": "value",
+    "type": "Object",
+    "description": "Value that will be asserted."
+   }
+  ],
+  "returns": "expect(locator) creates a LocatorAssertions object; expect(page) creates a PageAssertions object; expect(value) creates a GenericAssertions object.",
+  "example": {
+   "title": "Retry an eventual UI state",
+   "code": "import { test, expect } from '@playwright/test';\n\ntest('status becomes submitted', async ({ page }) => {\n  await page.goto('https://example.com');\n  await page.locator('#submit-button').click();\n  await expect(page.locator('.status')).toHaveText('Submitted');\n});",
+   "language": "typescript",
+   "explanation": "After the action, the locator assertion waits and retries until the status has the expected text or the assertion timeout is reached."
+  },
+  "useCases": [
+   {
+    "title": "Verify eventual text",
+    "scenario": "A click triggers an asynchronous status update."
+   },
+   {
+    "title": "Wait for visibility",
+    "scenario": "A component appears after loading or navigation."
+   },
+   {
+    "title": "Check navigation state",
+    "scenario": "A page title or URL changes after an action."
+   }
+  ],
+  "related": [
+   "expect(locator)",
+   "expect(page)",
+   "expect(value)",
+   "toHaveText",
+   "toBeVisible",
+   "LocatorAssertions"
+  ],
+  "since": "v1.18",
+  "keyPoints": [
+   "Use Playwright's web-first assertion matchers to express expected UI state.",
+   "Assertions wait and retry instead of evaluating the browser state only once.",
+   "Locator assertions repeatedly test the selected node as the page changes.",
+   "A text assertion succeeds when the fetched node eventually contains the expected text.",
+   "Provide a timeout option when an assertion needs a different maximum wait."
+  ],
+  "gotchas": [
+   "Assertions have a default five-second timeout; configure a suitable assertion timeout when the UI may take longer.",
+   "The assertion re-fetches the target while retrying, so prefer a Locator over a stale, one-time DOM reference."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test design::Visual comparisons": {
+  "sourceUrl": "https://playwright.dev/docs/test-snapshots",
+  "sourceTitle": "Visual comparisons | Playwright",
+  "summary": "Playwright Test can capture a page and compare it with a stored visual baseline. Use named screenshots for important regions or pages, then review diffs and intentionally update snapshots when the UI changes.",
+  "explanation": "A screenshot assertion waits for two consecutive page captures to stabilize, then compares the result with a stored snapshot. Use a named PNG or WebP file for a stable visual checkpoint; Playwright reports differences for review, and you can update the baseline deliberately when the UI changes.",
+  "syntax": "await expect(page).toHaveScreenshot(name?, options?);",
+  "parameters": [
+   {
+    "name": "name",
+    "type": "string | Array<string>",
+    "description": "Optional snapshot name; a `.png` or `.webp` extension selects the image format."
+   }
+  ],
+  "returns": "A Playwright Test assertion that waits for stable consecutive screenshots and compares the final image with the expected snapshot.",
+  "example": {
+   "title": "Compare a page with a baseline",
+   "code": "import { test, expect } from '@playwright/test';\n\ntest('landing page matches its baseline', async ({ page }) => {\n  await page.goto('https://playwright.dev');\n  await expect(page).toHaveScreenshot('landing.png');\n});",
+   "language": "typescript",
+   "explanation": "The first run creates the named baseline; later runs compare the current page against it."
+  },
+  "useCases": [
+   {
+    "title": "Page-level visual regression",
+    "scenario": "Protect a landing page or other high-value screen from unintended CSS and layout changes."
+   },
+   {
+    "title": "Region-level visual checks",
+    "scenario": "Capture a focused component or region whose appearance is contractually important."
+   },
+   {
+    "title": "Controlled baseline updates",
+    "scenario": "Review intentional design changes by regenerating approved baselines."
+   }
+  ],
+  "related": [
+   "toMatchSnapshot",
+   "threshold",
+   "maxDiffPixels",
+   "maxDiffPixelRatio",
+   "mask",
+   "fullPage",
+   "animations",
+   "caret"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use `expect(page).toHaveScreenshot()` to turn a page image into a visual regression check.",
+   "The initial run creates the reference image used by subsequent comparisons.",
+   "Later executions detect visual differences by comparing new captures with the stored baseline.",
+   "Give important checkpoints explicit names, such as `landing.png`, instead of relying on generated names.",
+   "PNG is the default snapshot format; a `.webp` name selects lossless WebP instead.",
+   "Tune comparison behavior with assertion options when controlled visual variation is acceptable.",
+   "The threshold controls tolerated perceived color difference per pixel, from strict 0 to lax 1."
+  ],
+  "gotchas": [
+   "Generate and compare baselines in the same environment so rendering differences do not create misleading failures.",
+   "Hover state can become part of the baseline; move the pointer away or hover a neutral element first.",
+   "Review intentional UI changes and regenerate snapshots with the update-snapshots flag rather than accepting accidental changes."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test hooks::Authentication in a setup project": {
+  "sourceUrl": "https://playwright.dev/docs/auth",
+  "sourceTitle": "Authentication - Playwright",
+  "summary": "Authenticate once in a Playwright setup project, save the browser context with storageState, and reuse that state in dependent test projects. This avoids repeating sign-in in beforeEach for every test.",
+  "explanation": "A setup project performs authentication once and saves the resulting browser state. Projects that depend on it configure this file as storageState, so each test begins authenticated without repeating login in a beforeEach hook.",
+  "syntax": "await page.context().storageState({ path: 'playwright/.auth/user.json' });",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Authenticate once in a setup project",
+   "code": "import { test as setup, expect } from '@playwright/test';\n\nconst authFile = 'playwright/.auth/user.json';\n\nsetup('authenticate', async ({ page }) => {\n  await page.goto('https://example.com/login');\n  await page.getByLabel('Username').fill(process.env.USERNAME!);\n  await page.getByLabel('Password').fill(process.env.PASSWORD!);\n  await page.getByRole('button', { name: 'Sign in' }).click();\n  await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible();\n  await page.context().storageState({ path: authFile });\n});",
+   "language": "typescript",
+   "explanation": "The setup test signs in once, verifies authentication, and writes the browser context state for dependent projects to reuse."
+  },
+  "useCases": [
+   {
+    "title": "Reuse a shared signed-in account",
+    "scenario": "Many tests share one stable user account"
+   },
+   {
+    "title": "Avoid repeated authentication overhead",
+    "scenario": "Login is slow or involves multiple UI steps"
+   },
+   {
+    "title": "Bootstrap dependent projects",
+    "scenario": "Several projects need the same authenticated baseline"
+   },
+   {
+    "title": "Start each context from saved state",
+    "scenario": "Tests must remain isolated after common authentication"
+   }
+  ],
+  "related": [
+   "testProject.dependencies",
+   "testProject.teardown",
+   "testOptions.storageState",
+   "browserContext.storageState()",
+   "playwright/.auth"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Create a dedicated setup project that logs in once and saves browser state for other projects.",
+   "The saved state contains the authenticated context information that later test contexts can load.",
+   "Set the dependent projects' storageState to the generated file so tests begin signed in.",
+   "A setup file can contain the login flow and state-saving step.",
+   "Use project dependencies to ensure authentication completes before dependent test projects run.",
+   "Apply the generated state through the project's use configuration."
+  ],
+  "gotchas": [
+   "The setup project must be declared as a dependency of every project that consumes its storageState.",
+   "Configure storageState in the dependent projects rather than logging in separately for each test."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test hooks::Automatic fixtures over hooks": {
+  "sourceUrl": "https://playwright.dev/docs/test-fixtures",
+  "sourceTitle": "Fixtures - Playwright",
+  "summary": "Automatic fixtures run for each applicable test or worker without being listed in the test parameters. They keep setup and teardown together around `await use()`, providing a fixture-based alternative to hooks.",
+  "explanation": "An automatic fixture is a custom fixture configured with `{ auto: true }`. Playwright runs it for each applicable test or worker without requiring the fixture name in the test parameters; code before `await use()` is setup, and code after it is teardown.",
+  "syntax": "const test = base.extend<{ fixtureName: FixtureType }>({ fixtureName: [async ({ dependencies }, use) => { /* setup */ await use(value); /* teardown */ }, { auto: true }] });",
+  "parameters": [
+   {
+    "name": "fixtures",
+    "type": "object",
+    "description": "Fixture dependencies and the `use` callback supplied by Playwright; the fixture may receive an options object as an additional dependency."
+   },
+   {
+    "name": "use",
+    "type": "function",
+    "description": "Callback that exposes the fixture value to the test or dependent fixture; code after it is teardown."
+   }
+  ],
+  "returns": "The fixture value supplied through `await use(value)`, or no value for a `void` fixture; teardown completes after the callback resolves.",
+  "example": {
+   "title": "Automatic fixture with teardown",
+   "code": "import { test as base, expect } from '@playwright/test';\n\nexport const test = base.extend<{ audit: void }>({\n  audit: [async ({}, use) => {\n    console.log('setup');\n    await use();\n    console.log('teardown');\n  }, { auto: true }],\n});\n\ntest('uses the automatic fixture', async ({ page }) => {\n  await page.goto('https://example.com');\n  await expect(page).toHaveTitle(/Example Domain/);\n});",
+   "language": "typescript",
+   "explanation": "The automatic fixture runs its setup and teardown for the test even though the test does not request `audit`."
+  },
+  "useCases": [
+   {
+    "title": "Replace repeated beforeEach/afterEach work",
+    "scenario": "A file needs consistent setup and cleanup for every test, even when individual tests do not need a fixture value."
+   },
+   {
+    "title": "Compose dependent resources",
+    "scenario": "Several fixtures require shared initialization in a predictable dependency order."
+   },
+   {
+    "title": "Use a worker-scoped automatic fixture",
+    "scenario": "All tests across files need one worker-level setup and teardown lifecycle."
+   },
+   {
+    "title": "Encapsulate resource lifecycle",
+    "scenario": "A test suite needs setup to appear beside the resource it creates and cleanup to be guaranteed after use."
+   }
+  ],
+  "related": [
+   "test.extend()",
+   "test.beforeAll()",
+   "test.afterAll()",
+   "test.beforeEach()",
+   "test.afterEach()",
+   "scope: 'worker'",
+   "scope: 'test'"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Define the fixture as a tuple and set `{ auto: true }` so Playwright schedules it without a test argument.",
+   "Put setup before `await use()` and teardown after it; the fixture owns both phases.",
+   "Playwright runs setup before the dependent test or hook and teardown when that dependency is finished.",
+   "Fixture dependencies determine ordering: prerequisites start first and finish last.",
+   "A fixture can be consumed by hooks as well as by other fixtures, not only by test bodies."
+  ],
+  "gotchas": [
+   "`{ auto: true }` makes the fixture run even when the test does not request it directly.",
+   "Teardown timing depends on scope: test scope ends after each test, while worker scope lasts until the worker process ends.",
+   "Use a worker-scoped automatic fixture for setup and teardown across all tests in every file instead of redeclaring hooks."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test hooks::globalSetup and globalTeardown": {
+  "sourceUrl": "https://playwright.dev/docs/test-global-setup-teardown",
+  "sourceTitle": "Global setup and teardown",
+  "summary": "Run preparation once before all Playwright tests and cleanup once after them. Configure globalSetup and globalTeardown in the test configuration, or return teardown logic from globalSetup.",
+  "explanation": "Configure `globalSetup` and `globalTeardown` in Playwright Test to perform run-wide preparation and cleanup. A setup module exports one function receiving the resolved configuration; it may return a teardown function, while a separate teardown module can be configured explicitly.",
+  "syntax": "globalSetup: require.resolve('./global-setup'),\nglobalTeardown: require.resolve('./global-teardown'),",
+  "parameters": [
+   {
+    "name": "config",
+    "type": "FullConfig",
+    "description": "Resolved Playwright test configuration supplied to the global setup function."
+   }
+  ],
+  "returns": "The setup function may return a function that Playwright uses as global teardown.",
+  "example": {
+   "title": "Configure one-time setup and teardown",
+   "code": "import { defineConfig } from '@playwright/test';\nimport type { FullConfig } from '@playwright/test';\n\nasync function globalSetup(config: FullConfig) {\n  process.env.TEST_DATABASE_URL = 'postgres://localhost/test';\n  return async () => {\n    delete process.env.TEST_DATABASE_URL;\n  };\n}\n\nexport default defineConfig({\n  globalSetup,\n});",
+   "language": "typescript",
+   "explanation": "The setup function runs once before the test run and returns cleanup logic that runs after all tests."
+  },
+  "useCases": [
+   {
+    "title": "Database preparation",
+    "scenario": "Create or seed shared test data before any test starts."
+   },
+   {
+    "title": "Start shared infrastructure",
+    "scenario": "Launch a service or allocate a shared resource for the run."
+   },
+   {
+    "title": "Run-wide cleanup",
+    "scenario": "Remove test data and stop resources after every test has completed."
+   }
+  ],
+  "related": [
+   "globalSetup",
+   "globalTeardown",
+   "defineConfig",
+   "FullConfig"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Set globalSetup to a module path or setup function when preparation must happen once before the full run.",
+   "The setup function receives the test configuration and executes once before the tests.",
+   "Configure globalTeardown for cleanup that should execute after the complete test run.",
+   "Use environment variables to expose values created during global setup, such as service ports or authentication tokens.",
+   "A global setup module is loaded from the configured path and must provide one callable setup function."
+  ],
+  "gotchas": [
+   "The setup module must export one function; exporting multiple setup functions is not supported.",
+   "Pass setup-produced values to tests through environment variables rather than expecting the setup function's return value to become a test fixture.",
+   "Returning cleanup from globalSetup is an alternative to configuring a separate globalTeardown module."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test hooks::test.afterEach": {
+  "sourceUrl": "https://playwright.dev/docs/api/class-test",
+  "sourceTitle": "Playwright Test",
+  "summary": "test.afterEach declares a hook that runs after each applicable test. Use it to undo per-test setup and inspect TestInfo for diagnostics or attachments.",
+  "explanation": "Call test.afterEach with a hook to run cleanup or diagnostics after every test. The hook can use the same fixtures as the test and receive TestInfo, whose status fields let it distinguish expected from unexpected outcomes; it is also suitable for tearing down resources created in beforeEach.",
+  "syntax": "test.afterEach(hookFunction)\ntest.afterEach(title, hookFunction)",
+  "parameters": [
+   {
+    "name": "title",
+    "type": "string",
+    "description": "Optional descriptive title for the hook."
+   },
+   {
+    "name": "hookFunction",
+    "type": "Function",
+    "description": "Asynchronous or synchronous callback executed after each applicable test; it can receive fixtures and TestInfo."
+   }
+  ],
+  "returns": "A test hook declaration; the documentation does not specify a return value.",
+  "example": {
+   "title": "Attach failure diagnostics",
+   "code": "import { test, expect } from '@playwright/test';\n\ntest.afterEach(async ({ page }, testInfo) => {\n  if (testInfo.status !== testInfo.expectedStatus) {\n    await testInfo.attach('failure-url', {\n      body: Buffer.from(page.url()),\n      contentType: 'text/plain',\n    });\n  }\n});\n\ntest('opens the home page', async ({ page }) => {\n  await page.goto('https://playwright.dev/');\n  await expect(page).toHaveTitle(/Playwright/);\n});",
+   "language": "typescript",
+   "explanation": "Runs after the test and attaches the page URL when the observed result differs from the expected result."
+  },
+  "useCases": [
+   {
+    "title": "Per-test cleanup",
+    "scenario": "Each test creates records, files, or other external resources that must be removed afterward."
+   },
+   {
+    "title": "Teardown paired with setup",
+    "scenario": "A beforeEach hook initializes a resource whose lifetime should end after the test."
+   },
+   {
+    "title": "Failure diagnostics",
+    "scenario": "A test fails or produces an unexpected status and the hook should capture context such as the current URL."
+   },
+   {
+    "title": "Scoped post-test behavior",
+    "scenario": "Only tests within one describe group need the same post-test behavior."
+   }
+  ],
+  "related": [
+   "test.beforeEach",
+   "test.afterAll",
+   "test.beforeAll",
+   "test.describe",
+   "TestInfo"
+  ],
+  "since": "v1.10",
+  "keyPoints": [
+   "Use it for work that must happen after every test, such as cleanup or result-based diagnostics.",
+   "A file-level hook applies to each test declared in that file.",
+   "A hook inside describe is limited to tests belonging to that group.",
+   "The callback can consume test fixtures and TestInfo, enabling access to the page, context, status, title, and attachments.",
+   "Inspect TestInfo status fields to perform diagnostics only when the outcome is unexpected.",
+   "Pair beforeEach setup with afterEach teardown when each test creates resources requiring explicit cleanup."
+  ],
+  "gotchas": [
+   "The hook's scope determines which tests it affects: inside a describe group it applies to tests in that group, rather than automatically to every test."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test hooks::test.beforeAll and afterAll": {
+  "sourceUrl": "https://playwright.dev/docs/api/class-test",
+  "sourceTitle": "Playwright Test",
+  "summary": "test.beforeAll and test.afterAll run once per worker before and after tests at file or describe scope. Use them to initialize shared resources and clean them up afterward, remembering that worker restarts can repeat setup and teardown.",
+  "explanation": "These hooks run once per worker rather than once per test. Use beforeAll to create shared resources and afterAll to release them; because a worker contains isolated test contexts, shared state should be managed deliberately.",
+  "syntax": "test.beforeAll(hookFunction)\ntest.beforeAll(title, hookFunction)\ntest.afterAll(hookFunction)\ntest.afterAll(title, hookFunction)",
+  "parameters": [
+   {
+    "name": "hookFunction",
+    "type": "Function",
+    "description": "The asynchronous or synchronous function executed by the hook; it may receive fixtures and test information."
+   },
+   {
+    "name": "title",
+    "type": "string",
+    "description": "An optional title for the hook."
+   }
+  ],
+  "returns": "A test hook registration; the hook executes once per worker at the relevant file or describe scope.",
+  "example": {
+   "title": "Share and clean up a worker-level page",
+   "code": "import { test, expect } from '@playwright/test';\n\nlet page;\n\ntest.beforeAll(async ({ browser }) => {\n  page = await browser.newPage();\n});\n\ntest.afterAll(async () => {\n  await page.close();\n});\n\ntest('opens the Playwright site', async () => {\n  await page.goto('https://playwright.dev/');\n  await expect(page).toHaveTitle(/Playwright/);\n});",
+   "language": "typescript",
+   "explanation": "Creates a page once for the worker, uses it in the test, and closes it after the worker finishes."
+  },
+  "useCases": [
+   {
+    "title": "Resource lifecycle management",
+    "scenario": "Create a shared resource once before a group of tests and release it afterward."
+   },
+   {
+    "title": "Worker-level browser state",
+    "scenario": "Create a page or other browser object for a deliberately shared test flow."
+   },
+   {
+    "title": "API or database preparation",
+    "scenario": "Create test data before a suite and delete it after the suite completes."
+   },
+   {
+    "title": "Scoped suite hooks",
+    "scenario": "Run setup and cleanup around tests organized in a describe block."
+   }
+  ],
+  "related": [
+   "test.describe",
+   "test.beforeEach",
+   "test.afterEach",
+   "test.setTimeout",
+   "workers",
+   "fixtures"
+  ],
+  "since": "v1.10",
+  "keyPoints": [
+   "beforeAll runs once per worker before the applicable tests.",
+   "At file scope, beforeAll precedes every test in that file.",
+   "Inside describe, the hook applies only to that group.",
+   "Pair beforeAll resource creation with afterAll cleanup.",
+   "afterAll runs once per worker after the applicable tests finish.",
+   "At file scope, afterAll follows all tests in that file.",
+   "Inside describe, afterAll runs after that group's tests."
+  ],
+  "gotchas": [
+   "Multiple afterAll hooks execute in registration order.",
+   "A failed test can restart the worker, causing afterAll to run again; cleanup should tolerate repeated execution."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test hooks::test.beforeEach": {
+  "sourceUrl": "https://playwright.dev/docs/api/class-test",
+  "sourceTitle": "Playwright Test",
+  "summary": "`test.beforeEach` registers setup that Playwright runs before every test in a file or `test.describe` group. It receives the same fixtures as the test, so per-test state can be prepared with the already-created `page` fixture.",
+  "explanation": "Call `test.beforeEach` with an asynchronous function that receives the fixtures needed for setup. Playwright runs the hook before each test in its file or describe group, creating the required fixture first; the hook can also receive TestInfo for test metadata and control.",
+  "syntax": "test.beforeEach(hookFunction)\ntest.beforeEach(title, hookFunction)",
+  "parameters": [
+   {
+    "name": "title",
+    "type": "string (optional)",
+    "description": "Optional display name for the hook."
+   },
+   {
+    "name": "hookFunction",
+    "type": "function(Fixtures, TestInfo)",
+    "description": "Function receiving the requested fixtures and optionally TestInfo."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Navigate before each test",
+   "code": "import { test, expect } from '@playwright/test';\n\ntest.beforeEach(async ({ page }) => {\n  await page.goto('https://playwright.dev/');\n});\n\ntest('shows the Playwright title', async ({ page }) => {\n  await expect(page).toHaveTitle(/Playwright/);\n});",
+   "language": "typescript",
+   "explanation": "The hook navigates the isolated page fixture before every test in the file."
+  },
+  "useCases": [
+   {
+    "title": "Reset page state",
+    "scenario": "Navigate to a consistent starting URL before each test."
+   },
+   {
+    "title": "Arrange test data",
+    "scenario": "Create or configure data required by every test."
+   },
+   {
+    "title": "Control test execution",
+    "scenario": "Use TestInfo to adjust timeout or inspect the current test."
+   },
+   {
+    "title": "Configure browser behavior",
+    "scenario": "Install per-test browser or network setup."
+   }
+  ],
+  "related": [
+   "test.afterEach",
+   "test.beforeAll",
+   "test.afterAll",
+   "test.describe",
+   "TestInfo"
+  ],
+  "since": "v1.10",
+  "keyPoints": [
+   "Use it to perform repeatable setup immediately before every test.",
+   "A file-level hook applies to all tests declared in that file.",
+   "A describe-level hook limits setup to tests inside that group.",
+   "The hook can destructure fixtures such as `page`, `context`, or custom fixtures.",
+   "Accept a second argument to inspect or control the currently running test through TestInfo.",
+   "A common arrangement is navigating `page` to the starting URL before assertions run.",
+   "Register dependent setup hooks in the order they need to execute."
+  ],
+  "gotchas": [
+   "Multiple hooks execute in registration order, so setup ordering can affect later hooks and tests.",
+   "Pair per-test setup with `test.afterEach()` when the setup creates resources that require cleanup.",
+   "Do not call `test.use` from inside this hook; configure fixture options at file or describe scope instead."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test hooks::test.fail and test.fixme": {
+  "sourceUrl": "https://playwright.dev/docs/test-annotations",
+  "sourceTitle": "Annotations | Playwright",
+  "summary": "test.fail() runs a test and verifies that it fails, while test.fixme() prevents the test from running. Use them to declare known failures without branching inside hooks.",
+  "explanation": "Use declarative annotations for known broken behavior: test.fail() still executes the test and verifies that it fails, while test.fixme() prevents the test from continuing after the annotation. Conditional forms let a test be marked only in selected configurations.",
+  "syntax": "test.fail();\ntest.fail(condition, description);\ntest.fail(title, body);\ntest.fixme();\ntest.fixme(condition, description);\ntest.fixme(title, body);",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Expected failure and fixme annotations",
+   "code": "import { test, expect } from '@playwright/test';\n\ntest('known issue', async ({ page }) => {\n  test.fail();\n  await page.goto('/broken-feature');\n  await expect(page.getByRole('heading', { name: 'Works' })).toBeVisible();\n});\n\ntest('mobile settings', async ({ page, isMobile }) => {\n  test.fixme(isMobile, 'Settings is not supported on mobile');\n  await page.goto('/settings');\n});",
+   "language": "typescript",
+   "explanation": "test.fail() runs the test and expects it to fail; a passing test is reported as an unexpected result. test.fixme() marks the test for repair and stops execution at the annotation, so later test steps are not run. Both can be declared with a title and body or applied conditionally at runtime."
+  },
+  "useCases": [
+   {
+    "title": "Track an expected failure",
+    "scenario": "A known product defect should remain visible in test reports while the test continues to exercise the broken behavior."
+   },
+   {
+    "title": "Temporarily disable a test",
+    "scenario": "A test is slow or crashes before it can provide useful feedback."
+   },
+   {
+    "title": "Conditionally mark a configuration",
+    "scenario": "A feature works on desktop but is not implemented for mobile."
+   }
+  ],
+  "related": [
+   "test.skip()",
+   "test.describe()",
+   "test.beforeEach()",
+   "testInfo.fail()",
+   "testInfo.fixme()"
+  ],
+  "since": "v1.10",
+  "keyPoints": [
+   "test.fail() declares that the test is expected to fail.",
+   "The test body still executes, and Playwright checks that it fails.",
+   "test.fixme() marks a test as needing a future fix.",
+   "A fixme test is not executed, unlike an expected-failure test.",
+   "Choose fixme when executing the test is impractical because it is slow or crashes.",
+   "For static expected failures, prefer the title-and-body declaration."
+  ],
+  "gotchas": [
+   "test.fixme() skips execution, unlike test.fail(), which runs the test.",
+   "A test marked with test.fail() must actually fail; otherwise Playwright reports the mismatch.",
+   "A conditional runtime test.fixme() aborts the test immediately at the call."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Test hooks::test.use for overrides": {
+  "sourceUrl": "https://playwright.dev/docs/api/class-test",
+  "sourceTitle": "Playwright Test",
+  "summary": "Use test.use() to override Playwright options or fixtures for a test file or test.describe() group. Declare it at file scope or inside the group, not inside beforeEach or beforeAll.",
+  "explanation": "Use test.use() to override Playwright options or fixtures for every test in a file or for tests inside a test.describe() group. Call it at global scope or within the describe block, not from beforeEach or beforeAll.",
+  "syntax": "test.use(options)",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "TestOptions",
+    "description": "Options or fixtures to apply locally."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Override locale by scope",
+   "code": "import { test, expect } from '@playwright/test';\n\ntest.use({ locale: 'fr-FR' });\n\ntest('uses the file locale', async ({ page }) => {\n  await page.goto('https://example.com');\n  await expect(page).toHaveTitle(/Example Domain/);\n});\n\ntest.describe('German locale', () => {\n  test.use({ locale: 'de-DE' });\n\n  test('uses the describe locale', async ({ page }) => {\n    await page.goto('https://example.com');\n    await expect(page).toHaveTitle(/Example Domain/);\n  });\n});",
+   "language": "typescript",
+   "explanation": "The file-level setting applies broadly, while the nested describe block overrides the locale for its own tests."
+  },
+  "useCases": [
+   {
+    "title": "File-wide environment override",
+    "scenario": "Set a locale or other context option for every test in a file."
+   },
+   {
+    "title": "Describe-scoped override",
+    "scenario": "Give one describe group a different browser or context configuration."
+   },
+   {
+    "title": "Local fixture override",
+    "scenario": "Replace a fixture for a local test scope."
+   }
+  ],
+  "related": [
+   "test.describe",
+   "test.beforeEach",
+   "test.beforeAll",
+   "TestOptions"
+  ],
+  "since": "v1.10",
+  "keyPoints": [
+   "test.use() scopes option or fixture overrides to one test file or one describe group.",
+   "It is especially useful for changing context-related options such as locale.",
+   "Place it at file scope for the file, or inside test.describe() for that group.",
+   "Pass an options object containing the local values to override.",
+   "A fixture can also be replaced by supplying a function."
+  ],
+  "gotchas": [
+   "Do not call test.use() inside beforeEach or beforeAll; declare the override at file scope or inside test.describe()."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

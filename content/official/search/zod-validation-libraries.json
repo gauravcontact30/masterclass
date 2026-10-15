@@ -1,0 +1,1818 @@
+{
+ "Rules & transformations::Branded and readonly types": {
+  "sourceUrl": "https://zod.dev/api?id=branded-types",
+  "sourceTitle": "Defining schemas | Zod",
+  "summary": "Zod brands add compile-time distinctions to inferred output types, while readonly schemas produce readonly types for supported values. Branding does not change parse results; readonly parsing freezes the result.",
+  "explanation": "Use .brand<T>() to make parsed output nominally distinct from structurally identical data, and .readonly() to produce readonly inferred types for supported values. Branding is type-only at runtime; readonly parsing freezes the result.",
+  "syntax": "schema.brand<T>()\nschema.readonly()",
+  "parameters": [
+   {
+    "name": "T",
+    "type": "brand type parameter",
+    "description": "The compile-time label used to distinguish the inferred output type."
+   }
+  ],
+  "returns": "`.brand<T>()` returns a branded schema whose inferred output carries the brand; `.readonly()` returns a schema whose inferred type is readonly and whose parsed result is frozen.",
+  "example": {
+   "title": "Branded and readonly schemas",
+   "code": "import * as z from \"zod\";\n\nconst UserId = z.string().brand<\"UserId\">();\nconst ReadonlyUser = z.object({ name: z.string() }).readonly();\n\ntype UserId = z.infer<typeof UserId>;\ntype ReadonlyUser = z.infer<typeof ReadonlyUser>;\n\nconst id = UserId.parse(\"u_123\");\nconst user = ReadonlyUser.parse({ name: \"Ada\" });\n\n// user.name = \"Grace\"; // TypeScript error\nconsole.log(id, user.name);\n",
+   "language": "typescript",
+   "explanation": "A brand adds a compile-time distinction to the inferred output, while readonly marks supported containers or objects as immutable in TypeScript. Parsing is still performed by the underlying schema; branding itself does not change the parsed runtime value, whereas readonly parsing freezes the result."
+  },
+  "useCases": [
+   {
+    "title": "Domain-specific type distinctions",
+    "scenario": "Prevent IDs, validated strings, or domain values with identical shapes from being mixed accidentally."
+   },
+   {
+    "title": "Validated nominal-style values",
+    "scenario": "Require callers to obtain a value through schema parsing before using a branded output."
+   },
+   {
+    "title": "Readonly object results",
+    "scenario": "Expose parsed configuration or state as immutable to TypeScript consumers."
+   },
+   {
+    "title": "Readonly arrays, maps, and sets",
+    "scenario": "Return immutable collections while retaining their key, value, or element types."
+   }
+  ],
+  "related": [
+   ".brand<T>()",
+   "z.infer",
+   "readonly",
+   "Object.freeze()",
+   "ZodBranded",
+   "ZodReadonly"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does a Zod brand solve?",
+    "answer": "`.brand<T>()` augments the inferred output type with a brand so structurally identical unbranded values are not assignable to it. The schema still validates the underlying value normally.",
+    "followUp": "Does branding change parsed JavaScript values? No. The documentation describes it as static-only, so no runtime brand is attached."
+   },
+   {
+    "question": "What does `.readonly()` change?",
+    "answer": "`.readonly()` marks the inferred result as readonly and is available on schemas such as objects, arrays, tuples, maps, and sets. This gives TypeScript a compile-time immutability view of the parsed value.",
+    "followUp": "Which container types are explicitly covered? Objects, arrays, tuples, `Set`, and `Map` are listed by the documentation."
+   },
+   {
+    "question": "How do branded and readonly schemas differ at runtime?",
+    "answer": "Branding and readonly affect different layers. Branding distinguishes types statically without changing parse output, while readonly parsing freezes the result after the base schema parses it.",
+    "followUp": "Can readonly replace validation? No. It changes immutability behavior and typing; the base schema remains responsible for validating the data."
+   }
+  ],
+  "keyPoints": [
+   "A branded inferred type rejects structurally identical plain values at compile time, creating a nominal-style distinction.",
+   "Obtain the branded value by parsing through the branded schema rather than by treating an ordinary value as already branded.",
+   "The brand exists for TypeScript's type system, not as a runtime property on the JavaScript value.",
+   "Readonly schemas make the inferred result readonly, preventing supported properties or collection mutations through TypeScript.",
+   "Readonly array schemas infer readonly array types, preserving the element type while disallowing normal array mutation.",
+   "Readonly map schemas infer ReadonlyMap with the original key and value types."
+  ],
+  "gotchas": [
+   "Branding does not add a runtime marker or alter the value returned by parse; it only changes the static type.",
+   "The input type remains unbranded by default, so the distinction is applied to inferred output.",
+   "Readonly typing does not apply universally; the documented supported categories are objects, arrays, tuples, Set, and Map."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Rules & transformations::Cross-field validation": {
+  "sourceUrl": "https://zod.dev/api?id=superrefine",
+  "sourceTitle": "Defining schemas | Zod",
+  "summary": "Use an object-level refinement to validate relationships between fields, such as matching passwords or ordered dates. Use refine for one custom issue and superRefine when you need multiple issues or specific issue types.",
+  "explanation": "Apply a refinement to an object schema when validity depends on multiple fields. The callback receives the parsed object and should return a truthy value for success; return a falsy value to create a custom issue. Use the path option to associate the issue with a particular field. For several distinct issues or built-in issue codes, use superRefine instead.",
+  "syntax": "z.object({...}).refine(check, options)\n schema.superRefine((value, ctx) => { ... })",
+  "parameters": [
+   {
+    "name": "check",
+    "type": "(value: T) => unknown",
+    "description": "Validation callback receiving the schema value and returning a truthy or falsy result."
+   },
+   {
+    "name": "options",
+    "type": "RefineParams",
+    "description": "Optional refinement configuration, including an error message or field path."
+   }
+  ],
+  "returns": "A refined schema; failed checks add validation issues during parsing.",
+  "example": {
+   "title": "Validate date ordering",
+   "code": "import { z } from \"zod\";\n\nconst Booking = z.object({\n  start: z.coerce.date(),\n  end: z.coerce.date(),\n}).refine((data) => data.start < data.end, {\n  message: \"End must be after start\",\n  path: [\"end\"],\n});\n\nconst result = Booking.safeParse({\n  start: \"2025-01-10\",\n  end: \"2025-01-09\",\n});\n\nconsole.log(result.success); // false",
+   "language": "typescript",
+   "explanation": "A schema-level refinement checks the relationship between two parsed date fields and attaches a failure to the end field."
+  },
+  "useCases": [
+   {
+    "title": "Matching passwords",
+    "scenario": "A registration object must contain equal password and confirmation fields."
+   },
+   {
+    "title": "Ordered date range",
+    "scenario": "A booking or reporting interval must have an end date after its start date."
+   },
+   {
+    "title": "Multiple cross-field issues",
+    "scenario": "One parsed object requires several independent relationship errors to be reported together."
+   }
+  ],
+  "related": [
+   "refine",
+   "superRefine",
+   "ctx.addIssue",
+   "path",
+   "type predicate",
+   "ZodIssueCode"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you validate a relationship between two object fields?",
+    "answer": "Use an object schema and call refine on it. The callback receives the complete parsed object, so it can compare fields such as password and confirmation or start and end dates; a falsy result creates a custom issue.",
+    "followUp": "How can the error target a field? Pass a path option such as path: [\"end\"] in the refinement options."
+   },
+   {
+    "question": "What does refine return from its callback?",
+    "answer": "refine produces one custom issue for a failed check. Its callback should return a truthy value when valid and a falsy value when invalid.",
+    "followUp": "What if the validation needs multiple issues? Use superRefine, which permits multiple issues and supports Zod's internal issue types."
+   },
+   {
+    "question": "When should superRefine be preferred over refine?",
+    "answer": "superRefine receives the value and a context object. Calling ctx.addIssue lets the callback report multiple failures with different issue codes and paths.",
+    "followUp": "Can a refinement narrow a schema type? Yes; supplying a type predicate to refine or superRefine narrows the resulting type."
+   }
+  ],
+  "keyPoints": [
+   "Use refinements for cross-field rules that are not represented by a built-in schema method.",
+   "Choose refine for one relationship failure with the default custom issue behavior.",
+   "Choose superRefine when one object may need several reported relationship errors or specific issue codes."
+  ],
+  "gotchas": [
+   "Do not throw from the refinement callback; return a falsy value to report validation failure.",
+   "A refinement may be skipped when an earlier, unrelated field has an error, so dependent checks are not guaranteed to run on invalid input."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Rules & transformations::Defaults and fallbacks": {
+  "sourceUrl": "https://zod.dev/api?id=defaults",
+  "sourceTitle": "Defining schemas",
+  "summary": "Zod separates missing-input defaults from invalid-input recovery. `.default()` returns a value for `undefined`, `.prefault()` parses a substitute for `undefined`, and `.catch()` returns a fallback after validation fails.",
+  "explanation": "Use `.default()` when `undefined` should immediately produce a value, `.prefault()` when a substitute should pass through parsing, and `.catch()` when invalid input should recover with a fallback. Defaults target missing input; catch targets validation errors.",
+  "syntax": "schema.default(value)\nschema.prefault(value)\nschema.catch(value)",
+  "parameters": [
+   {
+    "name": "value",
+    "type": "schema-compatible value",
+    "description": "Value returned for `undefined` by `.default()`, or inserted and parsed for `.prefault()`; `.catch()` uses a fallback after validation failure."
+   }
+  ],
+  "returns": "A parsed schema output, a default or prefault-derived output for `undefined`, or a catch fallback after validation failure.",
+  "example": {
+   "title": "Defaults, prefaults, and catch fallbacks",
+   "code": "import { z } from \"zod\";\n\nconst defaulted = z.string().default(\"tuna\");\nconst prefaulted = z.string().trim().toUpperCase().prefault(\" tuna \");\nconst recovered = z.string().catch(\"fallback\");\n\nconsole.log(defaulted.parse(undefined)); // \"tuna\"\nconsole.log(prefaulted.parse(undefined)); // \"TUNA\"\nconsole.log(recovered.parse(123)); // \"fallback\"",
+   "language": "typescript",
+   "explanation": "The example contrasts a short-circuiting default, a pre-parse default that still undergoes transformations, and an error fallback."
+  },
+  "useCases": [
+   {
+    "title": "Default a missing value",
+    "scenario": "An optional configuration field is omitted and should receive a ready-to-use output."
+   },
+   {
+    "title": "Pre-parse a default",
+    "scenario": "A missing string should receive trimming, coercion, or other schema transformations."
+   },
+   {
+    "title": "Recover from invalid input",
+    "scenario": "Untrusted input may fail validation but the application needs a safe replacement."
+   },
+   {
+    "title": "Apply defaults during decoding",
+    "scenario": "A codec schema needs defaults while decoding incoming data."
+   }
+  ],
+  "related": [
+   ".default()",
+   ".prefault()",
+   ".catch()",
+   "z.codec()",
+   "transform"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does `.default()` differ from `.prefault()`?",
+    "answer": "`.default()` handles `undefined` by returning its value immediately, so the schema's remaining parsing steps are skipped. The default therefore must match the schema's output type.",
+    "followUp": "How would you apply transformations to a missing value? Use `.prefault()` so the substitute enters the normal parsing pipeline."
+   },
+   {
+    "question": "When should `.prefault()` be used?",
+    "answer": "`.prefault()` supplies a value only when the input is `undefined`, then parses that value through the schema. It must therefore satisfy the schema's input type.",
+    "followUp": "What happens if a non-undefined value is invalid? `.prefault()` does not recover from that error; use `.catch()` for validation-error recovery."
+   },
+   {
+    "question": "What problem does `.catch()` solve?",
+    "answer": "`.catch()` returns a fallback when validation fails, including for invalid non-undefined input. Unlike `.default()`, it is intended for recovery after a parse error.",
+    "followUp": "Can `.catch()` replace a missing-input default? It can recover from an `undefined` validation error, but `.default()` more directly expresses the missing-input case."
+   }
+  ],
+  "keyPoints": [
+   "Call `.default(value)` to supply a result when the parsed input is `undefined`.",
+   "`.default()` short-circuits parsing, so transformations and refinements after it do not process the returned value.",
+   "Use `.prefault(value)` when a replacement for `undefined` should still be validated and transformed.",
+   "A prefault substitutes only missing input; ordinary supplied input continues through the schema normally.",
+   "Use `.catch(value)` to recover from a failed validation with a fallback output."
+  ],
+  "gotchas": [
+   "A `.default()` value is checked against the schema's output type because parsing stops before the schema runs.",
+   "A `.prefault()` value is checked against the schema's input type because it is parsed rather than returned directly.",
+   "When using codecs, defaults and prefaults do not apply during encoding."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Rules & transformations::Metadata and JSON Schema": {
+  "sourceUrl": "https://zod.dev/json-schema",
+  "sourceTitle": "JSON Schema",
+  "summary": "Use z.toJSONSchema() to export Zod schemas, including metadata stored in registries. Prefer .overwrite() for type-preserving runtime changes; type-changing transforms are not representable as JSON Schema.",
+  "explanation": "Zod stores metadata in registries rather than directly inside schemas. Register metadata with .meta() or use .describe() for a description, then call z.toJSONSchema() to export it; transformations that change the inferred type cannot be represented in JSON Schema, while .overwrite() can represent type-preserving changes.",
+  "syntax": "z.toJSONSchema(schema, options?)",
+  "parameters": [
+   {
+    "name": "schema",
+    "type": "Zod schema",
+    "description": "The Zod schema to convert into JSON Schema."
+   },
+   {
+    "name": "options",
+    "type": "JSON Schema conversion options",
+    "description": "Optional conversion settings, including metadata registry configuration."
+   }
+  ],
+  "returns": "A JSON Schema object representing the Zod schema and applicable registered metadata.",
+  "example": {
+   "title": "Export metadata to JSON Schema",
+   "code": "import * as z from \"zod\";\n\nconst schema = z.object({\n  name: z.string().meta({ title: \"Name\", description: \"A person name\" }),\n  score: z.number(),\n});\n\nconst jsonSchema = z.toJSONSchema(schema);\nconsole.log(jsonSchema);",
+   "language": "typescript",
+   "explanation": "The generated JSON Schema contains the registered metadata for the name field."
+  },
+  "useCases": [
+   {
+    "title": "Generate machine-readable schema descriptions",
+    "scenario": "OpenAPI or API documentation generation"
+   },
+   {
+    "title": "Export schemas with titles and descriptions",
+    "scenario": "AI structured outputs"
+   },
+   {
+    "title": "Attach reusable metadata to schema fields",
+    "scenario": "Forms and code generation"
+   },
+   {
+    "title": "Represent type-preserving changes with overwrite()",
+    "scenario": "Runtime normalization that preserves the type"
+   }
+  ],
+  "related": [
+   "z.toJSONSchema()",
+   "z.globalRegistry",
+   "z.registry()",
+   "z.meta()",
+   "z.describe()",
+   "z.overwrite()",
+   "z.fromJSONSchema()"
+  ],
+  "since": "Zod 4",
+  "interview": [
+   {
+    "question": "How do you export a Zod schema and its metadata as JSON Schema?",
+    "answer": "Use z.toJSONSchema(schema) to convert a Zod schema into JSON Schema. Metadata registered in the global registry is copied into the resulting output.",
+    "followUp": "How can metadata be omitted? Pass an empty registry through the metadata option, such as z.toJSONSchema(schema, { metadata: z.registry() })."
+   },
+   {
+    "question": "How are schema descriptions and metadata attached?",
+    "answer": "Zod stores metadata in registries. The global registry supports common JSON Schema-oriented fields such as id, title, description, and examples; .meta() registers metadata, while .describe() supplies a description.",
+    "followUp": "What happens with custom metadata? The JSON Schema converter copies metadata fields into the generated schema, including custom fields."
+   },
+   {
+    "question": "How should non-JSON transformations be represented?",
+    "answer": "A type-changing transform cannot be faithfully represented as JSON Schema because JSON Schema describes JSON structure rather than arbitrary runtime behavior. For a type-preserving transformation, use .overwrite(), which keeps the original schema class and inferred type.",
+    "followUp": "Why is overwrite() more exportable? Its function is stored as a refinement, so it does not change the inferred type."
+   }
+  ],
+  "keyPoints": [
+   "Call z.toJSONSchema() to produce a JSON Schema description from a Zod schema.",
+   "Metadata registered globally is exported automatically when converting the schema.",
+   "overwrite() represents a runtime change while preserving the schema's inferred type."
+  ],
+  "gotchas": [
+   "JSON Schema describes JSON data, so it cannot directly express every Zod behavior.",
+   "A transform is directional and is not suitable for JSON Schema representation.",
+   "Do not assume a schema containing transform() can support encoding."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Rules & transformations::Preprocessing": {
+  "sourceUrl": "https://zod.dev/api?id=preprocess",
+  "sourceTitle": "Defining schemas",
+  "summary": "Use `z.preprocess` to normalize raw input before a target schema validates it. Choose it for custom pre-validation transformations; use `z.coerce` for ordinary primitive coercion.",
+  "explanation": "`z.preprocess` runs a callback on the raw value before passing the callback's result to the supplied schema. Because the callback may receive arbitrary input, its inferred input type is `unknown` unless its parameter is explicitly narrowed; use `z.coerce` for straightforward primitive coercion.",
+  "syntax": "z.preprocess(preprocess: (input: unknown) => unknown, schema: z.ZodType)",
+  "parameters": [
+   {
+    "name": "preprocess",
+    "type": "(input: unknown) => unknown",
+    "description": "A callback that receives the raw input and returns the value to validate."
+   },
+   {
+    "name": "schema",
+    "type": "z.ZodType",
+    "description": "The schema that parses the callback's result."
+   }
+  ],
+  "returns": "A Zod schema that preprocesses its input and then parses the result with the supplied schema.",
+  "example": {
+   "title": "Normalize before validation",
+   "code": "import { z } from \"zod\";\n\nconst age = z.preprocess(\n  (value) => typeof value === \"string\" ? Number(value.trim()) : value,\n  z.number().int().nonnegative(),\n);\n\nconsole.log(age.parse(\"42\")); // 42",
+   "language": "typescript",
+   "explanation": "The preprocessing callback converts an intended string representation into a number before the numeric schema validates it."
+  },
+  "useCases": [
+   {
+    "title": "Adapt transport representations",
+    "scenario": "External data arrives as text but the domain schema expects a number, date, or other typed value."
+   },
+   {
+    "title": "Apply contract-specific normalization",
+    "scenario": "Input requires application-specific cleanup before validation, such as trimming or interpreting a sentinel value."
+   },
+   {
+    "title": "Bridge incompatible input shapes",
+    "scenario": "A callback must convert arbitrary raw input into the shape expected by an existing schema."
+   }
+  ],
+  "related": [
+   "z.coerce",
+   "z.transform",
+   "z.codec",
+   "z.input()",
+   "z.output()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `z.preprocess` do?",
+    "answer": "`z.preprocess` applies a transformation to raw input first, then validates the transformed result with the supplied schema. This is useful when the validator needs a normalized representation before parsing.",
+    "followUp": "How is it different from `transform`? `transform` operates as part of a post-validation transformation flow, whereas preprocessing occurs before the target schema parses the value."
+   },
+   {
+    "question": "Why is the input type of a preprocess schema `unknown`?",
+    "answer": "The schema's default input type is `unknown` because the callback is expected to handle arbitrary values. Annotating the callback parameter can narrow that input type when the application has a stronger contract.",
+    "followUp": "What should the callback return for invalid input? It should return a value that the target schema can reject, rather than assuming conversion succeeded."
+   },
+   {
+    "question": "When should you choose preprocessing over coercion?",
+    "answer": "Use `z.coerce` for standard primitive coercion, such as converting a string to a number. Use `z.preprocess` when a custom operation must happen before the target schema validates the result.",
+    "followUp": "When is a codec more suitable? Use a codec for bidirectional transformations; preprocessing is intended for a one-way path into validation."
+   }
+  ],
+  "keyPoints": [
+   "The API is a convenience for applying a transformation before another schema parses the value.",
+   "Preprocessing feeds data in one direction: raw input is changed into the representation the validator consumes.",
+   "Design the callback defensively because raw values can have any runtime type.",
+   "An explicit parameter annotation lets TypeScript model a narrower input contract for the callback."
+  ],
+  "gotchas": [
+   "The callback must safely handle arbitrary input unless you explicitly annotate and narrow its parameter.",
+   "Prefer the dedicated coercion API when the transformation is ordinary primitive coercion rather than custom preprocessing.",
+   "Preprocessing is one-way; choose a codec when the data must support both decoding and encoding."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Rules & transformations::refine and superRefine": {
+  "sourceUrl": "https://zod.dev/api?id=superrefine",
+  "sourceTitle": "Defining schemas | Zod",
+  "summary": "Use refine and superRefine for custom domain validation that built-in Zod constraints cannot express. refine handles a predicate with one custom issue; superRefine can add multiple issues, richer issue codes, and useful paths.",
+  "explanation": "Use refinements for domain checks that built-in Zod validators cannot express. refine evaluates a predicate and produces one custom issue, while superRefine receives a context and can add multiple issues with standard or custom codes and targeted paths.",
+  "syntax": "schema.refine(validator, params?)\nschema.superRefine((value, ctx) => { /* ctx.addIssue(...) */ })",
+  "parameters": [
+   {
+    "name": "validator / refinement callback",
+    "type": "(data: T) => any / (value, ctx) => void",
+    "description": "A callback receiving the schema value; refine uses its truthiness, while superRefine receives the value and a context for adding issues."
+   },
+   {
+    "name": "params",
+    "type": "RefineParams",
+    "description": "Optional settings for customizing refine error behavior."
+   },
+   {
+    "name": "ctx",
+    "type": "Refinement context",
+    "description": "Context used by superRefine to register validation issues, including messages, codes, and paths."
+   }
+  ],
+  "returns": "A new Zod schema carrying the refinement; parsing succeeds only when the refinement passes and no issues are added.",
+  "example": {
+   "title": "Attach a cross-field issue to a useful path",
+   "code": "import { z } from \"zod\";\n\nconst User = z.object({\n  password: z.string(),\n  confirmPassword: z.string(),\n}).superRefine((data, ctx) => {\n  if (data.password !== data.confirmPassword) {\n    ctx.addIssue({\n      code: \"custom\",\n      message: \"Passwords must match\",\n      path: [\"confirmPassword\"],\n    });\n  }\n});\n\nconsole.log(User.safeParse({\n  password: \"secret\",\n  confirmPassword: \"different\",\n}).success);",
+   "language": "typescript",
+   "explanation": "This cross-field rule reports a custom issue specifically on confirmPassword."
+  },
+  "useCases": [
+   {
+    "title": "Cross-field invariants",
+    "scenario": "Validate relationships between fields, such as matching password and confirmation values."
+   },
+   {
+    "title": "Multiple validation issues",
+    "scenario": "Report several independent problems found in one object or collection."
+   },
+   {
+    "title": "Useful error paths",
+    "scenario": "Associate an error with the exact nested field that caused a domain-rule failure."
+   },
+   {
+    "title": "Custom domain constraints",
+    "scenario": "Apply a business rule without a built-in Zod validator."
+   }
+  ],
+  "related": [
+   "ZodIssueCode",
+   "ctx.addIssue",
+   "type predicates",
+   "error handling"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Refinements add custom validation to any Zod schema when no native constraint fits.",
+   "They are suited to domain rules beyond primitive schema checks.",
+   "refine is the concise choice for one predicate failure with a custom issue.",
+   "superRefine enables several diagnostics and richer built-in issue categories."
+  ],
+  "gotchas": [
+   "Return a falsy value to indicate failure rather than throwing; thrown errors are not caught by Zod.",
+   "Use superRefine when you need multiple issues or issue codes other than custom."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Rules & transformations::Transforms": {
+  "sourceUrl": "https://zod.dev/api?id=transforms",
+  "sourceTitle": "Defining schemas | Zod",
+  "summary": "Transforms convert parsed data into application-ready output through a one-way transformation. Zod tracks the input and output types separately, so the output type can differ from the accepted input type.",
+  "explanation": "A transform is a unidirectional schema operation that accepts an input and produces a different output value. Zod tracks the input and output types separately, while pipes let you validate with one schema before applying the conversion; use the context object to report validation issues from inside a transform.",
+  "syntax": "z.transform((val) => output)",
+  "parameters": [
+   {
+    "name": "val",
+    "type": "unknown",
+    "description": "The value received by the transformation callback."
+   },
+   {
+    "name": "transform",
+    "type": "(val: unknown) => unknown",
+    "description": "The function that converts the input value to the output value."
+   }
+  ],
+  "returns": "A schema whose parsed output is the value returned by the transformation callback.",
+  "example": {
+   "title": "Validate, then transform",
+   "code": "import { z } from \"zod\";\n\nconst UserId = z.string().pipe(\n  z.transform((value) => Number(value))\n);\n\nconst result = UserId.parse(\"42\");\nconsole.log(result); // 42",
+   "language": "typescript",
+   "explanation": "This validates that the input is a string, then converts it to a number."
+  },
+  "useCases": [
+   {
+    "title": "Normalize primitive values",
+    "scenario": "Convert validated strings such as IDs or numeric form fields into numbers."
+   },
+   {
+    "title": "Build application-ready objects",
+    "scenario": "Validate an input schema and then map it into a domain-specific object."
+   },
+   {
+    "title": "Preprocess input",
+    "scenario": "Perform an early conversion before another schema validates the resulting value."
+   },
+   {
+    "title": "Use codecs for bidirectional data",
+    "scenario": "Represent reversible encode/decode behavior instead of a one-way conversion."
+   }
+  ],
+  "related": [
+   "z.transform",
+   "transform",
+   "z.preprocess",
+   "z.pipe",
+   "codecs",
+   ".transform()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Transforms convert accepted input into a new output value in one direction.",
+   "A standalone transform does not validate its input; put validation before it when input constraints matter.",
+   "Pipes are the usual way to combine validation with a subsequent transformation.",
+   "A pipe can first enforce the input shape and then produce application-ready output.",
+   "Use a schema's transform method as a convenient way to append a transformation.",
+   "Use preprocess when transformation should happen before another schema handles the value.",
+   "A transform can report validation failures by adding issues to its context."
+  ],
+  "gotchas": [
+   "Do not throw exceptions inside a transform; thrown errors are not caught by Zod.",
+   "Transforms only go in one direction. Use codecs when the value must be encoded and decoded.",
+   "Use the transform context for validation rather than throwing from the callback."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema composition::Arrays and tuples": {
+  "sourceUrl": "https://zod.dev/api?id=tuples",
+  "sourceTitle": "Defining schemas | Zod",
+  "summary": "Zod arrays repeat one element schema across a variable-length collection. Tuples define positional schemas, typically for a fixed-length array where each index can have a different type.",
+  "explanation": "Use z.array(elementSchema) when every item follows one schema and the collection may vary in length. Use z.tuple([...]) when positions have distinct schemas and the shape is fixed; a second argument can define the tuple's variadic remainder.",
+  "syntax": "z.array(elementSchema)\nz.string().array()\nz.tuple([schema0, schema1, ...schemas], restSchema?)",
+  "parameters": [
+   {
+    "name": "element / items",
+    "type": "Zod schema or schema array",
+    "description": "The schema applied to every item in an array, or the ordered schemas for tuple positions."
+   },
+   {
+    "name": "rest",
+    "type": "Zod schema",
+    "description": "Optional schema for additional tuple entries after the declared positions."
+   }
+  ],
+  "returns": "Array and tuple schemas that validate input and provide corresponding TypeScript inference.",
+  "example": {
+   "title": "Array versus tuple",
+   "code": "import { z } from \"zod\";\n\nconst tags = z.array(z.string());\nconst record = z.tuple([z.string(), z.number(), z.boolean()]);\n\nconsole.log(tags.parse([\"zod\", \"typescript\"]));\nconsole.log(record.parse([\"Ada\", 36, true]));",
+   "language": "typescript",
+   "explanation": "The array accepts any number of strings, while the tuple requires three positions with the specified types."
+  },
+  "useCases": [
+   {
+    "title": "Homogeneous collections",
+    "scenario": "Every item in an input collection has the same type, such as a list of tags."
+   },
+   {
+    "title": "Fixed positional records",
+    "scenario": "An ordered value has a known meaning and type at each position, such as [name, score, active]."
+   },
+   {
+    "title": "Variadic tuples",
+    "scenario": "A command or protocol starts with required fields and permits additional values of one known type."
+   }
+  ],
+  "related": [
+   "z.array",
+   "z.tuple",
+   "z.string().array()",
+   "z.infer"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When should you choose an array schema instead of a tuple schema?",
+    "answer": "Use z.array(elementSchema) for a collection whose members share one schema, for example z.array(z.string()). Use z.tuple([...]) when each position has its own schema and the shape is generally fixed.",
+    "followUp": "How can a tuple support extra values? Supply a rest schema as the second argument, such as z.tuple([z.string()], z.number()), which represents [string, ...number[]]."
+   },
+   {
+    "question": "How does Zod model different types at different indexes?",
+    "answer": "A tuple declaration lists schemas in positional order, so z.tuple([z.string(), z.number(), z.boolean()]) infers [string, number, boolean]. The array form instead applies one element schema repeatedly.",
+    "followUp": "What does the rest parameter change? It permits additional entries after the declared positions, and those entries must satisfy the supplied rest schema."
+   },
+   {
+    "question": "What are the two documented forms for declaring an array schema?",
+    "answer": "Zod offers both z.array(z.string()) and z.string().array() for a string-array schema. They are equivalent ways to declare the repeated element type.",
+    "followUp": "How would you express a fixed contract with a variable tail? Put the required positional schemas in the tuple array and provide the tail schema as the second argument."
+   }
+  ],
+  "keyPoints": [
+   "Pass the schema for one repeated element to z.array, or use the equivalent elementSchema.array() method.",
+   "For example, z.array(z.string()) validates an array whose entries are all strings.",
+   "Create a tuple by listing the schema for each positional slot inside z.tuple.",
+   "Zod's inferred TypeScript type mirrors the tuple's ordered positional types.",
+   "A second argument to z.tuple supplies the schema for additional variadic entries."
+  ],
+  "gotchas": [
+   "Do not use a tuple for a homogeneous, variable-length collection; tuples describe positional contracts.",
+   "A tuple can accept additional values only when a rest schema is supplied explicitly."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema composition::Discriminated unions": {
+  "sourceUrl": "https://zod.dev/api?id=discriminated-unions",
+  "sourceTitle": "Arrays | Zod",
+  "summary": "Use `z.discriminatedUnion()` for object variants sharing a tag property. Zod uses the tag to select a schema efficiently, while TypeScript narrows the parsed result to the matching variant.",
+  "explanation": "A discriminated union combines object schemas that share a discriminator property. Each option assigns that property a distinct literal or supported value, allowing Zod to choose the relevant schema efficiently and allowing TypeScript to narrow the resulting type from the tag.",
+  "syntax": "z.discriminatedUnion(discriminator, options)",
+  "parameters": [
+   {
+    "name": "discriminator",
+    "type": "string",
+    "description": "The shared discriminator property name used to choose a variant."
+   },
+   {
+    "name": "options",
+    "type": "object[]",
+    "description": "An array of object schemas representing the union alternatives."
+   }
+  ],
+  "returns": "A Zod schema representing the discriminated union.",
+  "example": {
+   "title": "Parsing tagged result variants",
+   "code": "import { z } from \"zod\";\n\nconst Result = z.discriminatedUnion(\"status\", [\n  z.object({ status: z.literal(\"success\"), data: z.string() }),\n  z.object({ status: z.literal(\"failed\"), error: z.string() }),\n]);\n\nconst result = Result.parse({ status: \"success\", data: \"done\" });\n\nif (result.status === \"success\") {\n  console.log(result.data);\n} else {\n  console.error(result.error);\n}",
+   "language": "typescript",
+   "explanation": "The parser selects the object schema from the `status` value, and TypeScript narrows the parsed result in each branch."
+  },
+  "useCases": [
+   {
+    "title": "Validate success and failure payloads with a shared status tag.",
+    "scenario": "API responses"
+   },
+   {
+    "title": "Represent commands with distinct payload fields selected by a command type.",
+    "scenario": "Command handling"
+   },
+   {
+    "title": "Parse event objects and narrow their data based on an event tag.",
+    "scenario": "Event processing"
+   },
+   {
+    "title": "Avoid checking every union alternative when a discriminator can select one.",
+    "scenario": "Large variant sets"
+   }
+  ],
+  "related": [
+   "z.union()",
+   "z.object()",
+   "z.literal()",
+   "z.enum()",
+   "z.null()",
+   "z.undefined()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a discriminated union and why use one?",
+    "answer": "It is a union of object schemas that share a discriminator key. Zod uses that key to select the applicable option instead of trying every option, while TypeScript can narrow the result from the discriminator value.",
+    "followUp": "Why can it be faster than `z.union()`? It can select one option using the discriminator rather than testing the input against every provided option."
+   },
+   {
+    "question": "What does `z.discriminatedUnion()` accept?",
+    "answer": "The first argument is the discriminator key, and the second is an array of object schemas. In the example, each schema gives `status` a different literal value and defines variant-specific fields.",
+    "followUp": "Which discriminator values does the documentation mention? Common choices include `z.enum()`, `z.literal()`, `z.null()`, and `z.undefined()`."
+   },
+   {
+    "question": "What is a common pitfall?",
+    "answer": "An optional discriminator defeats the optimized lookup, so the schema falls back to ordinary union behavior. The discriminator must remain available for selecting a branch.",
+    "followUp": "What must each option be? It must be an object schema whose discriminator property corresponds to a literal value or supported set of values."
+   }
+  ],
+  "keyPoints": [
+   "Build the union from object variants that all expose the same tag property.",
+   "Checking the tag lets TypeScript expose the fields belonging to the selected variant.",
+   "Plain unions may become expensive when many alternatives must be checked.",
+   "Use the discriminated-union API when a shared tag can direct parsing.",
+   "The declaration supplies the tag name first, followed by the variant schemas.",
+   "The documentation lists enums, literals, null, and undefined among typical discriminator schema choices."
+  ],
+  "gotchas": [
+   "Do not make the discriminator optional; doing so removes the discriminated lookup behavior.",
+   "Every member must be an object schema, and its discriminator must identify one literal value or supported value set."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema composition::extend and schema reuse": {
+  "sourceUrl": "https://zod.dev/api?id=extend",
+  "sourceTitle": "Defining schemas | Zod",
+  "summary": "Compose Zod object schemas from shared contracts with `extend()` or `safeExtend()`. Prefer `safeExtend()` when overlapping fields must remain type-compatible or when the base schema has refinements.",
+  "explanation": "Zod object schemas can be composed by extending a shared schema with additional fields. Use `safeExtend()` when compatibility matters: it rejects incompatible replacements and preserves refinements, while a regular `extend()` allows overlapping fields from the new shape to override the base.",
+  "syntax": "Base.extend(shape)\nBase.safeExtend(shape)",
+  "parameters": [
+   {
+    "name": "Base",
+    "type": "ZodObject",
+    "description": "The existing Zod object schema whose fields and validation behavior are reused."
+   },
+   {
+    "name": "shape",
+    "type": "object shape",
+    "description": "An object containing fields to add or, with `extend()`, replace on the base schema."
+   }
+  ],
+  "returns": "A new object schema containing the base fields plus the extension shape; `safeExtend()` additionally enforces assignable replacements.",
+  "example": {
+   "title": "Safely extend a shared object contract",
+   "code": "import { z } from \"zod\";\n\nconst User = z.object({\n  id: z.string(),\n  name: z.string(),\n});\n\nconst Admin = User.safeExtend({\n  role: z.literal(\"admin\"),\n});\n\nconsole.log(Admin.parse({ id: \"u1\", name: \"Ada\", role: \"admin\" }));",
+   "language": "typescript",
+   "explanation": "`safeExtend()` reuses the base object contract while adding an administrator-only field. It also preserves assignability when an existing field is refined rather than made incompatible."
+  },
+  "useCases": [
+   {
+    "title": "Build endpoint-specific schemas from a common base",
+    "scenario": "Several endpoints share identity and naming fields, while each endpoint adds its own payload properties."
+   },
+   {
+    "title": "Strengthen an inherited field safely",
+    "scenario": "A domain model needs stricter validation for an inherited field without changing its TypeScript-compatible type."
+   },
+   {
+    "title": "Extend refined schemas",
+    "scenario": "A refined base object must gain additional fields while retaining its cross-field validation."
+   },
+   {
+    "title": "Preserve object-schema operations",
+    "scenario": "A composed object must still support object helpers such as `pick()` and `omit()`."
+   }
+  ],
+  "related": [
+   "safeExtend()",
+   "z.intersection()",
+   "pick()",
+   "omit()",
+   "refinements",
+   "ZodObject"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Zod's `extend()` do?",
+    "answer": "`extend()` creates a new object schema by adding fields to an existing object schema. If both schemas define the same key, the extension's field wins.",
+    "followUp": "How do you preserve compatibility when redefining a field? Use `safeExtend()`, which rejects a non-assignable replacement while allowing a compatible refinement."
+   },
+   {
+    "question": "Why use `safeExtend()` instead of `extend()`?",
+    "answer": "`safeExtend()` behaves like `extend()` but checks that replacements remain assignable to the original inferred type. This lets the resulting schema continue to extend the base type in the TypeScript sense.",
+    "followUp": "Can it strengthen validation? Yes: replacing `z.string()` with `z.string().min(5)` is compatible and therefore allowed."
+   },
+   {
+    "question": "Why prefer object extension over intersection?",
+    "answer": "For merging object schemas, the documentation recommends `A.extend(B)` over `z.intersection(A, B)`. Extension returns an object schema with methods such as `pick` and `omit`, whereas an intersection returns `ZodIntersection`.",
+    "followUp": "When is `safeExtend()` especially necessary? When the base schema has refinements, because regular `extend()` throws in that case."
+   }
+  ],
+  "keyPoints": [
+   "Call `Base.extend({ ... })` to derive a new object schema with extra properties.",
+   "Use `safeExtend()` to prevent an extension from weakening or otherwise incompatibly replacing an inherited property.",
+   "The resulting inferred type remains a TypeScript-compatible extension of the base schema.",
+   "A refined object can be extended safely while retaining its existing refinement behavior.",
+   "Refinements defined on the base object continue to apply to the safely extended schema.",
+   "For object-schema composition, extension is the documented preference over intersections."
+  ],
+  "gotchas": [
+   "Overlapping keys are replaced by the extension shape, so an ordinary `extend()` can silently change an inherited contract.",
+   "Do not use regular `extend()` on an object schema containing refinements; choose `safeExtend()` instead.",
+   "Although intersections can combine schemas, they produce a less capable result than object extension for later object-specific composition."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema composition::Intersections": {
+  "sourceUrl": "https://zod.dev/api?id=intersections",
+  "sourceTitle": "Zod API - extend",
+  "summary": "Intersections combine two compatible schemas with logical AND semantics: a value must satisfy both. For object schemas, prefer `extend` when you need a regular object schema and its methods.",
+  "explanation": "Use `z.intersection(A, B)` when a value must satisfy two compatible schemas simultaneously. For object shapes, prefer `A.extend(B)` because it creates a regular object schema with object-specific methods, while an intersection produces a `ZodIntersection`.",
+  "syntax": "z.intersection(A, B)",
+  "parameters": [
+   {
+    "name": "A",
+    "type": "Zod schema",
+    "description": "First schema participating in the logical AND."
+   },
+   {
+    "name": "B",
+    "type": "Zod schema",
+    "description": "Second schema participating in the logical AND."
+   }
+  ],
+  "returns": "A ZodIntersection schema that accepts values satisfying both input schemas.",
+  "example": {
+   "title": "Intersect two object schemas",
+   "code": "import { z } from \"zod\";\n\nconst Person = z.object({ name: z.string() });\nconst Employee = z.object({ role: z.string() });\nconst EmployedPerson = z.intersection(Person, Employee);\n\nconsole.log(EmployedPerson.parse({ name: \"Ada\", role: \"Engineer\" }));",
+   "language": "typescript",
+   "explanation": "The intersection accepts an object only when it satisfies both schemas, producing a value with both properties."
+  },
+  "useCases": [
+   {
+    "title": "Combine compatible requirements",
+    "scenario": "A value must meet two independent validation contracts at once."
+   },
+   {
+    "title": "Compose object shapes",
+    "scenario": "Two object schemas contribute distinct required fields."
+   },
+   {
+    "title": "Express shared alternatives",
+    "scenario": "Two unions overlap on only a narrower set of values."
+   }
+  ],
+  "related": [
+   "A & B",
+   "z.infer",
+   "z.union",
+   "A.and(B)",
+   "A.extend(B)",
+   "ZodIntersection",
+   "pick",
+   "omit"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does a Zod intersection mean?",
+    "answer": "`z.intersection(A, B)` represents a logical AND: the input must pass both schemas. For example, intersecting unions of number-or-string and number-or-boolean leaves number as the shared valid type.",
+    "followUp": "When should object schemas use `extend` instead? Use `A.extend(B)` when composing object shapes, because it returns a new object schema with object-specific methods."
+   },
+   {
+    "question": "How are requirements combined by an intersection?",
+    "answer": "The result contains the requirements imposed by both schemas, so two object schemas can contribute different properties to the accepted value. Both validations must succeed for parsing to succeed.",
+    "followUp": "How can the same object composition be expressed as a method call? Use `A.and(B)`, which is equivalent to `z.intersection(A, B)`."
+   },
+   {
+    "question": "Why is `extend` generally preferred for merging object schemas?",
+    "answer": "For object schemas, prefer `A.extend(B)` over an intersection. `extend` returns a new object schema, whereas `z.intersection` returns a `ZodIntersection` with fewer object-schema utilities.",
+    "followUp": "Which methods are specifically called out as unavailable on the intersection result? `pick` and `omit` are examples."
+   }
+  ],
+  "keyPoints": [
+   "An intersection requires a value to conform to both schemas, matching the TypeScript idea of `A & B`.",
+   "Create an intersection with the top-level `z.intersection(a, b)` function.",
+   "The inferred type keeps only values compatible with both inputs; two overlapping unions can therefore narrow to their shared member."
+  ],
+  "gotchas": [
+   "For object schemas, an intersection does not provide common object methods such as `pick` and `omit`; use `extend` instead."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema composition::pick, omit and partial": {
+  "sourceUrl": "https://zod.dev/api?id=pick",
+  "sourceTitle": "Defining schemas | Zod",
+  "summary": "Derive related Zod object contracts with pick, omit, and partial while reusing the original field validators. Pick keeps selected keys, omit removes selected keys, and partial makes all or selected properties optional.",
+  "explanation": "Zod object schemas can derive narrower or less-required contracts from an existing schema. Use pick to retain selected keys, omit to remove keys, and partial either without arguments for all fields or with a key mask for selected fields.",
+  "syntax": "schema.pick(mask)\nschema.omit(mask)\nschema.partial()\nschema.partial(mask)",
+  "parameters": [
+   {
+    "name": "mask",
+    "type": "object",
+    "description": "A mask of object keys set to true; used by pick or omit to select or exclude properties, and by partial to target properties whose requiredness should change."
+   },
+   {
+    "name": "partial mask",
+    "type": "object | undefined",
+    "description": "No argument makes all object properties optional; a key mask limits the change to selected properties."
+   }
+  ],
+  "returns": "Derived Zod object schemas with selected keys retained, selected keys removed, or selected/all properties made optional.",
+  "example": {
+   "title": "Derive an update schema",
+   "code": "import { z } from \"zod\";\n\nconst Recipe = z.object({\n  id: z.string(),\n  title: z.string(),\n  description: z.string().optional(),\n  ingredients: z.array(z.string()),\n});\n\nconst UpdateRecipe = Recipe.omit({ id: true }).partial({\n  title: true,\n  ingredients: true,\n});\n\nconsole.log(UpdateRecipe.safeParse({ description: \"Short\" }).success);",
+   "language": "typescript",
+   "explanation": "The derived update contract excludes the identifier and makes only selected remaining fields optional."
+  },
+  "useCases": [
+   {
+    "title": "Public or response DTOs",
+    "scenario": "Expose only a safe subset of a larger object contract."
+   },
+   {
+    "title": "Create and update inputs",
+    "scenario": "Remove immutable or server-managed fields from an input contract."
+   },
+   {
+    "title": "Partial updates",
+    "scenario": "Allow a patch payload to contain only changed fields."
+   },
+   {
+    "title": "Partial records",
+    "scenario": "Represent optional keys in a record-shaped structure."
+   }
+  ],
+  "related": [
+   "z.object",
+   "z.partialRecord",
+   "Pick",
+   "Omit",
+   "Partial"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between pick and omit?",
+    "answer": "pick returns an object schema containing only the keys marked true in its mask. omit returns an object schema with the marked keys removed, so both preserve the validators of the keys they retain.",
+    "followUp": "How would you create a public response contract without an internal identifier? Use omit({ id: true }) on the full object schema."
+   },
+   {
+    "question": "How does partial differ with and without a key mask?",
+    "answer": "partial() makes every property optional. Passing a mask, such as partial({ ingredients: true }), makes only the selected properties optional while leaving the others required.",
+    "followUp": "How can you derive a patch schema that excludes an immutable identifier? First omit the identifier, then call partial() or partial(mask) on the resulting schema."
+   },
+   {
+    "question": "Why use these methods instead of redefining related schemas?",
+    "answer": "These methods derive new object schemas from an existing schema, allowing related contracts to reuse the original field validators. That keeps production validation rules attached while changing the set of keys or their requiredness.",
+    "followUp": "What alternative is documented for a partial record type? Use z.partialRecord(), which also avoids the normal exhaustiveness checks for enum or literal key schemas."
+   }
+  ],
+  "keyPoints": [
+   "Use pick and omit to derive object contracts by selecting keys to retain or keys to remove.",
+   "The APIs mirror the intent of TypeScript's Pick and Omit utility types while producing runtime Zod schemas.",
+   "partial is the composition tool for relaxing requiredness on every property or on a selected subset.",
+   "Calling partial with no arguments makes every property optional in the derived object schema.",
+   "Pass a true-valued key mask to partial when only named properties should become optional.",
+   "partialRecord is the documented choice for partial record types and changes the key-schema exhaustiveness behavior."
+  ],
+  "gotchas": [
+   "partial() changes optionality on object-schema properties; for partial record types, use z.partialRecord() instead."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema composition::Records, maps and sets": {
+  "sourceUrl": "https://zod.dev/api?id=maps",
+  "sourceTitle": "Defining schemas",
+  "summary": "Validate object records, JavaScript Maps, and Sets with schemas for their keys, values, or elements. Map and Set schemas can also enforce collection-size limits.",
+  "explanation": "Zod provides separate schemas for JavaScript objects used as records, Map instances, and Set instances. Supply the key and value schemas for records or maps, and the element schema for sets; collection-size methods can add cardinality rules.",
+  "syntax": "z.record(keySchema, valueSchema)\nz.map(keySchema, valueSchema)\nz.set(elementSchema)",
+  "parameters": [
+   {
+    "name": "keySchema",
+    "type": "Zod schema",
+    "description": "Schema for keys in a record or map."
+   },
+   {
+    "name": "valueSchema",
+    "type": "Zod schema",
+    "description": "Schema for values in a record or map."
+   },
+   {
+    "name": "elementSchema",
+    "type": "Zod schema",
+    "description": "Schema every Set element must satisfy."
+   }
+  ],
+  "returns": "z.record and z.map return schemas for keyed collections; z.set returns a schema for Set instances. Parsing returns the validated, typed collection.",
+  "example": {
+   "title": "Validate keyed and unique collections",
+   "code": "import { z } from \"zod\";\n\nconst Settings = z.record(z.string(), z.boolean());\nconst Scores = z.map(z.string(), z.number()).min(1);\nconst Tags = z.set(z.string()).max(3);\n\nconst settings = Settings.parse({ darkMode: true });\nconst scores = Scores.parse(new Map([[\"Ada\", 10]]));\nconst tags = Tags.parse(new Set([\"typescript\"]));\n\nconsole.log(settings, scores, tags);",
+   "language": "typescript",
+   "explanation": "The schemas validate an object record, a Map with string keys and numeric values, and a Set containing strings; the collection constraints require at least one map entry and at most three set entries."
+  },
+  "useCases": [
+   {
+    "title": "Validate records",
+    "scenario": "Configuration or lookup objects whose property names and values need runtime validation."
+   },
+   {
+    "title": "Validate Maps",
+    "scenario": "Caches, indexes, or other collections where keys and values have distinct runtime types."
+   },
+   {
+    "title": "Validate Sets",
+    "scenario": "Tags, capabilities, or deduplicated values that must all share one validated type."
+   },
+   {
+    "title": "Constrain collection size",
+    "scenario": "Enforce minimum, maximum, or exact collection cardinality during input validation."
+   }
+  ],
+  "related": [
+   "z.record",
+   "z.map",
+   "z.set",
+   "z.infer",
+   "nonempty",
+   "min",
+   "max",
+   "size"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When should you use z.record versus z.map?",
+    "answer": "Use z.record(keySchema, valueSchema) for an object whose keys and values must be validated. Use z.map(keySchema, valueSchema) when the collection is a JavaScript Map.",
+    "followUp": "How would you require a nonempty Map? Add .nonempty() to the map schema, or use .min(1) for the equivalent lower bound."
+   },
+   {
+    "question": "How do you validate a Set with Zod?",
+    "answer": "Create a set schema with z.set(elementSchema), such as z.set(z.number()). Parsing validates that the input is a Set and that its elements satisfy the element schema.",
+    "followUp": "How can you cap the number of elements? Chain .max(n), such as z.set(z.string()).max(3)."
+   },
+   {
+    "question": "Which size constraints are available for Map schemas?",
+    "answer": "Map schemas support .nonempty(), .min(n), .max(n), and .size(n) to constrain entry counts. These methods express minimum, maximum, or exact cardinality requirements.",
+    "followUp": "What rule enforces exactly five entries? Use .size(5) on the map schema."
+   }
+  ],
+  "keyPoints": [
+   "Use record schemas for object-shaped keyed collections, with validation applied to the record's declared key and value types.",
+   "z.map accepts a key schema followed by a value schema, letting a Map require string keys and numeric values.",
+   "Type inference turns the map schema into the corresponding TypeScript Map type, preserving the key and value types.",
+   "z.set takes one element schema, so this declaration describes a Set whose members must be numbers.",
+   "Call parse with the actual collection instance to validate it and obtain the typed result, or receive a validation error.",
+   "Use .size(n) when a map must contain exactly n entries; .min and .max express lower and upper bounds instead."
+  ],
+  "gotchas": [
+   "A record models an object-like keyed collection, not a JavaScript Map; choose z.map when the input must be a Map instance.",
+   "Map cardinality rules are additional constraints, so an unconstrained map does not automatically require a particular number of entries."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema composition::Recursive schemas": {
+  "sourceUrl": "https://zod.dev/api?id=recursive-objects",
+  "sourceTitle": "Defining schemas",
+  "summary": "Use an object getter to describe recursively nested data in current Zod. Child arrays can refer back to the enclosing schema, while any application-specific maximum depth must be enforced separately.",
+  "explanation": "A recursive schema defines a nested structure whose child value uses the enclosing schema again. In current Zod, an object getter can return an array of the schema being declared, so nested values are checked recursively; use a finite input structure or add an explicit application-level depth rule when bounded depth is required.",
+  "syntax": "const Category = z.object({\n  name: z.string(),\n  get subcategories() {\n    return z.array(Category);\n  },\n});",
+  "parameters": [],
+  "returns": "A Zod object schema that recursively validates nested child objects.",
+  "example": {
+   "title": "Recursive category schema",
+   "code": "import { z } from \"zod\";\n\nconst Category = z.object({\n  name: z.string(),\n  get subcategories() {\n    return z.array(Category);\n  },\n});\n\nconst category = Category.parse({\n  name: \"People\",\n  subcategories: [\n    { name: \"Politicians\", subcategories: [] },\n  ],\n});\n\nconsole.log(category.subcategories[0].name);",
+   "language": "typescript",
+   "explanation": "The getter delays access to the child schema, allowing the object schema to refer to itself while validating nested categories."
+  },
+  "useCases": [
+   {
+    "title": "Hierarchical data",
+    "scenario": "Category trees, menus, and taxonomies where each node can contain more nodes of the same shape."
+   },
+   {
+    "title": "Nested structures",
+    "scenario": "Directory-like objects whose entries contain recursively nested child entries."
+   },
+   {
+    "title": "Self-similar records",
+    "scenario": "Organizational units in which teams or departments can contain units with the same fields."
+   }
+  ],
+  "related": [
+   "z.object",
+   "z.array",
+   "z.parse",
+   "z.safeParse"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you declare a recursive object schema in current Zod?",
+    "answer": "Define the recursive child field through an object getter, returning a collection containing the enclosing schema. The getter delays evaluation until the schema exists, which lets nested objects reuse the same definition.",
+    "followUp": "How would you model a tree with bounded depth? Define separate schemas for each allowed level, or enforce a depth counter outside the schema; the documented recursive declaration itself does not specify a maximum depth parameter."
+   },
+   {
+    "question": "What does the recursive category example validate?",
+    "answer": "A category can contain a `subcategories` array whose elements are validated by `Category` itself. Each nested element therefore must satisfy the same object shape, including its own child array.",
+    "followUp": "What data shape does this support? Any finite tree-shaped nesting whose nodes match the declared fields, such as categories, directories, or organizational units."
+   },
+   {
+    "question": "How are recursion limits configured?",
+    "answer": "The current API page presents recursive object composition with a getter and does not expose a separate recursion-limit option in that declaration. If an application needs a maximum depth, it must represent or enforce that constraint separately.",
+    "followUp": "Would a recursive schema alone guarantee a business maximum depth? No; the schema describes recursive shape, so a distinct depth check or level-specific schema is needed for a business limit."
+   }
+  ],
+  "keyPoints": [
+   "Recursive schemas are useful when a value contains nested objects or arrays that repeat a common shape.",
+   "Start with an object schema for one recursive node, then expose its child field through a getter.",
+   "The child field can validate an array whose elements use the enclosing schema.",
+   "Parsing happens only after the recursive structure has been declared as a Zod schema."
+  ],
+  "gotchas": [
+   "The current documentation describes support for cyclical data, but recursive validation still requires care with arbitrary graphs; ensure inputs are compatible with the documented behavior rather than assuming every cyclic structure is safe."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema composition::Strict and loose objects": {
+  "sourceUrl": "https://zod.dev/api?id=zstrictobject",
+  "sourceTitle": "Defining schemas | Zod",
+  "summary": "Zod object schemas can explicitly reject or preserve unknown keys. Use `z.strictObject()` for rejection and `z.looseObject()` when extra properties should pass through.",
+  "explanation": "Zod provides two explicit object constructors for extra-key policy. `z.strictObject()` rejects input containing keys outside its shape, while `z.looseObject()` accepts those keys and includes them in the parsed result. This lets a public boundary choose rejection or preservation deliberately.",
+  "syntax": "z.strictObject(shape)\nz.looseObject(shape)",
+  "parameters": [
+   {
+    "name": "shape",
+    "type": "ZodRawShape",
+    "description": "An object shape mapping property names to Zod schemas."
+   }
+  ],
+  "returns": "A Zod object schema configured to reject or preserve unknown keys.",
+  "example": {
+   "title": "Choose how object schemas handle extra keys",
+   "code": "import { z } from \"zod\";\n\nconst StrictConfig = z.strictObject({\n  port: z.number(),\n});\nconst LooseConfig = z.looseObject({\n  port: z.number(),\n});\n\nStrictConfig.safeParse({ port: 3000, debug: true }); // failure\nLooseConfig.parse({ port: 3000, debug: true }); // { port: 3000, debug: true }",
+   "language": "typescript",
+   "explanation": "Use the strict schema to reject an unexpected key and the loose schema to retain it."
+  },
+  "useCases": [
+   {
+    "title": "Strict public APIs",
+    "scenario": "Validate request payloads where undeclared fields should be treated as errors."
+   },
+   {
+    "title": "Loose integration boundaries",
+    "scenario": "Accept extensible metadata or forward-compatible properties."
+   },
+   {
+    "title": "Preserve extra data",
+    "scenario": "Avoid silently losing client-supplied fields while parsing."
+   }
+  ],
+  "related": [
+   "z.object",
+   "z.strictObject",
+   "z.looseObject",
+   "strictness level",
+   "unknown keys"
+  ],
+  "since": "",
+  "keyPoints": [
+   "`z.strictObject(shape)` rejects input containing keys not declared in the shape.",
+   "`z.looseObject(shape)` accepts undeclared keys and preserves them in the parsed output.",
+   "`z.object(shape)` has a third behavior: it validates declared keys but removes unknown ones.",
+   "The strict constructor takes an object shape, just like the regular object constructor.",
+   "The loose constructor also receives a shape whose declared properties are validated.",
+   "Choose the constructor according to whether the boundary should reject or preserve additional keys."
+  ],
+  "gotchas": [
+   "A regular `z.object()` silently removes unknown keys, so use an explicit strict or loose constructor when that behavior must be visible."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Validation integration::API request and response schemas": {
+  "sourceUrl": "https://zod.dev/api",
+  "sourceTitle": "Defining schemas",
+  "summary": "Use Zod object schemas to validate API inputs and outputs at runtime. Derive a public response schema with pick or omit, then parse database results so private fields are not exposed.",
+  "explanation": "Define separate Zod schemas for incoming and outgoing API data. Parse requests to reject invalid input, and parse database results through a deliberately public response schema so undeclared private fields are removed from the returned value.",
+  "syntax": "schema.parse(data: unknown)\nschema.safeParse(data: unknown)\nz.object(shape)\nschema.pick(mask)\nschema.omit(mask)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "unknown",
+    "description": "The unknown request or response value to validate."
+   }
+  ],
+  "returns": "parse returns the validated value or throws on failure; safeParse returns { success: true, data: T } or { success: false, error: ZodError }.",
+  "example": {
+   "title": "Validate and shape a response",
+   "code": "import { z } from \"zod\";\n\nconst UserResponse = z.object({\n  id: z.string(),\n  name: z.string(),\n});\n\ntype UserResponse = z.infer<typeof UserResponse>;\n\nconst result = UserResponse.safeParse({\n  id: \"u_123\",\n  name: \"Ada\",\n  passwordHash: \"private\",\n});\n\nif (!result.success) {\n  throw new Error(result.error.message);\n}\n\nconsole.log(result.data);",
+   "language": "typescript",
+   "explanation": "The same public schema validates an unknown response and returns only the declared fields."
+  },
+  "useCases": [
+   {
+    "title": "Ingress validation",
+    "scenario": "Validate JSON bodies, query parameters, or other untrusted request data before application logic uses them."
+   },
+   {
+    "title": "Egress shaping",
+    "scenario": "Parse database records through a schema containing only client-visible properties."
+   },
+   {
+    "title": "Schema derivation",
+    "scenario": "Create a public contract from a larger internal object with pick or omit."
+   },
+   {
+    "title": "Safe error handling",
+    "scenario": "Return structured validation failures without throwing exceptions."
+   }
+  ],
+  "related": [
+   "z.object",
+   "z.infer",
+   "object schemas",
+   ".pick()",
+   ".omit()",
+   "parse",
+   "safeParse",
+   "ZodError"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Create a schema that describes each API boundary before parsing request or response data.",
+   "Use pick or omit to derive a public-facing object schema from a broader object schema.",
+   "Derivation methods help keep response contracts focused on fields that clients may receive."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Validation integration::Custom error messages": {
+  "sourceUrl": "https://zod.dev/error-customization",
+  "sourceTitle": "Customizing errors | Zod",
+  "summary": "Zod lets schemas and validation methods replace default messages with fixed or issue-aware custom text. Use safe, corrective wording for callers and global customization for consistent fallback behavior.",
+  "explanation": "Pass an `error` option to a schema or validation method when a fixed message is enough. For context-sensitive feedback, pass an error function; Zod calls it at parse time with the validation issue, and the returned text becomes the issue message. A global `customError` function in `z.config()` can provide fallback customization across schemas.",
+  "syntax": "z.string({ error: \"Invalid username\" })\nz.string().min(3, { error: \"Too short\" })\nz.string({ error: (issue) => \"Invalid value\" })\nz.config({ customError: (issue) => \"Invalid input\" })",
+  "parameters": [
+   {
+    "name": "error",
+    "type": "string | (issue) => string | undefined",
+    "description": "A string or function used to customize the validation error; the function receives the validation issue."
+   }
+  ],
+  "returns": "The customized text is exposed as the `message` property on the resulting validation issue.",
+  "example": {
+   "title": "Customizing a length error",
+   "code": "import { z } from \"zod\";\n\nconst User = z.object({\n  username: z.string().min(3, {\n    error: \"Username must be at least 3 characters\"\n  })\n});\n\nconst result = User.safeParse({ username: \"a\" });\nif (!result.success) {\n  console.log(result.error.issues[0].message);\n}",
+   "language": "typescript",
+   "explanation": "The schema supplies a user-facing message for this validation failure, which is exposed through the issue's message property."
+  },
+  "useCases": [
+   {
+    "title": "Fixed field feedback",
+    "scenario": "A field fails a simple rule and needs a stable message suitable for a form."
+   },
+   {
+    "title": "Context-aware validation",
+    "scenario": "The same rule needs different wording depending on the issue data."
+   },
+   {
+    "title": "Global error policy",
+    "scenario": "Multiple schemas should share consistent safe fallback messages."
+   }
+  ],
+  "related": [
+   "error map",
+   "z.config()",
+   "customError",
+   "ZodError",
+   "issues",
+   "message"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you customize a single validation message?",
+    "answer": "Use the unified `error` option on a schema or validation method. It may be a string for a fixed message or a function that receives the validation issue and returns tailored text.",
+    "followUp": "How can customization be applied globally? Configure `z.config({ customError: ... })`; this provides global error customization while more specific schema-level customization can take precedence."
+   },
+   {
+    "question": "What is an error map and when does it run?",
+    "answer": "An error customization function, called an error map, runs when parsing encounters a validation error. It receives issue information, so the message can reflect the failed rule without exposing internal implementation details.",
+    "followUp": "What should the function return when it does not want to override the current message? Return `undefined` so Zod continues to the next error map."
+   },
+   {
+    "question": "Where does the customized text appear?",
+    "answer": "Zod exposes each validation issue with a `message` property. A custom string or the result of an error function becomes that property, allowing callers to display corrective feedback consistently.",
+    "followUp": "How can required and invalid values receive different messages? Inspect the issue function's input or issue data and return separate safe messages for those cases."
+   }
+  ],
+  "keyPoints": [
+   "Most Zod APIs accept an optional error customization, so corrective text can be attached close to the rule that failed.",
+   "Use a function instead of a string when the message must depend on the validation issue.",
+   "Zod calls the issue-aware customization function an error map.",
+   "Dynamic message generation happens during parsing, only when validation produces an error.",
+   "The customized text is available through the resulting issue's `message` field.",
+   "Use `z.config()` with `customError` when a project-wide fallback policy is needed."
+  ],
+  "gotchas": [
+   "Prefer Zod 4's unified `error` parameter; the older `message` option remains only for compatibility and is deprecated."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Validation integration::Error formatting": {
+  "sourceUrl": "https://zod.dev/error-formatting?ref=doc",
+  "sourceTitle": "Formatting errors | Zod",
+  "summary": "Format Zod validation issues as either a schema-shaped tree or a shallow form result. Treeification preserves nested paths; flattening exposes fieldErrors and formErrors for simple forms.",
+  "explanation": "A failed parse yields a ZodError whose issues can be reshaped for presentation. Use z.treeifyError() to preserve nested object and array paths, or z.flattenError() when a shallow fieldErrors/formErrors structure is sufficient.",
+  "syntax": "z.treeifyError(error)\nz.flattenError(error)",
+  "parameters": [
+   {
+    "name": "error",
+    "type": "ZodError",
+    "description": "The ZodError produced by a failed validation."
+   }
+  ],
+  "returns": "z.treeifyError() returns a nested object with errors, properties, and items; z.flattenError() returns an object containing formErrors and fieldErrors.",
+  "example": {
+   "title": "Format nested and flat validation errors",
+   "code": "import { z } from \"zod\";\n\nconst schema = z.object({\n  username: z.string(),\n  profile: z.object({ age: z.number() }),\n});\n\nconst result = schema.safeParse({ username: 42, profile: { age: \"old\" } });\n\nif (!result.success) {\n  const nested = z.treeifyError(result.error);\n  const flat = z.flattenError(result.error);\n  console.log(nested.properties?.profile?.properties?.age?.errors);\n  console.log(flat.fieldErrors);\n}",
+   "language": "typescript",
+   "explanation": "Use the tree form for nested paths and the flattened form for shallow field and form messages."
+  },
+  "useCases": [
+   {
+    "title": "Render shallow field errors",
+    "scenario": "A form has username and email fields with one-level validation rules."
+   },
+   {
+    "title": "Traverse nested validation errors",
+    "scenario": "A payload contains nested objects or arrays and the UI must locate messages by path."
+   },
+   {
+    "title": "Display form-level errors",
+    "scenario": "A refinement applies to the whole object rather than one field."
+   }
+  ],
+  "related": [
+   "z.treeifyError()",
+   "z.flattenError()",
+   "formErrors",
+   "fieldErrors",
+   "properties",
+   "items"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When should you use z.treeifyError()?",
+    "answer": "z.treeifyError() converts a ZodError into a nested structure that mirrors the schema. Each node has errors, while properties and items provide traversal for object fields and array elements.",
+    "followUp": "How would you safely read an array element's messages? Use optional chaining through the properties and items branches, then access its errors array."
+   },
+   {
+    "question": "What does z.flattenError() return?",
+    "answer": "z.flattenError() is intended for mostly flat schemas. It returns formErrors for top-level issues and fieldErrors containing arrays of messages keyed by field.",
+    "followUp": "Why not use it for deeply nested data? Its shallow representation does not preserve the full nested path structure; treeifyError is the suitable traversal form."
+   },
+   {
+    "question": "How do these helpers support UI validation?",
+    "answer": "Both helpers reorganize the issues from a failed parse without requiring manual grouping. The choice depends on whether the consumer needs schema-shaped navigation or a shallow form-oriented result.",
+    "followUp": "What indicates a form-level issue? An issue whose path is empty, represented in the formErrors array."
+   }
+  ],
+  "keyPoints": [
+   "Call z.treeifyError(error) when the UI needs errors arranged along nested object and array paths.",
+   "Treeified output follows the schema shape, making deep validation messages navigable by corresponding properties and items.",
+   "Read a node's errors array to obtain messages attached directly to that path.",
+   "Use properties for object members and items for array positions when walking treeified output.",
+   "Prefer flattenError for forms whose relevant fields are one level deep.",
+   "Field-level output groups potentially multiple messages under each field key."
+  ],
+  "gotchas": [
+   "Use optional chaining when traversing treeified errors because a property or array item may not exist.",
+   "Root-level validation failures are kept in formErrors rather than assigned to a field."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Zod foundations::Booleans, literals and enums": {
+  "sourceUrl": "https://zod.dev/api?id=booleans",
+  "sourceTitle": "Defining schemas | Zod",
+  "summary": "Use Zod boolean, literal, and enum schemas to validate primitive values and finite allowed sets. Prefer z.enum() for controlled string values instead of accepting arbitrary strings.",
+  "explanation": "Zod provides schemas for exact primitive values and controlled sets. Use z.boolean() for true or false, z.literal() for an exact literal or a finite collection of literals, and z.enum() for a named set of string values. Parsing returns the accepted value; invalid input produces a validation failure.",
+  "syntax": "z.boolean()\nz.literal(value)\nz.literal([value1, value2, ...])\nz.enum([value1, value2, ...])",
+  "parameters": [
+   {
+    "name": "",
+    "type": "",
+    "description": "A boolean schema has no required parameters."
+   }
+  ],
+  "returns": "Zod schemas that validate booleans, exact literal values, or finite enum values and return the accepted input when parsing succeeds.",
+  "example": {
+   "title": "Validate primitive and finite values",
+   "code": "import { z } from \"zod\";\n\nconst Status = z.enum([\"draft\", \"published\", \"archived\"]);\n\nStatus.parse(\"published\"); // \"published\"\nStatus.safeParse(\"deleted\"); // { success: false }\n\nconst Enabled = z.boolean();\nEnabled.parse(true); // true\n\nconst Role = z.literal([\"admin\", \"editor\"]);\nRole.parse(\"admin\"); // \"admin\"",
+   "language": "typescript",
+   "explanation": "This example validates a boolean, a finite string enum, and a literal schema that accepts one of several exact values."
+  },
+  "useCases": [
+   {
+    "title": "Validate booleans",
+    "scenario": "A feature flag or consent field must contain only true or false."
+   },
+   {
+    "title": "Validate controlled strings",
+    "scenario": "A status, role, or category field must match one of a fixed set of strings."
+   },
+   {
+    "title": "Validate exact literals",
+    "scenario": "A discriminator or configuration value must equal one exact constant."
+   },
+   {
+    "title": "Validate declared enums",
+    "scenario": "Existing enum-like objects or TypeScript enums need runtime validation."
+   }
+  ],
+  "related": [
+   "z.boolean()",
+   "z.literal()",
+   "z.enum()",
+   "z.templateLiteral()",
+   "z.nativeEnum()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use z.boolean() when the input must be exactly true or false.",
+   "Use z.literal() when one exact value, such as a specific string or number, is required.",
+   "Template literals are available when the valid string must be assembled from literal parts and schemas.",
+   "z.enum() supports enum-like objects whose values are strings or numbers.",
+   "Prefer z.enum() when validating values represented by an externally declared TypeScript enum."
+  ],
+  "gotchas": [
+   "Use z.enum() for externally declared TypeScript enums instead of the deprecated z.nativeEnum() API.",
+   "An enum can also be created from an enum-like object, provided its values are strings or numbers."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Zod foundations::Numbers and coercion": {
+  "sourceUrl": "https://zod.dev/api?id=coercion",
+  "sourceTitle": "Defining schemas | Zod",
+  "summary": "Use `z.number()` to accept finite numeric values and reject invalid ones such as NaN or Infinity. Use `z.coerce.number()` when JavaScript Number conversion should run first, including its behavior for empty strings and booleans.",
+  "explanation": "Zod separates numeric validation from conversion. `z.number()` accepts finite numbers and rejects values such as `NaN` and `Infinity`; `z.coerce.number()` first applies `Number(input)`, which means JavaScript conversion behavior—including results for empty strings and booleans—determines what is then validated.",
+  "syntax": "z.number()\nz.coerce.number()",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Finite validation and coercion",
+   "code": "import { z } from \"zod\";\n\nconst finiteNumber = z.number();\nconst coercedNumber = z.coerce.number();\n\nconsole.log(finiteNumber.safeParse(3.14).success); // true\nconsole.log(finiteNumber.safeParse(Infinity).success); // false\nconsole.log(coercedNumber.parse(\"42\")); // 42\nconsole.log(coercedNumber.parse(\"\") ); // 0\nconsole.log(coercedNumber.parse(false)); // 0\n",
+   "language": "typescript",
+   "explanation": "The first schema accepts a finite number only. The coercing schema applies JavaScript's Number conversion, so a numeric string, empty string, and false become numbers."
+  },
+  "useCases": [
+   {
+    "title": "Strict numeric validation",
+    "scenario": "An API field must already be a valid finite JavaScript number."
+   },
+   {
+    "title": "Numeric input coercion",
+    "scenario": "Form or query input arrives as text and should be converted to a number."
+   },
+   {
+    "title": "Auditing coercion behavior",
+    "scenario": "You need to understand whether JavaScript conversion silently turns unusual inputs into valid numbers."
+   }
+  ],
+  "related": [
+   "z.number()",
+   "z.coerce.number()",
+   "z.int()",
+   "z.number().finite()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `z.number()` accept?",
+    "answer": "`z.number()` validates that the input is a finite number. The documentation demonstrates that 3.14 succeeds while NaN and Infinity fail.",
+    "followUp": "How would you accept numeric text? Use `z.coerce.number()`, which converts with `Number(input)` before applying numeric validation."
+   },
+   {
+    "question": "How does numeric coercion work?",
+    "answer": "`z.coerce.number()` attempts to convert its input using the JavaScript Number constructor. Therefore, a string such as `\"42\"` becomes the number 42 before validation.",
+    "followUp": "What happens with an empty string? JavaScript conversion produces 0, so the coerced schema accepts it as a valid finite number."
+   },
+   {
+    "question": "What happens when booleans are passed to a coerced number schema?",
+    "answer": "Boolean inputs are converted through `Number(input)`: true becomes 1 and false becomes 0. Those results are finite numbers, so the coerced schema accepts them.",
+    "followUp": "How could a schema reject these implicit conversions? Validate the original input as a string or add a refinement after coercion."
+   }
+  ],
+  "keyPoints": [
+   "Use `z.number()` when the input must already have numeric type.",
+   "The base numeric schema accepts finite values, including fractional numbers.",
+   "NaN is rejected by the base number schema.",
+   "Positive infinity is rejected as an invalid numeric value.",
+   "The coercing form converts incoming values before checking the resulting type.",
+   "Zod documents coercion as using the corresponding built-in JavaScript constructor."
+  ],
+  "gotchas": [
+   "Coercion uses the JavaScript Number constructor, so non-number inputs are converted before validation.",
+   "A plain number schema rejects NaN and Infinity rather than accepting every JavaScript number value."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Zod foundations::Optional, nullable and nullish": {
+  "sourceUrl": "https://zod.dev/api?id=nullables",
+  "sourceTitle": "Defining schemas | Zod",
+  "summary": "Distinguish undefined, null, and both: optional permits undefined, nullable permits null, and nullish permits both. For object keys, exactOptional can permit omission while rejecting an explicit undefined.",
+  "explanation": "Use optional when undefined is valid, nullable when null is valid, and nullish when both are valid. These wrappers preserve the inner schema's normal validation for non-nullish values, while exactOptional can distinguish an absent object key from an explicitly supplied undefined.",
+  "syntax": "z.optional(schema); schema.optional(); z.nullable(schema); schema.nullable(); z.nullish(schema); schema.nullish();",
+  "parameters": [
+   {
+    "name": "schema",
+    "type": "ZodType",
+    "description": "The schema to wrap; its ordinary accepted values remain valid in addition to the permitted undefined or null values."
+   }
+  ],
+  "returns": "A wrapped schema that accepts the configured nullish values together with values accepted by the inner schema.",
+  "example": {
+   "title": "Modeling absent, null, and both",
+   "code": "import { z } from \"zod\";\n\nconst profile = z.object({\n  nickname: z.string().optional(),\n  bio: z.string().nullable(),\n  avatarUrl: z.string().nullish(),\n});\n\nprofile.parse({ bio: null });\nprofile.parse({ bio: \"Hello\", avatarUrl: undefined });\n// profile.parse({}); // fails: bio is required\n",
+   "language": "typescript",
+   "explanation": "This object distinguishes an omitted optional field, an explicit null, and a field that permits either null or undefined."
+  },
+  "useCases": [
+   {
+    "title": "Optional configuration",
+    "scenario": "A request field may be left out and should remain undefined when absent."
+   },
+   {
+    "title": "Nullable data",
+    "scenario": "A database-backed field must be present but may intentionally contain null."
+   },
+   {
+    "title": "Nullish patch fields",
+    "scenario": "An update payload accepts either omission or explicit clearing with null."
+   }
+  ],
+  "related": [
+   "z.optional",
+   "z.nullable",
+   "z.nullish",
+   "ZodOptional",
+   "ZodNullable",
+   "exactOptional",
+   "unwrap"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do optional, nullable, and nullish differ?",
+    "answer": "`optional` allows undefined inputs, while `nullable` allows null inputs. `nullish` combines both permissions, so its inferred value can be the inner type, null, or undefined.",
+    "followUp": "What should be used when an object key may be omitted but must reject an explicit undefined? Use exactOptional, assuming TypeScript's exactOptionalPropertyTypes model."
+   },
+   {
+    "question": "What syntax does Zod provide for these wrappers?",
+    "answer": "`z.optional(schema)` and `schema.optional()` create the optional form. Likewise, `z.nullable(schema)` and `schema.nullable()` create the nullable form; the method forms are convenience syntax.",
+    "followUp": "How can the wrapped schema be recovered from a nullable schema? Call its unwrap method, which returns the original inner schema."
+   },
+   {
+    "question": "When is nullish appropriate for an API field?",
+    "answer": "A nullish schema accepts both undefined and null, while still validating ordinary values against its inner schema. It is appropriate when an API treats absence and explicit null as equivalent permitted states.",
+    "followUp": "How would you model a required property whose value may be null but may not be omitted? Use nullable without optional or nullish."
+   }
+  ],
+  "keyPoints": [
+   "Use optional when the wrapped schema should accept undefined.",
+   "Use nullable when the wrapped schema should accept null.",
+   "Use nullish when both undefined and null are valid.",
+   "Nullable creates a wrapper around the original schema rather than replacing its validation.",
+   "The inner schema of a nullable wrapper can be extracted with unwrap."
+  ],
+  "gotchas": [
+   "For object properties, optional does not enforce the distinction between an omitted key and an explicit undefined; use exactOptional when that distinction matters."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Zod foundations::parse and safeParse": {
+  "sourceUrl": "https://zod.dev/basics?id=parsing-data",
+  "sourceTitle": "Basic usage",
+  "summary": "Use parse when validation failure should throw a ZodError; use safeParse when you want a discriminated result with either parsed data or an error. Both validate input against a Zod schema.",
+  "explanation": "A Zod schema can validate unknown input with parse or safeParse. parse returns the typed parsed value and throws ZodError on failure; safeParse avoids exceptions and returns a discriminated result whose success flag determines whether data or error is available.",
+  "syntax": "schema.parse(data: unknown): T\nschema.safeParse(data: unknown): { success: true; data: T } | { success: false; error: ZodError }",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "unknown",
+    "description": "The unknown input value to validate against the schema."
+   }
+  ],
+  "returns": "parse returns the strongly typed parsed value on success and throws ZodError on failure. safeParse returns a discriminated union containing either the parsed data or a ZodError.",
+  "example": {
+   "title": "Choosing parse or safeParse",
+   "code": "import { z } from \"zod\";\n\nconst Player = z.object({\n  username: z.string(),\n  xp: z.number(),\n});\n\nconst input: unknown = { username: \"billie\", xp: \"100\" };\nconst result = Player.safeParse(input);\n\nif (result.success) {\n  console.log(result.data.username);\n} else {\n  console.error(result.error);\n}\n\ntry {\n  const player = Player.parse({ username: \"billie\", xp: 100 });\n  console.log(player.xp);\n} catch (error) {\n  console.error(error);\n}",
+   "language": "typescript",
+   "explanation": "The example uses safeParse for explicit branching and parse where a failed validation should enter exception handling."
+  },
+  "useCases": [
+   {
+    "title": "Exception-based validation",
+    "scenario": "An invalid value should stop normal control flow and be handled by an exception boundary."
+   },
+   {
+    "title": "Result-based validation",
+    "scenario": "Input validity is expected to vary and the caller should branch on success without try/catch."
+   },
+   {
+    "title": "Boundary validation",
+    "scenario": "Parsing request bodies, configuration, or external data where errors need to be displayed or returned."
+   }
+  ],
+  "related": [
+   "parseAsync",
+   "safeParseAsync",
+   "ZodError"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Call schema.parse(input) when invalid input should be represented by a thrown validation error.",
+   "A failed parse raises ZodError, which contains details about the validation issues.",
+   "Use safeParse when the surrounding flow should inspect a result instead of handling an exception.",
+   "safeParse returns a result distinguished by success: true or success: false.",
+   "On failure, access result.error for the ZodError.",
+   "On success, access result.data for the validated, typed value."
+  ],
+  "gotchas": [
+   "parse is exception-based, so callers need appropriate error handling when input may be invalid.",
+   "The successful parse result is a deep clone rather than the original input object.",
+   "safeParse is useful when ordinary branching is preferable to catching validation exceptions."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Zod foundations::parseAsync and safeParseAsync": {
+  "sourceUrl": "https://zod.dev/basics?id=parsing-data",
+  "sourceTitle": "Basic usage | Zod",
+  "summary": "Use parseAsync or safeParseAsync when a Zod schema contains asynchronous refinements or transforms. The former rejects on failure; the latter resolves to a discriminated success/error result.",
+  "explanation": "Both methods run a schema asynchronously and return a promise. Use parseAsync when failure should reject with a ZodError; use safeParseAsync when you want a result object whose success field distinguishes parsed data from an error.",
+  "syntax": "schema.parseAsync(data: unknown): Promise<Output>\nschema.safeParseAsync(data: unknown): Promise<SafeParseResult<Output>>",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "unknown",
+    "description": "The unknown input value to validate and parse."
+   }
+  ],
+  "returns": "parseAsync returns a Promise for the parsed value and rejects with a ZodError on validation failure. safeParseAsync returns a Promise for a discriminated result containing either the parsed data or a ZodError.",
+  "example": {
+   "title": "Safely validate with an async refinement",
+   "code": "import { z } from \"zod\";\n\nconst username = z.string().refine(async (value) => {\n  await Promise.resolve();\n  return value.length <= 8;\n});\n\nconst result = await username.safeParseAsync(\"billie\");\n\nif (result.success) {\n  console.log(result.data);\n} else {\n  console.error(result.error.issues);\n}",
+   "language": "typescript",
+   "explanation": "Runs an asynchronous refinement and handles success or validation failure without try/catch."
+  },
+  "useCases": [
+   {
+    "title": "Async refinement validation",
+    "scenario": "A refinement checks a username against a remote service or other asynchronous dependency."
+   },
+   {
+    "title": "Async transformation",
+    "scenario": "A transform loads or derives a value asynchronously after validation."
+   },
+   {
+    "title": "Result-based error handling",
+    "scenario": "Application code should receive validation failures as data rather than exceptions."
+   }
+  ],
+  "related": [
+   "parse",
+   "safeParse",
+   "refine",
+   "transform",
+   "ZodError"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Choose parseAsync when a refinement or transform performs asynchronous work.",
+   "Await the returned promise to receive the parsed and transformed value.",
+   "The safe parsing pattern avoids exception handling by returning a result object.",
+   "Inspect the result's success discriminator before reading data or the validation error.",
+   "Use safeParseAsync when asynchronous work is present and you prefer result-based error handling."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Zod foundations::Strings and formats": {
+  "sourceUrl": "https://zod.dev/api?ref=doc&id=strings",
+  "sourceTitle": "Defining schemas | Zod",
+  "summary": "Constrain strings with length, pattern, case, substring, and built-in format checks. Use top-level format helpers for supported formats and z.stringFormat() for domain-specific ones.",
+  "explanation": "Start with a string schema, then chain constraints that mirror the domain contract: minimum, maximum, exact length, regular expressions, prefixes, suffixes, substrings, case, or built-in formats. Top-level format helpers such as z.email() and z.uuid() express recognized formats directly; use z.stringFormat() for a custom format.",
+  "syntax": "z.string().min(n).max(n).length(n).regex(pattern).startsWith(prefix).endsWith(suffix).includes(fragment).uppercase().lowercase()\nz.stringFormat(name, validator)",
+  "parameters": [
+   {
+    "name": "n",
+    "type": "number",
+    "description": "Maximum permitted Unicode code-point length."
+   },
+   {
+    "name": "n",
+    "type": "number",
+    "description": "Minimum required Unicode code-point length."
+   },
+   {
+    "name": "n",
+    "type": "number",
+    "description": "Exact required Unicode code-point length."
+   },
+   {
+    "name": "pattern",
+    "type": "RegExp",
+    "description": "Regular expression used to validate the string."
+   },
+   {
+    "name": "name, validator",
+    "type": "string, function | RegExp",
+    "description": "Name and validator used to define a custom string format."
+   }
+  ],
+  "returns": "Zod string schemas that accept strings satisfying every chained constraint; parsing produces the validated string or a validation error.",
+  "example": {
+   "title": "Validate a username",
+   "code": "import { z } from \"zod\";\n\nconst username = z.string()\n  .min(3)\n  .max(20)\n  .regex(/^[a-z0-9_]+$/)\n  .lowercase();\n\nconsole.log(username.parse(\"ada_42\"));",
+   "language": "typescript",
+   "explanation": "Validates a lowercase username with a length range and character pattern."
+  },
+  "useCases": [
+   {
+    "title": "Enforce bounds and allowed characters",
+    "scenario": "Account handles, slugs, and identifiers"
+   },
+   {
+    "title": "Validate supported standard formats",
+    "scenario": "Emails, UUIDs, IP addresses, and ISO values"
+   },
+   {
+    "title": "Define a named custom format",
+    "scenario": "Organization-specific IDs or tokens"
+   },
+   {
+    "title": "Require uppercase or lowercase",
+    "scenario": "Case-sensitive protocol fields"
+   }
+  ],
+  "related": [
+   "z.string",
+   "z.email",
+   "z.uuid",
+   "z.iso.datetime",
+   "z.iso.date",
+   "z.ipv4",
+   "z.ipv6",
+   "z.stringFormat"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you validate a string against length, pattern, and format requirements?",
+    "answer": "Chain string checks such as .min(), .max(), .length(), and .regex() to encode length and pattern requirements. For recognizable formats, use dedicated top-level helpers such as z.email() or z.uuid().",
+    "followUp": "How would you model a format Zod does not provide? Use z.stringFormat() with a validator function or a regular expression, giving the custom format a name."
+   },
+   {
+    "question": "What does Zod count when applying string length constraints?",
+    "answer": "Use .min(n) and .max(n) for bounds, or .length(n) for an exact size. The documented length behavior is based on Unicode code points, not UTF-16 code units.",
+    "followUp": "What Unicode edge case can surprise a developer? A combining mark or a zero-width-joiner sequence may be counted separately, so user-perceived characters need not equal the measured length."
+   },
+   {
+    "question": "Which constraints are available beyond min and max?",
+    "answer": "Built-in constraints include regexes, prefixes, suffixes, substrings, and case checks. For example, .regex() checks a pattern, .startsWith() checks a prefix, and .lowercase() enforces lowercase output.",
+    "followUp": "How can you preserve a domain-specific format in schema metadata? Give it a named z.stringFormat() validator, or use its regex overload when a pattern is sufficient."
+   }
+  ],
+  "keyPoints": [
+   "Use .max(n) to reject strings longer than the contract permits.",
+   "Use .min(n) to require at least a specified number of characters.",
+   "Use .length(n) when the domain requires an exact length.",
+   "Use .regex(pattern) for character-set or structure rules that a simple length bound cannot express.",
+   "Use .startsWith(prefix), .endsWith(suffix), or .includes(fragment) for literal substring constraints.",
+   "Use .uppercase() or .lowercase() when the contract requires a particular case.",
+   "Use z.stringFormat(name, validator) for a named custom format; the validator can be a function or a regular expression."
+  ],
+  "gotchas": [
+   "Length checks count Unicode code points rather than UTF-16 code units; combining marks and joined emoji sequences can therefore count as multiple characters."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Zod foundations::z.infer, z.input and z.output": {
+  "sourceUrl": "https://zod.dev/basics",
+  "sourceTitle": "Basic usage",
+  "summary": "Derive TypeScript types from Zod schemas with `z.infer`. When parsing transforms data, use `z.input` for the accepted type and `z.output` for the produced type; `z.infer` corresponds to the output.",
+  "explanation": "Zod can derive a static TypeScript type from any schema with `z.infer`. When a schema transforms data, its accepted input and parsed output can differ; use `z.input<typeof schema>` for the input side and `z.output<typeof schema>` for the output side. For a transform, `z.infer` is equivalent to the output type.",
+  "syntax": "type Inferred = z.infer<typeof schema>;\ntype Input = z.input<typeof schema>;\ntype Output = z.output<typeof schema>;",
+  "parameters": [
+   {
+    "name": "T",
+    "type": "Zod schema type",
+    "description": "The schema type from which TypeScript should derive a type, commonly supplied as `typeof schema`."
+   }
+  ],
+  "returns": "`z.infer<T>` returns the schema's inferred output type; `z.input<T>` returns its input type; `z.output<T>` returns its output type.",
+  "example": {
+   "title": "Separate accepted and produced types",
+   "code": "import { z } from \"zod\";\n\nconst StringToLength = z.string().transform((value) => value.length);\n\ntype Accepted = z.input<typeof StringToLength>; // string\ntype Produced = z.output<typeof StringToLength>; // number\ntype Inferred = z.infer<typeof StringToLength>; // number\n\nconst length: Produced = StringToLength.parse(\"hello\");\nconsole.log(length);\n",
+   "language": "typescript",
+   "explanation": "The schema accepts a string, transforms it into its length, and produces a number. `z.infer` matches the output type, while `z.input` and `z.output` expose the two sides explicitly."
+  },
+  "useCases": [
+   {
+    "title": "Model parser boundaries",
+    "scenario": "A schema validates and transforms external data before application code uses it."
+   },
+   {
+    "title": "Type API inputs and results",
+    "scenario": "A function receives values before validation and returns values after parsing."
+   },
+   {
+    "title": "Document conversions",
+    "scenario": "A schema uses `.transform()` and the source and destination types must remain explicit."
+   }
+  ],
+  "related": [
+   "z.transform()",
+   "z.preprocess()",
+   "z.parse()",
+   "z.safeParse()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `z.infer` do?",
+    "answer": "`z.infer<typeof schema>` extracts the schema's static TypeScript type. For schemas with transformations, that inferred type represents the parsed output.",
+    "followUp": "How do you type the value before parsing? Use `z.input<typeof schema>`, which extracts the schema's accepted input type."
+   },
+   {
+    "question": "When should `z.input` and `z.output` be used separately?",
+    "answer": "`z.input<typeof schema>` gives the type accepted by the schema, while `z.output<typeof schema>` gives the type produced after parsing. They can differ when APIs such as `.transform()` convert one type into another.",
+    "followUp": "For a string-to-number transform, the input is `string`, the output is `number`, and `z.infer` is also `number`."
+   },
+   {
+    "question": "Why can a schema have different input and output types?",
+    "answer": "A transform can accept one type and return another, so the two sides must be modeled independently. In that situation, `z.infer` is shorthand for the output-side type.",
+    "followUp": "What happens without a transformation? The input and output generally coincide, so all three utilities describe the same effective type."
+   }
+  ],
+  "keyPoints": [
+   "Use `z.infer<typeof schema>` to derive a TypeScript type from a Zod schema.",
+   "The inferred type is a normal TypeScript type that can annotate variables, properties, or function interfaces.",
+   "A transform is the common reason a schema's input and output types diverge.",
+   "Use `z.input<typeof schema>` and `z.output<typeof schema>` when code needs to distinguish pre-parse and post-parse values.",
+   "The input utility is parameterized with the schema type, typically using `typeof schema`, and represents the value supplied to parsing.",
+   "The output utility represents the value returned after parsing and is equivalent to `z.infer` for this purpose."
+  ],
+  "gotchas": [
+   "Do not assume a schema's accepted value and parsed value have the same type; transformations can make them different.",
+   "`z.infer` describes the output type, not the original input type, when the schema transforms values."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

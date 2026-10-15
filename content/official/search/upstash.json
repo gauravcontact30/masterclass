@@ -1,0 +1,1506 @@
+{
+ "Application patterns::Caching": {
+  "sourceUrl": "https://upstash.com/blog/redis-caching-patterns-2026",
+  "sourceTitle": "Redis Caching Patterns: A Practical 2026 TypeScript Guide with Examples",
+  "summary": "Cache responses under keys containing a namespace version and keep the active version in a separate Redis key. Incrementing that counter invalidates the whole namespace without scanning every cached response.",
+  "explanation": "Use a separate version key to build cache keys. Reads consult only the current version, and a version increment retires the entire namespace; a TTL then bounds the lifetime of each populated entry.",
+  "syntax": "const key = `${namespace}:v${version}:${id}`;",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Versioned cache namespace",
+   "code": "async function readProduct(id: string) {\n  const version = (await redis.get<number>(\"product:version\")) ?? 1;\n  const key = `product:v${version}:${id}`;\n  const cached = await redis.get<Product>(key);\n  if (cached !== null) return cached;\n  const row = await db.getProduct(id);\n  await redis.set(key, row, { ex: 300 });\n  return row;\n}\n\nawait redis.incr(\"product:version\");",
+   "language": "typescript",
+   "explanation": "Reads use the current namespace version, while incrementing the shared version makes all previously generated product keys obsolete without scanning them."
+  },
+  "useCases": [
+   {
+    "title": "Bulk invalidation",
+    "scenario": "A product catalog or user-profile cache where many related responses must be retired after one data change."
+   },
+   {
+    "title": "Cache-aside reads",
+    "scenario": "A read-heavy API that can tolerate old entries remaining stored until expiration or eviction."
+   },
+   {
+    "title": "Generation isolation",
+    "scenario": "Deployments or schema changes that require separating newly generated responses from older ones."
+   }
+  ],
+  "related": [
+   "TTL",
+   "cache-aside",
+   "SCAN",
+   "DEL",
+   "INCR",
+   "Redis key namespace"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does versioned-key invalidation work?",
+    "answer": "A versioned key contains a namespace version, such as `product:v3:42`, while a separate key stores the current version. Reads use that current value, so old namespaces are no longer addressed after the counter changes.",
+    "followUp": "Why prefer this over deleting every matching key? Version bumping invalidates the namespace without scanning or deleting each entry individually."
+   },
+   {
+    "question": "What happens to old cache entries after a version bump?",
+    "answer": "Incrementing the version key changes the prefix used by future reads. Existing entries remain physically stored, but they become unreachable through the new namespace and can expire through their TTL.",
+    "followUp": "What operational concern remains? Old entries can still consume capacity until TTL expiry or eviction, so choose an appropriate expiration time."
+   },
+   {
+    "question": "How would you combine versioning with cache-aside and TTLs?",
+    "answer": "The example uses cache-aside: it checks Redis first, loads the database on a miss, and stores the result with a five-minute expiration. The version is read before constructing the cache key.",
+    "followUp": "How could staleness be reduced after a write? Bump the version immediately when the underlying product data changes, then subsequent reads use the new namespace."
+   }
+  ],
+  "keyPoints": [
+   "Keep the namespace counter separately from individual cached values, then include its current value in every generated key.",
+   "Construct keys from a resource prefix, the active version, and the resource identifier so different generations cannot collide.",
+   "A read first checks the versioned Redis key; a non-null result is a cache hit.",
+   "On a miss, retrieve the authoritative record from the database before repopulating the cache.",
+   "Store newly fetched data with an expiration, expressed here as 300 seconds.",
+   "Increment the namespace counter to retire all cache entries belonging to the previous generation."
+  ],
+  "gotchas": [
+   "Version bumping avoids scanning keys during bulk invalidation; increment the namespace counter instead.",
+   "Set a TTL because it both limits stale-data duration and makes the entry a priority for eviction when needed."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Application patterns::Counters and leaderboards": {
+  "sourceUrl": "https://upstash.com/docs/redis/commands/sorted-set/zincrby",
+  "sourceTitle": "ZINCRBY - Upstash Documentation",
+  "summary": "Use ZINCRBY on a sorted set for atomic counters and leaderboards. It updates a member’s score, creates missing members or keys automatically, and keeps the collection ordered for ranking reads.",
+  "explanation": "Store each participant as a member of a sorted set and its score as that member’s numeric score. Apply changes with ZINCRBY, which updates the score atomically and maintains ordering; then use ZRANGE in reverse order to retrieve the leaders without a separate read-modify-write cycle.",
+  "syntax": "ZINCRBY <key> <increment> <member>",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "string",
+    "description": "Redis key targeted by the command."
+   },
+   {
+    "name": "increment",
+    "type": "number",
+    "description": "Amount to add to the member’s score."
+   },
+   {
+    "name": "member",
+    "type": "string",
+    "description": "Member name."
+   }
+  ],
+  "returns": "The new score.",
+  "example": {
+   "title": "Atomic leaderboard updates",
+   "code": "import { Redis } from \"@upstash/redis\";\n\nconst redis = Redis.fromEnv();\n\nawait redis.zincrby(\"scores\", 10, \"ada\");\nawait redis.zincrby(\"scores\", 7, \"linus\");\nawait redis.zincrby(\"scores\", 5, \"grace\");\n\nconst leaderboard = await redis.zrange(\"scores\", 0, 9, {\n  rev: true,\n  withScores: true,\n});\n\nconsole.log(leaderboard);",
+   "language": "typescript",
+   "explanation": "Each score update is atomic, and the sorted set remains ordered so the highest-ranked members can be read directly."
+  },
+  "useCases": [
+   {
+    "title": "Concurrent counters",
+    "scenario": "Track points, votes, or other numeric changes per participant while safely handling concurrent updates."
+   },
+   {
+    "title": "Leaderboards",
+    "scenario": "Maintain a ranked collection whose order changes as member scores change."
+   },
+   {
+    "title": "Score corrections",
+    "scenario": "Adjust a ranking downward by applying a negative score delta."
+   }
+  ],
+  "related": [
+   "ZADD",
+   "ZRANGE",
+   "ZRANK",
+   "ZSCORE",
+   "ZCARD"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does ZINCRBY support a leaderboard?",
+    "answer": "ZINCRBY adds a delta to one member’s score in a sorted set and returns the resulting score. If the member or key does not exist, both are created automatically, so a separate initialization write is unnecessary.",
+    "followUp": "How would you read the top ten? Use ZRANGE with indexes 0 and 9, REV to put the highest scores first, and optionally WITHSCORES."
+   },
+   {
+    "question": "Why prefer ZINCRBY over reading, changing, and writing a score?",
+    "answer": "The operation is atomic, so concurrent score changes do not require an application-side read-modify-write sequence. Because the sorted set remains ordered after the update, the ranking can be read immediately with ZRANGE.",
+    "followUp": "What happens if a score adjustment is negative? The member moves downward because negative increments subtract from its current score."
+   },
+   {
+    "question": "Which command and options retrieve leaderboard entries?",
+    "answer": "ZRANGE reads a range of sorted-set members. Its normal indexes are inclusive and zero-based; REV reverses the ordering, and WITHSCORES includes each member’s score.",
+    "followUp": "How can a large leaderboard be paged? Use LIMIT with a range query; LIMIT requires BYSCORE or BYLEX according to the command documentation."
+   }
+  ],
+  "keyPoints": [
+   "Use ZINCRBY to apply score deltas directly to sorted-set members.",
+   "A first increment both creates a missing member and assigns its initial score.",
+   "A missing sorted-set key is created automatically, eliminating a setup write.",
+   "Atomic updates preserve correctness while the sorted set maintains ranking order.",
+   "ZRANK can be used after an increment to obtain a member’s rank.",
+   "ZRANGE can retrieve the leading entries from the ranking."
+  ],
+  "gotchas": [
+   "Negative increments are valid and reduce a member’s score, so validate deltas when scores must never decrease."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Application patterns::Idempotency keys": {
+  "sourceUrl": "https://upstash.com/docs/qstash/features/at-least-once",
+  "sourceTitle": "At-Least-Once Delivery - Upstash Documentation",
+  "summary": "QStash uses at-least-once delivery, so a message can be delivered more than once. Use its unique Upstash-Message-Id as a persisted idempotency key, or make the operation safe to repeat.",
+  "explanation": "QStash can deliver the same message again when it cannot determine whether a previous attempt completed. The handler can use the unique Upstash-Message-Id header as a durable request key: check whether it was processed, skip duplicates, and record new ids alongside the resulting database change. Alternatively, make the operation itself safe to repeat.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Deduplicate a QStash delivery",
+   "code": "import { Client } from \"@upstash/qstash\";\n\nconst qstash = new Client({ token: process.env.QSTASH_TOKEN! });\n\nexport async function POST(request: Request) {\n  const messageId = request.headers.get(\"Upstash-Message-Id\");\n  if (!messageId) return new Response(\"Missing message id\", { status: 400 });\n\n  const alreadyProcessed = await redis.sismember(\"processed\", messageId);\n  if (alreadyProcessed) return new Response(\"Already processed\");\n\n  await redis.sadd(\"processed\", messageId);\n  await applyBusinessEffect(await request.json());\n  return new Response(\"Processed\");\n}",
+   "language": "typescript",
+   "explanation": "Use QStash's unique message identifier as the request key, check durable state before applying the effect, and skip a message whose identifier is already recorded."
+  },
+  "useCases": [
+   {
+    "title": "Retry-safe webhook processing",
+    "scenario": "A QStash consumer updates a database record and must not apply the update twice after a timeout."
+   },
+   {
+    "title": "Preventing duplicate business effects",
+    "scenario": "A payment, order, or provisioning handler may receive the same message after the first attempt completed."
+   },
+   {
+    "title": "Naturally idempotent commands",
+    "scenario": "A state-setting operation can be repeated without changing its final result."
+   }
+  ],
+  "related": [
+   "At-Least-Once Delivery",
+   "Upstash-Message-Id",
+   "QStash",
+   "idempotent operations"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why are idempotency keys needed with QStash?",
+    "answer": "QStash provides at-least-once delivery, so a message can occasionally arrive again after the endpoint already succeeded. Use the unique Upstash-Message-Id header as the idempotency key, persist it, and skip processing when it is already present.",
+    "followUp": "How can duplicate prevention avoid a race? Perform the existence check and recording atomically in the durable store, ideally in the same transaction or with an atomic conditional write as the effect."
+   },
+   {
+    "question": "How should a consumer use the QStash message id?",
+    "answer": "The handler reads Upstash-Message-Id before doing work. If that identifier is recorded, it returns without repeating the operation; otherwise it records the identifier and applies the effect.",
+    "followUp": "What if recording and applying the effect are separate operations? A crash between them can still create inconsistency, so use a transaction, an outbox-style design, or an operation whose repeated application is harmless."
+   },
+   {
+    "question": "When can an application avoid storing an idempotency key?",
+    "answer": "A separate key is not always required when the operation is inherently idempotent: applying the same operation repeatedly leaves the final state unchanged. This can eliminate the need to store processed identifiers.",
+    "followUp": "Give an example: setting a resource to a target value is generally safer to retry than incrementing a counter, because repeated increments change the result."
+   }
+  ],
+  "keyPoints": [
+   "Design consumers for redelivery rather than assuming every message is delivered exactly once.",
+   "Use the message header as the stable identifier for deduplicating a delivery.",
+   "Keeping the key with the affected record ties deduplication state to the business change.",
+   "A previously recorded identifier means the handler should return without reapplying the operation.",
+   "Making the operation itself repeat-safe is an alternative to maintaining a separate key store."
+  ],
+  "gotchas": [
+   "A successful earlier delivery does not guarantee that a retry will not arrive; duplicate handling remains necessary.",
+   "The duplicate check must happen before applying the business effect."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Application patterns::Locks": {
+  "sourceUrl": "https://upstash.com/blog/lock",
+  "sourceTitle": "Introducing @upstash/lock: Distributed Locking using Upstash Redis",
+  "summary": "Upstash distributed locks serialize access to a named resource across invocations. A time-limited lease prevents a crashed owner from holding the lock indefinitely, while ownership tokens make release safe.",
+  "explanation": "A lock uses an atomic Redis operation to claim a named resource and associates the claim with a unique identifier. The lease adds an expiration so a crashed invocation does not hold the resource forever; release verifies ownership before deleting the lock, preventing an old invocation from releasing a newer owner’s lock.",
+  "syntax": "new Lock({ id, lease }); await lock.acquire(); await lock.release();",
+  "parameters": [
+   {
+    "name": "id",
+    "type": "string",
+    "description": "Identifier for the resource or critical section to protect."
+   },
+   {
+    "name": "lease",
+    "type": "number",
+    "description": "Lease duration in milliseconds; the lock is released after this period if not extended."
+   }
+  ],
+  "returns": "acquire() reports whether the lock was obtained; release() removes the lock only for its owner.",
+  "example": {
+   "title": "Serialize invoice processing",
+   "code": "import { Lock } from \"@upstash/lock\";\n\nconst lock = new Lock({\n  id: \"invoice-123\",\n  lease: 5000,\n});\n\nif (await lock.acquire()) {\n  try {\n    await processInvoice();\n  } finally {\n    await lock.release();\n  }\n}",
+   "language": "typescript",
+   "explanation": "Acquires a five-second lease before processing and releases it after the critical work completes."
+  },
+  "useCases": [
+   {
+    "title": "Serialize background work",
+    "scenario": "Prevent duplicate processing when multiple invocations handle the same job."
+   },
+   {
+    "title": "Protect shared state",
+    "scenario": "Ensure only one client updates a shared resource at a time."
+   },
+   {
+    "title": "Recover from failure",
+    "scenario": "Allow another invocation to continue after the current owner crashes."
+   }
+  ],
+  "related": [
+   "SETNX",
+   "EXPIRE",
+   "DEL",
+   "UUID",
+   "acquire",
+   "release"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use a lock to provide mutual exclusion around work that must not run concurrently.",
+   "Acquisition is atomic: the lock is created only when its key is absent.",
+   "A lease expiration bounds how long a failed invocation can retain the lock.",
+   "Each owner gets a unique token so release and lease extension can verify the caller that acquired the lock.",
+   "Ownership checks prevent a recovered invocation from releasing a newer owner’s lock."
+  ],
+  "gotchas": [
+   "Do not treat this library as a strict consistency guarantee: asynchronous replication can allow multiple clients to acquire a lock during a network failure.",
+   "Releasing by deleting the key without verifying ownership can remove a lock acquired by another invocation after the original lease expired."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Application patterns::Rate limiting": {
+  "sourceUrl": "https://upstash.com/docs/redis/sdks/ratelimit-ts/algorithms",
+  "sourceTitle": "Ratelimiting Algorithms - Upstash Documentation",
+  "summary": "Upstash Ratelimit supports fixed-window, sliding-window, and token-bucket strategies backed by Redis. Choose the algorithm based on whether you need simple bounded intervals, smoother rolling enforcement, or controlled bursts.",
+  "explanation": "The Upstash Ratelimit library stores limiter state in Redis and evaluates a named identifier against a configured algorithm. Fixed windows reset at boundaries, sliding windows smooth decisions across rolling slices, and token buckets consume continuously refilled tokens, rejecting requests when none remain.",
+  "syntax": "new Ratelimit({ redis, limiter });\nRatelimit.fixedWindow(maxRequests, window);\nRatelimit.slidingWindow(maxRequests, window);\nRatelimit.tokenBucket(refillRate, interval, maxTokens);\nawait ratelimit.limit(identifier)",
+  "parameters": [
+   {
+    "name": "identifier",
+    "type": "string",
+    "description": "Identifier used to track and limit a caller, such as a user ID, API key, or IP address."
+   },
+   {
+    "name": "options",
+    "type": "RatelimitOptions",
+    "description": "Limiter configuration supplied when constructing Ratelimit; examples use Redis and a fixed, sliding, or token-bucket limiter."
+   }
+  ],
+  "returns": "The `limit` method returns a result containing whether the request succeeded and rate-limit metadata such as the remaining allowance and reset value.",
+  "example": {
+   "title": "Limit requests with a sliding window",
+   "code": "import { Redis } from \"@upstash/redis\";\nimport { Ratelimit } from \"@upstash/ratelimit\";\n\nconst ratelimit = new Ratelimit({\n  redis: Redis.fromEnv(),\n  limiter: Ratelimit.slidingWindow(10, \"10 s\"),\n});\n\nconst result = await ratelimit.limit(\"user-123\");\nif (!result.success) {\n  return new Response(\"Too many requests\", { status: 429 });\n}\nreturn new Response(\"OK\");",
+   "language": "typescript",
+   "explanation": "Creates a sliding-window limiter backed by Upstash Redis and checks a stable identifier before handling the request."
+  },
+  "useCases": [
+   {
+    "title": "Simple interval quotas",
+    "scenario": "Apply a straightforward quota to API calls grouped into predictable periods."
+   },
+   {
+    "title": "Smoother rolling limits",
+    "scenario": "Smooth request distribution instead of allowing hard-boundary bursts."
+   },
+   {
+    "title": "Burst-tolerant traffic",
+    "scenario": "Permit short bursts while maintaining a sustained refill-controlled rate."
+   }
+  ],
+  "related": [
+   "Ratelimit",
+   "Ratelimit.fixedWindow",
+   "Ratelimit.slidingWindow",
+   "Ratelimit.tokenBucket",
+   "Redis.fromEnv",
+   "limit",
+   "getRemaining",
+   "maxTokens"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does fixed-window rate limiting work?",
+    "answer": "Fixed window counts requests inside discrete, fixed-duration intervals. Its counter resets when the next interval begins, so traffic near a boundary can create bursts across adjacent windows.",
+    "followUp": "When would sliding window be preferable? It is preferable when smoother distribution matters, because it evaluates a rolling window rather than only one fixed interval."
+   },
+   {
+    "question": "What distinguishes sliding-window limiting?",
+    "answer": "Sliding window builds on fixed-window slices but considers the rolling period around the current request. This spreads enforcement more smoothly than resetting one counter at a hard boundary.",
+    "followUp": "Is its reset timestamp exact? No; the documented reset value is the start of the next window, not an exact allowance-restoration time."
+   },
+   {
+    "question": "How does the token-bucket algorithm handle bursts?",
+    "answer": "A token bucket starts with up to maxTokens and refills continuously at a configured rate. Each request removes one token, so the bucket supports controlled bursts while enforcing a long-term refill rate.",
+    "followUp": "How can initial bursts be increased? Set maxTokens higher than the refill amount, which gives the bucket more capacity before sustained traffic is constrained."
+   }
+  ],
+  "keyPoints": [
+   "Fixed-window limiting groups requests into fixed-duration intervals and increments the interval's counter for each request.",
+   "Once the fixed-window counter exceeds its configured limit, the limiter denies the request.",
+   "Sliding-window limiting uses a moving time range, reducing the sharp boundary effect of fixed windows.",
+   "Token-bucket checks consume one token per accepted request.",
+   "Token-bucket configuration specifies capacity, refill quantity, and refill interval.",
+   "Increasing maxTokens lets a token bucket absorb a larger initial burst than its regular refill amount."
+  ],
+  "gotchas": [
+   "For sliding windows, the reported reset value is not an exact moment when the current allowance becomes available; it represents the next window's start.",
+   "Fixed and sliding windows use period boundaries for resets, so requests near a boundary can produce surprising allowance behavior.",
+   "A token-bucket limiter rejects a request when the bucket is empty, even though tokens will refill later."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Application patterns::Session storage": {
+  "sourceUrl": "https://upstash.com/blog/redis-session-storage-nextjs-nodejs",
+  "sourceTitle": "Redis Session Storage in Next.js and Node.js with Upstash Redis",
+  "summary": "Store session data server-side in Upstash Redis and put only a random session ID in the cookie. Give the Redis record a TTL matching the cookie lifetime so abandoned sessions expire automatically.",
+  "explanation": "Store only a random session identifier in the cookie and keep the session data in Upstash Redis. Apply a Redis TTL equal to the cookie lifetime so the server-side record expires when the client session expires; Redis then removes abandoned sessions automatically.",
+  "syntax": "redis.set(`session:${sessionId}`, sessionData, { ex: ttlSeconds })",
+  "parameters": [],
+  "returns": "A session identifier for the cookie on creation; the stored session object or null when looking up an identifier.",
+  "example": {
+   "title": "Store a session with an expiry",
+   "code": "import { Redis } from \"@upstash/redis\";\n\nconst redis = Redis.fromEnv();\nconst SESSION_TTL = 900;\n\nexport async function createSession(userId: string) {\n  const sessionId = crypto.randomUUID();\n  await redis.set(`session:${sessionId}`, { userId }, { ex: SESSION_TTL });\n  return sessionId;\n}\n\nexport async function readSession(sessionId: string) {\n  return redis.get<{ userId: string }>(`session:${sessionId}`);\n}",
+   "language": "typescript",
+   "explanation": "Creates a random session identifier, stores the session server-side with a 15-minute TTL, and retrieves it by identifier."
+  },
+  "useCases": [
+   {
+    "title": "Authenticated web sessions",
+    "scenario": "A user signs in and needs state shared across multiple requests."
+   },
+   {
+    "title": "Sliding expiration",
+    "scenario": "A session should end after inactivity rather than at one fixed deadline."
+   },
+   {
+    "title": "Immediate session revocation",
+    "scenario": "A user explicitly signs out or an administrator disables access."
+   }
+  ],
+  "related": [
+   "session ID",
+   "HttpOnly cookie",
+   "TTL",
+   "sliding expiration",
+   "absolute expiry",
+   "session revocation"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How should a server-side session be represented?",
+    "answer": "Store the session payload in Redis under a random session ID, and put only that ID in an HttpOnly cookie. Set the Redis key's TTL to the cookie's lifetime so both expire together.",
+    "followUp": "How would you support inactivity-based expiry? Refresh the Redis TTL whenever the session is read, creating a sliding expiration window."
+   },
+   {
+    "question": "What happens during login and subsequent requests?",
+    "answer": "On login, generate a fresh random ID, write the session data to Redis with an expiry, and return the ID in the cookie. On later requests, read the cookie and use its value to look up the Redis record.",
+    "followUp": "How do you prevent a pre-login identifier from remaining valid? Rotate to a newly generated session ID after authentication."
+   },
+   {
+    "question": "How should logout and expiration be handled?",
+    "answer": "Logout should delete the Redis key and clear the cookie. An expired Redis key is also removed automatically, so abandoned sessions do not require separate cleanup code.",
+    "followUp": "What security property should the cookie have? Mark it HttpOnly so client-side JavaScript cannot read the session identifier."
+   }
+  ],
+  "keyPoints": [
+   "Use a randomly generated session ID as the cookie value, and mark the cookie HttpOnly.",
+   "Use the session ID as the Redis key or key suffix, and attach a TTL to the stored session data.",
+   "Choose absolute expiry by setting the TTL once, or sliding expiry by extending it whenever the session is read.",
+   "Redis handles removal after the TTL, avoiding a scheduled cleanup job for abandoned sessions.",
+   "Deleting the Redis key immediately revokes the session; the next lookup returns no session."
+  ],
+  "gotchas": [
+   "Set the cookie expiration explicitly; otherwise its lifetime will not match the Redis session lifetime.",
+   "Do not place user data or session fields in the cookie; use an unpredictable identifier instead.",
+   "Always configure an expiry, including for sessions that may never receive a logout request."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Callbacks & lifecycle::blockUntilReady": {
+  "sourceUrl": "https://upstash.com/docs/redis/sdks/ratelimit-ts/methods",
+  "sourceTitle": "Methods - Upstash Documentation",
+  "summary": "Wait for rate-limit capacity instead of rejecting immediately. It retries when the next rate-limit window begins, while the timeout bounds the wait.",
+  "explanation": "blockUntilReady takes an identifier and a millisecond timeout, then returns a promise with the same response shape as limit. If capacity is unavailable, it waits for the next window and retries; the timeout ensures the promise resolves within a finite period.",
+  "syntax": "ratelimit.blockUntilReady(identifier: string, timeout: number): Promise<RatelimitResponse>",
+  "parameters": [
+   {
+    "name": "identifier",
+    "type": "string",
+    "description": "Request or client identifier used by the rate limiter."
+   },
+   {
+    "name": "timeout",
+    "type": "number",
+    "description": "Maximum waiting time before the promise resolves, in milliseconds."
+   }
+  ],
+  "returns": "Promise<RatelimitResponse>",
+  "example": {
+   "title": "Wait for rate-limit capacity",
+   "code": "import { Redis } from \"@upstash/redis\";\nimport { Ratelimit } from \"@upstash/ratelimit\";\n\nconst ratelimit = new Ratelimit({\n  redis: Redis.fromEnv(),\n  limiter: Ratelimit.slidingWindow(10, \"10 s\"),\n});\n\nconst { success } = await ratelimit.blockUntilReady(\"user-123\", 30_000);\n\nif (!success) {\n  throw new Error(\"Request was not allowed before the timeout\");\n}\n\nconsole.log(\"Process the request\");",
+   "language": "typescript",
+   "explanation": "Waits up to 30 seconds for the rate limit window to permit the request, then continues only when successful."
+  },
+  "useCases": [
+   {
+    "title": "Queue briefly under rate limits",
+    "scenario": "A request can tolerate waiting briefly for rate-limit capacity before processing."
+   },
+   {
+    "title": "Bound admission latency",
+    "scenario": "A service needs a hard upper bound on how long rate-limit admission may take."
+   },
+   {
+    "title": "Retry at the next window",
+    "scenario": "Work should begin immediately when the next rate-limit window permits it."
+   }
+  ],
+  "related": [
+   "limit",
+   "RatelimitResponse",
+   "Ratelimit",
+   "slidingWindow"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use this method when requests should wait for available rate-limit capacity instead of being rejected immediately.",
+   "The method accepts a string identifier and a numeric timeout, and returns a promise resolving to a RatelimitResponse.",
+   "Its result follows the same response contract as the limit method.",
+   "When the current window is exhausted, the method waits for the next window before retrying.",
+   "The timeout is measured in milliseconds and bounds how long the returned promise can remain pending.",
+   "The promise resolves when processing becomes allowed or when the configured timeout expires."
+  ],
+  "gotchas": [
+   "Do not rely on this method in Cloudflare Workers: the documentation warns that its timing behavior is not intended to work there."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Callbacks & lifecycle::Client retry configuration": {
+  "sourceUrl": "https://upstash.com/docs/redis/sdks/ts/retries",
+  "sourceTitle": "Retries - Upstash Documentation",
+  "summary": "The Upstash Redis REST client retries network-error requests with exponential backoff by default. Configure the retry count and delay in the `Redis` constructor, or disable client retries with `false`.",
+  "explanation": "The Redis client retries requests that fail because of network errors. Configure the policy in the `Redis` constructor with a retry count and a backoff function; passing `false` disables retries.",
+  "syntax": "new Redis({ url, token, retry: { retries, backoff } })",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "string",
+    "description": "Redis connection URL."
+   },
+   {
+    "name": "token",
+    "type": "string",
+    "description": "Redis authentication token."
+   },
+   {
+    "name": "retry",
+    "type": "object | false",
+    "description": "Retry count and backoff policy, or `false` to disable retries."
+   },
+   {
+    "name": "retry.retries",
+    "type": "number",
+    "description": "Maximum number of client retries."
+   },
+   {
+    "name": "retry.backoff",
+    "type": "(retryCount: number) => number",
+    "description": "Function receiving the retry count and returning the delay in milliseconds."
+   }
+  ],
+  "returns": "A configured `Redis` client; its commands return the normal Upstash Redis command results.",
+  "example": {
+   "title": "Configure Redis client retries",
+   "code": "import { Redis } from \"@upstash/redis\";\n\nconst redis = new Redis({\n  url: process.env.UPSTASH_REDIS_REST_URL!,\n  token: process.env.UPSTASH_REDIS_REST_TOKEN!,\n  retry: {\n    retries: 3,\n    backoff: (retryCount) => Math.exp(retryCount) * 50,\n  },\n});\n\nawait redis.set(\"health\", \"ok\");",
+   "language": "typescript",
+   "explanation": "Creates an Upstash Redis REST client with three retries and an exponential backoff function."
+  },
+  "useCases": [
+   {
+    "title": "Absorb transient network errors",
+    "scenario": "A serverless function calls Redis over the network and should tolerate transient connectivity failures."
+   },
+   {
+    "title": "Disable retries for fast failure",
+    "scenario": "A latency-sensitive endpoint should avoid automatic repeated attempts."
+   },
+   {
+    "title": "Tune caller-side retry policy",
+    "scenario": "An application needs fewer attempts or a bounded custom delay profile."
+   }
+  ],
+  "related": [
+   "Redis",
+   "retry",
+   "retries",
+   "backoff",
+   "@upstash/redis"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the Upstash client retry by default, and what is its default policy?",
+    "answer": "The client retries network-error requests by default. The documented default is five retries, with a backoff of `Math.exp(retry_count) * 50` milliseconds.",
+    "followUp": "How would you prevent these client retries? Pass `false` as the retry configuration."
+   },
+   {
+    "question": "How do you customize retry behavior?",
+    "answer": "Pass a `retry` object to the `Redis` constructor. Its `retries` field controls the count, while `backoff` receives the retry count and returns the delay in milliseconds.",
+    "followUp": "What must change to use a fixed delay? Supply a backoff function that returns the desired constant number of milliseconds."
+   },
+   {
+    "question": "How can retries be disabled, and what scope does that setting have?",
+    "answer": "Use `retry: false` in the constructor to disable client retrying. This affects the SDK's request behavior rather than any server-side delivery policy.",
+    "followUp": "Why distinguish these policies? A caller can stop SDK retries without changing retries configured by a separate Upstash service."
+   }
+  ],
+  "keyPoints": [
+   "The REST client retries requests when network errors occur.",
+   "The default policy allows five retries and uses exponential backoff.",
+   "The default delay function grows exponentially from the retry count and multiplies the result by 50 milliseconds.",
+   "Configure retry behavior in the `Redis` constructor by supplying a retry policy."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Callbacks & lifecycle::QStash callbacks": {
+  "sourceUrl": "https://upstash.com/docs/qstash/features/callbacks",
+  "sourceTitle": "Callbacks - Upstash Documentation",
+  "summary": "QStash callbacks let a published message trigger a normal HTTP request to a callback URL with the destination’s response. A failure callback handles delivery only after all retries are exhausted.",
+  "explanation": "QStash first delivers the published message to its destination and waits for that endpoint’s response. It then creates a new message for the callback URL containing the response; a failure callback is used only when delivery still fails after all retries.",
+  "syntax": "Upstash-Callback: https://example.com/callback\nUpstash-Failure-Callback: https://example.com/failure",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "URL",
+    "description": "Destination endpoint that receives the original published message."
+   },
+   {
+    "name": "Upstash-Callback / callback",
+    "type": "URL",
+    "description": "URL that receives the destination response."
+   },
+   {
+    "name": "Upstash-Failure-Callback / failureCallback",
+    "type": "URL",
+    "description": "URL called when delivery cannot succeed after retries."
+   },
+   {
+    "name": "Upstash-Callback-*",
+    "type": "HTTP headers",
+    "description": "Optional callback request configuration, including method, timeout, retries, and delay."
+   }
+  ],
+  "returns": "The callback receives a JSON object containing the destination response; the failure callback receives failure information when delivery ultimately fails.",
+  "example": {
+   "title": "Publish work with callbacks",
+   "code": "import { Client } from \"@upstash/qstash\";\n\nconst client = new Client({ token: process.env.QSTASH_TOKEN! });\n\nawait client.publishJSON({\n  url: \"https://api.example.com/work\",\n  body: { jobId: \"42\" },\n  callback: \"https://api.example.com/work-callback\",\n  failureCallback: \"https://api.example.com/work-failure\",\n});",
+   "language": "typescript",
+   "explanation": "Publishes work and asks QStash to send the destination response to the callback, or use the failure callback after delivery retries are exhausted."
+  },
+  "useCases": [
+   {
+    "title": "Long-running jobs",
+    "scenario": "A task may exceed the caller’s request duration."
+   },
+   {
+    "title": "Asynchronous result delivery",
+    "scenario": "A service needs the completed destination response asynchronously."
+   },
+   {
+    "title": "Failure handling",
+    "scenario": "An application must record or alert on undeliverable messages."
+   }
+  ],
+  "related": [
+   "Failure callbacks",
+   "Upstash-Callback",
+   "Upstash-Failure-Callback",
+   "Upstash-Callback-Method",
+   "Upstash-Callback-Timeout",
+   "Upstash-Callback-Retries",
+   "Upstash-Callback-Retry-Delay"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use callbacks when the destination may take a long time to finish.",
+   "Attach the callback URL when publishing the message.",
+   "QStash queues the message before sending it to the destination endpoint.",
+   "The destination response is delivered to the callback URL.",
+   "The callback is implemented as a separate QStash message.",
+   "The HTTP API configures callbacks with the Upstash-Callback header.",
+   "Use a failure callback for delivery failures after normal retries are exhausted."
+  ],
+  "gotchas": [
+   "Make the callback handler idempotent because QStash may invoke it repeatedly while retrying.",
+   "The callback and failure-callback values must be valid URLs.",
+   "Callback deliveries incur normal message charges.",
+   "A failure callback is not sent immediately; it runs after delivery retries are exhausted."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Callbacks & lifecycle::QStash failure callbacks": {
+  "sourceUrl": "https://upstash.com/docs/qstash/features/callbacks",
+  "sourceTitle": "Callbacks - Upstash Documentation",
+  "summary": "QStash failure callbacks notify an HTTP endpoint only after delivery has failed through all configured retries. Configure the destination with Upstash-Failure-Callback when publishing a message, avoiding the need to poll a dead-letter queue.",
+  "explanation": "QStash sends the failure callback only after delivery to the destination has failed through every configured retry. Configure the callback with the Upstash-Failure-Callback header or the SDK's failureCallback option; it must be a valid HTTP(S) URL. The callback is itself a message and inherits the original request's retry setting.",
+  "syntax": "Upstash-Failure-Callback: https://example.com/failure",
+  "parameters": [
+   {
+    "name": "Upstash-Failure-Callback / failureCallback",
+    "type": "string",
+    "description": "Destination URL for the endpoint that receives the request after all message-delivery retries are exhausted."
+   },
+   {
+    "name": "Upstash-Retries / retries",
+    "type": "integer",
+    "description": "Number of delivery retries; the failure callback inherits this retry setting."
+   }
+  ],
+  "returns": "QStash sends an HTTP request to the configured failure callback after all delivery retries are exhausted; the callback receives failure-related message data.",
+  "example": {
+   "title": "Publish with a failure callback",
+   "code": "import { Client } from \"@upstash/qstash\";\n\nconst client = new Client({ token: process.env.QSTASH_TOKEN! });\n\nawait client.publishJSON({\n  url: \"https://example.com/process\",\n  body: { jobId: \"job-123\" },\n  retries: 3,\n  failureCallback: \"https://example.com/failures\"\n});",
+   "language": "typescript",
+   "explanation": "Publishes a JSON message and asks QStash to call the failure endpoint after the configured delivery retries are exhausted."
+  },
+  "useCases": [
+   {
+    "title": "Alert on permanently failed delivery",
+    "scenario": "A background job remains unavailable after its retry policy is exhausted."
+   },
+   {
+    "title": "Start failure handling automatically",
+    "scenario": "A service needs to trigger cleanup or compensation after delivery failure."
+   },
+   {
+    "title": "Replace DLQ polling",
+    "scenario": "An operations system should receive failure events without periodically inspecting QStash state."
+   }
+  ],
+  "related": [
+   "Upstash-Retries",
+   "Upstash-Failure-Callback-Forward-*",
+   "retried",
+   "callbackBody",
+   "maxRteries",
+   "dead-letter queue"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When does QStash invoke a failure callback?",
+    "answer": "QStash invokes a failure callback only after the destination still cannot be delivered to when all configured retries have been exhausted. This provides an event-driven alternative to repeatedly checking a dead-letter queue.",
+    "followUp": "How can the callback distinguish retry state? The callback payload exposes retry information, including how many times the message was retried and the configured maximum."
+   },
+   {
+    "question": "What constraints and operational effects apply to the callback URL?",
+    "answer": "The callback URL must use either http:// or https://. QStash treats the callback as a regular message, so it can be retried and incurs message charges.",
+    "followUp": "What retry policy applies? The callback uses the retry setting from the original request rather than a separate callback-specific setting."
+   },
+   {
+    "question": "How do you configure a failure callback?",
+    "answer": "Add the callback destination with the Upstash-Failure-Callback header when publishing the message. In SDK-based code, the equivalent option is failureCallback, as shown in the example.",
+    "followUp": "What if the callback endpoint is also unavailable? Its delivery follows the inherited retry policy, so the endpoint should be idempotent and resilient."
+   }
+  ],
+  "keyPoints": [
+   "QStash waits until every configured delivery retry has failed before sending the failure callback.",
+   "A failure callback can notify your service directly instead of requiring dashboard or dead-letter-queue polling.",
+   "The HTTP publishing interface uses the Upstash-Failure-Callback header to configure the destination.",
+   "The configured callback value must be an absolute valid URL.",
+   "Retry metadata uses a zero-based retried counter, with zero representing the first retry."
+  ],
+  "gotchas": [
+   "The callback creates an additional billable message.",
+   "Use a complete HTTP or HTTPS URL, not a relative path.",
+   "The callback's own delivery retries inherit the original message configuration."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Callbacks & lifecycle::Ratelimit results": {
+  "sourceUrl": "https://upstash.com/docs/redis/sdks/ratelimit-ts/methods",
+  "sourceTitle": "Methods - Upstash Documentation",
+  "summary": "The `limit` call returns the allow/deny decision plus `limit`, `remaining`, and `reset` metadata. These values can be placed in response headers so clients know their allowance and reset boundary.",
+  "explanation": "Calling `limit` returns a promise containing the decision and rate-limit metadata. Use `success` to choose whether the request proceeds, and publish `limit`, `remaining`, and `reset` in response headers so clients can understand the current allowance and reset boundary.",
+  "syntax": "ratelimit.limit(identifier: string, req?: { geo?: Geo; rate?: number; ip?: string; userAgent?: string; country?: string }): Promise<RatelimitResponse>",
+  "parameters": [
+   {
+    "name": "identifier",
+    "type": "string",
+    "description": "The identifier whose rate-limit state is checked."
+   },
+   {
+    "name": "req",
+    "type": "{ geo?: Geo; rate?: number; ip?: string; userAgent?: string; country?: string }",
+    "description": "Optional request context, including geo, rate, IP address, user agent, or country."
+   }
+  ],
+  "returns": "Promise<RatelimitResponse>, containing success, limit, remaining, and reset metadata.",
+  "example": {
+   "title": "Return rate-limit metadata in response headers",
+   "code": "import { Ratelimit } from \"@upstash/ratelimit\";\nimport { Redis } from \"@upstash/redis\";\n\nconst ratelimit = new Ratelimit({\n  redis: Redis.fromEnv(),\n  limiter: Ratelimit.slidingWindow(10, \"1 m\"),\n});\n\nexport async function GET(request: Request) {\n  const identifier = request.headers.get(\"x-user-id\") ?? \"anonymous\";\n  const result = await ratelimit.limit(identifier);\n\n  return new Response(\"OK\", {\n    status: result.success ? 200 : 429,\n    headers: {\n      \"X-RateLimit-Limit\": String(result.limit),\n      \"X-RateLimit-Remaining\": String(result.remaining),\n      \"X-RateLimit-Reset\": String(result.reset),\n    },\n  });\n}",
+   "language": "typescript",
+   "explanation": "Calls the limiter and exposes its limit metadata through standard response headers."
+  },
+  "useCases": [
+   {
+    "title": "Emit rate-limit response headers",
+    "scenario": "An HTTP API needs clients to understand current quota usage."
+   },
+   {
+    "title": "Choose an allow or deny response",
+    "scenario": "A handler must reject requests that exceed the configured policy."
+   },
+   {
+    "title": "Communicate the reset boundary",
+    "scenario": "A client needs timing information before retrying."
+   }
+  ],
+  "related": [
+   "RatelimitResponse",
+   "getRemaining",
+   "resetUsedTokens",
+   "slidingWindow"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the `limit` method return?",
+    "answer": "The method signature is `ratelimit.limit(identifier: string, req?): Promise<RatelimitResponse>`. Its response includes whether the request passed, the configured limit, the remaining requests, and a reset timestamp.",
+    "followUp": "What should an API expose to clients? Return the decision through the status code and publish the limit, remaining, and reset values as response headers."
+   },
+   {
+    "question": "What do `remaining` and `reset` represent?",
+    "answer": "`remaining` reports how many requests are left for the identifier in the current window. `reset` is a Unix timestamp in milliseconds associated with the limit reset boundary.",
+    "followUp": "Is reset always exact? No: for sliding windows, the documentation says it represents the start of the next window rather than an exact reset time."
+   },
+   {
+    "question": "How should an HTTP handler use the result?",
+    "answer": "A caller can use `success` to accept or reject the request, then serialize `limit`, `remaining`, and `reset` into response headers. This lets clients adapt their request rate without exposing implementation details.",
+    "followUp": "Why should the status code and headers be handled separately? The status communicates the immediate decision, while the metadata helps the client schedule future requests."
+   }
+  ],
+  "keyPoints": [
+   "Call `limit` with an identifier to perform the rate-limit check and obtain its result.",
+   "Use `success` as the allow-or-deny decision for the current request.",
+   "The `remaining` field gives the identifier's unused allowance in the active window.",
+   "The `reset` field supplies the reset boundary as a Unix-millisecond timestamp.",
+   "The `limit` field reports the maximum requests permitted by the configured limiter."
+  ],
+  "gotchas": [
+   "For sliding-window limiting, treat `reset` as the start of the next window rather than an exact moment when the current allowance becomes available."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Callbacks & lifecycle::Workflow failure functions": {
+  "sourceUrl": "https://upstash.com/docs/workflow/features/failure-callback",
+  "sourceTitle": "Overview",
+  "summary": "Use failureFunction with serve to run custom code when a workflow run fails after all retries. It receives run context and failure details for cleanup, logging, alerting, or other error handling before DLQ handling.",
+  "explanation": "Attach failureFunction when serving a workflow. Upstash invokes it after the workflow run has exhausted its configured retries, passing the run context and failure details so the handler can log, alert, or clean up. The handler runs once as a callback and cannot add workflow steps through context.",
+  "syntax": "serve(workflowFunction, { failureFunction: async ({ context, failStatus, failResponse, failHeaders }) => { ... } })",
+  "parameters": [
+   {
+    "name": "context",
+    "type": "object",
+    "description": "Workflow context containing workflowRunId, url, requestPayload, headers, and env."
+   },
+   {
+    "name": "failStatus",
+    "type": "number",
+    "description": "HTTP status code returned by the failed workflow step."
+   },
+   {
+    "name": "failResponse",
+    "type": "number",
+    "description": "Response body returned by the failed workflow step."
+   },
+   {
+    "name": "failHeaders",
+    "type": "number",
+    "description": "Response headers returned by the failed workflow step."
+   }
+  ],
+  "returns": "The page notes that failureFunction may optionally return a string; that value is included in workflow logs and is intended for UI display.",
+  "example": {
+   "title": "Log a failed workflow run",
+   "code": "import { serve } from \"@upstash/workflow\";\n\nexport const POST = serve(\n  async (context) => {\n    await context.run(\"process-order\", async () => {\n      throw new Error(\"payment failed\");\n    });\n  },\n  {\n    failureFunction: async ({ context, failStatus, failResponse }) => {\n      console.error(\"Workflow failed\", {\n        runId: context.workflowRunId,\n        status: failStatus,\n        response: failResponse,\n      });\n    },\n  },\n);",
+   "language": "typescript",
+   "explanation": "The endpoint logs the failed run's identifier, HTTP status, and response after the workflow exhausts its retries."
+  },
+  "useCases": [
+   {
+    "title": "Cleanup",
+    "scenario": "A workflow leaves temporary resources behind when a step ultimately fails."
+   },
+   {
+    "title": "Monitoring and alerting",
+    "scenario": "Operations teams need an event with the failed run ID and response details."
+   },
+   {
+    "title": "Application-specific recovery",
+    "scenario": "A business process needs custom compensation or notification logic after retries are exhausted."
+   }
+  ],
+  "related": [
+   "serve",
+   "failureUrl",
+   "context.run",
+   "Dead Letter Queue (DLQ)",
+   "workflowRunId"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When does failureFunction run, and what does it receive?",
+    "answer": "The handler is configured as the failureFunction option passed to serve. Upstash calls it after all configured retries are exhausted and supplies the workflow context plus failure status, response, and headers.",
+    "followUp": "How would you handle failures if the application is completely unavailable? Use failureUrl instead, because it targets a separate endpoint and can operate even when the workflow application is down."
+   },
+   {
+    "question": "What information is available inside the callback?",
+    "answer": "The context exposes workflow-run properties such as workflowRunId, endpoint URL, original payload, headers, and environment variables. The callback also receives failStatus, failResponse, and failHeaders from the failed workflow step.",
+    "followUp": "Can the callback continue the workflow with context.run? No; the context is intended to expose run properties, not define further steps."
+   },
+   {
+    "question": "What are practical uses and failure semantics of the handler?",
+    "answer": "A failureFunction can perform cleanup, logging, alerting, or other custom error handling before the failed run moves to the Dead Letter Queue. It can optionally return a string that appears in workflow logs.",
+    "followUp": "What if the failure function itself fails? It is retried using the workflow run's retry configuration, and exhausted failures can be retried from the DLQ."
+   }
+  ],
+  "keyPoints": [
+   "Configure failureFunction alongside the workflow endpoint to run application-defined handling code.",
+   "Invocation occurs only after the workflow has used all retry attempts.",
+   "Typical responsibilities include resource cleanup, observability, notifications, and bespoke recovery.",
+   "The callback gets both identifying run data and the failure details needed to choose a response.",
+   "Its input is one object containing context, failStatus, failResponse, and failHeaders.",
+   "Use context for run metadata such as the run ID, URL, payload, headers, and environment."
+  ],
+  "gotchas": [
+   "Do not use the supplied context to create additional workflow steps; it is for inspecting the run.",
+   "Secure the failure handler with the same custom authorization scheme, or others may invoke it."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Callbacks & lifecycle::Workflow steps": {
+  "sourceUrl": "https://upstash.com/docs/workflow/steps/run",
+  "sourceTitle": "context.run - Upstash Documentation",
+  "summary": "context.run executes custom business logic as a durable workflow step. Upstash persists its JSON-serializable result, allowing resumed executions to skip completed work and continue with restored outputs.",
+  "explanation": "An Upstash Workflow endpoint can divide business logic into named context.run steps. Each step's JSON-serializable return value is persisted; when the endpoint is invoked again, completed steps are skipped and their stored results are supplied so execution continues with the next step.",
+  "syntax": "context.run(stepFunction)",
+  "parameters": [
+   {
+    "name": "stepFunction",
+    "type": "function",
+    "description": "The business logic to execute inside the workflow step."
+   }
+  ],
+  "returns": "A Promise resolving to the step function's JSON-serializable return value; the value is persisted and restored across requests.",
+  "example": {
+   "title": "Sequential durable steps",
+   "code": "import { serve } from \"@upstash/workflow/nextjs\";\n\nexport const POST = serve(async (context) => {\n  const user = await context.run(\"load-user\", async () => {\n    return { id: \"u_123\", plan: \"pro\" };\n  });\n\n  const message = await context.run(\"build-message\", async () => {\n    return `Welcome ${user.id} (${user.plan})`;\n  });\n\n  return Response.json({ message });\n});",
+   "language": "typescript",
+   "explanation": "Each business operation is isolated in its own durable step, and the later step consumes the earlier step's restored result."
+  },
+  "useCases": [
+   {
+    "title": "Sequential pipelines",
+    "scenario": "A workflow has multiple dependent operations, such as loading data and then transforming it."
+   },
+   {
+    "title": "Parallel work",
+    "scenario": "Independent workflow operations can run concurrently and their outputs are needed together."
+   },
+   {
+    "title": "Resumable processing",
+    "scenario": "A long-running or failure-prone process must continue after an HTTP request ends."
+   },
+   {
+    "title": "Dynamic step generation",
+    "scenario": "A loop creates a sequence of independently checkpointed operations."
+   }
+  ],
+  "related": [
+   "context.call",
+   "context.sleep",
+   "context.sleepFor",
+   "Promise.all",
+   "durable state",
+   "workflow endpoint"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does context.run do?",
+    "answer": "context.run executes custom business logic as a workflow step and returns a Promise. Its return value is JSON-serialized, persisted, and restored across later workflow requests.",
+    "followUp": "What should a step return? Plain JSON-compatible data such as primitives, arrays, and objects; stateful resources such as database connections should not be returned."
+   },
+   {
+    "question": "How does a workflow resume after a request ends?",
+    "answer": "After a step completes, Upstash stores its result in durable state. On a subsequent execution, the completed step is skipped and its stored result is restored, so the workflow continues without repeating that work.",
+    "followUp": "Why isolate logical operations? Each operation gets an independent checkpoint, allowing safe resumption and independent retries."
+   },
+   {
+    "question": "What constraints apply to step identity?",
+    "answer": "The workflow identifies steps using the order of context.run calls and the supplied step names. Names must remain unchanged between retries, and the call order must remain stable.",
+    "followUp": "What happens if several operations share one context.run? The engine cannot resume partway through that grouped logic, so completed sub-operations may be repeated."
+   }
+  ],
+  "keyPoints": [
+   "Put the operation that should be durable inside context.run; code outside it only connects workflow steps.",
+   "Await one step after another for sequential execution, or await multiple promises together for concurrency.",
+   "Step outputs can be passed to later steps when they use JSON-compatible values.",
+   "A completed result survives the endpoint being called again and is available when the workflow resumes.",
+   "Durable state provides the checkpoint that records finished work.",
+   "A resumed request does not rerun steps whose results are already recorded.",
+   "Use one context.run per independently resumable operation.",
+   "A dynamic sequence can progress across requests while each identified step is executed once."
+  ],
+  "gotchas": [
+   "Keep every step name stable across retries; changing a name prevents the engine from matching the stored step result.",
+   "Do not reorder context.run calls between requests, because the workflow uses their order when identifying steps."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Messaging & operation::Dead letter handling": {
+  "sourceUrl": "https://upstash.com/docs/qstash/features/dlq",
+  "sourceTitle": "Dead Letter Queues",
+  "summary": "QStash moves messages to a dead letter queue after their delivery retries are exhausted. You can manually republish or delete those messages from the console.",
+  "explanation": "QStash retries failed message deliveries and, when the configured attempts are exhausted, automatically moves the message to a dead letter queue. Operators can inspect the failed message and either republish it or delete it from the console; a republished message enters normal delivery and retry processing again.",
+  "syntax": "POST https://qstash.upstash.io/v2/publish/{destination}",
+  "parameters": [
+   {
+    "name": "Upstash-Retries",
+    "type": "HTTP header",
+    "description": "Retry count for the published message; set with the Upstash-Retries header."
+   },
+   {
+    "name": "Upstash-Retry-Delay",
+    "type": "HTTP header",
+    "description": "Optional retry delay or backoff override; set with the Upstash-Retry-Delay header."
+   },
+   {
+    "name": "destination",
+    "type": "URL path",
+    "description": "Message destination endpoint."
+   }
+  ],
+  "returns": "No programming-language return value is documented; failed messages are moved to the DLQ for manual handling.",
+  "example": {
+   "title": "Publish a message with retries",
+   "code": "curl -X POST \"https://qstash.upstash.io/v2/publish/https://example.com/api/process\" -H \"Authorization: Bearer $QSTASH_TOKEN\" -H \"Upstash-Retries: 3\" -d '{\"job\":\"email\"}'",
+   "language": "bash",
+   "explanation": "Publishes a message with an explicit retry count; if delivery continues to fail, QStash moves it to the DLQ for manual handling."
+  },
+  "useCases": [
+   {
+    "title": "Isolate persistent delivery failures",
+    "scenario": "A downstream API remains unavailable after automatic retries."
+   },
+   {
+    "title": "Replay after remediation",
+    "scenario": "An operator fixes a consumer bug and wants to send the failed message again."
+   },
+   {
+    "title": "Discard an unrecoverable message",
+    "scenario": "A failed message should not be processed again."
+   }
+  ],
+  "related": [
+   "QStash",
+   "retry",
+   "Upstash-Retries",
+   "Upstash-Retry-Delay",
+   "Upstash-Retried",
+   "Upstash-NonRetryable-Error",
+   "Dead Letter Queue"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When does a message enter the dead letter queue?",
+    "answer": "QStash normally retries a failed delivery three times. After the configured retry attempts are exhausted, it moves the message to the dead letter queue for manual handling.",
+    "followUp": "How can an endpoint prevent further retries? Return status 489 and include Upstash-NonRetryable-Error: true; QStash then forwards the message to the DLQ immediately."
+   },
+   {
+    "question": "What can an operator do with a DLQ message?",
+    "answer": "The console provides Retry and Delete actions. Retry republishes the message and removes it from the DLQ, while Delete removes it without republishing.",
+    "followUp": "What happens after a republish? The message is treated as a new normal delivery and is automatically retried again if delivery fails."
+   },
+   {
+    "question": "How are retries configured before dead-letter handling?",
+    "answer": "The default retry count is three, and the retry count can be changed per message with the Upstash-Retries header. QStash applies a backoff delay between attempts, with each delay capped at one day.",
+    "followUp": "Can retry timing be customized? Yes; Upstash-Retry-Delay can specify the delay, but it cannot exceed the maximum allowed by the default backoff algorithm."
+   }
+  ],
+  "keyPoints": [
+   "QStash starts by retrying deliveries that fail, allowing temporary endpoint or network problems to recover before dead-letter handling occurs.",
+   "Once retries are exhausted, QStash transfers the undelivered message into the DLQ instead of attempting delivery indefinitely.",
+   "The console lets operators republish failed messages after investigating or correcting the underlying problem.",
+   "A republished message resumes ordinary QStash delivery behavior, including automatic retries for subsequent failures.",
+   "The Retry action both sends the message again and removes its current DLQ entry.",
+   "The Delete action permanently removes the selected failed message from the DLQ rather than sending it again."
+  ],
+  "gotchas": [
+   "DLQ entries are temporary: messages disappear automatically when the retention period for the account’s plan expires, so inspection or recovery must happen before that deadline.",
+   "A consumer can intentionally skip remaining retries by returning HTTP 489 together with the documented non-retryable-error header."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Messaging & operation::Observability": {
+  "sourceUrl": "https://upstash.com/docs/redis/howto/metrics-and-charts",
+  "sourceTitle": "Metrics and Charts - Upstash Documentation",
+  "summary": "Upstash Redis observability is available in the Console. It exposes request volume, current-month cost, and latency statistics; Prod Pack adds deeper Insights, including route-level traffic.",
+  "explanation": "Upstash Redis observability is provided in the Console through database metrics and, for Prod Pack databases, the Insights tab. It covers request volume, daily cost, service and command latency, and per-route traffic details.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Console metrics",
+   "code": "// No example: the documentation page does not provide a runnable observability API or command.",
+   "language": "text",
+   "explanation": "The page describes observability through the Upstash Console rather than a code interface."
+  },
+  "useCases": [
+   {
+    "title": "Latency investigation",
+    "scenario": "Diagnose slow Redis operations by comparing mean, maximum, and tail latency statistics."
+   },
+   {
+    "title": "Usage and cost monitoring",
+    "scenario": "Track request growth and spending during the active billing month."
+   },
+   {
+    "title": "Route analysis",
+    "scenario": "Find noisy or failing endpoints using route-level request, traffic, and error data."
+   },
+   {
+    "title": "Execution profiling",
+    "scenario": "Separate command work from request overhead when investigating performance."
+   }
+  ],
+  "related": [
+   "Insights",
+   "Traffic",
+   "Performance",
+   "Limits",
+   "Lua",
+   "Keyspace",
+   "Current Month",
+   "Daily Request"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Where can Redis observability metrics be viewed?",
+    "answer": "The Console exposes metrics on the database list and on an individual database detail page. The documented metrics include current-month cost and daily request totals.",
+    "followUp": "Which latency values are available? The page lists maximum, mean, minimum, 99.9th-percentile, and 99.99th-percentile values."
+   },
+   {
+    "question": "What does the Insights route view show?",
+    "answer": "Insights provides route-level traffic information, including request count, request share, active and total connections, ingress and egress traffic, and errors. It also includes latency and throughput charts.",
+    "followUp": "What plan is required? Insights requires Prod Pack or is included with Enterprise."
+   },
+   {
+    "question": "What is command execution latency?",
+    "answer": "Command execution latency measures the time spent executing the command itself. It excludes parsing, lock waits, disk loads, and writing the response.",
+    "followUp": "How does this differ from service latency? Service latency measures the request interval from reading the request to writing its response for the specified request category."
+   }
+  ],
+  "keyPoints": [
+   "Metrics are available both in the database overview and on an individual database page.",
+   "The current-month metric tracks the database’s accumulated daily cost for the active billing month.",
+   "Daily requests shows request totals for each day across the previous five days.",
+   "Latency can be examined through maximum, mean, minimum, P99.9, and P99.99 statistics.",
+   "Command execution latency isolates command work instead of measuring the whole request lifecycle."
+  ],
+  "gotchas": [
+   "Insights is not available on every plan; it requires Prod Pack or Enterprise.",
+   "The latency chart has a short one-hour window and refreshes every ten seconds."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Messaging & operation::QStash": {
+  "sourceUrl": "https://upstash.com/docs/qstash/api-reference/messages/publish-a-message",
+  "sourceTitle": "Publish a Message - Upstash Documentation",
+  "summary": "QStash publishes HTTP messages to destination URLs, optionally delaying delivery and retrying failures. Headers configure the delay, retry count, and retry backoff.",
+  "explanation": "QStash accepts a message over HTTP and later delivers it to a destination URL. Delivery can be delayed with a duration or timestamp, and failed deliveries are retried; headers control the retry count, retry-delay expression, and delivery delay.",
+  "syntax": "POST https://qstash.upstash.io/v2/publish/{destination}",
+  "parameters": [
+   {
+    "name": "destination",
+    "type": "HTTPS URL",
+    "description": "Destination URL encoded in the publish endpoint path."
+   },
+   {
+    "name": "Upstash-Retries",
+    "type": "integer header",
+    "description": "Number of retries after the initial delivery attempt; defaults to 3."
+   },
+   {
+    "name": "Upstash-Delay",
+    "type": "duration header",
+    "description": "Relative delivery delay, formatted as number plus unit."
+   },
+   {
+    "name": "Upstash-Not-Before",
+    "type": "timestamp header",
+    "description": "Earliest delivery time as a UTC Unix timestamp in seconds."
+   },
+   {
+    "name": "Upstash-Retry-Delay",
+    "type": "string header",
+    "description": "Expression computing the delay after each failed attempt."
+   }
+  ],
+  "returns": "An HTTP publish request queues the message for delivery; the documentation examples do not specify a response schema.",
+  "example": {
+   "title": "Publish a delayed HTTP message",
+   "code": "curl -XPOST \\\n  -H 'Authorization: Bearer XXX' \\\n  -H 'Upstash-Retries: 3' \\\n  -H 'Upstash-Delay: 5m' \\\n  -H 'Content-Type: application/json' \\\n  -d '{\"hello\":\"world\"}' \\\n  'https://qstash.upstash.io/v2/publish/https://example.com'",
+   "language": "bash",
+   "explanation": "Publishes JSON to an HTTPS endpoint, waits five minutes, and permits three retries."
+  },
+  "useCases": [
+   {
+    "title": "Background HTTP jobs",
+    "scenario": "A web request starts work that should run asynchronously after the request returns."
+   },
+   {
+    "title": "Delayed delivery",
+    "scenario": "An operation should run after a controlled waiting period."
+   },
+   {
+    "title": "Resilient webhook delivery",
+    "scenario": "A destination may be temporarily unavailable."
+   },
+   {
+    "title": "Scheduled notifications",
+    "scenario": "A recurring trigger should create messages for an endpoint."
+   }
+  ],
+  "related": [
+   "Upstash-Retries",
+   "Upstash-Retry-Delay",
+   "Upstash-Delay",
+   "Upstash-Not-Before",
+   "exponential backoff",
+   "schedules",
+   "dead letter queue"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does QStash retry failed deliveries?",
+    "answer": "QStash delivers a published HTTP message to the destination URL later. If the destination errors or is unavailable, it retries; the default is three retries, and the total deliveries equal the initial attempt plus the retries.",
+    "followUp": "How would you alter retry timing? Set Upstash-Retry-Delay to a mathematical expression, using retried to calculate the next delay."
+   },
+   {
+    "question": "How can a message be delayed?",
+    "answer": "Use Upstash-Delay for a relative duration such as 5m. Use Upstash-Not-Before with a Unix timestamp in UTC when delivery must not occur before a specific instant.",
+    "followUp": "What happens when delaying a scheduled message? The schedule still triggers normally, but each resulting message waits for its own Upstash-Delay."
+   },
+   {
+    "question": "Which headers control retry behavior?",
+    "answer": "The Upstash-Retries header sets how many retries are allowed, while Upstash-Retry-Delay customizes the interval between attempts. Without a custom expression, QStash uses exponential backoff.",
+    "followUp": "What does retried represent? It is the current retry attempt number, starting at 0 for the first retry."
+   }
+  ],
+  "keyPoints": [
+   "Failed deliveries receive three retries unless the message overrides that setting.",
+   "Upstash-Retry-Delay accepts an expression for controlling the wait between retries.",
+   "Upstash-Not-Before schedules delivery for a specified UTC Unix timestamp."
+  ],
+  "gotchas": [
+   "The retry count is additional to the first delivery, so three retries can produce four total delivery attempts.",
+   "A custom retry delay cannot exceed the default backoff ceiling of one day."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Serverless Redis::Expiry and eviction": {
+  "sourceUrl": "https://upstash.com/docs/redis/features/eviction",
+  "sourceTitle": "Eviction",
+  "summary": "Set TTLs to remove stale keys automatically, and enable eviction when using Upstash Redis as a cache. Without eviction, writes are rejected after the database reaches its maximum size; with it, Upstash prioritizes TTL-bearing keys for random eviction.",
+  "explanation": "Use a TTL to automatically delete data after a defined lifetime. Separately, enable eviction for cache databases so Upstash can remove data when the size limit is reached; without eviction, writes are rejected at the limit. Upstash first samples keys with TTLs and may then remove non-expiring keys if more space is needed.",
+  "syntax": "EXPIRE <key> <seconds> [NX | XX | GT | LT]",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "string",
+    "description": "The key whose lifetime is being set."
+   },
+   {
+    "name": "seconds",
+    "type": "integer",
+    "description": "The lifetime in seconds."
+   },
+   {
+    "name": "condition",
+    "type": "NX | XX | GT | LT",
+    "description": "Optional condition: NX, XX, GT, or LT."
+   }
+  ],
+  "returns": "EXPIRE returns 1 when the expiration is set, and 0 when the key does not exist or the condition is not met.",
+  "example": {
+   "title": "Set and inspect a cache TTL",
+   "code": "import { Redis } from \"@upstash/redis\";\n\nconst redis = Redis.fromEnv();\n\nawait redis.set(\"cache:user:42\", { name: \"Ada\" }, { ex: 300 });\nconsole.log(await redis.ttl(\"cache:user:42\"));",
+   "language": "typescript",
+   "explanation": "This stores a cache value with a five-minute TTL and reads its remaining lifetime."
+  },
+  "useCases": [
+   {
+    "title": "Expire stale cache entries",
+    "scenario": "Short-lived cached responses"
+   },
+   {
+    "title": "Make room automatically with eviction",
+    "scenario": "A cache approaching its configured size limit"
+   },
+   {
+    "title": "Apply expiration only when conditions match",
+    "scenario": "Conditional refreshes where an existing TTL should be preserved"
+   }
+  ],
+  "related": [
+   "EXPIRE",
+   "TTL",
+   "PERSIST",
+   "Eviction",
+   "optimistic-volatile"
+  ],
+  "since": "",
+  "keyPoints": [
+   "EXPIRE assigns a lifetime in seconds and automatically deletes the key afterward.",
+   "Eviction lets Upstash remove older cache entries to make room when the configured size is reached.",
+   "Upstash uses the optimistic-volatile eviction algorithm.",
+   "Eviction samples keys randomly and prioritizes keys that have an expiration.",
+   "A negative EXPIRE duration deletes the key immediately."
+  ],
+  "gotchas": [
+   "Eviction is off by default; a full database rejects writes instead of removing keys.",
+   "Even keys without TTLs can be evicted when expiring keys do not provide enough space.",
+   "Replacing a value with SET removes its existing expiration, so reapply the TTL when needed."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Serverless Redis::Global replication": {
+  "sourceUrl": "https://upstash.com/docs/common/concepts/global-replication",
+  "sourceTitle": "Global Replication - Upstash Documentation",
+  "summary": "Upstash Global Replication keeps copies of a database in selected regions. Writes go through the primary, while reads use the closest replica, improving latency but allowing briefly stale reads during asynchronous propagation.",
+  "explanation": "A Global database has one primary region and one or more read regions. Writes are processed by the primary and then copied asynchronously to read replicas, while reads are served from the geographically closest replica. This lowers read latency, but a nearby replica can briefly return an older value because replication is eventual.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Read after a global write",
+   "code": "import { Redis } from \"@upstash/redis\";\n\nconst redis = Redis.fromEnv();\n\nawait redis.set(\"status\", \"ready\");\nconst status = await redis.get<string>(\"status\");\nconsole.log(status);",
+   "language": "typescript",
+   "explanation": "Writes are handled by the primary, while the read is routed automatically to a nearby replica; shortly after the write, that read can reflect replication lag."
+  },
+  "useCases": [
+   {
+    "title": "Worldwide read-heavy applications",
+    "scenario": "Serve globally distributed user-facing reads with lower latency by placing read regions near major user populations."
+   },
+   {
+    "title": "Latency-sensitive serverless workloads",
+    "scenario": "Keep session, feature-flag, or catalog reads responsive at the edge while tolerating short propagation delays."
+   },
+   {
+    "title": "Evolving regional deployment",
+    "scenario": "Add geographic coverage as traffic changes without taking the database offline."
+   }
+  ],
+  "related": [
+   "Primary Region",
+   "Read Regions",
+   "eventual consistency",
+   "read replicas",
+   "low latency",
+   "high availability"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How are reads and writes routed in a globally replicated Upstash database?",
+    "answer": "Global replication uses a primary region for writes and multiple read regions for copies of the data. Reads are sent to the nearest read region to reduce latency, while writes are processed at the primary and propagated asynchronously.",
+    "followUp": "What consistency trade-off follows? A read can observe stale data while propagation is still in progress, so the system provides eventual rather than immediate global consistency."
+   },
+   {
+    "question": "What consistency should an application expect after a successful write?",
+    "answer": "The database is eventually consistent because a successful write returns after the primary processes it, before asynchronous replication to read regions necessarily completes. A subsequent read may therefore return the previous value from a replica.",
+    "followUp": "When is this acceptable? It fits latency-sensitive reads where brief staleness is tolerable; workflows requiring immediate global freshness should avoid depending on a remote read replica immediately after writing."
+   },
+   {
+    "question": "How should regions be selected?",
+    "answer": "Choose a primary region near the workload that performs most writes, then choose read regions close to users. Requests are automatically served by the closest read replica, improving response time and reducing network latency.",
+    "followUp": "What operational flexibility is available? Regions can be added or removed without downtime, allowing geographic coverage to change as traffic patterns evolve."
+   }
+  ],
+  "keyPoints": [
+   "Every configured region stores a copy, so regional placement improves both access speed and availability.",
+   "Reads are routed automatically rather than requiring application-side region selection.",
+   "The primary region is the write authority for the globally replicated database.",
+   "A completed write is propagated to every configured read region.",
+   "Place the primary near the main write workload to reduce write latency.",
+   "Add read regions near users to optimize geographically distributed read traffic."
+  ],
+  "gotchas": [
+   "A read from a nearby replica may be stale immediately after a write because replication to read regions is asynchronous.",
+   "Do not assume every read comes from the primary; replica selection improves scalability but means freshness is not guaranteed across regions."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Serverless Redis::Pipelines": {
+  "sourceUrl": "https://upstash.com/docs/redis/sdks/ts/pipelining/pipeline-transaction",
+  "sourceTitle": "Pipeline & Transaction",
+  "summary": "Pipelines batch multiple Redis commands into one HTTP request, reducing round trips. They preserve command order but are not atomic.",
+  "explanation": "A pipeline collects several Redis commands locally and submits them together through one HTTP request. The commands execute in their queued order, and exec returns an array containing each command's result in the same order.",
+  "syntax": "const pipeline = redis.pipeline();\npipeline.command(...args);\nconst results = await pipeline.exec();",
+  "parameters": [
+   {
+    "name": "commands",
+    "type": "Redis commands",
+    "description": "Redis command and its arguments, queued on the pipeline before execution."
+   }
+  ],
+  "returns": "exec() returns an array containing the response from each command in the pipeline, in command order.",
+  "example": {
+   "title": "Batch Redis commands",
+   "code": "import { Redis } from \"@upstash/redis\";\n\nconst redis = Redis.fromEnv();\nconst pipeline = redis.pipeline();\npipeline.set(\"visits\", 1);\npipeline.incr(\"visits\");\nconst results = await pipeline.exec();\nconsole.log(results);",
+   "language": "typescript",
+   "explanation": "Creates a pipeline, queues two commands, and executes them in one request."
+  },
+  "useCases": [
+   {
+    "title": "Reduce HTTP round trips",
+    "scenario": "A serverless function needs to update several related keys in one request."
+   },
+   {
+    "title": "Batch ordered commands",
+    "scenario": "An application must issue a sequence of independent reads or writes while preserving their order."
+   },
+   {
+    "title": "Background auto-batching",
+    "scenario": "A client should group commands automatically without explicitly constructing a pipeline."
+   }
+  ],
+  "related": [
+   "Transaction",
+   "redis.pipeline()",
+   "pipeline.exec()",
+   "Auto-Pipelining",
+   "redis.multi()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does a pipeline solve, and how is it used?",
+    "answer": "A pipeline batches multiple Redis commands into one HTTP request, reducing round trips. Create one with redis.pipeline(), add commands, and call exec().",
+    "followUp": "What does exec return? It returns an array whose elements correspond to the commands in the pipeline, in their execution order."
+   },
+   {
+    "question": "Are pipelines atomic?",
+    "answer": "No. A pipeline sends multiple commands together, but it does not make them atomic. Other clients can interleave commands while the pipeline runs.",
+    "followUp": "Which Upstash API should be used for atomic grouping? Use redis.multi() to create a transaction."
+   },
+   {
+    "question": "How are pipeline results represented?",
+    "answer": "The returned array contains one response per queued command, with each response in the same order as its command. TypeScript callers can optionally provide a tuple type to exec for typed results.",
+    "followUp": "What alternative reduces manual batching while retaining ordinary Redis calls? Enable auto-pipelining, which batches commands in the background."
+   }
+  ],
+  "keyPoints": [
+   "A pipeline groups multiple Redis commands into one HTTP request, avoiding a separate network round trip for each command.",
+   "Commands can be queued one after another, and the API also supports fluent chaining.",
+   "Calling exec() returns one result for every queued command.",
+   "Results preserve command order, so each array position maps to the corresponding queued operation.",
+   "Auto-pipelining is available when batching should happen automatically rather than through an explicitly built pipeline."
+  ],
+  "gotchas": [
+   "Pipelines do not provide atomic execution: commands from other clients may run between commands in the batch.",
+   "Use a transaction instead when the group must execute without interleaving."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Serverless Redis::REST and HTTP clients": {
+  "sourceUrl": "https://upstash.com/docs/redis/sdks/ts/overview",
+  "sourceTitle": "Overview",
+  "summary": "@upstash/redis is an HTTP/REST Redis client designed for connectionless use in serverless and edge runtimes. It lets applications call Redis where HTTP works but persistent TCP connections are unsuitable.",
+  "explanation": "The TypeScript client wraps Upstash’s REST API, sending Redis operations over HTTP instead of maintaining a TCP connection. Construct it with the database REST URL and token, then invoke Redis commands such as get; this makes it suitable for runtimes where HTTP is available but persistent sockets are unavailable or undesirable.",
+  "syntax": "new Redis({ url: string, token: string })\nawait redis.get<T>(key: string)",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "string",
+    "description": "The Upstash Redis REST endpoint URL, supplied in the client configuration."
+   },
+   {
+    "name": "token",
+    "type": "string",
+    "description": "The authentication token for the Upstash Redis REST API."
+   },
+   {
+    "name": "key",
+    "type": "string",
+    "description": "The Redis key to retrieve."
+   }
+  ],
+  "returns": "The selected Redis command returns its Redis result; the documented example assigns redis.get(\"key\") to data and logs it.",
+  "example": {
+   "title": "Read a value with the REST client",
+   "code": "import { Redis } from \"@upstash/redis\";\n\nconst redis = new Redis({\n  url: process.env.UPSTASH_REDIS_REST_URL!,\n  token: process.env.UPSTASH_REDIS_REST_TOKEN!,\n});\n\nconst value = await redis.get<string>(\"key\");\nconsole.log(value);",
+   "language": "typescript",
+   "explanation": "Creates an HTTP-based Redis client from REST credentials and retrieves a value without opening a persistent TCP connection."
+  },
+  "useCases": [
+   {
+    "title": "Serverless functions",
+    "scenario": "Run Redis commands from AWS Lambda or another serverless function without managing a persistent connection."
+   },
+   {
+    "title": "Edge runtimes",
+    "scenario": "Access Redis from Cloudflare Workers or Fastly Compute@Edge, where HTTP is the suitable transport."
+   },
+   {
+    "title": "HTTP-first application environments",
+    "scenario": "Use Redis from Next.js, Jamstack, or WebAssembly applications."
+   },
+   {
+    "title": "Client-side applications",
+    "scenario": "Call Redis from a web or mobile client when the REST credentials can be handled securely."
+   }
+  ],
+  "related": [
+   "@upstash/redis",
+   "Upstash REST API",
+   "Serverless functions",
+   "Cloudflare Workers",
+   "Fastly Compute@Edge",
+   "Next.js",
+   "Jamstack",
+   "WebAssembly"
+  ],
+  "since": "",
+  "keyPoints": [
+   "The package provides a Redis client whose transport is Upstash’s REST API.",
+   "Operations do not require a persistent Redis connection.",
+   "AWS Lambda is an intended deployment environment.",
+   "Cloudflare Workers are supported as an edge runtime.",
+   "Fastly Compute@Edge is another documented target environment.",
+   "The client can be used from client-side web and mobile applications when exposing credentials is appropriate."
+  ],
+  "gotchas": [
+   "Use this client when the runtime cannot or should not maintain a persistent Redis connection; it is HTTP-based and connectionless.",
+   "The client is intended for environments that prefer HTTP rather than TCP, so it is not the general choice when TCP is required."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

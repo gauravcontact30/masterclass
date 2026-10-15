@@ -1,0 +1,2483 @@
+{
+ "Development & operation::Environments": {
+  "sourceUrl": "https://www.inngest.com/docs/platform-and-operations/environments-and-branch-deploys",
+  "sourceTitle": "Environments | Branch, Staging & Production - Inngest Docs",
+  "summary": "Inngest environments separate production, shared non-production stages, and branch previews. Each environment isolates its apps, functions, event history, data, and credentials, while event routing uses the selected environment.",
+  "explanation": "Inngest environments isolate applications, functions, event history, logs, and credentials. Production handles live traffic, custom environments suit shared staging or QA, and branch deploys provide isolated previews for code branches; the SDK routes events by the selected environment.",
+  "syntax": "new Inngest({ id: string, env?: string })",
+  "parameters": [
+   {
+    "name": "env",
+    "type": "string",
+    "description": "Environment name used to select the target branch deploy; pass it as the SDK client's `env` value."
+   }
+  ],
+  "returns": "The page does not specify a return value for environment selection or event routing.",
+  "example": {
+   "title": "Send an event to a branch environment",
+   "code": "import { Inngest } from \"inngest\";\n\nconst inngest = new Inngest({\n  id: \"my-app\",\n  env: process.env.INNGEST_ENV,\n});\n\nawait inngest.send({\n  name: \"app/user.created\",\n  data: { userId: \"user_123\" },\n});",
+   "language": "typescript",
+   "explanation": "The SDK client uses the environment value to route the event to the matching branch deploy."
+  },
+  "useCases": [
+   {
+    "title": "Staging and QA",
+    "scenario": "A team needs a shared pre-release space for integration testing and acceptance checks."
+   },
+   {
+    "title": "Branch preview validation",
+    "scenario": "A deployment preview must test background functions without affecting production."
+   },
+   {
+    "title": "Production isolation",
+    "scenario": "Live customer events must remain separate from development and test activity."
+   }
+  ],
+  "related": [
+   "Custom environments",
+   "Branch deploys",
+   "Dev Server",
+   "Event keys",
+   "Signing keys",
+   "INNGEST_ENV",
+   "x-inngest-env"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does an Inngest environment isolate?",
+    "answer": "Environments keep apps, functions, event history, and credentials separate. This prevents test or preview activity from mixing with production data and logs.",
+    "followUp": "How do branch deploys differ from custom environments? Branch deploys are isolated previews for individual code branches, while custom environments are shared non-production stages such as staging, QA, or canary."
+   },
+   {
+    "question": "Which environment type should be used for staging and previews?",
+    "answer": "Production is intended for live traffic. Custom environments are appropriate for shared staging, QA, or canary work, while branch deploys provide isolated previews for non-production branches.",
+    "followUp": "What happens when a branch deploy is first used? Inngest creates it on demand when events are first sent to it or functions are first synced with it."
+   },
+   {
+    "question": "How are events routed to a branch deploy?",
+    "answer": "Set the branch value in the SDK client and use the same value when sending events. The SDK then routes those events to the matching branch deploy.",
+    "followUp": "How would an HTTP-only integration select a branch? It should send the branch name in the `x-inngest-env` request header."
+   }
+  ],
+  "keyPoints": [
+   "An environment is an operational boundary: its applications, functions, history, and credentials are maintained independently.",
+   "Use the production environment for live workloads rather than testing or preview deployments.",
+   "Choose a custom environment when several people or deployments need a shared staging, QA, or canary space.",
+   "Branch deploys provide isolated preview environments tied to code branches.",
+   "Events, runs, and related data remain within the environment that receives them.",
+   "A branch deploy is provisioned lazily when its first event is sent or its functions are synchronized."
+  ],
+  "gotchas": [
+   "Branch deploys use a shared event key, but the SDK environment still must be set so events reach the intended branch.",
+   "When sending events over HTTP instead of the SDK, include the branch name in the `x-inngest-env` header."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Development & operation::Event schemas": {
+  "sourceUrl": "https://www.inngest.com/docs/durable-execution/guides-and-advanced/events-and-triggers/event-payloads-and-schemas",
+  "sourceTitle": "Event payload format - Inngest Docs",
+  "summary": "Event schemas define stable names and payload contracts so Inngest producers and consumers agree on event data. Use eventType() with a runtime schema or staticSchema() to create typed events.",
+  "explanation": "An event schema couples a stable event name with the shape of its data. Define it with eventType(), use a runtime schema such as Zod to validate payloads, and call create() so senders produce data that consumers can safely type-check and process.",
+  "syntax": "eventType(\"event/name\", { schema: z.object({ field: z.string() }) })",
+  "parameters": [
+   {
+    "name": "name",
+    "type": "string",
+    "description": "Event name used to match event triggers."
+   },
+   {
+    "name": "data",
+    "type": "object",
+    "description": "JSON object describing the event and delivered to each run."
+   },
+   {
+    "name": "id",
+    "type": "string",
+    "description": "Optional sender-defined deduplication key."
+   },
+   {
+    "name": "ts",
+    "type": "number",
+    "description": "Optional Unix timestamp in milliseconds; a future value schedules event-triggered functions."
+   }
+  ],
+  "returns": "eventType() returns an event type whose create() method builds a typed event payload for inngest.send(); inngest.send() returns a Promise resolving to an object containing sent event IDs.",
+  "example": {
+   "title": "Send a typed event",
+   "code": "import { eventType, Inngest } from \"inngest\";\nimport { z } from \"zod\";\n\nconst inngest = new Inngest({ id: \"billing-app\" });\n\nconst invoicePaid = eventType(\"billing/invoice.paid\", {\n  schema: z.object({\n    invoiceId: z.string(),\n    customerId: z.string(),\n  }),\n});\n\nawait inngest.send(invoicePaid.create({\n  invoiceId: \"inv_123\",\n  customerId: \"cus_456\",\n}));",
+   "language": "typescript",
+   "explanation": "Define the event name and Zod payload schema once, then create a validated, typed event before sending it."
+  },
+  "useCases": [
+   {
+    "title": "Coordinate independent services",
+    "scenario": "A billing service emits invoice-paid notifications consumed by downstream functions."
+   },
+   {
+    "title": "Share TypeScript event contracts",
+    "scenario": "An application needs compile-time guarantees for custom event payloads."
+   },
+   {
+    "title": "Validate incoming data at runtime",
+    "scenario": "Untrusted or external input must conform to the event shape before processing."
+   },
+   {
+    "title": "Type awaited events",
+    "scenario": "A long-running function pauses until a typed signal arrives."
+   }
+  ],
+  "related": [
+   "eventType()",
+   "staticSchema()",
+   "Inngest",
+   "inngest.send()",
+   "step.waitForEvent()",
+   "function triggers",
+   "Zod"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you define and send a typed event?",
+    "answer": "Use eventType() with a stable event name and a schema describing the payload. Call the resulting event type's create() method before passing the typed event to inngest.send().",
+    "followUp": "How can static checking differ from runtime validation? staticSchema() provides TypeScript checking only, while a runtime schema validates the event data when it is processed."
+   },
+   {
+    "question": "How should an event payload evolve safely?",
+    "answer": "Keep the event name and existing payload fields stable for deployed consumers. Add fields only when older consumers can ignore them; otherwise version the event and coordinate rollout.",
+    "followUp": "Why is adding an optional field safer? Consumers that do not use the field can continue processing the original payload shape without changing their code."
+   },
+   {
+    "question": "What are the essential parts of an Inngest event?",
+    "answer": "The required name identifies which event triggers match, and data is the JSON object delivered to each run describing what happened. Optional id and ts fields can provide deduplication and timestamp or scheduling behavior.",
+    "followUp": "What does a future ts value do? It schedules event-triggered functions to start at that future Unix-millisecond timestamp."
+   }
+  ],
+  "keyPoints": [
+   "Treat the event name and payload shape as a shared contract, allowing producers and consumers to change independently.",
+   "Put the event-specific payload in data; every triggered run receives that JSON object.",
+   "Reuse the declared event type in function triggers so the consumer is connected to the same typed contract.",
+   "The same event type can type an event awaited by a paused function through step.waitForEvent().",
+   "Choose staticSchema() when compile-time TypeScript guarantees are sufficient and runtime validation is unnecessary."
+  ],
+  "gotchas": [
+   "Changing a field's meaning or structure can break deployed consumers; publish a new event version and coordinate sender and consumer rollout.",
+   "A TypeScript type alone does not validate values at runtime; use a runtime schema when incoming data must be checked."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Development & operation::Local dev server": {
+  "sourceUrl": "https://www.inngest.com/docs/local-development",
+  "sourceTitle": "Local Development with the Inngest Dev Server",
+  "summary": "Run Inngest functions locally against real event payloads using the Dev Server, then inspect their execution traces, outputs, and errors before deployment.",
+  "explanation": "Run the Inngest Dev Server alongside your application. Set INNGEST_DEV=1 when starting the app so the SDK sends events to the local server rather than Inngest Cloud. Use the Dev Server UI to invoke a function with JSON, test an event trigger, and inspect the resulting run’s steps, output, errors, and trace.",
+  "syntax": "inngest dev -u <app-serve-url>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Run an app against the Dev Server",
+   "code": "inngest dev -u http://localhost:3000/api/inngest\n# In another terminal:\nINNGEST_DEV=1 npm run dev",
+   "language": "bash",
+   "explanation": "Starts the local Dev Server and runs the app in local-development mode so its functions connect to that server."
+  },
+  "useCases": [
+   {
+    "title": "Pre-deployment testing",
+    "scenario": "Validate a function's steps, waits, retries, and failures without deploying it."
+   },
+   {
+    "title": "Trigger verification",
+    "scenario": "Send a representative JSON event and verify that the configured trigger starts the intended function."
+   },
+   {
+    "title": "Debugging",
+    "scenario": "Inspect a local run's trace, output, and errors while iterating on function code."
+   }
+  ],
+  "related": [
+   "Dev Server",
+   "INNGEST_DEV",
+   "Functions",
+   "Invoke",
+   "Test Event",
+   "Runs",
+   "inngest.send()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you connect local functions to the Inngest Dev Server?",
+    "answer": "Start the app with INNGEST_DEV=1 and run the Dev Server alongside it. The SDK then directs events to the local server rather than Inngest Cloud.",
+    "followUp": "How can a developer verify a triggered execution? Open Runs, select the new run, and inspect its steps, output, errors, and trace."
+   },
+   {
+    "question": "How do you invoke one function locally?",
+    "answer": "In the Dev Server UI, open Functions and choose Invoke. Provide the function's JSON payload to call that function directly.",
+    "followUp": "How would you test event routing instead? Use Test Event and send JSON whose name matches the function trigger."
+   },
+   {
+    "question": "What does the local Dev Server let you inspect?",
+    "answer": "The Dev Server records local events and function runs, allowing developers to examine step behavior, waits, retries, and errors before deployment.",
+    "followUp": "What can be changed before rerunning? Modify the payload or function code, then run the test again."
+   }
+  ],
+  "keyPoints": [
+   "It provides a local execution record for validating durable behavior before deployment.",
+   "Set INNGEST_DEV=1 when launching the application to activate local development mode.",
+   "The Functions view supports direct invocation with a JSON payload.",
+   "The Runs view is where you open the execution created by a test.",
+   "A run exposes its step details, result, failures, and trace for debugging."
+  ],
+  "gotchas": [
+   "Without INNGEST_DEV=1, the app's SDKs do not switch to local event delivery.",
+   "A test event must use the event name configured by the function's trigger."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Development & operation::Observability": {
+  "sourceUrl": "https://www.inngest.com/docs/platform-and-operations/traces",
+  "sourceTitle": "Traces",
+  "summary": "Use run traces to follow every operation in an Inngest execution and pinpoint slow or failed steps. The timeline includes status, timing, retries, queue delays, inputs, outputs, and errors.",
+  "explanation": "A run trace presents the execution as a timeline of spans. It lets you inspect each step, wait, retry, timing, queue delay, inputs, outputs, and errors, making it possible to locate the failed operation without adding instrumentation.",
+  "syntax": "npx inngest-cli@latest api --prod --env production get-function-trace RUN_ID --include-output",
+  "parameters": [
+   {
+    "name": "RUN_ID",
+    "type": "string",
+    "description": "The identifier of the run whose trace should be retrieved."
+   },
+   {
+    "name": "--include-output",
+    "type": "flag",
+    "description": "CLI option that includes step output in the trace response."
+   }
+  ],
+  "returns": "A run trace containing a tree of spans with step status, timing, and—when requested—input and output details.",
+  "example": {
+   "title": "Fetch a run trace",
+   "code": "npx inngest-cli@latest api --prod --env production get-function-trace RUN_ID --include-output",
+   "language": "bash",
+   "explanation": "Fetches a production run trace, including step outputs, so failed work can be identified and inspected."
+  },
+  "useCases": [
+   {
+    "title": "Diagnose a failed run",
+    "scenario": "A production run fails and the offending operation is unclear."
+   },
+   {
+    "title": "Find latency and queue delays",
+    "scenario": "A workflow appears slow even though individual steps seem correct."
+   },
+   {
+    "title": "Analyze retry behavior",
+    "scenario": "A step succeeds only after retries."
+   },
+   {
+    "title": "Debug in the Dev Server",
+    "scenario": "A local workflow needs inspection before deployment."
+   }
+  ],
+  "related": [
+   "Waterfall timeline",
+   "Run trace",
+   "step.run",
+   "step.sleep",
+   "step.waitForEvent",
+   "step.invoke",
+   "Attempt badge",
+   "Dev Server"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does an Inngest trace show?",
+    "answer": "A trace is a run-level timeline containing spans for operations such as step.run, sleeps, waits, and invokes. Selecting a bar exposes timing and step details, including input, output, errors, and attempt number.",
+    "followUp": "How would you distinguish a transient retry from a definitively failed operation? Inspect the attempt badges and statuses: a failed attempt can be followed by a green successful retry, while an exhausted operation remains failed."
+   },
+   {
+    "question": "How do you locate the failing step?",
+    "answer": "Open the run and select the relevant bar in its waterfall timeline. Failed bars are marked red, and the details panel provides the error, input, output, timing, and attempt information needed to isolate the problem.",
+    "followUp": "What additional signal helps identify infrastructure delay rather than slow application code? Compare the step timing with the trace's queue-delay information."
+   },
+   {
+    "question": "How can a run trace be inspected from the CLI?",
+    "answer": "Use the CLI trace command with the run ID and the output option, then inspect the returned span tree for a failed status. Each span corresponds to a step, so filtering failed spans narrows the investigation.",
+    "followUp": "How can the result be made easier to scan in a shell? Pipe the trace response to jq and select spans whose status is FAILED."
+   }
+  ],
+  "keyPoints": [
+   "The trace combines execution timing, queue delay, retry history, and data inspection in one run view.",
+   "Use the waterfall timeline as the starting point for examining the run and choosing an individual operation.",
+   "The timeline distinguishes ordinary work from pauses, event waits, and calls to other functions.",
+   "Status colors provide a quick visual scan: completed work is green, failures red, and cancellations gray.",
+   "Selecting a step reveals the context needed to reproduce or explain its behavior."
+  ],
+  "gotchas": [
+   "No trace setup or instrumentation is required; traces are collected automatically in both the local Dev Server and Cloud dashboard.",
+   "A retry is represented separately, so distinguish the failed attempt from a later successful retry when diagnosing the run.",
+   "The error details view is selected automatically for failed steps, but inspect the other tabs when input or output context is needed."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Development & operation::Replay": {
+  "sourceUrl": "https://www.inngest.com/docs/platform-and-operations/replay-runs-in-bulk?ref=home",
+  "sourceTitle": "Replay runs in bulk",
+  "summary": "Replay recovers many function runs affected by an incident after the fix is deployed. Select the function, incident time range, and statuses in the dashboard, then review and start the bulk replay.",
+  "explanation": "After deploying a fix, open a function in the Inngest dashboard and choose Replay from All actions. Define the replay name, time range, and run statuses, review the selection, then start it; Inngest creates new executions and spreads them over time.",
+  "syntax": "",
+  "parameters": [
+   {
+    "name": "function",
+    "type": "dashboard selection",
+    "description": "Function whose runs should be replayed."
+   },
+   {
+    "name": "time range",
+    "type": "time interval",
+    "description": "Start and end of the incident window."
+   },
+   {
+    "name": "statuses",
+    "type": "status filter",
+    "description": "Run states to include in the selection."
+   },
+   {
+    "name": "replay name",
+    "type": "string",
+    "description": "Human-readable identifier for the replay operation."
+   }
+  ],
+  "returns": "A replay operation that creates new executions for the selected runs and exposes progress until completion.",
+  "example": {
+   "title": "Dashboard replay",
+   "code": "// Replay is started from the Inngest dashboard.\n// No application code or CLI command is required.",
+   "language": "text",
+   "explanation": "The dashboard starts the replay after you choose the function, time range, and statuses."
+  },
+  "useCases": [
+   {
+    "title": "Recover failed runs after a bad deploy",
+    "scenario": "A deployment caused many function runs to fail; after deploying the correction, replay the affected time range and failed status."
+   },
+   {
+    "title": "Repair silently incorrect successful runs",
+    "scenario": "A bug returned incorrect results but runs still succeeded; include successful runs when those executions also need recovery."
+   },
+   {
+    "title": "Recover skipped work",
+    "scenario": "A paused function later needs to process events skipped during the pause; resume it and select the Skipped status."
+   }
+  ],
+  "related": [
+   "Rerun a run",
+   "All actions",
+   "Skipped status",
+   "event retention",
+   "Inngest dashboard"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you replay runs after fixing a production incident?",
+    "answer": "Replay is a dashboard operation for recovering many affected function runs after an incident. After deploying the fix, select a function, time range, and statuses, review the selection, and start the replay.",
+    "followUp": "How does Replay avoid overwhelming the application? It spreads the selected work over time while reporting progress on the replay page."
+   },
+   {
+    "question": "What inputs determine which runs are replayed?",
+    "answer": "Open the function in the dashboard, choose Replay from All actions, name the replay, choose its time range and statuses, review the selection, and start it. Successful runs can be included when they also require recovery.",
+    "followUp": "When might successful runs be selected? When a bug produced an incorrect result without causing the run to fail."
+   },
+   {
+    "question": "What operational risk must you assess before replaying?",
+    "answer": "Replay creates new executions, so completed side effects may occur again. Before starting, inspect what the original runs did and verify that repeated charges, messages, or records are safe.",
+    "followUp": "What should be done for a single affected run? Use the separate Rerun action instead of bulk Replay."
+   }
+  ],
+  "keyPoints": [
+   "Bulk Replay targets affected runs using the function, a time window, and one or more statuses.",
+   "Start the operation from the function's dashboard through All actions and Replay.",
+   "Each replay should receive a descriptive incident-related name for identification.",
+   "Status filters can include failed runs and other statuses that need recovery.",
+   "Inngest throttles the bulk operation over time instead of launching every selected execution at once."
+  ],
+  "gotchas": [
+   "Replay creates new executions rather than restoring the original runs, so downstream side effects may happen again.",
+   "Only retained historical runs are available; the replay window depends on the plan's event-retention policy.",
+   "Use Replay for a selected bulk set, not for recovering a single run."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Development & operation::Serving the handler": {
+  "sourceUrl": "https://www.inngest.com/docs/learn/serving-inngest-functions",
+  "sourceTitle": "Serving Inngest functions",
+  "summary": "Expose Inngest functions by attaching `serve()` to an HTTP route, typically `/api/inngest`. Pass the client and functions so Inngest can discover, invoke, and register them.",
+  "explanation": "Create a framework-specific `serve()` handler and attach it to an HTTP route, normally `/api/inngest`. Pass the Inngest client and the functions to expose. The endpoint lets Inngest read function metadata, invoke runs, and register definitions after deployment; its framework adapter supplies the route-compatible handler.",
+  "syntax": "serve({ client, functions, servePath?, serveOrigin? })",
+  "parameters": [
+   {
+    "name": "client",
+    "type": "Inngest client",
+    "description": "The Inngest client used by the served functions."
+   },
+   {
+    "name": "functions",
+    "type": "InngestFunction[]",
+    "description": "Functions created with `inngest.createFunction()` and exposed through the endpoint."
+   },
+   {
+    "name": "servePath",
+    "type": "string",
+    "description": "Optional path where the serve handler is hosted; `/api/inngest` is recommended."
+   },
+   {
+    "name": "serveOrigin",
+    "type": "string",
+    "description": "Optional origin configuration used when the runtime cannot infer the public serving URL."
+   }
+  ],
+  "returns": "A framework-specific HTTP handler, or route-method handlers, that exposes the configured functions to Inngest.",
+  "example": {
+   "title": "Expose an Inngest function from a Next.js route",
+   "code": "import { serve } from \"inngest/next\";\nimport { inngest } from \"../../../inngest/client\";\nimport { processTask } from \"../../../inngest/functions\";\n\nexport const { GET, POST, PUT } = serve({\n  client: inngest,\n  functions: [processTask],\n});",
+   "language": "typescript",
+   "explanation": "This Next.js App Router route exports the three HTTP methods that let Inngest discover and invoke the listed function."
+  },
+  "useCases": [
+   {
+    "title": "Expose background functions through a framework API route",
+    "scenario": "Web application deployment"
+   },
+   {
+    "title": "Register changed function definitions with Inngest",
+    "scenario": "Automated deployment synchronization"
+   },
+   {
+    "title": "Run the same function-serving pattern on supported frameworks or platforms",
+    "scenario": "Multi-platform hosting"
+   }
+  ],
+  "related": [
+   "inngest.createFunction()",
+   "Inngest client",
+   "signing key",
+   "servePath",
+   "serveOrigin",
+   "Next.js App Router",
+   "Express",
+   "AWS Lambda"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you expose Inngest functions through a web framework?",
+    "answer": "Use the framework-specific `serve` import, pass the Inngest client and an array of functions, then export or register the resulting handler on an HTTP route. The recommended route is `/api/inngest`.",
+    "followUp": "What does the endpoint do for different methods? GET exposes metadata, POST invokes functions, and PUT registers the functions with Inngest using the signing key."
+   },
+   {
+    "question": "What are the HTTP roles of the serve endpoint?",
+    "answer": "The handler exposes one endpoint that supports multiple operations. GET returns function metadata and, in development, a landing page; POST invokes functions using the request body as incoming state; PUT triggers registration.",
+    "followUp": "Why is PUT relevant after deployment? It lets the SDK synchronize the deployed function definitions with Inngest, using the signing key."
+   },
+   {
+    "question": "What belongs in `serve()` configuration?",
+    "answer": "Pass every function that should be available to Inngest in the `functions` array. The array contains functions created with `inngest.createFunction()`, while `client` identifies the Inngest application.",
+    "followUp": "What if the endpoint path is not `/api/inngest`? Set the appropriate serving-path configuration so Inngest can locate the handler instead of relying on the recommended default."
+   }
+  ],
+  "keyPoints": [
+   "Serving means adding an HTTP endpoint in the application rather than running a separate invocation server.",
+   "The route makes the SDK-defined functions discoverable to Inngest.",
+   "`serve()` returns the framework handler that is attached to the router or route module.",
+   "The `functions` option takes the Inngest functions created by `inngest.createFunction()`.",
+   "The HTTP handler supports hosting function code on any platform compatible with the selected framework adapter."
+  ],
+  "gotchas": [
+   "Use `/api/inngest` as the route unless you deliberately configure a different API path, because automated deployments rely on the conventional endpoint.",
+   "The GET behavior's landing page is intended only for development; do not treat it as a production UI.",
+   "If the deployed URL cannot be inferred correctly, configure the serving path or origin explicitly."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Flow control::Batching": {
+  "sourceUrl": "https://www.inngest.com/docs/durable-execution/flow-control/batching",
+  "sourceTitle": "Batch Processing Events - Inngest Docs",
+  "summary": "Batching groups matching events into one Inngest function run so a costly database or API operation can be performed in bulk. A batch finalizes at its configured size, timeout, or the 10 MiB event-data limit.",
+  "explanation": "Batching opens a collection window when the first matching event arrives. Inngest starts one function run when the group reaches maxSize, the timeout expires, or the combined payload reaches the 10 MiB limit; the run receives all collected events in events.",
+  "syntax": "batchEvents: { maxSize, timeout, key?, if? }",
+  "parameters": [
+   {
+    "name": "maxSize",
+    "type": "number",
+    "description": "Maximum number of events collected before starting a run; configured as batchEvents.maxSize."
+   },
+   {
+    "name": "timeout",
+    "type": "duration string",
+    "description": "Maximum time the batch waits before starting; configured as batchEvents.timeout."
+   },
+   {
+    "name": "key",
+    "type": "CEL expression",
+    "description": "Optional Common Expression Language expression that partitions events by its distinct result."
+   },
+   {
+    "name": "if",
+    "type": "CEL expression",
+    "description": "Optional expression restricting which events are batched when it evaluates to true."
+   }
+  ],
+  "returns": "The function receives the collected events through events; the page does not define a required return value.",
+  "example": {
+   "title": "Batch activity events",
+   "code": "import { Inngest } from \"inngest\";\n\nconst inngest = new Inngest({ id: \"billing\" });\n\nexport const bulkWrite = inngest.createFunction(\n  {\n    id: \"bulk-write\",\n    batchEvents: { maxSize: 3, timeout: \"4s\", key: \"event.data.accountId\" },\n  },\n  { event: \"app/activity.created\" },\n  async ({ events }) => {\n    await writeActivitiesInBulk(events);\n    return { count: events.length };\n  },\n);\n\nasync function writeActivitiesInBulk(events: unknown[]) {\n  // Replace with a database or API bulk operation.\n  console.log(`Writing ${events.length} activities`);\n}",
+   "language": "typescript",
+   "explanation": "This function groups matching activity events by account, then receives the completed group through events for one bulk operation."
+  },
+  "useCases": [
+   {
+    "title": "Bulk database writes",
+    "scenario": "Many changes must be persisted efficiently."
+   },
+   {
+    "title": "Bulk API calls",
+    "scenario": "A downstream API supports multi-item requests."
+   },
+   {
+    "title": "Per-account batching",
+    "scenario": "Events should be processed independently for each customer."
+   },
+   {
+    "title": "Invocation reduction",
+    "scenario": "A burst of events should produce fewer function invocations."
+   }
+  ],
+  "related": [
+   "Step concurrency",
+   "idempotency",
+   "rate limiting",
+   "cancellation events",
+   "priority",
+   "Common Expression Language",
+   "Flow control"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When does an Inngest batch run?",
+    "answer": "Batching collects matching events and sends them to one function run as events. A run begins when maxSize, timeout, or the 10 MiB combined-data cap is reached.",
+    "followUp": "How can batches be isolated by tenant? Use the optional key expression; each distinct value receives its own batch."
+   },
+   {
+    "question": "How do you configure batching?",
+    "answer": "Set batchEvents.maxSize and batchEvents.timeout in the function configuration. The timeout bounds how long the batch waits after its first matching event.",
+    "followUp": "What happens if the timeout is longer than the plan permits? The plan's maximum batch timeout limits the effective configuration."
+   },
+   {
+    "question": "How do conditional batching and concurrency interact?",
+    "answer": "The optional if expression filters which events enter the batch. Events for which it is false or cannot produce a boolean result execute immediately instead.",
+    "followUp": "How can execution pressure be controlled after batching? Step concurrency can cap how many batches execute simultaneously."
+   }
+  ],
+  "keyPoints": [
+   "The handler receives the whole group through events, allowing one bulk database or API operation.",
+   "The batching window starts with the first event that satisfies the function's trigger and optional filter.",
+   "Three independent finalization conditions can launch the run.",
+   "Use a CEL expression to partition incoming events into separate batches.",
+   "Events with different key results do not share a batch.",
+   "An account-based key is suitable when bulk work must remain tenant-specific.",
+   "Step concurrency limits the number of finalized batch runs executing at once."
+  ],
+  "gotchas": [
+   "Timeouts or the payload limit can finalize a group before maxSize is reached.",
+   "An if condition does not hold unmatched or non-boolean events for batching.",
+   "Do not configure batching together with the listed flow-control or execution features.",
+   "Plan for the payload limit even when the configured event count and timeout allow larger batches."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Flow control::Concurrency limits": {
+  "sourceUrl": "https://www.inngest.com/docs/functions/concurrency",
+  "sourceTitle": "Concurrency Configuration Reference - Inngest Docs",
+  "summary": "Configure concurrency to cap parallel step execution globally or separately for each key, such as a customer ID. Scope controls whether matching work is limited within a function, environment, or account.",
+  "explanation": "Concurrency is configured on a function to cap simultaneously executing steps. A key expression creates separate queues for distinct values, while scope determines whether the limit applies to the function, environment, or account; account-wide and environment-wide scopes require a key.",
+  "syntax": "concurrency: { limit: number, key?: string, scope?: 'fn' | 'env' | 'account' }",
+  "parameters": [
+   {
+    "name": "limit",
+    "type": "number",
+    "description": "Maximum number of concurrently executing steps."
+   },
+   {
+    "name": "key",
+    "type": "string",
+    "description": "CEL expression whose string result identifies the concurrency queue."
+   },
+   {
+    "name": "scope",
+    "type": "'fn' | 'env' | 'account'",
+    "description": "Concurrency scope: `fn`, `env`, or `account`."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Per-customer account-wide concurrency",
+   "code": "import { inngest } from \"./client\";\n\nexport const processOrder = inngest.createFunction(\n  { id: \"process-order\", concurrency: {\n      limit: 2,\n      key: \"event.data.customer_id\",\n      scope: \"account\",\n    } },\n  { event: \"shop/order.created\" },\n  async ({ event, step }) => {\n    return step.run(\"process\", async () => ({ orderId: event.data.order_id }));\n  },\n);",
+   "language": "typescript",
+   "explanation": "This caps executing steps at two for each customer ID across the account."
+  },
+  "useCases": [
+   {
+    "title": "Protect a shared resource",
+    "scenario": "A downstream API or database has a fixed parallelism budget."
+   },
+   {
+    "title": "Isolate customer workloads",
+    "scenario": "Each customer should receive an independent concurrency allowance."
+   },
+   {
+    "title": "Coordinate account-wide capacity",
+    "scenario": "Several environments must share one keyed capacity ceiling."
+   }
+  ],
+  "related": [
+   "throttle",
+   "debounce",
+   "rateLimit",
+   "step.run",
+   "Common Expression Language (CEL)"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does an Inngest concurrency limit count?",
+    "answer": "It limits concurrently executing steps, not whole function runs. Runs that are sleeping, waiting for events, or paused between steps do not count toward the limit.",
+    "followUp": "How would you isolate capacity by customer?"
+   },
+   {
+    "question": "How do you configure per-customer concurrency?",
+    "answer": "Set a key expression such as `event.data.customer_id`. Each distinct evaluated value receives its own concurrency limit and queue.",
+    "followUp": "How would you share that keyed limit across environments?"
+   },
+   {
+    "question": "How can a concurrency limit be made account-wide?",
+    "answer": "Use `scope: \"account\"` with a key to apply the limit across every environment in the account. The key is required for account scope.",
+    "followUp": "What changes if the scope is omitted?"
+   }
+  ],
+  "keyPoints": [
+   "Add `concurrency` to a function configuration to cap active step parallelism.",
+   "A key partitions the limit by each distinct expression result.",
+   "Scope selects function-, environment-, or account-level sharing.",
+   "Without another scope, the limit applies only to that function.",
+   "Environment scope combines matching keyed runs from the same environment.",
+   "Account scope combines matching keyed runs across environments."
+  ],
+  "gotchas": [
+   "The setting governs active step execution rather than the total number of function runs.",
+   "Sleeping or waiting functions do not consume concurrency slots.",
+   "Environment- and account-scoped limits must define a key.",
+   "The key is an expression, not a JavaScript callback; it must produce a string."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Flow control::Debounce": {
+  "sourceUrl": "https://www.inngest.com/docs/durable-execution/flow-control/debounce",
+  "sourceTitle": "Debounce | Deduplicate Events Over Time - Inngest Docs",
+  "summary": "Collapse a burst of matching events into one function run after a quiet period, using the latest event. An optional key separates independent streams, and timeout bounds how long continuous activity can delay execution.",
+  "explanation": "Debounce postpones a function until its matching event stream has been quiet for the configured period. Each new event resets that wait and replaces the pending input; an optional key creates separate timers for distinct values, while timeout prevents an uninterrupted stream from delaying execution forever.",
+  "syntax": "debounce: { key?: string, period: string, timeout?: string }",
+  "parameters": [
+   {
+    "name": "period",
+    "type": "string",
+    "description": "Required quiet period; TypeScript accepts durations from 1s through 7d (168h)."
+   },
+   {
+    "name": "key",
+    "type": "string",
+    "description": "Optional CEL expression evaluated against each event to create a separate debounce period per value."
+   },
+   {
+    "name": "timeout",
+    "type": "string",
+    "description": "Optional maximum time that incoming events can keep extending the wait."
+   }
+  ],
+  "returns": "One function run using the last event received after the quiet period, or after timeout limits further extension.",
+  "example": {
+   "title": "Debounce document updates",
+   "code": "import { inngest } from \"./client\";\n\nexport const processDocument = inngest.createFunction(\n  {\n    id: \"process-document\",\n    debounce: {\n      key: \"event.data.document_id\",\n      period: \"5s\",\n      timeout: \"30s\",\n    },\n  },\n  { event: \"document/updated\" },\n  async ({ event, step }) => {\n    return step.run(\"process-latest-update\", async () => {\n      return { documentId: event.data.document_id };\n    });\n  },\n);",
+   "language": "typescript",
+   "explanation": "This function waits for five quiet seconds per document, then processes the latest update. A continuous stream is capped at 30 seconds by the timeout."
+  },
+  "useCases": [
+   {
+    "title": "Process only the final edit",
+    "scenario": "A user edits a record repeatedly."
+   },
+   {
+    "title": "Deduplicate bursty webhooks",
+    "scenario": "Several webhook updates arrive for one entity."
+   },
+   {
+    "title": "Bound waiting with timeout",
+    "scenario": "An event stream may remain continuously active."
+   }
+  ],
+  "related": [
+   "batching",
+   "concurrency",
+   "rate limiting",
+   "singleton",
+   "throttling",
+   "Common Expression Language (CEL)"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Inngest debounce do with a burst of events?",
+    "answer": "Debounce starts a quiet-period timer when the first matching event arrives. Every matching event during that period restarts the timer and replaces the pending event, so one run begins only after the period passes without another event.",
+    "followUp": "How would you prevent an endless stream from postponing execution? Configure timeout, which limits how long incoming events may extend the debounce before the function runs with the latest event."
+   },
+   {
+    "question": "How does the debounce key affect grouping?",
+    "answer": "The key is an optional CEL expression evaluated against each event. Each distinct resulting value receives an independent debounce period, which lets unrelated entities settle separately.",
+    "followUp": "What expression could isolate document updates? Use a value such as event.data.document_id so each document has its own timer."
+   },
+   {
+    "question": "What are the main debounce duration constraints and trade-offs?",
+    "answer": "The period is the required quiet interval, and current TypeScript values range from 1 second through 7 days, including equivalent hour notation up to 168 hours. The function starts after that interval elapses without a new matching event.",
+    "followUp": "When should batching be used instead? Use batching when one run needs multiple events; debounce preserves only the latest event and cannot be combined with batching."
+   }
+  ],
+  "keyPoints": [
+   "Use debounce when repeated updates should produce one function run based on the newest state.",
+   "A new event resets the wait rather than creating another pending run for the same key.",
+   "The pending input is overwritten by each later matching event.",
+   "Execution begins after the configured quiet interval and uses the final event.",
+   "A key separates timers by the value produced from each event.",
+   "The documented TypeScript duration range is one second to seven days."
+  ],
+  "gotchas": [
+   "Do not configure debounce and batching on the same function.",
+   "The handler cannot access the earlier events or a collection of all events; it receives only the final event."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Flow control::Fan-out": {
+  "sourceUrl": "https://www.inngest.com/docs/durable-execution/guides-and-advanced/patterns/fan-out",
+  "sourceTitle": "Fan-Out Pattern | One Event, Many Functions - Inngest Docs",
+  "summary": "Fan-out lets one event start many independently running Inngest functions. Each matching function gets its own retries, trace, and recovery, so unrelated work remains decoupled.",
+  "explanation": "Fan-out uses one event with multiple matching function triggers. Inngest creates a separate run for each matching function, allowing each workflow to have its own retries, tracing, and recovery; a failure in one run does not cancel the others.",
+  "syntax": "await inngest.send({ name: \"event/name\", data: { ... } });",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Fan out a signup event",
+   "code": "import { Inngest } from \"inngest\";\n\nconst inngest = new Inngest({ id: \"my-app\" });\n\nexport const welcomeEmail = inngest.createFunction(\n  { id: \"send-welcome-email\" },\n  { event: \"app/user.signed_up\" },\n  async ({ event }) => {\n    await sendWelcomeEmail(event.data.email);\n  },\n);\n\nexport const startTrial = inngest.createFunction(\n  { id: \"start-trial\" },\n  { event: \"app/user.signed_up\" },\n  async ({ event }) => {\n    await createTrial(event.data.userId);\n  },\n);\n\nawait inngest.send({\n  name: \"app/user.signed_up\",\n  data: { userId: \"u_123\", email: \"a@example.com\" },\n});\n\nasync function sendWelcomeEmail(email: string) {}\nasync function createTrial(userId: string) {}",
+   "language": "typescript",
+   "explanation": "Two independently registered functions subscribe to the same event, so one signup starts both workflows."
+  },
+  "useCases": [
+   {
+    "title": "Start separate signup workflows",
+    "scenario": "A user signs up and needs onboarding actions."
+   },
+   {
+    "title": "Distribute work across owners",
+    "scenario": "One business event must reach functions owned by different teams or applications."
+   },
+   {
+    "title": "Run parallel side effects",
+    "scenario": "Several destinations need independent processing and retry behavior."
+   }
+  ],
+  "related": [
+   "event triggers",
+   "step.sendEvent()",
+   "step.invoke()",
+   "Limits",
+   "Flow control"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Inngest implement fan-out?",
+    "answer": "One event is sent, and every registered function whose trigger matches that event starts its own run. The functions therefore remain separate while responding to the same business action.",
+    "followUp": "How would you fan out from inside an existing durable function? Send new events with `step.sendEvent()` so the event emission is recorded as a durable step."
+   },
+   {
+    "question": "What happens when one fan-out function fails?",
+    "answer": "Each matching function has independent retries and tracing. If one function fails, its run can be inspected and recovered without rerunning the other matching function.",
+    "followUp": "What advantage does separating functions provide over multiple steps in one function? Separate functions can have independent concurrency limits as well as independent retry policies."
+   },
+   {
+    "question": "When is the fan-out pattern appropriate?",
+    "answer": "Use one event and several functions when the work has separate owners, retry requirements, or destinations. The functions may even live in different apps and use different language SDKs.",
+    "followUp": "When should a child invocation be preferred? Use `step.invoke()` when the parent needs the child function's result rather than merely starting independent work."
+   }
+  ],
+  "keyPoints": [
+   "A single event can start multiple independent functions without making their success or failure depend on one another.",
+   "Inngest matches the event name against registered triggers and starts every function that subscribes to it.",
+   "Every fan-out branch receives separate retry handling and observability.",
+   "The platform models each matching function as its own durable run.",
+   "A failing branch does not prevent unrelated branches from continuing.",
+   "Recovery can target only the failed branch instead of repeating successful work."
+  ],
+  "gotchas": [
+   "Large fan-outs require checking limits and flow-control settings before selecting event and concurrency behavior.",
+   "Fan-out is not the right shape when the caller must receive a child function's result; use invocation instead."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Flow control::Priority": {
+  "sourceUrl": "https://www.inngest.com/docs/durable-execution/flow-control/priority",
+  "sourceTitle": "Priority | Push Critical Work First - Inngest Docs",
+  "summary": "Prioritize urgent queued runs ahead of routine runs within the same function. Set the priority from event data with a CEL expression that returns a numeric factor.",
+  "explanation": "Priority is configured on a function with a CEL expression that evaluates event data to an integer factor. Positive values move queued runs forward relative to recent queued work, negative values delay eligibility, and zero preserves normal queue behavior; priority affects queued starts rather than interrupting active work.",
+  "syntax": "priority: { run: \"event.data.plan == 'enterprise' ? 180 : 0\" }",
+  "parameters": [
+   {
+    "name": "priority.run",
+    "type": "string",
+    "description": "Optional CEL expression evaluated against the triggering event; it must return an integer priority factor, normally between -600 and 600."
+   }
+  ],
+  "returns": "No return value is documented for the priority configuration; the function run is scheduled according to the evaluated factor.",
+  "example": {
+   "title": "Prioritize enterprise requests",
+   "code": "import { inngest } from \"./client\";\n\nexport const handleRequest = inngest.createFunction(\n  {\n    id: \"handle-request\",\n    priority: { run: \"event.data.plan == 'enterprise' ? 180 : 0\" },\n  },\n  { event: \"request.created\" },\n  async ({ event, step }) => {\n    return step.run(\"process\", async () => ({ id: event.data.id }));\n  },\n);",
+   "language": "typescript",
+   "explanation": "Enterprise requests receive a positive queue factor, while other requests use normal ordering."
+  },
+  "useCases": [
+   {
+    "title": "Elevate urgent customer requests",
+    "scenario": "A customer-facing request must be handled before routine queued work."
+   },
+   {
+    "title": "Prioritize by account plan",
+    "scenario": "Different subscription tiers need different queue treatment."
+   },
+   {
+    "title": "Order work under load",
+    "scenario": "A function has a backlog and limited step capacity."
+   }
+  ],
+  "related": [
+   "Step concurrency",
+   "Batching",
+   "Scheduling primitive",
+   "Flow control"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Inngest priority control?",
+    "answer": "Priority orders queued runs within the same function. The `priority.run` expression is evaluated from the triggering event and returns an integer factor.",
+    "followUp": "What does a factor of 120 mean? It can move a new run ahead of runs queued during the preceding 120 seconds, while those runs remain queued."
+   },
+   {
+    "question": "How do priority factors behave?",
+    "answer": "A positive factor pulls queued work forward, zero keeps normal queue position, and a negative factor delays eligibility. The default range is -600 through 600 seconds.",
+    "followUp": "Does -60 merely lower ranking? No. It prevents the run from starting until 60 seconds after enqueueing, even if the queue is idle."
+   },
+   {
+    "question": "When should priority be combined with other flow controls?",
+    "answer": "Priority is useful when a backlog exists, but available capacity and other flow-control constraints still affect start time. It does not add workers or guarantee immediate execution.",
+    "followUp": "How can ordering become observable under load? Combine priority with Step concurrency or another control that creates a backlog."
+   }
+  ],
+  "keyPoints": [
+   "Priority chooses the next queued run inside one function rather than coordinating ordering across different functions.",
+   "Configure `priority.run` with a CEL expression that reads the triggering event.",
+   "The expression must produce an integer measured as a seconds-based priority factor.",
+   "A factor of 120 can move a new run ahead of work queued within the previous two minutes.",
+   "Zero leaves the run at its ordinary queue position.",
+   "Unless account limits differ, factors are accepted from -600 to 600 seconds."
+  ],
+  "gotchas": [
+   "Priority cannot preempt an executing step, increase capacity, or promise a specific launch time.",
+   "Priority does not reorder sleep periods or waits for incoming events.",
+   "Batching and priority are mutually exclusive for one function.",
+   "Positive priority needs queued competition to have an effect; negative priority imposes a delay even without competing work."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Flow control::Throttling and rate limiting": {
+  "sourceUrl": "https://www.inngest.com/docs/durable-execution/flow-control/throttling",
+  "sourceTitle": "Throttling | Limit Function Throughput - Inngest Docs",
+  "summary": "Throttle Inngest function starts to match a downstream API’s throughput limit. Excess runs are queued and later started as capacity becomes available.",
+  "explanation": "Throttling controls how quickly new function runs start. Configure a start limit and time period; excess runs wait in a FIFO queue and begin as capacity becomes available, optionally with separate capacity per key.",
+  "syntax": "throttle: { limit: number, period: duration, burst?: number, key?: expression }",
+  "parameters": [
+   {
+    "name": "limit",
+    "type": "number",
+    "description": "Maximum number of function runs allowed to start during the period."
+   },
+   {
+    "name": "period",
+    "type": "duration",
+    "description": "Time window for applying the throttle; one second through seven days, with one-second granularity."
+   },
+   {
+    "name": "key",
+    "type": "expression",
+    "description": "Optional expression used to partition throttling capacity by distinct values."
+   },
+   {
+    "name": "burst",
+    "type": "number",
+    "description": "Optional number of additional short-burst run starts above limit."
+   }
+  ],
+  "returns": "A throttled function configuration; queued runs start later when capacity is available.",
+  "example": {
+   "title": "Throttle downstream API calls",
+   "code": "import { inngest } from \"./client\";\n\nexport const syncCustomer = inngest.createFunction(\n  {\n    id: \"sync-customer\",\n    throttle: {\n      limit: 10,\n      period: \"1m\",\n      key: \"event.data.accountId\",\n    },\n  },\n  { event: \"app/customer.sync\" },\n  async ({ event }) => {\n    await fetch(`https://api.example.com/customers/${event.data.customerId}`);\n  },\n);",
+   "language": "typescript",
+   "explanation": "This function queues customer-sync runs and starts at most ten per minute for each account."
+  },
+  "useCases": [
+   {
+    "title": "Match a vendor API quota",
+    "scenario": "A downstream API accepts only a fixed number of requests per time window."
+   },
+   {
+    "title": "Absorb bursts without dropping work",
+    "scenario": "Traffic arrives in bursts but every triggered job must be processed."
+   },
+   {
+    "title": "Partition capacity by key",
+    "scenario": "Each tenant has an independent external-service quota."
+   }
+  ],
+  "related": [
+   "Rate limiting",
+   "Step concurrency",
+   "Flow control",
+   "Queues"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What happens when a throttle has no capacity?",
+    "answer": "Throttling limits how many new function runs can start during a configured period. Runs beyond available capacity remain queued and are started later in FIFO order, so work is preserved.",
+    "followUp": "How would you handle an API limit that applies independently to each customer? Set key to an expression such as event.data.accountId so each distinct key receives its own throttle."
+   },
+   {
+    "question": "What do limit and period configure?",
+    "answer": "Use limit for the number of starts and period for the interval over which that limit applies. The documented period range is one second through seven days with one-second granularity.",
+    "followUp": "When would burst be useful? Use it when a small short-lived spike is acceptable above the sustained limit; the documented maximum during a period is limit plus burst."
+   },
+   {
+    "question": "Does throttling limit every step or request inside a run?",
+    "answer": "Throttling governs new run starts, not steps within an already admitted run. For a cap on executing steps, use Step concurrency instead.",
+    "followUp": "What if excess work may safely be discarded? Choose Rate limiting, which skips excess runs rather than queueing them."
+   }
+  ],
+  "keyPoints": [
+   "Use throttling when work must be retained while matching a downstream service’s permitted throughput.",
+   "Queued runs are drained gradually and in FIFO order rather than being released as one burst.",
+   "Choose a period from one second to seven days, using one-second increments.",
+   "Add an optional key expression when the downstream quota is scoped to a customer, account, API key, or another dimension.",
+   "Use burst to permit temporary extra starts above the sustained limit."
+  ],
+  "gotchas": [
+   "A throttle does not cap concurrent steps after a function run has already started; use step concurrency when execution itself must be bounded.",
+   "Do not substitute rate limiting when every event must be processed: rate limiting discards excess triggers instead of retaining them.",
+   "If burst is configured, include it in the capacity calculation; the effective short-term maximum is limit plus burst."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Functions & steps::Function definition": {
+  "sourceUrl": "https://www.inngest.com/docs/reference/typescript/v4/functions/create",
+  "sourceTitle": "inngest.createFunction() | TypeScript SDK v4 Reference",
+  "summary": "Define an Inngest function with a unique ID, one or more triggers, and a handler. The handler runs when a matching event, schedule, or other trigger occurs.",
+  "explanation": "Inngest wraps ordinary application code with metadata describing its identity and trigger. When a matching event arrives, Inngest invokes the handler with an object containing runtime values such as the event and step API; work can then be placed in retriable steps.",
+  "syntax": "inngest.createFunction({ id: string, triggers: triggerConfig }, handler)",
+  "parameters": [
+   {
+    "name": "id",
+    "type": "string",
+    "description": "A unique, deployment-stable function identifier."
+   },
+   {
+    "name": "triggers",
+    "type": "trigger configuration",
+    "description": "One or more event, schedule, or other invocation triggers."
+   },
+   {
+    "name": "handler",
+    "type": "function",
+    "description": "Code executed when a trigger matches; it receives a single context object."
+   }
+  ],
+  "returns": "A configured Inngest function object suitable for serving and registration.",
+  "example": {
+   "title": "Event-triggered function",
+   "code": "import { inngest } from \"./client\";\n\nexport default inngest.createFunction(\n  {\n    id: \"import-product-images\",\n    triggers: { event: \"shop/product.imported\" },\n  },\n  async ({ event, step }) => {\n    return await step.run(\"copy-images\", async () => {\n      return copyAllImagesToS3(event.data.imageURLs);\n    });\n  },\n);",
+   "language": "typescript",
+   "explanation": "This function has a stable identifier, runs for the specified event, and receives event data and step utilities in its handler."
+  },
+  "useCases": [
+   {
+    "title": "Event-driven jobs",
+    "scenario": "Start background processing when an application event is emitted."
+   },
+   {
+    "title": "Scheduled tasks",
+    "scenario": "Run recurring maintenance or synchronization work."
+   },
+   {
+    "title": "Retriable workflows",
+    "scenario": "Build durable workflows whose operations can retry independently."
+   }
+  ],
+  "related": [
+   "createFunction",
+   "eventType()",
+   "cron()",
+   "step.run()",
+   "step.sleep()",
+   "step.sleepUntil()",
+   "step.invoke()",
+   "step.waitForEvent()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What are the essential parts of an Inngest function definition?",
+    "answer": "Use `createFunction` with an options object containing `id` and `triggers`, followed by an async handler. The ID uniquely identifies the function, while the trigger determines when it runs.",
+    "followUp": "What should remain stable when deploying a revised implementation? The function ID should remain unchanged so the deployed function keeps its identity."
+   },
+   {
+    "question": "What does the trigger do?",
+    "answer": "The trigger describes the event, schedule, or other condition that starts the function. For an event trigger, the event name identifies which emitted event invokes the handler.",
+    "followUp": "How can one function respond to more than one trigger? Supply multiple triggers using the supported trigger configuration rather than duplicating the handler."
+   },
+   {
+    "question": "What does the function handler receive?",
+    "answer": "The handler is the application code executed after the trigger matches. It receives one object argument that can include `event`, `step`, `runId`, `logger`, and `attempt`.",
+    "followUp": "Where should retryable work go? Put the operation inside `step.run()` so Inngest can retry it independently and memoize its result."
+   }
+  ],
+  "keyPoints": [
+   "Call `createFunction` on an Inngest client to declare the function.",
+   "The required `id` gives the function a unique identity in Inngest.",
+   "The `triggers` setting specifies one or more conditions that can invoke the function.",
+   "An event trigger names the event whose arrival starts the function run.",
+   "The handler contains the application logic executed for each matching trigger.",
+   "The handler commonly uses `event` for input data and `step` for durable operations."
+  ],
+  "gotchas": [
+   "Keep the function ID stable across deployments; changing it can make Inngest treat the function as a different function.",
+   "The handler receives one object argument, not separate positional arguments."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Functions & steps::Step memoization": {
+  "sourceUrl": "https://www.inngest.com/docs/durable-execution/durable-workflows",
+  "sourceTitle": "Durable Workflows | How Inngest Functions Run",
+  "summary": "Inngest memoizes completed steps and reuses their saved results when a function replays. Keep side effects and non-deterministic work inside steps because code outside steps can execute again.",
+  "explanation": "Inngest replays a function handler to resume durable work, but completed step callbacks are skipped and their saved results are returned. Code outside a step may execute again, so database writes, API calls, and other non-deterministic side effects belong inside named steps.",
+  "syntax": "await step.run(\"step-id\", async () => { /* work */ });",
+  "parameters": [],
+  "returns": "A completed step returns its saved result on replay; the handler returns its normal function result.",
+  "example": {
+   "title": "Memoize side effects with steps",
+   "code": "import { Inngest } from \"inngest\";\n\nconst inngest = new Inngest({ id: \"memoization-example\" });\n\nexport const processOrder = inngest.createFunction(\n  { id: \"process-order\" },\n  { event: \"shop/order.created\" },\n  async ({ event, step }) => {\n    const order = await step.run(\"load-order\", async () => {\n      return await fetch(`https://api.example.com/orders/${event.data.id}`).then((r) => r.json());\n    });\n\n    await step.run(\"record-order\", async () => {\n      await fetch(\"https://api.example.com/processed\", {\n        method: \"POST\",\n        body: JSON.stringify(order),\n        headers: { \"content-type\": \"application/json\" },\n      });\n    });\n\n    return order;\n  },\n);",
+   "language": "typescript",
+   "explanation": "The external calls are inside named steps, so completed results can be reused when the function replays."
+  },
+  "useCases": [
+   {
+    "title": "Protect side effects",
+    "scenario": "An API request or database operation must not repeat after a retry."
+   },
+   {
+    "title": "Resume from checkpoints",
+    "scenario": "A long-running function resumes after waiting or a later failure."
+   },
+   {
+    "title": "Continue across deployments",
+    "scenario": "A workflow is deployed while existing runs are still in progress."
+   }
+  ],
+  "related": [
+   "step.run()",
+   "step.invoke()",
+   "step.waitForEvent()",
+   "step.sendEvent()",
+   "Inngest functions",
+   "Durable execution"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Each step needs a stable identifier so Inngest can associate its saved result with later replays.",
+   "Give every step an ID; this is the key used for durable state and memoization.",
+   "Wrap external effects and durable control-flow operations in step methods."
+  ],
+  "gotchas": [
+   "Do not place non-deterministic work outside a step; replay can execute it again.",
+   "Database and API operations outside step.run() are not protected by memoization.",
+   "Only successful step results are reused; failed steps can be retried."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Functions & steps::step.run": {
+  "sourceUrl": "https://www.inngest.com/docs/reference/typescript/functions/step-run",
+  "sourceTitle": "Run",
+  "summary": "step.run() executes synchronous or asynchronous work as a retriable Inngest step. Its successful return value is stored and reused, so completed work is not run again during later retries.",
+  "explanation": "Call step.run with a stable step ID and a synchronous or asynchronous handler. Inngest executes the handler, retries it when it throws according to the function configuration, serializes its returned value, and reuses the saved result instead of invoking the completed step again.",
+  "syntax": "step.run(id, handler): Promise",
+  "parameters": [
+   {
+    "name": "id",
+    "type": "string",
+    "description": "Step identifier shown in function logs and used to memoize step state across function versions."
+   },
+   {
+    "name": "handler",
+    "type": "() => T | Promise<T>",
+    "description": "Synchronous function, async function, or Promise-returning function containing the work to execute and retry."
+   }
+  ],
+  "returns": "Promise<T> resolving to the handler's return value; returned data is serialized as JSON.",
+  "example": {
+   "title": "Checkpoint order work with step.run",
+   "code": "import { Inngest } from \"inngest\";\n\nconst inngest = new Inngest({ id: \"demo\" });\n\nexport const processOrder = inngest.createFunction(\n  { id: \"process-order\" },\n  { event: \"shop/order.created\" },\n  async ({ event, step }) => {\n    const order = await step.run(\"load-order\", async () => {\n      return { id: event.data.orderId, loaded: true };\n    });\n\n    await step.run(\"save-order\", () => {\n      console.log(\"Saving\", order.id);\n    });\n\n    return order;\n  },\n);",
+   "language": "typescript",
+   "explanation": "Each callback is executed as a retriable step; successful return values are serialized and reused on later function attempts."
+  },
+  "useCases": [
+   {
+    "title": "Durable side effects",
+    "scenario": "An external API call or database operation must be retried without repeating already completed workflow work."
+   },
+   {
+    "title": "Isolate retryable work",
+    "scenario": "A function has multiple independent operations and a later operation can fail."
+   },
+   {
+    "title": "Pass checkpointed results",
+    "scenario": "A later step needs data produced by earlier work."
+   }
+  ],
+  "related": [
+   "Inngest functions",
+   "retry configuration",
+   "Promise",
+   "handler function",
+   "step state",
+   "function logs"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does step.run do?",
+    "answer": "step.run(id, handler) returns a Promise that resolves to the handler's return value. The handler may be synchronous, async, or return a Promise; if it throws, the step is retried according to the function's retry configuration.",
+    "followUp": "What happens after a later step fails? The completed step's serialized result can be returned again, so its handler does not need to run again."
+   },
+   {
+    "question": "What are the arguments to step.run?",
+    "answer": "The first argument identifies the step. It appears in function logs and is used to memoize step state across function versions, while the handler contains the work to execute and retry.",
+    "followUp": "Why should the ID remain stable? Changing it can prevent the SDK from matching the saved step state to the intended work."
+   },
+   {
+    "question": "How are retries scoped?",
+    "answer": "Every step.run call has an independent retry counter. A thrown handler error causes that particular step to retry using the function's retry configuration, rather than consuming a shared pool for all steps.",
+    "followUp": "How should a workflow isolate failures? Put independently retryable work in separate step.run calls so a failed later operation does not require earlier completed work to execute again."
+   }
+  ],
+  "keyPoints": [
+   "Use step.run to place synchronous or asynchronous work inside a retriable function step.",
+   "Await the returned Promise when subsequent code needs the handler's result.",
+   "A handler exception marks the step as failed and triggers retry behavior.",
+   "The first argument is the step ID; use a distinct ID for each logical unit of work.",
+   "Retries are independently counted for every step.run invocation.",
+   "The step result crosses a JSON serialization boundary before being returned by the SDK."
+  ],
+  "gotchas": [
+   "Return values must be JSON-serializable; richer runtime objects may not survive the step boundary as expected.",
+   "Retry limits are tracked per step, so configure expectations for each call rather than treating retries as one function-wide budget.",
+   "Choose stable, meaningful IDs because the ID is both observable in logs and part of memoization across function versions."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Functions & steps::step.sleep and sleepUntil": {
+  "sourceUrl": "https://www.inngest.com/docs/features/inngest-functions/steps-workflows/sleeps?ref=homepage-durable-execution",
+  "sourceTitle": "Sleeping in Inngest Functions | step.sleep() & step.sleepUntil() - Inngest Docs",
+  "summary": "step.sleep pauses an Inngest run for a relative duration, while step.sleepUntil pauses it until a chosen date and time. Inngest suspends the run without holding a function process and resumes it durably.",
+  "explanation": "Both methods create durable pauses inside an Inngest function: sleep waits for a specified duration, while sleepUntil waits for a chosen date and time. Inngest suspends the run without retaining the function process, then invokes the function again and continues from the completed step state.",
+  "syntax": "await step.sleep(id, duration);\nawait step.sleepUntil(id, datetime);",
+  "parameters": [
+   {
+    "name": "id",
+    "type": "string",
+    "description": "A stable identifier for the step, used in logs and step-state memoization."
+   },
+   {
+    "name": "duration",
+    "type": "string",
+    "description": "The relative wait, such as 30m, 3h, or 2d."
+   },
+   {
+    "name": "datetime",
+    "type": "Date | string",
+    "description": "The target date and time; use a Date or timezone-aware ISO 8601 string."
+   }
+  ],
+  "returns": "Promise<void>",
+  "example": {
+   "title": "Pause by duration and timestamp",
+   "code": "import { inngest } from \"./client\";\n\nexport const remind = inngest.createFunction(\n  { id: \"send-reminder\" },\n  { event: \"reminder/scheduled\" },\n  async ({ event, step }) => {\n    await step.sleep(\"wait-before-send\", \"30m\");\n    await step.sleepUntil(\"wait-for-time\", event.data.remindAt);\n    return { userId: event.data.userId };\n  },\n);",
+   "language": "typescript",
+   "explanation": "Waits first for a duration, then until the timestamp supplied by the event."
+  },
+  "useCases": [
+   {
+    "title": "Relative delay",
+    "scenario": "A reminder should be sent a fixed interval after an event."
+   },
+   {
+    "title": "Calendar-time execution",
+    "scenario": "A trial, deadline, or scheduled reminder has a known timestamp."
+   },
+   {
+    "title": "Durable long-running workflow",
+    "scenario": "A long wait must survive serverless limits, restarts, or redeploys."
+   }
+  ],
+  "related": [
+   "step.waitForEvent",
+   "step.run",
+   "event.ts"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between step.sleep and step.sleepUntil?",
+    "answer": "step.sleep pauses for a relative duration such as 30 minutes, while step.sleepUntil pauses until a specified date and time. Both let Inngest resume the run without keeping the function process running.",
+    "followUp": "Which method fits an event containing a deadline? Use step.sleepUntil with the event's timestamp or date value."
+   },
+   {
+    "question": "How should these steps be called safely?",
+    "answer": "The function should await the call. A stable step ID identifies the durable step, and the duration can use values such as 30m, 3h, or 2d.",
+    "followUp": "What should be checked when using a timestamp? Validate it and include an explicit timezone."
+   },
+   {
+    "question": "What happens to the function while it is sleeping?",
+    "answer": "During the wait, the run uses no compute and does not count against step concurrency. The wait also survives server restarts and redeploys; Inngest resumes the function using saved step state.",
+    "followUp": "What alternative should be used when an external event, rather than time, should resume the run? Use step.waitForEvent."
+   }
+  ],
+  "keyPoints": [
+   "Use step.sleep when the delay is relative to the point where the function reaches the step.",
+   "Use step.sleepUntil when execution should resume at a specific calendar moment.",
+   "The host does not need to keep a process alive during the pause.",
+   "Durable scheduling preserves the pause across infrastructure changes.",
+   "Sleeping runs do not consume step-concurrency capacity while waiting.",
+   "On resumption, completed work is skipped through persisted step state."
+  ],
+  "gotchas": [
+   "Use sleepUntil for a target date or timestamp rather than calculating a duration.",
+   "Provide an explicit timezone-aware date value to avoid interpreting the scheduled time in an unintended local timezone.",
+   "Await either method so the function properly registers and performs the durable pause.",
+   "Individual sleeps have a one-year maximum, and the complete run must also fit the plan's maximum run length."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Functions & steps::step.waitForEvent": {
+  "sourceUrl": "https://www.inngest.com/docs/durable-execution/primitives/step-waitforevent",
+  "sourceTitle": "step.waitForEvent() | Pause Until an Event - Inngest Docs",
+  "summary": "Suspends a durable function run until a specified event matches or the timeout expires. It returns the received event, or null when no matching event arrives in time.",
+  "explanation": "The step creates a durable pause: Inngest stops keeping the function process running, listens for the named event, and resumes the run when a matching event arrives. The optional match field correlates events through a shared property; when the timeout elapses without a match, the returned value is null.",
+  "syntax": "const event = await step.waitForEvent(id, { event, timeout, match });",
+  "parameters": [
+   {
+    "name": "id",
+    "type": "string",
+    "description": "Stable identifier for the step."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Options configuring the wait."
+   },
+   {
+    "name": "options.event",
+    "type": "string",
+    "description": "Event name to wait for."
+   },
+   {
+    "name": "options.timeout",
+    "type": "string",
+    "description": "Maximum duration to wait, such as \"7d\"."
+   },
+   {
+    "name": "options.match",
+    "type": "string",
+    "description": "Optional dot-notation field shared by the triggering and awaited events."
+   }
+  ],
+  "returns": "Promise<null | EventPayload>; resolves with the matching event or null when the timeout expires.",
+  "example": {
+   "title": "Wait for a matching approval event",
+   "code": "import { Inngest } from \"inngest\";\n\nconst inngest = new Inngest({ id: \"billing\" });\n\nexport default inngest.createFunction(\n  { id: \"wait-for-approval\", trigger: { event: \"app/invoice.created\" } },\n  async ({ event, step }) => {\n    const approval = await step.waitForEvent(\"wait-for-approval\", {\n      event: \"app/invoice.approved\",\n      timeout: \"7d\",\n      match: \"data.invoiceId\",\n    });\n\n    return { approved: approval !== null };\n  },\n);",
+   "language": "typescript",
+   "explanation": "Waits up to seven days for an approval event whose invoice ID matches the triggering event."
+  },
+  "useCases": [
+   {
+    "title": "Human approval",
+    "scenario": "An invoice workflow waits for an approval event correlated by invoice ID."
+   },
+   {
+    "title": "Cross-function coordination",
+    "scenario": "A function pauses until another function emits a completion event."
+   },
+   {
+    "title": "Delayed user action",
+    "scenario": "A workflow gives a user several days to take a follow-up action."
+   }
+  ],
+  "related": [
+   "step.run",
+   "step.sleep",
+   "step.sendEvent",
+   "if"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does step.waitForEvent do?",
+    "answer": "It pauses a durable function run until the configured event arrives or the timeout expires. The function process does not remain running during the wait, and the result is the matching event or null after timeout.",
+    "followUp": "How would you correlate the response to the original request? Use match with a shared dot-notation field, such as data.invoiceId; for more complex conditions, use if."
+   },
+   {
+    "question": "What are its main arguments and return value?",
+    "answer": "The signature is step.waitForEvent(id, { event, timeout, match }). The ID identifies the step, event names the event to receive, timeout limits the wait, and match optionally correlates a shared field.",
+    "followUp": "What happens when no event arrives? The promise resolves to null when the timeout expires, so the function can branch accordingly."
+   },
+   {
+    "question": "What implementation details commonly cause incorrect behavior?",
+    "answer": "Call it with await or another Promise handler so the function sleeps correctly. A stable step ID is also required for the step's durable identity and state handling.",
+    "followUp": "When should match be replaced? Use an if expression when a simple shared property is insufficient for the required event condition."
+   }
+  ],
+  "keyPoints": [
+   "The run remains suspended until the specified event matches or the timeout ends.",
+   "The wait is durable and does not occupy an active function process.",
+   "The call accepts a stable ID and an options object containing event, timeout, and optional match settings.",
+   "Use a stable step ID so the wait has consistent durable identity.",
+   "Timeouts use human-readable duration strings such as 7d.",
+   "match correlates the incoming event with the original event through a shared field path.",
+   "The result is the matching event payload, or null when waiting ends without a match."
+  ],
+  "gotchas": [
+   "Await the returned promise; otherwise the function will not sleep correctly.",
+   "Use an if expression rather than match when correlation requires a more specific condition."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::onFunctionRun": {
+  "sourceUrl": "https://www.inngest.com/docs/reference/typescript/v3/middleware/lifecycle",
+  "sourceTitle": "Middleware Lifecycle | TypeScript SDK v3 Reference",
+  "summary": "`onFunctionRun` is an Inngest middleware hook that runs when a function is about to execute. Use it to add cross-cutting behavior such as logging, tenant context, input/output transformation, or tracing.",
+  "explanation": "`onFunctionRun` is a middleware lifecycle hook invoked when an Inngest function is about to run. It receives run context such as the function and prior steps, and can return hooks that transform input, transform output, or react after execution.",
+  "syntax": "onFunctionRun({ ctx, fn, steps }) { return { /* optional lifecycle hooks */ }; }",
+  "parameters": [
+   {
+    "name": "ctx",
+    "type": "object",
+    "description": "Input data available to the hook; initially only `event` and `runId` are available."
+   },
+   {
+    "name": "steps",
+    "type": "array",
+    "description": "Previously completed step objects, containing serialized data or errors."
+   },
+   {
+    "name": "fn",
+    "type": "InngestFunction",
+    "description": "The Inngest function about to execute."
+   }
+  ],
+  "returns": "An optional lifecycle object containing hooks such as `transformInput` and execution-completion callbacks.",
+  "example": {
+   "title": "Log a function run",
+   "code": "import { Inngest, InngestMiddleware } from \"inngest\";\n\nconst middleware = new InngestMiddleware({\n  name: \"Run logger\",\n  init() {\n    return {\n      onFunctionRun({ fn }) {\n        console.log(`Starting ${fn.name}`);\n        return {\n          afterExecution() {\n            console.log(`Finished ${fn.name}`);\n          },\n        };\n      },\n    };\n  },\n});\n\nexport const inngest = new Inngest({\n  id: \"my-app\",\n  middleware: [middleware],\n});",
+   "language": "typescript",
+   "explanation": "Registers hooks around each function execution through middleware."
+  },
+  "useCases": [
+   {
+    "title": "Logging",
+    "scenario": "Record function start and completion events for debugging or operational visibility."
+   },
+   {
+    "title": "Multi-tenant context",
+    "scenario": "Add tenant-specific information to the function context before the handler runs."
+   },
+   {
+    "title": "Tracing",
+    "scenario": "Attach correlation metadata across a durable function execution."
+   }
+  ],
+  "related": [
+   "InngestMiddleware",
+   "init",
+   "transformInput",
+   "afterExecution"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When does `onFunctionRun` execute, and what can it do?",
+    "answer": "`onFunctionRun` is a middleware lifecycle hook triggered immediately before an Inngest function executes. It can return lifecycle callbacks, including hooks for changing input and observing or changing execution results.",
+    "followUp": "What run data is available initially? `ctx` exposes only `event` and `runId` at that point, while `steps` contains previously completed step objects."
+   },
+   {
+    "question": "What arguments does `onFunctionRun` receive?",
+    "answer": "The hook receives the function being started through `fn`, plus the current context and completed steps. The middleware can use that information to attach cross-cutting behavior such as logging or tracing.",
+    "followUp": "How would you avoid duplicate trace records? Make recording idempotent because retries and parallel executions can invoke completion behavior more than once."
+   },
+   {
+    "question": "How can middleware modify a function run?",
+    "answer": "The returned lifecycle object can include `transformInput`, allowing middleware to extend the function context or transform step data before execution. It can also include output and completion hooks for later phases.",
+    "followUp": "Why should required side effects not depend solely on the final hook? The documentation says that hook is not guaranteed for every execution and may run multiple times."
+   }
+  ],
+  "keyPoints": [
+   "`onFunctionRun` runs before the target Inngest function starts.",
+   "Use the returned input-transform hook to add context or alter data before execution.",
+   "The `fn` argument identifies the function whose run is being initialized.",
+   "The `steps` argument provides results and errors from steps already completed in the run.",
+   "Middleware may implement only the lifecycle callbacks it needs.",
+   "A later lifecycle hook can alter the function's output before it is sent back."
+  ],
+  "gotchas": [
+   "At hook entry, the context is limited: do not expect the complete function context yet.",
+   "A completion hook may be skipped, so it should not be the only place for required cleanup or accounting.",
+   "Completion-related behavior must tolerate duplicate calls caused by parallelism or retries."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::onSendEvent": {
+  "sourceUrl": "https://www.inngest.com/docs/reference/typescript/v3/middleware/lifecycle",
+  "sourceTitle": "Middleware Lifecycle | TypeScript SDK v3 Reference",
+  "summary": "`onSendEvent` is an Inngest middleware lifecycle hook for outgoing events. Use `transformInput` to centrally add metadata, normalize data, or redact fields before sending, and `transformOutput` for post-send result handling.",
+  "explanation": "`onSendEvent` creates a send-event lifecycle hook. Its `transformInput` runs before events leave Inngest, allowing middleware to change the outgoing payloads; its optional `transformOutput` runs afterward and can change the result returned by `inngest.send()`.",
+  "syntax": "onSendEvent() {\n  return {\n    transformInput({ payloads }) { /* ... */ },\n    transformOutput() { /* ... */ },\n  };\n}",
+  "parameters": [
+   {
+    "name": "transformInput context",
+    "type": "object",
+    "description": "Context object supplied to `transformInput`, including the outgoing event payloads."
+   },
+   {
+    "name": "transformOutput context",
+    "type": "object",
+    "description": "Context supplied to `transformOutput`; the page does not enumerate its fields."
+   }
+  ],
+  "returns": "`onSendEvent()` returns an object containing optional `transformInput` and `transformOutput` functions. `transformInput` can modify outgoing events; `transformOutput` can modify the result from `inngest.send()`.",
+  "example": {
+   "title": "Add metadata to outgoing events",
+   "code": "import { InngestMiddleware } from \"inngest\";\n\nconst metadataMiddleware = new InngestMiddleware({\n  name: \"event-metadata\",\n  init: () => ({\n    onSendEvent() {\n      return {\n        transformInput({ payloads }) {\n          return {\n            payloads: payloads.map(({ name, data }) => ({\n              name,\n              data: { ...data, source: \"billing\" },\n            })),\n          };\n        },\n      };\n    },\n  }),\n});",
+   "language": "typescript",
+   "explanation": "Adds a source field to every outgoing event before the SDK sends it."
+  },
+  "useCases": [
+   {
+    "title": "Central metadata enrichment",
+    "scenario": "Add a consistent application, tenant, or source field to every outgoing event."
+   },
+   {
+    "title": "Central redaction",
+    "scenario": "Remove credentials, tokens, or other sensitive properties before transmission."
+   },
+   {
+    "title": "Post-send result handling",
+    "scenario": "Perform a final action or reshape the value returned by an event send."
+   }
+  ],
+  "related": [
+   "InngestMiddleware",
+   "init()",
+   "transformInput",
+   "transformOutput",
+   "inngest.send()",
+   "step.sendEvent()",
+   "step.invoke()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is `onSendEvent` used for?",
+    "answer": "It is a middleware lifecycle hook that runs when an event is sent through `inngest.send()`, `step.sendEvent()`, or `step.invoke()`. It returns optional `transformInput` and `transformOutput` functions.",
+    "followUp": "How would you redact data centrally? Use `transformInput` to map each outgoing payload and remove or replace sensitive fields before sending."
+   },
+   {
+    "question": "What is the difference between the two transformations?",
+    "answer": "`transformInput` runs before the events are sent, so it can modify outgoing event payloads. `transformOutput` runs afterward and can modify the output of `inngest.send()`.",
+    "followUp": "When would output transformation be useful? For normalizing or augmenting the send result after the event request has completed."
+   },
+   {
+    "question": "Which event-sending operations trigger this lifecycle?",
+    "answer": "The hook covers events sent by `inngest.send()`, `step.sendEvent()`, and `step.invoke()`. The lifecycle functions may be synchronous or asynchronous, and the SDK waits for them to resolve.",
+    "followUp": "What should an asynchronous transformer account for? Its latency becomes part of event sending because the SDK waits before continuing."
+   }
+  ],
+  "keyPoints": [
+   "The lifecycle covers direct sends, step event sends, and step invocations.",
+   "`transformInput` is the place to enrich, normalize, or redact outgoing events.",
+   "Input transformation changes the event data centrally before transmission.",
+   "`transformOutput` runs after the send operation completes.",
+   "Output transformation supports post-send actions and result shaping.",
+   "Middleware initialization can expose lifecycle-specific hook implementations."
+  ],
+  "gotchas": [
+   "Hooks may be synchronous or asynchronous; the SDK waits for a middleware hook to resolve before proceeding.",
+   "Use `transformInput` for pre-send changes; it is not an observation-only hook.",
+   "`transformOutput` can alter the result returned from `inngest.send()`, not the already-sent events."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::onStepRun": {
+  "sourceUrl": "https://www.inngest.com/docs/durable-execution/guides-and-advanced/middleware/creating-middleware",
+  "sourceTitle": "Creating Inngest Middleware",
+  "summary": "The current Inngest TypeScript v4 documentation does not document an `onStepRun` hook by that name. Step-handler wrapping is documented as `wrapStepHandler`, which is the supported place for per-step timing and context.",
+  "explanation": "`onStepRun` wraps an individual step-handler attempt. Start timing or attach per-step context before calling `next()`, await and return `next()` to preserve the step result, and use cleanup logic afterward for duration or outcome reporting.",
+  "syntax": "async wrapStepHandler({ next, ...context }) { return await next(); }",
+  "parameters": [
+   {
+    "name": "context",
+    "type": "hook context",
+    "description": "Middleware hook context, including `next` and step execution context; the page does not enumerate a separate formal signature for `onStepRun`."
+   }
+  ],
+  "returns": "The result returned by `next()`; the page documents this behavior for `wrapStepHandler`, not a distinct `onStepRun` signature.",
+  "example": {
+   "title": "Measure step duration",
+   "code": "class StepTimingMiddleware extends Middleware.BaseMiddleware {\n  async onStepRun({ next, ...context }) {\n    const started = Date.now();\n    try {\n      return await next();\n    } finally {\n      console.log(`${context.step.id}: ${Date.now() - started}ms`);\n    }\n  }\n}",
+   "language": "typescript",
+   "explanation": "Measures the duration of each step-handler attempt while preserving the handler result and errors."
+  },
+  "useCases": [
+   {
+    "title": "Per-step timing",
+    "scenario": "Measure the duration of each step-handler attempt."
+   },
+   {
+    "title": "Observability",
+    "scenario": "Attach logging or tracing context around step execution."
+   },
+   {
+    "title": "Cross-cutting middleware",
+    "scenario": "Apply shared behavior to every `step.run()` and `step.sendEvent()` handler attempt."
+   }
+  ],
+  "related": [
+   "wrapStepHandler",
+   "onStepStart",
+   "onStepComplete",
+   "Middleware.BaseMiddleware",
+   "onRunStart",
+   "onRunComplete"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Define the hook in a reusable middleware class.",
+   "Per-step instrumentation applies to both `step.run()` and `step.sendEvent()` handler attempts.",
+   "The current stable TypeScript v4 documentation identifies `wrapStepHandler` as the hook for wrapping step handlers.",
+   "Invoke `next()` to run the underlying handler and preserve its result.",
+   "Observation-hook failures are logged without making the function run fail.",
+   "Extend `Middleware.BaseMiddleware` when implementing current TypeScript middleware."
+  ],
+  "gotchas": [
+   "The hook must call and return `next()`; omitting it prevents the step from continuing.",
+   "For the current TypeScript v4 API, the documented hook name is `wrapStepHandler`; verify that `onStepRun` is not a legacy or incorrect name before implementing it."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::step.realtime.publish": {
+  "sourceUrl": "https://www.inngest.com/docs/reference/typescript/v4/realtime/publishing",
+  "sourceTitle": "Publishing Realtime Messages | TypeScript SDK v4",
+  "summary": "Publishes a realtime message as a durable, memoized function step. If execution retries after the step succeeds, Inngest does not send the message again.",
+  "explanation": "Inside an Inngest function, call the method with a unique step ID, a topic reference obtained from a channel instance, and data matching that topic's schema. Inngest memoizes the step and records it in the execution graph; if the function retries after this step completed, the publish is not performed again.",
+  "syntax": "step.realtime.publish(id, topicRef, data)",
+  "parameters": [
+   {
+    "name": "id",
+    "type": "string",
+    "description": "A unique step identifier used for memoization and function logs."
+   },
+   {
+    "name": "topicRef",
+    "type": "TopicRef<TData>",
+    "description": "A topic accessor from a channel instance."
+   },
+   {
+    "name": "data",
+    "type": "TData",
+    "description": "The message body, which must conform to the selected topic's schema."
+   }
+  ],
+  "returns": "The published data.",
+  "example": {
+   "title": "Publish a durable final status",
+   "code": "import { inngest } from \"./client\";\nimport { documentChannel } from \"./channels\";\n\nexport const processDocument = inngest.createFunction(\n  { id: \"process-document\" },\n  { event: \"document/process\" },\n  async ({ event, step }) => {\n    const channel = documentChannel({ documentId: event.data.documentId });\n\n    await step.realtime.publish(\"completed\", channel.status, {\n      message: \"Document processed\",\n      progress: 100,\n    });\n\n    return { ok: true };\n  },\n);",
+   "language": "typescript",
+   "explanation": "Publishes a final document status through a durable step, so a retry after completion does not publish the same message again."
+  },
+  "useCases": [
+   {
+    "title": "Important state transitions",
+    "scenario": "A workflow changes state, such as moving a document to “complete,” and the UI must receive that transition only once after retries."
+   },
+   {
+    "title": "Final results",
+    "scenario": "A function finishes processing and needs to notify subscribers with its final output without replaying the notification."
+   },
+   {
+    "title": "Auditable execution graph",
+    "scenario": "The publication should be represented alongside other operations in the function's execution history."
+   }
+  ],
+  "related": [
+   "inngest.realtime.publish()",
+   "realtime.channel()",
+   "TopicRef",
+   "channels",
+   "topics",
+   "function execution graph"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why use step.realtime.publish instead of the regular realtime publisher?",
+    "answer": "It is a durable, memoized step that publishes a message to a realtime topic. When a retry reaches a completed instance of this step, Inngest reuses the recorded result instead of publishing again.",
+    "followUp": "How do you publish streamed tokens where replay is acceptable? Use the non-durable realtime publisher, because durable publishing adds step overhead and is intended for important state transitions or final results."
+   },
+   {
+    "question": "What are the method's arguments?",
+    "answer": "The signature is `step.realtime.publish(id, topicRef, data)`. The ID is a unique string, the topic reference comes from a channel instance, and the data must satisfy that topic's schema.",
+    "followUp": "What does the topic reference identify? It carries the channel name, topic name, and associated schema, which lets the publish target and validate the message."
+   },
+   {
+    "question": "When should this method be used?",
+    "answer": "Use it inside a function handler for state changes and final results that should appear in the function's execution graph and should not duplicate after retries. It is not the choice for publishing from API routes, webhooks, or other code outside a function.",
+    "followUp": "Which publisher is suitable outside a function? Use `inngest.realtime.publish()`, which is available in server-side code outside a function but is non-durable."
+   }
+  ],
+  "keyPoints": [
+   "The call turns realtime publishing into a durable Inngest step.",
+   "Once completed, the publish is not sent again when execution retries beyond it.",
+   "The publication is visible as part of the function execution graph.",
+   "Use it for significant state changes and completed outputs rather than noisy transient updates.",
+   "Its unique ID supports deduplication and makes the operation identifiable in logs."
+  ],
+  "gotchas": [
+   "Do not use this method for updates where repeated delivery is acceptable but minimum latency is the priority; use the non-durable publisher instead."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::Subscription tokens": {
+  "sourceUrl": "https://www.inngest.com/docs/features/realtime/subscription-tokens",
+  "sourceTitle": "Realtime Subscription Tokens - Inngest Docs",
+  "summary": "Mint a scoped, short-lived subscription token on the server after authorizing the viewer. Send the token object to the browser without exposing the Inngest signing key.",
+  "explanation": "A server verifies the current user, selects one channel and the topics that user may read, then calls getClientSubscriptionToken(). The returned key and API base URL can cross to the browser without exposing the Inngest signing key. Pass the token together with the same channel and topics to useRealtime(); a token factory can mint a fresh token when the hook reconnects.",
+  "syntax": "getClientSubscriptionToken(inngest, { channel, topics })",
+  "parameters": [
+   {
+    "name": "app",
+    "type": "Inngest",
+    "description": "Inngest client used to mint the token."
+   },
+   {
+    "name": "channel",
+    "type": "channel instance or string",
+    "description": "Channel the browser may read."
+   },
+   {
+    "name": "topics",
+    "type": "array of topic names",
+    "description": "Topics the browser may read on that channel."
+   }
+  ],
+  "returns": "A serializable { key, apiBaseUrl } client subscription token object.",
+  "example": {
+   "title": "Mint a scoped client token",
+   "code": "import { Inngest } from \"inngest\";\nimport { getClientSubscriptionToken } from \"inngest/realtime\";\n\nconst inngest = new Inngest({ id: \"my-app\" });\n\nexport async function GET() {\n  const token = await getClientSubscriptionToken(inngest, {\n    channel: \"user-123\",\n    topics: [\"status\"],\n  });\n\n  return Response.json(token);\n}",
+   "language": "typescript",
+   "explanation": "A server route authorizes the request and returns the scoped client token object to the browser."
+  },
+  "useCases": [
+   {
+    "title": "Resource-scoped realtime access",
+    "scenario": "A user views live updates for one document, job, or thread."
+   },
+   {
+    "title": "Automatic token refresh",
+    "scenario": "A React subscription may reconnect after the initial connection."
+   },
+   {
+    "title": "Environment-aware browser connections",
+    "scenario": "Cloud and local development use different Inngest endpoints."
+   }
+  ],
+  "related": [
+   "getClientSubscriptionToken",
+   "useRealtime",
+   "ClientSubscriptionToken",
+   "inngest.realtime.token",
+   "getSubscriptionToken",
+   "realtime.channel"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does a subscription token protect the signing key?",
+    "answer": "The server authenticates the viewer, chooses an allowed channel and topic list, and calls getClientSubscriptionToken(). It returns a serializable object containing the token key and resolved API base URL, which the browser can use without receiving the signing key.",
+    "followUp": "Why include the API base URL? It lets the browser connect to the correct cloud or development environment without browser-side environment configuration."
+   },
+   {
+    "question": "What access does a minted token grant?",
+    "answer": "The token is scoped to one channel and an explicit list of topics. A client using it cannot access other channels, but it can read every message on the granted channel and topics until expiration.",
+    "followUp": "What authorization check belongs before minting? Verify the signed-in user may read the underlying document, job, or thread, then include only the topics that view needs."
+   },
+   {
+    "question": "How should clients handle token refresh?",
+    "answer": "Pass useRealtime an asynchronous token factory instead of a fixed token when reconnects may occur. The hook invokes the factory on initial connection and again on each reconnect, keeping the token fresh.",
+    "followUp": "What must remain consistent when using a client token? Keep channel and topics as top-level hook options because those fields are not embedded in the client token."
+   }
+  ],
+  "keyPoints": [
+   "Use getClientSubscriptionToken() in server-side code to create the browser-safe subscription credential.",
+   "The client receives both the token key and the environment-specific API base URL.",
+   "Authorization happens before token creation, so the token represents the server's access decision.",
+   "Scope every token to exactly one channel and the topics required by the view.",
+   "A token factory supports automatic renewal during initial connection and reconnection."
+  ],
+  "gotchas": [
+   "Treat the token as an authorization grant: do not mint it until the user is allowed to read the selected channel and topics.",
+   "When the client receives only the client token, provide the matching channel and topics separately to useRealtime().",
+   "Keep token creation and the signing key in server-side code."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::transformInput and transformOutput": {
+  "sourceUrl": "https://www.inngest.com/docs/reference/typescript/v3/middleware/lifecycle",
+  "sourceTitle": "Middleware Lifecycle | TypeScript SDK v3 Reference",
+  "summary": "transformInput changes prepared function context or step data before execution; transformOutput changes the completed result before it is sent to Inngest. Both are optional onFunctionRun middleware hooks.",
+  "explanation": "Inngest middleware can alter a function's prepared context and step data before execution, then reshape the completed result before Inngest receives it. Both hooks are optional lifecycle callbacks returned from onFunctionRun; transformInput returns replacement context or step data, while transformOutput returns an updated result.",
+  "syntax": "onFunctionRun: () => ({ transformInput({ ctx, fn, steps }), transformOutput({ result, step }) })",
+  "parameters": [
+   {
+    "name": "transformInput({ ctx, fn, steps })",
+    "type": "object",
+    "description": "Lifecycle callback input for transformInput: the prepared function context, function metadata, and step tooling/data."
+   },
+   {
+    "name": "transformOutput({ result, step })",
+    "type": "object",
+    "description": "Lifecycle callback input for transformOutput: the completed result and optional step information."
+   }
+  ],
+  "returns": "transformInput may return updated ctx and/or steps; transformOutput may return an updated result, including transformed result.data. All returned fields are optional.",
+  "example": {
+   "title": "Transform function input and output",
+   "code": "import { Inngest } from \"inngest\";\nimport { Middleware } from \"inngest/middleware\";\n\nconst middleware = new Middleware.BaseMiddleware({\n  name: \"transform-data\",\n  init() {\n    return {\n      onFunctionRun() {\n        return {\n          transformInput({ ctx, steps }) {\n            return {\n              ctx: { ...ctx, tenantId: ctx.event.data.tenantId },\n              steps,\n            };\n          },\n          transformOutput({ result }) {\n            return {\n              result: {\n                ...result,\n                data: { value: result.data },\n              },\n            };\n          },\n        };\n      },\n    };\n  },\n});\n\nexport const inngest = new Inngest({ id: \"example\", middleware: [middleware] });",
+   "language": "typescript",
+   "explanation": "The middleware adds a derived tenant ID to function context and wraps returned data before it is sent back to Inngest."
+  },
+  "useCases": [
+   {
+    "title": "Preprocess function input",
+    "scenario": "Middleware needs to decrypt or normalize incoming function data before the handler runs."
+   },
+   {
+    "title": "Extend execution context",
+    "scenario": "Middleware injects derived values or dependencies into the function context."
+   },
+   {
+    "title": "Postprocess function output",
+    "scenario": "Middleware encrypts, wraps, or redacts returned data before Inngest receives it."
+   }
+  ],
+  "related": [
+   "onFunctionRun",
+   "beforeExecution",
+   "afterExecution",
+   "beforeResponse",
+   "onSendEvent",
+   "Middleware.BaseMiddleware"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does transformInput do?",
+    "answer": "transformInput is an optional onFunctionRun hook invoked after the function input is prepared. It can return updated ctx data and transformed step data before execution begins.",
+    "followUp": "How can middleware add a dependency? Return a ctx object containing the dependency, preserving existing context fields when needed."
+   },
+   {
+    "question": "When does transformOutput run, and what can it change?",
+    "answer": "transformOutput is an optional hook that runs after the function finishes and before Inngest receives the response. It can return a result whose data has been transformed.",
+    "followUp": "How would you handle errors? Inspect result.error and transform result.data only when appropriate, leaving the error unchanged."
+   },
+   {
+    "question": "Where are these hooks configured and what arguments do they receive?",
+    "answer": "The hooks are returned from the object supplied by onFunctionRun. transformInput receives ctx, fn, and steps; transformOutput receives result and step, and each hook's returned fields are optional.",
+    "followUp": "Why might transformInput need steps? Middleware can transform step data as well as the function context before execution."
+   }
+  ],
+  "keyPoints": [
+   "Use transformInput to adjust the function's prepared input before execution.",
+   "Its callback receives the onFunctionRun input plus a fully populated context, including step tooling.",
+   "The input hook can transform individual step data while returning the updated steps collection.",
+   "Use transformOutput to reshape the completed function result.",
+   "Return a result object when transforming data sent back to Inngest."
+  ],
+  "gotchas": [
+   "transformInput runs after Inngest has prepared the function input, not as the initial request parser.",
+   "A hook may return only the portion it needs to change; omitted fields are not required.",
+   "transformOutput cannot affect the function's execution because it runs after completion."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::useRealtime": {
+  "sourceUrl": "https://www.inngest.com/docs/reference/typescript/v4/realtime/use-realtime",
+  "sourceTitle": "useRealtime() Hook | TypeScript SDK v4 Reference - Inngest Docs",
+  "summary": "Subscribe a React component to an Inngest function's Realtime channel and selected topics with a server-issued token. The hook manages the connection and exposes typed messages by topic.",
+  "explanation": "useRealtime opens and manages a React subscription to an Inngest Realtime channel. Supply a channel, selected topics, and authentication; the hook handles the WebSocket lifecycle, token refresh, reconnection, buffering, and typed message access.",
+  "syntax": "useRealtime({ channel, topics, token, enabled?, validate?, historyLimit?, bufferInterval?, reconnect?, ...options })",
+  "parameters": [
+   {
+    "name": "channel",
+    "type": "Channel instance | string",
+    "description": "Channel instance or channel name to subscribe to; channel instances preserve inferred topic types."
+   },
+   {
+    "name": "topics",
+    "type": "readonly string[]",
+    "description": "Topics to receive from the channel, typically supplied as a readonly literal array."
+   },
+   {
+    "name": "token",
+    "type": "ClientSubscriptionToken | token object | async token factory",
+    "description": "A client subscription token, full token object, or async factory returning an accepted token form."
+   },
+   {
+    "name": "enabled",
+    "type": "boolean",
+    "description": "Whether the subscription should connect; defaults to true."
+   },
+   {
+    "name": "validate",
+    "type": "boolean",
+    "description": "Whether to validate incoming messages against topic schemas; defaults to true."
+   },
+   {
+    "name": "historyLimit",
+    "type": "number | null",
+    "description": "Maximum retained messages in messages.all; defaults to 100, or null for unlimited history."
+   },
+   {
+    "name": "bufferInterval",
+    "type": "number",
+    "description": "Delay in milliseconds used to batch incoming updates before rerendering; defaults to 0."
+   },
+   {
+    "name": "reconnect",
+    "type": "boolean",
+    "description": "Whether to reconnect automatically after disconnection; defaults to true."
+   }
+  ],
+  "returns": "An object containing connectionStatus, runStatus, messages, error, and reset; messages includes byTopic, all, last, and delta views.",
+  "example": {
+   "title": "Subscribe to a realtime channel",
+   "code": "\"use client\";\n\nimport { useRealtime } from \"inngest/react\";\nimport { pipelineChannel } from \"@/inngest/channels\";\nimport { fetchToken } from \"./actions\";\n\nexport default function Progress({ contentId }: { contentId: string }) {\n  const { messages, connectionStatus } = useRealtime({\n    channel: pipelineChannel({ contentId }),\n    topics: [\"status\", \"result\"] as const,\n    token: () => fetchToken(contentId),\n  });\n\n  return (\n    <div>\n      <p>Connection: {connectionStatus}</p>\n      <p>{messages.byTopic.result?.data.output}</p>\n    </div>\n  );\n}",
+   "language": "tsx",
+   "explanation": "This client component subscribes to a typed channel, requests a server-issued token, and reads the latest topic messages."
+  },
+  "useCases": [
+   {
+    "title": "Live job progress",
+    "scenario": "Show progress or lifecycle state while a long-running Inngest function executes."
+   },
+   {
+    "title": "Streaming AI responses",
+    "scenario": "Render streamed model output as tokens arrive and replace it with a final result."
+   },
+   {
+    "title": "Live application state",
+    "scenario": "Display the latest typed update for each topic in a collaborative or interactive UI."
+   }
+  ],
+  "related": [
+   "getClientSubscriptionToken",
+   "realtime.channel",
+   "messages.byTopic",
+   "messages.all",
+   "messages.last",
+   "messages.delta",
+   "connectionStatus",
+   "runStatus"
+  ],
+  "since": "",
+  "keyPoints": [
+   "useRealtime connects a React component to messages emitted by an Inngest function.",
+   "channel identifies the Realtime stream; use a channel instance for automatic topic typing or pass a string.",
+   "topics limits the subscription to the channel topics the component needs.",
+   "The hook manages transport concerns and exposes messages in a topic-aware form.",
+   "A token factory supports initial authentication and refreshed authentication after reconnects.",
+   "The validate option can check incoming messages against their topic schemas and defaults to true.",
+   "bufferInterval batches incoming updates for a specified number of milliseconds before rerendering."
+  ],
+  "gotchas": [
+   "The topics option is required when using a ClientSubscriptionToken or a token factory that returns only a token key string.",
+   "Only the latest 100 messages are retained in messages.all unless historyLimit is changed.",
+   "Prefer a token factory so the hook can obtain credentials again after reconnecting."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Hooks::wrapStep": {
+  "sourceUrl": "https://www.inngest.com/docs/reference/typescript/middleware/lifecycle",
+  "sourceTitle": "Wrapping Hooks",
+  "summary": "wrapStep surrounds each Inngest step, including memoized steps and non-handler kinds such as sleeps and invokes. Call next() to preserve the middleware chain; use the hook for behavior that must compose around the whole step lifecycle.",
+  "explanation": "wrapStep is a middleware hook that surrounds each step, including memoized steps and non-handler steps such as sleeps and invokes. Code before next() runs on entry and code after it runs on exit; the hook can also use the function context to add durable steps.",
+  "syntax": "async wrapStep({ ctx, next, stepInfo }: Middleware.WrapStepArgs) { /* ... */ }",
+  "parameters": [
+   {
+    "name": "ctx",
+    "type": "Middleware.WrapStepArgs",
+    "description": "Function context, including the ability to schedule durable steps."
+   },
+   {
+    "name": "next",
+    "type": "Middleware.WrapStepArgs",
+    "description": "Function that continues the wrapping chain and yields the wrapped step result when applicable."
+   },
+   {
+    "name": "stepInfo",
+    "type": "Middleware.WrapStepArgs",
+    "description": "Metadata describing the current step, including its hashed identifier."
+   }
+  ],
+  "returns": "The value returned by next(), normally the wrapped step result; the hook must return it to preserve the middleware chain.",
+  "example": {
+   "title": "Wrapping every step",
+   "code": "import { Middleware } from \"inngest\";\n\nclass AuditMiddleware extends Middleware.BaseMiddleware {\n  async wrapStep({ ctx, next, stepInfo }: Middleware.WrapStepArgs) {\n    const result = await next();\n    console.log(\"step completed\", stepInfo.hashedId);\n    return result;\n  }\n}",
+   "language": "typescript",
+   "explanation": "This middleware runs logic around each step and returns the wrapped step's result."
+  },
+  "useCases": [
+   {
+    "title": "Deserialize memoized data",
+    "scenario": "A step result was serialized before being memoized and must be restored when replayed."
+   },
+   {
+    "title": "Insert durable steps",
+    "scenario": "A workflow needs an audit or bookkeeping operation associated with an individual step."
+   },
+   {
+    "title": "Observe per-step lifecycle",
+    "scenario": "Logging, metrics, or other cross-cutting behavior must apply to every step kind."
+   }
+  ],
+  "related": [
+   "wrapStepHandler",
+   "wrapFunctionHandler",
+   "transformStepInput",
+   "onStepStart",
+   "onStepComplete",
+   "onStepError",
+   "Middleware.BaseMiddleware"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does wrapStep wrap, and how does it differ from wrapStepHandler?",
+    "answer": "wrapStep surrounds every step, including memoized steps and step kinds such as step.run, step.sleep, and step.invoke. It is therefore broader than wrapStepHandler, which only handles step.run and step.sendEvent.",
+    "followUp": "When should wrapStepHandler be preferred? Use it when behavior must run around the actual handler attempt, such as handling errors for each retry attempt."
+   },
+   {
+    "question": "How should middleware code be structured around next()?",
+    "answer": "The hook follows an onion model: code before next() executes on the way in, and code after next() executes on the way out. Calling next() is required to continue middleware processing.",
+    "followUp": "What happens if the wrapped step is not memoized? next() does not resolve for that request because execution is deferred until replay."
+   },
+   {
+    "question": "Can wrapStep create additional durable steps?",
+    "answer": "wrapStep can access ctx and insert durable steps, for example an audit step around an individual step execution. Steps inserted by the same middleware do not invoke that middleware's wrapStep again, which prevents infinite recursion.",
+    "followUp": "How can a middleware record failures durably? Catch the error, call ctx.step.run with a stable identifier, then rethrow the original error."
+   }
+  ],
+  "keyPoints": [
+   "Use wrapStep for per-step behavior that must also cover memoized results, sleeps, invokes, and other step kinds.",
+   "Typical applications include restoring serialized memoized values and adding durable steps around execution.",
+   "The hook composes like nested middleware: pre-next logic runs inward, and post-next logic runs outward.",
+   "Place setup or transformation before next(), and completion or cleanup logic after it."
+  ],
+  "gotchas": [
+   "Do not expect next() to resolve while a non-memoized step is being scheduled; the hook intentionally remains pending until the step is later replayed.",
+   "A wrapping hook must continue the chain with next(); omitting it causes the request to hang."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Reliability::Automatic retries": {
+  "sourceUrl": "https://www.inngest.com/docs/durable-execution/guides-and-advanced/error-handling/retries",
+  "sourceTitle": "Automatic Retries in Inngest | Config & Behavior",
+  "summary": "Inngest automatically retries failed steps with backoff and jitter instead of immediately failing the function. Each step has an independent retry counter, while completed step results are reused.",
+  "explanation": "Inngest automatically retries errors from each named step independently. Configure the retry count on the function; completed steps retain their results, while temporary failures are retried with backoff and jitter.",
+  "syntax": "inngest.createFunction({ id, retries }, { event }, async ({ event, step }) => step.run(name, handler))",
+  "parameters": [
+   {
+    "name": "retries",
+    "type": "number",
+    "description": "Function configuration option that controls the number of retries for each step; the default is four retries after the initial attempt."
+   }
+  ],
+  "returns": "A successful step returns its result; after retries are exhausted, the error is thrown back into the function.",
+  "example": {
+   "title": "Retry a failed step",
+   "code": "import { inngest } from \"./client\";\n\nexport const syncInvoice = inngest.createFunction(\n  { id: \"sync-invoice\", retries: 3 },\n  { event: \"billing/invoice.sync\" },\n  async ({ event, step }) => {\n    return step.run(\"load-invoice\", async () => {\n      const response = await fetch(event.data.url);\n      if (!response.ok) throw new Error(`HTTP ${response.status}`);\n      return response.json();\n    });\n  },\n);",
+   "language": "typescript",
+   "explanation": "A standard error from the step lets Inngest retry the failed work with its backoff policy."
+  },
+  "useCases": [
+   {
+    "title": "Recover transient infrastructure errors",
+    "scenario": "Temporary network or database failures"
+   },
+   {
+    "title": "Delay retries until an API-provided time",
+    "scenario": "Rate-limited upstream APIs"
+   },
+   {
+    "title": "Retry only the failed operation",
+    "scenario": "Multi-step workflows"
+   },
+   {
+    "title": "Stop retries for invalid input",
+    "scenario": "Permanent validation failures"
+   }
+  ],
+  "related": [
+   "RetryAfterError",
+   "NonRetriableError",
+   "step.run()",
+   "StepError",
+   "onFailure"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Retries are tracked independently for each step rather than shared across the function.",
+   "Automatic retries use a backoff schedule with jitter to avoid synchronized repeated requests.",
+   "Configure the number of retries with the function's retries option.",
+   "Set retries to zero when a function or step should not receive automatic retry attempts.",
+   "Successful earlier steps are checkpointed and their results are reused when a later step retries.",
+   "Use ordinary Error objects for temporary failures that may succeed on a later attempt."
+  ],
+  "gotchas": [
+   "The configured retry count excludes the initial attempt, so the default allows five total attempts per step.",
+   "Do not retry failures that cannot succeed on another attempt; throw NonRetriableError instead.",
+   "Errors outside a named step can retry the function, so place retryable work in steps when you need step-level isolation."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Reliability::Cancellation": {
+  "sourceUrl": "https://www.inngest.com/docs/features/inngest-functions/cancellation/cancel-on-events",
+  "sourceTitle": "Cancel on Events",
+  "summary": "Cancel an active Inngest function when a configured event arrives. Match event data to the original trigger to ensure only the intended run is stopped.",
+  "explanation": "Configure cancelOn on a function to listen for a cancellation event and optionally match a field from that event with the original trigger. Cancellation occurs between steps: an executing step completes, then the run is marked canceled and later steps are skipped.",
+  "syntax": "cancelOn: [{ event: \"tasks/reminder.deleted\", match: \"data.reminderId\", timeout: \"1h\" }]",
+  "parameters": [
+   {
+    "name": "cancelOn[].event",
+    "type": "string | EventType",
+    "description": "Cancellation event name or event object that triggers cancellation."
+   },
+   {
+    "name": "cancelOn[].match",
+    "type": "string",
+    "description": "Dot-notation path used to match data between the trigger and cancellation event."
+   },
+   {
+    "name": "cancelOn[].timeout",
+    "type": "string",
+    "description": "Optional period during which the cancellation rule is active."
+   }
+  ],
+  "returns": "The function run is marked canceled; an executing step finishes, and later steps do not run.",
+  "example": {
+   "title": "Cancel a matching reminder",
+   "code": "import { inngest } from \"./client\";\n\nexport const remindUser = inngest.createFunction(\n  {\n    id: \"send-reminder\",\n    cancelOn: [\n      {\n        event: \"tasks/reminder.deleted\",\n        match: \"data.reminderId\",\n      },\n    ],\n  },\n  { event: \"tasks/reminder.created\" },\n  async ({ event, step }) => {\n    await step.sleep(\"wait\", \"1h\");\n    await step.run(\"send\", async () => sendReminder(event.data.reminderId));\n  },\n);",
+   "language": "typescript",
+   "explanation": "The function listens for a deletion event whose reminder ID matches the original trigger, cancelling the run between steps."
+  },
+  "useCases": [
+   {
+    "title": "Stop obsolete reminders",
+    "scenario": "A user deletes a reminder while its delayed notification workflow is sleeping."
+   },
+   {
+    "title": "Cancel revoked work",
+    "scenario": "A business object is revoked while its processing workflow is still active."
+   },
+   {
+    "title": "Limit cancellation by time",
+    "scenario": "A short-lived operation should no longer be cancelable after its relevant business window closes."
+   }
+  ],
+  "related": [
+   "cancelOn",
+   "match",
+   "timeout",
+   "inngest/function.cancelled",
+   "step.run"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you cancel a function when an event arrives?",
+    "answer": "Set cancelOn in the function configuration with a cancellation event name or event object. Inngest creates a listener for each triggered run, and a matching cancellation event marks that run canceled.",
+    "followUp": "What happens if a step is executing when the event arrives? The current step finishes; cancellation is applied between steps, so later steps do not run."
+   },
+   {
+    "question": "How do you avoid canceling the wrong function run?",
+    "answer": "Use match with dot notation, such as data.reminderId, so the cancellation event is associated with the same entity as the original trigger. The values in the triggering and cancellation events must match.",
+    "followUp": "How can the cancellation window be limited? Add an optional timeout so cancellation is enabled only for the configured period after the function is triggered."
+   },
+   {
+    "question": "How many cancellation events can one function configure?",
+    "answer": "The cancelOn configuration accepts one or more cancellation events, and a function may configure up to five. Each event can use matching logic to identify the intended run.",
+    "followUp": "What alternative exists when many existing runs must be stopped? Use bulk cancellation from the Dashboard or REST API rather than per-run event cancellation."
+   }
+  ],
+  "keyPoints": [
+   "Each triggered run gets a cancellation listener waiting for the configured event.",
+   "Match cancellation data to the original trigger so one entity's event cannot cancel another entity's run.",
+   "A timeout can restrict how long the cancellation rule remains active.",
+   "An in-progress step is allowed to complete before the run is canceled.",
+   "After the cancellation boundary, the run is marked canceled and subsequent steps are skipped."
+  ],
+  "gotchas": [
+   "Cancellation does not interrupt an already-running step; that step completes before the function is canceled.",
+   "A function can have no more than five cancellation events."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Reliability::Failure handlers": {
+  "sourceUrl": "https://www.inngest.com/docs/durable-execution/guides-and-advanced/error-handling/failure-handlers",
+  "sourceTitle": "Failure Handlers | After All Retries Fail - Inngest Docs",
+  "summary": "Failure handlers react after a function exhausts its retries. Attach onFailure to one function, or handle the inngest/function.failed system event across an environment.",
+  "explanation": "A failure handler runs only after a function reaches final failure. Attach onFailure to a specific function, or handle the inngest/function.failed system event for failures across an environment; the handler is separate from the original function run.",
+  "syntax": "onFailure: async ({ error, event, step, runId }) => { /* recovery, alert, or cleanup */ }",
+  "parameters": [
+   {
+    "name": "error",
+    "type": "Error",
+    "description": "The error thrown by the last retry of the main function."
+   },
+   {
+    "name": "event",
+    "type": "Event payload",
+    "description": "The inngest/function.failed system-event payload, including data for the failed function."
+   },
+   {
+    "name": "step",
+    "type": "Step tools",
+    "description": "The step API used to run durable handler work."
+   },
+   {
+    "name": "runId",
+    "type": "string",
+    "description": "The handler's own run identifier."
+   }
+  ],
+  "returns": "The failure handler runs as a separate Inngest function after the main function reaches final failure.",
+  "example": {
+   "title": "Record a final function failure",
+   "code": "import { Inngest } from \"inngest\";\n\nconst inngest = new Inngest({ id: \"billing\" });\n\nexport const chargeCustomer = inngest.createFunction(\n  {\n    id: \"charge-customer\",\n    retries: 3,\n    onFailure: async ({ error, event, step }) => {\n      await step.run(\"record-failure\", async () => {\n        console.error(\"Charge failed\", {\n          runId: event.data.run_id,\n          message: error.message,\n        });\n      });\n    },\n  },\n  { event: \"billing/charge.requested\" },\n  async ({ event }) => {\n    throw new Error(`Payment failed for ${event.data.customerId}`);\n  },\n);",
+   "language": "typescript",
+   "explanation": "The function-specific handler records the final error after the main function exhausts its retries."
+  },
+  "useCases": [
+   {
+    "title": "Function-specific cleanup",
+    "scenario": "A single function needs cleanup or notification after its retries are exhausted."
+   },
+   {
+    "title": "Environment-wide monitoring",
+    "scenario": "Several functions need centralized failure reporting."
+   },
+   {
+    "title": "Failure notification",
+    "scenario": "A failed operation requires an alert to an operator or customer."
+   },
+   {
+    "title": "Compensation and audit logging",
+    "scenario": "Partial work must be recorded or compensated after a final failure."
+   }
+  ],
+  "related": [
+   "inngest/function.failed",
+   "Non-retriable errors",
+   "Error handling & retries",
+   "System events"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use onFailure in a function definition to react to that function's final failure.",
+   "The handler is invoked automatically after the configured retry limit is exhausted.",
+   "Use the system event when one handler should cover failures throughout an environment.",
+   "onFailure creates a separate Inngest function rather than extending the original function run.",
+   "Internally, the dedicated handler is triggered through the function-failed system event.",
+   "The error argument represents the error from the final retry.",
+   "The event payload contains metadata about the failed function's last attempt."
+  ],
+  "gotchas": [
+   "Failure handlers do not run for each retry; they run only once the function has finally failed.",
+   "Use event.data.run_id when you need the original failed function's run ID.",
+   "Treat the handler as an independent function with its own execution and run identity."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Reliability::Idempotency": {
+  "sourceUrl": "https://www.inngest.com/docs/durable-execution/guides-and-advanced/idempotency?ref=homepage-durable-execution",
+  "sourceTitle": "Idempotency | Prevent Duplicate Runs - Inngest Docs",
+  "summary": "Inngest deduplicates work using a stable event ID or a function-level idempotency expression. Matching keys prevent another run for 24 hours, while duplicate events remain in history.",
+  "explanation": "Inngest can deduplicate at the producer by assigning a stable event `id`, or at one consumer by setting a function `idempotency` CEL expression. The selected key identifies one logical occurrence; matching keys suppress another function execution for 24 hours, while duplicate events remain visible in event history.",
+  "syntax": "inngest.createFunction({ id: \"...\", idempotency: \"event.data.<key>\" }, { event: \"<event-name>\" }, handler)",
+  "parameters": [
+   {
+    "name": "id",
+    "type": "string",
+    "description": "A unique event identifier supplied by the producer; duplicate IDs are deduplicated for 24 hours."
+   },
+   {
+    "name": "idempotency",
+    "type": "string",
+    "description": "A CEL expression evaluated against event data to produce the function-level idempotency key."
+   }
+  ],
+  "returns": "A duplicate event is retained in event history but does not start another function execution during the 24-hour idempotency period.",
+  "example": {
+   "title": "Deduplicate payment processing by checkout",
+   "code": "import { Inngest } from \"inngest\";\n\nconst inngest = new Inngest({ id: \"billing\" });\n\nexport const charge = inngest.createFunction(\n  { id: \"charge\", idempotency: \"event.data.checkoutId\" },\n  { event: \"shop/checkout.completed\" },\n  async ({ event, step }) => {\n    return step.run(\"charge-card\", async () => {\n      return chargeCard(event.data.checkoutId);\n    });\n  },\n);",
+   "language": "typescript",
+   "explanation": "The function derives its deduplication key from the checkout ID, so repeated events for that checkout do not start another execution during the idempotency window."
+  },
+  "useCases": [
+   {
+    "title": "Prevent duplicate payment capture",
+    "scenario": "A checkout webhook can be retried by the sender."
+   },
+   {
+    "title": "Avoid duplicate emails",
+    "scenario": "An order notification may be delivered more than once."
+   },
+   {
+    "title": "Protect resource creation",
+    "scenario": "Provisioning can be retried for the same customer resource."
+   }
+  ],
+  "related": [
+   "event",
+   "event.data",
+   "createFunction",
+   "step.run",
+   "Flow Control",
+   "CEL expressions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does event-level idempotency work?",
+    "answer": "At the event level, the producer assigns a stable unique `id` to the event. If the same ID arrives again within 24 hours, Inngest stores the duplicate but does not trigger another function run.",
+    "followUp": "When should deduplication move to the function level? Use a function-level expression when only one consumer needs protection while other functions triggered by the event should still execute."
+   },
+   {
+    "question": "What does the function-level idempotency expression do?",
+    "answer": "A function’s `idempotency` setting is a CEL expression evaluated against event data. The resulting string is the function’s deduplication key, and one execution is allowed for that key during each 24-hour period.",
+    "followUp": "What happens after the period ends? A later event producing the same expression can trigger another execution."
+   },
+   {
+    "question": "How should an idempotency key be chosen?",
+    "answer": "Choose a key representing the business operation whose side effect must happen once, such as a checkout ID for payment or an order-and-message combination for email. Include every field needed to distinguish valid separate occurrences.",
+    "followUp": "Why avoid a retry-attempt ID? Each retry attempt would create a different key, defeating deduplication of the original operation."
+   }
+  ],
+  "keyPoints": [
+   "At the producer, assign one stable event ID to each business occurrence that should be processed once.",
+   "A repeated event ID suppresses new function runs for 24 hours.",
+   "Function-level idempotency isolates deduplication to the consumer that owns the side effect.",
+   "The expression’s value becomes the function-level key and controls the 24-hour execution window.",
+   "Design the key around the side effect that must not repeat, rather than around an arbitrary event field."
+  ],
+  "gotchas": [
+   "Event IDs expire after 24 hours; a later event with the same key is treated as new work.",
+   "Do not reuse a key for a distinct business occurrence, because Inngest will treat it as the already-seen occurrence.",
+   "Deduplication prevents a new run but does not remove the duplicate event from history."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Reliability::Non-retriable errors": {
+  "sourceUrl": "https://www.inngest.com/docs/features/inngest-functions/error-retries/inngest-errors",
+  "sourceTitle": "RetryAfterError & NonRetriableError Reference",
+  "summary": "Use NonRetriableError to signal that another attempt cannot succeed, such as for invalid input. Inngest then skips remaining retries for the function or step that threw it.",
+  "explanation": "Use NonRetriableError when a function or step cannot succeed on another attempt. Throwing it makes Inngest bypass the remaining retries for the function or step that raised it.",
+  "syntax": "new NonRetriableError(message: string, options?: { cause?: Error }): NonRetriableError",
+  "parameters": [
+   {
+    "name": "message",
+    "type": "string",
+    "description": "Human-readable description of the permanent failure."
+   },
+   {
+    "name": "options",
+    "type": "{ cause?: Error }",
+    "description": "Optional configuration containing the underlying error."
+   }
+  ],
+  "returns": "A NonRetriableError instance; throwing it prevents additional retries for the function or step.",
+  "example": {
+   "title": "Stop retries for invalid input",
+   "code": "import { Inngest, NonRetriableError } from \"inngest\";\n\nconst inngest = new Inngest({ id: \"billing\" });\n\nexport const chargeCustomer = inngest.createFunction(\n  { id: \"charge-customer\" },\n  { event: \"billing/charge.requested\" },\n  async ({ event }) => {\n    if (!event.data.customerId) {\n      throw new NonRetriableError(\"customerId is required\");\n    }\n\n    return { customerId: event.data.customerId };\n  },\n);",
+   "language": "typescript",
+   "explanation": "Throws a permanent-error signal when required input is missing, so Inngest does not retry the function."
+  },
+  "useCases": [
+   {
+    "title": "Reject invalid input",
+    "scenario": "A request is missing a required field or contains invalid data."
+   },
+   {
+    "title": "Avoid repeated permanent failures",
+    "scenario": "A known permanent condition would produce the same failure on every attempt."
+   },
+   {
+    "title": "Stop a failing step early",
+    "scenario": "A workflow step detects that retrying cannot change the outcome."
+   }
+  ],
+  "related": [
+   "RetryAfterError",
+   "error retries",
+   "failure handlers"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When should a service throw NonRetriableError?",
+    "answer": "Use `NonRetriableError` when another attempt cannot succeed, such as for invalid input. Inngest then stops retrying the function or step that threw it.",
+    "followUp": "What should be thrown for a temporary network error? Throw a standard error so the normal retry behavior can handle the transient failure."
+   },
+   {
+    "question": "Where can NonRetriableError be used?",
+    "answer": "It can be raised from either a function or a step. The remaining retries are bypassed, and the function or step where it was thrown fails.",
+    "followUp": "Does it prevent retries everywhere in the workflow? No; its documented effect is on the function or step in which it is thrown."
+   },
+   {
+    "question": "What is the constructor signature?",
+    "answer": "Construct it with a message string: `new NonRetriableError(message)`. An optional `cause` error may also be supplied through the options object.",
+    "followUp": "How should a rate-limited API response be handled instead? Use `RetryAfterError` when the API provides a retry time."
+   }
+  ],
+  "keyPoints": [
+   "Throw NonRetriableError to stop further retries for the function or step that encounters a permanent failure.",
+   "Choose it when repeating the operation cannot resolve the underlying problem.",
+   "Invalid input is a typical case because retrying does not change the bad input.",
+   "Use it when the same error would predictably recur on another attempt.",
+   "The constructor requires a message and optionally accepts an underlying cause error."
+  ],
+  "gotchas": [
+   "Throw it at the function or step where the permanent condition is detected; it prevents retries for that execution unit.",
+   "Do not use it for transient failures such as temporary network problems; reserve it for conditions another attempt cannot fix."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Reliability::Timeouts": {
+  "sourceUrl": "https://www.inngest.com/docs/features/inngest-functions/cancellation/cancel-on-timeouts",
+  "sourceTitle": "Cancel Functions on Timeout",
+  "summary": "Bound a function run’s queue and execution time with `timeouts.start` and `timeouts.finish`. Both may be combined, while individual step duration is unaffected by these function-level limits.",
+  "explanation": "Inngest provides separate function-run limits for queue time and execution time. Set `timeouts.start` to bound how long a run waits before its first step begins, and `timeouts.finish` to bound execution after startup; these limits can be combined, while individual step duration is unaffected.",
+  "syntax": "timeouts: { start: \"10s\", finish: \"30s\" }",
+  "parameters": [
+   {
+    "name": "timeouts.start",
+    "type": "string | number | Date",
+    "description": "Maximum time a run may remain queued before the first step starts."
+   },
+   {
+    "name": "timeouts.finish",
+    "type": "string | number | Date",
+    "description": "Maximum execution time after the run starts."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Set start and finish timeouts",
+   "code": "import { inngest } from \"./client\";\n\nexport const sendReminder = inngest.createFunction(\n  {\n    id: \"send-reminder\",\n    timeouts: {\n      start: \"10s\",\n      finish: \"30s\",\n    },\n    triggers: { event: \"tasks/reminder.created\" },\n  },\n  async ({ event, step }) => {\n    await step.run(\"send-reminder-push\", async () => {\n      await pushNotificationService.push(event.data.reminder);\n    });\n  },\n);",
+   "language": "typescript",
+   "explanation": "This function is cancelled if it cannot start within 10 seconds or cannot finish within 30 seconds after starting."
+  },
+  "useCases": [
+   {
+    "title": "Expire stale queued runs",
+    "scenario": "Queued work loses value if it waits too long for capacity."
+   },
+   {
+    "title": "Enforce an execution deadline",
+    "scenario": "A workflow must complete within a business or operational deadline."
+   },
+   {
+    "title": "React to timeout cancellation",
+    "scenario": "Operations need a signal when long-running work is cancelled."
+   }
+  ],
+  "related": [
+   "timeouts.start",
+   "timeouts.finish",
+   "inngest/function.cancelled",
+   "concurrency",
+   "step.run"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What do `timeouts.start` and `timeouts.finish` control?",
+    "answer": "`timeouts.start` limits how long a run may remain queued before its first step starts. After the first step attempt begins, this limit stops applying and `timeouts.finish` begins.",
+    "followUp": "What happens if concurrency delays startup beyond the configured start timeout? The run can take longer to cancel because concurrency delays timeout enforcement."
+   },
+   {
+    "question": "Does a function timeout cancel an individual long-running step?",
+    "answer": "`timeouts.finish` limits how long a function run may execute after it has started. It applies to the run as a whole rather than cancelling a step at the same duration.",
+    "followUp": "Can both limits be configured together? Yes; stacking them bounds both queue time and post-start execution time."
+   },
+   {
+    "question": "What event is emitted when a run is cancelled by a timeout?",
+    "answer": "A timeout-cancelled run emits an `inngest/function.cancelled` event. The event provides a mechanism to observe or react to cancellation caused by the configured limits.",
+    "followUp": "Does cancellation interrupt code in the middle of a step? No; the documentation distinguishes function timeouts from step duration, so a timeout does not prematurely cancel a step."
+   }
+  ],
+  "keyPoints": [
+   "Use `timeouts.start` to limit queue time before the run successfully starts its first step.",
+   "Use `timeouts.finish` to limit execution time after the function has started.",
+   "Configure both properties when the function needs separate bounds for startup delay and active execution.",
+   "The start limit ends when the first step attempt begins; the finish limit then governs the run.",
+   "The finish duration applies from startup through the remaining function execution."
+  ],
+  "gotchas": [
+   "Function timeouts do not prematurely stop an individual step; they govern the run's start and finish phases.",
+   "Configured timeout cancellation may occur later than expected when concurrency keeps a run waiting.",
+   "Timeout cancellation emits the `inngest/function.cancelled` event, which can be used for handling or observability."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

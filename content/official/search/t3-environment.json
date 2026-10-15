@@ -1,0 +1,821 @@
+{
+ "Build & deployment::Monorepo usage": {
+  "sourceUrl": "https://env.t3.gg/docs/customization",
+  "sourceTitle": "Customization",
+  "summary": "Share common environment variables across monorepo packages by defining them in a reusable preset and extending that preset from each package. The `extends` property combines shared configuration with package-specific environment definitions.",
+  "explanation": "Define shared environment variables once in a preset package, then let each package extend that preset with the `extends` property. This keeps common validation centralized while allowing individual applications to add their own server or client variables.",
+  "syntax": "createEnv({ extends: [shared], ... })",
+  "parameters": [
+   {
+    "name": "env",
+    "type": "object",
+    "description": "An environment configuration object whose `extends` property references one or more reusable presets."
+   }
+  ],
+  "returns": "An environment object containing the inherited preset configuration together with the consuming package's definition.",
+  "example": {
+   "title": "Extend a shared preset",
+   "code": "import { createEnv } from \"@t3-oss/env-core\";\nimport * as z from \"zod\";\nimport { shared } from \"@acme/env\";\n\nexport const env = createEnv({\n  extends: [shared],\n  server: {\n    DATABASE_URL: z.url(),\n  },\n  runtimeEnv: process.env,\n});",
+   "language": "typescript",
+   "explanation": "Each package can extend the shared environment preset and add package-specific variables."
+  },
+  "useCases": [
+   {
+    "title": "Centralize shared variables",
+    "scenario": "Several applications in one repository require the same validated environment variables."
+   },
+   {
+    "title": "Combine shared and local schemas",
+    "scenario": "Each package needs common variables plus its own application-specific settings."
+   },
+   {
+    "title": "Include provider variables",
+    "scenario": "A deployment platform provides environment variables used by multiple packages."
+   }
+  ],
+  "related": [
+   "extends",
+   "presets",
+   "environment variables",
+   "monorepo"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use `extends` on an environment definition to inherit variables from another preset.",
+   "Presets can also bring in deployment-provider system variables alongside shared package variables.",
+   "A shared preset is suitable when several monorepo packages use the same environment variables."
+  ],
+  "gotchas": [
+   "The shared definition must be supplied as a preset and included through the `extends` property.",
+   "Use this pattern for variables shared by multiple packages in a monorepo; package-specific variables still belong in the consuming package."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Build & deployment::Per-environment values": {
+  "sourceUrl": "https://env.t3.gg/docs/introduction",
+  "sourceTitle": "Introduction ⋅ T3 Env",
+  "summary": "Keep one validated environment-variable schema while supplying distinct values for development, preview, and production deployments. T3 Env also separates server-only variables from values exposed to client code.",
+  "explanation": "Define one environment-variable schema for the application, then provide environment-specific values through the deployment environment or separate environment files. T3 Env validates the supplied values against that schema and exposes them through the generated, type-safe environment object while keeping server-only values away from client code.",
+  "syntax": "createEnv({ server, client, runtimeEnv })",
+  "parameters": [],
+  "returns": "A type-safe environment object containing validated server and, when configured, client variables.",
+  "example": {
+   "title": "Separate development and production values",
+   "code": "// .env.development\nDATABASE_URL=\"postgres://localhost/dev\"\n\n// .env.production\nDATABASE_URL=\"postgres://prod.example/app\"",
+   "language": "text",
+   "explanation": "Use separate environment files so the same variable name resolves to the configuration appropriate for each deployment environment."
+  },
+  "useCases": [
+   {
+    "title": "Use local services and credentials without changing application code.",
+    "scenario": "Local development"
+   },
+   {
+    "title": "Validate temporary deployment-specific values independently from production.",
+    "scenario": "Preview deployments"
+   },
+   {
+    "title": "Supply production secrets and service endpoints through the deployment environment.",
+    "scenario": "Production"
+   }
+  ],
+  "related": [
+   "schema",
+   "server",
+   "client",
+   "clientPrefix",
+   "runtimeEnv",
+   "runtimeEnvStrict",
+   "default values",
+   "transforms"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Create a schema once and validate the values supplied by each deployment environment.",
+   "After defining the schema, consume the validated environment object instead of reading untyped process variables throughout the application.",
+   "Schema validators can supply defaults when a variable is intentionally optional in a particular environment.",
+   "Server-only variables are protected from client exposure, and accidental client access produces a diagnostic failure."
+  ],
+  "gotchas": [
+   "Environment values arrive as strings; begin validation with a string schema before transforming or coercing them.",
+   "Do not assume server variables are available in browser code; T3 Env keeps them server-side."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Build & deployment::Skipping validation": {
+  "sourceUrl": "https://env.t3.gg/docs/customization",
+  "sourceTitle": "Customization",
+  "summary": "T3 Env can conditionally bypass environment validation, including during Docker builds where secrets are unavailable. Use this deliberately because skipped checks can desynchronize types from runtime values.",
+  "explanation": "Set `skipValidation` to a condition that is true only for the intended container build. When active, T3 Env bypasses validation for both the declared environment variables and extended presets, which can allow a Docker image to build without runtime secrets; normal runs should keep validation enabled.",
+  "syntax": "skipValidation: boolean",
+  "parameters": [
+   {
+    "name": "skipValidation",
+    "type": "boolean",
+    "description": "A boolean condition; when true, T3 Env skips validation."
+   }
+  ],
+  "returns": "An environment configuration created by createEnv, with validation conditionally bypassed.",
+  "example": {
+   "title": "Skip validation during a deliberate Docker build",
+   "code": "import { createEnv } from \"@t3-oss/env-core\";\nimport { z } from \"zod\";\n\nexport const env = createEnv({\n  server: {},\n  runtimeEnv: {},\n  skipValidation: process.env.DOCKER_BUILD === \"true\",\n});",
+   "language": "typescript",
+   "explanation": "This enables the documented opt-out only when the Docker build flag is set and no required variables are available."
+  },
+  "useCases": [
+   {
+    "title": "Secretless container build",
+    "scenario": "A Docker image build does not have all runtime environment variables available."
+   },
+   {
+    "title": "Lint-time configuration",
+    "scenario": "Linting or a similar process loads configuration without the deployment environment."
+   },
+   {
+    "title": "Deferred secret injection",
+    "scenario": "A deliberate build pipeline stage must create an artifact before runtime secrets are injected."
+   }
+  ],
+  "related": [
+   "createEnv",
+   "runtimeEnv",
+   "extended presets"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use the option for linting-like contexts or other deliberate situations where validation cannot run.",
+   "A supported scenario is a Docker image build that intentionally lacks some environment variables.",
+   "Configure `skipValidation` with a boolean condition rather than treating it as a permanent global bypass."
+  ],
+  "gotchas": [
+   "Do not use this as a general workaround: skipping checks can make the declared types disagree with actual runtime values.",
+   "The opt-out applies to extended presets as well as the environment variables defined in the current configuration."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Defining the schema::Client variables": {
+  "sourceUrl": "https://env.t3.gg/docs/core",
+  "sourceTitle": "Core ⋅ T3 Env",
+  "summary": "Declare only browser-safe environment values in the client schema, and give them the framework’s required public prefix. T3 Env enforces that prefix in both types and runtime validation.",
+  "explanation": "Client variables are the subset of environment values intended for browser code. Declare only publishable values in the client schema and configure clientPrefix to match the framework’s required exposure prefix; T3 Env checks that the names comply with this prefix at both the type and runtime levels.",
+  "syntax": "createEnv({ clientPrefix: \"PREFIX_\", client: { PREFIX_NAME: validator } })",
+  "parameters": [
+   {
+    "name": "clientPrefix",
+    "type": "string",
+    "description": "Prefix required on every key in the client schema; it must match the framework’s client-side exposure convention."
+   },
+   {
+    "name": "client",
+    "type": "object",
+    "description": "Schema entries for values that may be exposed to client-side code; each key must use clientPrefix."
+   }
+  ],
+  "returns": "A validated environment object containing the declared client variables.",
+  "example": {
+   "title": "Define a public client variable",
+   "code": "import { createEnv } from \"@t3-oss/env-core\";\nimport { z } from \"zod\";\n\nexport const env = createEnv({\n  clientPrefix: \"PUBLIC_\",\n  client: {\n    PUBLIC_API_URL: z.string().url(),\n  },\n  runtimeEnv: {\n    PUBLIC_API_URL: process.env.PUBLIC_API_URL,\n  },\n});",
+   "language": "typescript",
+   "explanation": "Defines a client-safe URL and permits it because its name starts with the configured prefix."
+  },
+  "useCases": [
+   {
+    "title": "Client API configuration",
+    "scenario": "Expose a public API base URL to browser code."
+   },
+   {
+    "title": "Publishable service keys",
+    "scenario": "Add a framework-approved publishable key, such as a public analytics or authentication identifier."
+   },
+   {
+    "title": "Separate public and private configuration",
+    "scenario": "Keep secrets out of the client schema while exposing non-sensitive configuration."
+   }
+  ],
+  "related": [
+   "createEnv",
+   "clientPrefix",
+   "client",
+   "server",
+   "runtimeEnv"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Choose the client prefix from the framework’s client-exposure convention before defining the schema.",
+   "clientPrefix configures the required beginning of every client variable name.",
+   "The correct prefix depends on the framework; Astro uses PUBLIC_, whereas Vite uses VITE_.",
+   "T3 Env validates the required prefix during type checking and when the environment is processed.",
+   "The client section contains publishable values validated with the chosen schema library."
+  ],
+  "gotchas": [
+   "Every key in the client schema must begin with the configured clientPrefix; otherwise TypeScript rejects the schema.",
+   "Prefix compliance is checked twice, so an invalid client variable is not merely a compile-time concern."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Defining the schema::createEnv": {
+  "sourceUrl": "https://env.t3.gg/docs/core",
+  "sourceTitle": "Core ⋅ T3 Env",
+  "summary": "Declare and validate server and client environment variables in one schema. createEnv returns typed access to the validated values.",
+  "explanation": "createEnv combines server-only and client-exposed variable schemas, checks client names against a required prefix, and validates values from the configured runtime environment. The returned env object provides typed, validated access to those variables.",
+  "syntax": "createEnv({ server, clientPrefix, client, runtimeEnv })",
+  "parameters": [
+   {
+    "name": "server",
+    "type": "object",
+    "description": "Schemas for server-only environment variables."
+   },
+   {
+    "name": "clientPrefix",
+    "type": "string",
+    "description": "Required prefix for client-side variable names."
+   },
+   {
+    "name": "client",
+    "type": "object",
+    "description": "Schemas for variables available to client-side code."
+   },
+   {
+    "name": "runtimeEnv",
+    "type": "object",
+    "description": "Runtime object containing environment values, typically process.env or import.meta.env."
+   }
+  ],
+  "returns": "A typed env object containing validated environment variables.",
+  "example": {
+   "title": "Define server and client environment schemas",
+   "code": "import { createEnv } from \"@t3-oss/env-core\";\nimport * as z from \"zod\";\n\nexport const env = createEnv({\n  server: {\n    DATABASE_URL: z.url(),\n    OPEN_AI_API_KEY: z.string().min(1),\n  },\n  clientPrefix: \"PUBLIC_\",\n  client: {\n    PUBLIC_API_URL: z.url(),\n  },\n  runtimeEnv: process.env,\n});",
+   "language": "typescript",
+   "explanation": "This defines validated server and client variables, requires client names to use the PUBLIC_ prefix, and reads values from process.env."
+  },
+  "useCases": [
+   {
+    "title": "Server configuration",
+    "scenario": "Centralize validation for database credentials, API keys, and other server-only settings."
+   },
+   {
+    "title": "Client configuration",
+    "scenario": "Expose only deliberately prefixed public settings to browser code."
+   },
+   {
+    "title": "Validator flexibility",
+    "scenario": "Use different Standard Schema-compatible validation libraries while retaining typed environment access."
+   }
+  ],
+  "related": [
+   "runtimeEnv",
+   "clientPrefix",
+   "server",
+   "client",
+   "Standard Schema",
+   "env"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Call createEnv with an object containing the environment variable schemas.",
+   "clientPrefix declares the required prefix for variables exposed to client code.",
+   "runtimeEnv specifies the source object from which values are read, commonly process.env or import.meta.env.",
+   "Schemas can use any validator implementing Standard Schema, not only Zod.",
+   "Use the returned env object throughout the application for typed access and editor completion."
+  ],
+  "gotchas": [
+   "If the application has no client-side variables, omit both client-related properties.",
+   "clientPrefix is checked during typing and runtime validation, so client variable names must follow it."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Defining the schema::Server variables": {
+  "sourceUrl": "https://env.t3.gg/docs/core",
+  "sourceTitle": "Core ⋅ T3 Env",
+  "summary": "Define secrets and other backend-only values in the `server` schema. Omit `clientPrefix` and `client` when the variables should exist only on the server.",
+  "explanation": "Place secrets and other backend-only values in the server schema passed to createEnv. Omitting client configuration keeps those variables unavailable to client code; if variable names are sensitive, split the schemas so their validation definitions are not shipped to the browser.",
+  "syntax": "createEnv({ server: { VARIABLE_NAME: validator }, runtimeEnv: process.env })",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "CreateEnvOptions",
+    "description": "Object containing server-only environment variable validators; clientPrefix and client are omitted for a server-only schema."
+   }
+  ],
+  "returns": "An env object exposing validated, type-safe environment variables; server variables are unavailable in client code.",
+  "example": {
+   "title": "Server-only environment schema",
+   "code": "import { createEnv } from \"@t3-oss/env-core\";\nimport * as z from \"zod\";\n\nexport const env = createEnv({\n  server: {\n    DATABASE_URL: z.url(),\n    OPEN_AI_API_KEY: z.string().min(1),\n  },\n  runtimeEnv: process.env,\n});",
+   "language": "typescript",
+   "explanation": "Defines validated server-only variables and reads their runtime values from the process environment."
+  },
+  "useCases": [
+   {
+    "title": "Keep database URLs server-only",
+    "scenario": "Database credentials"
+   },
+   {
+    "title": "Protect API keys and tokens",
+    "scenario": "Private API integrations"
+   },
+   {
+    "title": "Validate deployment-only settings",
+    "scenario": "Backend configuration"
+   }
+  ],
+  "related": [
+   "createEnv",
+   "server",
+   "clientPrefix",
+   "client",
+   "runtimeEnv",
+   "runtimeEnvStrict"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use only the server schema when every defined variable must remain server-side.",
+   "Client exposure is controlled separately by a required framework-specific prefix; server variables do not use that client prefix.",
+   "The library prevents server variable values from entering the client bundle.",
+   "A proxy and safe parsing allow validation to work without exposing server values to client code.",
+   "Declare each backend-only variable under server and attach an appropriate validator."
+  ],
+  "gotchas": [
+   "A combined schema is convenient, but its server validation schemas are shipped to the client; split the schemas if variable names are sensitive.",
+   "Do not access server variables from client code: they are unavailable there and access attempts throw an error."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Defining the schema::Shared variables": {
+  "sourceUrl": "https://env.t3.gg/docs/core",
+  "sourceTitle": "Core ⋅ T3 Env",
+  "summary": "Define environment-variable schemas for server and client use with createEnv. Declare shared values in the appropriate schema, and require a framework-specific prefix for variables exposed to the browser.",
+  "explanation": "T3 Env uses separate server and client schema sections to describe which environment variables the application may use. Put values needed by server code in server, and put browser-safe values in client with the framework’s required prefix; runtimeEnv supplies the actual environment object to validate.",
+  "syntax": "createEnv({ server, clientPrefix, client, runtimeEnv })",
+  "parameters": [
+   {
+    "name": "server",
+    "type": "Record<string, StandardSchema>",
+    "description": "Schema for server-only environment variables."
+   },
+   {
+    "name": "clientPrefix",
+    "type": "string",
+    "description": "Prefix required for variables exposed to the client."
+   },
+   {
+    "name": "client",
+    "type": "Record<string, StandardSchema>",
+    "description": "Schema for client-visible environment variables."
+   },
+   {
+    "name": "runtimeEnv",
+    "type": "object",
+    "description": "Runtime object containing environment values to validate."
+   }
+  ],
+  "returns": "A validated env object for type-safe access to declared environment variables.",
+  "example": {
+   "title": "Define shared environment schemas",
+   "code": "import { createEnv } from \"@t3-oss/env-core\";\nimport * as z from \"zod\";\n\nexport const env = createEnv({\n  server: {\n    NODE_ENV: z.enum([\"development\", \"test\", \"production\"]),\n    DATABASE_URL: z.url(),\n  },\n  clientPrefix: \"PUBLIC_\",\n  client: {\n    PUBLIC_API_URL: z.url(),\n  },\n  runtimeEnv: process.env,\n});",
+   "language": "typescript",
+   "explanation": "This schema validates server-only values and explicitly prefixed client values, then exposes the validated result through env."
+  },
+  "useCases": [
+   {
+    "title": "Server-only configuration",
+    "scenario": "Declare values used only by backend code, such as database credentials."
+   },
+   {
+    "title": "Client configuration",
+    "scenario": "Expose browser-safe settings using the framework’s required public prefix."
+   },
+   {
+    "title": "Runtime validation",
+    "scenario": "Validate and type-check environment values from process.env or import.meta.env."
+   },
+   {
+    "title": "Unified schema",
+    "scenario": "Keep server and client declarations together for editor autocomplete when variable names are not sensitive."
+   }
+  ],
+  "related": [
+   "createEnv",
+   "server",
+   "clientPrefix",
+   "client",
+   "runtimeEnv",
+   "Standard Schema",
+   "process.env",
+   "import.meta.env"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Create one schema with createEnv, placing server-only declarations under server and browser-exposed declarations under client.",
+   "Set clientPrefix to the prefix your framework uses for variables exposed to the browser.",
+   "The client prefix is checked during type checking and again at runtime.",
+   "Set runtimeEnv to the object containing the actual values, commonly process.env or import.meta.env.",
+   "For a server-only application, omit the client configuration entirely."
+  ],
+  "gotchas": [
+   "Client variables must use the configured client prefix; the prefix is enforced both at the type level and at runtime.",
+   "Keeping both schemas together can expose server-variable schema definitions to the client; split the schemas if variable names are sensitive."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Defining the schema::Type inference": {
+  "sourceUrl": "https://env.t3.gg/docs/introduction",
+  "sourceTitle": "Introduction ⋅ T3 Env",
+  "summary": "Validate environment variables with a schema, then derive Node's ProcessEnv type from that schema. This provides autocomplete and type checking while consuming the validated names.",
+  "explanation": "Define a validation schema, parse the environment values, and extend Node's ProcessEnv interface with the schema's inferred type. This enables editor autocomplete and type checking, but the runtime values on process.env remain the original strings, so transforms can make the declared types inaccurate.",
+  "syntax": "declare global {\n  namespace NodeJS {\n    interface ProcessEnv extends z.infer<typeof envVariables> {}\n  }\n}",
+  "parameters": [],
+  "returns": "The documentation describes a type augmentation rather than a runtime-returning helper; the schema parse validates process.env.",
+  "example": {
+   "title": "Infer ProcessEnv types from a schema",
+   "code": "import { z } from \"zod\";\n\nconst envVariables = z.object({\n  DATABASE_URL: z.string().url(),\n  PORT: z.coerce.number().int().positive(),\n});\n\nenvVariables.parse(process.env);\n\ndeclare global {\n  namespace NodeJS {\n    interface ProcessEnv extends z.infer<typeof envVariables> {}\n  }\n}\n\nconsole.log(process.env.DATABASE_URL);\nconsole.log(process.env.PORT);",
+   "language": "typescript",
+   "explanation": "Validates the environment schema, then augments Node's ProcessEnv type with the schema's inferred type."
+  },
+  "useCases": [
+   {
+    "title": "Editor-assisted environment access",
+    "scenario": "Give application code autocomplete for environment-variable names."
+   },
+   {
+    "title": "Fail early on invalid configuration",
+    "scenario": "Validate required environment variables during startup or build."
+   },
+   {
+    "title": "Consistent configuration typing",
+    "scenario": "Share schema-derived types across server-side modules."
+   }
+  ],
+  "related": [
+   "process.env",
+   "ProcessEnv",
+   "z.infer",
+   "envVariables.parse",
+   "schema validation"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Infer the schema result and apply it to Node's ProcessEnv declaration for editor support.",
+   "The augmentation makes schema-defined environment names available to autocomplete across the application.",
+   "Parse process.env with the schema before relying on the declared environment-variable types.",
+   "Extend ProcessEnv with the validator's inferred schema type."
+  ],
+  "gotchas": [
+   "Schema parsing does not replace values on process.env; transformed values are not written back.",
+   "Avoid transforms when augmenting ProcessEnv unless the runtime string values and inferred types intentionally match."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Validation rules::Cross-field refinement": {
+  "sourceUrl": "https://env.t3.gg/docs/customization",
+  "sourceTitle": "Customization",
+  "summary": "Use createFinalSchema to add cross-field validation to T3 Env. This lets one environment variable become required when another has a selected value.",
+  "explanation": "Use createFinalSchema to apply a validator-level refinement after the generated environment schema. This is the appropriate place to inspect multiple environment variables together and add a targeted validation issue for the dependent variable.",
+  "syntax": "createFinalSchema: (shape) => finalSchema",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "CreateEnvOptions",
+    "description": "Environment schema configuration containing the server-side variable definitions and a createFinalSchema callback."
+   },
+   {
+    "name": "shape",
+    "type": "SchemaShape",
+    "description": "Initial schema shape produced by T3 Env and passed to the final-schema callback."
+   },
+   {
+    "name": "env",
+    "type": "Inferred environment object",
+    "description": "The environment object inspected by the cross-field refinement."
+   }
+  ],
+  "returns": "A validated environment object; validation fails when the final schema reports an issue.",
+  "example": {
+   "title": "Require an environment variable conditionally",
+   "code": "import { createEnv } from \"@t3-oss/env-core\";\nimport { z } from \"zod\";\n\nexport const env = createEnv({\n  server: {\n    AUTH_MODE: z.enum([\"api-key\", \"oauth\"]),\n    API_KEY: z.string().optional(),\n  },\n  createFinalSchema: (shape) =>\n    z.object(shape).superRefine((env, ctx) => {\n      if (env.AUTH_MODE === \"api-key\" && !env.API_KEY) {\n        ctx.addIssue({\n          code: z.ZodIssueCode.custom,\n          path: [\"API_KEY\"],\n          message: \"API_KEY is required when AUTH_MODE is api-key\",\n        });\n      }\n    }),\n});",
+   "language": "typescript",
+   "explanation": "The final schema adds a cross-field rule: API_KEY may be omitted generally, but validation reports an error when AUTH_MODE selects api-key and the key is absent."
+  },
+  "useCases": [
+   {
+    "title": "Require an API key for API-key authentication",
+    "scenario": "Authentication configuration"
+   },
+   {
+    "title": "Require a database URL for a selected database provider",
+    "scenario": "Database selection"
+   },
+   {
+    "title": "Require mode-specific credentials only when a feature is enabled",
+    "scenario": "Feature modes"
+   }
+  ],
+  "related": [
+   "createEnv",
+   "createFinalSchema",
+   "Standard Schema",
+   "Zod",
+   "refine",
+   "superRefine"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Pass a function to createFinalSchema when validation needs to consider relationships between multiple environment variables.",
+   "The validator used for the final schema can follow the Standard Schema interface supported by T3 Env.",
+   "Define the raw environment variables with string-aware validators before refining their combined values.",
+   "The schema can use a supported validator library and its refinement capabilities rather than being limited to one validator implementation."
+  ],
+  "gotchas": [
+   "The refinement must be supplied through createFinalSchema; the page documents this option for applying additional refinement or transformation.",
+   "Environment values arrive as strings, so account for string input before applying parsing, coercion, or cross-field checks."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Validation rules::Defaults": {
+  "sourceUrl": "https://env.t3.gg/docs/customization",
+  "sourceTitle": "Customization",
+  "summary": "Use validator defaults only when the fallback is genuinely safe. If an environment variable may be an empty string, enable emptyStringAsUndefined so the default can apply when the value is effectively absent.",
+  "explanation": "Defaults are supplied through the validator schema, but an empty environment value can prevent them from taking effect. Enable emptyStringAsUndefined when empty strings should behave like missing values, then use a default only for a value with a safe fallback such as a local development domain.",
+  "syntax": "z.string().default(\"fallback\")",
+  "parameters": [
+   {
+    "name": "server",
+    "type": "Record<string, Standard Schema validator>",
+    "description": "Server-side environment schema containing variables and their validator definitions."
+   },
+   {
+    "name": "runtimeEnv",
+    "type": "Record<string, unknown>",
+    "description": "Runtime values supplied to the environment schema."
+   },
+   {
+    "name": "emptyStringAsUndefined",
+    "type": "boolean",
+    "description": "Converts empty strings to undefined before validation when enabled."
+   }
+  ],
+  "returns": "A validated environment object whose values reflect the validator schemas and their defaults.",
+  "example": {
+   "title": "Safe default for an optional local domain",
+   "code": "import { createEnv } from \"@t3-oss/env-core\";\nimport { z } from \"zod\";\n\nexport const env = createEnv({\n  server: {\n    DOMAIN: z.string().default(\"localhost\"),\n  },\n  runtimeEnv: {\n    DOMAIN: process.env.DOMAIN,\n  },\n  emptyStringAsUndefined: true,\n});",
+   "language": "typescript",
+   "explanation": "An empty DOMAIN value is treated as absent, allowing the schema default to apply."
+  },
+  "useCases": [
+   {
+    "title": "Development configuration",
+    "scenario": "A local development hostname has a harmless fallback."
+   },
+   {
+    "title": "Optional application setting",
+    "scenario": "A non-sensitive feature setting has a documented safe default."
+   },
+   {
+    "title": "Normalizing empty environment values",
+    "scenario": "Empty values in .env files should behave like omitted values."
+   }
+  ],
+  "related": [
+   "emptyStringAsUndefined",
+   "createEnv",
+   "server",
+   "runtimeEnv",
+   "Standard Schema",
+   "Zod",
+   "Valibot",
+   "ArkType"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Defaults are defined with the validator you choose, because T3 Env supports the validator’s standard features.",
+   "An empty environment value can interfere with a schema default, so decide explicitly whether empty strings should count as missing.",
+   "Set emptyStringAsUndefined to true when empty strings should be converted to undefined before validation.",
+   "The exact default declaration depends on the validator, while T3 Env passes the schema behavior through."
+  ],
+  "gotchas": [
+   "An empty string is not the same as a missing value: for a string field with a default, an explicitly empty environment variable bypasses the default unless emptyStringAsUndefined is enabled."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Validation rules::Error messages": {
+  "sourceUrl": "https://env.t3.gg/docs/customization",
+  "sourceTitle": "Customization | T3 Env",
+  "summary": "T3 Env lets you customize schema-validation failures through onValidationError. The callback receives validation issues so you can report the invalid variable and what its schema expected.",
+  "explanation": "T3 Env passes failed schema validation issues to the onValidationError callback, allowing applications to report which environment variable failed and inspect the expected validation details.",
+  "syntax": "onValidationError: (issues: StandardSchemaV1.Issue[]) => void",
+  "parameters": [
+   {
+    "name": "issues",
+    "type": "StandardSchemaV1.Issue[]",
+    "description": "Validation problems supplied by the validator, including details about the failed variable and rule."
+   }
+  ],
+  "returns": "The callback's return value is not specified; the documented example logs the issues and throws an Error.",
+  "example": {
+   "title": "Report validation issues",
+   "code": "import { createEnv } from \"@t3-oss/env-core\";\nimport { z } from \"zod\";\n\nexport const env = createEnv({\n  server: {\n    PORT: z.coerce.number().int().positive(),\n  },\n  runtimeEnv: {\n    PORT: process.env.PORT,\n  },\n  onValidationError: (issues) => {\n    console.error(\"Invalid environment variables:\", issues);\n    throw new Error(\"Invalid environment variables\");\n  },\n});",
+   "language": "typescript",
+   "explanation": "Logs the validator issues when an environment variable does not satisfy its schema."
+  },
+  "useCases": [
+   {
+    "title": "Readable configuration errors",
+    "scenario": "Print invalid environment variables and their validation details during startup."
+   },
+   {
+    "title": "Fail fast",
+    "scenario": "Abort application initialization when required configuration is invalid."
+   },
+   {
+    "title": "Build diagnostics",
+    "scenario": "Record validation failures in a build or deployment log."
+   }
+  ],
+  "related": [
+   "createEnv",
+   "StandardSchemaV1.Issue",
+   "onInvalidAccess"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use onValidationError to receive validation issues after the environment schema rejects one or more values.",
+   "The callback receives an issues array that can be logged to identify the invalid variable and the validation problem.",
+   "The callback accepts Standard Schema issue objects, providing a consistent error-reporting shape across supported validators.",
+   "After reporting the issues, the callback can throw an application-specific error to stop startup or the build."
+  ],
+  "gotchas": [
+   "The callback runs only after schema validation has failed; it is not a general environment-variable access hook.",
+   "Values are passed directly to the validator by default, so validator-specific type errors can appear in the reported issues."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Validation rules::Format validation": {
+  "sourceUrl": "https://env.t3.gg/docs/standard-schema",
+  "sourceTitle": "Standard Schema support",
+  "summary": "Use Standard Schema validators to constrain environment variables such as URLs and ports instead of accepting arbitrary strings. T3 Env supports compatible libraries including Zod, Valibot, ArkType, and Typia.",
+  "explanation": "Define each environment variable with a Standard Schema validator instead of accepting an unrestricted string. T3 Env passes runtime values to the chosen validator, so URL formats, numeric port bounds, and permitted enum values are checked when the environment is parsed.",
+  "syntax": "createEnv({ server, client, runtimeEnv, ...options })",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "CreateEnvOptions",
+    "description": "Environment schema configuration passed to createEnv, including server variables and runtime values."
+   }
+  ],
+  "returns": "A validated, typed environment object.",
+  "example": {
+   "title": "Constrain environment values with schemas",
+   "code": "import { createEnv } from \"@t3-oss/env-core\";\nimport * as z from \"zod\";\n\nexport const env = createEnv({\n  server: {\n    DATABASE_URL: z.string().url(),\n    PORT: z.coerce.number().int().min(1).max(65535),\n    NODE_ENV: z.enum([\"development\", \"test\", \"production\"]),\n  },\n  runtimeEnv: process.env,\n});",
+   "language": "typescript",
+   "explanation": "This schema validates a URL, constrains a coerced port to the valid TCP range, and accepts only the listed environment names."
+  },
+  "useCases": [
+   {
+    "title": "Validate URLs",
+    "scenario": "A database connection variable must be a valid URL."
+   },
+   {
+    "title": "Constrain ports",
+    "scenario": "A service port must be numeric and within an allowed range."
+   },
+   {
+    "title": "Restrict enums",
+    "scenario": "An environment name must be one of a fixed set of values."
+   }
+  ],
+  "related": [
+   "Standard Schema",
+   "Zod",
+   "Valibot",
+   "ArkType",
+   "Typia",
+   "createEnv",
+   "emptyStringAsUndefined"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use any validator library that implements Standard Schema, rather than being limited to one validation library.",
+   "Schemas validate environment input at runtime before your application relies on it.",
+   "Use a URL validator for variables that must contain a URL instead of an arbitrary string.",
+   "Coerce numeric environment values when the application expects a number; add range constraints when needed.",
+   "Standard Schema v1-compatible validators can provide the constraints used by T3 Env."
+  ],
+  "gotchas": [
+   "Empty strings are passed directly to the validator by default, so values such as an empty PORT can fail type validation."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Validation rules::Required versus optional": {
+  "sourceUrl": "https://env.t3.gg/docs/customization",
+  "sourceTitle": "Customization | T3 Env",
+  "summary": "T3 Env treats schema entries as required unless their validator is marked optional. Use `.optional()` only for values that may be absent, so missing requirements fail validation instead of being silently defaulted.",
+  "explanation": "Define required variables with a non-optional validator so validation fails when the value is missing. Add `.optional()` only when absence is valid; this keeps the schema and runtime values aligned instead of silently supplying a default.",
+  "syntax": "createEnv({ server, client?, clientPrefix?, runtimeEnv?, runtimeEnvStrict?, emptyStringAsUndefined? })",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "CreateEnvOptions",
+    "description": "Object containing the server schema, optional client schema and prefix, and runtime environment mapping."
+   }
+  ],
+  "returns": "A validated, typed environment object.",
+  "example": {
+   "title": "Required and optional variables",
+   "code": "import { createEnv } from \"@t3-oss/env-core\";\nimport * as z from \"zod\";\n\nexport const env = createEnv({\n  server: {\n    DATABASE_URL: z.string().min(1),\n    OPTIONAL_TOKEN: z.string().min(1).optional(),\n  },\n  runtimeEnv: {\n    DATABASE_URL: process.env.DATABASE_URL,\n    OPTIONAL_TOKEN: process.env.OPTIONAL_TOKEN,\n  },\n});",
+   "language": "typescript",
+   "explanation": "The required database URL fails validation when absent or empty, while the optional token may be omitted."
+  },
+  "useCases": [
+   {
+    "title": "Fail fast on missing secrets",
+    "scenario": "Application startup"
+   },
+   {
+    "title": "Allow deliberately absent optional settings",
+    "scenario": "Feature flags"
+   },
+   {
+    "title": "Normalize empty environment values when needed",
+    "scenario": "Docker builds"
+   }
+  ],
+  "related": [
+   "createEnv",
+   "server",
+   "client",
+   "clientPrefix",
+   "runtimeEnv",
+   "runtimeEnvStrict",
+   "emptyStringAsUndefined"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Server-only variables are not exposed to client code; client access produces an error rather than a usable value.",
+   "A required variable can use a non-empty string validator, such as `z.string().min(1)`.",
+   "Use `.optional()` when a variable is genuinely allowed to be absent."
+  ],
+  "gotchas": [
+   "Values are passed directly to the validator by default, so an empty string is not automatically treated as an absent value.",
+   "If your environment supplies empty strings for omitted values, enable `emptyStringAsUndefined` when that behavior is intended."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Validation rules::Transformations": {
+  "sourceUrl": "https://env.t3.gg/docs/recipes",
+  "sourceTitle": "Recipes",
+  "summary": "Transform environment-variable strings into application types at the validation boundary. The recipes show explicit boolean transforms and number parsing with a follow-up number check, plus Zod number coercion.",
+  "explanation": "Environment variables arrive as strings, so begin with a string validator and then transform or coerce them into the types used by the application. Number conversion can use parsing followed by a number check; boolean conversion should use explicit application rules rather than generic primitive coercion.",
+  "syntax": "createEnv({ server: { KEY: z.string().transform(...).pipe(...) }, runtimeEnv: process.env })",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "CreateEnvOptions",
+    "description": "Environment schema configuration passed to createEnv, including server validators and runtimeEnv."
+   }
+  ],
+  "returns": "A typed, validated environment object with transformed values.",
+  "example": {
+   "title": "Coerce environment strings at the boundary",
+   "code": "import { z } from \"zod\";\nimport { createEnv } from \"@t3-oss/env-core\";\n\nexport const env = createEnv({\n  server: {\n    PORT: z.string().transform((s) => parseInt(s, 10)).pipe(z.number()),\n    ENABLED: z.string().transform((s) => s !== \"false\" && s !== \"0\"),\n  },\n  runtimeEnv: process.env,\n});",
+   "language": "typescript",
+   "explanation": "This schema validates environment variables as strings, then converts the port to a number and the flag to a boolean."
+  },
+  "useCases": [
+   {
+    "title": "Numeric configuration",
+    "scenario": "Convert a PORT variable into a validated number for server configuration."
+   },
+   {
+    "title": "Boolean feature flags",
+    "scenario": "Turn string flags such as 0, 1, false, or true into booleans using explicit rules."
+   },
+   {
+    "title": "Strict boolean input",
+    "scenario": "Reject unexpected boolean spellings before they enter application code."
+   }
+  ],
+  "related": [
+   "createEnv",
+   "z.string()",
+   "z.coerce.number()",
+   "transform",
+   "pipe",
+   "z.number()",
+   "refine",
+   "Standard Schema"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Treat the incoming value as a string first, then perform the conversion at the environment boundary.",
+   "Boolean flags commonly need explicit conversion from their string representations.",
+   "Use a transform when the accepted string values and boolean rule are application-specific.",
+   "A refinement can restrict boolean input to the literal strings your configuration accepts.",
+   "Numeric settings such as ports commonly arrive as strings and need conversion.",
+   "Pipe the transformed result into a number validator to verify the conversion."
+  ],
+  "gotchas": [
+   "Avoid Zod's default primitive boolean coercion: any string, including \"false\", becomes true.",
+   "Start from a string schema because environment variables are supplied as strings."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

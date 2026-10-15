@@ -20,22 +20,19 @@ export function conciseFocus(summary: string, limit = 150) {
   return `${cut.slice(0, cut.lastIndexOf(" "))}…`;
 }
 
+/**
+ * The answer a catalogue row starts from before anything authored is added.
+ *
+ * Each sentence of the summary is said exactly once: the first is the
+ * definition and the rest are the paragraph under it. Nothing is invented to
+ * fill a section — a step, key point or question that only restates the
+ * summary, or that would read the same under any topic, teaches nothing and is
+ * left for the authored points, notes and examples to supply.
+ */
 export function summaryExplanation(name: string, summary: string, category: string): PreparedExplanation {
-  const answer = emptyAnswer(name, summary);
+  void category;
   const facts = [...new Set(summary.split(/(?<=[.;])\s+|\s+—\s+/).map(item => item.trim()).filter(Boolean))];
-  const focus = facts[0] ?? summary;
-  const secondFact = facts[1] ?? `It is commonly used when working with ${category.toLowerCase()}.`;
-  answer.summary = `Learn ${name} through its purpose, behavior, and practical trade-offs. ${summary}`;
-  answer.steps = [
-    { title: "Core concept", detail: focus, code: "" },
-    { title: "How it fits", detail: secondFact, code: "" },
-    { title: "Check your understanding", detail: `Before using ${name}, identify the input, the expected result, and the constraint that matters most in this context.`, code: "" },
-  ];
-  answer.keyPoints = [...new Set([focus, secondFact, `Choose ${name} when its ${category.toLowerCase()} behavior matches the problem.`])];
-  answer.subjects = [
-    { name: `Question: What is ${name}?`, summary: `Answer: ${focus}`, details: facts.slice(1), keyPoints: [] },
-    { name: `Question: Why does ${name} matter?`, summary: `Answer: ${secondFact}`, details: [`It gives you a predictable way to reason about ${category.toLowerCase()} decisions.`], keyPoints: [] },
-    { name: `Question: What should you verify before using it?`, summary: `Answer: Match the feature to the problem rather than choosing it by name alone.`, details: [`Check inputs, outputs, limits, and the failure case.`], keyPoints: [] },
-  ];
+  const answer = emptyAnswer(name, facts[0] ?? summary);
+  answer.summary = facts.slice(1).join(" ");
   return { answer, focus: conciseFocus(summary), kind: "interview" };
 }

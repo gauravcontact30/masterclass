@@ -1,0 +1,2175 @@
+{
+ "Grouping & aggregation::Aggregated cell rendering": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/framework/react/guide/aggregation",
+  "sourceTitle": "Aggregation (React) Guide | TanStack Table React Docs",
+  "summary": "Use a column’s `aggregatedCell` renderer to display grouped aggregate values differently from leaf-row cells. Pair it with an aggregation function when grouped rows need calculated values.",
+  "explanation": "Define an `aggregatedCell` renderer on a column that has an aggregation function. TanStack Table uses that renderer for synthetic grouped rows, so the grouped value can be displayed differently from leaf-row values. The cell context provides `getValue`, while `cell.getIsAggregated()` can identify aggregate cells when rendering more generally.",
+  "syntax": "aggregatedCell: ({ getValue }) => getValue<T>()",
+  "parameters": [
+   {
+    "name": "aggregatedCell",
+    "type": "ColumnDef['aggregatedCell']",
+    "description": "Column option specifying the renderer for aggregate values on grouped rows."
+   },
+   {
+    "name": "aggregationFn",
+    "type": "AggregationFn|string",
+    "description": "Column option specifying how grouped values are calculated."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Format grouped-row values",
+   "code": "const columnHelper = createColumnHelper<Person>()\n\nconst columns = [\n  columnHelper.accessor('visits', {\n    aggregationFn: 'sum',\n    aggregatedCell: ({ getValue }) =>\n      getValue<number>().toLocaleString(),\n  }),\n]",
+   "language": "typescript",
+   "explanation": "This column formats the aggregate value for grouped rows while ordinary rows continue using the column's normal cell renderer."
+  },
+  "useCases": [
+   {
+    "title": "Format grouped totals",
+    "scenario": "A grouped numeric column needs a formatted subtotal instead of the raw leaf-row rendering."
+   },
+   {
+    "title": "Differentiate group rows",
+    "scenario": "A table should distinguish generated group rows visually from records."
+   },
+   {
+    "title": "Customize aggregate presentation",
+    "scenario": "A grouped column needs a custom representation such as a label, badge, or localized number."
+   }
+  ],
+  "related": [
+   "aggregationFn",
+   "cell.getIsAggregated()",
+   "column.getAggregationValue()",
+   "footer",
+   "rowAggregationFeature",
+   "columnGroupingFeature",
+   "groupedRowModel"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you render a different value for a grouped row?",
+    "answer": "Set `aggregatedCell` on the column and provide an aggregation function such as `sum`. TanStack Table invokes that renderer for synthetic grouped rows, allowing their values to differ from leaf-row rendering.",
+    "followUp": "How can rendering code detect an aggregate cell outside the column option? Use `cell.getIsAggregated()` to test whether the cell represents a grouped aggregate."
+   },
+   {
+    "question": "What setup is required for grouped aggregation?",
+    "answer": "Grouped aggregation combines independent features: register row aggregation and column grouping, include the grouped row model, and configure aggregation on the relevant column. Without the grouped row model, grouped aggregate rows are not produced.",
+    "followUp": "Can aggregation exist without row grouping? Yes. The aggregation feature can calculate grand totals and row-subset totals in an otherwise ungrouped table."
+   },
+   {
+    "question": "How are aggregate cells different from footer cells?",
+    "answer": "Use the column's `aggregationFn` to calculate the grouped value and `aggregatedCell` to format it. A footer is separate and should use the adapter's ordinary footer renderer.",
+    "followUp": "How can a grand total be obtained? Call `column.getAggregationValue()` without arguments to aggregate the default pre-grouped row model."
+   }
+  ],
+  "keyPoints": [
+   "Use the column-level `aggregatedCell` option to render values on generated grouped rows.",
+   "`cell.getIsAggregated()` identifies whether a cell is an aggregate cell.",
+   "Assign an aggregation function only to columns whose grouped values should be calculated.",
+   "The renderer can retrieve the computed value with `getValue` and format it for display."
+  ],
+  "gotchas": [
+   "`aggregatedCell` applies to synthetic grouped rows, not ordinary leaf rows.",
+   "Do not use `aggregatedCell` to customize footers; configure the footer renderer separately.",
+   "Grouped aggregation requires both aggregation and grouping features, plus the grouped row-model slot."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Grouping & aggregation::Aggregation functions": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/framework/react/guide/aggregation",
+  "sourceTitle": "Aggregation (React) Guide | TanStack Table React Docs",
+  "summary": "Aggregation functions reduce column values into totals or other summaries such as count, extent, mean, and custom results. Use them independently for totals or with grouping features for per-group aggregates.",
+  "explanation": "Aggregation functions reduce a column's values for totals or grouped results. Register the row-aggregation feature, expose any named built-ins through aggregationFns, and select a function per column; a custom function can instead be supplied directly. Grouped aggregation additionally requires the column-grouping feature and grouped row model.",
+  "syntax": "aggregationFn: 'sum'\naggregationFns: { sum: aggregationFn_sum }\ncolumn.getAggregationValue()",
+  "parameters": [
+   {
+    "name": "tableOptions",
+    "type": "TableOptions",
+    "description": "Configuration object containing data, columns, features, and optional aggregationFns registry."
+   },
+   {
+    "name": "aggregationFn",
+    "type": "string | AggregationFn",
+    "description": "Column-level selector for the aggregation function, such as a built-in function ID or a function definition."
+   },
+   {
+    "name": "aggregationFns",
+    "type": "Record<string, AggregationFn>",
+    "description": "Map from aggregation-function IDs to function implementations."
+   }
+  ],
+  "returns": "An aggregation function produces the aggregate value for the supplied rows and column; getAggregationValue() returns the calculated value.",
+  "example": {
+   "title": "Summing a column",
+   "code": "import { createTable } from '@tanstack/table-core'\nimport { rowAggregationFeature, aggregationFn_sum } from '@tanstack/table-core'\n\nconst table = createTable({\n  data: [\n    { team: 'A', points: 10 },\n    { team: 'A', points: 15 },\n    { team: 'B', points: 7 },\n  ],\n  columns: [\n    { id: 'team', accessorKey: 'team' },\n    { id: 'points', accessorKey: 'points', aggregationFn: 'sum' },\n  ],\n  features: [rowAggregationFeature],\n  aggregationFns: { sum: aggregationFn_sum },\n})\n\nconst total = table.getColumn('points')?.getAggregationValue()\nconsole.log(total)",
+   "language": "typescript",
+   "explanation": "Registers the aggregation feature, assigns the built-in sum function to a column, and retrieves the aggregate value."
+  },
+  "useCases": [
+   {
+    "title": "Grand totals",
+    "scenario": "Calculate grand totals in a table that does not group rows."
+   },
+   {
+    "title": "Grouped summaries",
+    "scenario": "Display sums, means, counts, or bounds for each grouped row."
+   },
+   {
+    "title": "Custom reducers",
+    "scenario": "Reduce selected rows with domain-specific logic."
+   }
+  ],
+  "related": [
+   "rowAggregationFeature",
+   "columnGroupingFeature",
+   "groupedRowModel",
+   "aggregationFn_sum",
+   "aggregationFn_count",
+   "aggregationFn_extent",
+   "aggregationFn_mean",
+   "getAggregationValue"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Aggregation can calculate totals without enabling row grouping.",
+   "Enable the row aggregation feature when columns produce totals or other aggregate values.",
+   "Grand totals and custom row-subset totals are available even without a grouped row model.",
+   "Grouped aggregation combines row aggregation with column grouping rather than replacing either feature.",
+   "For grouped results, register both features, add the grouped row model, and configure aggregation functions on the relevant columns.",
+   "The built-in sum adds numeric values and contributes zero for non-numbers.",
+   "Extent returns the minimum and maximum as a two-item array, with undefined bounds for empty input.",
+   "Mean computes an average from numeric and number-like non-null values."
+  ],
+  "gotchas": [
+   "Named built-in functions must be registered when referenced by name; a function supplied directly on a column does not need a registry entry.",
+   "The built-in sum treats non-numeric values as zero.",
+   "Mean ignores null values and accepts numeric or number-like values."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Grouping & aggregation::Grouping state": {
+  "sourceUrl": "https://tanstack.com/table/v8/docs/guide/grouping",
+  "sourceTitle": "Grouping Guide",
+  "summary": "Grouping state is an ordered array of column IDs that organizes matching records into grouped rows and subRows. Pair the grouped row model with expanding support to let users reveal or hide each group.",
+  "explanation": "Grouping state is an ordered list of column IDs. The grouped row model turns matching records into subRows beneath synthetic grouped rows, while the expanding feature controls whether those subRows are visible. Control the grouping externally with the change handler or update it directly through table.setGrouping; use the expanded row model for collapse and expansion behavior.",
+  "syntax": "table.setGrouping(['column1', 'column2'])",
+  "parameters": [
+   {
+    "name": "grouping",
+    "type": "string[]",
+    "description": "Ordered column IDs used as grouping levels."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Controlled grouping state",
+   "code": "import { createColumnHelper, getCoreRowModel, getExpandedRowModel, getGroupedRowModel, useReactTable } from '@tanstack/react-table'\nimport { useState } from 'react'\n\ntype Person = { department: string; name: string }\nconst rows: Person[] = [\n  { department: 'Engineering', name: 'Ada' },\n  { department: 'Engineering', name: 'Linus' },\n  { department: 'Design', name: 'Grace' },\n]\nconst columnHelper = createColumnHelper<Person>()\nconst columns = [columnHelper.accessor('department', { header: 'Department' }), columnHelper.accessor('name', { header: 'Name' })]\n\nexport function GroupedTable() {\n  const [grouping, setGrouping] = useState<string[]>(['department'])\n  const [expanded, setExpanded] = useState<Record<string, boolean>>({})\n  const table = useReactTable({\n    data: rows, columns, state: { grouping, expanded },\n    onGroupingChange: setGrouping, onExpandedChange: setExpanded,\n    getCoreRowModel: getCoreRowModel(), getGroupedRowModel: getGroupedRowModel(),\n    getExpandedRowModel: getExpandedRowModel(),\n  })\n  return <button onClick={() => table.resetGrouping()}>Reset grouping</button>\n}",
+   "language": "tsx",
+   "explanation": "This React example controls the grouping and expanded state, enables the grouped and expanded row models, and resets grouping through the table API."
+  },
+  "useCases": [
+   {
+    "title": "Categorized tables",
+    "scenario": "A data grid needs department or category sections instead of one flat list."
+   },
+   {
+    "title": "User-configurable grouping",
+    "scenario": "Users need to choose one or more columns and control nesting order."
+   },
+   {
+    "title": "Collapsible summaries",
+    "scenario": "Large result sets should show group headers first and reveal details only on demand."
+   }
+  ],
+  "related": [
+   "Grouping Guide",
+   "grouped row model",
+   "expanding feature",
+   "setGrouping",
+   "resetGrouping",
+   "subRows"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does TanStack Table's grouping state contain, and why does order matter?",
+    "answer": "The grouping state is an array of column IDs, and its order determines grouping precedence. With ['department', 'team'], the table groups by department first and then groups each department by team.",
+    "followUp": "How are grouped records represented? The grouped row is inserted where the first matching row appeared, and matching records become its subRows."
+   },
+   {
+    "question": "What row models or features are needed for grouped, collapsible rows?",
+    "answer": "Configure the grouped row model so the table can build grouped rows from the grouping state. Add the expanding feature and expanded row model when grouped subRows must be shown or hidden.",
+    "followUp": "What happens if only grouping is configured? Group structure can be created, but expand/collapse behavior requires the separate expanding feature."
+   },
+   {
+    "question": "How can code update or reset grouping?",
+    "answer": "Use table.setGrouping with an array of column IDs to replace the active grouping. Use table.resetGrouping to restore the initial grouping state.",
+    "followUp": "How would you preserve grouping in application state? Provide the grouping state and its change handler in the table options, then update that external state from the handler."
+   }
+  ],
+  "keyPoints": [
+   "Grouping organizes rows according to selected columns, producing category-like groups.",
+   "Represent grouping as an array of column ID strings.",
+   "Array order defines nesting precedence for multiple grouping columns.",
+   "Matching records become subRows of their generated grouped row.",
+   "A grouped row takes the position where its first matching record occurred.",
+   "Use setGrouping to replace the current grouping selection programmatically."
+  ],
+  "gotchas": [
+   "Grouping alone does not produce grouped rows; configure the grouped row model.",
+   "Grouping and row expansion are separate capabilities, so enable expanding when users must collapse or reveal group contents.",
+   "After grouping, matching records are represented as subRows rather than remaining as top-level rows."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Grouping & aggregation::Grouping with pagination": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/guide/row-models",
+  "sourceTitle": "Row Models Guide",
+  "summary": "Grouping and expansion happen before pagination. Therefore, a collapsed group contributes its group row, while hidden sub-rows do not count toward the page size.",
+  "explanation": "TanStack Table applies grouping and then expansion before pagination. Consequently, pagination counts the rows visible after collapsed groups hide their sub-rows, rather than counting every underlying leaf row.",
+  "syntax": "getCoreRowModel -> getFilteredRowModel -> getGroupedRowModel -> getSortedRowModel -> getExpandedRowModel -> getPaginatedRowModel -> getRowModel",
+  "parameters": [],
+  "returns": "A final row model containing the rows displayed on the current page after grouping and expansion have been applied.",
+  "example": {
+   "title": "Group, expand, then paginate",
+   "code": "const table = createTable({\n  data,\n  columns,\n  getCoreRowModel: createCoreRowModel(),\n  getGroupedRowModel: createGroupedRowModel(),\n  getExpandedRowModel: createExpandedRowModel(),\n  getPaginatedRowModel: createPaginatedRowModel(),\n})",
+   "language": "typescript",
+   "explanation": "This pipeline groups and expands rows before pagination, so the page slices the visible rows after collapsed groups have hidden their sub-rows."
+  },
+  "useCases": [
+   {
+    "title": "Paginate collapsed groups",
+    "scenario": "Show grouped records in pages without spending page capacity on hidden group members."
+   },
+   {
+    "title": "Interactive group expansion",
+    "scenario": "Let users expand a group and see its members enter the paginated result."
+   },
+   {
+    "title": "Multi-stage row modeling",
+    "scenario": "Combine filtering, sorting, grouping, expansion, and pagination in a client-side table."
+   }
+  ],
+  "related": [
+   "getGroupedRowModel",
+   "getExpandedRowModel",
+   "getPaginatedRowModel",
+   "createGroupedRowModel()",
+   "createExpandedRowModel()",
+   "createPaginatedRowModel()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Grouping transforms the data into grouped rows with sub-rows.",
+   "Expansion determines which grouped sub-rows are visible.",
+   "The documented pipeline places pagination after grouping, sorting, and expansion.",
+   "The current pagination state determines which visible rows appear on a page."
+  ],
+  "gotchas": [
+   "Pagination contains only rows selected for the current page, so collapsed sub-rows do not consume page slots."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Grouping & aggregation::Sub-rows": {
+  "sourceUrl": "https://tanstack.com/table/v8/docs/guide/rows",
+  "sourceTitle": "Rows Guide | TanStack Table Docs",
+  "summary": "Model tree-shaped data as sub-rows beneath root rows. TanStack Table exposes each row's children through row.subRows and provides depth and parent helpers for navigating the hierarchy.",
+  "explanation": "Provide a getSubRows function that returns the children array for each row. TanStack Table then builds the nested row structure, while row metadata such as depth and parent relationships describes where each sub-row sits in the tree.",
+  "syntax": "getSubRows: (row) => row.children",
+  "parameters": [
+   {
+    "name": "row",
+    "type": "TData",
+    "description": "Returns the child rows belonging to the supplied row."
+   }
+  ],
+  "returns": "An array of child rows for the row, or no sub-rows when the row has none.",
+  "example": {
+   "title": "Point the table at nested children",
+   "code": "type Person = {\n  name: string\n  children?: Person[]\n}\n\nconst data: Person[] = [\n  { name: 'Ada', children: [{ name: 'Grace' }] },\n  { name: 'Linus' },\n]\n\nconst table = createTable({\n  data,\n  columns: [{ accessorKey: 'name', header: 'Name' }],\n  getSubRows: (row) => row.children,\n})",
+   "language": "typescript",
+   "explanation": "The table reads each row's children array as its sub-rows."
+  },
+  "useCases": [
+   {
+    "title": "Display parent and child records in one table",
+    "scenario": "Hierarchical records"
+   },
+   {
+    "title": "Represent departments, teams, and members",
+    "scenario": "Nested organizational data"
+   },
+   {
+    "title": "Inspect row depth and parent relationships",
+    "scenario": "Tree navigation"
+   }
+  ],
+  "related": [
+   "row.subRows",
+   "row.depth",
+   "row.parentId",
+   "row.getParentRow"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Rows can participate in a hierarchy when grouping or expanding is enabled.",
+   "The row.subRows property contains a row's immediate child rows.",
+   "Depth measures nesting relative to the root row array.",
+   "Root rows have depth 0; children and grandchildren increase the depth by one level.",
+   "A nested row can identify its parent through parentId.",
+   "Use getParentRow to retrieve the parent row when one exists."
+  ],
+  "gotchas": [
+   "Sub-rows are structural row data used with grouping or expanding; they are not limited to flat root rows."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Selection, layout & scale::Column and row pinning": {
+  "sourceUrl": "https://tanstack.com/table/v8/docs/guide/column-pinning",
+  "sourceTitle": "Column Pinning Guide",
+  "summary": "Pin columns to the left or right while other columns remain in the center, and optionally split pinned regions into separate tables or use sticky CSS. Row pinning uses analogous top, center, and bottom row regions.",
+  "explanation": "Column pinning keeps columns in left, center, or right regions while the table can render those regions separately or use the pinning state with sticky CSS. Row pinning similarly divides rows into top, center, and bottom regions; this card focuses on the documented column and row pinning model.",
+  "syntax": "type ColumnPinningPosition = false | 'left' | 'right'\ntype ColumnPinningState = { left?: string[]; right?: string[] }\ncolumn.pin(position: ColumnPinningPosition): void\ntable.setColumnPinning(updater: Updater<ColumnPinningState>): void",
+  "parameters": [
+   {
+    "name": "updater",
+    "type": "Updater<ColumnPinningState>",
+    "description": "The updater for the column pinning state, containing left and right column ID arrays."
+   },
+   {
+    "name": "position",
+    "type": "ColumnPinningPosition",
+    "description": "Optional pinned position: 'left', 'right', or false to unpin."
+   }
+  ],
+  "returns": "setColumnPinning and resetColumnPinning return void; column.pin returns void. Column position reads return false, 'left', or 'right'; row-region APIs return row lists.",
+  "example": {
+   "title": "Controlled left-pinned column",
+   "code": "import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table'\nimport { useState } from 'react'\n\ntype Person = { name: string; email: string }\nconst columnHelper = createColumnHelper<Person>()\nconst columns = [\n  columnHelper.accessor('name', { header: 'Name' }),\n  columnHelper.accessor('email', { header: 'Email' }),\n]\n\nexport function PinnedTable({ data }: { data: Person[] }) {\n  const [columnPinning, setColumnPinning] = useState({ left: ['name'], right: [] as string[] })\n  const table = useReactTable({\n    data,\n    columns,\n    state: { columnPinning },\n    onColumnPinningChange: setColumnPinning,\n    getCoreRowModel: getCoreRowModel(),\n  })\n  return <div>{table.getCenterHeaderGroups().map(group => group.headers.map(h => <span key={h.id}>{h.column.columnDef.header as string}</span>))}</div>\n}",
+   "language": "tsx",
+   "explanation": "This React example controls column pinning state and initially places the name column on the left."
+  },
+  "useCases": [
+   {
+    "title": "Persistent key columns",
+    "scenario": "Keep identifier or action columns visible while horizontally scrolling a wide data grid."
+   },
+   {
+    "title": "Split-table layout",
+    "scenario": "Render left, center, and right regions as separate tables for precise pinned-column layout."
+   },
+   {
+    "title": "Pinned priority rows",
+    "scenario": "Keep selected or priority records visible above or below the scrolling rows."
+   },
+   {
+    "title": "Default pinning",
+    "scenario": "Initialize a table with common columns or rows already fixed at an edge."
+   }
+  ],
+  "related": [
+   "columnPinning",
+   "ColumnPinningState",
+   "ColumnPinningPosition",
+   "column.pin",
+   "column.getCanPin",
+   "column.getIsPinned",
+   "column.getPinnedIndex",
+   "column.getStart"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Column pinning is implemented through table state plus column and table APIs rather than a built-in visual layout.",
+   "Pinned columns may be rendered in separate start, center, and end tables, or kept in one table with sticky positioning.",
+   "Set initial pinned column IDs through columnPinning state or the initialState table option.",
+   "Call setColumnPinning when application code needs to update pinning directly.",
+   "Resetting restores the configured initial pinning, while passing true clears both pinned groups."
+  ],
+  "gotchas": [
+   "Sticky positioning is a rendering concern: the guide says that when using sticky CSS, you can generally render the table normally and use the pinning state to position columns."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Selection, layout & scale::Column ordering": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/framework/react/guide/column-ordering",
+  "sourceTitle": "Column Ordering (React) Guide | TanStack Table React Docs",
+  "summary": "Reorder displayed columns by supplying columnOrder as a sequence of column IDs, while leaving the column definitions unchanged. The table also exposes methods to update or reset that sequence.",
+  "explanation": "TanStack Table normally displays columns in the order of the columns array. Provide columnOrder as an array of column IDs to choose a different display sequence, then use the table APIs to update or restore that state without modifying the definitions.",
+  "syntax": "columnOrder: string[]; table.setColumnOrder(order); table.resetColumnOrder(defaultState?: boolean)",
+  "parameters": [
+   {
+    "name": "columnOrder",
+    "type": "string[]",
+    "description": "Array of string column IDs defining the displayed order."
+   },
+   {
+    "name": "order",
+    "type": "string[]",
+    "description": "The desired column-ID sequence passed to the table instance method."
+   }
+  ],
+  "returns": "The page does not specify a separate return value for column-order state or the ordering methods.",
+  "example": {
+   "title": "Control displayed column order",
+   "code": "const table = useReactTable({\n  data,\n  columns,\n  state: { columnOrder: ['lastName', 'firstName', 'age'] },\n  onColumnOrderChange: setColumnOrder,\n  getCoreRowModel: getCoreRowModel(),\n})",
+   "language": "tsx",
+   "explanation": "Keep the column definitions unchanged and control their displayed order with columnOrder."
+  },
+  "useCases": [
+   {
+    "title": "User-customized layouts",
+    "scenario": "A data grid lets users choose which columns appear first without changing shared column definitions."
+   },
+   {
+    "title": "Context-specific ordering",
+    "scenario": "Different screens use the same definitions but present fields in different business-priority sequences."
+   },
+   {
+    "title": "Persisted column preferences",
+    "scenario": "A saved preference must be restored when a table is mounted."
+   }
+  ],
+  "related": [
+   "columnOrder",
+   "table.setColumnOrder",
+   "table.resetColumnOrder",
+   "initialState.columnOrder",
+   "column pinning",
+   "grouping",
+   "groupedColumnMode"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you reorder columns without changing their definitions?",
+    "answer": "Use the columnOrder state with an array of string column IDs. The table uses that array to determine the displayed sequence while the original columns array remains unchanged.",
+    "followUp": "What happens if columnOrder is omitted? The table falls back to the order in which columns are defined."
+   },
+   {
+    "question": "How is column order updated and reset?",
+    "answer": "Call table.setColumnOrder with the desired ID sequence. In a controlled setup, connect columnOrder to state and handle changes with onColumnOrderChange.",
+    "followUp": "How can a user restore the configured default? Call table.resetColumnOrder(), which restores initialState.columnOrder."
+   },
+   {
+    "question": "What else can affect the final column order?",
+    "answer": "Three features can affect ordering: pinning, manual column ordering, and grouping. Pinning divides columns into start, center, and end regions; grouping can move grouped columns to the beginning when groupedColumnMode is reorder or remove.",
+    "followUp": "Which mechanism is applied after manual ordering? Grouping is evaluated after manual column ordering in the documented ordering flow."
+   }
+  ],
+  "keyPoints": [
+   "Without explicit ordering state, the definitions array determines the visible sequence.",
+   "Set columnOrder when the UI needs a sequence different from the definitions.",
+   "Represent the desired sequence with column IDs rather than duplicating or rearranging definitions.",
+   "Use the table instance method to apply a new order programmatically.",
+   "Resetting without the clearing flag returns to the configured initial order."
+  ],
+  "gotchas": [
+   "Column ordering is not the only ordering mechanism: pinning and grouping can change the final visible arrangement.",
+   "Resetting can either restore the configured initial order or clear the ordering state entirely, depending on the argument."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Selection, layout & scale::Column sizing and resizing": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/framework/react/guide/column-resizing",
+  "sourceTitle": "Column Resizing (React) Guide | TanStack Table React Docs",
+  "summary": "TanStack Table supplies sizing state and resize APIs, but your markup renders the widths and resize controls. Set size constraints, choose onEnd or onChange behavior, and connect a custom handle with header.getResizeHandler().",
+  "explanation": "Define initial, minimum, and maximum column widths in column definitions, render those widths in your own markup, and attach each eligible header's resize handler to a mouse/touch control. Choose whether sizes update during dragging or only after it ends.",
+  "syntax": "columnResizeMode: 'onEnd' | 'onChange'; header.getResizeHandler(); column.getSize();",
+  "parameters": [
+   {
+    "name": "columnResizeMode",
+    "type": "\"onEnd\" | \"onChange\"",
+    "description": "Table option controlling whether width updates render during the drag or after it completes."
+   },
+   {
+    "name": "size",
+    "type": "number",
+    "description": "Column definition's initial width."
+   },
+   {
+    "name": "minSize",
+    "type": "number",
+    "description": "Column definition's minimum width."
+   },
+   {
+    "name": "maxSize",
+    "type": "number",
+    "description": "Column definition's maximum width."
+   },
+   {
+    "name": "enableColumnResizing",
+    "type": "boolean",
+    "description": "Table option that disables resizing globally."
+   },
+   {
+    "name": "enableResizing",
+    "type": "boolean",
+    "description": "Column option that disables resizing for one column."
+   }
+  ],
+  "returns": "The documented APIs expose computed column sizes, resize capability and active-resize state, plus a handler for wiring mouse and touch interactions into custom markup.",
+  "example": {
+   "title": "Resizable React table headers",
+   "code": "import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table'\n\ntype Person = { name: string; age: number }\nconst columnHelper = createColumnHelper<Person>()\nconst columns = [\n  columnHelper.accessor('name', { header: 'Name', size: 180, minSize: 100 }),\n  columnHelper.accessor('age', { header: 'Age', size: 90, maxSize: 140 }),\n]\n\nexport function Table({ data }: { data: Person[] }) {\n  const table = useReactTable({\n    data, columns, getCoreRowModel: getCoreRowModel(),\n    columnResizeMode: 'onChange',\n  })\n  return <table><thead>{table.getHeaderGroups().map(g => <tr key={g.id}>{g.headers.map(h => <th key={h.id} style={{ width: h.getSize() }}>{h.isPlaceholder ? null : <><span>{h.column.columnDef.header as string}</span>{h.column.getCanResize() && <button onMouseDown={h.getResizeHandler()} onTouchStart={h.getResizeHandler()}>↔</button>}</>}</th>)}</tr>)}</thead></table>\n}",
+   "language": "tsx",
+   "explanation": "The table reads each header's computed size and connects a custom control to the header resize handler for mouse and touch input."
+  },
+  "useCases": [
+   {
+    "title": "Constrained interactive columns",
+    "scenario": "A data grid needs user-adjustable widths while retaining per-column minimum and maximum limits."
+   },
+   {
+    "title": "Custom resize controls",
+    "scenario": "A table uses custom headers and needs its own resize handle and active-drag styling."
+   },
+   {
+    "title": "Commit-on-release resizing",
+    "scenario": "A wide table should update widths only after dragging completes to reduce continuous rendering work."
+   }
+  ],
+  "related": [
+   "column sizing",
+   "columnResizingFeature",
+   "columnSizingFeature",
+   "column.getSize()",
+   "column.getCanResize()",
+   "column.getIsResizing()",
+   "header.getResizeHandler()",
+   "table.setColumnSizing"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you establish and render column widths?",
+    "answer": "Use the column definition's size, minSize, and maxSize values to establish sizing constraints. In the markup, apply the computed value from column.getSize() or header.getSize() to the relevant cells.",
+    "followUp": "How would you support user resizing? Render a handle only when column.getCanResize() is true, then connect its mouse and touch start events to header.getResizeHandler()."
+   },
+   {
+    "question": "How do you connect resizing to custom UI?",
+    "answer": "header.getResizeHandler() supplies the interaction callback for both mouse and touch resizing. A custom handle can call it from onMouseDown and onTouchStart, while getCanResize() controls whether that handle appears.",
+    "followUp": "How would you show active drag feedback? Use column.getIsResizing() to conditionally style the handle or header during the interaction."
+   },
+   {
+    "question": "What is the difference between onEnd and onChange?",
+    "answer": "The default mode is onEnd, so the reported size changes after dragging finishes. Set columnResizeMode to onChange when the UI must rerender with the changing width during the drag.",
+    "followUp": "What trade-off should be considered for onChange? Continuous resizing can cause more renders, so the guide recommends performance-conscious rendering strategies for interactive tables."
+   }
+  ],
+  "keyPoints": [
+   "Column definitions can provide a starting width plus lower and upper bounds.",
+   "Columns are resizable unless resizing is disabled globally or for a particular column.",
+   "Use the table option to turn off resizing across the whole table.",
+   "Use a column definition option when only selected columns should refuse resizing.",
+   "Choose onChange to display width changes while the pointer is still dragging.",
+   "The header API provides the callback that your custom drag control should invoke.",
+   "Conditionally render the control so non-resizable columns have no resize affordance."
+  ],
+  "gotchas": [
+   "Without setting columnResizeMode, resizing is committed at the end of the drag rather than updating rendered sizes continuously.",
+   "Code that reads getSize during an onEnd interaction sees the previous size while the user is dragging.",
+   "When using the core feature system, register sizing before resizing or the dependency is not satisfied."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Selection, layout & scale::Column visibility": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/framework/react/guide/column-visibility",
+  "sourceTitle": "Column Visibility (React) Guide",
+  "summary": "Hide or show columns dynamically with the dedicated columnVisibility map. Control that map from application state and persist it, for example in localStorage, to restore a user's preferred view.",
+  "explanation": "TanStack Table represents visibility as a column-ID map. Pass that map through table state, update it with the visibility-change callback, and connect each column's toggle handler; persistence is application-owned, so save and restore the map using storage or another preference service.",
+  "syntax": "useReactTable({ state: { columnVisibility }, onColumnVisibilityChange })",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "TData[]",
+    "description": "Table data supplied to the table instance."
+   },
+   {
+    "name": "columns",
+    "type": "ColumnDef<TData, TValue>[]",
+    "description": "Column definitions, including IDs or accessor keys."
+   },
+   {
+    "name": "state.columnVisibility",
+    "type": "VisibilityState",
+    "description": "Controlled visibility map keyed by column ID."
+   },
+   {
+    "name": "onColumnVisibilityChange",
+    "type": "OnChangeFn<VisibilityState>",
+    "description": "Callback invoked when column visibility changes."
+   }
+  ],
+  "returns": "The table instance exposes column visibility state and APIs for toggling columns and reading visible leaf columns and cells.",
+  "example": {
+   "title": "Persist column visibility",
+   "code": "import { useState } from 'react'\nimport { useReactTable, getCoreRowModel } from '@tanstack/react-table'\n\nconst columns = [\n  { accessorKey: 'name', header: 'Name' },\n  { accessorKey: 'email', header: 'Email' },\n]\n\nexport function UsersTable({ data }) {\n  const [columnVisibility, setColumnVisibility] = useState(() => {\n    const saved = localStorage.getItem('users-columns')\n    return saved ? JSON.parse(saved) : {}\n  })\n\n  const table = useReactTable({\n    data,\n    columns,\n    state: { columnVisibility },\n    onColumnVisibilityChange: updater => {\n      setColumnVisibility(current => {\n        const next = typeof updater === 'function' ? updater(current) : updater\n        localStorage.setItem('users-columns', JSON.stringify(next))\n        return next\n      })\n    },\n    getCoreRowModel: getCoreRowModel(),\n  })\n\n  return table.getAllLeafColumns().map(column => (\n    <label key={column.id}>\n      <input type=\"checkbox\" checked={column.getIsVisible()}\n        onChange={column.getToggleVisibilityHandler()} />\n      {column.id}\n    </label>\n  ))\n}",
+   "language": "tsx",
+   "explanation": "Controls each column with its visibility handler and stores the controlled visibility map in localStorage so the selection is restored."
+  },
+  "useCases": [
+   {
+    "title": "Personalized table views",
+    "scenario": "A user chooses which fields appear in a dense data grid."
+   },
+   {
+    "title": "Persisted preferences",
+    "scenario": "A dashboard restores each user's preferred columns between sessions."
+   },
+   {
+    "title": "Protected columns",
+    "scenario": "A table keeps identifiers or actions visible while optional fields can be removed."
+   }
+  ],
+  "related": [
+   "columnVisibility",
+   "enableHiding",
+   "column.getCanHide",
+   "column.getIsVisible",
+   "column.toggleVisibility",
+   "table.getVisibleLeafColumns",
+   "row.getVisibleCells"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does TanStack Table represent column visibility?",
+    "answer": "Visibility is stored in columnVisibility, a map from column IDs to booleans. A false value hides that column; an absent ID or true value leaves it shown.",
+    "followUp": "How would you persist it?"
+   },
+   {
+    "question": "Which APIs support visibility controls?",
+    "answer": "Use column.getCanHide to decide whether to show a control, column.getIsVisible for its current state, and column.toggleVisibility or its handler to change it. The table also exposes visible-column and visible-cell APIs for derived rendering.",
+    "followUp": "Which APIs should a custom renderer use after hiding columns?"
+   },
+   {
+    "question": "How do you prevent a column from being hidden?",
+    "answer": "Set enableHiding to false on columns that users must not hide. Otherwise, columns are hideable by default.",
+    "followUp": "How should a preference UI treat such a column?"
+   }
+  ],
+  "keyPoints": [
+   "Keep visibility as a map keyed by stable column IDs; this makes the view preference serializable.",
+   "Set a column's entry to false to hide it.",
+   "Omit an ID or store true to show that column.",
+   "Use getCanHide to disable or omit a toggle for protected columns.",
+   "Read getIsVisible to keep a checkbox or menu item synchronized.",
+   "Call toggleVisibility when implementing a custom visibility control.",
+   "The feature has dedicated state and APIs, rather than requiring static column definitions."
+  ],
+  "gotchas": [
+   "Use enableHiding: false for columns that must always remain visible.",
+   "When rendering or inspecting the table, use visibility-aware APIs rather than APIs that include hidden columns."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Selection, layout & scale::Row selection": {
+  "sourceUrl": "https://tanstack.com/table/v8/docs/guide/row-selection",
+  "sourceTitle": "Row Selection Guide | TanStack Table Docs",
+  "summary": "TanStack Table keys row-selection state by row ID. Configure getRowId to return a unique, stable record identifier instead of allowing the default index-based ID.",
+  "explanation": "TanStack Table keys row-selection state by row ID. Without configuration, IDs are derived from row indexes; provide getRowId to map each row to a unique, stable identifier such as a database UUID, keeping selection attached to the correct records as data changes.",
+  "syntax": "getRowId: row => row.uuid",
+  "parameters": [
+   {
+    "name": "row",
+    "type": "TData",
+    "description": "The original row object supplied to getRowId."
+   },
+   {
+    "name": "getRowId",
+    "type": "(row: TData, index: number, parent?: Row<TData>) => string",
+    "description": "A function in table options that maps each row to its unique stable identifier."
+   }
+  ],
+  "returns": "A string row ID used as the key for row-selection state.",
+  "example": {
+   "title": "Use stable database IDs for row selection",
+   "code": "type Person = { id: string; name: string }\n\nconst data: Person[] = [\n  { id: 'a1', name: 'Ada' },\n  { id: 'b2', name: 'Grace' },\n]\n\nconst table = useReactTable({\n  data,\n  columns,\n  getRowId: row => row.id,\n  getCoreRowModel: getCoreRowModel(),\n})",
+   "language": "tsx",
+   "explanation": "Configure getRowId to return each record's stable database identifier, so selection state continues to refer to the same records when their positions change."
+  },
+  "useCases": [
+   {
+    "title": "Preserve selection through reordering",
+    "scenario": "A sortable or filterable table must preserve checked rows when visible ordering changes."
+   },
+   {
+    "title": "Keep selection stable across refreshes",
+    "scenario": "Data is refreshed from an API and records may be inserted, removed, or paginated."
+   },
+   {
+    "title": "Use durable backend identity",
+    "scenario": "A database exposes UUIDs or primary keys for each record."
+   }
+  ],
+  "related": [
+   "rowSelection",
+   "getSelectedRowModel",
+   "getState().rowSelection",
+   "enableRowSelection"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why should row selection use a stable row ID instead of the row index?",
+    "answer": "Row selection state is keyed by row ID, and TanStack Table uses the row index by default. Configure getRowId to return a stable unique field from the data, such as a database UUID.",
+    "followUp": "What happens if rows are reordered? With stable IDs, selection remains associated with the same records rather than their former positions."
+   },
+   {
+    "question": "How do you configure a custom row identifier?",
+    "answer": "Set getRowId in the table options: getRowId: row => row.uuid. The callback should return a unique identifier for each row.",
+    "followUp": "Which identifier is preferable? Use a durable application or database key rather than a display value that may change."
+   },
+   {
+    "question": "What is the practical risk of relying on default row IDs?",
+    "answer": "Without getRowId, root-row IDs are based on indexes. Since selection is keyed by those IDs, operations that change row positions can make existing selection refer to the wrong records.",
+    "followUp": "How can this be avoided during server-side data changes? Return the same stable key for a record on every fetch."
+   }
+  ],
+  "keyPoints": [
+   "Selection is stored against row IDs, making the identifier the link between selected state and the underlying record.",
+   "If no custom mapping is supplied, a row's position becomes its identifier.",
+   "For selectable data, choose an identifier that represents the record instead of its current position.",
+   "The table option for replacing index-based identity is getRowId.",
+   "The callback should produce a unique value per row so records do not share selection state."
+  ],
+  "gotchas": [
+   "The default row ID is the row index, so selection can refer to a different record after sorting, filtering, insertion, or deletion.",
+   "The function must return a unique identifier for every row; duplicate IDs can conflate selection state."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Selection, layout & scale::Virtualized rows": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/framework/react/guide/virtualization",
+  "sourceTitle": "Virtualization (React) Guide | TanStack Table React Docs",
+  "summary": "Render only the rows in or near the viewport while TanStack Table keeps its complete row model and state. A separate virtualizer handles scrolling, measurement, item selection, and full scroll geometry.",
+  "explanation": "Virtualized rows keep TanStack Table responsible for rows, columns, and state while a virtualizer controls scrolling, measurements, and which rows enter the DOM. Build a scroll container, feed it table.getRowModel().rows, configure the item count and size estimate, then position only the returned virtual items while retaining full scroll geometry.",
+  "syntax": "useVirtualizer({ count, getScrollElement, estimateSize, overscan, measureElement })",
+  "parameters": [
+   {
+    "name": "count",
+    "type": "number",
+    "description": "Number of row items available to virtualize; the guide's row pattern uses rows.length."
+   },
+   {
+    "name": "estimateSize",
+    "type": "() => number",
+    "description": "Estimated height of a row, used to calculate virtual positions before measurements are available."
+   },
+   {
+    "name": "getScrollElement",
+    "type": "() => Element | null",
+    "description": "The scrolling element used to determine the visible range."
+   },
+   {
+    "name": "overscan",
+    "type": "number",
+    "description": "Additional items rendered beyond the visible viewport."
+   },
+   {
+    "name": "measureElement",
+    "type": "optional measurement callback",
+    "description": "Optional row measurement callback for dynamic sizes."
+   }
+  ],
+  "returns": "The virtualizer returns the visible virtual items and the total virtual size used to render positioned rows and preserve scroll geometry.",
+  "example": {
+   "title": "Virtualize TanStack Table rows",
+   "code": "const rows = table.getRowModel().rows\nconst rowVirtualizer = useVirtualizer({\n  count: rows.length,\n  getScrollElement: () => tableContainerRef.current,\n  estimateSize: () => 35,\n  overscan: 5,\n})\nconst virtualRows = rowVirtualizer.getVirtualItems()\n\nreturn (\n  <div ref={tableContainerRef} style={{height: 500, overflow: \"auto\"}}>\n    <table>\n      <tbody style={{height: rowVirtualizer.getTotalSize()}}>\n        {virtualRows.map(virtualRow => {\n          const row = rows[virtualRow.index]\n          return (\n            <tr key={row.id} style={{transform: `translateY(${virtualRow.start}px)`}}>\n              {row.getVisibleCells().map(cell => (\n                <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>\n              ))}\n            </tr>\n          )\n        })}\n      </tbody>\n    </table>\n  </div>\n)",
+   "language": "tsx",
+   "explanation": "Use the table row model as the virtualizer's source, render only virtual items, and preserve the full scroll area with the virtualizer's total size and row offsets."
+  },
+  "useCases": [
+   {
+    "title": "Large datasets",
+    "scenario": "A table displays thousands of records and mounting every row makes scrolling or initial rendering slow."
+   },
+   {
+    "title": "Dynamic row heights",
+    "scenario": "Rows can change height because cells wrap, expand, or contain variable-length content."
+   },
+   {
+    "title": "Virtualized data operations",
+    "scenario": "The application needs sorting, filtering, or grouping without replacing TanStack Table's row-model logic."
+   },
+   {
+    "title": "Large column sets",
+    "scenario": "A wide table also needs to avoid mounting off-screen columns."
+   }
+  ],
+  "related": [
+   "TanStack Virtual",
+   "table.getRowModel().rows",
+   "table.getVisibleLeafColumns()",
+   "getVirtualItems()",
+   "getTotalSize()",
+   "overscan",
+   "estimateSize",
+   "measureElement"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Which responsibilities belong to TanStack Table and which belong to the virtualizer?",
+    "answer": "TanStack Table continues to produce the row model, columns, and table state. The virtualizer receives the row-model array, tracks scrolling and measurements, and determines which items to render.",
+    "followUp": "How would filtering affect virtualization? Filtering remains a TanStack Table row-model concern; configure the virtualizer from the resulting rows and update its count."
+   },
+   {
+    "question": "What is the basic implementation sequence for virtualized rows?",
+    "answer": "Set up a fixed-height scrolling element, pass it to the virtualizer, use table.getRowModel().rows as the source, and configure count, estimateSize, and overscan. Render the returned virtual items rather than every row.",
+    "followUp": "Why is overscan useful? It renders a small buffer beyond the viewport, reducing visible pop-in while scrolling."
+   },
+   {
+    "question": "How do you preserve correct scrolling when only some rows are in the DOM?",
+    "answer": "The rendered subset must still occupy the correct positions in the overall scrollable area. Use each virtual item's offset or transform and preserve the virtualizer's total size with spacer space or equivalent geometry.",
+    "followUp": "What happens if row heights vary? Supply a suitable estimate and, where supported, use measureElement so the virtualizer can refine positioning."
+   }
+  ],
+  "keyPoints": [
+   "For row virtualization, use table.getRowModel().rows as the virtualizer's source collection.",
+   "The essential virtualizer settings are item count, estimated size, overscan, and optionally runtime measurement.",
+   "Map over the virtualizer's returned items instead of mounting every row in the table.",
+   "The DOM stays small because the viewport's rows plus a small buffer are rendered.",
+   "Sorting, filtering, grouping, and related row-model operations continue to be handled by TanStack Table.",
+   "Configure the row virtualizer from the row count, height estimate, scroll container, and overscan."
+  ],
+  "gotchas": [
+   "Virtualization requires a separate virtualizer; TanStack Table does not provide virtualization APIs itself.",
+   "Do not look for a virtualization row model or table feature; integrate virtualization at rendering time.",
+   "Rendering only visible rows is insufficient unless offsets or spacer space preserve the complete scroll height."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Sorting & filtering::Custom sort functions": {
+  "sourceUrl": "https://tanstack.com/table/v8/docs/guide/sorting",
+  "sourceTitle": "Sorting Guide",
+  "summary": "Custom sorting functions let TanStack Table order values according to application-specific rules. Define one per column or register reusable functions globally, returning -1, 0, or 1 for each row comparison.",
+  "explanation": "A custom sorting function is a three-argument comparator receiving two rows and the column ID. Read values through the column ID or access original row data, then return -1, 0, or 1 for ascending order. Attach it directly to a column or register it globally and reference it by name.",
+  "syntax": "const myCustomSortingFn: SortingFn<TData> = (rowA: Row<TData>, rowB: Row<TData>, columnId: string) => { return -1 | 0 | 1 }",
+  "parameters": [
+   {
+    "name": "rowA",
+    "type": "Row<TData>",
+    "description": "The first row being compared; its original data is available through rowA.original."
+   },
+   {
+    "name": "rowB",
+    "type": "Row<TData>",
+    "description": "The second row being compared; its original data is available through rowB.original."
+   },
+   {
+    "name": "columnId",
+    "type": "string",
+    "description": "The ID of the column whose values are being sorted."
+   }
+  ],
+  "returns": "-1, 0, or 1, representing ascending comparison order.",
+  "example": {
+   "title": "Locale-aware sorting with nulls last",
+   "code": "import { createColumnHelper, type SortingFn } from '@tanstack/react-table'\n\ntype Person = { name: string | null }\nconst collator = new Intl.Collator('de')\nconst sortLocalized: SortingFn<Person> = (rowA, rowB, columnId) => {\n  const a = rowA.getValue<string | null>(columnId)\n  const b = rowB.getValue<string | null>(columnId)\n  if (a === b) return 0\n  if (a === null) return 1\n  if (b === null) return -1\n  return collator.compare(a, b)\n}\n\nconst columnHelper = createColumnHelper<Person>()\nexport const columns = [\n  columnHelper.accessor('name', {\n    sortingFn: sortLocalized,\n  }),\n]",
+   "language": "typescript",
+   "explanation": "The column supplies a comparator that places null values last and compares remaining names with locale-aware collation."
+  },
+  "useCases": [
+   {
+    "title": "Localized text",
+    "scenario": "Names, addresses, or labels need locale-aware ordering rather than basic JavaScript comparison."
+   },
+   {
+    "title": "Null and undefined placement",
+    "scenario": "Missing values should consistently appear first or last instead of following default behavior."
+   },
+   {
+    "title": "Reusable global comparator",
+    "scenario": "Several columns or tables need the same domain-specific ordering rule."
+   },
+   {
+    "title": "Composite row ordering",
+    "scenario": "Ordering depends on multiple fields in the original record, not only the displayed cell value."
+   }
+  ],
+  "related": [
+   "sortingFn",
+   "sortingFns",
+   "SortingFn",
+   "Row",
+   "rowA.original",
+   "rowB.original"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the contract of a custom sorting function?",
+    "answer": "Define a function with the SortingFn<TData> shape: it receives rowA, rowB, and columnId, compares the rows, and returns -1, 0, or 1. The function can read the column value or use rowA.original and rowB.original.",
+    "followUp": "How would you make nulls sort last? Handle equality first, then explicitly rank null against non-null before comparing ordinary values."
+   },
+   {
+    "question": "How can a custom comparator be attached or reused?",
+    "answer": "Pass the function as a column's sortingFn option for local use. For reuse, provide it through the table's sortingFns option and refer to it from column definitions by its registered key.",
+    "followUp": "When is registration preferable? Use it when multiple columns or tables share the same comparator, because the named function avoids duplicating comparator logic."
+   },
+   {
+    "question": "What must the comparator return?",
+    "answer": "The comparator establishes ascending order by returning -1 when the first row precedes the second, 1 when it follows, and 0 when they compare equally. Its columnId argument identifies which column is being sorted.",
+    "followUp": "How could localized text be handled? Use a locale-aware comparison mechanism inside the comparator while preserving the same three-result contract."
+   }
+  ],
+  "keyPoints": [
+   "Set sortingFn on an individual column when only that column needs specialized ordering.",
+   "An inline comparator is supported, so small one-off ordering rules need not be registered globally.",
+   "Put reusable comparators in the table-level sortingFns registry and reference them from columns.",
+   "Type the comparator as SortingFn<TData> to align its parameters and return contract with TanStack Table.",
+   "The function gets row objects rather than only primitive values, allowing comparisons based on row context.",
+   "Use negative, zero, and positive ordering results represented by the documented -1, 0, or 1 contract."
+  ],
+  "gotchas": [
+   "The comparator must accept the two rows and the current column ID; it should not assume a fixed field name.",
+   "Return only the documented comparison result, and use original row objects when the comparison needs data beyond the column value."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Sorting & filtering::Faceted values": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/framework/vue/guide/column-faceting",
+  "sourceTitle": "Faceting (Vue) Guide | TanStack Table Vue Docs",
+  "summary": "Faceted values expose the distinct values and counts currently available for a column. Use them to build dynamic checkboxes, selects, or autocomplete suggestions from the table data.",
+  "explanation": "Column faceting derives information for filter interfaces. Register the faceted row model and unique-values factory, then call getFacetedUniqueValues() to obtain a Map of values and occurrence counts; use its keys for options. Faceting supplies filter data but does not apply the filter itself.",
+  "syntax": "column.getFacetedUniqueValues(): Map<any, number>",
+  "parameters": [
+   {
+    "name": "",
+    "type": "",
+    "description": "No parameters are documented for the column API used here."
+   }
+  ],
+  "returns": "column.getFacetedUniqueValues() returns a Map of facet values to occurrence counts.",
+  "example": {
+   "title": "Build a filter option list from present values",
+   "code": "import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table'\nimport { createFacetedRowModel, createFacetedUniqueValues } from '@tanstack/table-core'\n\ntype Person = { name: string; status: string }\nconst columnHelper = createColumnHelper<Person>()\nconst columns = [\n  columnHelper.accessor('name', { header: 'Name' }),\n  columnHelper.accessor('status', { header: 'Status' }),\n]\n\nfunction StatusOptions({ table }: { table: ReturnType<typeof useReactTable<Person>> }) {\n  const values = Array.from(\n    table.getColumn('status')!.getFacetedUniqueValues().keys(),\n  )\n  return <select>{values.map(value => <option key={value}>{value}</option>)}</select>\n}\n\nconst table = useReactTable({\n  data: [{ name: 'Ada', status: 'Active' }, { name: 'Linus', status: 'Paused' }],\n  columns,\n  getCoreRowModel: getCoreRowModel(),\n  getFacetedRowModel: createFacetedRowModel(),\n  getFacetedUniqueValues: createFacetedUniqueValues(),\n})",
+   "language": "tsx",
+   "explanation": "Registers faceting row models, then reads the status column's unique values to populate a select."
+  },
+  "useCases": [
+   {
+    "title": "Dynamic select options",
+    "scenario": "A status column needs a select whose options stay aligned with the loaded data."
+   },
+   {
+    "title": "Checkbox filters with counts",
+    "scenario": "A categorical filter should show each available value and how many rows contain it."
+   },
+   {
+    "title": "Autocomplete suggestions",
+    "scenario": "Users need suggestions while typing a column filter."
+   }
+  ],
+  "related": [
+   "column.getFacetedRowModel()",
+   "column.getFacetedUniqueValues()",
+   "column.getFacetedMinMaxValues()",
+   "createFacetedRowModel()",
+   "createFacetedUniqueValues()"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use faceting to derive the data needed for filter controls rather than hard-coding possible values.",
+   "A column facet can reveal the values currently available in the relevant row set.",
+   "getFacetedUniqueValues() returns a Map whose keys can populate controls and whose values provide occurrence counts.",
+   "Register the faceted row-model factory when deriving facets from client-side table data.",
+   "Register this factory when the filter UI needs distinct values or their frequencies."
+  ],
+  "gotchas": [
+   "Reading faceted values only provides data for constructing the filter UI; it does not change the table's rows.",
+   "Without registering the unique-values row-model factory, the column cannot provide its unique facet values and counts.",
+   "Options are based on rows remaining after other filters, while the current column's filter is excluded."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Sorting & filtering::Manual filtering and sorting": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/guide/client-side-vs-server-side",
+  "sourceTitle": "Client-Side vs Server-Side Guide",
+  "summary": "Delegate filtering and sorting to your backend by enabling the matching manual options and passing the table already-processed rows. Keep relevant state in the request or query key so server results stay synchronized.",
+  "explanation": "Keep sorting and filtering state in the application, include it in the server request or query key, enable the corresponding manual options, and pass the server-processed rows to the table. With manual processing enabled, TanStack Table treats the supplied data as already transformed instead of applying its own row models.",
+  "syntax": "useReactTable({ data, columns, state, onSortingChange, onColumnFiltersChange, manualSorting: true, manualFiltering: true, rowCount })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Delegate sorting and filtering to the server",
+   "code": "const table = useReactTable({\n  data: serverRows,\n  columns,\n  state: { sorting, columnFilters },\n  onSortingChange: setSorting,\n  onColumnFiltersChange: setColumnFilters,\n  manualSorting: true,\n  manualFiltering: true,\n  rowCount: totalRows,\n});",
+   "language": "tsx",
+   "explanation": "The server receives sorting and filter state, returns processed rows, and the table displays them without applying client-side sorting or filtering."
+  },
+  "useCases": [
+   {
+    "title": "Large datasets",
+    "scenario": "The dataset is too large to download or process in the browser."
+   },
+   {
+    "title": "Server pagination",
+    "scenario": "The API returns only the current page or a filtered subset."
+   },
+   {
+    "title": "Backend-owned query semantics",
+    "scenario": "Filtering and sorting must use database indexes, authorization rules, or domain-specific query logic."
+   }
+  ],
+  "related": [
+   "manualFiltering",
+   "manualSorting",
+   "filteredRowModel",
+   "sortedRowModel",
+   "rowCount",
+   "pageCount"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does a manual table option do?",
+    "answer": "Manual processing means the table does not transform the supplied rows for that feature. Enable the matching manual option and provide data that the server has already filtered or sorted.",
+    "followUp": "How would you avoid stale results? Include every server-owned state value in the request or query key, and prevent slower responses from replacing newer ones."
+   },
+   {
+    "question": "How do you implement server-side sorting?",
+    "answer": "For server-side sorting, keep sorting state under application control, send it to the server, enable manualSorting, and omit the sorted row model. The returned rows are treated as already sorted.",
+    "followUp": "Why is client-side sorting unsafe after server pagination? It can order only the loaded page or subset rather than the complete dataset."
+   },
+   {
+    "question": "How does manual server-side filtering work?",
+    "answer": "For manual filtering, own the filter state, send it with the data request, enable manualFiltering, and pass the filtered response as data. The table then skips filtering logic on those rows.",
+    "followUp": "When is client-side filtering preferable? Use it when the browser has the complete dataset; use server-side filtering for a page or other subset unless filtering only loaded rows is intentional."
+   }
+  ],
+  "keyPoints": [
+   "“Manual” processing means your backend performs the transformation rather than TanStack Table.",
+   "Manual options neither fetch data nor execute the server operation; your application must do both.",
+   "The table assumes supplied rows already satisfy the enabled manual feature.",
+   "Implement the operation in the backend, SQL layer, database API, or another suitable service.",
+   "Make every state value owned by the server part of the request or query key.",
+   "Turn on the manual option corresponding to each operation delegated to the server."
+  ],
+  "gotchas": [
+   "Do not combine server pagination or filtering with client-side sorting when the intended result is ordering across the complete dataset.",
+   "A changed filter or sort can invalidate the current page, so reset or validate pagination state."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Sorting & filtering::Sorting state": {
+  "sourceUrl": "https://tanstack.com/table/v8/docs/guide/sorting",
+  "sourceTitle": "Sorting Guide",
+  "summary": "Sorting state is an ordered array of column descriptors. Each descriptor records a column id and whether it sorts descending, so the array can represent both direction and multi-column priority.",
+  "explanation": "Sorting state is an array of descriptors. Each descriptor identifies a column with id and records direction through desc; array order represents the multi-column sort priority. You can let the table manage it, initialize it with initialState, or control it with state.sorting and onSortingChange.",
+  "syntax": "type SortingState = Array<{ id: string; desc: boolean }>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Controlled sorting state",
+   "code": "import { useState } from 'react'\nimport { getCoreRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table'\n\nconst data = [\n  { name: 'Ada', age: 36 },\n  { name: 'Linus', age: 54 },\n  { name: 'Grace', age: 28 },\n]\nconst columns = [\n  { accessorKey: 'name', header: 'Name' },\n  { accessorKey: 'age', header: 'Age' },\n]\n\nexport default function App() {\n  const [sorting, setSorting] = useState([\n    { id: 'age', desc: true },\n  ])\n  const table = useReactTable({\n    data, columns, state: { sorting }, onSortingChange: setSorting,\n    getCoreRowModel: getCoreRowModel(), getSortedRowModel: getSortedRowModel(),\n  })\n  return <pre>{JSON.stringify(table.getState().sorting, null, 2)}</pre>\n}",
+   "language": "tsx",
+   "explanation": "Creates controlled sorting state, initially sorting age descending, and supplies the sorted row model."
+  },
+  "useCases": [
+   {
+    "title": "Controlled sorting",
+    "scenario": "Keep sort controls and the table synchronized with application state, URL parameters, or a data-fetching query."
+   },
+   {
+    "title": "Initial sort",
+    "scenario": "Show a predictable ordering when the table first renders without taking ownership of later changes."
+   },
+   {
+    "title": "Multi-column sorting",
+    "scenario": "Apply primary, secondary, and later tie-breaker columns in a defined priority order."
+   },
+   {
+    "title": "Server-side sorting",
+    "scenario": "Send the selected columns and directions to an API that performs ordering before returning rows."
+   }
+  ],
+  "related": [
+   "Sorting Guide",
+   "table.getState()",
+   "state.sorting",
+   "onSortingChange",
+   "initialState.sorting",
+   "column.getToggleSortingHandler",
+   "enableMultiSort",
+   "manualSorting"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the shape of sorting state?",
+    "answer": "Sorting state is an array of objects shaped like { id: string, desc: boolean }. The id names the column, and desc indicates descending order; false means ascending.",
+    "followUp": "How does the table represent a priority order for several columns? It stores descriptors in an array, with the array order defining the multi-sort sequence."
+   },
+   {
+    "question": "How do you control or initialize sorting?",
+    "answer": "Use the table's state.sorting option together with onSortingChange to control the state externally. Use initialState.sorting when only a starting sort is needed and the table should manage subsequent changes.",
+    "followUp": "What happens if both state.sorting and initialState.sorting are supplied? The controlled state takes precedence, so the initialState value is not the effective source of truth."
+   },
+   {
+    "question": "How does multi-column sorting work?",
+    "answer": "Multi-column sorting is available because sorting state is an array, and the column sorting handler enables multi-sorting by default. You can change participation with enableMultiSort at the column or table level.",
+    "followUp": "How would you implement server-side sorting? Set manualSorting and send the sorting state to the server; do not provide the client-side sorted row model."
+   }
+  ],
+  "keyPoints": [
+   "Sorting state is an array of descriptors, not a single column value.",
+   "Multiple descriptors allow compound sorting across several columns.",
+   "Read the current sorting state with table.getState().sorting.",
+   "The standard column toggle handler supports multi-column sorting by default.",
+   "External control uses state.sorting plus onSortingChange."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Table fundamentals::Accessor and display columns": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/guide/column-defs",
+  "sourceTitle": "Column Definitions Guide",
+  "summary": "Accessor columns read row values and provide a data model for table operations. Display columns have no data model and are for arbitrary rendered content such as actions, checkboxes, and expanders.",
+  "explanation": "Use an accessor column when a column should extract a row value and participate in data operations. Use a display column when it only renders arbitrary UI such as actions, checkboxes, or expanders and has no underlying data value.",
+  "syntax": "columnHelper.accessor(accessor, column)\ncolumnHelper.display(column)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Accessor and display column definitions",
+   "code": "import { createColumnHelper } from '@tanstack/table-core'\n\ntype Person = { firstName: string; lastName: string }\n\nconst columnHelper = createColumnHelper<Person>()\n\nconst columns = [\n  columnHelper.display({\n    id: 'actions',\n    header: 'Actions',\n    cell: () => 'Edit',\n  }),\n  columnHelper.accessor('firstName', {\n    header: 'First name',\n    cell: (info) => info.getValue(),\n  }),\n  columnHelper.accessor((row) => row.lastName, {\n    id: 'lastName',\n    header: 'Last name',\n    cell: (info) => info.getValue(),\n  }),\n]\n\nconsole.log(columns)",
+   "language": "typescript",
+   "explanation": "Defines one display-only actions column and two accessor columns: one using an object key and one using an accessor function."
+  },
+  "useCases": [
+   {
+    "title": "Data-backed fields",
+    "scenario": "A table needs sortable, filterable, or groupable fields such as names, dates, or statuses."
+   },
+   {
+    "title": "Row controls",
+    "scenario": "Each row needs an edit button, menu, checkbox, or expander that is not part of the row's data."
+   },
+   {
+    "title": "Computed values",
+    "scenario": "A derived field must be calculated from multiple properties in the complete row."
+   }
+  ],
+  "related": [
+   "Column Definitions Guide",
+   "ColumnHelper",
+   "accessor",
+   "display",
+   "accessorKey",
+   "accessorFn",
+   "cell"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between accessor and display columns?",
+    "answer": "An accessor column extracts a value from every row and supplies a data model for operations such as sorting, filtering, and grouping. A display column has no data model and is intended for arbitrary rendered content such as row actions or selection controls.",
+    "followUp": "How can an accessor column obtain its value? It can use an object key, an array index, or an accessor function; the function receives the row and should return the value to extract."
+   },
+   {
+    "question": "How are these columns declared with the column helper?",
+    "answer": "Use `columnHelper.accessor` with either a property key or a function. Use `columnHelper.display` for non-data content, and give it an `id` when the definition needs an explicit identifier.",
+    "followUp": "Why might an accessor function be preferable to an accessor key? It can derive a value from the complete row, including nested data or computed fields, while still creating a data column."
+   },
+   {
+    "question": "When should a row-action button be a display column?",
+    "answer": "Accessor columns are appropriate for values the table should understand as data, while display columns are appropriate for controls and other presentation-only content. Column definitions also control how the data model is formatted for display.",
+    "followUp": "Can a display column be made sortable by itself? Not through an extracted column value, because the documentation defines display columns as lacking a data model; sorting would require a separate data-bearing column or custom table behavior."
+   }
+  ],
+  "keyPoints": [
+   "Column definitions establish the table's data model and presentation, so choosing the correct column kind is foundational.",
+   "Accessor columns represent values extracted from rows and can support table features that operate on data.",
+   "Display columns are presentation-only definitions for content that is not a row value.",
+   "Use display columns for arbitrary rendered content such as buttons, checkboxes, expanders, or sparklines.",
+   "For object rows, an accessor key can directly identify the property to read.",
+   "An accessor function derives the column value from a row and must return the value used by the data column."
+  ],
+  "gotchas": [
+   "Accessor columns need to extract primitive values from each row; returning an object or array is not suitable for the column's data model.",
+   "A display column cannot provide the underlying value needed for sorting, filtering, or grouping.",
+   "For array-based row data, the accessor can use the relevant array index rather than an object property."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Table fundamentals::Column definitions": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/guide/column-defs",
+  "sourceTitle": "Column Definitions Guide",
+  "summary": "Define each table column with an accessor for row values, a header for the heading, and an optional cell renderer for formatted output.",
+  "explanation": "A column definition combines the value-extraction rule with presentation rules. Accessor columns derive values from each row, while header and cell functions or values control what the table displays; cell renderers can read the extracted value through the provided context.",
+  "syntax": "{ accessorKey: 'field', header: 'Label', cell: info => info.getValue() }",
+  "parameters": [
+   {
+    "name": "accessorKey/accessorFn",
+    "type": "string | number | (row: TData) => TValue",
+    "description": "A property key, array index, or function that extracts a value from each row."
+   },
+   {
+    "name": "header",
+    "type": "string | (props) => unknown",
+    "description": "Static content or a function receiving header context and returning rendered header content."
+   },
+   {
+    "name": "cell",
+    "type": "(props) => unknown",
+    "description": "A function receiving cell context and returning rendered cell content."
+   }
+  ],
+  "returns": "A column definition object used to build the table's data model and render its headers and cells.",
+  "example": {
+   "title": "Accessor, header, and cell",
+   "code": "import { createColumnHelper } from '@tanstack/react-table'\n\ntype Person = { firstName: string; age: number }\nconst columnHelper = createColumnHelper<Person>()\n\nexport const columns = [\n  columnHelper.accessor('firstName', {\n    header: 'First name',\n    cell: info => info.getValue(),\n  }),\n  columnHelper.accessor(row => row.age, {\n    id: 'age',\n    header: 'Age',\n    cell: info => `${info.getValue()} years`,\n  }),\n]",
+   "language": "typescript",
+   "explanation": "The first column extracts a property by key; the second uses a function. Each supplies a header and custom cell output."
+  },
+  "useCases": [
+   {
+    "title": "Direct property columns",
+    "scenario": "A row property maps directly to a displayed column."
+   },
+   {
+    "title": "Computed columns",
+    "scenario": "A displayed value must be computed from row data."
+   },
+   {
+    "title": "Custom cell presentation",
+    "scenario": "Cells need formatting, labels, or framework-specific UI."
+   }
+  ],
+  "related": [
+   "Column Definitions Guide",
+   "createColumnHelper",
+   "accessor columns",
+   "display columns",
+   "grouping columns",
+   "ColumnDef APIs"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the purpose of an accessor column?",
+    "answer": "An accessor identifies the value associated with a row, using an object key, array index, or accessor function. That value becomes part of the table's data model and supports features such as sorting, filtering, and grouping.",
+    "followUp": "How would you derive a value that is not a direct property? Use an accessor function, and provide an id when the column cannot obtain one automatically."
+   },
+   {
+    "question": "How can a column define its header?",
+    "answer": "The header definition controls the rendered column heading. It may be a static value or a function that receives header context and returns adapter-specific output.",
+    "followUp": "Can a header function inspect a row? No; headers do not have row data, so row-specific work belongs in a cell renderer."
+   },
+   {
+    "question": "How do you customize a cell's rendering?",
+    "answer": "The cell definition controls each row's displayed value. A cell function receives cell context, and getValue() provides the value produced by the accessor.",
+    "followUp": "What happens without a custom cell definition? The cell displays the data-model value as a string by default."
+   }
+  ],
+  "keyPoints": [
+   "Column definitions establish the table's data model and presentation behavior.",
+   "Use an object key when the desired value is a direct property of each row object.",
+   "Array-backed data can use an index as the accessor.",
+   "Accessor functions support computed or otherwise indirect row values.",
+   "A column without a custom cell formatter uses the extracted value's string form.",
+   "Set cell to a function when formatting needs to differ from the raw value."
+  ],
+  "gotchas": [
+   "Accessor columns must return primitive values for each row when they are used as the table's data model.",
+   "Do not expect a header renderer to receive row data; headers use their own header context."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Table fundamentals::flexRender": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/framework/react/reference/index/functions/flexRender",
+  "sourceTitle": "flexRender | TanStack Table React Docs",
+  "summary": "Renders a TanStack Table header, cell, or footer definition using its context. It supports static React nodes and component renderers, returning a React renderable.",
+  "explanation": "Call flexRender with a renderable column definition and the matching context. It invokes function definitions with those props and passes existing renderable values through; unlike the table-aware FlexRender wrapper, it does not choose aggregated-cell definitions or hide grouping placeholders.",
+  "syntax": "function flexRender<TProps>(Comp: Renderable<TProps>, props: TProps): ReactNode | Element;",
+  "parameters": [
+   {
+    "name": "Comp",
+    "type": "Renderable<TProps>",
+    "description": "A renderable component or value to render."
+   },
+   {
+    "name": "props",
+    "type": "TProps",
+    "description": "The props or rendering context supplied to Comp."
+   }
+  ],
+  "returns": "ReactNode | Element",
+  "example": {
+   "title": "Render a cell definition",
+   "code": "import { flexRender } from '@tanstack/react-table'\n\nconst column = {\n  accessorKey: 'name',\n  cell: ({ getValue }) => String(getValue()),\n}\n\nconst cell = table.getRowModel().rows[0].getVisibleCells()[0]\nconst content = flexRender(\n  cell.column.columnDef.cell,\n  cell.getContext(),\n)\n\nconsole.log(content)",
+   "language": "typescript",
+   "explanation": "This invokes the column's cell definition with the cell context and returns the resulting React renderable."
+  },
+  "useCases": [
+   {
+    "title": "Render custom cells",
+    "scenario": "A cell column definition contains a component or callback that must receive the cell context."
+   },
+   {
+    "title": "Render headers and footers",
+    "scenario": "A header or footer definition supplies custom React markup."
+   },
+   {
+    "title": "Normalize renderable definitions",
+    "scenario": "A column definition may be either a static node or a renderer function."
+   }
+  ],
+  "related": [
+   "FlexRender",
+   "cell.getValue()",
+   "cell.renderValue()",
+   "column.columnDef.cell",
+   "cell.getContext()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What arguments does flexRender receive?",
+    "answer": "flexRender takes a renderable definition and its props, such as cell.column.columnDef.cell and cell.getContext(). It returns a ReactNode or Element.",
+    "followUp": "How does it differ from FlexRender? FlexRender is the table-aware wrapper that selects the appropriate cell, header, or footer definition and handles grouped-cell decisions."
+   },
+   {
+    "question": "How does flexRender handle different definition forms?",
+    "answer": "It supports both function renderers and already-created React values. A function receives the supplied props, while other renderable values are passed through unchanged.",
+    "followUp": "Why should the context match the definition? The context supplies the typed table information expected by the renderer, so an unrelated props object can produce incorrect rendering or typing."
+   },
+   {
+    "question": "When should flexRender be preferred over getValue or renderValue?",
+    "answer": "For custom headers, cells, or footers, use flexRender rather than cell.getValue() or cell.renderValue(). The value methods are intended when only the accessor result is needed.",
+    "followUp": "What happens for an aggregated cell? Direct flexRender does not select aggregatedCell; use the table-aware FlexRender wrapper when that table-specific choice is required."
+   }
+  ],
+  "keyPoints": [
+   "The function accepts a renderable component or value plus props and returns a React renderable.",
+   "Use it for custom header, cell, and footer markup rather than for simple accessor-value retrieval.",
+   "React component forms and already-created React nodes are handled as different kinds of renderable input.",
+   "A cell is rendered by pairing its column definition with that cell's context."
+  ],
+  "gotchas": [
+   "Use flexRender directly only when you already have the exact definition and context; it does not handle grouped-cell selection or grouping placeholders for you.",
+   "Do not use flexRender merely to retrieve an accessor result; use getValue or renderValue when no custom column-definition markup is needed."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Table fundamentals::Row models": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/guide/row-models",
+  "sourceTitle": "Row Models Guide",
+  "summary": "Row models transform table data for features such as filtering, sorting, grouping, expansion, and pagination. The core model is automatic; register only the optional factories your table needs.",
+  "explanation": "Row models are processing stages that transform the input data for features such as filtering, sorting, grouping, expansion, and pagination. The core model is always present; register optional factories as slots in tableFeatures(), and render rows from the table's final getRowModel().",
+  "syntax": "features: tableFeatures({ filteredRowModel: createFilteredRowModel(), sortedRowModel: createSortedRowModel(), paginatedRowModel: createPaginatedRowModel() })",
+  "parameters": [
+   {
+    "name": "table options",
+    "type": "TableOptions<TData>",
+    "description": "Table configuration containing data, columns, and a features object whose row-model slots register optional processing."
+   }
+  ],
+  "returns": "getRowModel() returns the final row model after all processing from the table's registered features; row models contain rows, flatRows, and rowsById.",
+  "example": {
+   "title": "Register only the needed row model",
+   "code": "import { createTable, tableFeatures, createSortedRowModel } from '@tanstack/table-core'\n\ntype Person = { name: string; age: number }\nconst table = createTable<Person>({\n  data: [{ name: 'Ada', age: 36 }],\n  columns: [{ accessorKey: 'name' }, { accessorKey: 'age' }],\n  features: tableFeatures({\n    sortedRowModel: createSortedRowModel(),\n  }),\n})\n\nconst rows = table.getRowModel().rows",
+   "language": "typescript",
+   "explanation": "Creates a table with the automatic core model and registers sorting because the example uses that processing stage."
+  },
+  "useCases": [
+   {
+    "title": "Register sorting only",
+    "scenario": "A table needs client-side sorting."
+   },
+   {
+    "title": "Compose filtering and pagination stages",
+    "scenario": "A data grid supports filters and pagination."
+   },
+   {
+    "title": "Enable hierarchical row processing",
+    "scenario": "Rows must display grouped or expanded sub-rows."
+   }
+  ],
+  "related": [
+   "tableFeatures()",
+   "createFilteredRowModel()",
+   "createSortedRowModel()",
+   "createPaginatedRowModel()",
+   "createExpandedRowModel()",
+   "createGroupedRowModel()",
+   "createFacetedRowModel()",
+   "getRowModel()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What are row models and how are they registered?",
+    "answer": "Row models are transformations over the original data that support grid operations such as filtering, sorting, grouping, expansion, and pagination. The core model is automatic, while optional factories are registered through tableFeatures().",
+    "followUp": "How would you reduce bundle size? Register only the feature objects and row-model factories the table actually uses, allowing unused capabilities to be tree-shaken."
+   },
+   {
+    "question": "Which row model should render a table's rows?",
+    "answer": "Use the table instance's getRowModel() as the rendering source. It represents the final result after the processing supplied by the table's used features.",
+    "followUp": "What does getCoreRowModel() represent? It is the basic one-to-one mapping from the original data before optional processing is applied."
+   },
+   {
+    "question": "How do you enable sorting or pagination row models?",
+    "answer": "Add a factory as the matching slot in tableFeatures(), such as sortedRowModel: createSortedRowModel() for sorting or paginatedRowModel: createPaginatedRowModel() for pagination. The slot declares the processing capability the table needs.",
+    "followUp": "How should a table with no optional processing be configured? Use an empty features object, because the core row model remains available automatically."
+   }
+  ],
+  "keyPoints": [
+   "A row model is a derived representation of the table data, not the original data array itself.",
+   "Different operations require different models: filtering, sorting, grouping, expansion, and pagination each have corresponding processing stages.",
+   "Register optional factories directly on tableFeatures() using their feature-specific slot names.",
+   "The core model provides the initial rows as a direct mapping of the supplied data.",
+   "Rendering should consume the final row model obtained from the table instance."
+  ],
+  "gotchas": [
+   "Do not register a core row-model factory; it is already supplied by the table.",
+   "Avoid registering optional models speculatively, because unused processing adds work to table updates.",
+   "Use getRowModel() for rendering rather than selecting an intermediate model manually."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Table fundamentals::Stable data and columns": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/guide/data",
+  "sourceTitle": "Data Guide",
+  "summary": "Keep the data and columns passed to TanStack Table referentially stable. In React, use state or memoization so renders do not trigger unnecessary row, cell, column, and header recomputation or automatic state resets.",
+  "explanation": "TanStack Table uses the identities of the data and columns arrays to decide when row models and column structures need rebuilding. Keep both references stable with state, memoization, or equivalent framework mechanisms; otherwise renders can trigger unnecessary recomputation and, with automatic reset behavior, repeated state updates.",
+  "syntax": "useTable({ columns, data, ...options }, selector)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Stable data and columns",
+   "code": "import { useMemo, useState } from 'react'\nimport { useTable } from '@tanstack/react-table'\n\ntype Person = { name: string; age: number }\n\nconst initialData: Person[] = [\n  { name: 'Ada', age: 36 },\n  { name: 'Linus', age: 54 },\n]\n\nexport function PeopleTable() {\n  const [data] = useState(() => initialData)\n  const columns = useMemo(\n    () => [\n      { accessorKey: 'name', header: 'Name' },\n      { accessorKey: 'age', header: 'Age' },\n    ],\n    [],\n  )\n  const table = useTable({ columns, data }, (state) => state)\n  return <pre>{JSON.stringify(table.getRowModel().rows, null, 2)}</pre>\n}",
+   "language": "tsx",
+   "explanation": "The data is stored in state and the columns are memoized, so their references remain stable across renders."
+  },
+  "useCases": [
+   {
+    "title": "Preserve input references across renders",
+    "scenario": "React tables with local or fetched data"
+   },
+   {
+    "title": "Memoize data transformations",
+    "scenario": "Tables with filtered, mapped, or otherwise derived data"
+   },
+   {
+    "title": "Avoid render-reset cycles",
+    "scenario": "Client-side pagination or other auto-reset features"
+   }
+  ],
+  "related": [
+   "useTable",
+   "data",
+   "columns",
+   "row models",
+   "column structures",
+   "autoResetPageIndex",
+   "React.useState",
+   "React.useMemo"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why must data and columns have stable references?",
+    "answer": "TanStack Table compares the data and columns references when deciding whether to rebuild row models and column structures. New references can therefore cause unnecessary work even when the underlying values are unchanged.",
+    "followUp": "What happens with client-side pagination? An unstable data reference can trigger autoResetPageIndex, causing a state update and another render."
+   },
+   {
+    "question": "How can a React component stabilize table inputs?",
+    "answer": "Use a stable mechanism appropriate to the framework. In React, useState and useMemo are common choices, while defining values outside the component or using equivalent state management can also work.",
+    "followUp": "How should derived data be handled? Memoize the transformation, such as a filter or map, rather than passing its newly created array directly."
+   },
+   {
+    "question": "What work is caused by unstable references?",
+    "answer": "A changed data reference invalidates the core row model, rebuilding rows and cells; related sorted, filtered, grouped, or paginated models can also recompute. A changed columns reference similarly rebuilds column and header structures.",
+    "followUp": "Why does this matter more for large datasets? Rebuilding every row, cell, column, and header on each render increases computation and rendering cost."
+   }
+  ],
+  "keyPoints": [
+   "Keep both input arrays referentially stable so the table can reuse derived structures between renders.",
+   "Changing the data array identity rebuilds the core row model and can invalidate downstream row-model stages.",
+   "Changing the columns array identity rebuilds the table's column and header structures.",
+   "In React, stabilize inputs with state, memoization, or another mechanism that preserves references.",
+   "Memoize derived arrays created by filtering, mapping, or similar transformations before supplying them to the table."
+  ],
+  "gotchas": [
+   "Do not create the data array inside the component beside the table call without stabilizing it; that creates a new array on every render.",
+   "Inline transformations such as filtering produce new references, so memoize the transformed result.",
+   "Automatic page-index resets can turn unstable data into a repeated render-and-state-update cycle."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Table fundamentals::useReactTable": {
+  "sourceUrl": "https://tanstack.com/table/v8/docs/framework/react/react-table",
+  "sourceTitle": "React Table",
+  "summary": "Create a TanStack Table instance for React by passing an options object. The instance combines data, columns, and the row models needed by the table's features.",
+  "explanation": "useReactTable is the React adapter entry point for creating a TanStack Table instance. Pass it an options object containing the data, columns, and row-model functions required by the features the table uses; the returned instance exposes APIs for rendering and table operations.",
+  "syntax": "useReactTable<TData extends AnyData>(options: TableOptions<TData>): Table<TData>",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "TableOptions<TData>",
+    "description": "Configuration object containing the table's data, column definitions, row-model functions, and optional state or feature settings."
+   }
+  ],
+  "returns": "Table<TData>",
+  "example": {
+   "title": "Basic useReactTable instance",
+   "code": "import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'\n\ntype Person = { id: number; name: string }\n\nconst data: Person[] = [{ id: 1, name: 'Ada' }]\nconst columns = [\n  { accessorKey: 'name', header: 'Name' },\n]\n\nexport function App() {\n  const table = useReactTable({\n    data,\n    columns,\n    getCoreRowModel: getCoreRowModel(),\n  })\n\n  return (\n    <table>\n      <thead>\n        {table.getHeaderGroups().map(group => (\n          <tr key={group.id}>\n            {group.headers.map(header => (\n              <th key={header.id}>{flexRender(header.column.columnDef.header, header.getContext())}</th>\n            ))}\n          </tr>\n        ))}\n      </thead>\n      <tbody>\n        {table.getRowModel().rows.map(row => (\n          <tr key={row.id}><td>{row.getVisibleCells()[0].getValue<string>()}</td></tr>\n        ))}\n      </tbody>\n    </table>\n  )\n}",
+   "language": "tsx",
+   "explanation": "This creates a table instance from column definitions, row data, and the core row-model function, then reads header groups and rows for rendering."
+  },
+  "useCases": [
+   {
+    "title": "Create the table instance used by header and row rendering",
+    "scenario": "Render a basic data grid"
+   },
+   {
+    "title": "Enable feature-specific row models and state options",
+    "scenario": "Add sorting, filtering, or pagination"
+   },
+   {
+    "title": "Control selected state slices through state and on[State]Change options",
+    "scenario": "Coordinate table state with application state"
+   }
+  ],
+  "related": [
+   "TableOptions",
+   "Table",
+   "getCoreRowModel",
+   "getSortedRowModel",
+   "getPaginationRowModel",
+   "flexRender",
+   "table.getRowModel",
+   "table.getState"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useReactTable accept and return?",
+    "answer": "useReactTable accepts a TableOptions object and returns a Table instance. The options normally include data and columns, plus row-model functions such as getCoreRowModel().",
+    "followUp": "How would you add sorting? Include getSortedRowModel() and provide sorting state plus an onSortingChange handler when sorting is controlled."
+   },
+   {
+    "question": "Why is getCoreRowModel usually included?",
+    "answer": "The core row model supplies the basic rows that the table can expose through table.getRowModel().rows. Additional row-model functions are imported and enabled according to the features the table needs.",
+    "followUp": "Why are row models passed as functions? They provide tree-shakable, feature-specific processing rather than one monolithic plugin system."
+   },
+   {
+    "question": "How do internal and controlled table state differ?",
+    "answer": "TanStack Table can manage state internally when no state, initialState, or state-change options are supplied. To control a state slice, pass both its value in state and its corresponding on[State]Change callback.",
+    "followUp": "What happens if only the state value is supplied? The table will treat that slice as controlled but lacks the callback needed to update it, so both options should be supplied together."
+   }
+  ],
+  "keyPoints": [
+   "useReactTable is called with one options object and produces the table instance used by the component.",
+   "The React package adapts the framework-agnostic core to React state handling and rendering integration.",
+   "Store the returned value, conventionally named table, and use its instance APIs to render or operate on the table.",
+   "The framework-specific table creator is selected through the adapter, while the underlying table construction pattern remains consistent."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Table hooks & state::Column helpers and typing": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/reference/index/functions/createColumnHelper",
+  "sourceTitle": "createColumnHelper",
+  "summary": "Use createColumnHelper with your feature set and row type to define columns with stronger value inference. Accessor keys or functions determine cell value types, while display and group support non-data and nested columns.",
+  "explanation": "Call createColumnHelper with the row type, then use accessor for data columns, display for non-data columns, and group for parent columns. An accessor key or function determines the cell value type, which is carried into callbacks such as cell through getValue().",
+  "syntax": "function createColumnHelper<TFeatures, TData>(): ColumnHelper<TFeatures, TData>;",
+  "parameters": [
+   {
+    "name": "TFeatures",
+    "type": "type parameter",
+    "description": "The table feature-set type used to type feature-specific column options."
+   },
+   {
+    "name": "TData",
+    "type": "type parameter",
+    "description": "The row-data type from which accessor keys and values are inferred."
+   }
+  ],
+  "returns": "A ColumnHelper<TFeatures, TData> containing typed accessor, display, group, and columns utilities.",
+  "example": {
+   "title": "Typed column definitions",
+   "code": "import { createColumnHelper } from '@tanstack/react-table'\n\ntype Person = { firstName: string; lastName: string; age: number }\n\nconst columnHelper = createColumnHelper<Person>()\n\nconst columns = [\n  columnHelper.accessor('firstName', {\n    header: 'First name',\n    cell: info => info.getValue().toUpperCase(),\n  }),\n  columnHelper.accessor(row => row.lastName, {\n    id: 'lastName',\n    header: 'Last name',\n    cell: info => info.getValue(),\n  }),\n  columnHelper.display({\n    id: 'actions',\n    header: 'Actions',\n    cell: () => 'Edit',\n  }),\n]",
+   "language": "typescript",
+   "explanation": "The helper derives each accessor column's value type, so getValue() is typed consistently with the selected Person field. A display column is used for UI-only content that is not extracted from row data."
+  },
+  "useCases": [
+   {
+    "title": "Typed object accessors",
+    "scenario": "Define columns from fields on object rows while keeping cell callbacks type-safe."
+   },
+   {
+    "title": "Function accessors",
+    "scenario": "Compute a primitive value from each row for rendering or table features."
+   },
+   {
+    "title": "Display-only columns",
+    "scenario": "Add edit, select, or action controls that are not row-derived values."
+   },
+   {
+    "title": "Nested and grouped columns",
+    "scenario": "Keep nested column arrays' individual value types through inference."
+   }
+  ],
+  "related": [
+   "ColumnHelper",
+   "Column Definitions Guide",
+   "Helpers Guide",
+   "accessor",
+   "display",
+   "group",
+   "columns"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does createColumnHelper provide?",
+    "answer": "createColumnHelper takes the feature-set type and row type, then returns utilities for typed column definitions. Its accessor method infers the cell value from either an accessor key or accessor function.",
+    "followUp": "How can nested arrays retain individual value types? Use the columns helper around the column-definition array; it preserves tuple-level value types."
+   },
+   {
+    "question": "How do you define a typed data column?",
+    "answer": "Use accessor with an object key, array index, or accessor function to extract a value from each row. The cell callback can retrieve that inferred value with info.getValue().",
+    "followUp": "What must an accessor function column include? Give it a unique id, because the helper cannot derive one from a function."
+   },
+   {
+    "question": "When should display or group be used instead of accessor?",
+    "answer": "Use display for columns such as actions or selection controls that do not represent extracted row data. Use group to create a parent column containing nested columns.",
+    "followUp": "Does the helper create runtime table behavior? No; it returns column-definition objects and primarily improves TypeScript inference."
+   }
+  ],
+  "keyPoints": [
+   "The helper keeps accessor-derived cell values aligned with the row type and column callbacks.",
+   "An accessor key or function determines the TValue inferred for that column.",
+   "Use display for controls or other columns whose content does not come from a row accessor.",
+   "Use group to organize nested child columns beneath a parent definition.",
+   "Wrap a column array with columns when preserving each column's individual value type matters.",
+   "The helper is a typing and authoring aid, not a separate runtime table mechanism."
+  ],
+  "gotchas": [
+   "Configure accessor columns to return primitive values rather than objects or arrays; use a display column for content that is not a row-derived value."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Table hooks & state::Controlled table state": {
+  "sourceUrl": "https://tanstack.com/table/v8/docs/framework/react/guide/table-state",
+  "sourceTitle": "Table State (React) Guide",
+  "summary": "Lift selected table-state slices into application state by passing them through state and pairing each with its on[State]Change callback. Use onStateChange when the application should own the entire table state.",
+  "explanation": "Controlled state lets application code own selected table-state slices, such as sorting, filtering, or pagination. Pass each current slice through state and pair it with the matching on[State]Change callback; use onStateChange when the application should own the complete table state.",
+  "syntax": "useReactTable({ state: { sorting, columnFilters, pagination }, onSortingChange: setSorting, onColumnFiltersChange: setColumnFilters, onPaginationChange: setPagination })",
+  "parameters": [
+   {
+    "name": "state",
+    "type": "TableState",
+    "description": "Externally managed table-state slices, such as sorting, columnFilters, or pagination."
+   },
+   {
+    "name": "on[State]Change",
+    "type": "OnChangeFn<T>",
+    "description": "Callback for a controlled slice; examples include onSortingChange, onColumnFiltersChange, and onPaginationChange."
+   }
+  ],
+  "returns": "A table instance whose controlled state reflects the values supplied through state and whose changes are reported through the supplied callbacks.",
+  "example": {
+   "title": "Control selected state slices",
+   "code": "import { useState } from 'react'\nimport { useReactTable, getCoreRowModel } from '@tanstack/react-table'\n\nfunction UsersTable({ data, columns }) {\n  const [sorting, setSorting] = useState([])\n  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })\n\n  const table = useReactTable({\n    data,\n    columns,\n    getCoreRowModel: getCoreRowModel(),\n    state: { sorting, pagination },\n    onSortingChange: setSorting,\n    onPaginationChange: setPagination,\n  })\n\n  return <pre>{JSON.stringify(table.getState(), null, 2)}</pre>\n}",
+   "language": "tsx",
+   "explanation": "The component owns sorting and pagination, then supplies both values and their change handlers to the table."
+  },
+  "useCases": [
+   {
+    "title": "Drive remote queries",
+    "scenario": "Server-side data fetching uses sorting, filters, and pagination as request inputs."
+   },
+   {
+    "title": "Share table state",
+    "scenario": "Other UI or application logic needs to inspect or modify selected table state."
+   },
+   {
+    "title": "Own the complete state",
+    "scenario": "A central store must coordinate all table-state changes."
+   }
+  ],
+  "related": [
+   "Table State",
+   "Sorting",
+   "Column Filtering",
+   "Pagination",
+   "onStateChange"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you control only sorting?",
+    "answer": "Pass the externally owned slice in the table's state option and pass its matching on[State]Change callback. For example, sorting requires state.sorting and onSortingChange.",
+    "followUp": "How can the application own every slice? Use onStateChange to hoist the entire table state into external state management."
+   },
+   {
+    "question": "Why lift table state into application state?",
+    "answer": "Controlled state is useful when other application areas need direct access to table state, such as when filtering, sorting, and pagination drive server-side data fetching. Those values can be kept in application state and used by the fetch operation.",
+    "followUp": "What should remain internal? Any slice the API and surrounding application do not use can remain uncontrolled."
+   },
+   {
+    "question": "How do you control the entire table state?",
+    "answer": "Use the onStateChange table option instead of separate per-slice callbacks. This causes the complete table state to be managed by the application's state system.",
+    "followUp": "When is a per-slice approach preferable? When only selected slices need to be shared or controlled and the rest can stay internal."
+   }
+  ],
+  "keyPoints": [
+   "Control only the slices that the rest of the application needs to read or modify.",
+   "The controlled-state contract consists of a value in state plus a corresponding change handler.",
+   "Sorting, filtering, and pagination can be lifted independently rather than moving the whole table state.",
+   "Lift query-driving slices when table interactions determine server-side requests.",
+   "Use onStateChange when external state management should own every table-state slice."
+  ],
+  "gotchas": [
+   "A slice is not controlled by providing only its value or only its callback; provide both.",
+   "Adding a per-slice callback opts that slice into controlled behavior.",
+   "Do not lift unrelated slices unless the application needs to own them."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Table hooks & state::Header and cell renderers": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/framework/react/guide/flex-render",
+  "sourceTitle": "FlexRender (React) Guide",
+  "summary": "Header and cell definitions may be static React nodes or renderer components/functions. Render them with FlexRender or flexRender so TanStack Table supplies the correct context and handles the framework-specific result.",
+  "explanation": "A column's header and cell definitions can be static renderable values or functions/components. Use the framework adapter's rendering utility with the matching header or cell context so custom renderers receive the table information they need.",
+  "syntax": "flexRender<TProps>(Comp, props): ReactNode | Element",
+  "parameters": [
+   {
+    "name": "Comp",
+    "type": "Renderable definition",
+    "description": "The header, cell, or footer definition to render, such as columnDef.header or columnDef.cell."
+   },
+   {
+    "name": "props",
+    "type": "Renderer context",
+    "description": "The matching header or cell context, such as header.getContext() or cell.getContext()."
+   }
+  ],
+  "returns": "flexRender returns a ReactNode or Element; FlexRender renders the resolved header, cell, or footer output.",
+  "example": {
+   "title": "Render header and cell definitions",
+   "code": "import { flexRender } from '@tanstack/react-table'\n\nconst columns = [{\n  accessorKey: 'name',\n  header: 'Name',\n  cell: info => info.getValue(),\n}]\n\nfunction Table({ table }) {\n  return <table><thead>{table.getHeaderGroups().map(group => <tr key={group.id}>\n    {group.headers.map(header => <th key={header.id}>\n      {!header.isPlaceholder && flexRender(header.column.columnDef.header, header.getContext())}\n    </th>)}\n  </tr>)}</thead><tbody>{table.getRowModel().rows.map(row => <tr key={row.id}>\n    {row.getVisibleCells().map(cell => <td key={cell.id}>\n      {flexRender(cell.column.columnDef.cell, cell.getContext())}\n    </td>)}\n  </tr>)}</tbody></table>\n}",
+   "language": "tsx",
+   "explanation": "Define static or functional renderers in the column definitions, then pass each definition and its matching header or cell context to flexRender."
+  },
+  "useCases": [
+   {
+    "title": "Custom headers",
+    "scenario": "A column header needs a label, icon, sort state, or interactive controls."
+   },
+   {
+    "title": "Context-aware cells",
+    "scenario": "A cell needs formatting, links, badges, or controls based on its row and column context."
+   },
+   {
+    "title": "Grouped and aggregated output",
+    "scenario": "A table uses aggregation or grouping and needs the correct renderer for aggregated and placeholder cells."
+   }
+  ],
+  "related": [
+   "FlexRender",
+   "flexRender",
+   "columnDef.header",
+   "columnDef.cell",
+   "columnDef.footer",
+   "aggregatedCell",
+   "header.getContext()",
+   "cell.getContext()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you render a custom header or cell definition?",
+    "answer": "Use flexRender with the column definition and the matching object context: pass header.column.columnDef.header with header.getContext(), or cell.column.columnDef.cell with cell.getContext(). This resolves static values and invokes renderer functions correctly.",
+    "followUp": "When should cell.getValue() or cell.renderValue() be used instead? Use them when only the accessor result is needed; use flexRender when rendering the column definition or custom markup."
+   },
+   {
+    "question": "What forms can header and cell definitions take?",
+    "answer": "A definition may be a plain renderable value or a renderer component/function. The rendering utility interprets it in the adapter's expected way and supplies the typed table context.",
+    "followUp": "Why not call a renderer function manually? Manual invocation can omit or incorrectly construct the context; the adapter utility supplies the framework-compatible context."
+   },
+   {
+    "question": "What should rendering code do with placeholder headers?",
+    "answer": "A placeholder header represents layout rather than ordinary content, so check header.isPlaceholder before rendering it. Regular cells are rendered from their column's cell definition and cell context.",
+    "followUp": "What additional behavior does the higher-level FlexRender wrapper provide? In supported adapters it can select the appropriate grouped-cell renderer and suppress grouping placeholders."
+   }
+  ],
+  "keyPoints": [
+   "In React, header and cell definitions may be static nodes or renderer components; the same definition pattern also covers footer and aggregated-cell output.",
+   "Use the adapter rendering utility rather than treating a definition as an ordinary value, so it receives the appropriate table context.",
+   "For ordinary table markup, the framework's FlexRender wrapper is the recommended higher-level rendering approach.",
+   "The FlexRender wrapper accepts one table object at a time: a cell, header, or footer.",
+   "For grouped output, FlexRender can choose aggregatedCell, fall back to cell, and omit grouping placeholders.",
+   "Use flexRender directly when you already have a renderable definition and the props or context to pass to it."
+  ],
+  "gotchas": [
+   "Prefer the adapter's FlexRender wrapper when available because it handles both static nodes and component renderers."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Table hooks & state::Manual server-side state": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/guide/client-side-vs-server-side",
+  "sourceTitle": "Client-Side vs Server-Side Guide | TanStack Table Docs",
+  "summary": "Use the manual* table options when your backend performs filtering, sorting, or pagination. Control the relevant state, send it with the request, and give TanStack Table the already processed rows.",
+  "explanation": "For server-side processing, keep the relevant sorting, filtering, and pagination state where the data-fetching code can read it. Include those values in the request or query key, enable the corresponding manual option, and pass the server-processed rows to data. Manual pagination can also receive rowCount or pageCount so the table can calculate page navigation.",
+  "syntax": "useReactTable({ data, columns, manualFiltering: true, manualSorting: true, manualPagination: true, state, onColumnFiltersChange, onSortingChange, onPaginationChange, rowCount })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Server-paginated table",
+   "code": "import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table'\nimport { useState } from 'react'\n\ntype User = { id: number; name: string }\nconst columnHelper = createColumnHelper<User>()\nconst columns = [columnHelper.accessor('name', { header: 'Name' })]\n\nexport function UsersTable({ rows, total }: { rows: User[]; total: number }) {\n  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })\n  const table = useReactTable({\n    data: rows,\n    columns,\n    getCoreRowModel: getCoreRowModel(),\n    manualPagination: true,\n    rowCount: total,\n    state: { pagination },\n    onPaginationChange: setPagination,\n  })\n  return <button onClick={() => table.nextPage()}>Next</button>\n}",
+   "language": "tsx",
+   "explanation": "The server supplies the already paginated rows and total count; the table owns pagination state and exposes page navigation."
+  },
+  "useCases": [
+   {
+    "title": "Database-backed filtering and sorting",
+    "scenario": "A large dataset cannot be loaded efficiently into the browser."
+   },
+   {
+    "title": "Server pagination",
+    "scenario": "An API returns one page of an otherwise much larger result set."
+   },
+   {
+    "title": "Per-table manual processing",
+    "scenario": "A shared table component contains client row models but a particular screen delegates processing to an API."
+   }
+  ],
+  "related": [
+   "manualFiltering",
+   "manualSorting",
+   "manualPagination",
+   "manualGrouping",
+   "manualAggregation",
+   "manualExpanding",
+   "rowCount",
+   "pageCount"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you configure TanStack Table when the server performs sorting, filtering, or pagination?",
+    "answer": "Set the relevant manual option, such as manualSorting, manualFiltering, or manualPagination, and pass rows that the server has already processed. The table then skips that client-side processing; for manual pagination, provide rowCount or pageCount when known.",
+    "followUp": "What must accompany server-side state? Keep it in application state accessible to the fetcher and include every server-owned value in the request or query key."
+   },
+   {
+    "question": "How should table state drive server requests?",
+    "answer": "The fetch logic should read the table's controlled sorting, filtering, and pagination state. Each such value belongs in the request or query key, and the response becomes the table's data.",
+    "followUp": "Why include state in the query key? It distinguishes results for different server queries and helps the data layer fetch or cache the correct result."
+   },
+   {
+    "question": "What is required for manual server-side pagination?",
+    "answer": "Use manualPagination when the server returns one page at a time. Pass the returned page rows to data and provide rowCount or pageCount when known; no client pagination row model is needed.",
+    "followUp": "What happens when filtering changes? Reset or validate pageIndex because the old page may no longer exist in the filtered result."
+   }
+  ],
+  "keyPoints": [
+   "TanStack Table can delegate feature processing to your backend instead of requiring browser-side row-model work.",
+   "Treat pagination and whole-dataset operations as one server-side pipeline when the server owns the page boundary.",
+   "Use the manual option corresponding to each operation handled by the server: manualFiltering, manualSorting, manualPagination, and related options.",
+   "The table's data input should be the server's processed result, not the unprocessed full dataset.",
+   "Make every server-controlled state value part of the fetch request or cache key so results track the active table state."
+  ],
+  "gotchas": [
+   "Do not combine server pagination or filtering with client-side sorting when ordering must apply to the complete dataset; the client only sees the loaded subset.",
+   "Supply rowCount or pageCount when available so pagination controls have the total-page information.",
+   "A changed filter, sort, grouping value, or page size may leave the current page invalid, so reset or validate pageIndex."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Table hooks & state::Reading header groups and rows": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/overview",
+  "sourceTitle": "Overview | TanStack Table Docs",
+  "summary": "Render the table head from getHeaderGroups() and the body from getRowModel(), not directly from the source array. These table-instance results provide the current header structure and processed display rows.",
+  "explanation": "TanStack Table is headless, so the UI reads its current structure from the table instance. Iterate over getHeaderGroups() for each header row, skip placeholder headers, and render cells from each row returned by getRowModel(); these results reflect the table's configured processing rather than the original data array.",
+  "syntax": "table.getHeaderGroups(); table.getRowModel();",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "TableOptions<TData>",
+    "description": "Table configuration, including data, columns, and enabled row-model features."
+   }
+  ],
+  "returns": "getHeaderGroups() returns HeaderGroup<TFeatures, TData>[]; getRowModel() returns RowModel<TFeatures, TData>.",
+  "example": {
+   "title": "Render header groups and rows",
+   "code": "import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'\n\nfunction UsersTable({ data, columns }) {\n  const table = useReactTable({\n    data,\n    columns,\n    getCoreRowModel: getCoreRowModel(),\n  })\n\n  return <table>\n    <thead>\n      {table.getHeaderGroups().map(headerGroup => <tr key={headerGroup.id}>\n        {headerGroup.headers.map(header => <th key={header.id} colSpan={header.colSpan}>\n          {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}\n        </th>)}\n      </tr>)}\n    </thead>\n    <tbody>\n      {table.getRowModel().rows.map(row => <tr key={row.id}>\n        {row.getAllCells().map(cell => <td key={cell.id}>\n          {flexRender(cell.column.columnDef.cell, cell.getContext())}\n        </td>)}\n      </tr>)}\n    </tbody>\n  </table>\n}",
+   "language": "tsx",
+   "explanation": "Build the table head from header groups and the body from the processed row model, rendering each header and cell through flexRender."
+  },
+  "useCases": [
+   {
+    "title": "Grouped headers",
+    "scenario": "Rendering grouped or nested columns with multiple header rows."
+   },
+   {
+    "title": "Processed table body",
+    "scenario": "Displaying rows after enabled table features transform or order them."
+   },
+   {
+    "title": "Headless table markup",
+    "scenario": "Keeping rendering independent from the underlying UI framework."
+   }
+  ],
+  "related": [
+   "getHeaderGroups",
+   "getRowModel",
+   "HeaderGroup",
+   "RowModel",
+   "getAllCells",
+   "flexRender"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Call getHeaderGroups() and iterate over the result to create each header row.",
+   "Each header group contains the headers that belong in that row.",
+   "Read the body rows from the table's current row model instead of directly mapping the input data.",
+   "For each row, iterate through its cells to produce the table body cells."
+  ],
+  "gotchas": [
+   "Render every header group and its headers so multi-level column structures produce the required table rows.",
+   "Placeholder headers can occur in grouped layouts, so render no header content for them."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Table hooks & state::Row identity across state": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/framework/react/guide/row-selection",
+  "sourceTitle": "Row Selection (React) Guide | TanStack Table React Docs",
+  "summary": "Give each row a unique, durable ID through getRowId. Selection state is keyed by that ID, so it continues to identify the same record when table operations change row positions.",
+  "explanation": "TanStack Table uses row IDs as keys for row selection state. Configure getRowId to return a unique, durable identifier from the data instead of relying on the default positional index.",
+  "syntax": "getRowId: (row) => row.uuid",
+  "parameters": [
+   {
+    "name": "originalRow",
+    "type": "TData",
+    "description": "The original row object from which the stable identifier is resolved."
+   },
+   {
+    "name": "table",
+    "type": "Table_Internal<TFeatures, TData>",
+    "description": "The internal table instance used when resolving the ID."
+   },
+   {
+    "name": "index",
+    "type": "number",
+    "description": "The row's positional index, used by the default resolver."
+   },
+   {
+    "name": "parent",
+    "type": "Row<TFeatures, TData> | undefined",
+    "description": "The parent row when resolving a nested row."
+   }
+  ],
+  "returns": "A string containing the row's resolved stable ID.",
+  "example": {
+   "title": "Use a database identifier for row identity",
+   "code": "import { createTable } from '@tanstack/table-core'\n\ntype User = { uuid: string; name: string }\nconst table = createTable<User>({\n  data: [\n    { uuid: 'u-101', name: 'Ada' },\n    { uuid: 'u-102', name: 'Linus' },\n  ],\n  columns: [{ accessorKey: 'name', header: 'Name' }],\n  getRowId: row => row.uuid,\n})\n\nconst selected = { 'u-102': true }\nconst selectedRow = table.getRowModel().rows.find(row => selected[row.id])\nconsole.log(selectedRow?.original.name)",
+   "language": "typescript",
+   "explanation": "Uses each database UUID as the row identity, so selection state refers to the same user even when the displayed order changes."
+  },
+  "useCases": [
+   {
+    "title": "Preserve selection for the same records",
+    "scenario": "A user selects records, then sorts or filters the table."
+   },
+   {
+    "title": "Use domain IDs in backend requests",
+    "scenario": "The application sends selected records to an API."
+   },
+   {
+    "title": "Keep identity across data updates",
+    "scenario": "Rows are paginated or refreshed from a server."
+   }
+  ],
+  "related": [
+   "getRowId",
+   "rowSelection",
+   "getSelectedRowModel",
+   "getFilteredSelectedRowModel",
+   "getGroupedSelectedRowModel",
+   "Row Selection"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why should getRowId usually be configured for selectable rows?",
+    "answer": "TanStack Table keys row selection state by row ID. By default, that ID is the row's index, so configure getRowId to return a unique identifier from the row, such as a database UUID.",
+    "followUp": "What happens when data is reordered with index IDs? State can attach to the wrong record because the same position now represents different data; a stable row ID keeps the association with the record."
+   },
+   {
+    "question": "How do you configure a stable row identity?",
+    "answer": "Pass getRowId in the table options and return a unique value from each data object, for example getRowId: row => row.uuid. The returned value becomes the row's identity used by selection state.",
+    "followUp": "How would you choose the value? Use a durable identifier supplied by the data source, not a value derived from the current display position."
+   },
+   {
+    "question": "What behavior does a stable row ID enable across table operations?",
+    "answer": "The table can preserve interaction state through sorting, filtering, grouping, expansion, pagination, and data updates while the row ID remains in the display order. This works because state refers to the row ID rather than only its current position.",
+    "followUp": "What if a selected ID is absent from the current data? The selection state may still contain that ID, so applications should reconcile it when records are removed or no longer loaded."
+   }
+  ],
+  "keyPoints": [
+   "Set getRowId to derive identity from a unique field in each data record.",
+   "A database UUID is a suitable source when it remains unchanged for the record's lifetime.",
+   "TanStack Table can manage selection internally; the identity configuration determines what its state keys represent.",
+   "Stable IDs let row-related interaction survive common transformations of the displayed model.",
+   "Selection state may retain IDs for records outside the currently loaded data."
+  ],
+  "gotchas": [
+   "Index-based IDs change when rows are reordered, so state keyed by those IDs can refer to a different record after sorting, filtering, or data updates.",
+   "A custom identifier must be unique; collisions make multiple records share one state entry."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Table hooks & state::Row model functions": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/guide/row-models",
+  "sourceTitle": "Row Models Guide | TanStack Table Docs",
+  "summary": "Row model functions transform table data through enabled stages such as filtering, grouping, sorting, expansion, and pagination. Use getRowModel() for rendering; the core row model is included automatically.",
+  "explanation": "Row models are processing stages that turn the table's original data into row structures used by features such as filtering, grouping, sorting, expanding, and pagination. The core model starts with the unprocessed data, while getRowModel() exposes the final result after the enabled stages run in sequence.",
+  "syntax": "table.getRowModel()\ntable.getCoreRowModel()",
+  "parameters": [],
+  "returns": "getRowModel() returns the final row model used to render table rows; getCoreRowModel() returns the basic unprocessed row model.",
+  "example": {
+   "title": "Read the final row model",
+   "code": "import { createTable } from '@tanstack/table-core'\n\nconst table = createTable({\n  data: [{ name: 'Ada' }, { name: 'Linus' }],\n  columns: [{ accessorKey: 'name', header: 'Name' }],\n})\n\nconst rows = table.getRowModel().rows\nconsole.log(rows.map(row => row.getValue('name')))",
+   "language": "typescript",
+   "explanation": "The table's final row model supplies the rows used for rendering."
+  },
+  "useCases": [
+   {
+    "title": "Render the final table view",
+    "scenario": "Rendering rows after all enabled table features have been applied."
+   },
+   {
+    "title": "Read unprocessed data rows",
+    "scenario": "Inspecting the source-shaped rows before feature processing."
+   },
+   {
+    "title": "Compose feature-specific processing",
+    "scenario": "Building data-grid behavior that needs filtering, grouping, sorting, expansion, or pagination."
+   }
+  ],
+  "related": [
+   "getRowModel",
+   "getCoreRowModel",
+   "getFilteredRowModel",
+   "getGroupedRowModel",
+   "getSortedRowModel",
+   "getExpandedRowModel",
+   "getPaginatedRowModel",
+   "tableFeatures"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What are row models, and why does getRowModel() matter?",
+    "answer": "Row models transform the original table data for grid features such as filtering, grouping, sorting, expanding, and pagination. The enabled models are applied in a defined processing chain, and getRowModel() returns the final result for rendering.",
+    "followUp": "What is the processing order? Filtering comes before grouping, sorting, expansion, and pagination; the final getRowModel() combines the enabled stages."
+   },
+   {
+    "question": "What does getCoreRowModel provide?",
+    "answer": "getCoreRowModel represents the original data without row-model processing and is a 1:1 mapping of the data passed to the table. In the current API, the core row model is included automatically.",
+    "followUp": "When would you add another model? Add one when its associated feature requires processing, such as filtering or pagination."
+   },
+   {
+    "question": "In what order are row models applied?",
+    "answer": "The models run in this sequence when their features are enabled: core, filtered, grouped, sorted, expanded, paginated, then the final row model. This ordering determines which transformation receives the output of the preceding stage.",
+    "followUp": "Why should application rendering normally use getRowModel()? It automatically reflects the enabled row-model pipeline instead of coupling rendering to one intermediate stage."
+   }
+  ],
+  "keyPoints": [
+   "Row models convert the table's source data into structures required by data-grid behavior.",
+   "The core model preserves a direct row-for-row representation of the supplied data.",
+   "Use the table's final row model as the normal source for rendered rows.",
+   "The final model incorporates every enabled intermediate model in the pipeline.",
+   "The documented pipeline orders filtering, grouping, sorting, expansion, and pagination before the final model."
+  ],
+  "gotchas": [
+   "Register only the row model factories required by the features your table actually uses.",
+   "For rendering, prefer the final getRowModel() result rather than manually selecting an intermediate stage."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Table hooks & state::Table state slices": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/framework/react/guide/table-state",
+  "sourceTitle": "Table State (React) Guide",
+  "summary": "Subscribe a component to only the table-state slice it renders, rather than rerendering for every table change. Use a selector with table.Subscribe or target a specific state atom.",
+  "explanation": "In the React Table State guide, table state is divided into independently reactive slices. The table hook can select a subset for its component, while table.Subscribe creates a lower-level subscription; give it a selector for table.store or a specific atom when only one slice should trigger rendering.",
+  "syntax": "const table = useTable(options, selector)\n<table.Subscribe selector={(state) => state.slice} />",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "TableOptions",
+    "description": "Table options, including data and columns, used to create the table instance."
+   },
+   {
+    "name": "selector",
+    "type": "(state: TableState) => TSelected",
+    "description": "Optional TanStack Store selector used to choose the reactive state exposed by table.state."
+   }
+  ],
+  "returns": "A table instance whose table.state contains the selected reactive state and whose table.Subscribe component can create localized subscriptions.",
+  "example": {
+   "title": "Subscribe to one table-state slice",
+   "code": "import { useTable } from '@tanstack/react-table'\n\nfunction Pagination({ table }) {\n  return (\n    <table.Subscribe\n      selector={(state) => state.pagination}\n      children={(pagination) => (\n        <button\n          onClick={() => table.setPageIndex(pagination.pageIndex + 1)}\n        >\n          Next page\n        </button>\n      )}\n    />\n  )\n}\n\nfunction App({ columns, data }) {\n  const table = useTable({ data, columns })\n  return <Pagination table={table} />\n}",
+   "language": "tsx",
+   "explanation": "The pagination UI subscribes only to the pagination slice, so unrelated table-state changes do not update that region."
+  },
+  "useCases": [
+   {
+    "title": "Isolate pagination UI",
+    "scenario": "A pagination control should update when page state changes but not when filters or selection change."
+   },
+   {
+    "title": "Localize selection rendering",
+    "scenario": "A row-selection badge needs reactive selection updates without making the entire table component depend on every slice."
+   },
+   {
+    "title": "Create a subscription boundary",
+    "scenario": "A parent layout should remain stable while a nested table region responds to state changes."
+   }
+  ],
+  "related": [
+   "table.state",
+   "table.store",
+   "table.Subscribe",
+   "table.atoms.<slice>",
+   "useSelector",
+   "TanStack Store selector"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does TanStack Table avoid rerendering for unrelated state changes?",
+    "answer": "The default table hook selection includes all registered table state, so any selected slice can schedule the component. To narrow that behavior, pass a selector as the second argument to useTable, or move the reactive read into table.Subscribe.",
+    "followUp": "How would you prevent a parent from rerendering while keeping a nested state-dependent region reactive? Pass a selector that returns null to useTable and place table.Subscribe in the nested region."
+   },
+   {
+    "question": "How would you subscribe a pagination control to only pagination state?",
+    "answer": "Use table.Subscribe with a selector that returns the needed slice, such as state.pagination. The subscription establishes a fine-grained reactive boundary around the UI that consumes that value.",
+    "followUp": "What if the UI depends on sorting and pagination? Select both from table.store and keep the state-dependent table calls inside the subscription render function."
+   },
+   {
+    "question": "What is the difference between reading a slice and subscribing to it?",
+    "answer": "A direct atom or store read retrieves the current value but is not a React subscription. Future updates will not rerender that component unless another mechanism causes a render.",
+    "followUp": "When should a direct read be replaced? Use table.Subscribe, useTable state selection, or TanStack Store's useSelector when the UI must react automatically."
+   }
+  ],
+  "keyPoints": [
+   "Table state is represented as independently reactive slices rather than one indivisible state value.",
+   "The table hook accepts a selector that controls which state values are exposed reactively through table.state.",
+   "table.Subscribe lets a component place state-driven rendering at a precise location instead of making the whole table component reactive.",
+   "A subscription can target a single state atom directly, which avoids selecting from the complete table store."
+  ],
+  "gotchas": [
+   "Reading table.atoms.pagination.get() or table.store.state.pagination returns a value but does not make the component react to later changes.",
+   "A store-backed subscription needs a selector unless the component is subscribing directly through a source atom or store."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

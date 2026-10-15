@@ -1,4 +1,6 @@
 import type { AwsHighlight } from "./aws-highlights";
+import { NEXT_API_ROW_DETAILS } from "./row-details-next-apis";
+import { REACT_HOOK_ROW_DETAILS } from "./row-details-react-hooks";
 
 /**
  * Authored key points and a real use for one catalogue row.
@@ -441,15 +443,7 @@ export const ROW_DETAILS: Record<string, Record<string, RowDetail>> = {
         "Both are opt-in per area of the UI — applying them globally is how an app ends up feeling slower, not faster.",
       ],
       useCase: { title: "Switching tabs without losing scroll", scenario: "Coming back to a tab should restore where the reader was and animate the change, rather than remounting and jumping to the top." },
-    },
-    "Fragment refs": {
-      points: [
-        "A Fragment ref reaches the DOM nodes a Fragment rendered, which previously required a wrapper element.",
-        "It removes the extra `div` that used to exist only to hold a ref — the one that broke grid and flex layouts.",
-        "It is read-only access for observation: the children still belong to the components that rendered them.",
-      ],
-      useCase: { title: "Observing a list without a wrapper div", scenario: "An intersection observer for infinite scroll needed a container element that changed the layout; the ref now attaches without it." },
-    },
+    },
     "Conditional rendering": {
       points: [
         "`&&` renders `0` when the left side is the number zero — the reason an empty list sometimes shows a stray 0.",
@@ -5601,4 +5595,6 @@ export const ROW_DETAILS: Record<string, Record<string, RowDetail>> = {
       ],
     },
   },
+  "Next.js 16+ APIs — Directives, Functions, Hooks & Config": NEXT_API_ROW_DETAILS,
+  "React 19+ Hooks — State, Effects & Actions": REACT_HOOK_ROW_DETAILS,
 };

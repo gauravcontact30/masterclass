@@ -1,0 +1,479 @@
+{
+ "Complex forms::Field lists": {
+  "sourceUrl": "https://conform.guide/complex-structures",
+  "sourceTitle": "Nested object and Array",
+  "summary": "Field lists model repeating array fields in Conform. Use getFieldList() for row metadata, then attach insert, remove, and reorder intents to controls that modify the list.",
+  "explanation": "A field list represents an array of repeating form values. Get row metadata from the parent field with getFieldList(), then attach the form's insert, remove, or reorder intent to controls so users can change the list without manually managing indexed names.",
+  "syntax": "const items = fields.items.getFieldList();\nform.insert(name, options);\nform.remove(name, { index });\nform.reorder(name, { from, to });",
+  "parameters": [
+   {
+    "name": "field",
+    "type": "FieldMetadata",
+    "description": "The parent array field metadata used to create row metadata and identify the list."
+   },
+   {
+    "name": "options",
+    "type": "{ index?: number; defaultValue?: unknown }",
+    "description": "The insertion position and optional initial value for a new row."
+   },
+   {
+    "name": "options.index",
+    "type": "number",
+    "description": "The index of the row to remove."
+   },
+   {
+    "name": "options",
+    "type": "{ from: number; to: number }",
+    "description": "The current and destination indexes when moving a row."
+   }
+  ],
+  "returns": "getFieldList() returns metadata for each item in the array field; insert, remove, and reorder return button props for the corresponding intent controls.",
+  "example": {
+   "title": "Manage a repeating task list",
+   "code": "import { useForm } from '@conform-to/react';\n\nexport default function TasksForm() {\n  const [form, fields] = useForm({\n    defaultValue: { tasks: ['Write docs'] },\n  });\n  const tasks = fields.tasks.getFieldList();\n\n  return (\n    <form {...form.props}>\n      <ul>\n        {tasks.map((task, index) => (\n          <li key={task.key}>\n            <input name={task.name} defaultValue={task.value} />\n            <button {...form.remove(fields.tasks.name, { index })}>Remove</button>\n          </li>\n        ))}\n      </ul>\n      <button {...form.insert(fields.tasks.name, { defaultValue: '' })}>Add</button>\n      <button {...form.reorder(fields.tasks.name, { from: 0, to: 1 })}>Move first</button>\n    </form>\n  );\n}",
+   "language": "tsx",
+   "explanation": "This form derives row metadata with getFieldList and uses the form intent methods to insert, remove, and reorder rows."
+  },
+  "useCases": [
+   {
+    "title": "Dynamic repeating rows",
+    "scenario": "Users can add multiple entries such as tasks, contacts, or tags."
+   },
+   {
+    "title": "Remove rows",
+    "scenario": "Users need to delete an unwanted array item."
+   },
+   {
+    "title": "Reorder rows",
+    "scenario": "Users need to change the order of array items."
+   }
+  ],
+  "related": [
+   "Nested object and Array",
+   "Intent button",
+   "parseSubmission",
+   "FormStateInput",
+   "useForm"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Call getFieldList() on the parent field metadata to obtain the repeating rows.",
+   "Each returned item includes an inferred field name, so row inputs can use the metadata directly.",
+   "Use insert, remove, and reorder intents to change the list."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Complex forms::File inputs": {
+  "sourceUrl": "https://conform.guide/file-upload",
+  "sourceTitle": "File Upload",
+  "summary": "Validate uploaded files with a schema before accepting them. Configure multipart POST forms, enforce size limits per file, and add collection rules for multiple uploads.",
+  "explanation": "Use a multipart POST form and validate the submitted File values with a schema. For multiple uploads, validate each file individually and optionally validate the complete array for collection-level rules such as requiring at least one file.",
+  "syntax": "<form method=\"POST\" encType=\"multipart/form-data\">...</form>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Validate uploaded file sizes",
+   "code": "import { z } from 'zod';\n\nconst schema = z.object({\n  files: z\n    .array(z.instanceof(File).refine((file) => file.size < 1024, 'File size must be less than 1kb'))\n    .min(1, 'At least 1 file is required')\n    .refine(\n      (files) => files.every((file) => file.size < 1024),\n      'File size must be less than 1kb',\n    ),\n});",
+   "language": "typescript",
+   "explanation": "The schema requires at least one uploaded file and checks the size of each file before acceptance."
+  },
+  "useCases": [
+   {
+    "title": "Enforce file-size limits",
+    "scenario": "Reject oversized uploads before storage or further processing."
+   },
+   {
+    "title": "Validate multiple files",
+    "scenario": "Accept several attachments in one form submission."
+   },
+   {
+    "title": "Require at least one file",
+    "scenario": "Prevent empty attachment submissions."
+   }
+  ],
+  "related": [
+   "File Upload",
+   "useForm",
+   "allErrors"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Configure the form with multipart/form-data encoding and POST before processing uploads.",
+   "Create the file control using the same field metadata approach as other inputs.",
+   "Add the multiple attribute when the field should accept more than one file.",
+   "Apply a per-file refinement to reject files that exceed the permitted size.",
+   "Add a minimum array length when at least one upload is mandatory.",
+   "A collection-level refinement can ensure every file in a multi-file upload meets the size rule."
+  ],
+  "gotchas": [
+   "For multiple files, field-level errors may omit per-file errors; use allErrors when every individual error must be displayed.",
+   "Per-file errors are associated with indexed paths such as files[0], not only with the files array."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Complex forms::Intent buttons": {
+  "sourceUrl": "https://conform.guide/intent-button",
+  "sourceTitle": "Intent button",
+  "summary": "Intent buttons let one form trigger actions other than its default submit behavior. The clicked submitter supplies an intent value that Conform can use to select the requested action.",
+  "explanation": "An intent button is a submit button whose name and value identify the action requested by the user. Conform preserves that submitter data in the form submission, so application code can branch on the intent—for example, adding an item to a cart instead of performing the primary form action.",
+  "syntax": "<button type=\"submit\" name=\"intent\" value=\"action\">Action</button>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Action button with an intent",
+   "code": "import { useForm } from '@conform-to/react/future';\n\nexport function CartForm() {\n  const [form, fields] = useForm();\n\n  return (\n    <form id={form.id} onSubmit={form.onSubmit}>\n      <input {...fields.productId} />\n      <button type=\"submit\" name=\"intent\" value=\"add-to-cart\">\n        Add to cart\n      </button>\n    </form>\n  );\n}",
+   "language": "tsx",
+   "explanation": "The submit button contributes an intent value, allowing the server or client handler to choose an action other than the form's default submission."
+  },
+  "useCases": [
+   {
+    "title": "Multiple form actions",
+    "scenario": "Offer actions such as “Save draft” and “Publish” from the same form."
+   },
+   {
+    "title": "Targeted validation",
+    "scenario": "Run validation for one field or the entire form."
+   },
+   {
+    "title": "Field state controls",
+    "scenario": "Reset or update a field without creating a separate form."
+   },
+   {
+    "title": "Dynamic lists",
+    "scenario": "Insert, remove, or reorder entries in a field list."
+   }
+  ],
+  "related": [
+   "Submission Intent",
+   "Form Controls",
+   "Validate intent",
+   "Reset and Update intent",
+   "Insert, remove and reorder intents"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use a submit button when an action must travel with the form submission.",
+   "Different submit buttons can request different behaviors while sharing one form.",
+   "Submission intents support form-control operations as well as application-specific actions.",
+   "Identify an intent through the reserved button name and a serialized value.",
+   "Built-in helpers expose common actions such as validation, reset, and insertion."
+  ],
+  "gotchas": [
+   "Only the button that actually triggers submission contributes its intent to the form data; a generic button does not automatically do so.",
+   "Use the reserved intent name and serialize the intended action as its value; arbitrary button markup will not activate Conform's intent handling."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Form fundamentals::Field metadata": {
+  "sourceUrl": "https://conform.guide/api/react/future/useField",
+  "sourceTitle": "useField - Conform",
+  "summary": "Field metadata is a single object for rendering and validating a control. It provides the field’s name, generated id, errors, accessibility identifiers, and schema-derived HTML validation attributes.",
+  "explanation": "A field metadata object centralizes the values needed to render and validate a form control. Read its generated name and id for the input and label, use its errors and errorId for accessible feedback, and spread its validation attributes onto the control.",
+  "syntax": "const [meta, form] = useField(name, options);",
+  "parameters": [],
+  "returns": "A Field object containing field metadata and state, including id, name, errors, errorId, and schema-derived validation attributes.",
+  "example": {
+   "title": "Render a field from metadata",
+   "code": "const [form, fields] = useForm({\n  constraint: getZodConstraint(schema),\n});\n\nreturn (\n  <form id={form.id} onSubmit={form.onSubmit}>\n    <label htmlFor={fields.email.id}>Email</label>\n    <input {...getInputProps(fields.email, { type: 'email' })} />\n    {fields.email.errors && <p id={fields.email.errorId}>{fields.email.errors}</p>}\n  </form>\n);",
+   "language": "tsx",
+   "explanation": "Uses field metadata to connect the label, input, and error message while applying schema-derived HTML validation attributes."
+  },
+  "useCases": [
+   {
+    "title": "Keep label and input identifiers aligned",
+    "scenario": "Render labels and controls"
+   },
+   {
+    "title": "Connect errors with aria-describedby",
+    "scenario": "Display accessible validation feedback"
+   },
+   {
+    "title": "Populate native HTML validation attributes",
+    "scenario": "Apply schema constraints"
+   },
+   {
+    "title": "Avoid prop drilling with useField",
+    "scenario": "Build reusable field components"
+   }
+  ],
+  "related": [
+   "useField",
+   "useForm",
+   "getZodConstraint",
+   "getInputProps"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Field metadata combines rendering identifiers and current validation state in one object.",
+   "Use the generated id on the input and pair it with the label's htmlFor.",
+   "Use the metadata name as the control's name, including the correct path for nested fields.",
+   "Read errors to decide whether to render feedback for the field.",
+   "Schema constraints can be rendered as native HTML validation attributes such as required, minLength, and pattern.",
+   "Use errorId for the error element and connect that element through aria-describedby when the field has an error."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Form fundamentals::Validation timing": {
+  "sourceUrl": "https://conform.guide/validation",
+  "sourceTitle": "Validation",
+  "summary": "Conform lets each field validate on submission, blur, or input. Configure the initial check with shouldValidate and later checks with shouldRevalidate.",
+  "explanation": "Conform separates the first validation event from later revalidation. Set shouldValidate to choose whether a field is first checked on submit, blur, or input; use shouldRevalidate to choose when an already validated field is checked again. The defaults are submit for the initial check and the same timing for revalidation.",
+  "syntax": "useForm({ shouldValidate, shouldRevalidate })",
+  "parameters": [
+   {
+    "name": "shouldValidate",
+    "type": "'onSubmit' | 'onBlur' | 'onInput'",
+    "description": "Controls when each field is validated for the first time: onSubmit, onBlur, or onInput."
+   },
+   {
+    "name": "shouldRevalidate",
+    "type": "'onSubmit' | 'onBlur' | 'onInput'",
+    "description": "Controls when a field is validated again after its first validation: onSubmit, onBlur, or onInput."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Staged field validation",
+   "code": "import { useForm } from '@conform-to/react';\n\nexport function SignupForm() {\n  const [form, fields] = useForm({\n    shouldValidate: 'onBlur',\n    shouldRevalidate: 'onInput',\n  });\n\n  return (\n    <form id={form.id} onSubmit={form.onSubmit}>\n      <input {...fields.email} type=\"email\" />\n      <button type=\"submit\">Create account</button>\n    </form>\n  );\n}",
+   "language": "tsx",
+   "explanation": "Starts validation when the email field loses focus, then checks it again as the user types."
+  },
+  "useCases": [
+   {
+    "title": "Submit-only validation",
+    "scenario": "Validate a field only when the user submits the form."
+   },
+   {
+    "title": "Staged feedback",
+    "scenario": "Show errors after the user leaves a field, then provide immediate feedback while editing."
+   },
+   {
+    "title": "Server-driven validation",
+    "scenario": "Run server-side validation when a field changes without bundling validation logic in the client."
+   }
+  ],
+  "related": [
+   "useForm",
+   "configureForms",
+   "onValidate"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Use shouldValidate to control the first validation event for each field.",
+   "shouldValidate applies to a field's first validation.",
+   "shouldRevalidate applies after the field has already been validated.",
+   "If no timing is configured, Conform initially validates on submission."
+  ],
+  "gotchas": [
+   "Input-based validation can create noticeable latency when validation runs on the server.",
+   "Revalidating frequently is especially costly when the validation includes asynchronous work."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema integration::Coercion": {
+  "sourceUrl": "https://conform.guide/api/valibot/future/coerceFormValue",
+  "sourceTitle": "coerceFormValue",
+  "summary": "coerceFormValue preprocesses Valibot schemas for HTML form submissions. It strips empty values and converts strings into schema-defined numbers, booleans, dates, or bigints.",
+  "explanation": "coerceFormValue wraps a Valibot schema with preprocessing that removes empty strings or files and converts string form values according to the schema. Numbers are trimmed and passed to Number, booleans become true only for \"on\", and dates are parsed with Date, with timezone-less datetime strings normalized to UTC.",
+  "syntax": "coerceFormValue(schema)",
+  "parameters": [],
+  "returns": "An enhanced Valibot schema that strips empty form values and coerces submitted values to the types described by the schema.",
+  "example": {
+   "title": "Coerce submitted form values",
+   "code": "import * as v from 'valibot';\nimport { coerceFormValue } from '@conform-to/valibot/future';\n\nconst schema = coerceFormValue(v.object({\n  amount: v.number(),\n  date: v.date(),\n  confirm: v.boolean(),\n}));\n\nconst result = v.parse(schema, {\n  amount: '42',\n  date: '2026-01-01T12:00:00.000',\n  confirm: 'on',\n});\n\nconsole.log(result.amount, result.date, result.confirm);",
+   "language": "typescript",
+   "explanation": "This enhances a Valibot schema so submitted strings become a number, Date, and boolean during parsing."
+  },
+  "useCases": [
+   {
+    "title": "Numeric form fields",
+    "scenario": "Parsing HTML form submissions with numeric fields such as prices, quantities, or ages."
+   },
+   {
+    "title": "Date inputs",
+    "scenario": "Reading date inputs and validating them as JavaScript Date values."
+   },
+   {
+    "title": "Boolean controls",
+    "scenario": "Handling checkbox or radio submissions that use the browser's default on value."
+   },
+   {
+    "title": "Schema-based preprocessing",
+    "scenario": "Applying consistent conversion rules before validating a mixed form schema."
+   }
+  ],
+  "related": [
+   "configureCoercion",
+   "parseWithValibot",
+   "coerceStructure"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Wrap the schema with coerceFormValue to add form-value cleanup and type conversion before validation.",
+   "Number fields accept submitted strings after whitespace is removed and are converted with Number.",
+   "Date fields convert submitted strings using the Date constructor.",
+   "BigInt schemas are also supported: input is trimmed before BigInt conversion.",
+   "Use configureCoercion when the default conversion rules do not match the application's form format."
+  ],
+  "gotchas": [
+   "Empty strings and files are converted to undefined before the schema runs, so they are not preserved as ordinary values.",
+   "Checkbox-style boolean input is recognized only when its submitted value is on; other values do not become true.",
+   "A datetime string without a timezone is interpreted as UTC rather than using the local timezone."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Schema integration::Zod integration": {
+  "sourceUrl": "https://conform.guide/api/zod/parseWithZod",
+  "sourceTitle": "Conform / parseWithZod",
+  "summary": "Use parseWithZod to parse and validate FormData with a Zod schema. The helper returns a submission result containing either typed parsed data or validation errors and supports the same schema integration across client and server validation.",
+  "explanation": "Define one Zod schema and pass it to parseWithZod wherever FormData is validated. Conform inspects the schema to preprocess form values, removes empty values, coerces compatible types, and returns a submission overview containing either parsed data or validation errors, so the same integration can run in client validation and server actions.",
+  "syntax": "parseWithZod(payload, { schema })",
+  "parameters": [
+   {
+    "name": "payload",
+    "type": "FormData",
+    "description": "FormData or another form payload to parse and validate."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Options containing the Zod schema, or a function returning one."
+   }
+  ],
+  "returns": "A submission overview containing the parsed value on success or validation errors when parsing fails.",
+  "example": {
+   "title": "Validate FormData with Zod",
+   "code": "import { parseWithZod } from '@conform-to/zod/v4';\nimport { z } from 'zod/v4';\n\nconst schema = z.object({\n  email: z.string().email(),\n  age: z.coerce.number().int().min(18),\n});\n\nexport async function action({ request }: { request: Request }) {\n  const formData = await request.formData();\n  const submission = parseWithZod(formData, { schema });\n\n  if (submission.status !== 'success') {\n    return submission;\n  }\n\n  return { user: submission.value };\n}",
+   "language": "typescript",
+   "explanation": "Parses submitted FormData with a Zod v4 schema and returns either validation details or the typed parsed value."
+  },
+  "useCases": [
+   {
+    "title": "Server-side form validation",
+    "scenario": "A server action receives a browser form submission and must validate it before using typed data."
+   },
+   {
+    "title": "Client-side validation",
+    "scenario": "A React form needs schema-based validation during interaction through useForm's onValidate callback."
+   },
+   {
+    "title": "Form value coercion",
+    "scenario": "A form contains numeric or optional fields represented as strings or empty values in FormData."
+   }
+  ],
+  "related": [
+   "parseWithZod",
+   "coerceFormValue",
+   "useForm",
+   "getZodConstraint",
+   "@conform-to/zod/v4"
+  ],
+  "since": "",
+  "keyPoints": [
+   "parseWithZod converts FormData into a Conform submission result by applying the supplied Zod schema.",
+   "The schema option can be a Zod schema directly or a function that produces one.",
+   "Form-oriented preprocessing is automatic by default, including removing empty values and coercing values based on the schema.",
+   "Zod v4 projects must use the dedicated Conform v4 export rather than the default integration path.",
+   "The integration adds preprocessing internally through coerceFormValue to make submitted form values fit the schema."
+  ],
+  "gotchas": [
+   "Use the Zod v4 subpath for both the Conform helper and Zod imports; the default helper import targets Zod v3.",
+   "Default preprocessing changes empty strings and compatible form values before validation, so avoid duplicating equivalent preprocessing unnecessarily."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Server integration::Returning errors": {
+  "sourceUrl": "https://conform.guide/",
+  "sourceTitle": "Overview",
+  "summary": "Return the parsed submission when server validation fails, then use submission.reply() to add errors from server-side checks. Conform sends these results back so the form can display the relevant errors.",
+  "explanation": "On the server, parse the request data into a submission result. Return that result whenever validation fails, and use submission.reply() to attach additional form- or field-level errors from server-side checks.",
+  "syntax": "submission.reply(options?)",
+  "parameters": [],
+  "returns": "A submission response containing the parsed result and any validation or server errors for the client.",
+  "example": {
+   "title": "Return server-side validation results",
+   "code": "import { parseWithZod } from \"@conform-to/zod\";\nimport { formSchema } from \"./schema\";\n\nexport async function action({ request }) {\n  const submission = parseWithZod(await request.formData(), {\n    schema: formSchema,\n  });\n\n  if (submission.status !== \"success\") {\n    return submission.reply();\n  }\n\n  const user = await findUser(submission.value.email);\n  if (!user) {\n    return submission.reply({\n      formErrors: [\"Incorrect username or password\"],\n    });\n  }\n\n  return redirect(\"/dashboard\");\n}",
+   "language": "typescript",
+   "explanation": "Parse the submitted data on the server and return the submission result so Conform can restore validation errors; add a form-level error for an authentication failure."
+  },
+  "useCases": [
+   {
+    "title": "Return field validation errors",
+    "scenario": "A submitted form fails schema validation on the server."
+   },
+   {
+    "title": "Report a server-side field failure",
+    "scenario": "A database or service check rejects one field."
+   },
+   {
+    "title": "Report a form-level failure",
+    "scenario": "Authentication or another operation fails without a single field cause."
+   }
+  ],
+  "related": [
+   "parseWithZod",
+   "submission.reply",
+   "formErrors",
+   "form validation",
+   "server validation"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Form validation can run entirely on the server, keeping the validation rules out of the client bundle.",
+   "Server validation can support submission, field blur, and typing flows when configured by the form.",
+   "Return the parsed submission whenever validation does not succeed so Conform can map errors into the form state.",
+   "submission.reply() creates the server response that carries the current submission and its validation errors back to the client.",
+   "Pass formErrors to submission.reply() for a server failure that applies to the whole form rather than one field."
+  ],
+  "gotchas": [
+   "Return the submission when its status is not successful; otherwise the client cannot receive the validation errors.",
+   "Use submission.reply() to add a server-side failure after schema validation, such as an authentication error."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Server integration::Security": {
+  "sourceUrl": "https://conform.guide/",
+  "sourceTitle": "Overview",
+  "summary": "Treat every submitted field as untrusted and validate the complete FormData submission on the server before using it. Client-side validation is optional feedback, not a substitute for server validation.",
+  "explanation": "Server-side validation parses the complete FormData submission against the schema before application logic uses it. Client validation may improve responsiveness, but it is optional and cannot replace checking the request on the server.",
+  "syntax": "parseWithZod(formData, { schema })",
+  "parameters": [],
+  "returns": "A submission result that can be checked for success and returned to the form with submission.reply().",
+  "example": {
+   "title": "Validate submitted FormData on the server",
+   "code": "export async function action({ request }) {\n  const formData = await request.formData();\n  const submission = parseWithZod(formData, { schema });\n\n  if (submission.status !== 'success') {\n    return submission.reply();\n  }\n\n  return saveUser(submission.value);\n}",
+   "language": "typescript",
+   "explanation": "The server reads the submitted FormData and validates it against the schema before using the parsed value."
+  },
+  "useCases": [
+   {
+    "title": "Validate user input before persistence",
+    "scenario": "Processing login, registration, or profile forms"
+   },
+   {
+    "title": "Validate at the server boundary",
+    "scenario": "Using Remix or Next.js server actions"
+   },
+   {
+    "title": "Keep validation server-side",
+    "scenario": "Avoiding validation code in the browser bundle"
+   }
+  ],
+  "related": [
+   "useForm",
+   "parseWithZod",
+   "FormData",
+   "submission.reply"
+  ],
+  "since": "",
+  "keyPoints": [
+   "Conform obtains submitted values through the standard FormData API.",
+   "Pass the latest server result to useForm when displaying server validation outcomes.",
+   "Reject the request path unless parsing reports a successful submission."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ }
+}
