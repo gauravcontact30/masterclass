@@ -1,0 +1,947 @@
+{
+ "alias_generator": {
+  "sourceUrl": "https://docs.pydantic.dev/2.11/api/config/",
+  "sourceTitle": "Configuration - Pydantic",
+  "summary": "`alias_generator` is a `ConfigDict` option that derives field aliases from their names. A callable applies to both validation and serialization; `AliasGenerator` supports different rules for each.",
+  "explanation": "Set `alias_generator` in `ConfigDict` to a callable that receives each field name and returns its alias. The same callable applies during validation and serialization; use `AliasGenerator` when those two directions need different rules.",
+  "syntax": "model_config = ConfigDict(alias_generator=callable_or_alias_generator)",
+  "parameters": [
+   {
+    "name": "alias_generator",
+    "type": "Callable[[str], str] | AliasGenerator | None",
+    "description": "A callable mapping a field name to an alias, an `AliasGenerator` instance for separate validation and serialization rules, or `None`."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Generate PascalCase aliases",
+   "code": "from pydantic import BaseModel, ConfigDict\nfrom pydantic.alias_generators import to_pascal\n\nclass Voice(BaseModel):\n    model_config = ConfigDict(alias_generator=to_pascal)\n    name: str\n    language_code: str\n\nvoice = Voice(Name=\"Filiz\", LanguageCode=\"tr-TR\")\nprint(voice.model_dump(by_alias=True))\n",
+   "language": "python",
+   "explanation": "The generator converts field names to PascalCase for input aliases and serialized output."
+  },
+  "useCases": [
+   {
+    "title": "Adapt external naming conventions",
+    "scenario": "A Python API exchanges PascalCase keys while model attributes use snake_case."
+   },
+   {
+    "title": "Separate input and output aliases",
+    "scenario": "A model must accept one naming convention but serialize another."
+   },
+   {
+    "title": "Automate field alias declarations",
+    "scenario": "Multiple fields need consistent generated aliases without declaring each alias manually."
+   }
+  ],
+  "related": [
+   "ConfigDict",
+   "AliasGenerator",
+   "to_pascal",
+   "to_camel",
+   "to_snake",
+   "BaseModel.model_dump"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `alias_generator` do?",
+    "answer": "`alias_generator` is a configuration option whose value can be a callable, an `AliasGenerator`, or `None`. A callable maps each field name to an alias and is used for both validation and serialization.",
+    "followUp": "How would you use separate rules for input and output? Use an `AliasGenerator` instance rather than one callable, because it supports distinct validation and serialization generators."
+   },
+   {
+    "question": "How is `alias_generator` configured and typed?",
+    "answer": "Configure it through `model_config = ConfigDict(alias_generator=...)`. The callable receives a field name and returns the alias used by the model.",
+    "followUp": "What should the callable return? It should return a string alias for the supplied field name; the documented type is `Callable[[str], str]`."
+   },
+   {
+    "question": "Which built-in generators are available?",
+    "answer": "Pydantic includes `to_pascal`, `to_camel`, and `to_snake` as built-in alias generators. For example, `to_pascal` maps `language_code` to `LanguageCode`, which can be used for model input and alias-based serialization.",
+    "followUp": "How do you emit aliases when dumping a model? Call `model_dump(by_alias=True)` so serialization uses the generated aliases."
+   }
+  ],
+  "keyPoints": [
+   "The setting is a name-to-alias function: each field name is passed in and the returned string becomes its alias.",
+   "Instead of one callable, configure an `AliasGenerator` when validation and serialization require separate alias rules.",
+   "If omitted, no alias generator is configured.",
+   "The documented built-ins cover PascalCase, camelCase, and snake_case transformations.",
+   "The accepted configuration value is a string-to-string callable, an `AliasGenerator`, or `None`."
+  ],
+  "gotchas": [
+   "A plain callable controls aliases in both directions, so use `AliasGenerator` if input and output naming must differ."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "arbitrary_types_allowed": {
+  "sourceUrl": "https://docs.pydantic.dev/2.11/api/config/",
+  "sourceTitle": "Configuration - Pydantic",
+  "summary": "Allows model fields to use ordinary Python classes that Pydantic does not know how to validate. When enabled, Pydantic checks the supplied value's instance type rather than validating the object's internals.",
+  "explanation": "Set `arbitrary_types_allowed` to `True` in a model's `ConfigDict` when a field should accept instances of a regular Python class. Pydantic then performs a simple instance check rather than validating that class's internal attributes.",
+  "syntax": "model_config = ConfigDict(arbitrary_types_allowed=True)",
+  "parameters": [
+   {
+    "name": "arbitrary_types_allowed",
+    "type": "bool",
+    "description": "Boolean configuration setting controlling whether arbitrary Python classes may be used as field types."
+   }
+  ],
+  "returns": "A model configured to accept arbitrary class instances as field values.",
+  "example": {
+   "title": "Allow an arbitrary class as a field type",
+   "code": "from pydantic import BaseModel, ConfigDict\n\nclass Pet:\n    def __init__(self, name: str):\n        self.name = name\n\nclass Model(BaseModel):\n    model_config = ConfigDict(arbitrary_types_allowed=True)\n    pet: Pet\n\nmodel = Model(pet=Pet(\"Fluffy\"))\nassert model.pet.name == \"Fluffy\"",
+   "language": "python",
+   "explanation": "The model accepts a Pet instance without requiring Pet to be a Pydantic model."
+  },
+  "useCases": [
+   {
+    "title": "Domain objects",
+    "scenario": "A field must hold a domain object implemented as a normal Python class."
+   },
+   {
+    "title": "Third-party types",
+    "scenario": "A model integrates a class supplied by an external library."
+   }
+  ],
+  "related": [
+   "BaseModel",
+   "ConfigDict",
+   "ValidationError"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you allow a regular Python class as a Pydantic field type?",
+    "answer": "Set `model_config = ConfigDict(arbitrary_types_allowed=True)` on the model. This permits fields annotated with ordinary Python classes, such as `Pet`, and validates them by checking their type.",
+    "followUp": "What happens to attributes inside the arbitrary object? They are not recursively validated by Pydantic; only the outer instance check is performed."
+   },
+   {
+    "question": "What is the default value and what does enabling the option change?",
+    "answer": "The default is `False`, so arbitrary class types are rejected unless the model enables this configuration option. With it enabled, a value must be an instance of the annotated class.",
+    "followUp": "How would you preserve validation of the object's internal data? Define that data in a Pydantic model or add explicit validation outside this configuration option."
+   },
+   {
+    "question": "When is this configuration useful?",
+    "answer": "Use `ConfigDict(arbitrary_types_allowed=True)` in the model configuration. The option is useful when integrating domain objects or third-party classes that Pydantic does not model itself.",
+    "followUp": "Does enabling it make every value valid? No; values still need to be instances of the declared arbitrary type."
+   }
+  ],
+  "keyPoints": [
+   "The option controls whether fields may be annotated with arbitrary Python classes.",
+   "Pydantic disables arbitrary field types unless the model explicitly opts in.",
+   "Enable the behavior by assigning a `ConfigDict` with `arbitrary_types_allowed=True` to the model.",
+   "A regular class can be used as a field type after the option is enabled."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "ConfigDict": {
+  "sourceUrl": "https://docs.pydantic.dev/2.11/api/config/",
+  "sourceTitle": "Configuration - Pydantic",
+  "summary": "ConfigDict is Pydantic's TypedDict for configuring model behavior. Assign it to model_config to control validation and schema-related options.",
+  "explanation": "ConfigDict is a TypedDict used to declare configuration for Pydantic models. Assign it to a model's model_config attribute to control validation and schema behavior, such as allowing arbitrary types or enabling strict validation.",
+  "syntax": "class ConfigDict(TypedDict, total=False): ...",
+  "parameters": [],
+  "returns": "A TypedDict containing configuration options for Pydantic models.",
+  "example": {
+   "title": "Allow an arbitrary type",
+   "code": "from pydantic import BaseModel, ConfigDict\n\nclass Pet:\n    def __init__(self, name: str):\n        self.name = name\n\nclass Model(BaseModel):\n    model_config = ConfigDict(arbitrary_types_allowed=True)\n    pet: Pet\n\nmodel = Model(pet=Pet(\"Milo\"))\nprint(model.pet.name)",
+   "language": "python",
+   "explanation": "Allows a model to accept an instance of an arbitrary user-defined class as a field value."
+  },
+  "useCases": [
+   {
+    "title": "Permit arbitrary classes",
+    "scenario": "A model contains a field whose value is an instance of a regular user-defined class."
+   },
+   {
+    "title": "Enable strict mode",
+    "scenario": "A model must reject common coercions and apply stricter field validation."
+   },
+   {
+    "title": "Validate defaults",
+    "scenario": "A model's declared defaults must be checked instead of being trusted automatically."
+   }
+  ],
+  "related": [
+   "BaseModel",
+   "ValidationError",
+   "with_config",
+   "model_config"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is ConfigDict and how is it applied?",
+    "answer": "ConfigDict is a TypedDict that holds configuration for Pydantic behavior. A model typically uses it through a class-level model_config assignment, for example model_config = ConfigDict(strict=True).",
+    "followUp": "How would you configure only one field rather than the entire model? Use field-level configuration mechanisms rather than putting the option in the model-wide ConfigDict."
+   },
+   {
+    "question": "When would you use arbitrary_types_allowed?",
+    "answer": "Set arbitrary_types_allowed=True in ConfigDict when a model field should accept an instance of a user-defined class that Pydantic does not model itself. The class instance is then accepted as an arbitrary type.",
+    "followUp": "Does this option make Pydantic validate the internals of that class? No; allowing the type does not provide the class with Pydantic's normal field validation."
+   },
+   {
+    "question": "How do you configure strict validation?",
+    "answer": "ConfigDict can enable strict mode for a model by setting strict=True. This changes validation so fields do not use the usual permissive conversions where strict validation applies.",
+    "followUp": "How can strictness be scoped more narrowly? Configure strict behavior at the field or validation-call level when model-wide strictness is too broad."
+   }
+  ],
+  "keyPoints": [
+   "ConfigDict is a TypedDict whose purpose is to represent Pydantic model configuration.",
+   "Setting strict=True in the model configuration enables strict mode across the model's fields.",
+   "Assign ConfigDict to model_config to allow fields containing arbitrary user-defined types.",
+   "The configuration includes an option controlling whether default values are checked during validation.",
+   "The default-value validation option is disabled by default."
+  ],
+  "gotchas": [
+   "ConfigDict itself describes configuration; it does not turn arbitrary classes into Pydantic models.",
+   "Default values are not necessarily validated unless the relevant configuration option is enabled."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "extra": {
+  "sourceUrl": "https://docs.pydantic.dev/2.11/api/config/",
+  "sourceTitle": "Configuration - Pydantic",
+  "summary": "The `extra` configuration controls how Pydantic handles input keys that are not declared model fields. Choose `ignore`, `forbid`, or `allow`; the default is `ignore`.",
+  "explanation": "The `extra` configuration controls what happens to input keys that are not declared as model fields. Set it through `ConfigDict` to ignore those keys, reject them with validation errors, or preserve them in `__pydantic_extra__`.",
+  "syntax": "model_config = ConfigDict(extra='ignore' | 'forbid' | 'allow')",
+  "parameters": [
+   {
+    "name": "extra",
+    "type": "Literal['ignore', 'forbid', 'allow']",
+    "description": "Controls whether extra input is ignored, accepted, or rejected during model initialization. Supported values are `ignore`, `forbid`, and `allow`; the default is `ignore`."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Allow extra model data",
+   "code": "from pydantic import BaseModel, ConfigDict\n\nclass User(BaseModel):\n    model_config = ConfigDict(extra='allow')\n    name: str\n\nuser = User(name='Ada', role='admin')\nassert user.__pydantic_extra__ == {'role': 'admin'}",
+   "language": "python",
+   "explanation": "Unknown input is accepted and retained in the model's extra-data dictionary."
+  },
+  "useCases": [
+   {
+    "title": "Retain unknown fields",
+    "scenario": "Accept payloads that may contain forward-compatible or vendor-specific keys while preserving those values for later processing."
+   },
+   {
+    "title": "Reject unexpected data",
+    "scenario": "Enforce a strict input contract at API or configuration boundaries by rejecting unexpected keys."
+   },
+   {
+    "title": "Ignore incidental fields",
+    "scenario": "Build models that intentionally tolerate evolving payloads without exposing unknown keys as declared fields."
+   }
+  ],
+  "related": [
+   "BaseModel",
+   "ConfigDict",
+   "ValidationError",
+   "__pydantic_extra__"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the `extra` configuration control?",
+    "answer": "`extra` defines how Pydantic handles input that does not correspond to a declared field. Its supported policies are `ignore`, `forbid`, and `allow`, with `ignore` as the default.",
+    "followUp": "What happens under `allow`? Extra values are stored on the instance in `__pydantic_extra__`."
+   },
+   {
+    "question": "What is the default behavior for undeclared input?",
+    "answer": "With `extra='ignore'`, extra input is accepted during initialization but omitted from the resulting model. This is the default behavior.",
+    "followUp": "How would you reject such input? Set `model_config = ConfigDict(extra='forbid')`, which causes a `ValidationError`."
+   },
+   {
+    "question": "What does `extra='allow'` do?",
+    "answer": "`extra='allow'` accepts undeclared input and stores it in the model's `__pydantic_extra__` dictionary. Declared fields continue to be handled as normal model fields.",
+    "followUp": "How can a model inspect retained unknown values? Read the instance's `__pydantic_extra__` attribute."
+   }
+  ],
+  "keyPoints": [
+   "The setting applies to input keys that are not declared as model fields.",
+   "Pydantic supports exactly three policies: `ignore`, `forbid`, and `allow`.",
+   "`ignore` is used when no explicit `extra` policy is supplied.",
+   "Ignored keys do not appear in the constructed model.",
+   "`forbid` converts unknown input into a validation error.",
+   "`allow` preserves unknown values under the model's `__pydantic_extra__` attribute."
+  ],
+  "gotchas": [
+   "If no policy is configured, undeclared input is silently discarded.",
+   "The `forbid` policy makes unknown keys validation failures rather than merely ignoring them."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Field": {
+  "sourceUrl": "https://docs.pydantic.dev/2.11/api/config/",
+  "sourceTitle": "Configuration - Pydantic",
+  "summary": "Field configures an annotated Pydantic model field with validation constraints and metadata. It can also participate in aliases and generated schema.",
+  "explanation": "Field returns a field configuration object that Pydantic uses with an annotated model attribute. It can supply constraints and metadata such as descriptions, aliases, and titles, which affect validation or schema generation.",
+  "syntax": "Field(...)",
+  "parameters": [],
+  "returns": "A field configuration object used in a Pydantic model declaration.",
+  "example": {
+   "title": "Constrained field",
+   "code": "from pydantic import BaseModel, Field\n\nclass User(BaseModel):\n    name: str = Field(min_length=1, description=\"Display name\")\n\nuser = User(name=\"Ada\")\nprint(user.name)",
+   "language": "python",
+   "explanation": "Defines a required string field with a minimum length and description."
+  },
+  "useCases": [
+   {
+    "title": "Constrain input values",
+    "scenario": "Add validation rules such as minimum string length directly to a model field."
+   },
+   {
+    "title": "Document fields",
+    "scenario": "Attach descriptions or titles used by generated schemas and documentation."
+   },
+   {
+    "title": "Handle aliases",
+    "scenario": "Accept external names while retaining Python-friendly attribute names."
+   }
+  ],
+  "related": [
+   "BaseModel",
+   "ConfigDict",
+   "AliasGenerator",
+   "model_fields"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is Field used for?",
+    "answer": "Field is used as a default-value declaration for a model attribute. It supplies validation constraints and metadata that Pydantic applies to that field.",
+    "followUp": "How would you expose a different input name? Use an alias-related Field argument and configure whether validation accepts the alias, the Python attribute name, or both."
+   },
+   {
+    "question": "What kinds of metadata can Field provide?",
+    "answer": "A Field declaration can include metadata such as a description, title, or alias. Descriptions can also be sourced from attribute docstrings when the relevant model configuration is enabled.",
+    "followUp": "Which source wins when both are supplied? Inspect the generated field metadata and schema rather than assuming that a docstring replaces explicit Field metadata."
+   },
+   {
+    "question": "How do Field constraints affect a model?",
+    "answer": "Field constraints are declared alongside the type annotation, so Pydantic can validate values and use the same information when producing a schema. For example, a string field can specify a minimum length.",
+    "followUp": "What should be tested beyond successful construction? Test invalid boundary values and inspect the generated JSON schema when consumers depend on the constraints."
+   }
+  ],
+  "keyPoints": [
+   "Import Field from pydantic and assign it to an annotated model attribute to configure that field.",
+   "Model configuration can enable attribute docstrings as field descriptions.",
+   "Field metadata is available through the model's model_fields mapping.",
+   "An alias generator can derive aliases from field names when configured at the model level."
+  ],
+  "gotchas": [
+   "An alias changes the field name accepted for population; configure validation behavior carefully when combining aliases and attribute names.",
+   "At least one of alias-based or name-based population must remain enabled, or the attribute cannot be populated."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "frozen": {
+  "sourceUrl": "https://docs.pydantic.dev/2.11/api/config/",
+  "sourceTitle": "Configuration - Pydantic",
+  "summary": "Set frozen=True to make a Pydantic model faux-immutable and generate a __hash__() method. Hashing is only possible when all attribute values are hashable.",
+  "explanation": "The frozen configuration option makes a model faux-immutable: existing attributes cannot be reassigned, and Pydantic generates a __hash__() method. The resulting instance is hashable only when all its attribute values are hashable.",
+  "syntax": "model_config = ConfigDict(frozen=True)",
+  "parameters": [
+   {
+    "name": "frozen",
+    "type": "bool",
+    "description": "Whether a model is faux-immutable and whether Pydantic generates its hash method."
+   }
+  ],
+  "returns": "A boolean configuration value controlling model mutability and hash-method generation.",
+  "example": {
+   "title": "A faux-immutable model",
+   "code": "from pydantic import BaseModel, ConfigDict\n\nclass User(BaseModel):\n    model_config = ConfigDict(frozen=True)\n    name: str\n\nuser = User(name='Ada')\nprint(hash(user))\ntry:\n    user.name = 'Grace'\nexcept Exception as exc:\n    print(type(exc).__name__)",
+   "language": "python",
+   "explanation": "Setting frozen=True prevents attribute assignment after initialization and causes Pydantic to generate a hash method. Hashing succeeds here because the model's only field contains a hashable string."
+  },
+  "useCases": [
+   {
+    "title": "Read-only model state",
+    "scenario": "Prevent accidental reassignment of validated model attributes in configuration or value-object models."
+   },
+   {
+    "title": "Hashable value objects",
+    "scenario": "Use models as dictionary keys or set members when every field value is hashable."
+   },
+   {
+    "title": "Functional-style updates",
+    "scenario": "Signal that updates should produce a new model instance instead of mutating the current one."
+   }
+  ],
+  "related": [
+   "ConfigDict",
+   "BaseModel",
+   "__setattr__",
+   "__hash__",
+   "allow_mutation"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does frozen=True do?",
+    "answer": "Set model_config = ConfigDict(frozen=True) on the model. Pydantic then disallows attribute assignment and generates a __hash__() method.",
+    "followUp": "Does frozen guarantee hashability? No: hashability still depends on all model attributes being hashable."
+   },
+   {
+    "question": "Is a frozen model deeply immutable?",
+    "answer": "The model becomes faux-immutable, meaning attempts to assign to its attributes are rejected after construction. The option also requests generation of a hash method.",
+    "followUp": "What happens if a field contains a list? The model may not be hashable because the list is unhashable, even though assignment to the field is blocked."
+   },
+   {
+    "question": "What is the default value of frozen?",
+    "answer": "The documented default is False, so ordinary models allow attribute assignment unless frozen is enabled. The setting is the inverse of the older V1 allow_mutation option.",
+    "followUp": "What was the V1 counterpart? allow_mutation was the inverse setting and defaulted to True."
+   }
+  ],
+  "keyPoints": [
+   "With frozen=True, assignments to model attributes are prevented after the instance has been created.",
+   "Pydantic generates a __hash__() method when frozen is enabled.",
+   "A frozen instance can be used as a hashable value only when all its attributes are hashable.",
+   "The option is disabled by default, so models are mutable unless configured otherwise.",
+   "In Pydantic V1, the corresponding configuration used the inverse name allow_mutation."
+  ],
+  "gotchas": [
+   "A frozen model is not guaranteed to be hashable; every attribute value must itself be hashable.",
+   "frozen controls attribute assignment rather than providing deep immutability for mutable values stored inside the model."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "json_schema_extra": {
+  "sourceUrl": "https://docs.pydantic.dev/2.11/api/config/",
+  "sourceTitle": "Configuration - Pydantic",
+  "summary": "json_schema_extra adds custom properties to a Pydantic model's generated JSON Schema. Configure it with a dictionary or callable; its default is None.",
+  "explanation": "Set json_schema_extra in a model's configuration to add custom properties to the JSON Schema generated for that model. The value can be a dictionary of schema data or a callable that modifies the schema.",
+  "syntax": "model_config = ConfigDict(json_schema_extra={...})",
+  "parameters": [
+   {
+    "name": "json_schema_extra",
+    "type": "JsonDict | JsonSchemaExtraCallable | None",
+    "description": "Extra JSON Schema properties supplied as a dictionary, a callable, or None."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Add JSON Schema metadata",
+   "code": "from pydantic import BaseModel, ConfigDict\n\nclass Product(BaseModel):\n    model_config = ConfigDict(\n        json_schema_extra={\"examples\": [{\"name\": \"Keyboard\"}]}\n    )\n    name: str\n\nprint(Product.model_json_schema())",
+   "language": "python",
+   "explanation": "Adds an example object to the generated JSON Schema."
+  },
+  "useCases": [
+   {
+    "title": "Attach examples or descriptions to generated schemas",
+    "scenario": "Documenting API contracts"
+   },
+   {
+    "title": "Add vendor extensions or other JSON Schema properties",
+    "scenario": "Schema customization"
+   },
+   {
+    "title": "Compute schema additions with a callable",
+    "scenario": "Dynamic metadata"
+   }
+  ],
+  "related": [
+   "ConfigDict",
+   "BaseModel.model_json_schema",
+   "JsonDict",
+   "JsonSchemaExtraCallable"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is json_schema_extra used for?",
+    "answer": "json_schema_extra is a model configuration option for adding extra JSON Schema properties. It accepts either a dictionary or a callable.",
+    "followUp": "What happens when the option is omitted? It defaults to None, so this customization is not applied."
+   },
+   {
+    "question": "How do you configure json_schema_extra?",
+    "answer": "Use ConfigDict(json_schema_extra={...}) to attach metadata such as examples or descriptions to the generated schema. The extra data belongs to schema generation rather than runtime field validation.",
+    "followUp": "How could dynamic metadata be supplied? Use the callable form so the schema customization can be computed or applied programmatically."
+   },
+   {
+    "question": "What values can json_schema_extra accept?",
+    "answer": "The documented type is JsonDict | JsonSchemaExtraCallable | None. This means a dictionary, a supported callable, or no value can be used.",
+    "followUp": "What should be checked when choosing the callable form? Verify the callable matches Pydantic's documented JsonSchemaExtraCallable type and modifies schema data as intended."
+   }
+  ],
+  "keyPoints": [
+   "It adds custom properties to a model's generated JSON Schema.",
+   "The setting supports a JSON-schema dictionary, a callable, or None.",
+   "The default leaves the model without extra schema customization."
+  ],
+  "gotchas": [
+   "The value must be schema metadata supplied as a dictionary or through a callable; it is not validation logic.",
+   "If omitted, no additional JSON Schema properties are supplied by this setting."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "model_config": {
+  "sourceUrl": "https://docs.pydantic.dev/2.11/api/config/",
+  "sourceTitle": "Configuration - Pydantic",
+  "summary": "model_config assigns a ConfigDict to a Pydantic model, controlling validation and schema behavior. Options include handling extra fields and enabling strict validation.",
+  "explanation": "Assign a ConfigDict to model_config inside a BaseModel subclass to control validation and schema behavior. Configuration options can change how extra input is handled, whether strict validation is enabled, and how fields are populated.",
+  "syntax": "model_config = ConfigDict(...)",
+  "parameters": [
+   {
+    "name": "ConfigDict",
+    "type": "TypedDict",
+    "description": "A TypedDict containing model behavior settings such as extra-field handling and strict validation."
+   }
+  ],
+  "returns": "A configured Pydantic model; ConfigDict itself is a TypedDict used to specify model configuration.",
+  "example": {
+   "title": "Forbid extra fields",
+   "code": "from pydantic import BaseModel, ConfigDict\n\nclass User(BaseModel):\n    model_config = ConfigDict(extra='forbid')\n    name: str\n\nuser = User(name='John')\nprint(user)",
+   "language": "python",
+   "explanation": "This model rejects unexpected initialization fields while validating the declared name."
+  },
+  "useCases": [
+   {
+    "title": "Strict input contracts",
+    "scenario": "Rejecting unexpected request or configuration fields at validation time."
+   },
+   {
+    "title": "Model-wide strictness",
+    "scenario": "Applying strict validation consistently across every field in a model."
+   },
+   {
+    "title": "Arbitrary types",
+    "scenario": "Allowing models to accept values whose types are outside Pydantic's standard supported set."
+   },
+   {
+    "title": "Schema customization",
+    "scenario": "Customizing generated JSON Schema metadata."
+   }
+  ],
+  "related": [
+   "BaseModel",
+   "ConfigDict",
+   "extra",
+   "strict",
+   "arbitrary_types_allowed"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is model_config used for?",
+    "answer": "model_config is a class-level configuration value on a Pydantic model. It is assigned a ConfigDict containing options that affect model behavior, such as handling extra data or enabling strict mode.",
+    "followUp": "How would you reject unknown fields? Set model_config = ConfigDict(extra='forbid') so unexpected initialization data is rejected."
+   },
+   {
+    "question": "How does the extra configuration option work?",
+    "answer": "The extra option determines whether unexpected initialization fields are ignored, accepted, or rejected. The documented default is 'ignore'.",
+    "followUp": "What happens with extra='ignore'? Extra input is discarded and does not appear in the resulting model, while declared fields are still validated."
+   },
+   {
+    "question": "How do you enable strict validation for a model?",
+    "answer": "Set strict=True in the model's ConfigDict to configure strict mode for all fields. This changes validation so coercion is not broadly applied according to the model's strict-validation rules.",
+    "followUp": "Can strictness be configured for only one field? Yes; use field-level validation configuration when model-wide strict mode is unnecessarily broad."
+   }
+  ],
+  "keyPoints": [
+   "ConfigDict is the typed configuration container used to express a model's Pydantic behavior.",
+   "The extra option defaults to ignoring unknown initialization data.",
+   "With extra='ignore', supplied fields not declared by the model are omitted from the created instance.",
+   "A model-wide strict policy is enabled by putting strict=True in its configuration.",
+   "Configuration can control the title used for the generated JSON Schema; absent an override, the model name supplies it."
+  ],
+  "gotchas": [
+   "The extra setting controls unexpected initialization data; its default is 'ignore', so unrecognized fields are discarded unless configured otherwise.",
+   "Alias-related population is not automatically enabled: configure the relevant option when callers must use the field's declared name."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "model_dump(by_alias)": {
+  "sourceUrl": "https://docs.pydantic.dev/latest/api/base_model/",
+  "sourceTitle": "BaseModel - Pydantic",
+  "summary": "model_dump(by_alias=True) serializes a Pydantic model to a dictionary using configured field aliases as keys. Leave it false or unset to use Python attribute names.",
+  "explanation": "model_dump(by_alias=True) returns the model as a dictionary while using configured field aliases as the output keys. With the default False, serialization uses the model's attribute names; aliases can come from Field definitions or an alias generator.",
+  "syntax": "model_dump(*, mode='python', include=None, exclude=None, context=None, by_alias=None, exclude_unset=False, exclude_defaults=False, exclude_none=False, round_trip=False, warnings=True, fallback=None, serialize_as_any=False) -> dict[str, Any]",
+  "parameters": [
+   {
+    "name": "by_alias",
+    "type": "bool | None",
+    "description": "Whether to use field aliases as dictionary keys during serialization; defaults to False."
+   }
+  ],
+  "returns": "A dictionary representation of the model, using aliases when by_alias=True.",
+  "example": {
+   "title": "Serialize using field aliases",
+   "code": "from pydantic import BaseModel, Field\n\nclass User(BaseModel):\n    user_id: int = Field(alias='userId')\n\nuser = User(userId=7)\nprint(user.model_dump(by_alias=True))\n# {'userId': 7}",
+   "language": "python",
+   "explanation": "Use by_alias=True to serialize fields with their configured aliases instead of their Python attribute names."
+  },
+  "useCases": [
+   {
+    "title": "Emit API-compatible keys",
+    "scenario": "An API contract requires camelCase or another external naming convention."
+   },
+   {
+    "title": "Export external field names",
+    "scenario": "A model uses Field aliases for database, JSON, or wire-format names."
+   },
+   {
+    "title": "Serialize generated aliases",
+    "scenario": "Many fields follow a naming convention defined by an alias generator."
+   }
+  ],
+  "related": [
+   "BaseModel.model_dump",
+   "Field(alias=...)",
+   "ConfigDict(alias_generator=...)",
+   "validate_by_alias",
+   "validate_by_name"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does by_alias=True change in model_dump?",
+    "answer": "model_dump(by_alias=True) serializes a model to a dictionary and uses each field's configured alias as the key. If by_alias is omitted or false, the normal attribute names are used.",
+    "followUp": "How can aliases be applied consistently across a model? Define an alias_generator in model configuration, then call model_dump(by_alias=True) to emit the generated aliases."
+   },
+   {
+    "question": "Does by_alias affect validation or attribute access?",
+    "answer": "The setting affects the serialized dictionary keys, not the model's Python attributes. A field declared with an alias such as userId remains accessible through its Python attribute name inside the model.",
+    "followUp": "Does by_alias=True make alias-based construction valid? No; input behavior is controlled separately by validation configuration such as validate_by_alias."
+   },
+   {
+    "question": "Where do the aliases used by model_dump come from?",
+    "answer": "Aliases can be declared per field with Field(alias=...) or generated through model configuration. Dumping with by_alias=True makes those aliases appear in the output dictionary.",
+    "followUp": "What output would an alias generator produce? It transforms configured field names according to the generator, and the transformed names are emitted when aliases are requested."
+   }
+  ],
+  "keyPoints": [
+   "Pass by_alias=True when serialized data must use configured aliases rather than Python field names.",
+   "Serialization alias selection is distinct from the setting that permits population by a field's Python name.",
+   "The validation option for accepting aliases applies to input, while by_alias applies to output.",
+   "An alias generator can create aliases systematically for fields across a model.",
+   "Generated aliases do not replace normal Python attribute access on the model instance."
+  ],
+  "gotchas": [
+   "by_alias controls serialization output keys; it does not by itself determine whether input may use an alias or field name.",
+   "Input validation settings such as validate_by_alias are separate from choosing aliases during model dumping."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "populate_by_name": {
+  "sourceUrl": "https://docs.pydantic.dev/2.11/api/config/",
+  "sourceTitle": "Configuration - Pydantic",
+  "summary": "Enables aliased fields to accept input by their Python attribute names as well as their aliases. It defaults to false and is not recommended from Pydantic v2.11 onward because it will be deprecated in v3.",
+  "explanation": "When enabled, an aliased field accepts input under both its Python attribute name and its configured alias. The setting defaults to false, and current documentation advises replacing it with validate_by_name together with validate_by_alias because populate_by_name is deprecated for Pydantic v3.",
+  "syntax": "ConfigDict(populate_by_name=True)",
+  "parameters": [
+   {
+    "name": "populate_by_name",
+    "type": "bool",
+    "description": "Whether aliased fields may also be populated using their model attribute names."
+   }
+  ],
+  "returns": "A model configuration setting; it does not return a value.",
+  "example": {
+   "title": "Populate an aliased field by name",
+   "code": "from pydantic import BaseModel, ConfigDict, Field\n\nclass Model(BaseModel):\n    model_config = ConfigDict(populate_by_name=True)\n    my_field: str = Field(alias='my_alias')\n\nprint(Model(my_field='value'))\nprint(Model(my_alias='value'))",
+   "language": "python",
+   "explanation": "Both the field name and its alias can be used when creating the model."
+  },
+  "useCases": [
+   {
+    "title": "Support dual input naming",
+    "scenario": "A model must accept payloads that use either internal Python field names or external aliases."
+   },
+   {
+    "title": "Maintain older Pydantic behavior",
+    "scenario": "A migration temporarily needs the older v2.0-v2.10 population behavior."
+   }
+  ],
+  "related": [
+   "ConfigDict",
+   "Field",
+   "validate_by_name",
+   "validate_by_alias"
+  ],
+  "since": "2.0",
+  "interview": [
+   {
+    "question": "What does populate_by_name do?",
+    "answer": "It allows an aliased field to be populated using either the model attribute name or its alias. The default is false, so only the configured behavior is available unless the setting is enabled.",
+    "followUp": "What should replace it in newer Pydantic code? Use validate_by_name=True and validate_by_alias=True in ConfigDict."
+   },
+   {
+    "question": "What is its default behavior?",
+    "answer": "The setting defaults to false. With it enabled, a field declared with an alias can receive input using its Python name as well as that alias.",
+    "followUp": "Why might enabling both validation options be necessary? It preserves acceptance of both naming forms while avoiding the deprecated setting."
+   },
+   {
+    "question": "Is populate_by_name still recommended?",
+    "answer": "The current documentation says its use is not recommended from v2.11 onward and that it will be deprecated in v3. The recommended replacement is separate validation controls for names and aliases.",
+    "followUp": "Can both replacement options be disabled? No; the documentation states that disabling both would make it impossible to populate an attribute."
+   }
+  ],
+  "keyPoints": [
+   "It controls whether an aliased field accepts its model attribute name as input.",
+   "When enabled, the alias remains accepted alongside the attribute name.",
+   "If not configured, the setting is disabled.",
+   "For newer code, prefer validate_by_name; pair it with validate_by_alias when both forms should be accepted.",
+   "The replacement validation controls cannot both be disabled because the model would have no permitted population route.",
+   "The documentation identifies this as the configuration approach used in Pydantic v2.0 through v2.10."
+  ],
+  "gotchas": [
+   "Avoid this setting for new code targeting current Pydantic releases; use validate_by_name and validate_by_alias instead."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "SettingsConfigDict": {
+  "sourceUrl": "https://docs.pydantic.dev/2.11/api/config/",
+  "sourceTitle": "Configuration - Pydantic",
+  "summary": "SettingsConfigDict configures Pydantic settings models through named options such as environment-variable prefixes and dotenv-file loading. It is used as model_config data on a settings class.",
+  "explanation": "SettingsConfigDict is the settings-specific configuration dictionary used with Pydantic Settings models. It supplies options such as environment-variable naming and dotenv-file loading while retaining the typed configuration model used by Pydantic.",
+  "syntax": "model_config = SettingsConfigDict(**options)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Configure a settings model",
+   "code": "from pydantic_settings import BaseSettings, SettingsConfigDict\n\nclass AppSettings(BaseSettings):\n    model_config = SettingsConfigDict(env_prefix=\"APP_\", env_file=\".env\")\n    debug: bool = False\n\nsettings = AppSettings()",
+   "language": "python",
+   "explanation": "The settings model reads configuration using the declared environment prefix and optional dotenv file."
+  },
+  "useCases": [
+   {
+    "title": "Map environment variables into typed settings",
+    "scenario": "Environment-based application configuration"
+   },
+   {
+    "title": "Load values from a dotenv file",
+    "scenario": "Local development configuration"
+   },
+   {
+    "title": "Declare validation and input-handling policy",
+    "scenario": "Consistent model behavior"
+   }
+  ],
+  "related": [
+   "ConfigDict",
+   "with_config",
+   "BaseSettings"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is SettingsConfigDict used for?",
+    "answer": "SettingsConfigDict is a typed configuration dictionary for settings models. It is assigned to model_config to control how configuration values are sourced and interpreted.",
+    "followUp": "How would you make environment variables use a common prefix? Set env_prefix in SettingsConfigDict and name variables with that prefix."
+   },
+   {
+    "question": "Give two examples of settings configuration options.",
+    "answer": "It lets a settings model declare options such as an environment-variable prefix and a dotenv file. The settings model then applies those options when it is instantiated.",
+    "followUp": "What is the practical effect of env_file=\".env\"? Values from that dotenv file become one of the configured sources for settings loading."
+   },
+   {
+    "question": "What kind of object underlies Pydantic configuration dictionaries?",
+    "answer": "The configuration is expressed as a dictionary-shaped object because the underlying configuration type is ConfigDict, documented as a TypedDict. This provides a structured set of named configuration fields rather than an untyped mapping.",
+    "followUp": "Why prefer the documented configuration type over arbitrary keys? The typed fields communicate supported behavior and help catch misspelled or unsupported options."
+   }
+  ],
+  "keyPoints": [
+   "Use SettingsConfigDict to declare model configuration for a Pydantic settings class.",
+   "The configuration is dictionary-shaped and provides named options rather than requiring a custom configuration class.",
+   "Configuration can control how extra input is handled during model initialization.",
+   "Strict validation can be enabled across a model through its configuration."
+  ],
+  "gotchas": [
+   "Use it as configuration data rather than as a runtime model or validation schema."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "use_enum_values": {
+  "sourceUrl": "https://docs.pydantic.dev/2.11/api/config/",
+  "sourceTitle": "Configuration - Pydantic",
+  "summary": "`use_enum_values=True` makes Pydantic populate enum fields with their underlying values rather than enum members. Optional enum defaults need `validate_default=True` for this conversion to apply.",
+  "explanation": "Set `use_enum_values=True` in `ConfigDict` to make validated enum fields hold their underlying values instead of enum members. For an optional enum default, add `validate_default=True` to its `Field`, because conversion happens during validation.",
+  "syntax": "ConfigDict(use_enum_values=True)",
+  "parameters": [],
+  "returns": "The setting changes populated field values; the documented example shows `model_dump()` containing underlying enum values.",
+  "example": {
+   "title": "Store enum values",
+   "code": "from enum import Enum\nfrom typing import Optional\nfrom pydantic import BaseModel, ConfigDict, Field\n\nclass Flavor(Enum):\n    VANILLA = \"vanilla\"\n    CHOCOLATE = \"chocolate\"\n\nclass Order(BaseModel):\n    model_config = ConfigDict(use_enum_values=True)\n    flavor: Flavor\n    fallback: Optional[Flavor] = Field(\n        default=Flavor.VANILLA, validate_default=True\n    )\n\norder = Order(flavor=Flavor.CHOCOLATE)\nassert order.model_dump() == {\"flavor\": \"chocolate\", \"fallback\": \"vanilla\"}\nprint(order.model_dump())",
+   "language": "python",
+   "explanation": "The model stores enum values and validates the optional default so it is converted as well."
+  },
+  "useCases": [
+   {
+    "title": "Value-oriented output",
+    "scenario": "Models whose dumped data is sent to JSON APIs or persistence layers."
+   },
+   {
+    "title": "Consistent defaults",
+    "scenario": "Schemas containing optional enum fields with defaults."
+   },
+   {
+    "title": "Simpler downstream processing",
+    "scenario": "Applications that compare or transform dumped data using primitive values."
+   }
+  ],
+  "related": [
+   "ConfigDict",
+   "Field",
+   "validate_default",
+   "BaseModel.model_dump",
+   "Enum"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you configure a Pydantic model to use enum values?",
+    "answer": "Set `model_config = ConfigDict(use_enum_values=True)` on the model. Enum inputs are then populated using each enum member's `value`, which is also convenient when calling `model_dump()`.",
+    "followUp": "Why might an optional enum default remain an enum member? Because defaults are not validated automatically in this case; enable `validate_default=True` on the field."
+   },
+   {
+    "question": "What is the default behavior of `use_enum_values`?",
+    "answer": "The setting defaults to `False`, so the model otherwise retains raw enum members. With it enabled, a member such as `SomeEnum.BAR` is represented by its underlying value, such as `'bar'`.",
+    "followUp": "Where does the conversion occur? During validation, rather than during serialization, which explains the need to validate relevant defaults."
+   },
+   {
+    "question": "How should optional enum defaults be handled?",
+    "answer": "Add `Field(default=..., validate_default=True)` to an optional enum field that has a default. This causes the default to pass through validation and receive the same value extraction as supplied input.",
+    "followUp": "What output should be expected from `model_dump()` after enabling the option? Enum fields appear as their underlying values, including validated defaults."
+   }
+  ],
+  "keyPoints": [
+   "When enabled, enum-typed fields are populated with each member's underlying `value` instead of the enum object.",
+   "The option is useful when a later `model_dump()` should contain serialization-friendly enum values.",
+   "The setting is disabled by default; enable it explicitly in the model configuration.",
+   "Enum value extraction happens during validation, not when the model is serialized.",
+   "The documented example shows `model_dump()` returning strings such as `'bar'` and `'foo'` after the option is enabled."
+  ],
+  "gotchas": [
+   "An optional enum field with a default needs `validate_default=True`; otherwise its default is not converted."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "validate_assignment": {
+  "sourceUrl": "https://docs.pydantic.dev/2.11/api/config/",
+  "sourceTitle": "Configuration - Pydantic",
+  "summary": "`validate_assignment` enables validation when fields are changed after a Pydantic model is created. It defaults to `False`, so post-construction assignments are otherwise not revalidated.",
+  "explanation": "Set `validate_assignment=True` in a model’s configuration to validate values assigned after initialization. Pydantic then applies validation when model attributes change, rather than validating only during model creation.",
+  "syntax": "class User(BaseModel, validate_assignment=True):\n    ...\n\n# or\nmodel_config = ConfigDict(validate_assignment=True)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Validate assignments after model creation",
+   "code": "from pydantic import BaseModel, ValidationError\n\nclass User(BaseModel, validate_assignment=True):\n    name: str\n    age: int\n\nuser = User(name=\"Ada\", age=36)\nuser.age = \"37\"\nassert user.age == 37\n\ntry:\n    user.age = \"not an integer\"\nexcept ValidationError:\n    print(\"assignment rejected\")",
+   "language": "python",
+   "explanation": "The first assignment is converted to an integer; the second raises a validation error."
+  },
+  "useCases": [
+   {
+    "title": "Keep updates type-safe",
+    "scenario": "Mutable models whose fields may change after initialization."
+   },
+   {
+    "title": "Preserve validation guarantees",
+    "scenario": "Applications that modify validated state over time."
+   },
+   {
+    "title": "Reject invalid mutations",
+    "scenario": "Models where accidental invalid assignments should fail immediately."
+   }
+  ],
+  "related": [
+   "BaseModel",
+   "ConfigDict",
+   "model_config",
+   "ValidationError"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `validate_assignment` change?",
+    "answer": "By default, Pydantic validates data when the model is created, but not when an attribute is changed. Enabling `validate_assignment` makes later assignments undergo validation too.",
+    "followUp": "How can it be enabled? Use `validate_assignment=True` as a model class keyword argument or set it in `model_config`."
+   },
+   {
+    "question": "How do you enable assignment validation?",
+    "answer": "It can be enabled directly in the class definition with `class User(BaseModel, validate_assignment=True)`. This causes assignments such as `user.age = ...` to be validated after construction.",
+    "followUp": "What happens without the setting? An invalid value can be assigned without revalidation."
+   },
+   {
+    "question": "What is the default behavior?",
+    "answer": "The setting is a configuration option whose default is `False`. With the default, validation occurs only during model creation; with it enabled, validation also occurs when model data changes.",
+    "followUp": "Why might this matter? It preserves the model’s validation guarantees across its full mutable lifetime."
+   }
+  ],
+  "keyPoints": [
+   "`validate_assignment` controls whether Pydantic checks values assigned after the model has been created.",
+   "The option is disabled unless you explicitly configure it.",
+   "Initial model construction is validated independently of assignment-validation configuration.",
+   "Without this option, mutating a model does not trigger another validation pass.",
+   "The configuration can be supplied through the model class declaration or through `model_config`.",
+   "When enabled, later attribute changes receive validation in addition to construction-time checks."
+  ],
+  "gotchas": [
+   "Assignment validation is disabled by default, so changing an attribute otherwise bypasses model validation."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "ValidationError": {
+  "sourceUrl": "https://docs.pydantic.dev/2.11/api/config/",
+  "sourceTitle": "Configuration - Pydantic",
+  "summary": "ValidationError is raised when Pydantic rejects input during validation. Catch it to access a readable report describing the model, location, expected value, error type, and received input.",
+  "explanation": "ValidationError is raised when Pydantic cannot validate input against a model or other declared schema. Catch it to inspect human-readable output or structured details such as the failing location, message, error type, and supplied input.",
+  "syntax": "class ValidationError(Exception)",
+  "parameters": [],
+  "returns": "Raises ValidationError when validation fails; the documented example shows the exception being caught and printed.",
+  "example": {
+   "title": "Inspect validation errors",
+   "code": "from pydantic import BaseModel, ValidationError\n\nclass User(BaseModel):\n    age: int\n\ntry:\n    User(age=\"not an integer\")\nexcept ValidationError as exc:\n    print(exc.errors())\n",
+   "language": "python",
+   "explanation": "Catch the exception and inspect structured error details."
+  },
+  "useCases": [
+   {
+    "title": "Handle invalid model data",
+    "scenario": "A model receives malformed or incorrectly typed input."
+   },
+   {
+    "title": "Build validation feedback",
+    "scenario": "An application needs field-level diagnostics for a response."
+   },
+   {
+    "title": "Inspect validation failures",
+    "scenario": "Debugging reveals unexpected values entering a model."
+   }
+  ],
+  "related": [
+   "BaseModel",
+   "ConfigDict",
+   "model_validate"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does ValidationError represent?",
+    "answer": "ValidationError reports that input failed Pydantic validation. It can be caught and printed or inspected programmatically; the documentation example shows its string form identifying the model, field, message, error type, and input details.",
+    "followUp": "How would you handle several invalid fields? Inspect the structured error collection rather than parsing the formatted string, then map each location to an appropriate application response."
+   },
+   {
+    "question": "When can ValidationError be raised by model configuration?",
+    "answer": "It is raised when a configured validation rule rejects input, such as forbidding an extra field. The resulting diagnostic identifies where validation failed and why.",
+    "followUp": "What should an API return? Convert the structured diagnostics into your API's error format while avoiding exposure of sensitive input values."
+   },
+   {
+    "question": "What information does a validation error provide?",
+    "answer": "The displayed diagnostic includes the field location, a validation message, an error type, and information about the received input. This makes the exception useful both for debugging and for building field-level error responses.",
+    "followUp": "Why prefer structured diagnostics? They remain machine-readable when wording changes and can be grouped by location or error type."
+   }
+  ],
+  "keyPoints": [
+   "Catch the exception with a normal Python try/except block to handle invalid model input.",
+   "The formatted report identifies the number of validation failures and the model involved.",
+   "Each failure includes a human-readable explanation of what the input should have been.",
+   "Diagnostics can include the machine-oriented error type, received value, and received Python type."
+  ],
+  "gotchas": [
+   "When a model is configured to forbid extra fields, supplying one raises ValidationError rather than silently accepting it."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

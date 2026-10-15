@@ -2,6 +2,8 @@ import type { TechnologyHandbook } from "../technology-handbooks";
 import { LANGCHAIN_TOPICS } from "./langchain";
 import { LANGGRAPH_TOPICS } from "./langgraph";
 import { LANGSMITH_TOPICS } from "./langsmith";
+import { LANGFLOW_TOPICS } from "./langflow";
+import { LANGFLOW_API_TOPICS } from "./langflow-api";
 import { N8N_TOPICS } from "./n8n";
 import { DOCKER_TOPICS } from "./docker";
 import { AWS_DEVOPS_TOPICS } from "./aws-devops";
@@ -36,6 +38,14 @@ export const AUTOMATION_HANDBOOKS: TechnologyHandbook[] = [
     official("Prompt & Context Hub", "https://docs.langchain.com/langsmith/prompt-context-hub"),
     official("Deployment", "https://docs.langchain.com/langsmith/deployment"),
     official("LangSmith application", "https://smith.langchain.com/"),
+  ]),
+  create("LangFlow", "Lessons from first flow to production — building flows, agents and tools, RAG, serving over API, MCP and A2A, custom components and operations — plus the full API reference: concepts, CLI and LFX, REST endpoints, components, SDKs and configuration.", [...LANGFLOW_TOPICS, ...LANGFLOW_API_TOPICS], [
+    official("Langflow documentation", "https://docs.langflow.org/"),
+    official("Quickstart", "https://docs.langflow.org/get-started-quickstart"),
+    official("Trigger flows with the API", "https://docs.langflow.org/concepts-publish"),
+    official("Langflow as an MCP server", "https://docs.langflow.org/mcp-server"),
+    official("Langflow API reference", "https://docs.langflow.org/api-reference-api-examples"),
+    official("Custom components", "https://docs.langflow.org/components-custom-components"),
   ]),
   create("n8n", "Build workflow automations with data mapping, APIs, branches, AI agents, error recovery and production hosting.", N8N_TOPICS, [
     official("n8n documentation", "https://docs.n8n.io/"),

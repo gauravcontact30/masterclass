@@ -320,6 +320,14 @@ export const INDUSTRY_IMPACT: TechnologyIndustries[] = [
       { industry: "Regulated industries", problem: "Model behaviour must be evidenced over time, and trace plus evaluation history is the record an auditor asks for." },
     ],
   },
+  {
+    technologies: ["LangFlow"],
+    industries: [
+      { industry: "Internal tools and HR", problem: "A policy assistant over company documents is needed in days, and a visual RAG flow served as an API removes the rewrite between prototype and integration." },
+      { industry: "Platform engineering", problem: "Teams want their internal workflows callable from AI assistants, and publishing flows as MCP tools avoids writing a separate server for each." },
+      { industry: "Product teams", problem: "Domain experts must tune prompts and retrieval settings themselves, which a shared canvas and Playground allow without an engineering ticket per change." },
+    ],
+  },
 
   // ---- Cloud ----
   {

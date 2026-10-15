@@ -1,0 +1,77 @@
+{
+ "createClient": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/clients/nodejs/connect/",
+  "sourceTitle": "Connect to the server | Docs",
+  "summary": "`createClient` creates a node-redis client configured for Redis, defaulting to localhost on port 6379. Supply options such as a connection URL for another server, then connect explicitly before using commands.",
+  "explanation": "`createClient` constructs a node-redis client from optional connection settings. The returned client is not connected automatically: call `connect()` before issuing commands, monitor its error event, and call `quit()` when finished.",
+  "syntax": "createClient(options?)",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "RedisClientOptions",
+    "description": "Optional configuration object controlling the Redis connection, including a connection `url`, authentication, socket settings, RESP version, and client-side caching options."
+   }
+  ],
+  "returns": "A node-redis client object. The client exposes connection lifecycle methods, status properties, events, and Redis commands.",
+  "example": {
+   "title": "Create and use a node-redis client",
+   "code": "import { createClient } from 'redis';\n\nconst client = createClient();\nclient.on('error', (error) => console.error('Redis Client Error', error));\nawait client.connect();\nawait client.set('key', 'value');\nconsole.log(await client.get('key'));\nawait client.quit();",
+   "language": "javascript",
+   "explanation": "Creates a local Redis client, connects explicitly, performs a basic write and read, then closes the connection."
+  },
+  "useCases": [
+   {
+    "title": "Application caching",
+    "scenario": "A Node.js service needs to read and write cached values in Redis."
+   },
+   {
+    "title": "Remote or secured Redis access",
+    "scenario": "A program must connect to a hosted or authenticated Redis deployment."
+   },
+   {
+    "title": "General Redis data operations",
+    "scenario": "An application needs Redis commands through an async JavaScript API."
+   }
+  ],
+  "related": [
+   "connect",
+   "quit",
+   "isReady",
+   "isOpen",
+   "set",
+   "get",
+   "client-side caching"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `createClient()` return and where does it connect by default?",
+    "answer": "It creates a node-redis client for Node.js. With no options, the documented example connects to Redis on localhost at port 6379 after `connect()` is called.",
+    "followUp": "How would you target a secured remote instance? Pass a `url` such as `redis://username:password@host:port`, or configure connection options including TLS."
+   },
+   {
+    "question": "Does creating the client connect immediately?",
+    "answer": "The client must be connected explicitly with `await client.connect()`. Commands should be issued after that connection is established.",
+    "followUp": "How can readiness be checked? Use `client.isReady` for whether it is ready to send commands; `client.isOpen` reports whether the underlying socket is open."
+   },
+   {
+    "question": "How do you configure a non-default Redis connection?",
+    "answer": "Pass an options object, commonly `{ url: 'redis://...' }`, to select a host, port, credentials, or database through the connection URL. The documentation also shows socket settings such as TLS configuration.",
+    "followUp": "How would you handle failures in production? Register an `error` listener and configure options such as `socket.connectTimeout` or `disableOfflineQueue` when appropriate."
+   }
+  ],
+  "keyPoints": [
+   "Use `createClient` from the `redis` package when a Node.js or JavaScript application needs a Redis client.",
+   "Calling `createClient()` without connection options prepares a client for the local Redis server on port 6379.",
+   "A connection URL can specify the remote host, port, username, password, and database selection.",
+   "Attach an error listener so client connection or command errors are surfaced instead of becoming unhandled events.",
+   "Use `isReady` to test whether the client can currently send commands.",
+   "Use `isOpen` when the relevant state is whether the underlying client socket is open."
+  ],
+  "gotchas": [
+   "Close the client with `quit()` after use so the Redis connection is shut down cleanly.",
+   "The default client targets localhost on port 6379; configure another endpoint with the `url` option."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

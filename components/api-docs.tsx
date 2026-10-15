@@ -687,6 +687,14 @@ export function ApiDocs() {
     }
     return counts;
   }, [query, packageId, types]);
+  // The same for each identifier type, ignoring the type filter itself, so every type shows what choosing it would add.
+  const typeCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const pkg of filterApiPackages(query, packageId, [], statuses)) {
+      for (const entry of pkg.entries) counts[entry.kind] = (counts[entry.kind] ?? 0) + 1;
+    }
+    return counts;
+  }, [query, packageId, statuses]);
   const selectedFilterPackage = API_PACKAGES.find((pkg) => pkg.id === packageId);
   const total = groups.reduce((sum, pkg) => sum + pkg.entries.length, 0);
   const selectedPackage = API_PACKAGES.find((pkg) => pkg.id === params.get("package"));
@@ -974,6 +982,9 @@ export function ApiDocs() {
                   >
                     <Badge kind={type.k} />
                     {type.label}
+                    <span className={ref.typeCount} aria-hidden="true" data-empty={!typeCounts[type.k]}>
+                      {(typeCounts[type.k] ?? 0).toLocaleString("en-US")}
+                    </span>
                   </button>
                 ))}
               </div>

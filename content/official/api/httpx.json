@@ -1,0 +1,1047 @@
+{
+ "aclose": {
+  "sourceUrl": "https://www.python-httpx.org/api/",
+  "sourceTitle": "Developer Interface - HTTPX",
+  "summary": "`AsyncClient.aclose()` asynchronously closes the client's transport and proxies. Await it when explicitly managing an `AsyncClient` instead of relying on an async context manager.",
+  "explanation": "`aclose()` asynchronously shuts down the `AsyncClient`'s transport and proxies. Await it when a client was created without an async context manager, typically after all requests have completed.",
+  "syntax": "await client.aclose()",
+  "parameters": [],
+  "returns": "None",
+  "example": {
+   "title": "Explicitly close an AsyncClient",
+   "code": "import asyncio\nimport httpx\n\nasync def main():\n    client = httpx.AsyncClient()\n    try:\n        response = await client.get(\"https://example.org\")\n        print(response.status_code)\n    finally:\n        await client.aclose()\n\nasyncio.run(main())",
+   "language": "python",
+   "explanation": "This creates an asynchronous client, performs a request, and explicitly releases its resources in a finally block."
+  },
+  "useCases": [
+   {
+    "title": "Close a client created outside `async with`",
+    "scenario": "Manual lifecycle management"
+   },
+   {
+    "title": "Release resources from a `finally` block",
+    "scenario": "Guaranteed cleanup"
+   },
+   {
+    "title": "Close one client after concurrent tasks finish",
+    "scenario": "Shared asynchronous client"
+   }
+  ],
+  "related": [
+   "AsyncClient",
+   "AsyncClient.__aenter__",
+   "AsyncClient.__aexit__",
+   "Client.close"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `AsyncClient.aclose()` do?",
+    "answer": "Call `await client.aclose()` when an `AsyncClient` should be closed explicitly. The method closes the client's transport and proxies.",
+    "followUp": "How can explicit cleanup be avoided? Use `async with httpx.AsyncClient() as client:` so the context manager closes the client when the block exits."
+   },
+   {
+    "question": "What is the signature and return value?",
+    "answer": "`aclose()` is asynchronous and takes only `self`, so it has no configuration parameters. Its documented return value is `None`.",
+    "followUp": "What should code do if it needs to continue making requests? Keep the client open until all requests finish, then await `aclose()` once."
+   },
+   {
+    "question": "When should an application call it?",
+    "answer": "Use explicit closure when the client is managed outside a context-manager block, such as a longer-lived application component. Put cleanup in a `finally` block so it also runs when a request fails.",
+    "followUp": "What is the simpler scoped alternative? Use an `async with` block around the client and perform all related requests inside it."
+   }
+  ],
+  "keyPoints": [
+   "The method closes the asynchronous client's transport and configured proxies.",
+   "Await it when managing the client manually instead of using context-managed usage.",
+   "It belongs to `AsyncClient`, which supports asynchronous requests and connection pooling.",
+   "A single client may be shared across concurrent tasks and closed after those tasks complete."
+  ],
+  "gotchas": [
+   "Because this method performs asynchronous cleanup, it must be awaited; forgetting to await it leaves the client's resources unmanaged."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "AsyncClient": {
+  "sourceUrl": "https://www.python-httpx.org/api/",
+  "sourceTitle": "Developer Interface - HTTPX",
+  "summary": "HTTPX AsyncClient is an asynchronous, reusable HTTP client with connection pooling and shared configuration. Use it with await and manage its lifetime with an async context manager or aclose().",
+  "explanation": "AsyncClient is HTTPX's asynchronous client for making HTTP requests with connection pooling and shared client configuration. Use it with async/await, either inside an async context manager or by explicitly calling aclose() when finished.",
+  "syntax": "httpx.AsyncClient(*, auth=None, params=None, headers=None, cookies=None, verify=True, cert=None, http1=True, http2=False, proxy=None, mounts=None, timeout=Timeout(timeout=5.0), follow_redirects=False, limits=Limits(max_connections=100, max_keepalive_connections=20, keepalive_expiry=5.0), max_redirects=20, event_hooks=None, base_url='', transport=None, trust_env=True, default_encoding='utf-8')",
+  "parameters": [
+   {
+    "name": "auth",
+    "type": "optional authentication class",
+    "description": "Authentication class used for outgoing requests."
+   },
+   {
+    "name": "params",
+    "type": "optional string, dictionary, or sequence of two-tuples",
+    "description": "Query parameters included in request URLs."
+   },
+   {
+    "name": "headers",
+    "type": "optional dictionary",
+    "description": "Default HTTP headers."
+   },
+   {
+    "name": "cookies",
+    "type": "optional cookie mapping",
+    "description": "Cookies persisted by the client."
+   },
+   {
+    "name": "verify",
+    "type": "boolean or SSL context",
+    "description": "SSL verification configuration."
+   },
+   {
+    "name": "cert",
+    "type": "optional certificate configuration",
+    "description": "Client certificate configuration."
+   },
+   {
+    "name": "http1",
+    "type": "boolean",
+    "description": "Whether HTTP/1.1 is enabled."
+   },
+   {
+    "name": "http2",
+    "type": "boolean",
+    "description": "Whether HTTP/2 is enabled."
+   },
+   {
+    "name": "proxy",
+    "type": "optional proxy configuration",
+    "description": "Proxy configuration."
+   },
+   {
+    "name": "mounts",
+    "type": "optional mapping",
+    "description": "Per-scheme or per-host transports."
+   },
+   {
+    "name": "timeout",
+    "type": "Timeout",
+    "description": "Request timeout configuration."
+   },
+   {
+    "name": "follow_redirects",
+    "type": "boolean",
+    "description": "Whether redirects are followed."
+   }
+  ],
+  "returns": "An AsyncClient instance; its request methods return Response objects when awaited.",
+  "example": {
+   "title": "Basic AsyncClient request",
+   "code": "import asyncio\nimport httpx\n\nasync def main():\n    async with httpx.AsyncClient(base_url=\"https://example.org\") as client:\n        response = await client.get(\"/\")\n        response.raise_for_status()\n        print(response.status_code)\n\nasyncio.run(main())",
+   "language": "python",
+   "explanation": "Creates an asynchronous client, sends a request within its context, and closes the client automatically."
+  },
+  "useCases": [
+   {
+    "title": "Asynchronous API calls",
+    "scenario": "Applications making concurrent outbound HTTP requests inside asyncio or another supported async environment."
+   },
+   {
+    "title": "Connection reuse",
+    "scenario": "Services that make many requests and benefit from reusing pooled connections and shared defaults."
+   },
+   {
+    "title": "Custom transport integration",
+    "scenario": "Tests or application integration where requests should be routed through a custom transport."
+   }
+  ],
+  "related": [
+   "Client",
+   "Request",
+   "Response",
+   "Limits",
+   "Timeout",
+   "AsyncBaseTransport",
+   "ASGITransport"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is AsyncClient and how is it used?",
+    "answer": "AsyncClient provides asynchronous HTTP requests and connection pooling. It can be shared between tasks, and request methods such as get() must be awaited.",
+    "followUp": "How should its lifetime be managed? Use `async with httpx.AsyncClient()` for automatic cleanup, or call `await client.aclose()` explicitly."
+   },
+   {
+    "question": "Which kinds of configuration belong on AsyncClient?",
+    "answer": "The constructor accepts shared client configuration such as authentication, headers, cookies, timeout, proxy, redirects, limits, and a base URL. These settings apply to requests made through that client unless overridden.",
+    "followUp": "What does `base_url` change? Relative request URLs are resolved against the configured base URL."
+   },
+   {
+    "question": "Does AsyncClient use HTTP/2 automatically?",
+    "answer": "AsyncClient supports HTTP/2 when constructed with `http2=True`, but HTTP/2 is not enabled by default. The actual protocol still depends on whether the server supports HTTP/2.",
+    "followUp": "How can the negotiated protocol be checked? Inspect the response's `http_version` property."
+   }
+  ],
+  "keyPoints": [
+   "AsyncClient is an asynchronous HTTP client with connection pooling and support for features including HTTP/2 and redirects.",
+   "A single AsyncClient instance can be shared across concurrent tasks.",
+   "Use the client's request-building and sending APIs when you need separate control over request creation and transmission.",
+   "The send operation is asynchronous and returns a response after awaiting it.",
+   "Use AsyncClient as an asynchronous context manager to scope its lifetime and clean up resources.",
+   "The constructor supports a base URL, custom transport, environment trust setting, and default response encoding."
+  ],
+  "gotchas": [
+   "Streaming responses must be handled with AsyncClient.stream() as an asynchronous context block.",
+   "Event hooks configured on AsyncClient must be asynchronous functions, not regular synchronous callables."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Client": {
+  "sourceUrl": "https://www.python-httpx.org/api/",
+  "sourceTitle": "Developer Interface - HTTPX",
+  "summary": "AsyncClient is HTTPX’s reusable asynchronous client for making HTTP requests. It provides connection pooling and related client features and can be shared between tasks.",
+  "explanation": "AsyncClient provides asynchronous request methods together with connection pooling and reusable client configuration. Use it as an async context manager so its connections are closed automatically, or call aclose() explicitly when managing its lifetime yourself.",
+  "syntax": "httpx.AsyncClient(*, auth=None, params=None, headers=None, cookies=None, verify=True, cert=None, http1=True, http2=False, proxy=None, mounts=None, timeout=Timeout(timeout=5.0), follow_redirects=False, limits=Limits(max_connections=100, max_keepalive_connections=20, keepalive_expiry=5.0), max_redirects=20, event_hooks=None, base_url='', transport=None, trust_env=True, default_encoding='utf-8')",
+  "parameters": [],
+  "returns": "An asynchronous HTTP client instance; its request methods yield HTTPX Response objects when awaited.",
+  "example": {
+   "title": "Send a request with AsyncClient",
+   "code": "import asyncio\nimport httpx\n\nasync def main():\n    async with httpx.AsyncClient() as client:\n        response = await client.get(\"https://example.org\")\n        print(response.status_code)\n\nasyncio.run(main())",
+   "language": "python",
+   "explanation": "Creates an asynchronous client, sends a GET request, and closes the client automatically when the context ends."
+  },
+  "useCases": [
+   {
+    "title": "Outbound requests from async applications",
+    "scenario": "An async web application needs to call external HTTP services without blocking its event loop."
+   },
+   {
+    "title": "Reuse pooled connections across requests",
+    "scenario": "Several requests target the same services during one operation or task group."
+   },
+   {
+    "title": "In-process ASGI testing",
+    "scenario": "Tests need to send requests directly to an ASGI application."
+   },
+   {
+    "title": "Centralize request configuration",
+    "scenario": "The application needs shared defaults such as headers, cookies, a base URL, or transport behavior."
+   }
+  ],
+  "related": [
+   "AsyncHTTPTransport",
+   "AsyncBaseTransport",
+   "Client",
+   "Response",
+   "Request"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is AsyncClient and how are requests made with it?",
+    "answer": "AsyncClient is HTTPX's asynchronous client for issuing requests with methods such as get(), post(), request(), and send(). Its methods return asynchronously, so callers must await them.",
+    "followUp": "How should its lifetime be managed? Use `async with httpx.AsyncClient()` for automatic cleanup, or await `aclose()` when managing the instance manually."
+   },
+   {
+    "question": "Why use AsyncClient instead of individual top-level requests?",
+    "answer": "The client supports connection pooling, redirects, cookie persistence, and HTTP/2, and it can be shared between tasks. Reusing one instance avoids recreating client state for each request.",
+    "followUp": "How would you scope it safely? Create it around the group of operations that should share the client and let the async context manager close it afterward."
+   },
+   {
+    "question": "How can AsyncClient be customized for transports or HTTP/2?",
+    "answer": "AsyncClient accepts client configuration such as a transport and an HTTP/2 setting. For direct transport construction in asynchronous code, use `httpx.AsyncHTTPTransport`.",
+    "followUp": "What must custom asynchronous transports implement? They should implement the low-level transport API for sending one request and returning its response, commonly by subclassing `AsyncBaseTransport`."
+   }
+  ],
+  "keyPoints": [
+   "AsyncClient is the asynchronous HTTPX client and includes pooling, HTTP/2 support, redirects, and cookie persistence.",
+   "A single client instance can be shared across concurrent asynchronous tasks.",
+   "The recommended usage pattern is an async context manager, which scopes the client's lifetime.",
+   "Send requests through asynchronous methods and await the returned response operation.",
+   "The request API is asynchronous across convenience methods and the general request/send methods.",
+   "Use AsyncHTTPTransport when supplying a transport created directly for an asynchronous client."
+  ],
+  "gotchas": [
+   "Every request method is asynchronous, so await calls such as get(), post(), request(), and send().",
+   "A client created outside an async context manager must be closed explicitly with aclose().",
+   "Streaming uses an async context block rather than treating stream() as an ordinary awaited response."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "get": {
+  "sourceUrl": "https://www.python-httpx.org/api/",
+  "sourceTitle": "Developer Interface - HTTPX",
+  "summary": "`AsyncClient.get` asynchronously performs an HTTP GET request and returns an HTTPX response. Await the call, and manage the client with an async context manager or explicit closure.",
+  "explanation": "`AsyncClient.get` performs an asynchronous HTTP GET and returns a response after the request completes. Call it with `await`, typically inside an `async with` block so the client’s resources are closed automatically.",
+  "syntax": "await client.get(url, *, params=None, headers=None, cookies=None, auth=None, proxy=None, follow_redirects=False, verify=True, timeout=Timeout(timeout=5.0), trust_env=True)",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "str or URL",
+    "description": "Target URL for the GET request."
+   },
+   {
+    "name": "params",
+    "type": "QueryParamTypes | None",
+    "description": "Optional query parameters appended to the URL."
+   },
+   {
+    "name": "headers",
+    "type": "HeaderTypes | None",
+    "description": "Optional request headers."
+   },
+   {
+    "name": "cookies",
+    "type": "CookieTypes | None",
+    "description": "Optional cookies sent with the request."
+   },
+   {
+    "name": "auth",
+    "type": "AuthTypes | None",
+    "description": "Optional authentication configuration."
+   },
+   {
+    "name": "proxy",
+    "type": "ProxyTypes | None",
+    "description": "Optional proxy configuration."
+   },
+   {
+    "name": "follow_redirects",
+    "type": "bool",
+    "description": "Whether redirects are followed."
+   },
+   {
+    "name": "verify",
+    "type": "ssl.SSLContext | str | bool",
+    "description": "TLS certificate verification setting."
+   },
+   {
+    "name": "timeout",
+    "type": "TimeoutTypes | None",
+    "description": "Request timeout configuration."
+   },
+   {
+    "name": "trust_env",
+    "type": "bool",
+    "description": "Whether environment configuration is trusted."
+   }
+  ],
+  "returns": "Response",
+  "example": {
+   "title": "Asynchronous GET request",
+   "code": "import asyncio\nimport httpx\n\nasync def main():\n    async with httpx.AsyncClient() as client:\n        response = await client.get(\n            \"https://httpbin.org/get\",\n            params={\"q\": \"httpx\"},\n        )\n        response.raise_for_status()\n        print(response.json()[\"args\"])\n\nasyncio.run(main())",
+   "language": "python",
+   "explanation": "Creates a scoped asynchronous client, awaits a GET request with query parameters, validates success, and reads the decoded JSON response."
+  },
+  "useCases": [
+   {
+    "title": "Asynchronous retrieval",
+    "scenario": "Retrieve a web resource from an async application."
+   },
+   {
+    "title": "Query-driven requests",
+    "scenario": "Send filters or search terms without manually constructing a URL."
+   },
+   {
+    "title": "Shared connection-pool access",
+    "scenario": "Reuse one client for related concurrent operations."
+   }
+  ],
+  "related": [
+   "AsyncClient",
+   "AsyncClient.request",
+   "AsyncClient.stream",
+   "Response",
+   "httpx.get"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `AsyncClient.get` do?",
+    "answer": "`AsyncClient.get` sends an HTTP GET request and must be awaited. It returns an HTTPX response object, which exposes status, headers, body, and related response information.",
+    "followUp": "How should a client be managed across multiple requests? Use one shared `AsyncClient` when appropriate, and close it with the async context manager or `await client.aclose()`."
+   },
+   {
+    "question": "How is an asynchronous GET request called?",
+    "answer": "The method is invoked on `httpx.AsyncClient`, and its URL may include request-specific options such as query parameters. The documented async usage is `response = await client.get(...)`.",
+    "followUp": "How would you ensure a failed HTTP status is handled? Inspect the returned response status or call the response’s status-checking method before consuming the result."
+   },
+   {
+    "question": "Why use `AsyncClient` instead of the synchronous top-level helper?",
+    "answer": "An `AsyncClient` provides asynchronous HTTP access together with connection pooling and can be shared between tasks. A context-managed instance ensures its resources are released after use.",
+    "followUp": "What client feature can be enabled for HTTP/2? Construct `AsyncClient` with `http2=True`, then inspect the response protocol version through its HTTP-version property."
+   }
+  ],
+  "keyPoints": [
+   "The client supports connection pooling, HTTP/2, redirects, and cookie persistence.",
+   "A single asynchronous client can be reused by multiple concurrent tasks.",
+   "The documented call pattern awaits `client.get` and stores the resulting response."
+  ],
+  "gotchas": [
+   "Because this is an asynchronous method, omitting `await` leaves you with a coroutine rather than the completed response.",
+   "Use a context-managed client for automatic cleanup; otherwise close an explicitly created client with `await client.aclose()`."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "httpx.get": {
+  "sourceUrl": "https://www.python-httpx.org/api/",
+  "sourceTitle": "Developer Interface - HTTPX",
+  "summary": "Sends a synchronous HTTP GET request using HTTPX's top-level API and returns its response. Optional arguments control query parameters, headers, authentication, redirects, TLS verification, timeouts, proxies, and environment settings.",
+  "explanation": "`httpx.get` sends a synchronous GET request through HTTPX's top-level API and returns a `Response`. Request behavior can be adjusted with query parameters, headers, cookies, authentication, proxy settings, redirect handling, TLS verification, timeouts, and environment-variable trust.",
+  "syntax": "httpx.get(url, *, params=None, headers=None, cookies=None, auth=None, proxy=None, follow_redirects=False, verify=True, timeout=Timeout(timeout=5.0), trust_env=True)",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "URL or URL-like value",
+    "description": "Request URL."
+   },
+   {
+    "name": "params",
+    "type": "optional mapping or sequence",
+    "description": "Query-string parameters."
+   },
+   {
+    "name": "headers",
+    "type": "optional mapping or sequence",
+    "description": "Additional request headers."
+   },
+   {
+    "name": "cookies",
+    "type": "optional cookie mapping",
+    "description": "Cookies to send."
+   },
+   {
+    "name": "auth",
+    "type": "optional authentication value",
+    "description": "Authentication configuration."
+   },
+   {
+    "name": "proxy",
+    "type": "optional proxy URL or configuration",
+    "description": "Proxy configuration."
+   },
+   {
+    "name": "follow_redirects",
+    "type": "bool, default False",
+    "description": "Whether to follow redirects."
+   },
+   {
+    "name": "verify",
+    "type": "bool or SSL configuration, default True",
+    "description": "Whether to verify TLS certificates."
+   },
+   {
+    "name": "timeout",
+    "type": "Timeout or compatible value, default Timeout(timeout=5.0)",
+    "description": "Request timeout configuration."
+   },
+   {
+    "name": "trust_env",
+    "type": "bool, default True",
+    "description": "Whether to trust environment configuration such as proxy variables."
+   }
+  ],
+  "returns": "An `httpx.Response` instance.",
+  "example": {
+   "title": "GET with query parameters",
+   "code": "import httpx\n\nresponse = httpx.get(\n    \"https://httpbin.org/get\",\n    params={\"q\": \"httpx\"},\n    headers={\"user-agent\": \"learning-card/1.0\"},\n    timeout=5.0,\n)\nresponse.raise_for_status()\nprint(response.json()[\"args\"][\"q\"])\n",
+   "language": "python",
+   "explanation": "Performs a GET request with query parameters and a header, then raises for an unsuccessful status before reading JSON."
+  },
+  "useCases": [
+   {
+    "title": "Fetch an HTTP resource",
+    "scenario": "Retrieve a resource from an HTTP endpoint and inspect its status, headers, text, or JSON body."
+   },
+   {
+    "title": "Send query parameters",
+    "scenario": "Build a GET URL with encoded filters, pagination, or search terms without manually formatting the query string."
+   },
+   {
+    "title": "Customize request context",
+    "scenario": "Call an endpoint requiring custom metadata or authentication settings."
+   }
+  ],
+  "related": [
+   "httpx.request",
+   "httpx.Client.get",
+   "httpx.post",
+   "httpx.delete",
+   "httpx.head",
+   "httpx.options",
+   "httpx.Response.raise_for_status"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `httpx.get` return?",
+    "answer": "`httpx.get` is the top-level synchronous convenience function for sending a GET request. It returns an HTTPX `Response` object, which can then be inspected or processed.",
+    "followUp": "How would you make the request fail on a 4xx or 5xx response? Call `response.raise_for_status()` after receiving the response."
+   },
+   {
+    "question": "How do you add query parameters and headers?",
+    "answer": "Query-string values are supplied with `params`, and outgoing request metadata is supplied with `headers`. Both are keyword arguments on the function.",
+    "followUp": "How would you prevent HTTPX from using environment-configured proxies? Pass `trust_env=False` to the top-level call."
+   },
+   {
+    "question": "What are notable defaults for timeout and redirects?",
+    "answer": "The function uses a default timeout represented by `Timeout(timeout=5.0)`, and redirects are not followed by default because `follow_redirects=False`. These defaults can be overridden per request.",
+    "followUp": "How can a caller disable the timeout for one request? Pass `timeout=None`."
+   }
+  ],
+  "keyPoints": [
+   "The function issues an HTTP GET request and returns the resulting response.",
+   "Its public signature accepts a URL plus optional query parameters, headers, cookies, authentication, proxy, redirect, TLS, timeout, and environment settings.",
+   "Because the response is returned directly, the call can be chained with response methods such as `raise_for_status()`.",
+   "Use `params` to encode values into the request URL's query string.",
+   "Use `headers` to attach additional HTTP headers to the outgoing request.",
+   "The returned response provides decoded text through its text-oriented response interface."
+  ],
+  "gotchas": [
+   "Unlike request methods that carry a body, this convenience function does not accept data, files, JSON, or content arguments.",
+   "A returned response does not itself indicate that an HTTP error was raised; call `raise_for_status()` when unsuccessful status codes should become exceptions."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "httpx.post": {
+  "sourceUrl": "https://www.python-httpx.org/api/",
+  "sourceTitle": "Developer Interface - HTTPX",
+  "summary": "Sends a synchronous HTTP POST request and returns an `httpx.Response`. It supports multiple body encodings plus query parameters, headers, authentication, proxy, timeout, redirect, TLS, and environment settings.",
+  "explanation": "`httpx.post` performs a synchronous HTTP POST and returns an `httpx.Response`. Supply request data through options such as `content`, `data`, `files`, or `json`; query parameters and request metadata use `params`, `headers`, and related arguments. The top-level helper also exposes redirect, TLS verification, proxy, timeout, and environment settings.",
+  "syntax": "httpx.post(url, *, content=None, data=None, files=None, json=None, params=None, headers=None, cookies=None, auth=None, proxy=None, follow_redirects=False, verify=True, timeout=Timeout(timeout=5.0), trust_env=True)",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "URL | str",
+    "description": "Request URL."
+   },
+   {
+    "name": "content",
+    "type": "RequestContent | None",
+    "description": "Raw request-body content."
+   },
+   {
+    "name": "data",
+    "type": "RequestData | None",
+    "description": "Form data."
+   },
+   {
+    "name": "files",
+    "type": "RequestFiles | None",
+    "description": "Multipart upload files."
+   },
+   {
+    "name": "json",
+    "type": "Any | None",
+    "description": "JSON-serializable request body."
+   },
+   {
+    "name": "params",
+    "type": "QueryParamTypes | None",
+    "description": "Query-string parameters."
+   },
+   {
+    "name": "headers",
+    "type": "HeaderTypes | None",
+    "description": "Request headers."
+   },
+   {
+    "name": "cookies",
+    "type": "CookieTypes | None",
+    "description": "Cookies to send."
+   },
+   {
+    "name": "auth",
+    "type": "AuthTypes | None",
+    "description": "Authentication configuration."
+   },
+   {
+    "name": "proxy",
+    "type": "ProxyTypes | None",
+    "description": "Proxy configuration."
+   },
+   {
+    "name": "follow_redirects",
+    "type": "bool",
+    "description": "Whether to follow redirects."
+   },
+   {
+    "name": "verify",
+    "type": "VerifyTypes",
+    "description": "TLS verification setting."
+   }
+  ],
+  "returns": "An `httpx.Response` containing the server response.",
+  "example": {
+   "title": "Send JSON with POST",
+   "code": "import httpx\n\nresponse = httpx.post(\n    \"https://httpbin.org/post\",\n    json={\"name\": \"Ada\"},\n    timeout=5.0,\n)\nresponse.raise_for_status()\nprint(response.json()[\"json\"])\n",
+   "language": "python",
+   "explanation": "Sends a JSON POST request, raises for an unsuccessful HTTP status, and prints the decoded JSON payload."
+  },
+  "useCases": [
+   {
+    "title": "Send JSON",
+    "scenario": "Submit structured data to an HTTP endpoint."
+   },
+   {
+    "title": "Send form data",
+    "scenario": "Submit HTML-form-compatible fields."
+   },
+   {
+    "title": "Upload files",
+    "scenario": "Upload a document or other multipart payload."
+   },
+   {
+    "title": "Upload raw content",
+    "scenario": "Send bytes or raw text with a chosen body representation."
+   }
+  ],
+  "related": [
+   "httpx.request",
+   "httpx.get",
+   "httpx.put",
+   "httpx.patch",
+   "httpx.delete",
+   "httpx.AsyncClient.post"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `httpx.post` do?",
+    "answer": "It is the synchronous top-level helper for sending a POST request. It returns a response object and accepts the same request options documented for `httpx.request`.",
+    "followUp": "How would you send a request without blocking? Use `AsyncClient.post(...)` and await the call, because async request methods are awaitable."
+   },
+   {
+    "question": "How do the body arguments differ?",
+    "answer": "Use `data` for form fields, `files` for multipart uploads, `json` for JSON encoding, and `content` for raw text, bytes, or a byte iterator. The helper selects the corresponding request-body handling from the supplied argument.",
+    "followUp": "What should an async streaming upload provide? An async bytes generator, passed as the content to an async client request."
+   },
+   {
+    "question": "Which operational defaults should callers know?",
+    "answer": "The signature includes `params`, `headers`, `cookies`, `auth`, `proxy`, `follow_redirects`, `verify`, `timeout`, and `trust_env` in addition to body arguments. The default timeout is five seconds, redirects are disabled by default, and environment settings are trusted by default.",
+    "followUp": "How can environment configuration be bypassed? Pass `trust_env=False` to the top-level call."
+   }
+  ],
+  "keyPoints": [
+   "The function creates and sends an HTTP POST request.",
+   "Request bodies can be supplied as raw content, form data, uploaded files, or JSON.",
+   "Query parameters and common request metadata can be provided directly.",
+   "The default request timeout is five seconds."
+  ],
+  "gotchas": [
+   "Use `content` for raw text or binary bodies rather than using `data` for that purpose.",
+   "Redirects are not followed unless you explicitly enable them.",
+   "Environment-based proxy and certificate settings are trusted by default; disable this when required for isolated behavior."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Request": {
+  "sourceUrl": "https://www.python-httpx.org/api/",
+  "sourceTitle": "Developer Interface - HTTPX",
+  "summary": "`httpx.Request` is HTTPX’s low-level model for constructing an HTTP request before transmission. It is useful when request preparation and sending need to be separate.",
+  "explanation": "`httpx.Request` is a low-level request model: it stores the method, URL, headers, cookies, query parameters, body, and optional extensions. Build it when you need to prepare a request separately from transmission, then pass it to a client’s `send()` method; the request is sent as-is rather than being modified by the client.",
+  "syntax": "httpx.Request(method, url, *, content=None, data=None, files=None, json=None, params=None, headers=None, cookies=None, auth=None, extensions=None)",
+  "parameters": [
+   {
+    "name": "method",
+    "type": "str",
+    "description": "HTTP method, such as GET, POST, PUT, PATCH, DELETE, OPTIONS, or HEAD."
+   },
+   {
+    "name": "url",
+    "type": "URL or str",
+    "description": "Destination URL."
+   },
+   {
+    "name": "content",
+    "type": "bytes, str, or iterable of bytes",
+    "description": "Raw request body content."
+   },
+   {
+    "name": "data",
+    "type": "Mapping or iterable",
+    "description": "Form data."
+   },
+   {
+    "name": "files",
+    "type": "Mapping or iterable",
+    "description": "Multipart upload files."
+   },
+   {
+    "name": "json",
+    "type": "Any",
+    "description": "JSON-serializable request body."
+   },
+   {
+    "name": "params",
+    "type": "Mapping or iterable of two-tuples",
+    "description": "Query parameters."
+   },
+   {
+    "name": "headers",
+    "type": "Mapping or iterable",
+    "description": "HTTP headers."
+   },
+   {
+    "name": "cookies",
+    "type": "Mapping or iterable",
+    "description": "Cookies."
+   },
+   {
+    "name": "auth",
+    "type": "Auth object or tuple",
+    "description": "Authentication configuration."
+   },
+   {
+    "name": "extensions",
+    "type": "Mapping",
+    "description": "Request extensions."
+   }
+  ],
+  "returns": "A Request object representing the constructed HTTP request.",
+  "example": {
+   "title": "Build and send a request",
+   "code": "import asyncio\nimport httpx\n\nasync def main():\n    request = httpx.Request(\"GET\", \"https://example.org\")\n    async with httpx.AsyncClient() as client:\n        response = await client.send(request)\n        print(response.status_code)\n\nasyncio.run(main())",
+   "language": "python",
+   "explanation": "Creates a request explicitly, then sends it through an asynchronous client."
+  },
+  "useCases": [
+   {
+    "title": "Deferred sending",
+    "scenario": "Prepare a request before choosing when or through which client it will be transmitted."
+   },
+   {
+    "title": "Precise request construction",
+    "scenario": "Specify the exact method, URL, headers, query parameters, and body before dispatch."
+   },
+   {
+    "title": "Client-independent preparation",
+    "scenario": "Pass a prepared request to synchronous or asynchronous client sending APIs."
+   }
+  ],
+  "related": [
+   "httpx.Request",
+   "Client.send()",
+   "AsyncClient.send()",
+   "httpx.request()",
+   "Response"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the distinction between constructing and sending a Request?",
+    "answer": "`httpx.Request` represents a prepared HTTP request, while `Client.send()` or `AsyncClient.send()` performs transmission. This separation lets code construct a request first and send it later.",
+    "followUp": "How would you send one request asynchronously? Construct it with `httpx.Request`, create an `AsyncClient`, and await `client.send(request)`."
+   },
+   {
+    "question": "What does “sent as-is” imply for a Request?",
+    "answer": "The request is transmitted as-is and unmodified. Therefore, values that must be present in the outgoing request should be supplied when the `Request` is constructed.",
+    "followUp": "How can client-wide behavior be applied instead? Use a client’s configuration or event hooks for behavior that belongs to the client layer, rather than assuming `Request` will add it."
+   },
+   {
+    "question": "Which kinds of data can be included when constructing a Request?",
+    "answer": "The constructor accepts method, URL, content, form data, files, JSON, query parameters, headers, cookies, authentication, and extensions according to the documented signature. However, several client-level controls are not constructor parameters.",
+    "followUp": "Which controls are excluded? The documentation specifically excludes `auth`, `timeout`, `follow_redirects`, `mounts`, `verify`, and `cert` from `httpx.Request()`."
+   }
+  ],
+  "keyPoints": [
+   "Constructing a Request only prepares the model; transmission happens when a client sends it.",
+   "A manually built request preserves its prepared state when passed to the sending API.",
+   "Use explicit request construction when you need control over the exact request that leaves the client."
+  ],
+  "gotchas": [
+   "A Request does not receive the higher-level client preparation applied by convenience methods; review its final contents before sending it."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Response": {
+  "sourceUrl": "https://www.python-httpx.org/api/",
+  "sourceTitle": "Developer Interface - HTTPX",
+  "summary": "HTTPX Response represents the result of an HTTP request. It provides status and protocol metadata, headers, URL information, body access, status validation, and synchronous or asynchronous streaming operations.",
+  "explanation": "An HTTPX Response represents the server's result for a request. It exposes metadata such as status, URL, headers, and HTTP version, plus decoded or raw body access; asynchronous clients additionally provide awaitable reading, iteration, and closing operations.",
+  "syntax": "class httpx.Response",
+  "parameters": [],
+  "returns": "A Response instance representing an HTTP response.",
+  "example": {
+   "title": "Inspect an async response",
+   "code": "import httpx\n\nasync def fetch() -> None:\n    async with httpx.AsyncClient() as client:\n        response = await client.get(\"https://example.com\")\n        response.raise_for_status()\n        print(response.status_code)\n        print(response.json())",
+   "language": "python",
+   "explanation": "Makes an asynchronous request, validates the status, then reads the status code and JSON body."
+  },
+  "useCases": [
+   {
+    "title": "Read status, headers, and body data",
+    "scenario": "Inspect API results"
+   },
+   {
+    "title": "Raise on unsuccessful responses",
+    "scenario": "Validate HTTP outcomes"
+   },
+   {
+    "title": "Consume response data incrementally",
+    "scenario": "Process large downloads"
+   },
+   {
+    "title": "Read and close responses with awaitable APIs",
+    "scenario": "Build async network workflows"
+   }
+  ],
+  "related": [
+   "Request",
+   "Headers",
+   "URL",
+   "AsyncClient",
+   "Client"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you handle unsuccessful HTTP responses?",
+    "answer": "`status_code` gives the numeric HTTP status, while `raise_for_status()` raises an exception for unsuccessful responses. A successful response remains a Response object without automatically raising.",
+    "followUp": "How can success be checked without raising? Use the `is_success` property, which represents a 2xx response."
+   },
+   {
+    "question": "Which Response properties and methods are used to inspect a body?",
+    "answer": "Use `content` for bytes, `text` for decoded Unicode, and `json()` for JSON response data. The response also exposes dictionary-like headers and a URL object.",
+    "followUp": "What happens with a streamed response? The body must be consumed with streaming APIs, and `content` and `text` are unavailable until it is read."
+   },
+   {
+    "question": "How does Response support asynchronous streaming?",
+    "answer": "For asynchronous streaming, use `aread()`, `aiter_bytes()`, `aiter_text()`, `aiter_lines()`, or `aiter_raw()`. `aclose()` closes the response, although an `AsyncClient.stream()` block closes it automatically.",
+    "followUp": "When would `aiter_raw()` be preferable? Use it when the unprocessed response bytes are required rather than content-decoded data."
+   }
+  ],
+  "keyPoints": [
+   "Response is the model HTTPX returns to represent the server's HTTP result.",
+   "`status_code` contains the numeric HTTP status as an integer.",
+   "`reason_phrase` provides the textual HTTP reason phrase.",
+   "`http_version` identifies the protocol version used for the response."
+  ],
+  "gotchas": [
+   "A streamed response must be consumed through its streaming methods; accessing content or text before reading raises an error."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "stream": {
+  "sourceUrl": "https://www.python-httpx.org/api/",
+  "sourceTitle": "Developer Interface - HTTPX",
+  "summary": "Streams an asynchronous HTTP response instead of loading its entire body into memory at once. Use it as an async context block and consume the response with HTTPX async iterators.",
+  "explanation": "`AsyncClient.stream()` opens an asynchronous context block that performs the request without eagerly loading the response body. Consume the body with an async iterator such as `aiter_bytes()`, then let the block close the response automatically.",
+  "syntax": "AsyncClient.stream(method, url, *, params=None, content=None, data=None, files=None, json=None, headers=None, cookies=None, auth=None, proxy=None, timeout=Timeout(timeout=5.0), follow_redirects=False, verify=True, trust_env=True)",
+  "parameters": [
+   {
+    "name": "method",
+    "type": "str",
+    "description": "HTTP method to use for the request."
+   },
+   {
+    "name": "url",
+    "type": "URL | str",
+    "description": "Request URL."
+   },
+   {
+    "name": "params",
+    "type": "QueryParamTypes | None",
+    "description": "Query parameters."
+   },
+   {
+    "name": "content",
+    "type": "RequestContent | None",
+    "description": "Request body content."
+   },
+   {
+    "name": "data",
+    "type": "RequestData | None",
+    "description": "Form data."
+   },
+   {
+    "name": "files",
+    "type": "RequestFiles | None",
+    "description": "Files to upload."
+   },
+   {
+    "name": "json",
+    "type": "Any | None",
+    "description": "JSON request body."
+   },
+   {
+    "name": "headers",
+    "type": "HeaderTypes | None",
+    "description": "Request headers."
+   },
+   {
+    "name": "cookies",
+    "type": "CookieTypes | None",
+    "description": "Request cookies."
+   },
+   {
+    "name": "auth",
+    "type": "AuthTypes | UseClientDefault",
+    "description": "Authentication configuration."
+   },
+   {
+    "name": "proxy",
+    "type": "ProxyTypes | None",
+    "description": "Proxy configuration."
+   },
+   {
+    "name": "timeout",
+    "type": "TimeoutTypes | UseClientDefault",
+    "description": "Request timeout."
+   }
+  ],
+  "returns": "An asynchronous context manager yielding an `httpx.Response` whose body can be consumed incrementally.",
+  "example": {
+   "title": "Stream an asynchronous response",
+   "code": "import httpx\n\nasync def download(url: str) -> bytes:\n    async with httpx.AsyncClient() as client:\n        async with client.stream(\"GET\", url) as response:\n            response.raise_for_status()\n            parts = [chunk async for chunk in response.aiter_bytes()]\n            return b\"\".join(parts)",
+   "language": "python",
+   "explanation": "Streams the response incrementally as bytes and automatically closes it when the context block exits."
+  },
+  "useCases": [
+   {
+    "title": "Large downloads",
+    "scenario": "Download large files or response bodies incrementally without eagerly materializing the entire payload."
+   },
+   {
+    "title": "Line-oriented processing",
+    "scenario": "Process newline-delimited or other text output as it arrives."
+   },
+   {
+    "title": "Raw byte handling",
+    "scenario": "Handle raw byte streams where HTTPX content decoding should be avoided."
+   }
+  ],
+  "related": [
+   "httpx.AsyncClient",
+   "Response.aiter_bytes",
+   "Response.aiter_text",
+   "Response.aiter_lines",
+   "Response.aiter_raw",
+   "Response.aread",
+   "Response.aclose",
+   "AsyncClient.send"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does asynchronous streaming work in HTTPX?",
+    "answer": "`AsyncClient.stream()` is an asynchronous context block for making a request while leaving the response body streamed rather than eagerly consumed. The response should be consumed with async methods such as `aiter_bytes()`.",
+    "followUp": "How would you stream text lines instead of bytes? Use `response.aiter_lines()` inside the same asynchronous context block."
+   },
+   {
+    "question": "Why should `AsyncClient.stream()` be used as a context manager?",
+    "answer": "The context block owns the response lifecycle and closes it automatically when the block exits. This prevents a streamed response from remaining open after consumption.",
+    "followUp": "What can replace the context block when it is impractical? Send a `Request` with `client.send(..., stream=True)`, then manage closure explicitly."
+   },
+   {
+    "question": "Which methods can consume an asynchronously streamed response?",
+    "answer": "HTTPX provides several async response iterators: `aiter_bytes()` for decoded response bytes, `aiter_text()` for text, `aiter_lines()` for text lines, and `aiter_raw()` for raw bytes without content decoding. `aread()` conditionally reads a response inside the stream block.",
+    "followUp": "When would `aiter_raw()` be preferable? Use it when the consumer must receive the raw network bytes without HTTPX content decoding."
+   }
+  ],
+  "keyPoints": [
+   "Call `AsyncClient.stream()` with the HTTP method, target URL, and optional request arguments.",
+   "Use `aiter_bytes()` to asynchronously iterate through response content as bytes.",
+   "Use `aiter_text()` when the consumer expects streamed text rather than byte chunks.",
+   "Use `aiter_lines()` to process a streamed response one text line at a time.",
+   "Use `aiter_raw()` when content decoding must be bypassed.",
+   "`aread()` provides conditional full-response reading while remaining inside the streaming block."
+  ],
+  "gotchas": [
+   "Do not normally call `aclose()` when using the stream context block; it closes the response on exit.",
+   "If a context block cannot be used, manual streaming requires explicit response lifecycle management."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Timeout": {
+  "sourceUrl": "https://www.python-httpx.org/advanced/timeouts/",
+  "sourceTitle": "Timeouts - HTTPX",
+  "summary": "HTTPX Timeout configures maximum waiting periods for connection, reading, writing, and connection-pool acquisition. Set one default value or override individual phases with named arguments.",
+  "explanation": "Timeout represents HTTPX's limits for waiting during connection setup, response reading, request writing, and connection-pool acquisition. A scalar supplies a general limit, while named values let you tune individual phases; the resulting object can be passed to a client or request.",
+  "syntax": "httpx.Timeout(timeout, *, connect=None, read=None, write=None, pool=None)",
+  "parameters": [
+   {
+    "name": "timeout",
+    "type": "float | None",
+    "description": "Default timeout value, used as the general limit for timeout categories unless overridden."
+   },
+   {
+    "name": "connect",
+    "type": "float | None",
+    "description": "Maximum duration for establishing a connection."
+   },
+   {
+    "name": "read",
+    "type": "float | None",
+    "description": "Maximum duration for receiving response data."
+   },
+   {
+    "name": "write",
+    "type": "float | None",
+    "description": "Maximum duration for sending request data."
+   },
+   {
+    "name": "pool",
+    "type": "float | None",
+    "description": "Maximum duration for acquiring a connection from the pool."
+   }
+  ],
+  "returns": "A timeout configuration object used by HTTPX request and client APIs.",
+  "example": {
+   "title": "Custom connection timeout",
+   "code": "import httpx\n\n# Allow 60 seconds to establish the connection, but 10 seconds\n# for the other timeout categories.\ntimeout = httpx.Timeout(10.0, connect=60.0)\n\nwith httpx.Client(timeout=timeout) as client:\n    response = client.get(\"https://example.com\")\n    response.raise_for_status()\n    print(response.status_code)",
+   "language": "python",
+   "explanation": "Creates a reusable timeout policy with a longer connection limit and applies it to a client."
+  },
+  "useCases": [
+   {
+    "title": "Tune connection and data-transfer budgets",
+    "scenario": "A service has slow or distant endpoints but should still fail promptly when no data arrives."
+   },
+   {
+    "title": "Apply reusable client defaults",
+    "scenario": "A client shares a consistent timeout policy across many requests."
+   },
+   {
+    "title": "Disable a request timeout",
+    "scenario": "A request should intentionally wait without HTTPX's normal inactivity deadline."
+   }
+  ],
+  "related": [
+   "TimeoutException",
+   "ConnectTimeout",
+   "ReadTimeout",
+   "WriteTimeout",
+   "PoolTimeout",
+   "Client",
+   "httpx.request"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What timeout categories does HTTPX distinguish?",
+    "answer": "HTTPX has four timeout categories: connect, read, write, and pool. They cover establishing the socket, receiving response chunks, sending request chunks, and acquiring a pooled connection, respectively.",
+    "followUp": "Which exception identifies a failed connection deadline? `ConnectTimeout`; the other phases have corresponding `ReadTimeout`, `WriteTimeout`, and `PoolTimeout` exceptions."
+   },
+   {
+    "question": "How do you configure one general timeout and a different connection timeout?",
+    "answer": "A scalar such as `httpx.Timeout(10.0)` establishes a general ten-second limit. Individual categories can then override that value, for example `httpx.Timeout(10.0, connect=60.0)`.",
+    "followUp": "Why might the connection value be larger? Connection establishment can need a different budget from data transfer, so separate values let the policy reflect those operational characteristics."
+   },
+   {
+    "question": "How is a Timeout configuration applied?",
+    "answer": "A Timeout instance is supplied through the `timeout` argument, including on a client. This makes the policy reusable across requests made by that client.",
+    "followUp": "How would you remove the timeout entirely for one operation? Pass `timeout=None` on that individual request, as documented for the top-level API and client methods."
+   }
+  ],
+  "keyPoints": [
+   "The class supports connect, read, write, and pool phases rather than one undifferentiated network deadline.",
+   "Connect limits cover the wait for establishing a socket to the target host.",
+   "Read limits are evaluated while waiting for each incoming response-data chunk.",
+   "Write limits govern waiting while each request-data chunk is transmitted.",
+   "Pool limits control how long a request waits for an available pooled connection.",
+   "Use a general ten-second value with a sixty-second connection override when connection setup needs more time."
+  ],
+  "gotchas": [
+   "Timeouts apply to network inactivity, not necessarily to the total elapsed duration of a request; the default is five seconds.",
+   "Passing `None` disables timeouts for an individual request, but this is a request-level setting rather than a Timeout object's configuration."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

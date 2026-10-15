@@ -1,0 +1,1447 @@
+{
+ "barplot": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.barplot.html",
+  "sourceTitle": "seaborn.barplot — seaborn 0.13.2 documentation",
+  "summary": "Show aggregate estimates for numeric data as rectangular bars, with optional uncertainty intervals. By default, barplot displays group means with 95% confidence intervals.",
+  "explanation": "barplot groups observations by the categorical variables and computes an estimate for the numeric variable, using the mean by default. It draws each estimate as a rectangular bar and can add uncertainty intervals or other error representations; the function returns the matplotlib Axes containing the plot.",
+  "syntax": "seaborn.barplot(data=None, *, x=None, y=None, hue=None, order=None, hue_order=None, estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, units=None, weights=None, orient=None, color=None, palette=None, saturation=0.75, fill=True, hue_norm=None, width=0.8, dodge='auto', gap=0, log_scale=None, native_scale=False, formatter=None, legend='auto', capsize=0, err_kws=None, ci=<deprecated>, errcolor=<deprecated>, errwidth=<deprecated>, ax=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "DataFrame, Series, dict, array, or list of arrays",
+    "description": "Dataset for plotting; may be a DataFrame, Series, dictionary, array, or list of arrays."
+   },
+   {
+    "name": "x",
+    "type": "vector or key in data",
+    "description": "Input variable for the horizontal axis or categorical grouping."
+   },
+   {
+    "name": "y",
+    "type": "vector or key in data",
+    "description": "Input variable for the vertical axis or numeric measurement."
+   },
+   {
+    "name": "hue",
+    "type": "vector or key in data",
+    "description": "Semantic variable that creates subgroups and color distinctions."
+   },
+   {
+    "name": "estimator",
+    "type": "string or callable",
+    "description": "Function or callable used to obtain the point estimate."
+   },
+   {
+    "name": "errorbar",
+    "type": "string, tuple, callable, or None",
+    "description": "Method and level used to compute the uncertainty interval."
+   },
+   {
+    "name": "n_boot",
+    "type": "int",
+    "description": "Number of bootstrap iterations used for confidence intervals."
+   },
+   {
+    "name": "seed",
+    "type": "int, numpy.random.Generator, or None",
+    "description": "Seed controlling the random number generator for uncertainty calculations."
+   },
+   {
+    "name": "ax",
+    "type": "matplotlib.axes.Axes or None",
+    "description": "Matplotlib Axes containing the completed plot."
+   }
+  ],
+  "returns": "matplotlib.axes.Axes",
+  "example": {
+   "title": "Grouped bar plot",
+   "code": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\npenguins = sns.load_dataset(\"penguins\")\nsns.barplot(\n    data=penguins,\n    x=\"species\",\n    y=\"body_mass_g\",\n    hue=\"sex\",\n    errorbar=\"sd\",\n)\nplt.show()",
+   "language": "python",
+   "explanation": "This groups penguin body masses by species and sex, displaying the mean for each group with standard-deviation error bars."
+  },
+  "useCases": [
+   {
+    "title": "Category-level summaries",
+    "scenario": "Compare a numeric measurement across categories."
+   },
+   {
+    "title": "Grouped comparisons",
+    "scenario": "Show subgroup differences within each category."
+   },
+   {
+    "title": "Estimate with uncertainty",
+    "scenario": "Communicate uncertainty alongside aggregate estimates."
+   }
+  ],
+  "related": [
+   "catplot",
+   "pointplot",
+   "countplot",
+   "stripplot",
+   "swarmplot"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does seaborn.barplot visualize?",
+    "answer": "barplot aggregates a numeric variable within categorical groups and represents the resulting estimate with rectangular bars. The default estimator is the mean, and uncertainty is shown with error bars.",
+    "followUp": "How would you display variability rather than a confidence interval? Pass an errorbar option such as \"sd\"."
+   },
+   {
+    "question": "How are data and categories specified?",
+    "answer": "The function accepts long-form data through data and maps columns with x, y, and optionally hue. It can also receive vectors directly, while order and hue_order control category ordering.",
+    "followUp": "How can you make category order deterministic? Supply order and, when applicable, hue_order explicitly."
+   },
+   {
+    "question": "How does barplot compute and configure uncertainty?",
+    "answer": "errorbar controls the uncertainty representation, with the current default being a 95% confidence interval. n_boot sets the number of bootstrap iterations, and seed controls reproducibility.",
+    "followUp": "What is the practical trade-off of increasing n_boot? It can make the interval estimate more stable but increases computation time."
+   }
+  ],
+  "keyPoints": [
+   "Each bar communicates a point estimate, while an associated error bar communicates uncertainty.",
+   "The plotted height or horizontal extent summarizes a numeric variable after aggregation.",
+   "With vertical orientation, the estimate determines each rectangle's height.",
+   "Uncertainty is encoded separately from the estimate through an error bar.",
+   "The current default errorbar setting is a 95% confidence interval.",
+   "The default bootstrap count for uncertainty estimation is 1,000 iterations."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "boxplot": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.boxplot.html",
+  "sourceTitle": "seaborn.boxplot",
+  "summary": "Draws box-and-whisker plots that compare quantitative distributions across categorical levels. Quartiles form the box, whiskers follow the configured `whis` rule, and outlying observations are shown separately.",
+  "explanation": "Call `boxplot` with a dataset and categorical and numeric variables to compare distributions. It draws quartile-based boxes, extends whiskers according to the `whis` rule, and marks observations outside that rule as fliers; optional hue, ordering, orientation, scaling, and styling arguments refine the display.",
+  "syntax": "seaborn.boxplot(*data=None, *, x=None, y=None, hue=None, order=None, hue_order=None, orient=None, color=None, palette=None, saturation=0.75, fill=True, dodge='auto', width=0.8, gap=0, whis=1.5, linecolor='auto', linewidth=None, fliersize=None, hue_norm=None, native_scale=False, log_scale=None, formatter=None, legend='auto', ax=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "DataFrame, Series, dict, array, or list of arrays",
+    "description": "Dataset for plotting."
+   },
+   {
+    "name": "x",
+    "type": "vector or key in data",
+    "description": "Input data for the x axis."
+   },
+   {
+    "name": "y",
+    "type": "vector or key in data",
+    "description": "Input data for the y axis."
+   },
+   {
+    "name": "hue",
+    "type": "vector or key in data",
+    "description": "Semantic variable that is mapped to determine the color of plot elements."
+   },
+   {
+    "name": "order",
+    "type": "list of strings",
+    "description": "Order to plot the categorical levels in."
+   },
+   {
+    "name": "hue_order",
+    "type": "list of strings",
+    "description": "Specific order for the appearance of the hue levels."
+   },
+   {
+    "name": "orient",
+    "type": "“v” | “h” | “x” | “y”",
+    "description": "Orientation of the plot."
+   },
+   {
+    "name": "color",
+    "type": "matplotlib color",
+    "description": "Color for all of the elements."
+   },
+   {
+    "name": "palette",
+    "type": "palette name, list, or dict",
+    "description": "Colors to use for the different levels of the hue variable."
+   },
+   {
+    "name": "saturation",
+    "type": "float",
+    "description": "Proportion of the original saturation to draw colors at."
+   },
+   {
+    "name": "fill",
+    "type": "bool",
+    "description": "Whether the boxes should be drawn with a solid fill."
+   },
+   {
+    "name": "dodge",
+    "type": "bool or “auto”",
+    "description": "When hue nesting is used, whether the elements should be shifted along the categorical axis."
+   }
+  ],
+  "returns": "matplotlib.axes.Axes",
+  "example": {
+   "title": "Grouped boxplot",
+   "code": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\nsns.set_theme(style=\"whitegrid\")\ntips = sns.load_dataset(\"tips\")\nsns.boxplot(data=tips, x=\"day\", y=\"total_bill\", hue=\"smoker\")\nplt.show()",
+   "language": "python",
+   "explanation": "This groups numeric bill totals by day and adds smoker as a nested categorical grouping."
+  },
+  "useCases": [
+   {
+    "title": "Categorical distribution comparison",
+    "scenario": "Compare a numeric measurement across named categories such as days, groups, or classes."
+   },
+   {
+    "title": "Nested subgroup analysis",
+    "scenario": "Add `hue` to compare subgroups within each primary category."
+   },
+   {
+    "title": "Distribution diagnostics",
+    "scenario": "Inspect spread and potential outliers before choosing a statistical summary."
+   }
+  ],
+  "related": [
+   "boxenplot",
+   "stripplot",
+   "swarmplot",
+   "violinplot",
+   "catplot"
+  ],
+  "since": "0.13.0",
+  "interview": [
+   {
+    "question": "What information does a Seaborn boxplot encode?",
+    "answer": "`boxplot` visualizes quantitative distributions across categories. The box represents quartiles, while whiskers show the non-outlier range and points beyond the configured rule are treated as outliers.",
+    "followUp": "How would you show every observation instead of only the box-plot summary? Add a point-based categorical plot such as `stripplot` alongside the boxplot."
+   },
+   {
+    "question": "How do you create grouped boxplots?",
+    "answer": "Use `x` and `y` to assign variables, and `hue` to create an additional categorical subdivision. With a long-form DataFrame, these variable names select columns; with wide-form data, numeric columns can be plotted directly.",
+    "followUp": "How can category order be made deterministic? Pass an explicit `order`, and use `hue_order` for the hue levels."
+   },
+   {
+    "question": "How does `whis` affect the plotted result?",
+    "answer": "The default `whis=1.5` makes the whisker rule a function of the interquartile range. You can instead pass another value or a pair of percentile bounds to change which observations are treated as outliers.",
+    "followUp": "How can the display preserve actual numeric spacing for a categorical-looking axis? Enable `native_scale=True`, which was added for this behavior in version 0.13.0."
+   }
+  ],
+  "keyPoints": [
+   "Use `boxplot` when comparing a quantitative distribution across categorical levels.",
+   "The central box summarizes the lower quartile, median, and upper quartile.",
+   "Observations beyond the whisker criterion appear separately as outliers.",
+   "The `data` argument accepts common tabular or array-like dataset forms.",
+   "Pass vectors directly to the semantic variables when a separate dataset object is unnecessary.",
+   "Set `native_scale=True` to avoid ordinal repositioning when category values have a meaningful native scale."
+  ],
+  "gotchas": [
+   "Whiskers do not necessarily reach the minimum and maximum values; their extent is controlled by the outlier rule.",
+   "Categorical positions use ordinal spacing by default; set `native_scale=True` when the categorical variable's numeric or datetime scale should be preserved."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "catplot": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.catplot.html",
+  "sourceTitle": "seaborn.catplot — seaborn 0.13.2 documentation",
+  "summary": "Figure-level interface for categorical plots, combining several axes-level plot types with FacetGrid-based faceting. The kind argument selects the representation, and the returned grid supports further customization.",
+  "explanation": "Pass a long-form dataset and identify categorical and numerical variables with named arguments such as x, y, and hue. The kind argument chooses the underlying categorical plot, while row and col can create facets; the returned FacetGrid can be customized after plotting.",
+  "syntax": "seaborn.catplot(*, x=None, y=None, hue=None, data=None, row=None, col=None, kind='strip', estimator='mean', errorbar=('ci', 95), n_boot=1000, units=None, weights=None, seed=None, order=None, hue_order=None, row_order=None, col_order=None, col_wrap=None, height=5, aspect=1, log_scale=None, native_scale=False, formatter=None, orient=None, color=None, palette=None, hue_norm=None, legend='auto', legend_out=True, sharex=True, sharey=True, margin_titles=False, facet_kws=None, ci='deprecated', **kwargs)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "DataFrame, Series, dict, array, or list of arrays",
+    "description": "Dataset for plotting; the documentation lists DataFrame, Series, dict, array, or list of arrays."
+   },
+   {
+    "name": "x, y",
+    "type": "vector or key in data",
+    "description": "Names of variables or vectors mapped to the horizontal and vertical axes."
+   },
+   {
+    "name": "hue",
+    "type": "vector or key in data",
+    "description": "Grouping variable used to add semantic color distinctions."
+   },
+   {
+    "name": "row, col",
+    "type": "vector or key in data",
+    "description": "Variables used to create row and column facets."
+   },
+   {
+    "name": "kind",
+    "type": "string",
+    "description": "Selects the underlying categorical axes-level function."
+   },
+   {
+    "name": "estimator",
+    "type": "string or callable",
+    "description": "Controls the estimator used within each categorical bin."
+   },
+   {
+    "name": "errorbar",
+    "type": "string, tuple, or callable",
+    "description": "Method and level for uncertainty intervals."
+   },
+   {
+    "name": "n_boot",
+    "type": "int",
+    "description": "Number of bootstrap iterations when bootstrap estimation is used."
+   }
+  ],
+  "returns": "FacetGrid",
+  "example": {
+   "title": "Grouped categorical plot",
+   "code": "import seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\")\ng = sns.catplot(\n    data=penguins,\n    kind=\"bar\",\n    x=\"species\",\n    y=\"body_mass_g\",\n    hue=\"sex\",\n    errorbar=\"sd\",\n)\ng.set_axis_labels(\"Species\", \"Body mass (g)\")",
+   "language": "python",
+   "explanation": "Loads a dataset and draws a figure-level grouped bar plot, then labels its axes."
+  },
+  "useCases": [
+   {
+    "title": "Categorical scatterplots",
+    "scenario": "Show every observation across one or more categorical variables."
+   },
+   {
+    "title": "Distribution comparison",
+    "scenario": "Summarize category-wise distributions with quartiles or density-like shapes."
+   },
+   {
+    "title": "Estimate plots",
+    "scenario": "Compare category-level estimates and uncertainty intervals."
+   },
+   {
+    "title": "Faceted categorical analysis",
+    "scenario": "Display additional categorical dimensions as separate panels."
+   }
+  ],
+  "related": [
+   "stripplot",
+   "swarmplot",
+   "boxplot",
+   "violinplot",
+   "boxenplot",
+   "pointplot",
+   "barplot",
+   "countplot"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is catplot, and how does kind affect it?",
+    "answer": "catplot is a figure-level interface that draws categorical plots onto a FacetGrid. It provides one entry point for several categorical representations, selected with kind.",
+    "followUp": "How would you display a categorical distribution instead of individual observations? Use kind=\"box\", kind=\"violin\", or kind=\"boxen\"."
+   },
+   {
+    "question": "What plot types can catplot create?",
+    "answer": "The default kind is \"strip\", which produces a categorical scatterplot. Other supported choices include \"swarm\", \"box\", \"violin\", \"boxen\", \"point\", \"bar\", and \"count\".",
+    "followUp": "Which kind shows estimated values with uncertainty? Use \"point\" or \"bar\", whose behavior and options are supplied by their underlying plotting functions."
+   },
+   {
+    "question": "What does catplot return, and why is that useful?",
+    "answer": "catplot returns the FacetGrid containing the plot. That object can be used after plotting to adjust supporting plot details or add additional layers.",
+    "followUp": "How can higher-dimensional categorical relationships be shown? Supply row or col faceting variables, optionally using col_wrap to wrap columns."
+   }
+  ],
+  "keyPoints": [
+   "Use catplot when you want a complete figure-level categorical visualization organized through a FacetGrid.",
+   "Choose the categorical representation by setting kind to the desired axes-level plotting function.",
+   "With no kind specified, catplot uses a strip plot to show individual observations across categories.",
+   "A box plot is available through kind=\"box\" for summarizing distributions by category.",
+   "Use kind=\"point\" when the categorical display should use point-based estimates.",
+   "Keep the returned grid when you need post-plot customization or additional layers."
+  ],
+  "gotchas": [
+   "Use long-form data with variable names for x, y, hue, and related mappings rather than relying on wide-form inputs.",
+   "Options that are specific to the selected plot type are forwarded to that underlying axes-level function, so consult its documentation."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "color_palette": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.color_palette.html",
+  "sourceTitle": "seaborn.color_palette",
+  "summary": "Build a Seaborn palette from a named palette, colormap, palette specification, or explicit colors. It can return discrete colors or a continuous colormap.",
+  "explanation": "`color_palette()` accepts a named Seaborn or Matplotlib palette, a supported palette family specification, or a sequence of Matplotlib-compatible colors. It returns a color-palette object by default; setting `as_cmap=True` instead produces a continuous colormap. The number of colors and saturation can be adjusted with `n_colors` and `desat`.",
+  "syntax": "seaborn.color_palette(palette=None, n_colors=None, desat=None, as_cmap=False)",
+  "parameters": [
+   {
+    "name": "palette",
+    "type": "string, sequence, or None",
+    "description": "Palette definition: a Seaborn palette name, Matplotlib colormap name, supported palette specification, or sequence of Matplotlib-compatible colors."
+   },
+   {
+    "name": "n_colors",
+    "type": "int or None",
+    "description": "Number of colors in the palette. If omitted, the default depends on the palette specification."
+   },
+   {
+    "name": "desat",
+    "type": "float or None",
+    "description": "Proportion by which to desaturate each color."
+   },
+   {
+    "name": "as_cmap",
+    "type": "bool",
+    "description": "If true, return a continuous colormap instead of a discrete palette."
+   }
+  ],
+  "returns": "A list-like color palette, or a continuous colormap when `as_cmap=True`.",
+  "example": {
+   "title": "Create a discrete palette and a colormap",
+   "code": "import seaborn as sns\n\npalette = sns.color_palette(\"deep\", n_colors=4)\nprint(palette.as_hex())\n\ncmap = sns.color_palette(\"Spectral\", as_cmap=True)\nprint(cmap(0.5))",
+   "language": "python",
+   "explanation": "Creates four colors from Seaborn’s named categorical palette and converts them to hexadecimal strings, then creates a continuous colormap from a ColorBrewer palette."
+  },
+  "useCases": [
+   {
+    "title": "Choose a named qualitative palette",
+    "scenario": "Need consistent categorical colors for a plot."
+   },
+   {
+    "title": "Create a continuous colormap",
+    "scenario": "Need a scalar-to-color mapping for a heatmap or continuous plot."
+   },
+   {
+    "title": "Supply explicit Matplotlib-compatible colors",
+    "scenario": "Need exact brand or domain colors."
+   },
+   {
+    "title": "Adjust saturation with desat",
+    "scenario": "Need a lighter or less saturated visual treatment."
+   }
+  ],
+  "related": [
+   "set_palette",
+   "husl_palette",
+   "hls_palette",
+   "cubehelix_palette",
+   "dark_palette",
+   "light_palette",
+   "diverging_palette",
+   "blend_palette"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What kinds of values can `palette` accept?",
+    "answer": "The `palette` argument can be a Seaborn palette name, a Matplotlib colormap name, `husl` or `hls`, supported palette specifications such as `ch:<cubehelix arguments>`, or a sequence of Matplotlib-compatible colors. With `palette=None`, the function uses the current Matplotlib color cycle.",
+    "followUp": "How would you obtain a continuous mapping rather than discrete colors? Pass `as_cmap=True`; the return value is then a continuous colormap."
+   },
+   {
+    "question": "How does `n_colors` behave?",
+    "answer": "`n_colors` controls the requested palette length when a discrete palette is returned. If it is omitted, the default depends on how `palette` is specified; named palettes generally default to six colors.",
+    "followUp": "What happens if the requested length exceeds the palette size? The palette cycles through its available colors."
+   },
+   {
+    "question": "What does `color_palette()` return?",
+    "answer": "The default return is a list-like Seaborn palette object containing RGB tuples and methods such as hexadecimal conversion. With `as_cmap=True`, the function returns a continuous colormap instead.",
+    "followUp": "How can the discrete result be made easier to serialize for web use? Call its `as_hex()` method to obtain hexadecimal color strings."
+   }
+  ],
+  "keyPoints": [
+   "Use the function for either a discrete color collection or a continuous colormap.",
+   "Several built-in qualitative Seaborn palettes can be selected directly by name.",
+   "Matplotlib colormap names are valid palette specifications.",
+   "The HUSL and HLS hue systems are available through the palette argument.",
+   "You can provide explicit colors using formats supported by Matplotlib.",
+   "The discrete result wraps RGB tuples and provides palette-oriented utilities.",
+   "The returned palette supports hexadecimal conversion and rich display in HTML environments."
+  ],
+  "gotchas": [
+   "`n_colors` has no effect when requesting a continuous colormap with `as_cmap=True`.",
+   "Requesting more colors than a finite palette provides repeats its colors."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "FacetGrid": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.FacetGrid.html",
+  "sourceTitle": "seaborn.FacetGrid — seaborn 0.13.2 documentation",
+  "summary": "FacetGrid builds a grid of Matplotlib axes for conditional plots, organized by row and column variable levels. An optional hue variable adds colored subsets, after which plotting and formatting methods can be applied.",
+  "explanation": "FacetGrid creates a Matplotlib figure containing multiple axes arranged by levels of row and column variables, with an optional hue dimension for colored subsets. After construction, map a plotting function across each subset and then adjust labels, ticks, legends, or layout with the grid’s methods.",
+  "syntax": "seaborn.FacetGrid(data, *, row=None, col=None, hue=None, col_wrap=None, sharex=True, sharey=True, height=3, aspect=1, palette=None, row_order=None, col_order=None, hue_order=None, hue_kws=None, dropna=False, legend_out=True, despine=True, margin_titles=False, xlim=None, ylim=None, subplot_kws=None, gridspec_kws=None)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "DataFrame",
+    "description": "Input dataset containing the variables used to form facets."
+   },
+   {
+    "name": "row",
+    "type": "vector or key in data",
+    "description": "Variable defining row facets."
+   },
+   {
+    "name": "col",
+    "type": "vector or key in data",
+    "description": "Variable defining column facets."
+   },
+   {
+    "name": "hue",
+    "type": "vector or key in data",
+    "description": "Variable defining colored subsets."
+   },
+   {
+    "name": "col_wrap",
+    "type": "int",
+    "description": "Number of columns before wrapping to another row."
+   },
+   {
+    "name": "sharex, sharey",
+    "type": "bool",
+    "description": "Whether facet axes share x and y scales."
+   },
+   {
+    "name": "height, aspect",
+    "type": "float",
+    "description": "Figure height per facet and width-to-height ratio."
+   },
+   {
+    "name": "palette, row_order, col_order, hue_order",
+    "type": "palette or sequence",
+    "description": "Color palette and explicit orders for facet levels."
+   },
+   {
+    "name": "hue_kws",
+    "type": "dict",
+    "description": "Keyword mappings for hue levels."
+   },
+   {
+    "name": "dropna",
+    "type": "bool",
+    "description": "Whether to remove missing observations."
+   },
+   {
+    "name": "legend_out, despine, margin_titles",
+    "type": "bool",
+    "description": "Legend placement, despining, and margin-title behavior."
+   },
+   {
+    "name": "xlim, ylim, subplot_kws, gridspec_kws",
+    "type": "tuple or dict",
+    "description": "Initial axis limits and subplot/grid layout options."
+   }
+  ],
+  "returns": "A FacetGrid object that initializes the Matplotlib figure and axes arrangement.",
+  "example": {
+   "title": "Faceted scatterplots",
+   "code": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\npenguins = sns.load_dataset(\"penguins\")\ngrid = sns.FacetGrid(penguins, col=\"species\", hue=\"sex\", height=3, aspect=1)\ngrid.map(sns.scatterplot, \"bill_length_mm\", \"bill_depth_mm\")\ngrid.add_legend()\nplt.show()",
+   "language": "python",
+   "explanation": "Creates one scatterplot per species and uses color to distinguish sex."
+  },
+  "useCases": [
+   {
+    "title": "Small-multiple relationship plots",
+    "scenario": "Compare a relationship across categories"
+   },
+   {
+    "title": "Conditional distributions",
+    "scenario": "Show distributions separately for combinations of discrete groups"
+   },
+   {
+    "title": "Three-dimensional categorical faceting",
+    "scenario": "Add a third categorical grouping through color"
+   }
+  ],
+  "related": [
+   "FacetGrid.map",
+   "FacetGrid.map_dataframe",
+   "FacetGrid.facet_data",
+   "FacetGrid.apply",
+   "FacetGrid.add_legend",
+   "FacetGrid.set",
+   "set_theme"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does FacetGrid construct, and what is the usual workflow?",
+    "answer": "The constructor receives a dataset and optional row, column, and hue variables. It creates the figure and axes grid but does not itself draw a data plot; plotting is added afterward with methods such as map or map_dataframe.",
+    "followUp": "How would you control the ordering of facet levels? Supply row_order, col_order, or hue_order with the desired category sequences."
+   },
+   {
+    "question": "How do row, col, and hue differ?",
+    "answer": "row and col determine the two-dimensional axes arrangement. hue adds a third grouping dimension by drawing different subsets in different colors within each facet.",
+    "followUp": "What if the hue grouping needs per-level style changes? Use hue_kws to provide keyword values associated with hue levels."
+   },
+   {
+    "question": "What requirements does a function passed to map have?",
+    "answer": "map applies a plotting callable to every facet subset, passing the selected data columns in the order named. The callable must draw on the active Matplotlib Axes and accept color; with hue faceting it must also accept label.",
+    "followUp": "When is map_dataframe preferable? Use it when the plotting function should receive each subset as a DataFrame and access additional named columns or variables."
+   }
+  ],
+  "keyPoints": [
+   "Use FacetGrid to display conditional relationships as a coordinated set of plots.",
+   "Rows and columns correspond to levels of variables, producing one axes position per facet combination.",
+   "The hue dimension separates additional subsets by color inside the row-and-column grid.",
+   "Build the grid first, then apply one or more plotting functions to every subset.",
+   "Use subsequent grid methods to refine axes, ticks, labels, legends, and related presentation details."
+  ],
+  "gotchas": [
+   "Pass long-form data to the constructor rather than a wide table whose columns do not represent observation variables.",
+   "Each facet is a separate small multiple, so many category levels can create a crowded or very large figure."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "heatmap": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.heatmap.html",
+  "sourceTitle": "seaborn.heatmap",
+  "summary": "seaborn.heatmap displays a rectangular two-dimensional dataset as a color-encoded matrix. It can add annotations, cell borders, labels, masking, and a colorbar.",
+  "explanation": "heatmap renders a rectangular two-dimensional dataset as a matrix whose cell colors encode values. It operates on the active Matplotlib Axes unless you provide ax, and it normally reserves part of that Axes for a colorbar.",
+  "syntax": "seaborn.heatmap(data, *, vmin=None, vmax=None, cmap=None, center=None, robust=False, annot=None, fmt='.2g', annot_kws=None, linewidths=0, linecolor='white', cbar=True, cbar_kws=None, cbar_ax=None, square=False, xticklabels='auto', yticklabels='auto', mask=None, ax=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "rectangular dataset",
+    "description": "Rectangular two-dimensional dataset that can be converted to an array; DataFrame labels are used for rows and columns."
+   },
+   {
+    "name": "vmin, vmax",
+    "type": "float, optional",
+    "description": "Lower and upper values anchoring the colormap; inferred when omitted."
+   },
+   {
+    "name": "cmap",
+    "type": "matplotlib colormap name or object, optional",
+    "description": "Colormap name or Matplotlib colormap object."
+   },
+   {
+    "name": "center",
+    "type": "float, optional",
+    "description": "Value at which to center the colormap."
+   },
+   {
+    "name": "robust",
+    "type": "bool, optional",
+    "description": "If true, compute color limits using robust quantiles rather than extremes."
+   },
+   {
+    "name": "annot",
+    "type": "bool or rectangular dataset, optional",
+    "description": "Whether to annotate cells, or a separate rectangular annotation dataset."
+   },
+   {
+    "name": "fmt",
+    "type": "str, optional",
+    "description": "Formatting string for annotation text."
+   },
+   {
+    "name": "annot_kws",
+    "type": "dict, optional",
+    "description": "Keyword arguments passed to annotation text."
+   },
+   {
+    "name": "linewidths, linecolor",
+    "type": "float, str, optional",
+    "description": "Width and color of lines separating cells."
+   },
+   {
+    "name": "cbar, cbar_kws, cbar_ax",
+    "type": "bool, dict, matplotlib Axes, optional",
+    "description": "Whether to draw a colorbar and options controlling it."
+   },
+   {
+    "name": "square",
+    "type": "bool, optional",
+    "description": "Whether to force square cells."
+   },
+   {
+    "name": "xticklabels, yticklabels",
+    "type": "bool, int, list, or auto, optional",
+    "description": "Controls column and row tick labels."
+   }
+  ],
+  "returns": "matplotlib Axes. The function draws the heatmap on the supplied or active Axes.",
+  "example": {
+   "title": "Annotated matrix heatmap",
+   "code": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\nvalues = [[1, 2, 3], [4, 5, 6]]\nsns.heatmap(values, annot=True, fmt=\"d\", cmap=\"crest\")\nplt.show()",
+   "language": "python",
+   "explanation": "This draws a numeric matrix with cell values displayed as annotations and uses the named crest colormap."
+  },
+  "useCases": [
+   {
+    "title": "Matrix pattern exploration",
+    "scenario": "Inspect numeric tables where magnitude and patterns matter more than exact values."
+   },
+   {
+    "title": "Correlation matrix visualization",
+    "scenario": "Display correlations with a diverging palette, centered scale, and optional mask."
+   },
+   {
+    "title": "Annotated tabular display",
+    "scenario": "Show values directly inside cells with controlled formatting."
+   }
+  ],
+  "related": [
+   "clustermap",
+   "set_theme",
+   "load_dataset",
+   "cubehelix_palette",
+   "diverging_palette"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What input does heatmap expect?",
+    "answer": "The function accepts a rectangular two-dimensional dataset and maps its values to colors. A DataFrame also contributes its index and column labels to the plot.",
+    "followUp": "How would you show values in each cell? Pass annot=True, then use fmt to control their formatting."
+   },
+   {
+    "question": "How do you annotate a heatmap?",
+    "answer": "annot=True writes the cell values as text, while fmt controls the formatting string used for those annotations. You can also pass a separate rectangular dataset through annot.",
+    "followUp": "How can annotation text be styled? Supply a dictionary through annot_kws."
+   },
+   {
+    "question": "How does heatmap handle Axes and the colorbar?",
+    "answer": "heatmap is an Axes-level function, so it draws into the current Axes when ax is omitted. It creates a colorbar by default unless cbar is false or a separate cbar_ax is supplied.",
+    "followUp": "How can the color scale be bounded? Set vmin and vmax to anchor the colormap limits."
+   }
+  ],
+  "keyPoints": [
+   "Use heatmap to visualize a rectangular matrix by encoding each cell's value with color.",
+   "It integrates with Matplotlib's current Axes when no ax argument is given.",
+   "vmin and vmax explicitly set the lower and upper values used for the color mapping.",
+   "center can alter the default colormap when no cmap is explicitly selected.",
+   "Set annot to display numeric values or other annotations inside the heatmap cells.",
+   "Use linewidths and linecolor to visually separate neighboring cells."
+  ],
+  "gotchas": [
+   "A colorbar is enabled by default and consumes part of the plotting Axes; disable it with cbar=False or supply cbar_ax.",
+   "A DataFrame's index and columns provide row and column labels, unlike a plain array."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "histplot": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.histplot.html",
+  "sourceTitle": "seaborn.histplot — seaborn 0.13.2 documentation",
+  "summary": "Plot univariate or bivariate histograms that show dataset distributions. histplot supports configurable bins, normalization, grouping, cumulative views, and optional KDE overlays.",
+  "explanation": "histplot divides one or two variables into bins and displays the observations in those bins. It can condition distributions with hue, choose how values are represented and combined, normalize bin statistics, overlay a kernel-density estimate, and return an axes object for further customization.",
+  "syntax": "seaborn.histplot(data=None, *, x=None, y=None, hue=None, weights=None, stat='count', bins='auto', binwidth=None, binrange=None, discrete=None, cumulative=False, common_bins=True, common_norm=True, multiple='layer', element='bars', fill=True, shrink=1, kde=False, kde_kws=None, line_kws=None, thresh=0, pthresh=None, pmax=None, cbar=False, cbar_ax=None, cbar_kws=None, palette=None, hue_order=None, hue_norm=None, color=None, log_scale=None, legend=True, ax=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "DataFrame, array, mapping, or sequence",
+    "description": "Input data structure or vectors used to populate the plot."
+   },
+   {
+    "name": "x",
+    "type": "vector or key",
+    "description": "Variable assigned to the horizontal axis."
+   },
+   {
+    "name": "y",
+    "type": "vector or key",
+    "description": "Variable assigned to the vertical axis for a bivariate histogram."
+   },
+   {
+    "name": "hue",
+    "type": "vector or key",
+    "description": "Grouping variable used to condition the distributions."
+   },
+   {
+    "name": "weights",
+    "type": "vector or key",
+    "description": "Values used as weights instead of counting every observation equally."
+   },
+   {
+    "name": "stat",
+    "type": "string",
+    "description": "Statistic computed within each bin; the default is count."
+   },
+   {
+    "name": "bins",
+    "type": "str, int, or array",
+    "description": "Bin specification, such as an automatic rule, count, or explicit edges."
+   },
+   {
+    "name": "binwidth",
+    "type": "number or pair of numbers",
+    "description": "Width of each bin."
+   },
+   {
+    "name": "binrange",
+    "type": "pair of numbers or pairs",
+    "description": "Minimum and maximum values used for binning."
+   },
+   {
+    "name": "discrete",
+    "type": "bool or pair of bools",
+    "description": "Whether to treat one or both variables as discrete."
+   },
+   {
+    "name": "cumulative",
+    "type": "bool",
+    "description": "Whether to accumulate bin values."
+   },
+   {
+    "name": "common_bins",
+    "type": "bool",
+    "description": "Whether grouped distributions share bin boundaries."
+   }
+  ],
+  "returns": "matplotlib.axes.Axes",
+  "example": {
+   "title": "Grouped flipper-length distributions",
+   "code": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\npenguins = sns.load_dataset(\"penguins\")\nax = sns.histplot(\n    data=penguins,\n    x=\"flipper_length_mm\",\n    hue=\"species\",\n    multiple=\"layer\",\n    binwidth=3,\n)\nax.set_title(\"Penguin flipper lengths\")\nplt.show()",
+   "language": "python",
+   "explanation": "This draws overlapping, color-coded univariate histograms with three-unit bins."
+  },
+  "useCases": [
+   {
+    "title": "Univariate distribution inspection",
+    "scenario": "Explore the shape and spread of one numeric variable."
+   },
+   {
+    "title": "Conditional group comparison",
+    "scenario": "Compare distributions across categories such as species or cohorts."
+   },
+   {
+    "title": "Bivariate density overview",
+    "scenario": "Display joint concentration for two numeric variables."
+   },
+   {
+    "title": "Log-scaled distributions",
+    "scenario": "Show long-tailed measurements across multiplicative scales."
+   }
+  ],
+  "related": [
+   "kdeplot",
+   "displot",
+   "ecdfplot",
+   "rugplot",
+   "jointplot",
+   "pairplot"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does seaborn.histplot visualize?",
+    "answer": "histplot is an axes-level function for univariate or bivariate histograms. It partitions values into discrete bins and represents the distribution by the observations assigned to each bin.",
+    "followUp": "How would you make groups comparable when their sample sizes differ? Set an appropriate stat such as density or probability, and choose common bin settings when comparing groups."
+   },
+   {
+    "question": "How do you choose the main variables and grouping variable?",
+    "answer": "Use x for a univariate histogram and x together with y for a bivariate histogram. The hue semantic can condition the plot on another variable and distinguish the resulting distributions by color.",
+    "followUp": "How can a bivariate histogram show concentration rather than counts? Use a normalized statistic and, where useful, a color mapping or colorbar for the bin values."
+   },
+   {
+    "question": "How can binning be controlled?",
+    "answer": "The bins argument can specify the number of bins or an explicit binning strategy, while binwidth sets the width directly and binrange limits the range. The function also supports discrete data and cumulative displays.",
+    "followUp": "When is binwidth preferable to an automatic rule? Use it when domain units or consistent bin widths across several plots are more meaningful than a data-dependent choice."
+   }
+  ],
+  "keyPoints": [
+   "Use histplot for either one-dimensional or two-dimensional distribution views.",
+   "A histogram summarizes observations by assigning them to discrete bins.",
+   "The stat option lets bin heights express more than simple counts.",
+   "Set kde=True to overlay a smoothed density estimate on the histogram.",
+   "Control binning with a bin count or rule, a fixed binwidth, or explicit break locations.",
+   "The hue semantic supports conditional distributions by drawing one histogram per hue value."
+  ],
+  "gotchas": [
+   "The bar height is not always a raw count: stat can instead represent frequency, density, or probability mass.",
+   "Using hue creates separate distributions for unique values, so overlapping or stacked groups can change how the comparison reads."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "kdeplot": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.kdeplot.html",
+  "sourceTitle": "seaborn.kdeplot — seaborn 0.13.2 documentation",
+  "summary": "Plots univariate or bivariate distributions with kernel density estimation. It produces smooth probability-density curves or contours and supports grouping, normalization, bandwidth, and display controls.",
+  "explanation": "`kdeplot` estimates a continuous probability density from observations and renders it for one variable or as contours for two variables. Use `hue` for grouped distributions, while bandwidth, grid, normalization, levels, and clipping options control the estimate and its display.",
+  "syntax": "seaborn.kdeplot(*data=None*, ***, *x=None*, *y=None*, *hue=None*, *weights=None*, *palette=None*, *hue_order=None*, *hue_norm=None*, *color=None*, *fill=None*, *multiple='layer'*, *common_norm=True*, *common_grid=False*, *cumulative=False*, *bw_method='scott'*, *bw_adjust=1*, *warn_singular=True*, *log_scale=None*, *levels=10*, *thresh=0.05*, *gridsize=200*, *cut=3*, *clip=None*, *legend=True*, *cbar=False*, *cbar_ax=None*, *cbar_kws=None*, *ax=None*, ***kwargs*)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "DataFrame, array, or mapping",
+    "description": "Input data structure, such as a long-form DataFrame, vector, or mapping."
+   },
+   {
+    "name": "x",
+    "type": "vector or key in data",
+    "description": "Input variable for the univariate density estimate."
+   },
+   {
+    "name": "y",
+    "type": "vector or key in data",
+    "description": "Input variable for the y axis of a bivariate density estimate."
+   },
+   {
+    "name": "hue",
+    "type": "vector or key in data",
+    "description": "Semantic variable that determines subsets and color mapping."
+   },
+   {
+    "name": "weights",
+    "type": "vector or key in data",
+    "description": "Weights applied to observations when estimating the density."
+   },
+   {
+    "name": "palette",
+    "type": "palette name, list, or mapping",
+    "description": "Color palette used for hue levels."
+   },
+   {
+    "name": "hue_order",
+    "type": "list of strings",
+    "description": "Order for displaying hue levels."
+   },
+   {
+    "name": "hue_norm",
+    "type": "Normalize object or tuple",
+    "description": "Normalization for mapping hue values to colors."
+   },
+   {
+    "name": "color",
+    "type": "matplotlib color",
+    "description": "Single color for all density elements."
+   },
+   {
+    "name": "fill",
+    "type": "bool",
+    "description": "Whether to fill the area or bivariate contours."
+   },
+   {
+    "name": "multiple",
+    "type": "{layer, stack, fill, dodge}",
+    "description": "Arrangement mode for multiple densities."
+   },
+   {
+    "name": "common_norm",
+    "type": "bool",
+    "description": "Whether grouped densities share normalization."
+   }
+  ],
+  "returns": "Returns the matplotlib Axes object with the plot drawn on it.",
+  "example": {
+   "title": "Compare distributions by category",
+   "code": "import matplotlib.pyplot as plt\nimport seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\")\nsns.kdeplot(data=penguins, x=\"flipper_length_mm\", hue=\"species\", fill=True, common_norm=False)\nplt.show()",
+   "language": "python",
+   "explanation": "Loads the penguins dataset and draws filled kernel-density curves for flipper length, separated by species."
+  },
+  "useCases": [
+   {
+    "title": "Explore a univariate distribution",
+    "scenario": "Inspect the shape, spread, and modality of one numeric variable."
+   },
+   {
+    "title": "Compare groups with hue",
+    "scenario": "Compare a numeric measurement across categories."
+   },
+   {
+    "title": "Visualize a bivariate density",
+    "scenario": "Inspect concentration and relationship structure for two numeric variables."
+   },
+   {
+    "title": "Customize density rendering",
+    "scenario": "Produce publication-style density graphics with controlled contours, fills, or clipping."
+   }
+  ],
+  "related": [
+   "histplot",
+   "ecdfplot",
+   "rugplot",
+   "displot",
+   "jointplot",
+   "pairplot"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `kdeplot` visualize, and how does its univariate form differ from its bivariate form?",
+    "answer": "It estimates a continuous probability density from observations, analogous to a histogram but using a smooth curve. With one variable it draws a univariate density; with both `x` and `y`, it represents a bivariate density using contours or filled regions.",
+    "followUp": "How would you prevent grouped curves from being normalized together? Set `common_norm=False` so each subgroup is normalized independently."
+   },
+   {
+    "question": "How do bandwidth controls affect a KDE plot?",
+    "answer": "`bw_method` selects the bandwidth rule or value used by the underlying density estimator, and `bw_adjust` multiplies the resulting bandwidth. Increasing the adjustment produces a smoother estimate; decreasing it produces more detail.",
+    "followUp": "What is a practical risk of a very small bandwidth? It can produce a noisy estimate with artificial modes rather than meaningful distribution structure."
+   },
+   {
+    "question": "How can grouped distributions be compared with `kdeplot`?",
+    "answer": "`hue` maps a categorical variable to separate distributions, while `multiple` controls how those distributions are displayed, such as layered or stacked arrangements. `common_grid` determines whether subsets are evaluated on the same grid.",
+    "followUp": "When would `common_grid=True` help? It makes grouped curves directly comparable because each subset is evaluated at shared coordinate values."
+   }
+  ],
+  "keyPoints": [
+   "Use the function for either one-dimensional density curves or two-dimensional density visualizations.",
+   "KDE offers a smooth alternative to histogram bins for showing how observations are distributed.",
+   "The result is a continuous density representation rather than discrete counts."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "lineplot": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.lineplot.html",
+  "sourceTitle": "seaborn.lineplot — seaborn 0.13.2 documentation",
+  "summary": "seaborn.lineplot draws a line chart for an x–y relationship and can distinguish subsets with color, width, and style. It aggregates repeated observations by default and shows an estimate with uncertainty.",
+  "explanation": "lineplot maps variables to line position and can distinguish subsets with color, width, and style. When multiple y observations share an x value, it aggregates them by default and displays a central estimate with an uncertainty interval.",
+  "syntax": "seaborn.lineplot(data=None, *, x=None, y=None, hue=None, size=None, style=None, units=None, weights=None, palette=None, hue_order=None, hue_norm=None, sizes=None, size_order=None, size_norm=None, dashes=True, markers=None, style_order=None, estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, orient='x', sort=True, err_style='band', err_kws=None, legend='auto', ci='deprecated', ax=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "pandas.DataFrame, numpy.ndarray, mapping, or sequence",
+    "description": "Input data structure."
+   },
+   {
+    "name": "x, y",
+    "type": "vectors or keys in data",
+    "description": "Variables that specify positions on the x and y axes."
+   },
+   {
+    "name": "hue",
+    "type": "vector or key in data",
+    "description": "Grouping variable that will produce lines with different colors."
+   },
+   {
+    "name": "size",
+    "type": "vector or key in data",
+    "description": "Grouping variable that will produce lines with different widths."
+   },
+   {
+    "name": "style",
+    "type": "vector or key in data",
+    "description": "Grouping variable that will produce lines with different dashes and/or markers."
+   },
+   {
+    "name": "units",
+    "type": "vector or key in data",
+    "description": "Grouping variable that will produce separate lines without affecting line appearance."
+   },
+   {
+    "name": "estimator",
+    "type": "name of pandas method, callable, or None",
+    "description": "Method for aggregating over observations."
+   },
+   {
+    "name": "errorbar",
+    "type": "string, tuple, callable, or None",
+    "description": "Method for calculating the uncertainty estimate."
+   },
+   {
+    "name": "ax",
+    "type": "matplotlib.axes.Axes",
+    "description": "Axes object to draw the plot onto."
+   }
+  ],
+  "returns": "Returns the Axes object with the plot drawn onto it.",
+  "example": {
+   "title": "Grouped line plot",
+   "code": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\nsns.set_theme(style=\"whitegrid\")\ndata = {\"time\": [1, 2, 3, 1, 2, 3], \"value\": [2, 4, 3, 1, 3, 5], \"group\": [\"A\", \"A\", \"A\", \"B\", \"B\", \"B\"]}\nsns.lineplot(data=data, x=\"time\", y=\"value\", hue=\"group\", marker=\"o\")\nplt.show()",
+   "language": "python",
+   "explanation": "Plots the mean value at each time for two groups, using color and markers to distinguish them."
+  },
+  "useCases": [
+   {
+    "title": "Show change over time or another ordered continuous variable.",
+    "scenario": "Continuous progression"
+   },
+   {
+    "title": "Compare trajectories for subsets using hue, size, or style.",
+    "scenario": "Grouped trends"
+   },
+   {
+    "title": "Display an aggregated trend together with its confidence interval.",
+    "scenario": "Uncertainty visualization"
+   }
+  ],
+  "related": [
+   "seaborn.scatterplot",
+   "seaborn.relplot",
+   "seaborn.set_theme",
+   "seaborn.load_dataset"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is seaborn.lineplot used for?",
+    "answer": "lineplot draws a relationship between x and y and supports semantic grouping through hue, size, and style. It can show separate subsets of the data while varying color, line width, or line pattern.",
+    "followUp": "How can three additional variables be represented? Use hue, size, and style independently, while checking that the combined encodings remain interpretable."
+   },
+   {
+    "question": "What happens when multiple observations share the same x value?",
+    "answer": "With repeated y observations at an x value, the function aggregates them by default. It shows an estimate of central tendency together with a confidence interval.",
+    "followUp": "What should you consider when interpreting the line? Determine whether the aggregation and uncertainty interval match the question, rather than treating the line as every raw observation."
+   },
+   {
+    "question": "Which parameters control grouping and uncertainty?",
+    "answer": "The function accepts x and y variables plus an optional data structure, and hue can produce differently colored lines for groups. The current signature also exposes controls such as estimator, errorbar, sorting, and legend behavior.",
+    "followUp": "How would you make group distinctions more explicit? Combine semantic mappings selectively, for example hue with style, and use ordering parameters when the displayed order matters."
+   }
+  ],
+  "keyPoints": [
+   "Use lineplot to visualize a relationship between two variables while representing subsets through semantic mappings.",
+   "The same x–y relationship can be split into multiple subset-specific lines.",
+   "hue, size, and style determine how subsets are visually identified.",
+   "Three additional dimensions can be encoded independently with hue, size, and style.",
+   "The default display combines a central-tendency estimate with a confidence interval."
+  ],
+  "gotchas": [
+   "Using hue, size, and style simultaneously can encode three dimensions, but the resulting chart may be difficult to interpret.",
+   "Repeated y values for an x coordinate are summarized rather than drawn as independent observations; disable aggregation with an appropriate estimator setting."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "pairplot": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.pairplot.html",
+  "sourceTitle": "seaborn.pairplot — seaborn 0.13.2 documentation",
+  "summary": "Creates a figure-level grid of pairwise relationships for numeric variables, with each variable’s marginal distribution on the diagonal. Grouping, variable selection, plot type, sizing, and triangular layouts can be configured.",
+  "explanation": "`pairplot` builds a figure-level grid containing plots for combinations of numeric variables. Off-diagonal cells show relationships, diagonal cells show each variable’s marginal distribution, and options such as `hue`, `kind`, variable selectors, and `corner` control the layout and visual encoding.",
+  "syntax": "seaborn.pairplot(data, *, hue=None, hue_order=None, palette=None, vars=None, x_vars=None, y_vars=None, kind='scatter', diag_kind='auto', markers=None, height=2.5, aspect=1, corner=False, dropna=False, plot_kws=None, diag_kws=None, grid_kws=None, size=None)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "DataFrame",
+    "description": "DataFrame containing the variables to plot."
+   },
+   {
+    "name": "hue",
+    "type": "vector or key in data, optional",
+    "description": "Variable used to group observations by a semantic mapping."
+   },
+   {
+    "name": "hue_order",
+    "type": "list, optional",
+    "description": "Order for the levels of the hue variable."
+   },
+   {
+    "name": "palette",
+    "type": "string, list, dict, or callable, optional",
+    "description": "Colors used for the hue levels."
+   },
+   {
+    "name": "vars",
+    "type": "list of variable names, optional",
+    "description": "Variables to use in both rows and columns."
+   },
+   {
+    "name": "x_vars",
+    "type": "list of variable names, optional",
+    "description": "Variables to use on the x axes."
+   },
+   {
+    "name": "y_vars",
+    "type": "list of variable names, optional",
+    "description": "Variables to use on the y axes."
+   },
+   {
+    "name": "kind",
+    "type": "string, optional",
+    "description": "Off-diagonal plot type: `scatter`, `kde`, `hist`, or `reg`."
+   },
+   {
+    "name": "diag_kind",
+    "type": "string, optional",
+    "description": "Diagonal plot type, selected automatically by default."
+   },
+   {
+    "name": "markers",
+    "type": "list or boolean, optional",
+    "description": "Markers used for hue levels."
+   },
+   {
+    "name": "height",
+    "type": "float, optional",
+    "description": "Height of each facet in inches."
+   },
+   {
+    "name": "aspect",
+    "type": "float, optional",
+    "description": "Aspect ratio of each facet."
+   }
+  ],
+  "returns": "A `PairGrid` instance containing the plotted axes.",
+  "example": {
+   "title": "Pairwise relationships with a grouping variable",
+   "code": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\npenguins = sns.load_dataset(\"penguins\")\nsns.pairplot(penguins, hue=\"species\", vars=[\"bill_length_mm\", \"bill_depth_mm\", \"body_mass_g\"])\nplt.show()",
+   "language": "python",
+   "explanation": "Loads the example penguins dataset and compares selected numeric variables, coloring observations by species."
+  },
+  "useCases": [
+   {
+    "title": "Survey many numeric relationships",
+    "scenario": "Exploratory analysis of a tabular dataset."
+   },
+   {
+    "title": "Inspect groups with hue",
+    "scenario": "Comparing distributions across categories."
+   },
+   {
+    "title": "Select variables or use a corner layout",
+    "scenario": "Reducing visual clutter in a large grid."
+   }
+  ],
+  "related": [
+   "PairGrid",
+   "scatterplot",
+   "kdeplot",
+   "histplot",
+   "regplot"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `pairplot` generate?",
+    "answer": "The function creates a grid of pairwise relationship plots for the numeric variables in the dataset, with marginal distribution plots on the diagonal. It is a high-level interface to `PairGrid` for common styles.",
+    "followUp": "When would you choose `PairGrid` instead? Choose it when more customization or control over the grid is required."
+   },
+   {
+    "question": "How does `hue` affect a pair plot?",
+    "answer": "`hue` assigns a variable for semantic grouping, so observations are distinguished by color or another palette mapping. `hue_order` controls the order of its levels, while `palette` controls their colors.",
+    "followUp": "How can the plotted variables be restricted? Use `vars` for one shared selection, or `x_vars` and `y_vars` to specify row and column variables separately."
+   },
+   {
+    "question": "How can the plot style and layout be changed?",
+    "answer": "The `kind` parameter selects the off-diagonal plot style from `scatter`, `kde`, `hist`, or `reg`. The diagonal style is controlled independently by `diag_kind`, whose automatic behavior chooses an appropriate marginal plot.",
+    "followUp": "How can a triangular grid be made? Set `corner=True` to omit the redundant upper-triangle plots."
+   }
+  ],
+  "keyPoints": [
+   "Use `pairplot` to inspect many variable relationships in one figure.",
+   "Numeric variables organize the grid so each variable occupies a row and a column.",
+   "Diagonal cells summarize the marginal distribution of each variable.",
+   "Use `vars` to limit the plot to selected variables.",
+   "Use `x_vars` and `y_vars` when row and column selections should differ.",
+   "Choose among scatter, KDE, histogram, and regression styles with `kind`."
+  ],
+  "gotchas": [
+   "Use `PairGrid` instead when the high-level defaults do not provide enough control over the grid or mappings.",
+   "The diagonal is not another pairwise relationship; it displays a univariate distribution for each variable."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "scatterplot": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.scatterplot",
+  "sourceTitle": "seaborn.scatterplot — seaborn 0.13.2 documentation",
+  "summary": "Draws a scatter plot where x/y position shows the main relationship and hue, size, and style can encode additional subsets or dimensions. It returns an axes-level Matplotlib plot.",
+  "explanation": "`scatterplot` draws observations as points positioned by `x` and `y`. Optional `hue`, `size`, and `style` mappings encode additional variables through color, marker size, and marker shape, while `palette`, normalization, ordering, and legend options control their presentation.",
+  "syntax": "seaborn.scatterplot(*data=None*, ***, *x=None*, *y=None*, *hue=None*, *size=None*, *style=None*, *palette=None*, *hue_order=None*, *hue_norm=None*, *sizes=None*, *size_order=None*, *size_norm=None*, *markers=True*, *style_order=None*, *legend='auto'*, *ax=None*, ***kwargs*)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "pandas.DataFrame, numpy.ndarray, mapping, or sequence",
+    "description": "Input data structure; may be long-form or wide-form data reshaped internally."
+   },
+   {
+    "name": "x, y",
+    "type": "vectors or keys in data",
+    "description": "Variables specifying positions on the x and y axes."
+   },
+   {
+    "name": "hue",
+    "type": "vector or key in data",
+    "description": "Grouping variable that produces points with different colors."
+   },
+   {
+    "name": "size",
+    "type": "vector or key in data",
+    "description": "Grouping variable that changes point size."
+   },
+   {
+    "name": "style",
+    "type": "vector or key in data",
+    "description": "Grouping variable that changes marker style."
+   },
+   {
+    "name": "palette",
+    "type": "string, list, dict, or matplotlib.colors.Colormap",
+    "description": "Color-selection method for hue mapping."
+   },
+   {
+    "name": "hue_order",
+    "type": "list of strings",
+    "description": "Ordering of hue levels."
+   },
+   {
+    "name": "hue_norm",
+    "type": "tuple or matplotlib.colors.Normalize",
+    "description": "Normalization for mapping hue values."
+   },
+   {
+    "name": "sizes",
+    "type": "list, dict, or tuple",
+    "description": "Sizes used when mapping the size semantic."
+   },
+   {
+    "name": "size_order",
+    "type": "list",
+    "description": "Ordering of size levels."
+   },
+   {
+    "name": "size_norm",
+    "type": "tuple or matplotlib.colors.Normalize",
+    "description": "Normalization for mapping size values."
+   },
+   {
+    "name": "markers",
+    "type": "boolean, list, or dictionary",
+    "description": "Whether to use markers, or a marker specification by style level."
+   }
+  ],
+  "returns": "A matplotlib.axes.Axes object.",
+  "example": {
+   "title": "Scatter plot with semantic groupings",
+   "code": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\npenguins = sns.load_dataset(\"penguins\")\nsns.scatterplot(\n    data=penguins,\n    x=\"bill_length_mm\",\n    y=\"bill_depth_mm\",\n    hue=\"species\",\n    style=\"sex\",\n)\nplt.show()",
+   "language": "python",
+   "explanation": "This plots bill dimensions and uses color and marker shape to distinguish species and sex."
+  },
+  "useCases": [
+   {
+    "title": "Grouped relationship analysis",
+    "scenario": "Compare two numeric measurements while distinguishing categories by color."
+   },
+   {
+    "title": "Magnitude encoding",
+    "scenario": "Represent a continuous or ordered variable through point area."
+   },
+   {
+    "title": "Shape-based classification",
+    "scenario": "Show category membership through distinct marker shapes."
+   },
+   {
+    "title": "Custom figure composition",
+    "scenario": "Place a scatter plot inside an existing Matplotlib axes layout."
+   }
+  ],
+  "related": [
+   "seaborn.relplot",
+   "seaborn.lineplot",
+   "seaborn.scatterplot"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `seaborn.scatterplot` do?",
+    "answer": "It is an axes-level function that draws a scatter plot from `x` and `y`. The `data` argument can supply named columns, and the function can add semantic mappings for subsets of observations.",
+    "followUp": "How would you encode a third variable? Use `hue`, `size`, or `style`; choose based on whether color, area, or marker shape best communicates the variable."
+   },
+   {
+    "question": "How do the semantic parameters work?",
+    "answer": "`hue` changes point colors, `size` changes point dimensions, and `style` changes marker appearance. These mappings let subsets of the data be distinguished independently.",
+    "followUp": "What limitation should guide this design? Combining all three semantics can make the plot hard to interpret, so use only mappings that clarify the relationship."
+   },
+   {
+    "question": "How can legend placement and plotting axes be controlled?",
+    "answer": "`legend='auto'` lets Seaborn decide whether and how to show a legend for the semantic mappings. `ax` selects the Matplotlib axes on which to draw; otherwise, Seaborn uses the current axes context.",
+    "followUp": "How can ordering be controlled? Supply `hue_order`, `size_order`, or `style_order` to specify the order of semantic levels."
+   }
+  ],
+  "keyPoints": [
+   "The function creates a point-based plot and supports multiple ways to distinguish groups.",
+   "Use the plot to compare how subsets relate across two plotted variables.",
+   "Map `hue` to a grouping variable when groups should receive different colors.",
+   "Pass vectors or names in `data` through `x` and `y` to determine point coordinates.",
+   "Use `palette` to choose the color scheme for hue levels or values.",
+   "The `markers` option enables default markers or accepts custom marker specifications for style levels."
+  ],
+  "gotchas": [
+   "Using hue, size, and style together can encode three dimensions, but the resulting chart may be difficult to interpret.",
+   "With `style=False`, the function removes markers and draws lines instead, which can be surprising when a scatter appearance is expected."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "set_theme": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.set_theme.html",
+  "sourceTitle": "seaborn.set_theme — seaborn 0.13.2 documentation",
+  "summary": "Configures Seaborn's global visual theme for subsequent Seaborn and Matplotlib plots. It independently controls context, axes style, palette, typography, color shorthand behavior, and Matplotlib rc overrides.",
+  "explanation": "set_theme updates Seaborn's global plotting configuration through Matplotlib's rcParams system. It combines context scaling, axes style, palette, font settings, color shorthand handling, and optional rc overrides, so subsequent Seaborn and Matplotlib plots use the selected appearance.",
+  "syntax": "seaborn.set_theme(*, context='notebook', style='darkgrid', palette='deep', font='sans-serif', font_scale=1, color_codes=True, rc=None)",
+  "parameters": [
+   {
+    "name": "context",
+    "type": "string or dict",
+    "description": "Plotting context preset or parameter dictionary."
+   },
+   {
+    "name": "style",
+    "type": "string or dict",
+    "description": "Axes style preset or parameter dictionary."
+   },
+   {
+    "name": "palette",
+    "type": "string or sequence",
+    "description": "Named palette or color sequence."
+   },
+   {
+    "name": "font",
+    "type": "string",
+    "description": "Font family name."
+   },
+   {
+    "name": "font_scale",
+    "type": "float",
+    "description": "Scale factor for plot font and element sizes."
+   },
+   {
+    "name": "color_codes",
+    "type": "bool",
+    "description": "Whether to alter Matplotlib color shorthand meanings."
+   },
+   {
+    "name": "rc",
+    "type": "dict",
+    "description": "Matplotlib rc parameter overrides or additional rc parameters."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Customize a plot theme",
+   "code": "import matplotlib.pyplot as plt\nimport seaborn as sns\n\nsns.set_theme(style=\"whitegrid\", palette=\"pastel\", font_scale=1.1,\n              rc={\"axes.spines.right\": False})\nsns.barplot(x=[\"A\", \"B\", \"C\"], y=[1, 3, 2])\nplt.show()",
+   "language": "python",
+   "explanation": "Applies a white-grid theme, pastel colors, larger text, and hides the right axis spine before drawing a bar plot."
+  },
+  "useCases": [
+   {
+    "title": "Set a project-wide default theme",
+    "scenario": "A notebook or application needs consistent styling across all later charts."
+   },
+   {
+    "title": "Combine an axes style with a palette",
+    "scenario": "A chart needs a particular grid treatment and coordinated colors."
+   },
+   {
+    "title": "Scale plot typography",
+    "scenario": "A presentation requires larger labels and text."
+   },
+   {
+    "title": "Apply custom rc parameters",
+    "scenario": "A plot needs Matplotlib settings outside Seaborn's presets."
+   }
+  ],
+  "related": [
+   "axes_style",
+   "set_style",
+   "plotting_context",
+   "set_context",
+   "set_color_codes",
+   "reset_defaults",
+   "set"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does set_theme change?",
+    "answer": "set_theme configures the visual theme for Seaborn and Matplotlib plots. It writes the selected settings into Matplotlib's global rcParams, so later plots inherit them.",
+    "followUp": "How would you avoid changing a particular theme component? Pass None for that component, which preserves its current values."
+   },
+   {
+    "question": "Which aspects can set_theme configure?",
+    "answer": "The function accepts independent controls for context, style, palette, font, font scaling, color-code behavior, and rc overrides. This lets you combine a preset with targeted customization.",
+    "followUp": "How can you add a setting not covered by a Seaborn theme? Supply it through the rc dictionary, such as an axes spine setting."
+   },
+   {
+    "question": "How do you apply the default theme and customize Matplotlib settings?",
+    "answer": "Calling set_theme with no arguments activates Seaborn's default theme. Passing rc allows additional Matplotlib rc parameters or overrides to be applied at the same time.",
+    "followUp": "What is the preferred API alias? The API reference identifies set as an alias, while set_theme is the preferred interface."
+   }
+  ],
+  "keyPoints": [
+   "The function establishes the appearance used by both Seaborn and Matplotlib plots.",
+   "Its default context is notebook, its default axes style is darkgrid, and its default palette is deep.",
+   "The defaults use a sans-serif font, unit font scaling, enabled color codes, and no extra rc dictionary.",
+   "Theme components are independent, allowing focused changes such as style or palette without changing every setting.",
+   "The rc argument can override Seaborn parameters or define extra Matplotlib rc settings.",
+   "A no-argument call activates the default Seaborn theme."
+  ],
+  "gotchas": [
+   "The call affects global plotting defaults, including plots created directly with Matplotlib.",
+   "Use None for an individual theme group when you want to leave its current settings unchanged.",
+   "Do not assume the changes are limited to Seaborn-generated figures."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

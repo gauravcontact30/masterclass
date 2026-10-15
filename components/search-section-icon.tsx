@@ -4,7 +4,7 @@ import {
   Route, ServerCog, Share2, TestTube2, Type, Zap, Calculator, FlaskConical, Shield,
   GraduationCap, Trophy, School, Wrench, Leaf, Landmark, Gavel, Palette, BriefcaseBusiness, Link2, GitBranch, Activity, Workflow, Container,
   Table, ClipboardList, Rocket, List, Database, KeyRound, ShieldCheck, UserCog, Blocks, Ship,
-  CirclePlay, Webhook, Repeat, ShieldAlert, CreditCard, ClipboardCheck, Settings2, Network, Package, RefreshCw,
+  CirclePlay, Webhook, Repeat, ShieldAlert, CreditCard, ClipboardCheck, Settings2, Network, Package, RefreshCw, Waypoints,
   type LucideIcon,
 } from "lucide-react";
 
@@ -55,6 +55,7 @@ const BY_TITLE: [RegExp, LucideIcon][] = [
   [/^langchain/i, Link2],
   [/^langgraph/i, GitBranch],
   [/^langsmith/i, Activity],
+  [/^langflow/i, Waypoints],
   [/^n8n/i, Workflow],
   [/^docker/i, Container],
   [/^devops/i, Cloud],

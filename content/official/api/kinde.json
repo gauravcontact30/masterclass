@@ -1,0 +1,2351 @@
+{
+ "APIs API": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/your-apis/register-manage-apis/",
+  "sourceTitle": "Register and manage APIs",
+  "summary": "Kinde API registration gives an API a name and unique audience, then lets you authorize applications to use it. A linked API can be included in access-token audience claims for backend authentication.",
+  "explanation": "Register an API in Kinde by giving it a name and unique audience, then authorize applications that need to call it. Linking the API to an application allows the API audience to appear in access-token claims for backend authorization.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Register an API conceptually",
+   "code": "const audience = \"https://api.example.com\";\n\nconsole.log({\n  apiName: \"Orders API\",\n  audience,\n  tokenClaim: \"aud\"\n});",
+   "language": "typescript",
+   "explanation": "A minimal illustration of the stable concepts: an API has a name and unique audience, which can be included in an access token's aud claim."
+  },
+  "useCases": [
+   {
+    "title": "Connect frontend and backend authentication",
+    "scenario": "A frontend signs users in and calls a protected backend."
+   },
+   {
+    "title": "Identify an API through the aud claim",
+    "scenario": "A service needs its identity represented in access tokens."
+   },
+   {
+    "title": "Register and authorize multiple APIs",
+    "scenario": "An organization manages several backend services."
+   }
+  ],
+  "related": [
+   "API scopes",
+   "Kinde application",
+   "aud claim",
+   "OpenAPI spec",
+   "API keys"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What are the essential steps to register an API in Kinde?",
+    "answer": "Registering an API gives it a name and audience, where the audience uniquely identifies the API. After saving it, authorize the relevant application so the API can be used in that application's access-control setup.",
+    "followUp": "How can an API become an access-token audience? Link the registered API to a Kinde application; the API can then be included in the token's aud claim."
+   },
+   {
+    "question": "What is an API audience and how should it be chosen?",
+    "answer": "The audience is the identifier used for the API, commonly a short code or the API URL. It provides the value that identifies the intended backend API.",
+    "followUp": "What should be done if the audience needs to change? Because the documentation says the audience is not editable, create or register the appropriate API identity rather than relying on an in-place edit."
+   },
+   {
+    "question": "How do you allow an application to use a registered API?",
+    "answer": "After creating the API, open the relevant application and authorize it for that API. This connects the application to the API for authenticated access.",
+    "followUp": "How can access be narrowed further? Define API scopes and manage which scopes the application is allowed to use."
+   }
+  ],
+  "keyPoints": [
+   "Use API registration when your application exposes backend data or operations through an API.",
+   "Registration supports authenticated communication between the frontend and backend.",
+   "Associate the registered API with a Kinde application to connect the API to the application's authentication configuration.",
+   "A registered and linked API can appear as the access token's aud claim.",
+   "Start API registration from the environment's APIs settings page.",
+   "The registration form requires an API name and an audience value."
+  ],
+  "gotchas": [
+   "Choose an audience that uniquely identifies the API; it is not merely a display label.",
+   "Treat the generated API ID and saved audience as immutable details."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Applications API": {
+  "sourceUrl": "https://docs.kinde.com/build/applications/about-applications/",
+  "sourceTitle": "Applications in Kinde",
+  "summary": "Kinde applications are OAuth 2.0 clients that receive access tokens for application code. Select the application type that matches the client, then authorize APIs and request their audience when API access is required.",
+  "explanation": "Applications represent the OAuth clients that receive tokens for your product. Choose an application type for the client’s role, connect it to a registered API when needed, and request the API audience so the resulting token can authorize calls to that API.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "An OAuth 2.0 access token for the requested API audience; the documentation does not define a programming-language return signature.",
+  "example": {
+   "title": "Call an API with a Kinde access token",
+   "code": "import { KindeClient } from \"@kinde/js-utils\";\n\nconst token = await KindeClient.getToken({\n  audience: \"https://api.example.com\"\n});\n\nconst response = await fetch(\"https://api.example.com/data\", {\n  headers: { Authorization: `Bearer ${token}` }\n});\n\nconsole.log(await response.json());",
+   "language": "typescript",
+   "explanation": "Requests an access token for the registered API audience, then sends it to the API in the Bearer header."
+  },
+  "useCases": [
+   {
+    "title": "Backend API access",
+    "scenario": "A server needs to call a protected API."
+   },
+   {
+    "title": "Kinde Management API integration",
+    "scenario": "A service needs to manage Kinde resources programmatically."
+   },
+   {
+    "title": "CLI, daemon, or IoT client",
+    "scenario": "A non-interactive tool must authenticate without a user session."
+   },
+   {
+    "title": "Single-page web application",
+    "scenario": "A browser-based product needs user sign-in."
+   }
+  ],
+  "related": [
+   "Kinde APIs",
+   "Machine to machine (M2M) applications",
+   "Register and manage APIs",
+   "About scopes and Kinde API access",
+   "Secure your API using scopes"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Kinde application?",
+    "answer": "Applications are OAuth clients used to obtain access tokens for application code. Kinde supports application types such as regular web, single-page web, and machine-to-machine applications, each suited to a different execution environment.",
+    "followUp": "How would a backend service call the Kinde Management API? Create an M2M application, authorize it for the API, and use its credentials to obtain a token."
+   },
+   {
+    "question": "How does an application obtain access to a custom API?",
+    "answer": "Register the API in Kinde, link or authorize it for the application, and request its audience when initializing the SDK or requesting a token. The audience then appears in the token’s `aud` claim.",
+    "followUp": "How do you restrict what an authorized application can do? Enable only the required API scopes for that application."
+   },
+   {
+    "question": "When should you choose an M2M application?",
+    "answer": "M2M applications are intended for backend services that need API access, including Kinde’s Management API. They also fit non-interactive clients such as CLIs, daemons, and IoT devices.",
+    "followUp": "Why should a browser app not use M2M credentials? M2M secrets belong on trusted server-side systems and must not be exposed to browser code."
+   }
+  ],
+  "keyPoints": [
+   "Applications use OAuth 2.0 to transfer access tokens securely to application code.",
+   "Customer-identity applications cover your product’s front-end, back-end, and machine-to-machine clients.",
+   "M2M applications are designed for backend services that call APIs.",
+   "An M2M client can access the Kinde Management API after authorization.",
+   "Non-interactive clients such as command-line tools, daemons, and IoT devices are also suitable M2M use cases."
+  ],
+  "gotchas": [
+   "An API must be registered with Kinde before configuring application access."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "CreateOrgLink": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/nextjs-sdkv1/",
+  "sourceTitle": "Next.js App Router SDK v1 - Kinde docs",
+  "summary": "CreateOrgLink is a Next.js App Router SDK component for starting organization creation. It redirects the user to Kinde and creates the organization with that user as a member.",
+  "explanation": "CreateOrgLink is a Next.js App Router SDK component for starting organization creation. It renders link content and redirects the user to Kinde, where a new organization is created with that user as a member.",
+  "syntax": "<CreateOrgLink orgName=\"My org\">Create Org</CreateOrgLink>",
+  "parameters": [
+   {
+    "name": "orgName",
+    "type": "string",
+    "description": "Name to use for the organization created during the flow."
+   }
+  ],
+  "returns": "A rendered link component that redirects the user to Kinde to create an organization.",
+  "example": {
+   "title": "Create an organization link",
+   "code": "import { CreateOrgLink } from \"@kinde-oss/kinde-auth-nextjs/server\";\n\nexport default function CreateOrganization() {\n  return <CreateOrgLink orgName=\"Acme\">Create organization</CreateOrgLink>;\n}",
+   "language": "tsx",
+   "explanation": "Renders a link that sends the user to Kinde to create an organization and become its member."
+  },
+  "useCases": [
+   {
+    "title": "Customer organization onboarding",
+    "scenario": "A B2B application needs customers to create their own workspace during onboarding."
+   },
+   {
+    "title": "Organization creation link",
+    "scenario": "An application provides a dedicated call-to-action for creating a new organization."
+   }
+  ],
+  "related": [
+   "Next.js App Router SDK v1",
+   "organization creation",
+   "Kinde"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does CreateOrgLink do?",
+    "answer": "CreateOrgLink starts the organization-creation flow from a Next.js application. Clicking it redirects the user to Kinde, which creates the organization and adds the user as a member.",
+    "followUp": "How would you let users choose the organization name?"
+   },
+   {
+    "question": "How is CreateOrgLink imported and rendered?",
+    "answer": "Import it from the server entry point of the Next.js SDK: @kinde-oss/kinde-auth-nextjs/server. Use it as a component and provide link content between its tags.",
+    "followUp": "Why should the import match the App Router SDK entry point?"
+   },
+   {
+    "question": "How do you provide an organization name?",
+    "answer": "The documented example passes an orgName prop, such as \"My org\", while the child text supplies the visible call-to-action. The component then performs the redirect when the user selects the link.",
+    "followUp": "What would you verify if the link did not create an organization?"
+   }
+  ],
+  "keyPoints": [
+   "Use the SDK-provided CreateOrgLink component to expose organization creation from the application.",
+   "Selecting the link redirects to Kinde and creates the organization with the initiating user included as a member.",
+   "For the Next.js App Router SDK, import CreateOrgLink from the server module.",
+   "The documented usage supplies an organization name and visible link text through JSX."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Custom claims": {
+  "sourceUrl": "https://docs.kinde.com/workflows/bindings/access-token-binding/",
+  "sourceTitle": "kinde.accessToken",
+  "summary": "Custom claims let Kinde workflows add application-specific data to access or ID tokens. They can also be supplied through public properties or token customization.",
+  "explanation": "Custom claims add application-specific information to Kinde-issued access or ID tokens. Workflows can set claims programmatically, while token customization can include supported claims and properties; standard protected claims remain read-only.",
+  "syntax": "setCustomClaim(name: string, value: any): void",
+  "parameters": [
+   {
+    "name": "name",
+    "type": "string",
+    "description": "The claim key to add or update."
+   },
+   {
+    "name": "value",
+    "type": "any",
+    "description": "The value assigned to the claim."
+   }
+  ],
+  "returns": "setCustomClaim(name: string, value: any): void; the claim is available in the token returned to the client.",
+  "example": {
+   "title": "Add a custom access-token claim",
+   "code": "import {\n  accessTokenCustomClaims,\n  onUserTokenGeneratedEvent,\n} from \"@kinde/infrastructure\";\n\nexport default async function workflow(event: onUserTokenGeneratedEvent) {\n  const accessToken = accessTokenCustomClaims<{ companyName: string }>();\n  accessToken.companyName = \"Acme Inc.\";\n}",
+   "language": "typescript",
+   "explanation": "This workflow adds a typed companyName claim to the user's access token before Kinde returns it."
+  },
+  "useCases": [
+   {
+    "title": "Pass application context to an API",
+    "scenario": "A backend API needs a tenant or entitlement value in each access token."
+   },
+   {
+    "title": "Customize identity-token data",
+    "scenario": "An application needs identity data in an ID token."
+   },
+   {
+    "title": "Expose public properties as claims",
+    "scenario": "A service stores account attributes in Kinde properties."
+   }
+  ],
+  "related": [
+   "Custom claims and data with properties",
+   "Token customization",
+   "kinde.accessToken",
+   "User token generation workflow",
+   "accessTokenCustomClaims",
+   "kinde.idToken"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a custom claim in Kinde?",
+    "answer": "A custom claim is application-specific data added to a Kinde access or ID token. It can be created through token customization or by assigning values in a token-generation workflow.",
+    "followUp": "How would you add data fetched from another system? Use a user-token-generation workflow, call the external service, and assign the resulting value to the appropriate token claim."
+   },
+   {
+    "question": "How do you add a custom claim to an access token?",
+    "answer": "Use accessTokenCustomClaims with a TypeScript type, then assign the claim property in the workflow. Kinde includes that value in the access token returned to the client.",
+    "followUp": "What must be added when using the lower-level API? Use the kinde.accessToken binding and call setCustomClaim(name, value)."
+   },
+   {
+    "question": "Which claims cannot be modified?",
+    "answer": "Standard claims that Kinde protects cannot be changed. Examples include sub, aud, exp, iat, iss, nbf, and sid; access tokens also prohibit jti.",
+    "followUp": "How can preset claims or properties be included without workflow code? Configure Token customization for the relevant application and token type, then select the desired claims or properties."
+   }
+  ],
+  "keyPoints": [
+   "Claims assigned during token generation become part of the access token delivered to the client.",
+   "The infrastructure helper supports typed claim objects, reducing mistakes when setting workflow values.",
+   "The low-level setCustomClaim method accepts a claim name and its value.",
+   "Kinde properties provide another route for representing custom data as claims.",
+   "A property must be public rather than private to be eligible for token inclusion."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Feature Flags API": {
+  "sourceUrl": "https://docs.kinde.com/releases/feature-flags/manage-feature-flags-api/",
+  "sourceTitle": "Manage feature flags through the Kinde API",
+  "summary": "Kinde’s Feature Flags API lets authenticated machine-to-machine clients create, edit, override, and delete feature flags through the Management API. API-created flags support string, integer, and boolean types; JSON flags must be created in the dashboard.",
+  "explanation": "The Feature Flags API lets a machine-to-machine application use the Kinde Management API to create, update, override, and delete feature flags. Requests require a valid access token with the relevant feature-flag scope; API-created flags can be string, integer, or boolean, while JSON flags must originate in the dashboard.",
+  "syntax": "HTTP requests to the Kinde Management API using a Bearer access token",
+  "parameters": [],
+  "returns": "The page describes feature-flag management operations rather than one single return type; individual API responses depend on the requested operation.",
+  "example": {
+   "title": "Read feature flags",
+   "code": "const token = await getManagementApiToken();\n\nconst response = await fetch(\n  \"https://<your-kinde-domain>/api/v1/feature_flags\",\n  {\n    headers: { Authorization: `Bearer ${token}` }\n  }\n);\n\nif (!response.ok) throw new Error(`HTTP ${response.status}`);\nconst flags = await response.json();\nconsole.log(flags);",
+   "language": "typescript",
+   "explanation": "Fetches feature flags from the Kinde Management API using a machine-to-machine access token."
+  },
+  "useCases": [
+   {
+    "title": "Create and update flags from deployment or operations tooling.",
+    "scenario": "Automated release administration"
+   },
+   {
+    "title": "Override a flag for a specific environment or organization.",
+    "scenario": "Targeted rollout"
+   },
+   {
+    "title": "Delete obsolete flags through an authenticated API workflow.",
+    "scenario": "Flag cleanup"
+   }
+  ],
+  "related": [
+   "Kinde Management API",
+   "machine-to-machine application",
+   "valid access token",
+   "environment override",
+   "organization override",
+   "str",
+   "int",
+   "bool"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you access the Feature Flags API?",
+    "answer": "Use a machine-to-machine application to connect to the Kinde Management API, then authenticate requests with a valid access token. The API supports adding, editing, overriding, and deleting feature flags.",
+    "followUp": "Which permissions should the application receive? Grant only the required feature-flag scopes, such as read, create, update, or delete, matching the operations it performs."
+   },
+   {
+    "question": "Which flag types can the API create?",
+    "answer": "The API accepts str for strings, int for integers, and bool for booleans. JSON is not an API-createable type, even though it is available in the Kinde dashboard.",
+    "followUp": "How would you provision a JSON flag? Create it in the dashboard first, then use the API only for supported management operations such as overrides or deletion."
+   },
+   {
+    "question": "What does the API allow you to override?",
+    "answer": "A flag can be overridden for an environment or organization, allowing a different value from the general flag configuration. This supports targeted releases without changing the base flag definition.",
+    "followUp": "What should be checked before performing an override? Confirm that the flag exists, the target environment or organization is correct, and the access token includes the required update permission."
+   }
+  ],
+  "keyPoints": [
+   "The API provides programmatic lifecycle management instead of requiring every flag change to be made in the admin interface.",
+   "API clients need a machine-to-machine application configured for Management API access.",
+   "Every Management API request must be authenticated with a valid access token.",
+   "Overrides let you target a different value to a particular environment or organization.",
+   "When creating a flag, choose one of the documented API types: str, int, or bool.",
+   "JSON flags are supported in the dashboard, but they are not part of the API's creation type set."
+  ],
+  "gotchas": [
+   "Do not try to create a JSON flag by sending type json through the API; create it in the dashboard instead.",
+   "Although dashboard-created JSON flags can later be overridden or deleted through the API, their type cannot be set by an API call."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "getAccessToken": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/frontend/react-sdk/",
+  "sourceTitle": "React SDK",
+  "summary": "getAccessToken() asynchronously reads Kinde’s cached raw access-token JWT for use in API requests. It does not refresh the token and can return undefined or an expired token.",
+  "explanation": "Call the method to read the access-token JWT currently held in session storage. It returns the cached value without refreshing it, so callers should handle an absent token and understand that the returned token may already be expired.",
+  "syntax": "const token = await getAccessToken();",
+  "parameters": [],
+  "returns": "Promise<string | undefined> — the cached raw access-token JWT, or undefined if no token is stored.",
+  "example": {
+   "title": "Call an API with the cached access token",
+   "code": "import { useKindeAuth } from \"@kinde-oss/kinde-auth-react\";\n\nexport async function callApi() {\n  const { getAccessToken } = useKindeAuth();\n  const token = await getAccessToken();\n  if (!token) return;\n\n  const response = await fetch(\"https://api.example.com/data\", {\n    headers: { Authorization: `Bearer ${token}` },\n  });\n  return response.json();\n}",
+   "language": "typescript",
+   "explanation": "Reads the cached token and sends it to an API as a bearer token."
+  },
+  "useCases": [
+   {
+    "title": "Attach a bearer token to an API request",
+    "scenario": "A signed-in React frontend needs to call a protected backend API."
+   },
+   {
+    "title": "Check authentication state before a request",
+    "scenario": "An application needs to determine whether a cached access token exists."
+   },
+   {
+    "title": "Read a token after explicit refresh",
+    "scenario": "A caller needs a newly refreshed credential."
+   }
+  ],
+  "related": [
+   "useKindeAuth",
+   "refreshToken",
+   "getToken",
+   "Authorization bearer token"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does getAccessToken return?",
+    "answer": "getAccessToken() returns a Promise<string | undefined>. It reads the raw cached access-token JWT from session storage and returns undefined when no token is stored.",
+    "followUp": "How would you obtain a fresh token? Call refreshToken() first, then call getAccessToken() to read the refreshed value."
+   },
+   {
+    "question": "Does it refresh an expired token?",
+    "answer": "No. The method only reads the cached token and does not call Kinde’s token endpoint. The returned JWT may therefore be expired.",
+    "followUp": "Why might a subsequent call return a newer token? The SDK can refresh silently in the background, after which getAccessToken() reads the updated cached value."
+   },
+   {
+    "question": "How is the returned token used?",
+    "answer": "Use the value as a bearer credential in the Authorization header when calling an API. Check for undefined before constructing the request, because signed-out users may have no stored token.",
+    "followUp": "What should the API do with the bearer token? Validate the JWT server-side before authorizing the request."
+   }
+  ],
+  "keyPoints": [
+   "The result is the raw access-token JWT, not a decoded token or an error wrapper.",
+   "Use this hook method when a frontend needs to obtain the credential for an API request.",
+   "The asynchronous result is either the cached JWT or undefined when storage has no token.",
+   "A stored token is returned as-is, including an expired JWT; this method does not contact the token endpoint.",
+   "Use getAccessToken() rather than the deprecated getToken() method."
+  ],
+  "gotchas": [
+   "The method only reads the cached JWT, so it can return an expired token. Use refreshToken() when an explicit refresh is required.",
+   "Do not use exception handling or an error-object branch to detect a missing token; the result is undefined instead."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "getAccessTokenRaw": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/nextjs-sdk/",
+  "sourceTitle": "Next.js App Router SDK - Kinde docs",
+  "summary": "getAccessTokenRaw asynchronously retrieves the raw access token through the Next.js App Router server-session API. Use it when server-side code needs the token value itself.",
+  "explanation": "In the Next.js App Router SDK, obtain the server-session helpers, call getAccessTokenRaw asynchronously, and use the resulting access-token value in server-side code. The documentation presents it as a direct token-reading method rather than a decoded-token accessor.",
+  "syntax": "const { getAccessTokenRaw } = getKindeServerSession();\nconst accessToken = await getAccessTokenRaw();",
+  "parameters": [],
+  "returns": "A Promise resolving to the raw access token.",
+  "example": {
+   "title": "Read the raw access token",
+   "code": "import { getKindeServerSession } from \"@kinde-oss/kinde-auth-nextjs/server\";\n\nexport async function GET() {\n  const { getAccessTokenRaw } = getKindeServerSession();\n  const accessToken = await getAccessTokenRaw();\n\n  return Response.json({ accessToken });\n}",
+   "language": "typescript",
+   "explanation": "Reads the raw access token in a Next.js server route and returns it as JSON."
+  },
+  "useCases": [
+   {
+    "title": "Pass through an access token",
+    "scenario": "A server route needs to forward the user's bearer credential to another service."
+   },
+   {
+    "title": "Check token availability",
+    "scenario": "Server-side diagnostics need to inspect whether a token was returned."
+   },
+   {
+    "title": "Use the raw token",
+    "scenario": "Application code needs the token string rather than decoded claims."
+   }
+  ],
+  "related": [
+   "getAccessToken",
+   "getKindeServerSession",
+   "accessTokenRaw",
+   "useKindeBrowserClient"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you retrieve a raw access token in the Next.js App Router SDK?",
+    "answer": "Call getKindeServerSession() to obtain the session helpers, then await getAccessTokenRaw(). The documented Next.js example logs the resulting access token.",
+    "followUp": "How would you get decoded token data instead? Use the SDK's separate getAccessToken method, which the page distinguishes from getAccessTokenRaw."
+   },
+   {
+    "question": "Why does the example use await with getAccessTokenRaw()?",
+    "answer": "The call is asynchronous, so server-side code should await getAccessTokenRaw() before using the returned token. The page demonstrates this inside a server-side Next.js example.",
+    "followUp": "What kind of code should contain this call? Keep it in server-side application code, where getKindeServerSession from the server entry point is available."
+   },
+   {
+    "question": "What setup is required before calling getAccessTokenRaw()?",
+    "answer": "Import getKindeServerSession from @kinde-oss/kinde-auth-nextjs/server, destructure getAccessTokenRaw from the returned session helpers, and invoke it. This is the documented setup for the Next.js App Router SDK.",
+    "followUp": "How would the browser API differ? The same page documents a browser client API separately, so use the browser-client hook there rather than the server import."
+   }
+  ],
+  "keyPoints": [
+   "Its purpose is to retrieve the access token itself rather than a decoded representation.",
+   "Create the server session object, then destructure the raw-token method from it.",
+   "Invoke the method asynchronously and store the resolved token value.",
+   "The documentation demonstrates using the resolved value directly after retrieval."
+  ],
+  "gotchas": [
+   "This returns the raw access token string, not a decoded token object."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "getClaim": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/frontend/react-sdk/",
+  "sourceTitle": "React SDK - Kinde docs",
+  "summary": "getClaim asynchronously retrieves one named claim from the current access or ID token. It reads the access token by default, or the ID token when passed idToken.",
+  "explanation": "Call getClaim with a claim name to retrieve that claim from the current session's token. It checks the access token by default; pass idToken as the second argument when the claim should come from the ID token, and await the result because the helper is asynchronous.",
+  "syntax": "getClaim(claim: string, tokenKey?: \"accessToken\" | \"idToken\")",
+  "parameters": [
+   {
+    "name": "claim",
+    "type": "string",
+    "description": "Name of the claim to retrieve."
+   },
+   {
+    "name": "tokenKey",
+    "type": "\"accessToken\" | \"idToken\" (optional)",
+    "description": "Token source; either accessToken or idToken. Defaults to accessToken."
+   }
+  ],
+  "returns": "A promise resolving to an object containing the selected claim's name and value.",
+  "example": {
+   "title": "Read a claim from the ID token",
+   "code": "const { getClaim } = useKindeAuth();\n\nconst claim = await getClaim(\"given_name\", \"idToken\");\nconsole.log(claim);",
+   "language": "typescript",
+   "explanation": "Reads the given_name claim from the ID token and logs the returned claim object."
+  },
+  "useCases": [
+   {
+    "title": "Display user profile claims",
+    "scenario": "Read identity data such as given_name from an ID token."
+   },
+   {
+    "title": "Check token audience claims",
+    "scenario": "Inspect authorization data such as aud from the access token."
+   },
+   {
+    "title": "Use session claims in React",
+    "scenario": "Read a token claim after authentication in a React component."
+   }
+  ],
+  "related": [
+   "useKindeAuth",
+   "getClaims"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does getClaim do, and which token does it use by default?",
+    "answer": "getClaim retrieves one named claim from an access or ID token. The first argument identifies the claim, while the optional second argument selects the token; accessToken is the default.",
+    "followUp": "How would you read a claim from the ID token? Pass the claim name and idToken, then await the returned value."
+   },
+   {
+    "question": "How should a caller handle the result of getClaim?",
+    "answer": "The method is asynchronous, so callers should await it. The result is an object containing the claim name and its value, such as a scalar or an array.",
+    "followUp": "Why might the value be an array? Claims such as aud can contain multiple values, so consumers should not assume every claim is a string."
+   },
+   {
+    "question": "How is getClaim used in a React component?",
+    "answer": "Use useKindeAuth to obtain getClaim inside a React component, then call it with the desired claim key. Supplying idToken reads from the ID token instead of the default access token.",
+    "followUp": "How could you retrieve every claim instead? Use the related getClaims helper, optionally passing idToken for the ID token."
+   }
+  ],
+  "keyPoints": [
+   "The helper can inspect claims from either of the two supported token types.",
+   "Omitting the token selector makes getClaim read from the access token.",
+   "The function returns one selected claim rather than the complete token claims set.",
+   "The React API accepts a string claim key and an optional camelCase token selector."
+  ],
+  "gotchas": [
+   "Use camelCase token names such as idToken; the older id_token spelling is no longer the documented form for this React API."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "getClaimValue": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/typescript-sdk/",
+  "sourceTitle": "TypeScript",
+  "summary": "getClaimValue extracts the value of a named claim from the current session's access or ID token. It defaults to the access token unless you provide id_token.",
+  "explanation": "getClaimValue extracts one named claim from a token in the current session and returns only that claim's value. It uses the access token by default; pass the optional token key to read the ID token instead.",
+  "syntax": "client.getClaimValue(sessionManager, claim, tokenKey?)",
+  "parameters": [
+   {
+    "name": "sessionManager",
+    "type": "SessionManager",
+    "description": "Session manager for the current session."
+   },
+   {
+    "name": "claim",
+    "type": "string",
+    "description": "Name of the claim to extract."
+   },
+   {
+    "name": "tokenKey",
+    "type": "ClaimTokenType",
+    "description": "Optional token source: access_token or id_token. Defaults to access_token."
+   }
+  ],
+  "returns": "The value of the requested claim from the selected token.",
+  "example": {
+   "title": "Read an access-token claim value",
+   "code": "const value = client.getClaimValue(sessionManager, \"given_name\");\nconsole.log(value);",
+   "language": "typescript",
+   "explanation": "Reads the given_name claim from the current session's access token and returns its value."
+  },
+  "useCases": [
+   {
+    "title": "Inspect access-token data",
+    "scenario": "Read standard access-token claims such as aud or given_name during a server request."
+   },
+   {
+    "title": "Read ID-token identity claims",
+    "scenario": "Retrieve identity claims that are present in the ID token."
+   },
+   {
+    "title": "Access application claims",
+    "scenario": "Use custom claims exposed by Kinde in the selected token."
+   }
+  ],
+  "related": [
+   "getClaim",
+   "SessionManager",
+   "ClaimTokenType"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does getClaimValue return, and how does it differ from getClaim?",
+    "answer": "It extracts a named claim from the selected token in the current session and returns only the claim value. Unlike getClaim, it does not return an object containing the claim name.",
+    "followUp": "How would you read a claim from the ID token? Pass \"id_token\" as the optional tokenKey argument."
+   },
+   {
+    "question": "What arguments does getClaimValue accept?",
+    "answer": "The required inputs are a SessionManager and a string claim name. The optional tokenKey selects either access_token or id_token.",
+    "followUp": "What happens when tokenKey is omitted? The access token is selected by default."
+   },
+   {
+    "question": "Show how to retrieve a claim from the access token and from the ID token.",
+    "answer": "A call such as client.getClaimValue(sessionManager, \"given_name\") retrieves the given_name claim value from the current session. Supplying a third argument lets the call target the ID token.",
+    "followUp": "How would you retrieve the email claim from the ID token? Use client.getClaimValue(sessionManager, \"email\", \"id_token\")."
+   }
+  ],
+  "keyPoints": [
+   "The method reads one named claim from a token associated with the current session.",
+   "The optional token selector supports access_token and id_token.",
+   "A basic call retrieves the given_name value using the default token selection.",
+   "Passing id_token as the third argument reads the email claim from the ID token."
+  ],
+  "gotchas": [
+   "If tokenKey is omitted, the method reads the access token rather than the ID token."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "getIdToken": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/frontend/javascript-sdk/",
+  "sourceTitle": "JavaScript SDK - Kinde docs",
+  "summary": "getIdToken asynchronously returns Kinde’s raw ID token from memory. It accepts no arguments and may resolve to undefined when no ID token is available.",
+  "explanation": "Call getIdToken without arguments to asynchronously retrieve the raw ID token held in memory. The promise resolves to the token string when one is available, or undefined otherwise.",
+  "syntax": "await kinde.getIdToken()",
+  "parameters": [],
+  "returns": "Promise<string | undefined>",
+  "example": {
+   "title": "Read the raw ID token",
+   "code": "import { kinde } from \"@kinde/js-utils\";\n\nconst idToken = await kinde.getIdToken();\nconsole.log(idToken);",
+   "language": "typescript",
+   "explanation": "Awaits the raw ID token currently held in memory and logs it when available."
+  },
+  "useCases": [
+   {
+    "title": "Read identity-token data",
+    "scenario": "Inspect the authenticated user’s raw identity token for client-side processing."
+   },
+   {
+    "title": "Read organization context",
+    "scenario": "Access organization-related claims included in the ID token."
+   },
+   {
+    "title": "Modernize token access",
+    "scenario": "Replace deprecated token retrieval usage in the new authentication flow."
+   }
+  ],
+  "related": [
+   "getToken",
+   "id_token",
+   "org_code",
+   "permissions",
+   "kinde"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does getIdToken return?",
+    "answer": "getIdToken is an asynchronous JavaScript SDK method that returns the raw ID token from memory. Its return type is Promise<string | undefined>, so callers should await it and account for the token being unavailable.",
+    "followUp": "How would you distinguish it from an access-token helper? getIdToken returns the ID token, which carries identity-oriented claims; an access-token helper is used when authorizing API calls."
+   },
+   {
+    "question": "Does getIdToken accept options?",
+    "answer": "The method takes no arguments in the current API. The documentation marks the older getIdToken(options) form as deprecated.",
+    "followUp": "What should a migration preserve? Remove the options argument and handle the promise result as possibly undefined."
+   },
+   {
+    "question": "How should callers handle the result?",
+    "answer": "The SDK keeps the raw ID token in memory and getIdToken retrieves it asynchronously. The result can be a string or undefined, so code should not assume authentication has produced a value.",
+    "followUp": "What should code do when the result is undefined? Treat the user as lacking an available ID token and use the application’s authentication or reauthentication path."
+   }
+  ],
+  "keyPoints": [
+   "Retrieves the unparsed ID token rather than a decoded claims object.",
+   "Because the method is asynchronous, await the result; it may resolve without a token.",
+   "The returned value is a JWT supplied after authentication.",
+   "The ID token can include the organizations associated with the user.",
+   "Kinde adds organization and permission information to token claims."
+  ],
+  "gotchas": [
+   "Do not pass options; the documented options form is deprecated.",
+   "Use getIdToken for the ID token rather than relying on the deprecated getToken method."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "getIntegerFlag": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/nextjs-sdk/",
+  "sourceTitle": "Next.js App Router SDK - Kinde docs",
+  "summary": "Gets an integer feature flag for the current Kinde session. A numeric default can be supplied for an unset flag.",
+  "explanation": "Call the method with a flag code and a numeric fallback. It reads the integer feature flag associated with the current access token; supplying a default prevents a missing flag from producing an error.",
+  "syntax": "getIntegerFlag(code, defaultValue)",
+  "parameters": [
+   {
+    "name": "code",
+    "type": "string",
+    "description": "The feature-flag code to check."
+   },
+   {
+    "name": "defaultValue",
+    "type": "number",
+    "description": "The numeric value returned when the flag is not set."
+   }
+  ],
+  "returns": "number | Error",
+  "example": {
+   "title": "Read an integer feature flag",
+   "code": "import { getKindeServerSession } from \"@kinde-oss/kinde-auth-nextjs/server\";\n\nexport async function GET() {\n  const { getIntegerFlag } = getKindeServerSession();\n  const billingVersion = await getIntegerFlag(\"billingVersion\", 0);\n  return Response.json({ billingVersion });\n}",
+   "language": "typescript",
+   "explanation": "Reads the integer feature flag and uses 0 when the flag is not configured."
+  },
+  "useCases": [
+   {
+    "title": "Select a rollout or billing version",
+    "scenario": "Gradual rollouts"
+   },
+   {
+    "title": "Read a per-user or per-organization numeric limit",
+    "scenario": "Quota configuration"
+   },
+   {
+    "title": "Keep behavior deterministic when configuration is absent",
+    "scenario": "Safe defaults"
+   }
+  ],
+  "related": [
+   "getBooleanFlag",
+   "getFlag",
+   "getStringFlag",
+   "getKindeServerSession"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does getIntegerFlag do?",
+    "answer": "getIntegerFlag reads an integer feature flag for the current session and returns a number. The method accepts the flag code and a default number used when the flag is not set.",
+    "followUp": "What should the application do if the flag is absent? Pass an explicit fallback so the feature has deterministic behavior."
+   },
+   {
+    "question": "What are the method's arguments?",
+    "answer": "The first argument identifies the flag, while defaultValue supplies the value to use when that flag is unavailable. In the Next.js server SDK, the method is obtained from getKindeServerSession and awaited.",
+    "followUp": "How would you expose the result from a route? Read the flag in the handler, then include the resulting number in the response."
+   },
+   {
+    "question": "What does the method return?",
+    "answer": "The documented result is a number or an Error. A numeric default is therefore useful when a feature flag may not exist.",
+    "followUp": "How can a caller distinguish a configured value from a fallback? The method alone does not provide that distinction; track configuration separately or use a lower-level flag API if needed."
+   }
+  ],
+  "keyPoints": [
+   "The method retrieves an integer feature flag from the current access token.",
+   "Use code to name the feature flag being requested.",
+   "defaultValue controls the number returned when the requested flag is missing.",
+   "In the server-side Next.js SDK, obtain the method from the Kinde server-session helper and await it.",
+   "The documented result is either a number or an Error."
+  ],
+  "gotchas": [
+   "Provide the fallback value when calling this method; the page marks defaultValue as required."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "getKindeServerSession": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/nextjs-sdk/",
+  "sourceTitle": "Next.js App Router SDK - Kinde docs",
+  "summary": "getKindeServerSession provides server-side Kinde authentication data in Next.js App Router server components. Use its returned methods to check authentication and retrieve user, authorization, organization, or token information.",
+  "explanation": "In a Next.js App Router server component, getKindeServerSession provides functions for checking authentication and reading Kinde user data. Invoke the helper, then await methods such as isAuthenticated and getUser to decide whether to render protected content.",
+  "syntax": "const { isAuthenticated, getUser } = getKindeServerSession();",
+  "parameters": [],
+  "returns": "An object containing server-session functions, including authentication, user, authorization, organization, and token helpers.",
+  "example": {
+   "title": "Read a server session",
+   "code": "import { getKindeServerSession } from \"@kinde-oss/kinde-auth-nextjs/server\";\n\nexport default async function Page() {\n  const { isAuthenticated, getUser } = getKindeServerSession();\n  if (!(await isAuthenticated())) return <p>Sign in required</p>;\n  const user = await getUser();\n  return <p>Welcome, {user?.given_name}</p>;\n}",
+   "language": "tsx",
+   "explanation": "Call the helper in an async Next.js server component, then await its session functions before rendering protected content."
+  },
+  "useCases": [
+   {
+    "title": "Protect a server component",
+    "scenario": "A server-rendered page needs to allow only signed-in users."
+   },
+   {
+    "title": "Read the current user",
+    "scenario": "A page needs the current Kinde identity for personalized output."
+   },
+   {
+    "title": "Access a server token",
+    "scenario": "Server code must obtain an access token for an authorized downstream request."
+   }
+  ],
+  "related": [
+   "isAuthenticated",
+   "getUser",
+   "getAccessTokenRaw",
+   "accessTokenRaw",
+   "getPermissions",
+   "getOrganization",
+   "useKindeAuth"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is getKindeServerSession used for?",
+    "answer": "getKindeServerSession is a server-side helper for retrieving Kinde authentication data in a Next.js server component. It exposes methods such as isAuthenticated and getUser, which are used to protect rendering and access the current user.",
+    "followUp": "How should a protected page handle an unauthenticated request? Check isAuthenticated first and return an appropriate response or redirect instead of rendering protected content."
+   },
+   {
+    "question": "How do you protect a Next.js server component?",
+    "answer": "Call getKindeServerSession in the server component, destructure the required session methods, and await them. The current documentation shows isAuthenticated for the access check and getUser for user data.",
+    "followUp": "Why avoid reading the session only in client code? Server-side checks protect the initial request and keep authentication decisions close to the protected resource."
+   },
+   {
+    "question": "What kinds of data can the helper provide?",
+    "answer": "The helper exposes server-side Kinde Auth data, including access-token and user-session operations documented for the Next.js App Router SDK. The exact methods should be selected according to whether the component needs identity, authorization, or token data.",
+    "followUp": "When would an access token be preferable to user data? Use the token when the server component must call an authorized downstream API on the user's behalf."
+   }
+  ],
+  "keyPoints": [
+   "Use the helper from a Next.js server component to access the authenticated user’s Kinde data.",
+   "Import and call getKindeServerSession from the Next.js server SDK.",
+   "A protected page can perform its authentication check before handling or rendering its content."
+  ],
+  "gotchas": [
+   "Session functions are asynchronous, so await their results."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "getOrganization": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/typescript-sdk/",
+  "sourceTitle": "TypeScript",
+  "summary": "Retrieves details for the organization associated with the signed-in user. In the TypeScript SDK, it is called with a session manager and returns an object containing the organization code.",
+  "explanation": "Call getOrganization with the session manager to obtain details about the organization associated with the currently signed-in user. The documented result contains an orgCode value identifying that organization.",
+  "syntax": "kindeClient.getOrganization(sessionManager);",
+  "parameters": [
+   {
+    "name": "sessionManager",
+    "type": "session manager",
+    "description": "Session manager used by the SDK to access the signed-in user’s session."
+   }
+  ],
+  "returns": "An organization-details object containing orgCode, for example {\"orgCode\":\"org_1234\"}.",
+  "example": {
+   "title": "Get the signed-in organization",
+   "code": "const org = await kindeClient.getOrganization(sessionManager);\nconsole.log(org.orgCode);",
+   "language": "typescript",
+   "explanation": "Retrieves the signed-in user’s organization and prints its organization code."
+  },
+  "useCases": [
+   {
+    "title": "Identify the active organization",
+    "scenario": "Determine which organization is associated with the current authenticated session."
+   },
+   {
+    "title": "Use the organization code",
+    "scenario": "Pass the current organization identifier to application authorization or tenant-aware logic."
+   }
+  ],
+  "related": [
+   "getUserOrganizations",
+   "orgCode",
+   "sessionManager"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does getOrganization do?",
+    "answer": "It retrieves details for the organization associated with the signed-in user. In the TypeScript SDK, pass the sessionManager argument and await the returned value.",
+    "followUp": "What identifier does the documented example return? It returns an object containing an orgCode such as org_1234."
+   },
+   {
+    "question": "How do you call getOrganization in the TypeScript SDK?",
+    "answer": "The TypeScript SDK signature is kindeClient.getOrganization(sessionManager). The call is asynchronous, so it should be awaited before using the result.",
+    "followUp": "How would you inspect the result? Store the awaited value and read its orgCode property."
+   },
+   {
+    "question": "What does the returned value contain?",
+    "answer": "The function returns organization details represented by an object such as { orgCode: 'org_1234' }. The orgCode identifies the organization connected to the user’s session.",
+    "followUp": "How can you obtain all organizations instead? Use getUserOrganizations, which returns an object containing orgCodes."
+   }
+  ],
+  "keyPoints": [
+   "The SDK groups getOrganization with getUserOrganizations as helpers for extracting organization information.",
+   "In the TypeScript SDK, call the method with sessionManager and await the organization object.",
+   "The method resolves details for the organization tied to the user’s current login.",
+   "Use getUserOrganizations instead when the requirement is to retrieve the user’s organization codes collectively."
+  ],
+  "gotchas": [
+   "This function concerns the organization the user is currently logged into, not an arbitrary organization lookup."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "getPermission": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/frontend/react-sdk/",
+  "sourceTitle": "React SDK - Kinde docs",
+  "summary": "Checks whether the current user has a specified permission in the active organization. It returns the permission key, organization code, and a boolean access result.",
+  "explanation": "In Kinde's React SDK, obtain getPermission from useKindeAuth and pass it a permission key such as read:todos. The asynchronous call evaluates the current user's permission for their active organization and returns an object containing the key, organization code, and whether access is granted.",
+  "syntax": "const { getPermission } = useKindeAuth();\nawait getPermission(permissionKey);",
+  "parameters": [
+   {
+    "name": "permissionKey",
+    "type": "string",
+    "description": "Permission key to check, such as read:todos."
+   }
+  ],
+  "returns": "A promise resolving to an object containing permissionKey, orgCode, and isGranted.",
+  "example": {
+   "title": "Check a permission",
+   "code": "const { getPermission } = useKindeAuth();\n\nconst runAsyncFunction = async () => {\n  const permission = await getPermission(\"read:todos\");\n  console.log(permission);\n};\n\n<button onClick={runAsyncFunction}>Get Permission</button>;",
+   "language": "typescript",
+   "explanation": "Checks the signed-in user's access to the specified permission and returns its state."
+  },
+  "useCases": [
+   {
+    "title": "Gate a user action",
+    "scenario": "A todo application needs to decide whether to show its create or edit control."
+   },
+   {
+    "title": "Protect application UI",
+    "scenario": "A frontend route should display content only to users with a required permission."
+   },
+   {
+    "title": "Inspect organization context",
+    "scenario": "An organization-aware interface needs to report the permission context used for a decision."
+   }
+  ],
+  "related": [
+   "useKindeAuth",
+   "getPermissions",
+   "ProtectedRoute",
+   "has"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does getPermission do and what does it return?",
+    "answer": "getPermission checks one permission for the current user. In the React SDK it is called through useKindeAuth and resolves to an object with permissionKey, orgCode, and isGranted.",
+    "followUp": "How would you inspect every permission instead? Use getPermissions, which returns the current organization's permission collection."
+   },
+   {
+    "question": "How is getPermission called in the React SDK?",
+    "answer": "Pass the permission key as a string, for example read:todos. The call is asynchronous, so await its result before using the returned access state.",
+    "followUp": "What should the UI do with isGranted? Use it to conditionally enable or render the protected action."
+   },
+   {
+    "question": "Why does the result include an organization code?",
+    "answer": "Permission values are tied to the organization the user is signed into. The result includes orgCode so the organization context can be identified.",
+    "followUp": "Why does organization context matter? A user can have different permissions in different organizations, so checks must use the active organization."
+   }
+  ],
+  "keyPoints": [
+   "Use getPermission to evaluate one named permission rather than retrieve the full permission list.",
+   "In React, access the helper by destructuring it from useKindeAuth.",
+   "The method accepts a permission key, represented as a string such as create:todos.",
+   "The result identifies the checked key, active organization, and whether the permission is granted.",
+   "Use the related getPermissions helper when the application needs the complete active-organization list."
+  ],
+  "gotchas": [
+   "Configure the application to read permissions before relying on this helper.",
+   "The permission data becomes available after the user is verified as signed in."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "getPermissions": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/frontend/javascript-sdk/",
+  "sourceTitle": "JavaScript SDK - Kinde docs",
+  "summary": "getPermissions asynchronously returns all permissions for the current user in the organization they are signed in to. The result includes the organization code and an array of permission keys.",
+  "explanation": "Call getPermissions to asynchronously obtain every permission assigned to the current user within the organization they are signed into. The returned object identifies that organization with orgCode and provides the permission keys in a permissions array.",
+  "syntax": "kinde.getPermissions();",
+  "parameters": [],
+  "returns": "A Promise resolving to an object containing orgCode and permissions, where permissions is an array of permission keys.",
+  "example": {
+   "title": "Read the current user's permissions",
+   "code": "const { getPermissions } = useKindeAuth();\n\nconst runAsyncFunction = async () => {\n  const permissions = await getPermissions();\n  console.log(permissions);\n};\n\nrunAsyncFunction();",
+   "language": "javascript",
+   "explanation": "Asynchronously retrieves the signed-in user's permissions and logs the organization code and permission keys."
+  },
+  "useCases": [
+   {
+    "title": "Load available capabilities",
+    "scenario": "Render or enable features based on the user's complete access set."
+   },
+   {
+    "title": "Scope access to an organization",
+    "scenario": "Associate authorization data with the organization currently selected by the user."
+   },
+   {
+    "title": "Build a permission-aware interface",
+    "scenario": "Inspect several permissions at once before constructing an access-aware view."
+   }
+  ],
+  "related": [
+   "getPermission",
+   "useKindeAuth",
+   "permissions",
+   "orgCode"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does getPermissions return?",
+    "answer": "getPermissions returns all permissions for the current user in their signed-in organization. In the JavaScript SDK, the result contains orgCode and a permissions array.",
+    "followUp": "How would you check one permission? Use getPermission with the permission key and inspect its isGranted value."
+   },
+   {
+    "question": "What is the signature of getPermissions?",
+    "answer": "The call takes no arguments and is used as kinde.getPermissions(). The documented result includes the organization code and permission keys such as create:todos or read:todos.",
+    "followUp": "How can permissions be made available to the application? Configure the permissions in Kinde and ensure the application reads the access token data."
+   },
+   {
+    "question": "Why does the response include orgCode?",
+    "answer": "Permissions are organization-scoped: the function reports permissions for the organization in which the user is currently signed in. The response separates that organization identifier from the permissions list.",
+    "followUp": "What should code do when it needs a single authorization decision? Call getPermission for the relevant key rather than scanning the complete list."
+   }
+  ],
+  "keyPoints": [
+   "The function returns the complete permission set for the current user’s active organization.",
+   "The permissions field is an array of permission-key strings.",
+   "The response includes orgCode to identify the organization associated with the permissions.",
+   "The permission data originates in a permissions claim carried by the access token."
+  ],
+  "gotchas": [
+   "Configure the application to read permissions before relying on the returned access data."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "getRoles": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/native/expo/",
+  "sourceTitle": "Expo",
+  "summary": "getRoles asynchronously returns the current user's roles as an array of Role objects. It requires the roles claim to be enabled in the application's token settings.",
+  "explanation": "Call getRoles to asynchronously retrieve the roles associated with the current user. The result is an array of Role objects; roles must be included in the token through the application's settings for this information to be available.",
+  "syntax": "getRoles = async (): Promise<Role[]>",
+  "parameters": [],
+  "returns": "Promise<Role[]>",
+  "example": {
+   "title": "Read the current user's roles",
+   "code": "import { getRoles } from \"@kinde/expo/utils\";\n\nconst roles = await getRoles();\nconsole.log(roles);",
+   "language": "typescript",
+   "explanation": "Fetches the current user's roles and logs the returned role objects."
+  },
+  "useCases": [
+   {
+    "title": "Role-aware UI",
+    "scenario": "Render or tailor application behavior based on the authenticated user's assigned roles."
+   },
+   {
+    "title": "Client-side access checks",
+    "scenario": "Check whether the current user has a role before allowing role-dependent application actions."
+   },
+   {
+    "title": "Display role information",
+    "scenario": "Inspect role metadata such as IDs, keys, and names for account context."
+   }
+  ],
+  "related": [
+   "getUserProfile",
+   "getFlag",
+   "Role"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does getRoles return?",
+    "answer": "getRoles is an asynchronous utility that returns a Promise resolving to an array of Role objects. Each role can include fields such as id, key, and name.",
+    "followUp": "What must be configured if the returned roles are missing? Enable the roles claim in the application's token settings."
+   },
+   {
+    "question": "How do you call getRoles?",
+    "answer": "The function is called without arguments: await getRoles(). It reads the current user's roles from the available authentication token.",
+    "followUp": "How would you handle the result safely? Await it inside an async flow and treat the result as a collection that may be empty."
+   },
+   {
+    "question": "Why might getRoles not provide the expected roles?",
+    "answer": "Roles are not guaranteed to be present because they are optional in the token. The application must be configured to add the roles claim before the function can use it.",
+    "followUp": "What should authorization code do when no roles are returned? Deny role-dependent access rather than assuming a default privileged role."
+   }
+  ],
+  "keyPoints": [
+   "Use getRoles to obtain the roles belonging to the currently authenticated user.",
+   "Its asynchronous signature resolves to an array of Role values.",
+   "The function is intended for reading user roles, not changing role assignments.",
+   "Await the call before using the returned collection.",
+   "A returned role object includes an id field."
+  ],
+  "gotchas": [
+   "The roles claim is optional, so enable roles in the application settings before expecting getRoles to return them."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "getStringFlag": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/frontend/javascript-sdk/",
+  "sourceTitle": "JavaScript SDK - Kinde docs",
+  "summary": "Retrieves a string feature flag from the user's access token. An optional string fallback handles a flag that is not found.",
+  "explanation": "Call getStringFlag with a flag code and a string fallback. It reads the string feature flag from the access token's feature_flags claim; the fallback is used when the flag is not set, while a wrong flag type is invalid.",
+  "syntax": "kinde.getStringFlag(code, defaultValue)",
+  "parameters": [
+   {
+    "name": "code",
+    "type": "string",
+    "description": "Name or code of the feature flag to retrieve."
+   },
+   {
+    "name": "defaultValue",
+    "type": "string, optional",
+    "description": "String returned if the flag is not found."
+   }
+  ],
+  "returns": "string",
+  "example": {
+   "title": "Read a string feature flag",
+   "code": "const theme = kinde.getStringFlag(\"theme\", \"system\");\nconsole.log(theme);",
+   "language": "typescript",
+   "explanation": "Reads the user's string-valued theme flag and uses \"system\" when the flag is unavailable."
+  },
+  "useCases": [
+   {
+    "title": "Theme selection",
+    "scenario": "Choose a user's visual theme while retaining a safe application default."
+   },
+   {
+    "title": "Personalized configuration",
+    "scenario": "Toggle string-based UI or product configuration per user."
+   }
+  ],
+  "related": [
+   "getFlag",
+   "getBooleanFlag",
+   "getIntegerFlag",
+   "feature_flags"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does getStringFlag read, and what are its arguments?",
+    "answer": "It retrieves a string feature flag from the access token's feature_flags claim. The first argument identifies the flag, and the second supplies a fallback value.",
+    "followUp": "What should happen if the flag is missing? Use the provided default; without one, the SDK reports an error."
+   },
+   {
+    "question": "What does the defaultValue parameter do?",
+    "answer": "The method returns a string value. Its default value is returned when the requested flag is not found.",
+    "followUp": "How would you avoid an exception for optional configuration? Pass an explicit string fallback such as \"system\"."
+   },
+   {
+    "question": "What happens when the flag has the wrong type?",
+    "answer": "The requested flag must actually be string-typed. Calling this helper for a boolean flag causes a type error rather than converting the value.",
+    "followUp": "Which helper should be used for a boolean flag? Use the SDK's boolean-flag helper instead of getStringFlag."
+   }
+  ],
+  "keyPoints": [
+   "The helper obtains a string-valued flag from the access token's feature_flags claim.",
+   "code identifies which feature flag to retrieve.",
+   "defaultValue supplies a string fallback for an absent flag.",
+   "The documented call pattern passes a flag code followed by a default string."
+  ],
+  "gotchas": [
+   "Provide a default value when using the documented JavaScript SDK helper."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "getUser": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/frontend/javascript-sdk/",
+  "sourceTitle": "JavaScript SDK - Kinde docs",
+  "summary": "`getUser()` returns the current user’s profile from the Kinde JavaScript client. Its result is a `KindeUser`, with profile fields typed as `string | undefined`.",
+  "explanation": "`getUser()` reads the profile associated with the current user from the client. It returns a `KindeUser`, whose profile fields may be strings or undefined.",
+  "syntax": "kinde.getUser();",
+  "parameters": [],
+  "returns": "KindeUser",
+  "example": {
+   "title": "Read the current user",
+   "code": "const user = kinde.getUser();\nconsole.log(user);",
+   "language": "javascript",
+   "explanation": "Reads the current user profile from the Kinde client."
+  },
+  "useCases": [
+   {
+    "title": "Render user information",
+    "scenario": "Display signed-in user details in a browser interface."
+   },
+   {
+    "title": "Access the current profile",
+    "scenario": "Read profile data already available in the client session."
+   },
+   {
+    "title": "Handle optional fields",
+    "scenario": "Inspect optional profile properties while building client-side logic."
+   }
+  ],
+  "related": [
+   "getUserProfile",
+   "KindeUser"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `getUser()` return?",
+    "answer": "`getUser()` returns the current user’s profile from the client and has the `KindeUser` type. Its profile fields can be `string` or `undefined`.",
+    "followUp": "When should a freshly mapped profile be requested instead? Use the asynchronous `getUserProfile()` helper after session restoration or a redirect."
+   },
+   {
+    "question": "How do you call `getUser()`?",
+    "answer": "Call the helper on the configured Kinde client: `kinde.getUser()`. The result represents the profile for the current user.",
+    "followUp": "How can the result be used in an application? Read its profile properties, while accounting for fields that may be undefined."
+   },
+   {
+    "question": "How does `getUser()` differ from `getUserProfile()`?",
+    "answer": "`getUser()` is the synchronous client helper for the current profile. `getUserProfile()` is asynchronous and is preferred when a freshly mapped profile is needed after session restoration.",
+    "followUp": "What is the return type of the asynchronous alternative? It returns `Promise<KindeUser | undefined>`."
+   }
+  ],
+  "keyPoints": [
+   "The helper provides the current user’s client-side profile.",
+   "Individual profile properties can be absent and should be treated as undefined.",
+   "Invoke the helper through the Kinde client to obtain user information."
+  ],
+  "gotchas": [
+   "Handle missing profile fields as undefined rather than null."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "getUserOrganizations": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/frontend/react-sdk/",
+  "sourceTitle": "React SDK - Kinde docs",
+  "summary": "Retrieves an array of every organization the authenticated user can access. In the React SDK, call it from useKindeAuth() and await the result.",
+  "explanation": "Call this method from the Kinde React SDK to asynchronously retrieve every organization available to the authenticated user. The result is an array that can be used to display an organization list or build an organization switcher.",
+  "syntax": "getUserOrganizations(): Promise<Organization[]>",
+  "parameters": [],
+  "returns": "An array of all organizations the user has access to.",
+  "example": {
+   "title": "List a user's organizations",
+   "code": "const { getUserOrganizations } = useKindeAuth();\n\nasync function showOrganizations() {\n  const organizations = await getUserOrganizations();\n  console.log(organizations);\n}\n\nshowOrganizations();",
+   "language": "javascript",
+   "explanation": "Calls the React SDK method and logs the organizations available to the authenticated user."
+  },
+  "useCases": [
+   {
+    "title": "Populate an organization switcher",
+    "scenario": "Organization selection"
+   },
+   {
+    "title": "Show destinations available to the user",
+    "scenario": "Access-aware navigation"
+   },
+   {
+    "title": "Display the user's organization memberships",
+    "scenario": "Account context"
+   }
+  ],
+  "related": [
+   "getOrganization",
+   "useKindeAuth",
+   "getUser"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does getUserOrganizations return?",
+    "answer": "It retrieves an array containing all organizations the user has access to. In the React SDK, obtain the method from useKindeAuth and await its result.",
+    "followUp": "How could the result support organization switching? Use the returned organization choices to let the user select a target, then initiate authentication or application-specific switching with that organization's code."
+   },
+   {
+    "question": "How do you call getUserOrganizations?",
+    "answer": "The React documentation shows it being called without arguments: getUserOrganizations(). The call is asynchronous, so its result should be awaited before it is consumed.",
+    "followUp": "What should the UI do while the promise is pending? Render a loading state, then handle the resolved organization list before enabling selection."
+   },
+   {
+    "question": "What is a practical UI use for this method?",
+    "answer": "The method is useful when an application needs to present the organizations available to a user. The documentation's example logs the resolved value, while the returned list can also drive an organization selector.",
+    "followUp": "What additional organization context may be needed after selection? Retrieve or use the selected organization's code when the surrounding SDK flow requires a specific organization."
+   }
+  ],
+  "keyPoints": [
+   "The method returns the complete set of organizations available to the user.",
+   "In React, access the function by destructuring it from useKindeAuth().",
+   "Await the call before using its result because the documented usage treats it as asynchronous.",
+   "A button handler can trigger the lookup in response to user interaction."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "handleAuth": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/nextjs-sdk/",
+  "sourceTitle": "Next.js App Router SDK - Kinde docs",
+  "summary": "`handleAuth()` creates the Next.js route handler for Kinde authentication endpoints. In the App Router, export it as the route’s `GET` handler from `app/api/auth/[kindeAuth]/route.ts`.",
+  "explanation": "`handleAuth()` creates the route handler used by Next.js to expose Kinde authentication endpoints. In the App Router, call it when exporting the route’s `GET` handler from `app/api/auth/[kindeAuth]/route.ts`.",
+  "syntax": "handleAuth()",
+  "parameters": [],
+  "returns": "A Next.js route handler for Kinde authentication endpoints.",
+  "example": {
+   "title": "Create a Kinde auth route",
+   "code": "import { handleAuth } from \"@kinde-oss/kinde-auth-nextjs/server\";\n\nexport const GET = handleAuth();",
+   "language": "typescript",
+   "explanation": "Exports a GET route handler that serves Kinde authentication endpoints in a Next.js App Router application."
+  },
+  "useCases": [
+   {
+    "title": "Create the Kinde auth endpoint",
+    "scenario": "Next.js App Router setup"
+   },
+   {
+    "title": "Handle Kinde login and related auth endpoints",
+    "scenario": "Authentication route exposure"
+   },
+   {
+    "title": "Connect a Next.js route to Kinde authentication",
+    "scenario": "Server-side SDK integration"
+   }
+  ],
+  "related": [
+   "withAuth",
+   "getKindeServerSession",
+   "useKindeAuth"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `handleAuth` do in the Next.js SDK?",
+    "answer": "`handleAuth` is imported from `@kinde-oss/kinde-auth-nextjs/server` and called to produce the handler for Kinde authentication routes. In the App Router, that handler is exported as `GET`.",
+    "followUp": "How would you expose the endpoint? Create `app/api/auth/[kindeAuth]/route.ts` and export `GET = handleAuth()` from it."
+   },
+   {
+    "question": "Where should `handleAuth` be placed in an App Router project?",
+    "answer": "The route uses a dynamic `[kindeAuth]` segment under `app/api/auth`. This gives the SDK a route location through which Kinde authentication endpoints are handled.",
+    "followUp": "What should the route file contain? Import `handleAuth` from the server package and export its result as the route’s GET handler."
+   },
+   {
+    "question": "Which package entry point and HTTP method are shown for the App Router?",
+    "answer": "The current App Router example uses the server entry point, `@kinde-oss/kinde-auth-nextjs/server`, rather than a client-side import. The resulting function is assigned to the route’s GET export.",
+    "followUp": "How does this differ from the Pages Router? There, the documentation shows a catch-all API file exporting `default handleAuth()` instead."
+   }
+  ],
+  "keyPoints": [
+   "Import `handleAuth` from the Kinde Next.js SDK’s server module.",
+   "Call the function and export its result as the route’s GET handler.",
+   "The documented App Router file path is `app/api/auth/[kindeAuth]/route.ts`.",
+   "The generated handler serves Kinde authentication endpoints inside the Next.js application."
+  ],
+  "gotchas": [
+   "The function is used to create the Kinde auth endpoint, not as a general-purpose authentication check.",
+   "For an App Router route, assign the returned handler to the exported `GET` method."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "isAuthenticated": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/nextjs-sdk/",
+  "sourceTitle": "Next.js App Router SDK",
+  "summary": "isAuthenticated checks whether the current Kinde session represents an authenticated user. In a Next.js server component, call it through getKindeServerSession and await the boolean result.",
+  "explanation": "In the Next.js App Router SDK, obtain the server-session helpers with getKindeServerSession, then call isAuthenticated and await its result. The function reports whether the current session represents an authenticated user; use that boolean to allow protected behavior or prompt for sign-in.",
+  "syntax": "const { isAuthenticated } = getKindeServerSession();\nconst authenticated = await isAuthenticated();",
+  "parameters": [],
+  "returns": "A boolean indicating whether the user is authenticated.",
+  "example": {
+   "title": "Check authentication in a Next.js server component",
+   "code": "import { getKindeServerSession } from \"@kinde-oss/kinde-auth-nextjs/server\";\n\nexport default async function Page() {\n  const { isAuthenticated } = getKindeServerSession();\n  const authenticated = await isAuthenticated();\n  return <p>{authenticated ? \"Signed in\" : \"Please sign in\"}</p>;\n}",
+   "language": "tsx",
+   "explanation": "Reads the server session and awaits the boolean authentication check."
+  },
+  "useCases": [
+   {
+    "title": "Gate a page or component",
+    "scenario": "Protect server-rendered content"
+   },
+   {
+    "title": "Render signed-in or sign-in UI",
+    "scenario": "Choose the appropriate access path"
+   },
+   {
+    "title": "Use the client-side equivalent",
+    "scenario": "Inspect browser authentication state"
+   }
+  ],
+  "related": [
+   "getKindeServerSession",
+   "useKindeBrowserClient",
+   "getUser",
+   "getPermission"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you check authentication in a Next.js server component?",
+    "answer": "Call getKindeServerSession, extract isAuthenticated, and await isAuthenticated(). The resulting boolean indicates whether the user is authenticated.",
+    "followUp": "How would you use it in a client component? Use useKindeBrowserClient and read its isAuthenticated value instead of the server-session helper."
+   },
+   {
+    "question": "What does isAuthenticated return?",
+    "answer": "The function returns a boolean: true when the user is authenticated and false otherwise. The documented example stores that result in isUserAuthenticated.",
+    "followUp": "What should unauthenticated requests receive? They should be redirected or shown a sign-in path rather than allowed to access protected behavior."
+   },
+   {
+    "question": "Why must the server-side call be awaited?",
+    "answer": "The server-side form is asynchronous and must be awaited. This ensures the authentication state is resolved before rendering or protecting the requested content.",
+    "followUp": "Which client-side API exposes the equivalent state? useKindeBrowserClient returns an isAuthenticated value for client components."
+   }
+  ],
+  "keyPoints": [
+   "The function checks whether the current user is authenticated.",
+   "Invoke it with parentheses and await the returned authentication state.",
+   "The server-session helper can be used from any Next.js server component."
+  ],
+  "gotchas": [
+   "The helper must be obtained by destructuring the result of getKindeServerSession before calling it.",
+   "The check is asynchronous, so await the function result before making an authorization decision."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "KindeProvider": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/frontend/react-sdk/",
+  "sourceTitle": "React SDK - Kinde docs",
+  "summary": "KindeProvider configures the Kinde React SDK and supplies authentication context to the application tree. Set the client, domain, redirect URIs, and optionally an API audience or scope.",
+  "explanation": "KindeProvider initializes the Kinde React SDK and supplies its authentication context to descendant components. Configure it with the client, domain, and redirect values, then render the application inside it.",
+  "syntax": "<KindeProvider clientId=\"...\" domain=\"...\" logoutUri=\"...\" redirectUri=\"...\">{children}</KindeProvider>",
+  "parameters": [
+   {
+    "name": "clientId",
+    "type": "string",
+    "description": "Kinde application client identifier."
+   },
+   {
+    "name": "domain",
+    "type": "string",
+    "description": "Kinde environment domain."
+   },
+   {
+    "name": "logoutUri",
+    "type": "string",
+    "description": "URI to which the user is sent after logout."
+   },
+   {
+    "name": "redirectUri",
+    "type": "string",
+    "description": "URI to which the user is sent after authentication."
+   },
+   {
+    "name": "audience",
+    "type": "string",
+    "description": "Optional registered API identifier requested as the token audience."
+   },
+   {
+    "name": "scope",
+    "type": "string",
+    "description": "Optional OAuth scope override."
+   }
+  ],
+  "returns": "A React provider that supplies Kinde authentication context to its descendants.",
+  "example": {
+   "title": "Wrap a React application with KindeProvider",
+   "code": "import { KindeProvider } from '@kinde-oss/kinde-auth-react';\n\nexport default function App() {\n  return (\n    <KindeProvider\n      clientId={import.meta.env.VITE_KINDE_CLIENT_ID}\n      domain={import.meta.env.VITE_KINDE_DOMAIN}\n      logoutUri={window.location.origin}\n      redirectUri={window.location.origin}\n    >\n      <Routes />\n    </KindeProvider>\n  );\n}",
+   "language": "tsx",
+   "explanation": "Wrap the application tree so the React SDK can provide authentication state and functionality through context."
+  },
+  "useCases": [
+   {
+    "title": "Application authentication",
+    "scenario": "Add Kinde authentication to a React single-page application."
+   },
+   {
+    "title": "API audience configuration",
+    "scenario": "Request tokens intended for a registered backend API."
+   },
+   {
+    "title": "Scope customization",
+    "scenario": "Control the OAuth permissions requested during sign-in."
+   }
+  ],
+  "related": [
+   "React SDK",
+   "Kinde Auth",
+   "audience",
+   "scope"
+  ],
+  "since": "v5",
+  "interview": [
+   {
+    "question": "What role does KindeProvider play in a React application?",
+    "answer": "KindeProvider is a React Context Provider that maintains Kinde's internal state. It should wrap the application components that need access to the SDK's authentication capabilities.",
+    "followUp": "Why must the provider be above consumers? React context values are available only to descendants, so placing it lower leaves other components without the Kinde context."
+   },
+   {
+    "question": "Which core configuration values are used in the basic setup?",
+    "answer": "The provider accepts clientId, domain, logoutUri, and redirectUri to configure the client and its OAuth redirect behavior. The application is rendered as a child of the provider.",
+    "followUp": "How would you request an API-specific access token? Register the API, then pass its identifier through the audience prop."
+   },
+   {
+    "question": "How do you configure an API audience?",
+    "answer": "The audience identifies the intended recipient of an access token, such as an application's API. Pass the registered API identifier as the audience prop when initializing KindeProvider.",
+    "followUp": "What if the requested permissions differ from the defaults? Supply the required complete value through the scope prop."
+   }
+  ],
+  "keyPoints": [
+   "Import KindeProvider from the React SDK and place the application tree inside it.",
+   "The component exposes Kinde's internal authentication state through React context.",
+   "The documented SDK targets React 18 and later.",
+   "Use audience to identify the API or other resource intended to receive the access token.",
+   "Passing audience requests that value in the token's audience claim.",
+   "Use scope when the provider's default OAuth permissions are not sufficient."
+  ],
+  "gotchas": [
+   "The current React SDK requires React 18 or newer.",
+   "A custom scope replaces the provider's default scope, so specify the complete scope you need."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "login": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/typescript-sdk/",
+  "sourceTitle": "TypeScript",
+  "summary": "Kinde's TypeScript SDK `login` method creates a redirect URL for sign-in. Call it from a login route and redirect the browser to the returned URL.",
+  "explanation": "The TypeScript SDK's login method creates the authorization redirect URL for a user sign-in. A server route calls it with the session manager, then redirects the browser to Kinde so authentication can occur.",
+  "syntax": "kindeClient.login(sessionManager)",
+  "parameters": [
+   {
+    "name": "sessionManager",
+    "type": "SessionManager",
+    "description": "Session state manager used by the authentication client."
+   }
+  ],
+  "returns": "A redirect URL that sends the user to Kinde for sign-in.",
+  "example": {
+   "title": "Redirect to Kinde sign-in",
+   "code": "import express from \"express\";\nimport { KindeClient } from \"@kinde/js-node\";\n\nconst app = express();\nconst kindeClient = new KindeClient({\n  clientId: process.env.KINDE_CLIENT_ID!,\n  clientSecret: process.env.KINDE_CLIENT_SECRET!,\n  authDomain: process.env.KINDE_AUTH_DOMAIN!,\n  redirectUri: \"http://localhost:3000/callback\",\n});\n\napp.get(\"/login\", async (_req, res) => {\n  const loginUrl = await kindeClient.login(sessionManager);\n  res.redirect(loginUrl.toString());\n});",
+   "language": "typescript",
+   "explanation": "The route obtains Kinde's sign-in redirect URL and sends the browser to it."
+  },
+  "useCases": [
+   {
+    "title": "Add a login route",
+    "scenario": "A server-rendered application needs a sign-in endpoint."
+   },
+   {
+    "title": "Start hosted authentication",
+    "scenario": "An application delegates credential entry and authentication to Kinde."
+   },
+   {
+    "title": "Initiate a session-backed flow",
+    "scenario": "A session-aware backend begins an OAuth sign-in flow."
+   }
+  ],
+  "related": [
+   "register",
+   "SessionManager",
+   "KindeClient"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the TypeScript SDK `login` method do?",
+    "answer": "The method constructs a redirect URL that sends the user to Kinde to sign in. In a server application, the route should call it with the session manager and return a redirect response.",
+    "followUp": "Why pass a session manager? It supplies the session context required by the SDK while constructing the authentication flow."
+   },
+   {
+    "question": "How would you expose login in an Express application?",
+    "answer": "A typical implementation maps `/login` to an asynchronous handler, calls `kindeClient.login(sessionManager)`, converts the resulting URL to a string, and redirects the response there.",
+    "followUp": "What should happen after authentication? Kinde should return the browser to a configured callback URL so the application can complete the session flow."
+   },
+   {
+    "question": "Where does the actual sign-in occur?",
+    "answer": "Login is part of the redirect-based authentication flow rather than a local password-checking function. The user is sent to Kinde, where sign-in takes place.",
+    "followUp": "How could registration be exposed similarly? Add a `/register` route and connect it to the SDK's registration method."
+   }
+  ],
+  "keyPoints": [
+   "`login` starts sign-in by producing a URL that points the browser at Kinde.",
+   "The SDK call is asynchronous, so await its result before redirecting.",
+   "Convert the returned URL to text and use it as the HTTP redirect target."
+  ],
+  "gotchas": [
+   "Calling login does not authenticate the user locally; the application must redirect the browser to Kinde.",
+   "Expose a route such as `/login` and connect it to the SDK method."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "LoginLink": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/frontend/react-sdk/",
+  "sourceTitle": "React SDK - Kinde docs",
+  "summary": "`LoginLink` is a Kinde React SDK component that starts sign-in when activated. Render it with the content users should click.",
+  "explanation": "`LoginLink` is a React component supplied by the Kinde React SDK. Render it with link content, and selecting it starts the sign-in flow by constructing a redirect URL and sending the user to Kinde.",
+  "syntax": "<LoginLink>Sign in</LoginLink>",
+  "parameters": [
+   {
+    "name": "children",
+    "type": "ReactNode",
+    "description": "Required link content displayed to the user."
+   }
+  ],
+  "returns": "A React link component that starts the Kinde sign-in flow.",
+  "example": {
+   "title": "Render a sign-in link",
+   "code": "import { LoginLink } from \"@kinde-oss/kinde-auth-react/components\";\n\nexport default function App() {\n  return <LoginLink>Sign in</LoginLink>;\n}",
+   "language": "tsx",
+   "explanation": "Renders a sign-in link that starts the Kinde authentication flow."
+  },
+  "useCases": [
+   {
+    "title": "Add sign-in navigation",
+    "scenario": "A navigation bar needs a standard sign-in action."
+   },
+   {
+    "title": "Start authentication from a landing page",
+    "scenario": "A logged-out landing page needs to begin authentication."
+   }
+  ],
+  "related": [
+   "RegisterLink",
+   "useKindeAuth",
+   "login",
+   "register"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `LoginLink` do?",
+    "answer": "`LoginLink` is a standard link component from the Kinde React SDK. It starts authentication when rendered and activated, sending the user to Kinde to sign in.",
+    "followUp": "How can the same behavior be triggered from a button? Use `useKindeAuth`, obtain `login`, and call it from the button's click handler."
+   },
+   {
+    "question": "How is `LoginLink` used in a React component?",
+    "answer": "Import it from `@kinde-oss/kinde-auth-react/components`, then render it with the text or content users should select, such as `<LoginLink>Sign in</LoginLink>`.",
+    "followUp": "What alternative SDK API is documented for sign-in? The `useKindeAuth` hook exposes a `login` method."
+   },
+   {
+    "question": "What is an alternative to using `LoginLink`?",
+    "answer": "The component abstracts the redirect setup for sign-in. The documented alternative is the `login` method from `useKindeAuth`, which can be attached to a button.",
+    "followUp": "When should a button-based approach be preferred? Use it when the UI needs imperative click handling or custom button behavior."
+   }
+  ],
+  "keyPoints": [
+   "The React SDK provides standard link components for starting login and registration.",
+   "Import `LoginLink` from the SDK's components entry point.",
+   "Place the user-facing sign-in label or content between the component's tags.",
+   "Activating the link builds a redirect URL and sends the user to Kinde for authentication."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "logout": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/typescript-sdk/",
+  "sourceTitle": "TypeScript",
+  "summary": "The TypeScript SDK’s `logout` method creates a Kinde logout URL from a session manager. Redirect the user to that URL to complete sign-out and return them to the configured post-logout destination.",
+  "explanation": "The TypeScript SDK logout method receives the session manager and returns a logout URL. Redirect the user to that URL so Kinde can end the session and send the user back to a configured allowed logout redirect URL.",
+  "syntax": "kindeClient.logout(sessionManager)",
+  "parameters": [
+   {
+    "name": "sessionManager",
+    "type": "SessionManager",
+    "description": "Session manager used by the SDK to access the current authenticated session."
+   }
+  ],
+  "returns": "A logout URL that should be used as the destination of an HTTP redirect.",
+  "example": {
+   "title": "Redirect to Kinde logout",
+   "code": "import { KindeClient } from \"@kinde/typescript-sdk\";\n\napp.get(\"/logout\", async (req, res) => {\n  const logoutUrl = await kindeClient.logout(sessionManager);\n  res.redirect(logoutUrl.toString());\n});",
+   "language": "typescript",
+   "explanation": "Create a logout route, generate Kinde's logout URL with the session manager, and redirect the browser to it."
+  },
+  "useCases": [
+   {
+    "title": "Handle a sign-out route",
+    "scenario": "Server-rendered or Express-style application"
+   },
+   {
+    "title": "Connect a sign-out link to the route",
+    "scenario": "Navigation-based authentication UI"
+   },
+   {
+    "title": "Send users to a configured post-logout page",
+    "scenario": "Applications with a fixed return location"
+   }
+  ],
+  "related": [
+   "SessionManager",
+   "logoutRedirectURL",
+   "Allowed logout redirect URLs",
+   "/logout"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you implement logout with the TypeScript SDK?",
+    "answer": "Call `kindeClient.logout(sessionManager)` from a server route and await the returned URL. Redirect the browser to that URL rather than treating logout as only local session cleanup.",
+    "followUp": "What configuration is needed for the final destination? Register the destination as an Allowed logout redirect URL and configure the SDK’s logout redirect URL accordingly."
+   },
+   {
+    "question": "What are the parameter and return value of `logout`?",
+    "answer": "The method accepts one argument: a `SessionManager`. Its result is a URL, which the application should convert to a string and pass to the response redirect.",
+    "followUp": "Why redirect instead of returning the URL as JSON? The browser must navigate to Kinde’s logout endpoint to complete the hosted sign-out flow."
+   },
+   {
+    "question": "How should a user-facing sign-out link invoke logout?",
+    "answer": "Expose an application route such as `/logout`, invoke the SDK method there, and redirect to the generated URL. A sign-out link can target that route so the flow runs on the server.",
+    "followUp": "What should be checked if redirecting fails? Verify that the configured post-logout URL exactly matches an allowed logout redirect URL."
+   }
+  ],
+  "keyPoints": [
+   "The TypeScript SDK provides a dedicated logout method for ending a Kinde session.",
+   "Invoke the method asynchronously with the application’s session manager.",
+   "Redirect the response to the generated logout URL.",
+   "Configure the post-logout destination as the location users should return to after sign-out."
+  ],
+  "gotchas": [
+   "The post-logout destination must be registered in the application’s Allowed logout redirect URLs configuration."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "LogoutLink": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/frontend/react-sdk/",
+  "sourceTitle": "React SDK - Kinde docs",
+  "summary": "LogoutLink is Kinde’s React component for ending the current user session. Render it with child content such as a “Sign out” label.",
+  "explanation": "LogoutLink is a React component from Kinde’s React SDK that initiates the sign-out flow when activated. Place it in the authenticated interface and provide link content as its children; the configured logout redirect determines where the user goes afterward.",
+  "syntax": "<LogoutLink>Sign out</LogoutLink>",
+  "parameters": [
+   {
+    "name": "children",
+    "type": "ReactNode",
+    "description": "ReactNode rendered as the link’s content or label."
+   }
+  ],
+  "returns": "A React link component that starts the Kinde logout flow when activated.",
+  "example": {
+   "title": "Sign-out link",
+   "code": "import { LogoutLink } from '@kinde-oss/kinde-auth-react/components';\n\nexport default function AccountActions() {\n  return <LogoutLink>Sign out</LogoutLink>;\n}",
+   "language": "tsx",
+   "explanation": "Render the component where users should be able to end their current Kinde session."
+  },
+  "useCases": [
+   {
+    "title": "Provide a standard sign-out link in an account menu.",
+    "scenario": "Authenticated navigation"
+   },
+   {
+    "title": "Let a signed-in user end their current Kinde session from a profile page.",
+    "scenario": "User profile controls"
+   },
+   {
+    "title": "Place a consistent logout action in the authenticated layout.",
+    "scenario": "Shared application shell"
+   }
+  ],
+  "related": [
+   "KindeProvider",
+   "useKindeAuth",
+   "logout",
+   "logoutUri"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you add a sign-out control in a Kinde React application?",
+    "answer": "Import LogoutLink from the React SDK’s components entry point and render it with child content, such as “Sign out.” Activating the component starts Kinde’s logout flow.",
+    "followUp": "How would you implement logout with custom behavior instead? Use useKindeAuth to obtain logout and call it from a button handler."
+   },
+   {
+    "question": "What does LogoutLink do?",
+    "answer": "The component is intended to end the current Kinde session. It is the link-based alternative to calling the logout method returned by useKindeAuth.",
+    "followUp": "How can logout affect every session? The related logout method accepts allSessions: true."
+   },
+   {
+    "question": "How is the post-logout destination controlled?",
+    "answer": "After sign-out, Kinde redirects the user according to the logoutUri configured on KindeProvider. That setting is a string and is optional.",
+    "followUp": "How can one logout action override the configured destination? Call logout with a redirectUrl option instead of using the link component."
+   }
+  ],
+  "keyPoints": [
+   "The React SDK exposes LogoutLink as a built-in way to initiate sign-out.",
+   "Import LogoutLink from the SDK’s components module before rendering it.",
+   "Pass the visible link label as the component’s child content.",
+   "The configured logoutUri controls the user’s destination after logout."
+  ],
+  "gotchas": [
+   "The destination after logout comes from the provider’s configured logoutUri, so configure that redirect appropriately."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "M2M tokens": {
+  "sourceUrl": "https://docs.kinde.com/machine-to-machine-applications/about-m2m/",
+  "sourceTitle": "M2M overview",
+  "summary": "M2M tokens are OAuth 2.0 access tokens for backend services, scripts, and automation that operate without a user. Kinde issues them through the client credentials flow for an API audience, with optional scopes and organization context.",
+  "explanation": "An M2M token is a JWT access token obtained without user interaction through OAuth 2.0's client credentials flow. Kinde issues it for an authorized API audience, and the token's scopes and claims determine what the calling service can do.",
+  "syntax": "POST https://<your-subdomain>.kinde.com/oauth2/token\nContent-Type: application/x-www-form-urlencoded\n\ngrant_type=client_credentials&client_id=<your-client-id>&client_secret=<your-client-secret>&audience=<your-api-audience>",
+  "parameters": [
+   {
+    "name": "grant_type",
+    "type": "form field",
+    "description": "OAuth grant identifier; use `client_credentials`."
+   },
+   {
+    "name": "client_id",
+    "type": "form field",
+    "description": "Public identifier of the M2M application."
+   },
+   {
+    "name": "client_secret",
+    "type": "form field",
+    "description": "Secret credential for the M2M application."
+   },
+   {
+    "name": "audience",
+    "type": "form field",
+    "description": "API identifier the token is intended to access."
+   }
+  ],
+  "returns": "An access token for the requested API audience, used as a Bearer token in subsequent API requests.",
+  "example": {
+   "title": "Request an M2M access token",
+   "code": "curl --request POST \\\n  --url 'https://<your-subdomain>.kinde.com/oauth2/token' \\\n  --header 'content-type: application/x-www-form-urlencoded' \\\n  --data 'grant_type=client_credentials' \\\n  --data 'client_id=<your-client-id>' \\\n  --data 'client_secret=<your-client-secret>' \\\n  --data 'audience=<your-api-audience>'",
+   "language": "bash",
+   "explanation": "Requests an M2M access token using the client credentials flow; send the returned token as a Bearer token when calling the matching API."
+  },
+  "useCases": [
+   {
+    "title": "Service-to-service API calls",
+    "scenario": "A backend service calls another protected service without requiring a user session."
+   },
+   {
+    "title": "Automation and scheduled tasks",
+    "scenario": "A scheduled job or deployment script accesses an API automatically."
+   },
+   {
+    "title": "Organization-isolated integrations",
+    "scenario": "A multi-tenant integration must constrain credentials to one organization."
+   }
+  ],
+  "related": [
+   "OAuth 2.0 client credentials flow",
+   "client_id",
+   "client_secret",
+   "audience",
+   "scope",
+   "org_code",
+   "Bearer token",
+   "organization-scoped M2M application"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Kinde issue an M2M token?",
+    "answer": "Kinde obtains an M2M token through OAuth 2.0 client credentials. The request includes the client ID, client secret, grant type, and API audience; the resulting token can authenticate backend calls without a user.",
+    "followUp": "How would you restrict an M2M client? Authorize the application for the target API and grant only the scopes required by that service."
+   },
+   {
+    "question": "How is an M2M token used and validated?",
+    "answer": "The token is sent in the HTTP Authorization header using the Bearer scheme. The API should validate that the token's audience matches the API it serves before accepting it.",
+    "followUp": "What additional claim can support tenant isolation? An organization-scoped M2M application produces a token containing the relevant `org_code` claim."
+   },
+   {
+    "question": "What happens when an M2M token expires?",
+    "answer": "Access tokens are valid for one hour by default. M2M applications do not receive refresh tokens, so a service must obtain a new token with its client credentials after expiry.",
+    "followUp": "What operational concern follows from that lifetime? Cache tokens until near expiry, then perform a new client-credentials request rather than refreshing them."
+   }
+  ],
+  "keyPoints": [
+   "M2M authentication is intended for service-to-service, scripted, and automated workloads where no end user participates.",
+   "The authentication mechanism is OAuth 2.0 client credentials, using application credentials rather than a user login.",
+   "The issued access token can authorize calls to Kinde APIs or APIs operated by your application.",
+   "Scopes constrain the permissions carried by the token and should reflect the application's required access.",
+   "Organization-scoped M2M applications add trusted organization context through the `org_code` claim."
+  ],
+  "gotchas": [
+   "A token is valid only for the API audience supplied during issuance; using it against another audience will fail."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "PKCE": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/about/using-kinde-without-an-sdk/",
+  "sourceTitle": "Use Kinde without an SDK",
+  "summary": "PKCE is Kinde’s secure Authorization Code variant for public clients such as SPAs and mobile apps. It replaces a stored client secret with a verifier-and-challenge proof.",
+  "explanation": "PKCE extends Kinde’s authorization-code flow for clients that cannot safely keep a client secret. The client creates a random verifier, sends a transformed challenge during authorization, and later proves possession by presenting the original verifier when exchanging the authorization code for tokens.",
+  "syntax": "Authorization Code flow with PKCE: code_challenge + code_challenge_method in the authorization request; code_verifier in the token request",
+  "parameters": [
+   {
+    "name": "code_verifier",
+    "type": "string",
+    "description": "Random secret generated by the client and later presented to prove possession."
+   },
+   {
+    "name": "code_challenge",
+    "type": "string",
+    "description": "Hashed representation of the verifier sent in the authorization request."
+   },
+   {
+    "name": "code_challenge_method",
+    "type": "string",
+    "description": "Transformation used to create the challenge; Kinde documentation specifies SHA-256/S256."
+   }
+  ],
+  "returns": "An authorization code that can be exchanged for tokens after the client proves possession of the code verifier.",
+  "example": {
+   "title": "Create a Kinde PKCE authorization request",
+   "code": "const verifier = crypto.randomUUID();\nconst challenge = await crypto.subtle.digest(\n  \"SHA-256\",\n  new TextEncoder().encode(verifier),\n);\nconst codeChallenge = btoa(String.fromCharCode(...new Uint8Array(challenge)))\n  .replace(/\\+/g, \"-\").replace(/\\//g, \"_\").replace(/=+$/, \"\");\n\nconst authorizationUrl = new URL(\"https://yourbusiness.kinde.com/oauth2/auth\");\nauthorizationUrl.search = new URLSearchParams({\n  client_id: \"YOUR_CLIENT_ID\",\n  redirect_uri: \"https://example.com/callback\",\n  response_type: \"code\",\n  scope: \"openid email offline\",\n  code_challenge: codeChallenge,\n  code_challenge_method: \"S256\",\n}).toString();\n\nconsole.log(authorizationUrl.toString());",
+   "language": "javascript",
+   "explanation": "Generates a verifier, derives its SHA-256 challenge, and adds the PKCE parameters to a Kinde authorization request."
+  },
+  "useCases": [
+   {
+    "title": "Single-page applications",
+    "scenario": "A browser-based SPA needs OAuth sign-in without exposing a client secret."
+   },
+   {
+    "title": "Mobile authentication",
+    "scenario": "A mobile app authenticates users while keeping credentials out of shipped client code."
+   },
+   {
+    "title": "Front-end OAuth",
+    "scenario": "A front-end application needs Kinde authorization-code login instead of the unsupported Implicit Flow."
+   }
+  ],
+  "related": [
+   "Authorization Code Flow",
+   "code_challenge",
+   "code_challenge_method",
+   "code_verifier",
+   "state",
+   "nonce",
+   "Implicit Flow",
+   "Authorization Code (With PKCE)"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does PKCE solve?",
+    "answer": "PKCE is an extension to the Authorization Code flow that replaces the client secret with a one-time cryptographic proof. The application generates a code verifier, sends a hashed code challenge to Kinde, and later supplies the verifier during token exchange.",
+    "followUp": "Why is PKCE useful for a single-page application? It avoids depending on a client secret that client-side code cannot securely keep."
+   },
+   {
+    "question": "Which values are required in a Kinde PKCE request?",
+    "answer": "Kinde requires code_challenge and code_challenge_method when using its PKCE extension. The recommended method shown in the documentation is SHA-256, represented in authorization requests as S256.",
+    "followUp": "What must the client preserve after creating the authorization request? It must retain the original verifier so it can present it during the token request."
+   },
+   {
+    "question": "Which application types should use PKCE?",
+    "answer": "PKCE is recommended for mobile applications and single-page applications. It is also suitable for front-end applications because it does not require embedding a client secret in exposed client-side code.",
+    "followUp": "What flow should a Kinde front-end application avoid? It should avoid the Implicit Flow, which Kinde does not support for front-end apps."
+   }
+  ],
+  "keyPoints": [
+   "Kinde supports PKCE as an extension of its OAuth authorization-code flow.",
+   "The documentation recommends PKCE for mobile applications and single-page applications.",
+   "PKCE removes the need to send a client secret by using a one-time proof tied to the authorization request.",
+   "The client generates a random verifier and sends its hashed form as the challenge.",
+   "A Kinde authorization URL should carry PKCE parameters together with state and nonce values."
+  ],
+  "gotchas": [
+   "Do not substitute the Implicit Flow for a front-end application; Kinde supports Authorization Code with PKCE instead.",
+   "A PKCE authorization request must include both the challenge and the challenge-method parameters."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "register": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/typescript-sdk/",
+  "sourceTitle": "TypeScript",
+  "summary": "The Kinde TypeScript SDK `register` method creates a redirect URL for hosted user sign-up. Expose it through an application route and redirect the browser to the returned URL.",
+  "explanation": "The register method creates a redirect URL for Kinde's hosted sign-up flow. A web route calls it with the session manager, then redirects the browser so the user can register before returning to the application.",
+  "syntax": "kindeClient.register(sessionManager)",
+  "parameters": [
+   {
+    "name": "sessionManager",
+    "type": "SessionManager",
+    "description": "The application's session manager used by the TypeScript SDK while creating the registration redirect."
+   }
+  ],
+  "returns": "A redirect URL pointing to Kinde's hosted sign-up flow.",
+  "example": {
+   "title": "Express registration route",
+   "code": "app.get(\"/register\", async (req, res) => {\n  const registerUrl = await kindeClient.register(sessionManager);\n  res.redirect(registerUrl.toString());\n});",
+   "language": "typescript",
+   "explanation": "Creates a registration route that obtains Kinde's sign-up redirect URL and sends the browser there."
+  },
+  "useCases": [
+   {
+    "title": "Expose registration from a route",
+    "scenario": "A web application needs a dedicated sign-up entry point."
+   },
+   {
+    "title": "Start hosted sign-up",
+    "scenario": "An application uses Kinde's hosted authentication pages."
+   },
+   {
+    "title": "Connect a sign-up link",
+    "scenario": "A UI link should begin account creation without embedding authentication forms."
+   }
+  ],
+  "related": [
+   "login",
+   "sessionManager",
+   "KindeClient",
+   "authentication callback"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does register do?",
+    "answer": "It constructs a redirect URL for Kinde's hosted sign-up experience. The application then redirects the user's browser to that URL.",
+    "followUp": "How would you expose it in an Express application? Add a GET /register route, await kindeClient.register(sessionManager), and redirect to the returned URL."
+   },
+   {
+    "question": "What argument does the TypeScript register method use?",
+    "answer": "The TypeScript SDK usage passes the session manager to register. The returned URL is converted to a string before it is supplied to the response redirect.",
+    "followUp": "Why pass the session manager? It lets the SDK use the application's session handling while preparing the authentication redirect."
+   },
+   {
+    "question": "How is register commonly wired into a web application?",
+    "answer": "Create a route such as /register and call the SDK method from that route. The browser must be redirected to Kinde, where the user completes sign-up.",
+    "followUp": "What should be configured before testing? The application needs a Kinde domain and the relevant authentication callback configuration."
+   }
+  ],
+  "keyPoints": [
+   "register starts hosted user registration by producing a URL and directing the user to Kinde's sign-up experience.",
+   "A dedicated /register application route is a documented way to expose the registration action.",
+   "In the TypeScript SDK, call register on the Kinde client and provide the session manager."
+  ],
+  "gotchas": [
+   "Calling register alone does not display an in-app form; the application must redirect the user to Kinde for the authentication flow.",
+   "The Kinde application must have a configured Kinde domain before the registration flow can be used."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "RegisterLink": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/nextjs-sdk/",
+  "sourceTitle": "Next.js App Router SDK - Kinde docs",
+  "summary": "RegisterLink is a Kinde Next.js component for starting user registration. Render it with link content, and optionally provide orgCode to target a specific organization.",
+  "explanation": "RegisterLink is a Next.js component supplied by the Kinde SDK. Place it in a page and provide link content; selecting it starts the Kinde authentication flow, with optional organization targeting through the orgCode prop.",
+  "syntax": "<RegisterLink orgCode=\"organization_code\">Sign up</RegisterLink>",
+  "parameters": [
+   {
+    "name": "orgCode",
+    "type": "string",
+    "description": "Optional Kinde organization code used to target a specific organization."
+   }
+  ],
+  "returns": "A rendered link component that starts the Kinde registration/authentication flow.",
+  "example": {
+   "title": "Basic registration link",
+   "code": "import { RegisterLink } from \"@kinde-oss/kinde-auth-nextjs/components\";\n\nexport default function Home() {\n  return <RegisterLink>Sign up</RegisterLink>;\n}",
+   "language": "tsx",
+   "explanation": "Renders a link that starts Kinde’s registration flow."
+  },
+  "useCases": [
+   {
+    "title": "Start registration",
+    "scenario": "A public sign-up entry point is needed on a Next.js page."
+   },
+   {
+    "title": "Target an organization",
+    "scenario": "Registration must be associated with a known Kinde organization."
+   }
+  ],
+  "related": [
+   "LoginLink",
+   "@kinde-oss/kinde-auth-nextjs/components",
+   "KINDE_AUTH_REGISTER_ROUTE"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is RegisterLink used for?",
+    "answer": "RegisterLink is a component from @kinde-oss/kinde-auth-nextjs/components. Rendering it with child content creates a link that starts the authentication flow.",
+    "followUp": "How would you target an organization? Pass the organization code through the orgCode prop on RegisterLink."
+   },
+   {
+    "question": "How do you add a registration link in Next.js?",
+    "answer": "Import RegisterLink from the SDK components package and render it in a page, for example with “Sign up” as its child content. Clicking it begins registration through Kinde.",
+    "followUp": "What should change if the application uses a different SDK? Use that SDK’s documented registration mechanism rather than assuming the Next.js component is available."
+   },
+   {
+    "question": "How can RegisterLink select an organization?",
+    "answer": "The component accepts an orgCode parameter that lets users authenticate for a specific organization. This is useful when the application needs to associate the flow with a known organization.",
+    "followUp": "What value should be supplied? Provide the organization’s Kinde organization code, such as the documented org_... example."
+   }
+  ],
+  "keyPoints": [
+   "RegisterLink starts Kinde’s authentication flow when rendered as part of a Next.js page.",
+   "Import RegisterLink from the Next.js SDK components module.",
+   "Supply visible child content, such as “Sign up,” to label the link.",
+   "Pass orgCode when the link must direct the user toward a specific organization."
+  ],
+  "gotchas": [
+   "Use orgCode when the registration link should target a particular organization."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Roles API": {
+  "sourceUrl": "https://docs.kinde.com/manage-users/roles-and-permissions/user-roles/",
+  "sourceTitle": "Manage user roles",
+  "summary": "The Roles API lets applications manage Kinde roles and their organization-user assignments through the Management API. Roles package permissions into reusable groups, with access controlled by dedicated M2M token scopes.",
+  "explanation": "The Roles API is part of Kinde’s Management API. An M2M application receives a JWT access token with role-related scopes, then sends that token as a Bearer credential to list, create, update, or delete roles and to manage roles assigned to organization users.",
+  "syntax": "GET /api/v1/roles",
+  "parameters": [],
+  "returns": "Role resources or operation-specific JSON responses from the Kinde Management API.",
+  "example": {
+   "title": "List roles",
+   "code": "const response = await fetch(`${KINDE_DOMAIN}/api/v1/roles`, {\n  headers: { Authorization: `Bearer ${M2M_ACCESS_TOKEN}` }\n});\n\nif (!response.ok) throw new Error(`HTTP ${response.status}`);\nconsole.log(await response.json());",
+   "language": "javascript",
+   "explanation": "Uses an M2M bearer token to request the roles collection from the Kinde Management API."
+  },
+  "useCases": [
+   {
+    "title": "List and maintain role definitions",
+    "scenario": "An administration service synchronizes application roles with Kinde."
+   },
+   {
+    "title": "Assign organization-user roles",
+    "scenario": "An onboarding workflow grants a predefined role to a user in an organization."
+   },
+   {
+    "title": "Remove role assignments",
+    "scenario": "A security workflow removes access when a user changes responsibilities."
+   }
+  ],
+  "related": [
+   "Kinde Management API",
+   "M2M access token",
+   "read:roles",
+   "create:roles",
+   "update:roles",
+   "delete:roles",
+   "organization_user_roles",
+   "permissions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does an application access the Roles API?",
+    "answer": "Roles are managed through the Kinde Management API. The application authenticates with an M2M JWT and requests the relevant role scope, such as read:roles, create:roles, update:roles, or delete:roles.",
+    "followUp": "How would you restrict access to only listing roles? Authorize the M2M application with read:roles and request a token containing only the needed scope."
+   },
+   {
+    "question": "Which capabilities does the Roles API provide?",
+    "answer": "The API supports role lifecycle operations: reading, creating, updating, and deleting roles. It also exposes separate operations for reading, assigning, and removing roles for organization users.",
+    "followUp": "Why are organization-user role scopes separate? They govern assignments to users independently from managing the role definitions themselves."
+   },
+   {
+    "question": "How do roles relate to permissions and users?",
+    "answer": "Roles group permissions into reusable buckets, and a user may receive multiple roles. Permissions can also be assigned directly to a user in addition to role-derived permissions.",
+    "followUp": "Where are roles defined and applied? They are defined at the business level and applied to users at the organization level."
+   }
+  ],
+  "keyPoints": [
+   "A role is a reusable collection of permissions rather than a single permission.",
+   "Management API requests use JWT access tokens for authentication.",
+   "The read:roles scope authorizes reading role data.",
+   "The create:roles scope authorizes creating roles.",
+   "The update:roles scope authorizes changing existing roles.",
+   "The delete:roles scope authorizes deleting roles.",
+   "Organization-user role assignments have a dedicated read scope.",
+   "A dedicated scope controls assigning roles to organization users."
+  ],
+  "gotchas": [
+   "The token must contain the scope required by the operation, such as read:roles or create:roles."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Scopes": {
+  "sourceUrl": "https://docs.kinde.com/build/tokens/oath-scopes/",
+  "sourceTitle": "Using OAuth scopes - Kinde docs",
+  "summary": "Kinde OAuth scopes specify the protected user information or offline capability an application requests. Standard values include `openid`, `email`, `profile`, and `offline`.",
+  "explanation": "Scopes are OAuth permissions requested by an application and granted in a token. Kinde documents standard scopes for identity and user information, while the exact request format depends on the OAuth flow and application framework.",
+  "syntax": "scope=openid profile email offline",
+  "parameters": [
+   {
+    "name": "scope",
+    "type": "string",
+    "description": "Space-separated OAuth scope values requested by the application, such as `openid`, `profile`, `email`, or `offline`."
+   }
+  ],
+  "returns": "Depending on the requested scopes and flow, Kinde returns tokens containing the authorized identity, email, profile, or offline-access capabilities.",
+  "example": {
+   "title": "Request OAuth scopes",
+   "code": "const requestedScopes = [\"openid\", \"profile\", \"email\", \"offline\"];\nconst authorizationUrl = new URL(\"https://<your-kinde-domain>/oauth2/auth\");\nauthorizationUrl.searchParams.set(\"scope\", requestedScopes.join(\" \"));\nconsole.log(authorizationUrl.toString());",
+   "language": "javascript",
+   "explanation": "Builds an authorization URL requesting Kinde’s documented OAuth scopes."
+  },
+  "useCases": [
+   {
+    "title": "Request identity information",
+    "scenario": "An application needs an ID token identifying the signed-in user."
+   },
+   {
+    "title": "Request user details",
+    "scenario": "A frontend or backend needs the user’s email and basic profile fields."
+   },
+   {
+    "title": "Request offline access",
+    "scenario": "A service must refresh access after the user is no longer active."
+   }
+  ],
+  "related": [
+   "openid",
+   "email",
+   "profile",
+   "offline",
+   "Authorization Code flow",
+   "Authorization Code flow with Proof Key for Code Exchange (PKCE)"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What are OAuth scopes in Kinde?",
+    "answer": "Scopes represent permissions requested for protected information. Kinde documents `openid`, `email`, `profile`, and `offline` as standard OAuth scopes.",
+    "followUp": "What does `offline` provide? It requests a refresh token that can renew an access token after it expires."
+   },
+   {
+    "question": "What do the standard Kinde scopes do?",
+    "answer": "`openid` requests an ID token containing user information, while `email` requests email-related claims and `profile` requests profile details in the ID token.",
+    "followUp": "Which scope is needed for a refresh token? Use `offline`, not `offline_access`."
+   },
+   {
+    "question": "How are scopes requested?",
+    "answer": "The syntax for requesting scopes depends on the OAuth flow and application framework. For an authorization request, the requested scope values are supplied as part of that flow’s parameters.",
+    "followUp": "What should a developer check before implementing the request? Verify the flow-specific requirements, such as PKCE parameters when using the PKCE authorization-code flow."
+   }
+  ],
+  "keyPoints": [
+   "Scopes declare which categories of user-protected information an application wants to access.",
+   "The `openid` scope asks Kinde to return an ID token with user information.",
+   "The `email` scope requests the user’s email data.",
+   "The `profile` scope adds profile information, such as a name or avatar, to the ID token.",
+   "The `offline` scope supports continued operation when the user is not actively present."
+  ],
+  "gotchas": [
+   "Kinde uses the scope name `offline`; do not substitute the OIDC name `offline_access` when requesting a refresh token.",
+   "The authorization request must follow the requirements of the framework and OAuth flow being used."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "useKindeAuth": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/nextjs-prev-sdk/",
+  "sourceTitle": "Kinde Auth Data",
+  "summary": "useKindeAuth provides Kinde authentication data inside a component. Use it to read authorized-user information or obtain an access token for protected API requests.",
+  "explanation": "useKindeAuth is a React helper for accessing Kinde authentication data from a component. Destructure the authentication operation or data you need, such as getAccessToken or getUser, and use it within the component.",
+  "syntax": "const { getAccessToken } = useKindeAuth();",
+  "parameters": [],
+  "returns": "A Kinde authentication helper object; the page documents using it to access authorized-user Auth data and destructure getAccessToken.",
+  "example": {
+   "title": "Read authorized user data",
+   "code": "import { useKindeAuth } from \"@kindejs/react-core\";\n\nexport default function Profile() {\n  const { getUser } = useKindeAuth();\n  const user = getUser();\n\n  return <p>{user?.given_name ?? \"Not signed in\"}</p>;\n}",
+   "language": "tsx",
+   "explanation": "Reads the current authorized user's Kinde Auth data in a React component."
+  },
+  "useCases": [
+   {
+    "title": "Read authorized-user data",
+    "scenario": "A component needs to display information about the signed-in person."
+   },
+   {
+    "title": "Attach an access token to an API request",
+    "scenario": "A browser-side component calls a protected backend endpoint."
+   }
+  ],
+  "related": [
+   "getAccessToken",
+   "Kinde Auth data",
+   "KindeProvider"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is useKindeAuth used for?",
+    "answer": "useKindeAuth is a React helper that exposes Kinde authentication data to components. It can be used to obtain authentication-related values or operations, such as the access token or current user data.",
+    "followUp": "How would you use it for an API request? Obtain the access token, then send it in the request's Bearer authorization header."
+   },
+   {
+    "question": "How can useKindeAuth authenticate a call to your API?",
+    "answer": "Destructure getAccessToken from the hook and await it before making the request. Put the resulting token in the Authorization header using the Bearer scheme.",
+    "followUp": "What should the API do with that token? Validate the bearer access token before serving the protected request."
+   },
+   {
+    "question": "What should a component consider when reading user data?",
+    "answer": "The hook is used inside a component to retrieve Kinde Auth data for the currently authorized user. A component should account for the possibility that no authenticated user data is available.",
+    "followUp": "How can the UI represent that state? Render an anonymous or sign-in state whenever the user value is absent."
+   }
+  ],
+  "keyPoints": [
+   "Call the hook from a component when you need the current authorized user's Kinde authentication data.",
+   "The documented helper name is useKindeAuth.",
+   "Destructure getAccessToken from the hook when a protected API request needs a Kinde access token.",
+   "Await getAccessToken before using the token in an outgoing request.",
+   "Send the obtained token in the HTTP Authorization header with the Bearer scheme."
+  ],
+  "gotchas": [
+   "The hook provides authorized-user data; handle the unauthenticated state when the returned user is unavailable."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "useKindeBrowserClient": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/nextjs-sdk/",
+  "sourceTitle": "Next.js App Router SDK - Kinde docs",
+  "summary": "A client-component hook for reading an authorized user’s Kinde authentication data in Next.js. It also provides helpers for organizations, permissions, and refreshing data.",
+  "explanation": "useKindeBrowserClient is a client-side hook for accessing an authorized user’s Kinde authentication data in Next.js. It exposes helpers such as organization access, permission retrieval, and data refresh; the component using it must run on the client.",
+  "syntax": "const { organization, getOrganization, getPermissions, refreshData } = useKindeBrowserClient();",
+  "parameters": [],
+  "returns": "An object containing Kinde browser-client data and helper functions, including organization, getOrganization, getPermissions, and refreshData.",
+  "example": {
+   "title": "Read the current organization",
+   "code": "\"use client\";\n\nimport { useKindeBrowserClient } from \"@kinde-oss/kinde-auth-nextjs\";\n\nexport default function OrganizationName() {\n  const { organization, getOrganization } = useKindeBrowserClient();\n  const currentOrganization = getOrganization();\n\n  return <p>{currentOrganization?.name ?? organization?.name ?? \"No organization\"}</p>;\n}",
+   "language": "tsx",
+   "explanation": "A client component obtains organization data from the browser client and renders its name."
+  },
+  "useCases": [
+   {
+    "title": "Display authenticated-user data",
+    "scenario": "A client-rendered account or dashboard view needs the signed-in user’s Kinde context."
+   },
+   {
+    "title": "Read organization context",
+    "scenario": "A workspace-aware interface needs to identify or render the user’s current organization."
+   },
+   {
+    "title": "Check permissions",
+    "scenario": "An admin or feature-gating interface needs current permission information."
+   },
+   {
+    "title": "Refresh authorization data",
+    "scenario": "A client interaction changes authorization-related data and the UI must obtain current values."
+   }
+  ],
+  "related": [
+   "useKindeAuth",
+   "getOrganization",
+   "getPermissions",
+   "refreshData"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is useKindeBrowserClient used for?",
+    "answer": "It is a browser-side hook from the Kinde Next.js SDK. A client component calls it to access authentication data for an authorized user and helpers such as organization retrieval.",
+    "followUp": "What constraint applies to its use? The component must be a client component, and the utility is supported only in Next.js 14 and above."
+   },
+   {
+    "question": "How can a component read the current organization?",
+    "answer": "The hook returns an object that can include organization data and methods such as getOrganization. Calling getOrganization lets the component obtain the organization associated with the current user.",
+    "followUp": "How would you avoid stale data after a change? Use the exposed refreshData operation and await it before reading the updated values."
+   },
+   {
+    "question": "How should refreshData be handled?",
+    "answer": "refreshData is asynchronous, so callers should await it. This gives the component immediate access to the latest data after refreshing.",
+    "followUp": "Where must this refresh be triggered? From a client component, because Next.js does not permit on-demand refreshing from a server component."
+   }
+  ],
+  "keyPoints": [
+   "Use the hook inside a client component to access Kinde authentication data for the signed-in user.",
+   "The returned API includes organization state and a getOrganization helper for organization access.",
+   "Client components are required when an interaction needs to refresh data on demand.",
+   "The refreshData helper performs asynchronous server-side work and should be handled accordingly."
+  ],
+  "gotchas": [
+   "Use the hook only with Next.js 14 or later; older versions produce a warning.",
+   "Treat refreshData as asynchronous and await it when requesting immediately updated data.",
+   "On-demand refresh must be initiated by a client component because of Next.js limitations."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

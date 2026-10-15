@@ -1,0 +1,1298 @@
+{
+ "APIRouter": {
+  "sourceUrl": "https://fastapi.tiangolo.com/reference/apirouter/",
+  "sourceTitle": "APIRouter class - FastAPI",
+  "summary": "APIRouter groups related FastAPI path operations into a reusable router. Shared prefixes, tags, dependencies, responses, lifecycle handlers, and schema settings can be configured once and applied when the router is included in an application.",
+  "explanation": "APIRouter groups related path operations so they can be configured and included as a unit. Its constructor accepts shared routing, dependency, response, documentation, lifecycle, and schema-generation settings; routes are typically declared with its decorators and then mounted into a FastAPI application.",
+  "syntax": "APIRouter(*, prefix=\"\", tags=None, dependencies=None, default_response_class=Default(JSONResponse), responses=None, callbacks=None, routes=None, redirect_slashes=True, default=None, dependency_overrides_provider=None, route_class=APIRoute, on_startup=None, on_shutdown=None, lifespan=None, deprecated=None, include_in_schema=True, generate_unique_id_function=Default(generate_unique_id), strict_content_type=Default(True))",
+  "parameters": [
+   {
+    "name": "prefix",
+    "type": "str",
+    "description": "Optional path prefix for the router."
+   },
+   {
+    "name": "tags",
+    "type": "list[str | Enum] | None",
+    "description": "Tags applied to all path operations and included in generated OpenAPI."
+   },
+   {
+    "name": "dependencies",
+    "type": "Sequence[Depends] | None",
+    "description": "Dependencies applied to the router's path operations."
+   },
+   {
+    "name": "default_response_class",
+    "type": "type[Response]",
+    "description": "Default response class for responses from the router."
+   },
+   {
+    "name": "responses",
+    "type": "dict[int | str, dict[str, Any]] | None",
+    "description": "Additional responses included in the generated OpenAPI."
+   },
+   {
+    "name": "callbacks",
+    "type": "list[BaseRoute] | None",
+    "description": "Callback routes associated with operations in the router."
+   },
+   {
+    "name": "routes",
+    "type": "list[BaseRoute] | None",
+    "description": "Initial routes for the router."
+   },
+   {
+    "name": "redirect_slashes",
+    "type": "bool",
+    "description": "Whether to redirect slash variants of paths."
+   },
+   {
+    "name": "default",
+    "type": "Any",
+    "description": "Default value used for route behavior where supported."
+   },
+   {
+    "name": "dependency_overrides_provider",
+    "type": "Any",
+    "description": "Provider used for dependency overrides."
+   },
+   {
+    "name": "route_class",
+    "type": "type[APIRoute]",
+    "description": "Route class used when creating routes."
+   },
+   {
+    "name": "on_startup",
+    "type": "Sequence[Callable[[], Any]] | None",
+    "description": "Startup handlers for the router."
+   }
+  ],
+  "returns": "An APIRouter instance.",
+  "example": {
+   "title": "Grouped routes with APIRouter",
+   "code": "from fastapi import APIRouter, FastAPI\n\nrouter = APIRouter(prefix=\"/items\", tags=[\"items\"])\n\n@router.get(\"/{item_id}\")\nasync def read_item(item_id: int):\n    return {\"item_id\": item_id}\n\napp = FastAPI()\napp.include_router(router)",
+   "language": "python",
+   "explanation": "Creates a router with shared path and OpenAPI metadata, defines a route on it, and includes that router in the application."
+  },
+  "useCases": [
+   {
+    "title": "Modular route organization",
+    "scenario": "Organize endpoints by feature or domain and mount the group in a FastAPI application."
+   },
+   {
+    "title": "Shared route configuration",
+    "scenario": "Apply a common URL prefix, tags, dependencies, or response configuration to related operations."
+   },
+   {
+    "title": "Router reuse",
+    "scenario": "Reuse the same route group under multiple URL prefixes."
+   },
+   {
+    "title": "OpenAPI callbacks",
+    "scenario": "Define callback operations whose routes contribute to generated OpenAPI callback documentation."
+   }
+  ],
+  "related": [
+   "APIRoute",
+   "FastAPI",
+   "include_router",
+   "Depends",
+   "Default",
+   "generate_unique_id"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does APIRouter solve?",
+    "answer": "APIRouter is a smaller routing component that groups path operations. It supports the same kinds of shared configuration as FastAPI, including prefixes, tags, dependencies, responses, and other operation settings.",
+    "followUp": "How would you reuse one router under multiple URL bases? Include the same router multiple times with different prefixes."
+   },
+   {
+    "question": "How do shared router options affect its operations?",
+    "answer": "Set shared configuration when constructing the router, such as `prefix`, `tags`, or `dependencies`. Individual operations then inherit those settings when the router is included in the application.",
+    "followUp": "Where do router tags appear? They are added to the generated OpenAPI documentation, such as the `/docs` interface."
+   },
+   {
+    "question": "How are callback routes attached to an API operation?",
+    "answer": "Define callback operations on a separate APIRouter, then pass that router's `.routes` collection to the `callbacks` argument of the relevant path-operation decorator. The router itself is not passed as the callback value.",
+    "followUp": "Why use `.routes` here? FastAPI uses those route definitions to generate callback OpenAPI documentation."
+   }
+  ],
+  "keyPoints": [
+   "The class provides a complete routing abstraction with constructor options, attributes, and methods.",
+   "Import it directly from the top-level `fastapi` package.",
+   "`prefix` prepends a shared path segment to routes registered on the router.",
+   "`tags` applies common OpenAPI tags to every path operation in the router.",
+   "Router configuration can centralize parameters, responses, dependencies, tags, and comparable operation settings.",
+   "A router can be mounted more than once, allowing different prefixes for reuse."
+  ],
+  "gotchas": [
+   "Including one router repeatedly is supported, but each inclusion can apply a different prefix.",
+   "Do not modify the routes collection directly after inclusion; use documented decorators or include_router instead."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "BackgroundTasks": {
+  "sourceUrl": "https://fastapi.tiangolo.com/reference/background/",
+  "sourceTitle": "Background Tasks - BackgroundTasks - FastAPI",
+  "summary": "BackgroundTasks collects callable work and runs it after FastAPI sends the response. FastAPI injects it into path operations or dependencies, and add_task() accepts a synchronous or asynchronous function with its arguments.",
+  "explanation": "BackgroundTasks is injected into a path operation or dependency and collects callable work for execution after the HTTP response has been sent. Register work with add_task(), which accepts a regular or asynchronous function plus the arguments it needs; FastAPI runs the task for you.",
+  "syntax": "BackgroundTasks(tasks=None)\nadd_task(func, *args, **kwargs)",
+  "parameters": [
+   {
+    "name": "tasks",
+    "type": "list[starlette.background.BackgroundTask] | None",
+    "description": "Optional initial collection of background tasks."
+   }
+  ],
+  "returns": "BackgroundTasks is a task collection; add_task() returns None.",
+  "example": {
+   "title": "Schedule a notification",
+   "code": "from fastapi import BackgroundTasks, FastAPI\n\napp = FastAPI()\n\ndef write_notification(email: str, message: str = \"\"):\n    with open(\"log.txt\", \"a\") as file:\n        file.write(f\"{email}: {message}\\n\")\n\n@app.post(\"/send/{email}\")\nasync def send_notification(email: str, background_tasks: BackgroundTasks):\n    background_tasks.add_task(write_notification, email, message=\"queued\")\n    return {\"message\": \"Notification sent\"}",
+   "language": "python",
+   "explanation": "The endpoint registers a regular function with positional and keyword arguments; FastAPI runs it after sending the response."
+  },
+  "useCases": [
+   {
+    "title": "Deferred side effects",
+    "scenario": "Record an event or write a notification after returning a response."
+   },
+   {
+    "title": "Post-response work",
+    "scenario": "Send an email or perform another request-independent operation without delaying the client response."
+   },
+   {
+    "title": "Dependency-based task collection",
+    "scenario": "Register tasks from shared dependency logic."
+   }
+  ],
+  "related": [
+   "BackgroundTask",
+   "add_task",
+   "FastAPI dependency injection",
+   "path operation function"
+  ],
+  "since": "0.10.0",
+  "interview": [
+   {
+    "question": "How do you schedule a background task?",
+    "answer": "Declare a parameter annotated as BackgroundTasks in a path operation or dependency. FastAPI creates and injects the object, and add_task() registers work that runs after the response is sent.",
+    "followUp": "Can dependencies use it too? Yes: the type can be declared at multiple dependency levels, including sub-dependencies, and FastAPI coordinates the collected tasks."
+   },
+   {
+    "question": "What arguments does add_task accept?",
+    "answer": "Call add_task(func, *args, **kwargs). The first argument is the callable, followed by positional and keyword arguments that FastAPI passes when it runs the task.",
+    "followUp": "How would you pass a named option? Supply it as a keyword, such as add_task(write_notification, email, message=\"queued\")."
+   },
+   {
+    "question": "When does the task execute, and what callable types are supported?",
+    "answer": "The task runs after the response is sent, so the client does not wait for that work before receiving the response. The callable can be either a normal def or an async def function.",
+    "followUp": "When might this be insufficient? For heavier or distributed processing, use a separate task queue rather than relying on in-process background execution."
+   }
+  ],
+  "keyPoints": [
+   "Annotate a path operation or dependency parameter with BackgroundTasks to receive the task collector.",
+   "The instance stores work that executes after the response reaches the client.",
+   "Use add_task() to register one callable for later execution.",
+   "Registered work can be synchronous or asynchronous.",
+   "Positional arguments are forwarded to the task in the order supplied.",
+   "Keyword arguments can be forwarded by name when registering the task."
+  ],
+  "gotchas": [
+   "Tasks may be synchronous or asynchronous; choose the form appropriate to the work.",
+   "FastAPI's class is backed by Starlette, so use FastAPI's plural class for automatic injection rather than confusing it with the singular Starlette class."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "BaseModel": {
+  "sourceUrl": "https://fastapi.tiangolo.com/tutorial/body/",
+  "sourceTitle": "Request Body - FastAPI",
+  "summary": "BaseModel is the Pydantic superclass for defining typed data models in FastAPI. Subclass it to describe request bodies with standard Python annotations, enabling structured input handling and automatic API schema generation.",
+  "explanation": "BaseModel is a Pydantic base class used to define typed data models. In FastAPI, a path-operation parameter annotated with such a model is interpreted as a request body, while the model's fields provide validation and schema information.",
+  "syntax": "class ModelName(BaseModel):\n    field_name: field_type",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "BaseModel request body",
+   "code": "from fastapi import FastAPI\nfrom pydantic import BaseModel\n\napp = FastAPI()\n\nclass Item(BaseModel):\n    name: str\n    description: str | None = None\n    price: float\n\n@app.post(\"/items/\")\nasync def create_item(item: Item) -> Item:\n    return item\n",
+   "language": "python",
+   "explanation": "The model declares the request fields and their Python types; FastAPI uses the model parameter as the request body and returns the validated model."
+  },
+  "useCases": [
+   {
+    "title": "Request-body schemas",
+    "scenario": "Define JSON payloads for POST, PUT, PATCH, or similar operations."
+   },
+   {
+    "title": "Reusable data models",
+    "scenario": "Share one typed structure across multiple endpoint declarations."
+   },
+   {
+    "title": "Structured and nested data",
+    "scenario": "Expose nested objects with explicit field types."
+   }
+  ],
+  "related": [
+   "Pydantic models",
+   "Request Body",
+   "Response Model - Return Type",
+   "Nested Models",
+   "Form Models"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does BaseModel provide in a FastAPI endpoint?",
+    "answer": "A class inheriting from Pydantic's BaseModel defines the fields of a data model using standard Python types. FastAPI uses that model to interpret a path-operation parameter as request-body data and to generate its schema.",
+    "followUp": "How can the same model participate in response handling? Annotate the return type or use response_model; FastAPI can then validate, document, serialize, and filter the returned data."
+   },
+   {
+    "question": "How are fields declared and typed?",
+    "answer": "Each model attribute is declared with a Python type, such as str or float, and optional fields can have a default of None. FastAPI uses those declarations for request-body structure and automatic documentation.",
+    "followUp": "How would you represent nested JSON? Define a field whose type is another Pydantic model; FastAPI supports arbitrarily deeply nested models."
+   },
+   {
+    "question": "How does FastAPI decide where endpoint input comes from?",
+    "answer": "A parameter annotated with a Pydantic model is taken from the request body, while a parameter whose name matches a path placeholder is taken from the path. Body, path, and query parameters can be declared together.",
+    "followUp": "Can model fields come from forms instead? Yes: declare the model with Form and FastAPI extracts each field from submitted form data."
+   }
+  ],
+  "keyPoints": [
+   "Create a data model by subclassing BaseModel.",
+   "Declare model fields with ordinary Python type annotations.",
+   "Use a BaseModel-derived Pydantic model to describe request-body data.",
+   "FastAPI distinguishes path inputs by matching parameter names with placeholders in the route.",
+   "A model-typed endpoint parameter is read as structured request-body input.",
+   "One operation can combine model-based body data with path and query parameters."
+  ],
+  "gotchas": [
+   "A model parameter is not treated as a path parameter; path parameters are selected by matching their names to the route.",
+   "Declaring a model parameter makes FastAPI read it from the request body, so clients must send the matching structured payload."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Depends": {
+  "sourceUrl": "https://fastapi.tiangolo.com/reference/dependencies/",
+  "sourceTitle": "Dependencies - Depends() and Security() - FastAPI",
+  "summary": "Depends declares a callable that FastAPI resolves and injects into a route or another dependency. It also controls per-request result caching and, for yield dependencies, cleanup timing.",
+  "explanation": "Depends declares a callable that FastAPI resolves during request handling. FastAPI inspects that callable's parameters, invokes it with any required values, and injects its result into the dependent route or dependency; caching is enabled by default within one request.",
+  "syntax": "Depends(dependency=None, *, use_cache=True, scope=None)",
+  "parameters": [
+   {
+    "name": "dependency",
+    "type": "Callable[..., Any] | None",
+    "description": "A callable dependency. Pass the object itself; FastAPI invokes it and resolves its parameters."
+   },
+   {
+    "name": "use_cache",
+    "type": "bool",
+    "description": "Whether to reuse the dependency result after its first call within the same request."
+   },
+   {
+    "name": "scope",
+    "type": "Literal[\"function\", \"request\"] | None",
+    "description": "For yield dependencies, controls when cleanup after yield runs. Supported values are \"function\" and \"request\"."
+   }
+  ],
+  "returns": "Returns a Depends object used by FastAPI to declare dependency injection; the dependency's resolved value is injected into the dependent parameter.",
+  "example": {
+   "title": "Inject a dependency into a route",
+   "code": "from typing import Annotated\nfrom fastapi import Depends, FastAPI\n\napp = FastAPI()\n\ndef get_user_id() -> int:\n    return 42\n\n@app.get(\"/me\")\ndef read_me(user_id: Annotated[int, Depends(get_user_id)]):\n    return {\"user_id\": user_id}",
+   "language": "python",
+   "explanation": "FastAPI calls the dependency for each request and supplies its returned value to the route parameter."
+  },
+  "useCases": [
+   {
+    "title": "Inject request dependencies",
+    "scenario": "A route needs authenticated user information, configuration, or a database session supplied by application code."
+   },
+   {
+    "title": "Reuse resolved values",
+    "scenario": "Several dependencies share the same sub-dependency during one request."
+   },
+   {
+    "title": "Control resource lifetime",
+    "scenario": "A resource dependency uses yield and needs cleanup at a defined point in response handling."
+   },
+   {
+    "title": "Run side-effect dependencies",
+    "scenario": "A dependency needs to be executed for validation or authorization, but its return value is not needed by the route."
+   }
+  ],
+  "related": [
+   "Security",
+   "Annotated",
+   "FastAPI",
+   "APIRouter",
+   "dependency_overrides"
+  ],
+  "since": "0.121.0 for Depends(scope=\"function\") support",
+  "interview": [
+   {
+    "question": "What does Depends do?",
+    "answer": "Depends accepts a dependable callable and tells FastAPI to resolve it rather than treating it as an ordinary parameter. FastAPI calls the dependency with its declared parameters and assigns the returned value to the route parameter.",
+    "followUp": "What can be passed besides a function? Any callable can be used, including a class or an instance implementing __call__; FastAPI analyzes that callable's parameters."
+   },
+   {
+    "question": "How does dependency caching work?",
+    "answer": "use_cache defaults to True. If the same dependency is needed more than once in a request, FastAPI reuses the value from its first call.",
+    "followUp": "When would you set it to False? Set use_cache=False when the dependency must run again for another declaration in the same request."
+   },
+   {
+    "question": "What is the purpose of the scope parameter?",
+    "answer": "scope controls the lifetime of dependencies that use yield. With function scope, cleanup after yield runs when the path operation finishes but before the response is sent; request scope runs cleanup after the response is sent.",
+    "followUp": "Which scope is the default? request is the default scope, and it starts before the path operation similarly to function scope."
+   }
+  ],
+  "keyPoints": [
+   "Use Depends to declare a callable that FastAPI should resolve as a dependency.",
+   "The public import is from fastapi import Depends.",
+   "Its signature accepts an optional callable, request-level caching control, and an optional lifecycle scope.",
+   "The dependency's return value becomes available to the parameter that declares it."
+  ],
+  "gotchas": [
+   "Pass the callable itself, such as get_user_id, rather than invoking it as get_user_id().",
+   "The default cache reuses a dependency result during the request; disable it when repeated declarations must execute again.",
+   "For yield dependencies with scope=\"request\", cleanup runs after the response is sent; scope=\"function\" ends cleanup before sending it."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "FastAPI": {
+  "sourceUrl": "https://fastapi.tiangolo.com/reference/fastapi/",
+  "sourceTitle": "FastAPI class",
+  "summary": "FastAPI is the application class for building an API. Instantiate it, then register HTTP path operations on the resulting application object.",
+  "explanation": "FastAPI is the application class used to create an API instance. You attach path operations such as GET handlers to that instance; FastAPI then uses those declarations to serve endpoints and generate the API interface.",
+  "syntax": "app = FastAPI()",
+  "parameters": [
+   {
+    "name": "FastAPI constructor arguments",
+    "type": "various documented keyword parameters",
+    "description": "The page documents the constructor and application configuration parameters; use defaults unless your application needs custom metadata, middleware, dependencies, or response behavior."
+   }
+  ],
+  "returns": "A FastAPI application instance used to register and serve path operations.",
+  "example": {
+   "title": "Minimal FastAPI application",
+   "code": "from fastapi import FastAPI\n\napp = FastAPI()\n\n@app.get(\"/items/\")\ndef read_items():\n    return [{\"name\": \"Empanada\"}, {\"name\": \"Arepa\"}]\n",
+   "language": "python",
+   "explanation": "Creates an application instance and registers a GET path operation."
+  },
+  "useCases": [
+   {
+    "title": "Application bootstrap",
+    "scenario": "Create the root application object for a web API."
+   },
+   {
+    "title": "Route declaration",
+    "scenario": "Register HTTP endpoints with decorators such as `@app.get()`."
+   },
+   {
+    "title": "Application configuration",
+    "scenario": "Centralize API configuration and route registration."
+   }
+  ],
+  "related": [
+   "APIRouter",
+   "Request",
+   "Response",
+   "Depends"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you create a FastAPI application and expose a GET endpoint?",
+    "answer": "Instantiate FastAPI to create the application object, then use decorators such as `@app.get()` to register path operations. The registered handler returns the response for matching requests.",
+    "followUp": "How would you organize a larger application? Use `APIRouter` instances for groups of routes and include them in the main application."
+   },
+   {
+    "question": "What does a FastAPI path-operation decorator do?",
+    "answer": "A path operation decorator associates an HTTP method and URL path with a Python function. For example, `@app.get(\"/items/\")` maps GET requests for that path to the decorated function.",
+    "followUp": "What should be added when the endpoint needs request validation? Declare typed parameters or models in the path-operation function signature."
+   },
+   {
+    "question": "What role does the `FastAPI` instance play?",
+    "answer": "The application instance is the object on which path operations are declared. FastAPI uses those declarations as the API surface for the application.",
+    "followUp": "Which related class is intended for modular route groups? `APIRouter` is the related routing class documented by FastAPI."
+   }
+  ],
+  "keyPoints": [
+   "The reference documents the application class as part of FastAPI's public code API.",
+   "Path-operation decorators take a URL path that identifies where the operation is exposed.",
+   "The GET decorator registers a function as an HTTP GET path operation.",
+   "Import the class directly from the `fastapi` package.",
+   "A path operation can return ordinary Python data, which FastAPI uses as the endpoint response."
+  ],
+  "gotchas": [
+   "The reference page is an API reference, so the tutorial is the better place for end-to-end learning."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Form": {
+  "sourceUrl": "https://fastapi.tiangolo.com/tutorial/request-forms/",
+  "sourceTitle": "Form Data - FastAPI",
+  "summary": "Form declares FastAPI endpoint parameters that are read from submitted form data instead of JSON or query parameters. It supports the same style of configuration as other parameter helpers, including validation and aliases.",
+  "explanation": "Form marks endpoint parameters as fields from an incoming form-encoded request rather than ordinary query values or a JSON body. It derives from Body, so it accepts the same kinds of metadata and validation options, while FastAPI reads the submitted fields from the form payload.",
+  "syntax": "Form(default: Any = Undefined, *, default_factory: Callable[[], Any] | None = _Unset, media_type: str = 'application/x-www-form-urlencoded', alias: str | None = None, alias_priority: int | None = _Unset, validation_alias: str | AliasPath | AliasChoices | None = None, serialization_alias: str | None = _Unset, title: str | None = None, description: str | None = None, gt: float | None = None, ge: float | None = None, lt: float | None = None, le: float | None = None, multiple_of: float | None = None, max_digits: int | None = None, decimal_places: int | None = None, min_length: int | None = None, max_length: int | None = None, pattern: str | None = None, regex: str | None = None, discriminator: str | None = None, strict: bool | None = _Unset, multiple_of: float | None = None, allow_inf_nan: bool | None = _Unset, max_items: int | None = None, min_items: int | None = None, union_mode: Literal['smart', 'left_to_right'] = 'smart', json_schema_extra: JsonDict | None = None, **extra: Any)",
+  "parameters": [
+   {
+    "name": "*args, **kwargs",
+    "type": "Form",
+    "description": "The form field value is declared through the annotated parameter type; Form supplies the form-body metadata and can be configured with body-parameter options such as validation, examples, and aliases."
+   }
+  ],
+  "returns": "A parameter metadata object used by FastAPI to declare and extract a form-data input field.",
+  "example": {
+   "title": "Receive login form fields",
+   "code": "from typing import Annotated\nfrom fastapi import FastAPI, Form\n\napp = FastAPI()\n\n@app.post(\"/login/\")\nasync def login(\n    username: Annotated[str, Form()],\n    password: Annotated[str, Form()],\n):\n    return {\"username\": username}",
+   "language": "python",
+   "explanation": "Declares two form fields and returns the submitted username."
+  },
+  "useCases": [
+   {
+    "title": "HTML-style form submissions",
+    "scenario": "A browser or client submits ordinary fields with form encoding rather than a JSON object."
+   },
+   {
+    "title": "Login and credential fields",
+    "scenario": "An endpoint accepts credentials or other scalar fields from a multipart request."
+   },
+   {
+    "title": "Files plus form metadata",
+    "scenario": "A request combines uploaded content with accompanying textual fields."
+   }
+  ],
+  "related": [
+   "Body",
+   "Query",
+   "Path",
+   "Cookie",
+   "File"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you declare a form field in FastAPI?",
+    "answer": "Use Form in the endpoint parameter declaration, for example `username: Annotated[str, Form()]`. FastAPI then reads that value from form data instead of interpreting it as a query parameter or JSON body field.",
+    "followUp": "How would you receive an uploaded file and a form field together? Declare the file with File and the form value with Form; both are received as multipart form data."
+   },
+   {
+    "question": "What capabilities does Form provide besides selecting the input source?",
+    "answer": "Form inherits directly from Body and supports the same configuration style as Body, Query, Path, and Cookie. That includes validation-related settings, examples, and aliases such as mapping a Python parameter to a hyphenated submitted name.",
+    "followUp": "Why can an alias be useful? It lets the external form field use a name that is inconvenient or invalid as a Python identifier, while the handler uses a normal parameter name."
+   },
+   {
+    "question": "What constraint applies when combining Form with Body or File?",
+    "answer": "The form payload uses form encoding, so it must not be combined with JSON Body fields in the same request. For requests containing files and fields, use File and Form together and send multipart form data.",
+    "followUp": "What additional dependency is required for these requests? Install python-multipart so FastAPI can parse form submissions."
+   }
+  ],
+  "keyPoints": [
+   "Use Form in a path-operation parameter when the client submits fields as form data.",
+   "Form is Body-based, so it follows the framework's body-parameter declaration model.",
+   "Useful options include validation rules, generated examples, and alternate external field names.",
+   "FastAPI selects the form payload as the source rather than trying to decode the value from JSON."
+  ],
+  "gotchas": [
+   "The multipart parser dependency must be installed before handling form data.",
+   "Annotating a parameter only with its Python type does not make it a form field; use Form explicitly.",
+   "A request using multipart form encoding cannot simultaneously provide fields expected as JSON body data."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "get": {
+  "sourceUrl": "https://fastapi.tiangolo.com/reference/fastapi/",
+  "sourceTitle": "FastAPI class - FastAPI",
+  "summary": "`get` is a FastAPI decorator method that registers a function as the handler for an HTTP GET path. Its keyword arguments configure response behavior and generated OpenAPI metadata.",
+  "explanation": "`get` is a method on `FastAPI` and `APIRouter` used as a decorator. It registers the decorated function as the handler for the supplied URL path and configures how FastAPI describes, validates, and serves that GET operation, including its response model, status code, dependencies, OpenAPI metadata, and response class.",
+  "syntax": "get(\n    path,\n    *,\n    response_model=Default(None),\n    status_code=None,\n    tags=None,\n    dependencies=None,\n    summary=None,\n    description=None,\n    response_description=\"Successful Response\",\n    responses=None,\n    deprecated=None,\n    operation_id=None,\n    response_model_include=None,\n    response_model_exclude=None,\n    response_model_by_alias=True,\n    response_model_exclude_unset=False,\n    response_model_exclude_defaults=False,\n    response_model_exclude_none=False,\n    include_in_schema=True,\n    response_class=Default(JSONResponse),\n    name=None,\n    callbacks=None,\n    openapi_extra=None,\n    generate_unique_id_function=Default(generate_unique_id)\n)",
+  "parameters": [
+   {
+    "name": "path",
+    "type": "str",
+    "description": "URL path for the path operation."
+   },
+   {
+    "name": "response_model",
+    "type": "Any",
+    "description": "Pydantic-compatible type used for the response."
+   },
+   {
+    "name": "status_code",
+    "type": "int | None",
+    "description": "HTTP status code for the response."
+   },
+   {
+    "name": "tags",
+    "type": "list[str] | None",
+    "description": "OpenAPI tags for the operation."
+   },
+   {
+    "name": "dependencies",
+    "type": "Sequence[Depends] | None",
+    "description": "Dependencies applied to the operation."
+   },
+   {
+    "name": "summary",
+    "type": "str | None",
+    "description": "Short OpenAPI summary."
+   },
+   {
+    "name": "description",
+    "type": "str | None",
+    "description": "OpenAPI description."
+   },
+   {
+    "name": "response_description",
+    "type": "str",
+    "description": "Description of the successful response."
+   },
+   {
+    "name": "responses",
+    "type": "dict[int | str, dict[str, Any]] | None",
+    "description": "Additional response definitions."
+   },
+   {
+    "name": "deprecated",
+    "type": "bool | None",
+    "description": "Marks the operation as deprecated."
+   },
+   {
+    "name": "operation_id",
+    "type": "str | None",
+    "description": "Explicit OpenAPI operation identifier."
+   },
+   {
+    "name": "response_model_include",
+    "type": "IncEx | None",
+    "description": "Fields to include in the response model."
+   }
+  ],
+  "returns": "A decorator that registers the supplied function as a GET path operation.",
+  "example": {
+   "title": "A basic GET path operation",
+   "code": "from fastapi import FastAPI\n\napp = FastAPI()\n\n@app.get(\"/items/\")\ndef read_items():\n    return [{\"name\": \"Empanada\"}, {\"name\": \"Arepa\"}]",
+   "language": "python",
+   "explanation": "Registers a synchronous function as the handler for GET requests to `/items/`."
+  },
+  "useCases": [
+   {
+    "title": "Expose read-only endpoints",
+    "scenario": "Read a collection or resource over HTTP GET."
+   },
+   {
+    "title": "Validate and document responses",
+    "scenario": "Describe returned data and generate its API schema."
+   },
+   {
+    "title": "Attach operation dependencies",
+    "scenario": "Apply authentication, authorization, or other shared logic."
+   },
+   {
+    "title": "Add OpenAPI metadata",
+    "scenario": "Customize generated API documentation."
+   }
+  ],
+  "related": [
+   "FastAPI",
+   "APIRouter",
+   "get",
+   "post",
+   "Path Operation Configuration",
+   "response_model",
+   "Depends"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `app.get()` do?",
+    "answer": "`get` registers a path operation using the HTTP GET method. It accepts the URL path first, then keyword-only options that configure response handling and OpenAPI metadata.",
+    "followUp": "How would you document a non-default successful response? Pass `response_model`, and use `status_code` or `responses` when the operation needs explicit response documentation."
+   },
+   {
+    "question": "What is the purpose of the `path` argument?",
+    "answer": "The required `path` is the URL path for the operation, such as `/items`. The decorated function becomes the path operation function that handles requests matching that path and method.",
+    "followUp": "What is the difference between a path and an operation? The path identifies the URL portion, while `get` identifies the HTTP operation applied to it."
+   },
+   {
+    "question": "Which kinds of configuration does `get` support?",
+    "answer": "The decorator can configure `response_model`, `status_code`, dependencies, tags, summaries, descriptions, response inclusion, and the response class. These options are supplied to the decorator rather than to the handler's parameters.",
+    "followUp": "How can an operation be hidden from generated OpenAPI documentation? Set `include_in_schema=False` in the decorator."
+   }
+  ],
+  "keyPoints": [
+   "Use `get` to register a FastAPI path operation for HTTP GET requests.",
+   "The required `path` argument specifies the URL path, for example `/items`.",
+   "`response_model` declares the type FastAPI uses for response validation, serialization, and schema generation."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Header": {
+  "sourceUrl": "https://fastapi.tiangolo.com/reference/parameters/",
+  "sourceTitle": "Request Parameters - FastAPI",
+  "summary": "Header declares an HTTP request-header parameter for a FastAPI path operation or dependency. It supports defaults, validation, metadata, aliases, and automatic underscore-to-hyphen conversion.",
+  "explanation": "Header creates a request-parameter declaration for extracting and documenting an HTTP header in a path operation or dependency. FastAPI maps underscores in the Python parameter name to hyphens in the header name by default, while validation and metadata options configure the accepted value and generated schema.",
+  "syntax": "Header(default=Undefined, *, default_factory=_Unset, alias=None, alias_priority=_Unset, validation_alias=None, serialization_alias=None, convert_underscores=True, title=None, description=None, gt=None, ge=None, lt=None, le=None, min_length=None, max_length=None, pattern=None, regex=None, discriminator=None, strict=_Unset, multiple_of=_Unset, allow_inf_nan=_Unset, max_digits=None, decimal_places=None, examples=None, example=_Unset, openapi_examples=None, deprecated=None, include_in_schema=True, json_schema_extra=None, **extra)",
+  "parameters": [
+   {
+    "name": "default",
+    "type": "Any",
+    "description": "The default value used when the parameter field is not set."
+   },
+   {
+    "name": "default_factory",
+    "type": "Callable[[], Any] | None",
+    "description": "A callable that generates the default value."
+   },
+   {
+    "name": "alias",
+    "type": "str | None",
+    "description": "An alternate external name for the parameter."
+   },
+   {
+    "name": "convert_underscores",
+    "type": "bool",
+    "description": "Whether underscores in the Python name are converted to hyphens."
+   },
+   {
+    "name": "**extra",
+    "type": "Any",
+    "description": "Validation, schema, and documentation options accepted by the request parameter declaration."
+   }
+  ],
+  "returns": "Any",
+  "example": {
+   "title": "Read a request header",
+   "code": "from typing import Annotated\nfrom fastapi import FastAPI, Header\n\napp = FastAPI()\n\n@app.get(\"/items/\")\nasync def read_items(user_agent: Annotated[str | None, Header()] = None):\n    return {\"User-Agent\": user_agent}\n",
+   "language": "python",
+   "explanation": "Declares an optional request header and returns its value."
+  },
+  "useCases": [
+   {
+    "title": "Inspect request headers",
+    "scenario": "Read client metadata such as User-Agent from incoming requests."
+   },
+   {
+    "title": "Authenticate or authorize requests",
+    "scenario": "Require or validate tokens and custom client headers."
+   },
+   {
+    "title": "Describe the API contract",
+    "scenario": "Publish header requirements and constraints in generated OpenAPI documentation."
+   }
+  ],
+  "related": [
+   "Query",
+   "Path",
+   "Cookie",
+   "Param",
+   "Annotated"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does FastAPI Header do?",
+    "answer": "Header declares a path-operation or dependency parameter whose value comes from an HTTP request header. It also supplies validation and OpenAPI metadata through the common parameter options.",
+    "followUp": "How does a snake_case Python name become an HTTP header name? By default, FastAPI converts underscores to hyphens; set `convert_underscores=False` to preserve underscores."
+   },
+   {
+    "question": "How do you make a header optional or required?",
+    "answer": "The default is `Undefined`, so a header can be required when no default or optional type/default is supplied. A default value or `None` makes the declaration optional according to the annotation and default.",
+    "followUp": "What happens if Header is omitted entirely? FastAPI interprets the parameter as a query parameter, not a header."
+   },
+   {
+    "question": "Which Header options commonly matter?",
+    "answer": "The function exposes `convert_underscores=True` by default, along with options such as `alias`, length and numeric constraints, regular-expression patterns, examples, deprecation, and schema inclusion. These configure extraction, validation, and documentation.",
+    "followUp": "When would `alias` be useful? Use it when the external header name should differ from the Python parameter name or automatic underscore conversion."
+   }
+  ],
+  "keyPoints": [
+   "Use Header in a path-operation parameter or dependency, commonly wrapped with `Annotated`.",
+   "Import it directly with `from fastapi import Header`.",
+   "Header belongs to the same request-parameter family as Path, Query, and Cookie.",
+   "Its shared parameter behavior comes from the common Param base class.",
+   "Header names are case-insensitive, so Python snake_case is appropriate for declarations.",
+   "Set convert_underscores=False when the external header must retain underscores."
+  ],
+  "gotchas": [
+   "Using an ordinary function parameter makes FastAPI treat it as a query parameter rather than a request header.",
+   "A Python name such as `user_agent` normally targets the `user-agent` header; disable this mapping with `convert_underscores=False` when required."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "HTTPException": {
+  "sourceUrl": "https://fastapi.tiangolo.com/reference/exceptions/",
+  "sourceTitle": "Exceptions",
+  "summary": "FastAPI's HTTPException is raised to send a deliberate client-facing HTTP error. It accepts a status code plus optional JSON-compatible detail data and response headers.",
+  "explanation": "HTTPException is a FastAPI exception for terminating a request with an HTTP error response. Construct it with a status code and optionally include JSON-compatible detail data and response headers, then raise it rather than returning it.",
+  "syntax": "HTTPException(status_code, detail=None, headers=None)",
+  "parameters": [
+   {
+    "name": "status_code",
+    "type": "int",
+    "description": "HTTP status code to send to the client."
+   },
+   {
+    "name": "detail",
+    "type": "Any",
+    "description": "Data sent in the JSON response's detail key; defaults to None."
+   },
+   {
+    "name": "headers",
+    "type": "Mapping[str, str] | None",
+    "description": "Headers sent in the response; defaults to None."
+   }
+  ],
+  "returns": "An exception instance to raise; raising it produces the client-facing HTTP error response.",
+  "example": {
+   "title": "Raise an HTTP error from a path operation",
+   "code": "from fastapi import FastAPI, HTTPException\n\napp = FastAPI()\nitems = {\"foo\": \"The Foo Wrestlers\"}\n\n@app.get(\"/items/{item_id}\")\nasync def read_item(item_id: str):\n    if item_id not in items:\n        raise HTTPException(status_code=404, detail=\"Item not found\")\n    return {\"item\": items[item_id]}",
+   "language": "python",
+   "explanation": "Raises a client-facing 404 response when the requested item is absent."
+  },
+  "useCases": [
+   {
+    "title": "Report missing resources",
+    "scenario": "A requested resource does not exist."
+   },
+   {
+    "title": "Reject invalid client requests",
+    "scenario": "A request contains invalid data or credentials."
+   },
+   {
+    "title": "Add authentication response headers",
+    "scenario": "The client must receive an authentication challenge header."
+   }
+  ],
+  "related": [
+   "WebSocketException",
+   "fastapi.exceptions.HTTPException"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is HTTPException used for?",
+    "answer": "HTTPException represents an API error that FastAPI converts into an HTTP response. Its constructor accepts a status code, optional detail payload, and optional headers.",
+    "followUp": "Can detail be structured data? Yes. FastAPI accepts values that can be converted to JSON, including dictionaries and lists."
+   },
+   {
+    "question": "How do you send a custom error from an endpoint?",
+    "answer": "Raise it with the desired HTTP status code and a message or other JSON-compatible value in detail. FastAPI then sends that information in the response's detail field.",
+    "followUp": "What happens after it is raised? Execution of the current request is aborted, so later code in that path operation does not run."
+   },
+   {
+    "question": "How does FastAPI's HTTPException differ from Starlette's?",
+    "answer": "FastAPI's class inherits from Starlette's HTTPException but permits any JSON-compatible detail value, whereas Starlette's version only accepts strings for detail.",
+    "followUp": "What can headers provide? They can add response headers such as WWW-Authenticate for authentication-related errors."
+   }
+  ],
+  "keyPoints": [
+   "Raise the class in application code when an endpoint needs to return a deliberate HTTP error.",
+   "status_code is the required argument and determines the HTTP response status.",
+   "detail is placed under the response's detail key and may contain more than a plain string.",
+   "headers lets the exception add response headers, with values represented as strings.",
+   "Import HTTPException directly from the fastapi package.",
+   "Raising the exception immediately ends the remaining execution for that request."
+  ],
+  "gotchas": [
+   "Use raise, not return, because HTTPException is an exception and raising it stops the current request immediately.",
+   "Use this class for client-side problems such as invalid input or authentication failures, not unexpected application bugs."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Path": {
+  "sourceUrl": "https://fastapi.tiangolo.com/reference/parameters/",
+  "sourceTitle": "Request Parameters - FastAPI",
+  "summary": "Path declares a URL path parameter for a FastAPI path operation. It provides schema metadata and validation while the parameter remains required because it is part of the route.",
+  "explanation": "Path creates a declaration for a path-operation parameter. FastAPI uses its type annotation to parse the URL value and uses Path options to add metadata and validation; because the value is part of the route, it remains required regardless of defaults.",
+  "syntax": "Path(default=..., *, default_factory=_Unset, alias=None, alias_priority=_Unset, validation_alias=None, serialization_alias=None, title=None, description=None, gt=None, ge=None, lt=None, le=None, min_length=None, max_length=None, pattern=None, regex=None, discriminator=None, strict=_Unset, multiple_of=_Unset, allow_inf_nan=_Unset, max_digits=None, decimal_places=None, examples=None, example=_Unset, openapi_examples=None, deprecated=None, include_in_schema=True, json_schema_extra=None, **extra)",
+  "parameters": [
+   {
+    "name": "default",
+    "type": "Any",
+    "description": "The declared default; it does not make a Path parameter optional."
+   },
+   {
+    "name": "default_factory",
+    "type": "Callable[[], Any] | None",
+    "description": "Callable used to generate a default; it does not affect Path requiredness."
+   },
+   {
+    "name": "alias",
+    "type": "str | None",
+    "description": "Alternative external name for the parameter."
+   },
+   {
+    "name": "title",
+    "type": "str | None",
+    "description": "Human-readable schema title."
+   },
+   {
+    "name": "description",
+    "type": "str | None",
+    "description": "Description for the generated schema."
+   },
+   {
+    "name": "ge",
+    "type": "annotated numeric value | None",
+    "description": "Inclusive minimum numeric bound."
+   },
+   {
+    "name": "gt",
+    "type": "annotated numeric value | None",
+    "description": "Exclusive minimum numeric bound."
+   },
+   {
+    "name": "le",
+    "type": "annotated numeric value | None",
+    "description": "Inclusive maximum numeric bound."
+   },
+   {
+    "name": "lt",
+    "type": "annotated numeric value | None",
+    "description": "Exclusive maximum numeric bound."
+   },
+   {
+    "name": "min_length",
+    "type": "int | None",
+    "description": "Minimum string length."
+   },
+   {
+    "name": "max_length",
+    "type": "int | None",
+    "description": "Maximum string length."
+   },
+   {
+    "name": "pattern",
+    "type": "str | None",
+    "description": "Regular-expression pattern constraint."
+   }
+  ],
+  "returns": "A path-parameter declaration used in a path-operation function or dependency.",
+  "example": {
+   "title": "Validated path parameter",
+   "code": "from typing import Annotated\nfrom fastapi import FastAPI, Path\n\napp = FastAPI()\n\n@app.get(\"/items/{item_id}\")\nasync def read_item(\n    item_id: Annotated[int, Path(title=\"The ID of the item to get\", ge=1)],\n):\n    return {\"item_id\": item_id}\n",
+   "language": "python",
+   "explanation": "The route captures item_id, while Path adds metadata and requires the integer to be at least 1."
+  },
+  "useCases": [
+   {
+    "title": "Validate IDs and numeric segments",
+    "scenario": "Constrain numeric identifiers captured in a route."
+   },
+   {
+    "title": "Document route parameters",
+    "scenario": "Add titles or descriptions to generated OpenAPI parameter schemas."
+   },
+   {
+    "title": "Validate textual segments",
+    "scenario": "Enforce string length or pattern rules on path segments."
+   }
+  ],
+  "related": [
+   "Query",
+   "Body",
+   "Cookie",
+   "Header",
+   "Annotated",
+   "FastAPI"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Path do in FastAPI?",
+    "answer": "Path declares metadata and validation for a parameter captured from the URL path. The parameter's Python annotation controls its converted type, while options such as ge constrain accepted values.",
+    "followUp": "How would you make the captured value an integer no smaller than 1? Use an int annotation together with Path(ge=1), preferably through Annotated."
+   },
+   {
+    "question": "Can a Path parameter be optional?",
+    "answer": "Path parameters are required because they must match a placeholder in the route. Supplying a default or None does not make the placeholder optional.",
+    "followUp": "How should an optional filter be represented instead? Put it in a query parameter, such as Query(default=None), rather than in the route path."
+   },
+   {
+    "question": "Which kinds of constraints can Path express?",
+    "answer": "Path supports validation and metadata comparable to Query, including numeric constraints such as ge, le, gt, and lt. These constraints are applied to the converted path value and included in the generated API schema.",
+    "followUp": "What happens when ge=1 is applied to a float parameter? FastAPI validates the float against the same lower-bound rule."
+   }
+  ],
+  "keyPoints": [
+   "Use Path in a path-operation function parameter to declare that the value comes from the URL path.",
+   "Path accepts metadata and validation controls similar to Query, including descriptions and numeric bounds.",
+   "A ge constraint sets an inclusive lower bound for numeric path values.",
+   "The numeric validation options are not limited to integer annotations; they also apply to floats.",
+   "The default and default_factory arguments exist for compatibility, but they do not alter path-parameter requiredness."
+  ],
+  "gotchas": [
+   "A default value or default factory does not make a Path parameter optional; the route still requires it.",
+   "Declaring None or a default does not change the required nature of a path parameter."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Query": {
+  "sourceUrl": "https://fastapi.tiangolo.com/reference/parameters/",
+  "sourceTitle": "Request Parameters - FastAPI",
+  "summary": "`Query` declares a FastAPI query parameter and adds validation, documentation metadata, and OpenAPI schema information. Use it with `Annotated` to express constraints such as length limits or numeric bounds.",
+  "explanation": "`Query` creates request metadata for a query parameter and lets FastAPI apply validation and OpenAPI metadata. Place it inside `Annotated` alongside the parameter's type; defaults such as `None` still control whether the parameter is optional.",
+  "syntax": "Query(\ndefault=Undefined,\n*,\ndefault_factory=_Unset,\nalias=None,\nalias_priority=_Unset,\nvalidation_alias=None,\nserialization_alias=None,\ntitle=None,\ndescription=None,\ngt=None,\nge=None,\nlt=None,\nle=None,\nmin_length=None,\nmax_length=None,\npattern=None,\nregex=None,\ndiscriminator=None,\nstrict=_Unset,\nmultiple_of=_Unset,\nallow_inf_nan=_Unset,\nmax_digits=None,\ndecimal_places=None,\nexamples=None,\nexample=_Unset,\nopenapi_examples=None,\ndeprecated=None,\ninclude_in_schema=True,\njson_schema_extra=None,\n**extra\n)",
+  "parameters": [
+   {
+    "name": "default",
+    "type": "Any",
+    "description": "Default value for the query parameter; `Undefined` makes the parameter required unless another default is supplied."
+   },
+   {
+    "name": "alias",
+    "type": "str | None",
+    "description": "Alternative query name exposed to clients."
+   },
+   {
+    "name": "title",
+    "type": "str | None",
+    "description": "Human-readable parameter title."
+   },
+   {
+    "name": "description",
+    "type": "str | None",
+    "description": "Human-readable parameter description."
+   },
+   {
+    "name": "gt",
+    "type": "float | None",
+    "description": "Numeric lower bound; the value must be greater than this."
+   },
+   {
+    "name": "ge",
+    "type": "float | None",
+    "description": "Numeric lower bound; the value must be greater than or equal to this."
+   },
+   {
+    "name": "lt",
+    "type": "float | None",
+    "description": "Numeric upper bound; the value must be less than this."
+   },
+   {
+    "name": "le",
+    "type": "float | None",
+    "description": "Numeric upper bound; the value must be less than or equal to this."
+   },
+   {
+    "name": "min_length",
+    "type": "int | None",
+    "description": "Minimum string length."
+   },
+   {
+    "name": "max_length",
+    "type": "int | None",
+    "description": "Maximum string length."
+   },
+   {
+    "name": "pattern",
+    "type": "str | None",
+    "description": "Regular-expression pattern for validation."
+   },
+   {
+    "name": "include_in_schema",
+    "type": "bool",
+    "description": "Whether to include the parameter in the generated schema."
+   }
+  ],
+  "returns": "A parameter metadata object used by FastAPI to extract, validate, and document a query parameter.",
+  "example": {
+   "title": "Limit a query string length",
+   "code": "from typing import Annotated\nfrom fastapi import FastAPI, Query\n\napp = FastAPI()\n\n@app.get(\"/items/\")\nasync def read_items(\n    q: Annotated[str | None, Query(max_length=50)] = None,\n):\n    return {\"q\": q}",
+   "language": "python",
+   "explanation": "The optional `q` query parameter is accepted when present and validated to a maximum of 50 characters."
+  },
+  "useCases": [
+   {
+    "title": "Validate string query input",
+    "scenario": "An endpoint accepts a search term or filter value that should not exceed a defined size."
+   },
+   {
+    "title": "Constrain numeric query values",
+    "scenario": "An endpoint requires pagination, price, or rating values within numeric limits."
+   },
+   {
+    "title": "Document query parameters",
+    "scenario": "An API needs parameter descriptions, titles, aliases, or examples in its generated schema."
+   }
+  ],
+  "related": [
+   "Path",
+   "Body",
+   "Header",
+   "Cookie",
+   "Form",
+   "File",
+   "Annotated",
+   "Depends"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does FastAPI's `Query` function provide?",
+    "answer": "`Query` declares that a parameter comes from the URL query string and supplies validation or documentation metadata. For example, `Query(max_length=50)` limits an incoming string and contributes that constraint to the generated API description.",
+    "followUp": "How would you keep the parameter optional while adding validation? Use a nullable type and assign `None` as the default, such as `Annotated[str | None, Query(max_length=50)] = None`."
+   },
+   {
+    "question": "What kinds of options can be passed to `Query`?",
+    "answer": "The function accepts constraints such as `gt`, `ge`, `lt`, `le`, `min_length`, `max_length`, and `pattern`. It also accepts descriptive metadata including `title`, `description`, and examples.",
+    "followUp": "Which constraints are appropriate for a numeric query value? Use numeric checks such as `gt`, `ge`, `lt`, `le`, or `multiple_of`; string-length and pattern checks target string values."
+   },
+   {
+    "question": "What happens when a query value fails a `Query` constraint?",
+    "answer": "FastAPI validates the received value against the declared type and `Query` constraints. If the value violates a constraint, FastAPI returns a clear validation error to the client and documents the parameter constraint.",
+    "followUp": "What happens when a supplied string exceeds `max_length`? The request fails validation rather than reaching the endpoint body, and the client receives a validation error."
+   }
+  ],
+  "keyPoints": [
+   "Use `Query` to attach validation rules and descriptive metadata to query parameters.",
+   "The modern form places `Query(...)` inside `typing.Annotated` with the parameter's type.",
+   "A `max_length` constraint checks the number of characters in an incoming string.",
+   "Invalid query values are rejected with a client-facing validation error.",
+   "Import `Query` directly from the `fastapi` package."
+  ],
+  "gotchas": [
+   "Putting validation in `Query` does not make an optional parameter required; its Python default still determines that.",
+   "Use `Query` in a path-operation or dependency parameter, typically through `Annotated`, rather than as an unrelated standalone value."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Request": {
+  "sourceUrl": "https://fastapi.tiangolo.com/reference/request/",
+  "sourceTitle": "Request Class",
+  "summary": "Request is FastAPI's raw HTTP request object, injected into path operations or dependencies through a type annotation. Use it to inspect request-level data directly when standard parameter declarations do not provide the needed access.",
+  "explanation": "Request is the raw incoming HTTP request object that FastAPI injects when a path-operation parameter is annotated with Request. It exposes request metadata and underlying connection information without applying FastAPI's normal parameter validation, conversion, or OpenAPI documentation to values read directly from it.",
+  "syntax": "Request(scope, receive=empty_receive, send=empty_send)",
+  "parameters": [
+   {
+    "name": "scope",
+    "type": "Scope",
+    "description": "ASGI scope containing request metadata."
+   },
+   {
+    "name": "receive",
+    "type": "Receive",
+    "description": "ASGI receive callable; defaults to empty_receive."
+   },
+   {
+    "name": "send",
+    "type": "Send",
+    "description": "ASGI send callable; defaults to empty_send."
+   }
+  ],
+  "returns": "A Request instance representing the incoming HTTP request.",
+  "example": {
+   "title": "Read request client information",
+   "code": "from fastapi import FastAPI, Request\n\napp = FastAPI()\n\n@app.get(\"/client\")\nasync def client_info(request: Request):\n    return {\"client_host\": request.client.host if request.client else None}",
+   "language": "python",
+   "explanation": "Declares Request as a path-operation parameter and returns the client's host."
+  },
+  "useCases": [
+   {
+    "title": "Inspect client information",
+    "scenario": "An endpoint needs connection metadata such as the caller's host."
+   },
+   {
+    "title": "Read the raw request",
+    "scenario": "Application code must access raw request details not modeled as FastAPI parameters."
+   },
+   {
+    "title": "Share connection-aware dependencies",
+    "scenario": "A dependency needs protocol-neutral access across HTTP and WebSocket connections."
+   }
+  ],
+  "related": [
+   "HTTPConnection",
+   "WebSocket",
+   "APIRoute",
+   "FastAPI"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How is Request injected into a FastAPI endpoint?",
+    "answer": "Annotate a path-operation or dependency parameter with Request, and FastAPI supplies the raw request object. It can then be used to inspect request data and metadata directly.",
+    "followUp": "When should HTTPConnection be used instead? Use it when a dependency must work for both HTTP requests and WebSockets."
+   },
+   {
+    "question": "How can an endpoint obtain the client's host?",
+    "answer": "Request provides direct access to the incoming request, including connection metadata such as the client address. The documented example reads request.client.host and returns it.",
+    "followUp": "What should code do if the client information is unavailable? Treat request.client as optional and handle a missing value rather than dereferencing it unconditionally."
+   },
+   {
+    "question": "Where does FastAPI's Request object come from?",
+    "answer": "FastAPI exposes Request directly as a convenience, while the object comes from Starlette underneath. This means its behavior follows the underlying Starlette request implementation.",
+    "followUp": "What is a practical consequence of that layering? Consult Starlette's Request documentation for details not covered by FastAPI's reference page."
+   }
+  ],
+  "keyPoints": [
+   "Annotate a path-operation parameter or dependency with Request to receive the raw incoming request object.",
+   "Request is intended for direct access when normal FastAPI parameter declarations are insufficient.",
+   "The public import is `from fastapi import Request`.",
+   "Request extends HTTPConnection, so it represents an HTTP connection with request-specific behavior.",
+   "Choose HTTPConnection rather than Request when shared dependencies must support both HTTP and WebSocket protocols."
+  ],
+  "gotchas": [
+   "Values obtained through Request directly bypass FastAPI's validation and conversion, so validate application inputs yourself.",
+   "Data read directly from the request is not automatically converted, validated, or included in generated OpenAPI documentation."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Response": {
+  "sourceUrl": "https://fastapi.tiangolo.com/reference/response/",
+  "sourceTitle": "Response class - FastAPI",
+  "summary": "FastAPI's Response class represents an HTTP response that can be injected to modify headers or cookies, or constructed and returned directly. Its constructor controls content, status, headers, media type, and background work.",
+  "explanation": "Response is the base response type that you can inject into a path operation or dependency to modify outgoing headers and cookies, or instantiate and return directly. Its constructor stores the status code, optional media type, background task, rendered body, and initialized headers; direct returns bypass FastAPI's normal data conversion.",
+  "syntax": "Response(content=None, status_code=200, headers=None, media_type=None, background=None)",
+  "parameters": [
+   {
+    "name": "content",
+    "type": "Any = None",
+    "description": "Response body content, rendered into the response body."
+   },
+   {
+    "name": "status_code",
+    "type": "int = 200",
+    "description": "HTTP status code."
+   },
+   {
+    "name": "headers",
+    "type": "Mapping[str, str] | None = None",
+    "description": "Mapping of response header names to values."
+   },
+   {
+    "name": "media_type",
+    "type": "str | None = None",
+    "description": "Optional response media type."
+   },
+   {
+    "name": "background",
+    "type": "BackgroundTask | None = None",
+    "description": "Optional background task run after the response."
+   }
+  ],
+  "returns": "An HTTP response object containing rendered content, status, headers, media type, and optional background work.",
+  "example": {
+   "title": "Set a cookie through an injected Response",
+   "code": "from fastapi import FastAPI, Response\n\napp = FastAPI()\n\n@app.get(\"/health\")\ndef health(response: Response):\n    response.set_cookie(key=\"checked\", value=\"true\")\n    return {\"ok\": True}",
+   "language": "python",
+   "explanation": "Inject Response to add a cookie while allowing FastAPI to produce the normal response."
+  },
+  "useCases": [
+   {
+    "title": "Mutate response metadata through dependency injection",
+    "scenario": "A handler needs to add a cookie or header while returning ordinary data."
+   },
+   {
+    "title": "Return a custom response directly",
+    "scenario": "An endpoint must emit explicit body content, status, or media type."
+   },
+   {
+    "title": "Attach a background task",
+    "scenario": "A response needs post-send background work configured at construction time."
+   }
+  ],
+  "related": [
+   "BackgroundTask",
+   "JSONResponse",
+   "HTMLResponse",
+   "PlainTextResponse",
+   "StreamingResponse",
+   "RedirectResponse"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is FastAPI's Response class used for?",
+    "answer": "Response is the base response class for FastAPI responses. It can be injected into a path operation or dependency so the handler can set response data such as headers or cookies.",
+    "followUp": "How would you return a custom status and media type? Instantiate Response with content, status_code, headers, and media_type, then return that instance."
+   },
+   {
+    "question": "What does the Response constructor configure?",
+    "answer": "The constructor accepts content, status_code, headers, media_type, and background. It renders the content into the body and initializes headers during construction.",
+    "followUp": "What happens if content is omitted? The default is None, which is passed through the response's rendering process."
+   },
+   {
+    "question": "What changes when a handler returns Response directly?",
+    "answer": "Returning a Response instance sends it directly, so FastAPI does not perform normal data conversion. This also means response-model conversion and automatic response documentation do not apply in the usual way.",
+    "followUp": "When should a response model be preferred? Prefer it when you want Pydantic serialization and generated OpenAPI response information."
+   }
+  ],
+  "keyPoints": [
+   "Inject Response into a path operation or dependency when you need to modify the outgoing response.",
+   "The injected object lets handler code set response headers and cookies.",
+   "Construct and return Response directly when you need explicit response content or metadata.",
+   "The public import is `from fastapi import Response`.",
+   "The default HTTP status code is 200.",
+   "The media type is optional and defaults to None."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "status": {
+  "sourceUrl": "https://fastapi.tiangolo.com/reference/status/",
+  "sourceTitle": "Status Codes",
+  "summary": "FastAPI's status module provides named integer constants for HTTP and WebSocket status codes. Import it from fastapi to use readable values such as status.HTTP_200_OK in application code.",
+  "explanation": "The module exposes named integer constants for HTTP and WebSocket status codes. Import it from fastapi and use a descriptive constant, such as status.HTTP_200_OK, wherever a status-code value is needed.",
+  "syntax": "from fastapi import status",
+  "parameters": [],
+  "returns": "The module provides named integer status-code constants.",
+  "example": {
+   "title": "Use a named status code",
+   "code": "from fastapi import FastAPI, status\n\napp = FastAPI()\n\n@app.get(\"/items/\", status_code=status.HTTP_200_OK)\ndef read_items():\n    return [{\"name\": \"Plumbus\"}]\n",
+   "language": "python",
+   "explanation": "This runnable FastAPI app uses a named HTTP status constant in the route declaration."
+  },
+  "useCases": [
+   {
+    "title": "Declare endpoint response status",
+    "scenario": "A route declaration needs an explicit response code without embedding a magic number."
+   },
+   {
+    "title": "Handle status codes in control flow",
+    "scenario": "Application logic must compare or return an HTTP status value using a descriptive identifier."
+   },
+   {
+    "title": "Discover codes with autocomplete",
+    "scenario": "An editor's completion support can replace memorizing numeric HTTP or WebSocket codes."
+   }
+  ],
+  "related": [
+   "FastAPI",
+   "Response Status Code",
+   "HTTP_100_CONTINUE",
+   "HTTP_200_OK",
+   "HTTP_403_FORBIDDEN",
+   "HTTP_418_IM_A_TEAPOT"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the purpose of fastapi.status?",
+    "answer": "Import status from fastapi and select a named constant such as status.HTTP_200_OK. These constants represent integer HTTP or WebSocket status codes while making code completion and readability better than raw numbers.",
+    "followUp": "Why use named constants instead of literals? Named constants communicate intent and reduce the need to memorize numeric codes."
+   },
+   {
+    "question": "How do you configure a route with a status constant?",
+    "answer": "Set a route's status_code argument to a status constant, for example status.HTTP_418_IM_A_TEAPOT. FastAPI then uses that value as the operation's configured response status code.",
+    "followUp": "Can the same constants be used outside decorators? Yes; they are integer values and can be passed anywhere an HTTP status code is accepted."
+   },
+   {
+    "question": "What kinds of codes does the module expose?",
+    "answer": "The module contains named integer constants for both HTTP and WebSocket status codes. Examples include HTTP_200_OK and HTTP_403_FORBIDDEN.",
+    "followUp": "Where does this module originate? The documentation states that status is provided directly by Starlette."
+   }
+  ],
+  "keyPoints": [
+   "Import the module directly from fastapi with from fastapi import status.",
+   "Its members are named variables whose values are integer status codes.",
+   "The constants cover both HTTP and WebSocket status-code values.",
+   "Descriptive names improve editor completion and avoid memorizing numeric values."
+  ],
+  "gotchas": [
+   "The module is supplied directly by Starlette, so its constants are not independently defined by FastAPI."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

@@ -494,6 +494,13 @@ export const USE_CASES: TechnologyUseCases[] = [
     ],
   },
   {
+    technologies: ["LangFlow"],
+    useCase: { title: "Turning an AI prototype into an API in an afternoon", scenario: "A RAG pipeline or agent built and tested on the canvas is called from the app over its run endpoint, with no orchestration code written for the join." },
+    alsoUsedFor: [
+      { title: "Giving AI assistants your workflows as tools", scenario: "A project's flows are published on its MCP server, so Claude or Cursor can call them directly." },
+    ],
+  },
+  {
     technologies: ["n8n"],
     useCase: { title: "Automating work that spans several systems", scenario: "A form, a spreadsheet, a CRM and an email tool are connected without a service written, deployed and maintained for the join." },
     alsoUsedFor: [

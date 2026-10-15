@@ -1,0 +1,791 @@
+{
+ "json": {
+  "sourceUrl": "https://requests.readthedocs.io/en/latest/api/",
+  "sourceTitle": "Developer Interface — Requests 2.34.2 documentation",
+  "summary": "Response.json() decodes a response body as JSON and returns the corresponding Python object, such as a dictionary or list. It raises an exception when decoding fails.",
+  "explanation": "Call this method on a Response to decode its body as JSON. The result is whichever Python value the JSON represents, such as a dictionary or list; decoding failures raise an exception.",
+  "syntax": "Response.json(**kwargs) → Any",
+  "parameters": [
+   {
+    "name": "**kwargs",
+    "type": "Any",
+    "description": "Optional keyword arguments accepted by the JSON decoder."
+   }
+  ],
+  "returns": "Any",
+  "example": {
+   "title": "Decode a JSON response",
+   "code": "import requests\n\nresponse = requests.get(\"https://api.github.com/events\")\nresponse.raise_for_status()\nevents = response.json()\nprint(type(events).__name__)",
+   "language": "python",
+   "explanation": "Fetches JSON from an endpoint, verifies the HTTP status, and converts the response body into a Python object."
+  },
+  "useCases": [
+   {
+    "title": "Consume API data",
+    "scenario": "Parse a JSON API response into dictionaries, lists, or scalar Python values."
+   },
+   {
+    "title": "Validate then parse",
+    "scenario": "Decode a response after checking its HTTP status."
+   },
+   {
+    "title": "Detect decoding failures",
+    "scenario": "Handle malformed or non-JSON bodies from an endpoint."
+   }
+  ],
+  "related": [
+   "requests.get",
+   "requests.post",
+   "requests.Response",
+   "requests.exceptions.JSONDecodeError"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Response.json() do?",
+    "answer": "Response.json() parses the response body and returns the corresponding Python object. The returned value can be a dictionary, list, or another JSON-supported value.",
+    "followUp": "What happens when the body is not valid JSON? The call raises an exception rather than returning a partially decoded value."
+   },
+   {
+    "question": "How do you use the JSON decoder on a response?",
+    "answer": "It is a method, so it must be invoked with parentheses. The documentation specifically distinguishes the callable form from the older property-style form.",
+    "followUp": "How would you avoid treating an error page as JSON? Check the HTTP status first, then call json() and handle decoding errors."
+   },
+   {
+    "question": "Does calling json() validate the HTTP status?",
+    "answer": "The method decodes the response body; it does not itself establish that the HTTP request succeeded. Status handling should therefore be performed separately when success is required.",
+    "followUp": "What should a client do before decoding an API response? Raise for an unsuccessful status or otherwise inspect the status code, then decode the body."
+   }
+  ],
+  "keyPoints": [
+   "Response.json() transforms the response body into a native Python value.",
+   "Use json() with parentheses; accessing json without calling it is not the documented operation.",
+   "The JSON decoder belongs to the Response API exposed by Requests."
+  ],
+  "gotchas": [
+   "A successful HTTP response does not guarantee valid JSON; handle decoding failures when the body may be empty or malformed."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "params": {
+  "sourceUrl": "https://requests.readthedocs.io/en/latest/api/",
+  "sourceTitle": "Developer Interface — Requests 2.34.2 documentation",
+  "summary": "`params` supplies query-string data to Requests calls. Provide a dictionary, tuple list, or bytes; Requests encodes it into the URL and returns a `Response`.",
+  "explanation": "Pass query-string data through the `params` argument when creating a request. Requests accepts mappings, tuple lists, or bytes, encodes the values into the URL, and returns the resulting `Response`; list values produce repeated query keys.",
+  "syntax": "requests.request(method, url, **kwargs)\nrequests.get(url, params=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "params",
+    "type": "_t.ParamsType = None",
+    "description": "Dictionary, list of tuples, or bytes to send in the query string for the request."
+   }
+  ],
+  "returns": "Response object",
+  "example": {
+   "title": "Add query parameters",
+   "code": "import requests\n\nresponse = requests.get(\n    \"https://httpbin.org/get\",\n    params={\"page\": 2, \"tag\": [\"python\", \"http\"]},\n)\nprint(response.url)",
+   "language": "python",
+   "explanation": "Sends query parameters and prints the resulting URL."
+  },
+  "useCases": [
+   {
+    "title": "API filters and pagination",
+    "scenario": "Filtering or paginating an API response without manually assembling a URL."
+   },
+   {
+    "title": "Multivalued query parameters",
+    "scenario": "Sending repeated query keys such as tags or identifiers."
+   },
+   {
+    "title": "Optional URL arguments",
+    "scenario": "Adding optional parameters while omitting unset values."
+   }
+  ],
+  "related": [
+   "requests.request",
+   "requests.get",
+   "requests.post",
+   "requests.Session.params",
+   "requests.Request.prepare",
+   "requests.PreparedRequest.prepare_url"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the purpose and accepted input for `params`?",
+    "answer": "`params` supplies data for the request URL's query string. The API accepts a dictionary, a list of tuples, or bytes, and the request methods return a `Response`.",
+    "followUp": "How would you encode repeated query keys? Use a list value in a dictionary, such as `{\"tag\": [\"python\", \"http\"]}`, which produces multiple `tag` entries."
+   },
+   {
+    "question": "How do you send query parameters with `requests.get`?",
+    "answer": "For a GET request, pass `params` as a keyword argument, for example `requests.get(url, params=payload)`. Requests incorporates the supplied values into the URL rather than placing them in the request body.",
+    "followUp": "How can you inspect the encoded result? Read the returned response's `url` attribute."
+   },
+   {
+    "question": "What happens to `None`-valued dictionary entries?",
+    "answer": "A dictionary key whose value is `None` is excluded from the URL's query string. This lets optional filters remain absent without manually rebuilding the parameter mapping.",
+    "followUp": "What happens when a value is a list? Requests emits the same query key once for each list element."
+   }
+  ],
+  "keyPoints": [
+   "`params` accepts a dictionary, a list of key-value tuples, or raw bytes for query-string data.",
+   "Use the `params` keyword to attach query arguments without manually concatenating them to the URL.",
+   "The returned response exposes the fully constructed URL through its `url` attribute.",
+   "List-valued dictionary entries encode multiple occurrences of one query parameter."
+  ],
+  "gotchas": [
+   "Dictionary entries with `None` values are omitted rather than serialized into the query string.",
+   "A list value represents a repeated query parameter, so one key can appear multiple times in the final URL."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "raise_for_status": {
+  "sourceUrl": "https://requests.readthedocs.io/en/stable/api/",
+  "sourceTitle": "Developer Interface — Requests 2.34.2 documentation",
+  "summary": "Response.raise_for_status() raises HTTPError for an unsuccessful HTTP response and otherwise returns None. Use it after a request to enforce response-status validation before handling the result.",
+  "explanation": "Call this method on a Response after the request completes. It raises requests.exceptions.HTTPError when the response has an unsuccessful status code; otherwise, it returns None, so it can be used as a concise validation step before processing the response.",
+  "syntax": "raise_for_status() → None",
+  "parameters": [],
+  "returns": "None when no HTTP error is raised; otherwise the method raises HTTPError.",
+  "example": {
+   "title": "Raise an exception for an unsuccessful response",
+   "code": "import requests\n\nresponse = requests.get(\"https://httpbin.org/status/404\")\ntry:\n    response.raise_for_status()\nexcept requests.exceptions.HTTPError as error:\n    print(error)",
+   "language": "python",
+   "explanation": "The call raises HTTPError for this 404 response, allowing the failure to be handled explicitly."
+  },
+  "useCases": [
+   {
+    "title": "Guard response handling",
+    "scenario": "Validate an HTTP response before parsing or processing its body."
+   },
+   {
+    "title": "Centralize HTTP failure handling",
+    "scenario": "Convert 4XX and 5XX server responses into an exception path."
+   },
+   {
+    "title": "Simplify status checks",
+    "scenario": "Keep request code concise when successful responses need no explicit status branch."
+   }
+  ],
+  "related": [
+   "Response",
+   "Response.status_code",
+   "Response.ok",
+   "HTTPError",
+   "requests.get"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Response.raise_for_status() do?",
+    "answer": "It is a Response method with the signature `raise_for_status() → None`. It raises HTTPError when an unsuccessful status code occurred and returns None when no such error occurred.",
+    "followUp": "How would you distinguish HTTP failures from transport failures? Catch HTTPError for an unsuccessful response; connection problems are handled separately by Requests exceptions such as ConnectionError."
+   },
+   {
+    "question": "Does it require status code 200?",
+    "answer": "The method validates the completed response rather than checking only for 200 OK. A successful call returns None, while an unsuccessful response causes HTTPError to be raised.",
+    "followUp": "Why might checking only status code 200 be too strict? Other successful HTTP responses can use different status codes, so exact equality with 200 is not the method's criterion."
+   },
+   {
+    "question": "Where should this method usually be called?",
+    "answer": "It is useful immediately after a request and before consuming the response as successful application data. If the server returned an unsuccessful status, execution transfers through HTTPError handling instead.",
+    "followUp": "What should code do after catching HTTPError? It can inspect the exception or response context, log the failure, and apply an application-specific recovery or reporting policy."
+   }
+  ],
+  "keyPoints": [
+   "The method takes no arguments and has a None return annotation.",
+   "An HTTPError is raised when the response represents an unsuccessful HTTP result.",
+   "The method concerns an error associated with the stored response rather than producing a parsed response value.",
+   "The documentation's quickstart identifies client-side 4XX and server-side 5XX responses as failures that can be raised."
+  ],
+  "gotchas": [
+   "A response is not required to have exactly status 200 for this method to succeed; it checks for an unsuccessful response instead."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Request": {
+  "sourceUrl": "https://requests.readthedocs.io/en/latest/api/",
+  "sourceTitle": "Developer Interface — Requests 2.34.2 documentation",
+  "summary": "Request is a user-created description of an HTTP request. Prepare it to obtain a PreparedRequest that can be sent to a server.",
+  "explanation": "Request is the user-facing description of an HTTP operation. It stores the method, target URL, headers, query parameters, body, cookies, authentication, and related options; call prepare() to turn it into a PreparedRequest that can be sent.",
+  "syntax": "requests.Request(method: str | None = None, url: str | bytes | None = None, headers: Mapping[str, str] | None = None, files: Mapping | None = None, data: Mapping | Iterable[tuple] | str | bytes | file-like | None = None, params: Mapping | Iterable[tuple] | str | bytes | None = None, auth: tuple | callable | None = None, cookies: Mapping | CookieJar | None = None, hooks: Mapping[str, list[callable]] | None = None, json: Any = None)",
+  "parameters": [
+   {
+    "name": "method",
+    "type": "str | None",
+    "description": "HTTP method to use."
+   },
+   {
+    "name": "url",
+    "type": "str | bytes",
+    "description": "URL to send the request to."
+   },
+   {
+    "name": "headers",
+    "type": "Mapping[str, str] | None",
+    "description": "Dictionary of HTTP headers to send with the request."
+   },
+   {
+    "name": "params",
+    "type": "Mapping | Iterable[tuple] | str | bytes | None",
+    "description": "Dictionary, list of tuples, or bytes for the query string."
+   },
+   {
+    "name": "data",
+    "type": "Mapping | Iterable[tuple] | str | bytes | file-like | None",
+    "description": "Body to attach to the request."
+   },
+   {
+    "name": "json",
+    "type": "Any",
+    "description": "JSON data to send in the request body."
+   },
+   {
+    "name": "cookies",
+    "type": "Mapping | CookieJar | None",
+    "description": "Cookies to include."
+   },
+   {
+    "name": "auth",
+    "type": "tuple | callable | None",
+    "description": "Authentication credentials."
+   },
+   {
+    "name": "files",
+    "type": "Mapping | None",
+    "description": "Files to upload."
+   },
+   {
+    "name": "hooks",
+    "type": "Mapping[str, list[callable]] | None",
+    "description": "Request hooks."
+   }
+  ],
+  "returns": "A Request instance; after preparation, prepare() returns a PreparedRequest.",
+  "example": {
+   "title": "Create and prepare a Request",
+   "code": "import requests\n\nrequest = requests.Request(\n    method=\"GET\",\n    url=\"https://httpbin.org/get\",\n    params={\"page\": \"1\"},\n    headers={\"Accept\": \"application/json\"},\n)\nprepared = request.prepare()\nprint(prepared.url)",
+   "language": "python",
+   "explanation": "Creates a Request description, then prepares it so its final URL and headers can be inspected before sending."
+  },
+  "useCases": [
+   {
+    "title": "Preflight request construction",
+    "scenario": "Inspect or modify the fully assembled URL and headers before transmission."
+   },
+   {
+    "title": "Reusable request descriptions",
+    "scenario": "Build reusable request templates with consistent method, payload, and metadata."
+   },
+   {
+    "title": "Controlled dispatch",
+    "scenario": "Separate request creation from sending through a Session or another transport workflow."
+   }
+  ],
+  "related": [
+   "PreparedRequest",
+   "Session",
+   "Response",
+   "RequestEncodingMixin",
+   "requests.request"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the role of requests.Request?",
+    "answer": "Request represents a user-created HTTP request description. It can be prepared into a PreparedRequest, which is the form sent to the server.",
+    "followUp": "How would you inspect the final URL before transmission? Call prepare() and inspect the resulting PreparedRequest, including its URL."
+   },
+   {
+    "question": "Which information can a Request hold?",
+    "answer": "The method identifies the HTTP operation, while url identifies the target. Optional fields such as params, headers, data, json, cookies, auth, hooks, and files customize the request.",
+    "followUp": "What happens to query parameters? They are incorporated into the prepared request URL rather than remaining only in the Request object."
+   },
+   {
+    "question": "When would you use Request instead of requests.get()?",
+    "answer": "Request is useful when request construction and transmission should be separate. After creating it, prepare() produces a PreparedRequest that can be sent through a session.",
+    "followUp": "Why use a Session for sending? A session can persist configuration and cookies and reuse connections across requests."
+   }
+  ],
+  "keyPoints": [
+   "Instantiate Request when you need an explicit object representing the operation before it is prepared or sent.",
+   "prepare() converts the high-level Request into the wire-ready PreparedRequest.",
+   "The method argument selects the HTTP verb, such as GET, POST, PUT, PATCH, or DELETE.",
+   "Use data for a request body when sending form data, bytes, or a file-like object."
+  ],
+  "gotchas": [
+   "Constructing a Request does not send network traffic; prepare it first, or use a session/request API to send it.",
+   "Request is a description object rather than the response returned by the server."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "requests.delete": {
+  "sourceUrl": "https://requests.readthedocs.io/en/latest/api/",
+  "sourceTitle": "Developer Interface — Requests 2.34.2 documentation",
+  "summary": "Sends an HTTP DELETE request to a URL and returns the resulting Response object. Optional keyword arguments use the same request configuration supported by requests.request.",
+  "explanation": "Call this convenience function with the target URL and any optional keyword arguments accepted by requests.request. It creates and sends a DELETE request, then returns the resulting Response object, which exposes the status code, headers, body, and other response details.",
+  "syntax": "requests.delete(url, **kwargs)",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "_t.UriType",
+    "description": "URL for the new Request object."
+   },
+   {
+    "name": "**kwargs",
+    "type": "Unpack[_t.RequestKwargs]",
+    "description": "Optional arguments accepted by requests.request."
+   }
+  ],
+  "returns": "Response object",
+  "example": {
+   "title": "Delete a resource",
+   "code": "import requests\n\nresponse = requests.delete(\n    \"https://httpbin.org/delete\",\n    headers={\"Accept\": \"application/json\"},\n)\nresponse.raise_for_status()\nprint(response.status_code)",
+   "language": "python",
+   "explanation": "Sends a DELETE request and checks that the server returned a successful HTTP status."
+  },
+  "useCases": [
+   {
+    "title": "Delete a resource",
+    "scenario": "Removing a server-side resource through an HTTP API."
+   },
+   {
+    "title": "Configure the request",
+    "scenario": "Passing request options such as headers, authentication, or timeouts through the common request interface."
+   },
+   {
+    "title": "Handle the result",
+    "scenario": "Inspecting the returned HTTP status and response metadata after deletion."
+   }
+  ],
+  "related": [
+   "requests.request",
+   "requests.get",
+   "requests.options",
+   "requests.head",
+   "requests.post",
+   "requests.put",
+   "requests.patch",
+   "requests.Session.delete"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does requests.delete do and what does it return?",
+    "answer": "requests.delete is a convenience function for sending an HTTP DELETE request. Its signature accepts a URL plus optional keyword arguments, and it returns a Response object.",
+    "followUp": "How would you inspect whether the operation succeeded? Check response.status_code or call response.raise_for_status() before processing the response."
+   },
+   {
+    "question": "What are the parameters of requests.delete?",
+    "answer": "The required url identifies the new Request object. The optional **kwargs provide the request configuration supported by requests.request.",
+    "followUp": "Why is this useful? It gives the convenience method the same configuration surface as the general request API while fixing the HTTP method to DELETE."
+   },
+   {
+    "question": "How should a caller use the returned value?",
+    "answer": "The function sends the DELETE method to the supplied URL and returns the server's Response object. The response can then be used to inspect status and other HTTP response data.",
+    "followUp": "What if the server returns no content? Use the response metadata, such as status_code, rather than assuming a response body exists."
+   }
+  ],
+  "keyPoints": [
+   "The function fixes the HTTP method to DELETE and sends the request to the provided URL.",
+   "Optional keyword arguments configure the request using the same options as the general request function.",
+   "The URL identifies the destination for the request.",
+   "The function returns a Response instance representing the HTTP result."
+  ],
+  "gotchas": [
+   "All keyword arguments are delegated to the general request function, so their meaning and accepted values follow that function's interface."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "requests.get": {
+  "sourceUrl": "https://requests.readthedocs.io/en/latest/api/",
+  "sourceTitle": "Developer Interface — Requests 2.34.2 documentation",
+  "summary": "Sends an HTTP GET request and returns a `requests.Response`. Query-string data goes in `params`; other request options are supplied as keyword arguments.",
+  "explanation": "`requests.get` creates and sends a GET request for the supplied URL. It can add query parameters and accepts the optional keyword arguments supported by `requests.request`; the returned `Response` exposes the server's result.",
+  "syntax": "requests.get(url, params=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "UriType",
+    "description": "URL for the new `Request` object."
+   },
+   {
+    "name": "params",
+    "type": "ParamsType | None",
+    "description": "Optional dictionary, list of tuples, or bytes to send in the request query string."
+   },
+   {
+    "name": "**kwargs",
+    "type": "GetKwargs",
+    "description": "Optional keyword arguments accepted by `request`."
+   }
+  ],
+  "returns": "A `Response` object; return type `requests.Response`.",
+  "example": {
+   "title": "GET a resource with query parameters",
+   "code": "import requests\n\nresponse = requests.get(\n    \"https://httpbin.org/get\",\n    params={\"page\": 2},\n    timeout=10,\n)\nresponse.raise_for_status()\nprint(response.json())",
+   "language": "python",
+   "explanation": "This sends a GET request with query parameters, checks for an HTTP error, and reads the JSON response."
+  },
+  "useCases": [
+   {
+    "title": "Fetch a resource",
+    "scenario": "Retrieve a web resource or API endpoint using the GET method."
+   },
+   {
+    "title": "Build query parameters",
+    "scenario": "Add filters, pagination, or other query-string values without manually building the URL."
+   },
+   {
+    "title": "Customize the request",
+    "scenario": "Apply shared request options such as headers, authentication, timeout, or streaming."
+   }
+  ],
+  "related": [
+   "requests.request",
+   "requests.Session.get",
+   "requests.Response",
+   "requests.Request"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `requests.get` return?",
+    "answer": "`requests.get` is a convenience function for issuing an HTTP GET request. It returns a `requests.Response` object, which contains the server response and the original request.",
+    "followUp": "How would you avoid downloading the body immediately? Pass `stream=True`, then consume the response and close it when done."
+   },
+   {
+    "question": "What are the main positional arguments?",
+    "answer": "`url` identifies the resource, while `params` supplies query-string data. The documentation allows `params` to be a dictionary, a list of tuples, or bytes.",
+    "followUp": "Why use a list of tuples? It preserves repeated query-key entries, which a plain dictionary cannot represent directly."
+   },
+   {
+    "question": "How can request behavior be customized?",
+    "answer": "Additional keyword arguments are forwarded through the request machinery, so options such as authentication, headers, redirects, streaming, and timeouts can be supplied. A timeout should be provided when an application must not wait indefinitely.",
+    "followUp": "What happens with `stream=True`? The body is deferred until accessed, and the response must be closed after use."
+   }
+  ],
+  "keyPoints": [
+   "Use this function when the intended HTTP method is GET.",
+   "`url` specifies the resource for which Requests constructs the request.",
+   "`params` encodes query-string values and supports mappings, repeated-key tuples, or raw bytes.",
+   "`kwargs` provides the optional controls accepted by the general request function."
+  ],
+  "gotchas": [
+   "A response body is normally downloaded immediately; use `stream=True` when you need to defer body retrieval.",
+   "Streaming changes response-body handling, so close the response when finished, preferably with a context manager."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "requests.post": {
+  "sourceUrl": "https://requests.readthedocs.io/en/latest/api/",
+  "sourceTitle": "Developer Interface — Requests 2.34.2 documentation",
+  "summary": "Sends an HTTP POST request and returns a Response. Supply the body with data or with a JSON-serializable value via json, while other request options are passed as keyword arguments.",
+  "explanation": "requests.post creates and sends an HTTP POST request to the supplied URL. The request body can be provided through data or as a JSON-serializable object through json; additional request options are forwarded through keyword arguments, and the call returns a Response.",
+  "syntax": "requests.post(url: _t.UriType, data: _t.DataType = None, json: _t.JsonType = None, **kwargs: Unpack[_t.PostKwargs]) → Response",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "_t.UriType",
+    "description": "URL for the new Request object."
+   },
+   {
+    "name": "data",
+    "type": "_t.DataType = None",
+    "description": "Optional dictionary, list of tuples, bytes, or file-like object to send in the request body."
+   },
+   {
+    "name": "json",
+    "type": "_t.JsonType = None",
+    "description": "Optional JSON-serializable Python object to send in the request body."
+   },
+   {
+    "name": "**kwargs",
+    "type": "Unpack[_t.PostKwargs]",
+    "description": "Optional arguments accepted by request."
+   }
+  ],
+  "returns": "Response object",
+  "example": {
+   "title": "Send JSON with POST",
+   "code": "import requests\n\nresponse = requests.post(\n    \"https://httpbin.org/post\",\n    json={\"name\": \"Ada\", \"active\": True},\n)\nresponse.raise_for_status()\nprint(response.json()[\"json\"])\n",
+   "language": "python",
+   "explanation": "Sends a JSON-encoded POST body and reads the returned JSON response."
+  },
+  "useCases": [
+   {
+    "title": "Create a POST request",
+    "scenario": "Submit form fields or raw request content to an HTTP endpoint."
+   },
+   {
+    "title": "Post JSON",
+    "scenario": "Send structured application data without manually serializing it."
+   },
+   {
+    "title": "Stream request data",
+    "scenario": "Upload a stream or file-like body."
+   }
+  ],
+  "related": [
+   "requests.request",
+   "requests.get",
+   "requests.put",
+   "requests.patch",
+   "requests.delete",
+   "requests.options",
+   "requests.head",
+   "requests.Response"
+  ],
+  "since": "2.4.2 for the json parameter",
+  "interview": [
+   {
+    "question": "What does requests.post return and what are its main body arguments?",
+    "answer": "It sends a POST request and returns a requests.Response object. url identifies the destination, while data and json are optional body inputs.",
+    "followUp": "What happens when both json and data are supplied? The documentation says json is ignored when either data or files is passed."
+   },
+   {
+    "question": "How do data and json differ?",
+    "answer": "data accepts a dictionary, list of tuples, bytes, or file-like object for the request body. json accepts a JSON-serializable Python object and handles JSON encoding.",
+    "followUp": "How would you upload a large body without reading it all into memory? Pass a file-like object as data, which supports streamed uploads."
+   },
+   {
+    "question": "What role does **kwargs play in requests.post?",
+    "answer": "Keyword arguments are optional arguments accepted by request. The function returns a Response, whose status, headers, and body can then be inspected.",
+    "followUp": "How should an application handle an unsuccessful HTTP status? Inspect the Response or call raise_for_status() so unsuccessful statuses raise an HTTPError."
+   }
+  ],
+  "keyPoints": [
+   "The function performs an HTTP POST operation.",
+   "url specifies the destination for the newly created request.",
+   "data can carry form-style values, raw bytes, or a stream-like body.",
+   "json accepts Python data that can be represented as JSON.",
+   "Additional keyword options use the same options supported by the general request function."
+  ],
+  "gotchas": [
+   "Do not expect json to determine the body when data or files is also supplied; those arguments take precedence.",
+   "Passing serialized JSON through data does not automatically set the JSON Content-Type header; use json when you want Requests to encode the object and set the appropriate header."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "requests.put": {
+  "sourceUrl": "https://requests.readthedocs.io/en/latest/api/",
+  "sourceTitle": "Developer Interface — Requests 2.34.2 documentation",
+  "summary": "Sends an HTTP PUT request and returns the resulting Response. The request body may be supplied with data or json, while other request options are passed as keyword arguments.",
+  "explanation": "requests.put creates and sends an HTTP PUT request to the supplied URL. It can place dictionary, tuple-list, byte, or file-like data in the request body and accepts the optional keyword arguments supported by requests.request, returning the resulting Response.",
+  "syntax": "requests.put(url: _t.UriType, data: _t.DataType = None, **kwargs: Unpack[_t.DataKwargs]) → Response",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "_t.UriType",
+    "description": "URL for the new Request object."
+   },
+   {
+    "name": "data",
+    "type": "_t.DataType = None",
+    "description": "Optional dictionary, list of tuples, bytes, or file-like object to send in the body of the Request."
+   },
+   {
+    "name": "json",
+    "type": "JSON-serializable Python object",
+    "description": "Optional JSON-serializable Python object to send in the body of the Request."
+   },
+   {
+    "name": "**kwargs",
+    "type": "Unpack[_t.DataKwargs]",
+    "description": "Optional arguments accepted by request."
+   }
+  ],
+  "returns": "Response object (requests.Response).",
+  "example": {
+   "title": "Send a PUT request",
+   "code": "import requests\n\nresponse = requests.put(\n    \"https://httpbin.org/put\",\n    data={\"key\": \"value\"},\n    timeout=10,\n)\nresponse.raise_for_status()\nprint(response.status_code)",
+   "language": "python",
+   "explanation": "Sends form-style data in a PUT request and checks that the server returned a successful status."
+  },
+  "useCases": [
+   {
+    "title": "Resource replacement or update",
+    "scenario": "Updating a resource at a known endpoint."
+   },
+   {
+    "title": "Form-style request body",
+    "scenario": "Submitting structured form fields to a PUT endpoint."
+   },
+   {
+    "title": "JSON API update",
+    "scenario": "Sending serialized application data to an API."
+   }
+  ],
+  "related": [
+   "requests.request",
+   "requests.post",
+   "requests.patch",
+   "requests.delete",
+   "requests.Response"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does requests.put return and what are its main inputs?",
+    "answer": "It sends a PUT request and returns a requests.Response object. The URL identifies the destination, while data optionally supplies the request body.",
+    "followUp": "How would you send JSON? Pass a JSON-serializable Python object through the documented json keyword argument."
+   },
+   {
+    "question": "What types can the data argument accept?",
+    "answer": "data may be a dictionary, a list of tuples, bytes, or a file-like object. These values are used as the body of the Request.",
+    "followUp": "Why might a list of tuples be useful? It can represent repeated form-field names without collapsing them into one mapping entry."
+   },
+   {
+    "question": "How does requests.put relate to requests.request?",
+    "answer": "The function is a convenience wrapper for the PUT HTTP method. It accepts the same optional request arguments as the general request function, including json when a JSON body is needed.",
+    "followUp": "What should be checked after receiving the response? Inspect the Response or call raise_for_status to surface unsuccessful HTTP status codes."
+   }
+  ],
+  "keyPoints": [
+   "Use this function when the HTTP method should be PUT.",
+   "The required url argument specifies the destination for the request.",
+   "The data argument supports several body representations, including mappings, tuple sequences, raw bytes, and streams.",
+   "The json keyword argument is available for sending a serializable Python value as the request body.",
+   "The call produces a Response containing the server's result."
+  ],
+  "gotchas": [
+   "Keyword arguments are forwarded to the general request function, so their meaning and behavior come from that function's supported options."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Session": {
+  "sourceUrl": "https://requests.readthedocs.io/en/latest/user/advanced/",
+  "sourceTitle": "Session Objects — Requests: HTTP for Humans",
+  "summary": "A Requests Session groups HTTP calls while persisting selected settings and cookies. It also provides connection pooling and can be used as a context manager for automatic cleanup.",
+  "explanation": "Session groups repeated HTTP requests while retaining configuration and cookies between them. It also uses connection pooling, and its context-manager form closes the session when the block ends.",
+  "syntax": "requests.Session()",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Persist session configuration across requests",
+   "code": "import requests\n\nwith requests.Session() as session:\n    session.headers.update({\"Accept\": \"application/json\"})\n    response = session.get(\"https://httpbin.org/get\", timeout=10)\n    response.raise_for_status()\n    print(response.json()[\"url\"])",
+   "language": "python",
+   "explanation": "Creates a session, applies a default header, performs a request, and closes the session automatically."
+  },
+  "useCases": [
+   {
+    "title": "Connection reuse",
+    "scenario": "Several calls target the same host and should benefit from reusable connections."
+   },
+   {
+    "title": "Shared request configuration",
+    "scenario": "Multiple requests share authentication, headers, or other defaults."
+   },
+   {
+    "title": "Cookie-based workflows",
+    "scenario": "A workflow needs cookies from one response to be sent on later requests."
+   },
+   {
+    "title": "Scoped resource management",
+    "scenario": "A short-lived request workflow should release resources automatically."
+   }
+  ],
+  "related": [
+   "requests.Request",
+   "requests.Response",
+   "requests.Session.cookies",
+   "requests.adapters.HTTPAdapter",
+   "requests.sessions.session"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does a Requests Session provide beyond calling requests.get directly?",
+    "answer": "A Session persists selected request settings and cookies across requests. It also uses urllib3 connection pooling, allowing connections to the same host to be reused.",
+    "followUp": "How should session-wide and request-specific headers interact? Session headers provide defaults, while headers supplied to an individual request can add or override them."
+   },
+   {
+    "question": "Can a Session perform the usual Requests HTTP methods?",
+    "answer": "Yes. A Session has the methods of the main Requests API, so it can issue GET, POST, and other HTTP requests through the session object. This lets shared state and configuration apply consistently.",
+    "followUp": "How can a session be safely bounded? Use `with requests.Session() as session:` so the session is closed when the block exits."
+   },
+   {
+    "question": "How should Session lifetime be managed?",
+    "answer": "Use `with requests.Session() as session:` when the session should be scoped to a block. This context-manager pattern ensures the session is closed after the block completes.",
+    "followUp": "What state remains useful during that block? Cookies and configured defaults are available to subsequent requests made through the same session."
+   }
+  ],
+  "keyPoints": [
+   "A Session carries selected request parameters from one request to later requests.",
+   "Cookies set through the session are retained for subsequent requests made by that session.",
+   "Connection pooling can reuse a TCP connection for repeated requests to the same host.",
+   "Session exposes the standard Requests HTTP methods, including methods for common verbs.",
+   "Authentication can be configured as a session-level default for requests issued through that session."
+  ],
+  "gotchas": [
+   "Use a context manager when the session's lifetime should end after a bounded block, so its resources are closed automatically.",
+   "Manipulate Session.cookies with the cookie utility functions rather than assuming arbitrary cookie assignment handles all cookie behavior.",
+   "A session starts with adapters for HTTP and HTTPS; custom transport behavior should be mounted deliberately rather than assumed to apply automatically."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "status_code": {
+  "sourceUrl": "https://requests.readthedocs.io/en/latest/api/",
+  "sourceTitle": "Developer Interface — Requests 2.34.2 documentation",
+  "summary": "Response.status_code is the integer HTTP status returned by a server, such as 200 or 404. Use it for exact status checks, optionally comparing it with a named value from requests.codes.",
+  "explanation": "A response's status_code is the integer HTTP status returned by the server, such as 200 or 404. Read it directly for exact comparisons, or compare it with a named value from requests.codes when that improves readability.",
+  "syntax": "Response.status_code",
+  "parameters": [],
+  "returns": "int",
+  "example": {
+   "title": "Read a response status code",
+   "code": "import requests\n\nresponse = requests.get(\"https://httpbin.org/status/204\")\nprint(response.status_code)\n\nif response.status_code == requests.codes.no_content:\n    print(\"No content\")",
+   "language": "python",
+   "explanation": "Fetches a response, reads its integer HTTP status, and compares it with the named Requests status-code constant."
+  },
+  "useCases": [
+   {
+    "title": "Check an exact response status",
+    "scenario": "After any HTTP request, inspect whether the server returned the expected status."
+   },
+   {
+    "title": "Compare with a status constant",
+    "scenario": "Use a readable named status instead of embedding a numeric literal."
+   },
+   {
+    "title": "Handle response categories",
+    "scenario": "Branch application behavior for success, redirection, client-error, or server-error responses."
+   }
+  ],
+  "related": [
+   "Response.ok",
+   "Response.raise_for_status()",
+   "requests.codes",
+   "Response"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you inspect an HTTP response's status code?",
+    "answer": "Read the integer directly from the Response object: response.status_code. The documentation describes it as the returned HTTP status code and gives values such as 404 and 200.",
+    "followUp": "How can a named status value improve readability? Compare the integer with a corresponding requests.codes attribute, such as requests.codes.ok."
+   },
+   {
+    "question": "How do you test for a successful 200 response?",
+    "answer": "Use an exact comparison, for example response.status_code == 200. Requests also provides named constants through requests.codes, so requests.codes.ok can represent 200.",
+    "followUp": "What should you use when any client or server error should fail? Call response.raise_for_status(), which raises HTTPError when an error occurred."
+   },
+   {
+    "question": "Does reading status_code raise for HTTP errors?",
+    "answer": "status_code is an integer property on the Response object; it does not itself raise an exception for an error response. Error handling is separate and can be performed with raise_for_status().",
+    "followUp": "Why might status_code be preferable to ok? It distinguishes specific outcomes, while ok is true for every status below 400."
+   }
+  ],
+  "keyPoints": [
+   "status_code stores the server's HTTP response status as an integer.",
+   "Inspect the property after a request completes to determine the response's HTTP result.",
+   "Named alternatives are available through the requests.codes lookup object.",
+   "Status names can be retrieved with attribute syntax or dictionary indexing.",
+   "The lookup accepts aliases and permits either uppercase or lowercase status-name forms."
+  ],
+  "gotchas": [
+   "Do not treat Response.ok as an exact 200 check; status_code itself is the appropriate property for testing a particular code."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

@@ -85,7 +85,8 @@ function ask(question: string) {
  * an unscoped "tab" role would collect both sets.
  */
 const sectionStrip = () => screen.getByRole("tablist", { name: "Browse a catalogue" });
-const sectionTabs = () => within(sectionStrip()).getAllByRole("tab").map(tab => tab.textContent);
+// The first span is the title; the count pill after it is checked on its own.
+const sectionTabs = () => within(sectionStrip()).getAllByRole("tab").map(tab => tab.querySelector("span")?.textContent);
 function openSection(name: string) {
   closeAnswer();
   fireEvent.click(within(sectionStrip()).getByRole("tab", { name }));
@@ -654,6 +655,20 @@ test("the AI glossary is its own browser beside the services, with the same cont
 
   // And the services are one click away, with the controls they always had.
   expect(within(openSection("Popular AWS services")).getByRole("searchbox", { name: "Search Popular AWS services" })).toBeVisible();
+});
+
+test("every catalogue tab carries its topic count as a pill, without changing the tab's name", () => {
+  render(<AnswerSearch awsServices={AWS} awsCategories={CATS}
+    aiGlossary={AI_TERMS} aiGlossaryCategories={[{ name: "Retrieval & memory", count: 1 }, { name: "Model foundations", count: 1 }]}
+    deferredHandbooks={[{ title: "LangFlow", description: "Visual flows.", questionPrefix: "LangFlow", categories: [{ name: "Lessons", count: 3 }, { name: "API docs", count: 4 }] }]} />);
+
+  const glossary = within(sectionStrip()).getByRole("tab", { name: "AI terms worth knowing" });
+  expect(glossary).toHaveAccessibleDescription("2 terms");
+  expect(within(sectionStrip()).getByRole("tab", { name: "Popular AWS services" })).toHaveAccessibleDescription(`${AWS.length} services`);
+  // A deferred handbook has no rows yet, so its count comes from its categories.
+  const langflow = within(sectionStrip()).getByRole("tab", { name: "LangFlow" });
+  expect(langflow).toHaveAccessibleDescription("7 topics");
+  expect(langflow).toHaveTextContent("LangFlow7");
 });
 
 test("filtering one catalogue leaves the other alone", () => {

@@ -27,6 +27,7 @@ import { SERVICE_HANDBOOKS } from "./platform-handbooks/services";
 import { APP_FOUNDATION_HANDBOOKS } from "./platform-handbooks/app-foundations";
 import { SYSTEM_DESIGN_HANDBOOKS } from "./platform-handbooks/system-design";
 import { GIT_HANDBOOK } from "./git-handbook";
+import { withLearningModules } from "./learning-modules";
 
 export type TechnologyHandbook = {
   title: string;
@@ -58,7 +59,8 @@ const englishVocabularyTopics: AwsHighlight[] = ENGLISH_EXAM_VOCABULARY.map(entr
   vocabulary: entry,
 }));
 
-export const TECHNOLOGY_HANDBOOKS = [
+// Nine tabs open on an authored learning module (lib/pro-learn/learning-modules).
+export const TECHNOLOGY_HANDBOOKS = withLearningModules([
   // Git carries its own prepared answers rather than going through `handbook`:
   // every row is a command with an authored walkthrough, which no generated
   // explanation can stand in for.
@@ -998,4 +1000,4 @@ export const TECHNOLOGY_HANDBOOKS = [
   handbook("Playwright — API, Locators, Fixtures & Tooling", `${PLAYWRIGHT_PACKAGES.length} entries covering the Playwright API: locators, actions, web-first assertions, fixtures, network mocking, configuration and the tracing tools.`, "Playwright automation", PLAYWRIGHT_PACKAGES),
   handbook("English Corporate & Speaking Words — Workplace Vocabulary", `${ENGLISH_EXAM_VOCABULARY.length} advanced English words for the workplace and for competitive exams, each with a plain-English meaning, a spoken pronunciation, a contextual sentence, and at least three direct synonyms and three direct antonyms.`, "English Corporate/Speaking words, synonyms and antonyms", englishVocabularyTopics),
   ...AUTOMATION_HANDBOOKS,
-] as const;
+] as const);

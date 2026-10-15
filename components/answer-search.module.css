@@ -595,6 +595,16 @@
 }
 .sectionTab[aria-selected="true"] svg { color: #c8e5e2; opacity: 1; }
 .sectionName { min-width: 0; }
+/* The number of topics behind a tab, as a pill in the tab's own colour. */
+.sectionCount {
+  flex-shrink: 0;
+  min-width: 20px; padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 13%, white);
+  font-size: 10px; font-weight: 700; line-height: 16px; text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.sectionTab[aria-selected="true"] .sectionCount { background: #ffffff26; color: #fff; }
 
 .sectionsNav { display: flex; align-items: center; justify-content: center; gap: 3px; align-self: center; flex-shrink: 0; }
 .sectionsStep {

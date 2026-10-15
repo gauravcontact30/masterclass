@@ -1,3 +1,4 @@
+import type { ObjectiveQuestion } from "@/lib/api-learning-schema";
 import type { SearchAnswer } from "./types";
 
 export type PreparedExplanation = {
@@ -6,6 +7,8 @@ export type PreparedExplanation = {
   focus: string;
   kind: "exam" | "interview";
   sources?: { title: string; url: string }[];
+  /** Multiple-choice practice, answered in place: authored learning modules carry three. */
+  objective?: ObjectiveQuestion[];
 };
 
 export function emptyAnswer(title: string, summary: string): SearchAnswer {

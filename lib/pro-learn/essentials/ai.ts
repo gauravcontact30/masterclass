@@ -42,6 +42,16 @@ export const AI_ESSENTIALS: TechnologyEssentials[] = [
     ],
   },
   {
+    technologies: ["LangFlow"],
+    points: [
+      "A flow is a graph of Python components joined by typed ports, so a pipeline is something you can see, rewire and test in the Playground in seconds.",
+      "The flow you tested is the flow you serve: every flow has a run endpoint, and a project can publish its flows as MCP tools.",
+      "Secrets belong in global variables, not component fields, because a field's value is saved inside every exported flow.",
+      "Local defaults (SQLite, auto-login) are for laptops. Production needs PostgreSQL, API keys and a pinned version.",
+      "Visual does not mean reviewed: export flows as JSON into version control so a change can be diffed and rolled back.",
+    ],
+  },
+  {
     technologies: ["Agentic AI", "AI terms"],
     points: [
       "An agent is a loop: decide, act with a tool, observe the result, repeat until done. Everything else — memory, planning, guardrails — is added to that loop.",

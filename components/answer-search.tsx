@@ -5,7 +5,7 @@ import { learningImageUrl } from "@/lib/learning-image";
 import { vocabularyImageUrl } from "@/lib/vocabulary-image";
 import learningCard from "./learning-card.module.css";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { ArrowRight, Building2, Check, ChevronDown, ChevronLeft, ChevronRight, CornerDownLeft, FolderTree, GraduationCap, Images, Layers, Lightbulb, ListOrdered, Search, Sigma, Sparkles, TriangleAlert, X } from "lucide-react";
+import { ArrowRight, Building2, Check, ChevronDown, ChevronLeft, ChevronRight, CornerDownLeft, FolderTree, GraduationCap, Images, Layers, Lightbulb, ListOrdered, Search, Sigma, Sparkles, Target, TriangleAlert, X } from "lucide-react";
 import { LearningDiagram } from "./learning-diagram";
 import { learningDiagramSchema } from "@/lib/pro-learn/learning-diagram";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,9 @@ import { CodeFiles } from "./code-files";
 import { inferLanguage } from "@/lib/code-run";
 import { TerminalBlock } from "./terminal-block";
 import { GitWalkthrough } from "./git-walkthrough";
+import { ObjectiveQuestions } from "./api-interview-practice";
+import practiceStyles from "./api-project.module.css";
+import type { ObjectiveQuestion } from "@/lib/api-learning-schema";
 import { splitCommands } from "@/lib/terminal-commands";
 import { KeyText } from "./key-text";
 import { AiProviderSwitch, useAiProvider } from "./ai-provider-picker";
@@ -47,7 +50,7 @@ import { stripCitationsDeep } from "@/lib/strip-citations";
 import styles from "./answer-search.module.css";
 
 type LibraryMatch = { id: string; title: string; technology: string; category: string; description: string };
-type Result = { walkthrough?: "git"; answer: SearchAnswer | null; provider?: string; matches: LibraryMatch[]; reason?: string; prepared?: "exam" | "interview"; topic?: { subject: string; name: string; summary: string }; screens?: readonly OfficialScreen[];
+type Result = { walkthrough?: "git"; answer: SearchAnswer | null; objective?: ObjectiveQuestion[]; provider?: string; matches: LibraryMatch[]; reason?: string; prepared?: "exam" | "interview"; topic?: { subject: string; name: string; summary: string }; screens?: readonly OfficialScreen[];
   /** The rest of the opened topic's own category: what else this area covers. */
   related?: readonly { name: string; summary: string }[] };
 /** One question and what came back for it, keyed by the normalised question so asking twice reuses the answer. */
@@ -245,7 +248,7 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
     const related = siblings.filter(other => other.name !== item.name).map(other => ({ name: other.name, summary: other.summary }));
     setGroup(siblings.length ? { technology, classroom, items: siblings } : null);
     setPreparedCard({ id: `prepared:${technology}:${item.category}:${item.name}`, question: `${item.name} · ${item.category}`, at: 0, status: "ready",
-      result: { answer, walkthrough: lesson.walkthrough, matches: [], prepared: lesson.kind, screens: screensFor(technology, item.category, item.name), related,
+      result: { answer, walkthrough: lesson.walkthrough, objective: lesson.objective, matches: [], prepared: lesson.kind, screens: screensFor(technology, item.category, item.name), related,
         topic: { subject: technology, name: item.name, summary: item.summary } } });
     setReading(true);
   }, []);
@@ -358,7 +361,7 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
    * twenty-three catalogues rendered at once is what made this a scroll.
    */
   const sections = useMemo(() => [
-    ...(awsServices.length ? [{ id: "popular-aws", title: "Popular AWS services", render: () =>
+    ...(awsServices.length ? [{ id: "popular-aws", title: "Popular AWS services", count: awsServices.length, noun: "services", render: () =>
       <CatalogBrowser id="popular-aws" title="Popular AWS services" technology="AWS" noun="services"
         description="The services you meet first, in the order most learners meet them. Pick one to ask about it."
         items={awsServices} categories={awsCategories}
@@ -369,7 +372,7 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
         categoryIcon={category => <AwsCategoryIcon category={category} />}
         question={item => `What is ${item.name}, what is it for, and when should I use it?`}
         onAsk={value => void ask(value)} /> }] : []),
-    ...(aiGlossary.length ? [{ id: "ai-glossary", title: "AI terms worth knowing", render: () =>
+    ...(aiGlossary.length ? [{ id: "ai-glossary", title: "AI terms worth knowing", count: aiGlossary.length, noun: "terms", render: () =>
       <CatalogBrowser id="ai-glossary" title="AI terms worth knowing" technology="AI terms" noun="terms"
         description="The working vocabulary of building with language models, grouped by the question each term answers."
         items={aiGlossary} categories={aiGlossaryCategories}
@@ -379,7 +382,7 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
         categoryIcon={category => <AiCategoryIcon category={category} />}
         question={item => `Explain ${item.name} in the context of building with AI: what it means, why it matters, and how it is used in practice.`}
         onAsk={value => void ask(value)} /> }] : []),
-    ...(pythonHandbook.length ? [{ id: "python-handbook", title: "Python handbook", render: () =>
+    ...(pythonHandbook.length ? [{ id: "python-handbook", title: "Python handbook", count: pythonHandbook.length, noun: "topics", render: () =>
       <CatalogBrowser id="python-handbook" title="Python handbook" technology="Python" noun="topics"
         description="The language as it is usually taught — values, collections, control flow, functions, objects, then the craft around them."
         items={pythonHandbook} categories={pythonCategories}
@@ -393,6 +396,10 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
     ...[...technologyHandbooks, ...deferredHandbooks].map(handbook => ({
       id: handbook.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
       title: handbook.title,
+      // Summed from the category counts, which every handbook carries, so a
+      // deferred tab shows its total before its rows are fetched.
+      count: handbook.categories.reduce((sum, category) => sum + category.count, 0),
+      noun: "topics",
       render: () => {
         const renderBook = (handbook: TechnologyHandbook) => <CatalogBrowser id={handbook.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")} title={handbook.title} noun="topics"
         description={handbook.description} items={handbook.topics} categories={handbook.categories}
@@ -426,6 +433,8 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
       catalogues.map(entry => ({
         id: entry.id,
         title: entry.title,
+        count: entry.topics.length,
+        noun: entry.noun,
         render: () => <CatalogBrowser id={entry.id} title={entry.title} noun={entry.noun}
           description={entry.description} items={entry.topics} categories={entry.categories}
           cover={<TopicCover label={entry.title} catalogueId={entry.id} />}
@@ -506,7 +515,7 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
  * anyone who does not think to drag it. Only the open section is mounted, so
  * each catalogue keeps the search, category tabs and pager it always had.
  */
-function SectionTabs({ sections }: { sections: { id: string; title: string; render: () => ReactNode }[] }) {
+function SectionTabs({ sections }: { sections: { id: string; title: string; count: number; noun: string; render: () => ReactNode }[] }) {
   const [tab, setTab] = useState(sections[0]?.id ?? "");
   const [tabPage, setTabPage] = useState(0);
   if (!sections.length) return null;
@@ -533,9 +542,13 @@ function SectionTabs({ sections }: { sections: { id: string; title: string; rend
       </div>}
       </div>
       <TabsList className={styles.sectionsList} aria-label="Browse a catalogue">
-        {shown.map(section => <TabsTab key={section.id} className={styles.sectionTab} value={section.id}>
+        {shown.map(section => <TabsTab key={section.id} className={styles.sectionTab} value={section.id} aria-describedby={`${section.id}-count`}>
           <SearchSectionIcon title={section.title} />
           <span className={styles.sectionName}>{section.title}</span>
+          {/* The pill is hidden from the tab's name, which stays the catalogue's
+              title; assistive tech reads the count as the tab's description. */}
+          <span className={styles.sectionCount} aria-hidden="true">{section.count}</span>
+          <span id={`${section.id}-count`} hidden>{section.count} {section.noun}</span>
         </TabsTab>)}
       </TabsList>
     </div>
@@ -680,6 +693,12 @@ function AnswerDocument({ card, providers, onAsk, onRetry, onForget, onOpenRelat
               <ul className={styles.points}>{subject.keyPoints.map(point => <li key={point}><KeyText text={point} /></li>)}</ul>
             </div>}
           </li>)}</ul>
+        </Block>}
+
+        {/* Straight after the open-ended questions: the same topic checked as
+            multiple choice, each option revealing why it is right or wrong. */}
+        {!!card.result.objective?.length && <Block icon={<Target size={16} aria-hidden="true" />} title="Objective questions & answers" className={styles.subjectsBlock} count={card.result.objective.length}>
+          <div className={practiceStyles.interview}><ObjectiveQuestions questions={card.result.objective} heading={false} /></div>
         </Block>}
 
         {/* Formulas come before the method: a reader working a problem wants

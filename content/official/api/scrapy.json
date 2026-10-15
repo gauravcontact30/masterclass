@@ -1,0 +1,1025 @@
+{
+ "CrawlSpider": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/_modules/scrapy/spiders/crawl.html",
+  "sourceTitle": "Source code for scrapy.spiders.crawl",
+  "summary": "CrawlSpider is a Spider subclass for regular websites that follows links according to ordered Rule objects. Subclass it, define standard spider attributes, and use rules to describe link selection and callbacks.",
+  "explanation": "CrawlSpider is a Spider subclass for crawling regular websites through declarative Rule objects. It extracts links, selects the first matching rule in declaration order, creates requests using that rule, and processes the resulting responses with the rule callback; start responses are handled through parse_start_url.",
+  "syntax": "class scrapy.spiders.CrawlSpider(Spider):",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "CrawlSpider with an ordered link rule",
+   "code": "from scrapy import Spider\nfrom scrapy.spiders import CrawlSpider, Rule\nfrom scrapy.linkextractors import LinkExtractor\n\nclass DocsSpider(CrawlSpider):\n    name = \"docs\"\n    allowed_domains = [\"example.com\"]\n    start_urls = [\"https://example.com/\"]\n    rules = (\n        Rule(LinkExtractor(allow=(r\"/docs/\",)), callback=\"parse_doc\"),\n    )\n\n    def parse_doc(self, response):\n        yield {\"url\": response.url, \"title\": response.css(\"title::text\").get()}\n",
+   "language": "python",
+   "explanation": "A CrawlSpider applies its ordered rules to links extracted from responses, sending matching links to the configured callback. Subclass it, define the usual spider attributes, and provide rules describing link-following behavior."
+  },
+  "useCases": [
+   {
+    "title": "Rule-based site traversal",
+    "scenario": "A site has predictable internal URL patterns and pages should be crawled automatically."
+   },
+   {
+    "title": "Pattern-specific parsing",
+    "scenario": "Several link patterns need different callbacks or extraction behavior."
+   },
+   {
+    "title": "Reusable crawling scaffold",
+    "scenario": "A project needs a reusable generic crawler starting from one or more URLs."
+   }
+  ],
+  "related": [
+   "Spider",
+   "Rule",
+   "LinkExtractor",
+   "parse_start_url"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does CrawlSpider solve?",
+    "answer": "CrawlSpider is a Spider subclass designed for regular websites. Its rules describe link-following behavior, so the crawler can generate requests without manually implementing every link traversal.",
+    "followUp": "How does it choose among overlapping rules? It uses the first matching rule according to the order in the rules attribute."
+   },
+   {
+    "question": "What is the purpose of rules?",
+    "answer": "The rules attribute is a sequence of Rule objects. Each Rule defines a particular crawling behavior, such as which links to select and how to process their responses.",
+    "followUp": "What should be changed for highly custom traversal? Override the relevant behavior or implement a regular Spider when the generic rule model is not suitable."
+   },
+   {
+    "question": "How are start responses handled?",
+    "answer": "parse_start_url handles responses from start_urls and can parse initial content before rule-driven crawling continues. Its result must be an item, a request, or an iterable containing those types.",
+    "followUp": "How can a spider customize processing after a rule callback? Use the rule's callback and the CrawlSpider response-processing hooks rather than relying on the default parser alone."
+   }
+  ],
+  "keyPoints": [
+   "Use CrawlSpider as a convenient starting point for ordinary website crawling.",
+   "Link traversal is declared through rules instead of being fully hand-coded.",
+   "The class retains the standard Spider attributes, which the subclass must define as appropriate."
+  ],
+  "gotchas": [
+   "Rule order matters: when several rules match a link, only the first matching rule is selected."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Field": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/topics/items.html",
+  "sourceTitle": "Items — Scrapy 2.19.0 documentation",
+  "summary": "scrapy.Field is a dictionary-like metadata container used to declare fields on Scrapy Item subclasses. It can store configuration such as a serializer, while Scrapy records declared fields in Item.fields.",
+  "explanation": "Field is a metadata container used when declaring Scrapy item attributes. It behaves like a plain dictionary, so metadata can be supplied as keyword arguments; the declared Field objects are collected in the item’s fields mapping rather than remaining as class attributes.",
+  "syntax": "class scrapy.Field",
+  "parameters": [
+   {
+    "name": "**kwargs",
+    "type": "Any",
+    "description": "Optional field metadata supplied as dictionary entries, commonly through keyword arguments such as serializer."
+   }
+  ],
+  "returns": "A plain dictionary containing the supplied field metadata.",
+  "example": {
+   "title": "Declare fields on an item",
+   "code": "import scrapy\n\nclass Product(scrapy.Item):\n    name = scrapy.Field()\n    price = scrapy.Field(serializer=float)\n\nproduct = Product(name=\"Book\", price=\"12.50\")\nassert product[\"price\"] == \"12.50\"\nassert product.fields[\"name\"] == {}",
+   "language": "python",
+   "explanation": "Declare item fields with Field and optionally place metadata such as a serializer in the field mapping."
+  },
+  "useCases": [
+   {
+    "title": "Declare item fields",
+    "scenario": "Define the schema of scraped records with named attributes."
+   },
+   {
+    "title": "Store field metadata",
+    "scenario": "Attach serializer or other processing metadata to a field."
+   },
+   {
+    "title": "Examine Item.fields",
+    "scenario": "Inspect the complete declared schema of an Item subclass."
+   }
+  ],
+  "related": [
+   "scrapy.Item",
+   "Item.fields",
+   "itemadapter",
+   "serializer"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is scrapy.Field?",
+    "answer": "Field is used to declare an item field and hold metadata for it. The class itself is a plain dictionary alias, without extra functionality or attributes.",
+    "followUp": "Where can declaration metadata be inspected after class creation? In the Item.fields mapping, whose values are the Field objects used in the declaration."
+   },
+   {
+    "question": "How can Field carry field metadata?",
+    "answer": "A Field can be created without metadata or with metadata entries such as serializer=str. Those entries provide a central place to describe how the field is handled internally.",
+    "followUp": "Does Field itself run the serializer? No; it stores metadata, while other Scrapy processing uses that metadata."
+   },
+   {
+    "question": "How is Field used in an Item declaration?",
+    "answer": "Fields are declared as class attributes on an Item subclass, for example name = scrapy.Field(). Scrapy processes those declarations and stores them in the item’s fields attribute.",
+    "followUp": "What does the fields mapping contain? All declared fields, including fields that have not yet been populated."
+   }
+  ],
+  "keyPoints": [
+   "Use Field declarations to keep per-field metadata alongside the item schema.",
+   "A field declaration centralizes metadata instead of scattering it across crawler components.",
+   "Item subclasses declare fields as class attributes, and Scrapy collects those declarations.",
+   "The Item schema rejects unknown field names, helping catch misspellings.",
+   "Item.fields maps each declared name to its corresponding Field metadata dictionary."
+  ],
+  "gotchas": [
+   "Field is not a specialized field-value object: it is simply a dictionary alias and adds no behavior of its own.",
+   "Do not expect the declaration attribute to contain the Field after item construction; inspect the item’s fields mapping instead."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Item": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/topics/items.html",
+  "sourceTitle": "Items — Scrapy 2.19.0 documentation",
+  "summary": "`scrapy.Item` is a dictionary-like container for structured data extracted by spiders. Define its permitted fields with `scrapy.Field()` and populate instances using normal mapping operations.",
+  "explanation": "Subclass `scrapy.Item` to define the fields a spider may produce. Each field is declared with `scrapy.Field()`, while the resulting object behaves like a dictionary for storing and accessing values; its `fields` mapping retains declarations and metadata.",
+  "syntax": "class scrapy.Item(**args: Any, **kwargs: Any)",
+  "parameters": [
+   {
+    "name": "args",
+    "type": "Any",
+    "description": "Optional positional mapping or iterable accepted by the dictionary-like initializer."
+   },
+   {
+    "name": "kwargs",
+    "type": "Any",
+    "description": "Field values supplied by name during initialization."
+   }
+  ],
+  "returns": "A new Item instance initialized from the supplied arguments.",
+  "example": {
+   "title": "Declare and populate an Item",
+   "code": "import scrapy\n\nclass Product(scrapy.Item):\n    name = scrapy.Field()\n    price = scrapy.Field()\n\nproduct = Product(name=\"Book\", price=\"12.99\")\nprint(product[\"name\"])\nprint(product.fields.keys())",
+   "language": "python",
+   "explanation": "Declares fields on a custom item, initializes values with keyword arguments, reads a value using dictionary syntax, and inspects all declared fields."
+  },
+  "useCases": [
+   {
+    "title": "Model structured scraped data",
+    "scenario": "A spider extracts consistent attributes such as a product name and price."
+   },
+   {
+    "title": "Describe output schema",
+    "scenario": "A project needs exporters or pipelines to know the available output fields."
+   },
+   {
+    "title": "Catch extraction errors",
+    "scenario": "A team wants misspelled field names to fail instead of silently adding keys."
+   },
+   {
+    "title": "Store field metadata",
+    "scenario": "A field needs processing-related metadata for later Scrapy components."
+   }
+  ],
+  "related": [
+   "scrapy.Field",
+   "Item.fields",
+   "itemadapter",
+   "item pipelines",
+   "Item.copy()",
+   "Item.deepcopy()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is `scrapy.Item`, and how do you define one?",
+    "answer": "`Item` is Scrapy's feature-complete item type with a dictionary-like API. A custom item subclasses `scrapy.Item` and declares its allowed fields with `Field` attributes.",
+    "followUp": "How does Scrapy recognize an item for pipelines? The documentation says `Item` is supported by itemadapter, so spider callback results of this type can be passed to item pipelines."
+   },
+   {
+    "question": "How are values and field declarations accessed?",
+    "answer": "The class declaration creates the permitted field names, and instances store values using the standard dictionary interface. The declaration metadata is available through the instance's `fields` attribute.",
+    "followUp": "What does `fields` contain? It contains the declared field definitions, including fields that have not yet received values."
+   },
+   {
+    "question": "Why use `Item` instead of a plain dictionary?",
+    "answer": "An `Item` replicates the standard dictionary API, including its initializer, but limits keys to declared fields. Therefore, assigning or referring to an undefined field raises `KeyError`, helping expose spelling mistakes.",
+    "followUp": "What alternative item types does Scrapy support? The documentation identifies dictionaries, dataclasses, and attrs objects through itemadapter as well as `Item` objects."
+   }
+  ],
+  "keyPoints": [
+   "Subclass `scrapy.Item` when modeling structured data emitted by a spider.",
+   "Populate and read item values with normal dictionary operations, including constructor arguments.",
+   "The declared-field boundary catches accidental references to unknown names.",
+   "Attach metadata to fields when downstream processing needs field-specific behavior.",
+   "Item compatibility is defined through support by the itemadapter library."
+  ],
+  "gotchas": [
+   "Only declared field names are accepted; using an undeclared name raises `KeyError`."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "ItemLoader": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/topics/loaders.html",
+  "sourceTitle": "Item Loaders — Scrapy 2.19.0 documentation",
+  "summary": "ItemLoader is Scrapy’s convenient, response-aware API for collecting scraped values into items while applying field processors. Add values from selectors or directly, then call load_item() to produce the populated item.",
+  "explanation": "ItemLoader is Scrapy’s response-aware extension of itemloaders for collecting scraped values and applying field processors before producing an item. Instantiate it with an existing item or let it create one from default_item_class, add values through extraction or direct methods, and call load_item() when collection is complete.",
+  "syntax": "ItemLoader(item=None, selector=None, response=None, **context)",
+  "parameters": [
+   {
+    "name": "item",
+    "type": "Item or None",
+    "description": "Existing item to populate; when omitted, an item is created using default_item_class."
+   },
+   {
+    "name": "selector",
+    "type": "Selector or Response",
+    "description": "Selector or response used by extraction methods such as add_xpath() and add_css()."
+   }
+  ],
+  "returns": "load_item() returns the populated item after collected values have been processed.",
+  "example": {
+   "title": "Populate an item with ItemLoader",
+   "code": "from scrapy.loader import ItemLoader\nfrom scrapy.item import Item, Field\n\nclass Product(Item):\n    name = Field()\n    price = Field()\n\nloader = ItemLoader(item=Product())\nloader.add_value(\"name\", \"Widget\")\nloader.add_value(\"price\", \"12.50\")\nproduct = loader.load_item()\nprint(product[\"name\"], product[\"price\"])",
+   "language": "python",
+   "explanation": "Creates a loader for a Product item, collects values, then materializes the populated item with load_item()."
+  },
+  "useCases": [
+   {
+    "title": "Normalize scraped fields",
+    "scenario": "A spider extracts product fields from HTML and needs consistent normalization before creating the item."
+   },
+   {
+    "title": "Combine repeated values",
+    "scenario": "A field is assembled from several extracted fragments that must be combined by a processor."
+   },
+   {
+    "title": "Customize parsing rules",
+    "scenario": "Different spiders or source formats require independently configurable field parsing rules."
+   }
+  ],
+  "related": [
+   "ItemLoader.default_item_class",
+   "ItemLoader.add_xpath()",
+   "ItemLoader.add_css()",
+   "ItemLoader.add_value()",
+   "ItemLoader.load_item()",
+   "Input and Output processors",
+   "Selectors"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does ItemLoader solve?",
+    "answer": "ItemLoader provides a structured API for populating scraped items while applying field processors. It accepts an item or can create one automatically, collects values, and returns the populated item through load_item().",
+    "followUp": "How are multiple values for one field handled? The loader accumulates them and later combines them through the field’s configured processing function."
+   },
+   {
+    "question": "What happens if ItemLoader is created without an item?",
+    "answer": "You can instantiate it with an item object, or omit the item and rely on the class configured by default_item_class. The latter causes an item object to be created during initialization.",
+    "followUp": "How would you choose a different item type for a particular loader? Configure or override default_item_class for that loader class or use an explicitly supplied item."
+   },
+   {
+    "question": "When do ItemLoader processors run?",
+    "answer": "Each item field has an input processor and an output processor. Input processing occurs as values arrive, while output processing is applied when the collected field value is loaded into the final item.",
+    "followUp": "Why can adding values from different sources remain maintainable? Field-specific processors centralize normalization and combination rules instead of scattering them through spider code."
+   }
+  ],
+  "keyPoints": [
+   "ItemLoader centralizes the process of filling scraped items instead of requiring direct field assignment.",
+   "Scrapy’s class extends the underlying itemloaders functionality with response-oriented integration.",
+   "A field may receive several values during collection; the configured processor determines how those values are combined.",
+   "Processing is configured independently per field, with separate input and output stages.",
+   "Values can be collected from XPath selections, CSS selections, or direct values using the corresponding add methods."
+  ],
+  "gotchas": [
+   "Input processing happens immediately when values are added, so the loader stores processed input rather than the original value.",
+   "The item is not finalized merely by adding values; call load_item() after collection to obtain the populated item."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "parse": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/topics/spiders.html",
+  "sourceTitle": "Spiders",
+  "summary": "parse is a Scrapy spider’s default callback for processing responses without an explicitly assigned callback. It extracts items and can yield requests to continue crawling.",
+  "explanation": "Define parse on a spider to handle a downloaded Response, extract data, and optionally produce more requests. Scrapy uses it by default when a request has no callback, including the requests generated from start URLs; callback keyword arguments supplied through cb_kwargs are also accepted.",
+  "syntax": "parse(response: Response, **kwargs: Any) -> Any",
+  "parameters": [
+   {
+    "name": "response",
+    "type": "Response",
+    "description": "The downloaded response to process and extract data from."
+   },
+   {
+    "name": "**kwargs",
+    "type": "Any",
+    "description": "Additional keyword arguments supplied through the request’s cb_kwargs."
+   }
+  ],
+  "returns": "A Request, item, iterable of requests and/or items, or None.",
+  "example": {
+   "title": "Extract items with parse",
+   "code": "import scrapy\n\nclass QuotesSpider(scrapy.Spider):\n    name = \"quotes\"\n    start_urls = [\"https://quotes.toscrape.com/\"]\n\n    def parse(self, response):\n        for quote in response.css(\".quote\"):\n            yield {\n                \"text\": quote.css(\".text::text\").get(),\n                \"author\": quote.css(\".author::text\").get(),\n            }\n",
+   "language": "python",
+   "explanation": "The spider’s default callback extracts fields from each matching element and yields one item per quote."
+  },
+  "useCases": [
+   {
+    "title": "Item extraction",
+    "scenario": "Extract structured fields from HTML or other downloaded content."
+   },
+   {
+    "title": "Link traversal",
+    "scenario": "Follow pagination, detail links, or discovered URLs."
+   },
+   {
+    "title": "Context-aware callbacks",
+    "scenario": "Propagate request-specific context into callback processing."
+   }
+  ],
+  "related": [
+   "scrapy.Spider",
+   "Response",
+   "Request",
+   "start()",
+   "start_urls",
+   "cb_kwargs",
+   "callback",
+   "Selectors"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is parse responsible for?",
+    "answer": "parse is the default callback for responses whose requests do not specify a callback. It receives the Response, extracts data, and can return or yield items and further requests.",
+    "followUp": "What happens to requests yielded by parse? Scrapy schedules them, downloads their responses, and invokes the callback assigned to each request."
+   },
+   {
+    "question": "What arguments can parse receive?",
+    "answer": "Its first argument is the Response being processed. It may also receive keyword arguments passed through the request’s cb_kwargs.",
+    "followUp": "How can a callback remain compatible with arbitrary callback data? Accept keyword parameters, typically through **kwargs, in addition to response."
+   },
+   {
+    "question": "What may parse return?",
+    "answer": "parse may produce a Request, an item, an iterable containing requests or items, or None. Yielding is commonly used to emit multiple results incrementally.",
+    "followUp": "Why yield rather than build a list? Yielding lets Scrapy consume results incrementally and avoids requiring all outputs to be held at once."
+   }
+  ],
+  "keyPoints": [
+   "Scrapy selects parse automatically when a downloaded request has no explicit callback.",
+   "Its two core jobs are extracting scraped data and generating additional URLs for the crawl.",
+   "Values placed in a request’s cb_kwargs reach parse as keyword arguments.",
+   "The method combines response processing with optional crawl expansion.",
+   "Selectors are the typical extraction mechanism, while items and requests represent the callback’s outputs."
+  ],
+  "gotchas": [
+   "The callback must yield or return only supported Scrapy outputs: requests, items, iterables containing them, or None.",
+   "A spider can omit parse only when every request it sends has its own callback."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Request": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/topics/request-response.html",
+  "sourceTitle": "Requests and Responses — Scrapy 2.19.0 documentation",
+  "summary": "scrapy.Request represents an HTTP request created by a spider and executed by Scrapy's Downloader. Configure its URL, method, callback, payload, metadata, headers, scheduling priority, and error handling.",
+  "explanation": "scrapy.Request represents an HTTP request generated by a spider and executed by Scrapy's Downloader. Its options control the URL, HTTP method, callback or error callback, request data, metadata, priority, filtering, and related request behavior.",
+  "syntax": "scrapy.Request(**args: Any, **kwargs: Any)",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "str",
+    "description": "URL of the request; invalid URLs raise ValueError."
+   },
+   {
+    "name": "callback",
+    "type": "collections.abc.Callable",
+    "description": "Callable invoked with the downloaded response."
+   },
+   {
+    "name": "method",
+    "type": "str",
+    "description": "HTTP method; defaults to GET."
+   },
+   {
+    "name": "meta",
+    "type": "dict",
+    "description": "Initial values for Request.meta; shallow-copied when supplied."
+   },
+   {
+    "name": "body",
+    "type": "bytes or str",
+    "description": "Request body as bytes or string; strings are encoded using encoding."
+   },
+   {
+    "name": "encoding",
+    "type": "str",
+    "description": "Request encoding, defaulting to utf-8."
+   },
+   {
+    "name": "headers",
+    "type": "dict-like",
+    "description": "Request headers."
+   },
+   {
+    "name": "cookies",
+    "type": "dict or list",
+    "description": "Request cookies."
+   },
+   {
+    "name": "priority",
+    "type": "int",
+    "description": "Scheduling priority."
+   },
+   {
+    "name": "dont_filter",
+    "type": "bool",
+    "description": "Whether duplicate-request filtering is disabled."
+   },
+   {
+    "name": "errback",
+    "type": "collections.abc.Callable",
+    "description": "Callable used for request-processing errors."
+   }
+  ],
+  "returns": "A scrapy.Request object representing the HTTP request; its execution produces a Response.",
+  "example": {
+   "title": "Request with callback and metadata",
+   "code": "import scrapy\n\nclass ExampleSpider(scrapy.Spider):\n    name = \"example\"\n\n    def start_requests(self):\n        yield scrapy.Request(\n            \"https://example.org/\",\n            callback=self.parse,\n            headers={\"Accept\": \"text/html\"},\n            meta={\"source\": \"homepage\"},\n        )\n\n    def parse(self, response):\n        yield {\"title\": response.css(\"title::text\").get()}",
+   "language": "python",
+   "explanation": "Creates a GET request, routes its downloaded response to parse, and carries custom headers and metadata."
+  },
+  "useCases": [
+   {
+    "title": "Follow links with a callback",
+    "scenario": "A spider needs to follow a discovered link and process the resulting page."
+   },
+   {
+    "title": "Set request headers and cookies",
+    "scenario": "A request needs authentication, content negotiation, or custom HTTP behavior."
+   },
+   {
+    "title": "Pass crawl state with meta",
+    "scenario": "A callback needs context while processing a response."
+   },
+   {
+    "title": "Send a custom method and body",
+    "scenario": "A spider submits data or calls an endpoint other than the default GET request."
+   }
+  ],
+  "related": [
+   "scrapy.http.Response",
+   "Request.meta",
+   "Request.replace",
+   "Request.copy",
+   "scrapy.FormRequest"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is scrapy.Request and how does it fit into crawling?",
+    "answer": "Request represents an HTTP request that a spider usually creates and the Downloader executes, producing a Response. The callback receives that downloaded response.",
+    "followUp": "What happens when callback is omitted? Scrapy uses the spider's parse() method."
+   },
+   {
+    "question": "How do callback and errback differ?",
+    "answer": "The callback handles a successful downloaded response, while errback handles errors raised during processing. The request can also carry headers, cookies, body data, metadata, and an encoding.",
+    "followUp": "Why use meta? It passes request-scoped data through the crawl, but nested mutable values are not independently copied."
+   },
+   {
+    "question": "Which core arguments control a Request?",
+    "answer": "The method controls the HTTP method and defaults to GET. The URL is required, and invalid URLs raise ValueError.",
+    "followUp": "How can request scheduling behavior be adjusted? Use priority and dont_filter, as documented request options."
+   }
+  ],
+  "keyPoints": [
+   "A Request models work that a spider schedules for the Downloader.",
+   "callback receives the response after the request is downloaded.",
+   "method selects the HTTP verb and defaults to GET.",
+   "meta supplies request-scoped values accessible through Request.meta.",
+   "body carries payload data; string payloads are encoded to bytes.",
+   "Without callback, the spider's parse method handles the response."
+  ],
+  "gotchas": [
+   "A request without callback uses the spider's parse() method.",
+   "An invalid URL raises ValueError during request creation.",
+   "Request metadata is shallow-copied, so nested objects remain shared."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Response": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/topics/request-response.html",
+  "sourceTitle": "Requests and Responses",
+  "summary": "scrapy.http.Response represents an HTTP response downloaded by Scrapy and passed to a spider. It stores the URL, status, headers, raw byte body, and optional flags.",
+  "explanation": "Response is Scrapy's base container for a downloaded HTTP result. Construct it with a URL and optional status, headers, byte body, and flags; use specialized subclasses such as TextResponse when the payload needs decoded text or selector support.",
+  "syntax": "scrapy.http.Response(**args: Any, **kwargs: Any)",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "str",
+    "description": "URL associated with the response."
+   },
+   {
+    "name": "status",
+    "type": "int",
+    "description": "HTTP status code; defaults to 200."
+   },
+   {
+    "name": "headers",
+    "type": "dict",
+    "description": "Response headers; values may be strings or lists."
+   },
+   {
+    "name": "body",
+    "type": "bytes",
+    "description": "Raw response payload."
+   },
+   {
+    "name": "flags",
+    "type": "list",
+    "description": "Initial values for Response.flags."
+   }
+  ],
+  "returns": "A scrapy.http.Response object representing an HTTP response.",
+  "example": {
+   "title": "Construct a binary response",
+   "code": "from scrapy.http import Response\n\nresponse = Response(\n    url=\"https://example.com/data.bin\",\n    status=200,\n    headers={\"Content-Type\": [\"application/octet-stream\"]},\n    body=b\"binary data\",\n    flags=[\"cached\"],\n)\n\nprint(response.url)\nprint(response.status)\nprint(response.body)",
+   "language": "python",
+   "explanation": "Creates a base Response for binary content and reads its URL, status, and raw byte body."
+  },
+  "useCases": [
+   {
+    "title": "Represent binary downloads",
+    "scenario": "A downloader or test needs a generic container for a binary HTTP payload."
+   },
+   {
+    "title": "Build test responses",
+    "scenario": "A unit test needs a controlled HTTP result without making a network request."
+   },
+   {
+    "title": "Inspect response metadata",
+    "scenario": "A spider needs status, headers, or URL metadata while processing a result."
+   }
+  ],
+  "related": [
+   "scrapy.http.Request",
+   "scrapy.http.TextResponse",
+   "Response.request",
+   "Response.url",
+   "Response.status",
+   "Response.headers",
+   "Response.body",
+   "Response.flags"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is scrapy.http.Response used for?",
+    "answer": "Response represents an HTTP result downloaded by Scrapy and passed to a spider. Its core construction accepts a URL, with status defaulting to 200, plus optional headers, body, and flags.",
+    "followUp": "How should textual content be handled? Use an encoding-aware subclass such as TextResponse, which provides decoded text access through response.text."
+   },
+   {
+    "question": "What are the important constructor parameters?",
+    "answer": "The body parameter is bytes, and the base Response is meant for binary payloads. The response URL, status, headers, and flags describe the downloaded result.",
+    "followUp": "Why not pass decoded text as the body? Because the documented body type is bytes; decoding belongs to an encoding-aware Response subclass."
+   },
+   {
+    "question": "How do headers and flags behave?",
+    "answer": "Response.headers is a dictionary whose values can be strings for single-valued headers or lists for multi-valued headers. Response.flags receives the initial values for the flags attribute.",
+    "followUp": "What subclass is appropriate for HTML or other encoded text? TextResponse adds encoding capabilities to the base class."
+   }
+  ],
+  "keyPoints": [
+   "Response is the base object for representing HTTP responses inside Scrapy.",
+   "The downloader normally creates or supplies the response that a spider processes.",
+   "url identifies the resource associated with the response.",
+   "status records the HTTP result code and defaults to 200 when omitted.",
+   "body stores the raw response payload as bytes.",
+   "flags can be initialized with labels that annotate the response."
+  ],
+  "gotchas": [
+   "The base class is intended for binary data; do not treat its body as decoded text. Use an encoding-aware subclass for text access.",
+   "Header values may represent one value or multiple values, so preserve the documented string-or-list shape."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Rule": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/topics/spiders.html",
+  "sourceTitle": "Spiders — Scrapy 2.19.0 documentation",
+  "summary": "Rule defines how a CrawlSpider extracts, processes, follows, and handles links. Configure it with a LinkExtractor plus optional callback, request/link processors, follow behavior, and errback.",
+  "explanation": "Rule configures how CrawlSpider handles links found by a LinkExtractor. It can select links, dispatch matching responses to a callback, pass callback keyword arguments, transform links or requests, handle failures, and control whether subsequent links are followed.",
+  "syntax": "scrapy.spiders.Rule(link_extractor: LinkExtractor | None = None, callback: CallbackT | str | None = None, cb_kwargs: dict[str, Any] | None = None, follow: bool | None = None, process_links: ProcessLinksT | str | None = None, process_request: ProcessRequestT | str | None = None, errback: Callable[[Failure], Any] | str | None = None)",
+  "parameters": [
+   {
+    "name": "link_extractor",
+    "type": "LinkExtractor | None",
+    "description": "LinkExtractor defining which links are extracted."
+   },
+   {
+    "name": "callback",
+    "type": "CallbackT | str | None",
+    "description": "Callback callable or spider method name for extracted links."
+   },
+   {
+    "name": "cb_kwargs",
+    "type": "dict[str, Any] | None",
+    "description": "Keyword arguments passed to the callback."
+   },
+   {
+    "name": "follow",
+    "type": "bool | None",
+    "description": "Whether to follow links from matching responses."
+   },
+   {
+    "name": "process_links",
+    "type": "ProcessLinksT | str | None",
+    "description": "Callable or method name processing extracted links."
+   },
+   {
+    "name": "process_request",
+    "type": "ProcessRequestT | str | None",
+    "description": "Callable or method name processing generated requests."
+   },
+   {
+    "name": "errback",
+    "type": "Callable[[Failure], Any] | str | None",
+    "description": "Callable or method name handling request failures."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Crawl matching links with a callback",
+   "code": "from scrapy.spiders import CrawlSpider, Rule\nfrom scrapy.linkextractors import LinkExtractor\n\nclass DocsSpider(CrawlSpider):\n    name = \"docs\"\n    allowed_domains = [\"example.com\"]\n    start_urls = [\"https://example.com/\"]\n    rules = (\n        Rule(LinkExtractor(allow=r\"/articles/\"), callback=\"parse_article\", follow=True),\n    )\n\n    def parse_article(self, response):\n        yield {\"url\": response.url, \"title\": response.css(\"title::text\").get()}\n",
+   "language": "python",
+   "explanation": "The rule limits extracted links to article paths, sends matching responses to parse_article, and continues following links found there."
+  },
+  "useCases": [
+   {
+    "title": "Selective link crawling",
+    "scenario": "Restrict a CrawlSpider to URLs matching patterns such as product or article paths."
+   },
+   {
+    "title": "Response parsing",
+    "scenario": "Send matching pages to a named spider method that yields extracted items."
+   },
+   {
+    "title": "Link preprocessing",
+    "scenario": "Apply custom filtering or normalization to extracted links before requests are created."
+   },
+   {
+    "title": "Request and failure handling",
+    "scenario": "Customize generated requests or handle request failures for a rule."
+   }
+  ],
+  "related": [
+   "CrawlSpider",
+   "LinkExtractor",
+   "Spider",
+   "Request",
+   "Response"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is Rule used for?",
+    "answer": "Rule is a CrawlSpider configuration object that associates link extraction with optional callback, processing, error, and follow behavior. CrawlSpider applies the first matching rule when multiple rules match a link.",
+    "followUp": "What happens if a generated request preserves another rule's metadata? It can cause the response to be dispatched to the wrong callback, so rule metadata must not be copied across rules."
+   },
+   {
+    "question": "What does link_extractor control?",
+    "answer": "link_extractor determines which links are extracted from each crawled page. Each extracted link becomes a Request, and its link text is stored in the request metadata under link_text.",
+    "followUp": "How would you restrict crawling to product pages? Supply a LinkExtractor configured with an allow pattern for product URLs."
+   },
+   {
+    "question": "How does callback interact with follow?",
+    "answer": "callback may be a callable or the name of a spider method and receives a Response. It should return an item, request, or iterable containing items and/or requests.",
+    "followUp": "How does callback choice affect follow when follow is omitted? follow defaults to true without a callback and false when a callback is supplied."
+   }
+  ],
+  "keyPoints": [
+   "A Rule describes one crawling behavior within a CrawlSpider.",
+   "Requests created through rules retain the matching rule's index in their metadata for response dispatch.",
+   "Omitting link_extractor uses a default extractor, which extracts links without custom extractor arguments.",
+   "A callback receives the matching response as its first positional argument.",
+   "cb_kwargs supplies named arguments that CrawlSpider passes into the callback.",
+   "process_links can be a callable or a spider method name used to process extracted link lists.",
+   "process_request can be a callable or method name that processes each request generated from a matching link.",
+   "errback can be a callable or spider method name for handling request failures."
+  ],
+  "gotchas": [
+   "Rule order matters: when several rules match one link, CrawlSpider uses the earliest matching rule.",
+   "Leaving follow unset changes its default based on callback presence: no callback follows links, while a callback does not.",
+   "Do not copy the rule metadata key into requests created by another rule, because response dispatch can select the wrong callback."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Selector": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/topics/selectors.html",
+  "sourceTitle": "Selectors",
+  "summary": "Selector wraps a response or markup string and lets you select document content with XPath or CSS. Results are extracted with get() or getall().",
+  "explanation": "Selector wraps response content or supplied markup so XPath, CSS, and related extraction operations can be applied. When created from a response, Scrapy infers the selector type from that response; when created from text, it defaults to HTML unless a type is specified.",
+  "syntax": "scrapy.Selector(**args: Any, **kwargs: Any)",
+  "parameters": [
+   {
+    "name": "response",
+    "type": "TextResponse | None",
+    "description": "A TextResponse or response-compatible object whose content is selected and extracted."
+   },
+   {
+    "name": "text",
+    "type": "str | None",
+    "description": "Markup supplied directly when a response is unavailable."
+   },
+   {
+    "name": "type",
+    "type": "str | None",
+    "description": "Parsing mode; supported values include html, xml, json, or None for inference."
+   }
+  ],
+  "returns": "A Selector instance wrapping the supplied response or text content.",
+  "example": {
+   "title": "Select text from markup",
+   "code": "from scrapy import Selector\n\nhtml = \"<html><body><h1>Scrapy</h1></body></html>\"\nselector = Selector(text=html)\nprint(selector.xpath(\"//h1/text()\").get())",
+   "language": "python",
+   "explanation": "Creates a selector from markup and extracts the heading text with XPath."
+  },
+  "useCases": [
+   {
+    "title": "Response parsing",
+    "scenario": "Extract fields from an HTTP response in a spider."
+   },
+   {
+    "title": "Standalone markup parsing",
+    "scenario": "Parse a saved HTML fragment or fixture without issuing a request."
+   },
+   {
+    "title": "Nested document selection",
+    "scenario": "Traverse nested matches using chained XPath or CSS selections."
+   }
+  ],
+  "related": [
+   "SelectorList",
+   "Response.selector",
+   "xpath()",
+   "css()",
+   "get()",
+   "getall()",
+   "parsel"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is Selector used for?",
+    "answer": "Selector is Scrapy’s wrapper for selecting parts of response content. It can be constructed from a TextResponse or from markup passed through text.",
+    "followUp": "How would you create one without a response? Pass the markup string using Selector(text=...)."
+   },
+   {
+    "question": "How do you extract data with Selector?",
+    "answer": "Use xpath() or css() to locate content, then get() for one result or getall() for all matching results. XPath and CSS selections return selector objects that support further chaining.",
+    "followUp": "What happens when no result is available from get()? It returns None, while getall() returns an empty list."
+   },
+   {
+    "question": "How is the parsing type determined?",
+    "answer": "The selector type can be inferred from the response, or forced with type. Supported types include html, xml, and json, with HTML used as the default when text is supplied without an explicit type.",
+    "followUp": "Why force type? To ensure the supplied content is parsed using the intended rules instead of automatic inference."
+   }
+  ],
+  "keyPoints": [
+   "Selector builds on parsel while integrating selection and extraction with Scrapy response objects.",
+   "A Scrapy response already provides its selector through the response.selector attribute.",
+   "Initialize it from a response or provide markup directly with the text argument.",
+   "Selection alone produces selector results; call get() or getall() to obtain extracted values.",
+   "Selectors target document parts using XPath or CSS expressions."
+  ],
+  "gotchas": [
+   "Use either a response object or markup supplied through the text argument; do not assume a response is required.",
+   "Leaving type unset delegates parser selection to Scrapy, which may infer HTML, XML, or JSON from the response."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "settings": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/topics/settings.html",
+  "sourceTitle": "Settings",
+  "summary": "Scrapy settings are a shared key-value configuration namespace for the framework and its components. Projects normally define common settings in settings.py, with the active module selected through SCRAPY_SETTINGS_MODULE.",
+  "explanation": "Scrapy settings provide a shared key-value configuration namespace used by the framework, extensions, pipelines, and spiders. A project normally stores its common configuration in settings.py, while the active project settings module can be selected with SCRAPY_SETTINGS_MODULE.",
+  "syntax": "SCRAPY_SETTINGS_MODULE=myproject.settings",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Select a project settings module",
+   "code": "import os\nfrom scrapy.crawler import CrawlerProcess\n\nos.environ[\"SCRAPY_SETTINGS_MODULE\"] = \"myproject.settings\"\nprocess = CrawlerProcess()\nprocess.crawl(\"quotes\")\nprocess.start()",
+   "language": "python",
+   "explanation": "Selects a project settings module through the environment and starts a crawler process using those settings."
+  },
+  "useCases": [
+   {
+    "title": "Project-wide configuration",
+    "scenario": "Configure behavior shared by all spiders in a project."
+   },
+   {
+    "title": "Select the active settings module",
+    "scenario": "Choose which Scrapy project configuration to load."
+   },
+   {
+    "title": "Command-line overrides",
+    "scenario": "Override configuration for one execution without editing project files."
+   }
+  ],
+  "related": [
+   "SCRAPY_SETTINGS_MODULE",
+   "scrapy.crawler.Crawler.settings",
+   "settings.py",
+   "scrapy.settings.default_settings"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What are Scrapy settings and where are project settings normally stored?",
+    "answer": "Settings are a global key-value mapping used to configure Scrapy components. A project usually places shared values in its settings.py module, and SCRAPY_SETTINGS_MODULE identifies which project settings module is active.",
+    "followUp": "How do conflicting setting sources resolve? Command-line settings have the highest precedence, followed by spider, project, add-on, command-specific default, and global default settings."
+   },
+   {
+    "question": "How does SCRAPY_SETTINGS_MODULE work?",
+    "answer": "The environment variable selects the active settings module using Python import syntax, for example myproject.settings. That module must be available on Python's import search path.",
+    "followUp": "What would you check if selection fails? Verify both the dotted module name and that the project is importable from the current Python path."
+   },
+   {
+    "question": "Which settings source wins when values conflict?",
+    "answer": "Settings are populated through several mechanisms with defined precedence. Command-line values override spider, project, add-on, command-specific default, and global default values.",
+    "followUp": "Why does this matter operationally? A command-line override can change runtime behavior without editing the project's settings.py file."
+   }
+  ],
+  "keyPoints": [
+   "Settings act as a shared configuration namespace that Scrapy components can query by key.",
+   "The configuration applies across Scrapy's core, extensions, item pipelines, and spiders.",
+   "A standard project generally keeps its common configuration in settings.py.",
+   "Command-line values override settings supplied by lower-precedence sources."
+  ],
+  "gotchas": [
+   "Set SCRAPY_SETTINGS_MODULE to an importable Python module path, such as myproject.settings, rather than a filesystem path.",
+   "The selected settings module must be importable by Python."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Spider": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/topics/spiders.html",
+  "sourceTitle": "Spiders — Scrapy 2.19.0 documentation",
+  "summary": "scrapy.Spider is the base class for defining Scrapy crawlers. Configure initial URLs, parse responses, extract items, and yield requests to continue crawling.",
+  "explanation": "Subclass scrapy.Spider to define a crawl. Scrapy uses the spider's initial URLs to create requests, invokes parse for each response by default, and lets callbacks yield extracted items or more requests to continue the crawl.",
+  "syntax": "class scrapy.Spider(**args: Any*, ***kwargs: Any*)",
+  "parameters": [
+   {
+    "name": "*args, **kwargs",
+    "type": "Any",
+    "description": "Arguments supplied when the spider is instantiated; the documentation shows the class accepting arbitrary positional and keyword arguments."
+   }
+  ],
+  "returns": "A spider callback can yield item objects and Request objects; start() yields initial Request objects.",
+  "example": {
+   "title": "Minimal Spider",
+   "code": "import scrapy\n\nclass Spider(scrapy.Spider):\n    name = \"quotes\"\n    start_urls = [\"https://example.com/\"]\n\n    def parse(self, response):\n        yield {\"title\": response.css(\"title::text\").get()}\n",
+   "language": "python",
+   "explanation": "This spider starts at the configured URL, parses the downloaded response, and yields an item containing the page title."
+  },
+  "useCases": [
+   {
+    "title": "Seed a crawl with start_urls",
+    "scenario": "A crawl begins from a fixed list of pages."
+   },
+   {
+    "title": "Extract items from responses",
+    "scenario": "Downloaded pages contain structured information."
+   },
+   {
+    "title": "Follow continuation requests",
+    "scenario": "Links or API pages lead to additional content."
+   },
+   {
+    "title": "Group site-specific crawling logic",
+    "scenario": "Several related sites share crawl behavior."
+   }
+  ],
+  "related": [
+   "start",
+   "start_urls",
+   "parse",
+   "Request",
+   "Response",
+   "Selectors",
+   "from_crawler"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is scrapy.Spider and what is its default crawl flow?",
+    "answer": "A Spider is a class that defines which requests to send and how to process responses. It normally starts from start_urls, and parse handles each initial response by default.",
+    "followUp": "How does a callback continue a crawl? It yields Request objects, whose callbacks process later responses."
+   },
+   {
+    "question": "How are a spider's initial requests created?",
+    "answer": "Set start_urls to the initial URL strings. Scrapy's default start() creates a Request for each one and assigns parse as the callback.",
+    "followUp": "What if startup requires generated or customized requests? Override start() and yield the required Request objects."
+   },
+   {
+    "question": "What may a spider callback yield?",
+    "answer": "A callback parses the Response, commonly with Selectors, and yields item objects for extracted data. It may also yield Request objects to follow additional pages.",
+    "followUp": "Can one callback return both? Yes; it can yield extracted items and continuation requests during the same response processing."
+   }
+  ],
+  "keyPoints": [
+   "A spider packages the crawl rules for one site or a related collection of sites.",
+   "Its two central responsibilities are scheduling requests and interpreting downloaded responses.",
+   "The crawl begins by consuming requests produced by start().",
+   "Providing start_urls is the simplest way to declare the initial crawl targets.",
+   "Selectors are the usual mechanism for extracting information from a Response.",
+   "A callback communicates extracted results and further traversal through items and Requests."
+  ],
+  "gotchas": [
+   "The default initial requests use parse as their callback, so implement parse unless you assign another callback.",
+   "Callbacks can produce items or continuation requests; yielding neither means the crawl produces no extracted data from that response."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "xpath": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/topics/selectors.html",
+  "sourceTitle": "Selectors — Scrapy 2.19.0 documentation",
+  "summary": "xpath() applies an XPath expression to a Scrapy response or selector and returns the matching nodes. Extract their values with get() or getall().",
+  "explanation": "Call xpath() on a Scrapy response or selector with an XPath query. It returns a flattened SelectorList; use get() for one string or getall() for all matching values, and use a leading dot for paths relative to a nested selector.",
+  "syntax": "response.xpath(query, namespaces=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "query",
+    "type": "str",
+    "description": "XPath query string to apply to the response or selector."
+   },
+   {
+    "name": "namespaces",
+    "type": "Mapping[str, str] | None",
+    "description": "Optional namespace mapping for the XPath query."
+   },
+   {
+    "name": "**kwargs",
+    "type": "Any",
+    "description": "Additional keyword arguments accepted by the selector implementation."
+   }
+  ],
+  "returns": "A flattened SelectorList containing selectors for nodes matching the XPath query.",
+  "example": {
+   "title": "Extract title text with XPath",
+   "code": "import scrapy\n\nclass QuotesSpider(scrapy.Spider):\n    name = \"quotes\"\n\n    def parse(self, response):\n        for title in response.xpath(\"//title/text()\").getall():\n            yield {\"title\": title}\n",
+   "language": "python",
+   "explanation": "Selects every title text node and emits each extracted value."
+  },
+  "useCases": [
+   {
+    "title": "Read text nodes",
+    "scenario": "Extracting page text such as headings, titles, or paragraph content."
+   },
+   {
+    "title": "Read attributes",
+    "scenario": "Collecting URL or metadata values stored in HTML/XML attributes."
+   },
+   {
+    "title": "Use XPath filtering",
+    "scenario": "Selecting records with conditions or paths that are awkward to express in CSS."
+   },
+   {
+    "title": "Query nested content",
+    "scenario": "Traversing a selected element's descendants while preserving the current context."
+   }
+  ],
+  "related": [
+   "Selector",
+   "SelectorList",
+   "get()",
+   "getall()",
+   "Selector.remove_namespaces()",
+   "css()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Scrapy's xpath() method return?",
+    "answer": "xpath() evaluates an XPath query against a response or selector and returns matching nodes as a flattened SelectorList. The resulting selectors still support extraction methods such as get() and getall().",
+    "followUp": "How do you select relative descendants from a nested selector? Use .//, because an XPath beginning with / is absolute to the document."
+   },
+   {
+    "question": "How do you extract values after calling xpath()?",
+    "answer": "Use get() when one extracted string is needed and getall() when all matching strings are needed. For example, response.xpath(\"//title/text()\").get() returns one title value.",
+    "followUp": "What happens if no nodes match? The selector list is empty, so get() yields None while getall() yields an empty list."
+   },
+   {
+    "question": "What kinds of data can an XPath expression select?",
+    "answer": "The argument is an XPath expression, which can select HTML or XML nodes, text nodes, and attributes. For example, //a/@href selects link attributes and //span/text() selects span text.",
+    "followUp": "How can XML namespace problems be handled? Remove namespaces with Selector.remove_namespaces() before applying the XPath."
+   }
+  ],
+  "keyPoints": [
+   "XPath expressions select nodes in both XML and HTML documents.",
+   "XPath is the underlying selection mechanism on which Scrapy selectors are built.",
+   "Matching selectors do not become strings automatically; call get() or getall() to extract their contents.",
+   "A text-node XPath can be combined with getall() to collect every matching text value.",
+   "The selector documentation describes descendant text selection as a supported selection pattern.",
+   "Attribute values can be selected from descendant links, including href."
+  ],
+  "gotchas": [
+   "A leading slash makes a nested XPath absolute to the document rather than relative to the current selector; use .// for descendants.",
+   "For XPath string functions, pass the current node with . instead of selecting descendant text nodes through .//text().",
+   "Namespaced XML may require removing namespaces before an XPath query can match elements."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

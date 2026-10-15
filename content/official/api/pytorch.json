@@ -1,0 +1,873 @@
+{
+ "autograd": {
+  "sourceUrl": "https://docs.pytorch.org/docs/stable/autograd.html",
+  "sourceTitle": "Automatic differentiation package - torch.autograd",
+  "summary": "torch.autograd provides PyTorch’s automatic differentiation machinery for scalar-valued functions. Mark tensors with requires_grad=True, execute the computation, and use backward or related APIs to obtain gradients.",
+  "explanation": "Autograd records operations involving tensors that require gradients while executing the forward computation. Calling backward on a scalar result traverses that recorded computation in reverse and accumulates derivatives into the grad fields of eligible leaf tensors.",
+  "syntax": "torch.autograd",
+  "parameters": [],
+  "returns": "The module provides automatic-differentiation classes and functions; individual APIs define their own return values.",
+  "example": {
+   "title": "Compute a scalar gradient",
+   "code": "import torch\n\nx = torch.tensor(3.0, requires_grad=True)\ny = x**2 + 2 * x\n y.backward()\nprint(x.grad)  # tensor(8.)",
+   "language": "python",
+   "explanation": "Creates a scalar tensor that tracks operations, then computes and reads its derivative."
+  },
+  "useCases": [
+   {
+    "title": "Neural-network optimization",
+    "scenario": "Train models by differentiating a scalar loss with respect to learnable tensors."
+   },
+   {
+    "title": "Differentiable numerical programs",
+    "scenario": "Compute derivatives for custom numerical objectives involving supported tensor types."
+   },
+   {
+    "title": "Selective gradient computation",
+    "scenario": "Control which computations participate in gradient tracking by selecting tensors and grad modes."
+   }
+  ],
+  "related": [
+   "torch.autograd.Function",
+   "torch.autograd.backward",
+   "torch.autograd.grad",
+   "torch.no_grad",
+   "torch.inference_mode",
+   "torch.Tensor.requires_grad",
+   "torch.Tensor.backward"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is torch.autograd and how is it enabled?",
+    "answer": "torch.autograd is PyTorch’s automatic-differentiation package. It computes derivatives of scalar-valued functions, requiring tensors whose gradients are needed to be created or marked with requires_grad=True.",
+    "followUp": "How does it obtain derivatives? It records operations during the forward pass and applies the chain rule by traversing the resulting graph backward."
+   },
+   {
+    "question": "How do you trigger backpropagation?",
+    "answer": "Calling backward() computes derivatives of the output with respect to tracked inputs. For a scalar output, no gradient argument is needed; for a non-scalar output, a matching gradient tensor is required.",
+    "followUp": "What happens to the resulting derivatives? They are accumulated in the grad attributes of leaf tensors that require gradients."
+   },
+   {
+    "question": "Which tensor dtypes support autograd?",
+    "answer": "Autograd supports floating-point and complex tensor types, including half, float, double, bfloat16, cfloat, and cdouble. Integer tensors are therefore not valid differentiated inputs.",
+    "followUp": "How can gradient tracking be disabled temporarily? Use a no-grad context or decorator when computations should not be recorded."
+   }
+  ],
+  "keyPoints": [
+   "The module supplies the core classes and functions for differentiating scalar-valued computations.",
+   "Enable tracking selectively with requires_grad=True on tensors whose derivatives you need.",
+   "Supported tensor categories include floating-point and complex types rather than every dtype."
+  ],
+  "gotchas": [
+   "Autograd does not compute gradients for integer or boolean tensors; use supported floating-point or complex dtypes."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "DataLoader": {
+  "sourceUrl": "https://docs.pytorch.org/docs/stable/data.html",
+  "sourceTitle": "torch.utils.data — PyTorch main documentation",
+  "summary": "DataLoader wraps a dataset in an iterable that can customize sample order, batch samples, use single or multiple processes, and optionally pin fetched tensors in memory.",
+  "explanation": "DataLoader wraps a map-style or iterable-style dataset and exposes it as an iterable. It can select the loading order, form batches through collation, load in one or more processes, and place fetched tensors in pinned memory for transfers to CUDA-enabled GPUs.",
+  "syntax": "DataLoader(dataset, batch_size=1, shuffle=False, sampler=None, batch_sampler=None, num_workers=0, collate_fn=None, pin_memory=False, drop_last=False, timeout=0, worker_init_fn=None, multiprocessing_context=None, generator=None, *, prefetch_factor=None, persistent_workers=False, pin_memory_device='', in_order=True)",
+  "parameters": [
+   {
+    "name": "dataset",
+    "type": "Dataset",
+    "description": "Dataset from which to load data."
+   },
+   {
+    "name": "batch_size",
+    "type": "int, optional",
+    "description": "Number of samples per batch; default is 1."
+   },
+   {
+    "name": "shuffle",
+    "type": "bool, optional",
+    "description": "Whether to reshuffle data at every epoch; default is False."
+   },
+   {
+    "name": "sampler",
+    "type": "Sampler or Iterable, optional",
+    "description": "Strategy used to draw samples from the dataset."
+   },
+   {
+    "name": "batch_sampler",
+    "type": "Sampler or Iterable, optional",
+    "description": "Sampler that yields mini-batches of indices."
+   },
+   {
+    "name": "num_workers",
+    "type": "int, optional",
+    "description": "Number of worker processes used for loading; default is 0."
+   },
+   {
+    "name": "collate_fn",
+    "type": "callable, optional",
+    "description": "Function used to merge samples into a batch."
+   },
+   {
+    "name": "pin_memory",
+    "type": "bool, optional",
+    "description": "Whether to copy fetched tensors into pinned memory; default is False."
+   },
+   {
+    "name": "drop_last",
+    "type": "bool, optional",
+    "description": "Whether to discard the final incomplete batch; default is False."
+   },
+   {
+    "name": "timeout",
+    "type": "numeric, optional",
+    "description": "Maximum waiting time for a batch from workers; default is 0."
+   },
+   {
+    "name": "worker_init_fn",
+    "type": "callable, optional",
+    "description": "Initialization function run for each worker."
+   },
+   {
+    "name": "multiprocessing_context",
+    "type": "str or multiprocessing context, optional",
+    "description": "Context used to start worker processes."
+   }
+  ],
+  "returns": "An iterable over the given dataset that yields individual samples or automatically collated batches, according to the configured options.",
+  "example": {
+   "title": "Batch and shuffle a dataset",
+   "code": "from torch.utils.data import DataLoader, TensorDataset\nimport torch\n\nx = torch.arange(10).reshape(5, 2)\ny = torch.arange(5)\nloader = DataLoader(TensorDataset(x, y), batch_size=2, shuffle=True)\n\nfor features, labels in loader:\n    print(features.shape, labels.shape)",
+   "language": "python",
+   "explanation": "Creates a dataset of five feature-label pairs, then iterates over shuffled mini-batches of two samples."
+  },
+  "useCases": [
+   {
+    "title": "Produce mini-batches from datasets",
+    "scenario": "Training loops"
+   },
+   {
+    "title": "Reshuffle samples between epochs",
+    "scenario": "Randomized training"
+   },
+   {
+    "title": "Parallelize data loading with worker processes",
+    "scenario": "Input pipelines"
+   },
+   {
+    "title": "Pin fetched tensors for faster GPU transfer",
+    "scenario": "CUDA training"
+   }
+  ],
+  "related": [
+   "torch.utils.data.Dataset",
+   "torch.utils.data.IterableDataset",
+   "torch.utils.data.Sampler",
+   "torch.utils.data.BatchSampler",
+   "torch.utils.data.TensorDataset",
+   "torch.utils.data.default_collate"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does DataLoader provide?",
+    "answer": "DataLoader is a Python iterable that combines a dataset with a sampling strategy. It supports map-style and iterable-style datasets, batching, custom loading order, single- or multi-process loading, and optional memory pinning.",
+    "followUp": "How do you enable parallel loading? Set num_workers to a positive integer; zero retains the default single-process behavior."
+   },
+   {
+    "question": "How are batches formed?",
+    "answer": "batch_size controls how many samples are grouped into each batch. Automatic collation combines individual fetched samples, while collate_fn can customize that combination.",
+    "followUp": "Which other arguments affect automatic batching? drop_last, batch_sampler, and collate_fn also participate in batching behavior."
+   },
+   {
+    "question": "How does DataLoader control sample order?",
+    "answer": "The dataset is the main constructor input and identifies the data source. shuffle can request reshuffling at every epoch, while sampler defines the strategy for drawing samples.",
+    "followUp": "Can shuffle and sampler be freely combined? No: when a sampler is supplied, it determines the sampling strategy, so the two options should not be configured incompatibly."
+   }
+  ],
+  "keyPoints": [
+   "DataLoader is consumed directly in a loop, yielding data from the wrapped dataset.",
+   "The class works with both map-style datasets and iterable-style datasets.",
+   "Sampling configuration lets callers control the order in which dataset elements are fetched.",
+   "Loading may run in the main process or use multiple worker processes.",
+   "The pin_memory option can automatically place fetched tensors in pinned memory."
+  ],
+  "gotchas": [
+   "Parallel workers are not enabled unless num_workers is set to a positive integer.",
+   "Increasing num_workers changes loading to multi-process execution, so worker-related dataset behavior must be considered.",
+   "pin_memory is useful for faster CUDA transfers, but it changes where fetched tensors are placed."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Dataset": {
+  "sourceUrl": "https://docs.pytorch.org/docs/stable/data.html",
+  "sourceTitle": "torch.utils.data",
+  "summary": "torch.utils.data.Dataset is the abstract base for map-style datasets. Subclasses provide keyed sample retrieval with __getitem__ and may provide their size through __len__.",
+  "explanation": "Subclass Dataset to represent indexed samples. Implement __getitem__ for retrieving a sample by key; implement __len__ when the dataset has a known size so indexing utilities and data-loading components can determine its extent.",
+  "syntax": "class torch.utils.data.Dataset",
+  "parameters": [],
+  "returns": "A Dataset subclass exposes individual samples through __getitem__; when implemented, __len__ reports the dataset size.",
+  "example": {
+   "title": "Implementing a map-style Dataset",
+   "code": "from torch.utils.data import Dataset\n\nclass Numbers(Dataset):\n    def __init__(self, values):\n        self.values = values\n\n    def __len__(self):\n        return len(self.values)\n\n    def __getitem__(self, index):\n        return self.values[index]\n\n\ndataset = Numbers([10, 20, 30])\nprint(dataset[1], len(dataset))",
+   "language": "python",
+   "explanation": "Defines a map-style dataset whose samples are retrieved by index and whose size is reported with len()."
+  },
+  "useCases": [
+   {
+    "title": "Map samples to labels or features by index",
+    "scenario": "Training on an indexed collection of examples"
+   },
+   {
+    "title": "Provide a DataLoader-compatible dataset",
+    "scenario": "Feeding custom data to a training loop"
+   },
+   {
+    "title": "Centralize sample retrieval and dataset sizing",
+    "scenario": "Wrapping in-memory or file-backed records"
+   }
+  ],
+  "related": [
+   "torch.utils.data.DataLoader",
+   "torch.utils.data.IterableDataset",
+   "torch.utils.data.Sampler"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What methods should a map-style Dataset implement?",
+    "answer": "Dataset is the base abstraction for map-style data. A subclass should implement __getitem__ so a key can retrieve one sample, and it may implement __len__ to report the dataset size.",
+    "followUp": "How would you model a stream with no reliable length? Use IterableDataset and implement __iter__ instead of relying on indexed access."
+   },
+   {
+    "question": "How does Dataset relate to DataLoader?",
+    "answer": "A map-style dataset represents a mapping from keys, commonly indices, to samples. DataLoader can consume it and provide iteration, batching, sampling, and optional multi-process loading.",
+    "followUp": "What changes for an iterable-style dataset? Samples are produced through __iter__, which is useful when data arrives as a stream rather than from a finite indexable collection."
+   },
+   {
+    "question": "Does Dataset require __len__?",
+    "answer": "Dataset does not require a constructor signature of its own; subclasses define initialization for their storage and metadata. The required map-style retrieval hook is __getitem__, while __len__ is optional in the base class.",
+    "followUp": "Why might omitting __len__ matter? Components that expect dataset size or use default length-dependent behavior may not be able to determine the dataset extent."
+   }
+  ],
+  "keyPoints": [
+   "Dataset is an abstract base for user-defined datasets.",
+   "Use Dataset for map-style collections where keys identify individual samples.",
+   "Implement __getitem__ so indexed or keyed access returns one sample.",
+   "An optional __len__ method should return the number of samples when the size is known.",
+   "The map-style protocol combines sample lookup with a length-reporting operation.",
+   "Pass a Dataset to DataLoader to obtain an iterable that can apply sampling and loading behavior."
+  ],
+  "gotchas": [
+   "Implement __len__ accurately when the dataset has a known size; many dataset and loader behaviors use it to determine dataset length."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "nn.Conv2d": {
+  "sourceUrl": "https://docs.pytorch.org/docs/stable/generated/torch.nn.modules.conv.Conv2d.html",
+  "sourceTitle": "Conv2d — PyTorch 2.14 documentation",
+  "summary": "torch.nn.Conv2d applies a learnable 2D cross-correlation to channel-first image-like tensors. Stride, padding, dilation, and groups control spatial sampling and channel connectivity.",
+  "explanation": "Conv2d learns a bank of two-dimensional filters and applies cross-correlation across spatial dimensions. It accepts batched channel-first tensors, while stride, padding, dilation, and groups control sampling, borders, receptive-field spacing, and channel connectivity; the resulting spatial size follows the documented floor-based formula.",
+  "syntax": "class torch.nn.Conv2d(in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros', device=None, dtype=None)",
+  "parameters": [
+   {
+    "name": "in_channels",
+    "type": "int",
+    "description": "Number of channels in the input image."
+   },
+   {
+    "name": "out_channels",
+    "type": "int",
+    "description": "Number of channels produced by the convolution."
+   },
+   {
+    "name": "kernel_size",
+    "type": "int or tuple",
+    "description": "Size of the convolving kernel."
+   },
+   {
+    "name": "stride",
+    "type": "int or tuple",
+    "description": "Stride of the convolution; default 1."
+   },
+   {
+    "name": "padding",
+    "type": "int, tuple, or str",
+    "description": "Padding added to all four sides of the input; default 0."
+   },
+   {
+    "name": "dilation",
+    "type": "int or tuple",
+    "description": "Spacing between kernel elements; default 1."
+   },
+   {
+    "name": "groups",
+    "type": "int",
+    "description": "Controls connections between inputs and outputs; default 1."
+   },
+   {
+    "name": "bias",
+    "type": "bool",
+    "description": "If true, adds a learnable bias; default true."
+   },
+   {
+    "name": "padding_mode",
+    "type": "str",
+    "description": "Padding mode: zeros, reflect, replicate, or circular; default zeros."
+   },
+   {
+    "name": "device",
+    "type": "torch.device or str or None",
+    "description": "Optional device on which to create the module."
+   },
+   {
+    "name": "dtype",
+    "type": "torch.dtype or None",
+    "description": "Optional data type for the module parameters."
+   }
+  ],
+  "returns": "A tensor of shape (N, out_channels, H_out, W_out), where spatial dimensions are determined by the documented convolution formula.",
+  "example": {
+   "title": "Basic 2D convolution",
+   "code": "import torch\nfrom torch import nn\n\nlayer = nn.Conv2d(in_channels=3, out_channels=8, kernel_size=3, padding=1)\nx = torch.randn(2, 3, 32, 32)\ny = layer(x)\nprint(y.shape)  # torch.Size([2, 8, 32, 32])",
+   "language": "python",
+   "explanation": "Creates an eight-channel 3×3 convolution for RGB images and applies it to a batch of two 32×32 inputs."
+  },
+  "useCases": [
+   {
+    "title": "Learn spatial visual features from image batches.",
+    "scenario": "Image classification and recognition"
+   },
+   {
+    "title": "Transform feature maps while controlling resolution and channel count.",
+    "scenario": "Encoder-decoder and segmentation models"
+   },
+   {
+    "title": "Reduce or structure channel connectivity with groups.",
+    "scenario": "Grouped or depthwise architectures"
+   }
+  ],
+  "related": [
+   "torch.nn.Conv1d",
+   "torch.nn.Conv3d",
+   "torch.nn.functional.conv2d",
+   "torch.nn.BatchNorm2d",
+   "torch.nn.MaxPool2d"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What input and parameter shapes does Conv2d use?",
+    "answer": "Conv2d expects input shaped (N, C_in, H, W) and produces (N, C_out, H_out, W_out). Its learned weight has shape (C_out, C_in / groups, kernel height, kernel width), with an optional bias of length C_out.",
+    "followUp": "How does groups change connectivity? Each output channel connects only to its corresponding input-channel group, and C_in and C_out must both be divisible by groups."
+   },
+   {
+    "question": "How are Conv2d output dimensions determined?",
+    "answer": "The output height and width are computed independently as floor((input + 2·padding − dilation·(kernel−1) − 1) / stride + 1). Increasing padding generally preserves more border information, while stride reduces the spatial resolution.",
+    "followUp": "What does dilation do? It spaces kernel elements apart, increasing the receptive field without proportionally increasing the number of kernel parameters."
+   },
+   {
+    "question": "Which padding and operation semantics should be remembered?",
+    "answer": "Conv2d performs cross-correlation rather than mathematically flipped convolution. It supports zero, reflect, replicate, and circular padding modes, and its default padding mode is zeros.",
+    "followUp": "When is padding='same' valid? It keeps output and input spatial shapes equal, but the documented module restriction allows only stride 1."
+   }
+  ],
+  "keyPoints": [
+   "Conv2d is a learnable module for extracting two-dimensional spatial features from multiple input channels.",
+   "Stride sets the filter movement step and can be shared across dimensions or specified separately.",
+   "Groups partitions channel connections, enabling grouped or depthwise convolution patterns."
+  ],
+  "gotchas": [
+   "The string padding mode same preserves spatial size but cannot be combined with a stride other than one.",
+   "Integer spatial arguments apply uniformly; use two-element tuples when height and width need different settings."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "nn.Linear": {
+  "sourceUrl": "https://docs.pytorch.org/docs/2.8/generated/torch.nn.Linear.html",
+  "sourceTitle": "Linear — PyTorch 2.8 documentation",
+  "summary": "torch.nn.Linear is a trainable affine layer that maps each input vector from in_features to out_features. It preserves all leading dimensions and can optionally include a learnable bias.",
+  "explanation": "The module stores a weight matrix and, by default, a bias vector. For an input whose final dimension matches in_features, it computes an affine transformation and changes only that final dimension to out_features; leading dimensions are preserved.",
+  "syntax": "torch.nn.Linear(in_features, out_features, bias=True, device=None, dtype=None)",
+  "parameters": [
+   {
+    "name": "in_features",
+    "type": "int",
+    "description": "Size of each input sample."
+   },
+   {
+    "name": "out_features",
+    "type": "int",
+    "description": "Size of each output sample."
+   },
+   {
+    "name": "bias",
+    "type": "bool",
+    "description": "Whether to learn an additive bias; defaults to True."
+   },
+   {
+    "name": "device",
+    "type": "torch.device, optional",
+    "description": "Optional device on which to create the module."
+   },
+   {
+    "name": "dtype",
+    "type": "torch.dtype, optional",
+    "description": "Optional data type for the module’s parameters."
+   }
+  ],
+  "returns": "A tensor with shape (*, out_features), where * represents the input’s unchanged leading dimensions.",
+  "example": {
+   "title": "Apply a linear layer",
+   "code": "import torch\nfrom torch import nn\n\nlayer = nn.Linear(20, 30)\nx = torch.randn(128, 20)\ny = layer(x)\nprint(y.shape)  # torch.Size([128, 30])",
+   "language": "python",
+   "explanation": "Creates a trainable 20-to-30 affine layer and applies it to a batch whose final dimension has size 20."
+  },
+  "useCases": [
+   {
+    "title": "Feature projection",
+    "scenario": "Transforming representations between neural-network stages."
+   },
+   {
+    "title": "Classification or regression head",
+    "scenario": "Producing logits or scores from a learned representation."
+   },
+   {
+    "title": "Embedding or sequence projection",
+    "scenario": "Changing the width of the final dimension in batched or sequence data."
+   }
+  ],
+  "related": [
+   "torch.nn.Module",
+   "torch.nn.LazyLinear",
+   "torch.nn.Identity",
+   "torch.nn.Bilinear"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What transformation does nn.Linear perform, and what shapes does it use?",
+    "answer": "It applies y = xAᵀ + b, where the learnable weight has shape (out_features, in_features). The input’s last dimension must equal in_features, and the output’s last dimension becomes out_features.",
+    "followUp": "What happens to a batched or higher-rank input? Every dimension except the final one is retained, while the final dimension is replaced by out_features."
+   },
+   {
+    "question": "What do the constructor arguments mean?",
+    "answer": "in_features is the size of each input sample, while out_features is the size of each output sample. bias controls whether the module includes a learnable additive bias and defaults to True.",
+    "followUp": "How would you create a layer without an offset? Construct it with bias=False."
+   },
+   {
+    "question": "How are the learnable parameters shaped and initialized?",
+    "answer": "The weight is initialized from a uniform distribution whose bounds depend on the reciprocal of in_features. The module exposes weight with shape (out_features, in_features) and bias with shape (out_features).",
+    "followUp": "What parameter shape should be expected when connecting this layer to a previous representation of width n? The weight’s second dimension should be n, so construct the layer with in_features=n."
+   }
+  ],
+  "keyPoints": [
+   "nn.Linear implements a trainable affine mapping rather than an activation function.",
+   "in_features specifies the width of each input sample.",
+   "out_features specifies the width produced for each sample.",
+   "For higher-rank inputs, the layer preserves every leading dimension.",
+   "The weight matrix has one row per output feature and one column per input feature.",
+   "When enabled, the bias contains one trainable value per output feature."
+  ],
+  "gotchas": [
+   "The input may have arbitrary leading dimensions, but its final dimension must equal in_features.",
+   "Set bias=False when the affine offset is not wanted; the default is True."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "nn.Module": {
+  "sourceUrl": "https://docs.pytorch.org/docs/main/generated/torch.nn.Module.html",
+  "sourceTitle": "Module — PyTorch main documentation",
+  "summary": "torch.nn.Module is the base class for PyTorch neural-network modules. Subclass it to define models or reusable components, compose child modules, and manage registered parameters and module-wide conversions.",
+  "explanation": "Subclass nn.Module to define a callable neural-network component. Initialize child modules and state in __init__, implement forward for the computation, and assign child modules as attributes so PyTorch registers them for parameter discovery and operations such as device or dtype conversion.",
+  "syntax": "class torch.nn.Module(*args, **kwargs)",
+  "parameters": [
+   {
+    "name": "*args",
+    "type": "object",
+    "description": "Positional arguments accepted by the base constructor."
+   },
+   {
+    "name": "**kwargs",
+    "type": "object",
+    "description": "Keyword arguments accepted by the base constructor."
+   }
+  ],
+  "returns": "A Module instance; subclasses provide the model behavior through forward.",
+  "example": {
+   "title": "A small registered neural network",
+   "code": "import torch\nfrom torch import nn\n\nclass MLP(nn.Module):\n    def __init__(self, width=8):\n        super().__init__()\n        self.layers = nn.Sequential(\n            nn.Linear(4, width),\n            nn.ReLU(),\n            nn.Linear(width, 2),\n        )\n\n    def forward(self, x):\n        return self.layers(x)\n\nmodel = MLP()\nprint(model(torch.randn(3, 4)).shape)",
+   "language": "python",
+   "explanation": "Subclass nn.Module, register layers as attributes, and implement forward so the instance can be called with input tensors."
+  },
+  "useCases": [
+   {
+    "title": "Custom models",
+    "scenario": "Define a trainable neural network with layers and custom computation."
+   },
+   {
+    "title": "Reusable components",
+    "scenario": "Package a reusable operation together with its parameters and submodules."
+   },
+   {
+    "title": "Composed model trees",
+    "scenario": "Build hierarchical architectures from smaller neural-network modules."
+   }
+  ],
+  "related": [
+   "torch.nn.Parameter",
+   "torch.nn.Sequential",
+   "torch.nn.ModuleList",
+   "torch.nn.ModuleDict"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is nn.Module used for?",
+    "answer": "nn.Module is PyTorch’s base class for neural-network modules. A custom model subclasses it, initializes child modules, and defines forward for the computation.",
+    "followUp": "How does composition work? A Module can contain other Modules, producing a nested module tree."
+   },
+   {
+    "question": "What happens when a child module is assigned as an attribute?",
+    "answer": "Assigning child modules as attributes registers them with the parent. This lets PyTorch discover the submodules and apply operations such as to() to their parameters.",
+    "followUp": "Why prefer nn.Sequential or ModuleList over a plain Python list? Registered containers ensure contained modules participate in the module hierarchy."
+   },
+   {
+    "question": "How is a custom Module structured?",
+    "answer": "The documented class declaration is torch.nn.Module(*args, **kwargs). In practice, subclasses call super().__init__() before assigning their child modules.",
+    "followUp": "What belongs in forward? The input-to-output computation; initialization and layer construction belong in __init__."
+   }
+  ],
+  "keyPoints": [
+   "nn.Module is the foundational class for PyTorch neural-network components and models.",
+   "Child modules can be attached with ordinary attribute assignment.",
+   "Registered descendants participate when module-wide conversions such as to() are invoked.",
+   "A module may compose other modules into a nested architecture."
+  ],
+  "gotchas": [
+   "Assign child modules as attributes; otherwise they are not registered through the documented attribute-assignment mechanism.",
+   "Custom models should inherit from nn.Module rather than being unrelated callable Python classes.",
+   "Nested modules form a hierarchy, so composition should use Module instances when building reusable model components."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "torch.no_grad": {
+  "sourceUrl": "https://docs.pytorch.org/docs/2.14/generated/torch.no_grad.html",
+  "sourceTitle": "no_grad — PyTorch 2.14 documentation",
+  "summary": "torch.no_grad disables gradient calculation for a scope or decorated function. It is useful for inference because ordinary results stop requiring gradients and autograd can use less memory.",
+  "explanation": "torch.no_grad temporarily turns off gradient calculation for ordinary operations in its scope. It is available both as a context manager and decorator, reduces memory use when gradients are unnecessary, and leaves eligible factory-created tensors with an explicitly requested requires_grad value unchanged.",
+  "syntax": "torch.no_grad()",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Disable gradient tracking for inference",
+   "code": "import torch\n\nx = torch.tensor([1.0], requires_grad=True)\nwith torch.no_grad():\n    y = x * 2\n\nprint(y.requires_grad)  # False\n\n@torch.no_grad()\ndef double(value):\n    return value * 2\n\nprint(double(x).requires_grad)  # False\n\nwith torch.no_grad():\n    parameter = torch.nn.Parameter(torch.rand(2))\nprint(parameter.requires_grad)  # True",
+   "language": "python",
+   "explanation": "Use this context manager around inference or other work that must not build autograd history. It temporarily disables gradient recording for the current thread, so results from ordinary tensor operations do not require gradients; it can also be applied as a decorator."
+  },
+  "useCases": [
+   {
+    "title": "Inference",
+    "scenario": "Run evaluation or prediction without building autograd history."
+   },
+   {
+    "title": "Gradient-free utility functions",
+    "scenario": "Decorate a helper whose operations should never track gradients."
+   },
+   {
+    "title": "Memory-conscious forward passes",
+    "scenario": "Limit memory use during forward-only computation."
+   }
+  ],
+  "related": [
+   "torch.enable_grad",
+   "torch.set_grad_enabled",
+   "torch.inference_mode",
+   "torch.is_grad_enabled",
+   "Tensor.backward"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does torch.no_grad do, and why use it?",
+    "answer": "torch.no_grad disables gradient calculation within a scope, making ordinary operation results have requires_grad=False even when inputs require gradients. It is useful for inference when backward will not be called and can reduce memory consumption.",
+    "followUp": "How does it differ for factory functions? Factory functions that accept a requires_grad keyword argument are exempt, so an explicitly requested gradient setting remains effective."
+   },
+   {
+    "question": "Can torch.no_grad be used as a decorator?",
+    "answer": "The API works as either a context manager or a decorator. As a context manager it limits the enclosed block; as a decorator it applies the same behavior whenever the decorated function runs.",
+    "followUp": "Is the setting process-wide? No; the documentation specifies that it is thread local and does not affect computation in other threads."
+   },
+   {
+    "question": "Does torch.no_grad disable forward-mode AD?",
+    "answer": "No-grad does not apply to forward-mode automatic differentiation. It controls gradient calculation for the documented mode, while forward-mode dual tensors require a different approach.",
+    "followUp": "How can forward-mode tracking be disabled? The documentation says to unpack the dual tensors."
+   }
+  ],
+  "keyPoints": [
+   "It temporarily disables gradient calculation within its scope.",
+   "Use it for inference when the computation will not need backward().",
+   "Avoiding autograd tracking can reduce memory use.",
+   "Results of ordinary operations do not require gradients even if their inputs do.",
+   "The same behavior can be applied to a function with decorator syntax."
+  ],
+  "gotchas": [
+   "Factory functions that accept requires_grad can still create tensors requiring gradients inside the context.",
+   "The setting applies only to the current thread, so work executed in another thread is unaffected.",
+   "no_grad disables reverse-mode gradient tracking, not forward-mode automatic differentiation."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "torch.optim": {
+  "sourceUrl": "https://docs.pytorch.org/docs/stable/optim.html",
+  "sourceTitle": "torch.optim — PyTorch documentation",
+  "summary": "torch.optim provides optimization algorithms for updating model parameters from computed gradients. Create an optimizer with parameters and algorithm-specific options, then use it in the training loop to apply updates.",
+  "explanation": "torch.optim supplies optimizer objects that retain optimization state and modify model parameters using their computed gradients. Construct one with model parameters or named parameters, configure algorithm-specific options such as the learning rate, then clear gradients, backpropagate a loss, and call step(); learning-rate schedulers can adjust rates across epochs.",
+  "syntax": "torch.optim.<Optimizer>(params, **kwargs)",
+  "parameters": [
+   {
+    "name": "params",
+    "type": "iterable",
+    "description": "Iterable of torch.nn.Parameter objects, named parameters, or dictionaries defining parameter groups."
+   },
+   {
+    "name": "optimizer options",
+    "type": "keyword arguments",
+    "description": "Algorithm-specific settings such as learning rate and weight decay; exact options depend on the selected optimizer."
+   }
+  ],
+  "returns": "An optimizer object that stores state and updates the supplied parameters.",
+  "example": {
+   "title": "Basic optimizer training step",
+   "code": "import torch\nfrom torch import nn\n\nmodel = nn.Linear(2, 1)\noptimizer = torch.optim.SGD(model.parameters(), lr=0.1)\n\nx = torch.tensor([[1.0, 2.0]])\ny = torch.tensor([[1.0]])\n\noptimizer.zero_grad()\nloss = ((model(x) - y) ** 2).mean()\nloss.backward()\noptimizer.step()",
+   "language": "python",
+   "explanation": "Creates an SGD optimizer, computes a loss, backpropagates gradients, and updates the model parameters."
+  },
+  "useCases": [
+   {
+    "title": "Standard gradient-based training",
+    "scenario": "Train neural-network parameters with minibatch gradients."
+   },
+   {
+    "title": "Per-parameter-group configuration",
+    "scenario": "Use different learning rates or regularization settings for parameter subsets."
+   },
+   {
+    "title": "Learning-rate scheduling",
+    "scenario": "Change the learning rate as training progresses."
+   },
+   {
+    "title": "Closure-based optimization",
+    "scenario": "Optimize objectives requiring repeated model evaluation."
+   }
+  ],
+  "related": [
+   "torch.optim.Optimizer",
+   "torch.optim.lr_scheduler.LRScheduler",
+   "torch.optim.SGD",
+   "torch.optim.Adam",
+   "torch.optim.AdamW"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is torch.optim?",
+    "answer": "torch.optim is a package of optimization algorithms. An optimizer holds current optimization state and updates parameters using computed gradients.",
+    "followUp": "How can learning rates change during training? Use torch.optim.lr_scheduler.LRScheduler methods based on the number of epochs."
+   },
+   {
+    "question": "How is an optimizer used in a training loop?",
+    "answer": "Construct an optimizer with an iterable of Parameter objects or named parameters, then provide algorithm-specific options such as learning rate and weight decay. During training, clear gradients, compute gradients with backpropagation, and call step().",
+    "followUp": "Why can parameter groups be useful? They allow different optimization options for separate sets of parameters."
+   },
+   {
+    "question": "When is a closure needed?",
+    "answer": "Most optimizers use the straightforward step() form after gradients are computed. Algorithms that reevaluate the objective, such as LBFGS, instead receive a closure that clears gradients, computes the loss, and returns it.",
+    "followUp": "What must the closure return? It must return the recomputed loss so the optimizer can use the reevaluated objective."
+   }
+  ],
+  "keyPoints": [
+   "The module contains implementations of multiple optimization algorithms.",
+   "Common optimization methods are available directly rather than requiring custom integration.",
+   "An optimizer object stores the state needed across update steps.",
+   "Construction accepts parameters, named parameters, or parameter-group dictionaries.",
+   "Each optimizer can receive algorithm-specific settings including learning rate and weight decay.",
+   "Learning-rate schedulers provide APIs for changing the learning rate during training."
+  ],
+  "gotchas": [
+   "Algorithms such as LBFGS may require a closure because they reevaluate the model and loss multiple times.",
+   "A closure must reset gradients, recompute the loss, and return that loss.",
+   "Calling step() before gradients are computed does not perform the intended gradient-based update."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "torch.tensor": {
+  "sourceUrl": "https://docs.pytorch.org/docs/2.12/generated/torch.tensor.html",
+  "sourceTitle": "torch.tensor — PyTorch 2.12 documentation",
+  "summary": "Creates a new tensor by copying array-like data. It can configure dtype, device, autograd tracking, and pinned CPU memory.",
+  "explanation": "torch.tensor creates a new tensor by copying array-like input, so the result starts without autograd history. Optional keywords select its data type, device, gradient tracking, and pinned CPU memory allocation.",
+  "syntax": "torch.tensor(data, *, dtype=None, device=None, requires_grad=False, pin_memory=False) → Tensor",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "array_like",
+    "description": "Initial data for the tensor; accepts a list, tuple, NumPy ndarray, scalar, and other types."
+   },
+   {
+    "name": "dtype",
+    "type": "torch.dtype, optional",
+    "description": "Desired data type; if None, inferred from data."
+   },
+   {
+    "name": "device",
+    "type": "torch.device, optional",
+    "description": "Device for the constructed tensor; if None, uses the input tensor's device or the current device."
+   },
+   {
+    "name": "requires_grad",
+    "type": "bool, optional",
+    "description": "Whether autograd records operations on the returned tensor. Default: False."
+   },
+   {
+    "name": "pin_memory",
+    "type": "bool, optional",
+    "description": "Whether to allocate returned CPU storage in pinned memory. Default: False."
+   }
+  ],
+  "returns": "Tensor",
+  "example": {
+   "title": "Create a tensor from existing data",
+   "code": "import torch\n\nvalues = torch.tensor([[1, 2], [3, 4]], dtype=torch.float32)\nprint(values)\n",
+   "language": "python",
+   "explanation": "Creates a new floating-point tensor by copying nested-list data."
+  },
+  "useCases": [
+   {
+    "title": "Create tensors from existing values",
+    "scenario": "Convert nested Python data or a scalar into a tensor for model inputs or numerical operations."
+   },
+   {
+    "title": "Detach and copy tensor data",
+    "scenario": "Create an independent tensor from another tensor without retaining its gradient history."
+   },
+   {
+    "title": "Start a differentiable computation",
+    "scenario": "Prepare a gradient-tracking leaf from copied input data."
+   },
+   {
+    "title": "Use pinned CPU memory",
+    "scenario": "Allocate CPU data in pinned memory for suitable host-to-device workflows."
+   }
+  ],
+  "related": [
+   "torch.as_tensor",
+   "torch.Tensor.clone",
+   "torch.Tensor.detach",
+   "torch.Tensor.requires_grad_",
+   "torch.tensor_like"
+  ],
+  "since": "1.0.0",
+  "interview": [
+   {
+    "question": "What does torch.tensor do with its input?",
+    "answer": "It copies the supplied array-like data and returns a new tensor with no autograd history, making it a leaf tensor. The input may be a list, tuple, NumPy array, scalar, or other supported array-like value.",
+    "followUp": "How does tensor input differ from preserving history? `torch.tensor(t)` is equivalent to `t.detach().clone()`, so it does not retain t's autograd history."
+   },
+   {
+    "question": "How do dtype and device defaults work?",
+    "answer": "dtype controls the returned tensor's data type; when omitted, PyTorch infers it from data. device controls placement, using the input tensor's device when data is a tensor, or the current device otherwise.",
+    "followUp": "What happens when requires_grad=True? Operations on the returned tensor are recorded by autograd, and the copied tensor becomes a gradient-tracking leaf."
+   },
+   {
+    "question": "What do requires_grad and pin_memory control?",
+    "answer": "requires_grad defaults to False and determines whether autograd records operations on the result. pin_memory defaults to False and requests pinned allocation, but that option works only for CPU tensors.",
+    "followUp": "Can pin_memory=True place a tensor on a GPU? No; it controls pinned CPU allocation rather than selecting a GPU device."
+   }
+  ],
+  "keyPoints": [
+   "The function copies its input into a new leaf tensor without inheriting autograd history.",
+   "The data argument accepts common array-like inputs, including Python sequences, NumPy arrays, and scalars.",
+   "Use dtype to request the returned tensor's element type; otherwise it is inferred from the input.",
+   "Use device to control where the new tensor is allocated.",
+   "Set requires_grad=True when operations on the result should participate in automatic differentiation.",
+   "pin_memory requests pinned allocation for the returned tensor and defaults to disabled."
+  ],
+  "gotchas": [
+   "For an existing tensor, prefer the explicit clone, detach, and requires_grad_ methods when their intent is clearer.",
+   "pin_memory=True is supported only when the returned tensor is a CPU tensor."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "torch.Tensor": {
+  "sourceUrl": "https://docs.pytorch.org/docs/stable/tensors.html",
+  "sourceTitle": "torch.Tensor — PyTorch 2.8 documentation",
+  "summary": "`torch.Tensor` is PyTorch’s multidimensional container for values sharing one data type. Create tensors from existing data with `torch.tensor()` or use factory operations to control shape, dtype, device, and related properties.",
+  "explanation": "A tensor stores values of one data type in a multidimensional structure. Create one from existing array-like data with `torch.tensor()`, or use factory functions for a chosen shape, dtype, device, or related tensor; indexing and slicing access or modify its contents, while `requires_grad=True` enables autograd tracking.",
+  "syntax": "class torch.Tensor(*args, **kwargs)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Create and differentiate a tensor",
+   "code": "import torch\n\nx = torch.tensor([[1.0, 2.0], [3.0, 4.0]], requires_grad=True)\ny = (x * 2).sum()\ny.backward()\nprint(x.shape)\nprint(x.grad)",
+   "language": "python",
+   "explanation": "Creates a floating-point tensor, records operations for automatic differentiation, and computes gradients."
+  },
+  "useCases": [
+   {
+    "title": "Deep-learning data",
+    "scenario": "Representing model inputs, parameters, intermediate activations, and outputs."
+   },
+   {
+    "title": "Numerical computation",
+    "scenario": "Performing vector, matrix, and higher-dimensional numeric operations."
+   },
+   {
+    "title": "Automatic differentiation",
+    "scenario": "Building differentiable computations for training."
+   },
+   {
+    "title": "Device and dtype control",
+    "scenario": "Selecting storage placement and numeric representation for computation."
+   }
+  ],
+  "related": [
+   "torch.tensor",
+   "torch.dtype",
+   "torch.device",
+   "torch.Storage",
+   "torch.empty",
+   "torch.Tensor.new_*",
+   "torch.Tensor.*_like"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a `torch.Tensor`?",
+    "answer": "`torch.Tensor` represents a multidimensional matrix whose elements share one data type. A tensor also provides indexing, slicing, numeric operations, and metadata such as dtype, device, and layout.",
+    "followUp": "How would you preserve an existing tensor's properties while changing its shape? Use a suitable tensor operation or a `*_like` creation operation when creating a related tensor."
+   },
+   {
+    "question": "How should tensors be created?",
+    "answer": "Use `torch.tensor(data)` when you already have array-like values. For a specified shape, use tensor factory functions such as `torch.empty`; for matching another tensor's size and similar types, use `*_like` factories.",
+    "followUp": "Why avoid `torch.Tensor(data)`? It is a legacy constructor with behavior that depends on the input and is specifically discouraged by the documentation."
+   },
+   {
+    "question": "How does a tensor participate in automatic differentiation?",
+    "answer": "Set `requires_grad=True` when creating a tensor if operations on it should be recorded for automatic differentiation. The resulting computation can then participate in gradient propagation, as shown by calling `backward()` on a scalar result.",
+    "followUp": "What determines whether an operation is tracked? Autograd tracking depends on the tensors involved and their gradient requirements, not merely on the tensor's numeric dtype."
+   }
+  ],
+  "keyPoints": [
+   "A tensor is a multidimensional value container whose elements use one dtype.",
+   "Use `torch.tensor()` to build a tensor from nested Python sequences or other existing array-like data.",
+   "Creation operations can explicitly select the tensor's dtype and device.",
+   "Python indexing and slicing provide element and sub-tensor access, including mutation.",
+   "Enabling `requires_grad` makes operations on the tensor eligible for automatic-differentiation recording.",
+   "Tensor data is backed by an associated storage object."
+  ],
+  "gotchas": [
+   "Do not use `torch.Tensor(...)` as the general-purpose data constructor; prefer `torch.tensor(...)` or an appropriate tensor factory.",
+   "Passing a tensor to the legacy constructor can produce an alias rather than an independent copy.",
+   "Sequence input through the legacy constructor uses the default dtype unless another creation approach specifies the dtype."
+  ],
+  "checkedAt": "2026-10-15"
+ }
+}

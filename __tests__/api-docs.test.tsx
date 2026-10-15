@@ -223,3 +223,12 @@ test("Langflow sits under Agentic AI frameworks with an authored page for every 
     expect(detail.code.length).toBeGreaterThan(0);
   }
 });
+
+test("each identifier type shows how many entries it holds, without changing its name", async () => {
+  const user = userEvent.setup(); render(<ApiDocs/>);
+  await user.click(screen.getByRole("button", { name: `All ${API_TYPES.length} types` }));
+  const types = screen.getByRole("group", { name: "Identifier types" });
+  const hook = within(types).getByRole("button", { name: "Hook" });
+  const hooks = API_PACKAGES.reduce((sum, pkg) => sum + pkg.entries.filter(entry => entry.kind === "H").length, 0);
+  expect(hook).toHaveTextContent(`Hook${hooks.toLocaleString("en-US")}`);
+});
