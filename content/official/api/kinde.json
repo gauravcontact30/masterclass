@@ -135,6 +135,74 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "Branding": {
+  "sourceUrl": "https://docs.kinde.com/design/brand/global-brand-defaults/",
+  "sourceTitle": "Set global brand defaults - Kinde docs",
+  "summary": "Kinde global brand defaults customize Kinde-hosted authentication pages with your business identity. Configure them in the dashboard; changes apply immediately without redeploying application code.",
+  "explanation": "Kinde branding is a dashboard-level configuration for Kinde-hosted authentication pages. Set global defaults such as logos, favicon, colors, links, theme, and homepage URI; saved changes apply to applications immediately without redeploying application code.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Configure global branding",
+   "code": "# Branding is configured in the Kinde dashboard rather than declared in application code.\n# Open Design > Global > Brand, set the defaults, and select Save.",
+   "language": "text",
+   "explanation": "Configure branding in Kinde’s dashboard; application code does not need a branding declaration or redeployment."
+  },
+  "useCases": [
+   {
+    "title": "Customize hosted authentication",
+    "scenario": "A product wants hosted sign-in and sign-up pages to match its visual identity."
+   },
+   {
+    "title": "Standardize business branding",
+    "scenario": "A team needs a consistent logo, favicon, colors, and theme across applications."
+   },
+   {
+    "title": "Update presentation independently",
+    "scenario": "A business wants authentication changes to go live without shipping a new application build."
+   }
+  ],
+  "related": [
+   "Apply unique branding for an organization",
+   "Remove Kinde branding from sign in pages",
+   "Configure your authentication flows",
+   "Use your own custom domain"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Where is Kinde branding configured, and what does it affect?",
+    "answer": "Branding is configured in the Kinde dashboard under Design, then Global > Brand. It controls the appearance of Kinde-hosted authentication pages, including assets and theme settings.",
+    "followUp": "How would you brand separate tenants? Use organization-level brand settings, which can override the global business defaults for an organization."
+   },
+   {
+    "question": "What kinds of settings are covered by global brand defaults?",
+    "answer": "Global brand defaults can include the logo, favicon, avatar, colors, links, and default theme. They are applied to the Kinde-hosted authentication experience for the business.",
+    "followUp": "What happens after saving a change? The change applies immediately to applications, so application code does not need to be redeployed."
+   },
+   {
+    "question": "How does theme selection work?",
+    "answer": "Kinde supports Light, Dark, and User preference as the default theme choices. User preference follows the device’s theme preference.",
+    "followUp": "How can branding be removed from authentication pages? On a paid plan, disable Show Kinde branding in the global display settings and save."
+   }
+  ],
+  "keyPoints": [
+   "Global brand defaults keep Kinde-hosted authentication pages visually aligned with your product.",
+   "Saved global branding changes take effect in connected applications without waiting for a deployment.",
+   "The branding area includes visual assets and link-color customization.",
+   "An uploaded avatar provides consistent business identity across supported Kinde UI pages.",
+   "The Light theme uses a white background with dark text.",
+   "The Dark theme uses a dark background with light text."
+  ],
+  "gotchas": [
+   "Provide suitable assets for both light and dark themes when configuring the logo.",
+   "Uploaded logos must not exceed 1 MB.",
+   "Use one of the documented logo formats; unsupported file types are not accepted.",
+   "A code deployment is unnecessary after saving branding changes."
+  ],
+  "checkedAt": "2026-10-15"
+ },
  "CreateOrgLink": {
   "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/nextjs-sdkv1/",
   "sourceTitle": "Next.js App Router SDK v1 - Kinde docs",
@@ -270,6 +338,151 @@
    "A property must be public rather than private to be eligible for token inclusion."
   ],
   "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Custom domains": {
+  "sourceUrl": "https://docs.kinde.com/build/domains/pointing-your-domain/",
+  "sourceTitle": "Use your own custom domain - Kinde docs",
+  "summary": "Kinde custom domains let a production environment use your own authentication URL instead of its Kinde subdomain. Add the domain in environment settings, publish Kinde’s CNAME records, then update the application’s issuer and redirect URLs.",
+  "explanation": "A custom domain replaces the Kinde subdomain used for user-facing authentication. Configure it in the environment settings, add the generated CNAME records at your DNS provider, then update the application issuer and redirect URLs; Kinde verifies the DNS and provisions SSL before the domain is ready.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "A verified, SSL-enabled custom authentication domain for the environment.",
+  "example": {
+   "title": "Use the custom domain as the issuer",
+   "code": "const issuerUrl = \"https://account.example.com\";\n\nconst authUrl = `${issuerUrl}/oauth2/auth`;\nconsole.log(authUrl);",
+   "language": "typescript",
+   "explanation": "Build authentication URLs from the configured custom-domain issuer instead of the Kinde subdomain."
+  },
+  "useCases": [
+   {
+    "title": "Present a branded sign-in URL instead of a Kinde subdomain.",
+    "scenario": "Production authentication"
+   },
+   {
+    "title": "Use the custom domain as the issuer and in callback and logout redirects.",
+    "scenario": "Application configuration"
+   },
+   {
+    "title": "Register custom-domain callbacks with external identity providers.",
+    "scenario": "Social authentication"
+   }
+  ],
+  "related": [
+   "Kinde domain",
+   "Organization custom domain",
+   "KINDE_ISSUER_URL",
+   "CNAME DNS records",
+   "callback URL",
+   "logout redirect URL",
+   "Auth endpoints"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How is a custom domain configured?",
+    "answer": "Add the domain under Settings > Environment > Custom domain, enter a subdomain, and save it. Kinde then displays DNS details; create the requested CNAME records with the domain provider. After verification, the status becomes Provisioned and an SSL certificate is provisioned.",
+    "followUp": "What application changes are required? Set the issuer URL, callback URLs, and logout redirect URLs to the exact custom domain, and update any relevant configuration files."
+   },
+   {
+    "question": "What must change in an application after adding the domain?",
+    "answer": "The application must use the exact custom domain, including updating KINDE_ISSUER_URL. Callback and logout redirect URLs in Kinde must also be changed to the custom domain.",
+    "followUp": "What should remain on the Kinde domain? Management API access and machine-to-machine applications continue to use the Kinde domain."
+   },
+   {
+    "question": "What happens when the custom domain is provisioned?",
+    "answer": "The domain can be used for authentication endpoints after it is provisioned. Kinde also continues to expose auth endpoints through the original Kinde subdomain.",
+    "followUp": "What is a social-login-specific requirement? Add the custom-domain callback URL to the social provider application so the custom domain appears on the sign-in form."
+   }
+  ],
+  "keyPoints": [
+   "New environments start with a Kinde-provided subdomain, which the custom-domain setup can replace for production.",
+   "A typical configuration uses a dedicated authentication subdomain such as account.example.com.",
+   "Application configuration must match the custom domain exactly rather than merely using the same parent domain.",
+   "Start setup from the environment’s Custom domain page in the Kinde dashboard.",
+   "Publish the generated CNAME records at the domain provider to connect DNS to Kinde.",
+   "Successful verification changes the state to Provisioned and enables an SSL certificate."
+  ],
+  "gotchas": [
+   "Use a subdomain such as account.example.com; the procedure does not support a bare root domain.",
+   "Keep the Kinde domain for Management API access and machine-to-machine applications.",
+   "DNS verification and provisioning are asynchronous, so the domain may not be available immediately.",
+   "For social sign-in, authorize the custom-domain callback URL in each identity-provider application."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Feature flags": {
+  "sourceUrl": "https://docs.kinde.com/releases/about/about-feature-flags/",
+  "sourceTitle": "About feature flags",
+  "summary": "Kinde feature flags control feature visibility or behavior for selected users, organizations, environments, or the whole application. They use typed values and can be inherited or overridden at supported scopes.",
+  "explanation": "A Kinde feature flag is defined with a key, type, and value. Its value can be inherited from the business-level setting or overridden for an environment, organization, or user; the resolved flags are exposed in the signed-in user's access token under the feature_flags claim.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "The signed-in user's resolved feature flags are provided in the access token as the custom feature_flags claim.",
+  "example": {
+   "title": "Read feature flags from an access token",
+   "code": "const flags = accessToken.feature_flags ?? {};\n\nconst darkMode = flags.dark_mode?.v === true;\nconst checkoutVariant = flags.checkout_variant?.v ?? \"control\";\n\nif (darkMode) {\n  enableDarkMode();\n}\n\nrenderCheckout(checkoutVariant);",
+   "language": "javascript",
+   "explanation": "Read the user's resolved feature flags from the access token and use each flag's value to control application behavior."
+  },
+  "useCases": [
+   {
+    "title": "Progressive rollout",
+    "scenario": "Release a feature gradually to selected users or organizations before making it generally available."
+   },
+   {
+    "title": "Operational toggle",
+    "scenario": "Switch a capability on or off without deploying a new application version."
+   },
+   {
+    "title": "Experiment configuration",
+    "scenario": "Compare configuration or presentation variants using string or numeric values."
+   },
+   {
+    "title": "Structured configuration",
+    "scenario": "Supply structured application settings through a JSON flag."
+   }
+  ],
+  "related": [
+   "feature_flags",
+   "Boolean feature flags",
+   "String feature flags",
+   "Integer feature flags",
+   "JSON feature flags",
+   "Feature flag overrides",
+   "Kinde Management API"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Kinde feature flag and why use one?",
+    "answer": "Feature flags let an application control access to features without changing the deployed code. A flag has a key, type, and value, and can be used for gradual rollout or temporary release control.",
+    "followUp": "How can different users receive different values? Values cascade from the business level, with optional overrides at environment, organization, and user levels."
+   },
+   {
+    "question": "Which feature-flag types does Kinde provide?",
+    "answer": "Kinde supports boolean, string, integer, and JSON flags in the dashboard. Integers use whole numbers and are limited to -2147483648 through 2147483647.",
+    "followUp": "Which types can the Management API create? It accepts string, integer, and boolean types; JSON flags must be created in the dashboard."
+   },
+   {
+    "question": "How does an application consume a user's Kinde feature flags?",
+    "answer": "After sign-in, the access token contains a custom feature_flags claim describing the user's flags. Application code can read the resolved value from that claim when deciding whether or how to expose functionality.",
+    "followUp": "Where should a rollout override be applied? Choose the narrowest supported scope—environment, organization, or user—when only that audience should differ from the inherited value."
+   }
+  ],
+  "keyPoints": [
+   "Use flags to control feature visibility or behavior for targeted audiences and environments.",
+   "Each flag combines a stable key with a declared type and value that application logic can consume.",
+   "Boolean flags are suitable for enabling or disabling a capability.",
+   "String flags can select text or other named configuration values.",
+   "Integer flags support whole-number configuration, not fractional values.",
+   "JSON flags represent structured key-value configuration.",
+   "Inherited values flow downward from the business setting unless a permitted override changes them."
+  ],
+  "gotchas": [
+   "The flag's type and key cannot be changed after creation, so choose them carefully.",
+   "Deleting a feature flag cannot be undone."
+  ],
   "checkedAt": "2026-10-15"
  },
  "Feature Flags API": {
@@ -1277,6 +1490,73 @@
   "gotchas": [],
   "checkedAt": "2026-10-15"
  },
+ "getUserProfile": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/frontend/react-sdk/",
+  "sourceTitle": "React SDK - Kinde docs",
+  "summary": "getUserProfile asynchronously returns the profile of the currently logged-in user in Kinde’s React SDK. Obtain it from useKindeAuth and call it without arguments.",
+  "explanation": "In the Kinde React SDK, obtain getUserProfile from useKindeAuth and await it to retrieve the currently logged-in user’s profile. The returned object exposes identity and contact fields such as the Kinde ID, names, email, and optional profile picture.",
+  "syntax": "const { getUserProfile } = useKindeAuth();\nconst profile = await getUserProfile();",
+  "parameters": [],
+  "returns": "A profile object for the currently logged-in user, including id, givenName, familyName, email, and an optional picture.",
+  "example": {
+   "title": "Load the current user profile",
+   "code": "import { useKindeAuth } from '@kinde-oss/kinde-auth-react';\n\nexport default function Profile() {\n  const { getUserProfile } = useKindeAuth();\n\n  async function loadProfile() {\n    const profile = await getUserProfile();\n    console.log(profile);\n  }\n\n  return <button onClick={loadProfile}>Get profile</button>;\n}",
+   "language": "tsx",
+   "explanation": "This component obtains the profile loader from the Kinde React hook and invokes it asynchronously when the button is clicked."
+  },
+  "useCases": [
+   {
+    "title": "Render identity details",
+    "scenario": "Profile pages"
+   },
+   {
+    "title": "Pre-fill user information",
+    "scenario": "Account settings"
+   },
+   {
+    "title": "Show the signed-in user",
+    "scenario": "Authenticated dashboards"
+   }
+  ],
+  "related": [
+   "useKindeAuth",
+   "user",
+   "id",
+   "givenName",
+   "familyName",
+   "email",
+   "picture"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you call getUserProfile in the Kinde React SDK?",
+    "answer": "getUserProfile is obtained from useKindeAuth and called as an asynchronous function. Awaiting it returns the profile object for the currently logged-in user.",
+    "followUp": "How would you display the result safely? Store the resolved value in component state and guard optional fields before rendering them."
+   },
+   {
+    "question": "What information does the returned profile contain?",
+    "answer": "The profile includes the user’s Kinde ID, given name, family name, email, and picture when available. These values can be rendered from the resolved profile object.",
+    "followUp": "Which profile field may be unavailable? The picture is optional, so the UI should tolerate its absence."
+   },
+   {
+    "question": "How should a React component integrate the helper?",
+    "answer": "Destructure getUserProfile from useKindeAuth, then invoke it from an event handler or another appropriate asynchronous flow. The documented usage awaits the result before logging it.",
+    "followUp": "Why avoid calling it directly during every render? Repeated render-time calls can trigger unnecessary asynchronous work; use an event or controlled effect instead."
+   }
+  ],
+  "keyPoints": [
+   "The helper resolves to the current authenticated user’s profile.",
+   "Access getUserProfile by destructuring it from the Kinde authentication hook.",
+   "Invoke the helper with no arguments and await its asynchronous result.",
+   "The profile exposes the user’s Kinde identifier as a string id field.",
+   "A picture URL can be present, but the profile picture is not guaranteed."
+  ],
+  "gotchas": [
+   "Call the helper for the signed-in user; it is not a general user lookup."
+  ],
+  "checkedAt": "2026-10-15"
+ },
  "handleAuth": {
   "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/nextjs-sdk/",
   "sourceTitle": "Next.js App Router SDK - Kinde docs",
@@ -1400,6 +1680,348 @@
   "gotchas": [
    "The helper must be obtained by destructuring the result of getKindeServerSession before calling it.",
    "The check is asynchronous, so await the function result before making an authorization decision."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "KINDE_CLIENT_ID": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/ruby-sdk/",
+  "sourceTitle": "Ruby SDK - Kinde docs",
+  "summary": "KINDE_CLIENT_ID is the environment variable for your Kinde application’s unique Client ID. Find it on the application details page and provide it to the SDK configuration.",
+  "explanation": "KINDE_CLIENT_ID is an environment variable containing the unique identifier for your Kinde application. SDK configuration reads it alongside the Kinde domain, client secret, and callback URL when connecting an application to Kinde.",
+  "syntax": "KINDE_CLIENT_ID=<your_kinde_client_id>",
+  "parameters": [
+   {
+    "name": "KINDE_CLIENT_ID",
+    "type": "string",
+    "description": "The unique identifier of the Kinde application being connected."
+   }
+  ],
+  "returns": "The configured application Client ID is supplied to the Kinde SDK; this setting has no standalone runtime return value.",
+  "example": {
+   "title": "Configure the Kinde client ID",
+   "code": "KINDE_CLIENT_ID=your_kinde_client_id",
+   "language": "bash",
+   "explanation": "Set the application’s Client ID in the environment before starting the app."
+  },
+  "useCases": [
+   {
+    "title": "Backend application setup",
+    "scenario": "Configure a Kinde backend SDK using environment variables."
+   },
+   {
+    "title": "Application identification",
+    "scenario": "Select the Kinde application associated with an integration."
+   },
+   {
+    "title": "Environment-based configuration",
+    "scenario": "Keep application configuration separate from source code."
+   }
+  ],
+  "related": [
+   "KINDE_DOMAIN",
+   "KINDE_CLIENT_SECRET",
+   "KINDE_CALLBACK_URL",
+   "clientId",
+   "Application details",
+   "App keys"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does KINDE_CLIENT_ID represent?",
+    "answer": "It is the environment variable used to provide an application’s unique Kinde identifier to the SDK. The value is obtained from the application’s details in Kinde.",
+    "followUp": "Where should the value be sourced? From the application’s App keys section, where Kinde exposes the unique Client ID for that app."
+   },
+   {
+    "question": "How is KINDE_CLIENT_ID used in SDK configuration?",
+    "answer": "It identifies the Kinde application used by the integration. In the documented Ruby setup, it is configured together with KINDE_DOMAIN, KINDE_CLIENT_SECRET, and KINDE_CALLBACK_URL.",
+    "followUp": "Which related setting is not always present? KINDE_CLIENT_SECRET applies to back-end and M2M apps, while the Client ID is listed for the application."
+   },
+   {
+    "question": "Where do you obtain the value?",
+    "answer": "Find it on the application’s Details page in Kinde and place that value in the environment configuration. The documented example uses the placeholder your_kinde_client_id.",
+    "followUp": "How can you avoid selecting the wrong credential? Open the specific application you are connecting and copy its Client ID from App keys."
+   }
+  ],
+  "keyPoints": [
+   "The value comes from the application’s details page in Kinde.",
+   "The variable stores the application’s Client ID, represented in the configuration example by a placeholder.",
+   "Kinde provides the Client ID and other application credentials in the dashboard."
+  ],
+  "gotchas": [
+   "Use the Client ID belonging to the application being configured; do not substitute credentials from another application."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "KINDE_CLIENT_SECRET": {
+  "sourceUrl": "https://docs.kinde.com/get-started/guides/byo-code/",
+  "sourceTitle": "Add Kinde auth to your codebase",
+  "summary": "KINDE_CLIENT_SECRET stores the confidential secret issued for a Kinde application. Configure it in environment settings for back-end or M2M authentication, and keep it out of source control and client-side code.",
+  "explanation": "KINDE_CLIENT_SECRET is the secret key issued for a Kinde application. Store it in environment configuration and provide it to the server-side SDK or authentication client rather than exposing it in browser code.",
+  "syntax": "KINDE_CLIENT_SECRET=<your_kinde_client_secret>",
+  "parameters": [
+   {
+    "name": "KINDE_CLIENT_SECRET",
+    "type": "string",
+    "description": "The confidential client secret issued for the Kinde application; supplied through environment configuration."
+   }
+  ],
+  "returns": "An environment variable containing the Kinde application client secret; it is consumed by server-side authentication code.",
+  "example": {
+   "title": "Configure the client secret",
+   "code": "KINDE_CLIENT_SECRET=<your_kinde_client_secret>",
+   "language": "bash",
+   "explanation": "Set the secret in a local environment file, then read it only from server-side application configuration."
+  },
+  "useCases": [
+   {
+    "title": "Server-side authentication",
+    "scenario": "A server-rendered application needs Kinde login configuration."
+   },
+   {
+    "title": "Machine-to-machine authentication",
+    "scenario": "A service requests Kinde tokens without user redirection."
+   },
+   {
+    "title": "Secure environment-based configuration",
+    "scenario": "A deployment pipeline supplies credentials without embedding them in the repository."
+   }
+  ],
+  "related": [
+   "KINDE_CLIENT_ID",
+   "KINDE_DOMAIN",
+   "KINDE_ISSUER_URL",
+   "KINDE_WF_M2M_CLIENT_SECRET",
+   "Application details"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is KINDE_CLIENT_SECRET and where do you obtain it?",
+    "answer": "KINDE_CLIENT_SECRET is the secret credential for a Kinde application. The documentation says to obtain it from the application's Details page and place it in environment configuration for server-side use.",
+    "followUp": "How should it be handled in production? Inject it through secure environment configuration or a secret store, and keep it out of source control and client-side bundles."
+   },
+   {
+    "question": "How is KINDE_CLIENT_SECRET configured?",
+    "answer": "Add KINDE_CLIENT_SECRET to the environment file used by the application, alongside the other Kinde app values. The value comes from the application's Details page.",
+    "followUp": "Why not hard-code it? Hard-coding increases the chance of accidental disclosure and makes rotation harder; environment or secret-manager configuration avoids both problems."
+   },
+   {
+    "question": "Where must the client secret be used?",
+    "answer": "It is intended for back-end and M2M applications, not public browser code. A server-side SDK can read it from environment configuration when authenticating with Kinde.",
+    "followUp": "What is the related M2M concern? Production M2M token requests should run server-side using secure environment configuration for the credentials."
+   }
+  ],
+  "keyPoints": [
+   "Retrieve the value from the Kinde application's Application details page.",
+   "The environment variable declaration uses KINDE_CLIENT_SECRET as the key and the issued secret as its value.",
+   "Use this credential with back-end or machine-to-machine Kinde applications."
+  ],
+  "gotchas": [
+   "Use the client secret only for back-end and machine-to-machine applications; do not expose it to browser code.",
+   "Exclude the environment file containing the secret from source control, typically through .gitignore."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "KINDE_ISSUER_URL": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/guides/kinde-permissions-react-and-backend/",
+  "sourceTitle": "Use Kinde permissions in React and any backend",
+  "summary": "KINDE_ISSUER_URL stores the HTTPS domain of the Kinde tenant that issues tokens. Backend SDKs or JWT validators use it to verify that tokens come from the expected issuer.",
+  "explanation": "KINDE_ISSUER_URL is an environment variable containing the Kinde issuer domain. SDKs and backend token-validation code use this value to identify the issuer against which tokens should be validated.",
+  "syntax": "KINDE_ISSUER_URL=https://<your_kinde_subdomain>.kinde.com",
+  "parameters": [
+   {
+    "name": "KINDE_ISSUER_URL",
+    "type": "environment variable",
+    "description": "HTTPS URL of the Kinde tenant or configured custom domain that issues tokens."
+   }
+  ],
+  "returns": "The configured issuer URL is supplied to the Kinde SDK or JWT validator; it does not itself return a runtime value.",
+  "example": {
+   "title": "Configure the issuer URL",
+   "code": "KINDE_ISSUER_URL=https://your-kinde-subdomain.kinde.com",
+   "language": "bash",
+   "explanation": "Set the variable to your Kinde issuer domain and load it through your framework's configuration."
+  },
+  "useCases": [
+   {
+    "title": "SDK environment configuration",
+    "scenario": "Configure a Kinde SDK in a server application."
+   },
+   {
+    "title": "JWT issuer validation",
+    "scenario": "Validate access tokens in a custom backend."
+   },
+   {
+    "title": "Custom-domain deployment",
+    "scenario": "Move an application from a Kinde subdomain to a custom production domain."
+   }
+  ],
+  "related": [
+   "KINDE_CLIENT_ID",
+   "KINDE_CLIENT_SECRET",
+   "KINDE_SITE_URL",
+   "KINDE_HOST",
+   "permissions claim"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is KINDE_ISSUER_URL used for?",
+    "answer": "KINDE_ISSUER_URL identifies the Kinde domain that acts as the token issuer. Backend validation uses this issuer URL when checking a token's issuer and related claims.",
+    "followUp": "What must change after moving to a custom domain? Update KINDE_ISSUER_URL and other relevant configuration to the exact custom domain."
+   },
+   {
+    "question": "What value should KINDE_ISSUER_URL contain?",
+    "answer": "Set it to the HTTPS URL for the Kinde subdomain assigned to the application, such as https://your-kinde-subdomain.kinde.com. Framework-specific setup pages show the variable alongside the other required application settings.",
+    "followUp": "How should the value differ between local and production environments? Each environment should use the issuer domain configured for that environment."
+   },
+   {
+    "question": "How does KINDE_ISSUER_URL participate in backend authorization?",
+    "answer": "A backend can pass KINDE_ISSUER_URL to token validation and verify the JWT's issuer, audience, expiry, and signature. The issuer URL therefore helps ensure the token came from the expected Kinde tenant.",
+    "followUp": "What additional claim is especially relevant when authorizing access? Read and enforce the token's permissions claim after successful validation."
+   }
+  ],
+  "keyPoints": [
+   "This is the environment-variable name used to configure the Kinde issuer.",
+   "The usual value is the HTTPS URL of the application's Kinde subdomain.",
+   "The variable represents the issuer URL consumed by the SDK or validation layer.",
+   "The issuer normally corresponds to the Kinde domain assigned to the application.",
+   "Custom backend validation is supported when the JWT library checks tokens against this issuer URL."
+  ],
+  "gotchas": [
+   "The variable is normally provisioned during application setup; its exact setup procedure depends on the framework."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "KINDE_POST_LOGIN_REDIRECT_URL": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/nextjs-sdk/",
+  "sourceTitle": "Next.js App Router SDK",
+  "summary": "KINDE_POST_LOGIN_REDIRECT_URL is an environment variable that sets where users go after authenticating. The Next.js App Router SDK also supports a per-login destination through `post_login_redirect_url` or `postLoginRedirectURL`.",
+  "explanation": "This environment variable defines the destination users reach after authenticating. In the Next.js App Router SDK, it provides a static default, while the `post_login_redirect_url` login parameter can select a route-specific destination; the destination must be configured appropriately for the application and deployment.",
+  "syntax": "KINDE_POST_LOGIN_REDIRECT_URL=<post-login-url>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Static and dynamic post-login redirects",
+   "code": "// .env.local\nKINDE_POST_LOGIN_REDIRECT_URL=http://localhost:3000/dashboard\n\n// app/page.tsx\nimport { redirect } from \"next/navigation\";\n\nexport default function Home() {\n  redirect(\"/api/auth/login?post_login_redirect_url=/dashboard\");\n}",
+   "language": "tsx",
+   "explanation": "Set the environment variable for a fixed destination, or add the query parameter when initiating login for a route-specific destination."
+  },
+  "useCases": [
+   {
+    "title": "Static application landing page",
+    "scenario": "Use a consistent landing page such as `/dashboard` after every successful login."
+   },
+   {
+    "title": "Return to a protected route",
+    "scenario": "Send users back to the protected route they attempted to open before authentication."
+   },
+   {
+    "title": "Environment-specific redirects",
+    "scenario": "Use separate destinations or host values for local, production, and preview deployments."
+   }
+  ],
+  "related": [
+   "KINDE_SITE_URL",
+   "KINDE_REDIRECT_URL",
+   "KINDE_POST_LOGOUT_REDIRECT_URL",
+   "postLoginRedirectURL",
+   "post_login_redirect_url"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does KINDE_POST_LOGIN_REDIRECT_URL control?",
+    "answer": "It is an environment variable that sets a fixed destination after users log in. In the Next.js App Router SDK, define it in `.env.local`, such as `/dashboard` represented by the application URL.",
+    "followUp": "How would you support different destinations? Use the `post_login_redirect_url` query parameter when redirecting to the login endpoint, allowing the initiating route to specify its post-login destination."
+   },
+   {
+    "question": "How do static and dynamic redirects differ?",
+    "answer": "A static redirect applies one configured destination to the application. A dynamic redirect passes `post_login_redirect_url` during login, so the destination can vary by request.",
+    "followUp": "What deployment issue can affect the static approach? Preview domains can differ, so the variable should be set dynamically from the domain initiating the authentication flow."
+   },
+   {
+    "question": "How can a route request a specific post-login destination?",
+    "answer": "The login request can include `post_login_redirect_url`, for example `/api/auth/login?post_login_redirect_url=/dashboard`. Kinde then uses that value to return the user to the requested route after authentication.",
+    "followUp": "What should be checked when redirects fail? Verify the destination and deployment domain against the application's configured Kinde redirect settings."
+   }
+  ],
+  "keyPoints": [
+   "The variable names the destination users should reach once authentication completes.",
+   "For a fixed destination, define the variable in the local environment configuration.",
+   "SDK integrations may expose `postLoginRedirectURL` for choosing the destination dynamically.",
+   "The dynamic login flow transports the requested destination as a search parameter.",
+   "A protected route can preserve the route the user originally attempted to access.",
+   "Separate environments can use different post-login destinations."
+  ],
+  "gotchas": [
+   "A fixed value can send users to the wrong host when using Vercel preview domains; configure it for the domain that starts authentication.",
+   "Keep redirect destinations aligned with the URLs configured in Kinde; otherwise the redirect configuration may not work as intended."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "KINDE_POST_LOGOUT_REDIRECT_URL": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/nextjs-prev-sdk/",
+  "sourceTitle": "Next.js Pages Router SDK",
+  "summary": "KINDE_POST_LOGOUT_REDIRECT_URL is the Kinde environment variable for the URL users should reach after signing out. Register the same URL as an allowed logout redirect URL in Kinde.",
+  "explanation": "Set this environment variable to the destination users should reach after logging out. The destination must also be registered in Kinde as an allowed logout redirect URL, and deployed environments should use their corresponding application URL.",
+  "syntax": "KINDE_POST_LOGOUT_REDIRECT_URL=<post_logout_url>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Configure the post-logout destination",
+   "code": "KINDE_POST_LOGOUT_REDIRECT_URL=http://localhost:3000",
+   "language": "bash",
+   "explanation": "Set the environment variable to the URL where users should land after signing out."
+  },
+  "useCases": [
+   {
+    "title": "Return users to a localhost application after logout",
+    "scenario": "Local development"
+   },
+   {
+    "title": "Send signed-out users to the staging application",
+    "scenario": "Staging deployments"
+   },
+   {
+    "title": "Return users to the live application URL",
+    "scenario": "Production deployments"
+   }
+  ],
+  "related": [
+   "KINDE_POST_LOGIN_REDIRECT_URL",
+   "KINDE_SITE_URL",
+   "Allowed logout redirect URLs",
+   "logoutRedirectUri"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does KINDE_POST_LOGOUT_REDIRECT_URL control?",
+    "answer": "It specifies the destination users are sent to after they log out of Kinde. For example, a local application can set it to `http://localhost:3000`.",
+    "followUp": "What configuration is required for the redirect to work? The same destination must be included in Kinde's allowed logout redirect URLs."
+   },
+   {
+    "question": "What kind of value should this variable contain?",
+    "answer": "It is an environment variable containing a URL, such as `http://localhost:3000`. The application uses that value as its post-logout destination.",
+    "followUp": "How should production differ from local development? Replace the localhost URL with the deployed application's URL and register that URL in Kinde."
+   },
+   {
+    "question": "Why must the URL be allowlisted?",
+    "answer": "The URL must be listed under the application's allowed logout redirect URLs in Kinde. This restriction ensures the logout flow redirects only to an approved destination.",
+    "followUp": "What is a common deployment mistake? Updating the application variable without updating Kinde's allowed logout redirect URL, or vice versa."
+   }
+  ],
+  "keyPoints": [
+   "The variable defines the page users visit when the logout flow completes.",
+   "A local development value can point to the application's localhost origin.",
+   "The configured application URL and Kinde dashboard URL should match.",
+   "Use environment-specific destinations when the application runs locally, in staging, or in production."
+  ],
+  "gotchas": [
+   "The destination must be registered in Kinde's allowed logout redirect URLs; otherwise the redirect configuration is invalid.",
+   "Keep the environment value synchronized with the URL configured for the relevant deployment."
   ],
   "checkedAt": "2026-10-15"
  },
@@ -1858,6 +2480,275 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "MFA": {
+  "sourceUrl": "https://docs.kinde.com/authenticate/multi-factor-auth/enable-multi-factor-authentication/",
+  "sourceTitle": "Enable multi-factor authentication",
+  "summary": "MFA requires users to prove their identity with at least two authentication factors. Kinde lets you make MFA mandatory or optional and supports email, SMS, and authenticator-app verification.",
+  "explanation": "MFA requires users to authenticate with at least two factors. Kinde can make it mandatory or optional and supports email, SMS, and authenticator-app verification as secondary methods.",
+  "syntax": "MFA: enabled | optional | disabled",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "MFA configuration flag",
+   "code": "const mfaEnabled = true;\nconsole.log(`MFA enabled: ${mfaEnabled}`);",
+   "language": "typescript",
+   "explanation": "Represents whether multi-factor authentication is enabled for the environment."
+  },
+  "useCases": [
+   {
+    "title": "Add a second factor to user authentication",
+    "scenario": "Protecting customer sign-ins"
+   },
+   {
+    "title": "Apply MFA settings per organization",
+    "scenario": "Supporting different tenant policies"
+   },
+   {
+    "title": "Use recovery codes when a device is unavailable",
+    "scenario": "Recovering account access"
+   }
+  ],
+  "related": [
+   "multi-factor authentication",
+   "recovery codes",
+   "SMS verification",
+   "Authenticator app",
+   "MFA per organization"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does MFA provide in Kinde?",
+    "answer": "MFA adds a second authentication factor after the primary sign-in method. Kinde supports email codes, SMS codes, and authenticator apps as secondary factors.",
+    "followUp": "How can MFA policy vary across tenants? Kinde can configure MFA per organization, allowing organization-specific methods and recovery-code settings."
+   },
+   {
+    "question": "How do mandatory and optional MFA differ?",
+    "answer": "The environment setting can make MFA mandatory, optional, or disabled. Mandatory MFA prompts users to set it up when they first sign up or next sign in, while optional MFA lets them choose whether to configure it.",
+    "followUp": "What happens if an organization needs a different recovery-code policy? Its organization-level setting overrides the environment-level recovery-code setting."
+   },
+   {
+    "question": "Why are recovery codes useful?",
+    "answer": "Users can receive recovery codes during MFA setup and use one if they lose access to their device or authenticator app. Administrators can control whether recovery codes are enabled.",
+    "followUp": "Which MFA methods can be offered together? Kinde allows more than one additional method, such as email, SMS, and an authenticator app."
+   }
+  ],
+  "keyPoints": [
+   "MFA combines the primary sign-in method with at least one additional authentication method.",
+   "The environment policy can require MFA for everyone or allow users to opt in.",
+   "Supported secondary factors include email, SMS, and authenticator apps.",
+   "With mandatory MFA, setup is requested at initial registration or the next login.",
+   "Optional MFA presents setup as a choice during initial registration or the next login.",
+   "Recovery codes provide an alternative when the user cannot access the normal MFA device."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "Multi-tenancy": {
+  "sourceUrl": "https://docs.kinde.com/build/organizations/multi-tenancy-using-organizations/",
+  "sourceTitle": "About organizations",
+  "summary": "Kinde models multi-tenancy with organizations: one Kinde business can serve multiple customers while separating their users, access, and tenant data. Use a flat organization set within a business; separate Kinde businesses are required for independent projects.",
+  "explanation": "Kinde models multi-tenancy with organizations: each organization represents a tenant whose users, roles, permissions, and data are isolated from other tenants. Use one flat organization set within a Kinde business, or separate Kinde businesses for independent products or projects.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Read the active organization",
+   "code": "const org = await kindeClient.getOrganization();\nconsole.log(org.code);",
+   "language": "typescript",
+   "explanation": "Use the active organization returned by the Kinde SDK to scope tenant-aware application behavior."
+  },
+  "useCases": [
+   {
+    "title": "B2B SaaS tenants",
+    "scenario": "A SaaS product serves many customer companies from one application."
+   },
+   {
+    "title": "Separate user groups",
+    "scenario": "A platform needs different user groups with distinct access rules."
+   },
+   {
+    "title": "Cross-organization membership",
+    "scenario": "A user works with more than one customer organization."
+   },
+   {
+    "title": "Separate products",
+    "scenario": "Several products need independent tenant partitions."
+   }
+  ],
+  "related": [
+   "Organizations",
+   "User management in organizations",
+   "Roles and permissions",
+   "Add and manage organizations",
+   "Organization handles"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Kinde model multi-tenancy?",
+    "answer": "Kinde represents each tenant as an organization. Organizations separate user groups and let you manage organization-specific roles and permissions.",
+    "followUp": "How would you support two independent products? Use separate Kinde businesses rather than nesting organizations or treating one organization set as multiple isolated projects."
+   },
+   {
+    "question": "How is tenant data isolated in Kinde’s model?",
+    "answer": "Kinde uses one database with a schema per tenant. Customers share the application and database, while each tenant’s data remains isolated and invisible to other tenants.",
+    "followUp": "What is the application-level boundary? Use the organization context to scope users, access decisions, and tenant data consistently."
+   },
+   {
+    "question": "Can one user belong to more than one tenant?",
+    "answer": "Users can belong to multiple organizations. Organization-level management controls access and assigns roles and permissions for each user in that organization.",
+    "followUp": "What must authorization code avoid? It should not assume a user has only one organization; it must use the relevant organization context for the operation."
+   }
+  ],
+  "keyPoints": [
+   "Multi-tenancy lets one software instance and its infrastructure serve multiple customers.",
+   "Kinde uses a shared database with a separate schema for each tenant.",
+   "Tenant data is isolated so it is not visible to other tenants.",
+   "Organizations provide the tenant boundary for grouping users and controlling their access separately.",
+   "A user may participate in multiple organizations, so tenant membership is not necessarily exclusive.",
+   "Keep a multi-tenant model flat within one Kinde business."
+  ],
+  "gotchas": [
+   "Do not create organizations inside other organizations to represent separate projects and their tenants.",
+   "A single Kinde business cannot independently partition multiple multi-tenant products."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Organizations": {
+  "sourceUrl": "https://docs.kinde.com/build/organizations/orgs-for-developers/",
+  "sourceTitle": "Kinde organizations for developers - Kinde docs",
+  "summary": "Organizations group Kinde users into business or tenant-like units such as companies or departments. Users may belong to multiple organizations, with roles and permissions that can differ by organization.",
+  "explanation": "An organization is a Kinde tenant-like grouping for users, such as a company or department. Each organization has a unique org_code used by Kinde APIs and SDKs; users can belong to multiple organizations and have organization-specific roles and permissions.",
+  "syntax": "org_code",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Suspend an organization",
+   "code": "const orgCode = \"org_123\";\n\nconst response = await fetch(\n  `https://${process.env.KINDE_DOMAIN}/api/v1/organization/${orgCode}`,\n  {\n    method: \"PATCH\",\n    headers: {\n      Authorization: `Bearer ${process.env.KINDE_ACCESS_TOKEN}`,\n      \"Content-Type\": \"application/json\"\n    },\n    body: JSON.stringify({ is_suspended: true })\n  }\n);\n\nif (!response.ok) throw new Error(await response.text());",
+   "language": "typescript",
+   "explanation": "Suspends an organization through the Kinde Management API using its unique organization code."
+  },
+  "useCases": [
+   {
+    "title": "Model tenants",
+    "scenario": "A SaaS product serves multiple customer companies."
+   },
+   {
+    "title": "Support multi-organization membership",
+    "scenario": "A user works with several customer accounts."
+   },
+   {
+    "title": "Apply organization-specific authorization",
+    "scenario": "Access rules vary between business units."
+   }
+  ],
+  "related": [
+   "org_code",
+   "organization roles",
+   "organization permissions",
+   "default organization",
+   "multi-tenancy",
+   "Kinde Management API"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Kinde organization?",
+    "answer": "Organizations group users for multi-tenant access control. A user may belong to several organizations, and their roles and permissions can differ in each one.",
+    "followUp": "How should separate products be represented? Use separate Kinde businesses when the products require independent multi-tenant structures, because nested organization hierarchies are unsupported."
+   },
+   {
+    "question": "How do you identify an organization in Kinde?",
+    "answer": "The organization identifier is called org_code. It is unique per organization and is needed when using the Kinde API or SDKs.",
+    "followUp": "How can an organization be suspended programmatically? Send a PATCH request to /api/v1/organization/{org_code} with the is_suspended field."
+   },
+   {
+    "question": "What is special about the default organization?",
+    "answer": "Kinde provides a default organization when a business is created, and new users are placed there when no other organization is known. The default organization's name can be changed, but its unique code cannot.",
+    "followUp": "Can the default organization be suspended? No; Kinde explicitly excludes it from organization suspension."
+   }
+  ],
+  "keyPoints": [
+   "Organizations provide a boundary for grouping users, commonly representing a company, club, practice, or department.",
+   "Use org_code as the stable organization identifier in application and API integrations.",
+   "Membership is not exclusive: the same user can participate in several organizations.",
+   "Authorization can vary by organization for one user.",
+   "Kinde supplies a fallback organization for users whose organization is not identified.",
+   "Retrieve and retain the organization code when integrating Kinde developer tools."
+  ],
+  "gotchas": [
+   "The default organization is not suspendable, unlike other organizations."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Passwordless": {
+  "sourceUrl": "https://docs.kinde.com/authenticate/authentication-methods/passwordless-authentication/",
+  "sourceTitle": "Passwordless authentication",
+  "summary": "Kinde Passwordless authentication lets users sign in without maintaining passwords, using one-time passcodes delivered through configured email, phone, or username connections. Codes expire after two hours.",
+  "explanation": "Passwordless authentication lets users access an application without maintaining a password. Kinde sends a one-time passcode through a configured email, phone, or username-based connection; the user submits that code to complete sign-in. Codes expire after two hours, and the method is enabled by default for email in new Kinde businesses.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Enable email passwordless authentication",
+   "code": "// Enable Passwordless in Kinde Dashboard:\n// Settings > Environment > Authentication\n// Passwordless > Email connections > Code\n// Select your application, then Save.",
+   "language": "text",
+   "explanation": "Configure the connection in the Kinde dashboard, then select the applications that should use it. Users receive a one-time code instead of creating or entering a password."
+  },
+  "useCases": [
+   {
+    "title": "Email-based sign-in",
+    "scenario": "Users sign in with an emailed one-time passcode instead of remembering a password."
+   },
+   {
+    "title": "Phone-based authentication",
+    "scenario": "Users receive a sign-in code by SMS when phone authentication is configured."
+   },
+   {
+    "title": "Fallback code sign-in",
+    "scenario": "A password-based app offers a code option for users who prefer not to enter their password."
+   }
+  ],
+  "related": [
+   "Email connections > Code",
+   "Phone connections > Code",
+   "Username connections > Code",
+   "Email + password",
+   "Sign in with a code"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does passwordless authentication mean in Kinde?",
+    "answer": "Passwordless authentication removes the need for users to create or maintain passwords. Kinde authenticates them with a one-time passcode delivered through a configured connection, such as email or phone.",
+    "followUp": "How long is a passcode valid? Kinde passcodes expire after two hours."
+   },
+   {
+    "question": "How do you enable passwordless authentication?",
+    "answer": "Configure it in Kinde under Settings, Environment, and Authentication. In the Passwordless section, configure an email, phone, or username code connection, select the applications that use it, and save.",
+    "followUp": "What additional dependency applies to phone authentication? Phone authentication requires Twilio and a Kinde Pro upgrade."
+   },
+   {
+    "question": "What compatibility limitation applies to email code authentication?",
+    "answer": "Email passwordless is enabled by default for new Kinde businesses. However, an app cannot enable Email + code and Email + password at the same time.",
+    "followUp": "Can password users still be offered a code? Yes; Kinde documents a Sign in with a code option on the password page, allowing both experiences without enabling both conflicting email connection types for the same app."
+   }
+  ],
+  "keyPoints": [
+   "Users authenticate without creating or maintaining a password.",
+   "The replacement credential is a one-time passcode.",
+   "A Kinde-issued passcode remains usable for two hours.",
+   "New Kinde businesses start with email passwordless enabled.",
+   "Configuration is scoped by choosing the applications that may use the connection.",
+   "An optional code button can let password-page users sign in through an emailed OTP."
+  ],
+  "gotchas": [
+   "An application cannot have email code and email password authentication enabled simultaneously; disable one before enabling the other.",
+   "Do not design the flow around magic links; Kinde's documented passwordless method uses one-time passcodes."
+  ],
+  "checkedAt": "2026-10-15"
+ },
  "PKCE": {
   "sourceUrl": "https://docs.kinde.com/developer-tools/about/using-kinde-without-an-sdk/",
   "sourceTitle": "Use Kinde without an SDK",
@@ -2147,6 +3038,70 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "SAML": {
+  "sourceUrl": "https://docs.kinde.com/authenticate/enterprise-connections/custom-saml/",
+  "sourceTitle": "Custom SAML enterprise connection",
+  "summary": "SAML is an authentication protocol for Kinde enterprise connections. Kinde acts as the service provider, while an external identity provider authenticates users; the Entity ID identifies the connection and must match on both sides.",
+  "explanation": "SAML is an authentication protocol that Kinde supports for enterprise connections. Kinde operates as the service provider, while an external identity provider supplies the SAML authentication; the connection’s Entity ID identifies the service provider and must be configured identically on both sides.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Define a SAML Entity ID",
+   "code": "const entityId = \"5836g209gbhw09r8y0913\";\nconsole.log(entityId);",
+   "language": "typescript",
+   "explanation": "Creates the random alphanumeric Entity ID used to identify the SAML service-provider connection."
+  },
+  "useCases": [
+   {
+    "title": "Authenticate organization users with SAML",
+    "scenario": "Enterprise single sign-on"
+   },
+   {
+    "title": "Connect Kinde to an external IdP",
+    "scenario": "Identity-provider integration"
+   },
+   {
+    "title": "Configure a matching Entity ID",
+    "scenario": "Service-provider identification"
+   }
+  ],
+  "related": [
+   "Custom SAML enterprise connection",
+   "Entity ID",
+   "identity provider (IdP)",
+   "service provider (SP)",
+   "SAML SSO"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What role does Kinde play in a custom SAML integration?",
+    "answer": "Kinde can use SAML for enterprise authentication, acting as the service provider while an external identity provider performs authentication. The connection is configured with an Entity ID that identifies the service provider.",
+    "followUp": "What must be synchronized between Kinde and the IdP? The Entity ID must be configured with the same value in both systems."
+   },
+   {
+    "question": "What is the purpose of the SAML Entity ID?",
+    "answer": "The Entity ID is a value assigned to the SAML connection. It can be a random alphanumeric string, but the same value must be entered in Kinde and the identity provider.",
+    "followUp": "What naming might an IdP use for this field? It may appear as `Audience`, `SP Entity ID`, or `Entity ID`."
+   },
+   {
+    "question": "How should an Entity ID be configured?",
+    "answer": "For a custom SAML connection, configure the Entity ID in Kinde and then configure the identical value in the IdP’s SAML application. This matching is required for SSO to work.",
+    "followUp": "What exception is documented for Microsoft Azure? Older applications may require `spn:` at the beginning of the Entity ID in Kinde."
+   }
+  ],
+  "keyPoints": [
+   "SAML is available as an authentication protocol for Kinde enterprise connections.",
+   "Kinde is the SAML service provider, so the integration requires a separate identity provider.",
+   "The Entity ID does not need a prescribed format; a random alphanumeric value is acceptable.",
+   "Successful SAML SSO depends on the Entity ID matching across Kinde and the identity provider."
+  ],
+  "gotchas": [
+   "The Entity ID must match exactly between Kinde and the identity provider. An older Microsoft application may additionally require the `spn:` prefix."
+  ],
+  "checkedAt": "2026-10-15"
+ },
  "Scopes": {
   "sourceUrl": "https://docs.kinde.com/build/tokens/oath-scopes/",
   "sourceTitle": "Using OAuth scopes - Kinde docs",
@@ -2217,6 +3172,216 @@
   "gotchas": [
    "Kinde uses the scope name `offline`; do not substitute the OIDC name `offline_access` when requesting a refresh token.",
    "The authorization request must follow the requirements of the framework and OAuth flow being used."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "SessionManager": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/typescript-sdk/",
+  "sourceTitle": "TypeScript",
+  "summary": "SessionManager is the Kinde TypeScript SDK interface for storing authentication-session data. Implement it with a key-value store and pass the adapter to SDK authentication methods.",
+  "explanation": "SessionManager is an application-provided storage adapter for the Kinde TypeScript SDK. Implement its asynchronous operations with a key-value store so the SDK can preserve authenticated-session data between requests.",
+  "syntax": "interface SessionManager { getSessionItem(key: string): Promise<unknown>; setSessionItem(key: string, value: unknown): Promise<void>; removeSessionItem(key: string): Promise<void>; destroySession(): Promise<void>; }",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "string",
+    "description": "The key used to retrieve, store, or remove session data."
+   },
+   {
+    "name": "value",
+    "type": "unknown",
+    "description": "The session value to store."
+   }
+  ],
+  "returns": "The page specifies asynchronous methods but does not state explicit return types.",
+  "example": {
+   "title": "In-memory session manager",
+   "code": "import type { SessionManager } from \"@kinde/js-utils\";\n\nconst sessions = new Map<string, unknown>();\n\nconst sessionManager: SessionManager = {\n  async getSessionItem(key) {\n    return sessions.get(key);\n  },\n  async setSessionItem(key, value) {\n    sessions.set(key, value);\n  },\n  async removeSessionItem(key) {\n    sessions.delete(key);\n  },\n  async destroySession() {\n    sessions.clear();\n  },\n};",
+   "language": "typescript",
+   "explanation": "This in-memory implementation satisfies the SDK contract for reading, writing, deleting, and clearing session data."
+  },
+  "useCases": [
+   {
+    "title": "Track authenticated requests",
+    "scenario": "A server-rendered or backend TypeScript application needs authentication state retained between HTTP requests."
+   },
+   {
+    "title": "Connect persistent storage",
+    "scenario": "An application uses Redis, a database, or another external key-value system for session storage."
+   },
+   {
+    "title": "Prototype with memory",
+    "scenario": "A small local prototype needs a minimal working adapter without adding an external dependency."
+   }
+  ],
+  "related": [
+   "kindeClient.login",
+   "kindeClient.register",
+   "session store",
+   "SessionManager interface"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does SessionManager solve?",
+    "answer": "SessionManager is the storage abstraction that lets the SDK track an authenticated session between requests. The application supplies implementations for reading, writing, removing one item, and destroying the session.",
+    "followUp": "What storage can back it? Any key-value store is suitable, provided it implements the required interface methods."
+   },
+   {
+    "question": "What operations must an implementation provide?",
+    "answer": "getSessionItem reads a value by key, setSessionItem writes a value, removeSessionItem deletes one key, and destroySession clears the session store. Each operation is asynchronous.",
+    "followUp": "Why make the methods asynchronous? The contract can support remote or otherwise asynchronous session stores instead of only in-memory objects."
+   },
+   {
+    "question": "How is SessionManager passed to the Kinde client?",
+    "answer": "The SDK receives the adapter when authentication operations such as login are invoked. For example, the documentation shows `kindeClient.login(sessionManager)` and uses the adapter to retain session state.",
+    "followUp": "What changes when using a persistent store? The method behavior remains the same, but data can survive process restarts and be shared across application instances."
+   }
+  ],
+  "keyPoints": [
+   "The SDK needs a session store to preserve authentication state across separate requests.",
+   "Back the adapter with any key-value store as long as it implements the documented interface.",
+   "getSessionItem asynchronously retrieves the value associated with a string key.",
+   "setSessionItem asynchronously stores an unknown value under a string key.",
+   "removeSessionItem asynchronously removes the value associated with a string key."
+  ],
+  "gotchas": [
+   "The adapter is only an interface contract; production applications should connect these methods to a durable session store rather than rely on process memory."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Social connections": {
+  "sourceUrl": "https://docs.kinde.com/authenticate/social-sign-in/add-social-sign-in/",
+  "sourceTitle": "Add and manage social connections",
+  "summary": "Social connections let users sign up and sign in with existing social-account credentials. Configure a provider in Kinde’s Authentication settings, then enable it for the applications that should offer it.",
+  "explanation": "Kinde social connections let users authenticate with existing accounts from providers such as Google or GitHub. An administrator adds a provider in the environment’s Authentication settings, supplies its credentials, and enables it for selected applications.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Record an enabled social provider",
+   "code": "// Social connections are configured in the Kinde dashboard.\n// Enable the connection for an application after saving it.\nconst authentication = {\n  provider: \"Google\",\n  enabledForApplication: true\n};\n\nconsole.log(authentication);",
+   "language": "typescript",
+   "explanation": "Represent the provider configuration in application setup after adding it in Kinde."
+  },
+  "useCases": [
+   {
+    "title": "Consumer authentication",
+    "scenario": "Offer familiar sign-in options such as Google or GitHub."
+   },
+   {
+    "title": "Custom OAuth integration",
+    "scenario": "Connect an identity provider that is not available as a built-in option."
+   },
+   {
+    "title": "Application-specific sign-in",
+    "scenario": "Control which applications expose a provider."
+   }
+  ],
+  "related": [
+   "Custom OAuth 2.0 connections",
+   "Authentication",
+   "Enterprise connections",
+   "Kinde management API",
+   "Google social sign in",
+   "GitHub social sign in"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Kinde social connection?",
+    "answer": "A social connection delegates sign-up and sign-in to an existing social identity provider. In Kinde, an administrator adds the provider under Settings > Authentication, configures its credentials, and enables it for chosen applications.",
+    "followUp": "How would you support a provider that is not listed? Add a Custom OAuth 2.0 connection and provide its authorization, token, user-info URLs, credentials, and client-authentication method."
+   },
+   {
+    "question": "How do you make a social provider available to an application?",
+    "answer": "First add the provider from the Social connections section and save it. Then configure the provider credentials and select which applications can use the connection.",
+    "followUp": "What changes when an application uses a custom domain? The provider must receive the callback URL or URLs for those custom domains rather than only the default Kinde URL."
+   },
+   {
+    "question": "How can you integrate an unsupported OAuth provider?",
+    "answer": "Kinde supports adding Custom OAuth 2.0 connections through the same Social connections area. The setup requires provider endpoints, client credentials, and a choice of how client credentials are sent to the token endpoint.",
+    "followUp": "Why is the client-authentication method significant? It determines the credential transmission style during the OAuth 2.0 authorization-code exchange."
+   }
+  ],
+  "keyPoints": [
+   "They allow new and returning users to authenticate through credentials held by an existing social account.",
+   "Google and GitHub are examples of supported social identity providers.",
+   "Configuration begins in the environment’s Authentication settings.",
+   "Use Add connection in the Social connections section to start provider setup.",
+   "Custom OAuth 2.0 providers can be created from the same area as built-in social providers.",
+   "The management API provides operations for creating, modifying, and removing social connections."
+  ],
+  "gotchas": [
+   "Deleting a social connection is irreversible, so verify the provider and environment before removing it."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Token customization": {
+  "sourceUrl": "https://docs.kinde.com/build/tokens/token-customization/",
+  "sourceTitle": "Token customization - Kinde docs",
+  "summary": "Kinde token customization lets you add preset claims and properties to application tokens. Configure it per application for access, ID, or M2M tokens in the Kinde dashboard.",
+  "explanation": "Token customization lets an application choose preset claims and public properties to include in access, ID, or M2M tokens. Configure it from the application's Tokens area, select Customize for the relevant token type, choose the available claims or properties, and save.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Dashboard configuration",
+   "code": "// No runnable code is provided because this feature is configured in Kinde's dashboard.",
+   "language": "text",
+   "explanation": "Token customization is configured per application in Kinde rather than declared in application code."
+  },
+  "useCases": [
+   {
+    "title": "Organization-aware APIs",
+    "scenario": "Include organization context in an access token for API authorization."
+   },
+   {
+    "title": "Client identity data",
+    "scenario": "Add selected user identity data to an ID token used by a client application."
+   },
+   {
+    "title": "M2M feature control",
+    "scenario": "Expose feature flags to a machine-to-machine integration."
+   }
+  ],
+  "related": [
+   "Additional claims",
+   "Properties in tokens",
+   "Access tokens",
+   "ID tokens",
+   "M2M tokens",
+   "Token customization"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How is token customization configured?",
+    "answer": "Open the application, go to Tokens, find Token customization, and choose Customize on the required token type. Select the available additional claims or properties, then save the configuration.",
+    "followUp": "How would you include a custom claim that is not one of the available built-in choices? Use a workflow that modifies the appropriate access or ID token rather than relying on this dashboard feature."
+   },
+   {
+    "question": "Which token types can be customized?",
+    "answer": "Backend applications can customize access, ID, and M2M tokens. Frontend applications support access and ID tokens, while M2M applications support only M2M tokens.",
+    "followUp": "What should you check before adding a property? Confirm that the property is public in its property settings."
+   },
+   {
+    "question": "What can token customization add?",
+    "answer": "The feature provides preset additional claims and properties, such as organization name, roles, email, and external organization ID for access tokens. It can also add social identity or organizations to ID tokens and feature flags to M2M tokens.",
+    "followUp": "Can standard JWT claims be changed? No; claims such as `sub` cannot be overridden through token customization."
+   }
+  ],
+  "keyPoints": [
+   "The feature supports preset claims and properties for access, M2M, and ID tokens.",
+   "Begin configuration by opening the application details from Settings > Applications.",
+   "The customization controls are located in the application's Tokens section.",
+   "Choose Customize on the card for the token type you want to change.",
+   "Choose which available claims and properties should be emitted.",
+   "M2M token customization supports adding feature flags."
+  ],
+  "gotchas": [
+   "Do not expect standard JWT claims such as `sub` to be replaceable through token customization.",
+   "Properties must be marked public before they can be selected for inclusion in a token."
   ],
   "checkedAt": "2026-10-15"
  },
@@ -2345,6 +3510,75 @@
    "Use the hook only with Next.js 14 or later; older versions produce a warning.",
    "Treat refreshData as asynchronous and await it when requesting immediately updated data.",
    "On-demand refresh must be initiated by a client component because of Next.js limitations."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Webhooks": {
+  "sourceUrl": "https://docs.kinde.com/integrate/webhooks/about-webhooks/",
+  "sourceTitle": "About webhooks",
+  "summary": "Kinde webhooks notify your application when configured account events occur. Kinde sends event data in a JWT to your registered endpoint, which should verify, process, and acknowledge the request with HTTP 200.",
+  "explanation": "A Kinde webhook connects an event trigger to an HTTPS endpoint you control. When the event occurs, Kinde sends an application/jwt request containing a JWT with event data and webhook details; your application should verify its authenticity, decode it, process the event, and return HTTP 200 to mark delivery successful.",
+  "syntax": "POST <registered-endpoint> with Content-Type: application/jwt",
+  "parameters": [],
+  "returns": "The endpoint should return HTTP 200 to acknowledge successful delivery; otherwise Kinde may retry using its back-off policy.",
+  "example": {
+   "title": "Receive a Kinde webhook",
+   "code": "import express from \"express\";\nimport jwt from \"jsonwebtoken\";\n\nconst app = express();\napp.use(express.text({ type: \"application/jwt\" }));\n\napp.post(\"/webhooks/kinde\", (req, res) => {\n  const token = req.body;\n  const payload = jwt.decode(token);\n  console.log(payload);\n  res.sendStatus(200);\n});\n\napp.listen(3000);",
+   "language": "typescript",
+   "explanation": "This endpoint accepts Kinde's JWT content type, decodes the event token, and returns HTTP 200 after handling it."
+  },
+  "useCases": [
+   {
+    "title": "Keep application data synchronized",
+    "scenario": "Synchronize a local user or organization record when Kinde emits a corresponding event."
+   },
+   {
+    "title": "Trigger automated workflows",
+    "scenario": "Start application workflows when events such as user.created occur."
+   },
+   {
+    "title": "Capture event history",
+    "scenario": "Store incoming event data for auditing or downstream processing."
+   }
+  ],
+  "related": [
+   "Webhooks flow",
+   "Webhook request content-type",
+   "Webhooks security",
+   "Webhooks responses and retry policy",
+   "GET /api/v1/webhooks",
+   "GET /api/v1/event_types"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does a Kinde webhook delivery work?",
+    "answer": "A webhook registers an endpoint and associates it with a Kinde event. When the event occurs, Kinde calls the endpoint with a JWT containing event data and webhook details; a successful HTTP 200 completes delivery.",
+    "followUp": "What should happen when delivery fails? Kinde retries when it fails to receive a response, using a back-off policy."
+   },
+   {
+    "question": "How should a receiver process a webhook request?",
+    "answer": "The request uses the application/jwt content type. The receiver should verify the request's authenticity, decode the JWT, and then use its event data to trigger application logic.",
+    "followUp": "Why is decoding alone insufficient? Decoding reveals claims but does not establish that the request came from Kinde; authenticity verification must happen first."
+   },
+   {
+    "question": "How can webhooks and event types be managed programmatically?",
+    "answer": "Webhooks can be managed through the Kinde interface or API. The documented management endpoints include GET /api/v1/webhooks for listing, POST for creation, PATCH for updates, and DELETE for removal.",
+    "followUp": "How can available event definitions be discovered? Use GET /api/v1/event_types to list available event types and their schemas."
+   }
+  ],
+  "keyPoints": [
+   "A webhook is an endpoint registration tied to a selected Kinde event.",
+   "Events such as user.created trigger delivery to subscribed endpoints.",
+   "Each delivery carries the event data and webhook metadata inside a JWT.",
+   "An HTTP 200 response signals successful completion of the webhook workflow.",
+   "Missing responses cause Kinde to retry delivery with backoff.",
+   "Your application uses the received event data to initiate its own logic."
+  ],
+  "gotchas": [
+   "Returning HTTP 200 prevents Kinde from retrying that delivery, so acknowledge only after the request is safely handled or queued.",
+   "Do not trust decoded data before verifying the webhook request's authenticity.",
+   "Configure the receiver to accept application/jwt rather than assuming a JSON request body."
   ],
   "checkedAt": "2026-10-15"
  }
