@@ -64,8 +64,8 @@ button.switchLink:disabled{opacity:.6;cursor:default}
 
 /* ---------- Brand panel ---------- */
 .story{grid-column:1;grid-row:1;position:sticky;top:0;height:100dvh;display:flex;flex-direction:column;gap:24px;padding:40px clamp(28px,4.5vw,64px) 32px;background:var(--green);color:#f0eee6;overflow:hidden;isolation:isolate}
-.story::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 90% 6%,rgba(216,180,106,.2),transparent 42%),radial-gradient(circle at 0 100%,rgba(255,255,255,.06),transparent 46%)}
-.story::after{content:"";position:absolute;inset:0;z-index:-1;background-image:radial-gradient(rgba(255,255,255,.08) 1px,transparent 1.3px);background-size:22px 22px;-webkit-mask-image:linear-gradient(180deg,#000,transparent 72%);mask-image:linear-gradient(180deg,#000,transparent 72%)}
+.story::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(circle at 90% 6%,rgba(216,180,106,.2),transparent 42%),radial-gradient(circle at 0 100%,rgba(255,255,255,.06),transparent 46%)}
+.story::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background-image:radial-gradient(rgba(255,255,255,.08) 1px,transparent 1.3px);background-size:22px 22px;-webkit-mask-image:linear-gradient(180deg,#000,transparent 72%);mask-image:linear-gradient(180deg,#000,transparent 72%)}
 .tagline{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--gold)}
 .libraryNote{display:flex;align-items:flex-start;gap:10px;padding-top:18px;border-top:1px solid rgba(255,255,255,.14);font-size:13px;line-height:1.55;color:#d1cfc5}
 .libraryNote svg{flex-shrink:0;margin-top:1px;color:var(--gold)}
@@ -133,7 +133,10 @@ button.switchLink:disabled{opacity:.6;cursor:default}
   .formWrap{padding-block:24px 28px}
   .brand{margin-bottom:20px}
   .title{font-size:27px}
-  .story{grid-column:1;grid-row:2;position:static;height:auto;gap:0;padding:20px 20px 22px}
+  /* relative, not static: the panel's absolutely positioned ::before/::after
+     layers must stay inside it. With static they sized to the whole page and,
+     though invisible, sat over the form and swallowed every tap on its inputs. */
+  .story{grid-column:1;grid-row:2;position:relative;height:auto;gap:0;padding:20px 20px 22px}
   .tagline,.art,.libraryNote{display:none}
   .carousel{flex:none}
   .slideTitle{max-width:none;font-size:20px}
