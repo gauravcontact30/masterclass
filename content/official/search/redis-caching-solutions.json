@@ -1466,6 +1466,80 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "Learning module::Redis learning module": {
+  "sourceUrl": "https://redis.io/tutorials/what-is-redis/",
+  "sourceTitle": "What is Redis?: An Overview",
+  "summary": "Redis is an open-source, in-memory key-value data structure store. It can serve as a cache, database, message broker, streaming engine, document store, and vector search platform.",
+  "explanation": "Redis keeps key-value data in memory and maps each unique key to a typed value. Applications can use its data structures for fast caching, persistence-backed storage, messaging, and event streaming.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Cache a value with expiration",
+   "code": "redis-cli\nSET user:42:plan pro EX 3600\nGET user:42:plan",
+   "language": "bash",
+   "explanation": "Stores a value under a key with a one-hour expiration, then reads it back."
+  },
+  "useCases": [
+   {
+    "title": "Application caching",
+    "scenario": "Keep frequently requested results in memory to reduce latency and backend load."
+   },
+   {
+    "title": "Document storage",
+    "scenario": "Represent nested application records and query JSON content."
+   },
+   {
+    "title": "Vector search",
+    "scenario": "Store embeddings and search for semantically similar content."
+   },
+   {
+    "title": "Messaging and streaming",
+    "scenario": "Coordinate real-time notifications or process durable event sequences."
+   }
+  ],
+  "related": [
+   "Strings",
+   "Hashes",
+   "Lists",
+   "Sets",
+   "Sorted Sets",
+   "Streams",
+   "JSON",
+   "vector sets"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is Redis?",
+    "answer": "Redis is an in-memory key-value data structure store. A unique key maps to a typed value, and supported values include strings, hashes, lists, sets, sorted sets, streams, JSON, and vector sets.",
+    "followUp": "How does Redis support document storage? Store JSON documents and query them with Redis's JSON capabilities rather than modeling every field as a separate key."
+   },
+   {
+    "question": "Why is Redis useful for caching and messaging?",
+    "answer": "Redis is commonly used as a cache because its in-memory design provides very fast reads and writes. Applications can also use it as a database, message broker, and streaming engine.",
+    "followUp": "When would Streams be preferable to Pub/Sub? Use Streams when durable, consumer-group-based processing is required; Pub/Sub is intended for real-time channel delivery."
+   },
+   {
+    "question": "How does Redis support vector workloads?",
+    "answer": "Redis supports vector search through vector sets and indexed vector fields in Hash or JSON documents. This lets applications store embeddings with associated metadata and query them semantically.",
+    "followUp": "How can Redis support both structured and semantic retrieval? Keep metadata in Hash or JSON fields, index vectors alongside it, and combine vector queries with metadata filtering."
+   }
+  ],
+  "keyPoints": [
+   "One Redis deployment can cover caching, database storage, message brokering, and stream processing.",
+   "Redis uses a NoSQL key-value model rather than requiring relational tables.",
+   "Keys identify values, while the value type determines which operations are available.",
+   "Choose the native structure that matches the access pattern, such as Lists for sequences or Sorted Sets for ranked members.",
+   "Publishers write to channels and subscribers receive messages without direct service-to-service coupling.",
+   "Streams provide a persistence-oriented messaging model with consumer groups for coordinated processing."
+  ],
+  "gotchas": [
+   "Memory-first operation provides speed, but applications should account for memory capacity and configure persistence when data must survive restarts.",
+   "Pub/Sub is real-time messaging; Redis Streams are the better fit when messages need persistence and consumer groups."
+  ],
+  "checkedAt": "2026-10-16"
+ },
  "Redis foundations::Hashes": {
   "sourceUrl": "https://redis.io/docs/latest/develop/data-types/hashes/",
   "sourceTitle": "Redis hashes | Docs",

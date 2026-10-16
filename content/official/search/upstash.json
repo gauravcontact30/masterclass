@@ -970,6 +970,77 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "Learning module::Upstash learning module": {
+  "sourceUrl": "https://upstash.com/docs/introduction",
+  "sourceTitle": "Overview - Upstash Documentation",
+  "summary": "Upstash is a serverless platform for data, messaging, and AI infrastructure. It offers Redis, Vector, Search, QStash, and Workflow with scale-to-zero behavior and usage-based pricing.",
+  "explanation": "Upstash exposes managed data, messaging, and workflow products through HTTP-oriented services. Applications can use Redis, Vector, Search, QStash, and Workflow while scaling to zero and paying according to usage, without operating database or worker servers.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Store and retrieve a value",
+   "code": "import { Redis } from \"@upstash/redis\";\n\nconst redis = Redis.fromEnv();\nawait redis.set(\"greeting\", \"hello\");\nconsole.log(await redis.get(\"greeting\"));",
+   "language": "typescript",
+   "explanation": "A minimal serverless Redis example using environment-configured credentials."
+  },
+  "useCases": [
+   {
+    "title": "Application state and caching",
+    "scenario": "A serverless API needs low-latency key-value state without managing database servers."
+   },
+   {
+    "title": "Asynchronous messaging and scheduling",
+    "scenario": "An application must deliver delayed or retried work to an HTTP endpoint."
+   },
+   {
+    "title": "AI retrieval and search",
+    "scenario": "An AI product needs vector retrieval or combined full-text and semantic search."
+   },
+   {
+    "title": "Durable workflows",
+    "scenario": "A multi-step serverless process must resume reliably across execution boundaries."
+   }
+  ],
+  "related": [
+   "Redis",
+   "Vector",
+   "Search",
+   "QStash",
+   "Workflow",
+   "HTTP/REST API",
+   "pay per request",
+   "scale to zero"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Upstash provide?",
+    "answer": "Upstash is a serverless platform covering data, messaging, and AI infrastructure. Its documented products include Redis, Vector, Search, QStash, and Workflow, with usage-oriented pricing and scale-to-zero behavior.",
+    "followUp": "How would you choose between QStash and Workflow? QStash is the HTTP messaging and scheduling primitive, while Workflow provides durable serverless function execution on top of QStash."
+   },
+   {
+    "question": "How does QStash work?",
+    "answer": "QStash is an HTTP-based message queue and scheduler: an application publishes over HTTP and QStash delivers the message to an endpoint later. It supports operational features such as retries, delays, ordering, rate limits, and a dead letter queue.",
+    "followUp": "What removes the need for a worker process? QStash pushes messages directly to the existing HTTP route, so there is no poller or long-lived connection to maintain."
+   },
+   {
+    "question": "Why is HTTP access useful in serverless deployments?",
+    "answer": "Upstash services are designed for serverless and edge applications because their APIs are HTTP-based. Redis also supports the Redis protocol, while HTTP access avoids requiring a connection pool in environments where persistent connections are inconvenient.",
+    "followUp": "Why can this reduce idle cost? Per-request pricing and scale-to-zero mean unused capacity does not require continuously running application infrastructure."
+   }
+  ],
+  "keyPoints": [
+   "The platform combines managed data services with messaging and AI-oriented infrastructure.",
+   "The pricing model is designed to avoid charges for idle capacity and correlate cost with requests.",
+   "Redis is offered as a managed serverless database with either request-based or fixed pricing options.",
+   "QStash handles delayed message delivery and scheduling through HTTP rather than requiring a hosted worker.",
+   "Workflow is intended for serverless functions whose execution must survive interruptions and continue durably.",
+   "Upstash Search combines lexical and semantic retrieval capabilities for application search."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-16"
+ },
  "Messaging & operation::Dead letter handling": {
   "sourceUrl": "https://upstash.com/docs/qstash/features/dlq",
   "sourceTitle": "Dead Letter Queues",

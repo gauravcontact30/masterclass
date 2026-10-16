@@ -1,312 +1,390 @@
 {
  "Actions & forms::Actions and forms": {
-  "sourceUrl": "https://react.dev/reference/react/useActionState",
-  "sourceTitle": "useActionState - React",
-  "summary": "Use useActionState to manage an Action's latest result and pending state, then pass its returned action to a form. Server Functions and an optional permalink enable progressive enhancement before hydration or JavaScript loads.",
-  "explanation": "Actions let a form submit an async mutation through a function. useActionState supplies the previous result and pending flag, and the returned action is passed to the form; useFormStatus lets a child component read the parent form's submission status. With a Server Function, the form can progressively work before hydration, and permalink supports navigation before JavaScript loads.",
-  "syntax": "const [state, dispatchAction, isPending] = useActionState(reducerAction, initialState, permalink?);",
+  "sourceUrl": "https://react.dev/blog/2024/12/05/react-19",
+  "sourceTitle": "React v19",
+  "summary": "React form Actions handle asynchronous mutations through function-valued action props. useActionState tracks returned state and pending work, while useFormStatus exposes a parent form’s status; Server Functions can provide progressive enhancement.",
+  "explanation": "A form action can be wrapped with useActionState so each submission receives the previous state and FormData, returns updated state, and exposes whether the action is pending. A Server Function can enable progressive enhancement; useFormStatus lets a descendant read the parent form’s submission status.",
+  "syntax": "const [state, action, isPending] = useActionState(reducerAction, initialState, permalink?);",
   "parameters": [
    {
-    "name": "reducerAction",
+    "name": "action",
     "type": "function",
-    "description": "The action function; it receives the previous state and submitted FormData."
+    "description": "The action or Server Function; with useActionState it receives the previous state and submitted FormData."
    },
    {
     "name": "initialState",
     "type": "any",
-    "description": "The initial state returned before the first submission."
+    "description": "The initial value used for the action state before the first submission."
    },
    {
     "name": "permalink",
     "type": "string",
-    "description": "Optional stable page URL used for progressive enhancement on dynamic content."
+    "description": "Optional stable URL used for progressive enhancement when submission occurs before JavaScript loads."
    }
   ],
-  "returns": "An array containing the latest state, a dispatch action, and an isPending boolean.",
+  "returns": "useActionState returns the current state, a wrapped action, and a pending flag. useFormStatus returns form status information, including pending.",
   "example": {
-   "title": "Form action with result and pending state",
-   "code": "\"use client\";\n\nimport { useActionState } from \"react\";\n\nasync function updateName(previousState: string, formData: FormData) {\n  const name = String(formData.get(\"name\") || \"\").trim();\n  if (!name) return \"Enter a name.\";\n  return `Saved ${name}`;\n}\n\nexport default function NameForm() {\n  const [state, formAction, isPending] = useActionState(\n    updateName,\n    \"\"\n  );\n\n  return (\n    <form action={formAction}>\n      <input name=\"name\" />\n      <button disabled={isPending} type=\"submit\">\n        {isPending ? \"Saving…\" : \"Save\"}\n      </button>\n      <p aria-live=\"polite\">{state}</p>\n    </form>\n  );\n}",
+   "title": "Action-backed form",
+   "code": "import { useActionState } from \"react\";\n\nasync function saveName(previousState, formData) {\n  const name = formData.get(\"name\");\n  if (!name) return { error: \"Name is required\" };\n  return { error: null, name };\n}\n\nexport default function NameForm() {\n  const [state, submit, pending] = useActionState(saveName, { error: null });\n  return (\n    <form action={submit}>\n      <input name=\"name\" />\n      <button disabled={pending}>Save</button>\n      {state.error && <p>{state.error}</p>}\n    </form>\n  );\n}",
    "language": "tsx",
-   "explanation": "The hook supplies the latest action result and pending state, while its returned action can be used directly as the form action."
+   "explanation": "The returned action is attached to the form, while the state and pending flag drive the result and submit UI."
   },
   "useCases": [
    {
     "title": "Show action results",
-    "scenario": "Display validation or server results after an async form submission."
+    "scenario": "A mutation returns validation errors or updated data that the component must render."
    },
    {
-    "title": "Reflect pending state",
-    "scenario": "Disable a submit button or render progress during a mutation."
+    "title": "Build pending feedback",
+    "scenario": "A submit button should disable itself or show progress while the parent form is running."
    },
    {
-    "title": "Progressively enhanced forms",
-    "scenario": "Submit a Server Function before hydration finishes."
+    "title": "Progressively enhance submissions",
+    "scenario": "A form must remain submittable before the client bundle or hydration is ready."
    },
    {
-    "title": "Stable permalink navigation",
-    "scenario": "Support dynamic pages when JavaScript has not loaded."
+    "title": "Use formAction overrides",
+    "scenario": "Different controls in one form need distinct function-based submit behavior."
    }
   ],
   "related": [
    "useFormStatus",
    "<form> action",
-   "Server Function",
-   "Actions",
-   "FormData",
-   "useTransition"
+   "formAction",
+   "Server Functions",
+   "useOptimistic"
   ],
   "since": "19",
+  "interview": [
+   {
+    "question": "What does useActionState provide for a form mutation?",
+    "answer": "useActionState wraps an action and returns state plus a dispatch function, and React also provides a pending indicator for the action. The action receives the previous state and submitted FormData.",
+    "followUp": "How can the form work before hydration? Pass a Server Function through the form action, optionally supplying a permalink to useActionState so pre-JavaScript submission can navigate correctly."
+   },
+   {
+    "question": "How does useFormStatus help build form feedback?",
+    "answer": "useFormStatus reads status information from the parent form. A descendant can use its pending value to disable a submit control or display progress.",
+    "followUp": "Why must the status-reading component be nested? The Hook reads the nearest parent form’s status rather than the status of an arbitrary form elsewhere in the tree."
+   },
+   {
+    "question": "What does progressive enhancement mean for React form Actions?",
+    "answer": "React supports functions as form action handlers, and Server Functions can progressively enhance submissions. With the right setup, the browser can submit before the JavaScript bundle has loaded.",
+    "followUp": "How can an error appear before hydration? Render the form as a Client Component, use a Server Function as its action, and display the result returned through useActionState."
+   }
+  ],
   "keyPoints": [
-   "useActionState takes an action, an initial value, and an optional permalink, returning the latest state, a dispatchable action, and a pending flag.",
-   "Use the returned dispatch function as the form's action so submissions update the hook-managed result.",
-   "Write the action to accept the previous result first and the submitted fields second.",
-   "Server Functions can expose their response before hydration completes, supporting progressive enhancement.",
-   "Give dynamic forms a stable destination so submissions can work before JavaScript loads."
+   "A successful function-based form action resets the form automatically after submission.",
+   "The hook stores the most recent action result so the component can render server or validation feedback.",
+   "A nested submit component can read its parent form’s status without receiving status props explicitly.",
+   "With Server Functions, React can replay submissions made before hydration completes."
   ],
   "gotchas": [
-   "Call the hook only from client code.",
-   "Passing the returned action to a form already supplies the transition; do not add a separate startTransition for that submission."
+   "Call useActionState only from client code; it is a Hook and cannot be used directly in a Server Component.",
+   "Progressive enhancement requires the appropriate Server Function and form setup; client JavaScript is not required for the initial submission."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Actions & forms::Controlled inputs": {
   "sourceUrl": "https://react.dev/reference/react-dom/components/input",
-  "sourceTitle": "<input>",
-  "summary": "Keep an input’s current value in state by passing `value` or `checked` and update that state synchronously in `onChange`. This makes React state the single source of truth for validation and coordinated UI updates.",
-  "explanation": "A controlled input receives its current text or selection through `value` or `checked`, while `onChange` synchronously writes the user’s edit back to state. React then renders the input from that state, keeping validation and coordinated UI updates based on one value.",
-  "syntax": "<input value={state} onChange={e => setState(e.target.value)} />",
+  "sourceTitle": "<input> – React",
+  "summary": "A controlled input gets its displayed value from React state rather than letting the DOM own it. Pass value or checked together with an onChange handler that synchronously updates the backing state.",
+  "explanation": "A controlled input receives its current text or selection state through React and reports user edits through onChange. Updating the backing state synchronously keeps React's value and the DOM aligned, making state the single source of truth for validation and coordinated updates.",
+  "syntax": "<input value={state} onChange={event => setState(event.target.value)} />",
   "parameters": [
-   {
-    "name": "checked",
-    "type": "boolean",
-    "description": "Boolean that controls selection for checkbox or radio inputs."
-   },
    {
     "name": "value",
     "type": "string",
-    "description": "String that controls the text of a text input; for radio inputs, it specifies form data."
+    "description": "String containing the text for a controlled text input, or form data for a radio button."
+   },
+   {
+    "name": "checked",
+    "type": "boolean",
+    "description": "Boolean controlling whether a checkbox or radio button is selected."
    },
    {
     "name": "onChange",
     "type": "Event handler function",
-    "description": "Event handler required for controlled inputs; it receives the input event as the user changes the value."
+    "description": "Event handler that synchronously updates the controlled value."
    }
   ],
   "returns": "",
   "example": {
-   "title": "A controlled input with validation",
-   "code": "import { useState } from 'react';\n\nexport default function SignupForm() {\n  const [email, setEmail] = useState('');\n  const valid = email.includes('@');\n\n  return (\n    <form>\n      <label>\n        Email\n        <input\n          value={email}\n          onChange={e => setEmail(e.target.value)}\n          aria-invalid={!valid}\n        />\n      </label>\n      <button disabled={!valid}>Continue</button>\n    </form>\n  );\n}",
+   "title": "A controlled text input",
+   "code": "import { useState } from 'react';\n\nexport default function Signup() {\n  const [email, setEmail] = useState('');\n\n  return (\n    <form>\n      <label>\n        Email\n        <input\n          type=\"email\"\n          value={email}\n          onChange={event => setEmail(event.target.value)}\n        />\n      </label>\n      <p>Current value: {email}</p>\n    </form>\n  );\n}",
    "language": "tsx",
-   "explanation": "The state variable is the input's source of truth, so validation and related UI can use the same current value."
+   "explanation": "The state variable supplies the input's value, while onChange synchronously copies each DOM change into state."
   },
   "useCases": [
    {
     "title": "Live validation",
-    "scenario": "Validate or enable controls as the user types."
+    "scenario": "A field must show validation feedback immediately as the user types."
    },
    {
     "title": "Coordinated updates",
-    "scenario": "Keep multiple components synchronized with the same field value."
+    "scenario": "Several controls must update from one authoritative value."
    },
    {
-    "title": "Edit-driven UI",
-    "scenario": "Re-render surrounding UI on every edit."
+    "title": "State-driven form behavior",
+    "scenario": "The submitted or displayed form data must be derived from current React state."
    }
   ],
   "related": [
-   "useState",
-   "onChange",
-   "checked",
+   "<input>",
    "value",
-   "defaultValue",
-   "<form>"
+   "checked",
+   "onChange",
+   "useState",
+   "<textarea>",
+   "<select>"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How does a controlled input work?",
+    "answer": "A controlled input gets its current text from value, or its selection from checked for a checkbox or radio button. Its onChange handler must synchronously update the state that supplies that prop.",
+    "followUp": "What happens if the state is not updated during onChange? React re-renders the supplied value, so the DOM can revert after each keystroke."
+   },
+   {
+    "question": "Which props make an input controlled?",
+    "answer": "Use value for a text input and checked for a checkbox or radio button. Pass an onChange handler that reads the new value and updates the backing state.",
+    "followUp": "Why use this pattern? It lets React state remain the authoritative value for validation and coordinated UI updates."
+   },
+   {
+    "question": "When does onChange run and what is required of it?",
+    "answer": "onChange fires immediately when the user changes the input, including on every keystroke for text input. In React it behaves like the browser input event and is required for controlled inputs.",
+    "followUp": "What must the handler do? It must synchronously copy the new DOM value into the state represented by value or checked."
+   }
+  ],
   "keyPoints": [
-   "Use `value` for text inputs, or `checked` for checkboxes and radio buttons, to make the input controlled.",
-   "Pair the controlling prop with an `onChange` handler that writes the new value into state.",
-   "`onChange` runs as the user edits, including on each keystroke for text inputs.",
-   "React renders the input from the supplied state value, making that state the input’s source of truth.",
-   "Controlled inputs are useful when each edit must drive validation, conditional UI, or other coordinated updates."
+   "Pass value to control text input content, or checked to control checkbox and radio selection.",
+   "The value prop determines the text displayed by a controlled text input.",
+   "The checked prop determines whether a checkbox or radio button is selected.",
+   "Controlled input changes are observed immediately through onChange, including each text keystroke.",
+   "React treats the supplied controlled prop as authoritative and keeps the DOM aligned with it."
   ],
   "gotchas": [
-   "Always update the backing state synchronously in `onChange`; otherwise typing will not behave correctly.",
-   "Choose controlled or uncontrolled behavior for the input’s entire lifetime; do not switch between them.",
-   "Initialize controlled values with an appropriate concrete value, such as an empty string rather than `undefined` or `null`."
+   "If the handler does not synchronously update the state used by value or checked, React restores the previous supplied value after typing.",
+   "Supplying value or checked without the corresponding updater makes the input controlled but non-editable."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Actions & forms::Form status": {
   "sourceUrl": "https://react.dev/reference/react-dom/hooks/useFormStatus",
-  "sourceTitle": "useFormStatus - React",
-  "summary": "Use useFormStatus inside a form descendant to read the parent form’s submission status. Its pending value lets a nested control show progress or disable itself without passing props through intermediate components.",
-  "explanation": "Import useFormStatus from react-dom and call it in a component rendered inside the form. It returns status for the nearest parent form, including pending, which is true while that form is submitting; use that value to disable controls or show progress without threading props through intermediate components.",
-  "syntax": "const status = useFormStatus();",
+  "sourceTitle": "useFormStatus – React",
+  "summary": "Use useFormStatus inside a form to read its submission state from a nested component. This enables pending UI without passing form status through intermediate components.",
+  "explanation": "useFormStatus reads submission information from the nearest parent form, allowing a nested component to react to pending, submitted data, method, or action without receiving status props. The component using the Hook must be rendered inside the form; it observes the parent form rather than forms created by itself or its children.",
+  "syntax": "const { pending, data, method, action } = useFormStatus();",
   "parameters": [],
-  "returns": "An object containing form status information, including pending, data, method, and action.",
+  "returns": "A status object containing pending, data, method, and action. pending is boolean; data is FormData or null; method is 'get' or 'post'; action is the parent form's function reference or null.",
   "example": {
-   "title": "Disable a submit button while a form submits",
-   "code": "import { useFormStatus } from \"react-dom\";\n\nfunction SubmitButton() {\n  const { pending } = useFormStatus();\n\n  return (\n    <button type=\"submit\" disabled={pending}>\n      {pending ? \"Submitting...\" : \"Submit\"}\n    </button>\n  );\n}\n\nexport default function Signup() {\n  return (\n    <form action={async () => {}}>\n      <input name=\"email\" type=\"email\" required />\n      <SubmitButton />\n    </form>\n  );\n}",
+   "title": "Disable a submit button while the form is pending",
+   "code": "import { useFormStatus } from \"react-dom\";\n\nfunction SubmitButton() {\n  const { pending } = useFormStatus();\n  return (\n    <button type=\"submit\" disabled={pending}>\n      {pending ? \"Submitting...\" : \"Submit\"}\n    </button>\n  );\n}\n\nexport default function Form() {\n  async function submitForm(formData: FormData) {\n    await new Promise((resolve) => setTimeout(resolve, 1000));\n    console.log(formData.get(\"name\"));\n  }\n\n  return (\n    <form action={submitForm}>\n      <input name=\"name\" />\n      <SubmitButton />\n    </form>\n  );\n}",
    "language": "tsx",
-   "explanation": "The nested submit button reads the parent form's pending status and disables itself while submission is active."
+   "explanation": "The button reads the parent form's submission state directly and disables itself while the action is running."
   },
   "useCases": [
    {
-    "title": "Prevent duplicate submissions",
-    "scenario": "Disable a submit button while an action is running."
+    "title": "Pending submit control",
+    "scenario": "Disable a submit button and change its label while an action is running."
    },
    {
-    "title": "Show progress feedback",
-    "scenario": "Change button text to “Submitting...” during submission."
+    "title": "Submission-aware feedback",
+    "scenario": "Display or inspect the FormData currently being submitted."
    },
    {
-    "title": "Display submission details",
-    "scenario": "Read submitted values through the returned data property."
+    "title": "Reusable form components",
+    "scenario": "Build reusable design-system controls that respond to their containing form."
    }
   ],
   "related": [
-   "useFormStatus",
-   "pending",
-   "data",
-   "method",
-   "action",
-   "<form>"
+   "<form>",
+   "useActionState",
+   "useOptimistic",
+   "FormData"
   ],
-  "since": "19",
+  "since": "React 19",
+  "interview": [
+   {
+    "question": "What does useFormStatus provide, and how is pending commonly used?",
+    "answer": "useFormStatus returns a status object for the parent form. Its pending property is true while that form is actively submitting, so a nested submit control can disable itself or show alternate text.",
+    "followUp": "What happens if the Hook is called outside a form? It cannot observe a submission context, so pending remains false."
+   },
+   {
+    "question": "Where must a component using useFormStatus be rendered?",
+    "answer": "The component calling useFormStatus must be rendered inside the form whose status it needs. This lets reusable controls access the parent form state without receiving status through props.",
+    "followUp": "Does it observe a form rendered by the component itself? No; it only reports the status of a parent form."
+   },
+   {
+    "question": "Which status fields besides pending can useFormStatus expose?",
+    "answer": "The returned data property contains the FormData currently being submitted, or null when there is no active submission or no parent form. method reports GET or POST, and action reports the parent form's function action when applicable.",
+    "followUp": "When is action null? It is null without a parent form, and also when the form action is a URI or is unspecified."
+   }
+  ],
   "keyPoints": [
-   "useFormStatus exposes the current submission-related status for the parent form.",
-   "Read pending to switch labels, disable buttons, or otherwise show progress during submission.",
-   "pending is a Boolean value: true during submission and false otherwise.",
-   "Put status-aware controls inside the form so they can access its context.",
-   "The returned status also includes submitted form data for interfaces that need to inspect it."
+   "Read pending to switch a nested control between its idle and submitting UI.",
+   "Use data to inspect the values being submitted by the parent form.",
+   "The method field identifies whether the parent form submits with GET or POST."
   ],
   "gotchas": [
-   "Call the Hook in a descendant component, not directly in the component that renders the form.",
-   "It does not report status for a form rendered by the same component or by a child component."
+   "Calling the Hook outside a form does not provide that form's status.",
+   "A form rendered by the same component or by one of its children is not the form being observed."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Actions & forms::useActionState": {
   "sourceUrl": "https://react.dev/reference/react/useActionState",
-  "sourceTitle": "useActionState – React",
-  "summary": "Pair a form action with its latest returned state and pending status. The Hook returns a wrapped action for forms plus state for displaying results, errors, or validation feedback.",
-  "explanation": "Call useActionState at component level with an action and initial state. It returns the latest action result, a form-compatible wrapped action, and a flag indicating whether its transition is pending.",
-  "syntax": "const [state, formAction, isPending] = useActionState(fn, initialState, permalink?);",
+  "sourceTitle": "useActionState",
+  "summary": "Pair an Action with its latest result and pending flag. useActionState is useful for async forms because the reducer receives the previous result and the submitted payload, enabling validation feedback and loading UI.",
+  "explanation": "useActionState wraps an Action and tracks its latest result. At component scope, provide a reducer action and initial state; React returns that state, a dispatch function suitable for an Action or form action, and a pending flag. The reducer receives the previous state followed by the dispatched payload, so a form can render validation results while disabling controls during submission.",
+  "syntax": "const [state, dispatchAction, isPending] = useActionState(reducerAction, initialState, permalink?)",
   "parameters": [
    {
-    "name": "fn",
+    "name": "reducerAction",
     "type": "function",
-    "description": "The action function invoked by the wrapped form action. It receives the previous state first, followed by the action payload."
+    "description": "Function invoked by the Action. It receives the previous state first, followed by the payload passed to the returned dispatch function."
    },
    {
     "name": "initialState",
     "type": "any",
-    "description": "The initial state returned before the action has been submitted."
+    "description": "Initial value for the tracked state. It is not used after the returned dispatch function is invoked for the first time."
    },
    {
     "name": "permalink",
     "type": "string",
-    "description": "Optional unique page URL for the form's progressive-enhancement destination."
+    "description": "Optional unique URL for the page modified by the form; useful when the form submission needs progressive enhancement across navigation."
    }
   ],
-  "returns": "An array containing the current state, a wrapped action for form/action use, and an isPending boolean.",
+  "returns": "An array containing the current state, a dispatchAction function for Actions, and an isPending boolean indicating whether dispatched Actions for this Hook are pending.",
   "example": {
-   "title": "Form action with result and pending state",
-   "code": "import { useActionState } from 'react';\n\nasync function updateName(previousState: { error: string | null }, formData: FormData) {\n  const name = String(formData.get('name') || '').trim();\n  if (!name) return { error: 'Enter a name.' };\n  return { error: null };\n}\n\nexport default function UpdateName() {\n  const [state, formAction, isPending] = useActionState(updateName, { error: null });\n  return (\n    <form action={formAction}>\n      <label>\n        Name: <input name=\"name\" />\n      </label>\n      <button disabled={isPending}>{isPending ? 'Saving…' : 'Save'}</button>\n      {state.error && <p role=\"alert\">{state.error}</p>}\n    </form>\n  );\n}",
+   "title": "Form validation with result and pending state",
+   "code": "import { useActionState } from 'react';\n\nasync function saveName(previousState: { error: string | null }, formData: FormData) {\n  const name = String(formData.get('name') || '').trim();\n  if (!name) return { error: 'Name is required' };\n  return { error: null };\n}\n\nexport default function ProfileForm() {\n  const [state, formAction, isPending] = useActionState(saveName, { error: null });\n\n  return (\n    <form action={formAction}>\n      <label>\n        Name <input name=\"name\" disabled={isPending} />\n      </label>\n      <button disabled={isPending} type=\"submit\">\n        {isPending ? 'Saving…' : 'Save'}\n      </button>\n      {state.error && <p role=\"alert\">{state.error}</p>}\n    </form>\n  );\n}",
    "language": "tsx",
-   "explanation": "The wrapped action receives the form submission, returns the next state, and exposes pending status for feedback."
+   "explanation": "The returned form action receives FormData, while the reducer action also receives the previous result first. Each submission stores the reducer's returned value in state, and isPending indicates whether an Action dispatched through this hook is still running."
   },
   "useCases": [
    {
-    "title": "Form feedback",
-    "scenario": "Display validation errors or success messages returned by a form action."
+    "title": "Render the latest submission result",
+    "scenario": "A form needs to display server or validation feedback after each submission."
    },
    {
-    "title": "Pending UI",
-    "scenario": "Disable submit controls and show progress while an async action runs."
+    "title": "Disable controls while an Action is pending",
+    "scenario": "A submit control should reflect asynchronous work."
    },
    {
-    "title": "Server-backed forms",
-    "scenario": "Use a Server Function with the last response and progressive enhancement."
+    "title": "Support progressive enhancement with a permalink",
+    "scenario": "A form should work across navigation before client JavaScript finishes loading."
    }
   ],
   "related": [
    "Actions",
-   "form action",
-   "formAction",
    "startTransition",
+   "<form> action prop",
    "Server Functions",
-   "progressive enhancement"
+   "useTransition"
   ],
   "since": "React 19",
+  "interview": [
+   {
+    "question": "What does useActionState return?",
+    "answer": "It returns exactly three values: the latest state, a dispatch function, and an isPending flag. The initial render uses initialState; later state is the reducer action's returned value.",
+    "followUp": "Why does the reducer receive two arguments? The first is the prior state, and the second is the payload passed when the returned dispatch function runs."
+   },
+   {
+    "question": "How does the reducer action receive input and prior results?",
+    "answer": "The reducer action receives the previous state first and the dispatched payload second. With a form action, that payload is typically FormData, allowing the reducer to return validation or submission results.",
+    "followUp": "How can the result reach a form UI? Pass the returned dispatch function to the form's action prop and render the returned state."
+   },
+   {
+    "question": "What rules apply to calling useActionState and its dispatch function?",
+    "answer": "Call the Hook at the top level of a component or custom Hook, not inside a condition or loop. Invoke its returned dispatch function from an Action, such as startTransition or a form action.",
+    "followUp": "What should be done when conditional logic seems necessary? Extract a component so the Hook remains unconditional at that component's top level."
+   }
+  ],
   "keyPoints": [
-   "Use the Hook at component level to connect a form action with state that updates after submission.",
-   "Provide the action function and the value shown before the first submission.",
-   "The action receives the previous state first, followed by the submitted form data or payload.",
-   "Return the next state from the action; that value becomes available to the component.",
-   "Use the returned action as the form's action prop or a button's formAction prop.",
-   "Use isPending to disable controls or show progress while the action is running."
+   "It connects an Action to state, making the Action's latest result available to rendering code.",
+   "Initialize it during component rendering at the top level, rather than in event-driven or conditional code.",
+   "The reducer gets its prior result first, then the payload supplied to the returned dispatch function.",
+   "Its first returned value is the latest reducer result, beginning with the supplied initial state.",
+   "The second returned value is the wrapped function that triggers the reducer when used from an Action.",
+   "The third value supports loading UI, such as disabling a submit button while work is pending."
   ],
   "gotchas": [
-   "Call it only at the top level of a component or custom Hook; do not put it in loops or conditions.",
-   "The returned action must be used as a form action, a button formAction, or called manually inside startTransition.",
-   "initialState only establishes the starting value; later invocations use the action's previous return value."
+   "Call useActionState only at the top level of a component or custom Hook; do not place it in loops or conditions.",
+   "The returned dispatch function must run inside an Action, such as a function passed to a form action or wrapped in startTransition.",
+   "The initialState argument is used only before the first dispatch; later renders use the reducer's previous returned value."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Async UI::Error boundaries": {
   "sourceUrl": "https://react.dev/reference/react/Component",
   "sourceTitle": "Component – React",
-  "summary": "Error boundaries contain rendering failures in a descendant subtree and show fallback UI instead of clearing the whole interface. Use getDerivedStateFromError for fallback state and componentDidCatch for reporting or other side effects.",
-  "explanation": "An error boundary is a class component that protects a subtree from rendering failures. React calls getDerivedStateFromError so the boundary can switch to fallback UI, and componentDidCatch can perform side effects such as reporting the failure. The fallback preserves the rest of the application and gives users a recovery-oriented message.",
-  "syntax": "class ErrorBoundary extends Component<Props, State> {\n  static getDerivedStateFromError(error): State;\n  componentDidCatch(error, errorInfo): void;\n  render(): ReactNode;\n}",
+  "summary": "Error boundaries isolate rendering failures and show fallback UI for the affected subtree. Use getDerivedStateFromError for fallback state and componentDidCatch for reporting.",
+  "explanation": "An error boundary is a class component that surrounds part of the tree and substitutes fallback UI when a descendant fails while rendering. Implement getDerivedStateFromError to switch to fallback state, and optionally componentDidCatch for reporting; provide a recovery path such as retrying by remounting the failed subtree.",
+  "syntax": "class ErrorBoundary extends Component<Props, State> {\n  static getDerivedStateFromError(error): State;\n  componentDidCatch(error, errorInfo): void;\n}",
   "parameters": [],
   "returns": "",
   "example": {
    "title": "A rendering error boundary",
-   "code": "import { Component, type ReactNode } from 'react';\n\nclass ErrorBoundary extends Component<\n  { children: ReactNode },\n  { hasError: boolean }\n> {\n  state = { hasError: false };\n\n  static getDerivedStateFromError() {\n    return { hasError: true };\n  }\n\n  componentDidCatch(error: Error) {\n    console.error(error);\n  }\n\n  render() {\n    if (this.state.hasError) {\n      return <p role=\"alert\">Something went wrong. Try again.</p>;\n    }\n    return this.props.children;\n  }\n}\n\nexport default function App() {\n  return <ErrorBoundary><Profile /></ErrorBoundary>;\n}\n\nfunction Profile() {\n  throw new Error('Example failure');\n}",
+   "code": "import { Component, type ReactNode } from 'react';\n\nclass ErrorBoundary extends Component<\n  { children: ReactNode },\n  { hasError: boolean }\n> {\n  state = { hasError: false };\n\n  static getDerivedStateFromError() {\n    return { hasError: true };\n  }\n\n  componentDidCatch(error: Error) {\n    console.error(error);\n  }\n\n  render() {\n    if (this.state.hasError) {\n      return <p>Something went wrong. Try again.</p>;\n    }\n    return this.props.children;\n  }\n}\n\nexport default function App() {\n  return <ErrorBoundary><Profile /></ErrorBoundary>;\n}\n\nfunction Profile() {\n  return <h1>Profile</h1>;\n}",
    "language": "tsx",
-   "explanation": "The boundary replaces the failed subtree with fallback UI and logs the error."
+   "explanation": "Wrap the UI that should recover from rendering failures with the boundary. Replace Profile with a component whose render can fail to see the fallback."
   },
   "useCases": [
    {
-    "title": "Isolate risky UI",
-    "scenario": "Protect a profile, dashboard, or other isolated region so one rendering failure does not blank the entire interface."
+    "title": "Isolate a risky widget",
+    "scenario": "A dashboard widget can fail independently of the rest of the page."
    },
    {
-    "title": "Provide fallback UI",
-    "scenario": "Show a useful message when a descendant throws during rendering."
+    "title": "Keep surrounding navigation usable",
+    "scenario": "A profile or settings panel may fail because of malformed data or a rendering bug."
    },
    {
-    "title": "Report failures",
-    "scenario": "Send production failures and component-stack information to an error-monitoring service."
+    "title": "Report while showing a safe fallback",
+    "scenario": "A production failure should be visible to the team without exposing internal details to users."
    },
    {
     "title": "Handle action failures",
-    "scenario": "Wrap a form using a function action so errors thrown during submission render the boundary fallback."
+    "scenario": "A React 19 form action throws during submission."
    }
   ],
   "related": [
    "Component",
-   "static getDerivedStateFromError",
+   "getDerivedStateFromError",
    "componentDidCatch",
-   "react-error-boundary"
+   "Suspense",
+   "useActionState"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How do you implement an Error Boundary?",
+    "answer": "An Error Boundary is a component that displays fallback UI instead of the subtree that crashed. A class component becomes one by defining static getDerivedStateFromError; componentDidCatch can additionally report the failure.",
+    "followUp": "What failures are outside its scope? It does not catch event-handler errors, server-side-rendering errors, errors from itself, or ordinary errors caught by code outside the child-rendering path."
+   },
+   {
+    "question": "What are the roles of getDerivedStateFromError and componentDidCatch?",
+    "answer": "Use getDerivedStateFromError to update state during the error path, then render fallback UI when that state is set. Use componentDidCatch for side effects such as sending an error to an error-reporting service.",
+    "followUp": "Why separate the two methods? State derivation determines what React renders, while componentDidCatch is the place for logging or other extra logic."
+   },
+   {
+    "question": "Where should an Error Boundary be placed?",
+    "answer": "Place the boundary around the smallest UI region that can fail while still providing a useful fallback. React sends the failure to the nearest boundary, so nested boundaries can isolate independent parts of the interface.",
+    "followUp": "How does this relate to React 19 Actions? Errors thrown by a form action can be shown by wrapping the form in an Error Boundary; useActionState is another way to render an action error message."
+   }
+  ],
   "keyPoints": [
-   "A class component becomes an error boundary when it defines the documented error-handling lifecycle methods.",
-   "Use static getDerivedStateFromError to update boundary state and select fallback UI after a descendant rendering error.",
-   "Use componentDidCatch for side effects such as logging or sending the failure to an error-reporting service.",
-   "A boundary keeps the surrounding interface available while replacing only the crashed subtree with an error message.",
-   "Place the boundary around the UI region whose rendering failures should have a local fallback.",
-   "Fallback UI can be a concise error message that tells the user the protected region failed."
+   "A class component is an Error Boundary when it defines the rendering-error lifecycle methods.",
+   "The boundary replaces the failed descendant area with fallback content rather than leaving the user with a blank result.",
+   "componentDidCatch is suitable for reporting failures to monitoring or analytics systems.",
+   "React invokes the static method for rendering failures from descendants, including deeply nested children.",
+   "componentDidCatch receives descendant rendering failures after they reach the boundary."
   ],
   "gotchas": [
-   "They do not handle every error source; the page specifically excludes event handlers, server-side rendering, and errors thrown inside the boundary itself.",
-   "Without a boundary, a rendering failure can remove the application UI, so wrap the portion that needs protection.",
-   "A third-party package is an alternative when you do not want to implement the class boundary yourself."
+   "They do not handle event-handler failures, server-rendering failures, or errors thrown by the boundary itself.",
+   "A surrounding JavaScript try/catch is not a substitute for an Error Boundary when a child fails during rendering.",
+   "Without a boundary, a rendering failure can remove the application UI instead of showing a fallback."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Async UI::Suspense and use": {
   "sourceUrl": "https://react.dev/reference/react/use",
@@ -365,462 +443,580 @@
  },
  "Foundations::Components & JSX": {
   "sourceUrl": "https://react.dev/learn/describing-the-ui",
-  "sourceTitle": "Describing The UI | React",
-  "summary": "React components are JavaScript functions that return JSX. Compose them into a UI tree and pass data between parent and child components through props while keeping rendering pure.",
-  "explanation": "Define components as JavaScript functions that return JSX. Compose them by nesting components in JSX, pass data through props, and keep rendering pure: the same props, state, and context should produce the same output without mutating pre-existing values.",
-  "syntax": "function Component(props) { return <Element />; }\n<Component prop={value} />",
-  "parameters": [
-   {
-    "name": "props",
-    "type": "object",
-    "description": "Values passed from a parent through JSX attributes or children; a component reads them from its function parameter."
-   }
-  ],
-  "returns": "JSX describing the component's UI.",
+  "sourceTitle": "Describing the UI",
+  "summary": "React components are JavaScript functions that return JSX, a stricter HTML-like syntax for describing UI. Pass data through props, use curly braces for JavaScript expressions, and nest components to compose a UI tree.",
+  "explanation": "Define components as capitalized JavaScript functions that accept props and return JSX. JSX places markup-like structure beside JavaScript logic, and curly braces insert JavaScript expressions such as prop values. Compose components by rendering one component inside another, passing data through props.",
+  "syntax": "function ComponentName(props) {\n  return <Element>{props.value}</Element>;\n}",
+  "parameters": [],
+  "returns": "JSX markup representing the component's UI",
   "example": {
-   "title": "Passing props to a component",
-   "code": "function Avatar({ person, size }: { person: { name: string; imageId: string }; size: number }) {\n  return <img src={`/${person.imageId}.jpg`} alt={person.name} width={size} height={size} />;\n}\n\nexport default function Profile() {\n  const person = { name: \"Ada Lovelace\", imageId: \"ada\" };\n  return (\n    <section>\n      <h1>Profile</h1>\n      <Avatar person={person} size={80} />\n    </section>\n  );\n}",
+   "title": "A component that accepts props and returns JSX",
+   "code": "function Greeting({ name }: { name: string }) {\n  return <h1>Hello, {name}!</h1>;\n}\n\nexport default function App() {\n  return <Greeting name=\"Ada\" />;\n}",
    "language": "tsx",
-   "explanation": "A parent passes JavaScript values through JSX props, and the child reads them by destructuring its parameter."
+   "explanation": "A component receives a prop and returns JSX; using it as an element composes it into the application UI."
   },
   "useCases": [
    {
-    "title": "Reusable interface components",
-    "scenario": "Create reusable UI pieces such as profiles, buttons, cards, or navigation elements."
+    "title": "Reusable interface pieces",
+    "scenario": "Create reusable UI elements such as buttons, cards, or navigation sections."
    },
    {
-    "title": "Composed UI trees",
-    "scenario": "Build a page by nesting components and passing data through the resulting UI tree."
+    "title": "Markup with JavaScript",
+    "scenario": "Keep rendering logic and displayed content together in a component file."
    },
    {
-    "title": "Predictable rendering",
-    "scenario": "Render different content from props, state, or context without mutating external values."
+    "title": "Composable UI trees",
+    "scenario": "Build pages by nesting smaller components and passing each one the data it needs."
    }
   ],
   "related": [
+   "Describing the UI",
+   "Your First Component",
    "JSX",
-   "Passing Props to a Component",
-   "Keeping Components Pure",
-   "Components and Hooks must be pure",
-   "Rules of React"
+   "props",
+   "Conditional rendering",
+   "React DOM Components"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is a React component, and how does JSX relate to it?",
+    "answer": "A component is a JavaScript function that returns JSX, and JSX is a syntax extension that represents markup inside JavaScript. Components can be combined by rendering them inside other components.",
+    "followUp": "How do you pass data into a child? Pass attributes when rendering it; React makes those values available to the child as props."
+   },
+   {
+    "question": "What rules should you follow when writing a component with JSX?",
+    "answer": "Use a capitalized function name and return a single JSX tree. Put JavaScript expressions inside curly braces when the rendered output needs dynamic data.",
+    "followUp": "How can a component render different output? Use ordinary JavaScript conditional syntax such as if, &&, or the conditional operator."
+   },
+   {
+    "question": "How are components composed into a UI tree?",
+    "answer": "Compose a UI by nesting components in the JSX returned by another component. Supply child data through JSX attributes, which become the receiving component’s props.",
+    "followUp": "What should you do when sibling JSX elements need to be returned together? Wrap them in a shared parent element or an empty Fragment."
+   }
+  ],
   "keyPoints": [
-   "A component is a JavaScript function whose returned JSX describes part of the UI.",
-   "JSX provides HTML-like syntax inside JavaScript for declaring rendered UI.",
-   "Pass values from parent to child with JSX attributes, which become props.",
-   "Props can carry ordinary JavaScript values as well as JSX, enabling flexible component composition.",
-   "Pure components should produce the same result for the same inputs and avoid changing values outside the render."
+   "Treat each independently defined UI piece as a component, then combine those pieces to form the application.",
+   "The core component model is a JavaScript function whose returned result includes markup-like JSX.",
+   "JSX resembles HTML but follows stricter syntax rules, so familiar HTML may need small adjustments.",
+   "JSX is optional but is the common notation for describing the markup a component renders."
   ],
   "gotchas": [],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Foundations::Conditional rendering": {
   "sourceUrl": "https://react.dev/learn/conditional-rendering",
   "sourceTitle": "Conditional Rendering – React",
-  "summary": "Render different JSX based on conditions using JavaScript if statements, ternaries, and &&. Use early returns for clear guards and null when a component should render nothing.",
-  "explanation": "React uses ordinary JavaScript branching to choose which JSX a component returns. Use if statements or early returns for larger branches, the ternary operator for either-or UI inside JSX, and && when content should appear only when a condition is truthy; return null when a component should render nothing.",
+  "summary": "Render alternate UI by using ordinary JavaScript conditions. Choose if/else or early returns for larger branches, ternaries for either-or JSX, and && when the false case renders nothing.",
+  "explanation": "Conditional rendering uses ordinary JavaScript branching to choose which JSX a component returns or includes. Use if statements for guards and early returns, the ternary operator for either-or choices inside JSX, and && when the false branch should render nothing; a component can return null to render no UI.",
   "syntax": "if (condition) { return <A />; } else { return <B />; }\n{condition ? <A /> : <B />}\n{condition && <A />}",
   "parameters": [],
-  "returns": "A JSX element for the selected branch, or null when no UI should be rendered.",
+  "returns": "A component returns JSX for the selected UI, or null when it should render nothing.",
   "example": {
-   "title": "Render alternate UI states",
-   "code": "import { createRoot } from 'react-dom/client';\n\nfunction Status({ isReady }: { isReady: boolean }) {\n  if (!isReady) return <p>Loading…</p>;\n  return <p>Ready</p>;\n}\n\nfunction App() {\n  const isLoggedIn = true;\n  return (\n    <main>\n      <Status isReady={isLoggedIn} />\n      {isLoggedIn ? <button>Sign out</button> : <button>Sign in</button>}\n      {isLoggedIn && <p>Welcome back!</p>}\n    </main>\n  );\n}\n\ncreateRoot(document.getElementById('root')!).render(<App />);",
+   "title": "Choose and conditionally include UI",
+   "code": "import { useState } from 'react';\n\nexport default function Status() {\n  const [isOnline, setIsOnline] = useState(false);\n\n  return (\n    <main>\n      <button onClick={() => setIsOnline(!isOnline)}>\n        {isOnline ? 'Go offline' : 'Go online'}\n      </button>\n      {isOnline && <p role=\"status\">Online</p>}\n    </main>\n  );\n}",
    "language": "tsx",
-   "explanation": "This example combines an early return, a ternary for mutually exclusive UI, and && for optional content."
+   "explanation": "This component uses a ternary to choose the button label and && to show the status only when the condition is true."
   },
   "useCases": [
    {
-    "title": "State-dependent UI",
-    "scenario": "Show a loading, error, or success state based on request status."
+    "title": "Choose between alternate views",
+    "scenario": "A component has distinct authenticated and unauthenticated layouts."
    },
    {
-    "title": "Authentication branches",
-    "scenario": "Display signed-in controls or an authentication prompt."
+    "title": "Include optional UI",
+    "scenario": "A small indicator, action, or message should appear only when a flag is true."
    },
    {
-    "title": "Optional UI",
-    "scenario": "Add badges, actions, or notices only when a flag is enabled."
-   },
-   {
-    "title": "Guarded rendering",
-    "scenario": "Hide a component when a permission or visibility condition is false."
+    "title": "Guard with an early return",
+    "scenario": "A component should stop rendering when its required state is absent."
    }
   ],
   "related": [
-   "if statements",
-   "if/else statements",
+   "if statement",
+   "if/else statement",
    "&& operator",
-   "? : operator",
+   "conditional ? operator",
    "null",
    "JSX"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How do you conditionally render JSX in React?",
+    "answer": "React does not add a separate conditional syntax. Write normal JavaScript branching: use if statements, the ternary operator, or &&, then return or embed the selected JSX.",
+    "followUp": "When is && preferable to a ternary? Use && when the false case should display nothing; use a ternary when both true and false cases need UI."
+   },
+   {
+    "question": "What is the difference between a ternary and && in JSX?",
+    "answer": "A ternary chooses one of two JSX results: the first expression when the condition is truthy and the second when it is falsy. It works directly inside JSX braces.",
+    "followUp": "How would you express a one-sided condition? Replace the ternary with condition && <Element /> so the false case contributes nothing."
+   },
+   {
+    "question": "When should you use an early return?",
+    "answer": "Use an if guard or early return when the component's larger output depends on a condition. If no output is appropriate, return null; otherwise return the alternate JSX.",
+    "followUp": "Why use an early return instead of deeply nested JSX? It keeps the main render path straightforward and makes the alternate state explicit."
+   }
+  ],
   "keyPoints": [
-   "Conditional rendering lets a component choose alternate UI based on props, state, or other values.",
-   "React does not require a separate conditional-rendering construct; use familiar JavaScript control flow.",
-   "Use if statements when branches are substantial or when an early return makes the component clearer.",
-   "Use a ternary when exactly one of two UI alternatives should be rendered.",
-   "Use && for optional UI when the false branch should contain no element.",
-   "Returning null is the explicit way for a component to render no visible output."
+   "Use JavaScript if statements, &&, and the ternary operator to select JSX based on conditions.",
+   "An if/else branch can return completely different JSX trees for the two states.",
+   "Use a ternary inside JSX when both condition outcomes need distinct UI.",
+   "Use && for optional JSX whose false branch should render nothing.",
+   "An if statement can choose which JSX expression the component returns before the main return path.",
+   "Return null from a component branch when that state should produce no rendered UI."
   ],
   "gotchas": [
-   "Components need a return value; use null when the component should intentionally render no UI.",
-   "With &&, ensure the condition is truly boolean: a numeric 0 can otherwise become visible JSX content."
+   "A component cannot omit its return value; use null when its condition means that no UI should be rendered.",
+   "Returning null is the explicit way to render nothing from a component or early-return branch."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Foundations::Lists and keys": {
   "sourceUrl": "https://react.dev/learn/rendering-lists",
   "sourceTitle": "Rendering Lists",
-  "summary": "Render arrays with a stable key for every item. Keys identify items among siblings so React can match them correctly when a list changes.",
-  "explanation": "When JSX is produced from an array, assign each item a stable string or number that identifies it among its siblings. React uses that identity to match components across renders, so reordering, insertion, and deletion update the correct items. Keep the key in the data when possible; it is for React and is not passed to the component as a prop.",
-  "syntax": "<Element key={uniqueItemId} />",
+  "summary": "Use a stable key for every item rendered from an array. The key should represent the item’s identity, not its current position, so React can match items correctly when the collection changes.",
+  "explanation": "When JSX is produced from an array, give each item a stable string or number that identifies the underlying item. React uses that identity to match components across renders, so inserting, deleting, or reordering items updates the correct parts of the UI.",
+  "syntax": "array.map(item => <Element key={item.id} />)",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Render a keyed list",
-   "code": "const people = [\n  { id: 1, name: 'Ada' },\n  { id: 2, name: 'Linus' },\n];\n\nexport default function People() {\n  return (\n    <ul>\n      {people.map(person => (\n        <li key={person.id}>{person.name}</li>\n      ))}\n    </ul>\n  );\n}",
+   "title": "Render a keyed collection",
+   "code": "type Person = { id: number; name: string };\n\nconst people: Person[] = [\n  { id: 1, name: \"Ada\" },\n  { id: 2, name: \"Linus\" },\n];\n\nexport default function PeopleList() {\n  return (\n    <ul>\n      {people.map(person => (\n        <li key={person.id}>{person.name}</li>\n      ))}\n    </ul>\n  );\n}",
    "language": "tsx",
-   "explanation": "The stable database ID lets React match each list item correctly when the collection changes."
+   "explanation": "The stable database ID identifies each person even when the collection is reordered."
   },
   "useCases": [
    {
-    "title": "Persistent collection IDs",
-    "scenario": "Render records from an API or database"
+    "title": "Use a record ID",
+    "scenario": "Rendering records from an API"
    },
    {
-    "title": "Changing list order",
-    "scenario": "Support sorting, insertion, or deletion without mismatching item state"
+    "title": "Preserve identity through reordering",
+    "scenario": "Displaying sortable results"
    },
    {
-    "title": "Filtered results",
-    "scenario": "Render filtered subsets of a larger collection"
+    "title": "Use key plus a separate prop",
+    "scenario": "Passing identity into a child component"
    }
   ],
   "related": [
    "map()",
-   "filter()",
    "key",
-   "children"
+   "props",
+   "components",
+   "array items"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "Why does React require keys when rendering arrays?",
+    "answer": "React uses a key to associate each rendered component with the corresponding array item between renders. Stable identity lets it handle insertion, deletion, and reordering without confusing one item for another.",
+    "followUp": "What makes an identity suitable as a key? Use a value that belongs to the item and remains unchanged while that item remains the same; avoid values generated during rendering."
+   },
+   {
+    "question": "Where must keys be unique?",
+    "answer": "Keys must be unique among siblings, but they do not need to be globally unique. The same key can therefore appear in separate arrays rendered in different places.",
+    "followUp": "What if two siblings share a key? React cannot reliably distinguish them, so choose an identifier unique within that sibling set."
+   },
+   {
+    "question": "Can a component read its key through props?",
+    "answer": "The key is consumed by React and is not available as a component prop. If a component needs the same identifier, pass it separately, such as key={id} and userId={id}.",
+    "followUp": "Why separate the values? The key controls reconciliation, while the ordinary prop supplies application data to the component."
+   }
+  ],
   "keyPoints": [
-   "Give every array item rendered as a collection a key value.",
-   "Choose an identifier representing the item's identity, such as a database ID, rather than its current position.",
-   "React uses keys to preserve the relationship between data items and rendered components across updates.",
-   "Sibling elements in one rendered collection cannot share the same key.",
-   "Keep keys stable between renders; changing one makes React treat the item as a different element.",
-   "Store or derive keys from stable data before rendering instead of creating new values inside render."
+   "Every item rendered from an array needs a key whose value is a string or number.",
+   "Choose identity from the item’s data, such as a database ID, rather than from its current position.",
+   "React uses keys to connect rendered components with their underlying collection items across updates.",
+   "Place the key on the JSX element returned directly by map(), including when that element is a component."
   ],
   "gotchas": [
-   "Do not generate keys during rendering or derive them from values that can change.",
-   "A key only needs to be unique within its sibling list, not across the entire application.",
-   "Do not assume keys are ordinary component props; use a separate prop when the component needs the identifier."
+   "Do not generate keys during rendering; derive them from persistent item data.",
+   "A key only needs to be unique within its immediate sibling collection, not across the entire application."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Foundations::Props and composition": {
   "sourceUrl": "https://react.dev/learn/passing-props-to-a-component",
   "sourceTitle": "Passing Props to a Component – React",
-  "summary": "Props are the inputs a parent passes to configure a child component. Use explicit props and composition to reuse UI pieces while keeping data flow from parent to child.",
-  "explanation": "A component receives one props object from its parent. Treat those values as read-only inputs, define a focused API for the behavior or appearance that should vary, and compose components by nesting reusable pieces while passing data, handlers, objects, functions, or JSX through props.",
-  "syntax": "function Component({ propName }: Props) {\n  return <UI />;\n}\n\n<Component propName={value} />",
+  "summary": "Props are a component’s read-only inputs, passed by a parent through JSX. They let small components be configured and composed with data, callbacks, or nested JSX.",
+  "explanation": "A component receives one props object from its parent. The parent supplies values in JSX, while the child reads them through parameter destructuring; those values may be data, functions, or JSX, allowing components to be customized and composed without duplicating their rendering logic.",
+  "syntax": "function Component({ propName }) { return <element />; }",
   "parameters": [
    {
     "name": "props",
     "type": "object",
-    "description": "The single props object supplied by the parent; its fields carry component data, configuration, callbacks, or JSX."
+    "description": "The single object containing values passed from the parent JSX element."
    }
   ],
-  "returns": "A React component returns JSX describing the UI for its current props.",
+  "returns": "The component returns JSX describing its rendered UI.",
   "example": {
-   "title": "Composing configurable components",
-   "code": "function Button({ children, color = \"blue\" }: { children: React.ReactNode; color?: string }) {\n  return <button style={{ color }}>{children}</button>;\n}\n\nfunction Toolbar() {\n  return (\n    <div>\n      <Button color=\"tomato\">Delete</Button>\n      <Button color=\"seagreen\">Save</Button>\n    </div>\n  );\n}",
+   "title": "Passing props to a reusable component",
+   "code": "function Avatar({ person, size = 100 }) {\n  return <img src={person.imageUrl} width={size} height={size} alt={person.name} />;\n}\n\nfunction Profile() {\n  const person = { name: \"Maria\", imageUrl: \"/maria.jpg\" };\n  return <Avatar person={person} size={80} />;\n}",
    "language": "tsx",
-   "explanation": "The parent composes reusable Button instances and customizes each through explicit props."
+   "explanation": "The parent configures Avatar by passing an object and a size; Avatar reads those props and renders the customized image."
   },
   "useCases": [
    {
-    "title": "Configurable UI components",
-    "scenario": "Build reusable controls with configurable labels, styles, or behavior."
+    "title": "Configure repeated UI",
+    "scenario": "A parent renders many similar controls with different labels, values, or handlers."
    },
    {
-    "title": "Parent-controlled interactions",
-    "scenario": "Pass event handlers and state-derived values from a parent to children."
+    "title": "Reuse presentation logic",
+    "scenario": "A shared visual component needs domain data such as a person object and display dimensions."
    },
    {
-    "title": "Component composition",
-    "scenario": "Nest reusable components and pass JSX or other values to create flexible layouts."
+    "title": "Pass JSX or callbacks",
+    "scenario": "A component needs custom nested content or behavior supplied by its caller."
    }
   ],
   "related": [
-   "Thinking in React",
-   "Describing the UI",
-   "Sharing State Between Components"
+   "children",
+   "destructuring",
+   "state",
+   "lifting state up",
+   "function components"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What are props, and how does a component read them?",
+    "answer": "Props are the information passed to a JSX tag. A component function receives one props object, and destructuring provides convenient access to selected values.",
+    "followUp": "What can a prop contain? Any JavaScript value, including objects, arrays, functions, and JSX, so callbacks and nested UI can be passed explicitly."
+   },
+   {
+    "question": "How do you pass and destructure props?",
+    "answer": "The parent passes props in JSX, such as <Avatar person={person} size={80} />. The child declares matching names in its parameter, for example function Avatar({ person, size }).",
+    "followUp": "How would you provide a fallback? Use destructuring, such as size = 100; it applies only when size is missing or undefined."
+   },
+   {
+    "question": "Why are props read-only?",
+    "answer": "Props enable parent-to-child communication and customization. They are read-only snapshots, so a child should not mutate them or treat them as local writable state.",
+    "followUp": "How can a child request a change? The parent can pass a function prop; the child calls it, and the parent supplies updated props on the next render."
+   }
+  ],
   "keyPoints": [
-   "Use props as the communication mechanism between parent and child components.",
-   "Parents control the data and configuration supplied to their children.",
-   "Pass a component's inputs directly in JSX attributes or expressions.",
-   "Design a component API as one props object, with named fields for the values it needs.",
-   "Read props by destructuring the parameter, such as `function Avatar({ person, size })`.",
-   "Use JSX to configure reusable components without duplicating their internal UI logic."
+   "Use props as the explicit communication channel between a parent and its child.",
+   "The parent owns the inputs and decides which values each child receives.",
+   "Put component inputs directly on the JSX element using named props.",
+   "Destructure the props parameter to make component inputs available as local variables.",
+   "Treat a component's props object like a function's argument bundle when defining its API."
   ],
   "gotchas": [
-   "Do not mutate props or expect a child to change its own inputs; request different props through the parent instead."
+   "Do not mutate props inside a component. To change what a child displays, the parent must render it again with different props.",
+   "A destructuring default does not replace other falsy values such as 0 or null."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Foundations::Refs and the DOM": {
   "sourceUrl": "https://react.dev/learn/manipulating-the-dom-with-refs",
-  "sourceTitle": "Manipulating The Dom With Refs",
-  "summary": "Use refs to access a DOM node when declarative rendering is not enough—for example, to focus, scroll, or measure it. Create the ref with useRef, attach it with ref, then use ref.current for imperative browser APIs.",
-  "explanation": "React normally manages the DOM from your render output. When declarative rendering cannot perform an imperative task such as focusing, scrolling, or measuring, create a ref with useRef, attach it to the JSX element, and read the DOM node through ref.current in an event handler or other appropriate code.",
-  "syntax": "const ref = useRef(initialValue); <element ref={ref}>...</element>",
+  "sourceTitle": "Manipulating the DOM with Refs",
+  "summary": "Use refs to access a DOM node when React's declarative model cannot perform the needed imperative browser operation. Attach a useRef-created object to JSX and use its current value in event handlers.",
+  "explanation": "Declare a ref with useRef(null), attach it to the JSX element through ref, and read the resulting DOM node from ref.current in an event handler. React assigns the node after it creates the element and resets the value to null when the element is removed; changing current itself does not trigger rendering.",
+  "syntax": "const ref = useRef(null); <element ref={ref}>...</element>",
   "parameters": [
    {
     "name": "initialValue",
     "type": "any",
-    "description": "The initial value stored in the ref; use null when the ref will later point to a DOM node."
+    "description": "The initial value stored in the ref; use null when the ref will later hold a DOM node."
    }
   ],
-  "returns": "An object with a single mutable current property; React sets current to the associated DOM node when the element is created.",
+  "returns": "A ref object with one current property. For a DOM ref, current is initially null, becomes the attached DOM node after creation, and returns to null after removal.",
   "example": {
-   "title": "Focus a DOM node",
+   "title": "Focus an input with a ref",
    "code": "import { useRef } from 'react';\n\nexport default function SearchBox() {\n  const inputRef = useRef<HTMLInputElement>(null);\n\n  function handleClick() {\n    inputRef.current?.focus();\n  }\n\n  return (\n    <>\n      <input ref={inputRef} aria-label=\"Search\" />\n      <button onClick={handleClick}>Focus input</button>\n    </>\n  );\n}",
    "language": "tsx",
-   "explanation": "Clicking the button uses the ref to focus the associated input through the browser DOM API."
+   "explanation": "The ref starts as null, then React places the input DOM node in current after rendering. The click handler uses the browser focus API imperatively."
   },
   "useCases": [
    {
-    "title": "Focus a node",
-    "scenario": "Focus an input or other focusable control after a user action."
+    "title": "Focus an input",
+    "scenario": "Move keyboard focus to a particular input after a user action."
    },
    {
-    "title": "Scroll to a node",
-    "scenario": "Scroll to a particular element using its DOM methods."
+    "title": "Scroll to an element",
+    "scenario": "Scroll a managed element into view in response to an interaction."
    },
    {
-    "title": "Measure an element",
-    "scenario": "Read an element’s size or position for imperative browser behavior."
+    "title": "Measure layout",
+    "scenario": "Read an element's dimensions or position for an imperative browser operation."
    }
   ],
   "related": [
    "useRef",
    "ref attribute",
-   "DOM node",
+   "event handlers",
    "browser APIs",
-   "event handlers"
+   "callback refs"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How do you access a DOM element with a ref?",
+    "answer": "Create the ref with useRef(null), pass it to the element's ref attribute, and read ref.current from an event handler. React fills current with the DOM node after creation and sets it back to null when the node is removed.",
+    "followUp": "What happens if current changes? React does not re-render because ref updates are mutable storage rather than rendering data."
+   },
+   {
+    "question": "When should refs be used instead of declarative React code?",
+    "answer": "Refs are appropriate when an imperative browser operation is required, such as focusing, scrolling, or measuring an element. They let code call browser APIs on the managed DOM node while leaving ordinary UI description declarative.",
+    "followUp": "Why not use state for the DOM node? State changes trigger rendering, while changing a ref does not, so a ref avoids an unnecessary render for imperative data."
+   },
+   {
+    "question": "What is the lifecycle of a DOM ref?",
+    "answer": "An object ref from useRef is attached with JSX such as <input ref={inputRef}>. React stores the corresponding DOM node in inputRef.current, initially null, and the handler can call a method such as focus().",
+    "followUp": "What alternative does React support? A ref callback receives the DOM node when attached and can return cleanup for its removal."
+   }
+  ],
   "keyPoints": [
-   "Use a ref when you need an imperative DOM operation such as focusing, scrolling, or measuring an element.",
-   "Import useRef, call it inside the component with an initial value such as null, and keep the returned ref object.",
-   "Attach the ref object to the target JSX element using its ref attribute.",
-   "Read the referenced DOM node through ref.current, which React updates when the element is attached.",
-   "Use the node from an event handler to call browser APIs such as focus().",
-   "Although refs can hold other mutable values, DOM elements are their most common use."
+   "Use a DOM ref for imperative tasks React does not provide declaratively, including focusing, scrolling, or measuring.",
+   "useRef returns a stable object whose current property holds the referenced value.",
+   "Initialize a DOM ref with null because no element is attached during the initial declaration.",
+   "Read current in an event handler to invoke browser APIs such as focus on the attached node.",
+   "The basic setup imports useRef, creates a ref, and passes it to the target JSX element.",
+   "Attaching ref={inputRef} makes React store that input's DOM node in the ref object."
   ],
   "gotchas": [
-   "The DOM node is available after React creates it; during initial rendering, the ref's current value is null.",
-   "Prefer props and state for ordinary UI behavior; use refs only for imperative work that declarative rendering cannot express."
+   "Use refs for imperative escape hatches, not as a replacement for declarative rendering or state.",
+   "The DOM node is available through current only after React has created the element; the initial value is null.",
+   "A callback ref can receive cleanup when its DOM node is removed; avoid assuming the node remains attached forever."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Foundations::useId": {
   "sourceUrl": "https://react.dev/reference/react/useId",
   "sourceTitle": "useId – React",
-  "summary": "useId generates unique IDs for accessibility attributes. React can keep server-generated and client-generated IDs aligned during hydration when both render the same component tree.",
-  "explanation": "Call useId once at the top level of a component to obtain a stable unique string for wiring related DOM attributes, such as aria-describedby and id. React can produce matching IDs during server rendering and client hydration when both sides render the identical component tree.",
-  "syntax": "const id = useId();",
+  "summary": "Generate unique IDs for accessibility attributes with useId. React keeps them aligned between server rendering and hydration when the server and client render identical component trees.",
+  "explanation": "Call useId at the top level of a component to obtain a unique string, then assign it to related accessibility attributes such as id and aria-describedby. React can produce matching IDs during server rendering and hydration when the server and client render identical component trees.",
+  "syntax": "const id = useId()",
   "parameters": [],
   "returns": "A unique ID string associated with the particular useId call in the component.",
   "example": {
-   "title": "Link an input to an accessibility hint",
-   "code": "import { useId } from 'react';\n\nexport default function PasswordField() {\n  const passwordHintId = useId();\n\n  return (\n    <>\n      <label htmlFor=\"password\">Password</label>\n      <input id=\"password\" type=\"password\" aria-describedby={passwordHintId} />\n      <p id={passwordHintId}>Use at least 12 characters.</p>\n    </>\n  );\n}",
+   "title": "Link an input to its accessible hint",
+   "code": "import { useId } from 'react';\n\nfunction PasswordField() {\n  const passwordHintId = useId();\n\n  return (\n    <>\n      <input type=\"password\" aria-describedby={passwordHintId} />\n      <p id={passwordHintId}>Use at least 12 characters.</p>\n    </>\n  );\n}",
    "language": "tsx",
-   "explanation": "Connects an input to its accessible hint with a generated ID."
+   "explanation": "The generated ID connects the input to its descriptive hint through accessibility attributes."
   },
   "useCases": [
    {
-    "title": "Accessible form labels",
-    "scenario": "Associate a form control with its visible label using htmlFor and id."
+    "title": "Connect controls with descriptions",
+    "scenario": "A form control needs a descriptive hint or error message."
    },
    {
-    "title": "Descriptions and hints",
-    "scenario": "Connect an input to explanatory text with aria-describedby."
+    "title": "Coordinate accessible relationships",
+    "scenario": "Several accessibility attributes must refer to the same generated element ID."
    },
    {
-    "title": "Reusable accessible components",
-    "scenario": "Give related elements matching identifiers in reusable component-library primitives."
+    "title": "Preserve hydration-safe IDs",
+    "scenario": "A component is rendered on both server and client."
    }
   ],
   "related": [
+   "Hooks",
    "use()",
-   "useState",
-   "useEffect"
+   "Server rendering",
+   "Accessibility attributes"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What does useId return, and what is it commonly used for?",
+    "answer": "useId is a Hook that returns a unique string associated with a particular useId call in a component. It is intended for IDs used by accessibility attributes, such as connecting a control with its description.",
+    "followUp": "Why is it useful with server rendering? It lets React generate IDs that agree between server output and client hydration, provided both sides render the same component tree."
+   },
+   {
+    "question": "Where can useId be called?",
+    "answer": "Call useId at the top level of the component or inside a custom Hook. Do not place it in loops or conditions, because Hook calls must remain in a consistent order.",
+    "followUp": "How should conditional behavior be modeled instead? Extract a separate component and move the relevant state or Hook call into that component."
+   },
+   {
+    "question": "What is the signature and what conditions affect hydration?",
+    "answer": "useId does not accept parameters. The returned value is a unique ID string associated with that specific call in that specific component.",
+    "followUp": "What must be true for server-generated and client-generated IDs to match? The component trees rendered on the server and client must match exactly."
+   }
+  ],
   "keyPoints": [
-   "Use it to connect accessible labels, descriptions, hints, and other related elements through matching ID attributes.",
-   "Invoke it unconditionally at component top level so Hook ordering remains valid.",
-   "Each call produces a string associated with that call within its component.",
-   "Reuse the returned string in attributes such as id, aria-describedby, or aria-labelledby.",
-   "Treat the value as a component-instance identifier, not as arbitrary application data."
+   "Use useId to create unique identifiers for relationships expressed through accessibility attributes.",
+   "Invoke it at the component's top level, rather than inside nested control flow.",
+   "The Hook has no arguments; its result is determined by the component and the particular call.",
+   "Each call receives its own unique string, so separate relationships can use separate IDs.",
+   "Identical server and client trees allow the IDs to remain aligned through hydration."
   ],
   "gotchas": [
-   "Call it only at the top level of a component or custom Hook; never inside a loop or condition.",
-   "Server-rendered and client-rendered trees must match exactly, or the generated IDs will differ.",
-   "There are no arguments to configure the generated ID."
+   "Do not call useId inside loops or conditional branches; Hooks must be called at the component or custom Hook's top level.",
+   "Server-rendered and client-rendered component trees must be identical for the generated IDs to match during hydration."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Modern React::Document metadata": {
-  "sourceUrl": "https://react.dev/reference/react-dom/components/meta",
-  "sourceTitle": "meta | React",
-  "summary": "React 19 lets components declare document metadata such as titles and meta tags. React places supported document-level elements in the document head regardless of where they appear in the component tree.",
-  "explanation": "React 19 lets components render document metadata directly. React recognizes elements such as <title> and <meta> anywhere in the component tree and moves their corresponding DOM nodes into the document head, so page-specific metadata can stay near the content it describes.",
-  "syntax": "<title>text</title>\n<meta name=\"name\" content=\"value\" />",
+  "sourceUrl": "https://react.dev/blog/2024/12/05/react-19",
+  "sourceTitle": "React v19",
+  "summary": "React 19 lets components declare document metadata with built-in <title>, <meta>, and metadata <link> elements. React automatically places these elements in the document head, even when rendered deep in the component tree.",
+  "explanation": "React supports rendering document metadata directly in components. When a component renders built-in <title>, <meta>, or metadata <link> elements, React hoists the corresponding DOM nodes into the document head, even when the component is nested elsewhere in the tree.",
+  "syntax": "<title>{text}</title>\n<meta name=\"name\" content=\"value\" />\n<link rel=\"rel\" href=\"url\" />",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Metadata declared by a component",
-   "code": "export default function BlogPost({ post }: { post: { title: string; author: string } }) {\n  return (\n    <article>\n      <title>{post.title}</title>\n      <meta name=\"author\" content={post.author} />\n      <h1>{post.title}</h1>\n    </article>\n  );\n}",
+   "title": "Metadata from a component",
+   "code": "function BlogPost({ post }: { post: { title: string; keywords: string } }) {\n  return (\n    <article>\n      <h1>{post.title}</h1>\n      <title>{post.title}</title>\n      <meta name=\"author\" content=\"Ada Lovelace\" />\n      <meta name=\"keywords\" content={post.keywords} />\n      <p>Article content</p>\n    </article>\n  );\n}",
    "language": "tsx",
-   "explanation": "Rendering the metadata beside the page content lets React place the title and author metadata in the document head."
+   "explanation": "Rendering these built-in metadata components from a page component lets React place the title and meta elements in the document head."
   },
   "useCases": [
    {
-    "title": "Page titles",
-    "scenario": "Set a route or page title near the component that renders the page."
+    "title": "Page-specific SEO metadata",
+    "scenario": "A page component knows its own title and search metadata."
    },
    {
-    "title": "Search and document metadata",
-    "scenario": "Provide descriptions, keywords, or author information for a document."
+    "title": "Data-driven document metadata",
+    "scenario": "A blog or product component has data that should be reflected in the document head."
    },
    {
-    "title": "Universal rendering",
-    "scenario": "Declare metadata alongside server-rendered or client-rendered page content."
+    "title": "Client, SSR, and Server Components",
+    "scenario": "The same component model must support browser rendering and server delivery."
    }
   ],
   "related": [
    "<title>",
    "<meta>",
    "<link>",
-   "Document Metadata"
+   "React DOM Components",
+   "Server Components",
+   "streaming SSR"
   ],
   "since": "19",
-  "keyPoints": [
-   "Render <meta> in any component; React hoists the resulting element into the document head.",
-   "Metadata does not need to be declared in the root component or a dedicated head component.",
-   "Use <meta> for document information such as descriptions, keywords, and authors."
+  "interview": [
+   {
+    "question": "How does React handle metadata rendered deep in the component tree?",
+    "answer": "React 19 lets components render built-in <title>, <meta>, and metadata <link> elements directly. React detects them and hoists their corresponding DOM nodes into the document head, regardless of where those components occur in the tree.",
+    "followUp": "How does this differ from manually editing the head? It keeps metadata near the component that determines it and works across client-only apps, streaming SSR, and Server Components."
+   },
+   {
+    "question": "How do you set a document title from a component?",
+    "answer": "Use the built-in <title> component with text as its child. React places the resulting title element in the document head, and the title text becomes the document title.",
+    "followUp": "What constraint applies to the child? It must be a single string, number, or object with a toString method; multiple rendered children are not valid."
+   },
+   {
+    "question": "How do you add metadata from a component, and what prop constraint applies?",
+    "answer": "Render the built-in <meta> component with a metadata selector such as name, httpEquiv, charset, or itemProp, together with the appropriate value. React places the resulting meta element in the head.",
+    "followUp": "Can metadata describe an item instead of the whole document? Yes; use itemProp to annotate specific items within the document."
+   }
   ],
-  "gotchas": [],
-  "checkedAt": "2026-10-15"
+  "keyPoints": [
+   "React 19 natively supports rendering document metadata tags from components.",
+   "React moves rendered <title>, <link>, and <meta> elements into the document head.",
+   "A component can render <meta> regardless of its location in the component tree."
+  ],
+  "gotchas": [
+   "A <meta> element must select exactly one metadata-identifying prop from the documented alternatives."
+  ],
+  "checkedAt": "2026-10-16"
  },
  "Modern React::Stylesheets and preloading": {
   "sourceUrl": "https://react.dev/reference/react-dom/components/link",
-  "sourceTitle": "<link> – React",
-  "summary": "React can coordinate stylesheets declared in the component tree. Use precedence to control stylesheet order and preload to start fetching resources earlier.",
-  "explanation": "Render a stylesheet from the component that needs it, giving it a unique href and a precedence value. React uses precedence to order stylesheets, deduplicates repeated resources, and can wait for a stylesheet before revealing dependent content. Use preload when you know a resource will be needed and want fetching to begin earlier, including before a navigation.",
-  "syntax": "<link rel=\"stylesheet\" href=\"/styles.css\" precedence=\"page\" />\npreload('/styles.css', { as: 'style' })",
+  "sourceTitle": "link | React",
+  "summary": "React coordinates stylesheet loading and ordering from the component tree. Use `precedence` on stylesheet links and `preload` when a resource should begin fetching before it is rendered.",
+  "explanation": "React can discover resources from the component tree. Give a stylesheet a precedence value so React orders it relative to other stylesheets and waits for an external stylesheet before revealing dependent content; call preload when you know a resource will be needed and want fetching to begin early.",
+  "syntax": "preload(href, options)",
   "parameters": [
    {
     "name": "href",
     "type": "string",
-    "description": "The stylesheet URL used by the link and as the resource identity for deduplication."
-   },
-   {
-    "name": "rel",
-    "type": "string",
-    "description": "The relationship to the resource; use \"stylesheet\" for an external stylesheet."
-   },
-   {
-    "name": "precedence",
-    "type": "string",
-    "description": "A React ordering label that ranks this stylesheet relative to other stylesheets."
-   },
-   {
-    "name": "resource",
-    "type": "string",
-    "description": "The resource URL to fetch eagerly."
+    "description": "The resource URL to fetch."
    },
    {
     "name": "options",
     "type": "object",
-    "description": "An options object; its required as property identifies the resource type, such as \"style\"."
+    "description": "Options including the resource type and optional relative fetch priority."
    }
   ],
-  "returns": "The <link> component renders a stylesheet link; preload provides the browser with a loading hint and does not return a rendered component.",
+  "returns": "`preload` returns nothing; it provides the browser with a hint to begin downloading the resource.",
   "example": {
-   "title": "Preload and apply a stylesheet",
-   "code": "import { preload } from 'react-dom';\n\nexport default function ProductPage() {\n  preload('/product.css', { as: 'style' });\n\n  return (\n    <main>\n      <link rel=\"stylesheet\" href=\"/product.css\" precedence=\"page\" />\n      <h1>Product</h1>\n    </main>\n  );\n}",
+   "title": "Preload and render a component stylesheet",
+   "code": "import { preload } from 'react-dom';\n\nexport function ProductCard() {\n  preload('/styles/product.css', { as: 'style', precedence: 'components' });\n\n  return (\n    <link\n      rel=\"stylesheet\"\n      href=\"/styles/product.css\"\n      precedence=\"components\"\n    />\n  );\n}",
    "language": "tsx",
-   "explanation": "Preloads the stylesheet while the component renders, then declares it with precedence so React can coordinate loading and ordering."
+   "explanation": "The component hints that its stylesheet should be fetched early, then renders the stylesheet with a precedence group so React can coordinate its order and loading."
   },
   "useCases": [
    {
-    "title": "Load route-specific styles safely",
-    "scenario": "A route or component depends on CSS before it can be shown without unstyled content."
+    "title": "Declare a local stylesheet dependency",
+    "scenario": "A component needs styles before it can appear correctly."
    },
    {
-    "title": "Coordinate stylesheet precedence",
-    "scenario": "Several style systems or layers must have a predictable override order."
+    "title": "Start fetching an anticipated resource",
+    "scenario": "A likely navigation or upcoming render needs a stylesheet, font, image, or script soon."
    },
    {
-    "title": "Start resource loading early",
-    "scenario": "A stylesheet, font, or script is known before a navigation or state transition begins."
+    "title": "Coordinate precedence groups",
+    "scenario": "Several style systems must coexist without accidental cascade order changes."
    }
   ],
   "related": [
+   "preinit",
+   "preinitModule",
+   "preloadModule",
    "<link>",
    "<style>",
-   "preload",
-   "preinit",
-   "Suspense"
+   "Suspense",
+   "react-dom"
   ],
-  "since": "",
+  "since": "19",
+  "interview": [
+   {
+    "question": "How does a component declare a stylesheet dependency?",
+    "answer": "Render a stylesheet as a `<link rel=\"stylesheet\">` inside the component that depends on it and provide `precedence`. React uses that value to place the stylesheet relative to other stylesheets and can suspend dependent content while it loads.",
+    "followUp": "How can fetching begin earlier? Call `preload(href, { as: 'style' })` when rendering once you know the stylesheet will be needed; this gives the browser an early fetch hint."
+   },
+   {
+    "question": "What does the `precedence` prop control?",
+    "answer": "React treats precedence values as ordering groups. Stylesheets with higher precedence can override stylesheets with lower precedence, while stylesheets in the same group are kept together.",
+    "followUp": "What determines implicit relative ranking? React considers values discovered earlier in the component tree lower and later-discovered values higher."
+   },
+   {
+    "question": "What is the role of `preload`?",
+    "answer": "`preload` asks the browser to start fetching a resource such as a stylesheet, font, image, or external script. It is a hint rather than the stylesheet declaration itself, so the resource still needs to be used by the rendered UI.",
+    "followUp": "Which option controls fetch urgency? The `priority` option suggests `auto`, `high`, or `low` relative priority, with `auto` as the default."
+   }
+  ],
   "keyPoints": [
-   "Use the built-in link component with rel=\"stylesheet\" when declaring an external stylesheet.",
-   "The same precedence groups external links and inline style components into one ordering tier.",
-   "Call preload to begin fetching a stylesheet or another expected resource before it is needed.",
-   "Preload from the component tree when the component or its descendants will use the resource.",
-   "For anticipated navigation, preload in the triggering event before starting the transition."
+   "Use `precedence` on stylesheet links to make React manage their document order instead of relying on incidental rendering order.",
+   "Assign higher precedence to rules intended to win over lower-ranked stylesheet groups.",
+   "A precedence group can contain external links and inline styles, allowing one ordering model across both forms.",
+   "A component may suspend while its declared external stylesheet loads, helping prevent its content from appearing without required styling.",
+   "Set preload `priority` to `auto`, `high`, or `low` to suggest relative fetch urgency."
   ],
   "gotchas": [
-   "A stylesheet link intended to participate in React's stylesheet ordering must provide precedence; omitting it prevents the documented coordination behavior.",
-   "A component rendering a stylesheet link can suspend during loading, so account for Suspense behavior when the CSS is not cached."
+   "A stylesheet link that participates in React's ordering behavior must include `precedence`; omitting it prevents that coordination.",
+   "Precedence is relative to discovery order, so introducing values in a different component-tree order can change which rules win."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Performance::React Compiler": {
   "sourceUrl": "https://react.dev/learn/react-compiler/introduction",
-  "sourceTitle": "Introduction",
-  "summary": "React Compiler automatically memoizes React components and calculations at build time. It follows the Rules of React, reducing unnecessary re-renders and repeated work without requiring manual memoization in typical code.",
-  "explanation": "React Compiler analyzes React components and Hooks during the build, then adds memoization where its analysis indicates it is useful. It follows the Rules of React and can skip unsafe components or Hooks, so existing code can remain ordinary JavaScript while unnecessary re-renders and repeated calculations are reduced.",
+  "sourceTitle": "Introduction | React",
+  "summary": "React Compiler is a build-time optimizer that automatically memoizes React components, values, and calculations. It follows the Rules of React so most code can gain update-performance improvements without manual memoization.",
+  "explanation": "React Compiler analyzes React components and Hooks during the build, then automatically memoizes components, values, and calculations when appropriate. It relies on the Rules of React; code that may violate them can be skipped safely, while useMemo and useCallback remain available when precise manual control is needed.",
   "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
    "title": "Compiler-friendly component",
-   "code": "function ExpensiveList({ items }: { items: string[] }) {\n  const sorted = items.toSorted();\n  return <ul>{sorted.map(item => <li key={item}>{item}</li>)}</ul>;\n}\n\nexport default function App() {\n  const [count, setCount] = useState(0);\n  return <><button onClick={() => setCount(count + 1)}>{count}</button><ExpensiveList items={[\"b\", \"a\"]} /></>;\n}",
+   "code": "import { useState } from 'react';\n\nfunction ExpensiveList({ items }: { items: string[] }) {\n  const processed = items.map(item => item.toUpperCase());\n  return <ul>{processed.map(item => <li key={item}>{item}</li>)}</ul>;\n}\n\nexport default function App() {\n  const [items, setItems] = useState(['React', 'Compiler']);\n  return (\n    <>\n      <button onClick={() => setItems(items => [...items, 'Memoization'])}>\n        Add item\n      </button>\n      <ExpensiveList items={items} />\n    </>\n  );\n}",
    "language": "tsx",
-   "explanation": "With the compiler enabled, React can memoize the component and its render calculation without manually adding memoization hooks."
+   "explanation": "With the React Compiler enabled in the build, the component and its render-time calculation can be memoized automatically without adding manual memoization hooks."
   },
   "useCases": [
    {
-    "title": "Reduce cascading renders",
-    "scenario": "Prevent unchanged child components from re-rendering when a parent updates."
+    "title": "Skip cascading re-renders",
+    "scenario": "A parent update causes unaffected descendants to render again."
    },
    {
-    "title": "Cache costly work",
-    "scenario": "Reuse expensive calculations performed during rendering."
+    "title": "Reuse expensive calculations",
+    "scenario": "A component repeatedly performs costly pure work during rendering."
    },
    {
-    "title": "Simplify performance tuning",
-    "scenario": "Adopt automatic optimization in existing JavaScript or React code."
+    "title": "Prefer compiler inference",
+    "scenario": "A new codebase wants fewer hand-written memoization decisions."
    }
   ],
   "related": [
@@ -831,112 +1027,149 @@
    "use no memo"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What does React Compiler do?",
+    "answer": "React Compiler is a build-time tool that analyzes React code and inserts automatic memoization. It can reduce cascading child re-renders and repeated expensive calculations without requiring manual useMemo, useCallback, or memo in typical new code.",
+    "followUp": "What happens when code violates the Rules of React? The compiler can safely skip optimization for the affected component or Hook instead of changing its behavior."
+   },
+   {
+    "question": "Which performance problems does it target?",
+    "answer": "It primarily improves update performance. The compiler can avoid re-rendering unchanged parts of a component tree and reuse expensive render-time calculations when its analysis determines that reuse is valid.",
+    "followUp": "Does it eliminate every render? No. Its optimization targets unnecessary work; it does not make memoization a semantic guarantee."
+   },
+   {
+    "question": "Are useMemo and useCallback still needed?",
+    "answer": "The compiler infers memoization from its analysis and heuristics by default. useMemo and useCallback still work as escape hatches when a developer needs more precise control over what is memoized.",
+    "followUp": "Should existing manual memoization always be removed? Not automatically; remove it when appropriate, but retain explicit memoization when deliberate control or compatibility requires it."
+   }
+  ],
   "keyPoints": [
-   "Optimization happens during the build, not as a separate runtime API call.",
-   "You can use it with ordinary JavaScript while preserving React’s rules-based model.",
-   "The compiler adds optimization comparable to manually using memo, useMemo, and useCallback.",
-   "One target is preventing unchanged descendants from re-rendering after an ancestor update.",
-   "Another target is reusing costly calculations performed inside components or Hooks.",
-   "The compiler normally decides what to memoize instead of requiring annotations everywhere."
+   "Optimization happens during the build rather than through a runtime-only feature.",
+   "The compiler is designed for ordinary JavaScript and uses React’s rules as part of its analysis.",
+   "Its generated optimization can provide the effect of manually memoizing components and values.",
+   "A central benefit is reducing propagation of updates into unaffected portions of the UI.",
+   "Render-time calculations that are costly may be cached automatically when the compiler determines that it is safe.",
+   "Default behavior is inferred rather than requiring annotations on every component."
   ],
   "gotchas": [
-   "Manual memoization is still available when precise control is needed; it is not required by default.",
-   "Do not make correctness depend on a value or component being memoized.",
-   "Code that violates the Rules of React may be left unoptimized rather than safely transformed."
+   "The compiler does not force optimization onto code that appears to violate the Rules of React; it can leave affected components or Hooks unoptimized."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Performance::useDeferredValue": {
   "sourceUrl": "https://react.dev/reference/react/useDeferredValue",
-  "sourceTitle": "useDeferredValue | React",
-  "summary": "Defer updates to a non-critical part of the UI so urgent interactions, such as typing, remain responsive. React can render the deferred view in the background and let it catch up when ready.",
-  "explanation": "Call the Hook with a value whose updates may be expensive to render. React can first render with the previous deferred value, then attempt the new render in the background, allowing urgent UI such as an input to update immediately. The deferred render is interruptible, and React may skip it when a newer value arrives.",
+  "sourceTitle": "useDeferredValue",
+  "summary": "Defer updating a non-critical part of the UI so urgent interactions, such as typing, stay responsive while React prepares the expensive view.",
+  "explanation": "Call the Hook with a value whose update should not block urgent UI. React returns the previous value first during an update, then attempts a background render with the new value, allowing an expensive child view to lag briefly while input-driven UI stays responsive.",
   "syntax": "const deferredValue = useDeferredValue(value, initialValue?)",
   "parameters": [
    {
     "name": "value",
     "type": "any",
-    "description": "The value to defer; it may have any type."
+    "description": "The value to defer; it can have any type."
    },
    {
     "name": "initialValue",
     "type": "any",
-    "description": "Optional value used for the component's initial render. If omitted, the initial render is not deferred."
+    "description": "Optional value used during the component’s initial render. If omitted, the initial render is not deferred."
    }
   ],
-  "returns": "The deferred value: initially initialValue when supplied, otherwise value; on updates it may first return the previous value and later the new value.",
+  "returns": "Returns the current deferred value. On the initial render it is initialValue, if supplied, otherwise value; during updates React may first return the previous value and later render with the new value.",
   "example": {
    "title": "Keep search input responsive",
-   "code": "import { useDeferredValue, useState } from 'react';\n\nfunction SearchPage({ items }) {\n  const [query, setQuery] = useState('');\n  const deferredQuery = useDeferredValue(query);\n  const results = items.filter(item =>\n    item.name.toLowerCase().includes(deferredQuery.toLowerCase())\n  );\n\n  return (\n    <>\n      <label>\n        Search: <input value={query} onChange={e => setQuery(e.target.value)} />\n      </label>\n      <ul>{results.map(item => <li key={item.id}>{item.name}</li>)}</ul>\n    </>\n  );\n}",
+   "code": "import { Suspense, useDeferredValue, useState } from 'react';\n\nfunction SearchResults({ query }: { query: string }) {\n  return <div>Results for: {query || 'all items'}</div>;\n}\n\nexport default function SearchPage() {\n  const [query, setQuery] = useState('');\n  const deferredQuery = useDeferredValue(query);\n\n  return (\n    <>\n      <input\n        value={query}\n        onChange={(event) => setQuery(event.target.value)}\n        placeholder=\"Search\"\n      />\n      <Suspense fallback={<p>Loading…</p>}>\n        <SearchResults query={deferredQuery} />\n      </Suspense>\n    </>\n  );\n}",
    "language": "tsx",
-   "explanation": "The input uses the immediate query, while filtering uses a deferred query so expensive result rendering can lag without delaying typing."
+   "explanation": "The input uses the immediate query, while the results receive a deferred query and can continue showing older content during an update."
   },
   "useCases": [
    {
     "title": "Responsive search",
-    "scenario": "A search field updates on every keystroke while filtering or rendering a large result list."
+    "scenario": "A controlled search field updates immediately while a costly result list consumes deferredQuery."
+   },
+   {
+    "title": "Expensive derived view",
+    "scenario": "A large visualization or filtered collection can render behind the latest controls."
    },
    {
     "title": "Stale content during loading",
-    "scenario": "A query changes immediately while a Suspense-wrapped result view continues showing previous content until new data is ready."
-   },
-   {
-    "title": "Background rendering",
-    "scenario": "A large non-critical panel should yield to navigation, typing, or other urgent interactions."
+    "scenario": "A deferred query can keep previous results visible while new Suspense-driven content loads."
    }
   ],
   "related": [
    "useTransition",
-   "<Suspense>",
-   "startTransition"
+   "startTransition",
+   "Suspense",
+   "useState"
   ],
-  "since": "React 19",
+  "since": "18.0",
+  "interview": [
+   {
+    "question": "What problem does useDeferredValue solve?",
+    "answer": "It returns a deferred version of the supplied value. During an update, React can first render with the old value and then try a background render with the new one, so urgent UI can update before an expensive view.",
+    "followUp": "How does this differ from debouncing? It has no fixed delay; React schedules an interruptible background render rather than waiting for a timer."
+   },
+   {
+    "question": "What does the optional initialValue parameter do?",
+    "answer": "The Hook takes the value to defer and optionally an initialValue. The initial value is used only for the component’s initial render; later updates use the previous value first when React defers the work.",
+    "followUp": "What happens if initialValue is omitted? The first render uses the supplied value because React has no earlier version to display."
+   },
+   {
+    "question": "How would you use this Hook for a searchable view?",
+    "answer": "The input should read the immediate state, while an expensive child receives the deferred value. This lets the input reflect typing immediately while the child may temporarily render stale content.",
+    "followUp": "What should be passed to the Hook? Prefer primitives or objects created outside rendering, because a newly created object changes identity on every render."
+   }
+  ],
   "keyPoints": [
-   "Use it to let urgent UI update first while a non-critical view catches up.",
-   "Invoke the Hook at component top level and store the returned deferred value.",
-   "The deferred value can temporarily lag behind the current value during updates.",
-   "React schedules the newer view in the background rather than blocking the initial update."
+   "Use it when a non-critical UI section is expensive to update and should yield to more urgent interaction.",
+   "Invoke the Hook at component scope, not conditionally or inside nested functions.",
+   "The deferred value can lag behind the latest value, allowing the current UI to remain responsive.",
+   "React separately attempts to render the updated value in the background."
   ],
-  "gotchas": [],
-  "checkedAt": "2026-10-15"
+  "gotchas": [
+   "Prefer primitive values, or objects created outside rendering; creating a new object during every render can trigger unnecessary background renders.",
+   "Inside a Transition, the update is already deferred, so this Hook does not create another deferred render.",
+   "Without initialValue, the first render uses the supplied value because no previous value exists."
+  ],
+  "checkedAt": "2026-10-16"
  },
  "Performance::useMemo and useCallback": {
   "sourceUrl": "https://react.dev/reference/react/useCallback",
-  "sourceTitle": "useCallback – React",
-  "summary": "useMemo caches a calculation result; useCallback caches a function definition. Use them when stable identity enables a real optimization, such as a memoized child or an Effect dependency.",
-  "explanation": "useMemo caches the result of a calculation, while useCallback caches the function itself. Both compare dependencies between renders and are useful when stable identity enables a real optimization, such as avoiding work in a memoized child or preventing an Effect from repeatedly re-running.",
+  "sourceTitle": "useCallback",
+  "summary": "useMemo caches a calculation result; useCallback caches a function definition. Use either when stable identity enables a real optimization, such as skipping an optimized child render or avoiding unnecessary Effect work.",
+  "explanation": "useMemo caches the result of a calculation, whereas useCallback caches the function itself. Both are performance optimizations for stabilizing values passed to optimized children or used as dependencies; use them when identity affects a real optimization, not by default.",
   "syntax": "useMemo(calculateValue, dependencies)\nuseCallback(fn, dependencies)",
   "parameters": [
    {
     "name": "fn",
     "type": "function",
-    "description": "The calculation function whose result is cached by useMemo, or the function definition cached by useCallback."
+    "description": "Function or calculation to cache. useMemo calls the calculation; useCallback retains the function without calling it."
    },
    {
     "name": "dependencies",
-    "type": "array",
-    "description": "Every reactive value used by the calculation or callback; the list must have a constant number of items and be written inline."
+    "type": "Array<any>",
+    "description": "Inline array of all reactive values used by fn; React compares entries with Object.is."
    }
   ],
   "returns": "useMemo returns the cached calculation result. useCallback returns the cached function definition.",
   "example": {
-   "title": "Memoize values and callbacks only when identity matters",
-   "code": "import { memo, useCallback, useMemo, useState } from 'react';\n\nconst Requirements = memo(function Requirements({ value }: { value: string[] }) {\n  return <p>{value.join(', ')}</p>;\n});\n\nexport default function ShippingForm({ productId }: { productId: number }) {\n  const [referrer, setReferrer] = useState('email');\n  const requirements = useMemo(() => [\n    `Product ${productId}`,\n    `Source: ${referrer}`,\n  ], [productId, referrer]);\n  const handleSubmit = useCallback((order: string) => {\n    console.log(order, productId, referrer);\n  }, [productId, referrer]);\n  return <>\n    <button onClick={() => setReferrer('ad')}>Change source</button>\n    <Requirements value={requirements} />\n    <button onClick={() => handleSubmit('order')}>Submit</button>\n  </>;\n}",
+   "title": "Stable props for an optimized child",
+   "code": "import { memo, useCallback, useMemo, useState } from 'react';\n\nconst Button = memo(function Button({ onClick, label }: {\n  onClick: () => void;\n  label: string;\n}) {\n  console.log('Button rendered');\n  return <button onClick={onClick}>{label}</button>;\n});\n\nexport default function App() {\n  const [count, setCount] = useState(0);\n  const requirements = useMemo(() => ({ label: `Count: ${count}` }), [count]);\n  const increment = useCallback(() => setCount(c => c + 1), []);\n\n  return <>\n    <p>{requirements.label}</p>\n    <Button onClick={increment} label=\"Increment\" />\n  </>;\n}",
    "language": "tsx",
-   "explanation": "The memoized array and callback keep stable identities while their dependencies stay unchanged, allowing the memoized child and consumers to benefit from referential equality."
+   "explanation": "useMemo preserves the derived object identity, while useCallback preserves the handler identity; memo can then skip Button renders when its props remain unchanged."
   },
   "useCases": [
    {
-    "title": "Stabilize a derived prop",
-    "scenario": "A memoized child receives an object, array, or other derived value whose identity would otherwise change on every parent render."
+    "title": "Skip unnecessary child renders",
+    "scenario": "A memoized child receives a callback prop; useCallback keeps that prop identity stable when its inputs are unchanged."
    },
    {
-    "title": "Stabilize a callback prop",
-    "scenario": "A memoized child receives a callback and should skip rendering when the callback’s dependencies have not changed."
+    "title": "Stabilize derived values",
+    "scenario": "A calculation creates an object, array, or derived data passed to an optimized child; useMemo preserves its identity until relevant inputs change."
    },
    {
     "title": "Control Effect dependencies",
-    "scenario": "An Effect depends on a function or derived object and should not re-run solely because its identity was recreated."
+    "scenario": "An Effect depends on a callback or derived value whose identity would otherwise change on every render; memoize it when that prevents avoidable Effect work."
    }
   ],
   "related": [
@@ -947,339 +1180,426 @@
    "useState"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between useMemo and useCallback?",
+    "answer": "useMemo caches the value returned by calling a calculation function. useCallback caches the function definition itself and does not invoke it.",
+    "followUp": "How are they conceptually related? useCallback(fn, deps) is equivalent to useMemo(() => fn, deps)."
+   },
+   {
+    "question": "How should dependencies be selected?",
+    "answer": "Pass every value from the component that the calculation or callback reads in its dependency list. React compares dependencies with Object.is and recalculates or returns a new function when one changes.",
+    "followUp": "What happens with an omitted dependency? The hook cannot correctly track reactive inputs, so the cached result or callback can become stale; restructure the code or specify the complete list."
+   },
+   {
+    "question": "When should these hooks be used?",
+    "answer": "They are useful when a stable identity enables a concrete optimization, such as allowing memo to skip a child render, or when a stable value or callback prevents an Effect from running unnecessarily. They add complexity and should not be used indiscriminately.",
+    "followUp": "What alternative can reduce the need for them? React Compiler can automatically memoize in supported code, while the hooks remain available when precise manual control is needed."
+   }
+  ],
   "keyPoints": [
-   "useCallback stores a function definition between renders, returning the same function while dependencies are unchanged.",
-   "The hooks can stabilize values passed to optimized children, but identity stability matters only when it avoids actual work.",
-   "Every reactive value read by the callback belongs in its dependency list, so changes correctly produce a new function.",
-   "Hooks must be called unconditionally at component or custom-Hook top level."
+   "useCallback returns the same function identity across renders while its dependencies are unchanged.",
+   "Provide the function to retain and a dependency list containing each reactive value used by that function.",
+   "Together, the hooks can stabilize object-like values and callbacks passed as props to an optimized child.",
+   "useCallback stores the callback rather than its return value; useMemo stores the calculation’s return value.",
+   "Place the hook at component top level around a callback whose identity matters to a child optimization or dependency list."
   ],
   "gotchas": [
-   "Call useCallback only at the top level of a component or custom Hook; do not place it in loops or conditions.",
-   "useCallback preserves the callback definition, whereas useMemo invokes its calculation function and preserves that calculation's result."
+   "Call the Hooks only at the top level of a component or custom Hook; do not place them in loops or conditions."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Performance::useTransition": {
   "sourceUrl": "https://react.dev/reference/react/useTransition",
   "sourceTitle": "useTransition",
-  "summary": "useTransition marks state updates as non-urgent Transitions, allowing React to render them in the background while urgent interactions stay responsive. It also provides an isPending flag for feedback.",
-  "explanation": "Call the Hook in a component or custom Hook, then use the returned function to wrap non-urgent state updates. React can render that work in the background while the returned flag exposes whether the Transition is pending.",
-  "syntax": "const [isPending, startTransition] = useTransition();",
+  "summary": "useTransition marks non-urgent state updates as Transitions so React can render them in the background while urgent interactions stay responsive. It also provides isPending for showing transition progress.",
+  "explanation": "At component level, call useTransition to obtain a pending indicator and a function for scheduling non-urgent state updates. Pass a synchronous callback to startTransition; React marks updates performed during that callback as transitions so urgent work can interrupt them. In React 19, transition callbacks may also be async, but updates after an await need another transition wrapper.",
+  "syntax": "const [isPending, startTransition] = useTransition()",
   "parameters": [],
-  "returns": "An array containing isPending and startTransition.",
+  "returns": "An array containing exactly two items: isPending, a boolean indicating whether a Transition is pending, and startTransition, a function that marks updates as a Transition.",
   "example": {
-   "title": "Keep search input responsive",
-   "code": "import { useState, useTransition } from 'react';\n\nexport default function SearchResults() {\n  const [query, setQuery] = useState('');\n  const [results, setResults] = useState([]);\n  const [isPending, startTransition] = useTransition();\n\n  function handleChange(event) {\n    const value = event.target.value;\n    setQuery(value);\n    startTransition(() => {\n      setResults(filterResults(value));\n    });\n  }\n\n  return (\n    <>\n      <input value={query} onChange={handleChange} />\n      {isPending && <p>Loading…</p>}\n      <Results items={results} />\n    </>\n  );\n}\n",
+   "title": "Marking a tab change as a transition",
+   "code": "import { useState, useTransition } from 'react';\n\nexport default function Tabs() {\n  const [tab, setTab] = useState('about');\n  const [isPending, startTransition] = useTransition();\n\n  function selectTab(nextTab: string) {\n    startTransition(() => setTab(nextTab));\n  }\n\n  return (\n    <>\n      <button disabled={isPending} onClick={() => selectTab('about')}>About</button>\n      <button disabled={isPending} onClick={() => selectTab('posts')}>Posts</button>\n      {isPending && <p>Loading…</p>}\n      <p>Selected: {tab}</p>\n    </>\n  );\n}",
    "language": "tsx",
-   "explanation": "Keeps text input updates urgent while rendering the filtered results as a non-blocking Transition."
+   "explanation": "Wraps the tab state update in a transition and uses isPending to expose progress."
   },
   "useCases": [
    {
-    "title": "Keep text input responsive",
-    "scenario": "A user types into a search field while a large result list updates."
+    "title": "Keep tab navigation responsive",
+    "scenario": "A tab switch changes a large panel and may require substantial rendering."
    },
    {
-    "title": "Defer tab content",
-    "scenario": "A tab switch causes expensive rendering."
+    "title": "Prioritize text input over results",
+    "scenario": "A search control should accept typing while result rendering catches up."
    },
    {
-    "title": "Show transition progress",
-    "scenario": "A navigation or view change needs a pending indicator."
+    "title": "Show pending navigation feedback",
+    "scenario": "A route or view change needs visible progress without blocking interaction."
    }
   ],
   "related": [
    "startTransition",
-   "useOptimistic",
+   "useDeferredValue",
+   "Suspense",
    "useActionState"
   ],
-  "since": "",
+  "since": "18.0",
+  "interview": [
+   {
+    "question": "What does useTransition return?",
+    "answer": "useTransition returns exactly two values: isPending and startTransition. The boolean indicates whether a transition is pending, while the function marks state updates performed by its callback as transitions.",
+    "followUp": "How can code outside a component start a transition? Use the standalone startTransition API, which can mark updates but does not provide the Hook's isPending indicator."
+   },
+   {
+    "question": "How do you mark an update as a transition?",
+    "answer": "Call the Hook at the top level of a component or custom Hook, then call startTransition with a callback around the non-urgent state update. React can let urgent updates interrupt that transition work.",
+    "followUp": "What happens if an update occurs after an async request? Wrap that later update in another startTransition call so it is marked as transition work."
+   },
+   {
+    "question": "When should useTransition be used instead of standalone startTransition?",
+    "answer": "The callback supplied to startTransition is invoked immediately, and state updates made while it runs are marked as transitions. The Hook also exposes isPending so the UI can show progress while the transition is active.",
+    "followUp": "Why might a component prefer the standalone API? A non-component context such as a data library may need to start the transition, but only the Hook supplies a pending flag."
+   }
+  ],
   "keyPoints": [
-   "useTransition marks selected rendering work as background work so urgent interactions can remain responsive.",
-   "Call the Hook at component top level, not conditionally or inside event-handler logic.",
-   "The Hook has no input arguments.",
-   "Destructure the result into the pending indicator and the function that starts a Transition.",
-   "Use isPending to show feedback while the Transition is still underway.",
-   "Call startTransition with a function containing the non-urgent state updates."
+   "It lets React render part of the interface in the background instead of treating every update as equally urgent.",
+   "Call it at the component’s top level, not conditionally or inside event-specific branches.",
+   "Use isPending to display progress feedback or adjust controls while transition work remains pending.",
+   "Use startTransition to identify state updates whose rendering can be deferred in favor of urgent interaction.",
+   "All state updates performed during the callback are classified as transition updates.",
+   "The Hook has no configuration arguments; its behavior is controlled through the returned function."
   ],
   "gotchas": [
-   "Call useTransition only at the top level of a component or custom Hook; use standalone startTransition elsewhere.",
-   "The function passed to startTransition must be synchronous; after an async request, wrap subsequent state updates in another startTransition."
+   "The callback passed to startTransition must be synchronous; do not make it an async function when relying on the documented synchronous callback behavior.",
+   "After an asynchronous request, wrap subsequent state updates in another startTransition call so React continues treating them as transition work.",
+   "Call useTransition only within a component or custom Hook, following the Rules of Hooks.",
+   "Code outside components cannot use this Hook; use the standalone startTransition API when no component or custom Hook is available."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Server & client::Context as a provider": {
   "sourceUrl": "https://react.dev/reference/react/createContext.md",
   "sourceTitle": "createContext – React",
-  "summary": "React 19 lets you render a context object directly as a provider, making its value available to deeply nested components without prop drilling. Descendants read the nearest provider's value with `useContext` or `use`.",
-  "explanation": "React 19 lets the context object itself act as the provider: render `<ThemeContext value={...}>` around descendants, then read the nearest value with `useContext(ThemeContext)` or `use(ThemeContext)`. The provider supplies its value to every nested consumer, and a nearer provider overrides an outer one.",
-  "syntax": "const SomeContext = createContext(defaultValue);\n<SomeContext value={value}>{children}</SomeContext>",
+  "summary": "React 19 lets you render a context object directly as a provider, making shared values available to descendants without passing props through every layer.",
+  "explanation": "Create a context, then render that context as a provider with a value. Every descendant can read the nearest provider's value with useContext or use; the provider must be above the component that reads it, and nested providers can override outer values.",
+  "syntax": "<SomeContext value={value}>{children}</SomeContext>",
   "parameters": [
    {
-    "name": "defaultValue",
-    "type": "any",
-    "description": "The default value returned when no matching provider exists; it is also the context's fallback value."
+    "name": "SomeContext",
+    "type": "Context object",
+    "description": "The context object created by createContext; render it as the provider element."
    },
    {
     "name": "value",
     "type": "any",
-    "description": "The value exposed to matching consumers nested inside the provider."
+    "description": "The value made available to descendants that read this context."
    }
   ],
-  "returns": "`createContext(defaultValue)` returns a context object that can be rendered as a provider in React 19 and read by descendant consumers.",
+  "returns": "A provider element that makes value available to matching descendant consumers.",
   "example": {
-   "title": "Providing and reading a theme",
-   "code": "import { createContext, use } from 'react';\n\nconst ThemeContext = createContext('light');\n\nfunction App() {\n  return (\n    <ThemeContext value=\"dark\">\n      <Toolbar />\n    </ThemeContext>\n  );\n}\n\nfunction Toolbar() {\n  return <Button />;\n}\n\nfunction Button() {\n  const theme = use(ThemeContext);\n  return <button className={theme}>Save</button>;\n}\n\nexport default App;",
+   "title": "Providing context with the context element",
+   "code": "import { createContext, useContext } from \"react\";\n\nconst ThemeContext = createContext(\"light\");\n\nfunction Button() {\n  const theme = useContext(ThemeContext);\n  return <button className={theme}>Save</button>;\n}\n\nexport default function App() {\n  return (\n    <ThemeContext value=\"dark\">\n      <Button />\n    </ThemeContext>\n  );\n}",
    "language": "tsx",
-   "explanation": "The parent renders the context object with a value, and a descendant reads that value without receiving it through props."
+   "explanation": "The provider supplies a theme to every descendant, and Button reads the nearest value without receiving a theme prop."
   },
   "useCases": [
    {
-    "title": "Global UI configuration",
-    "scenario": "Theme, locale, or appearance settings shared throughout an application subtree."
+    "title": "Share theme or locale configuration",
+    "scenario": "Application-wide preferences"
    },
    {
-    "title": "User and authorization state",
-    "scenario": "Authenticated user or permission data needed by many nested client components."
+    "title": "Expose current user data to nested client components",
+    "scenario": "Authenticated interfaces"
    },
    {
-    "title": "Avoiding prop drilling",
-    "scenario": "A parent-managed value that multiple descendants need without forwarding props through layout components."
+    "title": "Provide changing state and its update functions to a subtree",
+    "scenario": "Stateful coordination"
    }
   ],
   "related": [
    "createContext",
    "useContext",
    "use",
+   "useState",
    "Context.Provider"
   ],
   "since": "19",
+  "interview": [
+   {
+    "question": "How do you provide context in React 19?",
+    "answer": "Starting in React 19, the context object itself can be rendered as the provider, using a value prop. Descendants can read the nearest value with useContext or use; older React versions use SomeContext.Provider.",
+    "followUp": "What happens with nested providers? The consumer receives the value from the closest corresponding provider above it, so an inner provider overrides an outer one."
+   },
+   {
+    "question": "How does React choose a context value?",
+    "answer": "Call useContext with the context created by createContext. React searches upward from the calling component and returns the value supplied by the closest matching provider, or the context's default when none exists.",
+    "followUp": "Can a consumer read a provider rendered in the same component? No; the provider must be above the component performing the read."
+   },
+   {
+    "question": "How can context provide changing shared state?",
+    "answer": "A context provider's value can have any type and is passed to all descendants reading that context, regardless of their depth. To change it over time, keep the value in parent state and pass that state to the provider.",
+    "followUp": "How can a Server Component render context? It cannot create context, but it can render a context imported from a 'use client' module; Client Components below can read it."
+   }
+  ],
   "keyPoints": [
-   "React 19 allows the context object itself to be rendered as the provider, replacing the longer `.Provider` syntax.",
-   "Put the components that need shared data inside the context provider.",
-   "The provider's `value` reaches matching consumers at any nesting depth.",
-   "Consumers use the closest matching provider, so nested providers can override outer values."
+   "React 19 lets the context object serve directly as the provider element.",
+   "The value prop reaches matching consumers at any descendant depth.",
+   "Consumers use the innermost matching provider when providers are nested.",
+   "A provider can supply primitives, objects, functions, or other values."
   ],
-  "gotchas": [
-   "The value is not restricted to objects or primitives, but consumers receive the value from the nearest matching provider.",
-   "The provider shorthand is available starting in React 19; older React versions require the `.Provider` form."
-  ],
-  "checkedAt": "2026-10-15"
+  "gotchas": [],
+  "checkedAt": "2026-10-16"
  },
  "Server & client::Server Components": {
   "sourceUrl": "https://react.dev/reference/rsc/server-components",
   "sourceTitle": "Server Components",
-  "summary": "Server Components render ahead of bundling in a separate server environment, at build time or per request. Use them for server-side data access and pass data or JSX across deliberate Client Component boundaries.",
-  "explanation": "A Server Component renders before the application is bundled in a separate server environment. It can run at build time or per request, read server-side data directly, and pass serializable props or JSX to Client Components. Keep interaction behind a client boundary because Server Components are not sent to the browser and cannot register event handlers.",
-  "syntax": "async function Component(props) { /* server-side rendering */ }",
+  "summary": "Server Components render ahead of bundling in a separate server environment, either at build time or per request. They keep data access and heavy rendering on the server while interactive behavior stays in intentional Client Component boundaries.",
+  "explanation": "A Server Component executes in a separate server environment before the application is bundled. It may run at build time or per request, read files or access a data layer directly, and pass serializable data or JSX into Client Components. Because it is not sent to the browser, interactive behavior belongs in a client subtree marked with \"use client\".",
+  "syntax": "async function Component(props) { /* server-side rendering and data access */ }",
   "parameters": [],
-  "returns": "Rendered JSX and data that can be passed to Client Components as props.",
+  "returns": "Rendered data and JSX that can be passed to Client Components; the page may be rendered at build time or per request.",
   "example": {
-   "title": "Server-render data, isolate interaction",
+   "title": "Server-render data and delegate interaction",
    "code": "import db from './db';\nimport LikeButton from './LikeButton';\n\nexport default async function Post({ id }: { id: string }) {\n  const post = await db.posts.get(id);\n  return (\n    <article>\n      <h1>{post.title}</h1>\n      <p>{post.body}</p>\n      <LikeButton postId={id} />\n    </article>\n  );\n}",
    "language": "tsx",
-   "explanation": "This async Server Component reads data on the server and passes only the interactive portion to a Client Component."
+   "explanation": "The server component reads data directly, while the client component provides interaction."
   },
   "useCases": [
    {
-    "title": "Build-time static pages",
-    "scenario": "Render static content from files or fetched sources during a build."
+    "title": "Build-time content generation",
+    "scenario": "A mostly static page needs filesystem content or fetched static data."
    },
    {
-    "title": "Request-time data access",
-    "scenario": "Read a database or other data layer during a page request without creating a rendering API."
+    "title": "Request-time data rendering",
+    "scenario": "A page needs direct access to a database or other server-side data layer."
    },
    {
-    "title": "Smaller client surface",
-    "scenario": "Keep large data-fetching and presentation logic out of the browser bundle."
-   },
-   {
-    "title": "Server data with client interaction",
-    "scenario": "Combine server-rendered data with buttons, forms, or other interactive UI."
+    "title": "Server-rendered UI with client islands",
+    "scenario": "A data-heavy view needs only small interactive controls in the browser."
    }
   ],
   "related": [
    "Client Components",
-   "'use client' directive",
+   "use client",
    "Server Functions",
-   "Server Components without a Server",
-   "Server Components with a Server"
+   "use server"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is a Server Component?",
+    "answer": "A Server Component renders ahead of bundling in an environment separate from the client app or SSR server. It can run during a build or for each request, and its output is not included as client JavaScript.",
+    "followUp": "How would you add a button to it? Put the button in a Client Component and pass it serializable props or JSX from the Server Component."
+   },
+   {
+    "question": "Why use Server Components for data-heavy UI?",
+    "answer": "Use a Server Component for data access when the data can be fetched on the server or at build time. It can read the filesystem or access the data layer directly, avoiding the need to construct an API for that access.",
+    "followUp": "Can it update when data changes? Yes: run or re-fetch the Server Component from the server so it accesses current data and renders again."
+   },
+   {
+    "question": "How do Server and Client Components work together?",
+    "answer": "The boundary is created by the client-marking directive: code in that module and its transitive dependencies is client code. Components outside that client subtree are Server Components by default in an RSC application.",
+    "followUp": "What constraint applies to props crossing the boundary? They must be serializable, because the server sends them to the client."
+   }
+  ],
   "keyPoints": [
-   "They render before bundling in a separate environment from the client application or SSR server.",
-   "Choose build-time execution for static content or request-time execution for data that must be current.",
-   "Build-time Server Components can read files and fetch static content without requiring a web server.",
-   "Request-time Server Components can access the data layer directly instead of adding an API solely for rendering.",
-   "Use Server Components for data-heavy work and pass the resulting data or JSX into interactive Client Components."
+   "They support static generation at build time and request-time rendering on a web server.",
+   "Static content can be produced without deploying a web server for the component execution.",
+   "Rendering happens before bundling, and Server Components can provide data or JSX to interactive descendants."
   ],
   "gotchas": [],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Server & client::Server Functions": {
-  "sourceUrl": "https://uk.react.dev/reference/rsc/server-functions",
-  "sourceTitle": "Server Functions – React",
-  "summary": "Server Functions let Client Components invoke asynchronous server-side functions through framework-generated references. Use them primarily for mutations, while treating arguments and exposed functions as untrusted public-endpoint inputs.",
-  "explanation": "Server Functions are asynchronous server-side functions exposed through a framework-generated reference. A client call sends the arguments over the network and receives the serialized result; they are intended mainly for mutations, with authorization and input validation handled on the server.",
-  "syntax": "async function fn(...args) { \"use server\"; ... }\n\n// or in a module:\n\"use server\";\nexport async function fn(...args) { ... }",
+  "sourceUrl": "https://react.dev/reference/rsc/server-functions",
+  "sourceTitle": "Server Functions",
+  "summary": "Server Functions let Client Components call async server-side functions through React-managed requests. Mark functions with 'use server'; use them primarily for authorized mutations and invoke them in Actions or Transitions.",
+  "explanation": "A Server Function is an async function marked with 'use server' so client code can invoke work on the server. React and the framework arrange a network request, serialize arguments and any returned value, and expose the function through a reference; use it for authorized mutations rather than ordinary data fetching.",
+  "syntax": "async function fn(...args) { 'use server'; /* server mutation */ }\n\n// Or at module scope:\n'use server';\nexport async function fn(...args) { /* server mutation */ }",
   "parameters": [
    {
     "name": "...args",
     "type": "serializable values",
-    "description": "Arguments passed by client code; they must be serializable across the network."
-   },
-   {
-    "name": "formData",
-    "type": "FormData",
-    "description": "For a form action, submitted fields are provided as a FormData instance."
+    "description": "Arguments passed by client code; React serializes a copy for the server request. The page does not prescribe a fixed parameter list."
    }
   ],
-  "returns": "If the function returns a value, React serializes it and returns it to the client; a form action may return nothing.",
+  "returns": "A promise resolving to the Server Function's serialized return value; if no value is returned, it resolves without a useful result.",
   "example": {
-   "title": "Submit a form with a Server Function",
-   "code": "\"use server\";\n\nexport async function createNote(formData: FormData) {\n  const text = formData.get(\"text\");\n  if (typeof text !== \"string\" || !text.trim()) return;\n  await saveNote(text);\n}\n\n// Client Component\n\"use client\";\n\nimport { createNote } from \"./actions\";\n\nexport default function NoteForm() {\n  return <form action={createNote}><input name=\"text\" /><button>Save</button></form>;\n}",
+   "title": "Calling a Server Function from a client component",
+   "code": "// actions.ts\n'use server';\n\nexport async function updateName(name: string) {\n  // Validate and authorize before mutating server state.\n  return {ok: name.trim().length > 0};\n}\n\n// App.tsx\n'use client';\n\nimport {useTransition} from 'react';\nimport {updateName} from './actions';\n\nexport default function App() {\n  const [isPending, startTransition] = useTransition();\n  return <button disabled={isPending} onClick={() => startTransition(() => updateName('Ada'))}>\n    Save\n  </button>;\n}",
    "language": "tsx",
-   "explanation": "A client-rendered form invokes the imported Server Function through its action prop."
+   "explanation": "A module-level directive exposes the exported async function to client code. React turns the imported reference into a server request; the client invokes it inside a Transition and can await its promise."
   },
   "useCases": [
    {
     "title": "Form mutations",
-    "scenario": "A client form needs to create or update server-side data."
+    "scenario": "A form submission needs to create, update, or delete server-side data."
    },
    {
-    "title": "Interactive actions",
-    "scenario": "A Client Component needs to trigger an authenticated server-side mutation."
+    "title": "Interactive mutations",
+    "scenario": "A client interaction must trigger a server-side state change without a hand-written API endpoint."
    },
    {
-    "title": "Action state",
-    "scenario": "The UI needs pending state and the latest response from a server operation."
+    "title": "Passing server operations as props",
+    "scenario": "A Server Component has a server operation that a Client Component needs to invoke."
    }
   ],
   "related": [
-   "use server",
-   "useActionState",
-   "<form>",
-   "Actions",
+   "'use server'",
    "Server Components",
    "Client Components",
-   "Transitions"
+   "Actions",
+   "Transition",
+   "<form action>",
+   "formAction"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is a Server Function?",
+    "answer": "A Server Function is an async server-side function marked with 'use server'. When client code calls its reference, React sends a request to execute it and returns a promise for the serialized result.",
+    "followUp": "What must be protected? Treat arguments as untrusted input and authorize mutations on the server, because exposed functions can be called from client code."
+   },
+   {
+    "question": "How do you define and import one?",
+    "answer": "Put 'use server' at the top of an async function, or at module scope to mark all exported functions. A module directive enables importing those exports from client code; a function directive marks one function.",
+    "followUp": "Why must it be async? The underlying network call is asynchronous, so Server Functions require async functions."
+   },
+   {
+    "question": "How should a client invoke a Server Function?",
+    "answer": "Server Functions are intended for mutations that update server-side state. Call them in a Transition, or pass one to a form action or formAction, which invokes it through the form's action flow.",
+    "followUp": "How can the client consume a result? Await the promise returned by the Server Function."
+   }
+  ],
   "keyPoints": [
-   "They let Client Components trigger asynchronous work on the server.",
-   "The directive lets the framework create a client-usable reference instead of shipping the implementation.",
-   "A client invocation becomes a server request, and the serialized result is returned.",
-   "Define them in Server Components or export them from a server-marked module for client imports.",
-   "A Server Function can be supplied as a form action for server-side submission.",
-   "useActionState is useful when the UI needs pending status and the latest action response."
+   "They let Client Components invoke asynchronous server work without implementing a separate client-side API call.",
+   "The call crosses the network: React requests server execution and returns the function's result to the caller.",
+   "A Server Component may pass a function as a prop, while client code may import module-level Server Functions."
   ],
   "gotchas": [],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "State & effects::Effects and synchronization": {
   "sourceUrl": "https://react.dev/learn/synchronizing-with-effects",
   "sourceTitle": "Synchronizing With Effects",
-  "summary": "Effects run after rendering to synchronize a component with an external system. Use them only when rendering or event handlers cannot express the work, and declare dependencies for the reactive values they read.",
-  "explanation": "An Effect runs after React commits the rendered screen, making it suitable for synchronizing with an external system such as the browser DOM, a network connection, or a third-party library. Declare it with useEffect, then list every reactive value it reads in its dependency array so React can re-run synchronization when those values change.",
+  "summary": "Use Effects to synchronize React with external systems when rendering alone cannot express the work. They run after commits and should re-run only when their reactive dependencies require synchronization.",
+  "explanation": "An Effect is React’s mechanism for running synchronization code after a commit, when rendering alone cannot express an interaction with an external system. Declare it with useEffect, list every reactive value it reads as a dependency, and return cleanup when synchronization must be stopped or reversed.",
   "syntax": "useEffect(setup, dependencies?)",
   "parameters": [
    {
     "name": "setup",
     "type": "() => void | (() => void)",
-    "description": "A setup function that synchronizes with an external system and may return a cleanup function."
+    "description": "A callback containing synchronization code; it may return cleanup code."
    },
    {
     "name": "dependencies",
     "type": "DependencyList | undefined",
-    "description": "Optional array of reactive values read by the setup function; changes cause re-synchronization."
+    "description": "Optional reactive values read by the callback."
    }
   ],
-  "returns": "useEffect returns undefined.",
+  "returns": "The page does not specify a standalone return value for useEffect; its setup callback may return a cleanup function.",
   "example": {
-   "title": "Synchronize a video player",
-   "code": "import { useEffect, useRef } from \"react\";\n\nexport default function VideoPlayer({ src, isPlaying }: { src: string; isPlaying: boolean }) {\n  const ref = useRef<HTMLVideoElement>(null);\n\n  useEffect(() => {\n    if (isPlaying) ref.current?.play();\n    else ref.current?.pause();\n  }, [isPlaying]);\n\n  return <video ref={ref} src={src} controls />;\n}",
+   "title": "Synchronize a video element",
+   "code": "import { useEffect, useRef } from 'react';\n\nexport default function VideoPlayer({ src, isPlaying }: {\n  src: string;\n  isPlaying: boolean;\n}) {\n  const videoRef = useRef<HTMLVideoElement>(null);\n\n  useEffect(() => {\n    const video = videoRef.current;\n    if (!video) return;\n    if (isPlaying) video.play();\n    else video.pause();\n  }, [isPlaying]);\n\n  return <video ref={videoRef} src={src} controls />;\n}",
    "language": "tsx",
-   "explanation": "The Effect updates the browser video element after rendering whenever the playback state changes."
+   "explanation": "The Effect synchronizes the browser video element with the React state after rendering. The dependency makes it run again only when playback state changes."
   },
   "useCases": [
    {
-    "title": "Synchronize external UI",
-    "scenario": "Control a non-React widget or browser API after the UI has rendered."
+    "title": "Synchronize an external widget",
+    "scenario": "A component controls a browser or third-party widget whose imperative API must reflect React state."
    },
    {
-    "title": "Manage connections",
-    "scenario": "Start and stop a network or subscription connection as reactive inputs change."
+    "title": "Manage an external connection",
+    "scenario": "A component connects to a service whose configuration changes with props or state."
    },
    {
-    "title": "React to display",
-    "scenario": "Run work caused by a component appearing on screen rather than a particular user interaction."
+    "title": "React to rendering-driven synchronization",
+    "scenario": "A component performs work caused by being displayed or by changed reactive inputs rather than a specific user event."
    }
   ],
   "related": [
    "useEffect",
    "useSyncExternalStore",
-   "useMemo",
-   "event handlers",
    "Lifecycle of Reactive Effects",
-   "Separating Events from Effects",
-   "You Might Not Need an Effect"
+   "You Might Not Need an Effect",
+   "Separating Events from Effects"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "When should you use an Effect?",
+    "answer": "Use an Effect when a component must synchronize with something outside React, such as a browser API, network, or third-party library. Rendering should remain focused on describing the UI.",
+    "followUp": "What should happen when synchronization is no longer needed? Return cleanup from the Effect so React can stop or undo the external synchronization."
+   },
+   {
+    "question": "How do dependencies control an Effect?",
+    "answer": "Call useEffect at the component’s top level and place the synchronization code in its callback. The dependency list states which reactive values determine when React must repeat the synchronization.",
+    "followUp": "How does React decide whether to repeat it? It skips the Effect only when every listed dependency has the same value as in the previous render."
+   },
+   {
+    "question": "When does an Effect run?",
+    "answer": "Effects run after the commit, once the screen has been updated. This timing makes them suitable for coordinating React with external systems rather than producing JSX.",
+    "followUp": "Why not perform the synchronization during rendering? Rendering must stay free of this kind of external work so React can render predictably and potentially restart rendering."
+   }
+  ],
   "keyPoints": [
-   "Use an Effect when rendering alone cannot express synchronization with an external system.",
-   "The Effect executes after React commits the updated screen.",
-   "Without a dependency array, React re-runs the Effect after each commit.",
-   "Provide dependencies to limit synchronization to changes that matter.",
-   "Treat an Effect as a synchronization process with optional cleanup that stops the prior process.",
-   "Use the linter as a safeguard for complete dependency arrays."
+   "Use Effects to coordinate a component with external APIs, network services, browser features, or other non-React systems.",
+   "The synchronization callback runs after React commits the rendered result to the screen.",
+   "Import useEffect and call it at the top level of the component.",
+   "Without a dependency strategy, React reruns the Effect after each commit.",
+   "Provide dependencies so synchronization repeats only when relevant reactive inputs change.",
+   "React uses the dependency values from the previous render to decide whether to skip the next run."
   ],
   "gotchas": [
-   "Dependencies are compared as a complete set, so omitting a reactive value can leave synchronization stale.",
-   "An Effect is not a replacement for render-time calculations because it runs after the UI has been committed."
+   "Effects happen after the screen is updated, so they should not be used to calculate the rendered output itself.",
+   "React compares dependencies from the previous render; omitting a reactive value can leave the external system out of sync.",
+   "An Effect without deliberate dependencies runs after every commit, which can cause unnecessary synchronization."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "State & effects::Reducers & context": {
   "sourceUrl": "https://react.dev/learn/scaling-up-with-reducer-and-context",
   "sourceTitle": "Scaling Up With Reducer and Context",
-  "summary": "Combine a reducer with context to centralize complex state transitions and make state plus dispatch available throughout a component subtree.",
-  "explanation": "A reducer centralizes state transitions as pure responses to actions. Put the reducer's state and dispatch function into separate contexts so descendants can read state or request updates without prop drilling.",
+  "summary": "Combine useReducer with context to centralize complex state transitions and make state plus dispatch available throughout a component subtree without prop drilling.",
+  "explanation": "A reducer centralizes transitions from state and actions, while separate contexts expose the resulting state and dispatch function to descendants without prop drilling. A provider component owns useReducer; consumers read whichever context they need and dispatch actions to request updates.",
   "syntax": "const [state, dispatch] = useReducer(reducer, initialArg, init?)",
   "parameters": [
    {
     "name": "reducer",
-    "type": "(state, action) => nextState",
-    "description": "Reducer function receiving the current state and an action, then returning the next state."
+    "type": "function",
+    "description": "Pure function receiving current state and an action, then returning the next state."
    },
    {
     "name": "initialArg",
     "type": "any",
-    "description": "Value used to create the initial state."
+    "description": "Initial state value, or input passed to init when initialization is customized."
    },
    {
     "name": "init",
-    "type": "(initialArg) => initialState",
-    "description": "Optional initializer for deriving initial state from initialArg."
+    "type": "function | undefined",
+    "description": "Optional initializer that derives the initial state from initialArg."
    }
   ],
   "returns": "useReducer returns the current state and a dispatch function.",
   "example": {
-   "title": "Reducer-backed task context",
-   "code": "import { createContext, useContext, useReducer } from 'react';\n\ntype Task = { id: number; text: string };\ntype Action = { type: 'add'; text: string };\n\nconst TasksContext = createContext<Task[]>([]);\nconst TasksDispatchContext = createContext<React.Dispatch<Action>>(() => {});\n\nfunction reducer(tasks: Task[], action: Action) {\n  if (action.type === 'add') return [...tasks, { id: Date.now(), text: action.text }];\n  return tasks;\n}\n\nfunction TaskProvider({ children }: { children: React.ReactNode }) {\n  const [tasks, dispatch] = useReducer(reducer, []);\n  return <TasksContext value={tasks}><TasksDispatchContext value={dispatch}>{children}</TasksDispatchContext></TasksContext>;\n}\n\nfunction AddTask() {\n  const dispatch = useContext(TasksDispatchContext);\n  return <button onClick={() => dispatch({ type: 'add', text: 'Learn React' })}>Add</button>;\n}",
+   "title": "Reducer state shared through context",
+   "code": "import { createContext, useContext, useReducer } from 'react';\n\ntype Task = { id: number; text: string };\ntype Action = { type: 'added'; text: string };\n\nfunction reducer(tasks: Task[], action: Action): Task[] {\n  if (action.type === 'added') {\n    return [...tasks, { id: Date.now(), text: action.text }];\n  }\n  return tasks;\n}\n\nconst TasksContext = createContext<Task[]>([]);\nconst TasksDispatchContext = createContext<React.Dispatch<Action>>(() => {});\n\nfunction TaskProvider({ children }: { children: React.ReactNode }) {\n  const [tasks, dispatch] = useReducer(reducer, []);\n  return <TasksContext value={tasks}><TasksDispatchContext value={dispatch}>{children}</TasksDispatchContext></TasksContext>;\n}\n\nfunction AddTask() {\n  const dispatch = useContext(TasksDispatchContext);\n  return <button onClick={() => dispatch({ type: 'added', text: 'Read docs' })}>Add</button>;\n}",
    "language": "tsx",
-   "explanation": "The provider owns the reducer, while separate contexts expose the current tasks and the dispatch function to descendants."
+   "explanation": "A provider owns the reducer, exposes state and dispatch through separate contexts, and a descendant dispatches an action without receiving props."
   },
   "useCases": [
    {
-    "title": "Centralize complex transitions",
-    "scenario": "A screen has many related updates spread across several event handlers."
+    "title": "Centralize transitions",
+    "scenario": "A complex screen has many related updates spread across event handlers."
    },
    {
-    "title": "Share state through context",
-    "scenario": "Deeply nested components need shared state without prop drilling."
+    "title": "Avoid prop drilling",
+    "scenario": "Deep descendants need to read shared state."
    },
    {
-    "title": "Separate state and dispatch access",
-    "scenario": "Some descendants only trigger updates while others only display data."
+    "title": "Share state and dispatch",
+    "scenario": "Nested components both display and modify one state model."
    }
   ],
   "related": [
@@ -1287,106 +1607,149 @@
    "useContext",
    "createContext",
    "dispatch",
-   "state"
+   "reducer",
+   "TasksContext",
+   "TasksDispatchContext"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "When is useReducer useful?",
+    "answer": "useReducer centralizes state-transition logic in a reducer that receives the current state and an action and returns the next state. Event handlers dispatch actions instead of implementing every transition themselves.",
+    "followUp": "Why must the reducer be pure? Because reducers run during rendering, so identical inputs must produce identical outputs and side effects must be avoided."
+   },
+   {
+    "question": "How do you combine a reducer with context?",
+    "answer": "Use two contexts: one for the current state and one for the dispatch function. The provider calls useReducer and supplies both values, allowing descendants to read state or dispatch actions without prop drilling.",
+    "followUp": "Why separate the contexts? A component that only dispatches can subscribe to the dispatch context without also consuming the state value."
+   },
+   {
+    "question": "What does useReducer return?",
+    "answer": "useReducer(reducer, initialArg, init?) returns the current state and a dispatch function. Dispatching an action causes React to run the reducer and use its returned value as the next state.",
+    "followUp": "Where may useReducer be called? Only at the top level of a component or custom Hook, not inside loops or conditions."
+   }
+  ],
   "keyPoints": [
-   "Use a reducer for complex transition logic and context for distributing the resulting state and dispatch capability.",
-   "The component that calls useReducer can render both providers around its descendants.",
-   "Descendants can read state with the state context or send actions with the dispatch context."
+   "Move related transition rules into one reducer when many event handlers make state updates difficult to follow.",
+   "Use context to make reducer state available to descendants without manually forwarding it through every layer.",
+   "A provider component can own the reducer while deeply nested components read and update the shared screen state.",
+   "The component calling useReducer should place both context providers around the relevant subtree.",
+   "Consumers choose the state context for reading or the dispatch context for sending actions."
   ],
   "gotchas": [
-   "Keep the reducer pure: given the same state and action, it should return the same next state.",
-   "Context avoids passing values through every intermediate component, but consumers still need to be below the matching provider."
+   "Context avoids explicitly threading the values through every intermediate component, but consumers still need the appropriate provider above them."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "State & effects::State with useState": {
   "sourceUrl": "https://react.dev/reference/react/useState",
   "sourceTitle": "useState",
-  "summary": "useState adds a local state variable to a component and returns its current value plus a setter. Call the setter from interaction handlers to update the state and trigger a re-render.",
-  "explanation": "Call useState at the top level of a component to create local state. React returns the current value and a setter; calling the setter schedules a re-render with the updated value. Pass an updater function when the next value depends on the previous state.",
+  "summary": "useState adds local state to a component and returns the current value plus a setter. Update it from interaction handlers with a replacement value or an updater function.",
+  "explanation": "Call useState at the top level of a component to create a state variable and its setter. The initial value is used on the first render; later, call the setter with a replacement value or an updater function based on the previous state, which queues a re-render.",
   "syntax": "const [state, setState] = useState(initialState)",
   "parameters": [
    {
     "name": "initialState",
     "type": "any",
-    "description": "The initial value for the state. It may be any type; if it is a function, React treats it as an initializer. It is ignored after the initial render."
+    "description": "The value used as state on the first render. It may be any type; a function is treated specially as lazy initialization."
+   },
+   {
+    "name": "nextState",
+    "type": "any | (previousState => nextState)",
+    "description": "The next state value, or a function receiving the previous state and returning the next value."
    }
   ],
-  "returns": "An array containing the current state and a set function that updates the state and triggers a re-render.",
+  "returns": "An array containing the current state value and a setter function.",
   "example": {
-   "title": "Local interaction state",
-   "code": "import { useState } from 'react';\n\nexport default function Counter() {\n  const [count, setCount] = useState(0);\n\n  return (\n    <button onClick={() => setCount(c => c + 1)}>\n      Clicked {count} times\n    </button>\n  );\n}",
+   "title": "A local interaction counter",
+   "code": "import { useState } from 'react';\n\nexport default function Counter() {\n  const [count, setCount] = useState(0);\n\n  function handleClick() {\n    setCount(c => c + 1);\n  }\n\n  return <button onClick={handleClick}>Clicked {count} times</button>;\n}",
    "language": "tsx",
-   "explanation": "The component keeps its count locally and increments it through an event-driven setter."
+   "explanation": "The click handler derives the next count from the previous state, and React re-renders the button with the updated value."
   },
   "useCases": [
    {
     "title": "Interactive controls",
-    "scenario": "A button, checkbox, or input changes a value in response to user interaction."
+    "scenario": "A button, checkbox, or input needs to retain a value between renders."
    },
    {
-    "title": "Component-local memory",
-    "scenario": "A component needs to remember a count, selection, or expanded/collapsed status between renders."
+    "title": "UI status transitions",
+    "scenario": "A component switches among visual modes such as idle, submitting, and success."
    },
    {
-    "title": "Visual state transitions",
-    "scenario": "Several possible UI states need to be represented and switched by events."
+    "title": "Event-driven rendering",
+    "scenario": "A value changes in response to a user event and should refresh the rendered output."
    }
   ],
   "related": [
    "set functions",
-   "state variable",
-   "updater function",
-   "Rules of Hooks"
+   "state as a snapshot",
+   "Rules of Hooks",
+   "custom Hooks"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What does useState return?",
+    "answer": "useState returns a two-item array: the current state and a setter function. The initialState determines the value during the first render, and the setter can replace it and trigger a re-render.",
+    "followUp": "Why use an updater function? When the next value depends on the previous value, pass a function such as c => c + 1 so React calculates it from the prior state."
+   },
+   {
+    "question": "Where may useState be called?",
+    "answer": "The Hook must be called at the top level of a component or custom Hook, not inside loops or conditions. This keeps Hook calls in a consistent order between renders.",
+    "followUp": "How can conditional state be modeled? Extract a component so the conditional branch has its own consistently ordered Hook calls."
+   },
+   {
+    "question": "How should state updates based on previous state be written?",
+    "answer": "The setter accepts either the next state directly or a function that receives the previous state and returns the next one. Calling it queues a re-render rather than mutating the current render's state value.",
+    "followUp": "What does an event handler observe after calling a setter? It continues to observe the snapshot from the render in which the handler was created."
+   }
+  ],
   "keyPoints": [
-   "Use useState to give a component memory for interaction data that changes over time.",
-   "Declare each state variable at the component’s top level.",
-   "Destructure the returned pair into the current state and its setter.",
-   "The first returned value is the state for the current render.",
-   "The second returned value updates state and causes React to render again."
+   "useState gives a component local memory that persists across renders.",
+   "Destructure the returned pair into a readable state value and its setter.",
+   "On the first render, the state value matches the initialState supplied to the Hook.",
+   "Calling the setter requests a new render with the replacement state.",
+   "Choose a direct value for independent updates or an updater function for derived updates.",
+   "Declare Hooks unconditionally at component scope so their call order remains stable."
   ],
   "gotchas": [
-   "Call useState only at the component or custom Hook’s top level, not inside loops or conditions.",
-   "The initialState argument is used only during initialization."
+   "Do not call useState inside loops or conditions; move that state into a separate component or custom Hook.",
+   "Changing the initialState expression does not reset existing state during later renders."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "State & effects::useEffectEvent": {
   "sourceUrl": "https://react.dev/reference/react/useEffectEvent",
   "sourceTitle": "useEffectEvent",
-  "summary": "useEffectEvent creates an Effect Event that can read the latest props and state without making the surrounding Effect resubscribe. Use it for non-reactive logic triggered from an Effect.",
-  "explanation": "Call useEffectEvent at component or custom-Hook top level to create a non-reactive function. Invoke that function from an Effect; when invoked, it reads the latest committed props and state without making the surrounding Effect resynchronize.",
+  "summary": "useEffectEvent creates an Effect Event: non-reactive logic that an Effect can trigger while still reading the latest props and state. Keep synchronization dependencies on the Effect, not on the Effect Event.",
+  "explanation": "Call useEffectEvent at component or custom-Hook scope to create a non-reactive callback for logic triggered by an Effect. The returned function reads the latest committed props and state when invoked, while the surrounding Effect remains reactive to its own dependencies. Invoke it only from an Effect or another Effect Event, and keep it beside the Effect that uses it.",
   "syntax": "const event = useEffectEvent(callback)",
   "parameters": [
    {
     "name": "callback",
     "type": "function",
-    "description": "Function containing the logic for the Effect Event; it may accept any number of arguments and return any value."
+    "description": "A function containing the Effect Event logic; it may accept any number of arguments and return any value."
    }
   ],
-  "returns": "An Effect Event function with the same type signature as callback.",
+  "returns": "An Effect Event function with the same type signature as callback; when called, it reads the latest committed values from render.",
   "example": {
-   "title": "Read current props without resubscribing",
-   "code": "import { useEffect, useEffectEvent, useState } from 'react';\n\nexport default function ChatRoom({ roomId, theme }: { roomId: string; theme: string }) {\n  const [status, setStatus] = useState('offline');\n\n  const onConnected = useEffectEvent(() => {\n    setStatus(`Connected with ${theme} theme`);\n  });\n\n  useEffect(() => {\n    const connection = createConnection(roomId);\n    connection.onConnected(onConnected);\n    connection.connect();\n    return () => connection.disconnect();\n  }, [roomId]);\n\n  return <p>{status}</p>;\n}\n\nfunction createConnection(roomId: string) {\n  return {\n    connect() {},\n    disconnect() {},\n    onConnected(callback: () => void) { callback(); },\n  };\n}",
+   "title": "Read current values without resubscribing",
+   "code": "import { useEffect, useEffectEvent, useState } from 'react';\n\nfunction ChatRoom({ roomId, theme }: { roomId: string; theme: string }) {\n  const [connected, setConnected] = useState(false);\n\n  const onConnected = useEffectEvent(() => {\n    console.log(`Connected to ${roomId} using ${theme} theme`);\n  });\n\n  useEffect(() => {\n    const connection = createConnection(roomId);\n    connection.on('connected', () => {\n      setConnected(true);\n      onConnected();\n    });\n    connection.connect();\n    return () => connection.disconnect();\n  }, [roomId]);\n\n  return <p>{connected ? 'Connected' : 'Connecting...'}</p>;\n}\n\nfunction createConnection(roomId: string) {\n  return {\n    on: (_event: string, handler: () => void) => {},\n    connect: () => {},\n    disconnect: () => {},\n  };\n}",
    "language": "tsx",
-   "explanation": "The Effect reconnects only when roomId changes, while the Effect Event reads the latest theme when the connection reports success."
+   "explanation": "The connection is recreated only when roomId changes, while onConnected reads the latest theme when the connection event fires."
   },
   "useCases": [
    {
-    "title": "Connection notifications",
-    "scenario": "A connection should react to roomId changes but use the current theme when it connects."
+    "title": "Fresh notification data without reconnecting",
+    "scenario": "A subscription or connection should be recreated only when its identity changes, while its notification uses the latest theme or locale."
    },
    {
-    "title": "Subscriptions",
-    "scenario": "A subscription callback needs current settings without recreating the subscription."
+    "title": "Read current state in a long-lived subscription",
+    "scenario": "An Effect receives external messages and needs current UI state without making the subscription resubscribe for every state change."
    },
    {
-    "title": "Separating reactive and non-reactive Effect logic",
-    "scenario": "An Effect triggers logic that should read current state without becoming reactive to it."
+    "title": "Separate synchronization from triggered actions",
+    "scenario": "A synchronization Effect contains a small callback-like action that should run only when an external event occurs."
    }
   ],
   "related": [
@@ -1394,23 +1757,40 @@
    "useLayoutEffect",
    "useInsertionEffect",
    "Effect Events",
-   "Effect dependencies"
+   "eslint-plugin-react-hooks"
   ],
-  "since": "",
+  "since": "React 19.2",
+  "interview": [
+   {
+    "question": "What problem does useEffectEvent solve?",
+    "answer": "useEffectEvent creates a non-reactive callback whose body sees the latest committed props and state when called. This lets an Effect trigger current-value logic without making that logic a reason to resynchronize the Effect.",
+    "followUp": "How should its dependencies be handled? Keep reactive values that control synchronization in the Effect dependency list, but omit the Effect Event itself."
+   },
+   {
+    "question": "Where may an Effect Event be called?",
+    "answer": "The Hook is called at the top level of a component or custom Hook. Its returned function may be called from useEffect, useLayoutEffect, useInsertionEffect, or another Effect Event.",
+    "followUp": "Can a child component receive the returned function? No; Effect Events must not be passed to other components or Hooks."
+   },
+   {
+    "question": "When should useEffectEvent be used?",
+    "answer": "An Effect Event is meant for logic conceptually representing an event that an Effect triggers, while the Effect handles synchronization. It should not be used indiscriminately or merely to silence a dependency-linter warning.",
+    "followUp": "What design signal suggests using it? Extract the non-reactive portion that needs fresh values, while leaving the synchronization-related portion reactive."
+   }
+  ],
   "keyPoints": [
-   "It extracts event-like, non-reactive logic from an Effect.",
-   "The returned function reads current props and state while the surrounding Effect avoids resynchronizing for those reads.",
-   "Create the Effect Event at the top level of a component or custom Hook.",
-   "The callback can receive arbitrary arguments and produce any return value.",
-   "The returned function preserves the callback’s type signature.",
-   "Use the returned function from supported Effect Hooks or another Effect Event in the same component."
+   "It separates event-like logic triggered by an Effect from the Effect’s synchronization work.",
+   "The callback reads current props and state when invoked rather than values captured by an older render.",
+   "Changing values read only by the Effect Event does not force the surrounding Effect to resubscribe.",
+   "Create the Effect Event during the component’s top-level Hook calls, not inside control flow.",
+   "The returned callback preserves the callback’s argument and result flexibility.",
+   "The returned function can be triggered from the listed Effect Hooks or another Effect Event."
   ],
   "gotchas": [
-   "Invoke the returned function only from an Effect or another Effect Event—not during rendering.",
-   "Do not call an Effect Event during render or pass it to another component or Hook.",
-   "Do not add the Effect Event itself to the Effect dependency array.",
-   "The Hook call must stay unconditional at the top level."
+   "Do not invoke an Effect Event during rendering or from an event handler; its call site must be an Effect or another Effect Event.",
+   "Keep Effect Events local to the component and do not pass them as props or arguments to other Hooks.",
+   "Like other Hooks, useEffectEvent cannot be called conditionally or inside loops.",
+   "Do not add the returned Effect Event to the Effect dependency array; declare the actual reactive dependencies instead."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  }
 }

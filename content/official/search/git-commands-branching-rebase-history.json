@@ -3585,72 +3585,71 @@
   "checkedAt": "2026-10-15"
  },
  "Rebase & cherry-pick::Rebase vs merge": {
-  "sourceUrl": "https://git-scm.com/book/en/v2/Git-Branching-Rebasing",
-  "sourceTitle": "Rebasing - Git",
-  "summary": "Merge combines branch endpoints, while rebase replays one branch’s commits onto another base. Prefer rebase for private work and merge for already-shared commits or when preserving existing ancestry matters.",
-  "explanation": "Merge combines branch tips and can preserve the original branching structure, while rebase replays one branch’s commits onto another base and produces a linear history. Use rebase for commits only you control; use merge when the commits are already shared or preserving their existing ancestry matters.",
-  "syntax": "git rebase [-i | --interactive] [options] [--onto <newbase>] [<upstream> [<branch>]]",
-  "parameters": [
-   {
-    "name": "<branch>",
-    "type": "revision",
-    "description": "The branch or commit whose changes are replayed."
-   },
-   {
-    "name": "<upstream>",
-    "type": "revision",
-    "description": "The branch or commit that becomes the new base."
-   },
-   {
-    "name": "<newbase>",
-    "type": "revision",
-    "description": "Optional replacement base used with --onto."
-   }
-  ],
-  "returns": "Rewrites the rebased commits onto the selected base; merge integrates revisions into the current HEAD.",
+  "sourceUrl": "https://git-scm.com/docs/git-rebase",
+  "sourceTitle": "git-rebase Documentation",
+  "summary": "Merge preserves the branch join, while rebase replays commits onto another branch to create a linear history. Rebase private work; merge shared work when preserving public ancestry matters.",
+  "explanation": "Merge combines histories and preserves the point where branches joined. Rebase instead replays the working branch’s commits on top of another branch, producing a linear result; because replayed commits are recreated, use it only when those commits are not already shared with others.",
+  "syntax": "git rebase [--onto <newbase>] [<upstream> [<branch>]]",
+  "parameters": [],
+  "returns": "The page documents the rebase operation and its continuation, skipping, and abort controls; it does not define a conventional return value.",
   "example": {
-   "title": "Rebase a private feature branch",
-   "code": "git switch feature\ngit rebase main\ngit switch main\ngit merge --ff-only feature",
+   "title": "Update a private feature branch",
+   "code": "git switch feature\ngit fetch origin\ngit rebase origin/main\n# resolve conflicts, then:\ngit add <file>\ngit rebase --continue",
    "language": "bash",
-   "explanation": "Replays the feature commits on the current main, then fast-forwards main to the rebased tip."
+   "explanation": "Rebases a local feature branch onto the updated main branch; use merge instead when the branch history is already shared."
   },
   "useCases": [
    {
     "title": "Keep private work linear",
-    "scenario": "A local feature branch has not been published or consumed by others."
+    "scenario": "A local feature branch needs the latest main branch without adding a merge commit."
    },
    {
-    "title": "Integrate shared history safely",
-    "scenario": "A branch’s commits are already shared with collaborators."
+    "title": "Preserve shared history",
+    "scenario": "A branch has been published or is used by others and its ancestry should remain stable."
    },
    {
-    "title": "Preserve branching structure",
-    "scenario": "The original branch topology is meaningful and should remain visible."
+    "title": "Retain merge topology",
+    "scenario": "A rebased series contains meaningful internal branch structure that should not be flattened."
    }
   ],
   "related": [
    "git merge",
-   "git cherry-pick",
+   "git pull --rebase",
    "git rebase --continue",
    "git rebase --abort",
-   "--rebase-merges",
-   "--onto"
+   "git rebase --skip",
+   "--rebase-merges"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How do merge and rebase differ?",
+    "answer": "Merge joins two lines of development and retains their existing ancestry. Rebase replays the working branch’s commits on top of the upstream branch, giving a linear history.",
+    "followUp": "What should happen if a rebase conflicts? Resolve the conflict, stage the result, and run git rebase --continue; git rebase --abort can abandon the operation."
+   },
+   {
+    "question": "How do you choose between them?",
+    "answer": "Use rebase for commits that remain private when a linear history is useful. Prefer merge when the commits are already shared, because replaying them changes the history others may rely on.",
+    "followUp": "Why does replaying matter? Recreated commits can have different identities even when they represent the same changes."
+   },
+   {
+    "question": "What happens to merge commits during rebase?",
+    "answer": "A standard rebase drops merge commits from its todo list, flattening the rebased portion. Use --rebase-merges when preserving the branching structure is required.",
+    "followUp": "What is the trade-off? Preserving merges retains topology but produces a more complex history than a single linear branch."
+   }
+  ],
   "keyPoints": [
-   "The two primary integration choices are merge and rebase.",
-   "Rebase copies a branch’s committed changes onto a different base, creating replacement commits.",
-   "Rebase maintains commit order while relocating the work onto the new base.",
-   "Merge combines the branch endpoints instead of replaying each commit onto a new base.",
-   "Rebasing commonly produces a linear history, which can make the resulting log easier to follow.",
-   "Choose rebase-merges when the rebased history must retain its internal merge structure."
+   "Rebase moves a branch’s changes conceptually by replaying its commits above the chosen upstream branch.",
+   "Default rebase creates a linearized branch and does not retain merge commits.",
+   "Use --rebase-merges when the internal branch topology of the commits being rebased matters.",
+   "Conflict handling is iterative: resolve the current commit’s conflict, stage the files, and continue the rebase."
   ],
   "gotchas": [
-   "During a rebase conflict, Git’s labels can be counterintuitive: “ours” refers to the rebased series so far, not the branch being replayed.",
-   "A normal rebase omits merge commits; use rebase-merges when preserving the branch structure is required.",
-   "Merge acts on the current HEAD, so switch to the intended target branch before running it."
+   "Rebase replays commits rather than moving the original commit objects, so commit identities and history can change.",
+   "Ordinary rebase omits merge commits unless the rebase-merges option is selected.",
+   "After a conflict, resolve the files, stage the resolutions, and continue; skip a problematic commit only when its change is unnecessary."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Rebase & cherry-pick::What cherry-pick is": {
   "sourceUrl": "https://git-scm.com/docs/git-cherry-pick/2.50.0.html",
@@ -3803,129 +3802,163 @@
  "Remotes & collaboration::Forks and pull requests": {
   "sourceUrl": "https://git-scm.com/book/en/v2/GitHub-Contributing-to-a-Project",
   "sourceTitle": "Git - Contributing to a Project",
-  "summary": "Use a fork when you cannot push to the original repository: create a topic branch in your copy, commit and push the change, then open a pull request for review and possible merging.",
-  "explanation": "A fork is your writable copy of a repository. Develop the change on a topic branch, push that branch to your fork, and open a pull request against the original project so its maintainers can review, discuss, and merge or close it.",
-  "syntax": "git push -u <fork-remote> <topic-branch>",
+  "summary": "Contribute without push access by forking a project, creating and pushing a topic branch to your copy, and opening a pull request against the original repository. The owner reviews the proposal and may request more commits before merging or closing it.",
+  "explanation": "A fork is a hosting-service copy of a repository in your account when you lack push access to the original. Develop on a topic branch, push that branch to your fork, then open a pull request proposing those commits to the original project; discussion may lead to further commits before the owner merges or closes it.",
+  "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
    "title": "Contribute through a fork",
-   "code": "git clone https://github.com/OWNER/PROJECT.git\ncd PROJECT\ngit switch -c improve-docs\n# edit files, then:\ngit add .\ngit commit -m \"Improve documentation\"\ngit push -u origin improve-docs\n# Open a pull request from improve-docs in your fork.",
+   "code": "git clone https://github.com/OWNER/PROJECT.git\ncd PROJECT\ngit switch -c improve-docs\n# edit files, then stage and commit\ngit add .\ngit commit -m \"Improve documentation\"\ngit remote add fork https://github.com/YOU/PROJECT.git\ngit push -u fork improve-docs\n# Open a pull request from improve-docs on the hosting service",
    "language": "bash",
-   "explanation": "Creates a topic branch, commits the change, pushes it to your fork, and leaves the pull request creation to the hosting service."
+   "explanation": "The branch is pushed to your fork; create the pull request there so the original project owner can review and merge or close it."
   },
   "useCases": [
    {
-    "title": "External contribution",
-    "scenario": "Contributing to an open-source project without write permission."
+    "title": "External open-source contribution",
+    "scenario": "You want to fix a bug in an open-source project but are not an approved contributor."
    },
    {
-    "title": "Topic-branch proposal",
-    "scenario": "Submitting an isolated feature or bug fix for maintainer review."
+    "title": "Collaborative code review",
+    "scenario": "You need review before changes enter a shared repository."
    },
    {
-    "title": "Keeping a pull request current",
-    "scenario": "Updating an existing proposal after incorporating upstream changes."
+    "title": "Isolated proposals",
+    "scenario": "Several independent changes must be proposed without mixing their histories."
    }
   ],
   "related": [
    "topic branch",
    "push",
+   "commit",
+   "master",
    "Pull Request",
-   "code review",
-   "merge",
-   "remote",
-   "fetch",
-   "Branches page"
+   "fork"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How do you contribute when you cannot push to the original repository?",
+    "answer": "Fork the project, create a topic branch, commit the change, push the branch to your fork, and open a pull request against the original repository. The project owner can discuss the proposal and then merge or close it.",
+    "followUp": "How can you continue responding to review? Push additional commits to the same branch used by the pull request; the proposal can then be updated before the owner decides."
+   },
+   {
+    "question": "What are the roles of a fork and a pull request?",
+    "answer": "The fork is a copy under your namespace, where you have permission to push. The pull request connects a branch in that copy with the original project for review and a possible merge.",
+    "followUp": "What should happen after the original project advances? Synchronize the updated mainline branch back to your fork before starting or refreshing later work."
+   },
+   {
+    "question": "What workflow does the documentation recommend for a contribution?",
+    "answer": "Use a separate topic branch for the proposed change, make focused commits, push that branch to the fork, and open the pull request from it. This keeps the proposal isolated and makes review clearer.",
+    "followUp": "Why avoid committing directly on the fork's default branch? An isolated topic branch lets you develop multiple proposals independently and update one review without mixing unrelated work."
+   }
+  ],
   "keyPoints": [
-   "Fork the project when you need to contribute without direct push permission.",
-   "The fork is an independently writable copy in your account or namespace.",
-   "A pull request proposes changes from your fork for review in the original repository.",
-   "The pull request provides a place for review and discussion before the owner decides whether to merge it."
+   "Fork the project when the original repository does not grant you push access.",
+   "Your fork is an independently writable copy in your hosting-service namespace.",
+   "A pull request proposes sending changes from your fork back to the original repository.",
+   "Develop the contribution on a topic branch rather than directly on the default branch.",
+   "Record the proposed improvement in commits on that topic branch.",
+   "Publish the topic branch by pushing it to your fork.",
+   "Review discussion can result in additional commits before the proposal is finalized.",
+   "The original project owner makes the final decision by merging or closing the pull request."
   ],
-  "gotchas": [
-   "Merging the pull-request branch into the target branch and pushing it can close the pull request automatically.",
-   "To update a pull request with upstream changes, add the original repository as a remote, fetch it, merge its main branch, resolve issues, and push again."
-  ],
-  "checkedAt": "2026-10-15"
+  "gotchas": [],
+  "checkedAt": "2026-10-16"
  },
  "Remotes & collaboration::git fetch": {
   "sourceUrl": "https://git-scm.com/docs/git-fetch",
   "sourceTitle": "Git - git-fetch Documentation",
-  "summary": "Download objects and refs from another repository while updating remote-tracking branches. It does not merge fetched changes into your current branch.",
-  "explanation": "git fetch contacts one or more other repositories, downloads the objects needed for their histories, and updates the corresponding remote-tracking branches. It records the fetched ref names and object IDs in .git/FETCH_HEAD; unlike git pull, it does not integrate those changes into the current branch.",
+  "summary": "Downloads refs and the objects needed for their histories from another repository, updating remote-tracking branches without merging into the current branch. Fetched ref names and object IDs are recorded in .git/FETCH_HEAD.",
+  "explanation": "Git contacts the specified repository, obtains the objects needed for the selected branches or tags, and updates matching remote-tracking references. It also records the fetched reference names and object IDs in .git/FETCH_HEAD; it does not merge those changes into the currently checked-out branch.",
   "syntax": "git fetch [<options>] [<repository> [<refspec>…]]\ngit fetch [<options>] <group>\ngit fetch --multiple [<options>] [(<repository> | <group>)…]\ngit fetch --all [<options>]",
   "parameters": [
    {
-    "name": "options",
-    "type": "<options>",
-    "description": "Optional command-line flags controlling the fetch operation."
+    "name": "<options>",
+    "type": "options",
+    "description": "Options controlling fetching, pruning, tags, shallow history, ref updates, and output."
    },
    {
-    "name": "repository",
-    "type": "<repository>",
-    "description": "The remote repository from which to fetch."
+    "name": "<repository>",
+    "type": "repository",
+    "description": "A configured remote name or repository URL."
    },
    {
-    "name": "refspec",
-    "type": "<refspec>…",
-    "description": "The refs to fetch and the local refs to update."
+    "name": "<refspec>…",
+    "type": "refspec",
+    "description": "A mapping that specifies which remote refs to fetch and which local refs to update."
    },
    {
-    "name": "group",
-    "type": "<group>",
+    "name": "<group>",
+    "type": "group",
     "description": "A configured group of repositories."
    }
   ],
-  "returns": "Updates fetched remote-tracking refs and writes fetched ref names and object IDs to .git/FETCH_HEAD; it does not merge changes into the current branch.",
+  "returns": "Updates selected local remote-tracking refs and writes fetched ref names and object IDs to .git/FETCH_HEAD; it does not integrate the changes into the current branch.",
   "example": {
-   "title": "Fetch from origin",
-   "code": "git fetch origin",
+   "title": "Inspect remote changes",
+   "code": "git fetch origin main\n\ngit log --oneline main..origin/main",
    "language": "bash",
-   "explanation": "Downloads objects and refs from the remote named origin, updating remote-tracking branches without switching or merging into the current branch."
+   "explanation": "Fetches the remote main branch, then lists commits present on the remote-tracking branch but not in the local main branch."
   },
   "useCases": [
    {
     "title": "Inspect remote updates",
-    "scenario": "Check a remote's latest commits before deciding whether to merge or rebase."
-   },
-   {
-    "title": "Synchronize remote-tracking refs",
-    "scenario": "Refresh remote-tracking branches for ongoing team collaboration."
-   },
-   {
-    "title": "Dry-run a fetch",
-    "scenario": "Preview the refs and changes that a fetch would update."
+    "scenario": "Review incoming work without changing the checked-out branch."
    },
    {
     "title": "Fetch all remotes",
-    "scenario": "Retrieve updates from every configured remote."
+    "scenario": "Synchronize several configured remotes in one operation."
+   },
+   {
+    "title": "Prune stale references",
+    "scenario": "Remove local remote-tracking refs deleted from the server."
+   },
+   {
+    "title": "Control history depth",
+    "scenario": "Limit transferred history for a shallow repository."
    }
   ],
   "related": [
    "git pull",
    "git push",
+   "git branch",
    "git clone",
-   "git remote",
-   "remote-tracking branches",
+   "git log",
    "FETCH_HEAD",
+   "remote-tracking branches",
    "refspec"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What does git fetch change locally?",
+    "answer": "It downloads refs and the objects required to complete their histories, then updates remote-tracking branches. It does not merge the fetched branch into the current branch; FETCH_HEAD records the fetched refs and object names.",
+    "followUp": "How would you fetch only selected history? Use a refspec to select refs, or a shallow option such as --depth=<depth> to limit commits from each remote branch tip."
+   },
+   {
+    "question": "How do you control what git fetch retrieves?",
+    "answer": "The command accepts a repository and optional refspecs, so it can fetch from one named remote or URL and restrict which refs are obtained. With --all it fetches all configured remotes.",
+    "followUp": "How can stale remote-tracking refs be removed? Use --prune, which removes remote-tracking references that no longer exist on the remote."
+   },
+   {
+    "question": "What are remote-tracking branches and FETCH_HEAD used for?",
+    "answer": "Remote-tracking references are updated after the remote refs and necessary objects are received. The fetched ref names and object IDs are written to .git/FETCH_HEAD, which other commands can use to identify what was fetched.",
+    "followUp": "What does --atomic provide? It makes ref updates transactional: either every ref update succeeds or none is applied."
+   }
+  ],
   "keyPoints": [
-   "The command obtains repository objects and refs from another repository.",
-   "It can fetch branches, tags, or both from one or multiple repositories.",
-   "Fetched remote refs update local remote-tracking branches.",
-   "Git records fetched ref names and their object IDs in FETCH_HEAD.",
-   "The --all option fetches from every configured remote.",
-   "The --dry-run option previews the operation without changing repository state."
+   "The command retrieves branches and tags, collectively called refs, from one or more repositories.",
+   "Git transfers the objects needed to make the fetched histories complete.",
+   "Fetching advances the corresponding remote-tracking branches rather than the checked-out local branch.",
+   "Git records fetched ref names and their object IDs in .git/FETCH_HEAD.",
+   "The atomic option makes reference updates transactional."
   ],
   "gotchas": [
-   "A normal fetch replaces the existing FETCH_HEAD contents; use --append when you need to retain earlier entries."
+   "A shallow repository may reject refs that would require changing its shallow-boundary file unless you explicitly allow that update.",
+   "Repeated fetches replace earlier FETCH_HEAD entries unless you use the option that appends them."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Remotes & collaboration::git fetch --prune": {
   "sourceUrl": "https://git-scm.com/docs/git-fetch/2.55.0",
@@ -4683,59 +4716,87 @@
  "Undoing & recovering::git commit --amend": {
   "sourceUrl": "https://git-scm.com/docs/git-commit",
   "sourceTitle": "git-commit Documentation - Git",
-  "summary": "Replace the current branch’s latest commit with a new commit built from the current index. Use it to correct the commit message or include staged changes that were missed.",
-  "explanation": "Git rebuilds the tip of the current branch as a new commit using the index’s current contents. With --amend, the previous commit message is reused unless another message option is supplied; --no-edit keeps that message without opening an editor.",
-  "syntax": "git commit [--amend] [options] [--] [<pathspec>…]",
+  "summary": "Replace the current branch's latest commit with a new commit. Use it to revise the message or include additional staged content you forgot.",
+  "explanation": "Git rebuilds the current branch tip as a new commit from the staged tree. With no explicit message option, the previous commit message becomes the starting point; use --no-edit to retain it unchanged or provide -m, -F, or -c to choose another message.",
+  "syntax": "git commit [options] [--amend] [--] [<pathspec>…]",
   "parameters": [
    {
-    "name": "options",
-    "type": "flags and arguments",
-    "description": "Optional commit preparation and selection flags, message options, author options, and pathspecs accepted by git commit."
+    "name": "--amend",
+    "type": "option",
+    "description": "Optionally selects the current branch tip for replacement; normal commit options and pathspecs determine the recorded tree and message."
+   },
+   {
+    "name": "--no-edit",
+    "type": "option",
+    "description": "Suppresses changing the existing commit message when used with amend."
+   },
+   {
+    "name": "-m <msg>",
+    "type": "option",
+    "description": "Supplies a replacement commit message."
    }
   ],
-  "returns": "Creates a new commit replacing the tip of the current branch.",
+  "returns": "A new commit replacing the tip of the current branch.",
   "example": {
-   "title": "Add a forgotten file to the latest commit",
-   "code": "git add forgotten-file.txt\ngit commit --amend --no-edit",
+   "title": "Amend the latest commit",
+   "code": "git add forgotten-file.txt\ngit commit --amend --no-edit\n\n# Or replace the message too:\ngit commit --amend -m \"Corrected message\"",
    "language": "bash",
-   "explanation": "Stages the omitted file and replaces the current branch tip while retaining the existing commit message."
+   "explanation": "Stage the omitted change, then replace the current branch tip while retaining or replacing the previous message."
   },
   "useCases": [
    {
-    "title": "Fix the commit message",
-    "scenario": "Correct a typo or clarify the latest commit message."
+    "title": "Correct the last message",
+    "scenario": "A typo or unclear wording remains in the latest commit message."
    },
    {
-    "title": "Add forgotten changes",
-    "scenario": "Include a file or change accidentally left out of the latest commit."
+    "title": "Add forgotten staged changes",
+    "scenario": "A file or fix was omitted from the latest commit."
    },
    {
-    "title": "Amend without editing the message",
-    "scenario": "Update the latest commit’s content while preserving its existing message."
+    "title": "Polish an unpublished commit",
+    "scenario": "The latest commit needs both content and message corrections before sharing."
    }
   ],
   "related": [
    "git commit",
    "--no-edit",
-   "--interactive",
-   "--patch",
-   "--reset-author"
+   "-m <msg>",
+   "-F <file>",
+   "-c <commit>",
+   "-i",
+   "-o"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What does git commit --amend do?",
+    "answer": "It replaces the tip of the current branch by creating a new commit. Git builds that commit from the index and uses the original message as the starting point when no command-line message option is supplied.",
+    "followUp": "What does --no-edit change? It keeps the existing message without opening an editor, while the commit still gets rebuilt from the prepared tree."
+   },
+   {
+    "question": "How do you add forgotten content to the last commit?",
+    "answer": "The staged tree is used to construct the replacement commit. Therefore, stage the forgotten file or fix first, then run the amend command.",
+    "followUp": "How can you amend only selected paths? Use the command's normal explicit pathspec behavior and ensure the intended index or path selection is prepared."
+   },
+   {
+    "question": "How do you change only the last commit's message?",
+    "answer": "Use git commit --amend with a message option such as -m, -F, or -c. If no such option is used, the previous message supplies the starting point.",
+    "followUp": "When should the operation be avoided? Since it replaces the branch tip with a new commit, coordinate carefully if that tip is already relied on by others."
+   }
+  ],
   "keyPoints": [
-   "Use --amend to replace the latest commit on the current branch.",
-   "The amended commit is built from the index and normal commit-selection options.",
-   "Interactive, patch, and explicit pathspec choices affect what the replacement records.",
-   "The old message is reused as the basis when no replacement message is supplied.",
-   "Amending does not begin with a blank message by default.",
-   "Add --no-edit when the content should change but the commit message should remain unchanged."
+   "The option replaces the current branch tip with a newly created commit.",
+   "The replacement uses Git's normal tree preparation, including relevant index, option, and pathspec effects.",
+   "If no message option is supplied, the old commit message is loaded as the starting message.",
+   "Amend starts from the previous message rather than presenting an empty commit message.",
+   "Interactive or otherwise selected input options can affect the tree recorded by the amended commit."
   ],
   "gotchas": [
-   "Amending replaces the branch tip with a new commit rather than modifying the existing commit in place.",
-   "Only staged changes, together with the normal commit inputs, become part of the amended commit.",
-   "Without a new message option, Git starts from the previous commit message."
+   "Amending creates a replacement commit rather than editing the existing commit object.",
+   "Without a new message option, Git opens the prior message as the starting content; this is not the same as explicitly preserving it with --no-edit.",
+   "Only staged content and any explicitly selected paths contribute to the replacement commit, so stage forgotten files first."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Undoing & recovering::git filter-repo": {
   "sourceUrl": "https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History",

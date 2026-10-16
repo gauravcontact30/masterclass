@@ -23,7 +23,8 @@ export default async function proxy(request: NextRequest) {
   }
 
   // 2. Upstash Redis Rate Limiting on API endpoints
-  if (pathname.startsWith("/api/")) {
+  // The page-view beacon has its own limiter (app/api/track/route.ts) and must not spend the API budget.
+  if (pathname.startsWith("/api/") && pathname !== "/api/track") {
     const clientIp = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anonymous";
     const rl = await checkRateLimit(clientIp, 60, 60); // 60 requests per minute
     if (!rl.success) {

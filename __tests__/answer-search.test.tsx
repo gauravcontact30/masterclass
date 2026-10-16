@@ -664,11 +664,13 @@ test("every catalogue tab carries its topic count as a pill, without changing th
 
   const glossary = within(sectionStrip()).getByRole("tab", { name: "AI terms worth knowing" });
   expect(glossary).toHaveAccessibleDescription("2 terms");
-  expect(within(sectionStrip()).getByRole("tab", { name: "Popular AWS services" })).toHaveAccessibleDescription(`${AWS.length} services`);
   // A deferred handbook has no rows yet, so its count comes from its categories.
   const langflow = within(sectionStrip()).getByRole("tab", { name: "LangFlow" });
   expect(langflow).toHaveAccessibleDescription("7 topics");
   expect(langflow).toHaveTextContent("LangFlow7");
+  // Two catalogues a page: the third is one step on.
+  fireEvent.click(screen.getByRole("button", { name: "More catalogues" }));
+  expect(within(sectionStrip()).getByRole("tab", { name: "Popular AWS services" })).toHaveAccessibleDescription(`${AWS.length} services`);
 });
 
 test("filtering one catalogue leaves the other alone", () => {
@@ -719,7 +721,10 @@ test("the Python handbook is a third browser below the glossary", async () => {
     pythonHandbook={PY} pythonCategories={[{ name: "Functions", count: 1 }, { name: "Collections", count: 1 }]} />);
 
   // Alphabetical, so a reader looking for one knows where to look for it.
-  expect(sectionTabs()).toEqual(["AI terms worth knowing", "Popular AWS services", "Python handbook"]);
+  // Two catalogues a page, so the third is one step on.
+  expect(sectionTabs()).toEqual(["AI terms worth knowing", "Popular AWS services"]);
+  fireEvent.click(screen.getByRole("button", { name: "More catalogues" }));
+  expect(sectionTabs()).toEqual(["Python handbook"]);
 
   const python = openSection("Python handbook");
   expect(within(python).getByText("2 topics")).toBeVisible();
@@ -728,10 +733,12 @@ test("the Python handbook is a third browser below the glossary", async () => {
   // Its own search box and tabs, independent of the other two.
   fireEvent.change(within(python).getByRole("searchbox", { name: "Search Python handbook" }), { target: { value: "wraps" } });
   expect(within(python).getAllByRole("listitem")).toHaveLength(1);
+  fireEvent.click(screen.getByRole("button", { name: "Previous catalogues" }));
   expect(within(openSection("Popular AWS services")).getAllByRole("listitem")).toHaveLength(3);
   expect(within(openSection("AI terms worth knowing")).getAllByRole("listitem")).toHaveLength(2);
 
   // A card asks a Python-shaped question, not the glossary's or the services'.
+  fireEvent.click(screen.getByRole("button", { name: "More catalogues" }));
   const reopened = openSection("Python handbook");
   fireEvent.click(within(within(reopened).getAllByRole("listitem")[0]).getByRole("button", { name: /^Explain this: / }));
   await screen.findByRole("article", { name: /^Decorators/ });

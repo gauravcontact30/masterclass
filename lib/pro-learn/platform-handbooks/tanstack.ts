@@ -405,7 +405,7 @@ export const TANSTACK_HANDBOOKS = [
     ],
   }),
 
-  defineHandbook("TanStack Table", "Headless row models, columns, sorting, filtering, grouping, selection, pinning and virtualization.", "https://tanstack.com/table/latest/docs/introduction", {
+  defineHandbook("TanStack Table", "Headless row models, columns, sorting, filtering, grouping, selection, pinning and virtualization.", "https://tanstack.com/table/latest/docs/overview", {
     mechanism: "The table is headless: it computes row models and leaves every element to you. Features compose as a pipeline — filtering feeds sorting, sorting feeds grouping, grouping feeds pagination — and each stage produces a new row model.",
     example: "An orders table filters by status, sorts by date, paginates server-side and lets the reader pin the order number column. State lives in the component so a URL can restore the exact view.",
     pitfall: "Defining columns inline recreates them on every render and resets table state. Column definitions and data must both keep stable references, usually through memoization.",

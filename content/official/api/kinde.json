@@ -203,6 +203,74 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "Connected apps": {
+  "sourceUrl": "https://docs.kinde.com/integrate/connected-apps/add-connected-apps/",
+  "sourceTitle": "Add connected apps",
+  "summary": "Kinde connected apps let users access third-party services through Kinde. Configure a provider with credentials, callback URLs, a code-facing reference key, and selected scopes.",
+  "explanation": "Connected apps let users access third-party services through Kinde. You add a provider, configure its client credentials and callback URL, choose the permissions or scopes, and save the connection; the resulting reference key identifies it in application code.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Store a connected-app reference key",
+   "code": "# Connected apps are configured in the Kinde dashboard.\n# After setup, use the configured reference key in your application.\nCONNECTED_APP_REFERENCE_KEY=\"google_drive\"",
+   "language": "bash",
+   "explanation": "Store the reference key you entered when configuring the connected app, then use that key in the relevant application integration."
+  },
+  "useCases": [
+   {
+    "title": "Third-party service access",
+    "scenario": "Users need to work with an external service from an application authenticated by Kinde."
+   },
+   {
+    "title": "Scoped permissions",
+    "scenario": "An integration should expose only selected provider capabilities."
+   },
+   {
+    "title": "Centralized integration configuration",
+    "scenario": "A team wants to manage provider credentials and connection settings centrally in Kinde."
+   }
+  ],
+  "related": [
+   "Provider to Kinde callback URL",
+   "reference key",
+   "permissions",
+   "scopes",
+   "/connected apps/revoke",
+   "Client ID",
+   "Client secret"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you configure a connected app in Kinde?",
+    "answer": "In Kinde, add a provider from Settings > Connected apps, save it, then configure its client ID, client secret, reference key, and callback URL. Finally select the required permissions in the Permissions tab and save.",
+    "followUp": "Why should scopes be selected explicitly? They define which provider features are made available through the connection, so selecting only necessary permissions limits access."
+   },
+   {
+    "question": "What callback URL is needed during setup?",
+    "answer": "After creating the connection, configure the provider outside Kinde using the Provider to Kinde callback URL copied from the connection. Then return to Kinde and enter the provider credentials and application callback URL.",
+    "followUp": "What is the purpose of the Provider to Kinde callback URL? It gives the external provider the redirect destination needed to complete the connection flow with Kinde."
+   },
+   {
+    "question": "What configuration is available for a connected app?",
+    "answer": "A reference key is entered while configuring the connection and is intended for use in application code. The connection also stores provider credentials and the scopes selected in the Permissions tab.",
+    "followUp": "What should be reviewed when an integration needs another provider capability? Update the connection's selected permissions or scopes, then save the configuration and ensure the provider also grants them."
+   }
+  ],
+  "keyPoints": [
+   "A connected app is Kinde's bridge for giving users access to an external tool or service.",
+   "During setup, choose the provider capabilities, called scopes, that the connection may expose.",
+   "Start management from the Connected apps area under Settings.",
+   "Use Connect an app to begin adding a provider.",
+   "Give the connection a reference key so application code can identify it.",
+   "Permissions are selected separately in the Permissions tab and determine the scopes available through the connection."
+  ],
+  "gotchas": [
+   "Removing or changing access requires calling the documented revoke endpoint; disabling the connection alone is not the stated revocation mechanism."
+  ],
+  "checkedAt": "2026-10-15"
+ },
  "CreateOrgLink": {
   "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/nextjs-sdkv1/",
   "sourceTitle": "Next.js App Router SDK v1 - Kinde docs",
@@ -411,6 +479,142 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "Custom properties": {
+  "sourceUrl": "https://docs.kinde.com/properties/about-properties/",
+  "sourceTitle": "Custom claims and data with properties - Kinde docs",
+  "summary": "Custom properties are user-defined fields for Kinde users, organizations, and applications. They store business-specific data and can be exposed in tokens as custom claims when configured as public.",
+  "explanation": "Custom properties are user-defined fields attached to users, organizations, or applications. They store business-specific data, can be grouped into categories, and may be exposed in tokens when configured as public properties and selected during token customization.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Custom property configuration",
+   "code": "// No runnable SDK declaration is provided on the documentation page.\n",
+   "language": "typescript",
+   "explanation": "The documentation describes configuring custom properties in the Kinde dashboard rather than exposing a code-level const declaration."
+  },
+  "useCases": [
+   {
+    "title": "Business metadata",
+    "scenario": "Store application-specific identifiers or customer relationship data on a Kinde record."
+   },
+   {
+    "title": "Organized profile data",
+    "scenario": "Group related custom fields for easier viewing in records."
+   },
+   {
+    "title": "Token claims",
+    "scenario": "Pass selected custom values between systems through tokens."
+   }
+  ],
+  "related": [
+   "Custom claims and data with properties",
+   "Add and manage custom data with properties",
+   "Customize tokens using properties",
+   "Property categories",
+   "Kinde Management API"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What are Kinde custom properties used for?",
+    "answer": "Custom properties are configurable fields for users, organizations, or applications. They let a business store data beyond Kinde’s standard profile fields.",
+    "followUp": "How would you expose one to an application? Make it public, then select it while customizing the relevant token."
+   },
+   {
+    "question": "How is a custom property configured?",
+    "answer": "A property is created in Kinde under Settings > Data management > Properties. Its configuration includes a name, unique key, visibility, target entity, category, and type.",
+    "followUp": "Which property types are documented? Boolean, single-line text, and multi-line text."
+   },
+   {
+    "question": "How do custom properties reach tokens?",
+    "answer": "Public properties can be selected for access, ID, or M2M tokens according to the application type and token type. The selected value is then delivered as token data.",
+    "followUp": "Where does the value appear? Token customization documentation shows it under an entity-specific properties claim, with the value represented by a v field."
+   }
+  ],
+  "keyPoints": [
+   "Use properties to add business-specific data beyond Kinde’s built-in profile fields.",
+   "Custom properties can capture application identifiers, marketing details, or customer relationship data.",
+   "Categories group related fields under a heading in a user, application, or organization record.",
+   "The documented property types are Boolean, single-line text, and multi-line text.",
+   "Property definitions can be maintained through the dashboard or the Kinde Management API.",
+   "Properties can supply custom claims when included in token configuration."
+  ],
+  "gotchas": [
+   "Choose the property key carefully because Kinde does not allow it to be changed after creation.",
+   "A property must not remain private if you want to include it in tokens.",
+   "Property keys must be unique within the business."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Entitlements": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/backend/go-sdk/",
+  "sourceTitle": "Go SDK",
+  "summary": "`Entitlements` are billing-plan capabilities that describe what a customer is allowed to use. Kinde SDK helpers can read all entitlements, retrieve one by key, or check billing-entitlement membership for a user.",
+  "explanation": "`Entitlements` represents billing-plan capabilities available to a customer. SDK helpers read entitlement data from Kinde’s Account API so an application can retrieve all entitlements, inspect one by key, or test whether named plan entitlements are present.",
+  "syntax": "result, err := token.GetEntitlements(ctx, accountClient)\nentitlement, err := token.GetEntitlement(ctx, accountClient, \"seats\")\nok, err := token.HasBillingEntitlements(ctx, accountClient, []string{\"pro_plan\"}, jwt.HasBillingEntitlementsOptions{})",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Check a billing entitlement",
+   "code": "const entitlement = await getEntitlement('seats');\n\nif (entitlement.isEntitled) {\n  enableSeatManagement();\n}",
+   "language": "typescript",
+   "explanation": "Read one billing entitlement and enable the related feature when the current user is entitled."
+  },
+  "useCases": [
+   {
+    "title": "Feature gating",
+    "scenario": "Gate access to a feature based on the customer’s plan."
+   },
+   {
+    "title": "Plan capability display",
+    "scenario": "Show a user which capabilities their current plan provides."
+   },
+   {
+    "title": "Plan eligibility checks",
+    "scenario": "Determine whether a user has one of the required billing plans."
+   }
+  ],
+  "related": [
+   "GetEntitlements",
+   "GetEntitlement",
+   "HasBillingEntitlements",
+   "Account API",
+   "Management API",
+   "billing plans",
+   "features"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Kinde entitlement?",
+    "answer": "Entitlements describe what a customer may use based on their billing plan. In the Go SDK, `GetEntitlements` reads the complete set from the Account API, while `GetEntitlement` retrieves one entitlement by key.",
+    "followUp": "How would you check whether a customer has any of several plans? Use `HasBillingEntitlements` and pass the plan keys plus its options value."
+   },
+   {
+    "question": "How do you retrieve entitlements?",
+    "answer": "Use the SDK’s entitlement helper rather than parsing billing data manually. For example, the Go SDK exposes `GetEntitlements(ctx, accountClient)` and `GetEntitlement(ctx, accountClient, \"seats\")`.",
+    "followUp": "What data source do these helpers use? They read billing-entitlement data through the Kinde Account API using the user’s access token."
+   },
+   {
+    "question": "What limitation applies to entitlement access?",
+    "answer": "Individual users can access their plan entitlements through the Account API. Organization plan-entitlement information is intentionally excluded because browser-accessible token data is less secure; use the Management API for secure data.",
+    "followUp": "Why is the distinction significant? It prevents sensitive organization billing information from being exposed through a browser-scoped user token."
+   }
+  ],
+  "keyPoints": [
+   "An entitlement is a billing-plan-based capability that determines what a customer may use.",
+   "The SDK entitlement helpers obtain their data from Kinde’s Account API.",
+   "The Account API exposes entitlements so individual users can view the plan capabilities available to them.",
+   "Plan features are the concrete functions or entitlements granted to users.",
+   "Entitlements may represent metered, chargeable features or unmetered features included in a plan."
+  ],
+  "gotchas": [
+   "Do not use the Account API for organization plan-entitlement information; the documentation directs secure organization data access to the Management API.",
+   "Treat an entitlement feature’s name, key, and type as immutable after creation; correct mistakes by replacing the feature."
+  ],
+  "checkedAt": "2026-10-15"
+ },
  "Feature flags": {
   "sourceUrl": "https://docs.kinde.com/releases/about/about-feature-flags/",
   "sourceTitle": "About feature flags",
@@ -552,6 +756,144 @@
   "gotchas": [
    "Do not try to create a JSON flag by sending type json through the API; create it in the dashboard instead.",
    "Although dashboard-created JSON flags can later be overridden or deleted through the API, their type cannot be set by an API call."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "First-party application": {
+  "sourceUrl": "https://docs.kinde.com/build/applications/about-applications/",
+  "sourceTitle": "Applications in Kinde",
+  "summary": "A first-party application is an OAuth application for your own product, managed under Kinde’s Customer identity area. It lets product code receive access tokens through OAuth 2.0.",
+  "explanation": "A first-party application is an OAuth application belonging to your product under Kinde’s Customer identity area. You create it for a front end, back end, or machine-to-machine component so Kinde can issue access tokens that your code uses.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Describe a first-party application",
+   "code": "const kindeApplication = {\n  type: \"front-end and mobile\",\n  customerIdentity: true,\n};",
+   "language": "typescript",
+   "explanation": "Represents a Kinde customer-identity application configured for a browser or mobile client."
+  },
+  "useCases": [
+   {
+    "title": "Regular web application",
+    "scenario": "Server-rendered or full-stack product"
+   },
+   {
+    "title": "Single-page web application",
+    "scenario": "Browser-based single-page app or mobile client"
+   },
+   {
+    "title": "Machine-to-machine application",
+    "scenario": "Backend service calling an API"
+   }
+  ],
+  "related": [
+   "Customer identity",
+   "Workforce identity",
+   "OAuth 2.0",
+   "regular web app",
+   "single page web app",
+   "machine to machine application"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a first-party application in Kinde?",
+    "answer": "A first-party application is an OAuth application used by your own product. In Kinde, it belongs under Customer identity and receives tokens for application code.",
+    "followUp": "How would you distinguish it from a SAML application? A SAML application belongs to Workforce identity and supports team access to third-party tools, while a first-party application uses OAuth 2.0 for your product."
+   },
+   {
+    "question": "How do you create one?",
+    "answer": "Create the application from Settings > Environment > Applications, select Customer identity, choose Add application, provide a name and type, and save it. Then open its details to configure it.",
+    "followUp": "What should be configured after creation? Application keys, callback URLs, authentication, and token settings are the main follow-up tasks."
+   },
+   {
+    "question": "Which application type should you choose?",
+    "answer": "Kinde supports regular web applications, single-page web applications, and machine-to-machine applications. The choice depends on whether the code runs on a server, in a browser or mobile client, or as a backend service accessing an API.",
+    "followUp": "Which type suits a browser-based React client? Use the front-end and mobile application type, as the React documentation specifies for browser and mobile applications."
+   }
+  ],
+  "keyPoints": [
+   "Use an application to represent a product or service that users access.",
+   "First-party applications are managed in the Customer identity area.",
+   "OAuth 2.0 is the protocol Kinde applications use to deliver tokens securely.",
+   "Choose a regular web application when authentication logic executes on a server.",
+   "Choose a single-page web application for browser-based or mobile clients.",
+   "Use a machine-to-machine application for backend services that need API access."
+  ],
+  "gotchas": [
+   "Do not confuse a first-party application with a Workforce identity application: workforce applications are SAML connections for your team’s third-party tools.",
+   "Choose the Customer identity area when creating an application for your own product; Workforce identity is a separate area."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "generatePortalUrl": {
+  "sourceUrl": "https://docs.kinde.com/developer-tools/sdks/frontend/react-sdk/",
+  "sourceTitle": "React SDK - Kinde docs",
+  "summary": "generatePortalUrl creates a URL for the Kinde portal. In the React SDK, await the result and navigate to its url value, optionally supplying a return path.",
+  "explanation": "Call generatePortalUrl through the useKindeAuth hook to create a portal destination. Await the result, convert its url value to a string, and assign it to window.location.href to send the user to the portal; PortalLink is an alternative that performs the redirect for you.",
+  "syntax": "const { url } = await generatePortalUrl({ returnPath: \"/dashboard\" });",
+  "parameters": [
+   {
+    "name": "returnPath",
+    "type": "string",
+    "description": "Optional path used as the return destination after the portal flow."
+   }
+  ],
+  "returns": "A promise resolving to an object containing url, the generated portal URL.",
+  "example": {
+   "title": "Open the Kinde portal",
+   "code": "const { generatePortalUrl } = useKindeAuth();\n\nasync function openPortal() {\n  const { url } = await generatePortalUrl({ returnPath: \"/dashboard\" });\n  window.location.href = url.toString();\n}\n\n<button onClick={openPortal} type=\"button\">\n  Manage account\n</button>",
+   "language": "typescript",
+   "explanation": "Generates a portal URL with an optional return path, then navigates the browser to that URL."
+  },
+  "useCases": [
+   {
+    "title": "Add a Manage account action that opens the Kinde portal.",
+    "scenario": "Account settings"
+   },
+   {
+    "title": "Generate the destination in an event handler before redirecting the browser.",
+    "scenario": "Custom navigation"
+   },
+   {
+    "title": "Send users back to a chosen application path after completing portal actions.",
+    "scenario": "Return routing"
+   }
+  ],
+  "related": [
+   "PortalLink",
+   "useKindeAuth",
+   "self-serve portal"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you use generatePortalUrl in the React SDK?",
+    "answer": "generatePortalUrl is accessed from useKindeAuth and returns a promise. The resolved object contains url, which can be converted to a string and assigned to window.location.href.",
+    "followUp": "How could the same flow be implemented without manually handling the URL? Use the PortalLink component, which generates the link and redirects the user."
+   },
+   {
+    "question": "How do you specify where the user returns after using the portal?",
+    "answer": "Pass an options object containing returnPath, such as { returnPath: \"/dashboard\" }. This tells the portal flow where the user should return in the application.",
+    "followUp": "What should be checked if the return navigation is wrong? Verify that the supplied path matches the intended application route and that the resulting URL is used for navigation."
+   },
+   {
+    "question": "How does the example redirect the browser to the generated URL?",
+    "answer": "After awaiting generatePortalUrl, read the returned url property and navigate with window.location.href = url.toString(). This performs a full browser navigation to the generated portal URL.",
+    "followUp": "What alternative UI abstraction is documented for this purpose? PortalLink can be rendered directly and handles portal redirection without the explicit event handler."
+   }
+  ],
+  "keyPoints": [
+   "The function creates a destination URL for Kinde's self-serve portal.",
+   "In React, obtain the function by destructuring it from the useKindeAuth hook.",
+   "The function is asynchronous and resolves to an object whose url property contains the generated destination.",
+   "Navigate by converting the returned URL to text and assigning it to window.location.href.",
+   "A button click can trigger the portal-opening handler for an account-management action."
+  ],
+  "gotchas": [
+   "The generated destination is for the Kinde portal and is intended to be used for account-management navigation.",
+   "If explicit URL generation is unnecessary, use PortalLink instead because it combines link generation and redirection."
   ],
   "checkedAt": "2026-10-15"
  },
@@ -2391,6 +2733,96 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "M2M application": {
+  "sourceUrl": "https://docs.kinde.com/machine-to-machine-applications/about-m2m/",
+  "sourceTitle": "M2M overview",
+  "summary": "An M2M application authenticates backend services, scripts, or automation tools without a user. It uses OAuth 2.0 client credentials to obtain access tokens for Kinde APIs or your own APIs.",
+  "explanation": "An M2M application represents a backend service, script, or automation tool rather than a person. It uses OAuth 2.0 client credentials: the service sends its client ID and secret, receives an access token, and uses that token for authorized API calls.",
+  "syntax": "POST /oauth2/token with grant_type=client_credentials, client_id, client_secret, and audience",
+  "parameters": [
+   {
+    "name": "client_id",
+    "type": "string",
+    "description": "The application's client identifier issued by Kinde."
+   },
+   {
+    "name": "client_secret",
+    "type": "string",
+    "description": "The application's secret issued by Kinde."
+   },
+   {
+    "name": "grant_type",
+    "type": "string",
+    "description": "OAuth grant requested by the client; use client_credentials."
+   },
+   {
+    "name": "audience",
+    "type": "string",
+    "description": "The API the token is intended to access."
+   }
+  ],
+  "returns": "An OAuth access token that can be sent as a bearer token to an authorized API.",
+  "example": {
+   "title": "Request a token and call an API",
+   "code": "const tokenResponse = await fetch(`https://${process.env.KINDE_DOMAIN}/oauth2/token`, {\n  method: \"POST\",\n  headers: { \"Content-Type\": \"application/x-www-form-urlencoded\" },\n  body: new URLSearchParams({\n    grant_type: \"client_credentials\",\n    client_id: process.env.KINDE_CLIENT_ID!,\n    client_secret: process.env.KINDE_CLIENT_SECRET!,\n    audience: process.env.API_AUDIENCE!\n  })\n});\n\nif (!tokenResponse.ok) throw new Error(\"Token request failed\");\nconst { access_token } = await tokenResponse.json();\n\nconst apiResponse = await fetch(`${process.env.API_URL}/records`, {\n  headers: { Authorization: `Bearer ${access_token}` }\n});\n\nconsole.log(await apiResponse.json());",
+   "language": "typescript",
+   "explanation": "The service exchanges its M2M credentials for an access token, then presents that token when calling the protected API."
+  },
+  "useCases": [
+   {
+    "title": "Backend automation",
+    "scenario": "A server needs to call a protected backend API on a schedule."
+   },
+   {
+    "title": "CLI tooling",
+    "scenario": "A command-line tool needs non-interactive API access."
+   },
+   {
+    "title": "IoT and daemon workloads",
+    "scenario": "A device or daemon must authenticate without a user session."
+   },
+   {
+    "title": "Management API integration",
+    "scenario": "A service needs scoped access to the Kinde Management API."
+   }
+  ],
+  "related": [
+   "OAuth 2.0 client credentials flow",
+   "Client ID",
+   "Client Secret",
+   "access token",
+   "API authorization",
+   "scopes",
+   "Kinde Management API",
+   "organization"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is an M2M application and how does it authenticate?",
+    "answer": "An M2M application authenticates a backend service, script, or automation tool without a user. It uses the OAuth 2.0 client credentials grant to exchange its client ID and client secret for an access token.",
+    "followUp": "How would you limit its authority? Authorize the application for only the required API and grant the smallest necessary scopes."
+   },
+   {
+    "question": "What setup is required before an M2M app can call an API?",
+    "answer": "First create the application, then authorize it for the APIs it may call. The service sends its credentials in a client-credentials token request and uses the returned bearer token to call the API.",
+    "followUp": "What must be configured before token use? The target API must be authorized for the M2M app, and the request must identify the intended API audience."
+   },
+   {
+    "question": "When should you use an M2M application?",
+    "answer": "M2M apps suit backend services, CLIs, daemons, IoT devices, and automation because they operate without user interaction. Each app can be dedicated to a service or other machine identity.",
+    "followUp": "Why use one app per service or environment? Separate credentials reduce blast radius and make least-privilege authorization and auditing clearer."
+   }
+  ],
+  "keyPoints": [
+   "Use an M2M application when a non-user workload must authenticate to an API.",
+   "The authentication mechanism is OAuth 2.0's client credentials flow.",
+   "The resulting access token can authorize calls to Kinde APIs or your own backend.",
+   "An M2M app can be broadly available or restricted to one organization."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
  "M2M tokens": {
   "sourceUrl": "https://docs.kinde.com/machine-to-machine-applications/about-m2m/",
   "sourceTitle": "M2M overview",
@@ -2542,6 +2974,74 @@
    "Recovery codes provide an alternative when the user cannot access the normal MFA device."
   ],
   "gotchas": [],
+  "checkedAt": "2026-10-15"
+ },
+ "MFA enforcement": {
+  "sourceUrl": "https://docs.kinde.com/authenticate/multi-factor-auth/enable-multi-factor-authentication/",
+  "sourceTitle": "Enable multi-factor authentication",
+  "summary": "Kinde lets administrators make MFA mandatory or optional for users. Environment settings apply globally, while organization-level settings can narrow enforcement to one organization.",
+  "explanation": "MFA enforcement makes users configure and use a second authentication factor during sign-up or their next sign-in. It can be required for the whole environment, or configured separately for individual organizations when that feature is available.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Enable environment-wide MFA",
+   "code": "# Configure in Kinde Dashboard:\n# Settings > Environment > Multi-factor auth\n# Require multi-factor authentication: Yes\n# Select authentication methods, then Save",
+   "language": "text",
+   "explanation": "Enable mandatory MFA for every user in the environment through the Kinde dashboard."
+  },
+  "useCases": [
+   {
+    "title": "Environment-wide protection",
+    "scenario": "Require every user to enroll in a second factor for a security-sensitive application."
+   },
+   {
+    "title": "Gradual adoption",
+    "scenario": "Offer MFA without forcing enrollment immediately, allowing users to opt in at their next sign-in."
+   },
+   {
+    "title": "Organization-specific enforcement",
+    "scenario": "Apply stronger authentication requirements to one customer organization without changing other organizations."
+   }
+  ],
+  "related": [
+   "Multi-factor authentication",
+   "Set multi-factor authentication for an organization",
+   "Enable recovery codes",
+   "Authenticator app",
+   "Email OTP",
+   "SMS OTP"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you enforce MFA for all users?",
+    "answer": "Set **Require multi-factor authentication** to **Yes** under Settings > Environment > Multi-factor auth, choose the available additional methods, and save. Users then have to set up MFA when they first sign up or next sign in.",
+    "followUp": "How would you limit enforcement to one organization? Use the organization’s Multi-factor auth settings and enable enforcement there, rather than applying it at the environment level."
+   },
+   {
+    "question": "How does optional MFA differ from mandatory MFA?",
+    "answer": "Choose **Optional** instead of **Yes** in the environment’s MFA settings. Users can then choose whether to set up MFA when they first sign up or next sign in.",
+    "followUp": "What happens after a user opts in? They use the selected secondary method during subsequent sign-ins and can use recovery codes if those are enabled."
+   },
+   {
+    "question": "Which secondary factors can be enabled?",
+    "answer": "Kinde supports email OTP, SMS OTP, and authenticator apps as secondary factors. The dashboard lets you select which additional authentication options users may use.",
+    "followUp": "What configuration detail affects recovery? The Enable recovery codes toggle controls whether recovery codes are shown during MFA setup and is enabled by default."
+   }
+  ],
+  "keyPoints": [
+   "The environment setting supports two policies: require MFA for users or offer it as an opt-in.",
+   "Available secondary factors include email OTP, SMS OTP, and an authenticator app.",
+   "Mandatory enforcement triggers enrollment at first registration or at the next login.",
+   "Organization-scoped enforcement is available when MFA should not apply across the whole environment.",
+   "Administrators choose which secondary methods are offered rather than automatically enabling every method.",
+   "After saving the configuration, sign-in flows direct users through MFA."
+  ],
+  "gotchas": [
+   "Environment-level configuration affects every user; use organization-level settings when enforcement must be narrower.",
+   "Recovery codes are enabled initially; disabling them removes the recovery-code generation and display step during MFA setup."
+  ],
   "checkedAt": "2026-10-15"
  },
  "Multi-tenancy": {
@@ -2831,6 +3331,141 @@
   "gotchas": [
    "Do not substitute the Implicit Flow for a front-end application; Kinde supports Authorization Code with PKCE instead.",
    "A PKCE authorization request must include both the challenge and the challenge-method parameters."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Post-authentication workflow": {
+  "sourceUrl": "https://docs.kinde.com/workflows/example-workflows/workflow-user-post-auth/",
+  "sourceTitle": "User post-authentication workflow",
+  "summary": "The `user:post_authentication` workflow runs after single-factor authentication. Use it for post-login checks, user enrichment, organization assignment, and first-time-user handling before authorization continues.",
+  "explanation": "This workflow runs after single-factor authentication and before the authorization flow completes. It receives an event containing request and context data, allowing you to perform checks, enrich users, assign organizations, or identify first-time Kinde users.",
+  "syntax": "Trigger: `user:post_authentication`",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Inspect the workflow event",
+   "code": "export default async function handler(event) {\n  const { request, context } = event;\n  return { ...context, firstTimeUser: request?.user?.isFirstTimeUser };\n}",
+   "language": "typescript",
+   "explanation": "A workflow handler receives the event object and can use its request and context data to apply post-authentication logic."
+  },
+  "useCases": [
+   {
+    "title": "Minimize account sharing",
+    "scenario": "Evaluate recent login activity and IP information to detect impossible travel or suspicious access."
+   },
+   {
+    "title": "Enrich user records",
+    "scenario": "Set additional user properties before Kinde generates tokens."
+   },
+   {
+    "title": "Assign organizations",
+    "scenario": "Add an invited user to relevant organizations before authorization proceeds."
+   },
+   {
+    "title": "Detect first-time users",
+    "scenario": "Branch application behavior when Kinde has created a user for the first time."
+   }
+  ],
+  "related": [
+   "user:pre_registration",
+   "user:new_password_provided",
+   "user:tokens_generation",
+   "kinde.accessToken",
+   "kinde.idToken"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What trigger identifies the post-authentication workflow, and when does it run?",
+    "answer": "The trigger is user:post_authentication. It fires after a user completes single-factor authentication, such as with email and password or Google.",
+    "followUp": "How would you modify token claims instead? Use the user token generation workflow and its accessToken or idToken bindings."
+   },
+   {
+    "question": "What data does the workflow handler receive?",
+    "answer": "The workflow can inspect the event object, whose main argument has request and context keys. Those provide the trigger reason and additional relevant data points.",
+    "followUp": "What should be inspected first when implementing a workflow? Start with the event shape and the fields exposed in request and context for the selected trigger."
+   },
+   {
+    "question": "What are practical uses for this workflow?",
+    "answer": "Typical uses include checking suspicious or impossible travel, adding user properties before token generation, adding invited users to organizations, and determining whether the user is new to Kinde.",
+    "followUp": "How can an application respond to a high-risk login? Perform the external risk check in the workflow and block access proactively when the risk is high."
+   }
+  ],
+  "keyPoints": [
+   "Use the user:post_authentication trigger to run custom logic immediately after the user passes single-factor authentication.",
+   "The trigger covers common sign-in methods such as email/password and Google after their single-factor step completes.",
+   "The handler's primary input is the Kinde workflow event object.",
+   "The event exposes request and context as its two top-level keys.",
+   "The workflow can distinguish a first-time Kinde user from an existing user in the application's own database."
+  ],
+  "gotchas": [
+   "It runs after single-factor authentication, not necessarily after every authentication-related step.",
+   "Use this trigger for user enrichment before token creation, rather than modifying claims directly in the token-generation workflow."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Pre-registration workflow": {
+  "sourceUrl": "https://docs.kinde.com/workflows/example-workflows/pre-user-registration-workflow/",
+  "sourceTitle": "User pre-registration workflow",
+  "summary": "Kinde’s `user:pre_registration` workflow runs after single-factor authentication and before a user record is created. Use it to validate registration inputs or block risky sign-ups.",
+  "explanation": "A pre-registration workflow runs after single-factor authentication but before Kinde creates the user record. It receives the workflow event and can inspect registration data, then use the authentication binding to deny access when validation or business rules fail.",
+  "syntax": "Trigger: `user:pre_registration`",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Block disposable email registrations",
+   "code": "import { denyAccess } from \"kinde-workflows\";\n\nexport default async function workflow(event) {\n  const email = event.request.user.email;\n  const disposable = [\"mailinator.com\", \"tempmail.com\"];\n\n  if (disposable.some((domain) => email.endsWith(`@${domain}`))) {\n    denyAccess(\"Disposable email addresses are not allowed\");\n  }\n\n  return event;\n}",
+   "language": "typescript",
+   "explanation": "Rejects registrations when the submitted email belongs to a known disposable-email domain."
+  },
+  "useCases": [
+   {
+    "title": "Block suspicious IP addresses",
+    "scenario": "Registration security"
+   },
+   {
+    "title": "Reject disposable email domains",
+    "scenario": "Spam prevention"
+   },
+   {
+    "title": "Apply pre-account registration rules",
+    "scenario": "Business validation"
+   }
+  ],
+  "related": [
+   "user:post_authentication",
+   "user:pre_mfa",
+   "kinde.auth",
+   "denyAccess"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When does the pre-registration workflow run?",
+    "answer": "It fires on the `user:pre_registration` trigger after single-factor authentication and before a Kinde user record exists. This makes it suitable for validating registration data before account creation.",
+    "followUp": "What authorization checks have happened at this point? Organization access and MFA have not been checked, so later workflow stages or the normal authentication flow must still handle them."
+   },
+   {
+    "question": "What does the workflow event contain?",
+    "answer": "The workflow receives an event object with `request` and `context` keys. These provide the trigger reason and additional data that the workflow can use when deciding whether registration should proceed.",
+    "followUp": "How would you inspect a submitted email? Read the relevant value from the request data, then apply a validation rule before allowing the registration to continue."
+   },
+   {
+    "question": "What are practical uses for this workflow?",
+    "answer": "A common use is blocking registrations from suspicious IP addresses or refusing disposable email addresses. The workflow can apply these rules before Kinde creates the user record.",
+    "followUp": "How could a product use this for fraud prevention? It could call an external fraud or reputation service and deny access when the returned risk assessment exceeds the product's threshold."
+   }
+  ],
+  "keyPoints": [
+   "The trigger executes only after the user completes a single authentication factor.",
+   "It provides a gate before Kinde persists the new user account.",
+   "Your workflow function receives Kinde's event object as its main input.",
+   "The event is organized around request data and contextual workflow information.",
+   "Use it to reject registrations originating from suspicious IP addresses.",
+   "Use it to reduce spam by refusing disposable email domains."
+  ],
+  "gotchas": [
+   "Do not treat this trigger as proof that the user is fully authorized: organization access and MFA have not yet been evaluated."
   ],
   "checkedAt": "2026-10-15"
  },
@@ -3172,6 +3807,154 @@
   "gotchas": [
    "Kinde uses the scope name `offline`; do not substitute the OIDC name `offline_access` when requesting a refresh token.",
    "The authorization request must follow the requirements of the framework and OAuth flow being used."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Self-serve portal": {
+  "sourceUrl": "https://docs.kinde.com/build/self-service-portal/self-serve-portal-for-orgs/",
+  "sourceTitle": "Enable self-serve portal for organizations",
+  "summary": "Kinde’s self-serve portal lets authorized users and organization members manage configured account functions without contacting support. Configure its available capabilities, return URL, and permissions, then open it with a one-time link.",
+  "explanation": "Kinde lets authenticated users open a configured self-serve portal through a one-time link. The portal exposes only the functions enabled for the audience, while access to individual capabilities is controlled by system permissions.",
+  "syntax": "portal()",
+  "parameters": [],
+  "returns": "A one-time portal URL, or a redirect to the portal when using an SDK helper.",
+  "example": {
+   "title": "Open the self-serve portal",
+   "code": "const portalUrl = await kindeClient.portal();\nwindow.location.assign(portalUrl);",
+   "language": "typescript",
+   "explanation": "After portal configuration, call the authenticated JavaScript SDK helper to send the user to a one-time portal URL."
+  },
+  "useCases": [
+   {
+    "title": "Individual account self-management",
+    "scenario": "Let customers update profile, billing, or payment information without building those screens in the application."
+   },
+   {
+    "title": "Organization administration",
+    "scenario": "Allow organization administrators to maintain business details, members, roles, API keys, or billing settings."
+   },
+   {
+    "title": "In-app account navigation",
+    "scenario": "Offer an Account or Profile button that opens Kinde-hosted management screens."
+   }
+  ],
+  "related": [
+   "PortalLink",
+   "POST /api/v1/portal/generate_url",
+   "Return URL",
+   "Organization alias",
+   "org:write:billing",
+   "Self-serve portal for users",
+   "Self-serve portal for organizations"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is Kinde’s self-serve portal?",
+    "answer": "The self-serve portal is a Kinde-hosted interface where users or organization members manage enabled account functions. It can cover profile, billing, API keys, organization members and roles, and other configured capabilities.",
+    "followUp": "How would you prevent a member from using an enabled organization function? Keep the function enabled at the portal level, but restrict the member through the corresponding system role or permission."
+   },
+   {
+    "question": "How is the portal configured?",
+    "answer": "Configure it under Settings > Environment > Self-serve portal, set a return URL, choose the functions available to users or organization admins, and save. The selected options determine what appears in the portal.",
+    "followUp": "What should change if only one organization needs different settings? Use the organization-specific Self-serve portal configuration and enable Override environment settings for that organization."
+   },
+   {
+    "question": "How does an application open the portal?",
+    "answer": "The portal is opened through a one-time URL. In an authenticated app, the JavaScript SDK exposes portal(), which redirects the signed-in user to the Kinde portal.",
+    "followUp": "What alternative exists for server-side generation? Call POST /api/v1/portal/generate_url with an M2M token, then use the returned URL."
+   }
+  ],
+  "keyPoints": [
+   "The portal moves supported account-management tasks from your support team to customers.",
+   "For organizations, authorized members can manage business details, payment details, API keys, members and roles, and SSO enterprise connections when enabled.",
+   "Portal capabilities map to system permissions, allowing access to be controlled per function.",
+   "The portal can be configured separately for individual users and for organization members.",
+   "A return URL sends users back to the application after they leave the hosted portal."
+  ],
+  "gotchas": [
+   "Portal links are single-use, so generate a fresh link whenever a user needs to enter the portal.",
+   "For an authenticated application, prefer generating the link with the user's access token rather than using an alternative flow.",
+   "Enabling a portal function for an organization does not by itself grant every member access; system roles still govern individual access."
+  ],
+  "checkedAt": "2026-10-15"
+ },
+ "Session management": {
+  "sourceUrl": "https://docs.kinde.com/authenticate/manage-authentication/session-management/",
+  "sourceTitle": "Session management",
+  "summary": "Kinde session management configures application-level SSO cookie persistence and inactivity re-authentication. Backends can also terminate a user’s sessions through the Management API.",
+  "explanation": "Kinde session management controls the SSO session associated with an application. Configure whether its cookie persists after browser closure and set an inactivity period, or revoke a user’s sessions from a backend through the Management API.",
+  "syntax": "DELETE /api/v1/users/{user_id}/sessions",
+  "parameters": [
+   {
+    "name": "user_id",
+    "type": "path parameter",
+    "description": "The Kinde user identifier whose sessions should be ended."
+   },
+   {
+    "name": "Authorization",
+    "type": "Bearer token",
+    "description": "An M2M access token authorized with delete:user_sessions."
+   }
+  ],
+  "returns": "The page does not specify a response body or status for the session-deletion endpoint.",
+  "example": {
+   "title": "End a user's sessions",
+   "code": "curl -X DELETE \"https://<your_kinde_domain>/api/v1/users/<user_id>/sessions\" \\\n  -H \"Authorization: Bearer <m2m_access_token>\"",
+   "language": "bash",
+   "explanation": "Use the Management API from a backend to end all sessions for a user."
+  },
+  "useCases": [
+   {
+    "title": "Persistent SSO",
+    "scenario": "Keep users signed in between browser visits for an application."
+   },
+   {
+    "title": "Inactivity-based re-authentication",
+    "scenario": "Require users to authenticate again after inactivity."
+   },
+   {
+    "title": "Backend session revocation",
+    "scenario": "Force sign-out across Kinde sessions after a security event."
+   }
+  ],
+  "related": [
+   "SSO sessions",
+   "SSO session inactivity timeout",
+   "Management API",
+   "M2M application",
+   "delete:user_sessions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Kinde session management control?",
+    "answer": "Kinde session settings are configured per application in the dashboard. They control whether the SSO cookie persists after the browser closes and how long inactivity can continue before re-authentication is required.",
+    "followUp": "How would you revoke sessions for one user? Use DELETE /api/v1/users/{user_id}/sessions from a backend with an M2M application granted delete:user_sessions."
+   },
+   {
+    "question": "What is the difference between persistent and non-persistent SSO sessions?",
+    "answer": "Choose Persistent to keep the session active after browser closure, or Non-persistent to end it when the browser closes. The inactivity timeout defines when Kinde prompts the user to authenticate again.",
+    "followUp": "What unit does the timeout use? Seconds; the documented default is 86400 seconds, which is one day."
+   },
+   {
+    "question": "How do you configure session behavior?",
+    "answer": "Session settings are managed per application through Settings > Environment > Applications. Open the application, choose Sessions, configure the SSO session policy and inactivity timeout, then save.",
+    "followUp": "Does this configure an application's own session store? No. The page limits these settings to Kinde sessions, not sessions maintained by the application."
+   }
+  ],
+  "keyPoints": [
+   "A Kinde session represents the interval in which Kinde considers the user authenticated.",
+   "Configure session behavior independently for each application.",
+   "A persistent cookie preserves the Kinde session across browser closure.",
+   "A non-persistent policy ends the session when the browser closes, subject to documented limitations.",
+   "The default inactivity timeout is 86400 seconds, equivalent to one day.",
+   "The Management API endpoint deletes a user's sessions on demand."
+  ],
+  "gotchas": [
+   "Application-level settings do not configure sessions managed independently by your application.",
+   "The inactivity timeout must be entered in seconds, not minutes or hours.",
+   "Backend session revocation requires an M2M application with the delete:user_sessions scope."
   ],
   "checkedAt": "2026-10-15"
  },

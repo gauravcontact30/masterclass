@@ -1,359 +1,1170 @@
 {
- "Browser basics::Command queue": {
-  "sourceUrl": "https://docs.cypress.io/app/core-concepts/introduction-to-cypress",
-  "sourceTitle": "Introduction to Cypress",
-  "summary": "Cypress commands are queued for later execution and yield subjects through the command chain instead of returning values synchronously. Use chaining or `.then()` to work with a command's result.",
-  "explanation": "Cypress commands are added to a central queue when invoked and execute later in order. A command does not synchronously return its subject; instead, Cypress yields that subject to the next command or passes it to a `.then()` callback. Synchronous JavaScript runs immediately, so use chaining or `.then()` when code depends on a Cypress result.",
-  "syntax": "cy.<command>()\ncy.<command>().then((subject) => { ... })",
-  "parameters": [],
-  "returns": "Cypress commands return immediately after being appended to the queue; their subjects are yielded rather than synchronously returned.",
+ "Browser basics::Aliases": {
+  "sourceUrl": "https://docs.cypress.io/app/core-concepts/variables-and-aliases",
+  "sourceTitle": "Variables and aliases in Cypress",
+  "summary": "Aliases give Cypress elements, data, and intercepted requests readable names for later retrieval and assertions. Create them with `.as()` and reference them using `@name`.",
+  "explanation": "Use `.as()` to assign a readable name to a Cypress subject, intercepted route, spy, or stub. Retrieve the name with `cy.get('@name')` or `cy.wait('@name')`; element aliases normally re-run their preceding queries, while `{ type: 'static' }` preserves the value captured when the alias was created.",
+  "syntax": ".as(aliasName)\n.as(aliasName, options)",
+  "parameters": [
+   {
+    "name": "aliasName",
+    "type": "string",
+    "description": "Alias name used later with `@`; it must be a non-empty string and cannot start with `@`."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Optional settings object; `type` accepts `query` or `static`."
+   }
+  ],
+  "returns": "The original subject, with the alias registered for later retrieval.",
   "example": {
-   "title": "Read a yielded subject",
-   "code": "cy.get('button').then(($button) => {\n  expect($button).to.be.visible\n})",
+   "title": "Reuse element and request aliases",
+   "code": "cy.get('[data-cy=\"submit\"]').as('submitButton')\ncy.get('@submitButton').should('be.visible')\n\ncy.intercept('GET', '/api/users').as('getUsers')\ncy.visit('/users')\ncy.wait('@getUsers').its('response.statusCode').should('eq', 200)",
    "language": "typescript",
-   "explanation": "The callback receives the subject yielded by the preceding command, so assertions or dependent work run after Cypress resolves the command."
+   "explanation": "Names a DOM element and intercepted request, then retrieves each alias with the @ prefix for assertions."
   },
   "useCases": [
    {
-    "title": "Consume a yielded subject",
-    "scenario": "Access the element or value produced by a previous Cypress command."
+    "title": "Reuse DOM elements",
+    "scenario": "Assign a stable, readable handle to a DOM subject and retrieve it later for assertions."
    },
    {
-    "title": "Sequence dependent assertions",
-    "scenario": "Run assertions only after a command has resolved."
+    "title": "Coordinate network requests",
+    "scenario": "Name an intercepted route and wait for its matching request before checking its response."
    },
    {
-    "title": "Coordinate synchronous code",
-    "scenario": "Prevent immediate JavaScript from racing ahead of queued Cypress commands."
+    "title": "Assert on test doubles",
+    "scenario": "Give spies and stubs descriptive names so tests can retrieve and assert on them."
+   },
+   {
+    "title": "Share test data",
+    "scenario": "Share basic objects or primitives between applicable hooks and tests through Cypress’s Mocha context."
+   }
+  ],
+  "related": [
+   "cy.get()",
+   "cy.wait()",
+   "cy.intercept()",
+   "cy.spy()",
+   "cy.stub()",
+   "beforeEach",
+   "this.aliasName"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you create and consume a Cypress alias?",
+    "answer": "Use `.as('name')` to assign an alias, then reference it with the `@` prefix in `cy.get()` or `cy.wait()`. Aliases can represent DOM elements, primitives, objects, intercepts, spies, and stubs.",
+    "followUp": "What happens when an element alias is requested? By default, Cypress re-runs the queries that produced it, so the result reflects the current page state."
+   },
+   {
+    "question": "What is the difference between query and static aliases?",
+    "answer": "The default alias type is `query`, which re-runs the preceding queries whenever the alias is requested. `{ type: 'static' }` stores the value once and returns that captured value thereafter.",
+    "followUp": "Does `type` affect intercepts, spies, or stubs? No; the documentation says it has no effect for those alias targets."
+   },
+   {
+    "question": "How are aliases useful with network interception?",
+    "answer": "Alias an intercepted route with `cy.intercept(...).as('route')`, then use `cy.wait('@route')` to wait for the response or inspect the request and response for assertions. This also helps verify that the expected request occurred.",
+    "followUp": "Why define the route before visiting the page? Defining it first prevents the application’s request from occurring before Cypress starts waiting for the alias."
+   }
+  ],
+  "keyPoints": [
+   "Call `.as('name')` on a Cypress subject to give it a reusable name.",
+   "Use `cy.get('@name')` for an alias lookup, or `cy.wait('@name')` for an intercepted request.",
+   "Query aliases recalculate their subject from the original command chain on every retrieval.",
+   "Static aliases provide a fixed snapshot instead of re-querying the page.",
+   "Intercept aliases let tests coordinate with application network traffic.",
+   "In standard-function tests, basic object and primitive aliases are also available through `this.name`."
+  ],
+  "gotchas": [
+   "Do not include `@` when declaring an alias; the symbol belongs to the later reference.",
+   "Create aliases again in each test, commonly in `beforeEach`, rather than relying on aliases from a previous test.",
+   "Choose `static` only when a snapshot is intended; it will not reflect later changes."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Browser basics::Command queue": {
+  "sourceUrl": "https://docs.cypress.io/app/core-concepts/introduction-to-cypress",
+  "sourceTitle": "Introduction to Cypress",
+  "summary": "Cypress commands are queued for later execution rather than run synchronously. They yield subjects from one command to the next, so use chaining or .then() instead of reading a command's return value.",
+  "explanation": "Cypress commands enqueue work instead of executing immediately, and each command yields a subject to the next command in the chain. Because commands return immediately with queue information rather than usable subjects, use chaining or .then() to consume values after Cypress has produced them.",
+  "syntax": "cy.[command]().then((subject) => { ... })",
+  "parameters": [],
+  "returns": "Commands return immediately after being appended to the queue; their useful values are yielded during later execution.",
+  "example": {
+   "title": "Read a yielded subject",
+   "code": "cy.get('button').then(($button) => {\n  cy.log($button.text())\n})",
+   "language": "javascript",
+   "explanation": "The callback receives the subject yielded by cy.get() after Cypress runs the queued command."
+  },
+  "useCases": [
+   {
+    "title": "Build command chains",
+    "scenario": "Pass a DOM subject through actions and assertions"
+   },
+   {
+    "title": "Consume yielded values with .then()",
+    "scenario": "Inspect or transform a value produced by an earlier command"
+   },
+   {
+    "title": "Reason about queued execution",
+    "scenario": "Diagnose unexpected execution order or stale values"
    }
   ],
   "related": [
    ".then()",
+   "cy.contains()",
+   "cy.clearCookies()",
    "cy.get()",
-   "subject",
-   "Cypress commands",
-   "command queue"
+   "cy.log()",
+   "Command Queue"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between returning and yielding in Cypress?",
+    "answer": "Cypress commands are queued when invoked and execute later. During execution, each command yields a subject to the next command, while the command call itself returns immediately and does not provide that subject.",
+    "followUp": "How should a test access a value yielded by cy.get()? Use a chained command that accepts the subject or a .then() callback, whose parameter receives the yielded value."
+   },
+   {
+    "question": "What determines whether Cypress commands can be chained?",
+    "answer": "Every command defines what it yields. For example, cy.contains() yields a DOM element, while cy.clearCookies() yields null; chaining is valid only when the next command can use that subject.",
+    "followUp": "What happens after a command yields null? The chain can continue only with a command that does not require a subject."
+   },
+   {
+    "question": "Are Cypress commands Promises?",
+    "answer": "Cypress commands resemble Promises syntactically but are not Promises. They are serialized in a central command queue, and Cypress manages execution and subject transfer between commands.",
+    "followUp": "Why can ordinary synchronous variable assignment fail? The assignment runs while commands are only being queued, before their yielded values exist."
+   }
+  ],
   "keyPoints": [
-   "Cypress manages the chain and passes each command's yielded subject to the following command.",
-   "Use the yielded subject through chaining or a callback rather than expecting a synchronous return value.",
-   "Calling a command schedules it; execution happens later through Cypress's command queue.",
-   "The JavaScript call finishes immediately, while the queued command sequence executes afterward.",
-   "`.then()` receives the previous command's resolved subject as its first callback argument."
+   "A chain begins with a cy command, and the yielded subject determines which commands may follow.",
+   "Command documentation defines the subject passed onward, so inspect a command's yield behavior when designing a chain.",
+   "Commands that yield DOM subjects can feed subject-dependent actions such as click.",
+   "Some commands preserve the current subject, allowing the chain to continue with that same subject.",
+   "Use Cypress chaining or callbacks to consume subjects rather than expecting a synchronous function return.",
+   "The test body queues commands first; execution happens later under Cypress's control."
   ],
   "gotchas": [
-   "Do not assign a Cypress command to a variable expecting its eventual subject; use chaining or `.then()` instead.",
-   "Avoid mixing immediate JavaScript reads with commands when the JavaScript depends on a command that has not run yet.",
-   "Do not treat Cypress chains as ordinary promises or try to reconcile them with your own promise flow."
+   "Do not assign a Cypress command to a variable expecting its yielded subject; the command's immediate return value is not the application value.",
+   "Do not treat Cypress chains as ordinary Promises or use Promise-style reasoning to obtain command results synchronously.",
+   "Arguments can be evaluated before earlier queued commands execute, so log values produced by previous commands inside .then()."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Browser basics::Commands and chaining": {
-  "sourceUrl": "https://docs.cypress.io/app/core-concepts/introduction-to-cypress",
-  "sourceTitle": "Introduction to Cypress",
-  "summary": "Cypress commands are queued and composed into chains, with each command yielding a subject to the next. Queries and assertions retry; action commands execute once, so re-query after DOM-changing actions when necessary.",
-  "explanation": "Cypress queues commands while the test function runs and executes them afterward. Each command yields a subject for the next command; queries and assertions can retry, while action commands execute once, so separate queries may be safer when the application re-renders elements.",
-  "syntax": "cy.[command](...args).<command>(...args)",
+  "sourceUrl": "https://docs.cypress.io/api/table-of-contents",
+  "sourceTitle": "Table of Contents | Cypress API Documentation",
+  "summary": "Cypress commands are queued and chained through yielded subjects rather than executed immediately. Queries and assertions can retry, while non-query actions execute once.",
+  "explanation": "Cypress queues commands for later execution and manages the chain between them. Each command yields a subject that determines what can follow; queries can retry together, while actions execute once, so use fresh queries when rendering may replace the element.",
+  "syntax": "cy.[command]().[command]()",
   "parameters": [],
-  "returns": "Each command yields a subject to the next command; the yielded value depends on the command.",
+  "returns": "Commands yield a subject to the next command in the chain; the specific subject depends on the command.",
   "example": {
-   "title": "Query, interact, and assert in one chain",
-   "code": "cy.get('input[name=\"email\"]')\n  .should('be.visible')\n  .type('ada@example.com')\n  .should('have.value', 'ada@example.com')",
-   "language": "javascript",
-   "explanation": "This chain queries an input, checks it, types into the yielded element, and verifies the resulting value."
+   "title": "Chain a query, assertion, and action",
+   "code": "cy.get('button')\n  .should('be.visible')\n  .click()\n\ncy.get('[data-cy=total]').should('contain', '$42')",
+   "language": "typescript",
+   "explanation": "Queries and assertions can be composed so Cypress retries the query chain until the expected state is reached."
   },
   "useCases": [
    {
-    "title": "Form interactions",
-    "scenario": "Locate an element, interact with it, and verify its state."
+    "title": "Reliable UI interaction",
+    "scenario": "Locate an element, verify its state, then interact with it."
    },
    {
-    "title": "Retryable checks",
-    "scenario": "Read application state and assert that it has reached an expected condition."
+    "title": "Inspection and assertions",
+    "scenario": "Read application state and pass the yielded subject into assertions or later queries."
    },
    {
-    "title": "Inspecting subjects",
-    "scenario": "Pass a yielded DOM element or value into custom callback logic."
-   },
-   {
-    "title": "Stable interactions",
-    "scenario": "Re-query after an action that may trigger a DOM re-render."
+    "title": "Handling re-rendering",
+    "scenario": "Use separate query statements when rendering may replace a DOM node between actions."
    }
   ],
   "related": [
    "cy.get()",
    "cy.contains()",
    "cy.should()",
+   "cy.and()",
    "cy.then()",
-   "cy.click()",
-   "cy.type()",
-   "Cypress commands",
-   "queries"
+   "cy.click()"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How does Cypress chaining work?",
+    "answer": "Cypress commands are queued rather than run immediately. Cypress manages the promise chain, passing each command’s yielded subject to the next command.",
+    "followUp": "What does the yielded subject control? It determines which commands can be chained next; for example, a DOM element can be passed to `.click()`, while `null` cannot satisfy a command requiring a subject."
+   },
+   {
+    "question": "Which Cypress commands are retryable?",
+    "answer": "Queries read application state, yield data for later commands, and retry as needed. Assertions are a special kind of query, whereas non-queries execute only once.",
+    "followUp": "How should a test handle a DOM node replaced during rendering? Split actions into separate statements so each action begins with a fresh query."
+   },
+   {
+    "question": "How is a Cypress chain started?",
+    "answer": "A new chain starts with `cy.[command]`. The command’s yielded value establishes which subsequent commands can be attached.",
+    "followUp": "What happens after a test function returns? Cypress executes the commands that were enqueued by the `cy.*` chains."
+   }
+  ],
   "keyPoints": [
-   "Cypress commands form chains because each command yields a subject that the following command receives.",
-   "Begin a chain with a `cy` command; the first command's yielded subject determines which commands can follow.",
-   "Queries inspect application state, yield elements or other data, and retry until the yielded result is current.",
-   "Calling a Cypress command queues it; execution happens after the test function has finished setting up the chain.",
-   "Use `.then()` to access the previous yielded subject in a callback after the preceding command resolves."
+   "Calling a Cypress command queues it; execution happens after the test function has finished running.",
+   "Chaining lets Cypress coordinate command execution without requiring the test author to manage promises.",
+   "Queries inspect application state and provide subjects that later commands can use.",
+   "A query both yields a subject and retries until the yielded DOM or other data is current.",
+   "Begin an independent chain with a command on `cy`, such as `cy.get()` or `cy.contains()`."
   ],
-  "gotchas": [
-   "Commands are enqueued rather than executed immediately, so do not depend on ordinary synchronous JavaScript timing around Cypress commands."
-  ],
-  "checkedAt": "2026-10-15"
+  "gotchas": [],
+  "checkedAt": "2026-10-16"
  },
  "Browser basics::cy.get and querying": {
   "sourceUrl": "https://docs.cypress.io/api/commands/get",
-  "sourceTitle": "cy.get() | Cypress API Documentation",
-  "summary": "`cy.get()` queries DOM elements by selector or retrieves aliases. As a Cypress query, it retries and yields a subject that can be chained into actions and assertions.",
-  "explanation": "`cy.get()` queries the document for matching elements and automatically retries while Cypress waits for the application to reach the expected state. It can also resolve aliases such as `@saveButton`; the yielded subject can be used safely by later commands and assertions. When chained from `cy`, searching starts at the document, except inside `.within()`, where it starts from the scoped root.",
+  "sourceTitle": "cy.get() | Cypress API Documentation | Cypress",
+  "summary": "Query DOM elements by selector or retrieve an alias with `cy.get()`. Cypress retries linked queries and assertions, making stable selectors useful for controls that may render or update asynchronously.",
+  "explanation": "`cy.get()` queues a query for DOM elements matching a selector, or resolves an alias introduced with `.as()`. Cypress retries linked queries and assertions until they pass or the timeout is reached, then yields the found elements or alias result for subsequent commands.",
   "syntax": "cy.get(selector)\ncy.get(alias)\ncy.get(selector, options)\ncy.get(alias, options)",
   "parameters": [
    {
     "name": "selector",
     "type": "String selector",
-    "description": "A selector used to filter matching DOM elements."
+    "description": "A CSS selector used to filter matching DOM elements."
    },
    {
     "name": "alias",
-    "type": "String",
-    "description": "An alias created with `.as()` and referenced using `@` plus its name."
+    "type": "String alias",
+    "description": "An alias created with `.as()` and referenced with `@`; aliases may represent DOM elements, primitives, objects, intercepts, spies, or stubs."
    },
    {
     "name": "options",
     "type": "Object",
-    "description": "Options that change the default behavior of `cy.get()`."
+    "description": "Options that modify `cy.get()` default behavior, such as timeout or logging."
    }
   ],
-  "returns": "Yields the matching DOM elements or the result of an alias lookup; for an intercept alias, yields the most recent interception or null if no request has matched. The result is safe to chain further commands.",
+  "returns": "Yields the matching DOM elements or the result of alias lookup. An intercept alias yields the most recent interception, or null when no request has matched. The yielded subject is safe to chain.",
   "example": {
-   "title": "Query and act on an application control",
-   "code": "cy.visit('/settings')\ncy.get('[data-cy=\"save\"]')\n  .should('be.visible')\n  .click()\ncy.get('.toast').should('contain', 'Saved')",
-   "language": "javascript",
-   "explanation": "Queries the save control by selector, waits for it to be visible, clicks it, then queries the resulting notification."
+   "title": "Query a control and an alias",
+   "code": "cy.get('[data-cy=\"submit\"]').should('be.visible').click()\ncy.get('@saveRequest').its('response.statusCode').should('eq', 200)",
+   "language": "typescript",
+   "explanation": "The first query finds a control by a stable attribute and safely chains an assertion and action; the second reads an intercept alias and asserts on its response."
   },
   "useCases": [
    {
-    "title": "Query application controls",
-    "scenario": "Find a button, input, or other control before acting on it."
+    "title": "Wait for application controls",
+    "scenario": "A control appears after rendering or changes while the test runs."
    },
    {
-    "title": "Synchronize with dynamic UI",
-    "scenario": "Wait for an element to appear or reach an asserted state."
+    "title": "Use stable selectors",
+    "scenario": "A test needs to target controls without depending on presentation-oriented classes."
    },
    {
-    "title": "Read aliases",
-    "scenario": "Retrieve an aliased DOM subject or network result."
+    "title": "Retrieve aliased values",
+    "scenario": "A prior command stored an element, primitive, intercept, spy, or stub under an alias."
    },
    {
-    "title": "Use combined selectors",
-    "scenario": "Match several element types in one query."
+    "title": "Query multiple selector alternatives",
+    "scenario": "Several control types should be asserted together."
    }
   ],
   "related": [
-   "cy.as()",
    "cy.find()",
    "cy.contains()",
-   "cy.root()",
-   "cy.within()",
-   "cy.should()"
+   "cy.root",
+   "within()",
+   "as()",
+   "cy.wait()",
+   "Cypress.$"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What does `cy.get()` do and what can it yield?",
+    "answer": "`cy.get()` accepts a CSS selector or an alias and yields the matching DOM elements or alias result. It is a query, so it is safe to chain additional commands.",
+    "followUp": "How does Cypress handle a failed chained assertion? It re-queries the linked query chain from the beginning and retries until the timeout is reached."
+   },
+   {
+    "question": "Where does `cy.get()` begin its search?",
+    "answer": "A selector passed to top-level `cy.get()` is searched from the entire document. The command starts at `cy.root`; inside `.within()`, that root is the scoped element instead.",
+    "followUp": "How would you search relative to an existing subject? Use `.find()`, because `.find()` starts from the current subject rather than the root."
+   },
+   {
+    "question": "How does alias lookup differ from a cached DOM reference?",
+    "answer": "Use an alias with the `@` prefix, such as `cy.get('@rows')`. For DOM aliases, Cypress stores the query chain and re-executes it, which produces fresh results against the current DOM.",
+    "followUp": "What is the difference from `Cypress.$`? `Cypress.$` runs synchronously and is not a queued Cypress command, so it does not wait for earlier Cypress commands."
+   }
+  ],
   "keyPoints": [
-   "Use `cy.get(selector)` to find one or more DOM elements, or `cy.get(alias)` to retrieve an aliased value.",
-   "Selector matching follows familiar jQuery-style querying behavior.",
-   "The selector argument filters the elements returned from the application DOM.",
-   "An optional options object can customize command behavior, such as timeout-related settings.",
-   "The yielded subject is either the matched elements or the value resolved from an alias.",
-   "Comma-separated selectors let one query return elements matching any listed selector."
+   "Use `cy.get()` to retrieve one or more DOM elements with a selector, or to resolve an alias.",
+   "Its selector matching behaves similarly to jQuery’s `$()` query.",
+   "A comma-separated selector returns elements matching any listed selector, allowing one query to cover several control types.",
+   "Because it is a query, the yielded subject can safely be followed by assertions or actions.",
+   "The command starts at `cy.root`; normally that means the document, except when a `.within()` scope changes the root."
   ],
   "gotchas": [
-   "A top-level `cy.get()` searches the whole document; use `.within()` when the query should be scoped to a container.",
-   "The command yields a subject for subsequent commands, rather than performing an immediate synchronous lookup.",
-   "Alias lookups require the `@` prefix, such as `cy.get('@saveButton')`."
+   "A top-level `cy.get()` searches the whole document; it does not begin from the currently yielded subject. Use `.find()` for a search rooted at that subject."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Browser basics::Interacting with forms": {
   "sourceUrl": "https://docs.cypress.io/api/commands/submit",
   "sourceTitle": "cy.submit() | Cypress API Documentation",
-  "summary": "Fill form controls with Cypress commands, assert their values or state, and submit the form with `.submit()`. The submission command requires the selected subject to be a `<form>`.",
-  "explanation": "Use Cypress's DOM queries and action commands to operate form controls as a user would, then assert the resulting values or state. Submit the form explicitly with `.submit()` when the form itself is the subject.",
+  "summary": "Interact with a form by querying its controls, typing through them, asserting their values or outcomes, and submitting the form with `.submit()`. Cypress enforces that submission targets a single `<form>` and applies client-side validation.",
+  "explanation": "Use Cypress queries to obtain form controls, action commands such as `.type()` to enter data, and assertions such as `.should()` to check values or outcomes. Submit by chaining `.submit()` from a command that yields the form element; Cypress also checks client-side validation during submission.",
   "syntax": "cy.get('form').submit()\ncy.get('form').submit(options)",
   "parameters": [
    {
     "name": "options",
     "type": "object",
-    "description": "Optional settings that change the command's default behavior."
+    "description": "Options object; the documented `timeout` option controls how long `.submit()` waits before timing out."
    }
   ],
-  "returns": "Yields the same subject it was given.",
+  "returns": "`.submit()` yields the same subject it was given.",
   "example": {
-   "title": "Submit a completed form",
-   "code": "describe('user form', () => {\n  it('fills, submits, and checks the form', () => {\n    cy.visit('/users/new')\n    cy.get('[data-testid=\"first-name\"]')\n      .type('Johnny')\n      .should('have.value', 'Johnny')\n    cy.get('[data-testid=\"last-name\"]').type('Appleseed')\n    cy.get('form').submit()\n  })\n})",
-   "language": "javascript",
-   "explanation": "This test enters values through the form controls, verifies one entered value, and submits the form."
+   "title": "Fill and submit a form",
+   "code": "cy.get('#contact').within(() => {\n  cy.get('input[name=\"message\"]')\n    .type('Hello Cypress')\n    .should('have.value', 'Hello Cypress')\n})\ncy.get('#contact').submit()\n",
+   "language": "typescript",
+   "explanation": "Select the form, enter text through its input, assert the entered value, and submit the form."
   },
   "useCases": [
    {
-    "title": "Test successful form submission",
-    "scenario": "Complete a registration or profile form and submit it."
+    "title": "Form submission flow",
+    "scenario": "Verify that a user can enter data and send a form."
    },
    {
-    "title": "Validate field values",
-    "scenario": "Verify that entered values are present in controls."
+    "title": "Control-value validation",
+    "scenario": "Confirm that text entered into a field is reflected in its value."
    },
    {
-    "title": "Check invalid submissions",
-    "scenario": "Exercise browser-side required-field validation."
+    "title": "Validation behavior",
+    "scenario": "Check that invalid client-side input prevents a successful submission."
    }
   ],
   "related": [
    "cy.get()",
-   "cy.type()",
    "cy.contains()",
    "cy.click()",
-   "cy.should()"
+   "cy.type()",
+   "cy.should()",
+   "cy.and()",
+   "cy.submit()"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What are the requirements and result of `.submit()`?",
+    "answer": "`.submit()` must be chained from a command yielding a form element, such as `cy.get('form')`. It submits that form and yields the same subject, but relying on that subject in subsequent commands is unsafe.",
+    "followUp": "What happens with invalid required fields? Cypress fails the submission and lists the client-side validation failures."
+   },
+   {
+    "question": "How should a test submit a specific form?",
+    "answer": "A form can be submitted with `cy.get('form').submit()`. Calling `cy.submit()` directly is invalid because the command requires a yielded DOM element, and chaining it from an input is invalid because the subject is not a form.",
+    "followUp": "How can a test avoid an overly broad selector? Select a unique form, for example by ID, so the command operates on the intended single form."
+   },
+   {
+    "question": "How does `.submit()` interact with assertions and timeouts?",
+    "answer": "Cypress can wait for assertions chained to the submission to pass, and the command can time out while waiting for those assertions. The command also has a configurable `timeout` option, whose default is `defaultCommandTimeout`.",
+    "followUp": "When would the timeout matter most? It matters when submission or its chained assertions do not resolve within the configured limit."
+   }
+  ],
   "keyPoints": [
-   "Call `.submit()` to submit a form selected from the page.",
-   "Select the form itself before calling `.submit()`; an input element is not a valid subject.",
-   "The command yields the original form subject, but later commands should not rely on that subject because Cypress marks such chaining unsafe.",
-   "Start the command chain with a DOM-yielding query such as `cy.get()`.",
-   "Assertions chained before submission are awaited automatically."
+   "Start submission from a DOM-query command, commonly `cy.get()`.",
+   "Assertions attached to the submission are retried and awaited by Cypress.",
+   "Target one form at a time; the submission command is not intended for multiple matched forms."
   ],
   "gotchas": [
-   "Do not depend on the form subject in commands chained after `.submit()`; query the page again or assert an independent result.",
-   "`.submit()` only works when the command chain yields a form, not an input or another element.",
-   "Client-side validation failures cause `.submit()` to fail, so provide valid required values when testing successful submission."
+   "Do not depend on the form subject for later commands after submission; query the needed element again instead.",
+   "`.submit()` cannot be chained from an input or another non-form element.",
+   "Client-side validation failures make submission fail and Cypress reports the validation problems."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
- "Configuration::Fixtures and test data": {
+ "Configuration::Custom commands": {
+  "sourceUrl": "https://docs.cypress.io/api/cypress-api/custom-commands",
+  "sourceTitle": "Custom Commands in Cypress | Cypress API Documentation",
+  "summary": "Custom commands package repeated Cypress workflows behind a named `cy` command. Register them with `add` or `addAll`; use `overwrite` only when intentionally changing an existing command.",
+  "explanation": "A custom command is a named Cypress workflow registered with `Cypress.Commands.add`; its callback receives the arguments supplied at the call site and can compose Cypress commands. Use `addAll` for several commands, and reserve `overwrite` for changing an existing command; overwriting affects Cypress itself and cannot modify queries.",
+  "syntax": "Cypress.Commands.add(name, callbackFn)\nCypress.Commands.add(name, options, callbackFn)\nCypress.Commands.addAll(callbackObj)\nCypress.Commands.addAll(options, callbackObj)\nCypress.Commands.overwrite(name, callbackFn)",
+  "parameters": [
+   {
+    "name": "name",
+    "type": "String",
+    "description": "Name of the command being added or overwritten."
+   },
+   {
+    "name": "callbackFn",
+    "type": "Function",
+    "description": "Function that receives the command's arguments."
+   },
+   {
+    "name": "callbackObj",
+    "type": "Object",
+    "description": "Object whose properties are callback functions, used with `addAll`."
+   },
+   {
+    "name": "options",
+    "type": "Object",
+    "description": "Options object defining the custom command's implicit behavior."
+   }
+  ],
+  "returns": "The page documents registration signatures and callback inputs, but does not specify a standalone return value.",
+  "example": {
+   "title": "A typed login command",
+   "code": "Cypress.Commands.add('login', (email: string, password: string) => {\n  cy.session([email, password], () => {\n    cy.visit('/login')\n    cy.get('[name=email]').type(email)\n    cy.get('[name=password]').type(password)\n    cy.get('form').submit()\n    cy.url().should('include', '/dashboard')\n  })\n})\n\n// cypress.d.ts\nexport {}\ndeclare global {\n  namespace Cypress {\n    interface Chainable {\n      login(email: string, password: string): Chainable<void>\n    }\n  }\n}",
+   "language": "typescript",
+   "explanation": "Register the command in a support file, then call it as `cy.login(...)` from tests. Keep meaningful assertions in the command so the workflow still verifies the expected outcome."
+  },
+  "useCases": [
+   {
+    "title": "Reusable test workflows",
+    "scenario": "A login or setup flow is repeated across many specs."
+   },
+   {
+    "title": "Grouped command registration",
+    "scenario": "Several related commands need one registration block."
+   },
+   {
+    "title": "Intentional command customization",
+    "scenario": "A built-in command needs project-specific behavior."
+   }
+  ],
+  "related": [
+   "Cypress.Commands.add",
+   "Cypress.Commands.addAll",
+   "Cypress.Commands.overwrite",
+   "Cypress.Commands.overwriteQuery",
+   "Custom Queries"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you create a custom Cypress command?",
+    "answer": "Use `Cypress.Commands.add(name, callbackFn)` to register one command, or provide an options object between the name and callback. The callback receives the arguments passed when the command is invoked.",
+    "followUp": "How would you register several commands together? Use `Cypress.Commands.addAll(callbackObj)`, where each object property is a callback function."
+   },
+   {
+    "question": "When should `Cypress.Commands.overwrite` be used?",
+    "answer": "Use `Cypress.Commands.overwrite(name, callbackFn)` when changing an existing built-in command or reserved internal function. The overwrite callback receives the original function plus the command's arguments, so it can preserve or alter the original behavior.",
+    "followUp": "Can this API change a query? No. Use `Cypress.Commands.overwriteQuery` for queries."
+   },
+   {
+    "question": "What do the custom-command API parameters represent?",
+    "answer": "The command name identifies the command being added or overwritten, `callbackFn` implements it, `callbackObj` groups callbacks for `addAll`, and `options` configures implicit behavior. The page lists these as the API's supported inputs.",
+    "followUp": "What is the distinction between adding and overwriting? Adding creates a command for tests; overwriting changes an existing Cypress command or reserved internal function."
+   }
+  ],
+  "keyPoints": [
+   "Register a new command with `Cypress.Commands.add`, then invoke it through the `cy` chain in test code.",
+   "Use `overwrite` to alter an existing command rather than to define a new workflow.",
+   "Use `addAll` when a group of commands can be declared together in one callback object.",
+   "The callback receives the values supplied by the test, letting the command expose a focused, reusable interface.",
+   "An options object can control the command's implicit behavior when registering it."
+  ],
+  "gotchas": [
+   "Overwriting a built-in command changes Cypress's own behavior, so use `Cypress.Commands.overwrite` cautiously.",
+   "Do not use `overwrite` for a query; use `Cypress.Commands.overwriteQuery` instead.",
+   "Custom commands use the same registration API as Cypress's built-in commands, so naming and behavior should remain clear."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Configuration::cy.session": {
+  "sourceUrl": "https://docs.cypress.io/api/commands/session",
+  "sourceTitle": "cy.session() | Cypress API Documentation",
+  "summary": "Cache and restore authenticated browser state so repeated tests can skip the login flow. Sessions preserve cookies and web storage, with optional validation and cross-spec reuse.",
+  "explanation": "`cy.session()` runs a setup callback to establish authentication, then saves the resulting cookies, localStorage, and sessionStorage. Later calls with the same ID restore that browser state and can validate it, avoiding repeated login flows; caching normally lasts for the spec unless cross-spec caching is enabled.",
+  "syntax": "cy.session(id, setup)\ncy.session(id, setup, options)",
+  "parameters": [
+   {
+    "name": "id",
+    "type": "any",
+    "description": "A unique identifier used to find the cached session."
+   },
+   {
+    "name": "setup",
+    "type": "() => void",
+    "description": "A callback that creates the session's browser state."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Optional settings, including `validate` and `cacheAcrossSpecs`."
+   }
+  ],
+  "returns": "Yields null; `cy.session()` is intended for establishing and restoring browser session data rather than yielding a subject.",
+  "example": {
+   "title": "Cache a login session",
+   "code": "describe('dashboard', () => {\n  beforeEach(() => {\n    cy.session('alice', () => {\n      cy.visit('/login')\n      cy.get('[name=email]').type('[email protected]')\n      cy.get('[name=password]').type('secret')\n      cy.get('button[type=submit]').click()\n      cy.url().should('include', '/dashboard')\n    })\n\n    cy.visit('/dashboard')\n  })\n\n  it('shows the dashboard', () => {\n    cy.contains('Dashboard').should('be.visible')\n  })\n})",
+   "language": "typescript",
+   "explanation": "The login setup runs only when the session is absent; later calls restore the cached browser session before visiting the dashboard."
+  },
+  "useCases": [
+   {
+    "title": "Avoid repeated authentication",
+    "scenario": "A suite repeatedly logs in through a form or API before each test."
+   },
+   {
+    "title": "Preserve the complete browser context",
+    "scenario": "Authentication sets cookies or storage that must be available to each test."
+   },
+   {
+    "title": "Share a session across specs",
+    "scenario": "Several spec files need the same login during one run on one machine."
+   }
+  ],
+  "related": [
+   "validate",
+   "cacheAcrossSpecs",
+   "testIsolation",
+   "Cypress.session.getSession()",
+   "Cypress.session.getCurrentSessionData()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the ID passed to `cy.session()` control?",
+    "answer": "The ID identifies the cached session. If that ID has no cached session, or validation says it is invalid, Cypress runs setup; otherwise it restores the saved cookies and storage and skips setup.",
+    "followUp": "How would you reuse a session across spec files? Enable `cacheAcrossSpecs` in the options; it makes the session global for the current run on the same machine."
+   },
+   {
+    "question": "What browser state does `cy.session()` cache?",
+    "answer": "The command preserves cookies, `sessionStorage`, and `localStorage` after setup and validation complete. A later call with the same ID restores that browser context instead of repeating authentication.",
+    "followUp": "What must happen before a session can be reused? The initial setup and validation must complete successfully so Cypress can cache the resulting browser state."
+   },
+   {
+    "question": "How does test isolation affect `cy.session()`?",
+    "answer": "With test isolation enabled, Cypress clears the page and browser context when establishing the session. With isolation disabled, it clears cookies and storage but does not clear the current page.",
+    "followUp": "What option changes the reuse scope? `cacheAcrossSpecs: true` permits restoration in other specs during the same run on the same machine."
+   }
+  ],
+  "keyPoints": [
+   "The command captures the browser's authentication state and restores it for later tests.",
+   "Setup runs for a new ID and runs again when the cached session is no longer valid.",
+   "Matching IDs let later tests avoid repeating the login setup.",
+   "By default, the cached session remains available throughout its spec file.",
+   "`cacheAcrossSpecs: true` extends reuse to other spec files in the same Cypress run and machine.",
+   "Test isolation determines whether Cypress clears the page while creating the session."
+  ],
+  "gotchas": [
+   "All domains' cookies, localStorage, and sessionStorage are cleared before setup, even when test isolation is disabled.",
+   "A cached session is immutable; create another session with a different ID when the stored state must change."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Configuration::Fixtures": {
   "sourceUrl": "https://docs.cypress.io/api/commands/fixture",
   "sourceTitle": "cy.fixture () | Cypress API Documentation",
-  "summary": "Load fixed test data from a file in Cypress’s fixturesFolder. Use it to share deterministic records or assets and to stub network responses without relying on a live backend.",
-  "explanation": "Place stable test data in the configured fixtures folder and load it with cy.fixture(), or reference it directly in an intercept response. Cypress caches a fixture after its first read, so repeated uses receive the same contents; use cy.readFile() instead when a file changes during the test.",
+  "summary": "Fixtures are reusable files containing static test data. Load them with cy.fixture() from the configured fixturesFolder, or use them as deterministic responses for intercepted network requests.",
+  "explanation": "Place reusable static data in the configured fixtures folder and load it with cy.fixture(). Cypress parses supported formats according to their extensions, yields the loaded value for chained commands, and can reuse fixture files when intercepting network requests. JSON imports are instead evaluated at build time, making them suitable when data is needed to define tests.",
   "syntax": "cy.fixture(filePath)\ncy.fixture(filePath, encoding)\ncy.fixture(filePath, options)\ncy.fixture(filePath, encoding, options)",
   "parameters": [
    {
     "name": "filePath",
     "type": "string",
-    "description": "Path to a file within the fixturesFolder; the extension may be omitted."
+    "description": "Path to a file within fixturesFolder; nested paths are allowed."
    },
    {
     "name": "encoding",
     "type": "string | null",
-    "description": "Encoding used to read the fixture, including null for a Cypress.Buffer."
+    "description": "Encoding used when reading the file; supported values include utf8, base64, binary, and null."
    },
    {
     "name": "options",
     "type": "object",
-    "description": "Command options."
+    "description": "Options object for the command."
    }
   ],
-  "returns": "Yields the loaded fixture contents, parsed or encoded according to the file type and supplied encoding.",
+  "returns": "Yields the loaded fixture contents.",
   "example": {
-   "title": "Stub a request with fixture data",
-   "code": "describe('users', () => {\n  beforeEach(() => {\n    cy.intercept('GET', '/api/users', { fixture: 'users.json' }).as('getUsers')\n  })\n\n  it('shows deterministic user data', () => {\n    cy.visit('/users')\n    cy.wait('@getUsers')\n    cy.contains('Ada Lovelace').should('be.visible')\n  })\n})",
+   "title": "Load and reuse a fixture",
+   "code": "cy.fixture('users/admin.json').as('adminUser')\ncy.intercept('GET','/api/users/admin',{fixture:'users/admin.json'}).as('getAdmin')\ncy.visit('/admin')\ncy.wait('@getAdmin')\ncy.get('@adminUser').its('email').should('eq','admin@example.com')",
    "language": "typescript",
-   "explanation": "Each test stubs the users request with the checked-in users.json fixture, so the page receives predictable data instead of depending on a live backend."
+   "explanation": "Loads a nested JSON fixture, aliases its data, and reuses the fixture to stub an intercepted response."
   },
   "useCases": [
    {
-    "title": "Deterministic network data",
-    "scenario": "Stub API responses with checked-in JSON so end-to-end assertions use predictable data."
+    "title": "Deterministic network testing",
+    "scenario": "Stub an API response with stable data so an end-to-end test does not depend on a live backend."
    },
    {
-    "title": "Reusable test data",
-    "scenario": "Share the same user, image, CSV, or JSON data across multiple tests."
+    "title": "Shared test data",
+    "scenario": "Reuse the same user, product, or configuration record across multiple tests without embedding it in each spec."
    },
    {
-    "title": "Asset-based scenarios",
-    "scenario": "Load an image or other fixture asset for upload or rendering tests."
+    "title": "Non-text test resources",
+    "scenario": "Load images or other non-JSON resources for upload and response-related workflows."
+   }
+  ],
+  "related": [
+   "fixturesFolder",
+   "cy.intercept()",
+   "Cypress.config()",
+   "cy.request()",
+   "cy.selectFile()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does cy.fixture() do?",
+    "answer": "cy.fixture() reads a file from the configured fixturesFolder and yields its contents. Cypress interprets supported formats by extension unless an encoding is supplied.",
+    "followUp": "How would you load binary data? Pass null or an appropriate encoding so Cypress yields raw contents instead of parsing by extension."
    },
    {
-    "title": "Use cy.readFile() instead",
-    "scenario": "Read output generated during a test or data that changes between reads."
+    "question": "Where does Cypress find fixture files?",
+    "answer": "The default directory is cypress/fixtures, and nested paths are resolved relative to that directory. For example, cy.fixture('users/admin.json') addresses a file in a users subdirectory.",
+    "followUp": "What happens when the same fixture is loaded repeatedly? Cypress caches it using the exact path and encoding."
+   },
+   {
+    "question": "When should you use a fixture versus importing JSON?",
+    "answer": "Fixtures are useful for deterministic network stubs: cy.intercept() can use a fixture file for a response, avoiding dependence on a live backend. A static JSON import is evaluated at build time and is better when data is needed to create test blocks.",
+    "followUp": "Why not use cy.fixture() to generate tests dynamically? It yields data during a test and therefore cannot create it() blocks."
+   }
+  ],
+  "keyPoints": [
+   "A fixture is a reusable, external data file that a test loads when needed.",
+   "Cypress uses cypress/fixtures by default, while fixturesFolder can point to a different location.",
+   "File extensions determine how supported fixture formats are parsed or encoded, including JSON, JavaScript, text, CSV, images, and ZIP files.",
+   "Use cy.fixture() to read data during a test, especially when supplying deterministic responses for intercepted requests.",
+   "Import or require JSON when the fixture data must be available while the spec is being constructed."
+  ],
+  "gotchas": [
+   "A fixture is cached after its first load by its exact path and encoding, so later calls can return stale contents if the file changes during a run.",
+   "Supplying an encoding disables extension-based parsing and returns raw contents, which is useful for binary or deliberately unparsed data.",
+   "The command depends on a configured fixturesFolder and fails when that setting is false.",
+   "Use a static JSON import rather than cy.fixture() when records must determine test definitions, because fixture loading happens inside test execution."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Configuration::Fixtures and test data": {
+  "sourceUrl": "https://docs.cypress.io/app/core-concepts/writing-and-organizing-tests",
+  "sourceTitle": "Writing and organizing Cypress tests",
+  "summary": "Fixtures are checked-in static files that Cypress loads as controlled test data. Use cy.fixture() to read them or cy.intercept() with the fixture option to return deterministic responses and reduce dependence on changing backend data.",
+  "explanation": "Place controlled data in the fixtures directory and load it when a test needs it. A fixture can be read with cy.fixture() or supplied directly to cy.intercept(), allowing the application to receive a stable response instead of depending on changing backend data.",
+  "syntax": "cy.fixture(fixtureName)\ncy.intercept(method, url, { fixture: fixtureName })",
+  "parameters": [
+   {
+    "name": "fixture",
+    "type": "string",
+    "description": "Fixture name or path, optionally including a nested directory and file extension."
+   }
+  ],
+  "returns": "cy.fixture() yields the loaded fixture data; an intercept configured with fixture supplies that data as the matched response.",
+  "example": {
+   "title": "Stub a request with fixture data",
+   "code": "describe('users', () => {\n  beforeEach(() => {\n    cy.intercept('GET', '/api/users', { fixture: 'users.json' }).as('getUsers')\n  })\n\n  it('shows fixture-backed users', () => {\n    cy.visit('/users')\n    cy.wait('@getUsers')\n    cy.get('[data-cy=\"user\"]').should('have.length', 2)\n  })\n})",
+   "language": "typescript",
+   "explanation": "The test intercepts the users request and serves checked-in fixture data, making the displayed records predictable."
+  },
+  "useCases": [
+   {
+    "title": "Stub network responses",
+    "scenario": "A UI test needs predictable API data without contacting a live backend."
+   },
+   {
+    "title": "Reuse shared test data",
+    "scenario": "Several specs use the same user, product, or API payload."
+   },
+   {
+    "title": "Work with non-JSON fixtures",
+    "scenario": "A test uploads a known image or validates a fixed downloaded file."
+   }
+  ],
+  "related": [
+   "cy.fixture()",
+   "cy.intercept()",
+   "fixturesFolder",
+   "cypress/fixtures",
+   "Network Requests"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why use fixtures in Cypress tests?",
+    "answer": "Fixtures are checked-in static files that provide controlled input to tests. They make responses repeatable and keep bulky test data outside the spec.",
+    "followUp": "How would you keep a request from reaching a live backend? Use cy.intercept() with the fixture option so the matched request is answered by fixture data."
+   },
+   {
+    "question": "How can a Cypress test load fixture data?",
+    "answer": "Use cy.fixture('name') to load a fixture's contents, commonly inside a callback, or pass its filename through cy.intercept() using the fixture option. Cypress resolves files from the configured fixtures directory.",
+    "followUp": "What if the data is needed before the test body runs? Import or require a JSON fixture, recognizing that this loads it at build time."
+   },
+   {
+    "question": "How do fixtures work with network interception?",
+    "answer": "cy.intercept() can return a fixture directly, so the application receives a deterministic response without relying on a live backend. This is useful when the test focuses on UI behavior rather than server behavior.",
+    "followUp": "When should the backend remain real? Avoid stubbing when the scenario specifically verifies end-to-end server integration."
+   }
+  ],
+  "keyPoints": [
+   "Fixtures establish a known input environment, helping repeated test runs produce comparable results.",
+   "Separate fixture files improve spec readability and let multiple tests reuse the same data.",
+   "Fixture files can use several formats, including JSON, JavaScript, HTML, text, CSV, images, and ZIP archives.",
+   "Call cy.fixture() when the test needs the loaded contents itself, especially for constructing a stubbed response.",
+   "The fixture option lets an intercept serve a file directly, avoiding an extra data-loading step in the test."
+  ],
+  "gotchas": [
+   "Fixtures are static files, not dynamically generated state; update the file when the canned data should change.",
+   "The default location may differ if the fixtures folder is configured, so verify the project configuration before resolving paths.",
+   "Static imports load JSON during build time, unlike cy.fixture(), which loads the file during test execution."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Debugging::Debugging and retries": {
+  "sourceUrl": "https://docs.cypress.io/app/core-concepts/open-mode",
+  "sourceTitle": "Open mode in the Cypress app",
+  "summary": "Cypress open mode combines a chronological Command Log, time-travel snapshots, and console details for diagnosing browser behavior. Configure test retries separately for interactive and run modes to expose intermittent failures.",
+  "explanation": "Use Cypress open mode to diagnose a failing browser flow: inspect each command in the Command Log, hover to time-travel through captured application states, and pin a snapshot for detailed console output. Configure limited test retries to distinguish intermittent failures from reproducible defects; each retry is a fresh test attempt.",
+  "syntax": "retries: { runMode: number, openMode: number }",
+  "parameters": [
+   {
+    "name": "retries.runMode",
+    "type": "number",
+    "description": "Number of additional attempts for tests in cypress run."
+   },
+   {
+    "name": "retries.openMode",
+    "type": "number",
+    "description": "Number of additional attempts for tests in cypress open."
+   },
+   {
+    "name": "numTestsKeptInMemory",
+    "type": "number",
+    "description": "Number of tests whose snapshots and command data remain available for time travel."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Inspect a login flow",
+   "code": "describe('login', () => {\n  it('shows the dashboard', () => {\n    cy.visit('/login')\n    cy.get('[data-cy=email]').type('user@example.com')\n    cy.get('[data-cy=password]').type('secret')\n    cy.get('[data-cy=submit]').click()\n    cy.url().should('include', '/dashboard')\n  })\n})",
+   "language": "typescript",
+   "explanation": "Run this test in Cypress open mode, then click or hover commands in the Command Log to inspect snapshots and console details."
+  },
+  "useCases": [
+   {
+    "title": "Separate flaky failures from deterministic failures",
+    "scenario": "A test fails only intermittently in CI."
+   },
+   {
+    "title": "Time-travel through command states",
+    "scenario": "A UI interaction produces an unexpected state."
+   },
+   {
+    "title": "Limit retained debugging history",
+    "scenario": "A long interactive session causes high browser memory use."
+   }
+  ],
+  "related": [
+   "Command Log",
+   "time travel snapshots",
+   "console details",
+   "retries.runMode",
+   "retries.openMode",
+   "numTestsKeptInMemory",
+   "cypress open"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you inspect what happened during a failing test?",
+    "answer": "Cypress open mode displays commands in the Command Log. Selecting a command exposes its snapshot and console details, while hovering restores the application to that command's captured state.",
+    "followUp": "How can memory use be reduced? Lower numTestsKeptInMemory, which controls how many tests' snapshots and command data Cypress retains."
+   },
+   {
+    "question": "How are controlled test retries configured?",
+    "answer": "Enable retries in Cypress configuration and set a retry count. A value of 2 permits the initial attempt plus two additional attempts before the test can fail.",
+    "followUp": "How do run and open modes differ? Configure retries.runMode and retries.openMode independently for CI and interactive debugging."
+   },
+   {
+    "question": "What does a command snapshot provide during debugging?",
+    "answer": "Cypress takes snapshots for commands, allowing time travel to earlier application states. Pinning a command locks the application under test to that command's state and opens additional console details.",
+    "followUp": "What happens on a retry? Cypress re-executes the complete test, including beforeEach and afterEach hooks."
+   }
+  ],
+  "keyPoints": [
+   "Use the Command Log as the chronological index for commands and lifecycle hooks.",
+   "Select a command to correlate its subject, application state, and console output.",
+   "Hovering provides time-travel debugging without rerunning the test.",
+   "Cypress retains debugging history for 50 tests by default.",
+   "Pin a command when you need to keep its captured state visible while examining details.",
+   "Interactive runs show attempt counts and let you expand individual retries."
+  ],
+  "gotchas": [
+   "Retries are disabled unless enabled in Cypress configuration.",
+   "Snapshots consume memory; reduce numTestsKeptInMemory if the browser uses too much memory."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Debugging::Flake detection": {
+  "sourceUrl": "https://docs.cypress.io/cloud/features/flaky-test-management.md",
+  "sourceTitle": "Flaky Test Management in Cypress Cloud",
+  "summary": "Cypress Cloud detects flake when a test fails and then passes across retries without code changes. Enable retries, then use Test Replay to compare attempts and fix the underlying timing, race, or environment problem.",
+  "explanation": "Cypress Cloud uses retry attempts to identify tests that fail and then pass without code changes. Configure retries, then compare failing and passing attempts in Test Replay to investigate timing issues, race conditions, or environmental dependencies rather than treating a retry as the fix.",
+  "syntax": "retries: { runMode: number, openMode: number }",
+  "parameters": [
+   {
+    "name": "retries.runMode",
+    "type": "number",
+    "description": "Retry count for tests executed with `cypress run`."
+   },
+   {
+    "name": "retries.openMode",
+    "type": "number",
+    "description": "Retry count for tests executed with `cypress open`."
+   }
+  ],
+  "returns": "A test that passes on a retry is ultimately marked as passed; a test that fails all configured attempts is marked as failed.",
+  "example": {
+   "title": "Enable retries to expose flake",
+   "code": "describe('checkout', { retries: { runMode: 2, openMode: 0 } }, () => {\n  it('shows the confirmation', () => {\n    cy.visit('/checkout')\n    cy.get('[data-cy=submit]').click()\n    cy.get('[data-cy=confirmation]').should('be.visible')\n  })\n})",
+   "language": "typescript",
+   "explanation": "The test may run up to three times in CI. A pass after an initial failure is evidence of flake; inspect the attempts and fix the underlying timing, race, or environment problem."
+  },
+  "useCases": [
+   {
+    "title": "Expose timing problems",
+    "scenario": "A CI test sometimes fails because the UI or network is not ready when an assertion runs."
+   },
+   {
+    "title": "Investigate environment-dependent flake",
+    "scenario": "A test behaves differently in CI and locally or depends on unstable external conditions."
+   },
+   {
+    "title": "Prioritize flaky tests",
+    "scenario": "A team needs to focus engineering effort on the tests creating the most unreliable runs and retry overhead."
+   }
+  ],
+  "related": [
+   "Test retries",
+   "Flaky Test Management",
+   "Test Replay",
+   "Flake Detection",
+   "Cypress Cloud Analytics"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Cypress identify a flaky test?",
+    "answer": "Cypress detects flake when a test fails on one attempt and passes on a later attempt without a code change. Test retries provide the attempts that Cypress Cloud records and analyzes.",
+    "followUp": "How would you investigate the cause? Compare a failing attempt with a passing attempt in Test Replay, looking at the DOM, network requests, console logs, and element state."
+   },
+   {
+    "question": "How do you configure retries?",
+    "answer": "Set the `retries` configuration with separate `runMode` and `openMode` values. For example, `runMode: 2` permits two additional CI attempts, for up to three total executions.",
+    "followUp": "What does each retry cost? The entire test runs again, including `beforeEach` and `afterEach`, so retries can multiply setup, teardown, and runtime."
+   },
+   {
+    "question": "What should a team do when a retry passes?",
+    "answer": "A retry is diagnostic evidence, not a repair. A test that passes after failing suggests a timing issue, race condition, or environmental dependency that should be isolated and fixed.",
+    "followUp": "What evidence is especially useful? Replay the exact CI attempts and compare the passing and failing runs on the same code."
+   }
+  ],
+  "keyPoints": [
+   "Flake means the same test is nondeterministic across retry attempts, even though the application code remains unchanged.",
+   "Cypress Cloud needs retries enabled to identify and track flake from recorded CI runs.",
+   "The configured retry count adds attempts after the initial failure; it does not replace the first execution.",
+   "Use Test Replay to compare attempts and locate the condition that changes between failure and success.",
+   "Test Replay preserves the CI execution context and exposes the main browser and network evidence needed for diagnosis."
+  ],
+  "gotchas": [
+   "Retries rerun the complete test lifecycle, so setup and teardown may affect the result and add execution cost.",
+   "Persistent retries are a performance signal; prioritize tests with high flake rates and many retries."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Debugging::Screenshots and videos": {
+  "sourceUrl": "https://docs.cypress.io/app/guides/screenshots-and-videos",
+  "sourceTitle": "Capture screenshots and videos in Cypress",
+  "summary": "Cypress can capture screenshots manually or automatically on test failure during `cypress run`. Enable `video: true` to record one video per spec; artifacts go to configurable folders for CI inspection.",
+  "explanation": "During `cypress run`, Cypress can automatically save a screenshot when a test fails and, when enabled, record a video for each spec. Screenshots and videos are written to configurable asset folders; interactive `cypress open` does not automatically capture failure screenshots or record videos.",
+  "syntax": "cy.screenshot();\n\n// cypress.config.ts\nscreenshotOnRunFailure: true;\nvideo: true;",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Enable CI visual artifacts",
+   "code": "import { defineConfig } from 'cypress'\n\nexport default defineConfig({\n  screenshotOnRunFailure: true,\n  video: true,\n  e2e: {\n    setupNodeEvents(on, config) {\n      return config\n    },\n  },\n})",
+   "language": "typescript",
+   "explanation": "Run with `cypress run` to save failure screenshots and record one video per spec."
+  },
+  "useCases": [
+   {
+    "title": "Automatic failure evidence",
+    "scenario": "A CI test fails and the team needs visual context without reproducing the failure locally."
+   },
+   {
+    "title": "Checkpoint screenshots",
+    "scenario": "A test reaches a visually significant state such as a completed checkout or modal."
+   },
+   {
+    "title": "Spec-level video review",
+    "scenario": "A team needs to inspect browser behavior across a whole spec after a headless run."
+   }
+  ],
+  "related": [
+   "cy.screenshot()",
+   "screenshotOnRunFailure",
+   "screenshotsFolder",
+   "video",
+   "videosFolder",
+   "Cypress.Screenshot.defaults()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When does Cypress automatically capture failure screenshots?",
+    "answer": "Cypress automatically captures screenshots for failures during `cypress run`; this behavior can be disabled with `screenshotOnRunFailure: false`. The default screenshot location is `cypress/screenshots`.",
+    "followUp": "How would you capture a screenshot outside a failure? Use `cy.screenshot()`, which saves it under the configured screenshots folder."
+   },
+   {
+    "question": "How do you enable Cypress videos, and what is their unit of recording?",
+    "answer": "Video recording is off by default. Setting `video: true` enables recording, and Cypress creates one video for each spec when tests run with `cypress run`.",
+    "followUp": "Are videos recorded in open mode? No; videos are not recorded during `cypress open`."
+   },
+   {
+    "question": "Where does Cypress save screenshots and videos?",
+    "answer": "The default folders are `cypress/screenshots` for screenshots and `cypress/videos` for videos. Both locations can be changed through the corresponding folder configuration options.",
+    "followUp": "What happens with recorded videos and `--record`? Cypress processes, compresses, and uploads them to Cypress Cloud after each spec."
+   }
+  ],
+  "keyPoints": [
+   "Use `cy.screenshot()` when evidence is needed at a deliberate point in a test rather than only after failure.",
+   "Headless or CI runs provide automatic failure screenshots without adding screenshot commands to every test.",
+   "The screenshot output directory is configurable, with `cypress/screenshots` as the default.",
+   "Video artifacts are organized at the spec-file level, producing one recording per spec run.",
+   "The default video output directory is `cypress/videos`, and it can be configured.",
+   "Set `screenshotOnRunFailure` to `false` when automatic failure images should be disabled."
+  ],
+  "gotchas": [
+   "Failure screenshots are automatic in `cypress run`, not in the interactive `cypress open` mode.",
+   "Videos require explicitly enabling `video: true` in Cypress configuration.",
+   "Using `--record` adds processing, compression, and Cypress Cloud upload for videos."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Network control::Request stubbing": {
+  "sourceUrl": "https://docs.cypress.io/api/commands/intercept",
+  "sourceTitle": "cy.intercept() | Cypress API Documentation",
+  "summary": "Cypress request stubbing uses cy.intercept() to replace selected application HTTP responses with controlled bodies, statuses, headers, delays, or failures. Route handlers can make response decisions at request time.",
+  "explanation": "Use cy.intercept() to match an application's HTTP request and replace its server interaction with a controlled response. A static response can define the returned body, status, headers, delay, or other response characteristics; a route handler enables request-time decisions through methods such as req.reply(), req.continue(), req.destroy(), and req.redirect().",
+  "syntax": "cy.intercept(url)\ncy.intercept(method, url)\ncy.intercept(routeMatcher)\ncy.intercept(url, staticResponse)\ncy.intercept(method, url, staticResponse)\ncy.intercept(routeMatcher, staticResponse)\ncy.intercept(url, routeHandler)\ncy.intercept(method, url, routeHandler)\ncy.intercept(routeMatcher, routeHandler)",
+  "parameters": [
+   {
+    "name": "method",
+    "type": "string",
+    "description": "HTTP method to match, such as GET or POST; optional when using a URL or route matcher."
+   },
+   {
+    "name": "url or routeMatcher",
+    "type": "string | RouteMatcher",
+    "description": "URL, URL pattern, or route matcher identifying requests to intercept."
+   },
+   {
+    "name": "staticResponse or routeHandler",
+    "type": "StaticResponse | function",
+    "description": "Static response or route handler used to stub, modify, or inspect the request."
+   }
+  ],
+  "returns": "A Cypress chainable command; the page documents cy.intercept() as the command for spying on and stubbing network requests and responses.",
+  "example": {
+   "title": "Stub a delayed HTTP failure",
+   "code": "cy.intercept('GET', '/api/users', {\n  statusCode: 503,\n  body: { error: 'Service unavailable' },\n  delay: 500,\n}).as('getUsers')\n\ncy.visit('/dashboard')\ncy.wait('@getUsers')\ncy.contains('Service unavailable').should('be.visible')",
+   "language": "typescript",
+   "explanation": "The route returns a controlled delayed failure so the test can verify the application's error state."
+  },
+  "useCases": [
+   {
+    "title": "Simulate HTTP failures",
+    "scenario": "Test application error handling without relying on a failing service."
+   },
+   {
+    "title": "Control response data",
+    "scenario": "Make tests deterministic by replacing changing backend data with fixed fixtures or objects."
+   },
+   {
+    "title": "Model response delay",
+    "scenario": "Verify loading and timeout-related UI behavior under controlled latency."
+   },
+   {
+    "title": "Modify live exchanges",
+    "scenario": "Inspect or alter outgoing requests and real responses while retaining server behavior."
    }
   ],
   "related": [
    "cy.intercept()",
-   "cy.readFile()",
-   "fixturesFolder",
-   "static import/require of JSON fixtures"
+   "StaticResponse",
+   "req.reply()",
+   "req.continue()",
+   "req.destroy()",
+   "req.redirect()",
+   "req.on()",
+   "res.send()"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How does Cypress define a request stub?",
+    "answer": "cy.intercept() can receive a URL, method and URL, route matcher, or a route handler. A static response directly stubs the matched route, while a handler can inspect and control the intercepted request.",
+    "followUp": "How can a test alter a real server response? Use req.continue() with a callback, then modify or assert on the response before it reaches the browser."
+   },
+   {
+    "question": "What can a StaticResponse control?",
+    "answer": "A StaticResponse can specify response data such as body, status code, headers, and delay. Passing it to cy.intercept() prevents the matched request from depending on the real back end.",
+    "followUp": "How can a stub be selected dynamically? Use a route handler and call req.reply() with the response chosen from the request details."
+   },
+   {
+    "question": "What request-handler methods support different failure and response behaviors?",
+    "answer": "req.reply() ends the request with a stubbed response, req.continue() allows the real request and can modify its response, req.destroy() produces a network error, and req.redirect() returns a redirect.",
+    "followUp": "How can response-phase behavior be customized? Attach handlers with req.on(), or end the response phase with res.send() using an optional StaticResponse."
+   }
+  ],
   "keyPoints": [
-   "Fixtures keep controlled, reusable test data outside the test implementation.",
-   "Unless configured otherwise, Cypress resolves fixture paths from cypress/fixtures.",
-   "Use cy.fixture() to load fixed records or supported assets from the fixtures directory.",
-   "Fixture data can serve as deterministic responses for intercepted network requests.",
-   "Fixtures are intended to remain stable during execution, supporting repeatable tests.",
-   "JSON fixtures can also be imported statically when build-time loading suits the spec."
+   "A stub can control the response body, status, headers, and delay.",
+   "Use cy.intercept() as the main command for matching and controlling application HTTP traffic.",
+   "A test may stub selected requests while allowing other matched traffic to reach the real server.",
+   "Use req.reply() when the test should be independent of a live back end.",
+   "req.destroy() simulates a network-level failure rather than an ordinary HTTP error response.",
+   "req.redirect() lets the handler model redirect behavior."
   ],
   "gotchas": [
-   "A fixture is cached after its first read for a given path and encoding, so editing the file during a test will not change later reads.",
-   "Use cy.readFile() for generated or changing files rather than cy.fixture().",
-   "The fixtures folder must be configured for cy.fixture() to work."
+   "When multiple routes match, middleware routes are considered first; other matching routes are evaluated from newest to oldest."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
- "Debugging::Debugging and retries": {
-  "sourceUrl": "https://docs.cypress.io/app/guides/debugging",
-  "sourceTitle": "Debugging in Cypress | Cypress Documentation",
-  "summary": "Use the Command Log, snapshots, console details, and cy.debug() to inspect failed browser behavior. Enable test retries to compare repeated attempts and identify flaky tests.",
-  "explanation": "Cypress exposes each test command in the Command Log and captures snapshots that can restore the application to earlier states. Clicking a command reveals its subject and result; enabling test retries reruns failed tests for additional attempts, while cy.debug() adds a breakpoint and browser-console details for the previous command.",
-  "syntax": "cy.debug()\nretries: { runMode: number, openMode: number }",
-  "parameters": [],
-  "returns": "cy.debug() yields the subject received from the previous command; test retries rerun failed tests up to the configured retry count.",
+ "Network control::wait for network": {
+  "sourceUrl": "https://docs.cypress.io/api/commands/intercept",
+  "sourceTitle": "cy.intercept() | Cypress API Documentation",
+  "summary": "Alias a route with cy.intercept() and wait for it with cy.wait('@alias') instead of sleeping for a guessed duration. Cypress resumes after the matching request/response cycle completes.",
+  "explanation": "Define an intercepted route and give it an alias before the action that triggers the request. Pass that alias to cy.wait() so Cypress waits for the matching request and response cycle, then continues with the next command; this synchronizes the test with a specific network event rather than a guessed delay.",
+  "syntax": "cy.intercept(url).as(alias)\ncy.wait(alias)\ncy.wait(aliases, options)",
+  "parameters": [
+   {
+    "name": "wait",
+    "type": "number | string | string[]",
+    "description": "A time in milliseconds or an alias, prefixed with @, for an intercepted route; cy.wait() also accepts an array of aliases and options."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Configuration such as requestTimeout and responseTimeout."
+   }
+  ],
+  "returns": "For an aliased intercepted route, cy.wait() yields an object containing information about the matching request/response cycle; an array of aliases yields an array in alias order.",
   "example": {
-   "title": "Inspect a flaky assertion",
-   "code": "describe('checkout', () => {\n  it('submits an order', () => {\n    cy.visit('/checkout')\n    cy.get('[data-cy=submit]').click()\n    cy.debug()\n    cy.contains('Order confirmed').should('be.visible')\n  })\n})",
-   "language": "typescript",
-   "explanation": "Run this in Cypress open mode, click the cy.debug() command, and inspect the browser console while Cypress retries the linked query and assertion."
+   "title": "Wait for a users request",
+   "code": "cy.intercept('GET', '/users').as('getUsers')\ncy.get('[data-testid=\"fetch-users\"]').click()\ncy.wait('@getUsers')\ncy.get('table tr').should('have.length', 2)",
+   "language": "javascript",
+   "explanation": "Aliases the users request and waits for its response before checking the rendered table."
   },
   "useCases": [
    {
-    "title": "Inspect command state and snapshots",
-    "scenario": "A selector or assertion fails intermittently while developing in Cypress open mode."
+    "title": "Synchronize initial data loading",
+    "scenario": "A page loads data after navigation."
    },
    {
-    "title": "Detect flaky test behavior with retries",
-    "scenario": "A test passes locally but fails intermittently in CI."
+    "title": "Verify action-triggered requests",
+    "scenario": "A click submits a form or triggers an API call."
    },
    {
-    "title": "Pause with cy.debug()",
-    "scenario": "A linked query and assertion need browser-console inspection during failure."
-   },
-   {
-    "title": "Trace execution through the Command Log",
-    "scenario": "A test contains unexpected lifecycle or network-related commands."
+    "title": "Coordinate multiple requests",
+    "scenario": "Several independent requests must finish before assertions run."
    }
   ],
   "related": [
-   "cy.debug()",
-   "Cypress.log()",
-   "Command Log",
-   "test retries",
-   "snapshots",
-   "retry-ability",
-   "command:retry"
+   "cy.intercept()",
+   "cy.as()",
+   "cy.wait()",
+   "cy.get('@alias.all')",
+   "requestTimeout",
+   "responseTimeout"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How do you wait for a specific network request in Cypress?",
+    "answer": "Use cy.intercept() to match the route, chain .as() to assign an alias, and call cy.wait('@alias') after the action that triggers it. The wait resolves after the matching request/response cycle completes and yields request and response details.",
+    "followUp": "How can several requests be synchronized? Pass an array such as cy.wait(['@users', '@messages']); Cypress waits for all of them within the requestTimeout and responseTimeout limits."
+   },
+   {
+    "question": "What happens when cy.wait() uses an aliased route repeatedly?",
+    "answer": "Each cy.wait('@alias') waits for the next matching request associated with that alias. This makes repeated calls useful when the same route is expected more than once.",
+    "followUp": "How can the complete matching history be inspected? Use cy.get('@alias.all') after the requests settle."
+   },
+   {
+    "question": "Which timeouts govern waiting on a network alias?",
+    "answer": "cy.wait() first waits for a matching request to start, using requestTimeout, and then waits for its response, using responseTimeout. The documented defaults are 5000 ms and 30000 ms respectively.",
+    "followUp": "What should replace a fixed delay when the application has a meaningful completion condition? Alias the relevant route or use an assertion that expresses that condition."
+   }
+  ],
   "keyPoints": [
-   "Clicking a command exposes its subject and yielded value for diagnosis.",
-   "In open mode, expand retry attempts individually to compare their behavior.",
-   "Use test retries to identify flaky tests and failures that appear in CI.",
-   "Place cy.debug() in a chain when you need a breakpoint while a linked assertion is failing."
+   "Set up the intercept and alias before visiting or performing the action that initiates the request, so the request cannot be missed.",
+   "Use cy.wait('@alias') to synchronize with completion of a matched request and its response.",
+   "The wait yields an object containing information about the matching request and response cycle, enabling targeted assertions.",
+   "Provide multiple aliases in an array when the next step depends on several network operations completing."
   ],
   "gotchas": [
-   "Test retries must be enabled in Cypress configuration before failed tests receive additional attempts.",
-   "cy.debug() does not repeatedly log or break during later retry cycles."
+   "Cypress cannot automatically wait for every network request; define the routes and aliases that the test needs.",
+   "When waiting on multiple aliases, Cypress waits concurrently rather than enforcing a sequence between those requests."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
+ },
+ "Test design::Component testing": {
+  "sourceUrl": "https://docs.cypress.io/app/component-testing/get-started",
+  "sourceTitle": "Get started with component testing | Cypress Documentation",
+  "summary": "Mount a component in Cypress's real browser, then interact with its rendered DOM and assert the visible result. This tests component behavior in the same browser environment users experience.",
+  "explanation": "Component testing renders an individual component in Cypress's real browser test app. After mounting it with cy.mount(), use Cypress commands to find rendered elements, interact with them as a user would, and assert the resulting UI state.",
+  "syntax": "cy.mount(component)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Test a rendered interaction",
+   "code": "import Stepper from './Stepper'\n\ndescribe('Stepper', () => {\n  it('changes the value when buttons are clicked', () => {\n    cy.mount(<Stepper />)\n    cy.contains('button', 'increment').click()\n    cy.get('[data-cy=value]').should('have.text', '1')\n  })\n})",
+   "language": "tsx",
+   "explanation": "Mounts the component in Cypress's browser test app, performs a user-like click, and checks the rendered value."
+  },
+  "useCases": [
+   {
+    "title": "Focused component behavior",
+    "scenario": "Validate a component's user-facing behavior without starting the entire application."
+   },
+   {
+    "title": "Rendered interaction flows",
+    "scenario": "Check that a click, input, or other browser action changes rendered UI state."
+   },
+   {
+    "title": "Visual browser debugging",
+    "scenario": "Inspect visual output and debug browser-specific rendering issues during development."
+   }
+  ],
+  "related": [
+   "cy.mount()",
+   "click()",
+   "should()",
+   "Cypress Component Testing",
+   "Cypress App"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What distinguishes Cypress component testing from end-to-end testing?",
+    "answer": "Component testing mounts an individual component in Cypress's test app instead of opening the entire application through a URL. Cypress renders it in a real browser, allowing the test to inspect the visible result and exercise browser interactions.",
+    "followUp": "How would you verify a counter interaction? Mount the counter, click its increment control, then assert that the rendered value changed."
+   },
+   {
+    "question": "How do you test a rendered button interaction?",
+    "answer": "Call cy.mount() with the component, locate the relevant rendered control, interact with it using Cypress commands such as click(), and assert the resulting DOM state. This checks behavior as experienced through the browser.",
+    "followUp": "Why prefer click() over directly invoking a component handler? Because click() exercises the actual rendered DOM interaction path."
+   },
+   {
+    "question": "What debugging benefits does component testing provide?",
+    "answer": "The component appears visually in the test run, and browser developer tools can be used to inspect and debug both the component and the test. This provides a browser-based feedback loop while the test executes.",
+    "followUp": "What additional browser capability is useful when diagnosing a failing component test? Inspect the rendered component and test code with browser DevTools."
+   }
+  ],
+  "keyPoints": [
+   "The component runs in a real browser rather than a simulated DOM, so rendering and browser behavior are exercised together.",
+   "The test runner displays the component while the test executes, making the rendered result directly observable.",
+   "Browser DevTools can help inspect the rendered component and troubleshoot both its implementation and the test.",
+   "Cypress interaction commands can drive rendered controls and support assertions about the resulting UI."
+  ],
+  "gotchas": [
+   "Mounting starts the component test, but the component still needs normal Cypress commands for interaction and assertions.",
+   "Use click() for button behavior so the test exercises the rendered DOM interaction rather than only inspecting component code."
+  ],
+  "checkedAt": "2026-10-16"
  }
 }

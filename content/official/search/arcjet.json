@@ -2,133 +2,157 @@
  "Core model::Characteristics": {
   "sourceUrl": "https://docs.arcjet.com/fingerprints",
   "sourceTitle": "Arcjet fingerprints",
-  "summary": "Characteristics are stable request attributes Arcjet uses to identify clients for a rule. They can key limits by a user ID, account, tenant, API key, or a combination of attributes instead of relying only on IP address.",
-  "explanation": "Characteristics define the stable values Arcjet uses to identify clients for fingerprinting and rule enforcement. Configure names such as a user ID or API key, then provide the corresponding value when calling protect; multiple characteristics are combined into one fingerprint.",
+  "summary": "Characteristics are stable identifiers Arcjet uses to build a client fingerprint for a rule. They can represent an IP address, API key, user ID, or another application attribute.",
+  "explanation": "Arcjet builds a fingerprint from configured characteristics and uses it to identify the client for a rule. Set characteristics globally or on an individual rule; a custom key such as userId receives its value when protect is called, allowing limits to follow a user across devices and IP addresses.",
   "syntax": "characteristics: [\"userId\"]",
   "parameters": [
    {
     "name": "characteristics",
     "type": "string[]",
-    "description": "Names of the request characteristics used to uniquely identify clients; examples include a user ID or API key."
+    "description": "Array of characteristic names used to identify clients; the default is the client IP address."
    },
    {
-    "name": "characteristic values",
+    "name": "custom characteristic values",
     "type": "string | number | boolean",
-    "description": "Values for the configured characteristic names, supplied when calling protect."
+    "description": "A stable value for each configured custom characteristic, supplied when calling protect."
    }
   ],
-  "returns": "A decision from protect containing the result of applying the configured rule.",
+  "returns": "A fingerprint-based client identity used by Arcjet rules; the protected request produces a decision.",
   "example": {
-   "title": "Key a rule by user ID",
-   "code": "const aj = arcjet({\n  key: process.env.ARCJET_KEY,\n  characteristics: [\"userId\"],\n  rules: [\n    fixedWindow({\n      mode: \"LIVE\",\n      window: \"1m\",\n      max: 10,\n      characteristics: [\"userId\"]\n    })\n  ]\n});\n\nconst decision = await aj.protect(request, {\n  userId: \"user-123\"\n});",
+   "title": "Track a limit by user ID",
+   "code": "import arcjet, { tokenBucket } from \"@arcjet/next\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  characteristics: [\"userId\"],\n  rules: [\n    tokenBucket({\n      mode: \"LIVE\",\n      refillRate: 10,\n      interval: \"1m\",\n      capacity: 20,\n    }),\n  ],\n});\n\nconst userId = \"user-123\";\nconst decision = await aj.protect({ userId });\n\nif (decision.isDenied()) {\n  throw new Error(\"Request denied\");\n}",
    "language": "typescript",
-   "explanation": "This applies the rule to each user ID instead of grouping requests only by client IP."
+   "explanation": "This configures a token bucket to track requests independently for the supplied user identifier."
   },
   "useCases": [
    {
     "title": "Per-user limits",
-    "scenario": "Apply a quota separately to each authenticated account."
+    "scenario": "Apply one quota per authenticated account across devices and IP addresses."
    },
    {
     "title": "Per-API-key limits",
-    "scenario": "Enforce independent quotas for API consumers."
+    "scenario": "Throttle each API consumer independently."
    },
    {
-    "title": "Stable identity tracking",
-    "scenario": "Track a client across changing devices or IP addresses."
+    "title": "IP-plus-key limits",
+    "scenario": "Combine network and application identity to distinguish client pairs."
    },
    {
-    "title": "Composite fingerprints",
-    "scenario": "Combine an IP address with another identifier for a composite client key."
+    "title": "Mixed authentication states",
+    "scenario": "Use different identities for anonymous and authenticated traffic."
    }
   ],
   "related": [
    "fingerprint",
    "protect",
    "withRule",
-   "userId",
+   "with_rule",
+   "rate limiting",
    "ip.src",
-   "API key",
-   "rate limiting"
+   "userId"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What are Arcjet characteristics?",
+    "answer": "Characteristics are the fields Arcjet uses to uniquely identify a client for a rule. They are assembled into a fingerprint, and the rule tracks the resulting identity.",
+    "followUp": "How would you enforce both account and IP quotas? Configure separate rules: one using a stable account identifier and another using the client IP characteristic."
+   },
+   {
+    "question": "How do you key a rule by a logged-in user?",
+    "answer": "Set characteristics to an array such as [\"userId\"] in the Arcjet configuration or on a rule. Pass the corresponding value to protect, and Arcjet uses it when generating the rule’s fingerprint.",
+    "followUp": "What happens if you combine userId and IP? The fingerprint represents the pair, so a user’s limit is split by IP rather than shared across all their addresses."
+   },
+   {
+    "question": "Which identifier should an application choose?",
+    "answer": "The default fingerprint uses the client IP address. For authenticated traffic, a stable application value such as a user ID, account ID, tenant ID, or API key is more appropriate when the limit should follow that entity.",
+    "followUp": "How can anonymous and authenticated requests use different identities? Use the IP for anonymous users and an authenticated identifier for logged-in users, potentially with augmented clients configured through withRule or with_rule."
+   }
+  ],
   "keyPoints": [
-   "Characteristics let a rule track a client by an application-defined attribute rather than only its network address.",
-   "Declare each custom characteristic by its string key in the SDK or rule configuration.",
-   "Supply the matching characteristic value dynamically when protecting a request.",
-   "When several characteristics are configured, Arcjet combines their values into one client fingerprint.",
-   "You can set defaults globally while allowing individual rules to use different characteristics."
+   "Arcjet converts the selected request attributes into a SHA-256 fingerprint used as the rule’s client identity.",
+   "Without custom configuration, tracking is per client IP.",
+   "Custom keys let applications track by application-level identifiers instead of only network origin.",
+   "A custom characteristic’s runtime value can be a string, number, or boolean supplied to protect.",
+   "Use distinct rules when different quotas must be maintained independently.",
+   "Root-level characteristics provide defaults across rules, while a rule can replace that default."
   ],
   "gotchas": [
-   "Combining characteristics does not create separate counters for each characteristic; use separate rules when independent limits are required.",
-   "A rule-level configuration can replace the SDK-wide characteristics, so check whether a rule has its own setting.",
-   "Pass the configured characteristic value to protect using a supported primitive type."
+   "A rule-specific configuration replaces the global characteristics for that rule, so check overrides when different rules should share or separate identities.",
+   "Multiple characteristics identify a combination, such as an IP address and API key pair, rather than creating separate independent limits.",
+   "A user identifier can aggregate traffic across devices and addresses; use an additional IP-based rule if per-IP throttling is also required."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Core model::Decisions and conclusions": {
   "sourceUrl": "https://docs.arcjet.com/reference/nodejs",
   "sourceTitle": "Arcjet Node.js SDK reference",
-  "summary": "An Arcjet decision tells you whether to allow, deny, challenge, or treat a request as an error. Its conclusion combines the outcomes of all configured rules using Arcjet’s severity order.",
-  "explanation": "Arcjet evaluates the configured rules and returns an ArcjetDecision. Read its conclusion directly or use helper methods such as isAllowed(), isDenied(), isChallenge(), and isError(); the overall result reflects the highest-severity finding among the rules.",
-  "syntax": "const decision = await aj.protect(request);",
-  "parameters": [
-   {
-    "name": "request",
-    "type": "Request",
-    "description": "Request passed to the protection function for evaluation."
-   }
-  ],
-  "returns": "A Promise resolving to an ArcjetDecision object containing the overall conclusion and rule details.",
+  "summary": "Read an Arcjet decision to determine whether a request is allowed, denied, challenged, or errored. The aggregate conclusion combines the findings from all configured rules.",
+  "explanation": "Calling `protect` produces a decision whose conclusion summarizes the configured rules. Inspect the conclusion directly or use its helper methods to determine whether Arcjet allowed or denied the request; examine individual results when you need rule-level detail.",
+  "syntax": "const decision = await aj.protect();",
+  "parameters": [],
+  "returns": "An `ArcjetDecision` containing the aggregate `conclusion` and rule-level `results`.",
   "example": {
-   "title": "Handle an Arcjet decision",
-   "code": "import arcjet, { detectBot, fixedWindow } from \"@arcjet/next\";\nimport { NextResponse } from \"next/server\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [\n    detectBot({ mode: \"LIVE\", allow: [\"CATEGORY:SEARCH_ENGINE\"] }),\n    fixedWindow({ mode: \"LIVE\", window: \"1m\", max: 10 }),\n  ],\n});\n\nexport async function GET(req: Request) {\n  const decision = await aj.protect(req);\n  if (decision.isDenied()) return new NextResponse(\"Denied\", { status: 403 });\n  if (decision.isChallenge()) return new NextResponse(\"Challenge\", { status: 401 });\n  if (decision.isError()) return new NextResponse(\"Temporarily unavailable\", { status: 503 });\n  return NextResponse.json({ ok: true });\n}",
+   "title": "Branch on a decision",
+   "code": "import arcjet, { tokenBucket } from \"@arcjet/next\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [tokenBucket({ mode: \"LIVE\", refillRate: 1, interval: 60, capacity: 10 })],\n});\n\nexport async function GET() {\n  const decision = await aj.protect();\n\n  if (decision.isDenied()) {\n    return new Response(\"Denied\", { status: 403 });\n  }\n  return new Response(\"Allowed\");\n}\n",
    "language": "typescript",
-   "explanation": "Runs Arcjet protection and branches on the resulting conclusion before handling the request."
+   "explanation": "Run the configured protection rules, then branch on the returned decision to reject denied requests and continue for allowed ones."
   },
   "useCases": [
    {
-    "title": "Enforce denials",
-    "scenario": "Reject requests that violate a security or rate-limit rule."
+    "title": "Enforce a protection policy",
+    "scenario": "Reject requests when Arcjet’s aggregate outcome is DENY."
    },
    {
-    "title": "Handle challenges",
-    "scenario": "Require an additional verification step for suspicious traffic."
+    "title": "Gate application logic",
+    "scenario": "Continue processing when the decision allows the request."
    },
    {
-    "title": "Handle errors",
-    "scenario": "Return a safe fallback when Arcjet reports an evaluation error."
-   },
-   {
-    "title": "Accept allowed requests",
-    "scenario": "Allow the request when no configured rule produces a stronger outcome."
+    "title": "Diagnose policy behavior",
+    "scenario": "Inspect individual rule outcomes after an unexpected result."
    }
   ],
   "related": [
    "ArcjetDecision",
+   "protect",
    "conclusion",
    "isAllowed()",
    "isDenied()",
-   "isChallenge()",
-   "isError()",
-   "reason",
-   "results"
+   "results",
+   "ArcjetReason"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What does Arcjet return after protection rules run?",
+    "answer": "`protect` returns an `ArcjetDecision`. Its `conclusion` represents the final outcome after evaluating the configured rules, and helper methods such as `isAllowed()` and `isDenied()` provide convenient checks.",
+    "followUp": "How are conflicting rule findings resolved? The highest-severity finding wins: DENY, then CHALLENGE, ERROR, and ALLOW."
+   },
+   {
+    "question": "How should application code act on the decision?",
+    "answer": "Use the decision’s allowed and denied checks to select the request path. A denied decision should be rejected, while an allowed decision can continue according to the application’s policy.",
+    "followUp": "How would you investigate an unexpected aggregate result? Inspect the decision’s `results` collection to identify the individual rule outcome and any error details."
+   },
+   {
+    "question": "What information is available beyond a boolean allow or deny?",
+    "answer": "The decision exposes a `conclusion` with the values ALLOW, DENY, CHALLENGE, or ERROR. It also contains rule-level results, so applications can distinguish the final recommendation from the evidence produced by individual rules.",
+    "followUp": "Why can the final conclusion differ from one rule’s result? Because Arcjet combines all configured findings and chooses the highest-severity outcome."
+   }
+  ],
   "keyPoints": [
-   "Protect is asynchronous and produces an ArcjetDecision for the request.",
-   "The decision combines an overall outcome with details explaining why Arcjet reached it.",
-   "The conclusion can allow, deny, challenge, or report an error for the request.",
-   "Use isAllowed() to test whether the final decision permits the request.",
-   "Use isDenied() to test whether the final decision blocks the request.",
-   "The final decision is aggregated from the configured rules by selecting the highest-severity finding."
+   "Protection evaluation gives your code one decision object to inspect.",
+   "The conclusion can express four outcomes: allow, deny, challenge, or error.",
+   "Use the allowed helper when the request may proceed.",
+   "Use the denied helper when the request must be blocked.",
+   "A deny from one rule can determine the aggregate result even when another rule errors."
   ],
   "gotchas": [
-   "When multiple rules produce different outcomes, Arcjet uses the most severe conclusion rather than the last rule's result.",
-   "Do not assume an error always outranks a challenge or denial; the documented severity order determines the final result.",
-   "Use the final conclusion when implementing the recommended policy instead of interpreting one individual rule result."
+   "The overall conclusion is selected from all configured rule findings, rather than from whichever rule runs first.",
+   "A deny takes precedence over challenge, error, and allow when combining rule outcomes.",
+   "Use `conclusion` when your code should follow Arcjet’s aggregate recommendation.",
+   "The aggregate conclusion does not replace per-rule diagnostics; inspect `results` for an error’s details."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Core model::Dry run mode": {
   "sourceUrl": "https://docs.arcjet.com/best-practices",
@@ -192,140 +216,155 @@
  "Core model::Framework integration": {
   "sourceUrl": "https://docs.arcjet.com/reference/nextjs/",
   "sourceTitle": "Arcjet Next.js SDK reference",
-  "summary": "Add Arcjet protection by creating a configured SDK client and calling protect() inside supported framework handlers. The documented integrations include Next.js, Node.js, Bun, and Deno.",
-  "explanation": "Arcjet integration is framework-specific: install the matching SDK, create one Arcjet instance outside the request handler with your site key and rules, then call protect() for each incoming request and branch on the decision. The same handler-oriented model applies across supported runtimes, while each framework package supplies its compatible adapter.",
+  "summary": "Add Arcjet protection by configuring a framework SDK client with your site key and rules, then calling protect() from server-side request code. Use the resulting decision to allow or reject the request.",
+  "explanation": "Arcjet integrates at the server entry point by creating a framework-specific client with an API key and rules, then calling protect() in the handler. The returned decision determines whether the request continues or receives an application-defined denial response.",
   "syntax": "const aj = arcjet({ key, rules });\nconst decision = await aj.protect(request);",
-  "parameters": [
-   {
-    "name": "key",
-    "type": "string",
-    "description": "Arcjet site key used to authenticate the SDK."
-   },
-   {
-    "name": "rules",
-    "type": "Rule[]",
-    "description": "Protection rules evaluated for requests."
-   },
-   {
-    "name": "request",
-    "type": "Request",
-    "description": "Incoming HTTP request passed to protect()."
-   }
-  ],
-  "returns": "protect() returns a decision object; use isDenied() to determine whether the request should be rejected.",
+  "parameters": [],
+  "returns": "A decision object that can be checked with `decision.isDenied()` to determine whether to reject the request.",
   "example": {
    "title": "Protect a Next.js route handler",
-   "code": "import arcjet, { shield, detectBot, tokenBucket } from \"@arcjet/next\";\nimport { NextResponse } from \"next/server\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [\n    shield({ mode: \"LIVE\" }),\n    detectBot({ mode: \"LIVE\", allow: [\"CATEGORY:SEARCH_ENGINE\"] }),\n    tokenBucket({ mode: \"LIVE\", refillRate: 5, interval: 10, capacity: 10 }),\n  ],\n});\n\nexport async function GET(request: Request) {\n  const decision = await aj.protect(request);\n  if (decision.isDenied()) {\n    return NextResponse.json({ error: \"Forbidden\" }, { status: 403 });\n  }\n  return NextResponse.json({ ok: true });\n}",
+   "code": "import arcjet, { shield } from \"@arcjet/next\";\nimport { NextResponse } from \"next/server\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [shield({ mode: \"LIVE\" })],\n});\n\nexport async function GET(request: Request) {\n  const decision = await aj.protect(request);\n  if (decision.isDenied()) {\n    return NextResponse.json({ error: \"Forbidden\" }, { status: 403 });\n  }\n  return NextResponse.json({ ok: true });\n}",
    "language": "typescript",
-   "explanation": "A Next.js route handler creates Arcjet once outside the handler, then evaluates each request with protect()."
+   "explanation": "Creates the Arcjet client outside the handler, applies a Shield rule, and rejects requests whose decision is denied."
   },
   "useCases": [
    {
-    "title": "Next.js request protection",
-    "scenario": "Protect Next.js route handlers, API routes, server components, or server actions."
+    "title": "Protect incoming API requests",
+    "scenario": "HTTP route handlers"
    },
    {
-    "title": "Node.js server protection",
-    "scenario": "Apply rules to Node.js HTTP or Express handlers."
+    "title": "Apply checks before request handling",
+    "scenario": "Next.js middleware"
    },
    {
-    "title": "Bun HTTP protection",
-    "scenario": "Protect routes served by Bun's HTTP server."
+    "title": "Protect supported server-side actions",
+    "scenario": "Server actions"
    },
    {
-    "title": "Deno request protection",
-    "scenario": "Evaluate requests in Deno handlers."
+    "title": "Evaluate requests in server-rendered code",
+    "scenario": "API routes and server components"
    }
   ],
   "related": [
-   "@arcjet/next",
-   "@arcjet/node",
-   "@arcjet/bun",
    "protect()",
+   "Arcjet",
+   "@arcjet/next",
+   "Shield",
+   "server actions",
+   "middleware",
+   "API routes",
+   "site key"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you integrate Arcjet into a server handler?",
+    "answer": "Use the SDK package for the target framework, create an Arcjet client with the site key and rules, and call protect() from the server handler. Inspect the returned decision and return an appropriate response when it is denied.",
+    "followUp": "Why should the client be created outside the handler? The documentation explicitly places client construction outside request processing, which avoids reinitializing the configured client for each request."
+   },
+   {
+    "question": "What configuration does the Arcjet client need?",
+    "answer": "The client requires a string site key and a rules collection. The key comes from the Arcjet site configuration, while rules such as Shield define what protections apply.",
+    "followUp": "How would you add another protection? Include another configured rule in the rules array, then evaluate the resulting decision after protect() runs."
+   },
+   {
+    "question": "Where can Arcjet protection run in Next.js?",
+    "answer": "Next.js client components cannot be protected because they execute only in the browser. Arcjet must therefore be called from server-capable locations such as handlers and other supported server-side features.",
+    "followUp": "Is every Next.js server feature equivalent? No: server actions support Arcjet features except sensitive data detection."
+   }
+  ],
+  "keyPoints": [
+   "Client configuration requires a site key and rules to apply to requests.",
+   "The key is a string identifying the Arcjet site whose policies should evaluate the request.",
+   "Rules are supplied as the client's protection configuration.",
+   "Some Next.js server-action integrations need request metadata obtained through the documented request utility."
+  ],
+  "gotchas": [
+   "Instantiate the client outside the request handler so it is configured once rather than recreated for every request.",
+   "Do not assume sensitive-data detection works in Next.js server actions."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Core model::Protect calls": {
+  "sourceUrl": "https://docs.arcjet.com/reference/nodejs",
+  "sourceTitle": "Arcjet Node.js SDK reference",
+  "summary": "Call protect() inside a request handler to evaluate the Arcjet rules configured for that client. Inspect the resulting ArcjetDecision before allowing the request to proceed.",
+  "explanation": "Create one Arcjet client outside the request handler with the rules that should apply. Inside the handler, pass the incoming request to protect(); it evaluates those rules and returns a decision that the handler can use before continuing.",
+  "syntax": "const decision = await aj.protect(request, options);",
+  "parameters": [
+   {
+    "name": "request",
+    "type": "Request / framework request object",
+    "description": "The incoming request or framework request context passed to the request handler."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Optional additional rule inputs, including values such as email or a trusted client IP."
+   }
+  ],
+  "returns": "A Promise resolving to an ArcjetDecision object.",
+  "example": {
+   "title": "Protect a Next.js route",
+   "code": "import arcjet, { detectBot, shield } from \"@arcjet/next\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [shield({ mode: \"LIVE\" }), detectBot({ mode: \"LIVE\" })],\n});\n\nexport async function GET(req: Request) {\n  const decision = await aj.protect(req);\n  if (decision.isDenied()) {\n    return new Response(\"Forbidden\", { status: 403 });\n  }\n  return Response.json({ ok: true });\n}",
+   "language": "typescript",
+   "explanation": "Create the Arcjet client outside the handler, then call protect once with the incoming request and reject a denied decision."
+  },
+  "useCases": [
+   {
+    "title": "Protect an HTTP route",
+    "scenario": "An API or web route needs Arcjet protection before executing its main action."
+   },
+   {
+    "title": "Supply dynamic rule inputs",
+    "scenario": "A route uses rules that need request-specific values, such as an email address."
+   },
+   {
+    "title": "Override client IP detection",
+    "scenario": "The application obtains the client IP from a trusted proxy or platform integration."
+   }
+  ],
+  "related": [
+   "Arcjet",
+   "ArcjetDecision",
+   "withRule",
+   "ipSrc",
    "shield",
    "rate limiting",
    "bot protection",
    "email validation"
   ],
   "since": "",
-  "keyPoints": [
-   "Configure an Arcjet client with the site key and the protection rules that should apply.",
-   "The client configuration requires the documented key and rules fields.",
-   "Rules define which controls—such as shielding, rate limiting, bot protection, or validation—are evaluated."
-  ],
-  "gotchas": [
-   "Instantiate the Arcjet client once at module scope rather than recreating it for every request.",
-   "The Next.js SDK is ESM-only, so use ESM imports rather than CommonJS require().",
-   "For Bun applications using Node's HTTP compatibility layer or Express, use the Node SDK instead of the Bun HTTP-server package."
-  ],
-  "checkedAt": "2026-10-15"
- },
- "Core model::Protect calls": {
-  "sourceUrl": "https://docs.arcjet.com/reference/nextjs",
-  "sourceTitle": "Arcjet Next.js SDK reference",
-  "summary": "Call `protect()` inside a request handler to evaluate the Arcjet rules configured on the client. The returned decision tells the handler whether to allow or deny the request.",
-  "explanation": "Create the Arcjet client with its rules outside the request handler. In the handler, call `protect()` with the incoming request; Arcjet evaluates the configured rules and returns a decision that the handler can enforce.",
-  "syntax": "const decision = await aj.protect(request, options);",
-  "parameters": [
+  "interview": [
    {
-    "name": "request",
-    "type": "Request",
-    "description": "Incoming framework request passed to the request handler."
+    "question": "What does protect() do?",
+    "answer": "protect() is the Arcjet entry point for executing the configured protection rules. It receives the framework request object and asynchronously returns an ArcjetDecision that the handler can inspect before serving the request.",
+    "followUp": "What should be passed when the application already knows the trusted client IP? Pass it as ipSrc in the second argument to protect(), rather than relying on automatic detection."
    },
    {
-    "name": "options",
-    "type": "object",
-    "description": "Optional additional rule inputs and request metadata, including `ipSrc` when applicable."
+    "question": "Where should the Arcjet client be created?",
+    "answer": "Construct the Arcjet client once, outside the request handler, and configure its rules there. Call protect() inside the handler with the incoming request, then use the returned decision to determine whether to continue.",
+    "followUp": "Why not instantiate the client per request? The documentation recommends creating it outside the handler; this preserves the intended shared client configuration and avoids repeated setup."
+   },
+   {
+    "question": "What inputs does protect() accept?",
+    "answer": "The first argument is the request object or framework request context passed to the handler. A second argument can provide additional rule inputs, such as email data or a trusted ipSrc value.",
+    "followUp": "How are route-specific rules added in JavaScript SDKs? Use withRule to attach rules for a particular route or location, then call protect() in that route handler."
    }
   ],
-  "returns": "A Promise resolving to an ArcjetDecision object.",
-  "example": {
-   "title": "Protect a Next.js route",
-   "code": "import arcjet, { detectBot, shield } from \"@arcjet/next\";\nimport { NextResponse } from \"next/server\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [shield({ mode: \"LIVE\" }), detectBot({ mode: \"LIVE\" })],\n});\n\nexport async function GET(req: Request) {\n  const decision = await aj.protect(req);\n  if (decision.isDenied()) {\n    return new NextResponse(\"Forbidden\", { status: 403 });\n  }\n  return NextResponse.json({ ok: true });\n}",
-   "language": "typescript",
-   "explanation": "The handler passes the incoming request to `protect()`, then rejects the request when the returned decision is denied."
-  },
-  "useCases": [
-   {
-    "title": "Enforce rules on API endpoints",
-    "scenario": "HTTP route protection"
-   },
-   {
-    "title": "Block suspicious requests",
-    "scenario": "Bot and WAF defense"
-   },
-   {
-    "title": "Apply request limits",
-    "scenario": "Rate limiting"
-   },
-   {
-    "title": "Add rules with `withRule`",
-    "scenario": "Route-specific policies"
-   }
-  ],
-  "related": [
-   "Arcjet",
-   "protect",
-   "ArcjetDecision",
-   "isDenied",
-   "withRule",
-   "shield",
-   "detectBot"
-  ],
-  "since": "",
   "keyPoints": [
-   "`protect()` is the main SDK entry point for evaluating the rules attached to an Arcjet client.",
-   "Pass the framework's incoming request object to `protect()`.",
-   "Await `protect()` to obtain an `ArcjetDecision`.",
-   "Use the optional second argument for trusted request metadata such as a previously determined client IP.",
-   "Client construction requires the documented configuration fields, including the site key and rules."
+   "Use one protect function as the execution point for the rules configured on the Arcjet client.",
+   "Supply the incoming request object so Arcjet can evaluate request-derived signals.",
+   "protect is asynchronous and resolves to an ArcjetDecision.",
+   "The returned decision exposes properties that the handler can inspect when making its response decision.",
+   "Place protection in each route handler that needs it, rather than treating one call as universal for every route."
   ],
   "gotchas": [
-   "Call `protect()` once for each request; calling it multiple times is discouraged.",
-   "Instantiate the Arcjet client outside the handler rather than creating one for every request.",
-   "Some configured rules need extra values in the second argument, such as an email for email validation."
+   "Do not invoke protect more than once for the same request.",
+   "Initialize the client outside the handler rather than recreating it for every request.",
+   "Some configured rules need extra values in the protect call, such as an email for email validation."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Extension points::aj.protect": {
   "sourceUrl": "https://docs.arcjet.com/reference/nodejs",
@@ -549,160 +588,217 @@
  "Extension points::DRY_RUN mode": {
   "sourceUrl": "https://docs.arcjet.com/reference/nodejs",
   "sourceTitle": "Arcjet Node.js SDK reference",
-  "summary": "DRY_RUN evaluates an Arcjet rule and records what it would decide without blocking requests. Use it to test and tune rules before switching them to LIVE.",
-  "explanation": "Configure an individual Arcjet rule with mode set to \"DRY_RUN\". Arcjet still evaluates it and exposes the result, while the overall conclusion remains ALLOW; use the logged or dashboard data to tune the rule before changing the mode to \"LIVE\".",
+  "summary": "DRY_RUN evaluates an Arcjet rule and reports what it would decide without enforcing that decision. The overall request conclusion remains ALLOW, making it suitable for testing and tuning before switching to LIVE.",
+  "explanation": "Set a rule's mode to DRY_RUN to execute it and expose its individual decision without applying that decision to the request. Arcjet therefore returns an overall ALLOW while you inspect logs or rule results, then you can switch the rule to LIVE after testing and tuning.",
   "syntax": "mode: \"DRY_RUN\"",
   "parameters": [
    {
     "name": "mode",
     "type": "\"LIVE\" | \"DRY_RUN\"",
-    "description": "The enforcement mode for the rule: `LIVE` applies the rule's conclusion, while `DRY_RUN` records the result without applying it."
+    "description": "Selects whether the rule enforces its conclusion or only evaluates and reports it."
    }
   ],
-  "returns": "Each rule returns its decision; with DRY_RUN, the overall conclusion is always ALLOW.",
+  "returns": "In DRY_RUN mode, each rule returns its decision while the overall conclusion is always ALLOW.",
   "example": {
-   "title": "Test a bot rule without blocking",
-   "code": "import arcjet, { detectBot } from \"@arcjet/next\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [\n    detectBot({\n      mode: \"DRY_RUN\",\n      allow: [\"CATEGORY:SEARCH_ENGINE\"],\n    }),\n  ],\n});\n\nexport async function GET(req: Request) {\n  const decision = await aj.protect(req);\n  return Response.json({\n    allowed: decision.isAllowed(),\n    conclusion: decision.conclusion,\n    results: decision.results,\n  });\n}",
+   "title": "Run bot protection in dry-run mode",
+   "code": "import arcjet, { detectBot } from \"@arcjet/node\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY,\n  rules: [\n    detectBot({\n      mode: \"DRY_RUN\",\n      allow: [],\n    }),\n  ],\n});\n\nconst decision = await aj.protect(request);\nconsole.log(decision.conclusion);\nfor (const result of decision.results) {\n  console.log(result.state, result.conclusion);\n}",
    "language": "typescript",
-   "explanation": "The rule is evaluated and its result is recorded, but dry-run mode leaves the overall request allowed so you can inspect likely enforcement before switching to live mode."
+   "explanation": "This runs bot detection while keeping the overall request allowed, so the individual result can be logged and reviewed before changing the rule to LIVE."
   },
   "useCases": [
    {
-    "title": "Safe rule rollout",
-    "scenario": "Roll out a new bot, shield, or rate-limit rule without affecting users."
+    "title": "Staged rule rollout",
+    "scenario": "Roll out a new rule safely by observing prospective blocks without affecting requests."
    },
    {
-    "title": "Inspect simulated enforcement",
-    "scenario": "Compare individual rule results with the overall request conclusion."
+    "title": "False-positive analysis",
+    "scenario": "Compare rule results with real traffic to identify overly broad matches."
    },
    {
-    "title": "Production calibration",
-    "scenario": "Measure likely blocks and tune thresholds before enabling enforcement."
+    "title": "Operational validation",
+    "scenario": "Inspect individual rule outcomes in logs before enabling enforcement."
    }
   ],
   "related": [
    "LIVE",
-   "rule results",
+   "ALLOW",
+   "RUN",
+   "decision.results",
    "conclusion",
-   "decision",
-   "Arcjet dashboard"
+   "state"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What does DRY_RUN do?",
+    "answer": "DRY_RUN executes the rule and returns its individual decision, but the overall conclusion is always ALLOW. This permits passive testing before enforcement.",
+    "followUp": "How would you determine what a request would have triggered? Iterate through the individual rule results and inspect each result's state and conclusion."
+   },
+   {
+    "question": "When should a rule use DRY_RUN?",
+    "answer": "Use DRY_RUN to test and tune a rule without blocking requests. Once its behavior is acceptable, switch that rule to LIVE.",
+    "followUp": "What is the operational difference after promotion? LIVE applies the rule's conclusion to the request, unlike DRY_RUN."
+   },
+   {
+    "question": "Why inspect individual rule results?",
+    "answer": "The overall result cannot tell you whether a rule would have blocked the request because DRY_RUN forces the final conclusion to ALLOW. The individual results preserve that information.",
+    "followUp": "What should be logged during rollout? Log each rule result so the prospective enforcement behavior can be analyzed before promotion."
+   }
+  ],
   "keyPoints": [
-   "Set the mode separately on each rule.",
-   "Dry-run evaluates the rule but never enforces its result against the request.",
-   "Use it to validate and tune a new rule safely.",
-   "The mode is intended for observing effects without blocking traffic.",
-   "Review per-rule results to identify requests that would be denied in live mode."
+   "A rule selects between enforcement with LIVE and passive evaluation with DRY_RUN.",
+   "DRY_RUN preserves each rule's decision while forcing the combined request outcome to ALLOW.",
+   "Use DRY_RUN as a rollout phase for validating rule behavior without user-facing blocking.",
+   "Dry-run evaluation still runs the rule; it only suppresses enforcement of its conclusion.",
+   "Review dry-run outcomes before changing a rule to live enforcement.",
+   "For prospective-block analysis, examine the individual results rather than the top-level conclusion."
   ],
   "gotchas": [
-   "The top-level decision stays ALLOW even when a rule would have blocked the request.",
-   "Inspect individual rule results rather than relying only on the overall conclusion."
+   "The top-level decision remains ALLOW in DRY_RUN mode, even when an individual rule would have blocked the request.",
+   "Inspect individual rule results rather than relying only on the overall conclusion.",
+   "DRY_RUN is for testing rules before enabling enforcement; change the mode to LIVE when ready."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Extension points::hasFailedOpen and errorResults": {
   "sourceUrl": "https://docs.arcjet.com/guards/reference",
-  "sourceTitle": "Agent guards testing and reference | Arcjet",
-  "summary": "Detect when Arcjet allowed a request only because a rule or decision could not be evaluated. Use hasFailedOpen() as the fail-closed gate and errorResults() to inspect the underlying rule errors.",
-  "explanation": "Arcjet normally fails open when it cannot complete a rule evaluation: the decision can still be ALLOW, while hasFailedOpen() identifies that the allow was caused by the incomplete evaluation. Use errorResults() to inspect the individual error results and decide whether degraded protection is acceptable.",
-  "syntax": "decision.hasFailedOpen();\ndecision.errorResults();",
+  "sourceTitle": "Agent guards testing and reference | Arcjet Docs",
+  "summary": "Detect an `ALLOW` that occurred because Arcjet could not fully evaluate a rule or decision. Use `errorResults()` to inspect the resulting evaluation errors.",
+  "explanation": "Arcjet normally fails open when a rule or the decision cannot be evaluated. `hasFailedOpen()` identifies an `ALLOW` that happened only because evaluation was incomplete, while `errorResults()` exposes the associated error results for diagnosis.",
+  "syntax": "decision.hasFailedOpen()\ndecision.errorResults()",
   "parameters": [],
-  "returns": "hasFailedOpen() reports whether an ALLOW occurred because evaluation could not be completed; errorResults() returns the relevant rule error results.",
+  "returns": "`hasFailedOpen()` returns a boolean indicating whether an `ALLOW` occurred only because evaluation could not be completed. `errorResults()` returns the decision's error results for diagnostics.",
   "example": {
-   "title": "Block degraded evaluations and inspect errors",
-   "code": "const decision = await guard.protect(request);\n\nif (decision.conclusion === \"DENY\" || decision.hasFailedOpen()) {\n  throw new Error(\"Action blocked\");\n}\n\nfor (const result of decision.errorResults()) {\n  console.error(\"Arcjet rule error\", result);\n}",
+   "title": "Reject degraded decisions and inspect errors",
+   "code": "const decision = await arcjet.protect(req, { requested: 1 });\n\nif (decision.conclusion === \"DENY\" || decision.hasFailedOpen()) {\n  for (const error of decision.errorResults()) {\n    console.error(error);\n  }\n  throw new Error(\"Request blocked\");\n}",
    "language": "typescript",
-   "explanation": "Treats a denial or incomplete fail-open evaluation as blocked, then logs rule-level errors."
+   "explanation": "Treat a fail-open allow as blocked and inspect its rule errors for diagnostics."
   },
   "useCases": [
    {
-    "title": "Fail closed on degraded protection",
-    "scenario": "Block actions whenever the security decision is incomplete."
+    "title": "Fail closed on incomplete evaluation",
+    "scenario": "Reject requests whenever the security signal is degraded, even though Arcjet returned `ALLOW`."
    },
    {
-    "title": "Diagnose fail-open decisions",
-    "scenario": "Record the rules that could not be evaluated while allowing low-risk traffic."
+    "title": "Diagnose evaluation errors",
+    "scenario": "Record the causes of transport, timeout, or rule-evaluation failures for troubleshooting."
    },
    {
-    "title": "Separate warnings from errors",
-    "scenario": "Distinguish informational warnings from actual rule-evaluation failures."
+    "title": "Validate test setup",
+    "scenario": "Verify that test guards did not run any policy rules."
    }
   ],
   "related": [
+   "guard()",
+   "protect()",
    "decision.conclusion",
-   "decision.errorResults()",
-   "has_failed_open()",
-   "results",
+   "decision.results",
    "warnings",
-   "RuleResultError"
+   "errorResults()",
+   "has_failed_open()"
   ],
   "since": "0.9.0",
+  "interview": [
+   {
+    "question": "What does `hasFailedOpen()` indicate?",
+    "answer": "`hasFailedOpen()` is true when the decision is allowed only because a rule or the decision itself could not be processed. It marks a degraded security signal, so callers can apply a fail-closed policy themselves.",
+    "followUp": "How should warnings affect this check? Warnings are informational; inspect them for request-data problems, but do not treat them as failed open."
+   },
+   {
+    "question": "How do you diagnose a failed-open decision?",
+    "answer": "`errorResults()` provides the error results associated with the decision. Iterate over them to diagnose why rule evaluation could not complete.",
+    "followUp": "What should be logged when several rules fail? Inspect each returned error result rather than assuming one error represents every failed rule."
+   },
+   {
+    "question": "Why check `hasFailedOpen()` in addition to the conclusion?",
+    "answer": "A failed-open decision may still have the `ALLOW` conclusion because Arcjet allowed the request when evaluation was incomplete. Therefore, code that requires a complete security decision should reject when the conclusion is `DENY` or `hasFailedOpen()` is true.",
+    "followUp": "What happens when no rules are registered? `guard()` returns an `ALLOW` with an error result and reports `hasFailedOpen()` as true, meaning policy did not run."
+   }
+  ],
   "keyPoints": [
-   "A failed-open evaluation has an ALLOW conclusion but includes an error result.",
-   "Call errorResults() to retrieve rule-level errors for logging or inspection.",
-   "Transport, timeout, response, local-evaluation, and remote-policy completeness failures can trigger fail-open behavior.",
-   "Use hasFailedOpen() in JavaScript or has_failed_open() in Python to detect the degraded ALLOW."
+   "The decision object exposes both the overall outcome and accessors for per-rule errors.",
+   "Arcjet distinguishes an evaluation failure from an explicit policy denial.",
+   "Call `errorResults()` when you need details about evaluation failures.",
+   "Transport, timeout, response, local-evaluation, and policy-completeness failures can cause a failed open.",
+   "A failed-open allow means the security policy was not fully applied, not that the request passed normally."
   ],
   "gotchas": [
-   "Do not use warnings alone as evidence that the decision failed open.",
-   "An unconfigured guard can return ALLOW with hasFailedOpen() true; treat that as policy not running."
+   "Warnings alone are not evidence of a failed-open decision; use `hasFailedOpen()` for that condition.",
+   "A free `guard()` with no registered rules returns an allowed decision that still reports a failed open.",
+   "A failed-open decision can have an `ALLOW` conclusion, so checking only the conclusion is insufficient."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Extension points::Result inspectors": {
   "sourceUrl": "https://docs.arcjet.com/inspect",
   "sourceTitle": "arcjet/inspect",
-  "summary": "Result inspectors examine individual Arcjet rule results after a decision is returned. isSpoofedBot identifies spoofed requests detected by live bot rules.",
-  "explanation": "After Arcjet protection returns a decision, pass its individual rule results to an inspector such as isSpoofedBot. The helper identifies spoofed bots only for non-DRY_RUN bot rules; unrelated rules and dry-run bot results produce undefined, so using some() lets an application block when any result matches.",
+  "summary": "Result inspectors examine individual Arcjet rule results after a decision. isSpoofedBot detects spoofed clients identified by a non-DRY_RUN bot rule.",
+  "explanation": "Inspectors receive individual rule results after Arcjet has made its decision. isSpoofedBot identifies spoofing reported by a non-DRY_RUN bot rule; it returns undefined for DRY_RUN bot results and for results from other rule types.",
   "syntax": "isSpoofedBot(result: ArcjetRuleResult)",
   "parameters": [
    {
     "name": "result",
     "type": "ArcjetRuleResult",
-    "description": "One rule result returned in the decision's results array."
+    "description": "One per-rule result returned in the decision; the result is evaluated for bot spoofing."
    }
   ],
-  "returns": "true for a spoofed result from a non-DRY_RUN bot rule; false for a non-spoofed result from such a rule; undefined for a DRY_RUN bot result or a non-bot rule.",
+  "returns": "Returns true for a spoofed bot detected by a non-DRY_RUN bot rule, false when that rule does not detect spoofing, and undefined for DRY_RUN bot results or non-bot results.",
   "example": {
-   "title": "Inspect results for a spoofed bot",
-   "code": "import arcjet, { detectBot } from \"@arcjet/node\";\nimport { isSpoofedBot } from \"@arcjet/inspect\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [detectBot({ mode: \"LIVE\", allow: [\"CATEGORY:SEARCH_ENGINE\"] })],\n});\n\nconst decision = await aj.protect(request);\nif (decision.results.some(isSpoofedBot)) {\n  return new Response(\"Forbidden\", { status: 403 });\n}\nreturn new Response(\"OK\");",
+   "title": "Reject spoofed bots",
+   "code": "import arcjet, { detectBot } from \"@arcjet/node\";\nimport { isSpoofedBot } from \"@arcjet/inspect\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [detectBot({ mode: \"LIVE\", allow: [\"CATEGORY:SEARCH_ENGINE\"] })],\n});\n\nexport async function handler(request: Request) {\n  const decision = await aj.protect(request);\n  if (decision.results.some(isSpoofedBot)) {\n    return new Response(\"Forbidden\", { status: 403 });\n  }\n  return new Response(\"OK\");\n}",
    "language": "typescript",
-   "explanation": "Checks every rule result after protection and rejects the request if any live bot rule detected spoofing."
+   "explanation": "The helper is passed to Array.some so the request is rejected when any executed bot-rule result indicates spoofing."
   },
   "useCases": [
    {
-    "title": "Block spoofed bots",
-    "scenario": "Reject requests that impersonate trusted crawlers or other allowed bots."
+    "title": "Block spoofed search-engine bots",
+    "scenario": "A request claims to come from an allowed search engine, but its network identity fails Arcjet verification."
    },
    {
-    "title": "Inspect rule outcomes",
-    "scenario": "Apply custom response logic after Arcjet has evaluated a request."
-   },
-   {
-    "title": "Evaluate multiple results",
-    "scenario": "Scan all rules with decision.results.some(isSpoofedBot)."
+    "title": "Inspect per-rule outcomes",
+    "scenario": "An application needs to distinguish bot-verification outcomes from the aggregate decision."
    }
   ],
   "related": [
    "Arcjet decision",
+   "decision.results",
    "ArcjetRuleResult",
-   "isSpoofedBot",
+   "isVerifiedBot",
+   "isMissingUserAgent",
    "@arcjet/inspect",
-   "DRY_RUN",
-   "bot rule"
+   "detectBot"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What does isSpoofedBot return?",
+    "answer": "isSpoofedBot is an inspector for an individual ArcjetRuleResult. It returns true only when a non-DRY_RUN bot rule detected a spoofed bot; it returns false when that rule did not detect spoofing.",
+    "followUp": "What happens for a DRY_RUN result? The helper returns undefined, as it does for a result produced by a non-bot rule."
+   },
+   {
+    "question": "How would you use the inspector after protection runs?",
+    "answer": "The helper is applied to decision.results, which contains the per-rule results. Calling results.some(isSpoofedBot) detects whether at least one executed rule reported a spoofed bot.",
+    "followUp": "Why inspect results instead of only the overall decision? A decision-level conclusion does not by itself identify the specific bot verification outcome; the result inspector does."
+   },
+   {
+    "question": "How does Arcjet detect a spoofed allowed bot?",
+    "answer": "For allow rules, Arcjet verifies detected bots using IP data and reverse DNS lookups. This helps distinguish authentic search-engine bots from clients pretending to be them.",
+    "followUp": "What operational limitation should be considered? Verification is unavailable on Free plans, so this check should not be assumed to work for every account."
+   }
+  ],
   "keyPoints": [
-   "Inspectors operate on the decision produced by an Arcjet SDK.",
-   "isSpoofedBot checks whether a live bot rule identified a spoofed request.",
-   "In JavaScript, import isSpoofedBot from the standalone @arcjet/inspect package.",
-   "Inspection utilities can be used independently of the main SDK."
+   "Result inspectors operate on the decision returned by an Arcjet SDK, after protection has run.",
+   "JavaScript and TypeScript applications import these helpers from @arcjet/inspect.",
+   "isSpoofedBot checks whether a live bot rule identified a request as spoofed.",
+   "Allow-listed bots can undergo authenticity verification using client IP information and reverse DNS.",
+   "The return value true means the applicable bot rule found spoofing."
   ],
   "gotchas": [
-   "The spoofed-bot inspector requires a paid Arcjet plan."
+   "Spoofed-bot detection requires a paid Arcjet plan.",
+   "Do not treat every non-true result as an ordinary false: the helper can also return undefined.",
+   "DRY_RUN bot results and non-bot results are intentionally not classified as spoofed."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Extension points::withRule": {
   "sourceUrl": "https://docs.arcjet.com/reference/nodejs",
@@ -774,172 +870,233 @@
   "checkedAt": "2026-10-15"
  },
  "Operating::Choosing a key": {
-  "sourceUrl": "https://docs.arcjet.com/reference/go",
-  "sourceTitle": "Arcjet Go SDK reference",
-  "summary": "Choose a stable authenticated identity as the protection key when one is available, rather than relying on a raw IP address. Use a validated IP from a trusted source only when an identity is unavailable.",
-  "explanation": "Arcjet protection rules need a stable key to distinguish request subjects. Prefer an authenticated user identifier when available, because it represents the account rather than the network address; use a validated client IP only when no trusted identity exists.",
-  "syntax": "decision, err := aj.Protect(ctx, request, arcjet.WithIPSrc(ipSrc))",
+  "sourceUrl": "https://docs.arcjet.com/fingerprints",
+  "sourceTitle": "Arcjet fingerprints",
+  "summary": "Prefer a trusted authenticated identity as the fingerprint key instead of a raw IP. Configure custom characteristics so Arcjet groups requests by the identity your application can verify.",
+  "explanation": "Arcjet fingerprints requests using configured characteristics. Prefer a trusted authenticated identity as a characteristic instead of relying only on the client IP, which can be spoofed or shared; pass the identity consistently to protect so limits and other decisions apply per user.",
+  "syntax": "characteristics: [\"user.id\"]",
   "parameters": [
    {
-    "name": "request",
-    "type": "Request",
-    "description": "Arcjet request context."
+    "name": "key",
+    "type": "string",
+    "description": "The Arcjet site key used to initialize the SDK."
    },
    {
-    "name": "options",
-    "type": "object",
-    "description": "Optional protection options, including a fingerprint or trusted client IP."
+    "name": "rules",
+    "type": "Array<ArcjetRule>",
+    "description": "The configured rules applied to protected requests."
+   },
+   {
+    "name": "characteristics",
+    "type": "Array<string>",
+    "description": "Optional custom fingerprint characteristics supplied to protect."
    }
   ],
-  "returns": "A protection decision indicating whether the request is allowed or denied.",
+  "returns": "A request decision whose fingerprinting and limits use the configured characteristics.",
   "example": {
-   "title": "Key protection to an authenticated identity",
-   "code": "import arcjet, { tokenBucket } from \"@arcjet/next\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [tokenBucket({ mode: \"LIVE\", refillRate: 5, interval: 60, capacity: 10 })],\n});\n\nexport async function GET(request: Request) {\n  const userId = \"authenticated-user-id\";\n  const decision = await aj.protect(request, { fingerprint: userId });\n  return new Response(decision.isDenied() ? \"Denied\" : \"Allowed\", {\n    status: decision.isDenied() ? 429 : 200,\n  });\n}",
+   "title": "Key a decision by authenticated identity",
+   "code": "import arcjet, { tokenBucket } from \"@arcjet/node\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [tokenBucket({ mode: \"LIVE\", refillRate: 5, interval: 60, capacity: 10 })],\n});\n\nexport async function handler(request: Request) {\n  const userId = request.headers.get(\"x-authenticated-user-id\");\n  const decision = await aj.protect(request, {\n    characteristics: userId ? [userId] : undefined,\n  });\n  return new Response(decision.isDenied() ? \"Denied\" : \"OK\");\n}",
    "language": "typescript",
-   "explanation": "Uses the authenticated user identifier as the stable fingerprint for protection decisions."
+   "explanation": "Uses the authenticated user ID as a custom fingerprint characteristic when available."
   },
   "useCases": [
    {
-    "title": "Authenticated-user rate limiting",
-    "scenario": "Rate-limit requests per signed-in account instead of per changing network address."
+    "title": "Apply limits per signed-in user",
+    "scenario": "Authenticated web or API requests"
    },
    {
-    "title": "Anonymous IP protection",
-    "scenario": "Apply abuse prevention to anonymous traffic when no account identity exists."
+    "title": "Separate tenants by a validated API key",
+    "scenario": "API-key-based access"
    },
    {
-    "title": "Trusted proxy IP handling",
-    "scenario": "Preserve correct client attribution behind a trusted proxy or load balancer."
+    "title": "Avoid grouping different users behind one public IP",
+    "scenario": "Shared networks"
    }
   ],
   "related": [
-   "fingerprint",
-   "ipSrc",
-   "WithIPSrc",
-   "Protect",
-   "client IP",
-   "rate limiting"
+   "fingerprints",
+   "characteristics",
+   "protect",
+   "ip.src",
+   "http.request.headers[\"x-api-key\"]",
+   "Arcjet SDK"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "Why prefer an authenticated identity over an IP address?",
+    "answer": "Arcjet fingerprints requests from configured characteristics. A trusted authenticated identity is preferable to a raw IP because multiple users can share an IP and IP values can be spoofed.",
+    "followUp": "What should be used when no authenticated identity exists? Use Arcjet’s trusted IP detection rather than accepting an arbitrary client-supplied header."
+   },
+   {
+    "question": "How are custom identity characteristics configured and supplied?",
+    "answer": "Define a custom characteristic with a string key, then provide its value when calling protect. The value can be a string, number, or boolean.",
+    "followUp": "How would you represent a compound identity? Configure a characteristic whose value consistently encodes the required dimensions, while keeping the value within the documented primitive types."
+   },
+   {
+    "question": "How does choosing characteristics affect fingerprinting?",
+    "answer": "The fingerprint is generated from the selected characteristics, so changing them changes what Arcjet considers unique. An example can combine IP and an API key to distinguish each pair.",
+    "followUp": "What is the trade-off of adding more characteristics? It creates finer-grained identities, but inconsistent or missing values can produce unexpected grouping and limits."
+   }
+  ],
   "keyPoints": [
-   "IP-based identification is automatic when no trusted application-provided IP is supplied.",
-   "When an authenticated identity is unavailable and the application has a trusted IP, pass that validated address explicitly.",
-   "In the Go SDK, the trusted IP is supplied with the WithIPSrc option when calling Protect.",
-   "A non-empty manually supplied IP becomes the identifier instead of Arcjet's automatically detected address."
+   "Arcjet uses the client IP for fingerprinting unless you configure different characteristics.",
+   "Configure characteristics to make the fingerprint represent an authenticated user or another trusted identity.",
+   "Combining characteristics produces a distinct fingerprint for each combination, such as an IP and API-key pair.",
+   "Give each custom characteristic a string name in the SDK configuration.",
+   "The characteristic key name is flexible; choose a clear, stable name for the identity being represented.",
+   "When IP remains part of the choice, let the SDK obtain it through its native detection rather than trusting an unvalidated header."
   ],
   "gotchas": [
-   "Never use an IP value copied directly from a client-controlled header; validate it first or clients may control the fingerprinting and rate-limit identity.",
-   "An explicitly supplied IP overrides Arcjet's automatic detection, so only provide one when the application has determined it from a trusted source."
+   "Do not use a raw client IP as the sole identity when a trusted authenticated identifier is available.",
+   "Custom characteristic values must use supported primitive types when supplied to protect.",
+   "Characteristic names are arbitrary strings, so keep the chosen name stable across configuration and requests."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Operating::Handling denials": {
   "sourceUrl": "https://docs.arcjet.com/reference/python",
   "sourceTitle": "Arcjet Python SDK reference",
-  "summary": "Handle Arcjet denials by checking the decision, mapping the reason to an appropriate HTTP status, and returning a clear error message. This prevents denials from becoming silent failures.",
-  "explanation": "After Arcjet evaluates a request, inspect the decision with isDenied(). For denied requests, map the reason to an HTTP status and return a JSON message instead of silently continuing. Rate-limit denials commonly use 429, while bot, shield, filter, and other denials use 403.",
-  "syntax": "decision.is_denied()\n decision.isDenied()",
-  "parameters": [],
-  "returns": "Return an application response containing a client-visible error message and an HTTP status; the documentation recommends 429 for RATE_LIMIT and 400 or 403 for other denial reasons.",
+  "summary": "Handle Arcjet denials explicitly: inspect the decision, map the reason to an appropriate HTTP status, and return a useful error message instead of silently failing.",
+  "explanation": "After Arcjet denies a request, inspect the decision and return a response that explains the outcome. Rate limits use 429, input-related denials use 400, and bot, shield, filter, or other denials use 403; this avoids silently dropping the request.",
+  "syntax": "decision.is_denied()",
+  "parameters": [
+   {
+    "name": "decision",
+    "type": "ArcjetDecision",
+    "description": "The Arcjet decision to inspect after evaluating the configured rules."
+   }
+  ],
+  "returns": "An HTTP response with a clear error body and a reason-appropriate status code; the documented examples return JSONResponse objects.",
   "example": {
-   "title": "Return a status and message for denials",
-   "code": "import arcjet, { detectBot, fixedWindow } from \"@arcjet/next\";\nimport { NextResponse } from \"next/server\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [\n    detectBot({ mode: \"LIVE\", allow: [\"CATEGORY:SEARCH_ENGINE\"] }),\n    fixedWindow({ mode: \"LIVE\", window: \"1m\", max: 10 }),\n  ],\n});\n\nexport async function GET(req: Request) {\n  const decision = await aj.protect(req);\n\n  if (decision.isDenied()) {\n    if (decision.reason.isRateLimit()) {\n      return NextResponse.json({ message: \"Too many requests\" }, { status: 429 });\n    }\n    return NextResponse.json({ message: \"Forbidden\" }, { status: 403 });\n  }\n\n  return NextResponse.json({ ok: true });\n}",
-   "language": "typescript",
-   "explanation": "Checks the Arcjet decision, then returns a client-visible message with a status appropriate to the denial reason."
+   "title": "Map Arcjet denials to HTTP responses",
+   "code": "if decision.is_denied():\n    if decision.reason_v2.type == \"RATE_LIMIT\":\n        return JSONResponse({\"error\": \"Too many requests\"}, status_code=429)\n    if decision.reason_v2.type in (\"EMAIL\", \"SENSITIVE_INFO\", \"PROMPT_INJECTION\"):\n        return JSONResponse({\"error\": \"Bad request\"}, status_code=400)\n    return JSONResponse({\"error\": \"Forbidden\"}, status_code=403)",
+   "language": "python",
+   "explanation": "Checks the denial, maps its reason to an appropriate HTTP status, and returns a useful error body."
   },
   "useCases": [
    {
-    "title": "Report rate limits",
-    "scenario": "A request exceeds a configured rate limit."
+    "title": "Rate-limit responses",
+    "scenario": "An API endpoint needs to tell clients that they have exceeded an Arcjet rate limit."
    },
    {
-    "title": "Reject bots clearly",
-    "scenario": "A bot-protection rule denies an automated client."
+    "title": "Reject invalid input",
+    "scenario": "A request violates email, sensitive-information, or prompt-injection validation."
    },
    {
-    "title": "Return a client error",
-    "scenario": "Email, sensitive-information, or prompt-injection validation denies input."
-   },
-   {
-    "title": "Return forbidden access",
-    "scenario": "Shield, filter, or another security rule denies access."
+    "title": "Report forbidden requests",
+    "scenario": "Bot protection, Shield, or filter rules block access."
    }
   ],
   "related": [
    "ArcjetDecision",
-   "isDenied()",
    "is_denied()",
-   "reason_v2",
+   "reason_v2.type",
    "results",
    "RATE_LIMIT",
-   "BOT",
-   "SHIELD"
+   "EMAIL",
+   "SENSITIVE_INFO",
+   "PROMPT_INJECTION"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How should an application turn an Arcjet denial into an HTTP response?",
+    "answer": "Call `decision.is_denied()` to determine whether Arcjet denied the request. Then choose the response status from `decision.reason_v2.type`: rate limits map to 429, input-related reasons to 400, and other listed reasons to 403.",
+    "followUp": "What happens if multiple rules disagree? The overall conclusion uses the highest severity, with DENY above CHALLENGE, ERROR, and ALLOW."
+   },
+   {
+    "question": "Which status codes should common denial reasons return?",
+    "answer": "Use 429 for `RATE_LIMIT`. Use 400 for `EMAIL`, `SENSITIVE_INFO`, and `PROMPT_INJECTION`, because the request content is unacceptable; use 403 for `BOT`, `SHIELD`, `FILTER`, and the fallback case.",
+    "followUp": "Why retain a fallback? New or unrecognized denial reasons should still produce a safe forbidden response rather than an uncaught branch."
+   },
+   {
+    "question": "How is the final Arcjet conclusion selected?",
+    "answer": "The decision's conclusion is the highest-severity finding among configured rules. A deny from one rule therefore determines the overall result even if another rule returns an error or a less severe outcome.",
+    "followUp": "Where can the detailed rule-level error be found? Iterate over the decision's `results` property."
+   }
+  ],
   "keyPoints": [
-   "Use ArcjetDecision methods such as isDenied() to determine whether the request should be rejected.",
-   "In Python, is_denied() returns a boolean indicating that Arcjet concluded the request was denied.",
-   "Branch immediately after the decision check so a denied request receives an explicit application response.",
-   "Return HTTP 429 with a clear message for rate-limit denials.",
-   "Use HTTP 403 with a clear message for bot, shield, filter, and other forbidden denials.",
-   "Map the status to the denial reason instead of returning one generic status for every denial."
+   "Use the decision helper method to test whether Arcjet reached a denied conclusion.",
+   "In Python, `is_denied()` returns a Boolean that identifies a denied request.",
+   "Arcjet documents a recommended mapping from denial reason types to HTTP status codes.",
+   "Return HTTP 429 for rate-limit denials so clients can recognize throttling.",
+   "Use HTTP 403 for bot, shield, filter, and fallback denial reasons."
   ],
   "gotchas": [
-   "A denial can represent the highest-severity result across all configured rules, so handle the overall decision rather than assuming one rule ran alone."
+   "A denial decision does not expose every rule error directly; inspect the decision's results when you need the underlying error."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Operating::Layered defence": {
   "sourceUrl": "https://docs.arcjet.com/architecture",
   "sourceTitle": "Architecture - Arcjet Docs",
-  "summary": "Use Arcjet alongside WAFs, CDNs, API gateways, bot defences, and hosting protections. Arcjet adds application-aware decisions based on identity, session, plan, route, request data, and workflow state.",
-  "explanation": "Layered defence means keeping platform-level controls in place and adding Arcjet where application context is available. Arcjet evaluates rules close to the routes and workflows they protect, complementing WAFs, CDNs, API gateways, and bot defences rather than replacing them.",
-  "syntax": "arcjet({ key, rules }).protect(request)",
+  "summary": "Use Arcjet as an application-aware security layer alongside existing WAFs, CDNs, API gateways, and bot defences. It adds context from identity, sessions, plans, routes, requests, and workflows before protected actions complete.",
+  "explanation": "Layered defence means keeping existing edge protections such as WAFs, CDNs, API gateways, and bot defences while adding Arcjet in the application. Arcjet evaluates context available inside the app—such as identity, session, plan, route, request body, and workflow state—before a protected action completes.",
+  "syntax": "const decision = await aj.protect(request);",
   "parameters": [],
-  "returns": "The page does not specify a standalone return value for the layered-defence concept.",
+  "returns": "",
   "example": {
-   "title": "Layer Arcjet with platform protections",
-   "code": "import arcjet, { shield } from \"@arcjet/next\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [shield({ mode: \"LIVE\" })],\n});\n\nexport async function GET(req: Request) {\n  const decision = await aj.protect(req);\n  if (decision.isDenied()) {\n    return new Response(\"Forbidden\", { status: 403 });\n  }\n  return Response.json({ ok: true });\n}",
+   "title": "Apply Arcjet in a route",
+   "code": "import arcjet, { shield } from \"@arcjet/next\";\nimport { NextResponse } from \"next/server\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [\n    shield({ mode: \"LIVE\" }),\n  ],\n});\n\nexport async function GET(request: Request) {\n  const decision = await aj.protect(request);\n  if (decision.isDenied()) {\n    return NextResponse.json({ error: \"Forbidden\" }, { status: 403 });\n  }\n  return NextResponse.json({ ok: true });\n}",
    "language": "typescript",
-   "explanation": "This applies Arcjet at the application boundary while existing WAF, CDN, gateway, or hosting protections handle traffic-level threats."
+   "explanation": "This places Arcjet at the application boundary, where the route can apply application-aware protection alongside upstream WAF, CDN, gateway, and bot defenses."
   },
   "useCases": [
    {
-    "title": "Add application context behind infrastructure controls",
-    "scenario": "A web application already uses a CDN or WAF and needs rules based on authenticated users, plans, or routes."
+    "title": "Context-aware API protection",
+    "scenario": "A public API already protected by a CDN and gateway needs per-user or per-plan enforcement."
    },
    {
-    "title": "Protect business-sensitive API actions",
-    "scenario": "An API needs protection against application-level abuse that a gateway cannot infer from traffic alone."
+    "title": "Pre-action workflow checks",
+    "scenario": "A workflow must block an operation based on route data, request content, or current workflow state."
    },
    {
-    "title": "Enforce rules at the application boundary",
-    "scenario": "A workflow or tool call must be checked before a protected action completes."
+    "title": "Central policy operations",
+    "scenario": "Security teams need to change broad policy without redeploying application code."
    }
   ],
   "related": [
-   "WAF",
-   "CDN",
-   "API gateway",
-   "bot defenses",
    "Arcjet SDK",
+   "Arcjet Cloud API",
    "remote rules",
-   "application boundary"
+   "WAFs",
+   "CDNs",
+   "API gateways",
+   "bot defenses",
+   "middleware"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "Why use Arcjet if an application already has a WAF or API gateway?",
+    "answer": "Arcjet belongs at the application boundary and works alongside WAFs, CDNs, API gateways, and bot defences. Its additional value is access to application context such as identity, session, plan, route, request body, and workflow state.",
+    "followUp": "What should remain at the edge? Keep broad traffic and common-attack protections there, then use Arcjet for decisions that depend on application context."
+   },
+   {
+    "question": "Where should an Arcjet check execute?",
+    "answer": "The SDK is installed in the application, where rules can run through middleware or directly in application code. The application can inspect the decision and choose how to handle it before completing the protected action.",
+    "followUp": "Why is direct placement useful? It lets the check see route-specific and workflow-specific state at the point where the action is about to happen."
+   },
+   {
+    "question": "How can teams combine code-based and centrally managed policy?",
+    "answer": "Arcjet rules stay close to the routes, tools, and workflows they protect, while remote rules can change site-wide policy from the dashboard or MCP server without a code change. This separates enforcement location from policy operation.",
+    "followUp": "What is the operational benefit? Security teams can adjust broad policy centrally while developers retain local, context-aware protections in code."
+   }
+  ],
   "keyPoints": [
-   "Use Arcjet as an additional application-aware layer behind existing network and platform protections.",
-   "Arcjet can make decisions using business context that infrastructure layers generally cannot determine.",
-   "Rules can consider identity, sessions, plans, routes, request data, and workflow state before an action completes.",
-   "Install and invoke the SDK where requests enter the application or where protected workflows execute.",
-   "Place rules near the code they protect so they can use the relevant application context.",
-   "Define application-specific protections in SDK configuration and enforce them from application code."
+   "Application-aware security decisions need context that is available inside the application rather than only at the network perimeter.",
+   "Keep protections near the routes, tools, and workflows whose actions they govern.",
+   "Arcjet can use identity, session, plan, route, request data, and workflow state when deciding whether to allow an action.",
+   "Remote rules let security and operations teams alter broad policy centrally without waiting for an application code change.",
+   "The SDK is the in-application enforcement component; Arcjet Cloud API supports making or reporting decisions."
   ],
   "gotchas": [
-   "Do not rely on Arcjet for volumetric network attacks; leave those to the hosting provider or other platform-level controls.",
-   "Platform protections do not replace application-level rules; configure Arcjet for threats that require application context."
+   "Arcjet complements rather than replaces perimeter controls; deploy it behind existing edge and gateway protections.",
+   "Do not expect upstream layers to make decisions that require application-specific identity, plan, route, or workflow context.",
+   "Enforce the decision before the protected operation finishes, not after the business action has already occurred."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Operating::Local and CI behaviour": {
   "sourceUrl": "https://docs.arcjet.com/testing",
@@ -989,354 +1146,450 @@
   "checkedAt": "2026-10-15"
  },
  "Operating::Logging and tuning": {
-  "sourceUrl": "https://docs.arcjet.com/best-practices",
-  "sourceTitle": "Arcjet best practices",
-  "summary": "Use DRY_RUN to observe rule decisions without blocking requests. Tune thresholds and review projected impact before switching rules to LIVE.",
-  "explanation": "Arcjet evaluates configured rules and returns their individual results while dry-run mode forces the final outcome to ALLOW. Review the recorded impact and decision data, adjust thresholds or rule settings, then promote the tuned rules to LIVE enforcement.",
-  "syntax": "mode: \"DRY_RUN\" → mode: \"LIVE\"",
-  "parameters": [],
-  "returns": "Each rule returns its decision; the overall conclusion remains ALLOW while the rule is in DRY_RUN mode.",
+  "sourceUrl": "https://docs.arcjet.com/reference/nodejs",
+  "sourceTitle": "Arcjet Node.js SDK reference",
+  "summary": "Run Arcjet rules in DRY_RUN to record their decisions without enforcing them. Use those observations to tune thresholds, then switch to LIVE when the behavior is ready.",
+  "explanation": "Arcjet can execute rules in DRY_RUN mode so their decisions are recorded without affecting the request outcome. Review those results to tune thresholds, then change the rule to LIVE when the behavior is appropriate for enforcement.",
+  "syntax": "await aj.protect(request, rules)",
+  "parameters": [
+   {
+    "name": "request and rules",
+    "type": "request, ArcjetRule[]",
+    "description": "The incoming request and configured protection rules passed to the SDK."
+   }
+  ],
+  "returns": "A Promise resolving to an ArcjetDecision object containing the final conclusion and detailed rule explanations.",
   "example": {
-   "title": "Tune rules in dry-run mode",
-   "code": "import { arcjet, detectBot, shield, tokenBucket } from \"@arcjet/next\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [\n    detectBot({ mode: \"DRY_RUN\", allow: [\"CATEGORY:SEARCH_ENGINE\"] }),\n    shield({ mode: \"DRY_RUN\" }),\n    tokenBucket({ mode: \"DRY_RUN\", refillRate: 5, interval: 60, capacity: 20 })\n  ]\n});\n\nexport async function GET(req: Request) {\n  const decision = await aj.protect(req);\n  console.log(decision);\n  return Response.json({ ok: true });\n}",
+   "title": "Tune a threshold in dry-run mode",
+   "code": "const decision = await aj.protect(request, {\n  slidingWindow: {\n    mode: \"DRY_RUN\",\n    interval: \"1m\",\n    max: 10,\n  },\n});\n\nif (decision.isDenied()) {\n  console.log(\"Would deny:\", decision.reason);\n}\n\nreturn new Response(\"ok\");",
    "language": "typescript",
-   "explanation": "Runs Arcjet rules in dry-run mode, records the resulting decision, and keeps the request allowed while thresholds are evaluated."
+   "explanation": "Run the rule passively, inspect the recorded decision, then adjust the threshold before switching the rule to LIVE."
   },
   "useCases": [
    {
-    "title": "Test rate-limit thresholds",
-    "scenario": "Evaluate a new rate limit without disrupting users."
+    "title": "Trial a new threshold",
+    "scenario": "You are introducing a new rate or bot-protection threshold and need to observe real traffic before blocking it."
    },
    {
-    "title": "Estimate enforcement impact",
-    "scenario": "Measure the effect of bot or shield rules before rollout."
+    "title": "Diagnose rule behavior",
+    "scenario": "A rule produces unexpected decisions and you need detailed outcomes to refine its configuration."
    },
    {
-    "title": "Tune security rules",
-    "scenario": "Iterate on protection settings using observed decisions."
+    "title": "Enable enforcement",
+    "scenario": "A tested policy is ready to affect requests in production."
    }
   ],
   "related": [
-   "DRY_RUN",
+   "protect",
+   "ArcjetDecision",
    "LIVE",
-   "get-dry-run-impact",
-   "rules",
-   "decision"
+   "DRY_RUN",
+   "conclusion",
+   "results"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How can Arcjet rules be tested before enforcement?",
+    "answer": "Set the rule mode to DRY_RUN. Arcjet still evaluates the rule and returns its decision, but the final conclusion is ALLOW, so requests continue while you inspect behavior.",
+    "followUp": "How would you activate the tuned rule? Change its mode to LIVE, where the evaluated conclusion is applied to the request."
+   },
+   {
+    "question": "What does Arcjet return after evaluating protection rules?",
+    "answer": "Call the protect function and await its Promise. It resolves to an ArcjetDecision containing the high-level conclusion and detailed explanations for the decision.",
+    "followUp": "How do you determine the recommended outcome? Read the decision's conclusion, whose severity order places DENY above CHALLENGE, ERROR, and ALLOW."
+   },
+   {
+    "question": "How should recorded decisions guide threshold tuning?",
+    "answer": "A rule's threshold should first be observed in DRY_RUN, using recorded decisions to see whether its behavior matches the application. After tuning, switch the rule to LIVE to apply the result.",
+    "followUp": "Why avoid inferring the final result from one rule alone? The overall conclusion is the highest-severity finding across all configured rules."
+   }
+  ],
   "keyPoints": [
-   "Start new protection rules in dry-run mode.",
-   "Dry-run preserves traffic while exposing each rule's prospective result.",
-   "Use the recorded decisions to test behavior and tune thresholds before enforcement.",
-   "The MCP server can report how many currently allowed requests a dry-run rule would block.",
-   "Review dry-run impact before promoting the rule to live."
+   "Choose LIVE for enforcement or DRY_RUN for observing a rule without applying its conclusion.",
+   "Your application receives a unified decision, allowing runtime code to decide how to respond.",
+   "Await protect to obtain the decision object and inspect the result of the configured rules.",
+   "The decision exposes both an overall outcome and rule-level explanatory information.",
+   "When several rules run, Arcjet uses the most severe finding as the final conclusion."
   ],
   "gotchas": [
-   "Dry-run rules report what they would decide, but they do not block requests.",
-   "Begin new rules in dry-run mode before enabling enforcement.",
-   "Tune and review a rule before changing its mode to LIVE."
+   "Dry-run decisions do not block requests: the overall conclusion remains ALLOW even when an individual rule would deny.",
+   "Use DRY_RUN for testing before enforcement; it is not equivalent to an active production block."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Operating::Performance": {
   "sourceUrl": "https://docs.arcjet.com/architecture",
   "sourceTitle": "Architecture - Arcjet Docs",
-  "summary": "Arcjet usually adds under 1 ms when it decides locally or uses its cache. If it must call the Cloud API, typical added overhead is 20–30 ms or less, with a configurable default timeout of 2000 ms.",
-  "explanation": "Arcjet evaluates requests locally and asynchronously whenever possible, including reuse of in-memory decisions. Those paths usually add less than 1 ms. Decisions that need the Cloud API add network latency, typically 20–30 ms or less because the SDK uses the nearest region. A configurable timeout prevents indefinite waiting when the API is unavailable.",
-  "syntax": "await aj.protect(request)",
+  "summary": "Arcjet usually adds less than 1 ms when a decision is local or comes from the in-memory cache. A Cloud API lookup typically adds no more than 20–30 ms, often less, because the SDK routes to the closest region.",
+  "explanation": "Arcjet performs as much work as possible asynchronously and locally, including using in-memory cached decisions, so those paths usually add under 1 ms. If a Cloud API request is necessary, the nearest region is selected and the usual added time is up to roughly 20–30 ms, often less.",
+  "syntax": "const decision = await aj.protect(request, options);",
   "parameters": [],
-  "returns": "The page describes the latency and timeout behavior of Arcjet decisions; it does not define a separate return signature.",
+  "returns": "A protection decision; the page describes the latency incurred before that decision is made.",
   "example": {
-   "title": "Measure decision overhead in a route",
-   "code": "import arcjet, { detectBot, shield } from \"@arcjet/next\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY,\n  rules: [\n    shield({ mode: \"LIVE\" }),\n    detectBot({ mode: \"LIVE\", allow: [\"CATEGORY:SEARCH_ENGINE\"] }),\n  ],\n});\n\nexport async function GET(request: Request) {\n  const decision = await aj.protect(request);\n  return new Response(decision.isDenied() ? \"Denied\" : \"Allowed\", {\n    status: decision.isDenied() ? 403 : 200,\n  });\n}",
+   "title": "Measure the decision path",
+   "code": "import arcjet, { detectBot, shield } from \"@arcjet/next\";\nimport { NextResponse } from \"next/server\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [shield({ mode: \"LIVE\" }), detectBot({ mode: \"LIVE\" })],\n});\n\nexport async function GET(req: Request) {\n  const decision = await aj.protect(req, { requested: 1 });\n  return NextResponse.json({ allowed: decision.isAllowed() });\n}",
    "language": "typescript",
-   "explanation": "This route applies Arcjet rules and waits for the protection decision before responding, so its added latency depends on whether the decision is local, cached, or requires the Cloud API."
+   "explanation": "The request runs Arcjet protection; the decision may be produced locally or by the Cloud API, depending on whether local data or a cached decision is sufficient."
   },
   "useCases": [
    {
-    "title": "Local protection",
-    "scenario": "Estimate the overhead of local Arcjet evaluation on ordinary requests."
+    "title": "Minimize latency on ordinary requests",
+    "scenario": "A request can be evaluated locally or matched to a cached decision."
    },
    {
-    "title": "Cloud-backed decisions",
-    "scenario": "Account for network latency when a rule requires the Cloud API."
+    "title": "Estimate remote-decision overhead",
+    "scenario": "A rule needs a Cloud API decision, such as tracking a rate limit in a serverless environment."
    },
    {
-    "title": "Timeout configuration",
-    "scenario": "Tune failure behavior when Cloud API responses are slow."
+    "title": "Consolidate security checks",
+    "scenario": "Several Arcjet security checks apply to one request."
    }
   ],
   "related": [
    "Arcjet SDK",
-   "Cloud API",
    "in-memory cache",
-   "timeout",
-   "local decision",
-   "asynchronous processing"
+   "Cloud API",
+   "closest region",
+   "security functionality"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What latency does a locally resolved Arcjet decision usually add?",
+    "answer": "Local evaluation and previously cached decisions usually keep latency below 1 ms. Arcjet also performs much of its work asynchronously and locally.",
+    "followUp": "What happens when local evaluation is insufficient? A Cloud API call is made, adding typically no more than 20–30 ms, often less, because the SDK selects the closest region."
+   },
+   {
+    "question": "How much overhead should be expected when Arcjet contacts the Cloud API?",
+    "answer": "A Cloud API call is needed when Arcjet cannot resolve the decision locally or from its in-memory cache. The added latency is typically no more than 20–30 ms and is often significantly lower.",
+    "followUp": "Why can the number vary? Network distance and the need to contact the Cloud API affect the time, although regional routing reduces it."
+   },
+   {
+    "question": "How does Arcjet minimize latency for repeated or locally decidable requests?",
+    "answer": "Arcjet reduces request overhead by doing as much work as possible asynchronously and locally, while caching decisions in memory. This makes many decisions complete in under 1 ms.",
+    "followUp": "What architecture supports the remote path? The Cloud API is deployed across multiple regions, and the SDK automatically chooses the closest one."
+   }
+  ],
   "keyPoints": [
-   "Rules are evaluated locally when possible, avoiding a network round trip.",
-   "Previously computed decisions may be reused from an in-memory cache.",
-   "Local evaluation and cached decisions commonly add under 1 ms.",
-   "Typical local asynchronous processing contributes less than 1 ms of overhead.",
-   "Cloud API decisions generally add no more than 20–30 ms, and often less.",
-   "Adding rules does not create one Cloud API request per rule.",
-   "The default Cloud API timeout is 2 seconds in development and production."
+   "Local decisions and in-memory cache hits usually complete with less than 1 ms of latency.",
+   "Arcjet combines its security checks into a single request while targeting high performance.",
+   "The Cloud API’s multi-region deployment is part of its low-latency design.",
+   "Remote decision-making adds time before the protection result is available."
   ],
   "gotchas": [
-   "Cloud-dependent rules can add latency before the request receives a decision.",
-   "Requests do not wait forever for a Cloud API response; the SDK enforces a timeout.",
-   "Reducing the timeout trades quicker failures for a greater chance of errors."
+   "A Cloud API lookup adds latency before Arcjet can return its decision.",
+   "The documented 20–30 ms figure is typical overhead, not a universal maximum."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Rules::Bot detection": {
   "sourceUrl": "https://docs.arcjet.com/bot-protection/reference/",
   "sourceTitle": "Bot protection reference",
-  "summary": "Arcjet bot detection distinguishes automated clients and lets you allow or deny named bots and managed categories. Use an allowlist for only approved bots, or a denylist for specifically blocked bots.",
-  "explanation": "The detectBot rule classifies automated clients and applies an allow or deny list containing named bots, managed categories, or both. With allow, only listed bots pass; with deny, listed bots are blocked while other detected bots are allowed. Arcjet can verify allowed bots using IP data and reverse DNS.",
-  "syntax": "detectBot({ mode: \"LIVE\", allow: [\"BOT_IDENTIFIER\", \"CATEGORY:NAME\"] })",
+  "summary": "Arcjet bot detection distinguishes automated clients and applies an allowlist or denylist. It can target named bots, categories, or both, and verifies bots permitted by allow rules.",
+  "explanation": "The rule classifies automated clients from request data and applies either an allowlist or denylist. An allowlist rejects detected bots not named in it, while a denylist rejects only the listed bots; allowed bots are additionally checked with IP data and reverse DNS.",
+  "syntax": "detectBot({ mode: \"LIVE\", allow: [\"GOOGLE_CRAWLER\"] })",
   "parameters": [
    {
-    "name": "request",
-    "type": "Request",
-    "description": "The request being evaluated by the protection rules."
+    "name": "allow | deny",
+    "type": "object",
+    "description": "The rule configuration must contain exactly one of `allow` or `deny`, each containing bot identifiers, categories, or both."
    }
   ],
-  "returns": "A decision object; use `decision.isDenied()` and `decision.reason.isBot()` to identify a denied bot request.",
+  "returns": "A protection decision that can be checked for a denial and a bot reason.",
   "example": {
-   "title": "Allow selected bots",
-   "code": "import arcjet, { detectBot } from \"@arcjet/next\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [\n    detectBot({\n      mode: \"LIVE\",\n      allow: [\"CATEGORY:SEARCH\", \"GOOGLE_CRAWLER\"],\n    }),\n  ],\n});\n\nexport async function GET(request: Request) {\n  const decision = await aj.protect(request);\n\n  if (decision.isDenied()) {\n    return new Response(\"Forbidden\", { status: 403 });\n  }\n\n  return new Response(\"Hello\");\n}",
+   "title": "Allow one verified bot",
+   "code": "import arcjet, { detectBot } from \"@arcjet/next\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [detectBot({ mode: \"LIVE\", allow: [\"GOOGLE_CRAWLER\"] })],\n});\n\nexport async function GET(request: Request) {\n  const decision = await aj.protect(request);\n  if (decision.isDenied() && decision.reason.isBot()) {\n    return new Response(\"Bot denied\", { status: 403 });\n  }\n  return new Response(\"Allowed\");\n}",
    "language": "typescript",
-   "explanation": "This rule allows selected search bots and the named Google crawler while denying other detected bots."
+   "explanation": "Allows the named crawler while denying other detected bots."
   },
   "useCases": [
    {
-    "title": "Selective crawler access",
-    "scenario": "Permit search-engine crawlers while blocking other detected bots."
+    "title": "Allow selected crawlers",
+    "scenario": "A public website needs search indexing but should reject other automated clients."
    },
    {
-    "title": "Targeted bot blocking",
-    "scenario": "Block known scraping or automation clients by identifier or category."
+    "title": "Deny specific bots",
+    "scenario": "An API wants to stop known scraping or automation clients."
    },
    {
-    "title": "Deny all bots",
-    "scenario": "Prevent all detected automated clients from reaching a sensitive route."
+    "title": "Block all detected bots",
+    "scenario": "A route should receive only human traffic."
    },
    {
-    "title": "Route-specific protection",
-    "scenario": "Apply different bot policies to different application routes."
+    "title": "Apply category policies",
+    "scenario": "A service wants to manage groups of automated clients consistently."
    }
   ],
   "related": [
-   "detectBot",
-   "allow",
-   "deny",
    "protect",
-   "BotCategory"
+   "decision.isDenied()",
+   "decision.reason.isBot()",
+   "GOOGLE_CRAWLER",
+   "bot categories",
+   "reverse DNS"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How do `allow` and `deny` differ?",
+    "answer": "`allow` is an allowlist: detected bots absent from it are denied. `deny` is a blocklist: detected bots absent from it remain allowed.",
+    "followUp": "What does an empty allowlist do? It blocks every detected bot, so it is useful when a route should accept no automated clients."
+   },
+   {
+    "question": "What can a bot list contain?",
+    "answer": "The rule can use individual bot identifiers, managed categories, or both. This lets a policy target one crawler or a broader group such as a bot category.",
+    "followUp": "Why might a category be preferable? It can cover the maintained set of bots in that category without naming each bot individually."
+   },
+   {
+    "question": "How is a bot denial detected in JavaScript?",
+    "answer": "Arcjet executes protection rules through `protect`, which receives the request. A denied bot decision can be recognized with `decision.isDenied()` together with `decision.reason.isBot()` in JavaScript.",
+    "followUp": "How would the equivalent check look in Python? Use `decision.is_denied()` and test whether `decision.reason_v2.type == \"BOT\"`."
+   }
+  ],
   "keyPoints": [
-   "Configure the rule as an allowlist or denylist for automated clients.",
-   "An allowlist permits only the detected bots named in the list.",
-   "A denylist blocks named bots but permits other detected bots.",
-   "Use an empty allowlist when no automated clients should access the route.",
-   "Entries may be individual bot identifiers, managed categories, or a combination.",
-   "Call protect with the request to evaluate the configured bot rule."
+   "Use bot detection to control whether automated traffic may reach an application route.",
+   "A rule chooses one policy style: an allowlist or a denylist, never both.",
+   "Allow mode permits only the detected bots explicitly included in the list.",
+   "Deny mode blocks listed bots while leaving other detected bots permitted.",
+   "Build the policy from named bots, managed categories, or a combination.",
+   "Call the protection entry point with the incoming request to evaluate the rule."
   ],
   "gotchas": [
-   "A rule cannot use both allow and deny; choose one list.",
-   "An empty allow list is a deny-all policy for detected bots.",
-   "Do not combine the two list forms or treat them as additive.",
-   "Allowing a bot identifier does not rely only on its user-agent; Arcjet performs authenticity checks."
+   "Do not provide both configuration modes on one rule; the lists are mutually exclusive.",
+   "An empty allowlist is a deliberate block-all setting, not an invalid configuration.",
+   "Allowing a bot name does not bypass verification; Arcjet checks that the client is genuine."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Rules::Custom rules": {
   "sourceUrl": "https://docs.arcjet.com/blueprints/defining-custom-rules/",
   "sourceTitle": "Defining custom rules",
-  "summary": "Custom rules extend Arcjet with application-specific checks that follow the @arcjet/protocol rule interface. They execute locally and can be combined with built-in rules, such as validating a request body with Zod.",
-  "explanation": "A custom rule is a user-defined Arcjet rule that follows the interface from @arcjet/protocol. The SDK can execute it alongside built-in rules, but it runs only locally because the Arcjet service does not recognize custom rules. The documentation demonstrates using this pattern to validate a request body with Zod and deny invalid input.",
-  "syntax": "aj.protect(request)",
-  "parameters": [],
-  "returns": "The custom rule produces an Arcjet rule decision; in the documented example, the request is denied when body validation fails.",
+  "summary": "Define an application-specific Arcjet rule by implementing the @arcjet/protocol rule format. Custom rules run locally and can enforce checks such as request-body validation alongside Arcjet’s built-in rules.",
+  "explanation": "Custom rules let the Arcjet SDK run application-defined checks that follow the @arcjet/protocol rule format. They execute locally because the Arcjet service does not know about them, and they can be attached to a client before protect() evaluates the request.",
+  "syntax": "const customRule = { type: \"CUSTOM\", ... };",
+  "parameters": [
+   {
+    "name": "request",
+    "type": "Request",
+    "description": "The request context supplied to the custom rule, including the body or other application data it needs to inspect."
+   }
+  ],
+  "returns": "A rule result consumed by the Arcjet SDK; the example denies when validation fails.",
   "example": {
-   "title": "Local body-validation rule",
-   "code": "import { createMiddleware } from \"@arcjet/next\";\nimport arcjet, { shield } from \"@arcjet/next\";\nimport { z } from \"zod\";\n\nconst bodySchema = z.object({ name: z.string() });\n\nconst validateBody = {\n  type: \"CUSTOM\",\n  name: \"validate-body\",\n  validate: async ({ request }) => {\n    const body = await request.json();\n    return bodySchema.safeParse(body).success\n      ? { conclusion: \"ALLOW\" }\n      : { conclusion: \"DENY\", reason: \"Invalid body\" };\n  },\n};\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [shield({ mode: \"LIVE\" }), validateBody],\n});\n\nexport default createMiddleware(async (req) => {\n  const decision = await aj.protect(req);\n  if (decision.isDenied()) return new Response(\"Forbidden\", { status: 403 });\n});",
+   "title": "Local request-body validation",
+   "code": "import { createArcjet, detectBot } from \"@arcjet/node\";\nimport { z } from \"zod\";\n\nconst aj = createArcjet({ key: process.env.ARCJET_KEY! });\n\nconst bodyRule = {\n  type: \"CUSTOM\",\n  validate: async ({ request }) => {\n    const body = await request.json();\n    return z.object({ email: z.string().email() }).safeParse(body).success;\n  },\n};\n\nconst decision = await aj\n  .withRule(bodyRule)\n  .protect(request);\n\nif (decision.isDenied()) {\n  return new Response(\"Forbidden\", { status: 403 });\n}\nreturn new Response(\"OK\");",
    "language": "typescript",
-   "explanation": "Adds a local custom rule that validates the request body with Zod before allowing the request."
+   "explanation": "A custom rule validates a request body locally and denies requests that fail the schema."
   },
   "useCases": [
    {
     "title": "Request-body validation",
-    "scenario": "Validate incoming JSON against a Zod schema before route logic runs."
+    "scenario": "Validate JSON payloads against an application schema before processing them."
    },
    {
-    "title": "Application-specific policy",
-    "scenario": "Enforce a business-specific condition that Arcjet’s built-in rules do not provide."
+    "title": "Application policy enforcement",
+    "scenario": "Enforce domain-specific checks that are not represented by Arcjet’s built-in rules."
    },
    {
-    "title": "Composite protection",
-    "scenario": "Combine a local check with Arcjet’s built-in security rules."
+    "title": "Route-level protection",
+    "scenario": "Keep route-specific validation in the same protection flow as other Arcjet rules."
    }
   ],
   "related": [
    "@arcjet/protocol",
    "Arcjet SDK",
-   "aj.protect()",
+   "protect()",
+   "withRule",
    "Zod",
    "request body validation"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is an Arcjet custom rule?",
+    "answer": "A custom rule is an application-written Arcjet rule that follows the format defined by @arcjet/protocol. It is useful when the built-in rules do not express a check such as validating structured request data.",
+    "followUp": "How does its execution location affect deployment? It must run in the application, because the Arcjet service does not know the custom rule definition."
+   },
+   {
+    "question": "Where does a custom rule run, and how is it integrated?",
+    "answer": "Custom rules are local SDK logic, so they can inspect application-specific request information and return a decision. The SDK can consume one through the same protection flow as other rules once it conforms to the rule interface.",
+    "followUp": "What must be checked before integration? Verify the rule matches the protocol interface expected by the SDK."
+   },
+   {
+    "question": "Give a practical use case for a custom rule.",
+    "answer": "A body-validation rule can parse the request body, apply a schema such as Zod, and deny the request when validation fails. Calling protect() causes that custom rule to execute within the request path.",
+    "followUp": "Why is this pattern useful? It adds policy tied to the application’s data model rather than relying only on generic security signals."
+   }
+  ],
   "keyPoints": [
-   "Custom rules let developers extend the SDK with application-specific policy logic.",
-   "Local execution still makes custom rules useful for application-specific checks.",
-   "A custom rule can validate request bodies against a Zod schema.",
-   "A correctly shaped custom rule can be supplied to the SDK alongside built-in rules."
+   "Developers can extend the SDK with rules tailored to their application.",
+   "Custom rule definitions must use the protocol format supplied by @arcjet/protocol.",
+   "Local-only execution is still valuable when the policy depends on application-specific logic.",
+   "Request-body schema validation is an example of a policy that can be implemented as a custom rule."
   ],
   "gotchas": [
-   "The rule must conform to the interface defined by @arcjet/protocol."
+   "The implementation must satisfy the protocol rule interface before the SDK can use it."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Rules::Email validation": {
   "sourceUrl": "https://docs.arcjet.com/email-validation",
   "sourceTitle": "Introduction to Arcjet email validation",
-  "summary": "Arcjet email validation checks address syntax and verifies email quality, including disposable status and whether the domain has MX records. Use it at signup to reject disposable, invalid, or undeliverable addresses.",
-  "explanation": "Arcjet validates syntax locally, then sends syntactically valid addresses to its Cloud API for verification. The rule can classify addresses as disposable, free, custom, invalid, or unable to receive mail through missing MX records; pass the request email to protect(), then use the decision to accept or reject the signup.",
-  "syntax": "validateEmail({ mode: \"LIVE\", deny: [\"DISPOSABLE\", \"NO_MX_RECORDS\", \"INVALID\"] })",
+  "summary": "Arcjet validates signup email syntax locally and remotely checks categories and deliverability signals. Deny disposable, invalid, and no-MX addresses before creating accounts.",
+  "explanation": "Arcjet first checks email syntax locally, then sends syntactically valid addresses to its cloud service for checks such as disposable-provider classification and MX records. Configure one email rule with either allow or deny, pass the submitted address to protect(), and use the resulting decision to accept or reject the signup.",
+  "syntax": "validateEmail({ mode: \"LIVE\", deny: [\"DISPOSABLE\", \"INVALID\", \"NO_MX_RECORDS\"] })",
   "parameters": [
    {
-    "name": "mode",
-    "type": "optional mode",
-    "description": "Validation mode, such as LIVE or DRY_RUN."
+    "name": "options",
+    "type": "ArcjetEmailValidationOptions",
+    "description": "Rule configuration containing mode and exactly one allow or deny list of email types."
    },
    {
-    "name": "deny",
-    "type": "array",
-    "description": "Email categories to reject; mutually exclusive with allow."
-   },
-   {
-    "name": "allow",
-    "type": "array",
-    "description": "Email categories to allow; categories not listed are rejected."
-   },
-   {
-    "name": "email",
-    "type": "string",
-    "description": "The email address supplied when calling protect()."
+    "name": "protect(request, { email })",
+    "type": "protect input",
+    "description": "The request context and an object containing the email address to validate."
    }
   ],
-  "returns": "An Arcjet decision that can be used to accept, reject, or flag the email address.",
+  "returns": "A decision that application code can use to accept, reject, or flag the address.",
   "example": {
    "title": "Reject risky signup email addresses",
-   "code": "import arcjet, { detectBot, validateEmail } from \"@arcjet/next\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [\n    validateEmail({\n      mode: \"LIVE\",\n      deny: [\"DISPOSABLE\", \"NO_MX_RECORDS\", \"INVALID\"],\n    }),\n  ],\n});\n\nexport async function POST(req: Request) {\n  const { email } = await req.json();\n  const decision = await aj.protect(req, { email });\n\n  if (decision.isDenied()) {\n    return new Response(\"Invalid email\", { status: 400 });\n  }\n  return new Response(\"Accepted\", { status: 200 });\n}",
+   "code": "import arcjet, { validateEmail } from \"@arcjet/next\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [\n    validateEmail({\n      mode: \"LIVE\",\n      deny: [\"DISPOSABLE\", \"INVALID\", \"NO_MX_RECORDS\"],\n    }),\n  ],\n});\n\nexport async function POST(req: Request) {\n  const { email } = await req.json();\n  const decision = await aj.protect(req, { email });\n  return decision.isDenied()\n    ? new Response(\"Invalid email\", { status: 400 })\n    : new Response(\"Accepted\", { status: 200 });\n}",
    "language": "typescript",
-   "explanation": "Configures a live email-validation rule that rejects disposable, undeliverable, and syntactically invalid addresses before accepting a signup."
+   "explanation": "Configures Arcjet to deny disposable, syntactically invalid, and undeliverable addresses, then supplies the submitted address to protect()."
   },
   "useCases": [
    {
-    "title": "Block disposable signup addresses",
+    "title": "Block throwaway registrations",
     "scenario": "Signup forms"
    },
    {
-    "title": "Avoid sending messages to undeliverable addresses",
-    "scenario": "Login and password reset"
+    "title": "Avoid sending verification mail to undeliverable domains",
+    "scenario": "Account onboarding"
    },
    {
-    "title": "Filter invalid or temporary email submissions",
-    "scenario": "Contact and lead forms"
+    "title": "Filter malformed or risky submitted addresses",
+    "scenario": "Password reset and contact forms"
    }
   ],
   "related": [
-   "validateEmail",
-   "EmailOptions",
-   "DISPOSABLE",
-   "NO_MX_RECORDS",
-   "INVALID",
-   "FREE",
-   "DRY_RUN",
-   "LIVE"
+   "EmailType.DISPOSABLE",
+   "EmailType.FREE",
+   "EmailType.NO_MX_RECORDS",
+   "EmailType.NO_GRAVATAR",
+   "EmailType.INVALID",
+   "protect()",
+   "Arcjet Cloud API"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How does Arcjet validate an email address?",
+    "answer": "Arcjet uses two stages: local syntax validation followed by remote verification for syntactically valid addresses. Remote checks include email categorization, MX records, and Gravatar information.",
+    "followUp": "What happens when syntax validation fails? The SDK can return the result immediately without sending that address to the cloud API."
+   },
+   {
+    "question": "How would you reject disposable or undeliverable signup addresses?",
+    "answer": "The rule can deny DISPOSABLE and NO_MX_RECORDS, along with INVALID, to reject throwaway, undeliverable, and malformed addresses. The submitted email must be provided to protect().",
+    "followUp": "How would you permit free providers while blocking throwaway addresses? Configure an allow or deny list that expresses that policy, but never both in the same rule."
+   },
+   {
+    "question": "What configuration constraints apply to the rule?",
+    "answer": "Email validation is configured with exactly one of allow or deny. The lists contain email categories such as DISPOSABLE, FREE, NO_MX_RECORDS, NO_GRAVATAR, and INVALID.",
+    "followUp": "Why can an empty allow list be dangerous? It allows no email types, so it effectively rejects every categorized address."
+   }
+  ],
   "keyPoints": [
-   "Use the rule to validate and verify addresses entered in signup, login, password-reset, or contact forms.",
-   "The SDK first checks syntax locally, then performs additional verification through Arcjet Cloud.",
-   "Verification categorizes the domain, including whether it belongs to a disposable, free, or custom email service.",
-   "An MX check identifies domains that appear unable to receive mail, helping reject undeliverable addresses.",
-   "Use the resulting decision in application logic to accept, reject, or flag a signup.",
-   "Rejecting invalid or undeliverable addresses reduces failed verification and onboarding messages."
+   "Validation begins locally and continues remotely only when the address passes the syntax stage.",
+   "NO_MX_RECORDS identifies domains that do not appear able to receive mail.",
+   "Remote categorization distinguishes disposable, free, and custom email domains.",
+   "The rule result is an input to application logic rather than an automatic account-management action.",
+   "Read the submitted address and configure the rule in SDK code before calling protect()."
   ],
   "gotchas": [
-   "Each rule must use exactly one mutually exclusive policy: allow selected email types or deny selected types.",
-   "An empty allow list rejects every email category.",
-   "The request email must be supplied to protect(); configuring the rule alone is insufficient.",
-   "Email validation must be configured in SDK code rather than as a remotely managed rule."
+   "Do not configure allow and deny together; each email-validation rule must choose exactly one.",
+   "An empty allow list rejects every email type, so use it only deliberately.",
+   "Cloud checks such as MX validation are not reached when local syntax validation fails."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Rules::Shield": {
   "sourceUrl": "https://docs.arcjet.com/shield",
   "sourceTitle": "Introduction to Arcjet Shield WAF",
-  "summary": "Arcjet Shield is a managed, application-aware WAF that detects common web attacks, including OWASP Top 10 categories. It analyzes request metadata and traffic patterns over time, then blocks clients whose behavior crosses a suspiciousness threshold.",
-  "explanation": "Shield examines request metadata over time and combines OWASP Core Rule Set detections with traffic-pattern analysis. When a client crosses the suspicious-request threshold, the application can block the request or handle it differently.",
+  "summary": "Arcjet Shield is a managed, application-aware WAF that detects common web attacks, including OWASP Top 10 categories. It combines attack-signature rules with request-pattern analysis over time and can block suspicious clients.",
+  "explanation": "Shield is a managed, application-aware web application firewall. It evaluates request metadata over time, combines that behavioral analysis with OWASP Core Rule Set protections, and can deny clients whose activity matches suspicious attack patterns.",
   "syntax": "shield({ mode: \"LIVE\" })",
   "parameters": [
    {
     "name": "options",
     "type": "ShieldOptions",
-    "description": "Shield configuration, including the operating mode such as LIVE or DRY_RUN."
+    "description": "Configuration object containing the Shield execution mode, such as LIVE or DRY_RUN."
+   },
+   {
+    "name": "mode",
+    "type": "LIVE | DRY_RUN",
+    "description": "Controls whether Shield enforces blocking or only records decisions."
    }
   ],
-  "returns": "A Shield rule used by Arcjet protection; the resulting decision can be checked for denial and Shield-specific reasoning.",
+  "returns": "A protection decision that can be inspected to determine whether the request was denied and whether Shield identified suspicious activity.",
   "example": {
-   "title": "Enable Shield for a route",
-   "code": "import arcjet, { shield } from \"@arcjet/next\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [shield({ mode: \"LIVE\" })],\n});\n\nexport async function GET(req: Request) {\n  const decision = await aj.protect(req);\n  if (decision.isDenied()) {\n    return new Response(\"Blocked\", { status: 403 });\n  }\n  return Response.json({ ok: true });\n}",
+   "title": "Apply Shield to a Next.js route",
+   "code": "import arcjet, { shield } from \"@arcjet/next\";\nimport { NextResponse } from \"next/server\";\n\nconst aj = arcjet({\n  key: process.env.ARCJET_KEY!,\n  rules: [shield({ mode: \"LIVE\" })],\n});\n\nexport async function GET(request: Request) {\n  const decision = await aj.protect(request);\n\n  if (decision.isDenied()) {\n    return new NextResponse(\"Blocked\", { status: 403 });\n  }\n\n  return NextResponse.json({ ok: true });\n}",
    "language": "typescript",
-   "explanation": "Configures Shield in LIVE mode and returns HTTP 403 when Arcjet denies a suspicious request."
+   "explanation": "This Next.js route applies Shield in live mode and returns HTTP 403 when the protection decision denies the request."
   },
   "useCases": [
    {
-    "title": "General web-attack protection",
-    "scenario": "Protect an application endpoint from common OWASP-style attacks."
+    "title": "Detect reconnaissance and resource scanning",
+    "scenario": "A public web application receives repeated probes for administrative paths, login endpoints, backup files, or exposed configuration files."
    },
    {
-    "title": "Reconnaissance detection",
-    "scenario": "Detect repeated access to admin or login paths."
+    "title": "Protect application inputs",
+    "scenario": "An application accepts user-controlled query strings or payloads and needs protection from common injection attacks."
    },
    {
-    "title": "Sensitive-file scanning",
-    "scenario": "Identify scans for backup, configuration, and version-control files."
-   },
-   {
-    "title": "Injection probing",
-    "scenario": "Spot crafted inputs that probe for injection vulnerabilities."
+    "title": "Evaluate protection in dry-run mode",
+    "scenario": "A team wants to observe likely Shield decisions before enforcing them in production."
    }
   ],
   "related": [
    "OWASP Core Rule Set",
-   "SQL injection (SQLi)",
-   "Cross-site scripting (XSS)",
-   "Local file inclusion (LFI)",
-   "Remote file inclusion (RFI)",
-   "HTTPoxy",
-   "Shellshock"
+   "protect",
+   "LIVE",
+   "DRY_RUN",
+   "rate limiting",
+   "bot protection",
+   "email validation"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What does Arcjet Shield protect against, and how does it work?",
+    "answer": "Shield is Arcjet’s managed, application-aware WAF. It combines OWASP Core Rule Set checks with analysis of request patterns over time, allowing it to recognize attacks whose individual requests may appear harmless.",
+    "followUp": "Why analyze requests over time? Repeated probes for admin paths, configuration files, or login endpoints can reveal an attack pattern even when no single request is obviously malicious."
+   },
+   {
+    "question": "Which attack categories are covered by Shield?",
+    "answer": "Shield includes protections for categories such as SQL injection, cross-site scripting, local and remote file inclusion, shell injection, and session fixation. These rules are combined with Arcjet’s own request-pattern analysis.",
+    "followUp": "What additional value does behavioral analysis provide? It can identify coordinated probing that is not necessarily caught by examining one request in isolation."
+   },
+   {
+    "question": "How should Shield be deployed safely?",
+    "answer": "Configure Shield with the `shield` rule and select `LIVE` or `DRY_RUN` mode. Use the protection result to determine whether the request was denied; dry-run mode logs the outcome but leaves the final decision as allowed.",
+    "followUp": "When should dry-run mode be used? Use it to observe likely decisions and tune deployment behavior before switching to live enforcement."
+   }
+  ],
   "keyPoints": [
-   "Shield is a managed WAF that applies security analysis at the application request level.",
-   "It detects common web attacks and can block clients whose behavior becomes suspicious across requests.",
-   "Its built-in protections include OWASP Core Rule Set coverage.",
-   "SQL injection is one of the attack categories covered by Shield.",
-   "Cross-site scripting is another built-in attack category.",
-   "Shield is useful for identifying reconnaissance that targets backup, configuration, or version-control files."
+   "Shield is a managed WAF that evaluates requests with application context rather than operating only as a network perimeter filter.",
+   "Shield correlates request metadata across time to identify suspicious behavior that may be distributed across several requests.",
+   "The rule set supplies broad coverage for established web attack patterns.",
+   "SQL injection is one of the attack categories covered by the built-in Shield rules.",
+   "Cross-site scripting is another attack category handled by Shield.",
+   "Shield blocks clients after their observed behavior crosses the applicable suspicion threshold."
   ],
   "gotchas": [
-   "Shield analyzes request metadata, not request bodies, so body contents are not part of this detection mechanism.",
-   "A single suspicious-looking request may not trigger blocking; Shield evaluates repeated behavior against a threshold.",
-   "Choose LIVE mode when Shield should enforce blocking; a dry-run mode is available in SDK examples for logging without blocking."
+   "DRY_RUN records the rule result without blocking traffic; use LIVE when Shield should enforce denials."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  }
 }

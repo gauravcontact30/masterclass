@@ -22,8 +22,11 @@ import { LandingFooter } from "./landing-footer";
 import { LandingApiDocs, LandingTechy } from "./landing-pro-sections";
 import type { LandingProPreview } from "@/lib/landing-pro-preview";
 import type { LandingLibrary } from "@/lib/landing-library";
+import type { DailyWord, LockedTeaser, PulseCard } from "@/lib/landing-daily-types";
 import home from "./landing-home.module.css";
 import { LandingSlider } from "./landing-slider";
+import { LandingAiPulse } from "./landing-ai-pulse";
+import { LandingVocabulary } from "./landing-vocabulary";
 import { LandingNavbar } from "./landing-navbar";
 import { SubjectRibbon } from "./subject-ribbon";
 import { LandingPaths } from "./landing-paths";
@@ -34,7 +37,7 @@ import { useLanguage } from "./language-provider";
 import styles from "./learn-landing.module.css";
 
 export type LandingPrices = { monthly: number; yearly: number; enabled: boolean };
-export function LandingPage({ pro, library, prices: initialPrices }: { pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices }) {
+export function LandingPage({ pro, library, prices: initialPrices, daily }: { pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null } } }) {
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
   // Prices rendered on the server arrive in the HTML, so the plan card never paints "—" and then shifts; the fetch is only the fallback.
@@ -51,6 +54,7 @@ export function LandingPage({ pro, library, prices: initialPrices }: { pro?: Lan
     <h1 className={home.srOnly}>{text("MasterClass: school, exam and technology learning in English and Hindi", "MasterClass: अंग्रेज़ी और हिन्दी में स्कूल, परीक्षा और तकनीक की पढ़ाई")}</h1>
     <LandingSlider technologies={library?.counts.technology} />
     {library && <SubjectRibbon entries={library.entries} />}
+    {daily && <><LandingAiPulse cards={daily.pulse} day={daily.day} locked={daily.locked?.pulse} /><LandingVocabulary words={daily.words} day={daily.day} locked={daily.locked?.word} /></>}
     <LandingOverview counts={library?.counts} />
     <LandingPaths />
     {library && <section ref={libraryRef} id="library" className={home.library} data-reveal={libraryReveal} aria-labelledby="library-title"><div className={`${home.inner} ${home.libraryInner}`}>

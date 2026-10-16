@@ -1,0 +1,5730 @@
+{
+ "change tack": {
+  "pronunciation": "chayn-j TAK",
+  "hindi": "रास्ता बदलना"
+ },
+ "reorient": {
+  "pronunciation": "ree-OR-ee-ent",
+  "hindi": "नई दिशा देना"
+ },
+ "switch": {
+  "pronunciation": "swich",
+  "hindi": "बदलना"
+ },
+ "redirect": {
+  "pronunciation": "ree-duh-REKT",
+  "hindi": "दिशा बदलना"
+ },
+ "persist": {
+  "pronunciation": "puhr-SIST",
+  "hindi": "डटे रहना"
+ },
+ "maintain course": {
+  "pronunciation": "mayn-TAYN kors",
+  "hindi": "राह पर कायम रहना"
+ },
+ "stay put": {
+  "pronunciation": "stay PUUT",
+  "hindi": "जस का तस रहना"
+ },
+ "intensify": {
+  "pronunciation": "in-TEN-suh-fy",
+  "hindi": "तेज़ करना"
+ },
+ "heighten": {
+  "pronunciation": "HY-tuhn",
+  "hindi": "बढ़ाना"
+ },
+ "elevate": {
+  "pronunciation": "EL-uh-vayt",
+  "hindi": "ऊपर उठाना"
+ },
+ "refer upward": {
+  "pronunciation": "ri-FUR UHP-wurd",
+  "hindi": "ऊपर भेजना"
+ },
+ "subside": {
+  "pronunciation": "suhb-SYD",
+  "hindi": "शांत होना"
+ },
+ "suggest": {
+  "pronunciation": "suh-JEST",
+  "hindi": "सुझाव देना"
+ },
+ "hint": {
+  "pronunciation": "hint",
+  "hindi": "संकेत देना"
+ },
+ "intimate": {
+  "pronunciation": "IN-tuh-mayt",
+  "hindi": "इशारा करना"
+ },
+ "state": {
+  "pronunciation": "stayt",
+  "hindi": "साफ़ कहना"
+ },
+ "declare": {
+  "pronunciation": "di-KLAIR",
+  "hindi": "घोषित करना"
+ },
+ "spell out": {
+  "pronunciation": "spel OWT",
+  "hindi": "विस्तार से बताना"
+ },
+ "specify": {
+  "pronunciation": "SPES-uh-fy",
+  "hindi": "स्पष्ट रूप से बताना"
+ },
+ "answerable": {
+  "pronunciation": "AN-sur-uh-buhl",
+  "hindi": "जवाबदेह"
+ },
+ "responsible": {
+  "pronunciation": "ri-SPON-suh-buhl",
+  "hindi": "ज़िम्मेदार"
+ },
+ "chargeable": {
+  "pronunciation": "CHAR-juh-buhl",
+  "hindi": "जिम्मेदार ठहराने योग्य"
+ },
+ "unaccountable": {
+  "pronunciation": "uhn-uh-KOWN-tuh-buhl",
+  "hindi": "जवाबदेही से मुक्त"
+ },
+ "exempt": {
+  "pronunciation": "ig-ZEMPT",
+  "hindi": "छूट प्राप्त"
+ },
+ "immune": {
+  "pronunciation": "i-MYOON",
+  "hindi": "अछूता, बचा हुआ"
+ },
+ "blameless": {
+  "pronunciation": "BLAYM-luhs",
+  "hindi": "निर्दोष"
+ },
+ "striking": {
+  "pronunciation": "STRY-king",
+  "hindi": "उल्लेखनीय, प्रभावशाली"
+ },
+ "insignificant": {
+  "pronunciation": "in-sig-NIF-i-kuhnt",
+  "hindi": "महत्वहीन"
+ },
+ "minor": {
+  "pronunciation": "MY-nur",
+  "hindi": "गौण, छोटा"
+ },
+ "unremarkable": {
+  "pronunciation": "uhn-ri-MAR-kuh-buhl",
+  "hindi": "साधारण"
+ },
+ "assemble": {
+  "pronunciation": "uh-SEM-buhl",
+  "hindi": "इकट्ठा करना"
+ },
+ "call together": {
+  "pronunciation": "kawl tuh-GETH-ur",
+  "hindi": "एकत्र बुलाना"
+ },
+ "summon": {
+  "pronunciation": "SUHM-uhn",
+  "hindi": "तलब करना"
+ },
+ "disband": {
+  "pronunciation": "dis-BAND",
+  "hindi": "भंग करना"
+ },
+ "disperse": {
+  "pronunciation": "dis-PURS",
+  "hindi": "तितर-बितर होना"
+ },
+ "turnover": {
+  "pronunciation": "TURN-oh-vur",
+  "hindi": "कर्मचारियों का आना-जाना"
+ },
+ "depletion": {
+  "pronunciation": "di-PLEE-shuhn",
+  "hindi": "क्षय, कमी"
+ },
+ "erosion": {
+  "pronunciation": "i-ROH-zhuhn",
+  "hindi": "धीरे-धीरे क्षरण"
+ },
+ "wastage": {
+  "pronunciation": "WAY-stij",
+  "hindi": "छीजन, नुकसान"
+ },
+ "replenishment": {
+  "pronunciation": "ri-PLEN-ish-muhnt",
+  "hindi": "पुनर्भरण"
+ },
+ "growth": {
+  "pronunciation": "GROHTH",
+  "hindi": "वृद्धि"
+ },
+ "accretion": {
+  "pronunciation": "uh-KREE-shuhn",
+  "hindi": "धीरे-धीरे बढ़ोतरी"
+ },
+ "painstaking": {
+  "pronunciation": "PAYNZ-tay-king",
+  "hindi": "बहुत सावधान और मेहनती"
+ },
+ "careless": {
+  "pronunciation": "KAIR-luhss",
+  "hindi": "लापरवाह"
+ },
+ "slapdash": {
+  "pronunciation": "SLAP-dash",
+  "hindi": "जल्दबाज़ी और बेपरवाही वाला"
+ },
+ "warm": {
+  "pronunciation": "WORM",
+  "hindi": "गर्मजोशी भरा"
+ },
+ "ungracious": {
+  "pronunciation": "uhn-GRAY-shuhss",
+  "hindi": "रूखा, अशिष्ट"
+ },
+ "mean-spirited": {
+  "pronunciation": "MEEN-SPIR-uh-tid",
+  "hindi": "ओछा, संकीर्ण मन का"
+ },
+ "arbitrate": {
+  "pronunciation": "AR-bi-trayt",
+  "hindi": "पंच बनकर फ़ैसला करना"
+ },
+ "intercede": {
+  "pronunciation": "in-tur-SEED",
+  "hindi": "बीच-बचाव करना"
+ },
+ "broker": {
+  "pronunciation": "BROH-kur",
+  "hindi": "मध्यस्थता से समझौता कराना"
+ },
+ "stern": {
+  "pronunciation": "STURN",
+  "hindi": "कठोर, सख़्त"
+ },
+ "forbidding": {
+  "pronunciation": "fur-BID-ing",
+  "hindi": "रोबीला, भयावह"
+ },
+ "cheerful": {
+  "pronunciation": "CHEER-fuhl",
+  "hindi": "प्रसन्न, हँसमुख"
+ },
+ "genial": {
+  "pronunciation": "JEE-nyuhl",
+  "hindi": "मिलनसार, दोस्ताना"
+ },
+ "anticipatory": {
+  "pronunciation": "an-TISS-uh-puh-tor-ee",
+  "hindi": "पूर्वानुमान पर आधारित"
+ },
+ "preemptive": {
+  "pronunciation": "pree-EMP-tiv",
+  "hindi": "पहले से किया गया बचाव"
+ },
+ "initiating": {
+  "pronunciation": "i-NISH-ee-ay-ting",
+  "hindi": "पहल करने वाला"
+ },
+ "forward-leaning": {
+  "pronunciation": "FOR-wurd-LEE-ning",
+  "hindi": "आगे की सोच वाला"
+ },
+ "passive": {
+  "pronunciation": "PASS-iv",
+  "hindi": "निष्क्रिय"
+ },
+ "explain": {
+  "pronunciation": "ik-SPLAYN",
+  "hindi": "समझाना"
+ },
+ "illuminate": {
+  "pronunciation": "i-LOO-muh-nayt",
+  "hindi": "स्पष्ट करना, रोशनी डालना"
+ },
+ "confuse": {
+  "pronunciation": "kuhn-FYOOZ",
+  "hindi": "उलझन में डालना"
+ },
+ "muddle": {
+  "pronunciation": "MUHD-l",
+  "hindi": "गड़बड़ करना"
+ },
+ "final demand": {
+  "pronunciation": "FY-nuhl dih-MAND",
+  "hindi": "अंतिम माँग"
+ },
+ "edict": {
+  "pronunciation": "EE-dikt",
+  "hindi": "फ़रमान, आदेश"
+ },
+ "condition": {
+  "pronunciation": "kuhn-DISH-uhn",
+  "hindi": "शर्त"
+ },
+ "threat": {
+  "pronunciation": "THRET",
+  "hindi": "धमकी"
+ },
+ "offer": {
+  "pronunciation": "AW-fur",
+  "hindi": "प्रस्ताव, पेशकश"
+ },
+ "proposal": {
+  "pronunciation": "pruh-POH-zuhl",
+  "hindi": "सुझाव, प्रस्ताव"
+ },
+ "pronounce": {
+  "pronunciation": "pruh-NOWNSS",
+  "hindi": "उच्चारण करना"
+ },
+ "vocalise": {
+  "pronunciation": "VOH-kuh-lyz",
+  "hindi": "स्वर में बोलना"
+ },
+ "sound out": {
+  "pronunciation": "SOWND OWT",
+  "hindi": "अक्षर-अक्षर बोलना"
+ },
+ "mumble": {
+  "pronunciation": "MUHM-buhl",
+  "hindi": "बुदबुदाना"
+ },
+ "slur": {
+  "pronunciation": "SLUR",
+  "hindi": "अस्पष्ट बोलना"
+ },
+ "mutter": {
+  "pronunciation": "MUHT-ur",
+  "hindi": "धीमे स्वर में बड़बड़ाना"
+ },
+ "garble": {
+  "pronunciation": "GAR-buhl",
+  "hindi": "गड्डमड्ड कर देना"
+ },
+ "assent": {
+  "pronunciation": "uh-SENT",
+  "hindi": "सहमति देना"
+ },
+ "comply": {
+  "pronunciation": "kuhm-PLY",
+  "hindi": "अनुपालन करना"
+ },
+ "resist": {
+  "pronunciation": "ri-ZIST",
+  "hindi": "विरोध करना"
+ },
+ "object": {
+  "pronunciation": "uhb-JEKT",
+  "hindi": "आपत्ति करना"
+ },
+ "protest": {
+  "pronunciation": "pruh-TEST",
+  "hindi": "विरोध करना"
+ },
+ "defy": {
+  "pronunciation": "dih-FY",
+  "hindi": "अवहेलना करना"
+ },
+ "overfamiliar": {
+  "pronunciation": "oh-vur-fuh-MIL-yur",
+  "hindi": "अति-घनिष्ठ, बेतकल्लुफ़"
+ },
+ "forward": {
+  "pronunciation": "FOR-wurd",
+  "hindi": "धृष्ट, बेझिझक"
+ },
+ "impertinent": {
+  "pronunciation": "im-PUR-tn-uhnt",
+  "hindi": "गुस्ताख़, ढीठ"
+ },
+ "overconfident": {
+  "pronunciation": "oh-vur-KON-fi-duhnt",
+  "hindi": "अति-आत्मविश्वासी"
+ },
+ "diffident": {
+  "pronunciation": "DIF-i-duhnt",
+  "hindi": "संकोची, झिझकने वाला"
+ },
+ "egotism": {
+  "pronunciation": "EE-guh-tiz-uhm",
+  "hindi": "अहंकार, आत्म-मुग्धता"
+ },
+ "immodesty": {
+  "pronunciation": "i-MOD-uh-stee",
+  "hindi": "निर्लज्जता, अभिमान"
+ },
+ "arrogance": {
+  "pronunciation": "AIR-uh-guhns",
+  "hindi": "घमंड, अहंकार"
+ },
+ "modesty": {
+  "pronunciation": "MOD-uh-stee",
+  "hindi": "विनम्रता, शालीनता"
+ },
+ "diffidence": {
+  "pronunciation": "DIF-i-duhns",
+  "hindi": "संकोच, झिझक"
+ },
+ "meekness": {
+  "pronunciation": "MEEK-nis",
+  "hindi": "विनीतता, नम्रता"
+ },
+ "write off": {
+  "pronunciation": "RYT AWF",
+  "hindi": "बट्टे खाते डालना"
+ },
+ "pay down": {
+  "pronunciation": "PAY DOWN",
+  "hindi": "क़र्ज़ धीरे-धीरे चुकाना"
+ },
+ "spread": {
+  "pronunciation": "SPRED",
+  "hindi": "फैलाकर बाँटना"
+ },
+ "discharge": {
+  "pronunciation": "dis-CHARJ",
+  "hindi": "क़र्ज़ चुकता करना"
+ },
+ "accumulate": {
+  "pronunciation": "uh-KYOOM-yuh-layt",
+  "hindi": "जमा करना"
+ },
+ "capitalize": {
+  "pronunciation": "KAP-i-tl-ize",
+  "hindi": "पूँजी में जोड़ना"
+ },
+ "incur": {
+  "pronunciation": "in-KUR",
+  "hindi": "ख़र्च या देनदारी उठाना"
+ },
+ "uniform": {
+  "pronunciation": "YOO-nuh-form",
+  "hindi": "एकसमान"
+ },
+ "alike": {
+  "pronunciation": "uh-LYK",
+  "hindi": "एक जैसा"
+ },
+ "unvaried": {
+  "pronunciation": "un-VAIR-eed",
+  "hindi": "बिना बदलाव का"
+ },
+ "diverse": {
+  "pronunciation": "dih-VURSS",
+  "hindi": "विविध, भिन्न-भिन्न"
+ },
+ "varied": {
+  "pronunciation": "VAIR-eed",
+  "hindi": "तरह-तरह का"
+ },
+ "mixed": {
+  "pronunciation": "MIKST",
+  "hindi": "मिश्रित"
+ },
+ "introduction": {
+  "pronunciation": "in-truh-DUHK-shuhn",
+  "hindi": "परिचय, भूमिका"
+ },
+ "prologue": {
+  "pronunciation": "PROH-lawg",
+  "hindi": "प्रस्तावना"
+ },
+ "preface": {
+  "pronunciation": "PREF-uhss",
+  "hindi": "प्राक्कथन"
+ },
+ "lead-in": {
+  "pronunciation": "LEED-in",
+  "hindi": "आरंभिक भाग"
+ },
+ "postscript": {
+  "pronunciation": "POHST-skript",
+  "hindi": "पुनश्च, अंत में जोड़ा गया"
+ },
+ "summation": {
+  "pronunciation": "suh-MAY-shuhn",
+  "hindi": "सारांश, उपसंहार"
+ },
+ "eventuality": {
+  "pronunciation": "ih-ven-choo-AL-i-tee",
+  "hindi": "संभावित घटना"
+ },
+ "fallback": {
+  "pronunciation": "FAWL-bak",
+  "hindi": "वैकल्पिक सहारा"
+ },
+ "provision": {
+  "pronunciation": "pruh-VIZH-uhn",
+  "hindi": "पूर्व-व्यवस्था, प्रावधान"
+ },
+ "backup plan": {
+  "pronunciation": "BAK-up PLAN",
+  "hindi": "वैकल्पिक योजना"
+ },
+ "inevitability": {
+  "pronunciation": "in-ev-i-tuh-BIL-i-tee",
+  "hindi": "अनिवार्यता"
+ },
+ "surety": {
+  "pronunciation": "SHOOR-i-tee",
+  "hindi": "निश्चितता, पक्का भरोसा"
+ },
+ "equal": {
+  "pronunciation": "EE-kwuhl",
+  "hindi": "समान, बराबर"
+ },
+ "democratic": {
+  "pronunciation": "dem-uh-KRAT-ik",
+  "hindi": "लोकतांत्रिक"
+ },
+ "level": {
+  "pronunciation": "LEV-uhl",
+  "hindi": "समतल, बराबरी का"
+ },
+ "non-hierarchical": {
+  "pronunciation": "non-hy-uh-RAR-ki-kuhl",
+  "hindi": "बिना ऊँच-नीच वाला"
+ },
+ "hierarchical": {
+  "pronunciation": "hy-uh-RAR-ki-kuhl",
+  "hindi": "पदानुक्रमिक, ऊँच-नीच वाला"
+ },
+ "inequitable": {
+  "pronunciation": "in-EK-wi-tuh-buhl",
+  "hindi": "अन्यायपूर्ण, पक्षपाती"
+ },
+ "stratified": {
+  "pronunciation": "STRAT-uh-fyd",
+  "hindi": "स्तरों में बँटा हुआ"
+ },
+ "dissimilar": {
+  "pronunciation": "dis-SIM-uh-lur",
+  "hindi": "असमान, भिन्न"
+ },
+ "unrelated": {
+  "pronunciation": "un-ri-LAY-tid",
+  "hindi": "असंबंधित"
+ },
+ "similar": {
+  "pronunciation": "SIM-uh-lur",
+  "hindi": "समान, मिलता-जुलता"
+ },
+ "excess": {
+  "pronunciation": "ik-SES",
+  "hindi": "अधिकता, ज़रूरत से ज़्यादा"
+ },
+ "overage": {
+  "pronunciation": "OH-vur-ij",
+  "hindi": "अतिरिक्त मात्रा"
+ },
+ "remainder": {
+  "pronunciation": "ri-MAYN-dur",
+  "hindi": "शेष, बचा हुआ भाग"
+ },
+ "shortfall": {
+  "pronunciation": "SHORT-fawl",
+  "hindi": "कमी, घाटा"
+ },
+ "deficiency": {
+  "pronunciation": "di-FISH-uhn-see",
+  "hindi": "कमी, अपर्याप्तता"
+ },
+ "bond": {
+  "pronunciation": "BOND",
+  "hindi": "जोड़ना, बाँधना"
+ },
+ "weld": {
+  "pronunciation": "WELD",
+  "hindi": "वेल्ड करना, धातु जोड़ना"
+ },
+ "fuse": {
+  "pronunciation": "FYOOZ",
+  "hindi": "मिलाकर एक करना"
+ },
+ "solidify": {
+  "pronunciation": "suh-LID-uh-fy",
+  "hindi": "ठोस बनाना, पक्का करना"
+ },
+ "disintegrate": {
+  "pronunciation": "dis-IN-tuh-grayt",
+  "hindi": "बिखर जाना, टूटकर अलग होना"
+ },
+ "loosen": {
+  "pronunciation": "LOO-suhn",
+  "hindi": "ढीला करना"
+ },
+ "weaken": {
+  "pronunciation": "WEE-kuhn",
+  "hindi": "कमज़ोर करना"
+ },
+ "sever": {
+  "pronunciation": "SEV-ur",
+  "hindi": "काट देना, अलग करना"
+ },
+ "agreeable": {
+  "pronunciation": "uh-GREE-uh-buhl",
+  "hindi": "सहमत होने को तैयार"
+ },
+ "tractable": {
+  "pronunciation": "TRAK-tuh-buhl",
+  "hindi": "आज्ञाकारी, सुगम"
+ },
+ "unyielding": {
+  "pronunciation": "un-YEEL-ding",
+  "hindi": "अड़ियल, न झुकने वाला"
+ },
+ "intractable": {
+  "pronunciation": "in-TRAK-tuh-buhl",
+  "hindi": "हठी, जिद्दी"
+ },
+ "brisk": {
+  "pronunciation": "BRISK",
+  "hindi": "तेज़, फुर्तीला"
+ },
+ "sprightly": {
+  "pronunciation": "SPRYT-lee",
+  "hindi": "चुस्त, जोशीला"
+ },
+ "stiff": {
+  "pronunciation": "STIF",
+  "hindi": "अकड़ा हुआ, कठोर"
+ },
+ "misconception": {
+  "pronunciation": "mis-kuhn-SEP-shuhn",
+  "hindi": "गलत धारणा"
+ },
+ "error": {
+  "pronunciation": "ER-ur",
+  "hindi": "गलती, भूल"
+ },
+ "delusion": {
+  "pronunciation": "di-LOO-zhuhn",
+  "hindi": "भ्रम, मिथ्या विश्वास"
+ },
+ "falsehood": {
+  "pronunciation": "FAWLS-hood",
+  "hindi": "झूठ, असत्य"
+ },
+ "truth": {
+  "pronunciation": "TROOTH",
+  "hindi": "सच, सत्य"
+ },
+ "fact": {
+  "pronunciation": "FAKT",
+  "hindi": "तथ्य"
+ },
+ "verity": {
+  "pronunciation": "VER-i-tee",
+  "hindi": "सच्चाई, सत्यता"
+ },
+ "sound reasoning": {
+  "pronunciation": "SOUND REE-zuh-ning",
+  "hindi": "सही तर्क"
+ },
+ "forceful": {
+  "pronunciation": "FORS-fuhl",
+  "hindi": "दमदार, ज़ोरदार"
+ },
+ "insistent": {
+  "pronunciation": "in-SIS-tuhnt",
+  "hindi": "आग्रही, ज़िद करने वाला"
+ },
+ "categorical": {
+  "pronunciation": "kat-uh-GOR-i-kuhl",
+  "hindi": "दो टूक, निश्चित"
+ },
+ "outshine": {
+  "pronunciation": "owt-SHYN",
+  "hindi": "फीका कर देना"
+ },
+ "dim": {
+  "pronunciation": "DIM",
+  "hindi": "मंद करना"
+ },
+ "brighten": {
+  "pronunciation": "BRY-tuhn",
+  "hindi": "चमकाना"
+ },
+ "reveal": {
+  "pronunciation": "ri-VEEL",
+  "hindi": "प्रकट करना"
+ },
+ "trail": {
+  "pronunciation": "TRAYL",
+  "hindi": "पीछे रहना"
+ },
+ "lag": {
+  "pronunciation": "LAG",
+  "hindi": "पिछड़ जाना"
+ },
+ "supreme": {
+  "pronunciation": "soo-PREEM",
+  "hindi": "सर्वोच्च"
+ },
+ "overriding": {
+  "pronunciation": "oh-vur-RY-ding",
+  "hindi": "सर्वोपरि"
+ },
+ "chief": {
+  "pronunciation": "CHEEF",
+  "hindi": "प्रमुख"
+ },
+ "secondary": {
+  "pronunciation": "SEK-uhn-der-ee",
+  "hindi": "गौण"
+ },
+ "collected": {
+  "pronunciation": "kuh-LEK-tid",
+  "hindi": "शांतचित्त"
+ },
+ "poised": {
+  "pronunciation": "POYZD",
+  "hindi": "संतुलित और शांत"
+ },
+ "self-possessed": {
+  "pronunciation": "self-puh-ZEST",
+  "hindi": "आत्मसंयमी"
+ },
+ "flustered": {
+  "pronunciation": "FLUS-turd",
+  "hindi": "घबराया हुआ"
+ },
+ "agitated": {
+  "pronunciation": "AJ-i-tay-tid",
+  "hindi": "विचलित"
+ },
+ "rattled": {
+  "pronunciation": "RAT-uhld",
+  "hindi": "बौखलाया हुआ"
+ },
+ "friendly": {
+  "pronunciation": "FREND-lee",
+  "hindi": "मित्रतापूर्ण"
+ },
+ "good-natured": {
+  "pronunciation": "good-NAY-churd",
+  "hindi": "सरल स्वभाव का"
+ },
+ "antagonistic": {
+  "pronunciation": "an-tag-uh-NIS-tik",
+  "hindi": "शत्रुतापूर्ण"
+ },
+ "vulgar": {
+  "pronunciation": "VUL-gur",
+  "hindi": "अश्लील, गँवार"
+ },
+ "ignoble": {
+  "pronunciation": "ig-NOH-buhl",
+  "hindi": "नीच"
+ },
+ "contemptible": {
+  "pronunciation": "kuhn-TEMP-tuh-buhl",
+  "hindi": "घृणित"
+ },
+ "noble": {
+  "pronunciation": "NOH-buhl",
+  "hindi": "उदात्त"
+ },
+ "honourable": {
+  "pronunciation": "ON-ur-uh-buhl",
+  "hindi": "सम्माननीय"
+ },
+ "lofty": {
+  "pronunciation": "LOF-tee",
+  "hindi": "ऊँचे विचारों वाला"
+ },
+ "virtuous": {
+  "pronunciation": "VUR-choo-uhss",
+  "hindi": "सदाचारी"
+ },
+ "delimit": {
+  "pronunciation": "dee-LIM-it",
+  "hindi": "सीमा तय करना"
+ },
+ "separate": {
+  "pronunciation": "SEP-uh-rayt",
+  "hindi": "अलग करना"
+ },
+ "mark off": {
+  "pronunciation": "MARK OF",
+  "hindi": "सीमांकित करना"
+ },
+ "bound": {
+  "pronunciation": "BOWND",
+  "hindi": "सीमाबद्ध करना"
+ },
+ "merge": {
+  "pronunciation": "MURJ",
+  "hindi": "मिला देना"
+ },
+ "blur": {
+  "pronunciation": "BLUR",
+  "hindi": "धुंधला करना"
+ },
+ "unify": {
+  "pronunciation": "YOO-nuh-fy",
+  "hindi": "एकजुट करना"
+ },
+ "overlap": {
+  "pronunciation": "oh-vur-LAP",
+  "hindi": "एक-दूसरे पर चढ़ना"
+ },
+ "sideline": {
+  "pronunciation": "SYD-lyn",
+  "hindi": "किनारे कर देना"
+ },
+ "disempower": {
+  "pronunciation": "dis-im-POW-ur",
+  "hindi": "शक्तिहीन करना"
+ },
+ "include": {
+  "pronunciation": "in-KLOOD",
+  "hindi": "शामिल करना"
+ },
+ "centre": {
+  "pronunciation": "SEN-tur",
+  "hindi": "केंद्र में रखना"
+ },
+ "reserved": {
+  "pronunciation": "ri-ZURVD",
+  "hindi": "संकोची, अल्पभाषी"
+ },
+ "uncommunicative": {
+  "pronunciation": "un-kuh-MYOO-nuh-kay-tiv",
+  "hindi": "चुप्पा, कम बोलने वाला"
+ },
+ "agreement": {
+  "pronunciation": "uh-GREE-muhnt",
+  "hindi": "सहमति"
+ },
+ "concurrence": {
+  "pronunciation": "kuhn-KUR-uhnss",
+  "hindi": "सहमति, मतैक्य"
+ },
+ "patronizing": {
+  "pronunciation": "PAY-truh-nye-zing",
+  "hindi": "संरक्षक जैसा रवैया दिखाने वाला"
+ },
+ "supercilious": {
+  "pronunciation": "soo-per-SIL-ee-uhss",
+  "hindi": "घमंडी, अभिमानी"
+ },
+ "disdainful": {
+  "pronunciation": "diss-DAYN-fuhl",
+  "hindi": "तिरस्कारपूर्ण"
+ },
+ "dispassionate": {
+  "pronunciation": "diss-PASH-uh-nuht",
+  "hindi": "निष्पक्ष, भावनारहित"
+ },
+ "factual": {
+  "pronunciation": "FAK-choo-uhl",
+  "hindi": "तथ्यात्मक"
+ },
+ "detached": {
+  "pronunciation": "dih-TACHT",
+  "hindi": "निर्लिप्त, तटस्थ"
+ },
+ "emotive": {
+  "pronunciation": "ih-MOH-tiv",
+  "hindi": "भावुक करने वाला"
+ },
+ "partial": {
+  "pronunciation": "PAR-shuhl",
+  "hindi": "पक्षपाती"
+ },
+ "inequality": {
+  "pronunciation": "in-ih-KWOL-uh-tee",
+  "hindi": "असमानता"
+ },
+ "gap": {
+  "pronunciation": "GAP",
+  "hindi": "अंतर, खाई"
+ },
+ "imbalance": {
+  "pronunciation": "im-BAL-uhnss",
+  "hindi": "असंतुलन"
+ },
+ "difference": {
+  "pronunciation": "DIF-uh-ruhnss",
+  "hindi": "फ़र्क, भेद"
+ },
+ "equality": {
+  "pronunciation": "ih-KWOL-uh-tee",
+  "hindi": "समानता"
+ },
+ "equivalence": {
+  "pronunciation": "ih-KWIV-uh-luhnss",
+  "hindi": "समतुल्यता"
+ },
+ "uniformity": {
+  "pronunciation": "yoo-nuh-FOR-muh-tee",
+  "hindi": "एकरूपता"
+ },
+ "lessen": {
+  "pronunciation": "LES-uhn",
+  "hindi": "कम करना"
+ },
+ "moderate": {
+  "pronunciation": "MOD-uh-rayt",
+  "hindi": "नरम करना, संयमित करना"
+ },
+ "temper": {
+  "pronunciation": "TEM-per",
+  "hindi": "मंद करना, नरम करना"
+ },
+ "collapse": {
+  "pronunciation": "kuh-LAPSS",
+  "hindi": "ढह जाना, पतन"
+ },
+ "decompose": {
+  "pronunciation": "dee-kuhm-POHZ",
+  "hindi": "सड़ना, गलना"
+ },
+ "rot": {
+  "pronunciation": "ROT",
+  "hindi": "सड़ना"
+ },
+ "flourish": {
+  "pronunciation": "FLUR-ish",
+  "hindi": "फलना-फूलना"
+ },
+ "regenerate": {
+  "pronunciation": "rih-JEN-uh-rayt",
+  "hindi": "पुनः उत्पन्न होना"
+ },
+ "opposite": {
+  "pronunciation": "OP-uh-zit",
+  "hindi": "विपरीत"
+ },
+ "converse": {
+  "pronunciation": "KON-vurss",
+  "hindi": "उलटा, विपरीत"
+ },
+ "reverse": {
+  "pronunciation": "rih-VURSS",
+  "hindi": "उलटा"
+ },
+ "equivalent": {
+  "pronunciation": "ih-KWIV-uh-luhnt",
+  "hindi": "समतुल्य"
+ },
+ "likeness": {
+  "pronunciation": "LYK-nuhss",
+  "hindi": "समानता, समरूपता"
+ },
+ "counterpart": {
+  "pronunciation": "KOUN-ter-part",
+  "hindi": "समकक्ष, प्रतिरूप"
+ },
+ "marshal": {
+  "pronunciation": "MAR-shuhl",
+  "hindi": "जुटाना, संगठित करना"
+ },
+ "rally": {
+  "pronunciation": "RAL-ee",
+  "hindi": "एकजुट करना"
+ },
+ "demobilize": {
+  "pronunciation": "dee-MOH-buh-lyz",
+  "hindi": "सेवामुक्त करना, भंग करना"
+ },
+ "stand down": {
+  "pronunciation": "STAND DOUN",
+  "hindi": "पीछे हटना, तैयारी रोकना"
+ },
+ "festive": {
+  "pronunciation": "FES-tiv",
+  "hindi": "उत्सवी, आनंदमय"
+ },
+ "sociable": {
+  "pronunciation": "SOH-shuh-buhl",
+  "hindi": "मिलनसार"
+ },
+ "unsociable": {
+  "pronunciation": "uhn-SOH-shuh-buhl",
+  "hindi": "अमिलनसार"
+ },
+ "overshadow": {
+  "pronunciation": "oh-ver-SHAD-oh",
+  "hindi": "फीका कर देना"
+ },
+ "surpass": {
+  "pronunciation": "ser-PASS",
+  "hindi": "आगे निकल जाना"
+ },
+ "half-hearted": {
+  "pronunciation": "HAF-HAR-tid",
+  "hindi": "अनमना, बेमन का"
+ },
+ "ban": {
+  "pronunciation": "BAN",
+  "hindi": "प्रतिबंध, पाबंदी"
+ },
+ "restriction": {
+  "pronunciation": "ri-STRIK-shuhn",
+  "hindi": "रोक, पाबंदी"
+ },
+ "blockade": {
+  "pronunciation": "blo-KAYD",
+  "hindi": "नाकेबंदी, घेराबंदी"
+ },
+ "permission": {
+  "pronunciation": "per-MISH-uhn",
+  "hindi": "अनुमति, इजाज़त"
+ },
+ "authorization": {
+  "pronunciation": "aw-thuh-ruh-ZAY-shuhn",
+  "hindi": "अधिकार-पत्र, प्राधिकरण"
+ },
+ "licence": {
+  "pronunciation": "LY-suhns",
+  "hindi": "लाइसेंस, अनुज्ञा-पत्र"
+ },
+ "approval": {
+  "pronunciation": "uh-PROO-vuhl",
+  "hindi": "मंज़ूरी, स्वीकृति"
+ },
+ "ease": {
+  "pronunciation": "EEZ",
+  "hindi": "कम होना, राहत मिलना"
+ },
+ "comparable": {
+  "pronunciation": "KOM-per-uh-buhl",
+  "hindi": "तुलनीय, मिलता-जुलता"
+ },
+ "parallel": {
+  "pronunciation": "PAR-uh-lel",
+  "hindi": "समानांतर, समरूप"
+ },
+ "corresponding": {
+  "pronunciation": "kor-uh-SPON-ding",
+  "hindi": "संगत, अनुरूप"
+ },
+ "incomparable": {
+  "pronunciation": "in-KOM-per-uh-buhl",
+  "hindi": "अतुलनीय, बेजोड़"
+ },
+ "denigrate": {
+  "pronunciation": "DEN-uh-grayt",
+  "hindi": "बदनाम करना, नीचा दिखाना"
+ },
+ "laud": {
+  "pronunciation": "LAWD",
+  "hindi": "प्रशंसा करना, सराहना"
+ },
+ "toll": {
+  "pronunciation": "TOHL",
+  "hindi": "घंटा बजाना, घंटे की आवाज़"
+ },
+ "chime": {
+  "pronunciation": "CHYM",
+  "hindi": "घंटी की मधुर ध्वनि"
+ },
+ "omen": {
+  "pronunciation": "OH-muhn",
+  "hindi": "शगुन, अपशकुन"
+ },
+ "presage": {
+  "pronunciation": "PRES-ij",
+  "hindi": "पूर्वसंकेत, पूर्वाभास"
+ },
+ "revival": {
+  "pronunciation": "ri-VY-vuhl",
+  "hindi": "पुनरुद्धार, पुनर्जीवन"
+ },
+ "dawn": {
+  "pronunciation": "DAWN",
+  "hindi": "सवेरा, उदय"
+ },
+ "renewal": {
+  "pronunciation": "ri-NOO-uhl",
+  "hindi": "नवीनीकरण, नवजीवन"
+ },
+ "beginning": {
+  "pronunciation": "bi-GIN-ing",
+  "hindi": "शुरुआत, आरंभ"
+ },
+ "composure": {
+  "pronunciation": "kuhm-POH-zhur",
+  "hindi": "शांतचित्तता, धैर्य"
+ },
+ "level-headedness": {
+  "pronunciation": "LEV-uhl-HED-id-nis",
+  "hindi": "संतुलित सोच, समझदारी"
+ },
+ "agitation": {
+  "pronunciation": "aj-i-TAY-shuhn",
+  "hindi": "बेचैनी, उत्तेजना"
+ },
+ "panic": {
+  "pronunciation": "PAN-ik",
+  "hindi": "घबराहट, भगदड़"
+ },
+ "volatility": {
+  "pronunciation": "vol-uh-TIL-i-tee",
+  "hindi": "अस्थिरता, चंचलता"
+ },
+ "distress": {
+  "pronunciation": "di-STRESS",
+  "hindi": "संकट, व्याकुलता"
+ },
+ "temporary": {
+  "pronunciation": "TEM-puh-rer-ee",
+  "hindi": "अस्थायी, कामचलाऊ"
+ },
+ "interim": {
+  "pronunciation": "IN-ter-im",
+  "hindi": "अंतरिम, मध्यकालीन"
+ },
+ "conditional": {
+  "pronunciation": "kuhn-DISH-uh-nuhl",
+  "hindi": "सशर्त"
+ },
+ "permanent": {
+  "pronunciation": "PUR-muh-nuhnt",
+  "hindi": "स्थायी"
+ },
+ "final": {
+  "pronunciation": "FY-nuhl",
+  "hindi": "अंतिम, निर्णायक"
+ },
+ "confirmed": {
+  "pronunciation": "kuhn-FURMD",
+  "hindi": "पक्का, पुष्ट"
+ },
+ "better": {
+  "pronunciation": "BET-er",
+  "hindi": "बेहतर बनाना, सुधारना"
+ },
+ "upgrade": {
+  "pronunciation": "UP-grayd",
+  "hindi": "उन्नत करना, स्तर सुधारना"
+ },
+ "worsen": {
+  "pronunciation": "WUR-suhn",
+  "hindi": "बिगड़ना, और खराब होना"
+ },
+ "opposition": {
+  "pronunciation": "op-uh-ZISH-uhn",
+  "hindi": "विरोध, मुखालफ़त"
+ },
+ "demurral": {
+  "pronunciation": "di-MUR-uhl",
+  "hindi": "आपत्ति, एतराज़"
+ },
+ "withdrawn": {
+  "pronunciation": "with-DRAWN",
+  "hindi": "अंतर्मुखी, संकोची"
+ },
+ "talkative": {
+  "pronunciation": "TAW-kuh-tiv",
+  "hindi": "बातूनी, वाचाल"
+ },
+ "expansive": {
+  "pronunciation": "ik-SPAN-siv",
+  "hindi": "खुले दिल का, मिलनसार"
+ },
+ "unnecessary": {
+  "pronunciation": "uhn-NES-uh-sair-ee",
+  "hindi": "अनावश्यक"
+ },
+ "gratuitous": {
+  "pronunciation": "gruh-TOO-uh-tuhss",
+  "hindi": "बेवजह, अनावश्यक"
+ },
+ "essential": {
+  "pronunciation": "ih-SEN-shuhl",
+  "hindi": "अनिवार्य, ज़रूरी"
+ },
+ "necessary": {
+  "pronunciation": "NES-uh-sair-ee",
+  "hindi": "आवश्यक, ज़रूरी"
+ },
+ "vital": {
+  "pronunciation": "VY-tuhl",
+  "hindi": "अत्यंत महत्वपूर्ण"
+ },
+ "indispensable": {
+  "pronunciation": "in-dis-PEN-suh-buhl",
+  "hindi": "अपरिहार्य, बेहद ज़रूरी"
+ },
+ "sell off": {
+  "pronunciation": "SEL AWF",
+  "hindi": "बेच डालना"
+ },
+ "shed": {
+  "pronunciation": "SHED",
+  "hindi": "छोड़ देना, त्याग देना"
+ },
+ "dispose of": {
+  "pronunciation": "dis-POHZ UHV",
+  "hindi": "निपटा देना, बेच देना"
+ },
+ "invest": {
+  "pronunciation": "in-VEST",
+  "hindi": "निवेश करना"
+ },
+ "purchase": {
+  "pronunciation": "PUR-chuhss",
+  "hindi": "खरीदना"
+ },
+ "punctilious": {
+  "pronunciation": "puhngk-TIL-ee-uhss",
+  "hindi": "नियमों का पक्का, सूक्ष्मदर्शी"
+ },
+ "negligent": {
+  "pronunciation": "NEG-li-juhnt",
+  "hindi": "लापरवाह"
+ },
+ "hostility": {
+  "pronunciation": "hah-STIL-uh-tee",
+  "hindi": "शत्रुता, दुश्मनी"
+ },
+ "dislike": {
+  "pronunciation": "dis-LYK",
+  "hindi": "नापसंद, अरुचि"
+ },
+ "animosity": {
+  "pronunciation": "an-uh-MAH-suh-tee",
+  "hindi": "द्वेष, वैर"
+ },
+ "fondness": {
+  "pronunciation": "FAHND-nuhss",
+  "hindi": "लगाव, स्नेह"
+ },
+ "attraction": {
+  "pronunciation": "uh-TRAK-shuhn",
+  "hindi": "आकर्षण"
+ },
+ "relevant": {
+  "pronunciation": "REL-uh-vuhnt",
+  "hindi": "प्रासंगिक"
+ },
+ "apposite": {
+  "pronunciation": "AP-uh-zit",
+  "hindi": "उपयुक्त, सटीक"
+ },
+ "applicable": {
+  "pronunciation": "AP-li-kuh-buhl",
+  "hindi": "लागू होने योग्य"
+ },
+ "unconnected": {
+  "pronunciation": "uhn-kuh-NEK-tid",
+  "hindi": "असंबद्ध"
+ },
+ "deduction": {
+  "pronunciation": "dih-DUHK-shuhn",
+  "hindi": "निगमन, तार्किक निष्कर्ष"
+ },
+ "reasoning": {
+  "pronunciation": "REE-zuh-ning",
+  "hindi": "तर्क, युक्ति"
+ },
+ "extrapolation": {
+  "pronunciation": "ik-strap-uh-LAY-shuhn",
+  "hindi": "अनुमानित विस्तार"
+ },
+ "observation": {
+  "pronunciation": "ob-zur-VAY-shuhn",
+  "hindi": "अवलोकन, प्रेक्षण"
+ },
+ "raw fact": {
+  "pronunciation": "RAW FAKT",
+  "hindi": "कच्चा तथ्य"
+ },
+ "measurement": {
+  "pronunciation": "MEZH-ur-muhnt",
+  "hindi": "माप"
+ },
+ "datum": {
+  "pronunciation": "DAY-tuhm",
+  "hindi": "आँकड़ा, तथ्य"
+ },
+ "gradual": {
+  "pronunciation": "GRAJ-oo-uhl",
+  "hindi": "क्रमिक, धीरे-धीरे होने वाला"
+ },
+ "step-by-step": {
+  "pronunciation": "STEP-by-STEP",
+  "hindi": "चरणबद्ध"
+ },
+ "piecemeal": {
+  "pronunciation": "PEES-meel",
+  "hindi": "थोड़ा-थोड़ा करके"
+ },
+ "wholesale": {
+  "pronunciation": "HOHL-sayl",
+  "hindi": "बड़े पैमाने का, पूर्ण"
+ },
+ "sweeping": {
+  "pronunciation": "SWEE-ping",
+  "hindi": "व्यापक, चौतरफा"
+ },
+ "rough": {
+  "pronunciation": "RUHF",
+  "hindi": "मोटा-मोटा, अनुमानित"
+ },
+ "estimated": {
+  "pronunciation": "ES-tuh-may-tid",
+  "hindi": "अनुमानित"
+ },
+ "ballpark": {
+  "pronunciation": "BAWL-park",
+  "hindi": "मोटे तौर का अंदाज़ा"
+ },
+ "empowered": {
+  "pronunciation": "im-POW-urd",
+  "hindi": "सशक्त"
+ },
+ "enfranchised": {
+  "pronunciation": "en-FRAN-chyzd",
+  "hindi": "मताधिकार प्राप्त"
+ },
+ "represented": {
+  "pronunciation": "rep-ri-ZEN-tid",
+  "hindi": "प्रतिनिधित्व प्राप्त"
+ },
+ "included": {
+  "pronunciation": "in-KLOO-did",
+  "hindi": "शामिल किया गया"
+ },
+ "hasten": {
+  "pronunciation": "HAY-suhn",
+  "hindi": "जल्दी करना"
+ },
+ "fast-track": {
+  "pronunciation": "FAST-trak",
+  "hindi": "तेज़ी से आगे बढ़ाना"
+ },
+ "speed up": {
+  "pronunciation": "SPEED UHP",
+  "hindi": "गति बढ़ाना"
+ },
+ "advance": {
+  "pronunciation": "uhd-VANSS",
+  "hindi": "आगे बढ़ना"
+ },
+ "betterment": {
+  "pronunciation": "BET-ur-muhnt",
+  "hindi": "सुधार"
+ },
+ "headway": {
+  "pronunciation": "HED-way",
+  "hindi": "प्रगति"
+ },
+ "improvement": {
+  "pronunciation": "im-PROOV-muhnt",
+  "hindi": "सुधार"
+ },
+ "retrogress": {
+  "pronunciation": "RET-roh-gress",
+  "hindi": "पीछे हटना"
+ },
+ "regression": {
+  "pronunciation": "ri-GRESH-uhn",
+  "hindi": "वापसी, अवनति"
+ },
+ "stagnation": {
+  "pronunciation": "stag-NAY-shuhn",
+  "hindi": "ठहराव"
+ },
+ "secure": {
+  "pronunciation": "si-KYOOR",
+  "hindi": "हासिल करना"
+ },
+ "attain": {
+  "pronunciation": "uh-TAYN",
+  "hindi": "प्राप्त करना"
+ },
+ "forfeit": {
+  "pronunciation": "FOR-fit",
+  "hindi": "गँवा देना"
+ },
+ "lose": {
+  "pronunciation": "LOOZ",
+  "hindi": "खो देना"
+ },
+ "surrender": {
+  "pronunciation": "suh-REN-dur",
+  "hindi": "छोड़ देना, समर्पण करना"
+ },
+ "build up": {
+  "pronunciation": "BILD UHP",
+  "hindi": "धीरे-धीरे जमा होना"
+ },
+ "amass": {
+  "pronunciation": "uh-MASS",
+  "hindi": "जमा करना"
+ },
+ "dissipate": {
+  "pronunciation": "DIS-uh-payt",
+  "hindi": "बिखेरना, नष्ट करना"
+ },
+ "deplete": {
+  "pronunciation": "di-PLEET",
+  "hindi": "घटाना, खाली करना"
+ },
+ "prejudiced": {
+  "pronunciation": "PREJ-uh-dist",
+  "hindi": "पूर्वाग्रही"
+ },
+ "intolerant": {
+  "pronunciation": "in-TOL-ur-uhnt",
+  "hindi": "असहिष्णु"
+ },
+ "tolerant": {
+  "pronunciation": "TOL-ur-uhnt",
+  "hindi": "सहनशील"
+ },
+ "open-minded": {
+  "pronunciation": "OH-puhn-MYN-did",
+  "hindi": "उदार विचारों वाला"
+ },
+ "gainsay": {
+  "pronunciation": "GAYN-say",
+  "hindi": "खंडन करना"
+ },
+ "oppose": {
+  "pronunciation": "uh-POHZ",
+  "hindi": "विरोध करना"
+ },
+ "counter": {
+  "pronunciation": "KOWN-tur",
+  "hindi": "प्रतिवाद करना"
+ },
+ "confirm": {
+  "pronunciation": "kuhn-FURM",
+  "hindi": "पुष्टि करना"
+ },
+ "support": {
+  "pronunciation": "suh-PORT",
+  "hindi": "समर्थन करना"
+ },
+ "affirm": {
+  "pronunciation": "uh-FURM",
+  "hindi": "दृढ़ता से पुष्टि करना"
+ },
+ "uncertain": {
+  "pronunciation": "uhn-SUR-tn",
+  "hindi": "अनिश्चित"
+ },
+ "noncommittal": {
+  "pronunciation": "non-kuh-MIT-l",
+  "hindi": "अस्पष्ट, टालमटोल वाला"
+ },
+ "evasive": {
+  "pronunciation": "i-VAY-siv",
+  "hindi": "टालमटोल करने वाला"
+ },
+ "clear-cut": {
+  "pronunciation": "KLEER-KUHT",
+  "hindi": "स्पष्ट"
+ },
+ "definite": {
+  "pronunciation": "DEF-uh-nit",
+  "hindi": "निश्चित"
+ },
+ "supplement": {
+  "pronunciation": "SUHP-luh-ment",
+  "hindi": "पूरक जोड़ना"
+ },
+ "enlarge": {
+  "pronunciation": "en-LARJ",
+  "hindi": "बढ़ाना, विस्तार करना"
+ },
+ "near": {
+  "pronunciation": "NEER",
+  "hindi": "लगभग सही, निकट"
+ },
+ "exact": {
+  "pronunciation": "ig-ZAKT",
+  "hindi": "सटीक, ठीक-ठीक"
+ },
+ "decline": {
+  "pronunciation": "dih-KLYN",
+  "hindi": "घटना, गिरावट आना"
+ },
+ "wax": {
+  "pronunciation": "WAKS",
+  "hindi": "बढ़ना, वृद्धि होना"
+ },
+ "rise": {
+  "pronunciation": "RYZ",
+  "hindi": "उठना, बढ़ना"
+ },
+ "grow": {
+  "pronunciation": "GROH",
+  "hindi": "बढ़ना, विकसित होना"
+ },
+ "increase": {
+  "pronunciation": "in-KREESS",
+  "hindi": "बढ़ना, वृद्धि करना"
+ },
+ "dissenter": {
+  "pronunciation": "dih-SEN-tur",
+  "hindi": "असहमत व्यक्ति, विरोधी"
+ },
+ "individualist": {
+  "pronunciation": "in-duh-VIJ-oo-uh-list",
+  "hindi": "स्वतंत्र विचारों वाला व्यक्ति"
+ },
+ "freethinker": {
+  "pronunciation": "free-THING-kur",
+  "hindi": "स्वतंत्र विचारक"
+ },
+ "conformist": {
+  "pronunciation": "kuhn-FOR-mist",
+  "hindi": "रूढ़िवादी, नियम मानने वाला"
+ },
+ "traditionalist": {
+  "pronunciation": "truh-DISH-uh-nuh-list",
+  "hindi": "परंपरावादी"
+ },
+ "follower": {
+  "pronunciation": "FOL-oh-ur",
+  "hindi": "अनुयायी"
+ },
+ "loyalist": {
+  "pronunciation": "LOY-uh-list",
+  "hindi": "निष्ठावान समर्थक"
+ },
+ "expressive": {
+  "pronunciation": "ik-SPRES-iv",
+  "hindi": "भावपूर्ण, अभिव्यंजक"
+ },
+ "fluent": {
+  "pronunciation": "FLOO-uhnt",
+  "hindi": "धाराप्रवाह"
+ },
+ "inarticulate": {
+  "pronunciation": "in-ar-TIK-yuh-luht",
+  "hindi": "अपनी बात न कह पाने वाला"
+ },
+ "halting": {
+  "pronunciation": "HAWL-ting",
+  "hindi": "अटक-अटक कर बोलने वाला"
+ },
+ "stilted": {
+  "pronunciation": "STIL-tid",
+  "hindi": "बनावटी, अस्वाभाविक"
+ },
+ "tongue-tied": {
+  "pronunciation": "TUNG-tyd",
+  "hindi": "मौन, बोल न पाने वाला"
+ },
+ "disrespectful": {
+  "pronunciation": "dis-rih-SPEKT-fuhl",
+  "hindi": "अनादरपूर्ण, बेअदब"
+ },
+ "insolent": {
+  "pronunciation": "IN-suh-luhnt",
+  "hindi": "उद्दंड, गुस्ताख"
+ },
+ "arrogant": {
+  "pronunciation": "AIR-uh-guhnt",
+  "hindi": "घमंडी, अहंकारी"
+ },
+ "signify": {
+  "pronunciation": "SIG-nuh-fy",
+  "hindi": "दर्शाना, सूचित करना"
+ },
+ "indicate": {
+  "pronunciation": "IN-duh-kayt",
+  "hindi": "संकेत देना, बताना"
+ },
+ "mean": {
+  "pronunciation": "MEEN",
+  "hindi": "अर्थ होना, मतलब रखना"
+ },
+ "designate": {
+  "pronunciation": "DEZ-ig-nayt",
+  "hindi": "नामित करना, निर्दिष्ट करना"
+ },
+ "conceal": {
+  "pronunciation": "kuhn-SEEL",
+  "hindi": "छिपाना"
+ },
+ "misrepresent": {
+  "pronunciation": "mis-rep-rih-ZENT",
+  "hindi": "गलत ढंग से प्रस्तुत करना"
+ },
+ "cause and effect": {
+  "pronunciation": "KAWZ and ih-FEKT",
+  "hindi": "कारण और परिणाम"
+ },
+ "origination": {
+  "pronunciation": "uh-rij-uh-NAY-shuhn",
+  "hindi": "उत्पत्ति, आरंभ"
+ },
+ "determination": {
+  "pronunciation": "dih-tur-muh-NAY-shuhn",
+  "hindi": "निर्धारण, निश्चय"
+ },
+ "agency": {
+  "pronunciation": "AY-juhn-see",
+  "hindi": "माध्यम, कारक शक्ति"
+ },
+ "coincidence": {
+  "pronunciation": "koh-IN-suh-duhns",
+  "hindi": "संयोग"
+ },
+ "chance": {
+  "pronunciation": "CHANSS",
+  "hindi": "संयोग, इत्तफाक"
+ },
+ "happenstance": {
+  "pronunciation": "HAP-uhn-stans",
+  "hindi": "संयोग, अचानक घटना"
+ },
+ "marginalised": {
+  "pronunciation": "MAR-juh-nuh-lyzd",
+  "hindi": "हाशिये पर धकेला हुआ"
+ },
+ "excluded": {
+  "pronunciation": "ik-SKLOO-did",
+  "hindi": "बहिष्कृत, अलग किया हुआ"
+ },
+ "voiceless": {
+  "pronunciation": "VOYSS-lis",
+  "hindi": "जिसकी आवाज न सुनी जाए"
+ },
+ "powerless": {
+  "pronunciation": "POW-ur-lis",
+  "hindi": "शक्तिहीन, बेबस"
+ },
+ "boost": {
+  "pronunciation": "BOOST",
+  "hindi": "बढ़ावा देना"
+ },
+ "reduce": {
+  "pronunciation": "rih-DYOOSS",
+  "hindi": "घटाना"
+ },
+ "affiliated": {
+  "pronunciation": "uh-FIL-ee-ay-tid",
+  "hindi": "संबद्ध"
+ },
+ "dependent": {
+  "pronunciation": "dih-PEN-duhnt",
+  "hindi": "आश्रित"
+ },
+ "primary": {
+  "pronunciation": "PRY-mair-ee",
+  "hindi": "प्राथमिक, मुख्य"
+ },
+ "principal": {
+  "pronunciation": "PRIN-suh-puhl",
+  "hindi": "प्रमुख"
+ },
+ "central": {
+  "pronunciation": "SEN-truhl",
+  "hindi": "केंद्रीय"
+ },
+ "controlling": {
+  "pronunciation": "kuhn-TROH-ling",
+  "hindi": "नियंत्रक"
+ },
+ "spur": {
+  "pronunciation": "SPUR",
+  "hindi": "प्रेरित करना"
+ },
+ "inculcate": {
+  "pronunciation": "in-KUHL-kayt",
+  "hindi": "मन में बैठाना"
+ },
+ "implant": {
+  "pronunciation": "im-PLANT",
+  "hindi": "रोपना, बैठाना"
+ },
+ "impart": {
+  "pronunciation": "im-PAHRT",
+  "hindi": "प्रदान करना"
+ },
+ "ingrain": {
+  "pronunciation": "in-GRAYN",
+  "hindi": "गहराई से बैठाना"
+ },
+ "extract": {
+  "pronunciation": "ik-STRAKT",
+  "hindi": "निकालना"
+ },
+ "remove": {
+  "pronunciation": "rih-MOOV",
+  "hindi": "हटाना"
+ },
+ "uproot": {
+  "pronunciation": "uhp-ROOT",
+  "hindi": "जड़ से उखाड़ना"
+ },
+ "division": {
+  "pronunciation": "dih-VIZH-uhn",
+  "hindi": "विभाजन"
+ },
+ "split": {
+  "pronunciation": "SPLIT",
+  "hindi": "बँटवारा, दरार"
+ },
+ "polarity": {
+  "pronunciation": "poh-LAIR-uh-tee",
+  "hindi": "ध्रुवीयता, विपरीतता"
+ },
+ "contrast": {
+  "pronunciation": "KON-trast",
+  "hindi": "विरोधाभास"
+ },
+ "convergence": {
+  "pronunciation": "kuhn-VUR-juhnss",
+  "hindi": "अभिसरण, मेल"
+ },
+ "continuum": {
+  "pronunciation": "kuhn-TIN-yoo-uhm",
+  "hindi": "सतत श्रृंखला"
+ },
+ "similarity": {
+  "pronunciation": "sim-uh-LAIR-uh-tee",
+  "hindi": "समानता"
+ },
+ "muddled": {
+  "pronunciation": "MUHD-uhld",
+  "hindi": "उलझा हुआ, अस्पष्ट"
+ },
+ "deft": {
+  "pronunciation": "DEFT",
+  "hindi": "कुशल, फुर्तीला"
+ },
+ "clumsy": {
+  "pronunciation": "KLUHM-zee",
+  "hindi": "अनाड़ी, बेढंगा"
+ },
+ "ponderous": {
+  "pronunciation": "PON-der-uhss",
+  "hindi": "भारी-भरकम, सुस्त"
+ },
+ "minute": {
+  "pronunciation": "my-NYOOT",
+  "hindi": "अत्यंत सूक्ष्म"
+ },
+ "inconsequential": {
+  "pronunciation": "in-kon-suh-KWEN-shuhl",
+  "hindi": "महत्वहीन"
+ },
+ "significant": {
+  "pronunciation": "sig-NIF-ih-kuhnt",
+  "hindi": "महत्वपूर्ण"
+ },
+ "considerable": {
+  "pronunciation": "kuhn-SID-er-uh-buhl",
+  "hindi": "काफ़ी, उल्लेखनीय"
+ },
+ "material": {
+  "pronunciation": "muh-TEER-ee-uhl",
+  "hindi": "महत्वपूर्ण, प्रासंगिक"
+ },
+ "politic": {
+  "pronunciation": "POL-uh-tik",
+  "hindi": "समझदार, चतुर"
+ },
+ "sensitive": {
+  "pronunciation": "SEN-suh-tiv",
+  "hindi": "संवेदनशील, नाज़ुक"
+ },
+ "undiplomatic": {
+  "pronunciation": "uhn-dip-luh-MAT-ik",
+  "hindi": "कूटनीतिहीन, अकुशल"
+ },
+ "indiscreet": {
+  "pronunciation": "in-dih-SKREET",
+  "hindi": "अविवेकी, लापरवाह"
+ },
+ "prove": {
+  "pronunciation": "PROOV",
+  "hindi": "सिद्ध करना"
+ },
+ "authenticate": {
+  "pronunciation": "aw-THEN-tih-kayt",
+  "hindi": "प्रमाणित करना"
+ },
+ "disprove": {
+  "pronunciation": "dis-PROOV",
+  "hindi": "खंडन करना"
+ },
+ "readable": {
+  "pronunciation": "REE-duh-buhl",
+  "hindi": "पढ़ने योग्य"
+ },
+ "clear": {
+  "pronunciation": "KLEER",
+  "hindi": "स्पष्ट"
+ },
+ "decipherable": {
+  "pronunciation": "dih-SY-fuh-ruh-buhl",
+  "hindi": "पढ़ने योग्य"
+ },
+ "distinct": {
+  "pronunciation": "dih-STINGKT",
+  "hindi": "साफ़, स्पष्ट"
+ },
+ "illegible": {
+  "pronunciation": "ih-LEJ-uh-buhl",
+  "hindi": "अपठनीय"
+ },
+ "indecipherable": {
+  "pronunciation": "in-dih-SY-fuh-ruh-buhl",
+  "hindi": "जिसे पढ़ा न जा सके"
+ },
+ "unreadable": {
+  "pronunciation": "uhn-REE-duh-buhl",
+  "hindi": "न पढ़ने योग्य"
+ },
+ "scrawled": {
+  "pronunciation": "SKRAWLD",
+  "hindi": "घसीटा हुआ, बेढंगा लिखा"
+ },
+ "loose-lipped": {
+  "pronunciation": "LOOS-LIPT",
+  "hindi": "बातूनी, राज़ खोलने वाला"
+ },
+ "connect": {
+  "pronunciation": "kuh-NEKT",
+  "hindi": "जोड़ना"
+ },
+ "harness": {
+  "pronunciation": "HAR-nis",
+  "hindi": "जोतना, बाँधना"
+ },
+ "couple": {
+  "pronunciation": "KUHP-uhl",
+  "hindi": "जोड़ना, युग्मित करना"
+ },
+ "liberate": {
+  "pronunciation": "LIB-uh-rayt",
+  "hindi": "आज़ाद करना"
+ },
+ "release": {
+  "pronunciation": "rih-LEESS",
+  "hindi": "छोड़ना, मुक्त करना"
+ },
+ "unfasten": {
+  "pronunciation": "uhn-FAS-uhn",
+  "hindi": "खोलना, बंधन खोलना"
+ },
+ "free": {
+  "pronunciation": "FREE",
+  "hindi": "मुक्त करना"
+ },
+ "decry": {
+  "pronunciation": "dih-KRY",
+  "hindi": "निंदा करना"
+ },
+ "applaud": {
+  "pronunciation": "uh-PLAWD",
+  "hindi": "सराहना करना"
+ },
+ "one-sided": {
+  "pronunciation": "wuhn-SY-did",
+  "hindi": "एकतरफ़ा"
+ },
+ "independent": {
+  "pronunciation": "in-dih-PEN-duhnt",
+  "hindi": "स्वतंत्र, अकेले का"
+ },
+ "solo": {
+  "pronunciation": "SOH-loh",
+  "hindi": "अकेले किया हुआ"
+ },
+ "unreciprocated": {
+  "pronunciation": "uhn-rih-SIP-ruh-kay-tid",
+  "hindi": "बिना बदले का, एकतरफ़ा"
+ },
+ "bilateral": {
+  "pronunciation": "by-LAT-uh-ruhl",
+  "hindi": "द्विपक्षीय"
+ },
+ "joint": {
+  "pronunciation": "JOYNT",
+  "hindi": "संयुक्त"
+ },
+ "snub": {
+  "pronunciation": "SNUHB",
+  "hindi": "अपमानजनक उपेक्षा करना"
+ },
+ "reject": {
+  "pronunciation": "rih-JEKT",
+  "hindi": "ठुकराना"
+ },
+ "spurn": {
+  "pronunciation": "SPURN",
+  "hindi": "तिरस्कार से ठुकराना"
+ },
+ "repulse": {
+  "pronunciation": "rih-PUHLSS",
+  "hindi": "दुत्कारना, भगा देना"
+ },
+ "welcome": {
+  "pronunciation": "WEL-kuhm",
+  "hindi": "स्वागत करना"
+ },
+ "accept": {
+  "pronunciation": "ak-SEPT",
+  "hindi": "स्वीकार करना"
+ },
+ "entertain": {
+  "pronunciation": "en-tur-TAYN",
+  "hindi": "विचार करना, स्वीकार करना"
+ },
+ "approachable": {
+  "pronunciation": "uh-PROH-chuh-buhl",
+  "hindi": "मिलनसार, सुगम"
+ },
+ "unfriendly": {
+  "pronunciation": "uhn-FREND-lee",
+  "hindi": "अमिलनसार, रूखा"
+ },
+ "influence": {
+  "pronunciation": "IN-floo-uhns",
+  "hindi": "प्रभाव"
+ },
+ "bargaining power": {
+  "pronunciation": "BAR-guh-ning POU-ur",
+  "hindi": "मोल-भाव की ताक़त"
+ },
+ "clout": {
+  "pronunciation": "KLOUT",
+  "hindi": "दबदबा, रसूख"
+ },
+ "advantage": {
+  "pronunciation": "ad-VAN-tij",
+  "hindi": "लाभ, बढ़त"
+ },
+ "weakness": {
+  "pronunciation": "WEEK-nis",
+  "hindi": "कमज़ोरी"
+ },
+ "disadvantage": {
+  "pronunciation": "dis-uhd-VAN-tij",
+  "hindi": "नुकसान, प्रतिकूल स्थिति"
+ },
+ "impotence": {
+  "pronunciation": "IM-puh-tuhns",
+  "hindi": "असमर्थता, शक्तिहीनता"
+ },
+ "vulnerability": {
+  "pronunciation": "vuhl-nur-uh-BIL-uh-tee",
+  "hindi": "असुरक्षा, कमज़ोर स्थिति"
+ },
+ "directive": {
+  "pronunciation": "duh-REK-tiv",
+  "hindi": "आधिकारिक निर्देश"
+ },
+ "decree": {
+  "pronunciation": "dih-KREE",
+  "hindi": "फरमान, राजकीय आदेश"
+ },
+ "remit": {
+  "pronunciation": "REE-mit",
+  "hindi": "कार्यक्षेत्र, अधिकार-सीमा"
+ },
+ "veto": {
+  "pronunciation": "VEE-toh",
+  "hindi": "निषेधाधिकार, वीटो"
+ },
+ "revocation": {
+  "pronunciation": "rev-uh-KAY-shuhn",
+  "hindi": "निरस्तीकरण, रद्द करना"
+ },
+ "exception": {
+  "pronunciation": "ik-SEP-shuhn",
+  "hindi": "अपवाद"
+ },
+ "aberration": {
+  "pronunciation": "ab-uh-RAY-shuhn",
+  "hindi": "विचलन, असामान्य बात"
+ },
+ "extreme value": {
+  "pronunciation": "ik-STREEM VAL-yoo",
+  "hindi": "चरम मान"
+ },
+ "norm": {
+  "pronunciation": "NORM",
+  "hindi": "सामान्य मानक"
+ },
+ "average": {
+  "pronunciation": "AV-rij",
+  "hindi": "औसत"
+ },
+ "typical case": {
+  "pronunciation": "TIP-i-kuhl KAYSS",
+  "hindi": "आम मामला"
+ },
+ "mainstream": {
+  "pronunciation": "MAYN-streem",
+  "hindi": "मुख्यधारा"
+ },
+ "even-handed": {
+  "pronunciation": "EE-vuhn-HAN-did",
+  "hindi": "निष्पक्ष, न्यायसंगत"
+ },
+ "unfair": {
+  "pronunciation": "un-FAIR",
+  "hindi": "अन्यायपूर्ण, अनुचित"
+ },
+ "discriminatory": {
+  "pronunciation": "dis-KRIM-uh-nuh-tor-ee",
+  "hindi": "भेदभावपूर्ण"
+ },
+ "prevaricate": {
+  "pronunciation": "prih-VAIR-uh-kayt",
+  "hindi": "गोलमोल बात करना"
+ },
+ "waffle": {
+  "pronunciation": "WOF-uhl",
+  "hindi": "टालमटोल करना"
+ },
+ "dodge": {
+  "pronunciation": "DOJ",
+  "hindi": "बच निकलना, कतराना"
+ },
+ "achievable": {
+  "pronunciation": "uh-CHEE-vuh-buhl",
+  "hindi": "प्राप्य, हासिल करने योग्य"
+ },
+ "realistic": {
+  "pronunciation": "ree-uh-LIS-tik",
+  "hindi": "व्यावहारिक, यथार्थवादी"
+ },
+ "within reach": {
+  "pronunciation": "with-IN REECH",
+  "hindi": "पहुँच के भीतर"
+ },
+ "unattainable": {
+  "pronunciation": "un-uh-TAY-nuh-buhl",
+  "hindi": "अप्राप्य"
+ },
+ "unrealistic": {
+  "pronunciation": "un-ree-uh-LIS-tik",
+  "hindi": "अव्यावहारिक, अवास्तविक"
+ },
+ "impossible": {
+  "pronunciation": "im-POS-uh-buhl",
+  "hindi": "असंभव"
+ },
+ "far-fetched": {
+  "pronunciation": "FAR-FECHT",
+  "hindi": "दूर की कौड़ी, अविश्वसनीय"
+ },
+ "workable": {
+  "pronunciation": "WUR-kuh-buhl",
+  "hindi": "कारगर, चलने योग्य"
+ },
+ "practicable": {
+  "pronunciation": "PRAK-tik-uh-buhl",
+  "hindi": "व्यवहार्य"
+ },
+ "unviable": {
+  "pronunciation": "un-VY-uh-buhl",
+  "hindi": "अव्यवहार्य, टिकने योग्य नहीं"
+ },
+ "impractical": {
+  "pronunciation": "im-PRAK-tik-uhl",
+  "hindi": "अव्यावहारिक"
+ },
+ "unworkable": {
+  "pronunciation": "un-WUR-kuh-buhl",
+  "hindi": "नाकारा, चलने योग्य नहीं"
+ },
+ "untenable": {
+  "pronunciation": "un-TEN-uh-buhl",
+  "hindi": "अटिकाऊ, असमर्थनीय"
+ },
+ "vibrate": {
+  "pronunciation": "VY-brayt",
+  "hindi": "कंपन करना, थरथराना"
+ },
+ "quiver": {
+  "pronunciation": "KWIV-er",
+  "hindi": "काँपना, थरथराना"
+ },
+ "shudder": {
+  "pronunciation": "SHUD-er",
+  "hindi": "सिहर उठना"
+ },
+ "quake": {
+  "pronunciation": "KWAYK",
+  "hindi": "काँप उठना"
+ },
+ "steady": {
+  "pronunciation": "STED-ee",
+  "hindi": "स्थिर, दृढ़"
+ },
+ "still": {
+  "pronunciation": "STIL",
+  "hindi": "शांत, गतिहीन"
+ },
+ "stabilise": {
+  "pronunciation": "STAY-buh-lyz",
+  "hindi": "स्थिर करना"
+ },
+ "settle": {
+  "pronunciation": "SET-uhl",
+  "hindi": "शांत होना, ठहरना"
+ },
+ "impenetrable": {
+  "pronunciation": "im-PEN-uh-truh-buhl",
+  "hindi": "दुर्बोध, अभेद्य"
+ },
+ "unclear": {
+  "pronunciation": "un-KLEER",
+  "hindi": "अस्पष्ट"
+ },
+ "intelligible": {
+  "pronunciation": "in-TEL-i-juh-buhl",
+  "hindi": "बोधगम्य, समझने योग्य"
+ },
+ "holding on": {
+  "pronunciation": "HOHL-ding ON",
+  "hindi": "टिकाए रखना"
+ },
+ "keeping": {
+  "pronunciation": "KEE-ping",
+  "hindi": "बनाए रखना"
+ },
+ "continuance": {
+  "pronunciation": "kuhn-TIN-yoo-uhns",
+  "hindi": "निरंतरता"
+ },
+ "staying power": {
+  "pronunciation": "STAY-ing POW-ur",
+  "hindi": "टिके रहने की क्षमता"
+ },
+ "departure": {
+  "pronunciation": "di-PAR-chur",
+  "hindi": "छोड़कर जाना"
+ },
+ "succeed": {
+  "pronunciation": "suhk-SEED",
+  "hindi": "सफल होना"
+ },
+ "prosper": {
+  "pronunciation": "PROS-pur",
+  "hindi": "फलना-फूलना"
+ },
+ "burgeon": {
+  "pronunciation": "BUR-juhn",
+  "hindi": "तेज़ी से बढ़ना"
+ },
+ "wither": {
+  "pronunciation": "WITH-ur",
+  "hindi": "मुरझाना"
+ },
+ "languish": {
+  "pronunciation": "LANG-gwish",
+  "hindi": "कमज़ोर पड़ना, मुरझाना"
+ },
+ "fail": {
+  "pronunciation": "FAYL",
+  "hindi": "असफल होना"
+ },
+ "restrained": {
+  "pronunciation": "ri-STRAYND",
+  "hindi": "संयमित"
+ },
+ "subtle": {
+  "pronunciation": "SUHT-l",
+  "hindi": "सूक्ष्म, हल्का"
+ },
+ "low-key": {
+  "pronunciation": "LOH-KEE",
+  "hindi": "सादा, दिखावे रहित"
+ },
+ "muted": {
+  "pronunciation": "MYOO-tid",
+  "hindi": "धीमा, फीका"
+ },
+ "exaggerated": {
+  "pronunciation": "ig-ZAJ-uh-ray-tid",
+  "hindi": "बढ़ा-चढ़ाकर कहा गया"
+ },
+ "overstated": {
+  "pronunciation": "OH-vur-STAY-tid",
+  "hindi": "अतिरंजित"
+ },
+ "roundabout phrasing": {
+  "pronunciation": "ROUND-uh-bout FRAY-zing",
+  "hindi": "घुमा-फिराकर कहना"
+ },
+ "periphrasis": {
+  "pronunciation": "puh-RIF-ruh-sis",
+  "hindi": "पर्यायोक्ति, घुमावदार कथन"
+ },
+ "directness": {
+  "pronunciation": "duh-REKT-nis",
+  "hindi": "सीधापन"
+ },
+ "concision": {
+  "pronunciation": "kuhn-SIZH-uhn",
+  "hindi": "संक्षिप्तता"
+ },
+ "bluntness": {
+  "pronunciation": "BLUHNT-nis",
+  "hindi": "साफ़गोई, रूखापन"
+ },
+ "plain speaking": {
+  "pronunciation": "PLAYN SPEE-king",
+  "hindi": "सीधी-सपाट बात"
+ },
+ "word-for-word": {
+  "pronunciation": "WURD-fur-WURD",
+  "hindi": "शब्दशः"
+ },
+ "strict": {
+  "pronunciation": "STRIKT",
+  "hindi": "सख़्त, अक्षरशः"
+ },
+ "metaphorical": {
+  "pronunciation": "met-uh-FOR-i-kuhl",
+  "hindi": "आलंकारिक"
+ },
+ "loose": {
+  "pronunciation": "LOOSS",
+  "hindi": "ढीला, मोटा-मोटा"
+ },
+ "creditworthy": {
+  "pronunciation": "KRED-it-wur-thee",
+  "hindi": "साख के योग्य"
+ },
+ "financially sound": {
+  "pronunciation": "fy-NAN-shuh-lee SOUND",
+  "hindi": "आर्थिक रूप से मज़बूत"
+ },
+ "debt-free": {
+  "pronunciation": "DET-FREE",
+  "hindi": "कर्ज़मुक्त"
+ },
+ "liquid": {
+  "pronunciation": "LIK-wid",
+  "hindi": "नकदी-संपन्न"
+ },
+ "bankrupt": {
+  "pronunciation": "BANG-kruhpt",
+  "hindi": "दिवालिया"
+ },
+ "indebted": {
+  "pronunciation": "in-DET-id",
+  "hindi": "कर्ज़दार"
+ },
+ "illiquid": {
+  "pronunciation": "i-LIK-wid",
+  "hindi": "नकदी की कमी वाला"
+ },
+ "speculation": {
+  "pronunciation": "spek-yuh-LAY-shuhn",
+  "hindi": "अटकल"
+ },
+ "supposition": {
+  "pronunciation": "suhp-uh-ZISH-uhn",
+  "hindi": "कल्पना, अनुमान"
+ },
+ "guess": {
+  "pronunciation": "GES",
+  "hindi": "अंदाज़ा"
+ },
+ "proof": {
+  "pronunciation": "PROOF",
+  "hindi": "प्रमाण"
+ },
+ "evidence": {
+  "pronunciation": "EV-uh-duhns",
+  "hindi": "प्रमाण"
+ },
+ "auxiliary": {
+  "pronunciation": "awg-ZIL-yuh-ree",
+  "hindi": "सहायक"
+ },
+ "supporting": {
+  "pronunciation": "suh-POR-ting",
+  "hindi": "सहायक, समर्थक"
+ },
+ "slight": {
+  "pronunciation": "SLYT",
+  "hindi": "मामूली, थोड़ा"
+ },
+ "peripheral": {
+  "pronunciation": "puh-RIF-uh-ruhl",
+  "hindi": "गौण, बाहरी"
+ },
+ "borderline": {
+  "pronunciation": "BOR-dur-lyn",
+  "hindi": "सीमारेखा पर स्थित"
+ },
+ "submerge": {
+  "pronunciation": "suhb-MURJ",
+  "hindi": "डुबो देना"
+ },
+ "engross": {
+  "pronunciation": "en-GROHSS",
+  "hindi": "पूरी तरह लीन करना"
+ },
+ "absorb": {
+  "pronunciation": "uhb-ZORB",
+  "hindi": "सोख लेना, तल्लीन करना"
+ },
+ "emerge": {
+  "pronunciation": "ih-MURJ",
+  "hindi": "उभरकर बाहर आना"
+ },
+ "uncover": {
+  "pronunciation": "uhn-KUHV-ur",
+  "hindi": "उघाड़ना, बेनकाब करना"
+ },
+ "withdraw": {
+  "pronunciation": "with-DRAW",
+  "hindi": "पीछे हटना, निकाल लेना"
+ },
+ "detach": {
+  "pronunciation": "dih-TACH",
+  "hindi": "अलग करना"
+ },
+ "custodianship": {
+  "pronunciation": "kuh-STOH-dee-uhn-ship",
+  "hindi": "संरक्षकता, अभिरक्षा"
+ },
+ "guardianship": {
+  "pronunciation": "GAR-dee-uhn-ship",
+  "hindi": "संरक्षण, अभिभावकत्व"
+ },
+ "care": {
+  "pronunciation": "KAIR",
+  "hindi": "देखभाल"
+ },
+ "neglect": {
+  "pronunciation": "nih-GLEKT",
+  "hindi": "उपेक्षा, अनदेखी"
+ },
+ "mismanagement": {
+  "pronunciation": "mis-MAN-ij-muhnt",
+  "hindi": "कुप्रबंधन"
+ },
+ "abandonment": {
+  "pronunciation": "uh-BAN-duhn-muhnt",
+  "hindi": "परित्याग"
+ },
+ "exploitation": {
+  "pronunciation": "ek-sploy-TAY-shuhn",
+  "hindi": "शोषण"
+ },
+ "assign": {
+  "pronunciation": "uh-SYN",
+  "hindi": "सौंपना, नियुक्त करना"
+ },
+ "entrust": {
+  "pronunciation": "en-TRUHST",
+  "hindi": "भरोसे से सौंपना"
+ },
+ "devolve": {
+  "pronunciation": "dih-VOLV",
+  "hindi": "अधिकार सौंपना"
+ },
+ "hand over": {
+  "pronunciation": "HAND OH-vur",
+  "hindi": "सुपुर्द करना"
+ },
+ "withhold": {
+  "pronunciation": "with-HOHLD",
+  "hindi": "रोक रखना"
+ },
+ "micromanage": {
+  "pronunciation": "MY-kroh-man-ij",
+  "hindi": "हर बात में दखल देना"
+ },
+ "disputed": {
+  "pronunciation": "dih-SPYOO-tid",
+  "hindi": "विवादित"
+ },
+ "quarrelsome": {
+  "pronunciation": "KWOR-uhl-suhm",
+  "hindi": "झगड़ालू"
+ },
+ "uncontroversial": {
+  "pronunciation": "uhn-kon-truh-VUR-shuhl",
+  "hindi": "निर्विवाद"
+ },
+ "settled": {
+  "pronunciation": "SET-uhld",
+  "hindi": "तय, निपटा हुआ"
+ },
+ "consensual": {
+  "pronunciation": "kuhn-SEN-shoo-uhl",
+  "hindi": "सर्वसम्मत"
+ },
+ "inconsistency": {
+  "pronunciation": "in-kuhn-SIS-tuhn-see",
+  "hindi": "असंगति"
+ },
+ "variance": {
+  "pronunciation": "VAIR-ee-uhns",
+  "hindi": "अंतर, भिन्नता"
+ },
+ "mismatch": {
+  "pronunciation": "MIS-mach",
+  "hindi": "बेमेल"
+ },
+ "divergence": {
+  "pronunciation": "dy-VUR-juhns",
+  "hindi": "विचलन, मतभेद"
+ },
+ "consistency": {
+  "pronunciation": "kuhn-SIS-tuhn-see",
+  "hindi": "संगति, एकरूपता"
+ },
+ "match": {
+  "pronunciation": "MACH",
+  "hindi": "मेल, तालमेल"
+ },
+ "convincing": {
+  "pronunciation": "kuhn-VIN-sing",
+  "hindi": "विश्वसनीय, कायल करने वाला"
+ },
+ "unconvincing": {
+  "pronunciation": "uhn-kuhn-VIN-sing",
+  "hindi": "अविश्वसनीय"
+ },
+ "weak": {
+  "pronunciation": "WEEK",
+  "hindi": "कमज़ोर"
+ },
+ "orthodoxy": {
+  "pronunciation": "AWR-thuh-dok-see",
+  "hindi": "रूढ़िवादिता"
+ },
+ "conventionality": {
+  "pronunciation": "kuhn-ven-shuh-NAL-uh-tee",
+  "hindi": "परंपरागतता"
+ },
+ "nonconformity": {
+  "pronunciation": "non-kuhn-FAWR-muh-tee",
+  "hindi": "अनुरूपता का अभाव, विद्रोही रवैया"
+ },
+ "individuality": {
+  "pronunciation": "in-duh-vij-oo-AL-uh-tee",
+  "hindi": "व्यक्तित्व की विशिष्टता"
+ },
+ "deviation": {
+  "pronunciation": "dee-vee-AY-shuhn",
+  "hindi": "भटकाव, विचलन"
+ },
+ "detailed": {
+  "pronunciation": "dee-TAYLD",
+  "hindi": "विस्तृत, ब्योरेवार"
+ },
+ "fine-grained": {
+  "pronunciation": "FYN-graynd",
+  "hindi": "बारीक, सूक्ष्म"
+ },
+ "itemised": {
+  "pronunciation": "Y-tuh-myzd",
+  "hindi": "मदवार, अलग-अलग गिना हुआ"
+ },
+ "specific": {
+  "pronunciation": "spuh-SIF-ik",
+  "hindi": "विशिष्ट, ख़ास"
+ },
+ "aggregated": {
+  "pronunciation": "AG-ruh-gay-tid",
+  "hindi": "समेकित, कुल जोड़ा हुआ"
+ },
+ "high-level": {
+  "pronunciation": "HY-lev-uhl",
+  "hindi": "मोटा, सामान्य स्तर का"
+ },
+ "broad-brush": {
+  "pronunciation": "BRAWD-brush",
+  "hindi": "मोटे तौर पर, सतही"
+ },
+ "unanimity": {
+  "pronunciation": "yoo-nuh-NIM-uh-tee",
+  "hindi": "सर्वसम्मति, एकमत"
+ },
+ "discord": {
+  "pronunciation": "DIS-kawrd",
+  "hindi": "मतभेद, कलह"
+ },
+ "civil": {
+  "pronunciation": "SIV-uhl",
+  "hindi": "शिष्ट, विनम्र"
+ },
+ "discourteous": {
+  "pronunciation": "dis-KUR-tee-uhss",
+  "hindi": "अशिष्ट, बदतमीज़"
+ },
+ "impolite": {
+  "pronunciation": "im-puh-LYT",
+  "hindi": "असभ्य, रूखा"
+ },
+ "disown": {
+  "pronunciation": "dis-OHN",
+  "hindi": "त्याग देना, अपना न मानना"
+ },
+ "renounce": {
+  "pronunciation": "ri-NOWNSS",
+  "hindi": "त्यागना, छोड़ देना"
+ },
+ "disavow": {
+  "pronunciation": "dis-uh-VOW",
+  "hindi": "नकारना, मुकर जाना"
+ },
+ "personal": {
+  "pronunciation": "PUR-suh-nuhl",
+  "hindi": "व्यक्तिगत, निजी"
+ },
+ "idiosyncratic": {
+  "pronunciation": "id-ee-oh-sin-KRAT-ik",
+  "hindi": "अनोखा, सनकी, निजी ढंग का"
+ },
+ "interpretive": {
+  "pronunciation": "in-TUR-pri-tiv",
+  "hindi": "व्याख्यात्मक"
+ },
+ "earthly": {
+  "pronunciation": "URTH-lee",
+  "hindi": "सांसारिक, भौतिक"
+ },
+ "fleshly": {
+  "pronunciation": "FLESH-lee",
+  "hindi": "शारीरिक, दैहिक"
+ },
+ "sensual": {
+  "pronunciation": "SEN-shoo-uhl",
+  "hindi": "विषयासक्त, इंद्रियसुख वाला"
+ },
+ "bodily": {
+  "pronunciation": "BOD-uh-lee",
+  "hindi": "शारीरिक, देह संबंधी"
+ },
+ "spiritual": {
+  "pronunciation": "SPIR-i-choo-uhl",
+  "hindi": "आध्यात्मिक"
+ },
+ "ascetic": {
+  "pronunciation": "uh-SET-ik",
+  "hindi": "संन्यासी, तपस्वी"
+ },
+ "ethereal": {
+  "pronunciation": "i-THEER-ee-uhl",
+  "hindi": "अलौकिक, दिव्य"
+ },
+ "gloss": {
+  "pronunciation": "GLOSS",
+  "hindi": "टिप्पणी जोड़ना, अर्थ समझाना"
+ },
+ "comment on": {
+  "pronunciation": "KOM-ent ON",
+  "hindi": "टिप्पणी करना"
+ },
+ "mark up": {
+  "pronunciation": "MAHRK UP",
+  "hindi": "निशान व टिप्पणी लगाना"
+ },
+ "footnote": {
+  "pronunciation": "FOOT-noht",
+  "hindi": "पाद-टिप्पणी देना"
+ },
+ "erase": {
+  "pronunciation": "i-RAYSS",
+  "hindi": "मिटाना"
+ },
+ "strip": {
+  "pronunciation": "STRIP",
+  "hindi": "हटा देना, उतार देना"
+ },
+ "leave bare": {
+  "pronunciation": "LEEV BAIR",
+  "hindi": "खाली छोड़ना, बिना टिप्पणी रखना"
+ },
+ "admit": {
+  "pronunciation": "uhd-MIT",
+  "hindi": "स्वीकार करना"
+ },
+ "grant": {
+  "pronunciation": "GRANT",
+  "hindi": "मान लेना, अनुमति देना"
+ },
+ "deny": {
+  "pronunciation": "di-NY",
+  "hindi": "इनकार करना"
+ },
+ "dispel": {
+  "pronunciation": "dih-SPEL",
+  "hindi": "दूर करना, तितर-बितर करना"
+ },
+ "guarded": {
+  "pronunciation": "GAR-did",
+  "hindi": "सतर्क, सावधान, संकोची"
+ },
+ "tight-lipped": {
+  "pronunciation": "TYT-LIPT",
+  "hindi": "चुप्पा, मौन साधे हुए"
+ },
+ "forthcoming": {
+  "pronunciation": "FORTH-KUHM-ing",
+  "hindi": "खुलकर बोलने वाला, मिलनसार"
+ },
+ "conversational": {
+  "pronunciation": "kon-vur-SAY-shuh-nuhl",
+  "hindi": "बातचीत वाला, बोलचाल का"
+ },
+ "vernacular": {
+  "pronunciation": "vur-NAK-yuh-lur",
+  "hindi": "स्थानीय बोली का, देशी भाषा का"
+ },
+ "everyday": {
+  "pronunciation": "EV-ree-day",
+  "hindi": "रोज़मर्रा का"
+ },
+ "literary": {
+  "pronunciation": "LIT-uh-rer-ee",
+  "hindi": "साहित्यिक"
+ },
+ "scholarly": {
+  "pronunciation": "SKOL-ur-lee",
+  "hindi": "विद्वतापूर्ण"
+ },
+ "elevated": {
+  "pronunciation": "EL-uh-vay-tid",
+  "hindi": "उच्चस्तरीय, परिष्कृत"
+ },
+ "insurrection": {
+  "pronunciation": "in-suh-REK-shuhn",
+  "hindi": "विद्रोह, बग़ावत"
+ },
+ "outburst": {
+  "pronunciation": "OWT-burst",
+  "hindi": "अचानक विस्फोट, उबाल"
+ },
+ "upsurge": {
+  "pronunciation": "UHP-surj",
+  "hindi": "अचानक उछाल, तेज़ वृद्धि"
+ },
+ "subjection": {
+  "pronunciation": "suhb-JEK-shuhn",
+  "hindi": "अधीनता, दमन"
+ },
+ "containment": {
+  "pronunciation": "kuhn-TAYN-muhnt",
+  "hindi": "रोकथाम, नियंत्रण"
+ },
+ "welcoming": {
+  "pronunciation": "WEL-kuh-ming",
+  "hindi": "स्वागत करने वाला"
+ },
+ "all-embracing": {
+  "pronunciation": "AWL-em-BRAY-sing",
+  "hindi": "सर्वव्यापी, सबको समेटने वाला"
+ },
+ "accessible": {
+  "pronunciation": "ak-SES-uh-buhl",
+  "hindi": "सुलभ, सबके लिए पहुँच योग्य"
+ },
+ "exclusive": {
+  "pronunciation": "ik-SKLOO-siv",
+  "hindi": "विशिष्ट, सीमित वर्ग का"
+ },
+ "exclusionary": {
+  "pronunciation": "ik-SKLOO-zhuh-ner-ee",
+  "hindi": "बहिष्कारी, अलग रखने वाला"
+ },
+ "solitary": {
+  "pronunciation": "SOL-uh-ter-ee",
+  "hindi": "अकेला, एकांतप्रिय"
+ },
+ "secluded": {
+  "pronunciation": "sih-KLOO-did",
+  "hindi": "एकांत, सबसे अलग"
+ },
+ "retiring": {
+  "pronunciation": "rih-TYR-ing",
+  "hindi": "संकोची, शर्मीला"
+ },
+ "outgoing": {
+  "pronunciation": "OWT-goh-ing",
+  "hindi": "मिलनसार, खुले स्वभाव का"
+ },
+ "desert": {
+  "pronunciation": "dih-ZURT",
+  "hindi": "छोड़ देना, त्याग देना"
+ },
+ "hold": {
+  "pronunciation": "HOHLD",
+  "hindi": "थामे रखना, पकड़े रहना"
+ },
+ "maintain": {
+  "pronunciation": "mayn-TAYN",
+  "hindi": "बनाए रखना"
+ },
+ "keep": {
+  "pronunciation": "KEEP",
+  "hindi": "रखना, साथ बनाए रखना"
+ },
+ "descriptive": {
+  "pronunciation": "dih-SKRIP-tiv",
+  "hindi": "वर्णनात्मक"
+ },
+ "non-numerical": {
+  "pronunciation": "non-noo-MER-uh-kuhl",
+  "hindi": "संख्यारहित, गैर-संख्यात्मक"
+ },
+ "experiential": {
+  "pronunciation": "ik-spir-ee-EN-shuhl",
+  "hindi": "अनुभवजन्य"
+ },
+ "numerical": {
+  "pronunciation": "noo-MER-uh-kuhl",
+  "hindi": "संख्यात्मक"
+ },
+ "measurable": {
+  "pronunciation": "MEZH-ur-uh-buhl",
+  "hindi": "मापने योग्य"
+ },
+ "statistical": {
+  "pronunciation": "stuh-TIS-tuh-kuhl",
+  "hindi": "सांख्यिकीय"
+ },
+ "metric": {
+  "pronunciation": "MET-rik",
+  "hindi": "मापन संबंधी, मीट्रिक"
+ },
+ "impressionistic": {
+  "pronunciation": "im-presh-uh-NIS-tik",
+  "hindi": "धारणा पर आधारित, अनुमानित"
+ },
+ "adorn": {
+  "pronunciation": "uh-DORN",
+  "hindi": "सजाना, अलंकृत करना"
+ },
+ "exaggerate": {
+  "pronunciation": "ig-ZAJ-uh-rayt",
+  "hindi": "बढ़ा-चढ़ाकर कहना"
+ },
+ "ornament": {
+  "pronunciation": "OR-nuh-muhnt",
+  "hindi": "सजावट करना, अलंकृत करना"
+ },
+ "garnish": {
+  "pronunciation": "GAR-nish",
+  "hindi": "सजाना, सज्जा करना"
+ },
+ "simplify": {
+  "pronunciation": "SIM-pluh-fy",
+  "hindi": "सरल बनाना"
+ },
+ "strip back": {
+  "pronunciation": "STRIP BAK",
+  "hindi": "अनावश्यक सजावट हटाना"
+ },
+ "understate": {
+  "pronunciation": "uhn-dur-STAYT",
+  "hindi": "कम करके बताना"
+ },
+ "pare down": {
+  "pronunciation": "PAIR DOWN",
+  "hindi": "छाँटकर कम करना"
+ },
+ "approve": {
+  "pronunciation": "uh-PROOV",
+  "hindi": "मंज़ूरी देना"
+ },
+ "repeal": {
+  "pronunciation": "ri-PEEL",
+  "hindi": "रद्द करना"
+ },
+ "annul": {
+  "pronunciation": "uh-NUHL",
+  "hindi": "अमान्य करना"
+ },
+ "perish": {
+  "pronunciation": "PER-ish",
+  "hindi": "नष्ट होना"
+ },
+ "droop": {
+  "pronunciation": "DROOP",
+  "hindi": "मुरझाकर झुकना"
+ },
+ "flag": {
+  "pronunciation": "FLAG",
+  "hindi": "थकना, कमज़ोर पड़ना"
+ },
+ "revive": {
+  "pronunciation": "ri-VYVE",
+  "hindi": "फिर से जीवित होना"
+ },
+ "bloom": {
+  "pronunciation": "BLOOM",
+  "hindi": "खिलना"
+ },
+ "freshen": {
+  "pronunciation": "FRESH-uhn",
+  "hindi": "तरोताज़ा करना"
+ },
+ "out of place": {
+  "pronunciation": "OWT UHV PLAYSS",
+  "hindi": "बेमेल, अनुचित जगह पर"
+ },
+ "inconsistent": {
+  "pronunciation": "in-kuhn-SIS-tuhnt",
+  "hindi": "असंगत"
+ },
+ "incompatible": {
+  "pronunciation": "in-kuhm-PAT-uh-buhl",
+  "hindi": "बेमेल, असंगत"
+ },
+ "congruous": {
+  "pronunciation": "KONG-groo-uhss",
+  "hindi": "सुसंगत, अनुरूप"
+ },
+ "fitting": {
+  "pronunciation": "FIT-ing",
+  "hindi": "उचित, मेल खाता"
+ },
+ "appropriate": {
+  "pronunciation": "uh-PROH-pree-it",
+  "hindi": "उपयुक्त"
+ },
+ "connectedness": {
+  "pronunciation": "kuh-NEK-tid-niss",
+  "hindi": "जुड़ाव"
+ },
+ "integration": {
+  "pronunciation": "in-tuh-GRAY-shuhn",
+  "hindi": "एकीकरण"
+ },
+ "flow": {
+  "pronunciation": "FLOH",
+  "hindi": "प्रवाह"
+ },
+ "fragmentation": {
+  "pronunciation": "frag-muhn-TAY-shuhn",
+  "hindi": "बिखराव, विखंडन"
+ },
+ "disjointedness": {
+  "pronunciation": "dis-JOYN-tid-niss",
+  "hindi": "बेतरतीबी, असंबद्धता"
+ },
+ "incoherence": {
+  "pronunciation": "in-koh-HEER-uhns",
+  "hindi": "असंगति, बेतुकापन"
+ },
+ "disunity": {
+  "pronunciation": "dis-YOO-nuh-tee",
+  "hindi": "फूट, एकता का अभाव"
+ },
+ "foreign": {
+  "pronunciation": "FOR-uhn",
+  "hindi": "विदेशी"
+ },
+ "outsider": {
+  "pronunciation": "owt-SY-dur",
+  "hindi": "बाहरी व्यक्ति"
+ },
+ "unfamiliar": {
+  "pronunciation": "uhn-fuh-MIL-yur",
+  "hindi": "अपरिचित"
+ },
+ "native": {
+  "pronunciation": "NAY-tiv",
+  "hindi": "मूल निवासी, स्थानीय"
+ },
+ "resident": {
+  "pronunciation": "REZ-uh-duhnt",
+  "hindi": "निवासी"
+ },
+ "familiar": {
+  "pronunciation": "fuh-MIL-yur",
+  "hindi": "जाना-पहचाना"
+ },
+ "grating": {
+  "pronunciation": "GRAY-ting",
+  "hindi": "कर्कश, चिढ़ पैदा करने वाला"
+ },
+ "gentle": {
+  "pronunciation": "JEN-tuhl",
+  "hindi": "कोमल, नरम"
+ },
+ "emollient": {
+  "pronunciation": "ih-MOL-yuhnt",
+  "hindi": "शांत करने वाला, मृदु"
+ },
+ "soothing": {
+  "pronunciation": "SOO-thing",
+  "hindi": "सुकून देने वाला"
+ },
+ "restate": {
+  "pronunciation": "ree-STAYT",
+  "hindi": "दोबारा कहना"
+ },
+ "reword": {
+  "pronunciation": "ree-WURD",
+  "hindi": "शब्द बदलकर कहना"
+ },
+ "rephrase": {
+  "pronunciation": "ree-FRAYZ",
+  "hindi": "दूसरे ढंग से कहना"
+ },
+ "recast": {
+  "pronunciation": "ree-KAST",
+  "hindi": "नए रूप में ढालना"
+ },
+ "venal": {
+  "pronunciation": "VEE-nuhl",
+  "hindi": "बिकाऊ, रिश्वतखोर"
+ },
+ "money-driven": {
+  "pronunciation": "MUHN-ee-DRIV-uhn",
+  "hindi": "पैसे के लालची"
+ },
+ "grasping": {
+  "pronunciation": "GRAS-ping",
+  "hindi": "लालची, लोभी"
+ },
+ "avaricious": {
+  "pronunciation": "av-uh-RISH-uhss",
+  "hindi": "अत्यंत लालची"
+ },
+ "idealistic": {
+  "pronunciation": "eye-dee-uh-LIS-tik",
+  "hindi": "आदर्शवादी"
+ },
+ "selfless": {
+  "pronunciation": "SELF-luhss",
+  "hindi": "निस्वार्थ"
+ },
+ "compensate": {
+  "pronunciation": "KOM-puhn-sayt",
+  "hindi": "क्षतिपूर्ति करना"
+ },
+ "insure": {
+  "pronunciation": "in-SHOOR",
+  "hindi": "बीमा करना"
+ },
+ "protect": {
+  "pronunciation": "pruh-TEKT",
+  "hindi": "सुरक्षा देना"
+ },
+ "expose": {
+  "pronunciation": "ik-SPOHZ",
+  "hindi": "खतरे में डालना"
+ },
+ "imperil": {
+  "pronunciation": "im-PER-uhl",
+  "hindi": "खतरे में डालना"
+ },
+ "charge": {
+  "pronunciation": "CHARJ",
+  "hindi": "दोषी ठहराना, दायित्व डालना"
+ },
+ "literal meaning": {
+  "pronunciation": "LIT-uh-ruhl MEE-ning",
+  "hindi": "शाब्दिक अर्थ"
+ },
+ "dictionary sense": {
+  "pronunciation": "DIK-shuh-ner-ee SENSS",
+  "hindi": "शब्दकोशीय अर्थ"
+ },
+ "strict definition": {
+  "pronunciation": "STRIKT def-uh-NISH-uhn",
+  "hindi": "सटीक परिभाषा"
+ },
+ "plain sense": {
+  "pronunciation": "PLAYN SENSS",
+  "hindi": "सीधा अर्थ"
+ },
+ "implication": {
+  "pronunciation": "im-pli-KAY-shuhn",
+  "hindi": "निहितार्थ"
+ },
+ "overtone": {
+  "pronunciation": "OH-vur-tohn",
+  "hindi": "अंतर्निहित भाव"
+ },
+ "suggestion": {
+  "pronunciation": "suhg-JESS-chuhn",
+  "hindi": "संकेत, अर्थ-व्यंजना"
+ },
+ "unified": {
+  "pronunciation": "YOO-nuh-fyd",
+  "hindi": "एकीकृत"
+ },
+ "integrated": {
+  "pronunciation": "IN-tuh-gray-tid",
+  "hindi": "समेकित, एकीकृत"
+ },
+ "tight-knit": {
+  "pronunciation": "TYT-NIT",
+  "hindi": "घनिष्ठ, मजबूती से जुड़ा"
+ },
+ "united": {
+  "pronunciation": "yoo-NY-tid",
+  "hindi": "संगठित, एकजुट"
+ },
+ "fragmented": {
+  "pronunciation": "FRAG-men-tid",
+  "hindi": "बिखरा हुआ, खंडित"
+ },
+ "disjointed": {
+  "pronunciation": "diss-JOYN-tid",
+  "hindi": "असंबद्ध, बेतरतीब"
+ },
+ "divided": {
+  "pronunciation": "dih-VY-did",
+  "hindi": "बँटा हुआ"
+ },
+ "assorted": {
+  "pronunciation": "uh-SOR-tid",
+  "hindi": "विविध, तरह-तरह का"
+ },
+ "matching": {
+  "pronunciation": "MACH-ing",
+  "hindi": "मेल खाता हुआ"
+ },
+ "incongruent": {
+  "pronunciation": "in-KONG-groo-uhnt",
+  "hindi": "बेमेल, असंगत"
+ },
+ "discordant": {
+  "pronunciation": "diss-KOR-duhnt",
+  "hindi": "बेसुरा, असंगत"
+ },
+ "mismatched": {
+  "pronunciation": "mis-MACHT",
+  "hindi": "बेमेल"
+ },
+ "conflicting": {
+  "pronunciation": "kuhn-FLIK-ting",
+  "hindi": "परस्पर विरोधी"
+ },
+ "loquacious": {
+  "pronunciation": "loh-KWAY-shuhss",
+  "hindi": "बातूनी, वाचाल"
+ },
+ "chatty": {
+  "pronunciation": "CHAT-ee",
+  "hindi": "बातूनी"
+ },
+ "factional": {
+  "pronunciation": "FAK-shuh-nuhl",
+  "hindi": "गुटबाज़"
+ },
+ "sectarian": {
+  "pronunciation": "sek-TAIR-ee-uhn",
+  "hindi": "सांप्रदायिक, पंथवादी"
+ },
+ "nonpartisan": {
+  "pronunciation": "non-PAR-tuh-zuhn",
+  "hindi": "निष्पक्ष, दलनिरपेक्ष"
+ },
+ "converge": {
+  "pronunciation": "kuhn-VURJ",
+  "hindi": "एक जगह मिलना"
+ },
+ "huddle": {
+  "pronunciation": "HUHD-uhl",
+  "hindi": "सिमटकर इकट्ठा होना"
+ },
+ "scatter": {
+  "pronunciation": "SKAT-ur",
+  "hindi": "बिखेरना, तितर-बितर होना"
+ },
+ "quote": {
+  "pronunciation": "KWOHT",
+  "hindi": "उद्धृत करना"
+ },
+ "transcribe": {
+  "pronunciation": "tran-SKRYB",
+  "hindi": "हू-ब-हू लिख लेना"
+ },
+ "cite verbatim": {
+  "pronunciation": "SYT vur-BAY-tim",
+  "hindi": "शब्दशः उद्धृत करना"
+ },
+ "proportionate": {
+  "pronunciation": "pruh-PAWR-shuh-nit",
+  "hindi": "अनुपातिक, समानुपाती"
+ },
+ "disproportionate": {
+  "pronunciation": "dis-pruh-PAWR-shuh-nit",
+  "hindi": "अनुपात से बाहर"
+ },
+ "incommensurate": {
+  "pronunciation": "in-kuh-MEN-ser-it",
+  "hindi": "असंगत, बेमेल"
+ },
+ "unequal": {
+  "pronunciation": "un-EE-kwuhl",
+  "hindi": "असमान"
+ },
+ "literally": {
+  "pronunciation": "LIT-er-uh-lee",
+  "hindi": "अक्षरशः"
+ },
+ "exactly": {
+  "pronunciation": "ig-ZAKT-lee",
+  "hindi": "ठीक-ठीक"
+ },
+ "precisely": {
+  "pronunciation": "pri-SYSS-lee",
+  "hindi": "बिल्कुल सटीक"
+ },
+ "paraphrased": {
+  "pronunciation": "PAR-uh-frayzd",
+  "hindi": "अपने शब्दों में कहा गया"
+ },
+ "loosely": {
+  "pronunciation": "LOOSS-lee",
+  "hindi": "मोटे तौर पर"
+ },
+ "approximately": {
+  "pronunciation": "uh-PROK-suh-mit-lee",
+  "hindi": "लगभग"
+ },
+ "freely": {
+  "pronunciation": "FREE-lee",
+  "hindi": "खुले ढंग से, स्वतंत्र रूप से"
+ },
+ "magnify": {
+  "pronunciation": "MAG-nuh-fy",
+  "hindi": "बढ़ाना, बड़ा करना"
+ },
+ "mute": {
+  "pronunciation": "MYOOT",
+  "hindi": "धीमा करना, दबाना"
+ },
+ "dampen": {
+  "pronunciation": "DAM-puhn",
+  "hindi": "कम करना, मंद करना"
+ },
+ "remedy": {
+  "pronunciation": "REM-uh-dee",
+  "hindi": "उपचार करना, सुधारना"
+ },
+ "correct": {
+  "pronunciation": "kuh-REKT",
+  "hindi": "सही करना, सुधारना"
+ },
+ "falsify": {
+  "pronunciation": "FAWL-suh-fy",
+  "hindi": "झूठा बनाना, गलत दिखाना"
+ },
+ "brief": {
+  "pronunciation": "BREEF",
+  "hindi": "संक्षिप्त"
+ },
+ "sparing": {
+  "pronunciation": "SPAIR-ing",
+  "hindi": "मितभाषी, कम बोलने वाला"
+ },
+ "effusive": {
+  "pronunciation": "i-FYOO-siv",
+  "hindi": "अत्यधिक भावुक, बड़बोला"
+ },
+ "contradiction": {
+  "pronunciation": "kon-truh-DIK-shuhn",
+  "hindi": "विरोधाभास"
+ },
+ "incongruity": {
+  "pronunciation": "in-kuhn-GROO-uh-tee",
+  "hindi": "असंगति, बेमेलपन"
+ },
+ "absurdity": {
+  "pronunciation": "ub-SUR-duh-tee",
+  "hindi": "बेतुकापन"
+ },
+ "logic": {
+  "pronunciation": "LOJ-ik",
+  "hindi": "तर्क"
+ },
+ "truism": {
+  "pronunciation": "TROO-iz-uhm",
+  "hindi": "स्वतःसिद्ध सत्य"
+ },
+ "coherence": {
+  "pronunciation": "koh-HEER-uhns",
+  "hindi": "संगति, तारतम्य"
+ },
+ "warning": {
+  "pronunciation": "WAWR-ning",
+  "hindi": "चेतावनी"
+ },
+ "qualification": {
+  "pronunciation": "kwol-uh-fuh-KAY-shuhn",
+  "hindi": "शर्त, सीमा-कथन"
+ },
+ "unconditional promise": {
+  "pronunciation": "un-kuhn-DISH-uh-nuhl PROM-iss",
+  "hindi": "बिना शर्त का वादा"
+ },
+ "par": {
+  "pronunciation": "PAHR",
+  "hindi": "बराबरी का स्तर"
+ },
+ "balance": {
+  "pronunciation": "BAL-uhns",
+  "hindi": "संतुलन"
+ },
+ "philanthropic": {
+  "pronunciation": "fil-uhn-THROP-ik",
+  "hindi": "परोपकारी"
+ },
+ "charitable": {
+  "pronunciation": "CHAR-uh-tuh-buhl",
+  "hindi": "दानशील, दयालु"
+ },
+ "selfish": {
+  "pronunciation": "SEL-fish",
+  "hindi": "स्वार्थी"
+ },
+ "egotistical": {
+  "pronunciation": "ee-guh-TIS-tik-uhl",
+  "hindi": "अहंकारी, आत्ममुग्ध"
+ },
+ "self-serving": {
+  "pronunciation": "self-SUR-ving",
+  "hindi": "खुदगर्ज, स्वार्थसाधक"
+ },
+ "opinionated": {
+  "pronunciation": "uh-PIN-yuh-nay-tid",
+  "hindi": "अड़ियल, अपनी बात पर अड़ा"
+ },
+ "doctrinaire": {
+  "pronunciation": "dok-truh-NAIR",
+  "hindi": "सिद्धांतवादी, कट्टर"
+ },
+ "inflexible": {
+  "pronunciation": "in-FLEK-suh-buhl",
+  "hindi": "अड़ियल, लचीलापन-रहित"
+ },
+ "misleading": {
+  "pronunciation": "mis-LEE-ding",
+  "hindi": "भ्रामक"
+ },
+ "deceptive": {
+  "pronunciation": "dih-SEP-tiv",
+  "hindi": "धोखा देने वाला"
+ },
+ "plausible but false": {
+  "pronunciation": "PLAW-zuh-buhl buht FAWLSS",
+  "hindi": "सही लगने वाला पर झूठा"
+ },
+ "sound": {
+  "pronunciation": "SOWND",
+  "hindi": "ठोस, तर्कसंगत"
+ },
+ "valid": {
+  "pronunciation": "VAL-id",
+  "hindi": "वैध, मान्य"
+ },
+ "truthful": {
+  "pronunciation": "TROOTH-fuhl",
+  "hindi": "सच्चा, सत्यवादी"
+ },
+ "chair": {
+  "pronunciation": "CHAIR",
+  "hindi": "अध्यक्षता करना"
+ },
+ "officiate": {
+  "pronunciation": "uh-FISH-ee-ayt",
+  "hindi": "संचालन करना"
+ },
+ "lead": {
+  "pronunciation": "LEED",
+  "hindi": "नेतृत्व करना"
+ },
+ "attend": {
+  "pronunciation": "uh-TEND",
+  "hindi": "उपस्थित होना"
+ },
+ "follow": {
+  "pronunciation": "FOL-oh",
+  "hindi": "अनुसरण करना"
+ },
+ "observe": {
+  "pronunciation": "uhb-ZURV",
+  "hindi": "देखना, निरीक्षण करना"
+ },
+ "static": {
+  "pronunciation": "STAT-ik",
+  "hindi": "स्थिर, जड़"
+ },
+ "flat": {
+  "pronunciation": "FLAT",
+  "hindi": "मंद, ठहरा हुआ"
+ },
+ "booming": {
+  "pronunciation": "BOO-ming",
+  "hindi": "तेज़ी से बढ़ता हुआ"
+ },
+ "thriving": {
+  "pronunciation": "THRY-ving",
+  "hindi": "फलता-फूलता"
+ },
+ "buoyant": {
+  "pronunciation": "BOY-uhnt",
+  "hindi": "उत्साहपूर्ण, तेज़ी वाला"
+ },
+ "long-winded": {
+  "pronunciation": "LONG-WIN-did",
+  "hindi": "लंबा-चौड़ा, वाचाल"
+ },
+ "discursive": {
+  "pronunciation": "dis-KUR-siv",
+  "hindi": "भटकाव भरा, विस्तृत"
+ },
+ "hardy": {
+  "pronunciation": "HAR-dee",
+  "hindi": "मज़बूत, सहनशील"
+ },
+ "obligatory": {
+  "pronunciation": "uh-BLIG-uh-tor-ee",
+  "hindi": "अनिवार्य"
+ },
+ "enforceable": {
+  "pronunciation": "en-FOR-suh-buhl",
+  "hindi": "लागू करने योग्य"
+ },
+ "compulsory": {
+  "pronunciation": "kuhm-PUL-suh-ree",
+  "hindi": "अनिवार्य, ज़रूरी"
+ },
+ "irrevocable": {
+  "pronunciation": "ih-REV-uh-kuh-buhl",
+  "hindi": "अटल, न बदलने योग्य"
+ },
+ "non-binding": {
+  "pronunciation": "non-BYN-ding",
+  "hindi": "बाध्यकारी नहीं"
+ },
+ "voluntary": {
+  "pronunciation": "VOL-uhn-ter-ee",
+  "hindi": "स्वैच्छिक"
+ },
+ "revocable": {
+  "pronunciation": "REV-uh-kuh-buhl",
+  "hindi": "रद्द करने योग्य"
+ },
+ "optional": {
+  "pronunciation": "OP-shuh-nuhl",
+  "hindi": "वैकल्पिक"
+ },
+ "afterword": {
+  "pronunciation": "AF-tur-wurd",
+  "hindi": "उपसंहार, पश्चलेख"
+ },
+ "coda": {
+  "pronunciation": "KOH-duh",
+  "hindi": "समापन अंश"
+ },
+ "vague": {
+  "pronunciation": "VAYG",
+  "hindi": "अस्पष्ट, धुंधला"
+ },
+ "nitpicking": {
+  "pronunciation": "NIT-pik-ing",
+  "hindi": "छिद्रान्वेषी, बाल की खाल"
+ },
+ "hairsplitting": {
+  "pronunciation": "HAIR-split-ing",
+  "hindi": "बाल की खाल निकालने वाला"
+ },
+ "overprecise": {
+  "pronunciation": "OH-vur-prih-SYSS",
+  "hindi": "हद से ज़्यादा सटीक"
+ },
+ "easygoing": {
+  "pronunciation": "EE-zee-GOH-ing",
+  "hindi": "सहज, बेफ़िक्र स्वभाव का"
+ },
+ "imprecise": {
+  "pronunciation": "im-prih-SYSS",
+  "hindi": "अस्पष्ट, गैर-सटीक"
+ },
+ "broad-minded": {
+  "pronunciation": "BRAWD-MYN-did",
+  "hindi": "उदार विचारों वाला"
+ },
+ "casual": {
+  "pronunciation": "KAZH-oo-uhl",
+  "hindi": "लापरवाह, अनौपचारिक"
+ },
+ "engage": {
+  "pronunciation": "en-GAYJ",
+  "hindi": "भाग लेना"
+ },
+ "ruined": {
+  "pronunciation": "ROO-ind",
+  "hindi": "बर्बाद, तबाह"
+ },
+ "failed": {
+  "pronunciation": "FAYLD",
+  "hindi": "असफल, दिवालिया"
+ },
+ "sacrifice": {
+  "pronunciation": "SAK-ruh-fyss",
+  "hindi": "त्याग देना"
+ },
+ "claim": {
+  "pronunciation": "KLAYM",
+  "hindi": "दावा करना"
+ },
+ "demand": {
+  "pronunciation": "dih-MAND",
+  "hindi": "माँग करना"
+ },
+ "consequent": {
+  "pronunciation": "KON-suh-kwuhnt",
+  "hindi": "परिणामस्वरूप आने वाला"
+ },
+ "following": {
+  "pronunciation": "FOL-oh-ing",
+  "hindi": "अगला, बाद का"
+ },
+ "ensuing": {
+  "pronunciation": "en-SOO-ing",
+  "hindi": "आगामी, उसके बाद का"
+ },
+ "later": {
+  "pronunciation": "LAY-tur",
+  "hindi": "बाद का"
+ },
+ "preceding": {
+  "pronunciation": "prih-SEE-ding",
+  "hindi": "पूर्ववर्ती, पिछला"
+ },
+ "previous": {
+  "pronunciation": "PREE-vee-uhss",
+  "hindi": "पिछला, पहले का"
+ },
+ "prior": {
+  "pronunciation": "PRY-ur",
+  "hindi": "पूर्व, पहले का"
+ },
+ "antecedent": {
+  "pronunciation": "an-tuh-SEE-duhnt",
+  "hindi": "पूर्ववर्ती"
+ },
+ "spirit": {
+  "pronunciation": "SPIR-it",
+  "hindi": "जोश, हौसला"
+ },
+ "confidence": {
+  "pronunciation": "KON-fuh-duhnss",
+  "hindi": "आत्मविश्वास"
+ },
+ "motivation": {
+  "pronunciation": "moh-tuh-VAY-shuhn",
+  "hindi": "प्रेरणा"
+ },
+ "esprit de corps": {
+  "pronunciation": "es-PREE duh KOR",
+  "hindi": "दल भावना, सामूहिक गौरव"
+ },
+ "demoralization": {
+  "pronunciation": "dih-mor-uh-ly-ZAY-shuhn",
+  "hindi": "मनोबल टूटना"
+ },
+ "despondency": {
+  "pronunciation": "dih-SPON-duhn-see",
+  "hindi": "निराशा, उदासी"
+ },
+ "disillusionment": {
+  "pronunciation": "dis-ih-LOO-zhuhn-muhnt",
+  "hindi": "मोहभंग"
+ },
+ "fleeting": {
+  "pronunciation": "FLEE-ting",
+  "hindi": "क्षणिक, जल्दबाज़ी वाला"
+ },
+ "exhaustive": {
+  "pronunciation": "ig-ZAW-stiv",
+  "hindi": "विस्तृत, गहन"
+ },
+ "suspend": {
+  "pronunciation": "suh-SPEND",
+  "hindi": "स्थगित करना"
+ },
+ "recess": {
+  "pronunciation": "REE-sess",
+  "hindi": "अवकाश देना"
+ },
+ "reconvene": {
+  "pronunciation": "ree-kuhn-VEEN",
+  "hindi": "फिर से बैठक बुलाना"
+ },
+ "open": {
+  "pronunciation": "OH-puhn",
+  "hindi": "शुरू करना"
+ },
+ "oblique": {
+  "pronunciation": "oh-BLEEK",
+  "hindi": "तिरछा"
+ },
+ "wayward": {
+  "pronunciation": "WAY-wurd",
+  "hindi": "भटकने वाला, अनियमित"
+ },
+ "meandering": {
+  "pronunciation": "mee-AN-dur-ing",
+  "hindi": "टेढ़ा-मेढ़ा, घुमावदार"
+ },
+ "serpentine": {
+  "pronunciation": "SUR-puhn-teen",
+  "hindi": "सर्पिल, साँप जैसा टेढ़ा"
+ },
+ "straight": {
+  "pronunciation": "STRAYT",
+  "hindi": "सीधा"
+ },
+ "unbent": {
+  "pronunciation": "un-BENT",
+  "hindi": "बिना मुड़ा, सीधा"
+ },
+ "direct": {
+  "pronunciation": "duh-REKT",
+  "hindi": "सीधा, प्रत्यक्ष"
+ },
+ "linear": {
+  "pronunciation": "LIN-ee-ur",
+  "hindi": "रेखीय, सीधी रेखा में"
+ },
+ "uninvolved": {
+  "pronunciation": "un-in-VOLVD",
+  "hindi": "असंलग्न, निर्लिप्त"
+ },
+ "invested": {
+  "pronunciation": "in-VES-tid",
+  "hindi": "पूरी तरह लगा हुआ"
+ },
+ "committed": {
+  "pronunciation": "kuh-MIT-id",
+  "hindi": "प्रतिबद्ध, समर्पित"
+ },
+ "involved": {
+  "pronunciation": "in-VOLVD",
+  "hindi": "शामिल, संलग्न"
+ },
+ "versed": {
+  "pronunciation": "VURST",
+  "hindi": "निपुण, जानकार"
+ },
+ "discontinue": {
+  "pronunciation": "dis-kuhn-TIN-yoo",
+  "hindi": "बंद करना"
+ },
+ "begin": {
+  "pronunciation": "bih-GIN",
+  "hindi": "शुरू करना"
+ },
+ "gridlock": {
+  "pronunciation": "GRID-lok",
+  "hindi": "पूर्ण गतिरोध"
+ },
+ "unscientific": {
+  "pronunciation": "un-sy-uhn-TIF-ik",
+  "hindi": "अवैज्ञानिक"
+ },
+ "hearsay-based": {
+  "pronunciation": "HEER-say-bayst",
+  "hindi": "सुनी-सुनाई बातों पर आधारित"
+ },
+ "illustrative": {
+  "pronunciation": "ih-LUHS-truh-tiv",
+  "hindi": "उदाहरणात्मक"
+ },
+ "verified": {
+  "pronunciation": "VER-uh-fyd",
+  "hindi": "सत्यापित"
+ },
+ "systematic": {
+  "pronunciation": "sis-tuh-MAT-ik",
+  "hindi": "व्यवस्थित"
+ },
+ "gripping": {
+  "pronunciation": "GRIP-ing",
+  "hindi": "मन को बांधने वाला"
+ },
+ "riveting": {
+  "pronunciation": "RIV-it-ing",
+  "hindi": "अत्यंत रोचक"
+ },
+ "dull": {
+  "pronunciation": "DUHL",
+  "hindi": "नीरस"
+ },
+ "conclusive": {
+  "pronunciation": "kuhn-KLOO-siv",
+  "hindi": "निर्णायक"
+ },
+ "authoritative": {
+  "pronunciation": "uh-THOR-uh-tay-tiv",
+  "hindi": "प्रामाणिक"
+ },
+ "inconclusive": {
+  "pronunciation": "in-kuhn-KLOO-siv",
+  "hindi": "अनिर्णायक"
+ },
+ "preliminary": {
+  "pronunciation": "prih-LIM-uh-ner-ee",
+  "hindi": "प्रारंभिक"
+ },
+ "energize": {
+  "pronunciation": "EN-er-jyz",
+  "hindi": "ऊर्जा भरना"
+ },
+ "rouse": {
+  "pronunciation": "ROWZ",
+  "hindi": "जगाना, उकसाना"
+ },
+ "demoralize": {
+  "pronunciation": "dih-MOR-uh-lyz",
+  "hindi": "हतोत्साहित करना"
+ },
+ "paralyze": {
+  "pronunciation": "PAIR-uh-lyz",
+  "hindi": "निष्क्रिय कर देना"
+ },
+ "unmotivated": {
+  "pronunciation": "un-MOH-tuh-vay-tid",
+  "hindi": "प्रेरणाहीन"
+ },
+ "listless": {
+  "pronunciation": "LIST-lis",
+  "hindi": "सुस्त, बेदम"
+ },
+ "passionate": {
+  "pronunciation": "PASH-uh-nit",
+  "hindi": "जोशीला"
+ },
+ "enthusiastic": {
+  "pronunciation": "en-thoo-zee-AS-tik",
+  "hindi": "उत्साही"
+ },
+ "emerging": {
+  "pronunciation": "ih-MUR-jing",
+  "hindi": "उभरता हुआ"
+ },
+ "budding": {
+  "pronunciation": "BUHD-ing",
+  "hindi": "नवोदित"
+ },
+ "mature": {
+  "pronunciation": "muh-CHUR",
+  "hindi": "परिपक्व"
+ },
+ "established": {
+  "pronunciation": "ih-STAB-lisht",
+  "hindi": "स्थापित"
+ },
+ "declining": {
+  "pronunciation": "dih-KLY-ning",
+  "hindi": "ढलता हुआ"
+ },
+ "short-sighted": {
+  "pronunciation": "short-SY-tid",
+  "hindi": "अदूरदर्शी"
+ },
+ "narrow": {
+  "pronunciation": "NAIR-oh",
+  "hindi": "संकीर्ण"
+ },
+ "insular": {
+  "pronunciation": "IN-suh-ler",
+  "hindi": "संकुचित सोच वाला"
+ },
+ "near-term": {
+  "pronunciation": "NEER-turm",
+  "hindi": "तात्कालिक, अल्पकालिक"
+ },
+ "far-sighted": {
+  "pronunciation": "far-SY-tid",
+  "hindi": "दूरदर्शी"
+ },
+ "proposition": {
+  "pronunciation": "prop-uh-ZISH-uhn",
+  "hindi": "प्रस्ताव, कथन"
+ },
+ "theory": {
+  "pronunciation": "THEE-uh-ree",
+  "hindi": "सिद्धांत"
+ },
+ "established fact": {
+  "pronunciation": "ih-STAB-lisht FAKT",
+  "hindi": "सिद्ध तथ्य"
+ },
+ "refrain": {
+  "pronunciation": "rih-FRAYN",
+  "hindi": "परहेज़ करना"
+ },
+ "forbear": {
+  "pronunciation": "for-BAIR",
+  "hindi": "संयम रखना"
+ },
+ "vote": {
+  "pronunciation": "VOHT",
+  "hindi": "मतदान करना"
+ },
+ "partake": {
+  "pronunciation": "par-TAYK",
+  "hindi": "भाग लेना"
+ },
+ "acquainted": {
+  "pronunciation": "uh-KWAYN-tid",
+  "hindi": "परिचित, जानकार"
+ },
+ "knowledgeable": {
+  "pronunciation": "NOL-ij-uh-buhl",
+  "hindi": "जानकार, ज्ञानी"
+ },
+ "ignorant": {
+  "pronunciation": "IG-nuh-ruhnt",
+  "hindi": "अनजान, अज्ञानी"
+ },
+ "unacquainted": {
+  "pronunciation": "uhn-uh-KWAYN-tid",
+  "hindi": "अपरिचित, अनभिज्ञ"
+ },
+ "observed": {
+  "pronunciation": "uhb-ZURVD",
+  "hindi": "देखा हुआ, अवलोकित"
+ },
+ "evidence-based": {
+  "pronunciation": "EV-i-duhns-BAYST",
+  "hindi": "प्रमाण-आधारित"
+ },
+ "experimental": {
+  "pronunciation": "ik-sper-uh-MEN-tl",
+  "hindi": "प्रयोगात्मक"
+ },
+ "verifiable": {
+  "pronunciation": "VER-uh-fy-uh-buhl",
+  "hindi": "सत्यापन योग्य"
+ },
+ "theoretical": {
+  "pronunciation": "thee-uh-RET-i-kuhl",
+  "hindi": "सैद्धांतिक"
+ },
+ "speculative": {
+  "pronunciation": "SPEK-yuh-luh-tiv",
+  "hindi": "अटकलों पर आधारित"
+ },
+ "conjectural": {
+  "pronunciation": "kuhn-JEK-chuh-ruhl",
+  "hindi": "अनुमानित, काल्पनिक"
+ },
+ "quickness": {
+  "pronunciation": "KWIK-nis",
+  "hindi": "फुर्ती, तेज़ी"
+ },
+ "velocity": {
+  "pronunciation": "vuh-LOS-i-tee",
+  "hindi": "वेग, गति"
+ },
+ "swiftness": {
+  "pronunciation": "SWIFT-nis",
+  "hindi": "तीव्रता, शीघ्रता"
+ },
+ "slowness": {
+  "pronunciation": "SLOH-nis",
+  "hindi": "धीमापन, मंदता"
+ },
+ "sluggishness": {
+  "pronunciation": "SLUG-ish-nis",
+  "hindi": "सुस्ती, काहिली"
+ },
+ "as good as": {
+  "pronunciation": "az GUUD az",
+  "hindi": "लगभग वही, समान"
+ },
+ "amounting to": {
+  "pronunciation": "uh-MOWN-ting too",
+  "hindi": "के बराबर होना"
+ },
+ "enduring": {
+  "pronunciation": "en-DUUR-ing",
+  "hindi": "टिकाऊ, चिरस्थायी"
+ },
+ "maintainable": {
+  "pronunciation": "mayn-TAY-nuh-buhl",
+  "hindi": "बनाए रखने योग्य"
+ },
+ "renewable": {
+  "pronunciation": "ri-NOO-uh-buhl",
+  "hindi": "नवीकरणीय"
+ },
+ "durable": {
+  "pronunciation": "DUUR-uh-buhl",
+  "hindi": "टिकाऊ, मज़बूत"
+ },
+ "unsustainable": {
+  "pronunciation": "uhn-suh-STAY-nuh-buhl",
+  "hindi": "अस्थायी, टिक न सकने वाला"
+ },
+ "depleting": {
+  "pronunciation": "di-PLEE-ting",
+  "hindi": "घटाता हुआ, क्षयकारी"
+ },
+ "short-lived": {
+  "pronunciation": "short-LIVD",
+  "hindi": "अल्पकालिक, क्षणभंगुर"
+ },
+ "ruinous": {
+  "pronunciation": "ROO-uh-nuhs",
+  "hindi": "विनाशकारी"
+ },
+ "overturn": {
+  "pronunciation": "oh-vur-TURN",
+  "hindi": "उलट देना, पलट देना"
+ },
+ "destabilise": {
+  "pronunciation": "dee-STAY-buh-lyz",
+  "hindi": "अस्थिर करना"
+ },
+ "sabotage": {
+  "pronunciation": "SAB-uh-tahzh",
+  "hindi": "तोड़फोड़ करना, कमज़ोर करना"
+ },
+ "unsettle": {
+  "pronunciation": "uhn-SET-l",
+  "hindi": "विचलित करना, अस्थिर करना"
+ },
+ "mild substitute": {
+  "pronunciation": "MYLD SUHB-sti-toot",
+  "hindi": "नरम विकल्प"
+ },
+ "understatement": {
+  "pronunciation": "UHN-dur-stayt-muhnt",
+  "hindi": "कमतर कथन"
+ },
+ "polite term": {
+  "pronunciation": "puh-LYT TURM",
+  "hindi": "शिष्ट शब्द"
+ },
+ "softened phrase": {
+  "pronunciation": "SOF-uhnd FRAYZ",
+  "hindi": "नरम किया हुआ वाक्यांश"
+ },
+ "dysphemism": {
+  "pronunciation": "DIS-fuh-miz-uhm",
+  "hindi": "कठोर या अपमानजनक शब्द-प्रयोग"
+ },
+ "plain speech": {
+  "pronunciation": "PLAYN SPEECH",
+  "hindi": "सीधी-सपाट बात"
+ },
+ "crude term": {
+  "pronunciation": "KROOD TURM",
+  "hindi": "अशिष्ट शब्द"
+ },
+ "token": {
+  "pronunciation": "TOH-kuhn",
+  "hindi": "नाममात्र का, प्रतीकात्मक"
+ },
+ "in name only": {
+  "pronunciation": "in NAYM OHN-lee",
+  "hindi": "केवल नाम के लिए"
+ },
+ "notional": {
+  "pronunciation": "NOH-shuh-nl",
+  "hindi": "काल्पनिक, कथित"
+ },
+ "litigation": {
+  "pronunciation": "lit-uh-GAY-shuhn",
+  "hindi": "मुकदमेबाज़ी"
+ },
+ "confrontation": {
+  "pronunciation": "kon-fruhn-TAY-shuhn",
+  "hindi": "टकराव"
+ },
+ "open dispute": {
+  "pronunciation": "OH-puhn dih-SPYOOT",
+  "hindi": "खुला विवाद"
+ },
+ "elective": {
+  "pronunciation": "ih-LEK-tiv",
+  "hindi": "वैकल्पिक"
+ },
+ "permissive": {
+  "pronunciation": "puhr-MIS-iv",
+  "hindi": "उदार, छूट देने वाला"
+ },
+ "slack": {
+  "pronunciation": "SLAK",
+  "hindi": "ढीला, लापरवाह"
+ },
+ "implied": {
+  "pronunciation": "im-PLYD",
+  "hindi": "निहित"
+ },
+ "unspoken": {
+  "pronunciation": "un-SPOH-kuhn",
+  "hindi": "अनकहा"
+ },
+ "understood": {
+  "pronunciation": "un-duhr-STUUD",
+  "hindi": "समझा हुआ, मौन सहमत"
+ },
+ "stated": {
+  "pronunciation": "STAY-tid",
+  "hindi": "कहा हुआ, उल्लिखित"
+ },
+ "expressed": {
+  "pronunciation": "ik-SPREST",
+  "hindi": "व्यक्त किया हुआ"
+ },
+ "declared": {
+  "pronunciation": "dih-KLAIRD",
+  "hindi": "घोषित"
+ },
+ "eulogise": {
+  "pronunciation": "YOO-luh-jyz",
+  "hindi": "गुणगान करना"
+ },
+ "criticise": {
+  "pronunciation": "KRIT-uh-syz",
+  "hindi": "आलोचना करना"
+ },
+ "acquit": {
+  "pronunciation": "uh-KWIT",
+  "hindi": "बरी करना"
+ },
+ "convict": {
+  "pronunciation": "kuhn-VIKT",
+  "hindi": "दोषी ठहराना"
+ },
+ "blame": {
+  "pronunciation": "BLAYM",
+  "hindi": "दोष देना"
+ },
+ "cut back": {
+  "pronunciation": "KUT bak",
+  "hindi": "कटौती करना"
+ },
+ "restrict": {
+  "pronunciation": "rih-STRIKT",
+  "hindi": "सीमित करना"
+ },
+ "truncate": {
+  "pronunciation": "TRUNG-kayt",
+  "hindi": "छोटा करना, काट देना"
+ },
+ "extend": {
+  "pronunciation": "ik-STEND",
+  "hindi": "बढ़ाना"
+ },
+ "prolong": {
+  "pronunciation": "pruh-LAWNG",
+  "hindi": "लंबा खींचना"
+ },
+ "unstable": {
+  "pronunciation": "un-STAY-buhl",
+  "hindi": "अस्थिर"
+ },
+ "erratic": {
+  "pronunciation": "ih-RAT-ik",
+  "hindi": "अनियमित, मनमौजी"
+ },
+ "unpredictable": {
+  "pronunciation": "un-prih-DIK-tuh-buhl",
+  "hindi": "अप्रत्याशित"
+ },
+ "stable": {
+  "pronunciation": "STAY-buhl",
+  "hindi": "स्थिर"
+ },
+ "predictable": {
+  "pronunciation": "prih-DIK-tuh-buhl",
+  "hindi": "पूर्वानुमेय"
+ },
+ "upshot": {
+  "pronunciation": "UP-shot",
+  "hindi": "नतीजा, परिणाम"
+ },
+ "result": {
+  "pronunciation": "rih-ZULT",
+  "hindi": "परिणाम"
+ },
+ "offshoot": {
+  "pronunciation": "OF-shoot",
+  "hindi": "शाखा, उपफल"
+ },
+ "cause": {
+  "pronunciation": "KAWZ",
+  "hindi": "कारण"
+ },
+ "precondition": {
+  "pronunciation": "pree-kuhn-DISH-uhn",
+  "hindi": "पूर्व शर्त"
+ },
+ "overdue debt": {
+  "pronunciation": "OH-vuhr-dyoo DET",
+  "hindi": "बकाया कर्ज़"
+ },
+ "outstanding balance": {
+  "pronunciation": "owt-STAN-ding BAL-uhns",
+  "hindi": "बकाया राशि"
+ },
+ "prepayment": {
+  "pronunciation": "pree-PAY-muhnt",
+  "hindi": "अग्रिम भुगतान"
+ },
+ "credit": {
+  "pronunciation": "KRED-it",
+  "hindi": "जमा राशि, उधार"
+ },
+ "wanderer": {
+  "pronunciation": "WON-duhr-uhr",
+  "hindi": "घुमक्कड़"
+ },
+ "roamer": {
+  "pronunciation": "ROH-muhr",
+  "hindi": "भटकने वाला"
+ },
+ "drifter": {
+  "pronunciation": "DRIF-tuhr",
+  "hindi": "आवारा, बेठिकाना व्यक्ति"
+ },
+ "settler": {
+  "pronunciation": "SET-luhr",
+  "hindi": "बसने वाला, निवासी"
+ },
+ "minimal": {
+  "pronunciation": "MIN-uh-muhl",
+  "hindi": "न्यूनतम, बहुत कम"
+ },
+ "actual": {
+  "pronunciation": "AK-choo-uhl",
+  "hindi": "वास्तविक, असली"
+ },
+ "real": {
+  "pronunciation": "REE-uhl",
+  "hindi": "असली, सच्चा"
+ },
+ "effective": {
+  "pronunciation": "ih-FEK-tiv",
+  "hindi": "प्रभावी, कारगर"
+ },
+ "random": {
+  "pronunciation": "RAN-duhm",
+  "hindi": "यादृच्छिक, बेतरतीब"
+ },
+ "unreasoned": {
+  "pronunciation": "un-REE-zuhnd",
+  "hindi": "तर्कहीन, बिना सोचा-समझा"
+ },
+ "reasoned": {
+  "pronunciation": "REE-zuhnd",
+  "hindi": "तर्कसंगत, सोच-समझकर किया गया"
+ },
+ "deduce": {
+  "pronunciation": "dih-DOOSS",
+  "hindi": "निष्कर्ष निकालना"
+ },
+ "assert": {
+  "pronunciation": "uh-SURT",
+  "hindi": "दृढ़ता से कहना, दावा करना"
+ },
+ "agree": {
+  "pronunciation": "uh-GREE",
+  "hindi": "सहमत होना"
+ },
+ "coincide": {
+  "pronunciation": "koh-in-SIDE",
+  "hindi": "मेल खाना, एकमत होना"
+ },
+ "harmonize": {
+  "pronunciation": "HAR-muh-nize",
+  "hindi": "तालमेल बैठाना, सामंजस्य करना"
+ },
+ "disagree": {
+  "pronunciation": "dis-uh-GREE",
+  "hindi": "असहमत होना"
+ },
+ "differ": {
+  "pronunciation": "DIF-ur",
+  "hindi": "मतभेद रखना, भिन्न होना"
+ },
+ "association": {
+  "pronunciation": "uh-soh-see-AY-shuhn",
+  "hindi": "संबंध, जुड़ाव"
+ },
+ "relationship": {
+  "pronunciation": "rih-LAY-shuhn-ship",
+  "hindi": "रिश्ता, संबंध"
+ },
+ "co-variation": {
+  "pronunciation": "koh-vair-ee-AY-shuhn",
+  "hindi": "सह-परिवर्तन"
+ },
+ "linkage": {
+  "pronunciation": "LING-kij",
+  "hindi": "जुड़ाव, कड़ी"
+ },
+ "independence": {
+  "pronunciation": "in-dih-PEN-duhns",
+  "hindi": "स्वतंत्रता, असंबद्धता"
+ },
+ "dissociation": {
+  "pronunciation": "dih-soh-see-AY-shuhn",
+  "hindi": "अलगाव, विच्छेद"
+ },
+ "randomness": {
+  "pronunciation": "RAN-duhm-nuhs",
+  "hindi": "यादृच्छिकता, अनियमितता"
+ },
+ "unrelatedness": {
+  "pronunciation": "un-rih-LAY-tid-nuhs",
+  "hindi": "असंबद्धता"
+ },
+ "uncompromising": {
+  "pronunciation": "un-KOM-pruh-my-zing",
+  "hindi": "अड़ियल, समझौता न करने वाला"
+ },
+ "obdurate": {
+  "pronunciation": "OB-dyuh-ruht",
+  "hindi": "हठी, जिद्दी"
+ },
+ "pliant": {
+  "pronunciation": "PLY-uhnt",
+  "hindi": "लचीला, नरम"
+ },
+ "recover": {
+  "pronunciation": "rih-KUV-ur",
+  "hindi": "वापस पाना, बरामद करना"
+ },
+ "reclaim": {
+  "pronunciation": "rih-KLAYM",
+  "hindi": "वापस हासिल करना"
+ },
+ "atone": {
+  "pronunciation": "uh-TOHN",
+  "hindi": "प्रायश्चित करना"
+ },
+ "damn": {
+  "pronunciation": "DAM",
+  "hindi": "धिक्कारना, अभिशप्त करना"
+ },
+ "induction": {
+  "pronunciation": "in-DUK-shuhn",
+  "hindi": "प्रवेश-परिचय कार्यक्रम"
+ },
+ "orientation": {
+  "pronunciation": "or-ee-en-TAY-shuhn",
+  "hindi": "अभिविन्यास, परिचय कार्यक्रम"
+ },
+ "assimilation": {
+  "pronunciation": "uh-sim-uh-LAY-shuhn",
+  "hindi": "आत्मसात्करण, घुल-मिल जाना"
+ },
+ "offboarding": {
+  "pronunciation": "OF-bor-ding",
+  "hindi": "कर्मचारी की विदाई प्रक्रिया"
+ },
+ "dismissal": {
+  "pronunciation": "dis-MIS-uhl",
+  "hindi": "बर्खास्तगी"
+ },
+ "exit": {
+  "pronunciation": "EG-zit",
+  "hindi": "निकास, प्रस्थान"
+ },
+ "separation": {
+  "pronunciation": "sep-uh-RAY-shuhn",
+  "hindi": "अलगाव, सेवा-समाप्ति"
+ },
+ "rebut": {
+  "pronunciation": "rih-BUT",
+  "hindi": "खंडन करना"
+ },
+ "debunk": {
+  "pronunciation": "dee-BUNGK",
+  "hindi": "झूठ का पर्दाफाश करना"
+ },
+ "dilute": {
+  "pronunciation": "dy-LOOT",
+  "hindi": "पतला करना, कमजोर करना"
+ },
+ "strengthen": {
+  "pronunciation": "STRENG-thuhn",
+  "hindi": "मजबूत करना"
+ },
+ "subtlety": {
+  "pronunciation": "SUHT-uhl-tee",
+  "hindi": "सूक्ष्मता"
+ },
+ "shade": {
+  "pronunciation": "SHAYD",
+  "hindi": "हल्का अंतर, छटा"
+ },
+ "fine distinction": {
+  "pronunciation": "FYN dih-STINGK-shuhn",
+  "hindi": "बारीक अंतर"
+ },
+ "gradation": {
+  "pronunciation": "gray-DAY-shuhn",
+  "hindi": "क्रमिक अंतर, श्रेणी"
+ },
+ "crudeness": {
+  "pronunciation": "KROOD-nuhss",
+  "hindi": "अपरिष्कृतता, मोटापन"
+ },
+ "oversimplification": {
+  "pronunciation": "oh-vur-sim-pluh-fih-KAY-shuhn",
+  "hindi": "अति सरलीकरण"
+ },
+ "generalisation": {
+  "pronunciation": "jen-ruh-ly-ZAY-shuhn",
+  "hindi": "सामान्यीकरण"
+ },
+ "bland": {
+  "pronunciation": "BLAND",
+  "hindi": "फीका, नीरस"
+ },
+ "uninspiring": {
+  "pronunciation": "uhn-in-SPY-ur-ing",
+  "hindi": "अप्रेरक, उत्साहहीन"
+ },
+ "engaging": {
+  "pronunciation": "en-GAY-jing",
+  "hindi": "आकर्षक, मनमोहक"
+ },
+ "stimulating": {
+  "pronunciation": "STIM-yuh-lay-ting",
+  "hindi": "उत्साहवर्धक, रोचक"
+ },
+ "embed": {
+  "pronunciation": "em-BED",
+  "hindi": "जमाना, गहरे बैठाना"
+ },
+ "fortify": {
+  "pronunciation": "FOR-tuh-fy",
+  "hindi": "मज़बूत करना"
+ },
+ "establish firmly": {
+  "pronunciation": "ih-STAB-lish FURM-lee",
+  "hindi": "मज़बूती से स्थापित करना"
+ },
+ "dislodge": {
+  "pronunciation": "dis-LOJ",
+  "hindi": "उखाड़ना, हटाना"
+ },
+ "retrenchment": {
+  "pronunciation": "rih-TRENCH-muhnt",
+  "hindi": "खर्च में कटौती"
+ },
+ "belt-tightening": {
+  "pronunciation": "BELT-TY-tuhn-ing",
+  "hindi": "खर्च में कटौती, किफ़ायत"
+ },
+ "thrift": {
+  "pronunciation": "THRIFT",
+  "hindi": "मितव्ययिता, किफ़ायत"
+ },
+ "extravagance": {
+  "pronunciation": "ik-STRAV-uh-guhns",
+  "hindi": "फ़िज़ूलखर्ची"
+ },
+ "profligacy": {
+  "pronunciation": "PROF-luh-guh-see",
+  "hindi": "अपव्यय, उड़ाऊपन"
+ },
+ "lavishness": {
+  "pronunciation": "LAV-ish-nuhss",
+  "hindi": "उदार खर्च, शाहखर्ची"
+ },
+ "largesse": {
+  "pronunciation": "lar-JESS",
+  "hindi": "उदारता, दानशीलता"
+ },
+ "shrink": {
+  "pronunciation": "SHRINGK",
+  "hindi": "सिकुड़ना, घटना"
+ },
+ "decrease": {
+  "pronunciation": "dih-KREESS",
+  "hindi": "कम होना"
+ },
+ "taper": {
+  "pronunciation": "TAY-pur",
+  "hindi": "धीरे-धीरे घटना"
+ },
+ "swell": {
+  "pronunciation": "SWEL",
+  "hindi": "बढ़ना, फूलना"
+ },
+ "damage": {
+  "pronunciation": "DAM-ij",
+  "hindi": "नुकसान पहुँचाना"
+ },
+ "restore": {
+  "pronunciation": "rih-STOR",
+  "hindi": "बहाल करना, ठीक करना"
+ },
+ "dogged": {
+  "pronunciation": "DAWG-id",
+  "hindi": "अड़ियल, दृढ़"
+ },
+ "determined": {
+  "pronunciation": "dih-TUR-mind",
+  "hindi": "दृढ़निश्चयी"
+ },
+ "resolute": {
+  "pronunciation": "REZ-uh-loot",
+  "hindi": "अटल, दृढ़ संकल्पी"
+ },
+ "irresolute": {
+  "pronunciation": "ih-REZ-uh-loot",
+  "hindi": "अनिश्चित, ढुलमुल"
+ },
+ "yielding": {
+  "pronunciation": "YEEL-ding",
+  "hindi": "झुकने वाला, नरम"
+ },
+ "faltering": {
+  "pronunciation": "FAWL-tur-ing",
+  "hindi": "लड़खड़ाता, डगमगाता"
+ },
+ "fellowship": {
+  "pronunciation": "FEL-oh-ship",
+  "hindi": "साथीपन, मेलजोल"
+ },
+ "comradeship": {
+  "pronunciation": "KOM-rad-ship",
+  "hindi": "भाईचारा, साथीपन"
+ },
+ "estrangement": {
+  "pronunciation": "ih-STRAYNJ-muhnt",
+  "hindi": "मनमुटाव, अलगाव"
+ },
+ "rivalry": {
+  "pronunciation": "RY-vuhl-ree",
+  "hindi": "प्रतिद्वंद्विता"
+ },
+ "adjudication": {
+  "pronunciation": "uh-joo-dih-KAY-shuhn",
+  "hindi": "न्यायिक निर्णय, फ़ैसला"
+ },
+ "conciliation": {
+  "pronunciation": "kuhn-sil-ee-AY-shuhn",
+  "hindi": "सुलह, समझौता"
+ },
+ "homebody": {
+  "pronunciation": "HOHM-bod-ee",
+  "hindi": "घरेलू, घर में रहने वाला"
+ },
+ "kinship": {
+  "pronunciation": "KIN-ship",
+  "hindi": "रिश्ता, आत्मीयता"
+ },
+ "liking": {
+  "pronunciation": "LY-king",
+  "hindi": "पसंद, लगाव"
+ },
+ "repulsion": {
+  "pronunciation": "ri-PUHL-shuhn",
+  "hindi": "घृणा, विकर्षण"
+ },
+ "economical": {
+  "pronunciation": "ee-kuh-NOM-i-kuhl",
+  "hindi": "संक्षिप्त, मितव्ययी"
+ },
+ "diffuse": {
+  "pronunciation": "di-FYOOSS",
+  "hindi": "शब्दाडंबरपूर्ण, विस्तृत"
+ },
+ "enable": {
+  "pronunciation": "i-NAY-buhl",
+  "hindi": "सक्षम बनाना"
+ },
+ "equip": {
+  "pronunciation": "i-KWIP",
+  "hindi": "सुसज्जित करना"
+ },
+ "approach": {
+  "pronunciation": "uh-PROHCH",
+  "hindi": "पहल, संपर्क का प्रयास"
+ },
+ "opening": {
+  "pronunciation": "OH-puh-ning",
+  "hindi": "शुरुआती कदम, आरंभ"
+ },
+ "feeler": {
+  "pronunciation": "FEE-luhr",
+  "hindi": "टोह लेने वाला प्रस्ताव"
+ },
+ "rejection": {
+  "pronunciation": "ri-JEK-shuhn",
+  "hindi": "अस्वीकृति"
+ },
+ "refusal": {
+  "pronunciation": "ri-FYOO-zuhl",
+  "hindi": "इनकार"
+ },
+ "companionable": {
+  "pronunciation": "kuhm-PAN-yuh-nuh-buhl",
+  "hindi": "मिलनसार, साथ निभाने वाला"
+ },
+ "introverted": {
+  "pronunciation": "IN-truh-vur-tid",
+  "hindi": "अंतर्मुखी"
+ },
+ "antisocial": {
+  "pronunciation": "an-tee-SOH-shuhl",
+  "hindi": "समाज से कटा हुआ, असामाजिक"
+ },
+ "define": {
+  "pronunciation": "di-FYN",
+  "hindi": "परिभाषित करना"
+ },
+ "outline": {
+  "pronunciation": "OWT-lyn",
+  "hindi": "रूपरेखा खींचना"
+ },
+ "generalise": {
+  "pronunciation": "JEN-ruh-lyz",
+  "hindi": "सामान्यीकरण करना"
+ },
+ "false": {
+  "pronunciation": "FAWLSS",
+  "hindi": "झूठा, नकली"
+ },
+ "counterfeit": {
+  "pronunciation": "KOWN-tuhr-fit",
+  "hindi": "जाली, नकली"
+ },
+ "inflate": {
+  "pronunciation": "in-FLAYT",
+  "hindi": "बढ़ा-चढ़ाकर बताना"
+ },
+ "downplay": {
+  "pronunciation": "DOWN-play",
+  "hindi": "कम करके दिखाना"
+ },
+ "minimize": {
+  "pronunciation": "MIN-uh-myz",
+  "hindi": "कमतर आंकना"
+ },
+ "cloud": {
+  "pronunciation": "KLOWD",
+  "hindi": "धुंधला करना, उलझाना"
+ },
+ "placatory": {
+  "pronunciation": "PLAY-kuh-tor-ee",
+  "hindi": "शांत करने वाला"
+ },
+ "appeasing": {
+  "pronunciation": "uh-PEE-zing",
+  "hindi": "तुष्ट करने वाला"
+ },
+ "mollifying": {
+  "pronunciation": "MOL-uh-fy-ing",
+  "hindi": "नरम करने वाला, शांत करने वाला"
+ },
+ "combative": {
+  "pronunciation": "KOM-buh-tiv",
+  "hindi": "झगड़ालू, लड़ाकू"
+ },
+ "provocative": {
+  "pronunciation": "pruh-VOK-uh-tiv",
+  "hindi": "भड़काऊ, उकसाने वाला"
+ },
+ "mechanical": {
+  "pronunciation": "muh-KAN-i-kuhl",
+  "hindi": "यांत्रिक, बेमन से किया हुआ"
+ },
+ "wholehearted": {
+  "pronunciation": "hohl-HAR-tid",
+  "hindi": "पूरे मन से किया गया"
+ },
+ "earnest": {
+  "pronunciation": "UR-nist",
+  "hindi": "गंभीर, सच्चे मन वाला"
+ },
+ "break down": {
+  "pronunciation": "BRAYK DOWN",
+  "hindi": "अलग-अलग हिस्सों में बांटना"
+ },
+ "itemise": {
+  "pronunciation": "Y-tuh-myz",
+  "hindi": "मदवार ब्योरा देना"
+ },
+ "combine": {
+  "pronunciation": "kuhm-BYN",
+  "hindi": "मिलाना, जोड़ना"
+ },
+ "lump together": {
+  "pronunciation": "LUHMP tuh-GETH-uhr",
+  "hindi": "एक साथ जोड़ देना"
+ },
+ "forward-thinking": {
+  "pronunciation": "FOR-wuhrd-THING-king",
+  "hindi": "दूरदर्शी, आगे की सोच वाला"
+ },
+ "unimaginative": {
+  "pronunciation": "uhn-i-MAJ-uh-nuh-tiv",
+  "hindi": "कल्पनाहीन"
+ },
+ "sensible": {
+  "pronunciation": "SEN-suh-buhl",
+  "hindi": "समझदार, विवेकी"
+ },
+ "heedless": {
+  "pronunciation": "HEED-luhs",
+  "hindi": "लापरवाह, बेपरवाह"
+ },
+ "etiquette": {
+  "pronunciation": "ET-i-ket",
+  "hindi": "शिष्टाचार, तहज़ीब"
+ },
+ "dignity": {
+  "pronunciation": "DIG-nuh-tee",
+  "hindi": "गरिमा, प्रतिष्ठा"
+ },
+ "seemliness": {
+  "pronunciation": "SEEM-lee-nuhs",
+  "hindi": "शालीनता, औचित्य"
+ },
+ "rudeness": {
+  "pronunciation": "ROOD-nuhs",
+  "hindi": "अशिष्टता, बदतमीज़ी"
+ },
+ "indecorum": {
+  "pronunciation": "in-di-KOR-uhm",
+  "hindi": "अशोभनीय व्यवहार"
+ },
+ "vulgarity": {
+  "pronunciation": "vuhl-GAR-uh-tee",
+  "hindi": "फूहड़पन, अश्लीलता"
+ },
+ "mercurial": {
+  "pronunciation": "mur-KYOOR-ee-uhl",
+  "hindi": "चंचल, पल-पल बदलने वाला"
+ },
+ "constant": {
+  "pronunciation": "KON-stuhnt",
+  "hindi": "स्थिर, अटल"
+ },
+ "revoke": {
+  "pronunciation": "ri-VOHK",
+  "hindi": "रद्द करना, वापस लेना"
+ },
+ "cancel": {
+  "pronunciation": "KAN-suhl",
+  "hindi": "रद्द करना"
+ },
+ "enact": {
+  "pronunciation": "i-NAKT",
+  "hindi": "कानून बनाना, लागू करना"
+ },
+ "reinstate": {
+  "pronunciation": "ree-in-STAYT",
+  "hindi": "बहाल करना, फिर से लागू करना"
+ },
+ "all-encompassing": {
+  "pronunciation": "awl-in-KUHM-puh-sing",
+  "hindi": "सर्वव्यापी, सब कुछ समेटने वाला"
+ },
+ "systemic": {
+  "pronunciation": "si-STEM-ik",
+  "hindi": "प्रणालीगत, पूरी व्यवस्था से जुड़ा"
+ },
+ "reductive": {
+  "pronunciation": "ri-DUHK-tiv",
+  "hindi": "अति-सरलीकरण करने वाला"
+ },
+ "merit-based system": {
+  "pronunciation": "MER-it-bayst SIS-tuhm",
+  "hindi": "योग्यता आधारित व्यवस्था"
+ },
+ "achievement culture": {
+  "pronunciation": "uh-CHEEV-muhnt KUHL-chur",
+  "hindi": "उपलब्धि-प्रधान संस्कृति"
+ },
+ "open competition": {
+  "pronunciation": "OH-puhn kom-puh-TISH-uhn",
+  "hindi": "खुली प्रतियोगिता"
+ },
+ "ability-based order": {
+  "pronunciation": "uh-BIL-uh-tee-bayst OR-dur",
+  "hindi": "क्षमता आधारित व्यवस्था"
+ },
+ "cronyism": {
+  "pronunciation": "KROH-nee-iz-uhm",
+  "hindi": "यार-दोस्तों को तरजीह, भाई-भतीजावाद"
+ },
+ "favouritism": {
+  "pronunciation": "FAY-vuh-rit-iz-uhm",
+  "hindi": "पक्षपात"
+ },
+ "oligarchy": {
+  "pronunciation": "OL-uh-gar-kee",
+  "hindi": "अल्पतंत्र, चंद लोगों का शासन"
+ },
+ "erode": {
+  "pronunciation": "i-ROHD",
+  "hindi": "धीरे-धीरे कमज़ोर करना"
+ },
+ "after-the-fact": {
+  "pronunciation": "AF-tur-thuh-FAKT",
+  "hindi": "घटना के बाद का"
+ },
+ "defensive": {
+  "pronunciation": "di-FEN-siv",
+  "hindi": "बचाव की मुद्रा वाला"
+ },
+ "tangent": {
+  "pronunciation": "TAN-juhnt",
+  "hindi": "विषय से हटकर बात"
+ },
+ "aside": {
+  "pronunciation": "uh-SIDE",
+  "hindi": "प्रसंगवश कही बात"
+ },
+ "detour": {
+  "pronunciation": "DEE-toor",
+  "hindi": "घुमावदार रास्ता, भटकाव"
+ },
+ "focus": {
+  "pronunciation": "FOH-kuhs",
+  "hindi": "केंद्रबिंदु, ध्यान"
+ },
+ "main thread": {
+  "pronunciation": "mayn thred",
+  "hindi": "मुख्य सूत्र"
+ },
+ "core argument": {
+  "pronunciation": "kor AR-gyuh-muhnt",
+  "hindi": "मूल तर्क"
+ },
+ "unfeeling": {
+  "pronunciation": "uhn-FEE-ling",
+  "hindi": "संवेदनहीन, भावशून्य"
+ },
+ "hard-hearted": {
+  "pronunciation": "hard-HAR-tid",
+  "hindi": "कठोर हृदय वाला, निष्ठुर"
+ },
+ "insensitive": {
+  "pronunciation": "in-SEN-suh-tiv",
+  "hindi": "असंवेदनशील"
+ },
+ "compassionate": {
+  "pronunciation": "kuhm-PASH-uh-nit",
+  "hindi": "दयालु, करुणामय"
+ },
+ "tender": {
+  "pronunciation": "TEN-dur",
+  "hindi": "कोमल, नरम दिल"
+ },
+ "caring": {
+  "pronunciation": "KAIR-ing",
+  "hindi": "परवाह करने वाला"
+ },
+ "favourable": {
+  "pronunciation": "FAY-vuh-ruh-buhl",
+  "hindi": "अनुकूल, लाभकारी"
+ },
+ "kindly": {
+  "pronunciation": "KIND-lee",
+  "hindi": "कृपालु, दयालु"
+ },
+ "malignant": {
+  "pronunciation": "muh-LIG-nuhnt",
+  "hindi": "हानिकारक, घातक"
+ },
+ "cruel": {
+  "pronunciation": "KROO-uhl",
+  "hindi": "क्रूर, निर्दयी"
+ },
+ "harmful": {
+  "pronunciation": "HAHRM-fuhl",
+  "hindi": "नुकसानदेह"
+ },
+ "shelve": {
+  "pronunciation": "SHELV",
+  "hindi": "स्थगित करना, टाल देना"
+ },
+ "hold over": {
+  "pronunciation": "HOHLD OH-vur",
+  "hindi": "आगे के लिए टालना"
+ },
+ "proceed": {
+  "pronunciation": "pruh-SEED",
+  "hindi": "आगे बढ़ना"
+ },
+ "hurried": {
+  "pronunciation": "HUR-eed",
+  "hindi": "जल्दबाज़ी वाला"
+ },
+ "leisurely": {
+  "pronunciation": "LEE-zhur-lee",
+  "hindi": "आराम से, इत्मीनान से"
+ },
+ "unhurried": {
+  "pronunciation": "un-HUR-eed",
+  "hindi": "बिना जल्दबाज़ी का"
+ },
+ "total": {
+  "pronunciation": "TOH-tuhl",
+  "hindi": "कुल योग"
+ },
+ "combined": {
+  "pronunciation": "kuhm-BYND",
+  "hindi": "संयुक्त, मिला हुआ"
+ },
+ "sum": {
+  "pronunciation": "SUHM",
+  "hindi": "योग, जोड़"
+ },
+ "discrete": {
+  "pronunciation": "dih-SKREET",
+  "hindi": "अलग, पृथक"
+ },
+ "firm": {
+  "pronunciation": "FURM",
+  "hindi": "दृढ़, पक्का"
+ },
+ "vacillating": {
+  "pronunciation": "VAS-uh-lay-ting",
+  "hindi": "अनिर्णायक, डांवाडोल"
+ },
+ "standstill": {
+  "pronunciation": "STAND-stil",
+  "hindi": "ठहराव, गतिरोध"
+ },
+ "superseded": {
+  "pronunciation": "soo-pur-SEE-did",
+  "hindi": "अपदस्थ, बदला हुआ"
+ },
+ "disused": {
+  "pronunciation": "dis-YOOZD",
+  "hindi": "अप्रयुक्त, छोड़ा हुआ"
+ },
+ "current": {
+  "pronunciation": "KUR-uhnt",
+  "hindi": "प्रचलित, वर्तमान"
+ },
+ "modern": {
+  "pronunciation": "MOD-urn",
+  "hindi": "आधुनिक"
+ },
+ "up-to-date": {
+  "pronunciation": "UHP-tuh-DAYT",
+  "hindi": "अद्यतन, नवीनतम"
+ },
+ "expand on": {
+  "pronunciation": "ik-SPAND ON",
+  "hindi": "विस्तार से बताना"
+ },
+ "detail": {
+  "pronunciation": "DEE-tayl",
+  "hindi": "ब्योरा देना"
+ },
+ "divide": {
+  "pronunciation": "dih-VYD",
+  "hindi": "बाँटना, विभाजित करना"
+ },
+ "factionalize": {
+  "pronunciation": "FAK-shuh-nuh-lyz",
+  "hindi": "गुटों में बाँटना"
+ },
+ "unite": {
+  "pronunciation": "yoo-NYT",
+  "hindi": "एकजुट करना"
+ },
+ "bridge": {
+  "pronunciation": "BRIJ",
+  "hindi": "खाई पाटना"
+ },
+ "two-way": {
+  "pronunciation": "TOO-way",
+  "hindi": "दोतरफ़ा"
+ },
+ "complementary": {
+  "pronunciation": "kom-pluh-MEN-tuh-ree",
+  "hindi": "पूरक"
+ },
+ "shared": {
+  "pronunciation": "SHAIRD",
+  "hindi": "साझा"
+ },
+ "asymmetric": {
+  "pronunciation": "ay-suh-MET-rik",
+  "hindi": "असमान, असममित"
+ },
+ "unrivalled": {
+  "pronunciation": "un-RY-vuhld",
+  "hindi": "बेजोड़, अद्वितीय"
+ },
+ "leading": {
+  "pronunciation": "LEE-ding",
+  "hindi": "अग्रणी, प्रमुख"
+ },
+ "inferior": {
+  "pronunciation": "in-FEER-ee-ur",
+  "hindi": "निम्न, घटिया"
+ },
+ "undistinguished": {
+  "pronunciation": "un-dih-STING-gwisht",
+  "hindi": "साधारण, अप्रसिद्ध"
+ },
+ "recommend": {
+  "pronunciation": "rek-uh-MEND",
+  "hindi": "सिफ़ारिश करना"
+ },
+ "self-satisfied": {
+  "pronunciation": "self-SAT-is-fyd",
+  "hindi": "आत्मसंतुष्ट"
+ },
+ "smug": {
+  "pronunciation": "SMUHG",
+  "hindi": "घमंडी, आत्मतुष्ट"
+ },
+ "unconcerned": {
+  "pronunciation": "un-kuhn-SURND",
+  "hindi": "बेफ़िक्र, लापरवाह"
+ },
+ "driven": {
+  "pronunciation": "DRIV-uhn",
+  "hindi": "लगनशील, प्रेरित"
+ },
+ "ceremonious": {
+  "pronunciation": "ser-uh-MOH-nee-uhss",
+  "hindi": "औपचारिक, रस्मी"
+ },
+ "official": {
+  "pronunciation": "uh-FISH-uhl",
+  "hindi": "आधिकारिक, सरकारी"
+ },
+ "decorous": {
+  "pronunciation": "DEK-uh-ruhss",
+  "hindi": "शिष्ट, मर्यादित"
+ },
+ "relaxed": {
+  "pronunciation": "ri-LAKST",
+  "hindi": "अनौपचारिक, सहज"
+ },
+ "meeting": {
+  "pronunciation": "MEE-ting",
+  "hindi": "मिलता हुआ, संगम करता"
+ },
+ "aligning": {
+  "pronunciation": "uh-LYE-ning",
+  "hindi": "एक सीध में आता हुआ"
+ },
+ "unifying": {
+  "pronunciation": "YOO-nuh-fye-ing",
+  "hindi": "एकजुट करने वाला"
+ },
+ "coinciding": {
+  "pronunciation": "koh-in-SYE-ding",
+  "hindi": "संयोग से मेल खाता"
+ },
+ "separating": {
+  "pronunciation": "SEP-uh-ray-ting",
+  "hindi": "अलग होता हुआ"
+ },
+ "diverging": {
+  "pronunciation": "dye-VUR-jing",
+  "hindi": "अलग दिशा में जाता"
+ },
+ "partiality": {
+  "pronunciation": "pahr-shee-AL-uh-tee",
+  "hindi": "पक्षपात"
+ },
+ "impartiality": {
+  "pronunciation": "im-pahr-shee-AL-uh-tee",
+  "hindi": "निष्पक्षता"
+ },
+ "fairness": {
+  "pronunciation": "FAIR-nuhss",
+  "hindi": "न्यायसंगतता, निष्पक्षता"
+ },
+ "strong": {
+  "pronunciation": "strawng",
+  "hindi": "मजबूत, सशक्त"
+ },
+ "sturdy": {
+  "pronunciation": "STUR-dee",
+  "hindi": "दृढ़, पक्का"
+ },
+ "flimsy": {
+  "pronunciation": "FLIM-zee",
+  "hindi": "कमजोर, कच्चा"
+ },
+ "unreliable": {
+  "pronunciation": "uhn-ri-LYE-uh-buhl",
+  "hindi": "अविश्वसनीय"
+ },
+ "differing": {
+  "pronunciation": "DIF-uh-ring",
+  "hindi": "भिन्न, अलग-अलग"
+ },
+ "aligned": {
+  "pronunciation": "uh-LYND",
+  "hindi": "सुसंगत, एक सीध में"
+ },
+ "marry": {
+  "pronunciation": "MAIR-ee",
+  "hindi": "शादी करना"
+ },
+ "espouse": {
+  "pronunciation": "ih-SPOWZ",
+  "hindi": "विवाह करना, अपनाना"
+ },
+ "divorce": {
+  "pronunciation": "dih-VORSS",
+  "hindi": "तलाक देना"
+ },
+ "part": {
+  "pronunciation": "pahrt",
+  "hindi": "अलग होना"
+ },
+ "stand-in": {
+  "pronunciation": "STAND-in",
+  "hindi": "स्थानापन्न"
+ },
+ "substitute": {
+  "pronunciation": "SUHB-stuh-toot",
+  "hindi": "विकल्प, स्थानापन्न"
+ },
+ "surrogate": {
+  "pronunciation": "SUR-uh-guht",
+  "hindi": "प्रतिनिधि विकल्प"
+ },
+ "representative": {
+  "pronunciation": "rep-ri-ZEN-tuh-tiv",
+  "hindi": "प्रतिनिधि"
+ },
+ "original": {
+  "pronunciation": "uh-RIJ-uh-nuhl",
+  "hindi": "मूल"
+ },
+ "direct measure": {
+  "pronunciation": "duh-REKT MEZH-ur",
+  "hindi": "प्रत्यक्ष माप"
+ },
+ "firsthand source": {
+  "pronunciation": "FURST-hand SORSS",
+  "hindi": "प्रत्यक्ष स्रोत"
+ },
+ "practical": {
+  "pronunciation": "PRAK-ti-kuhl",
+  "hindi": "व्यावहारिक"
+ },
+ "hard-headed": {
+  "pronunciation": "HAHRD-HED-id",
+  "hindi": "यथार्थवादी, कठोर व्यावहारिक"
+ },
+ "distinguish": {
+  "pronunciation": "dih-STING-gwish",
+  "hindi": "भेद करना"
+ },
+ "differentiate": {
+  "pronunciation": "dif-uh-REN-shee-ayt",
+  "hindi": "अंतर करना"
+ },
+ "disentangle": {
+  "pronunciation": "dis-in-TANG-guhl",
+  "hindi": "सुलझाना, अलग करना"
+ },
+ "ungainly": {
+  "pronunciation": "uhn-GAYN-lee",
+  "hindi": "बेढंगा"
+ },
+ "blundering": {
+  "pronunciation": "BLUHN-der-ing",
+  "hindi": "फूहड़, गलतियाँ करने वाला"
+ },
+ "gauche": {
+  "pronunciation": "gohsh",
+  "hindi": "अटपटा, असभ्य"
+ },
+ "graceful": {
+  "pronunciation": "GRAYSS-fuhl",
+  "hindi": "सुंदर, सुघड़"
+ },
+ "polished": {
+  "pronunciation": "POL-isht",
+  "hindi": "परिष्कृत, सुसंस्कृत"
+ },
+ "self-governance": {
+  "pronunciation": "self-GUHV-ur-nuhns",
+  "hindi": "स्वशासन"
+ },
+ "self-direction": {
+  "pronunciation": "self-duh-REK-shuhn",
+  "hindi": "आत्म-निर्देशन"
+ },
+ "dependence": {
+  "pronunciation": "dih-PEN-duhns",
+  "hindi": "निर्भरता"
+ },
+ "subjugation": {
+  "pronunciation": "suhb-juh-GAY-shuhn",
+  "hindi": "अधीनता, गुलामी"
+ },
+ "constraint": {
+  "pronunciation": "kuhn-STRAYNT",
+  "hindi": "बंदिश, प्रतिबंध"
+ },
+ "control": {
+  "pronunciation": "kuhn-TROHL",
+  "hindi": "नियंत्रण"
+ },
+ "severe": {
+  "pronunciation": "suh-VEER",
+  "hindi": "कठोर"
+ },
+ "tight": {
+  "pronunciation": "TYT",
+  "hindi": "कड़ा, सख्त"
+ },
+ "back": {
+  "pronunciation": "BAK",
+  "hindi": "समर्थन करना"
+ },
+ "champion": {
+  "pronunciation": "CHAM-pee-uhn",
+  "hindi": "पक्ष लेना, पैरवी करना"
+ },
+ "influential": {
+  "pronunciation": "in-floo-EN-shuhl",
+  "hindi": "प्रभावशाली"
+ },
+ "dissuasive": {
+  "pronunciation": "dih-SWAY-siv",
+  "hindi": "हतोत्साहित करने वाला"
+ },
+ "reprimand": {
+  "pronunciation": "REP-ruh-mand",
+  "hindi": "फटकार लगाना"
+ },
+ "reprove": {
+  "pronunciation": "rih-PROOV",
+  "hindi": "डाँटना, झिड़कना"
+ },
+ "shore up": {
+  "pronunciation": "SHOR UHP",
+  "hindi": "सहारा देना, मज़बूत करना"
+ },
+ "buttress": {
+  "pronunciation": "BUH-trihs",
+  "hindi": "मज़बूती देना, सहारा देना"
+ },
+ "sap": {
+  "pronunciation": "SAP",
+  "hindi": "कमज़ोर करना"
+ },
+ "external": {
+  "pronunciation": "ik-STUR-nuhl",
+  "hindi": "बाहरी"
+ },
+ "incidental": {
+  "pronunciation": "in-suh-DEN-tl",
+  "hindi": "आनुषंगिक, गौण"
+ },
+ "multiply": {
+  "pronunciation": "MUHL-tuh-ply",
+  "hindi": "तेज़ी से बढ़ना"
+ },
+ "mushroom": {
+  "pronunciation": "MUHSH-room",
+  "hindi": "तेज़ी से फैलना"
+ },
+ "junior": {
+  "pronunciation": "JOON-yur",
+  "hindi": "कनिष्ठ"
+ },
+ "lesser": {
+  "pronunciation": "LES-ur",
+  "hindi": "कम महत्त्व का"
+ },
+ "superior": {
+  "pronunciation": "suh-PEER-ee-ur",
+  "hindi": "उच्च, वरिष्ठ"
+ },
+ "senior": {
+  "pronunciation": "SEEN-yur",
+  "hindi": "वरिष्ठ"
+ },
+ "dominant": {
+  "pronunciation": "DAH-muh-nuhnt",
+  "hindi": "प्रभावी, प्रमुख"
+ },
+ "indiscretion": {
+  "pronunciation": "in-dih-SKRESH-uhn",
+  "hindi": "नासमझी भरा अनुचित कार्य"
+ },
+ "unseemliness": {
+  "pronunciation": "uhn-SEEM-lee-nuhs",
+  "hindi": "अशोभनीयता"
+ },
+ "correctness": {
+  "pronunciation": "kuh-REKT-nuhs",
+  "hindi": "औचित्य, शुद्धता"
+ },
+ "rectitude": {
+  "pronunciation": "REK-tuh-tood",
+  "hindi": "सदाचार, नैतिक ईमानदारी"
+ },
+ "detect": {
+  "pronunciation": "dih-TEKT",
+  "hindi": "भाँप लेना, पता लगाना"
+ },
+ "overlook": {
+  "pronunciation": "oh-vur-LUUK",
+  "hindi": "अनदेखा करना"
+ },
+ "miss": {
+  "pronunciation": "MIS",
+  "hindi": "चूक जाना"
+ },
+ "gruff": {
+  "pronunciation": "GRUHF",
+  "hindi": "रूखा, कर्कश"
+ },
+ "allowance": {
+  "pronunciation": "uh-LOW-uhns",
+  "hindi": "रियायत, छूट"
+ },
+ "climbdown": {
+  "pronunciation": "KLYM-down",
+  "hindi": "पीछे हटना, झुकना"
+ },
+ "give": {
+  "pronunciation": "GIV",
+  "hindi": "लचीलापन, झुकाव"
+ },
+ "intransigence": {
+  "pronunciation": "in-TRAN-suh-juhns",
+  "hindi": "हठधर्मिता"
+ },
+ "fragment": {
+  "pronunciation": "FRAG-muhnt",
+  "hindi": "टुकड़ों में बाँटना"
+ },
+ "remunerative": {
+  "pronunciation": "rih-MYOO-nur-uh-tiv",
+  "hindi": "लाभकारी, मुनाफ़े वाला"
+ },
+ "square": {
+  "pronunciation": "SKWAIR",
+  "hindi": "मेल बैठाना"
+ },
+ "resolve": {
+  "pronunciation": "ri-ZOLV",
+  "hindi": "सुलझाना"
+ },
+ "estrange": {
+  "pronunciation": "i-STRAYNJ",
+  "hindi": "पराया करना"
+ },
+ "qualify": {
+  "pronunciation": "KWOL-uh-fy",
+  "hindi": "शर्त लगाकर सीमित करना"
+ },
+ "soften": {
+  "pronunciation": "SOF-uhn",
+  "hindi": "नरम करना"
+ },
+ "commit": {
+  "pronunciation": "kuh-MIT",
+  "hindi": "प्रतिबद्ध होना"
+ },
+ "oscillate": {
+  "pronunciation": "OS-uh-layt",
+  "hindi": "डगमगाना"
+ },
+ "decide": {
+  "pronunciation": "di-SYD",
+  "hindi": "निर्णय लेना"
+ },
+ "inoperative": {
+  "pronunciation": "in-OP-ur-uh-tiv",
+  "hindi": "निष्क्रिय"
+ },
+ "extinct": {
+  "pronunciation": "ik-STINGKT",
+  "hindi": "विलुप्त"
+ },
+ "dissolved": {
+  "pronunciation": "di-ZOLVD",
+  "hindi": "भंग किया हुआ"
+ },
+ "active": {
+  "pronunciation": "AK-tiv",
+  "hindi": "सक्रिय"
+ },
+ "operational": {
+  "pronunciation": "op-uh-RAY-shuh-nuhl",
+  "hindi": "चालू"
+ },
+ "snobbish": {
+  "pronunciation": "SNOB-ish",
+  "hindi": "घमंडी"
+ },
+ "privileged": {
+  "pronunciation": "PRIV-uh-lijd",
+  "hindi": "विशेषाधिकार प्राप्त"
+ },
+ "populist": {
+  "pronunciation": "POP-yuh-list",
+  "hindi": "जनवादी"
+ },
+ "interchangeable": {
+  "pronunciation": "in-tur-CHAYN-juh-buhl",
+  "hindi": "आपस में बदलने योग्य"
+ },
+ "identical in sense": {
+  "pronunciation": "eye-DEN-ti-kuhl in SENSS",
+  "hindi": "अर्थ में समान"
+ },
+ "antonymous": {
+  "pronunciation": "an-TON-uh-muhs",
+  "hindi": "विलोमार्थक"
+ },
+ "contrasting": {
+  "pronunciation": "kuhn-TRAS-ting",
+  "hindi": "विपरीत"
+ },
+ "commotion": {
+  "pronunciation": "kuh-MOH-shuhn",
+  "hindi": "हलचल"
+ },
+ "tumult": {
+  "pronunciation": "TOO-muhlt",
+  "hindi": "कोलाहल"
+ },
+ "flurry": {
+  "pronunciation": "FLUR-ee",
+  "hindi": "अचानक हड़बड़ी"
+ },
+ "hubbub": {
+  "pronunciation": "HUHB-uhb",
+  "hindi": "शोरगुल"
+ },
+ "quiet": {
+  "pronunciation": "KWY-uht",
+  "hindi": "शांति"
+ },
+ "stillness": {
+  "pronunciation": "STIL-nuhs",
+  "hindi": "निस्तब्धता"
+ },
+ "ill-tempered": {
+  "pronunciation": "IL-TEM-purd",
+  "hindi": "चिड़चिड़ा"
+ },
+ "challenge": {
+  "pronunciation": "CHAL-inj",
+  "hindi": "चुनौती देना"
+ },
+ "question": {
+  "pronunciation": "KWES-chuhn",
+  "hindi": "सवाल उठाना"
+ },
+ "loiter": {
+  "pronunciation": "LOY-tur",
+  "hindi": "मंडराना"
+ },
+ "tarry": {
+  "pronunciation": "TAR-ee",
+  "hindi": "ठहरना"
+ },
+ "dawdle": {
+  "pronunciation": "DAW-duhl",
+  "hindi": "देर लगाना"
+ },
+ "remain": {
+  "pronunciation": "ri-MAYN",
+  "hindi": "टिके रहना"
+ },
+ "quicken": {
+  "pronunciation": "KWIK-uhn",
+  "hindi": "तेज़ करना"
+ },
+ "depart": {
+  "pronunciation": "di-PAHRT",
+  "hindi": "चले जाना"
+ },
+ "rush": {
+  "pronunciation": "RUHSH",
+  "hindi": "जल्दी करना"
+ },
+ "devastate": {
+  "pronunciation": "DEV-uh-stayt",
+  "hindi": "तबाह करना"
+ },
+ "wreck": {
+  "pronunciation": "REK",
+  "hindi": "बर्बाद करना"
+ },
+ "repair": {
+  "pronunciation": "ri-PAIR",
+  "hindi": "मरम्मत करना"
+ },
+ "construct": {
+  "pronunciation": "kuhn-STRUHKT",
+  "hindi": "निर्माण करना"
+ },
+ "gainful": {
+  "pronunciation": "GAYN-fuhl",
+  "hindi": "लाभदायक"
+ },
+ "rewarding": {
+  "pronunciation": "ri-WOR-ding",
+  "hindi": "फलदायी, संतोषजनक"
+ },
+ "loss-making": {
+  "pronunciation": "LOSS-MAY-king",
+  "hindi": "घाटे वाला"
+ },
+ "unremunerative": {
+  "pronunciation": "un-ri-MYOO-nuh-ruh-tiv",
+  "hindi": "अलाभकारी"
+ },
+ "worthless": {
+  "pronunciation": "WURTH-luhss",
+  "hindi": "बेकार, निकम्मा"
+ },
+ "undertone": {
+  "pronunciation": "UN-dur-tohn",
+  "hindi": "अंतर्निहित भाव"
+ },
+ "formation": {
+  "pronunciation": "for-MAY-shuhn",
+  "hindi": "गठन, निर्माण"
+ },
+ "foundation": {
+  "pronunciation": "fown-DAY-shuhn",
+  "hindi": "नींव, स्थापना"
+ },
+ "genesis": {
+  "pronunciation": "JEN-uh-siss",
+  "hindi": "उत्पत्ति"
+ },
+ "invention": {
+  "pronunciation": "in-VEN-shuhn",
+  "hindi": "आविष्कार"
+ },
+ "destruction": {
+  "pronunciation": "di-STRUK-shuhn",
+  "hindi": "विनाश"
+ },
+ "ruin": {
+  "pronunciation": "ROO-in",
+  "hindi": "बर्बादी"
+ },
+ "demolition": {
+  "pronunciation": "dem-uh-LISH-uhn",
+  "hindi": "ध्वस्तीकरण"
+ },
+ "annihilation": {
+  "pronunciation": "uh-ny-uh-LAY-shuhn",
+  "hindi": "पूर्ण विनाश"
+ },
+ "ascribe": {
+  "pronunciation": "uh-SKRYB",
+  "hindi": "आरोपित करना, श्रेय देना"
+ },
+ "dissociate": {
+  "pronunciation": "di-SOH-shee-ayt",
+  "hindi": "अलग करना, संबंध तोड़ना"
+ },
+ "disclaim": {
+  "pronunciation": "dis-KLAYM",
+  "hindi": "अस्वीकार करना"
+ },
+ "self-assured": {
+  "pronunciation": "self-uh-SHOORD",
+  "hindi": "आत्मविश्वासी"
+ },
+ "submissive": {
+  "pronunciation": "suhb-MISS-iv",
+  "hindi": "आज्ञाकारी, दब्बू"
+ },
+ "source": {
+  "pronunciation": "SORSS",
+  "hindi": "स्रोत से प्राप्त करना"
+ },
+ "comprehensible": {
+  "pronunciation": "kom-pri-HEN-suh-buhl",
+  "hindi": "समझने योग्य"
+ },
+ "confusing": {
+  "pronunciation": "kuhn-FYOO-zing",
+  "hindi": "भ्रमित करने वाला"
+ },
+ "recap": {
+  "pronunciation": "REE-kap",
+  "hindi": "दोहराना, सार बताना"
+ },
+ "encapsulate": {
+  "pronunciation": "en-KAP-suh-layt",
+  "hindi": "संक्षेप में समेटना"
+ },
+ "distil": {
+  "pronunciation": "di-STIL",
+  "hindi": "सार निकालना"
+ },
+ "persevering": {
+  "pronunciation": "pur-suh-VEER-ing",
+  "hindi": "दृढ़ निश्चयी, लगनशील"
+ },
+ "idle": {
+  "pronunciation": "Y-duhl",
+  "hindi": "आलसी, निठल्ला"
+ },
+ "lackadaisical": {
+  "pronunciation": "lak-uh-DAY-zi-kuhl",
+  "hindi": "सुस्त, लापरवाह"
+ },
+ "frank": {
+  "pronunciation": "FRANGK",
+  "hindi": "स्पष्टवादी"
+ },
+ "unguarded": {
+  "pronunciation": "un-GAR-did",
+  "hindi": "बेझिझक, खुला"
+ },
+ "disingenuous": {
+  "pronunciation": "dis-in-JEN-yoo-uhss",
+  "hindi": "कपटी, बेईमान"
+ },
+ "cagey": {
+  "pronunciation": "KAY-jee",
+  "hindi": "बातें छिपाने वाला"
+ },
+ "ribald": {
+  "pronunciation": "RIB-uhld",
+  "hindi": "अश्लील, फूहड़"
+ },
+ "boorish": {
+  "pronunciation": "BOOR-ish",
+  "hindi": "उजड्ड, गँवार"
+ },
+ "crude": {
+  "pronunciation": "KROOD",
+  "hindi": "भद्दा, अशिष्ट"
+ },
+ "fine": {
+  "pronunciation": "FYN",
+  "hindi": "महीन, बारीक"
+ },
+ "refined": {
+  "pronunciation": "ri-FYND",
+  "hindi": "परिष्कृत, सुसंस्कृत"
+ },
+ "genteel": {
+  "pronunciation": "jen-TEEL",
+  "hindi": "शिष्ट, सभ्य"
+ },
+ "considerate": {
+  "pronunciation": "kuhn-SID-ur-uht",
+  "hindi": "विचारशील"
+ },
+ "shorten": {
+  "pronunciation": "SHOR-tuhn",
+  "hindi": "छोटा करना"
+ },
+ "bitter": {
+  "pronunciation": "BIT-er",
+  "hindi": "कटु, तीखा"
+ },
+ "rancorous": {
+  "pronunciation": "RANG-kuhr-uhss",
+  "hindi": "द्वेषपूर्ण, वैर से भरा"
+ },
+ "trim": {
+  "pronunciation": "TRIM",
+  "hindi": "छाँटना, कम करना"
+ },
+ "complicate": {
+  "pronunciation": "KOM-pli-kayt",
+  "hindi": "जटिल बनाना"
+ },
+ "encumber": {
+  "pronunciation": "en-KUM-ber",
+  "hindi": "बोझिल करना, बाधा डालना"
+ },
+ "bloat": {
+  "pronunciation": "BLOHT",
+  "hindi": "फुलाना, अनावश्यक बढ़ाना"
+ },
+ "convolute": {
+  "pronunciation": "KON-vuh-loot",
+  "hindi": "उलझाना, पेचीदा बनाना"
+ },
+ "cash availability": {
+  "pronunciation": "KASH uh-vay-luh-BIL-uh-tee",
+  "hindi": "नकदी की उपलब्धता"
+ },
+ "convertibility": {
+  "pronunciation": "kuhn-vur-tuh-BIL-uh-tee",
+  "hindi": "परिवर्तनीयता"
+ },
+ "solvency": {
+  "pronunciation": "SOL-vuhn-see",
+  "hindi": "ऋण चुकाने की क्षमता"
+ },
+ "fluidity": {
+  "pronunciation": "floo-ID-uh-tee",
+  "hindi": "तरलता"
+ },
+ "illiquidity": {
+  "pronunciation": "il-i-KWID-uh-tee",
+  "hindi": "अतरलता, नकदी का अभाव"
+ },
+ "insolvency": {
+  "pronunciation": "in-SOL-vuhn-see",
+  "hindi": "दिवालियापन"
+ },
+ "improvise": {
+  "pronunciation": "IM-pruh-vyz",
+  "hindi": "तुरंत बनाकर करना"
+ },
+ "ad-lib": {
+  "pronunciation": "AD-LIB",
+  "hindi": "बिना तैयारी बोलना"
+ },
+ "invent": {
+  "pronunciation": "in-VENT",
+  "hindi": "गढ़ना, रचना"
+ },
+ "wing it": {
+  "pronunciation": "WING IT",
+  "hindi": "अंदाज़े से काम चलाना"
+ },
+ "rehearse": {
+  "pronunciation": "ri-HURSS",
+  "hindi": "पूर्वाभ्यास करना"
+ },
+ "prepare": {
+  "pronunciation": "pri-PAIR",
+  "hindi": "तैयारी करना"
+ },
+ "script": {
+  "pronunciation": "SKRIPT",
+  "hindi": "पटकथा लिखना"
+ },
+ "plan": {
+  "pronunciation": "PLAN",
+  "hindi": "योजना बनाना"
+ },
+ "organised": {
+  "pronunciation": "AWR-guh-nyzd",
+  "hindi": "सुव्यवस्थित"
+ },
+ "ordered": {
+  "pronunciation": "AWR-derd",
+  "hindi": "क्रमबद्ध"
+ },
+ "haphazard": {
+  "pronunciation": "hap-HAZ-erd",
+  "hindi": "अव्यवस्थित, बेतरतीब"
+ },
+ "disorganised": {
+  "pronunciation": "dis-AWR-guh-nyzd",
+  "hindi": "अव्यवस्थित"
+ },
+ "crucial": {
+  "pronunciation": "KROO-shuhl",
+  "hindi": "निर्णायक, अत्यंत महत्वपूर्ण"
+ },
+ "pressing": {
+  "pronunciation": "PRESS-ing",
+  "hindi": "अत्यावश्यक"
+ },
+ "dispensable": {
+  "pronunciation": "dis-PEN-suh-buhl",
+  "hindi": "गैर-ज़रूरी"
+ },
+ "rebel": {
+  "pronunciation": "REB-uhl",
+  "hindi": "विद्रोही"
+ },
+ "foresighted": {
+  "pronunciation": "FAWR-SY-tid",
+  "hindi": "दूरदर्शी"
+ },
+ "prophetic": {
+  "pronunciation": "pruh-FET-ik",
+  "hindi": "भविष्यसूचक"
+ },
+ "far-seeing": {
+  "pronunciation": "FAR-SEE-ing",
+  "hindi": "दूरदर्शी"
+ },
+ "unaware": {
+  "pronunciation": "un-uh-WAIR",
+  "hindi": "अनजान, बेख़बर"
+ },
+ "irregularity": {
+  "pronunciation": "i-reg-yuh-LAIR-uh-tee",
+  "hindi": "अनियमितता"
+ },
+ "regularity": {
+  "pronunciation": "reg-yuh-LAIR-uh-tee",
+  "hindi": "नियमितता"
+ },
+ "standard": {
+  "pronunciation": "STAN-derd",
+  "hindi": "मानक, सामान्य"
+ },
+ "pattern": {
+  "pronunciation": "PAT-ern",
+  "hindi": "नियमित प्रतिरूप"
+ },
+ "absolute": {
+  "pronunciation": "AB-suh-loot",
+  "hindi": "निश्चित, पूर्ण"
+ },
+ "qualified": {
+  "pronunciation": "KWOL-uh-fyd",
+  "hindi": "शर्तों वाला, सीमित"
+ },
+ "hedged": {
+  "pronunciation": "HEJD",
+  "hindi": "गोलमोल, टालमटोल वाला"
+ },
+ "build": {
+  "pronunciation": "BILD",
+  "hindi": "बनाना, निर्माण करना"
+ },
+ "symbolic": {
+  "pronunciation": "sim-BOL-ik",
+  "hindi": "प्रतीकात्मक"
+ },
+ "allegorical": {
+  "pronunciation": "al-uh-GOR-ik-uhl",
+  "hindi": "रूपकात्मक"
+ },
+ "non-literal": {
+  "pronunciation": "non-LIT-uh-ruhl",
+  "hindi": "अशाब्दिक, लाक्षणिक"
+ },
+ "plain": {
+  "pronunciation": "PLAYN",
+  "hindi": "सीधा-सादा, स्पष्ट"
+ },
+ "require": {
+  "pronunciation": "ri-KWYR",
+  "hindi": "अनिवार्य करना, माँगना"
+ },
+ "prescribe": {
+  "pronunciation": "pri-SKRYB",
+  "hindi": "निर्धारित करना"
+ },
+ "lay down": {
+  "pronunciation": "LAY DOWN",
+  "hindi": "शर्त के रूप में तय करना"
+ },
+ "leave open": {
+  "pronunciation": "LEEV OH-puhn",
+  "hindi": "खुला छोड़ना"
+ },
+ "aspiring": {
+  "pronunciation": "uh-SPY-ring",
+  "hindi": "महत्वाकांक्षी, आकांक्षी"
+ },
+ "far-reaching": {
+  "pronunciation": "FAR-REE-ching",
+  "hindi": "दूरगामी, व्यापक"
+ },
+ "unambitious": {
+  "pronunciation": "uhn-am-BISH-uhs",
+  "hindi": "महत्वाकांक्षा-रहित"
+ },
+ "misnaming": {
+  "pronunciation": "mis-NAY-ming",
+  "hindi": "गलत नामकरण"
+ },
+ "mislabel": {
+  "pronunciation": "mis-LAY-buhl",
+  "hindi": "गलत नाम देना"
+ },
+ "wrong term": {
+  "pronunciation": "RAWNG TURM",
+  "hindi": "गलत शब्द"
+ },
+ "inaccurate name": {
+  "pronunciation": "in-AK-yuh-ruht NAYM",
+  "hindi": "गलत नाम"
+ },
+ "accurate term": {
+  "pronunciation": "AK-yuh-ruht TURM",
+  "hindi": "सटीक शब्द"
+ },
+ "correct name": {
+  "pronunciation": "kuh-REKT NAYM",
+  "hindi": "सही नाम"
+ },
+ "apt label": {
+  "pronunciation": "APT LAY-buhl",
+  "hindi": "उपयुक्त नाम"
+ },
+ "precise designation": {
+  "pronunciation": "pri-SYSS dez-ig-NAY-shuhn",
+  "hindi": "सटीक पदनाम"
+ },
+ "assumption": {
+  "pronunciation": "uh-SUHMP-shuhn",
+  "hindi": "मान्यता, धारणा"
+ },
+ "basis": {
+  "pronunciation": "BAY-sis",
+  "hindi": "आधार"
+ },
+ "postulate": {
+  "pronunciation": "POS-chuh-luht",
+  "hindi": "अभिधारणा, स्वयंसिद्ध मान्यता"
+ },
+ "undaunted": {
+  "pronunciation": "uhn-DAWN-tid",
+  "hindi": "निडर, अविचलित"
+ },
+ "assured": {
+  "pronunciation": "uh-SHOORD",
+  "hindi": "आश्वस्त, विश्वस्त"
+ },
+ "cowardly": {
+  "pronunciation": "KOW-urd-lee",
+  "hindi": "डरपोक, कायर"
+ },
+ "unsure": {
+  "pronunciation": "uhn-SHOOR",
+  "hindi": "अनिश्चित, असुरक्षित"
+ },
+ "implicate": {
+  "pronunciation": "IM-pli-kayt",
+  "hindi": "फँसाना, लपेटना"
+ },
+ "accuse": {
+  "pronunciation": "uh-KYOOZ",
+  "hindi": "आरोप लगाना"
+ },
+ "inculpate": {
+  "pronunciation": "in-KUHL-payt",
+  "hindi": "दोषी ठहराना"
+ },
+ "connection": {
+  "pronunciation": "kuh-NEK-shuhn",
+  "hindi": "जुड़ाव, तालमेल"
+ },
+ "antagonism": {
+  "pronunciation": "an-TAG-uh-niz-uhm",
+  "hindi": "शत्रुता, विरोध"
+ }
+}

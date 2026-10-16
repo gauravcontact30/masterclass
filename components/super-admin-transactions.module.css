@@ -1,0 +1,38 @@
+/* Transactions page, on the admin shell's panels and tables (super-admin-dashboard.module.css). */
+.transactions { display: grid; gap: 14px; }
+.transactions h2 { display: flex; align-items: center; gap: 8px; }
+.summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 1100px) { .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.summary > div { display: grid; gap: 3px; padding: 12px 14px; border: 1px solid #e8e6dc; border-radius: 12px; background: #fff; }
+.summary span { font-size: 12px; font-weight: 600; color: #5e5d59; }
+.summary strong { font-size: 20px; font-variant-numeric: tabular-nums; color: #141413; }
+.summary small { font-size: 12px; color: #5e5d59; }
+.headActions { display: inline-flex; align-items: center; gap: 8px; }
+
+.filters { display: grid; grid-template-columns: minmax(240px, 2fr) repeat(6, minmax(120px, 1fr)) auto; align-items: end; gap: 10px; margin: 6px 0 14px; }
+@media (max-width: 1300px) { .filters { grid-template-columns: repeat(4, minmax(0, 1fr)); } .search { grid-column: 1 / -1; } }
+@media (max-width: 620px) { .filters { grid-template-columns: 1fr 1fr; } }
+.search { display: flex; align-items: center; gap: 8px; color: #5e5d59; }
+.field { display: grid; gap: 4px; min-width: 0; }
+.field label { font-size: 12px; color: #5e5d59; }
+.clear { align-self: end; }
+
+.tableWrap[aria-busy="true"] { opacity: .6; transition: opacity .2s ease; }
+.nowrap { white-space: nowrap; }
+.code { font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+.item { max-width: 280px; }
+.customer { display: grid; gap: 1px; }
+.customer small, .amount small { display: block; font-size: 11px; color: #5e5d59; }
+.amount { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+.type, .status { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; white-space: nowrap; background: #f5f4ed; }
+.type[data-type="Membership"] { background: #d6e7fa; color: #24508a; }
+.type[data-type="Card unlock"] { background: #f3dccd; color: #8f3f23; }
+.type[data-type="Download credit"] { background: #e3dbf7; color: #4d3a8c; }
+.status[data-status="captured"] { background: #d5efe0; color: #24613f; }
+.status[data-status="authorized"] { background: #f8ecc4; color: #765510; }
+.status[data-status="failed"] { background: #fbe4ea; color: #8e2f4c; }
+.status[data-status="refunded"], .status[data-status="partially refunded"] { background: #e8e6dc; color: #3d3d3a; }
+
+.pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; font-size: 13px; color: #5e5d59; }
+.pager > div { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.gap { padding: 0 4px; }

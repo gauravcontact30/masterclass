@@ -63,64 +63,69 @@
  "Correctness::Idempotency keys": {
   "sourceUrl": "https://docs.stripe.com/api/idempotent_requests",
   "sourceTitle": "Idempotent requests | Stripe API Reference",
-  "summary": "Send a unique idempotency key when creating or updating a Stripe object. If a connection failure leads to a retry, reuse the same key and parameters so Stripe does not perform the operation twice.",
-  "explanation": "Generate a unique key for a create request and send it in the Idempotency-Key request option. If the request must be retried, reuse that key with the identical endpoint and parameters; Stripe returns the stored result rather than performing the operation again. This protects payment creation from duplicate execution after connection failures.",
-  "syntax": "Stripe SDK request options: { idempotencyKey: \"unique-key\" }",
-  "parameters": [
-   {
-    "name": "Idempotency-Key",
-    "type": "string",
-    "description": "A unique client-generated value sent with the request options as Idempotency-Key; use the same value for an identical retry. Maximum length is 255 characters."
-   },
-   {
-    "name": "Request endpoint and parameters",
-    "type": "request data",
-    "description": "The original request endpoint and parameters; retries using the key must match them."
-   }
-  ],
-  "returns": "Stripe saves the first request’s status code and response body for the key; later identical requests return that same result, including 500 errors.",
+  "summary": "Send a unique idempotency key with a create or update request. If the client retries because the result is uncertain, reusing that key makes Stripe return the original outcome instead of performing the operation twice.",
+  "explanation": "The client creates a unique key and sends it with a POST request. Stripe stores the first resulting status and body once endpoint execution starts, so repeating the same request with that key returns the stored result instead of starting the operation again; use the same parameters when retrying.",
+  "syntax": "Idempotency-Key: <unique-key>",
+  "parameters": [],
+  "returns": "The first request's saved status code and response body; later requests using the same key return that same result.",
   "example": {
-   "title": "Create a PaymentIntent safely",
-   "code": "import Stripe from \"stripe\";\n\nconst stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);\nconst idempotencyKey = crypto.randomUUID();\n\nconst paymentIntent = await stripe.paymentIntents.create(\n  { amount: 2000, currency: \"usd\" },\n  { idempotencyKey }\n);\n\nconsole.log(paymentIntent.id);",
+   "title": "Retry a PaymentIntent creation safely",
+   "code": "import Stripe from \"stripe\";\n\nconst stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);\nconst idempotencyKey = crypto.randomUUID();\n\nconst paymentIntent = await stripe.paymentIntents.create(\n  { amount: 2000, currency: \"usd\", payment_method: \"pm_card_visa\" },\n  { idempotencyKey }\n);\n\nconsole.log(paymentIntent.id);",
    "language": "typescript",
-   "explanation": "Creates a PaymentIntent with a unique key that can be reused for an identical retry."
+   "explanation": "Create the payment operation with one unique key and reuse that same key and parameters if the request must be retried."
   },
   "useCases": [
    {
-    "title": "Safe payment creation retry",
-    "scenario": "Retrying a PaymentIntent creation after a connection failure without risking a second payment operation."
+    "title": "Safe network retry",
+    "scenario": "A payment creation request loses its network connection before the client receives a response."
    },
    {
-    "title": "Unknown request outcome",
-    "scenario": "Repeating a POST request when the client cannot determine whether the original request completed."
+    "title": "Duplicate-prevention for POST operations",
+    "scenario": "A service retries a POST after a transient failure or timeout."
    },
    {
-    "title": "Duplicate-operation prevention",
-    "scenario": "Protecting object creation or updates from duplicate execution during network retries."
+    "title": "Reliable create or update processing",
+    "scenario": "An object update may be submitted again by a job or worker after an uncertain result."
    }
   ],
   "related": [
-   "PaymentIntents",
+   "Idempotent requests",
+   "Idempotency-Key header",
    "POST requests",
-   "connection errors",
-   "Idempotency-Key",
-   "automatic retries"
+   "connection error",
+   "V4 UUIDs"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How does an idempotency key prevent duplicate operations?",
+    "answer": "An idempotency key is a client-generated unique value that lets Stripe recognize retries of the same request. Stripe saves the first request’s status code and body after endpoint execution begins, and later requests with that key return the saved response, including a 500 response.",
+    "followUp": "What should a client do after a network failure? Retry the request with the same key and identical parameters rather than generating a new key, so it cannot initiate a second operation."
+   },
+   {
+    "question": "When should an integration send an idempotency key?",
+    "answer": "Use an idempotency key when creating or updating an object, especially when a connection failure leaves the result unknown. For API v1, POST requests accept these keys.",
+    "followUp": "What happens if the client changes parameters while reusing a key? The retry should preserve the original parameters; a key identifies the same request, not an interchangeable new operation."
+   },
+   {
+    "question": "How should an integration generate keys?",
+    "answer": "Generate the key on the client and make it unique, such as with a V4 UUID or another sufficiently random string. The key can be at most 255 characters.",
+    "followUp": "Why must retries keep the original key? A new key is treated as a different request and can allow the operation to run again."
+   }
+  ],
   "keyPoints": [
-   "Idempotency keys let a client retry a request without unintentionally repeating the operation.",
-   "Attach a key when creating or updating Stripe objects, including payment creation requests.",
-   "The client chooses the key; Stripe uses it to identify retries belonging to the original request.",
-   "Generate keys with sufficient randomness, such as UUID v4, so separate operations do not accidentally share a key.",
-   "Keep each key within Stripe’s 255-character maximum.",
-   "Stripe API POST requests accept idempotency keys."
+   "Idempotency makes a retry safe when the client cannot tell whether the original operation completed.",
+   "Attach a key when a create or update must tolerate retries.",
+   "The client owns key generation; Stripe uses the value to associate later attempts with the original request.",
+   "Use a high-entropy identifier, preferably a V4 UUID, to minimize accidental key collisions.",
+   "For API v1, the mechanism applies across POST endpoints, not only payment creation endpoints."
   ],
   "gotchas": [
-   "Reuse a key only for the same endpoint and parameters; changing either can cause an idempotency error.",
-   "Do not depend on the key preventing duplication indefinitely: after Stripe removes an older key, reuse can start a new operation.",
-   "Use keys for mutating requests such as POST; they provide no benefit for GET or DELETE."
+   "Keep the key at 255 characters or fewer.",
+   "Keys are useful for POST operations; adding one to GET or DELETE does not change their behavior.",
+   "Validation failures and concurrent conflicts are not saved as idempotent results, so those requests can be retried."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Correctness::Race conditions": {
   "sourceUrl": "https://docs.stripe.com/event-destinations",
@@ -173,71 +178,86 @@
  "Correctness::Signature verification": {
   "sourceUrl": "https://docs.stripe.com/webhooks",
   "sourceTitle": "How to ensure security in Stripe webhooks?",
-  "summary": "Verify every Stripe webhook before acting on it. Use the raw request body, Stripe-Signature header, and the endpoint's signing secret with Stripe's official library.",
-  "explanation": "Stripe signs each webhook with the Stripe-Signature header. Pass the unmodified UTF-8 request body, that header, and the endpoint's whsec_ signing secret to the official library's constructEvent function; process the event only when verification succeeds.",
-  "syntax": "stripe.webhooks.constructEvent(requestBody, signature, endpointSecret)",
+  "summary": "Verify every Stripe webhook with the raw payload, Stripe-Signature header, and the endpoint’s whsec_ secret before acting on the event. Use Stripe’s official libraries and reject requests when verification fails.",
+  "explanation": "Stripe signs every webhook with a Stripe-Signature header. Verify the exact raw request body, that header, and the endpoint-specific whsec_ secret with the official library; only then process the event. Any body transformation, wrong secret, or malformed header causes verification to fail.",
+  "syntax": "stripe.webhooks.constructEvent(rawBody, signature, endpointSecret)",
   "parameters": [
    {
-    "name": "requestBody",
-    "type": "string",
-    "description": "The unmodified request body string sent by Stripe."
+    "name": "request body",
+    "type": "raw payload",
+    "description": "The exact raw request body string or bytes sent by Stripe."
    },
    {
     "name": "signature",
     "type": "string",
-    "description": "The Stripe-Signature request header."
+    "description": "The value of the Stripe-Signature request header."
    },
    {
-    "name": "endpointSecret",
+    "name": "endpoint secret",
     "type": "string",
-    "description": "The endpoint-specific webhook signing secret, beginning with whsec_."
+    "description": "The signing secret for the receiving webhook endpoint, beginning with whsec_."
    }
   ],
-  "returns": "A verified Stripe Event when the signature is valid; otherwise the verification function throws an error.",
+  "returns": "A verified Stripe Event when the signature is valid; otherwise the official library raises an error.",
   "example": {
-   "title": "Verify a Stripe webhook",
-   "code": "import express from \"express\";\nimport Stripe from \"stripe\";\n\nconst stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);\nconst app = express();\n\napp.post(\"/webhook\", express.raw({ type: \"application/json\" }), (req, res) => {\n  const signature = req.headers[\"stripe-signature\"] as string;\n  let event: Stripe.Event;\n\n  try {\n    event = stripe.webhooks.constructEvent(\n      req.body,\n      signature,\n      process.env.STRIPE_WEBHOOK_SECRET!\n    );\n  } catch {\n    return res.status(400).send(\"Invalid signature\");\n  }\n\n  // Act only after verification.\n  console.log(event.type);\n  res.sendStatus(200);\n});",
+   "title": "Verify a Stripe webhook before processing it",
+   "code": "import Stripe from \"stripe\";\nimport express from \"express\";\n\nconst stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);\nconst app = express();\n\napp.post(\"/webhook\", express.raw({ type: \"application/json\" }), (req, res) => {\n  const signature = req.headers[\"stripe-signature\"];\n  if (typeof signature !== \"string\") return res.sendStatus(400);\n\n  try {\n    const event = stripe.webhooks.constructEvent(\n      req.body,\n      signature,\n      process.env.STRIPE_WEBHOOK_SECRET!\n    );\n    console.log(event.type);\n    res.sendStatus(200);\n  } catch {\n    res.sendStatus(400);\n  }\n});\n\napp.listen(4242);",
    "language": "typescript",
-   "explanation": "This Express route preserves the raw request body and verifies it with Stripe's official library before processing the event."
+   "explanation": "The handler preserves the raw request body, obtains the Stripe-Signature header, and passes both with the endpoint secret to Stripe’s verifier before using the event."
   },
   "useCases": [
    {
-    "title": "Authenticate Stripe events before processing",
-    "scenario": "Incoming production webhook requests"
+    "title": "Authenticate incoming events",
+    "scenario": "A production endpoint receives payment or account events from Stripe."
    },
    {
-    "title": "Verify Stripe CLI forwarded events with the CLI secret",
-    "scenario": "Local webhook development"
+    "title": "Protect the signed raw body",
+    "scenario": "A framework normally parses JSON before route handlers run."
    },
    {
-    "title": "Preserve the raw body through middleware configuration",
-    "scenario": "Framework-based servers"
-   },
-   {
-    "title": "Manually validate signatures with HMAC-SHA256 and timestamp tolerance",
-    "scenario": "Custom integrations"
+    "title": "Validate development webhooks",
+    "scenario": "A local integration forwards test events through Stripe CLI."
    }
   ],
   "related": [
-   "Stripe-Signature",
-   "constructEvent()",
+   "Stripe-Signature header",
    "webhook signing secret",
-   "raw request body",
-   "HMAC-SHA256",
-   "timestamp tolerance"
+   "constructEvent()",
+   "manual signature verification",
+   "timestamp tolerance",
+   "Stripe CLI"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What inputs are required to verify a Stripe webhook?",
+    "answer": "Pass the exact raw request body, the Stripe-Signature header, and the endpoint secret to the official webhook verification method. If verification succeeds, the resulting event can be handled; otherwise reject the request.",
+    "followUp": "What breaks verification even when the JSON content looks equivalent? A parsed or reformatted body, a wrong endpoint secret, or an incorrectly extracted header can differ from what Stripe signed."
+   },
+   {
+    "question": "Why must the webhook body be raw?",
+    "answer": "The request body must remain the exact UTF-8 string sent by Stripe. Framework middleware must not parse or modify it before constructEvent receives it.",
+    "followUp": "How should a handler prevent accidental parsing? Configure the webhook route to receive raw bytes or the untouched raw body before general JSON parsing middleware."
+   },
+   {
+    "question": "How do you choose and protect the endpoint secret?",
+    "answer": "Each endpoint has its own signing secret, and the secret begins with whsec_. Retrieve the matching value from Workbench or from the Stripe CLI when developing locally, and keep it private.",
+    "followUp": "What should be checked first when verification suddenly fails? Compare the configured secret with the secret for the exact endpoint and environment receiving the request."
+   }
+  ],
   "keyPoints": [
-   "Read the Stripe-Signature header from every incoming webhook.",
-   "Prefer Stripe's official SDK verification helpers instead of implementing cryptography yourself.",
-   "Verification requires the raw payload, signature header, and endpoint signing secret.",
-   "Reject the request and do not perform webhook side effects when verification fails."
+   "Treat the Stripe-Signature header as the authenticity proof that must be checked before event handling.",
+   "Prefer Stripe’s maintained SDK verifier instead of implementing the cryptographic procedure yourself.",
+   "The verifier needs three values: the untouched payload, the signature header, and the matching endpoint signing secret.",
+   "Handle verification exceptions as an invalid webhook and return an error response rather than processing the event."
   ],
   "gotchas": [
-   "Do not parse, reserialize, or otherwise modify the request body before verification; body changes make verification fail.",
-   "Framework middleware such as JSON parsing must not run before the webhook route."
+   "Preserve the body exactly as received; parsing it as JSON or otherwise transforming it can invalidate verification.",
+   "Do not let middleware rewrite the request body before the verifier receives it.",
+   "Use the secret belonging to this webhook endpoint, not another endpoint’s secret or an unrelated API key.",
+   "Reject failed verification and do not perform business actions for an unverified request."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Correctness::Webhook fulfilment": {
   "sourceUrl": "https://docs.stripe.com/checkout/fulfillment?payment-ui=embedded-page&locale=en-GB",
@@ -393,308 +413,381 @@
   "checkedAt": "2026-10-15"
  },
  "Lifecycle operations::Invoices and receipts": {
-  "sourceUrl": "https://docs.stripe.com/receipts",
-  "sourceTitle": "Receipts and paid invoices - Stripe Documentation",
-  "summary": "Stripe creates receipts for successful payments and refunds. Enable invoice creation for one-time Checkout payments when customers need a paid invoice with more detail than a standard receipt.",
-  "explanation": "Stripe creates receipts for successful payments and refunds. For one-time Checkout payments, enable invoice creation to produce a paid invoice with more detail than a standard receipt; after successful payment, Stripe emails links to download both documents. Use the Charge object's receipt_url when the application needs to link directly to the receipt.",
-  "syntax": "stripe.checkout.sessions.create({ mode: 'payment', line_items: [...], invoice_creation: { enabled: true } })",
-  "parameters": [
-   {
-    "name": "invoice_creation.enabled",
-    "type": "boolean",
-    "description": "Checkout Session creation parameter that enables invoice creation for a one-time payment."
-   }
-  ],
-  "returns": "The Charge object provides receipt_url, a URL where the customer can view the receipt. When invoice creation is enabled and payment succeeds, Stripe emails links to invoice and receipt PDFs.",
+  "sourceUrl": "https://docs.stripe.com/invoicing/dashboard",
+  "sourceTitle": "Use the Dashboard",
+  "summary": "Stripe creates receipts for successful invoice and subscription payments, with itemized charges such as line items, discounts, and taxes. Configure successful-payment emails and the customer’s email to deliver documents that reflect the payment.",
+  "explanation": "Stripe creates receipts after successful invoice or subscription payments and can include itemized line items, discounts, and taxes. Enable successful-payment emails and provide the customer’s email to send receipts automatically; the hosted invoice page also lets customers download a receipt.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
   "example": {
-   "title": "Enable a paid invoice for Checkout",
-   "code": "const session = await stripe.checkout.sessions.create({\n  mode: 'payment',\n  line_items: [{ price: 'price_123', quantity: 1 }],\n  invoice_creation: { enabled: true },\n});",
+   "title": "Access a paid invoice from a webhook",
+   "code": "const event = stripeEvent;\n\nif (event.type === 'invoice.paid') {\n  const invoice = event.data.object;\n  console.log(invoice.hosted_invoice_url);\n}",
    "language": "typescript",
-   "explanation": "Creates a one-time Checkout payment and enables a paid invoice with links to the invoice and receipt."
+   "explanation": "Handle the paid-invoice event to retrieve the invoice information after payment succeeds."
   },
   "useCases": [
    {
-    "title": "Create a paid invoice",
-    "scenario": "A one-time Checkout purchase needs formal billing documentation."
+    "title": "Automatic payment confirmation",
+    "scenario": "Send an automatically generated receipt after an invoice payment succeeds."
    },
    {
-    "title": "Link to a receipt",
-    "scenario": "An application needs to show customers their payment document."
+    "title": "Self-service document access",
+    "scenario": "Provide customers with a downloadable record from the hosted invoice page."
    },
    {
-    "title": "Provide refund receipts",
-    "scenario": "A business must document refunds as well as payments."
+    "title": "Manual resend",
+    "scenario": "Send a receipt manually when an operator needs to resend payment documentation."
    }
   ],
   "related": [
-   "Charge.receipt_url",
+   "receipt_url",
+   "Charge",
    "invoice.paid",
-   "automatic receipts",
-   "paid invoices",
-   "Checkout Sessions"
+   "hosted invoice page",
+   "Successful payments",
+   "Invoice details page"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "When does Stripe create invoice receipts, and what information can they contain?",
+    "answer": "Stripe creates receipts when an invoice or subscription payment succeeds. Invoice-payment receipts can itemize line items, discounts, and taxes.",
+    "followUp": "How can an application obtain a receipt link? Use the receipt_url attribute on the Charge object."
+   },
+   {
+    "question": "How do you configure automatic receipt delivery?",
+    "answer": "Enable Successful payments in the email settings and add the customer’s email address. Stripe then sends the receipt automatically after payment.",
+    "followUp": "What alternative exists if automatic email delivery is not suitable? Send the receipt manually from the Invoice details page."
+   },
+   {
+    "question": "How can customers or an application access the resulting documents?",
+    "answer": "After successful payment, the hosted invoice page provides a receipt-download link. The invoice summary sent to the customer can also include PDF links for the invoice and payment receipt.",
+    "followUp": "Which event can be used to process invoice receipts programmatically? Listen for invoice.paid."
+   }
+  ],
   "keyPoints": [
-   "Successful payments and refunds receive receipts, including payments generated by invoices and subscriptions.",
-   "Use a paid invoice when customers need richer documentation than a standard payment receipt.",
-   "Subscription invoices are automatic; enable invoice creation explicitly for one-time Checkout payments.",
-   "Link customers directly to a receipt with the Charge object's receipt_url value.",
-   "After successful payment, the emailed invoice summary can provide downloadable invoice and receipt PDFs.",
-   "Receipts are browser-viewable, allowing an application to present or link to them without generating its own document."
+   "Receipts are generated for successful invoice payments and recurring subscription payments.",
+   "Invoice and subscription receipts can show the charged components, including discounts and taxes.",
+   "The hosted invoice page gives the customer a downloadable receipt link.",
+   "An operator can manually send a receipt from the Invoice details page."
   ],
   "gotchas": [
-   "Do not treat Checkout session completion as proof that the invoice receipt was sent; wait for successful payment."
+   "Automatic delivery requires enabling the Successful payments email setting and collecting the customer’s email address."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Lifecycle operations::Refunds": {
   "sourceUrl": "https://docs.stripe.com/refunds",
-  "sourceTitle": "Refunds | Stripe Documentation",
-  "summary": "Create full or partial refunds through Stripe's Refunds API using a Charge or PaymentIntent. Track the returned Refund and its status in your records.",
-  "explanation": "Create a Refund using the payment's PaymentIntent or Charge identifier. Omitting the amount refunds the remaining charge in full; supplying a positive amount in the currency's smallest unit creates a partial refund. Multiple refunds are allowed until the original charge is fully refunded, after which further refunds fail. Store the returned Refund identifier and status so your records can follow the operation.",
-  "syntax": "POST /v1/refunds",
+  "sourceTitle": "Refund and cancel payments",
+  "summary": "Issue full or partial refunds for completed payments through Stripe’s Dashboard or API. Use a payment or charge identifier, optionally specify the amount in the currency’s smallest unit, and track the resulting refund status.",
+  "explanation": "A refund is created against a completed payment by supplying its PaymentIntent or charge identifier. Omitting the amount refunds the full payment; supplying an integer amount in the currency’s smallest unit creates a partial refund. A payment can receive multiple refunds, but their combined amount cannot exceed the original charge, and your system should track the Refund status.",
+  "syntax": "stripe.refunds.create({ payment_intent, amount, reason })",
   "parameters": [
    {
-    "name": "charge or payment_intent",
+    "name": "payment_intent or charge",
     "type": "string",
-    "description": "Charge or PaymentIntent on which to create the refund."
+    "description": "PaymentIntent or charge identifier for the transaction to refund."
    },
    {
     "name": "amount",
-    "type": "integer, optional",
-    "description": "Positive integer amount in the currency's smallest unit; omit it for a full refund."
+    "type": "integer",
+    "description": "Refund amount as a positive integer in the currency’s smallest unit; omit it for a full refund."
+   },
+   {
+    "name": "reason",
+    "type": "string",
+    "description": "Optional reason selected for the refund."
    }
   ],
-  "returns": "A Refund object containing the refund identifier and status.",
+  "returns": "A Refund object containing the refund identifier and status; asynchronous methods can ultimately report succeeded or failed through refund events.",
   "example": {
    "title": "Create a partial refund",
-   "code": "const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);\n\nasync function refundPayment(paymentIntentId, amount) {\n  return stripe.refunds.create({\n    payment_intent: paymentIntentId,\n    ...(amount === undefined ? {} : { amount }),\n  });\n}\n\nrefundPayment('pi_Aabcxyz01aDfoo', 1000)\n  .then((refund) => console.log(refund.id, refund.status));",
-   "language": "javascript",
-   "explanation": "Creates a partial refund of 1,000 units in the charge currency's smallest unit and prints the refund identifier and status."
+   "code": "import Stripe from \"stripe\";\n\nconst stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);\n\nconst refund = await stripe.refunds.create({\n  payment_intent: \"pi_123\",\n  amount: 1000,\n});\n\nconsole.log(refund.id, refund.status);",
+   "language": "typescript",
+   "explanation": "Creates a partial refund of 1,000 in the payment currency’s smallest unit and records the returned refund identifier and status."
   },
   "useCases": [
    {
-    "title": "Full refund",
-    "scenario": "A customer returns an entire order."
+    "title": "Full order refund",
+    "scenario": "A customer returns an entire order after payment completion."
    },
    {
     "title": "Partial refund",
-    "scenario": "A merchant refunds one item or part of an order."
+    "scenario": "A merchant refunds only one item, shipping charge, or price difference."
    },
    {
-    "title": "Multiple refunds",
-    "scenario": "A payment needs separate refunds over time."
+    "title": "Multiple refunds against one charge",
+    "scenario": "A payment requires separate reimbursements over time."
    },
    {
-    "title": "Refund status tracking",
-    "scenario": "A system must reconcile asynchronous outcomes."
+    "title": "Webhook-based reconciliation",
+    "scenario": "An integration needs reliable bookkeeping for asynchronous refund processing."
    }
   ],
   "related": [
    "Refunds API",
-   "Create a refund",
    "Refund object",
    "PaymentIntent",
    "Charge",
    "refund.updated",
-   "refund.failed"
+   "refund.failed",
+   "Dashboard"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How do you issue a full or partial refund?",
+    "answer": "Create a refund through the Refunds API using either the PaymentIntent ID or the Charge ID. Leave the amount out for a full refund, or pass an integer amount in the currency’s smallest unit for a partial refund.",
+    "followUp": "How would you prevent over-refunding? Track the original charge and the sum of successful or pending refunds, then reject a request whose cumulative amount exceeds the original."
+   },
+   {
+    "question": "Can one payment receive multiple refunds?",
+    "answer": "A payment can have multiple refunds, including multiple partial refunds. Stripe prevents the total refunded amount from exceeding the original charge amount.",
+    "followUp": "What should happen if a refund request would exceed the remaining refundable amount? Reject or reduce it before calling Stripe, and surface the remaining amount to the caller."
+   },
+   {
+    "question": "Which Stripe balance funds refunds?",
+    "answer": "Refunds consume available Stripe balance rather than pending balance. If available funds do not cover the refund, Stripe debits the remaining amount from the bank account.",
+    "followUp": "What operational check is useful before creating a large refund? Verify available balance and account funding expectations, while still handling the API result as authoritative."
+   }
+  ],
   "keyPoints": [
-   "Refunds can be created through the API or Stripe Dashboard.",
-   "Identify the payment with either its PaymentIntent ID or Charge ID.",
-   "The API supports full refunds, partial refunds, and multiple refunds for one charge.",
-   "Each refund is limited to the amount that remains unrefunded."
+   "Multiple refunds can be applied to one charge when their combined value remains within the original charge.",
+   "A refund request without a specified amount produces a full refund.",
+   "For asynchronous payment methods, reconcile the final outcome from refund webhook events."
   ],
   "gotchas": [
-   "The sum of all refunds cannot exceed the original charge amount.",
-   "Refunds draw from the available Stripe balance rather than the pending balance.",
-   "A fully refunded charge cannot receive another refund."
+   "Do not treat the original processing fee as refundable; Stripe keeps it when issuing the payment refund.",
+   "When issuing multiple refunds, enforce a cumulative limit no higher than the original charge."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Lifecycle operations::Subscriptions": {
-  "sourceUrl": "https://docs.stripe.com/api/subscriptions/create?api-version=2024-06-20",
-  "sourceTitle": "Create a subscription | Stripe API Reference",
-  "summary": "Subscriptions charge customers for products at recurring prices. Trials delay the first charge, while upgrades, downgrades, and quantity changes can create prorations that are invoiced immediately or later.",
-  "explanation": "A subscription charges a customer repeatedly for a product at its configured price. Changes such as switching prices or quantities can create prorations; choose whether Stripe invoices them immediately, defers them, or omits them, while trial settings delay the first charge.",
-  "syntax": "stripe.subscriptions.create({ customer, items, trial_end, proration_behavior })",
+  "sourceUrl": "https://docs.stripe.com/api/subscriptions/update",
+  "sourceTitle": "Update a subscription",
+  "summary": "Stripe subscriptions charge repeatedly at a configured price and interval. Trials delay payment, while mid-cycle changes can create prorations that are invoiced immediately, deferred, or disabled.",
+  "explanation": "A subscription charges a customer repeatedly according to its price and billing interval. When you change its price, quantity, billing period, or items during a cycle, Stripe can create prorations; you choose whether to invoice them immediately, defer them to the next invoice, or disable them. Trials postpone initial payment and establish a new billing period when they end.",
+  "syntax": "stripe.subscriptions.update(subscription, parameters)",
   "parameters": [
    {
-    "name": "customer",
+    "name": "subscription",
     "type": "string",
-    "description": "Customer receiving the subscription."
+    "description": "Subscription identifier to update."
    },
    {
     "name": "items",
     "type": "array",
-    "description": "Recurring prices and quantities included in the subscription."
-   },
-   {
-    "name": "trial_end",
-    "type": "integer or string",
-    "description": "Unix timestamp ending the trial before the first charge."
+    "description": "Subscription items, including the replacement price or quantity."
    },
    {
     "name": "proration_behavior",
     "type": "enum",
-    "description": "Controls how subscription-change prorations are handled: always_invoice, create_prorations, or none."
+    "description": "Controls whether prorations are created, invoiced immediately, or disabled."
+   },
+   {
+    "name": "trial_end",
+    "type": "timestamp",
+    "description": "Unix timestamp for the trial's end."
    }
   ],
-  "returns": "A Subscription object representing the created or updated recurring billing agreement.",
+  "returns": "An updated Subscription object.",
   "example": {
-   "title": "Create a subscription with a trial",
-   "code": "const subscription = await stripe.subscriptions.create({\n  customer: 'cus_123',\n  items: [{ price: 'price_monthly' }],\n  trial_period_days: 14\n});",
-   "language": "javascript",
-   "explanation": "Creates a subscription with a recurring price and a 14-day trial."
+   "title": "Immediately invoice an upgrade",
+   "code": "const updated = await stripe.subscriptions.update('sub_123', {\n  items: [{ id: 'si_123', price: 'price_premium' }],\n  proration_behavior: 'always_invoice',\n});",
+   "language": "typescript",
+   "explanation": "Changes the subscription price and immediately invoices the resulting proration."
   },
   "useCases": [
    {
+    "title": "Upgrade with immediate collection",
+    "scenario": "A customer moves to a more expensive plan during an active billing period."
+   },
+   {
+    "title": "Downgrade with credit",
+    "scenario": "A customer moves to a cheaper plan and receives unused-time credit."
+   },
+   {
     "title": "Start a trial",
-    "scenario": "Offer a recurring product with a delayed first charge."
+    "scenario": "A product offers payment-free access before the first charge."
    },
    {
-    "title": "Upgrade with immediate proration",
-    "scenario": "Move a customer to a higher-priced plan mid-cycle."
-   },
-   {
-    "title": "Downgrade with deferred credit",
-    "scenario": "Move a customer to a lower-priced plan and apply the credit later."
-   },
-   {
-    "title": "Disable proration",
-    "scenario": "Change quantity without time-based adjustments."
+    "title": "Adjust recurring service",
+    "scenario": "A customer changes quantity or billing interval during an active cycle."
    }
   ],
   "related": [
+   "trial_period_days",
    "billing_cycle_anchor",
-   "subscription item",
-   "invoice",
-   "trial_end",
-   "always_invoice",
-   "create_prorations",
-   "none"
+   "subscription items",
+   "invoices",
+   "upgrades",
+   "downgrades"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What happens when a subscription changes price mid-cycle?",
+    "answer": "Stripe normally prorates subscription changes. An upgrade can create a charge for the remaining value in the cycle, while a downgrade creates a credit applied to a later invoice.",
+    "followUp": "How can an upgrade be collected immediately? Set `proration_behavior` to `always_invoice`; Stripe creates the prorations, invoices them, and attempts collection."
+   },
+   {
+    "question": "How do the proration behaviors differ?",
+    "answer": "`always_invoice` creates and immediately invoices prorations. `create_prorations` creates them without automatically invoicing, while `none` prevents proration.",
+    "followUp": "When would `create_prorations` require extra work? When payment must occur before renewal, manually create an invoice for the prorations."
+   },
+   {
+    "question": "How are subscription trials configured?",
+    "answer": "A trial can be specified with an exact `trial_end` timestamp or with `trial_period_days`. When the trial ends, a new billing period starts and billing begins according to the subscription configuration.",
+    "followUp": "What limit applies to a trial? The trial duration cannot be longer than 730 days, or two years."
+   }
+  ],
   "keyPoints": [
-   "Mid-cycle price or quantity changes can adjust the next invoice for the unused or additional service time.",
-   "Use always_invoice when an upgrade should generate and attempt to collect an invoice immediately.",
-   "create_prorations records adjustments for a later invoice rather than collecting them immediately.",
-   "Set proration_behavior to none when plan changes should not produce time-based credits or charges."
+   "Price and quantity changes can produce an adjustment for the partial period.",
+   "Downgrades generally create a credit for a future invoice.",
+   "Use `always_invoice` when an upgrade must be billed immediately.",
+   "Set the behavior to `none` to avoid prorated adjustments."
   ],
   "gotchas": [
-   "Price and quantity changes are prorated unless you explicitly choose another proration behavior.",
-   "Changing a price usually preserves the billing date, but interval changes, free-to-paid changes, and trial boundaries are exceptions.",
-   "Creating prorations alone does not charge the customer before renewal; invoice them separately when immediate collection is required."
+   "Changing prices normally preserves the billing date and does not charge immediately, except for interval changes, free-to-paid transitions, and trial starts or ends.",
+   "Creating prorations alone does not collect payment before renewal; invoice them separately if immediate billing is required."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Operating & compliance::Key management": {
   "sourceUrl": "https://docs.stripe.com/keys",
   "sourceTitle": "API keys | Stripe Documentation",
-  "summary": "Separate publishable keys for client-side code from secret keys for servers. Store secrets securely and rotate them periodically or immediately after exposure, saving each replacement because it cannot be retrieved later.",
-  "explanation": "Use publishable keys in client-side code and keep secret keys on your server. Store secrets in a vault or environment variable, rotate them periodically, and immediately replace any exposed or compromised secret key. In the Dashboard, rotation revokes the old key and creates a replacement; copy and save the replacement because it cannot be retrieved later.",
+  "summary": "Separate publishable keys for client-side use from secret or restricted keys for server-side access. Store non-public keys outside source code and rotate them with a gradual rollout, request-log verification, and controlled expiration.",
+  "explanation": "Stripe uses publishable keys for client-side SDKs and secret or restricted keys for server-side API access. Keep non-public keys in a secrets vault or environment variables, then rotate them through the Dashboard: deploy the replacement gradually, inspect request logs, and expire the old key after its traffic reaches zero.",
   "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Use a server-side secret key",
+   "title": "Server-side secret-key usage",
    "code": "const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);\n\nstripe.customers.list({limit: 1}).then(console.log);",
    "language": "javascript",
-   "explanation": "This server-side example reads the secret key from an environment variable rather than exposing it in application code."
+   "explanation": "Run server-side with the secret key supplied through an environment variable; never place that key in client code."
   },
   "useCases": [
    {
-    "title": "Use a publishable key in client applications",
-    "scenario": "Browser or mobile payment collection"
+    "title": "Client-side payment setup",
+    "scenario": "A browser checkout or mobile SDK needs to identify the Stripe account without receiving server privileges."
    },
    {
-    "title": "Use a secret key only on the server",
-    "scenario": "Server-side Stripe API requests"
+    "title": "Server-side API calls",
+    "scenario": "A backend creates or retrieves Stripe resources that require authenticated server access."
    },
    {
-    "title": "Periodically rotate keys",
-    "scenario": "Routine credential hygiene"
-   },
-   {
-    "title": "Immediately rotate the compromised key",
-    "scenario": "Suspected credential exposure"
+    "title": "Zero-downtime key rotation",
+    "scenario": "A production credential must be replaced without interrupting payment operations."
    }
   ],
   "related": [
    "API keys",
-   "Best practices for managing secret API keys",
-   "publishable keys",
-   "secret API keys",
-   "secrets vault",
-   "environment variables",
+   "Restricted API keys",
+   "Secrets vault",
+   "Environment variables",
+   "Request logs",
    "Rotate keys"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between publishable and secret keys?",
+    "answer": "Publishable keys can be included in client-side applications because they are designed for client use. Secret keys must remain on the backend and should be supplied through a vault or environment variable.",
+    "followUp": "How would you prevent downtime during rotation? Deploy the new key gradually, verify request logs, and let the old key expire only after its traffic is zero."
+   },
+   {
+    "question": "How should a production API key be rotated safely?",
+    "answer": "Dashboard rotation revokes the old key and creates a replacement that is immediately usable. During a scheduled rotation, both keys can work for up to seven days, allowing a gradual migration.",
+    "followUp": "What if seven days is insufficient? Create a new key manually, migrate services to it, and expire the old key afterward."
+   },
+   {
+    "question": "When is it safe to expire the old key?",
+    "answer": "Before expiring the old key, inspect its request logs and confirm that request volume has remained at zero for a few hours or days. This verifies that services no longer depend on it.",
+    "followUp": "How should a team respond to a leaked key? Rotate it immediately, even without proof of misuse, and use the replacement after updating every dependent service."
+   }
+  ],
   "keyPoints": [
-   "Publishable keys are intended for browser or app clients, while secret keys belong only in the server environment.",
-   "Prefer a platform secrets vault to provide secret keys to the integration at runtime.",
-   "When no vault is available, pass the secret through an environment variable.",
-   "Establish and practice periodic rotation so the team knows where each key is used and can replace it quickly.",
-   "Dashboard rotation invalidates the old key and creates a replacement that can be used immediately.",
-   "Choose immediate rotation or schedule expiration for the old key when the migration plan requires a transition period."
+   "Use publishable keys in browser or distributed-app integrations; keep secret keys exclusively on the server.",
+   "Environment variables are the documented fallback when a hosting platform lacks a secrets vault.",
+   "Regular rotation exercises the team’s ability to locate key consumers and replace credentials quickly.",
+   "Rotation invalidates the prior credential and produces a usable replacement.",
+   "A scheduled Dashboard rotation can provide a migration window in which both credentials remain accepted.",
+   "Canary the replacement on a limited service subset before expanding deployment.",
+   "Use request activity as the final check before revoking the former key."
   ],
   "gotchas": [
-   "Save a newly generated or rotated key immediately; Stripe does not let you retrieve its value later.",
-   "Rotate an exposed or compromised restricted or secret key immediately, even when you are unsure whether it was accessed.",
-   "Do not commit secret keys to source code or repositories; supply them through a secrets vault or environment variable.",
-   "Do not embed secret keys in distributed applications; use publishable keys for client-side integrations."
+   "Treat any suspected exposure as a compromise and rotate the affected key without waiting for confirmation.",
+   "A Dashboard rotation grace period is limited; create a separate key when migration needs longer than seven days.",
+   "After rotation, save the newly displayed value immediately because the replacement key must be captured and stored safely."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Operating & compliance::PCI scope": {
   "sourceUrl": "https://docs.stripe.com/security/guide",
   "sourceTitle": "Integration security guide",
-  "summary": "Keep raw card details out of your servers by collecting and transmitting them directly to Stripe with a low-risk integration. This reduces PCI DSS obligations, but PCI compliance remains shared between Stripe and your business.",
-  "explanation": "PCI DSS applies to organizations that store, process, or transmit card data. A low-risk Stripe integration collects and sends payment information directly to Stripe, so raw card details do not pass through your servers and your PCI obligations are reduced. Stripe may return non-sensitive details such as the card brand and last four digits, which the documentation says can be stored.",
+  "summary": "Keep raw card data out of your servers by using a low-risk Stripe integration that collects and sends payment information directly to Stripe. This reduces PCI obligations, but PCI compliance remains shared with your business.",
+  "explanation": "PCI scope is reduced when a low-risk Stripe integration collects and sends payment information directly from the browser to Stripe. Your server receives Stripe-generated payment identifiers rather than raw card details, but PCI compliance remains a shared responsibility and your business must still attest to compliance.",
   "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Collect card details without sending them to your server",
-   "code": "const stripe = Stripe(process.env.STRIPE_PUBLISHABLE_KEY);\nconst elements = stripe.elements();\nconst card = elements.create('card');\ncard.mount('#card-element');\n\nconst form = document.querySelector('#payment-form');\nform.addEventListener('submit', async (event) => {\n  event.preventDefault();\n  const {paymentMethod, error} = await stripe.createPaymentMethod({\n    type: 'card',\n    card,\n  });\n  if (error) throw error;\n  await fetch('/pay', {\n    method: 'POST',\n    headers: {'Content-Type': 'application/json'},\n    body: JSON.stringify({paymentMethodId: paymentMethod.id}),\n  });\n});",
+   "title": "Client-side collection with Stripe.js",
+   "code": "const stripe = Stripe(\"pk_test_...\");\nconst elements = stripe.elements();\nconst paymentElement = elements.create(\"payment\");\npaymentElement.mount(\"#payment-element\");",
    "language": "javascript",
-   "explanation": "Stripe.js and Elements collect card details in Stripe-hosted UI, then the server receives only a PaymentMethod identifier."
+   "explanation": "Collect payment details with Stripe.js in the browser so the details go directly to Stripe instead of through your server."
   },
   "useCases": [
    {
-    "title": "Collect card details without backend exposure",
-    "scenario": "Hosted or embedded web checkout"
+    "title": "Client-side checkout",
+    "scenario": "A browser checkout needs to collect card details without sending them through application servers."
    },
    {
-    "title": "Store non-sensitive card descriptors",
-    "scenario": "Receipts and payment history"
+    "title": "Minimize compliance scope",
+    "scenario": "A team wants to reduce the systems covered by its PCI assessment."
    },
    {
-    "title": "Choose a low-risk integration",
-    "scenario": "Reducing audit scope"
+    "title": "Store non-sensitive card details",
+    "scenario": "An application needs to retain payment context without storing raw card numbers."
    }
   ],
   "related": [
-   "PCI DSS",
-   "low risk payment integrations",
+   "Stripe.js",
    "Stripe Elements",
-   "Stripe Checkout",
-   "PaymentMethod",
-   "Stripe.js"
+   "Checkout",
+   "Payment Element",
+   "PCI DSS",
+   "Self-Assessment Questionnaire"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How can an integration minimize PCI scope?",
+    "answer": "Use a low-risk integration that collects payment information directly in the browser and transmits it to Stripe without passing through your server. This reduces your PCI obligations, but your business still has PCI responsibilities and must attest to compliance.",
+    "followUp": "What changes if the server collects raw card data? The integration has greater PCI responsibility because the server processes or transmits cardholder data; prefer client-side collection when possible."
+   },
+   {
+    "question": "What is the role of Stripe.js in reducing PCI exposure?",
+    "answer": "Stripe.js provides browser APIs for collecting sensitive payment information and sending it directly to Stripe. The server can then work with Stripe’s resulting objects or identifiers instead of receiving raw card details.",
+    "followUp": "Why must Stripe.js be loaded from Stripe’s domain? The documentation requires loading it from js.stripe.com and not bundling or self-hosting it to remain compliant."
+   },
+   {
+    "question": "Does Stripe’s certification remove the merchant’s PCI responsibilities?",
+    "answer": "PCI compliance applies to both Stripe and the business accepting payments. Stripe is a PCI Level 1 Service Provider, but the business must still integrate in a PCI-compliant manner and annually attest to that compliance.",
+    "followUp": "What card information can generally be stored? Stripe says card type, last four digits, expiration date, and data returned by its API can be stored as non-sensitive information, subject to the integration’s obligations."
+   }
+  ],
   "keyPoints": [
-   "Your PCI responsibilities depend on whether your systems process, transmit, or store cardholder data.",
-   "Prefer Stripe integrations that keep raw payment details out of your backend.",
-   "Direct-to-Stripe collection reduces the amount of PCI work your environment must cover.",
-   "Stripe-returned non-sensitive card details can be retained for display or reconciliation."
+   "Choose a payment integration that avoids making your application handle sensitive card data.",
+   "Direct browser-to-Stripe collection keeps raw payment information away from your servers and reduces PCI obligations.",
+   "Treat PCI compliance as shared: Stripe’s certification does not eliminate your business’s compliance duties.",
+   "Stripe maintains annual PCI Level 1 Service Provider certification through an independent Qualified Security Assessor."
   ],
   "gotchas": [
-   "Handling untokenized card data yourself can require substantially more PCI DSS controls.",
-   "Using Stripe does not remove your responsibility to maintain PCI compliance and attest to it."
+   "Only store the non-sensitive card properties Stripe identifies as outside PCI scope, such as card type, last four digits, and expiration date."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Operating & compliance::Reconciliation": {
   "sourceUrl": "https://docs.stripe.com/payouts/reconciliation",
@@ -753,133 +846,155 @@
   "checkedAt": "2026-10-15"
  },
  "Operating & compliance::Taxes and regional rules": {
-  "sourceUrl": "https://docs.stripe.com/tax/how-tax-works",
-  "sourceTitle": "How Stripe Tax works",
-  "summary": "Stripe Tax helps calculate and collect indirect taxes according to regional obligations. Register in each jurisdiction, add registrations to Stripe, and enable automatic tax in your payment integration.",
-  "explanation": "Stripe Tax determines applicable tax using your business location, tax registrations, product tax codes, customer location, and customer status. First register with the relevant tax authorities and add those registrations to Stripe; then enable automatic tax in the payment integration so Stripe calculates tax only in jurisdictions where you are registered.",
-  "syntax": "automatic_tax: { enabled: true }",
-  "parameters": [],
-  "returns": "",
+  "sourceUrl": "https://docs.stripe.com/tax/set-up",
+  "sourceTitle": "Set up Stripe Tax",
+  "summary": "Configure tax registrations for the regions where the business must collect tax, then enable automatic tax on applicable Stripe payment objects. Stripe calculates tax only in registered jurisdictions.",
+  "explanation": "Configure tax registrations for the regions where the business must collect tax, then enable automatic tax on each applicable Checkout Session, invoice, subscription, or Payment Link. Stripe uses the registration information and transaction details to calculate tax for supported locations; existing objects need to be edited separately.",
+  "syntax": "automatic_tax[enabled]=true",
+  "parameters": [
+   {
+    "name": "automatic_tax.enabled",
+    "type": "boolean",
+    "description": "Enables automatic tax calculation for the created Checkout Session."
+   },
+   {
+    "name": "line_items",
+    "type": "array",
+    "description": "The Checkout line items whose products and prices are used for tax calculation."
+   },
+   {
+    "name": "mode",
+    "type": "string",
+    "description": "The Checkout Session payment flow; the example uses a one-time payment."
+   }
+  ],
+  "returns": "A Checkout Session. The example reads its hosted payment-page URL from `session.url`.",
   "example": {
    "title": "Enable automatic tax in Checkout",
-   "code": "const session = await stripe.checkout.sessions.create({\n  mode: 'payment',\n  line_items: [{ price: 'price_123', quantity: 1 }],\n  automatic_tax: { enabled: true },\n  success_url: 'https://example.com/success',\n  cancel_url: 'https://example.com/cancel'\n});",
-   "language": "typescript",
-   "explanation": "Creates a Checkout Session with automatic tax calculation enabled."
+   "code": "const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);\n\nconst session = await stripe.checkout.sessions.create({\n  mode: 'payment',\n  line_items: [{ price: 'price_123', quantity: 1 }],\n  automatic_tax: { enabled: true },\n  success_url: 'https://example.com/success',\n  cancel_url: 'https://example.com/cancel'\n});\nconsole.log(session.url);",
+   "language": "javascript",
+   "explanation": "Creates a Checkout Session that calculates and collects tax automatically for the configured registrations."
   },
   "useCases": [
    {
-    "title": "Regional checkout tax",
-    "scenario": "A Checkout integration needs to calculate tax for customers in multiple registered jurisdictions."
+    "title": "Add a regional tax obligation",
+    "scenario": "A business expands into a new state or country and must begin collecting an indirect tax there."
    },
    {
-    "title": "Monitor registration obligations",
-    "scenario": "A business wants Stripe to track processed sales against local thresholds."
+    "title": "Tax API-created checkout payments",
+    "scenario": "A server creates Checkout Sessions through Stripe’s API and wants Stripe to calculate applicable tax."
    },
    {
-    "title": "Marketplace tax compliance",
-    "scenario": "A platform must handle tax collection responsibilities for facilitated sales."
+    "title": "Update an existing payment page",
+    "scenario": "An existing Payment Link needs tax collection after the business enables Stripe Tax."
    }
   ],
   "related": [
    "Stripe Tax",
-   "How Stripe Tax works",
-   "Set up Stripe Tax",
-   "Monitor your obligations",
-   "Tax Registrations API",
-   "automatic_tax.enabled"
+   "tax registration",
+   "automatic tax",
+   "Payment Links",
+   "Checkout Sessions",
+   "Invoices",
+   "Subscriptions",
+   "Tax Settings API"
   ],
   "since": "",
-  "keyPoints": [
-   "Tax calculation considers the business address, registrations, product classification, customer location, and whether the customer is an individual or business.",
-   "Register with each applicable tax authority before collecting tax there.",
-   "Add every tax registration to Stripe’s Dashboard Locations area."
-  ],
-  "gotchas": [
-   "Registration is required before collecting tax in a jurisdiction.",
-   "Automatic tax does not calculate tax for regions without an active Stripe registration."
-  ],
-  "checkedAt": "2026-10-15"
- },
- "Payment flow::Authentication and 3-D Secure": {
-  "sourceUrl": "https://docs.stripe.com/payments/3d-secure/authentication-flow?locale=en-GB",
-  "sourceTitle": "Authenticate with 3D Secure - Stripe Documentation",
-  "summary": "3D Secure adds an issuer-controlled authentication step when Stripe determines a card transaction needs extra verification. Integrations must support the resulting customer challenge and then handle the updated payment status.",
-  "explanation": "Stripe evaluates a card payment for 3DS based on regulations, Radar rules, explicit requests, issuer soft declines, and other factors. If authentication is needed, Stripe starts the issuer flow and the customer completes the challenge; your integration then handles the resulting PaymentIntent status.",
-  "syntax": "stripe.paymentIntents.create({ amount, currency, payment_method, confirm: true, return_url })",
-  "parameters": [
+  "interview": [
    {
-    "name": "amount",
-    "type": "integer",
-    "description": "Amount in the smallest currency unit."
+    "question": "How do you configure regional tax collection?",
+    "answer": "Create a tax registration for every region where the business is required to collect tax, then configure Stripe Tax with those registrations. When creating a supported object through the API, enable automatic tax with `automatic_tax.enabled=true`.",
+    "followUp": "How should an existing Payment Link be handled after Stripe Tax is enabled? Edit the Payment Link and enable automatic tax; enabling Stripe Tax alone does not change existing objects."
    },
    {
-    "name": "currency",
-    "type": "string",
-    "description": "Three-letter ISO currency code."
+    "question": "What is the purpose of a tax registration?",
+    "answer": "Tax registrations tell Stripe where the business is registered to collect tax. Stripe then calculates tax only for those registered jurisdictions, using the transaction and product information supplied by the integration.",
+    "followUp": "What happens if a required registration is missing? Stripe Tax will not calculate tax for that unregistered jurisdiction, so the integration must add the registration before collecting there."
    },
    {
-    "name": "payment_method",
-    "type": "string",
-    "description": "Payment method to confirm."
-   },
-   {
-    "name": "confirm",
-    "type": "boolean",
-    "description": "Requests immediate confirmation of the PaymentIntent."
-   },
-   {
-    "name": "return_url",
-    "type": "string",
-    "description": "URL Stripe returns the customer to after authentication."
+    "question": "How is automatic tax enabled?",
+    "answer": "For API-created Invoices, Subscriptions, Payment Links, and Checkout Sessions, set `automatic_tax.enabled=true`. Dashboard-created objects can be configured by enabling automatic tax in their respective settings.",
+    "followUp": "Does this setting automatically change previously created objects? No; each existing object must be edited separately to enable automatic tax."
    }
   ],
-  "returns": "A PaymentIntent whose status indicates the next payment state, such as requiring customer action, processing, succeeded, or requiring a new payment method.",
+  "keyPoints": [
+   "Add a tax registration for each region where the business is registered to collect tax.",
+   "Stripe Tax supports regional calculation across US states, the capital, and territories.",
+   "The Dashboard’s Locations area is where tax registrations can be added.",
+   "Regional tax treatment differs, so configure registrations and product details for each applicable market."
+  ],
+  "gotchas": [
+   "Turning on Stripe Tax does not retroactively enable automatic tax on existing invoices, subscriptions, or Payment Links.",
+   "Register with the relevant local tax authority before collecting tax."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Payment flow::Authentication and 3-D Secure": {
+  "sourceUrl": "https://docs.stripe.com/payments/3d-secure/authentication-flow",
+  "sourceTitle": "Authenticate with 3D Secure",
+  "summary": "3D Secure adds an issuer-driven verification step to card payments when regulations, risk rules, API requests, or issuer responses require it. Stripe starts the flow and your integration handles the resulting PaymentIntent state and customer challenge.",
+  "explanation": "Stripe evaluates whether a transaction supports and needs 3DS using factors such as regulations, Radar rules, an API request, or an issuer soft decline. If required, Stripe contacts the issuer’s 3DS Access Control Server and starts authentication; your integration then handles the resulting PaymentIntent state and presents the authentication UI when needed.",
+  "syntax": "stripe.paymentIntents.create({ amount, currency, payment_method, confirm, return_url })",
+  "parameters": [],
+  "returns": "The page describes resulting PaymentIntent states, including `requires_payment_method` when 3DS is not supported and `processing` when authorization may continue.",
   "example": {
    "title": "Confirm a PaymentIntent that may require 3DS",
-   "code": "const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);\n\nconst paymentIntent = await stripe.paymentIntents.create({\n  amount: 1099,\n  currency: 'usd',\n  payment_method: 'pm_card_threeDSecure2Required',\n  confirm: true,\n  return_url: 'https://example.com/return',\n});\n\nconsole.log(paymentIntent.status);",
+   "code": "const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);\n\nconst intent = await stripe.paymentIntents.create({\n  amount: 1099,\n  currency: 'eur',\n  payment_method: 'pm_card_threeDSecure2Required',\n  confirm: true,\n  return_url: 'https://example.com/return',\n});\n\nconsole.log(intent.status);",
    "language": "javascript",
-   "explanation": "Creates and confirms a PaymentIntent using Stripe’s 3DS test payment method; production client-side handling must complete any required authentication."
+   "explanation": "Create and confirm a PaymentIntent, then handle any required next action in the client checkout flow."
   },
   "useCases": [
    {
-    "title": "Meet authentication requirements",
-    "scenario": "Regulated card payments"
+    "title": "Meet authentication regulations",
+    "scenario": "A card payment may be subject to Strong Customer Authentication or another issuer requirement."
    },
    {
-    "title": "Respond to issuer or Radar authentication requests",
-    "scenario": "Risk-based checkout"
+    "title": "Request authentication selectively",
+    "scenario": "A Radar rule or explicit API request should ask the customer for additional verification."
    },
    {
-    "title": "Force 3DS behavior with request_three_d_secure",
-    "scenario": "Manual testing"
-   },
-   {
-    "title": "Authenticate SetupIntents before future use",
-    "scenario": "Saved payment methods"
+    "title": "Handle issuer-triggered challenges",
+    "scenario": "An issuer soft decline indicates that the payment needs extra cardholder verification."
    }
   ],
   "related": [
    "PaymentIntent",
    "SetupIntent",
    "PaymentMethod",
-   "Checkout Session",
+   "Radar",
    "confirmCardPayment",
    "handleCardAction",
-   "request_three_d_secure",
    "3DS Access Control Server (ACS)"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What causes Stripe to require 3DS?",
+    "answer": "Stripe can trigger 3DS because of regulatory requirements, Radar rules, an explicit API request, an issuer soft decline, or other assessment criteria. It first determines whether the transaction supports and requires 3DS.",
+    "followUp": "What happens when 3DS is required? Stripe contacts the issuer’s 3DS Access Control Server and starts the authentication flow."
+   },
+   {
+    "question": "How should a web integration present the 3DS challenge?",
+    "answer": "When 3DS is required, the PaymentIntent enters an authentication flow and the customer may need to complete an issuer challenge. On the web, Stripe can display the authentication interface in a modal when the relevant confirmation or action-handling method is called.",
+    "followUp": "What should the integration do after the challenge? Retrieve the updated PaymentIntent and inspect its current payment status."
+   },
+   {
+    "question": "What happens when 3DS cannot be completed?",
+    "answer": "If the card does not support 3DS, or an error occurs during authentication, Stripe allows the payment to proceed normally. The integration must still use the resulting PaymentIntent state to determine the outcome.",
+    "followUp": "What state indicates a failed authentication? The PaymentIntent transitions to `requires_payment_method`."
+   }
+  ],
   "keyPoints": [
-   "Stripe decides whether 3DS is supported and required using regulations, Radar, explicit API requests, issuer soft declines, and other signals.",
-   "When authentication is required, Stripe contacts the issuer’s ACS to begin the 3DS flow.",
-   "You can request 3DS explicitly on a PaymentIntent, SetupIntent, or Checkout Session with the card payment method option.",
-   "The flow begins when the customer supplies payment details for a PaymentIntent, SetupIntent, or Customer attachment.",
-   "Stripe.js can present the issuer authentication interface when these client-side methods are used."
+   "Stripe decides whether to invoke 3DS using regulation, Radar, an API request, issuer feedback, and other risk signals.",
+   "For a required challenge, Stripe initiates communication with the issuer’s ACS.",
+   "The assessment occurs during common PaymentIntent, SetupIntent, or customer PaymentMethod workflows.",
+   "Stripe.js can automatically show the web authentication interface during payment confirmation or action handling.",
+   "A non-supported or unsuccessful path can leave the PaymentIntent requiring a payment method."
   ],
   "gotchas": [
-   "A customer challenge is not guaranteed: Stripe prompts for authentication only when 3DS is available for that card.",
-   "Do not assume every unavailable or failed 3DS attempt automatically means the payment is declined; Stripe may continue the payment normally."
+   "Do not assume every card can complete 3DS; if authentication is unavailable, the payment proceeds normally.",
+   "A failed or unavailable authentication does not necessarily produce a separate challenge; continue according to the resulting payment state."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  }
 }

@@ -1,0 +1,122 @@
+/* Paper-world carousel with light tinted cards; tokens from landing-home.module.css .home.
+   Each tone sets a pale wash (--tint), a slightly deeper panel (--panel) and a readable accent (--edge). */
+.pulse { position: relative; overflow: hidden; padding-block: clamp(56px, 7vw, 96px); background:
+  radial-gradient(60% 50% at 8% 0%, #fde8dc 0%, transparent 70%),
+  radial-gradient(50% 45% at 100% 100%, #e3eefc 0%, transparent 70%),
+  var(--nb-paper); border-block: 1px solid var(--nb-rule); }
+
+.head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 20px 40px; margin-bottom: 32px; }
+.headCopy { max-width: 720px; }
+.kicker { display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 6px 12px; border: 1px solid var(--nb-cream-edge); border-radius: 999px; background: var(--nb-sheet); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--nb-ink); }
+.head h2 { margin: 16px 0 12px; font-family: var(--nb-font); font-weight: 600; font-size: clamp(30px, 3.6vw, 50px); line-height: 1.06; letter-spacing: -0.02em; color: var(--nb-graphite); text-wrap: balance; }
+.head h2 em { font-style: italic; color: var(--nb-ink); }
+.lede { margin: 0; max-width: 60ch; font-size: 17px; line-height: 1.55; color: var(--nb-text); }
+
+.controls { display: flex; align-items: center; gap: 8px; padding: 6px; border: 1px solid var(--nb-rule); border-radius: 999px; background: color-mix(in srgb, var(--nb-sheet) 80%, transparent); backdrop-filter: blur(6px); }
+.controls button { display: grid; place-items: center; width: 38px; height: 38px; border: 0; border-radius: 50%; background: transparent; color: var(--nb-graphite); cursor: pointer; transition: background .2s ease; }
+.controls button:hover { background: var(--nb-orange); }
+.count { min-width: 64px; text-align: center; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--nb-graphite); }
+.count i { margin-inline: 4px; font-style: normal; color: var(--nb-muted); }
+
+/* Three cards a screen; each page is exactly one track width so autoplay turns a whole screen. */
+.track { --gap: 24px; display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 2 * var(--gap)) / 3); gap: var(--gap); margin: 0; padding: 0; list-style: none; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
+.track::-webkit-scrollbar { display: none; }
+@media (max-width: 1080px) { .track { grid-auto-columns: calc((100% - var(--gap)) / 2); } }
+@media (max-width: 680px) { .track { --gap: 14px; grid-auto-columns: 100%; } }
+
+.card { --tint: #fdf1ea; --panel: #f9e1d3; --edge: #a64c2c;
+  scroll-snap-align: start; display: flex; flex-direction: column; min-width: 0; overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--edge) 22%, transparent); border-radius: 20px;
+  background: linear-gradient(180deg, var(--tint) 0%, var(--nb-sheet) 72%);
+  box-shadow: 0 1px 0 rgba(20, 20, 19, .03), 0 12px 32px -20px color-mix(in srgb, var(--edge) 45%, transparent);
+  transition: transform .4s var(--ease-out), box-shadow .4s var(--ease-out); }
+.card[data-tone="peach"]    { --tint: #fdf1ea; --panel: #f9e1d3; --edge: #a64c2c; }
+.card[data-tone="mint"]     { --tint: #ebf7f0; --panel: #d5efe0; --edge: #2f7a52; }
+.card[data-tone="sky"]      { --tint: #eaf3fd; --panel: #d6e7fa; --edge: #2f63a3; }
+.card[data-tone="lavender"] { --tint: #f2eefc; --panel: #e3dbf7; --edge: #5f47a8; }
+.card[data-tone="butter"]   { --tint: #fdf7e4; --panel: #f8ecc4; --edge: #8a6512; }
+.card[data-tone="rose"]     { --tint: #fdeef2; --panel: #f8dbe3; --edge: #a43b5c; }
+.card[data-tone="sage"]     { --tint: #f0f4ea; --panel: #e0e9d4; --edge: #4f6b2c; }
+@media (prefers-reduced-motion: no-preference) { .card:hover { transform: translateY(-4px); box-shadow: 0 1px 0 rgba(20, 20, 19, .03), 0 22px 40px -22px color-mix(in srgb, var(--edge) 60%, transparent); } }
+
+.picture { position: relative; aspect-ratio: 3 / 2; overflow: hidden; background: linear-gradient(135deg, var(--panel), var(--tint)); }
+/* A soft fade into the card so the picture and the paper read as one surface. */
+.picture::after { content: ""; position: absolute; inset: auto 0 0; height: 38%; background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--tint) 55%, transparent)); pointer-events: none; }
+.picture img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--ease-out); }
+@media (prefers-reduced-motion: no-preference) { .card:hover .picture img { transform: scale(1.04); } }
+/* No picture: a dotted, tinted panel with the kind's icon in a glass disc, at the same size so rows stay even. */
+.picture[data-empty="true"] { background:
+  radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--edge) 22%, transparent) 1px, transparent 0) 0 0 / 16px 16px,
+  radial-gradient(70% 80% at 30% 20%, var(--nb-sheet), transparent 70%),
+  linear-gradient(135deg, var(--panel), var(--tint)); }
+.placeholder { position: absolute; inset: 0; display: grid; place-items: center; color: var(--edge); }
+.placeholder svg { box-sizing: content-box; padding: 22px; border: 1px solid color-mix(in srgb, var(--edge) 25%, transparent); border-radius: 50%; background: rgba(255, 255, 255, .7); box-shadow: 0 12px 30px -16px var(--edge); }
+
+.body { display: flex; flex: 1; flex-direction: column; gap: 14px; padding: 20px 22px 22px; }
+.kind { position: absolute; z-index: 1; left: 14px; top: 14px; display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; background: rgba(255, 255, 255, .9); backdrop-filter: blur(6px); box-shadow: 0 4px 14px -8px rgba(20, 20, 19, .35); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--edge); }
+/* The card number as an outlined numeral in the picture's corner. */
+.index { position: absolute; z-index: 1; right: 14px; bottom: 6px; font-family: Georgia, "Times New Roman", serif; font-size: 44px; font-weight: 700; line-height: 1; font-variant-numeric: lining-nums; color: rgba(255, 255, 255, .55); -webkit-text-stroke: 1.5px var(--edge); }
+.card h3 { margin: 0; font-family: var(--nb-font); font-size: 22px; font-weight: 600; line-height: 1.2; letter-spacing: -0.01em; color: var(--nb-graphite); }
+
+.block { display: flex; flex-direction: column; gap: 6px; }
+.label { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--edge); }
+.definition { margin: 0; font-size: 15px; line-height: 1.55; color: var(--nb-text); text-align: left; }
+.points, .uses { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.points li, .uses li { position: relative; padding-left: 18px; font-size: 14px; line-height: 1.45; color: var(--nb-text); }
+.points li::before { content: ""; position: absolute; left: 2px; top: .55em; width: 7px; height: 7px; border-radius: 2px; background: var(--edge); opacity: .75; }
+.uses li::before { content: "→"; position: absolute; left: 0; top: 0; font-size: 13px; color: var(--edge); }
+.industries { display: grid; gap: 6px; margin: 0; }
+.industries div { padding: 8px 10px; border-radius: 10px; background: color-mix(in srgb, var(--panel) 65%, transparent); }
+.industries dt { font-size: 12px; font-weight: 700; color: var(--nb-graphite); }
+.industries dd { margin: 2px 0 0; font-size: 13px; line-height: 1.4; color: var(--nb-text); }
+
+.source { margin-top: auto; display: inline-flex; align-items: center; gap: 6px; padding-top: 12px; border-top: 1px dashed color-mix(in srgb, var(--edge) 30%, transparent); font-size: 14px; font-weight: 600; color: var(--edge); text-decoration: none; }
+.source:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+.dots { display: flex; justify-content: center; gap: 8px; margin-top: 28px; }
+.dots button { position: relative; overflow: hidden; width: 28px; height: 6px; padding: 0; border: 0; border-radius: 999px; background: var(--nb-rule); cursor: pointer; transition: width .3s var(--ease-out), background .3s ease; }
+.dots button[aria-current="true"] { width: 56px; background: color-mix(in srgb, var(--nb-ink) 30%, var(--nb-rule)); }
+/* The active dot fills over the two-minute wait, so the reader can see when the page will turn. */
+.timer { position: absolute; inset: 0; transform-origin: left; background: var(--nb-ink); animation: fill linear forwards; }
+@keyframes fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) { .timer { display: none; } }
+
+/* A hairline of the card's own colour across the top, drawn on hover. */
+.card { position: relative; }
+.card::before { content: ""; position: absolute; z-index: 2; inset: 0 0 auto; height: 3px; background: linear-gradient(90deg, var(--edge), color-mix(in srgb, var(--edge) 30%, transparent)); transform: scaleX(0); transform-origin: left; transition: transform .5s var(--ease-out); }
+.card:hover::before, .card:focus-within::before { transform: scaleX(1); }
+
+/* "X vs. Y" cards: each side explained on its own, A over B, joined by a vs. seal. */
+.vs { display: inline-block; margin-inline: 2px; padding: 0 8px; border-radius: 999px; background: var(--panel); font-family: Georgia, "Times New Roman", serif; font-size: .7em; font-style: italic; font-weight: 600; vertical-align: .15em; color: var(--edge); }
+.compare { position: relative; display: grid; gap: 10px; }
+.compare::after { content: "vs"; position: absolute; left: 50%; top: 50%; translate: -50% -50%; display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid color-mix(in srgb, var(--edge) 30%, transparent); border-radius: 50%; background: var(--nb-sheet); font-family: Georgia, "Times New Roman", serif; font-size: 12px; font-style: italic; font-weight: 700; color: var(--edge); }
+.side { display: grid; gap: 8px; padding: 12px 14px; border: 1px solid color-mix(in srgb, var(--edge) 18%, transparent); border-radius: 14px; background: var(--nb-sheet); }
+.side + .side { background: color-mix(in srgb, var(--panel) 45%, var(--nb-sheet)); }
+.side header { display: flex; align-items: center; gap: 10px; }
+.side h4 { margin: 0; font-family: var(--nb-font); font-size: 16px; font-weight: 700; line-height: 1.2; color: var(--nb-graphite); }
+.sideMark { display: grid; place-items: center; flex-shrink: 0; width: 26px; height: 26px; border-radius: 8px; background: var(--edge); color: #fff; font-size: 12px; font-weight: 700; }
+.side + .side .sideMark { background: var(--nb-sheet); color: var(--edge); border: 1px solid var(--edge); }
+.sideTitle { margin: 1px 0 0; font-size: 12px; font-weight: 600; letter-spacing: .02em; color: var(--edge); text-align: left; }
+.sideSummary { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--nb-text); text-align: left; }
+.side .points li { font-size: 13px; }
+.useWhen { margin: 0; padding-top: 8px; border-top: 1px dashed color-mix(in srgb, var(--edge) 25%, transparent); font-size: 13px; line-height: 1.45; color: var(--nb-text); text-align: left; }
+.useWhen b { margin-right: 4px; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--edge); }
+
+/* A faint dotted field behind the whole section, fading out towards the cards. */
+.pulse::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 1px 1px, rgba(20, 20, 19, .07) 1px, transparent 0) 0 0 / 22px 22px; mask-image: linear-gradient(180deg, #000, transparent 55%); pointer-events: none; }
+.pulse > * { position: relative; }
+
+/* ---- Equal-height cards with every word shown: nothing is clamped or cut with an ellipsis. Cards in a row stretch
+   to the tallest, and the industry block takes up the difference, so no card shows empty space. ---- */
+.track { align-items: stretch; }
+.card { height: 100%; }
+.today { margin-left: 4px; padding-left: 10px; border-left: 1px solid var(--nb-cream-edge); font-weight: 600; letter-spacing: .04em; color: var(--nb-text); text-transform: none; }
+.category { margin: 0 0 -8px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--nb-muted); text-align: left; overflow-wrap: anywhere; }
+.card h3, .definition, .points li, .uses li, .sideSummary, .useWhen, .industries dd { overflow-wrap: anywhere; }
+/* The filler: its panels share whatever height the row's tallest card leaves over. */
+.fill { flex: 1; }
+.fill .industries { flex: 1; grid-auto-rows: 1fr; }
+.fill .industries div { display: flex; flex-direction: column; justify-content: center; }
+.source { min-width: 0; align-items: flex-start; }
+.source span { overflow-wrap: anywhere; }
+.source svg { flex-shrink: 0; margin-top: 2px; }

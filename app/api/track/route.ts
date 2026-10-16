@@ -1,0 +1,84 @@
+import { randomUUID } from "node:crypto";
+import { cookies } from "next/headers";
+import { after } from "next/server";
+import { z } from "zod";
+import { authConfigured } from "@/lib/server/config";
+import { supabaseServer } from "@/lib/server/auth";
+import { db } from "@/lib/server/db";
+import { clientIp, geo, hashIp, maskIp, parseUserAgent } from "@/lib/server/visit-context";
+
+/*
+ * Page-view beacon for the super admin's User activities page (components/visit-tracker.tsx sends it).
+ * Not wrapped in api(): that would log every beacon as a request event as well. It always answers 204 quickly,
+ * writes after the response, and never fails the page: a missing table (migration 0023 not applied) is ignored.
+ */
+const VISITOR = "mc_vid", SESSION = "mc_sid";
+const SESSION_SECONDS = 30 * 60;
+const text = (max: number) => z.string().trim().max(max).optional().nullable().transform(value => value || null);
+const bodySchema = z.object({
+  type: z.enum(["view", "leave"]),
+  path: z.string().trim().min(1).max(300).regex(/^\//),
+  title: text(200), referrer: text(500), language: text(35), timezone: text(60), screen: text(20),
+  duration: z.number().int().min(0).max(86_400_000).optional(),
+  utm: z.object({ source: text(80), medium: text(80), campaign: text(120) }).partial().optional(),
+});
+
+/** At most 120 beacons a minute from one network per server instance: a page view is cheap, a flood is not. */
+const recent = new Map<string, { count: number; since: number }>();
+function allowed(key: string) {
+  const now = Date.now(); const entry = recent.get(key);
+  if (!entry || now - entry.since > 60_000) { if (recent.size > 5000) recent.clear(); recent.set(key, { count: 1, since: now }); return true; }
+  return ++entry.count <= 120;
+}
+
+const noContent = () => new Response(null, { status: 204, headers: { "Cache-Control": "no-store" } });
+
+export async function POST(request: Request) {
+  if (!authConfigured()) return noContent();
+  const origin = request.headers.get("origin");
+  if (origin && origin !== new URL(request.url).origin) return new Response(null, { status: 403 });
+  if (Number(request.headers.get("content-length")) > 4000) return new Response(null, { status: 413 });
+  let input: z.infer<typeof bodySchema>;
+  try { input = bodySchema.parse(JSON.parse(await request.text())); } catch { return new Response(null, { status: 400 }); }
+  // Super admin pages are not part of the audience being measured.
+  if (input.path.startsWith("/dashboard/super-admin") || input.path.startsWith("/api/")) return noContent();
+
+  const ip = clientIp(request.headers);
+  const ipHash = ip ? hashIp(ip) : null;
+  if (!allowed(ipHash ?? "unknown")) return new Response(null, { status: 429 });
+
+  const store = await cookies();
+  const secure = new URL(request.url).protocol === "https:";
+  const known = store.get(VISITOR)?.value;
+  const visitorId = known && /^[\w-]{8,64}$/.test(known) ? known : randomUUID();
+  const sessionId = store.get(SESSION)?.value && /^[\w-]{8,64}$/.test(store.get(SESSION)!.value) ? store.get(SESSION)!.value : randomUUID();
+  // A first-party, HTTP-only id: one per browser for a year, and a session that ends after 30 idle minutes.
+  store.set(VISITOR, visitorId, { httpOnly: true, sameSite: "lax", secure, path: "/", maxAge: 365 * 86400 });
+  store.set(SESSION, sessionId, { httpOnly: true, sameSite: "lax", secure, path: "/", maxAge: SESSION_SECONDS });
+
+  let userId: string | null = null;
+  try { const { data } = await (await supabaseServer()).auth.getClaims(); userId = typeof data?.claims?.sub === "string" ? data.claims.sub : null; } catch { /* anonymous */ }
+
+  const ua = parseUserAgent(request.headers.get("user-agent") ?? "");
+  let referrerHost: string | null = null;
+  try { if (input.referrer) { const host = new URL(input.referrer).host; referrerHost = host && host !== new URL(request.url).host ? host.replace(/^www\./, "") : null; } } catch { /* not a URL */ }
+
+  const row = {
+    event: input.type === "view" ? "page_view" : "page_leave",
+    visitor_id: visitorId, session_id: sessionId, user_id: userId,
+    new_visitor: input.type === "view" && !known,
+    path: input.path, title: input.title, referrer_host: referrerHost,
+    utm_source: input.utm?.source ?? null, utm_medium: input.utm?.medium ?? null, utm_campaign: input.utm?.campaign ?? null,
+    ...geo(request.headers), ip_masked: ip ? maskIp(ip) : null, ip_hash: ipHash,
+    browser: ua.browser, os: ua.os, device: ua.device, is_bot: ua.isBot,
+    language: input.language, timezone: input.timezone, screen: input.screen,
+    duration_ms: input.type === "leave" ? input.duration ?? null : null,
+  };
+  after(async () => {
+    try {
+      const { error } = await db().from("site_visits").insert(row);
+      if (error && error.code !== "42P01" && error.code !== "PGRST205") console.error("visit_write_failed", error.code);
+    } catch { console.error("visit_write_unavailable"); }
+  });
+  return noContent();
+}

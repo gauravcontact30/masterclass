@@ -1,4 +1,318 @@
 {
+ "Cell": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/reference/index/type-aliases/Cell",
+  "sourceTitle": "Cell",
+  "summary": "Cell is TanStack Table's feature-aware type for a table cell. It combines the core cell contract with cell-related types supplied by the enabled table features.",
+  "explanation": "Cell is a feature-aware table-cell type. It combines the core cell contract with the type contributions supplied by the selected table features, while generics describe the feature set, row data, and cell value.",
+  "syntax": "type Cell<TFeatures, TData, TValue> = Cell_Core<TFeatures, TData, TValue> & ExtractFeatureMapTypes<TFeatures, Cell_FeatureMap>",
+  "parameters": [
+   {
+    "name": "TFeatures",
+    "type": "TableFeatures",
+    "description": "The table features enabled for the cell type."
+   },
+   {
+    "name": "TData",
+    "type": "RowData",
+    "description": "The row-data type associated with the cell."
+   },
+   {
+    "name": "TValue",
+    "type": "CellData",
+    "description": "The value type held by the cell; defaults to CellData."
+   }
+  ],
+  "returns": "A Cell type combining Cell_Core<TFeatures, TData, TValue> with feature-specific cell types.",
+  "example": {
+   "title": "Typing a table cell",
+   "code": "import type { Cell, TableFeatures, RowData, CellData } from '@tanstack/table-core'\n\ntype Person = { name: string }\ntype Features = TableFeatures\n\ndeclare const cell: Cell<Features, Person, string>\n\nconst value: string = cell.getValue()\nconsole.log(value)",
+   "language": "typescript",
+   "explanation": "This type annotation describes a cell containing a string value for a Person row."
+  },
+  "useCases": [
+   {
+    "title": "Annotate cell values",
+    "scenario": "Strongly typing a cell instance in TypeScript"
+   },
+   {
+    "title": "Model enabled features",
+    "scenario": "Preserving feature-specific cell members"
+   },
+   {
+    "title": "Associate row data",
+    "scenario": "Connecting a cell to its row's domain object"
+   }
+  ],
+  "related": [
+   "Cell_Core",
+   "CellContext",
+   "CellData",
+   "constructCell",
+   "TableFeatures",
+   "RowData"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the Cell type alias represent?",
+    "answer": "Cell is generic over the enabled table features, the row-data type, and the cell-value type. Its definition combines Cell_Core with the feature-specific cell types extracted from the feature map.",
+    "followUp": "Why is TFeatures constrained? It must extend TableFeatures so feature-specific additions can be derived safely from the table's supported feature set."
+   },
+   {
+    "question": "What do the TData and TValue generics control?",
+    "answer": "TData extends RowData and identifies the row shape associated with the cell. TValue extends CellData and represents the value held by that cell.",
+    "followUp": "What happens when TValue is omitted? It defaults to CellData, which is broader than a domain-specific value type."
+   },
+   {
+    "question": "How does Cell incorporate table features?",
+    "answer": "The alias is feature-aware rather than only a fixed core type: it intersects Cell_Core<TFeatures, TData, TValue> with ExtractFeatureMapTypes<TFeatures, Cell_FeatureMap>. This allows enabled features to augment the cell type.",
+    "followUp": "How would you preserve those augmentations in application code? Use the same TFeatures type when declaring or passing cells instead of reducing the value to an unrelated base type."
+   }
+  ],
+  "keyPoints": [
+   "Cell is an intersection of the core cell type and the types contributed by enabled features.",
+   "The feature generic must be a valid TableFeatures collection.",
+   "The row-data generic is restricted to TanStack Table's RowData type.",
+   "The cell-value generic is constrained to CellData and defaults to CellData.",
+   "The alias is defined in the table package's types/Cell.ts source file."
+  ],
+  "gotchas": [
+   "If the value type is omitted, TValue defaults to the general CellData type, so provide it when precise cell-value typing matters."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Column": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/reference/index/type-aliases/Column",
+  "sourceTitle": "Column | TanStack Table Docs",
+  "summary": "Column is TanStack Table's feature-aware column type. It combines the core column contract with members derived from enabled features and is parameterized by features, row data, and cell-value type.",
+  "explanation": "Column combines the core column shape with the feature-specific types selected by TFeatures. TData identifies the row model, while TValue describes the value produced by the column and defaults to unknown when omitted.",
+  "syntax": "type Column<TFeatures, TData, TValue> = Column_Core<TFeatures, TData, TValue> & ExtractFeatureMapTypes<TFeatures, Column_FeatureMap<TFeatures, TData>>;",
+  "parameters": [
+   {
+    "name": "TFeatures",
+    "type": "TFeatures extends TableFeatures",
+    "description": "Enabled table features used to derive feature-specific column types; must extend TableFeatures."
+   },
+   {
+    "name": "TData",
+    "type": "TData extends RowData",
+    "description": "The table's row-data type; must extend RowData."
+   },
+   {
+    "name": "TValue",
+    "type": "TValue = unknown",
+    "description": "The value type represented by the column; defaults to unknown."
+   }
+  ],
+  "returns": "A type combining Column_Core<TFeatures, TData, TValue> with the feature-specific types extracted from Column_FeatureMap<TFeatures, TData>.",
+  "example": {
+   "title": "Typing a user-name column",
+   "code": "import type { Column, RowData, TableFeatures } from '@tanstack/table-core'\n\ntype User = { name: string; age: number }\ntype Features = TableFeatures\n\ntype UserNameColumn = Column<Features, User, string>",
+   "language": "typescript",
+   "explanation": "This declares a column type for User rows whose cell values are strings."
+  },
+  "useCases": [
+   {
+    "title": "Represent a concrete column for a specific row model",
+    "scenario": "Typing table internals"
+   },
+   {
+    "title": "Specify string, number, or another precise TValue for column operations",
+    "scenario": "Type-safe cell values"
+   },
+   {
+    "title": "Expose members contributed by the table features enabled for a table",
+    "scenario": "Feature-aware APIs"
+   }
+  ],
+  "related": [
+   "Column_Core",
+   "Column_FeatureMap",
+   "ColumnDef",
+   "RowData",
+   "TableFeatures"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the Column type alias represent?",
+    "answer": "Column is a generic type alias that combines Column_Core with the feature-derived types from ExtractFeatureMapTypes. Its three parameters describe enabled features, row data, and column values.",
+    "followUp": "How would you preserve value safety for a numeric column? Use Column<Features, Row, number> rather than relying on the unknown default."
+   },
+   {
+    "question": "What are Column's generic parameters and constraints?",
+    "answer": "TFeatures must extend TableFeatures, and TData must extend RowData. TValue is optional and defaults to unknown.",
+    "followUp": "Why constrain TData to RowData? The alias follows the table library's row-data contract instead of accepting an unconstrained type."
+   },
+   {
+    "question": "How does Column incorporate table features?",
+    "answer": "The alias is defined as Column_Core<TFeatures, TData, TValue> intersected with ExtractFeatureMapTypes<TFeatures, Column_FeatureMap<TFeatures, TData>>. This adds feature-specific column members to the core column contract.",
+    "followUp": "What changes when features differ? The extracted feature map changes the additional members available on the resulting column type."
+   }
+  ],
+  "keyPoints": [
+   "Column starts with the core column contract and then augments it with feature-dependent members.",
+   "The intersection adds types computed from the selected table features and row-data model.",
+   "The feature generic is restricted to the library's TableFeatures shape.",
+   "The row generic must satisfy TanStack Table's RowData constraint.",
+   "The alias is defined in the library's types/Column.ts source file."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-10-16"
+ },
+ "ColumnDef": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/reference/index/type-aliases/ColumnDef",
+  "sourceTitle": "ColumnDef",
+  "summary": "ColumnDef is TanStack Table's union type for describing display, group, and accessor columns. Its generics type the feature set, row data, and cell values.",
+  "explanation": "ColumnDef is a union describing a table column: a display column, a group column containing child definitions, or an accessor column that extracts row data. Its generics specify the table features, row type, and cell-value type.",
+  "syntax": "type ColumnDef<TFeatures, TData, TValue> = DisplayColumnDef<TFeatures, TData, TValue> | GroupColumnDef<TFeatures, TData, TValue> | AccessorColumnDef<TFeatures, TData, TValue>;",
+  "parameters": [
+   {
+    "name": "TFeatures",
+    "type": "extends TableFeatures",
+    "description": "The enabled table feature set used by the definition types."
+   },
+   {
+    "name": "TData",
+    "type": "extends RowData",
+    "description": "The row-data type used by the table."
+   },
+   {
+    "name": "TValue",
+    "type": "extends CellData = CellData",
+    "description": "The cell-value type; defaults to CellData."
+   }
+  ],
+  "returns": "A union type for display, group, and accessor column definitions; it does not define a runtime return value.",
+  "example": {
+   "title": "Basic typed column definitions",
+   "code": "import type { ColumnDef } from '@tanstack/react-table'\n\ntype Person = { firstName: string; age: number }\n\nconst columns: ColumnDef<Person>[] = [\n  { accessorKey: 'firstName', header: 'First name' },\n  { accessorKey: 'age', header: 'Age' },\n]",
+   "language": "typescript",
+   "explanation": "Defines typed table columns by mapping row-object keys to displayed headers."
+  },
+  "useCases": [
+   {
+    "title": "Property-backed columns",
+    "scenario": "Define fields read directly from typed row objects."
+   },
+   {
+    "title": "Computed columns",
+    "scenario": "Build values derived from multiple row fields."
+   },
+   {
+    "title": "Grouped columns",
+    "scenario": "Arrange related columns under a shared heading."
+   },
+   {
+    "title": "Column metadata",
+    "scenario": "Attach application-specific configuration to columns."
+   }
+  ],
+  "related": [
+   "ColumnDefTemplate",
+   "Column APIs",
+   "Table APIs",
+   "AccessorColumnDef",
+   "DisplayColumnDef",
+   "GroupColumnDef"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is ColumnDef and what are its generic parameters?",
+    "answer": "ColumnDef<TFeatures, TData, TValue> is a union of display, group, and accessor column definitions. TFeatures describes enabled table features, TData is the row type, and TValue defaults to CellData.",
+    "followUp": "How would you model a computed column? Use an accessor column with accessorFn, whose function receives the original row and index and returns the value."
+   },
+   {
+    "question": "When should accessorKey and accessorFn be used?",
+    "answer": "Use accessorKey when the value comes directly from a row property. Use accessorFn when the value must be computed from the original row.",
+    "followUp": "What information does an accessorFn receive? It receives originalRow: TData and index: number, and returns any."
+   },
+   {
+    "question": "How are column content and metadata configured?",
+    "answer": "A column definition can include header, footer, and cell render templates. A template may be a string or a function receiving the relevant context, with the exact rendered result depending on the adapter.",
+    "followUp": "Where can column metadata be read? Through column.columnDef.meta whenever the column is available."
+   }
+  ],
+  "keyPoints": [
+   "ColumnDef is a type union rather than one single column shape.",
+   "Display columns are one of the three principal ColumnDef variants.",
+   "Group columns provide a way to include child column definitions.",
+   "Accessor columns describe definitions that obtain values from each row.",
+   "An accessor function receives the original typed row and its index.",
+   "Nested child definitions are represented by an array of ColumnDef values.",
+   "Custom metadata is available through the normalized column's columnDef.meta property."
+  ],
+  "gotchas": [
+   "A header string can supply a default column ID, but relying on it is less explicit than setting id yourself when needed.",
+   "Group columns organize child definitions and do not themselves represent a directly accessed row value.",
+   "accessorKey must identify a property on each row that supplies the column value."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "createBrowserHistory": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/guide/history-types",
+  "sourceTitle": "History Types",
+  "summary": "Creates the default browser history implementation for TanStack Router. Use its returned history object when you want to provide browser navigation history explicitly.",
+  "explanation": "createBrowserHistory creates the browser-oriented history implementation used by TanStack Router. It relies on the browser History API, and the resulting history object can be passed to the Router constructor or router options.",
+  "syntax": "createBrowserHistory()",
+  "parameters": [],
+  "returns": "A browser-oriented history instance compatible with TanStack Router's RouterHistory type.",
+  "example": {
+   "title": "Create and attach browser history",
+   "code": "import { createBrowserHistory } from '@tanstack/react-router'\n\nconst history = createBrowserHistory()\n\nconst router = createRouter({\n  routeTree,\n  history,\n})\n\n// Later, when the history instance is no longer needed:\nhistory.destroy()",
+   "language": "typescript",
+   "explanation": "Creates browser-backed history and supplies it explicitly to a TanStack Router instance."
+  },
+  "useCases": [
+   {
+    "title": "Manage normal browser URL navigation",
+    "scenario": "Browser single-page applications"
+   },
+   {
+    "title": "Inject an explicitly created history object",
+    "scenario": "Custom router construction"
+   },
+   {
+    "title": "Create and later dispose of a controlled history instance",
+    "scenario": "Testing router setup"
+   }
+  ],
+  "related": [
+   "createHashHistory",
+   "Router",
+   "RouterOptions.history",
+   "RouterHistory"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does createBrowserHistory do?",
+    "answer": "It creates the default TanStack Router history implementation for browser routing. The implementation uses the browser's History API to manage navigation state.",
+    "followUp": "What happens if no history is supplied? The router creates and uses a new createBrowserHistory instance automatically."
+   },
+   {
+    "question": "How do you use the returned value with a router?",
+    "answer": "Call createBrowserHistory to obtain a history object, then pass that object through the router's history option. This lets the router use that specific browser history instance.",
+    "followUp": "Which option receives it? RouterOptions.history, whose type is RouterHistory."
+   },
+   {
+    "question": "How does browser history differ from hash history?",
+    "answer": "It is intended for browser routing and is the default history type. For hash-based URLs, use createHashHistory instead, which is a different history type.",
+    "followUp": "When would browser history be inappropriate? When the application specifically needs URL fragments to represent navigation state, hash history is the relevant alternative."
+   }
+  ],
+  "keyPoints": [
+   "It is TanStack Router's standard history implementation for normal browser URL routing.",
+   "Navigation is backed by the platform History API rather than a hash-only URL strategy.",
+   "The returned object can be injected when constructing a Router.",
+   "The API is provided by the @tanstack/history package as the browser-oriented history choice."
+  ],
+  "gotchas": [
+   "Creating an instance is optional in the usual browser setup because the router creates one automatically."
+  ],
+  "checkedAt": "2026-10-16"
+ },
  "createColumnHelper": {
   "sourceUrl": "https://tanstack.com/table/latest/docs/reference/index/functions/createColumnHelper",
   "sourceTitle": "createColumnHelper | TanStack Table Docs",
@@ -79,6 +393,446 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "createFileRoute": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/createFileRouteFunction",
+  "sourceTitle": "createFileRoute function",
+  "summary": "Creates a file-based TanStack Router route from its generated path. The returned function accepts RouteOptions and produces the configured route instance used in the generated route tree.",
+  "explanation": "Call createFileRoute with the route file's path, then invoke the returned function with RouteOptions such as a loader or component. Export the configured instance under the Route identifier so the file-based tooling can include it when generating the route tree.",
+  "syntax": "createFileRoute(path)(routeOptions)",
+  "parameters": [
+   {
+    "name": "path",
+    "type": "string literal",
+    "description": "The full file path represented by the generated route; it is a required string literal and is maintained by the generation tooling."
+   },
+   {
+    "name": "routeOptions",
+    "type": "RouteOptions",
+    "description": "Route configuration, including options such as loader and component."
+   }
+  ],
+  "returns": "The first call returns a function accepting RouteOptions; invoking it returns a configured file Route instance.",
+  "example": {
+   "title": "Create a file-based route",
+   "code": "import { createFileRoute } from '@tanstack/react-router'\n\nexport const Route = createFileRoute('/')({\n  loader: () => 'Hello World',\n  component: IndexComponent,\n})\n\nfunction IndexComponent() {\n  const data = Route.useLoaderData()\n  return <div>{data}</div>\n}",
+   "language": "tsx",
+   "explanation": "This defines the root file route, supplies loader and component options, and reads the loader result in the rendered component."
+  },
+  "useCases": [
+   {
+    "title": "Create application routes",
+    "scenario": "Defining a page in a file-based TanStack Router application."
+   },
+   {
+    "title": "Load route data",
+    "scenario": "Adding route-specific loading behavior before rendering a component."
+   },
+   {
+    "title": "Generate a route tree",
+    "scenario": "Connecting generated route files to the application's route tree."
+   }
+  ],
+  "related": [
+   "RouteOptions",
+   "Route",
+   "tsr generate",
+   "tsr watch",
+   "useLoaderData"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does createFileRoute do?",
+    "answer": "It is a factory for creating a file-based route instance. The path string identifies the file route, and the returned function accepts RouteOptions that configure the route.",
+    "followUp": "Why does the API return another function? It separates the file-derived path from route configuration, allowing the generated route file to attach options in a typed way."
+   },
+   {
+    "question": "What is the function's argument?",
+    "answer": "It accepts one string argument representing the path of the file from which the route will be generated. The argument is required and has a string-literal type.",
+    "followUp": "How is that path maintained? The tsr generate and tsr watch commands automatically insert and update it."
+   },
+   {
+    "question": "What does it return, and how must it be exported?",
+    "answer": "The configured file Route instance is returned after calling the returned function with RouteOptions. For file-based generation to work, that instance must be exported with the identifier Route.",
+    "followUp": "What should be checked when generation omits a route? Verify that the file exports the created instance exactly as Route."
+   }
+  ],
+  "keyPoints": [
+   "The function creates the route object used by TanStack Router's file-based routing workflow.",
+   "The resulting route instance participates in automatic route-tree generation.",
+   "Its first call takes exactly one path argument.",
+   "That path corresponds to the source file represented by the route.",
+   "The initial call returns a configuration function rather than the final route instance.",
+   "Pass route options to the returned function to define behavior such as loading data or rendering a component."
+  ],
+  "gotchas": [
+   "Export the configured route as Route; otherwise the tsr generate and tsr watch commands cannot process it correctly.",
+   "The path argument is tooling-managed, so avoid treating it as a manually maintained source of truth when using those commands."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "createLazyFileRoute": {
+  "sourceUrl": "https://tanstack.com/router/v1/docs/api/router/createLazyFileRouteFunction",
+  "sourceTitle": "createLazyFileRoute function | TanStack Router Docs",
+  "summary": "Creates a partial file-based route whose non-critical configuration is loaded lazily when the route matches. It is intended for route-level code splitting.",
+  "explanation": "createLazyFileRoute creates a partial file-based route whose configuration is loaded when the route matches. It takes the route file path and returns a function accepting only the supported non-critical route options, such as rendering and fallback components.",
+  "syntax": "createLazyFileRoute(path)(options)",
+  "parameters": [
+   {
+    "name": "path",
+    "type": "string",
+    "description": "The file route's path; it is required and is automatically inserted or updated by the tsr generate and tsr watch commands."
+   },
+   {
+    "name": "options",
+    "type": "Pick<RouteOptions, 'component' | 'pendingComponent' | 'errorComponent' | 'notFoundComponent'>",
+    "description": "A partial RouteOptions object limited to component, pendingComponent, errorComponent, and notFoundComponent."
+   }
+  ],
+  "returns": "A function that accepts the supported partial RouteOptions and creates the lazy file-route instance.",
+  "example": {
+   "title": "Lazy file route",
+   "code": "import { createLazyFileRoute } from '@tanstack/react-router'\n\nexport const Route = createLazyFileRoute('/')({\n  component: IndexComponent,\n})\n\nfunction IndexComponent() {\n  const data = Route.useLoaderData()\n  return <div>{data}</div>\n}",
+   "language": "tsx",
+   "explanation": "Defines the lazily loaded, non-critical component configuration for the root file route."
+  },
+  "useCases": [
+   {
+    "title": "Route-level code splitting",
+    "scenario": "Split route bundles so component code loads only when a file-based route is matched."
+   },
+   {
+    "title": "Lazy non-critical UI",
+    "scenario": "Add a route's main, loading, error, or not-found UI in a lazy file."
+   },
+   {
+    "title": "Generated file routes",
+    "scenario": "Use generated file-based routes while keeping the lazy instance discoverable by the router tooling."
+   }
+  ],
+  "related": [
+   "createFileRoute",
+   "createLazyRoute",
+   "lazyRouteComponent",
+   "Route.lazy"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is createLazyFileRoute used for?",
+    "answer": "It creates a partial file-based route that is loaded lazily when the route matches. The returned configuration is limited to non-critical options such as component, pendingComponent, errorComponent, and notFoundComponent.",
+    "followUp": "How does it support code splitting? Put the non-critical configuration in a lazy route file, commonly using the .lazy.tsx suffix, and create that configuration with createLazyFileRoute instead of createFileRoute."
+   },
+   {
+    "question": "What arguments does createLazyFileRoute use?",
+    "answer": "The function receives the file route path as a string and returns a function. Calling that function with route options creates the lazy file-route instance.",
+    "followUp": "What must happen to the path value in generated file-based routing? The generator or watcher automatically inserts and updates it."
+   },
+   {
+    "question": "Why must the route be exported as Route?",
+    "answer": "The generated route instance should be exported as Route. This lets the file-based routing generator and watcher recognize the route correctly.",
+    "followUp": "Which route options belong in the lazy configuration? The documented supported options are component, pendingComponent, errorComponent, and notFoundComponent."
+   }
+  ],
+  "keyPoints": [
+   "It creates a partial file-based route that loads when its route match is activated.",
+   "Its path identifies the source file from which the generated route is created.",
+   "The path is maintained automatically by the tsr generate and tsr watch commands.",
+   "The accepted lazy options are component, pendingComponent, errorComponent, and notFoundComponent.",
+   "The call returns a function that accepts a partial RouteOptions object."
+  ],
+  "gotchas": [
+   "Do not place critical route configuration such as loaders or path matching behavior in this lazy route; use the main file route for that configuration.",
+   "File-based route generation requires exporting the instance under the exact Route identifier."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "createMemoryHistory": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/guide/history-types",
+  "sourceTitle": "History Types | TanStack Router Solid Docs",
+  "summary": "Creates a TanStack Router history whose navigation entries are stored in memory. Initialize it with `initialEntries`, then pass the history instance to a router.",
+  "explanation": "`createMemoryHistory` builds a router history implementation whose entries live only in memory. Provide `initialEntries` to establish the starting URL, then pass the resulting history object to the Router constructor or configuration.",
+  "syntax": "createMemoryHistory(options)",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "MemoryHistoryOptions",
+    "description": "Configuration object containing the initial history entries, such as an initial URL."
+   }
+  ],
+  "returns": "A memory-backed router history instance.",
+  "example": {
+   "title": "Create a router with memory history",
+   "code": "import { createMemoryHistory, createRouter } from '@tanstack/react-router'\n\nconst history = createMemoryHistory({\n  initialEntries: ['/'],\n})\n\nconst router = createRouter({ routeTree, history })\n",
+   "language": "typescript",
+   "explanation": "Creates an in-memory history and supplies it to a TanStack Router instance."
+  },
+  "useCases": [
+   {
+    "title": "Testing",
+    "scenario": "Automated router tests need a controlled starting location without changing the browser URL."
+   },
+   {
+    "title": "Non-browser environments",
+    "scenario": "The application runs outside a browser and still needs client-style navigation."
+   },
+   {
+    "title": "URL-independent routing",
+    "scenario": "Routes should change without exposing navigation through the browser URL."
+   }
+  ],
+  "related": [
+   "createBrowserHistory",
+   "createHashHistory",
+   "createRouter",
+   "RouterHistory"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `createMemoryHistory` provide?",
+    "answer": "It creates a history type that keeps navigation entries in memory instead of using the browser's URL history. The returned history can be passed to `createRouter` as its `history` option.",
+    "followUp": "Why is it useful in tests? It lets tests set deterministic starting entries without depending on a browser location or changing the real URL."
+   },
+   {
+    "question": "How do you initialize memory history?",
+    "answer": "Pass an options object containing `initialEntries`, such as `['/']`, to define the initial URL represented by the memory history. Then give the returned instance to the router configuration.",
+    "followUp": "What would happen if the initial entry were a nested route? The router would begin from that path, subject to the route tree and its matching behavior."
+   },
+   {
+    "question": "When should memory routing be used?",
+    "answer": "Memory routing is appropriate when there is no browser environment or when components should not interact with the URL. Typical examples include tests and other non-browser execution contexts.",
+    "followUp": "How does this differ conceptually from browser history? Browser history integrates with the browser URL, while memory history retains navigation state in memory."
+   }
+  ],
+  "keyPoints": [
+   "The function creates a history implementation backed by in-memory entries.",
+   "Use `initialEntries` to provide the starting URL for the history.",
+   "The returned history instance is supplied to the Router constructor or router configuration.",
+   "It supports routing in non-browser environments.",
+   "It keeps route navigation separate from the URL when components should not modify it."
+  ],
+  "gotchas": [
+   "Use memory history when the application runs outside a browser; it does not use browser URL history.",
+   "Choose this history type when route changes should remain internal rather than update the URL."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "createRootRoute": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/createRootRouteFunction",
+  "sourceTitle": "createRootRoute function | TanStack Router Docs",
+  "summary": "Creates the top-level route for a TanStack Router route tree. Configure it with route options, attach child routes, and pass the resulting tree to createRouter.",
+  "explanation": "Call createRootRoute with route options to obtain the top-level route instance. Configure its component or other supported options, add child routes to form a route tree, and pass that tree to createRouter.",
+  "syntax": "createRootRoute(options?: Omit<RouteOptions, 'path' | 'id' | 'getParentRoute' | 'caseSensitive' | 'parseParams' | 'stringifyParams'>): RootRoute",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "Omit<RouteOptions, 'path' | 'id' | 'getParentRoute' | 'caseSensitive' | 'parseParams' | 'stringifyParams'>",
+    "description": "Configuration for the root route, typed as RouteOptions with path, id, getParentRoute, caseSensitive, parseParams, and stringifyParams omitted."
+   }
+  ],
+  "returns": "A new Route instance.",
+  "example": {
+   "title": "Create a root route",
+   "code": "import { createRootRoute, createRouter, Outlet } from '@tanstack/react-router'\n\nconst rootRoute = createRootRoute({\n  component: () => <Outlet />,\n})\n\nconst routeTree = rootRoute.addChildren([])\nconst router = createRouter({ routeTree })\n\nexport { router }",
+   "language": "tsx",
+   "explanation": "Creates a root route with an outlet, adds its child routes, and supplies the resulting tree to a router."
+  },
+  "useCases": [
+   {
+    "title": "Render shared layout content and an Outlet for nested routes.",
+    "scenario": "Application shell"
+   },
+   {
+    "title": "Create the root node and attach child routes with addChildren.",
+    "scenario": "Route-tree construction"
+   },
+   {
+    "title": "Supply the completed route tree to createRouter.",
+    "scenario": "Router initialization"
+   }
+  ],
+  "related": [
+   "createRootRouteWithContext",
+   "createRoute",
+   "createRouter",
+   "Outlet",
+   "RouteOptions",
+   "RootRoute"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does createRootRoute return?",
+    "answer": "It creates and returns a new root route instance. That instance can receive route options and is then used to build a route tree with child routes.",
+    "followUp": "How is a root route used to construct a router? Add child routes with addChildren, then pass the resulting route tree to createRouter."
+   },
+   {
+    "question": "What is the shape of the options parameter?",
+    "answer": "The function accepts an options object for configuring the root route. The documented type is RouteOptions with path, id, getParentRoute, caseSensitive, parseParams, and stringifyParams omitted.",
+    "followUp": "Why are those fields omitted? A root route is the tree's top-level route, so those route relationships and path-specific settings are not supplied through this function."
+   },
+   {
+    "question": "How does a root route participate in rendering nested routes?",
+    "answer": "A root route commonly renders an Outlet so nested route content has a place in the layout. The root route can also be created without options when no root component is needed.",
+    "followUp": "When should a context-specific helper be used instead? Use createRootRouteWithContext when the router must satisfy a declared context type."
+   }
+  ],
+  "keyPoints": [
+   "Calling the function creates the top-level route object.",
+   "Provide an options object to define the root route's behavior and presentation.",
+   "Its options are based on RouteOptions but exclude root-inapplicable path, identity, and parent-route fields.",
+   "The function is imported from the React Router package alongside common root-route setup utilities.",
+   "Use addChildren on the returned instance to assemble the route tree.",
+   "Give the constructed route tree to createRouter to configure the router."
+  ],
+  "gotchas": [
+   "The returned route is only the root of the tree; add child routes before using the route tree with a router.",
+   "Pass configuration through the options object rather than trying to provide path or parent-route settings that the function excludes."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "createRootRouteWithContext": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/createRootRouteWithContextFunction",
+  "sourceTitle": "createRootRouteWithContext function",
+  "summary": "Creates a typed root-route factory whose context contract must be satisfied when the router is created. Use it to make router context available with consistent types across the route tree.",
+  "explanation": "Call createRootRouteWithContext with the router-context type, then call the returned factory with root-route options. The resulting route tree carries that type contract, so createRouter must receive a context object satisfying it; the context remains available throughout the route tree.",
+  "syntax": "createRootRouteWithContext<TRouterContext>()(routeOptions)",
+  "parameters": [
+   {
+    "name": "TRouterContext",
+    "type": "generic type",
+    "description": "The router context type that must be supplied when createRouter is called. It is optional but recommended."
+   }
+  ],
+  "returns": "A factory function for creating a createRootRoute instance; it accepts the same argument as createRootRoute.",
+  "example": {
+   "title": "Create a typed router context",
+   "code": "import { createRootRouteWithContext, createRouter } from '@tanstack/react-router'\n\ninterface RouterContext {\n  queryClient: QueryClient\n}\n\ndeclare const QueryClient: new () => unknown\n\nconst rootRoute = createRootRouteWithContext<RouterContext>()({\n  component: () => null,\n})\n\nconst routeTree = rootRoute.addChildren([])\nconst queryClient = new QueryClient()\n\nconst router = createRouter({\n  routeTree,\n  context: { queryClient },\n})\n\nvoid router",
+   "language": "typescript",
+   "explanation": "The typed root route requires the router to provide a matching context object."
+  },
+  "useCases": [
+   {
+    "title": "Typed dependency context",
+    "scenario": "A router needs shared services such as a QueryClient available to route loaders and child routes."
+   },
+   {
+    "title": "Typed application state",
+    "scenario": "Authentication state or other application-wide values must be passed into the router with compile-time checking."
+   },
+   {
+    "title": "Route-tree type safety",
+    "scenario": "A route tree should expose one consistent context contract to all descendant routes."
+   }
+  ],
+  "related": [
+   "createRootRoute",
+   "createRouter",
+   "Router Context",
+   "rootRoute"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does createRootRouteWithContext solve?",
+    "answer": "It creates a root-route factory whose generic context type becomes a requirement when the router is instantiated. Supplying the generic gives the route tree and its child routes a consistent context contract.",
+    "followUp": "What happens if the router omits a required context property? TypeScript reports that the router configuration does not satisfy the context contract."
+   },
+   {
+    "question": "How is the function called?",
+    "answer": "The first call supplies the context type, and the returned factory is then called with the same root-route options accepted by createRootRoute. This produces the root route used to build the route tree.",
+    "followUp": "Why are there two calls? The first configures the factory's generic type; the second creates the route instance."
+   },
+   {
+    "question": "Where is the context value provided?",
+    "answer": "The context is supplied in createRouter through its context option. Once the root route establishes the type, that object must fulfill the declared contract.",
+    "followUp": "Can child routes use the context? Yes; the typed context is available throughout the route tree."
+   }
+  ],
+  "keyPoints": [
+   "It takes one generic argument, TRouterContext, representing the context type the router must later provide.",
+   "The context generic is optional, although the documentation recommends specifying it for stronger type safety.",
+   "The declared type becomes a requirement on the context passed during router creation.",
+   "The result is a factory for creating a root-route instance.",
+   "The factory accepts the same root-route options as createRootRoute."
+  ],
+  "gotchas": [
+   "The function returns a factory, so route options belong in a second call rather than the initial invocation."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "createRoute": {
+  "sourceUrl": "https://tanstack.com/router/v1/docs/api/router/createRouteFunction",
+  "sourceTitle": "createRoute function",
+  "summary": "createRoute creates a TanStack Router Route instance from a RouteOptions object. Add the instance to a parent route’s children to build the route tree passed to the router.",
+  "explanation": "createRoute accepts a RouteOptions object and returns a Route instance. Configure the parent with getParentRoute, define the URL path when applicable, optionally attach loading or rendering behavior, and add the result to a parent’s children before passing the completed tree to the router.",
+  "syntax": "createRoute(options: RouteOptions): Route",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "RouteOptions",
+    "description": "The required options used to configure the route instance, including route hierarchy and route behavior."
+   }
+  ],
+  "returns": "A new Route instance.",
+  "example": {
+   "title": "Create a child route",
+   "code": "import { createRoute } from '@tanstack/react-router'\nimport { rootRoute } from './__root'\n\nconst Route = createRoute({\n  getParentRoute: () => rootRoute,\n  path: '/about',\n  component: () => <div>About</div>,\n})\n\nconst routeTree = rootRoute.addChildren([Route])",
+   "language": "tsx",
+   "explanation": "Defines an About route beneath the root route and adds it to the route tree."
+  },
+  "useCases": [
+   {
+    "title": "Create a child page route",
+    "scenario": "Define a normal URL-matched page beneath a root route."
+   },
+   {
+    "title": "Configure route behavior",
+    "scenario": "Attach route behavior such as a loader or component to a route configuration."
+   },
+   {
+    "title": "Build a route tree",
+    "scenario": "Assemble independently defined routes into the tree consumed by the router."
+   }
+  ],
+  "related": [
+   "RouteOptions",
+   "createRootRoute",
+   "createRouter",
+   "createFileRoute",
+   "Route"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does createRoute return, and what is its role?",
+    "answer": "createRoute takes one required RouteOptions argument and produces a new Route instance. The instance can be supplied as a child of a root route to build the route tree.",
+    "followUp": "How does the route become usable by the router? Add it to the appropriate parent’s children, complete the route tree, and pass that tree to createRouter."
+   },
+   {
+    "question": "Why is getParentRoute needed?",
+    "answer": "getParentRoute is a function that returns the route’s parent. It connects the new route to the route hierarchy and is required in the documented setup for child routes.",
+    "followUp": "What should be checked when a route is not matched? Verify that getParentRoute returns the intended parent and that the route is included in the constructed tree."
+   },
+   {
+    "question": "What is the purpose of the path option?",
+    "answer": "The path identifies the URL pathname segment used to determine whether the route matches. A path is required for routes other than the root route and pathless layout routes.",
+    "followUp": "When might a route omit path? A pathless layout route can omit it while still grouping or applying layout behavior to descendants."
+   }
+  ],
+  "keyPoints": [
+   "The function creates and returns a Route instance.",
+   "The returned instance participates in a route tree through a parent route’s children.",
+   "Its single options object controls the route configuration.",
+   "path controls matching against the URL pathname."
+  ],
+  "gotchas": [
+   "Non-root, non-pathless-layout routes must include a path.",
+   "Creating a route alone is insufficient; add it to the parent’s children to build the final route tree."
+  ],
+  "checkedAt": "2026-10-16"
+ },
  "createRouter": {
   "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/createRouterFunction",
   "sourceTitle": "createRouter function",
@@ -151,6 +905,74 @@
    "The returned router coordinates route matching and navigation, so it should be created as the application's central router instance."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "defaultShouldDehydrateQuery": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/svelte/reference/functions/defaultShouldDehydrateQuery",
+  "sourceTitle": "defaultShouldDehydrateQuery",
+  "summary": "defaultShouldDehydrateQuery is TanStack Query's default predicate for selecting queries during dehydration. It includes only queries with a successful status.",
+  "explanation": "This predicate receives each query considered during dehydration and returns whether it should be included. Its default rule accepts only queries whose status is \"success\", so custom predicates can call it first to preserve that behavior while adding other conditions.",
+  "syntax": "function defaultShouldDehydrateQuery(query: Query): boolean;",
+  "parameters": [
+   {
+    "name": "query",
+    "type": "Query",
+    "description": "The Query whose dehydration eligibility is evaluated."
+   }
+  ],
+  "returns": "boolean: true when the query's status is 'success'.",
+  "example": {
+   "title": "Extend the default dehydration predicate",
+   "code": "import { dehydrate, defaultShouldDehydrateQuery } from '@tanstack/query-core'\n\nconst state = dehydrate(queryClient, {\n  shouldDehydrateQuery: (query) =>\n    defaultShouldDehydrateQuery(query) || query.state.status === 'error',\n})",
+   "language": "typescript",
+   "explanation": "Creates dehydrated state that keeps the default successful queries and additionally includes failed queries."
+  },
+  "useCases": [
+   {
+    "title": "Select successful queries for transfer to the client",
+    "scenario": "Server-side rendering"
+   },
+   {
+    "title": "Extend the default rule to include failed queries",
+    "scenario": "Error-aware hydration"
+   },
+   {
+    "title": "Build status-based inclusion logic around the built-in predicate",
+    "scenario": "Custom dehydration policies"
+   }
+  ],
+  "related": [
+   "dehydrate",
+   "DehydrateOptions",
+   "shouldDehydrateQuery"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does defaultShouldDehydrateQuery do?",
+    "answer": "It is the default predicate used by dehydrate to decide whether a query is included in dehydrated state. It returns true only when the query status is \"success\".",
+    "followUp": "How would you include errors while retaining the default behavior? Call this predicate and OR its result with a condition for the error status."
+   },
+   {
+    "question": "What are its parameter and return types?",
+    "answer": "The function accepts one Query argument and returns a boolean. A true result means the query meets the default dehydration rule.",
+    "followUp": "Why might a caller avoid replacing the predicate with an unconditional true? Because that changes the default filtering and includes queries that are not successful."
+   },
+   {
+    "question": "How can the default rule be extended?",
+    "answer": "dehydrate uses this predicate as its default query-selection rule. To extend the rule, provide shouldDehydrateQuery and invoke the default predicate inside the custom function.",
+    "followUp": "What additional behavior can the custom predicate implement? It can selectively include other query statuses, such as errors, while preserving successful-query inclusion."
+   }
+  ],
+  "keyPoints": [
+   "It is the built-in query-selection predicate used when dehydrate determines its default dehydrated contents.",
+   "Its sole input is the Query currently being evaluated.",
+   "A successful query produces true, making it eligible for default dehydration.",
+   "The default policy excludes queries whose status is not successful."
+  ],
+  "gotchas": [
+   "Queries in other statuses are excluded unless dehydrate receives a custom shouldDehydrateQuery predicate."
+  ],
+  "checkedAt": "2026-10-16"
  },
  "dehydrate": {
   "sourceUrl": "https://tanstack.com/query/latest/docs/framework/solid/reference/functions/dehydrate",
@@ -306,6 +1128,228 @@
    "A disabled query does not respond to invalidation or refetch calls that would ordinarily cause it to fetch."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "FieldApi": {
+  "sourceUrl": "https://tanstack.com/form/latest/docs/reference/classes/FieldApi",
+  "sourceTitle": "FieldApi | TanStack Form Docs",
+  "summary": "FieldApi manages the state and behavior of one TanStack Form field. Framework hooks or field-creation functions normally create it so it participates in the framework's reactivity model.",
+  "explanation": "FieldApi is the object-oriented interface for a single TanStack Form field. In normal framework usage, a hook or field-creation function constructs it, and consumers use its state plus event and validation methods to manage the field without manually instantiating the class.",
+  "syntax": "class FieldApi<TParentData, TName, TData, TOnMount, TOnChange, TOnChangeAsync, TOnBlur, TOnBlurAsync, TOnSubmit, TOnSubmitAsync, TOnDynamic, TOnDynamicAsync, TFormOnMount, TFormOnChange, TFormOnChangeAsync, TFormOnBlur, TFormOnBlurAsync, TFormOnSubmit, TFormOnSubmitAsync, TFormOnDynamic, TFormOnDynamicAsync, TFormOnServer, TPatentSubmitMeta>",
+  "parameters": [
+   {
+    "name": "type parameters",
+    "type": "TParentData, TName, TData, TOnMount, TOnChange, TOnChangeAsync, TOnBlur, TOnBlurAsync, TOnSubmit, TOnSubmitAsync, TOnDynamic, TOnDynamicAsync, TFormOnMount, TFormOnChange, TFormOnChangeAsync, TFormOnB",
+    "description": "Generic field and form type parameters govern the parent data, field name and value, validation callbacks, and form-level callbacks."
+   }
+  ],
+  "returns": "A FieldApi instance representing the specified field.",
+  "example": {
+   "title": "Managing a field with useField",
+   "code": "import { useField } from '@tanstack/react-form'\n\nexport function EmailField() {\n  const field = useField({\n    name: 'email',\n    defaultValue: '',\n    validators: {\n      onChange: ({ value }) =>\n        value.includes('@') ? undefined : 'Enter a valid email',\n    },\n  })\n\n  return (\n    <label>\n      Email\n      <input\n        value={field.state.value}\n        onChange={(event) => field.handleChange(event.target.value)}\n        onBlur={field.handleBlur}\n      />\n      {!field.state.meta.isValid && <span>{field.state.meta.errors.join(', ')}</span>}\n    </label>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Creates a managed field through the framework hook, then reads its state and forwards input and blur events to the field API."
+  },
+  "useCases": [
+   {
+    "title": "Connect UI controls to field state and handlers",
+    "scenario": "Building a text input, checkbox, or other controlled form control"
+   },
+   {
+    "title": "Read validation status and field errors",
+    "scenario": "Displaying validation feedback beside an input"
+   },
+   {
+    "title": "Share field operations across components",
+    "scenario": "Implementing reusable form utilities"
+   },
+   {
+    "title": "Manually construct a field API when direct instantiation is required",
+    "scenario": "Creating a field outside a standard framework helper"
+   }
+  ],
+  "related": [
+   "useField",
+   "createField",
+   "FieldApiOptions",
+   "FieldOptions",
+   "AnyFieldApi",
+   "FieldWithValue"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is FieldApi?",
+    "answer": "FieldApi represents the API for managing one form field. It exposes the field's state and operations used to read values, process changes and blur events, and participate in validation.",
+    "followUp": "How should a framework integration expose it? Use the framework's field hook or creation function so the instance follows that framework's reactivity model."
+   },
+   {
+    "question": "How is a FieldApi instance normally created?",
+    "answer": "Usually, application code does not call its constructor. A framework hook such as useField or a creation function such as createField creates the instance for the component or field definition.",
+    "followUp": "When would direct construction be reasonable? Only when a manual instance is specifically needed outside the normal framework-managed creation path."
+   },
+   {
+    "question": "What does a field API manage?",
+    "answer": "A field has its own state, including its current value, validation status, errors, and other metadata. Consumers access that state through the field API and connect UI events to the API's handlers.",
+    "followUp": "How can generic error-rendering code avoid depending on a concrete field name? Use a suitably generic field API type, while retaining value types when the helper reads or updates values."
+   }
+  ],
+  "keyPoints": [
+   "FieldApi encapsulates operations and state for one form field.",
+   "Framework integrations are the normal way to obtain a field API instance.",
+   "The framework-created instance is connected to the integration's reactivity behavior."
+  ],
+  "gotchas": [
+   "Prefer a framework integration such as useField or createField instead of constructing FieldApi yourself."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "focusManager": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/reference/interfaces/FocusManager",
+  "sourceTitle": "FocusManager",
+  "summary": "focusManager is TanStack Query's singleton focus-state controller. It lets you customize focus events, manually override focus, and inspect the current state.",
+  "explanation": "The singleton focusManager controls the focus state observed by TanStack Query. Use setFocused for an explicit state, setFocused(undefined) to return to the default document-visibility check, or setEventListener to replace how focus changes are detected.",
+  "syntax": "const focusManager: FocusManager;",
+  "parameters": [
+   {
+    "name": "setup",
+    "type": "(setFocused: (focused?: boolean) => void) => () => void",
+    "description": "Callback that installs custom focus detection and returns cleanup for the installed listener."
+   },
+   {
+    "name": "focused",
+    "type": "boolean | undefined",
+    "description": "Explicit focus value; undefined restores the default focus check."
+   }
+  ],
+  "returns": "focusManager is a singleton FocusManager instance; isFocused() returns the current focus state.",
+  "example": {
+   "title": "Override and restore focus state",
+   "code": "import { focusManager } from '@tanstack/react-query'\n\nfocusManager.setFocused(false)\n\n// Later, restore the normal document-visibility check\nfocusManager.setFocused(undefined)\n\nconsole.log(focusManager.isFocused())",
+   "language": "typescript",
+   "explanation": "Temporarily overrides TanStack Query's focus state, then restores the default check and reads the current result."
+  },
+  "useCases": [
+   {
+    "title": "Connect custom focus events",
+    "scenario": "An app uses a platform lifecycle or custom event source instead of browser focus events."
+   },
+   {
+    "title": "Temporarily override focus",
+    "scenario": "A workflow must temporarily prevent focus-driven query activity."
+   },
+   {
+    "title": "Read focus status",
+    "scenario": "Code needs to inspect the focus state currently seen by TanStack Query."
+   }
+  ],
+  "related": [
+   "FocusManager",
+   "setEventListener",
+   "setFocused",
+   "isFocused"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is focusManager used for?",
+    "answer": "focusManager is the singleton FocusManager instance used to manage and observe focus state in TanStack Query. It exposes methods for custom event handling, manual state changes, and reading the current state.",
+    "followUp": "How would you integrate a non-browser lifecycle? Call setFocused with true or false from that lifecycle, and pass undefined when control should return to the default check."
+   },
+   {
+    "question": "How does setFocused behave?",
+    "answer": "setFocused manually sets the focus state. Passing true or false forces the corresponding state, while passing undefined restores the default focus check.",
+    "followUp": "Why might setFocused(undefined) be necessary after a temporary override? Without it, the manual state remains authoritative instead of allowing the normal document-visibility check to determine focus."
+   },
+   {
+    "question": "When would you use setEventListener?",
+    "answer": "setEventListener accepts setup code that receives a callback for reporting focus changes. The setup should register the callback with the desired events and return an unsubscribe function for cleanup.",
+    "followUp": "What should happen when a second custom listener is installed? The first listener's cleanup must run so its event handlers do not remain active."
+   }
+  ],
+  "keyPoints": [
+   "focusManager centralizes the focus state that TanStack Query observes.",
+   "It supports both replacing automatic event detection and directly overriding the state.",
+   "Use setEventListener when the application's focus signal comes from events other than the default browser listeners.",
+   "The setup callback gets a function that custom events can invoke to report focus.",
+   "Call isFocused to read the currently effective focus value."
+  ],
+  "gotchas": [
+   "Leaving an explicit state in place prevents the normal focus check from being used; pass undefined to restore it.",
+   "A custom event listener must return cleanup logic so the previous subscriptions are removed when another listener replaces it."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "FormApi": {
+  "sourceUrl": "https://tanstack.com/form/latest/docs/reference/classes/FormApi",
+  "sourceTitle": "FormApi | TanStack Form Docs",
+  "summary": "FormApi is TanStack Form’s core class for managing form state, validation, and submission. Framework adapters usually create it through hooks or factory functions, but it can be constructed directly when needed.",
+  "explanation": "FormApi is the core class that owns form state and coordinates interactions such as value updates, validation, and submission. Framework adapters normally create it for you; instantiate it directly when you need a framework-independent form instance.",
+  "syntax": "new FormApi(options)",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "FormOptions<TFormData, TOnMount, TOnChange, TOnChangeAsync, TOnBlur, TOnBlurAsync, TOnSubmit, TOnSubmitAsync, TOnDynamic, TOnDynamicAsync, TOnServer, TSubmitMeta>",
+    "description": "Options used to configure the new form instance, including its state, validation, and submission behavior."
+   }
+  ],
+  "returns": "A configured FormApi instance.",
+  "example": {
+   "title": "Create and submit a core form",
+   "code": "import { FormApi } from '@tanstack/form-core'\n\nconst form = new FormApi({\n  defaultValues: { email: '' },\n  onSubmit: async ({ value }) => {\n    console.log(value.email)\n  },\n})\n\nform.mount()\nform.setFieldValue('email', 'dev@example.com')\nawait form.handleSubmit()\nform.dispose()",
+   "language": "typescript",
+   "explanation": "Creates a core form, updates a field, submits the current values, and disposes the instance."
+  },
+  "useCases": [
+   {
+    "title": "Core or custom integrations",
+    "scenario": "Build a form without a UI framework"
+   },
+   {
+    "title": "Framework-backed forms",
+    "scenario": "Use a framework adapter that creates the underlying instance"
+   },
+   {
+    "title": "Reusable form infrastructure",
+    "scenario": "Own form state, validation, and submission in a custom abstraction"
+   }
+  ],
+  "related": [
+   "FormOptions",
+   "ReactFormApi",
+   "ReactFormExtendedApi",
+   "AnyFormApi",
+   "FormValidators"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What responsibility does FormApi have?",
+    "answer": "FormApi is the core form class responsible for form-state logic and interactions. It supports reading and updating state, validation, and submission, while framework adapters add framework-specific behavior.",
+    "followUp": "Why should an application usually avoid constructing it directly? Framework hooks or factory functions create an instance integrated with the framework's reactivity model."
+   },
+   {
+    "question": "How is a FormApi instance created?",
+    "answer": "Construct it with form options by calling the FormApi constructor. The options configure the instance, including the initial form behavior and submission handling.",
+    "followUp": "When would manual construction be appropriate? Use it when a framework-independent or otherwise custom FormApi instance is needed."
+   },
+   {
+    "question": "How does FormApi relate to framework adapters?",
+    "answer": "FormApi is framework-agnostic core functionality. React or other adapters compose it with framework-specific helpers rather than changing the core form-state responsibilities.",
+    "followUp": "What does an adapter add? It supplies the framework integration needed for reactive updates and framework-oriented APIs."
+   }
+  ],
+  "keyPoints": [
+   "FormApi is a class rather than merely a framework hook or standalone helper.",
+   "Its central role is coordinating form-state logic and interactions.",
+   "The API covers state access and mutation, validation, and submission workflows.",
+   "Framework integrations generally create the instance through useForm or createForm.",
+   "The constructor accepts form options used to configure the instance."
+  ],
+  "gotchas": [
+   "Prefer a framework hook or factory such as useForm or createForm unless direct construction is required.",
+   "The core class does not itself provide framework-specific reactivity or rendering helpers."
+  ],
+  "checkedAt": "2026-10-16"
  },
  "gcTime": {
   "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/reference/functions/useQuery",
@@ -862,6 +1906,83 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "getRouteApi": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/getRouteApiFunction",
+  "sourceTitle": "getRouteApi function",
+  "summary": "Creates a type-safe RouteApi bound to a route ID. Use it to access route hooks and APIs without importing the route object.",
+  "explanation": "Call getRouteApi with a route ID literal to obtain a RouteApi instance tied to that route's registered types. Use the instance for type-safe route hooks and related APIs, especially when component code is separate from the route definition or code-split.",
+  "syntax": "getRouteApi(routeId)",
+  "parameters": [
+   {
+    "name": "routeId",
+    "type": "string literal",
+    "description": "Required route ID to bind the returned RouteApi instance to."
+   }
+  ],
+  "returns": "A RouteApi instance pre-bound to the supplied route ID.",
+  "example": {
+   "title": "Read typed loader data without importing the route",
+   "code": "import { getRouteApi } from '@tanstack/react-router'\n\nconst routeApi = getRouteApi('/posts')\n\nexport function PostsPage() {\n  const posts = routeApi.useLoaderData()\n  return <ul>{posts.map((post) => <li key={post.id}>{post.title}</li>)}</ul>\n}",
+   "language": "tsx",
+   "explanation": "Creates a route-bound API and uses its typed loader-data hook in a component that does not import the route object."
+  },
+  "useCases": [
+   {
+    "title": "Access route APIs from a separate component file",
+    "scenario": "A component is located away from its route definition and needs typed loader data, params, search state, or context."
+   },
+   {
+    "title": "Keep code-split components decoupled",
+    "scenario": "A route's UI is code-split and should avoid importing its route configuration."
+   },
+   {
+    "title": "Perform route-bound redirects",
+    "scenario": "Authentication or other route logic needs a typed redirect outside the route definition."
+   }
+  ],
+  "related": [
+   "RouteApi",
+   "useParams",
+   "useSearch",
+   "useRouteContext",
+   "useNavigate",
+   "useLoaderData",
+   "useLoaderDeps",
+   "redirect"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does getRouteApi do?",
+    "answer": "getRouteApi accepts a route ID string literal and returns a RouteApi instance bound to that ID. The instance exposes type-safe route APIs such as useParams, useSearch, useLoaderData, and useNavigate.",
+    "followUp": "Why use it in a separate component file? It provides typed route access without importing the route configuration, helping avoid circular dependencies."
+   },
+   {
+    "question": "How is getRouteApi used in a component?",
+    "answer": "Pass the route ID to getRouteApi, then call the desired API on the returned object. For example, getRouteApi('/posts').useLoaderData() accesses loader data using the registered types for /posts.",
+    "followUp": "How would you access route parameters instead? Call routeApi.useParams() on the instance created for that route ID."
+   },
+   {
+    "question": "How does the route ID affect type safety?",
+    "answer": "The returned RouteApi is pre-bound to the supplied route ID. This binding supplies the corresponding registered route types to its supported hooks and APIs.",
+    "followUp": "Can it help with redirects? Yes; its redirect API is route-bound, and the route ID is automatically used as the from value for type-safe relative redirects."
+   }
+  ],
+  "keyPoints": [
+   "It wraps common route hooks with the types registered for the selected route.",
+   "Loader data and loader dependencies are also available through the route-bound API.",
+   "The function takes exactly one required route ID argument.",
+   "The supplied ID determines which route's API and types the result represents.",
+   "The return value is a RouteApi instance already associated with the supplied route.",
+   "A typical usage stores the returned object and then invokes a route API from it.",
+   "The example reads loader data through the returned object's typed hook."
+  ],
+  "gotchas": [
+   "The argument must be the route's literal ID; it is not an arbitrary runtime string.",
+   "Prefer the helper in separated or code-split component files rather than importing the route object directly."
+  ],
+  "checkedAt": "2026-10-16"
+ },
  "hydrate": {
   "sourceUrl": "https://tanstack.com/query/latest/docs/framework/lit/reference/functions/hydrate",
   "sourceTitle": "hydrate | TanStack Query Lit Docs",
@@ -1241,6 +2362,69 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "IsRestoringProvider": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/solid/reference/variables/IsRestoringProvider",
+  "sourceTitle": "IsRestoringProvider | TanStack Query Solid Docs",
+  "summary": "IsRestoringProvider is the Solid context provider for persisted query-client restoration state. It exposes an accessor<boolean> that useIsRestoring and query primitives can consume.",
+  "explanation": "IsRestoringProvider is the Solid context provider used to expose persisted-client restoration state. PersistQueryClientProvider supplies this state, while useIsRestoring reads it and query primitives use it internally to avoid restore-related races.",
+  "syntax": "const IsRestoringProvider: ContextProviderComponent<Accessor<boolean>> = IsRestoringContext.Provider;",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Providing restore state",
+   "code": "import { createSignal } from \"solid-js\";\nimport { IsRestoringProvider, useIsRestoring } from \"@tanstack/solid-query\";\n\nfunction RestoreStatus() {\n  const restoring = useIsRestoring();\n  return <span>{restoring() ? \"Restoring…\" : \"Ready\"}</span>;\n}\n\nexport function App() {\n  const [isRestoring] = createSignal(false);\n  return (\n    <IsRestoringProvider value={isRestoring}>\n      <RestoreStatus />\n    </IsRestoringProvider>\n  );\n}",
+   "language": "tsx",
+   "explanation": "Provides a Solid accessor through context so a descendant can read whether persisted query state is being restored."
+  },
+  "useCases": [
+   {
+    "title": "Expose restoration progress to descendants",
+    "scenario": "Persisted-cache startup"
+   },
+   {
+    "title": "Supply restore state through Solid context",
+    "scenario": "Custom persistence integration"
+   },
+   {
+    "title": "Render UI that reflects cache restoration",
+    "scenario": "Loading-state coordination"
+   }
+  ],
+  "related": [
+   "PersistQueryClientProvider",
+   "useIsRestoring",
+   "IsRestoringContext"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is IsRestoringProvider?",
+    "answer": "It is a Solid context provider whose value has type `Accessor<boolean>`. Its purpose is to expose whether a persisted query client is currently being restored.",
+    "followUp": "How is the value normally populated? `PersistQueryClientProvider` uses this provider to publish the restore state."
+   },
+   {
+    "question": "How is the provider consumed?",
+    "answer": "The provider communicates restoration status to descendants through context. `useIsRestoring` reads that status, while query APIs also check it internally.",
+    "followUp": "Why does that internal check matter? It helps prevent race conditions between restoring persisted state and mounting queries."
+   },
+   {
+    "question": "What is its type and declaration?",
+    "answer": "The documented declaration is `const IsRestoringProvider: ContextProviderComponent<Accessor<boolean>> = IsRestoringContext.Provider;`. Therefore, the supplied value is a Solid accessor returning a boolean.",
+    "followUp": "What should the accessor return? It should be true during persisted-client restoration and false once restoration has finished."
+   }
+  ],
+  "keyPoints": [
+   "The exported value is the Solid context provider, typed to accept an accessor of boolean state.",
+   "PersistQueryClientProvider uses it to publish restoration status to the query context.",
+   "Its boolean state represents whether persisted query-client restoration is in progress.",
+   "The companion useIsRestoring primitive is the documented consumer for this context."
+  ],
+  "gotchas": [
+   "This provider is generally supplied by PersistQueryClientProvider; manually replacing it means your value must accurately represent the active restore operation.",
+   "Consumers should read the context through useIsRestoring rather than depending on the provider object directly."
+  ],
+  "checkedAt": "2026-10-16"
+ },
  "keepPreviousData": {
   "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/reference/functions/keepPreviousData",
   "sourceTitle": "keepPreviousData | TanStack Query React Docs",
@@ -1305,6 +2489,178 @@
    "It does not make the new query resolve immediately; it only supplies the previous result as placeholder data during the fetch."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "lazyRouteComponent": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/lazyRouteComponentFunction",
+  "sourceTitle": "lazyRouteComponent function",
+  "summary": "Creates a one-off, code-split TanStack Router route component. The returned lazy component can be preloaded, and an optional export name supports named exports.",
+  "explanation": "Pass an importer that resolves to a module containing the route component. The function returns a React.lazy component and adds a preload method, while an optional export name selects a named export instead of the module's default export.",
+  "syntax": "lazyRouteComponent(importer, exportName?)",
+  "parameters": [
+   {
+    "name": "importer",
+    "type": "() => Promise<T>",
+    "description": "Function returning a promise that resolves to an object containing the component."
+   },
+   {
+    "name": "exportName",
+    "type": "string",
+    "description": "Optional exported component name; defaults to the default export."
+   }
+  ],
+  "returns": "A React.lazy component that can be preloaded using component.preload().",
+  "example": {
+   "title": "Lazy-load a route component",
+   "code": "import { createRoute, lazyRouteComponent } from '@tanstack/react-router'\n\nconst postsRoute = createRoute({\n  getParentRoute: () => rootRoute,\n  path: '/posts/$postId',\n  component: lazyRouteComponent(() => import('./Post')),\n})",
+   "language": "typescript",
+   "explanation": "The route loads its default-exported component on demand, splitting the route component into a separate bundle."
+  },
+  "useCases": [
+   {
+    "title": "Route-level code splitting",
+    "scenario": "A route component should be downloaded only when its route is needed."
+   },
+   {
+    "title": "Preloading a future route",
+    "scenario": "Navigation or interaction can begin loading a route before rendering it."
+   },
+   {
+    "title": "Named component exports",
+    "scenario": "The component is exported by name rather than as the module default."
+   }
+  ],
+  "related": [
+   "createLazyFileRoute",
+   "createRoute",
+   "React.lazy"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What arguments does lazyRouteComponent accept?",
+    "answer": "It accepts an importer and an optional exportName. The importer must return a promise resolving to a module containing the component; exportName identifies which export to use and defaults to the default export.",
+    "followUp": "How can the resulting component be loaded before rendering? Call its preload() method, which is exposed on the returned lazy component."
+   },
+   {
+    "question": "What does lazyRouteComponent return?",
+    "answer": "It creates a one-off code-split route component. The returned value is a React.lazy component that supports preloading through component.preload().",
+    "followUp": "When should this helper generally be avoided? In file-based routing, use createLazyFileRoute instead."
+   },
+   {
+    "question": "How do you lazy-load a named component export?",
+    "answer": "Use the default form when the module's component is the default export. Pass the export's name as the second argument when the component is exported by name.",
+    "followUp": "What must the first argument provide? A function returning a promise for an object that contains the component to load."
+   }
+  ],
+  "keyPoints": [
+   "It is intended for one-off route-level code splitting and exposes preload() for warming the component before navigation.",
+   "The importer is a required function whose promise resolves to a module-like object containing the component.",
+   "The optional exportName chooses the component property from the imported module.",
+   "The result is a React.lazy component with a preload() method."
+  ],
+  "gotchas": [
+   "For file-based routing, prefer createLazyFileRoute rather than using this one-off component helper.",
+   "If exportName is omitted, the imported module's default export is used."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Link": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/linkComponent",
+  "sourceTitle": "Link component | TanStack Router Docs",
+  "summary": "TanStack Router's Link creates typed, declarative navigation to a new location. It renders a real anchor with a valid href and supports route parameters, search parameters, hashes, state, active styling, and preloading.",
+  "explanation": "Link is a typed navigation component for TanStack Router. It produces an anchor with a usable href, while its options describe the destination pathname, route parameters, search parameters, hash, and location state.",
+  "syntax": "<Link to=\"/route\" params={{ ... }} search={{ ... }}>Children</Link>",
+  "parameters": [
+   {
+    "name": "to",
+    "type": "string",
+    "description": "Destination route pathname; it may contain route placeholders."
+   },
+   {
+    "name": "params",
+    "type": "object or updater function",
+    "description": "Values used to fill dynamic route parameters."
+   },
+   {
+    "name": "search",
+    "type": "object, boolean, or updater function",
+    "description": "Search parameters, supplied as a value or updater from previous search state."
+   },
+   {
+    "name": "from",
+    "type": "string",
+    "description": "Optional route origin used when resolving relative links."
+   },
+   {
+    "name": "preload",
+    "type": "false | 'intent' | 'viewport' | 'render'",
+    "description": "Controls when route data is preloaded."
+   }
+  ],
+  "returns": "An anchor element that can be used to navigate to a new location.",
+  "example": {
+   "title": "Typed route link",
+   "code": "import { Link } from '@tanstack/react-router'\n\nexport function Navigation() {\n  return (\n    <nav>\n      <Link\n        to=\"/somewhere/$somewhereId\"\n        params={{ somewhereId: 'baz' }}\n        search={(prev) => ({ ...prev, foo: 'bar' })}\n      >\n        Go to item\n      </Link>\n    </nav>\n  )\n}",
+   "language": "tsx",
+   "explanation": "This renders a typed anchor that navigates to a route with a path parameter and updates search parameters."
+  },
+  "useCases": [
+   {
+    "title": "Link between typed routes",
+    "scenario": "Application navigation"
+   },
+   {
+    "title": "Fill route parameters",
+    "scenario": "Dynamic pages"
+   },
+   {
+    "title": "Update search parameters",
+    "scenario": "Filtered views"
+   },
+   {
+    "title": "Preload a destination before activation",
+    "scenario": "Prefetching"
+   }
+  ],
+  "related": [
+   "useNavigate",
+   "LinkProps",
+   "activeProps",
+   "inactiveProps",
+   "pathParamsAllowedCharacters"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the Link component render and why is that useful?",
+    "answer": "Link renders an actual anchor with a valid href, so users can click it or open it with modifier keys. It also supplies TanStack Router's typed navigation options for route-aware navigation.",
+    "followUp": "When should useNavigate be preferred? Use it when navigation must happen imperatively as a side effect; otherwise, the Link component is generally preferred."
+   },
+   {
+    "question": "Which navigation data can Link express?",
+    "answer": "The destination can include a pathname, route parameters, search parameters, hash, and location state. Route parameters are passed through the params option, while search can be an object or a function derived from previous values.",
+    "followUp": "How can a link preserve existing search parameters? Pass search={true}, or return the previous search object from a functional search option."
+   },
+   {
+    "question": "How does Link preloading work?",
+    "answer": "Link supports four preload modes: false, intent, viewport, and render. Intent preloads on focus, hover, or touch; viewport preloads when entering the viewport; render preloads immediately after rendering.",
+    "followUp": "What is a practical conservative default? Keep automatic preloading disabled with false when prefetching is not wanted."
+   }
+  ],
+  "keyPoints": [
+   "Use Link for declarative navigation between locations in a TanStack Router application.",
+   "A link can describe changes to the pathname, query string, hash, and navigation state.",
+   "The component outputs a real anchor and href, retaining standard browser link behavior.",
+   "Normal anchor attributes, including target, can be used for browser behaviors such as opening a new window.",
+   "activeProps and inactiveProps allow link properties to vary according to whether the destination is active.",
+   "Preloading can be configured with false, intent, viewport, or render."
+  ],
+  "gotchas": [
+   "Route parameter values containing characters such as @ are encoded by default, so the resulting URL may differ from the raw value.",
+   "Relative navigation depends on the supplied from route; without it, relative paths resolve from the current active location.",
+   "The path-parameter character setting must be chosen when creating the router and cannot be modified afterward."
+  ],
+  "checkedAt": "2026-10-16"
  },
  "matchQuery": {
   "sourceUrl": "https://tanstack.com/query/latest/docs/framework/vue/reference/functions/matchQuery",
@@ -1456,6 +2812,395 @@
    "Always retain and invoke the function returned by subscribe when the observer is no longer needed."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "notFound": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/notFoundFunction",
+  "sourceTitle": "notFound function",
+  "summary": "Creates a TanStack Router not-found error for missing resources or route handling. Return it or throw it from beforeLoad or loader callbacks, with options available to select handling and control throwing.",
+  "explanation": "Call notFound to create a TanStack Router not-found error. Throw it from a route loader or beforeLoad callback when a resource is absent; alternatively, configure options such as routeId, data, or throw to control handling and whether the function throws immediately.",
+  "syntax": "notFound(options?)",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "NotFoundErrorOptions",
+    "description": "Optional configuration for the not-found error, including throw, routeId, and data."
+   }
+  ],
+  "returns": "A NotFoundError object by default; with options.throw set to true, the function throws the object instead.",
+  "example": {
+   "title": "Throw from a route loader",
+   "code": "import { notFound, createFileRoute } from '@tanstack/react-router'\n\nexport const Route = createFileRoute('/posts/$postId')({\n  loader: async ({ params }) => {\n    const post = await getPost(params.postId)\n    if (!post) throw notFound()\n    return post\n  },\n})\n\nasync function getPost(id: string) {\n  return id === '1' ? { id, title: 'Hello' } : undefined\n}",
+   "language": "typescript",
+   "explanation": "The loader throws a not-found error when the requested post does not exist."
+  },
+  "useCases": [
+   {
+    "title": "Signal a missing resource",
+    "scenario": "A route loader cannot retrieve a post, user, or other resource by identifier."
+   },
+   {
+    "title": "Force immediate throwing",
+    "scenario": "A helper needs to throw immediately rather than return an error object."
+   },
+   {
+    "title": "Select the handling route",
+    "scenario": "A specific route or the root route should render the not-found UI."
+   }
+  ],
+  "related": [
+   "NotFoundError",
+   "notFoundComponent",
+   "Not Found Errors",
+   "RouterOptions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does notFound do?",
+    "answer": "notFound creates a NotFoundError that can be returned or thrown from route beforeLoad and loader callbacks. Throwing it signals TanStack Router to render the applicable notFoundComponent.",
+    "followUp": "How can the root route handle the error? Use routeId for the root route, or configure the router's notFoundMode as root so root handling is selected."
+   },
+   {
+    "question": "How does the throw option change behavior?",
+    "answer": "Calling notFound() returns the error object by default. Passing { throw: true } makes the function throw the object instead, which is useful when a throwing helper should have a never-like control flow.",
+    "followUp": "What happens when throw is false or omitted? The object is returned and must be thrown by the caller if it should trigger not-found handling."
+   },
+   {
+    "question": "What is routeId used for?",
+    "answer": "The optional routeId identifies the route that should attempt to handle the error. If that route has no notFoundComponent, the error can bubble to a parent, eventually reaching the root when needed.",
+    "followUp": "What is the default handling route? TanStack Router normally tries the route that threw the error, while notFoundMode can change route-matching behavior."
+   }
+  ],
+  "keyPoints": [
+   "notFound constructs the error representation used by TanStack Router for missing resources.",
+   "Use it in route lifecycle callbacks to signal that required data is unavailable.",
+   "Its API takes one optional options object."
+  ],
+  "gotchas": [
+   "By default, notFound returns an error object; use throw: true when the call itself must throw it."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "notifyManager": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/reference/variables/notifyManager",
+  "sourceTitle": "notifyManager | TanStack Query React Docs",
+  "summary": "notifyManager batches TanStack Query updates and schedules notification callbacks. It supports framework-specific batching, custom notification handling, and configurable scheduling.",
+  "explanation": "notifyManager coordinates TanStack Query notifications by batching updates and scheduling callbacks. Its batch method supports nesting and returns the callback's result, while scheduling defaults to setTimeout and can be customized for framework-specific rendering or test behavior.",
+  "syntax": "const notifyManager: object;",
+  "parameters": [
+   {
+    "name": "batch callback",
+    "type": "() => T",
+    "description": "Callback executed within the batching scope."
+   },
+   {
+    "name": "schedule callback",
+    "type": "NotifyCallback",
+    "description": "Notification callback queued for the next batch."
+   },
+   {
+    "name": "fn",
+    "type": "NotifyFunction",
+    "description": "Framework-provided function that batches notifications."
+   },
+   {
+    "name": "scheduler",
+    "type": "Scheduler",
+    "description": "Function used to schedule the next batch."
+   }
+  ],
+  "returns": "notifyManager is an object exposing batch, schedule, setBatchNotifyFunction, setNotifyFunction, and setScheduler. batch returns the callback's result; schedule and configuration methods return void.",
+  "example": {
+   "title": "Batch and schedule notifications",
+   "code": "import { notifyManager } from '@tanstack/query-core'\n\nconst values: number[] = []\n\nnotifyManager.batch(() => {\n  values.push(1)\n  notifyManager.schedule(() => values.push(2))\n})\n\nconsole.log(values)",
+   "language": "typescript",
+   "explanation": "Runs a synchronous update inside a batch and schedules another callback for the next notification batch."
+  },
+  "useCases": [
+   {
+    "title": "Batch query updates",
+    "scenario": "Reduce redundant subscriber work when several query updates occur together."
+   },
+   {
+    "title": "Framework rendering integration",
+    "scenario": "Connect TanStack Query to a framework's own batching primitive."
+   },
+   {
+    "title": "Test-safe notifications",
+    "scenario": "Wrap notifications with a testing utility such as React.act."
+   },
+   {
+    "title": "Control notification timing",
+    "scenario": "Run notification batches in a microtask, animation frame, or delayed timeout."
+   }
+  ],
+  "related": [
+   "batch",
+   "schedule",
+   "setBatchNotifyFunction",
+   "setNotifyFunction",
+   "setScheduler",
+   "defaultScheduler"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why does TanStack Query use notifyManager?",
+    "answer": "notifyManager batches updates and schedules notification callbacks so multiple changes can be processed together. This reduces redundant subscriber work and, for framework adapters, can prevent multiple renders for one query update.",
+    "followUp": "How can a framework integrate its own batching primitive? Use setBatchNotifyFunction with the framework's batch function so notifications are grouped into one tick."
+   },
+   {
+    "question": "What are the important semantics of batch?",
+    "answer": "batch executes updates within a batching scope, and nested scopes defer flushing until the outermost scope ends. It also passes the callback's return value through to the caller.",
+    "followUp": "What happens to callbacks scheduled during a batch? They are queued for the next batch rather than executed immediately."
+   },
+   {
+    "question": "How can notification timing be customized?",
+    "answer": "schedule queues a callback for the next batch. By default, the next batch is scheduled with setTimeout(callback, 0), but setScheduler can replace that timing function.",
+    "followUp": "How would you schedule before the next frame? Configure setScheduler with requestAnimationFrame."
+   }
+  ],
+  "keyPoints": [
+   "notifyManager is the core utility for coordinating callback scheduling and notification batching.",
+   "batch groups updates performed within its callback.",
+   "batch preserves and returns the callback's result.",
+   "A configured batch notification function groups every callback invocation it wraps.",
+   "setBatchNotifyFunction lets framework integrations provide their native batching mechanism.",
+   "schedule defers a callback until the next notification batch.",
+   "setScheduler changes the function responsible for starting the next batch."
+  ],
+  "gotchas": [
+   "Nested batches do not flush independently; queued work waits until the outermost batch completes.",
+   "A custom notify function must invoke every callback it receives.",
+   "Changing the scheduler changes when the next batch runs; the default is a zero-delay timeout."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "onlineManager": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/reference/interfaces/OnlineManager",
+  "sourceTitle": "OnlineManager",
+  "summary": "onlineManager is TanStack Query's singleton controller for application connectivity. It reads browser online/offline events by default and supports custom listeners or manual state changes.",
+  "explanation": "The singleton tracks whether TanStack Query considers the application connected. It normally derives this from browser online and offline events, but you can replace that detection with a custom listener or directly override the state.",
+  "syntax": "const onlineManager: OnlineManager;",
+  "parameters": [
+   {
+    "name": "online",
+    "type": "boolean | undefined",
+    "description": "The boolean connectivity value supplied to setOnline; the API also supports undefined for the default check."
+   },
+   {
+    "name": "setup",
+    "type": "(setOnline: (online: boolean) => void) => (() => void)",
+    "description": "A setup function that receives setOnline and returns listener cleanup."
+   }
+  ],
+  "returns": "Singleton OnlineManager instance; isOnline returns boolean and listener-registration status returns boolean.",
+  "example": {
+   "title": "Control the online state",
+   "code": "import { onlineManager } from '@tanstack/react-query'\n\nonlineManager.setOnline(false)\nconsole.log(onlineManager.isOnline())\nonlineManager.setOnline(true)",
+   "language": "typescript",
+   "explanation": "Manually toggles TanStack Query's connectivity state and reads it back."
+  },
+  "useCases": [
+   {
+    "title": "Default browser connectivity",
+    "scenario": "A browser application needs TanStack Query to react to normal connectivity changes."
+   },
+   {
+    "title": "Platform-specific network detection",
+    "scenario": "A React Native or other non-browser runtime provides its own network-status subscription."
+   },
+   {
+    "title": "Manual connectivity control",
+    "scenario": "Tests or application infrastructure need to force online or offline behavior."
+   }
+  ],
+  "related": [
+   "OnlineManager",
+   "isOnline",
+   "setEventListener",
+   "setOnline"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is onlineManager used for?",
+    "answer": "onlineManager is the singleton OnlineManager used to manage and observe TanStack Query's online state. It exposes methods for querying the state, overriding it, and installing custom detection.",
+    "followUp": "How would you support React Native connectivity? Install a platform network listener and pass its connection status to the callback received by setEventListener."
+   },
+   {
+    "question": "How do you read the current online state?",
+    "answer": "Call onlineManager.isOnline() to read the current status. It returns a boolean, with true meaning TanStack Query currently considers the app online.",
+    "followUp": "What should code do when the status changes? Use setOnline through the configured listener so TanStack Query receives each new boolean state."
+   },
+   {
+    "question": "How can custom connectivity detection be configured?",
+    "answer": "Use onlineManager.setEventListener to replace the default browser event handling. Its setup function receives setOnline, and the setup function should return cleanup for the installed listener.",
+    "followUp": "When is direct setOnline useful? It is useful when application code already knows connectivity or must manually force the state during testing or specialized runtime integration."
+   }
+  ],
+  "keyPoints": [
+   "The object centralizes the connectivity state consumed by TanStack Query.",
+   "In a browser, its default detector responds to window connectivity events.",
+   "Call isOnline when code needs the current connectivity decision.",
+   "Use setOnline to explicitly mark the application online or offline.",
+   "Use setEventListener when the default browser detector does not match the runtime.",
+   "The listener-registration status method reports whether listeners remain active."
+  ],
+  "gotchas": [
+   "The initial assumption is that the application is online until connectivity detection changes it.",
+   "A custom event listener must invoke the supplied callback whenever connectivity changes."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Outlet": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/guide/outlets",
+  "sourceTitle": "Outlets",
+  "summary": "TanStack Router's Outlet renders the next matching child route inside a parent route component. It takes no props and renders null when no child route matches.",
+  "explanation": "Outlet is a parameterless component for nested TanStack Router layouts. When rendered inside a route component, it inserts the next matching child route at that position; with no matching child, it renders nothing.",
+  "syntax": "<Outlet />",
+  "parameters": [],
+  "returns": "The matched child route's component, errorComponent, pendingComponent, or notFoundComponent; otherwise null.",
+  "example": {
+   "title": "Render child routes in a root layout",
+   "code": "import { Outlet, createRootRoute } from '@tanstack/react-router'\n\nexport const Route = createRootRoute({\n  component: RootComponent,\n})\n\nfunction RootComponent() {\n  return (\n    <main>\n      <h1>My App</h1>\n      <Outlet />\n    </main>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Renders the root layout and places the currently matched child route where Outlet appears."
+  },
+  "useCases": [
+   {
+    "title": "Render top-level routes beneath shared branding or navigation.",
+    "scenario": "Root application shell"
+   },
+   {
+    "title": "Place child pages inside a parent route's persistent layout.",
+    "scenario": "Nested layouts"
+   },
+   {
+    "title": "Wrap protected child routes in a layout or pathless layout route.",
+    "scenario": "Authenticated sections"
+   },
+   {
+    "title": "Allow the matched child component, pending UI, error UI, or not-found UI to render at the nested position.",
+    "scenario": "Conditional route states"
+   }
+  ],
+  "related": [
+   "createRootRoute",
+   "createFileRoute",
+   "RouteComponent",
+   "defaultComponent",
+   "Layout Route",
+   "Pathless Layout Route"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is Outlet used for, and what does it render?",
+    "answer": "Outlet renders the next potentially matching child route inside a parent route's component tree. It accepts no props, and it renders null when no child route matches.",
+    "followUp": "What happens if a route has no component? TanStack Router renders an Outlet automatically for that route."
+   },
+   {
+    "question": "How does Outlet support nested layouts?",
+    "answer": "Place Outlet anywhere in the parent route component tree where the child route should appear. The surrounding elements remain part of the parent layout while the matched child is inserted at that location.",
+    "followUp": "How would you create a shared authenticated layout? Use a layout or pathless layout route, render the shared UI around Outlet, and perform the authentication check in beforeLoad."
+   },
+   {
+    "question": "What does Outlet return for matched and unmatched children?",
+    "answer": "The component renders the matched child route's component, error component, pending component, or not-found component as appropriate. It has no configurable props.",
+    "followUp": "What is the fallback when no child route matches? Outlet returns null, so any fallback UI must be supplied by the surrounding route component."
+   }
+  ],
+  "keyPoints": [
+   "Outlet inserts the next child route that can match the current location.",
+   "It has no props and may be placed at any point in the parent route's component tree.",
+   "For a matched child, Outlet selects the applicable component state, including normal, error, pending, or not-found rendering.",
+   "When no child route matches, Outlet contributes no rendered output.",
+   "Outlet is the rendering mechanism that makes nested route composition possible."
+  ],
+  "gotchas": [
+   "An Outlet does not render fallback content when its parent has no matching child route; it produces null.",
+   "A route without its own component receives Outlet behavior automatically, so adding a component is only necessary when defining layout content."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "PaginationState": {
+  "sourceUrl": "https://tanstack.com/table/latest/docs/framework/react/guide/table-state",
+  "sourceTitle": "Table State (React) Guide",
+  "summary": "PaginationState is TanStack Table’s feature-specific type for pagination state. It contains a zero-based page index and the number of rows per page.",
+  "explanation": "PaginationState is the feature-specific state shape for TanStack Table pagination. It stores the currently selected zero-based page through pageIndex and the number of rows requested per page through pageSize, and can be used for local state or external atoms.",
+  "syntax": "type PaginationState = {\n  pageIndex: number\n  pageSize: number\n}",
+  "parameters": [
+   {
+    "name": "pageIndex",
+    "type": "number",
+    "description": "Zero-based index of the active page."
+   },
+   {
+    "name": "pageSize",
+    "type": "number",
+    "description": "Number of rows displayed or requested per page."
+   }
+  ],
+  "returns": "An object containing pageIndex and pageSize.",
+  "example": {
+   "title": "Define pagination state",
+   "code": "type PaginationState = {\n  pageIndex: number\n  pageSize: number\n}\n\nconst pagination: PaginationState = {\n  pageIndex: 0,\n  pageSize: 10,\n}",
+   "language": "typescript",
+   "explanation": "Creates a valid pagination state with a zero-based page index and a page size of ten."
+  },
+  "useCases": [
+   {
+    "title": "Controlled client-side pagination",
+    "scenario": "Keep the current page and page size in component state while controlling a table."
+   },
+   {
+    "title": "Server-side data queries",
+    "scenario": "Use pageIndex and pageSize to identify and fetch a server-side page."
+   },
+   {
+    "title": "External state or atoms",
+    "scenario": "Share pagination state with code outside the table instance."
+   }
+  ],
+  "related": [
+   "SortingState",
+   "RowSelectionState",
+   "initialState",
+   "pagination",
+   "onPaginationChange",
+   "rowPaginationFeature"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does PaginationState contain?",
+    "answer": "PaginationState is the state object used for table pagination. Its pageIndex is zero-based, and pageSize specifies how many rows belong to a page.",
+    "followUp": "How would you use it with server-side fetching? Include the pagination object in the query key and use it to request the corresponding page and size."
+   },
+   {
+    "question": "When should you use PaginationState instead of a broader table-state type?",
+    "answer": "Use PaginationState when creating local state or an external atom for only the pagination slice. The documentation recommends feature-specific state types such as PaginationState for that purpose.",
+    "followUp": "Why prefer the feature-specific type? It keeps the state contract narrow and aligned with the table feature being controlled."
+   },
+   {
+    "question": "Why control PaginationState outside the table?",
+    "answer": "The state can be controlled externally and supplied back to the table, allowing another owner to react to pagination changes. This is useful when pagination must also drive data fetching.",
+    "followUp": "What should a server-side result provide alongside the requested rows? Return the rows for the requested page and the total row count so the table can derive pagination information."
+   }
+  ],
+  "keyPoints": [
+   "pageIndex identifies the selected page using zero-based indexing.",
+   "pageSize records how many rows the current pagination configuration requests per page.",
+   "Use PaginationState when defining local state or an external atom for the pagination slice.",
+   "The same state shape applies with either client-side pagination or manually fetched server-side pages."
+  ],
+  "gotchas": [
+   "It is an object with exactly the documented pagination properties, pageIndex and pageSize; do not treat it as a numeric page value.",
+   "pageIndex starts at 0 for the first page, so UI page numbers may need a +1 conversion.",
+   "When a query key or other external consumer needs pagination, keep the slice in external state rather than assuming the table instance is the only source."
+  ],
+  "checkedAt": "2026-10-16"
  },
  "placeholderData": {
   "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/placeholder-query-data",
@@ -1761,6 +3506,77 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "QueryErrorResetBoundary": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/reference/functions/QueryErrorResetBoundary",
+  "sourceTitle": "QueryErrorResetBoundary | TanStack Query React Docs",
+  "summary": "QueryErrorResetBoundary scopes query-error resets to a component subtree. Give its render-prop reset function to an error boundary so a retry action can clear query errors before rendering again.",
+  "explanation": "QueryErrorResetBoundary provides a reset function to descendant content. Pair that function with a React error boundary so a user-triggered reset clears query errors and allows queries using suspense or throwOnError to try again during a later render.",
+  "syntax": "function QueryErrorResetBoundary(props: QueryErrorResetBoundaryProps): Element;",
+  "parameters": [
+   {
+    "name": "children",
+    "type": "ReactNode | QueryErrorResetBoundaryFunction",
+    "description": "Either rendered content or a function receiving QueryErrorResetBoundaryValue and returning rendered content."
+   }
+  ],
+  "returns": "Element containing the supplied children.",
+  "example": {
+   "title": "Retry failed queries from an error boundary",
+   "code": "import { QueryErrorResetBoundary } from '@tanstack/react-query'\nimport { ErrorBoundary } from 'react-error-boundary'\n\nexport function App() {\n  return (\n    <QueryErrorResetBoundary>\n      {({ reset }) => (\n        <ErrorBoundary\n          onReset={reset}\n          fallbackRender={({ resetErrorBoundary }) => (\n            <button onClick={resetErrorBoundary}>Try again</button>\n          )}\n        >\n          <Page />\n        </ErrorBoundary>\n      )}\n    </QueryErrorResetBoundary>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Connects a React error boundary's reset action to TanStack Query's query-error reset function."
+  },
+  "useCases": [
+   {
+    "title": "Retry suspense queries",
+    "scenario": "A suspense query throws into a React error boundary and the fallback offers a retry button."
+   },
+   {
+    "title": "Recover from thrown query errors",
+    "scenario": "Queries configured with throwOnError need coordinated recovery after an error fallback is reset."
+   },
+   {
+    "title": "Scope recovery to a subtree",
+    "scenario": "Several related queries should share a reset lifecycle within one page or widget."
+   }
+  ],
+  "related": [
+   "QueryErrorResetBoundaryProps",
+   "QueryErrorResetBoundaryFunction",
+   "QueryErrorResetBoundaryValue",
+   "useQueryErrorResetBoundary",
+   "throwOnError"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does QueryErrorResetBoundary solve?",
+    "answer": "It is a React component that scopes query-error resetting to its boundary. Its children may be a render function receiving a reset value, which can be passed to an error boundary's onReset callback.",
+    "followUp": "How does the hook differ? useQueryErrorResetBoundary resets errors in the closest component boundary, or globally when no boundary exists."
+   },
+   {
+    "question": "How is it wired to an error boundary?",
+    "answer": "Use the component around the content whose query errors should be reset. Render-prop children receive reset, and the error boundary invokes that function when its fallback is reset.",
+    "followUp": "Why connect onReset rather than only the fallback button? Because the error-boundary reset lifecycle is the event that should coordinate the query reset and the component re-render."
+   },
+   {
+    "question": "What does the children prop accept?",
+    "answer": "The component's children can be either a plain React node or a function receiving QueryErrorResetBoundaryValue. The rendered result is either returned directly or produced by calling that function.",
+    "followUp": "What does the value currently expose? The documented example uses its reset function to clear query errors."
+   }
+  ],
+  "keyPoints": [
+   "Reset behavior is scoped to queries inside the component boundary.",
+   "The required children prop supplies the UI contained by the reset boundary.",
+   "Children may be a React node or a render function that receives the boundary reset value.",
+   "The component renders plain children directly and calls function children with the boundary value.",
+   "The component accepts QueryErrorResetBoundaryProps and returns a React Element."
+  ],
+  "gotchas": [
+   "Use this boundary when query errors are surfaced through suspense or throwOnError; ordinary rendering does not by itself require this reset coordination."
+  ],
+  "checkedAt": "2026-10-16"
+ },
  "queryFn": {
   "sourceUrl": "https://tanstack.com/query/latest/docs/framework/svelte/reference/interfaces/QueryOptions",
   "sourceTitle": "QueryOptions",
@@ -2054,6 +3870,77 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "redirect": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/redirectFunction",
+  "sourceTitle": "redirect function",
+  "summary": "TanStack Router's redirect function creates a Redirect object that can be returned or thrown to navigate from route callbacks. The throw option controls whether the object is thrown immediately.",
+  "explanation": "TanStack Router's redirect function creates a Redirect object for changing location. Return it or throw it from callbacks such as a route's beforeLoad or loader; setting throw to true makes the function throw the object immediately.",
+  "syntax": "redirect(options)",
+  "parameters": [
+   {
+    "name": "opts",
+    "type": "Redirect",
+    "description": "Options controlling the redirect behavior, including navigation properties and the optional throw flag."
+   }
+  ],
+  "returns": "A Redirect object; it is thrown when the options object's throw property is true.",
+  "example": {
+   "title": "Redirect from beforeLoad",
+   "code": "import { redirect } from '@tanstack/react-router'\n\nexport const Route = createFileRoute('/dashboard')({\n  beforeLoad: ({ context }) => {\n    if (!context.auth.user) {\n      throw redirect({ to: '/login' })\n    }\n  },\n})",
+   "language": "typescript",
+   "explanation": "Throw the redirect from a route lifecycle callback to navigate unauthenticated users to the login route."
+  },
+  "useCases": [
+   {
+    "title": "Redirect unauthenticated users from beforeLoad",
+    "scenario": "Protecting authenticated routes"
+   },
+   {
+    "title": "Abort a loader-driven route transition",
+    "scenario": "Loading route data"
+   },
+   {
+    "title": "Create type-safe relative redirects with Route.redirect",
+    "scenario": "File-based routing"
+   }
+  ],
+  "related": [
+   "Redirect",
+   "Route.redirect",
+   "beforeLoad",
+   "loader",
+   "NavigateOptions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does redirect do?",
+    "answer": "redirect accepts one options object and returns a Redirect object by default. It can be returned or thrown from route beforeLoad and loader callbacks to trigger navigation.",
+    "followUp": "How can a caller force throwing behavior? Set throw: true in the options; otherwise the object is returned."
+   },
+   {
+    "question": "Where can redirect be used?",
+    "answer": "The function is useful in route lifecycle callbacks, especially beforeLoad and loader. Throwing or returning the resulting Redirect causes TanStack Router to navigate to the target location.",
+    "followUp": "Why might beforeLoad be preferable for authentication? It runs during route loading, allowing the redirect decision before the protected route finishes loading."
+   },
+   {
+    "question": "What advantage does Route.redirect provide?",
+    "answer": "File-based routes can use Route.redirect directly. That helper automatically supplies the route's from value, which enables type-safe relative redirects without manually providing the origin route.",
+    "followUp": "When is an explicit from value unnecessary? When using the file-based Route.redirect helper, because it derives from from the route path."
+   }
+  ],
+  "keyPoints": [
+   "redirect produces a Redirect object representing the requested navigation.",
+   "Use the object from route beforeLoad or loader callbacks by returning it or throwing it.",
+   "Its single argument is an options object that controls the redirect.",
+   "With throw omitted or false, the function returns rather than throws.",
+   "File-based Route.redirect derives the origin route, supporting type-safe relative destinations."
+  ],
+  "gotchas": [
+   "Setting throw to true throws the Redirect object; when throw is false or omitted, redirect returns it instead."
+  ],
+  "checkedAt": "2026-10-16"
+ },
  "refetchInterval": {
   "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/guides/polling",
   "sourceTitle": "Polling | TanStack Query React Docs",
@@ -2278,6 +4165,76 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "RouterProvider": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/RouterClass",
+  "sourceTitle": "Router Class",
+  "summary": "RouterProvider mounts a configured TanStack Router in a React application. Pass the router instance through its router prop, usually at the application root.",
+  "explanation": "RouterProvider is the React component that mounts a configured TanStack Router into the component tree. Pass the router instance created with createRouter through the router prop, typically rendering the provider as the application root.",
+  "syntax": "<RouterProvider router={router} />",
+  "parameters": [
+   {
+    "name": "router",
+    "type": "Router",
+    "description": "The configured TanStack Router instance that RouterProvider mounts for the React application."
+   }
+  ],
+  "returns": "A React element that provides TanStack Router functionality to its descendant component tree.",
+  "example": {
+   "title": "Render a TanStack Router",
+   "code": "import { RouterProvider, createRouter } from '@tanstack/react-router'\nimport { routeTree } from './routeTree.gen'\n\nconst router = createRouter({ routeTree })\n\nexport default function App() {\n  return <RouterProvider router={router} />\n}",
+   "language": "tsx",
+   "explanation": "Create a router from the generated route tree, then render it through RouterProvider at the application root."
+  },
+  "useCases": [
+   {
+    "title": "Mount the application router",
+    "scenario": "Application bootstrap"
+   },
+   {
+    "title": "Combine routing with QueryClientProvider",
+    "scenario": "React Query integration"
+   },
+   {
+    "title": "Render a generated route tree",
+    "scenario": "Generated routes"
+   }
+  ],
+  "related": [
+   "createRouter",
+   "Router",
+   "QueryClientProvider",
+   "routeTree"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is RouterProvider used for?",
+    "answer": "RouterProvider renders the configured router for a React application. It receives the router instance through its router prop, as in <RouterProvider router={router} />.",
+    "followUp": "How would you combine it with TanStack Query? Render QueryClientProvider around RouterProvider so both providers are available to the application."
+   },
+   {
+    "question": "How do you configure RouterProvider?",
+    "answer": "First create a router with the application's route tree, then pass that instance to RouterProvider. The documented example imports RouterProvider and Router, constructs the router, and renders the provider.",
+    "followUp": "Why use a generated route tree? It supplies the route structure consumed when configuring the router."
+   },
+   {
+    "question": "Where should RouterProvider be rendered?",
+    "answer": "RouterProvider belongs at the application rendering boundary, where it can mount the router for the React tree. The official example exports an App component whose returned JSX is RouterProvider.",
+    "followUp": "What commonly surrounds it in an application? A query client provider may wrap it when using React Query, as shown in the official integration example."
+   }
+  ],
+  "keyPoints": [
+   "The React package exports RouterProvider alongside router-construction APIs.",
+   "A router instance is created before RouterProvider is rendered.",
+   "The router instance is supplied through the provider's router prop.",
+   "When integrating React Query, QueryClientProvider can wrap RouterProvider so the query client is available to the app.",
+   "The provider is rendered as a React element in the application's root component."
+  ],
+  "gotchas": [
+   "RouterProvider needs a configured router instance; construct or create that router separately rather than passing route options directly to the provider."
+  ],
+  "checkedAt": "2026-10-16"
+ },
  "RowModel": {
   "sourceUrl": "https://tanstack.com/table/v8/docs/guide/row-models",
   "sourceTitle": "Row Models Guide",
@@ -2422,6 +4379,326 @@
    "staleTime does not disable a separately configured refetchInterval."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "Store": {
+  "sourceUrl": "https://tanstack.com/store/latest/docs/reference/classes/Store",
+  "sourceTitle": "Store",
+  "summary": "Store is TanStack Store's writable reactive container. It holds typed state, supports updates and subscriptions, and can expose optional typed actions.",
+  "explanation": "Store is a writable reactive container for a value. Construct it with an initial value, read the current state through state or get(), change it with setState(), and observe changes with subscribe(); optional actions can be attached during construction.",
+  "syntax": "new Store<T, TActions>(initialValue)\nnew Store<T, TActions>(getValue)\nnew Store<T, TActions>(initialValue, actionsFactory)",
+  "parameters": [
+   {
+    "name": "initialValue / getValue",
+    "type": "NonFunction<T> or () => T",
+    "description": "Initial value or value-producing function used to initialize the store."
+   },
+   {
+    "name": "actionsFactory",
+    "type": "StoreActionsFactory<T, TActions>",
+    "description": "Factory that creates the store's optional typed actions."
+   }
+  ],
+  "returns": "A Store<T, TActions> instance; its subscribe method returns a Subscription and setState returns void.",
+  "example": {
+   "title": "Create and update a Store",
+   "code": "import { Store } from '@tanstack/store'\n\nconst count = new Store(0)\nconst subscription = count.subscribe((value) => {\n  console.log(value)\n})\n\ncount.setState((value) => value + 1)\nsubscription.unsubscribe()",
+   "language": "typescript",
+   "explanation": "Creates a writable store, observes state changes, updates the value, and removes the subscription."
+  },
+  "useCases": [
+   {
+    "title": "Local reactive state",
+    "scenario": "Keep framework-independent client state in a typed mutable container."
+   },
+   {
+    "title": "Change subscriptions",
+    "scenario": "Notify dependent code when a value changes."
+   },
+   {
+    "title": "Typed store actions",
+    "scenario": "Bundle domain-specific commands with the state they modify."
+   }
+  ],
+  "related": [
+   "ReadonlyStore",
+   "createStore",
+   "StoreActionMap",
+   "StoreActionsFactory",
+   "Subscription"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the core purpose of Store and which operations does it provide?",
+    "answer": "Store is a writable reactive state container. Its API exposes the current value through state or get(), changes it with setState(), and allows observers to react through subscribe().",
+    "followUp": "How would you avoid leaving observers attached? Retain the Subscription returned by subscribe() and call its unsubscribe() method when the observer is no longer needed."
+   },
+   {
+    "question": "How can a Store expose custom actions?",
+    "answer": "The constructor accepts an initial value and can optionally receive an actions factory. The resulting actions are exposed through the store's readonly actions property.",
+    "followUp": "Why use an actions factory? It provides typed, store-associated commands while keeping the state update logic attached to the store instance."
+   },
+   {
+    "question": "How do state updates and subscriptions work?",
+    "answer": "setState accepts an updater and returns void. subscribe accepts either an observer or a callback and returns a Subscription that can later be unsubscribed.",
+    "followUp": "What should a caller use when it only needs side effects for each new value? Pass a callback function directly to subscribe rather than constructing a full observer object."
+   }
+  ],
+  "keyPoints": [
+   "The state getter returns the store's current value using the store's generic value type.",
+   "setState updates the value through an updater function and does not return a new state value.",
+   "subscribe accepts an observer or callback and returns a Subscription for managing the listener.",
+   "Optional actions supplied at construction are available through a readonly actions property."
+  ],
+  "gotchas": [
+   "The class is generic over both the stored value type and the optional actions type; preserve those types when exposing a store API.",
+   "The getter overload creates a Store from a value-producing function, so distinguish that overload from construction with a direct initial value."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Table": {
+  "sourceUrl": "https://tanstack.com/table/beta/docs/reference/index/type-aliases/Table",
+  "sourceTitle": "Table | TanStack Table Docs",
+  "summary": "`Table<TFeatures, TData>` is the TanStack Table instance type. It combines core table behavior with the APIs contributed by the enabled features.",
+  "explanation": "`Table<TFeatures, TData>` combines core table behavior with the types supplied by enabled features. A table instance is produced by the framework adapter and exposes operations such as retrieving the row model; the generic parameters describe the feature set and row-data shape.",
+  "syntax": "type Table<TFeatures, TData> = Table_Core<TFeatures, TData> & ExtractFeatureMapTypes<TFeatures, Table_FeatureMap<TFeatures, TData>>;",
+  "parameters": [
+   {
+    "name": "TFeatures",
+    "type": "TableFeatures",
+    "description": "The enabled table-feature set used to derive feature-specific table members."
+   },
+   {
+    "name": "TData",
+    "type": "RowData",
+    "description": "The shape of data stored in each table row."
+   }
+  ],
+  "returns": "A table instance type containing core functionality plus members derived from enabled features.",
+  "example": {
+   "title": "Create and inspect a table",
+   "code": "import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table'\n\ntype Person = { name: string; age: number }\nconst data: Person[] = [{ name: 'Ada', age: 36 }]\nconst columnHelper = createColumnHelper<Person>()\nconst columns = [columnHelper.accessor('name', { header: 'Name' })]\n\nconst table = useReactTable({\n  data,\n  columns,\n  getCoreRowModel: getCoreRowModel(),\n})\n\nconst allRows = table.getRowModel().rows",
+   "language": "typescript",
+   "explanation": "Creates a table instance and reads its current row model."
+  },
+  "useCases": [
+   {
+    "title": "Strongly typed table references",
+    "scenario": "Typing a table instance in adapter or reusable component code."
+   },
+   {
+    "title": "Table-instance operations",
+    "scenario": "Accessing core operations and feature APIs from a created table."
+   },
+   {
+    "title": "Row-data type propagation",
+    "scenario": "Propagating row-data types into table-related APIs."
+   }
+  ],
+  "related": [
+   "Table_Core",
+   "Table_FeatureMap",
+   "TableFeatures",
+   "RowData",
+   "useReactTable",
+   "getCoreRowModel"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the `Table` type alias combine?",
+    "answer": "`Table<TFeatures, TData>` is an intersection of `Table_Core<TFeatures, TData>` and `ExtractFeatureMapTypes<TFeatures, Table_FeatureMap<TFeatures, TData>>`. This gives the instance its core API plus the type contributions from enabled features.",
+    "followUp": "Why use feature extraction? It lets the table type expose only the feature-related members associated with the generic feature set."
+   },
+   {
+    "question": "What are the generic parameters for?",
+    "answer": "`TFeatures` describes the table's feature configuration, while `TData` describes the row-data type. Both are carried through the core and feature-derived portions of the alias.",
+    "followUp": "How would a row-specific API become type-safe? Bind `TData` to the row interface used by the table's data and column definitions."
+   },
+   {
+    "question": "What does a `Table` value represent?",
+    "answer": "The documentation describes `Table` as the table object containing core functionality and enabled features. In application code, an adapter-created table instance is the value consumed to access table operations such as its row model.",
+    "followUp": "What should be checked when a feature method is missing? Verify that the feature is enabled and included in the table's generic feature set."
+   }
+  ],
+  "keyPoints": [
+   "`Table` is an intersection type whose first component is the core table type.",
+   "Its second component extracts feature-specific members from the table feature map.",
+   "The alias models the complete table object, not only its core behavior.",
+   "Feature availability is tied to features enabled through the table configuration."
+  ],
+  "gotchas": [
+   "The type reflects enabled features, so feature-specific members depend on the selected feature set rather than being universally available."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "useBlocker": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/useBlockerHook",
+  "sourceTitle": "useBlocker hook | TanStack Router React Docs",
+  "summary": "useBlocker blocks TanStack Router navigation when a condition is met. It can expose the pending transition and controls for continuing or cancelling it.",
+  "explanation": "useBlocker registers a navigation condition through shouldBlockFn. When blocking occurs, the hook exposes the pending navigation state and, with withResolver enabled, proceed and reset controls so the UI can decide whether to continue or cancel; enableBeforeUnload separately controls browser unload protection.",
+  "syntax": "useBlocker(options)",
+  "parameters": [
+   {
+    "name": "shouldBlockFn",
+    "type": "ShouldBlockFn",
+    "description": "Required predicate or asynchronous predicate that receives transition details and determines whether navigation should be blocked."
+   },
+   {
+    "name": "disabled",
+    "type": "boolean",
+    "description": "Disables the blocker entirely; defaults to false."
+   },
+   {
+    "name": "enableBeforeUnload",
+    "type": "boolean | (() => boolean)",
+    "description": "Controls whether browser beforeUnload protection is enabled; defaults to true."
+   },
+   {
+    "name": "withResolver",
+    "type": "boolean",
+    "description": "Controls whether the hook's resolver is used; defaults to false."
+   }
+  ],
+  "returns": "An object containing status, transition details such as next, current, and action when blocked, plus proceed and reset controls.",
+  "example": {
+   "title": "Block navigation from a dirty editor",
+   "code": "import { useState } from 'react'\nimport { useBlocker } from '@tanstack/react-router'\n\nexport function Editor() {\n  const [dirty, setDirty] = useState(false)\n\n  const { status, proceed, reset } = useBlocker({\n    shouldBlockFn: () => dirty,\n    enableBeforeUnload: dirty,\n    withResolver: true,\n  })\n\n  return (\n    <>\n      <textarea onChange={() => setDirty(true)} />\n      {status === 'blocked' && (\n        <div>\n          <button onClick={proceed}>Leave</button>\n          <button onClick={reset}>Stay</button>\n        </div>\n      )}\n    </>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Blocks leaving a dirty editor and lets the user continue or cancel the pending navigation."
+  },
+  "useCases": [
+   {
+    "title": "Protect unsaved changes",
+    "scenario": "A user edits a form and attempts to navigate away before saving."
+   },
+   {
+    "title": "Confirm workflow exit",
+    "scenario": "An application must ask for confirmation before leaving a multi-step workflow."
+   },
+   {
+    "title": "Protect an in-progress operation",
+    "scenario": "A payment or other critical operation should not be interrupted by route changes."
+   }
+  ],
+  "related": [
+   "ShouldBlockFn",
+   "ShouldBlockFnArgs",
+   "Navigation Blocking",
+   "HistoryAction"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is useBlocker for, and what is required?",
+    "answer": "useBlocker is a hook that blocks navigation when a condition is met. It requires an options object whose shouldBlockFn returns a boolean or Promise<boolean>.",
+    "followUp": "How can the blocker inspect the transition? Pass a function accepting ShouldBlockFnArgs; it receives information about the current route, next route, and navigation action."
+   },
+   {
+    "question": "How do you implement a confirmation UI?",
+    "answer": "withResolver enables the resolver returned by the hook to control the decision. A blocked result exposes proceed to continue navigation and reset to cancel it and return to idle.",
+    "followUp": "What state indicates a pending decision? Check status === 'blocked', then use the narrowed next, current, and action values to render context-aware UI."
+   },
+   {
+    "question": "How does browser unload behavior differ from in-app blocking?",
+    "answer": "enableBeforeUnload defaults to true and accepts either a boolean or a function returning a boolean. It controls whether the blocker registers protection for the browser beforeUnload event.",
+    "followUp": "How would you avoid unload protection for a particular blocker? Set enableBeforeUnload to false while retaining shouldBlockFn for in-app navigation."
+   }
+  ],
+  "keyPoints": [
+   "Use the hook to prevent a route transition whenever your blocking condition evaluates to true.",
+   "Call useBlocker with one options object rather than positional arguments.",
+   "shouldBlockFn may decide synchronously or asynchronously whether the current navigation is blocked.",
+   "The return value supplies state and controls for handling a blocked transition in the UI.",
+   "Use status to distinguish a pending blocked navigation from the normal idle state.",
+   "Call proceed after confirmation to resume the pending navigation.",
+   "Call reset when the user chooses to remain on the current route."
+  ],
+  "gotchas": [
+   "Returning false from shouldBlockFn does not by itself prevent a beforeunload handler from running; control that behavior with enableBeforeUnload.",
+   "Use enableBeforeUnload when browser reload and tab-closing protection should depend on the same condition."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "useChildMatches": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/useChildMatchesHook",
+  "sourceTitle": "useChildMatches hook | TanStack Router Docs",
+  "summary": "Returns descendant route matches from the closest match to the leaf-most match, excluding the current match. An optional selector can map those matches to another value.",
+  "explanation": "useChildMatches reads the child RouteMatch objects beneath the closest matched route. It excludes the current match, while an optional select function can transform the array and influence rerendering through shallow equality; structuralSharing can control reuse of selected results.",
+  "syntax": "useChildMatches(opts?)",
+  "parameters": [
+   {
+    "name": "opts",
+    "type": "object",
+    "description": "Optional options object containing select and structuralSharing."
+   },
+   {
+    "name": "opts.select",
+    "type": "(matches: RouteMatch[]) => TSelected",
+    "description": "Transforms RouteMatch[] into the value returned by the hook; optional."
+   },
+   {
+    "name": "opts.structuralSharing",
+    "type": "boolean",
+    "description": "Controls structural sharing for the value returned by select; optional."
+   }
+  ],
+  "returns": "With select, the selected value; without select, an array of RouteMatch objects.",
+  "example": {
+   "title": "Read descendant route IDs",
+   "code": "import { useChildMatches } from '@tanstack/react-router'\n\nfunction Breadcrumbs() {\n  const matches = useChildMatches({\n    select: (routeMatches) =>\n      routeMatches.map((match) => match.routeId),\n  })\n\n  return <nav>{matches.join(' / ')}</nav>\n}",
+   "language": "tsx",
+   "explanation": "Selects route IDs from descendant matches and renders them as a simple breadcrumb trail."
+  },
+  "useCases": [
+   {
+    "title": "Derive navigation context",
+    "scenario": "Build breadcrumbs or route navigation from descendant route IDs, paths, or metadata."
+   },
+   {
+    "title": "Project match data",
+    "scenario": "Extract only the route data a component needs with select instead of processing every match during render."
+   },
+   {
+    "title": "Inspect nested routing state",
+    "scenario": "Observe nested route state that may include descendants beyond the current render boundary."
+   }
+  ],
+  "related": [
+   "useMatch",
+   "useParentMatches",
+   "RouteMatch"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useChildMatches return?",
+    "answer": "It returns the child RouteMatch objects from the closest match down to the leaf-most match, excluding the current match. Without select, the result is an array of RouteMatch objects.",
+    "followUp": "How can the result be transformed? Pass select, which receives RouteMatch[] and returns the value exposed by the hook."
+   },
+   {
+    "question": "What is the purpose of select?",
+    "answer": "The select callback receives the route-match array and its return value becomes the hook result. That selected value also participates in shallow-equality checks used to decide whether the parent component should rerender.",
+    "followUp": "What option controls reuse behavior for a selected result? structuralSharing configures whether structural sharing is enabled for the value returned by select."
+   },
+   {
+    "question": "Why might matches include loading or non-rendered descendants?",
+    "answer": "The hook's result comes from the router's current match presentation rather than only from fully settled descendants. Consequently, still-loading descendants and descendants below the current render boundary may appear.",
+    "followUp": "How would you obtain the current match instead? Use useMatch, because useChildMatches deliberately omits the current match."
+   }
+  ],
+  "keyPoints": [
+   "It provides the descendant route matches spanning from the nearest matched route to the deepest matched route.",
+   "Its output follows the router's current match presentation.",
+   "select transforms the route-match array, and the transformed value becomes the hook's result.",
+   "The selected value is compared shallowly to determine parent rerenders.",
+   "structuralSharing controls structural sharing for the value produced by select."
+  ],
+  "gotchas": [
+   "The current route is excluded; use useMatch when the current match is also needed.",
+   "The returned list may contain descendants that have not finished loading or are below the current rendering boundary."
+  ],
+  "checkedAt": "2026-10-16"
  },
  "useForm": {
   "sourceUrl": "https://tanstack.com/form/latest/docs/framework/react/reference/functions/useForm",
@@ -2648,6 +4925,335 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "useLinkProps": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/useLinkPropsHook",
+  "sourceTitle": "useLinkProps hook",
+  "summary": "useLinkProps creates React anchor props from TanStack Router link options and ordinary anchor attributes. Apply the returned props to an anchor to build a navigational link.",
+  "explanation": "useLinkProps converts route-link options plus ordinary anchor attributes into a props object for a native anchor. Applying the returned object to an anchor creates a link that can navigate while incorporating pathname, search parameters, hash, and location state.",
+  "syntax": "useLinkProps(options: UseLinkPropsOptions): React.AnchorHTMLAttributes<HTMLAnchorElement>",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "UseLinkPropsOptions",
+    "description": "An object combining ActiveLinkOptions with React anchor attributes; it supplies navigation details and any additional anchor props."
+   }
+  ],
+  "returns": "A React.AnchorHTMLAttributes<HTMLAnchorElement> object that can be applied to an anchor element for navigation.",
+  "example": {
+   "title": "Create a navigational anchor",
+   "code": "import { useLinkProps } from '@tanstack/react-router'\n\nexport function ProfileLink() {\n  const linkProps = useLinkProps({\n    to: '/profile',\n    children: 'Profile',\n    className: 'profile-link',\n  })\n\n  return <a {...linkProps} />\n}",
+   "language": "tsx",
+   "explanation": "Builds anchor attributes from route options and applies them to a native anchor for client-side navigation."
+  },
+  "useCases": [
+   {
+    "title": "Create a custom anchor-based link while retaining router navigation.",
+    "scenario": "Custom navigation UI"
+   },
+   {
+    "title": "Build a component that adds project-specific anchor attributes around generated router props.",
+    "scenario": "Reusable link wrappers"
+   },
+   {
+    "title": "Navigate while encoding pathname, search, hash, or location-state changes.",
+    "scenario": "Rich route targets"
+   }
+  ],
+  "related": [
+   "ActiveLinkOptions",
+   "Link",
+   "LinkProps",
+   "useNavigate"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useLinkProps return and how is it used?",
+    "answer": "It accepts an options object and returns React anchor attributes. Those attributes can be spread onto an anchor to create a link capable of navigating to a new location.",
+    "followUp": "How does it differ from rendering Link? useLinkProps gives you the computed props, while Link is the component-level abstraction that renders the anchor."
+   },
+   {
+    "question": "What can be passed to useLinkProps?",
+    "answer": "The options type combines ActiveLinkOptions with React.AnchorHTMLAttributes<HTMLAnchorElement>. This lets route-navigation options and normal anchor attributes be supplied together.",
+    "followUp": "Why is that combination useful? It allows a custom anchor component to preserve native HTML attributes while using TanStack Router navigation behavior."
+   },
+   {
+    "question": "Which location parts can the generated link handle?",
+    "answer": "The generated link can represent changes to the pathname, search parameters, hash, and location state. The returned object is intended to be applied directly to an anchor element.",
+    "followUp": "What element should consume the result? A React anchor element, because the documented return type is React.AnchorHTMLAttributes<HTMLAnchorElement>."
+   }
+  ],
+  "keyPoints": [
+   "Call the hook with one options object; its result is typed as React anchor attributes.",
+   "Spread the returned object onto an anchor when building a custom link element.",
+   "The resulting anchor performs TanStack Router navigation to the target location.",
+   "Route targets may include pathname, query parameters, hash, and location state changes.",
+   "The hook's options include the router's active-link navigation options.",
+   "The options also support standard React anchor attributes.",
+   "Internally, the supplied options are used to construct the link-props object returned for the anchor."
+  ],
+  "gotchas": [
+   "Additional anchor attributes are merged into the generated link props, so supplied values participate in the resulting object."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "useLoaderData": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/useLoaderDataHook",
+  "sourceTitle": "useLoaderData hook | TanStack Router React Docs",
+  "summary": "useLoaderData returns loader data from the closest matching route. It supports route-based type narrowing and optional selection of a derived value.",
+  "explanation": "useLoaderData reads the loader result associated with the closest matching route. Pass the route identifier with from for precise inference, optionally transform the value with select, and use strict to control how types are resolved.",
+  "syntax": "useLoaderData({ from?, strict?, select?, structuralSharing? })",
+  "parameters": [
+   {
+    "name": "from",
+    "type": "string",
+    "description": "Route id of the closest parent match; optional, but recommended for full type safety."
+   },
+   {
+    "name": "strict",
+    "type": "boolean",
+    "description": "Controls type narrowing; defaults to true. If false, from is ignored and types are loosened."
+   },
+   {
+    "name": "select",
+    "type": "(loaderData: TLoaderData) => TSelected",
+    "description": "Transforms loader data and returns the transformed value."
+   },
+   {
+    "name": "structuralSharing",
+    "type": "boolean",
+    "description": "Controls structural sharing for the value returned by select."
+   }
+  ],
+  "returns": "The selected value when select is provided; otherwise the route's loader data, or loosened loader data when strict is false.",
+  "example": {
+   "title": "Read route loader data",
+   "code": "import { createFileRoute } from '@tanstack/react-router'\n\nexport const Route = createFileRoute('/posts/$postId')({\n  loader: async ({ params }) => ({\n    postId: params.postId,\n    title: 'Example post',\n  }),\n  component: Post,\n})\n\nfunction Post() {\n  const data = Route.useLoaderData()\n  return <h1>{data.title}</h1>\n}",
+   "language": "tsx",
+   "explanation": "The route loader returns data, and the route component reads that result with the route-scoped hook."
+  },
+  "useCases": [
+   {
+    "title": "Consume route data",
+    "scenario": "A route component needs the result produced by its route loader."
+   },
+   {
+    "title": "Select derived data",
+    "scenario": "A component needs only one field or a derived projection of a larger loader result."
+   },
+   {
+    "title": "Control type narrowing",
+    "scenario": "A shared component reads loader data while preserving or intentionally relaxing route-specific typing."
+   }
+  ],
+  "related": [
+   "Route.useLoaderData",
+   "loader",
+   "RouteMatch",
+   "getRouteApi"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useLoaderData return?",
+    "answer": "It returns loader data from the closest RouteMatch in the component tree. With a select function, it returns the selected result instead of the complete loader value.",
+    "followUp": "How can a component obtain precise types? Pass the relevant route id through from; this is optional but recommended for full type safety."
+   },
+   {
+    "question": "Which options does useLoaderData provide?",
+    "answer": "The hook accepts an options object containing from, strict, select, and structuralSharing. from identifies the closest parent match, while select transforms the loader data before it is returned.",
+    "followUp": "What does select receive? It receives the loader-data value and its return value becomes the hook result."
+   },
+   {
+    "question": "How does strict affect typing?",
+    "answer": "strict defaults to true. When strict is false, from is ignored and the returned type is loosened to account for the shared types of possible loader data.",
+    "followUp": "When is strict false useful? It can be used when a component intentionally consumes loader data without narrowing to one route match."
+   }
+  ],
+  "keyPoints": [
+   "The hook reads data belonging to the nearest matching route in the rendered component hierarchy.",
+   "Configuration is supplied as one options object rather than positional arguments.",
+   "The from option identifies the route match whose loader data the component intends to consume.",
+   "Although from is not mandatory, providing it gives TypeScript a narrower and more reliable result type.",
+   "select can project the full loader result into a smaller value for the component.",
+   "structuralSharing controls whether the selected result uses structural sharing."
+  ],
+  "gotchas": [
+   "Setting strict to false discards the narrowing supplied by from and broadens the inferred loader-data type.",
+   "A select result participates in shallow-equality checks, so return a stable selected value when avoiding unnecessary parent renders matters."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "useMatch": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/useMatchHook",
+  "sourceTitle": "useMatch hook | TanStack Router React Docs",
+  "summary": "useMatch returns the RouteMatch for a route in the component tree. It can select a derived value and optionally allow an absent match without throwing.",
+  "explanation": "useMatch reads the RouteMatch associated with a route in the component tree. Pass the route identifier through `from`; optionally use `select` to derive a smaller value, while `strict` controls whether the match must be associated with the specified route and `shouldThrow` controls behavior when no match exists.",
+  "syntax": "useMatch<TSelected = RouteMatch>(opts: { from: string; select?: (match: RouteMatch) => TSelected; strict?: boolean; shouldThrow?: boolean }): TSelected",
+  "parameters": [
+   {
+    "name": "opts.from",
+    "type": "string",
+    "description": "Route ID identifying the match to read; the documented examples use a route path or `rootRouteId`."
+   },
+   {
+    "name": "opts.select",
+    "type": "(match: RouteMatch) => TSelected",
+    "description": "Optional function receiving the RouteMatch and producing the hook's returned value."
+   },
+   {
+    "name": "opts.strict",
+    "type": "boolean",
+    "description": "Optional strictness setting; when false, the returned match type is loosened."
+   },
+   {
+    "name": "opts.shouldThrow",
+    "type": "boolean",
+    "description": "Optional missing-match behavior; false allows an undefined result."
+   }
+  ],
+  "returns": "The selected value when `select` is supplied; otherwise the RouteMatch, or a loosened RouteMatch when `strict` is false. With `shouldThrow: false`, the result can be undefined when no match exists.",
+  "example": {
+   "title": "Select a route parameter",
+   "code": "import { useMatch } from '@tanstack/react-router'\n\nexport function PostHeader() {\n  const match = useMatch({\n    from: '/posts/$postId',\n    select: (match) => match.params.postId,\n  })\n\n  return <h1>Post {match}</h1>\n}",
+   "language": "tsx",
+   "explanation": "This component reads the current post route match and selects only its post ID."
+  },
+  "useCases": [
+   {
+    "title": "Read the current route match",
+    "scenario": "A component needs route-specific params, search data, loader data, or context from the match."
+   },
+   {
+    "title": "Select a focused value",
+    "scenario": "A component needs only one field and should avoid subscribing to unrelated match data."
+   },
+   {
+    "title": "Handle an optional match",
+    "scenario": "A shared component may render outside the requested route match."
+   }
+  ],
+  "related": [
+   "useParams",
+   "useLoaderData",
+   "useRouteContext",
+   "useSearch",
+   "useMatches",
+   "useMatchRoute",
+   "RouteApi"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useMatch provide?",
+    "answer": "useMatch returns the route match associated with the component's position in the route tree. The match includes route information and powers hooks such as parameter and loader-data hooks.",
+    "followUp": "How can you reduce unnecessary parent re-renders? Pass a `select` function that returns only the needed value; the selected result is compared with shallow equality."
+   },
+   {
+    "question": "How do you select data from a match?",
+    "answer": "The hook accepts one options object. `from` identifies the route, while `select` transforms the match into the value returned by the hook.",
+    "followUp": "What should be used when the route ID is known through a RouteApi? Use the API's pre-bound `useMatch`, which takes selection options without requiring `from`."
+   },
+   {
+    "question": "How do you handle a missing match?",
+    "answer": "With `shouldThrow: false`, a missing match can produce `undefined`, so the component should check the result before using it. The documented example narrows the value with an explicit undefined check.",
+    "followUp": "What is the alternative default behavior? Allow the hook to throw when the requested match is unavailable, when that behavior is appropriate for the component."
+   }
+  ],
+  "keyPoints": [
+   "It returns the route match visible from the calling component's location in the route tree.",
+   "The returned match exposes the router's information for that matched route.",
+   "Call the hook with one options object rather than separate positional arguments.",
+   "Use `from` to specify the route ID whose match should be read.",
+   "`select` receives the match and makes its return value the hook result.",
+   "Selecting a focused value lets the hook determine parent re-renders with shallow equality."
+  ],
+  "gotchas": [
+   "Without `select`, the hook returns the complete match; setting `strict` to false loosens the returned type."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "useMatches": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/useMatchesHook",
+  "sourceTitle": "useMatches hook | TanStack Router Docs",
+  "summary": "useMatches returns the router’s complete presented route-match list from any component-tree position. An optional selector can transform that list into a derived result.",
+  "explanation": "useMatches exposes the router’s complete presented route-match array from any component-tree position. Pass an optional selector to return a derived value instead; the selected result participates in shallow-equality checks, and structural sharing can be configured for it.",
+  "syntax": "useMatches(opts?)",
+  "parameters": [
+   {
+    "name": "opts",
+    "type": "object",
+    "description": "Optional options object. It may contain select and structuralSharing."
+   },
+   {
+    "name": "opts.select",
+    "type": "(matches: RouteMatch[]) => TSelected",
+    "description": "Optional function receiving the route matches and returning the selected value."
+   },
+   {
+    "name": "opts.structuralSharing",
+    "type": "boolean",
+    "description": "Optional flag controlling structural sharing for the selected value."
+   }
+  ],
+  "returns": "With select, the selected value; without select, an array of RouteMatch objects.",
+  "example": {
+   "title": "Render route breadcrumbs",
+   "code": "import { useMatches } from '@tanstack/react-router'\n\nexport function Breadcrumbs() {\n  const matches = useMatches({\n    select: (matches) =>\n      matches.filter((match) => match.staticData?.getTitle),\n  })\n\n  return (\n    <nav>\n      {matches.map((match) => (\n        <span key={match.id}>{match.staticData.getTitle()}</span>\n      ))}\n    </nav>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Selects only matches that provide a static title, then renders those titles as breadcrumbs."
+  },
+  "useCases": [
+   {
+    "title": "Build breadcrumbs",
+    "scenario": "A layout or root component needs route metadata for breadcrumbs or navigation."
+   },
+   {
+    "title": "Compute route-driven UI state",
+    "scenario": "A shared component must derive a boolean or subset from all active matches."
+   },
+   {
+    "title": "Observe the complete match presentation",
+    "scenario": "A component needs to inspect loading, error, or not-found match presentation."
+   }
+  ],
+  "related": [
+   "useParentMatches",
+   "useChildMatches",
+   "RouteMatch",
+   "useRouterState"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useMatches return?",
+    "answer": "useMatches returns the router’s complete presented array of RouteMatch objects, regardless of where the calling component sits in the component tree. Without a selector, the result is an array of RouteMatch objects.",
+    "followUp": "How would you obtain only ancestors? Use useParentMatches, which is intended for parent-match selection rather than the complete match list."
+   },
+   {
+    "question": "How can useMatches return derived data?",
+    "answer": "The hook accepts one optional options object. Its select function receives the route matches and returns the value exposed by the hook, which can be a derived value such as filtered metadata.",
+    "followUp": "Why use select instead of filtering after the hook returns? Selection lets the hook use shallow equality checks on the selected result to decide whether the parent should re-render."
+   },
+   {
+    "question": "What does structuralSharing configure?",
+    "answer": "structuralSharing is an optional boolean in the options object. It controls whether structural sharing is enabled for the value returned by select.",
+    "followUp": "What should a component do if it needs only child matches? Use useChildMatches rather than retrieving the full array and filtering it manually."
+   }
+  ],
+  "keyPoints": [
+   "The hook provides the full presented route-match array, independent of the caller’s location in the component tree.",
+   "A component can access the complete match presentation without being located within a particular matched route.",
+   "Its only argument is optional and is an options object.",
+   "The select callback transforms the matches into the hook’s returned value.",
+   "A selected result is used in shallow-equality checks that govern parent re-rendering.",
+   "The structuralSharing option controls structural sharing for selected output."
+  ],
+  "gotchas": [
+   "Do not assume every returned match is fully loaded or above the currently rendered boundary."
+  ],
+  "checkedAt": "2026-10-16"
+ },
  "useMutation": {
   "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/reference/functions/useMutation",
   "sourceTitle": "useMutation | TanStack Query React Docs",
@@ -2799,6 +5405,156 @@
    "If a custom QueryClient is not passed, the hook resolves the client from the nearest context."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "useNavigate": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/useNavigateHook",
+  "sourceTitle": "useNavigate hook",
+  "summary": "`useNavigate` returns an imperative navigation function for a TanStack Router application. Use it to change the pathname, search parameters, hash, or location state, especially when navigation is triggered by component logic.",
+  "explanation": "In a React component, call useNavigate with an optional source location to obtain an imperative navigation function. Invoke that function with NavigateOptions to change the pathname, search parameters, hash, or location state; it returns a promise that resolves after navigation completes.",
+  "syntax": "useNavigate(opts?: { from?: string }): (options: NavigateOptions) => Promise<void>",
+  "parameters": [
+   {
+    "name": "opts",
+    "type": "object",
+    "description": "Optional object configuring the hook; its `from` property is a string identifying the location to navigate from."
+   },
+   {
+    "name": "options",
+    "type": "NavigateOptions",
+    "description": "A navigation configuration object, including destination and supported location updates."
+   }
+  ],
+  "returns": "A navigate function; calling it returns a Promise that resolves when navigation is complete.",
+  "example": {
+   "title": "Update search parameters",
+   "code": "import { useNavigate } from '@tanstack/react-router'\n\nfunction PostsPage() {\n  const navigate = useNavigate({ from: '/posts' })\n\n  return (\n    <button onClick={() => navigate({ search: { page: 2 } })}>\n      Next page\n    </button>\n  )\n}",
+   "language": "tsx",
+   "explanation": "This component creates a navigate function scoped from `/posts` and uses it to update the page search parameter."
+  },
+  "useCases": [
+   {
+    "title": "Navigate after an async side effect",
+    "scenario": "A successful form submission or mutation should move the user to another route."
+   },
+   {
+    "title": "Update search parameters",
+    "scenario": "A pagination, filtering, or sorting control needs to update URL state from an event handler."
+   },
+   {
+    "title": "Imperative location updates",
+    "scenario": "A component must change the hash or location state without using a declarative link."
+   }
+  ],
+  "related": [
+   "Link",
+   "NavigateOptions",
+   "useSearch",
+   "useParams",
+   "RouteApi"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useNavigate provide?",
+    "answer": "useNavigate is a hook that returns a navigate function for changing the current location. The navigation can modify the pathname, search parameters, hash, and location state.",
+    "followUp": "How can navigation be scoped to a route? Pass the route location through the hook's optional `from` option, such as `useNavigate({ from: '/posts' })`."
+   },
+   {
+    "question": "What is the purpose of the from option?",
+    "answer": "The hook accepts an optional options object. Its `from` string identifies the location to navigate from, which is useful when the target should be resolved relative to a specific location rather than the current one.",
+    "followUp": "What does the returned function accept? One options object of type `NavigateOptions`, containing the destination and other navigation settings."
+   },
+   {
+    "question": "What are the input and result of the navigate function?",
+    "answer": "The returned navigate function accepts one `NavigateOptions` object and performs the requested navigation. Its result is a promise that resolves when navigation finishes.",
+    "followUp": "How would you update only a search parameter? Invoke `navigate` with a `search` option, for example `navigate({ search: { page: 2 } })`."
+   }
+  ],
+  "keyPoints": [
+   "Calling the hook gives the component an imperative navigation function.",
+   "Navigation can update the path, query-like search parameters, URL hash, or location state.",
+   "The hook's argument is one optional configuration object.",
+   "The `from` option establishes the source location used to resolve navigation.",
+   "Call the returned function with one navigation-options object.",
+   "The returned promise signals that navigation has completed."
+  ],
+  "gotchas": [
+   "Prefer Link for ordinary user-triggered navigation; use this hook when navigation must happen imperatively, such as after a side effect."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "useParams": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/useParamsHook",
+  "sourceTitle": "useParams hook",
+  "summary": "useParams returns parsed path parameters from the closest route match and its parents. Options can scope the route or select a derived result.",
+  "explanation": "useParams reads path parameters from the closest matched route and its parent matches. You can constrain it to a route with from, derive a smaller value with select, or use strict: false when accessing parameters from an ambiguous location.",
+  "syntax": "useParams<TSelected = TAllParams>(opts?: { from?: TFrom; select?: (params: TAllParams) => TSelected; strict?: boolean; structuralSharing?: boolean }): TSelected",
+  "parameters": [
+   {
+    "name": "opts",
+    "type": "object",
+    "description": "Optional route and selection configuration, including from, select, strict, and structuralSharing."
+   }
+  ],
+  "returns": "The matched route and parent path-parameter object, or the value returned by select.",
+  "example": {
+   "title": "Read a route parameter",
+   "code": "import { createRoot } from 'react-dom/client'\nimport { createRouter, RouterProvider, Route } from '@tanstack/react-router'\n\nconst postRoute = new Route({\n  getParentRoute: () => rootRoute,\n  path: '/posts/$postId',\n  component: Post,\n})\n\nfunction Post() {\n  const params = postRoute.useParams()\n  return <p>Post: {params.postId}</p>\n}\n\nconst router = createRouter({ routeTree: rootRoute.addChildren([postRoute]) })\ncreateRoot(document.getElementById('root')!).render(<RouterProvider router={router} />)",
+   "language": "tsx",
+   "explanation": "The route-bound hook reads the typed postId value from the /posts/$postId path."
+  },
+  "useCases": [
+   {
+    "title": "Load or display a resource by ID",
+    "scenario": "A component renders content for a dynamic URL such as /posts/$postId."
+   },
+   {
+    "title": "Read params from an ambiguous location",
+    "scenario": "A shared component needs route parameters without a single statically known route."
+   },
+   {
+    "title": "Select a focused value",
+    "scenario": "A component needs one parameter rather than the complete parameter object."
+   }
+  ],
+  "related": [
+   "Path Params",
+   "RouteApi",
+   "Route.useParams",
+   "useSearch",
+   "useLoaderData"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useParams return?",
+    "answer": "useParams returns the path parameters parsed for the closest match together with parameters from its parent matches. The result is the complete parameter object unless select transforms it.",
+    "followUp": "How would you read only one parameter? Pass select, such as select: params => params.postId, and use the returned selected value."
+   },
+   {
+    "question": "How do you make useParams type-safe for a particular route?",
+    "answer": "Use the from option to identify the route whose parameters should be read, for example { from: '/posts/$postId' }. This gives the hook route-specific type information.",
+    "followUp": "What if the component is not associated with one route? Use strict: false to access parameters from an ambiguous location."
+   },
+   {
+    "question": "What is the purpose of select?",
+    "answer": "The hook accepts an optional select function that receives the parameter object and returns a derived value. That returned value becomes the hook result and participates in shallow-equality re-render checks.",
+    "followUp": "When should select be used? Use it when a component needs only a subset or computed view of the route parameters."
+   }
+  ],
+  "keyPoints": [
+   "The hook reads parameters from the nearest matched route.",
+   "Parameters from every parent match are included as well.",
+   "Configuration is supplied through an optional options object.",
+   "Use from to bind parameter access to a specific route path.",
+   "select can project the full parameter object to one value.",
+   "The return type is either the parameter object or the selector's result."
+  ],
+  "gotchas": [
+   "When calling useParams outside a route-specific context, set strict to false because the location is ambiguous.",
+   "A select result can affect re-rendering; the selected value is compared with shallow equality."
+  ],
+  "checkedAt": "2026-10-16"
  },
  "usePrefetchQuery": {
   "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/reference/functions/usePrefetchQuery",
@@ -3026,6 +5782,376 @@
    "Calling the hook without an explicit QueryClient requires a QueryClientProvider; otherwise it throws."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "useQueryErrorResetBoundary": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/reference/functions/useQueryErrorResetBoundary",
+  "sourceTitle": "useQueryErrorResetBoundary | TanStack Query React Docs",
+  "summary": "useQueryErrorResetBoundary exposes a reset function for coordinating TanStack Query errors with an error boundary. It resets errors within the nearest QueryErrorResetBoundary, or globally when no boundary exists.",
+  "explanation": "Call the hook inside a component and use its reset function as the reset callback for an error boundary. The reset affects query errors in the nearest QueryErrorResetBoundary; without one, it applies globally.",
+  "syntax": "function useQueryErrorResetBoundary(): QueryErrorResetBoundaryValue;",
+  "parameters": [],
+  "returns": "QueryErrorResetBoundaryValue",
+  "example": {
+   "title": "Reset query errors from an error boundary",
+   "code": "import { ErrorBoundary } from 'react-error-boundary'\nimport { useQueryErrorResetBoundary } from '@tanstack/react-query'\n\nfunction App({ children }: { children: React.ReactNode }) {\n  const { reset } = useQueryErrorResetBoundary()\n\n  return (\n    <ErrorBoundary\n      onReset={reset}\n      fallbackRender={({ resetErrorBoundary }) => (\n        <div>\n          <p>There was an error!</p>\n          <button onClick={() => resetErrorBoundary()}>Try again</button>\n        </div>\n      )}\n    >\n      {children}\n    </ErrorBoundary>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Connect the error boundary's reset action to the hook's reset function so failed queries can retry when the boundary is reset."
+  },
+  "useCases": [
+   {
+    "title": "Retry suspense failures",
+    "scenario": "A query configured with suspense throws during rendering, and the UI needs a retry action that clears both the displayed boundary error and TanStack Query's error state."
+   },
+   {
+    "title": "Retry throwOnError failures",
+    "scenario": "Queries use throwOnError to delegate failures to an error boundary while the fallback provides a Try again control."
+   },
+   {
+    "title": "Integrate an external error boundary",
+    "scenario": "An application uses react-error-boundary and needs its onReset callback to reset TanStack Query errors."
+   }
+  ],
+  "related": [
+   "QueryErrorResetBoundary",
+   "QueryErrorResetBoundaryValue",
+   "suspense",
+   "throwOnError"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useQueryErrorResetBoundary return and how is it used?",
+    "answer": "It returns a QueryErrorResetBoundaryValue, whose reset function tells TanStack Query that failed queries may retry during the next render. Use that function as the error boundary's reset callback.",
+    "followUp": "How does scope change when a QueryErrorResetBoundary is present? The nearest boundary limits the reset to query errors inside that boundary; without one, the reset is global."
+   },
+   {
+    "question": "How does the hook interact with QueryErrorResetBoundary?",
+    "answer": "The hook resets query errors within the closest QueryErrorResetBoundary. It is useful when an external error-boundary component, such as react-error-boundary, needs to coordinate its reset with TanStack Query.",
+    "followUp": "Why is coordinating both resets necessary? The UI error boundary must clear its displayed error while TanStack Query must also clear its query-error state so rendering can retry."
+   },
+   {
+    "question": "How would you wire a retry button to this hook?",
+    "answer": "Use the returned reset function as the error boundary's onReset callback. A retry button can then invoke the boundary's resetErrorBoundary function, which calls the TanStack Query reset callback.",
+    "followUp": "What query configurations commonly require this pattern? It is especially relevant when queries use suspense or throwOnError, because rendering can surface query failures to an error boundary."
+   }
+  ],
+  "keyPoints": [
+   "The hook takes no arguments and returns a QueryErrorResetBoundaryValue.",
+   "Its reset behavior is scoped to the nearest QueryErrorResetBoundary.",
+   "With no surrounding boundary, query-error resets apply globally."
+  ],
+  "gotchas": [
+   "Without a surrounding QueryErrorResetBoundary, reset is global rather than limited to a component subtree."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "useRouteContext": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/useRouteContextHook",
+  "sourceTitle": "useRouteContext hook",
+  "summary": "useRouteContext returns context for a specified current route. Use `select` to derive and return a narrower value.",
+  "explanation": "useRouteContext reads the context belonging to the current route match. Pass the target route ID with `from`; optionally provide `select` to transform the context and receive only the selected value.",
+  "syntax": "useRouteContext({ from: string, select?: (context: RouteContext) => TSelected })",
+  "parameters": [
+   {
+    "name": "opts.from",
+    "type": "string",
+    "description": "Required route ID used to identify the route context."
+   },
+   {
+    "name": "opts.select",
+    "type": "(context: RouteContext) => TSelected",
+    "description": "Optional function receiving the route context and returning the value exposed by the hook."
+   }
+  ],
+  "returns": "The current context for the current route, or the value returned by `select` when provided.",
+  "example": {
+   "title": "Select a value from route context",
+   "code": "import { useRouteContext } from '@tanstack/react-router'\n\nexport function UserBadge() {\n  const email = useRouteContext({\n    from: '/posts/$postId',\n    select: (context) => context.user.email,\n  })\n\n  return <span>{email}</span>\n}",
+   "language": "tsx",
+   "explanation": "Reads only the user's email from the context associated with the specified route."
+  },
+  "useCases": [
+   {
+    "title": "Read shared route state",
+    "scenario": "A route's beforeLoad or loader places authenticated-user data in context, and a descendant component needs to display it."
+   },
+   {
+    "title": "Select a narrow value",
+    "scenario": "A component needs one context property rather than the complete context object."
+   },
+   {
+    "title": "Target a specific route",
+    "scenario": "A route-aware component needs strongly identified context from a particular route ID."
+   }
+  ],
+  "related": [
+   "Route.useRouteContext",
+   "useParams",
+   "useSearch",
+   "useLoaderData",
+   "getRouteApi"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useRouteContext do?",
+    "answer": "It is a hook for reading the current route's context inside a component. The `from` option identifies the route context to use.",
+    "followUp": "How can a component avoid consuming the whole context? Pass `select` and return only the needed property."
+   },
+   {
+    "question": "What is the purpose of the from option?",
+    "answer": "`from` is a required string containing the RouteID to match. It tells the hook which route's context should be returned.",
+    "followUp": "What happens if the route ID is omitted? The documented hook signature requires the option, so provide an explicit route ID."
+   },
+   {
+    "question": "How does select change the returned value?",
+    "answer": "`select` is optional and receives the route context object. Its return value becomes the hook's result, allowing a component to consume a derived value such as a user ID.",
+    "followUp": "What type does the selected result have? It is the selector's return type, represented in the documentation as `TSelected`."
+   }
+  ],
+  "keyPoints": [
+   "The hook exposes context associated with the current route.",
+   "Use it within a component that needs data placed in route context.",
+   "Configuration is passed as one options object.",
+   "The selector maps a RouteContext value to a selected result type.",
+   "Without a selector it returns route context; with one it returns the selected result."
+  ],
+  "gotchas": [
+   "`from` is required and must identify the route whose context you want to read.",
+   "A selector receives the complete route context, so access valid properties for that route."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "useRouter": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/useRouterHook",
+  "sourceTitle": "useRouter hook",
+  "summary": "useRouter returns the current TanStack Router instance from context. Use it for imperative router operations in a component.",
+  "explanation": "Call useRouter inside a component to obtain the current Router instance from context. Use that instance for imperative router operations such as navigation; if the component must react to router-state changes, use useRouterState instead.",
+  "syntax": "useRouter()",
+  "parameters": [],
+  "returns": "The current Router instance.",
+  "example": {
+   "title": "Navigate imperatively",
+   "code": "import { useRouter } from '@tanstack/react-router'\n\nexport function GoHomeButton() {\n  const router = useRouter()\n\n  return <button onClick={() => router.navigate({ to: '/' })}>Home</button>\n}",
+   "language": "tsx",
+   "explanation": "Gets the router from context and uses it for imperative navigation."
+  },
+  "useCases": [
+   {
+    "title": "Imperative navigation",
+    "scenario": "A button click needs to change routes programmatically."
+   },
+   {
+    "title": "Imperative route matching",
+    "scenario": "An event handler needs to test whether a route matches."
+   },
+   {
+    "title": "Router instance access",
+    "scenario": "Component logic needs access to router APIs or options."
+   }
+  ],
+  "related": [
+   "useRouterState",
+   "useMatchRoute",
+   "router.navigate",
+   "router.matchRoute"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useRouter return and when is it useful?",
+    "answer": "useRouter is a hook that returns the current Router instance from context. It is used inside a component when imperative access to router operations is needed.",
+    "followUp": "How should a component react to router-state changes? Use useRouterState, because router.state itself is not reactive and will not trigger re-renders."
+   },
+   {
+    "question": "How can useRouter be used for navigation?",
+    "answer": "The hook returns the current Router instance. A component can use that instance to perform imperative actions such as calling router.navigate in an event handler.",
+    "followUp": "What alternative is appropriate for an imperative route match check? Use useRouter and call router.matchRoute."
+   },
+   {
+    "question": "Is router.state reactive when obtained through useRouter?",
+    "answer": "useRouter exposes the router instance, but its state is not reactive when read directly from router.state. A component depending on state updates should use useRouterState.",
+    "followUp": "Why is direct router.state access still useful? It provides an up-to-date snapshot for imperative code, even though it does not subscribe the component to changes."
+   }
+  ],
+  "keyPoints": [
+   "The hook obtains the active Router instance through React context.",
+   "Use it when component code needs direct access to router functionality.",
+   "Its return value is the current Router instance.",
+   "Choose useRouterState when rendered output must update in response to router-state changes."
+  ],
+  "gotchas": [
+   "Reading router.state gives current data but does not cause the component to re-render when that state changes."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "useRouterState": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/useRouterStateHook",
+  "sourceTitle": "useRouterState hook | TanStack Router React Docs",
+  "summary": "A reactive hook for reading TanStack Router's internal state in a component. An optional selector can reduce the returned value to the specific state needed.",
+  "explanation": "useRouterState subscribes a component to the router's internal state. Without options it returns the complete RouterState; with select, it derives a value from that state, and structuralSharing can control sharing for the selected result.",
+  "syntax": "useRouterState(options?)",
+  "parameters": [
+   {
+    "name": "opts",
+    "type": "UseRouterStateOptions<TSelected>",
+    "description": "Optional selector and structural-sharing configuration. select receives RouterState and returns the selected value; structuralSharing controls sharing for that value."
+   },
+   {
+    "name": "opts.select",
+    "type": "(state: RouterState) => TSelected",
+    "description": "Transforms RouterState into the value returned by the hook."
+   },
+   {
+    "name": "opts.structuralSharing",
+    "type": "boolean",
+    "description": "Controls whether structural sharing is enabled for the selected result."
+   }
+  ],
+  "returns": "The current RouterState, or TSelected when a select function is provided.",
+  "example": {
+   "title": "Read a selected router value",
+   "code": "import { useRouterState } from '@tanstack/react-router'\n\nexport function RouterStatus() {\n  const status = useRouterState({\n    select: (state) => state.status,\n  })\n\n  return <output>{status}</output>\n}",
+   "language": "tsx",
+   "explanation": "This component subscribes to the router and renders only the selected navigation status."
+  },
+  "useCases": [
+   {
+    "title": "Track router status",
+    "scenario": "A component needs to react to router-wide state changes such as navigation status."
+   },
+   {
+    "title": "Select a focused value",
+    "scenario": "A component needs one derived value rather than the complete RouterState object."
+   },
+   {
+    "title": "Subscribe to router changes",
+    "scenario": "A component needs reactive router state instead of a direct, non-reactive router.state read."
+   }
+  ],
+  "related": [
+   "useLocation",
+   "useMatches",
+   "useRouter",
+   "RouterState"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useRouterState return?",
+    "answer": "It is a hook that exposes the router's current internal state to a component. It returns RouterState by default, or the value produced by select when a selector is supplied.",
+    "followUp": "How would you avoid subscribing to more state than necessary? Pass select and return only the field or derived value the component needs."
+   },
+   {
+    "question": "What options does the hook accept?",
+    "answer": "The options object is optional. Its select callback receives RouterState and determines the returned value; structuralSharing configures whether structural sharing is enabled for that selected value.",
+    "followUp": "What should a component use for current location data instead? Prefer useLocation, which is designed specifically for that access pattern."
+   },
+   {
+    "question": "Why use this hook instead of router.state?",
+    "answer": "router.state is current but non-reactive when accessed directly in a component, so a component will not re-render when it changes. useRouterState provides the reactive version.",
+    "followUp": "When only route matches are needed, which specialized hook is preferable? Use useMatches rather than accessing the complete router state."
+   }
+  ],
+  "keyPoints": [
+   "It provides a component with the router's current internal state.",
+   "Use it when a component needs router state reactively.",
+   "Call it with no argument for the whole state or pass options to select a result.",
+   "The selector receives RouterState and its result becomes the hook's return value.",
+   "Use structuralSharing to configure sharing behavior for selected results.",
+   "The return type is RouterState without select, otherwise it is the selector's TSelected type."
+  ],
+  "gotchas": [
+   "Prefer useLocation or useMatches for location or match data; they are intended to be more ergonomic and performant than reading the full router state.",
+   "Do not read router.state directly in a component when it must re-render after router-state changes; use this hook for a reactive value."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "useSearch": {
+  "sourceUrl": "https://tanstack.com/router/latest/docs/api/router/useSearchHook",
+  "sourceTitle": "useSearch hook | TanStack Router React Docs",
+  "summary": "useSearch returns the current location's search parameters in a TanStack Router React component. Use from for route-specific typing, select for a derived value, and strict: false for a looser shared-schema view.",
+  "explanation": "useSearch is a TanStack Router React hook that subscribes to the current location's search parameters. Provide a route identifier with from for precise types, optionally project the search object with select, or set strict to false for a looser shared-schema result.",
+  "syntax": "useSearch({ from, shouldThrow, select, strict })",
+  "parameters": [
+   {
+    "name": "from",
+    "type": "string",
+    "description": "Route ID used to match the search-query parameters; required in strict mode."
+   },
+   {
+    "name": "shouldThrow",
+    "type": "boolean",
+    "description": "Whether to throw when no matching rendered route is found; defaults to true."
+   },
+   {
+    "name": "select",
+    "type": "(search: SelectedSearchSchema) => TSelected",
+    "description": "Transforms the search object and returns the selected value."
+   },
+   {
+    "name": "strict",
+    "type": "boolean",
+    "description": "When false, ignores from and loosens the type to Partial<FullSearchSchema>; defaults to true."
+   }
+  ],
+  "returns": "With from, the current location's search-parameter object, or the value returned by select. With strict: false, a Partial<FullSearchSchema> or the selected value; with shouldThrow: false and no match, undefined.",
+  "example": {
+   "title": "Read route search parameters",
+   "code": "import { useSearch } from '@tanstack/react-router'\n\nfunction Component() {\n  const search = useSearch({ from: '/posts/$postId' })\n  return <pre>{JSON.stringify(search, null, 2)}</pre>\n}",
+   "language": "tsx",
+   "explanation": "Reads the current route's typed search parameters and renders them."
+  },
+  "useCases": [
+   {
+    "title": "Read route filters",
+    "scenario": "A route component needs validated query values such as filters, pagination, or sorting."
+   },
+   {
+    "title": "Select one parameter",
+    "scenario": "A component needs only one derived search value instead of the full parameter object."
+   },
+   {
+    "title": "Read shared search state",
+    "scenario": "Shared UI reads search parameters without naming a specific route origin."
+   }
+  ],
+  "related": [
+   "useRouterState",
+   "Route.useSearch",
+   "useParams",
+   "useLoaderData"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useSearch return, and why use from?",
+    "answer": "useSearch returns the current location's search query parameters as an object. Passing from identifies the route whose search schema should be used, providing stronger type safety.",
+    "followUp": "How can a component subscribe to only one search value? Use select to return that value, so the hook result is the selected type and the component can avoid responding to unrelated search changes."
+   },
+   {
+    "question": "How does select change the hook result?",
+    "answer": "The select callback receives the search object and its return value becomes the hook result. For example, selecting search.postView produces a string rather than the complete search schema.",
+    "followUp": "What trade-off does strict: false make? It omits the from requirement and exposes a Partial<FullSearchSchema>, so properties may be undefined."
+   },
+   {
+    "question": "Which options control matching and failure behavior?",
+    "answer": "The hook accepts an options object. from is required in strict mode, shouldThrow defaults to true, select is optional, and strict defaults to true.",
+    "followUp": "What happens when a route match cannot be found? With the default shouldThrow behavior an invariant exception is thrown; setting it to false returns undefined instead."
+   }
+  ],
+  "keyPoints": [
+   "The hook reads search parameters from the current location.",
+   "Configuration is supplied through an options object.",
+   "from identifies the route whose search parameters should be matched.",
+   "select transforms the complete search object into the value exposed by the hook.",
+   "strict: false changes the result to a partial shared search schema."
+  ],
+  "gotchas": [
+   "With shouldThrow set to false, a missing rendered route match does not throw; the hook returns undefined instead.",
+   "Setting strict to false disables the from constraint and loosens the inferred search type."
+  ],
+  "checkedAt": "2026-10-16"
  },
  "useStore": {
   "sourceUrl": "https://tanstack.com/store/latest/docs/framework/react/reference/functions/useStore-1",
@@ -3332,5 +6458,154 @@
    "The scroll container must be supplied through getScrollElement; useWindowVirtualizer instead when the browser window is the scrolling surface."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "VisibilityState": {
+  "sourceUrl": "https://tanstack.com/table/v8/docs/api/features/column-visibility",
+  "sourceTitle": "Column Visibility APIs | TanStack Table Docs",
+  "summary": "VisibilityState is TanStack Table’s map of column IDs to visibility flags. Use it to represent which columns are shown or hidden and to control column-visibility state.",
+  "explanation": "VisibilityState models TanStack Table's column-visibility state as a map from column identifiers to booleans. A true value marks a column visible, while false hides it; identifiers omitted from the map are treated as visible by the feature.",
+  "syntax": "export type VisibilityState = Record<string, boolean>",
+  "parameters": [],
+  "returns": "A type alias for Record<string, boolean>; it describes the table's column-visibility map.",
+  "example": {
+   "title": "Define column visibility",
+   "code": "import type { VisibilityState } from '@tanstack/react-table'\n\nconst visibility: VisibilityState = {\n  id: true,\n  email: false,\n}\n\nconst visibleColumns = Object.entries(visibility)\n  .filter(([, isVisible]) => isVisible)\n  .map(([columnId]) => columnId)\n\nconsole.log(visibleColumns)",
+   "language": "typescript",
+   "explanation": "Creates a visibility map in which each column identifier is associated with whether that column should be shown."
+  },
+  "useCases": [
+   {
+    "title": "Save and restore selected columns",
+    "scenario": "Persisting user preferences"
+   },
+   {
+    "title": "Drive visibility checkboxes",
+    "scenario": "Building column controls"
+   },
+   {
+    "title": "Synchronize visibility with application state",
+    "scenario": "Controlled table state"
+   }
+  ],
+  "related": [
+   "VisibilityTableState",
+   "columnVisibility",
+   "onColumnVisibilityChange",
+   "setColumnVisibility",
+   "toggleVisibility",
+   "toggleAllColumnsVisible",
+   "getIsVisible"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the shape and meaning of VisibilityState?",
+    "answer": "VisibilityState is a Record<string, boolean>. The string key identifies a column, and its boolean value represents that column's visibility.",
+    "followUp": "What happens when a column is absent from the record? It remains visible because missing column IDs are treated as visible."
+   },
+   {
+    "question": "How do you use VisibilityState as controlled table state?",
+    "answer": "Pass the state through the table's columnVisibility state property. To control updates externally, provide onColumnVisibilityChange, which receives an updater for VisibilityState.",
+    "followUp": "Why must external state be persisted when using the change callback? The callback replaces the table's built-in state management."
+   },
+   {
+    "question": "How can column visibility be changed?",
+    "answer": "setColumnVisibility accepts an Updater<VisibilityState>, so it can receive either a new visibility value or an updater function. The table also exposes toggling APIs for individual and all columns.",
+    "followUp": "Which API is useful for a checkbox? getToggleVisibilityHandler returns a handler intended to bind to a checkbox input."
+   }
+  ],
+  "keyPoints": [
+   "The alias is a string-keyed boolean record: keys identify columns and values indicate whether each column is visible.",
+   "The table keeps this map as the columnVisibility member of its table state.",
+   "The change callback is typed specifically to receive VisibilityState updates.",
+   "The setter accepts either a visibility value or an updater function through the Updater type.",
+   "The table can set or toggle visibility for every column at once."
+  ],
+  "gotchas": [
+   "Omitting a column identifier does not hide it; absent entries are interpreted as visible.",
+   "Supplying onColumnVisibilityChange transfers responsibility for persisting column-visibility updates outside the table."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "windowScroll": {
+  "sourceUrl": "https://tanstack.com/virtual/latest/docs/api/virtualizer.md",
+  "sourceTitle": "Virtualizer API",
+  "summary": "windowScroll is TanStack Virtual’s built-in implementation for scrolling a virtualizer through the browser window. Framework adapters such as useWindowVirtualizer configure it automatically.",
+  "explanation": "The documentation identifies windowScroll as a built-in scrolling implementation for a virtualizer. Framework adapters such as useWindowVirtualizer configure it automatically, so applications normally select the window adapter instead of invoking this helper directly.",
+  "syntax": "windowScroll(offset, options, instance)",
+  "parameters": [
+   {
+    "name": "offset",
+    "type": "number",
+    "description": "Pixel offset to scroll toward."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Information about measurement adjustments and requested scrolling behavior."
+   },
+   {
+    "name": "instance",
+    "type": "Virtualizer",
+    "description": "The virtualizer instance performing the scroll."
+   }
+  ],
+  "returns": "A scrolling function used by a virtualizer to scroll the window toward a pixel offset.",
+  "example": {
+   "title": "Window-scrolling virtual list",
+   "code": "import { useWindowVirtualizer } from '@tanstack/react-virtual'\n\nexport function List({ items }: { items: string[] }) {\n  const virtualizer = useWindowVirtualizer({\n    count: items.length,\n    estimateSize: () => 36,\n    overscan: 5,\n  })\n\n  return (\n    <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>\n      {virtualizer.getVirtualItems().map((item) => (\n        <div\n          key={item.key}\n          style={{\n            position: 'absolute',\n            top: 0,\n            left: 0,\n            width: '100%',\n            transform: `translateY(${item.start}px)`,\n          }}\n        >\n          {items[item.index]}\n        </div>\n      ))}\n    </div>\n  )\n}",
+   "language": "tsx",
+   "explanation": "This example uses the window adapter, which configures the virtualizer to scroll with the browser window rather than a dedicated element."
+  },
+  "useCases": [
+   {
+    "title": "Window-based virtual lists",
+    "scenario": "A page renders a long list whose scroll container is the browser window."
+   },
+   {
+    "title": "Document-scrolling tables",
+    "scenario": "A virtualized table occupies the page without its own overflow element."
+   },
+   {
+    "title": "Adapter-configured scrolling",
+    "scenario": "An adapter must provide standard window scrolling without custom movement logic."
+   }
+  ],
+  "related": [
+   "elementScroll",
+   "useVirtualizer",
+   "useWindowVirtualizer",
+   "scrollToFn",
+   "getScrollElement"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is windowScroll?",
+    "answer": "windowScroll is a built-in scroll implementation for TanStack Virtual. It supplies window-based scrolling behavior to a virtualizer, while framework adapters can configure it automatically.",
+    "followUp": "How is it normally selected in a React application? Use useWindowVirtualizer for a window-scrolling list; useVirtualizer is intended for a specific scroll element."
+   },
+   {
+    "question": "How does windowScroll differ from elementScroll?",
+    "answer": "The built-in implementations are elementScroll and windowScroll. The former targets an element scroll container, while the latter targets the browser window.",
+    "followUp": "What determines the correct choice? Identify which object owns the scrolling: the window or a dedicated element."
+   },
+   {
+    "question": "What arguments does a custom scroll implementation receive?",
+    "answer": "The virtualizer's scroll implementation receives the target offset, adjustment information, smooth-scrolling behavior, and the virtualizer instance. That lets it perform scrolling while accounting for measurement corrections and requested behavior.",
+    "followUp": "Why pass adjustments? Estimated and actual item sizes can differ, so the implementation may need to compensate for that difference."
+   }
+  ],
+  "keyPoints": [
+   "TanStack Virtual exports windowScroll as one of its standard scrolling implementations.",
+   "React adapters can configure the scrolling implementation for you, so direct use of windowScroll is often unnecessary.",
+   "Scrolling is requested using a pixel offset rather than an item index.",
+   "The invocation communicates whether smooth scrolling was requested."
+  ],
+  "gotchas": [
+   "Use the window-specific adapter when the browser window is the scroll container; useWindowVirtualizer configures the built-in implementation automatically.",
+   "A scroll-element accessor can temporarily produce null, so code should tolerate the scroll target not being available during initial rendering."
+  ],
+  "checkedAt": "2026-10-16"
  }
 }

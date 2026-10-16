@@ -1,0 +1,1134 @@
+{
+ "Modules::CommonJS and package exports": {
+  "sourceUrl": "https://nodejs.org/api/packages.html",
+  "sourceTitle": "Modules: Packages | Node.js v26.11.1 Documentation",
+  "summary": "Use package.json exports to define explicit package entry points for both require and import. Conditional mappings can select different files, while undeclared package paths remain inaccessible.",
+  "explanation": "Define package entry points with package.json exports so CommonJS require and ES module import can resolve different implementations. The field can expose the package root and selected subpaths, while hiding every other package path from consumers. If both exports and main exist, exports controls resolution.",
+  "syntax": "{\n  \"exports\": {\n    \".\": {\n      \"import\": \"./dist/index.js\",\n      \"require\": \"./dist/index.cjs\"\n    }\n  }\n}",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Conditional package exports",
+   "code": "// package.json\n{\n  \"name\": \"acme-tools\",\n  \"exports\": {\n    \".\": {\n      \"import\": \"./dist/index.js\",\n      \"require\": \"./dist/index.cjs\"\n    },\n    \"./format\": \"./dist/format.js\"\n  }\n}\n\n// CommonJS consumer\nconst tools = require('acme-tools');\n\n// ES module consumer\nimport tools from 'acme-tools';",
+   "language": "javascript",
+   "explanation": "The package exposes separate files for require and import, plus one public subpath."
+  },
+  "useCases": [
+   {
+    "title": "Dual-module distribution",
+    "scenario": "A library ships separate ESM and CommonJS builds and needs each consumer style to receive the compatible file."
+   },
+   {
+    "title": "Public API encapsulation",
+    "scenario": "A package wants to expose stable root and subpath APIs while hiding internal implementation files."
+   },
+   {
+    "title": "Multiple package entry points",
+    "scenario": "A library needs several supported entry points instead of one legacy main file."
+   }
+  ],
+  "related": [
+   "main",
+   "package.json",
+   "conditional exports",
+   "subpath exports",
+   "ES modules",
+   "CommonJS modules",
+   "node_modules lookup",
+   "self-reference"
+  ],
+  "since": "12+",
+  "interview": [
+   {
+    "question": "How does exports bridge require and import?",
+    "answer": "The exports field defines package entry points for both ES module and CommonJS consumers. Conditional branches can select different targets when the package is loaded through import or require.",
+    "followUp": "What happens when main and exports are both present? exports takes precedence, so main does not control package resolution."
+   },
+   {
+    "question": "Why use exports instead of only main?",
+    "answer": "exports is a modern alternative to main that can define multiple entry points and conditional resolution. It also encapsulates the package by allowing only declared entry points.",
+    "followUp": "How can a package expose a subpath? Add a key such as ./format mapped to a relative target, then consumers import the declared subpath."
+   },
+   {
+    "question": "How are package-name entry points resolved?",
+    "answer": "A package can be self-referenced by its own package name or loaded by name through node_modules. The declared mappings determine which files those package-name imports can reach.",
+    "followUp": "What is the consequence of omitting a previously used subpath? Consumers using that undeclared path can no longer import it once exports is defined."
+   }
+  ],
+  "keyPoints": [
+   "Package entry points are declared in package.json through main or exports.",
+   "The entry-point fields are relevant to both module systems rather than being limited to ESM.",
+   "exports supports several public entry points, whereas main represents the traditional package entry.",
+   "Conditional exports let resolution vary by environment, including whether the consumer uses import or require.",
+   "exports forms a public boundary: consumers can access only the package paths explicitly declared there.",
+   "Named package imports resolve through the package's declared exports."
+  ],
+  "gotchas": [
+   "Adding exports can break consumers that import undocumented files or subpaths, because those paths become inaccessible.",
+   "Export targets must use relative paths beginning with ./; bare package names or arbitrary absolute paths are invalid."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Modules::ES modules and imports": {
+  "sourceUrl": "https://nodejs.org/download/release/v20.2.0/docs/api/esm.html",
+  "sourceTitle": "Modules: ECMAScript modules | Node.js v20.2.0 Documentation",
+  "summary": "Node supports CommonJS and ECMAScript modules. Enable ES modules with .mjs, package.json \"type\": \"module\", or --input-type; use static import in ES modules and dynamic import() when interoperability or asynchronous loading is needed.",
+  "explanation": "Node supports ES modules alongside CommonJS. A file becomes an ES module through the .mjs extension, a package.json \"type\": \"module\" setting, or the --input-type=module flag; static import is available there, while dynamic import() also works from CommonJS. Node resolves ES-module specifiers as URLs, so relative imports should include their file extensions.",
+  "syntax": "import defaultExport from 'module-name';\nimport * as name from 'module-name';\nimport { export1, export2 as alias } from 'module-name';\nconst module = await import('module-name');",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Import a built-in module from an ES module",
+   "code": "// package.json: { \"type\": \"module\" }\nimport { readFile } from 'node:fs/promises';\n\nconst text = await readFile(new URL('./message.txt', import.meta.url), 'utf8');\nconsole.log(text);",
+   "language": "javascript",
+   "explanation": "With package.json configured as an ES-module package, this file can use a static import and top-level await."
+  },
+  "useCases": [
+   {
+    "title": "Build an ES-module package",
+    "scenario": "A package uses package.json with \"type\": \"module\" and organizes code with static import/export declarations."
+   },
+   {
+    "title": "Bridge module systems",
+    "scenario": "CommonJS code needs to load an ES module without converting the entire package."
+   },
+   {
+    "title": "Load modules dynamically",
+    "scenario": "Code loads a module only when a feature is requested or when a runtime condition is met."
+   }
+  ],
+  "related": [
+   "CommonJS modules",
+   "ECMAScript modules",
+   "import() expressions",
+   "import statements",
+   "ESM_RESOLVE",
+   "package.json \"type\" field",
+   "--input-type"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Node decide whether a file is an ES module?",
+    "answer": "Node has two module systems: CommonJS and ECMAScript modules. A file can use the ES-module loader through .mjs, package.json with \"type\": \"module\", or --input-type=module.",
+    "followUp": "How can CommonJS load an ES module? Use the asynchronous dynamic import() expression; static import declarations are restricted to ES modules."
+   },
+   {
+    "question": "What is the difference between import and import() in Node?",
+    "answer": "Static import declarations work only inside ES modules, but dynamic import() is supported by both systems. That makes dynamic import the interoperability option for CommonJS code that needs to load an ES module.",
+    "followUp": "Can an ES module use import() too? Yes; dynamic import is supported in both ES modules and CommonJS."
+   },
+   {
+    "question": "How does Node resolve ES-module specifiers?",
+    "answer": "Node resolves an ES-module specifier relative to a parent URL using its ESM_RESOLVE algorithm. The resulting modules are resolved and cached as URLs, which makes the URL form part of module identity.",
+    "followUp": "What should be checked when two apparently identical imports behave as separate modules? Compare their resolved URLs, including encoded characters, query strings, and fragments."
+   }
+  ],
+  "keyPoints": [
+   "Node offers CommonJS and ECMAScript modules; choose the system consistently at package or file boundaries.",
+   "Activate ES-module interpretation with .mjs, a package.json type setting, or the input-type command-line option.",
+   "Use import() for asynchronous module loading in either module system.",
+   "Dynamic import provides a bridge from CommonJS code to ES modules.",
+   "A static import declaration can target either an ES module or a CommonJS module.",
+   "Node uses ESM_RESOLVE to turn an ES-module specifier into a resolved module location."
+  ],
+  "gotchas": [
+   "A .js file is treated as CommonJS unless its package scope sets \"type\": \"module\" or another ES-module activation rule applies.",
+   "Do not use static import syntax in a CommonJS file; use dynamic import() when loading an ES module from CommonJS.",
+   "Resolution is URL-based, so URL details such as encoding and query or fragment differences can affect module identity."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Modules::npm and dependency management": {
+  "sourceUrl": "https://nodejs.org/learn/getting-started/an-introduction-to-the-npm-package-manager",
+  "sourceTitle": "An introduction to the npm package manager",
+  "summary": "npm manages Node.js project dependencies, installs them into node_modules, updates versions within declared constraints, and runs package.json scripts. Lockfiles and npm ci help keep dependency installation reproducible.",
+  "explanation": "npm records project dependencies in package.json, installs them into node_modules, and provides commands for updating packages and running named scripts. A lockfile can make direct and transitive dependency versions reproducible; npm ci enforces consistency between the lockfile and package.json.",
+  "syntax": "npm install [<package-name>[@<version>]]\nnpm update [<package-name>]\nnpm run <task-name>",
+  "parameters": [
+   {
+    "name": "<package-name>",
+    "type": "string",
+    "description": "The package name to install or update."
+   },
+   {
+    "name": "<version>",
+    "type": "string",
+    "description": "The requested package version."
+   },
+   {
+    "name": "<task-name>",
+    "type": "string",
+    "description": "The name of a package script to execute."
+   }
+  ],
+  "returns": "Installs or updates packages, or executes a declared package script; command output and exit status are produced by npm.",
+  "example": {
+   "title": "Define a package script",
+   "code": "{\"scripts\":{\"start\":\"node server.js\"}}",
+   "language": "json",
+   "explanation": "Add a script to package.json, then run it with npm run start."
+  },
+  "useCases": [
+   {
+    "title": "Install project dependencies",
+    "scenario": "Set up a checked-out Node.js project locally."
+   },
+   {
+    "title": "Update constrained dependencies",
+    "scenario": "Refresh packages without violating package.json version ranges."
+   },
+   {
+    "title": "Run package scripts",
+    "scenario": "Expose repeatable development, build, or start commands."
+   }
+  ],
+  "related": [
+   "package.json",
+   "node_modules",
+   "dependencies",
+   "scripts",
+   "npm install",
+   "npm update",
+   "npm run",
+   "npm ci"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does npm install do in a project?",
+    "answer": "npm install reads the project's package.json and installs its dependencies into node_modules. Installing a named package also adds it to package.json dependencies in modern npm.",
+    "followUp": "How would you make CI installs deterministic? Use npm ci and commit the lockfile, because npm ci enforces consistency between the lockfile and package.json."
+   },
+   {
+    "question": "How does npm update differ from npm install?",
+    "answer": "npm update checks installed packages for newer versions permitted by the version ranges in package.json. It can also target one package by name.",
+    "followUp": "Does npm update necessarily install the newest release? No; it stays within the declared versioning constraints."
+   },
+   {
+    "question": "How are npm package scripts declared and executed?",
+    "answer": "Package scripts are named commands declared under package.json's scripts property. Run one with npm run followed by its task name, such as npm run start.",
+    "followUp": "Why can a script invoke a locally installed tool? npm places node_modules/.bin on PATH while running lifecycle scripts."
+   }
+  ],
+  "keyPoints": [
+   "npm is Node.js's standard package manager and handles project dependency installation and updates.",
+   "Running npm install in a project installs the dependencies declared by package.json into node_modules.",
+   "Installing a named package records it in package.json dependencies.",
+   "npm update respects the version constraints declared for dependencies.",
+   "The scripts property in package.json defines reusable command-line tasks."
+  ],
+  "gotchas": [
+   "Use npm ci for clean, reproducible installs; it fails when package.json and the lockfile disagree.",
+   "An exact direct dependency version does not pin its transitive dependencies; use a lockfile for the complete dependency tree."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Networking::HTTP fetch": {
+  "sourceUrl": "https://nodejs.org/download/release/v24.15.0/docs/api/globals.html",
+  "sourceTitle": "Node.js v24.15.0 documentation",
+  "summary": "Use Node.js's global fetch for outbound HTTP requests, attach AbortSignal.timeout for a deadline, and check response.ok because HTTP error statuses do not reject the promise.",
+  "explanation": "Node.js provides a browser-compatible global fetch that returns a promise for a Response after response headers arrive. Pass AbortSignal.timeout through the request options to impose a deadline, then inspect response.ok because HTTP error statuses do not reject the fetch promise; consume the body with a Response method such as json().",
+  "syntax": "fetch(resource[, options])",
+  "parameters": [
+   {
+    "name": "resource",
+    "type": "string | URL | Request",
+    "description": "Resource URL or request target accepted by fetch."
+   },
+   {
+    "name": "options",
+    "type": "RequestInit",
+    "description": "Optional request configuration, including signal for cancellation."
+   }
+  ],
+  "returns": "Promise<Response>",
+  "example": {
+   "title": "Fetch with timeout and status check",
+   "code": "const response = await fetch('https://nodejs.org/api/documentation.json', {\n  signal: AbortSignal.timeout(5000),\n});\n\nif (!response.ok) {\n  throw new Error(`HTTP ${response.status}`);\n}\n\nconst data = await response.json();\nconsole.log(data);",
+   "language": "javascript",
+   "explanation": "This request aborts after five seconds, rejects non-2xx responses explicitly, and parses the successful body as JSON."
+  },
+  "useCases": [
+   {
+    "title": "Time-bounded API call",
+    "scenario": "Call a JSON API while preventing a request from hanging indefinitely."
+   },
+   {
+    "title": "Checked resource retrieval",
+    "scenario": "Retrieve a remote document and distinguish transport failures from HTTP error responses."
+   },
+   {
+    "title": "Cooperative cancellation",
+    "scenario": "Stop downstream work when a caller or operation cancels an in-flight request."
+   }
+  ],
+  "related": [
+   "AbortController",
+   "AbortSignal",
+   "AbortSignal.timeout()",
+   "Response",
+   "Response.ok",
+   "Response.status",
+   "Response.json()"
+  ],
+  "since": "v17.5.0",
+  "interview": [
+   {
+    "question": "When does fetch reject, and how are HTTP errors handled?",
+    "answer": "fetch returns a promise that fulfills with a Response once response headers arrive. It rejects for network failures, but an HTTP error such as 404 still fulfills the promise, so application code should inspect response.ok.",
+    "followUp": "How would you enforce a deadline? Pass signal: AbortSignal.timeout(milliseconds) in the fetch options and handle the resulting abort failure."
+   },
+   {
+    "question": "How do you add a timeout to a Node.js fetch?",
+    "answer": "Use AbortSignal.timeout(delay) as the request's signal. Node.js returns a signal that is automatically aborted after the specified number of milliseconds, allowing the in-flight operation to be cancelled.",
+    "followUp": "How could callers cancel before the deadline? Create an AbortController, pass its signal, and call abort() when the operation should stop."
+   },
+   {
+    "question": "How should a fetched JSON response be processed?",
+    "answer": "The response body is read through Response methods such as response.json(). A typical successful flow checks response.ok first and only then consumes the body.",
+    "followUp": "Why check before parsing? It prevents treating an error response body as the expected successful payload and lets the caller report the HTTP status explicitly."
+   }
+  ],
+  "keyPoints": [
+   "Node.js exposes fetch as a browser-compatible global API, so no package import is required.",
+   "AbortSignal.timeout(delay) creates a deadline signal that aborts automatically after delay milliseconds.",
+   "An AbortController can provide a manually controlled signal for cancellation."
+  ],
+  "gotchas": [
+   "AbortSignal.timeout uses milliseconds, so confirm the unit when configuring deadlines."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Networking::HTTP servers": {
+  "sourceUrl": "https://nodejs.org/api/http.html",
+  "sourceTitle": "HTTP | Node.js v26.12.0 Documentation",
+  "summary": "Node's low-level HTTP API creates servers whose request and response bodies can be streamed. Explicitly manage status codes, headers, body writes, and response completion.",
+  "explanation": "Node's HTTP server is deliberately low-level: the request and response are streams, while the API handles message parsing and stream handling. Create a server with a request listener, inspect request data, set response headers and status, write body chunks when needed, and finish with end().",
+  "syntax": "http.createServer([requestListener]); server.listen(...);",
+  "parameters": [
+   {
+    "name": "requestListener",
+    "type": "function",
+    "description": "Optional callback invoked for each incoming request; it receives the request and response objects."
+   },
+   {
+    "name": "options",
+    "type": "number | object",
+    "description": "Port or other server-listen options used to accept connections."
+   }
+  ],
+  "returns": "http.createServer() returns a new http.Server; server.listen() starts the server listening for connections.",
+  "example": {
+   "title": "Minimal streaming HTTP response",
+   "code": "import { createServer } from 'node:http';\n\nconst server = createServer((req, res) => {\n  res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });\n  res.write('Hello, ');\n  res.end('world!\\n');\n});\n\nserver.listen(8000);",
+   "language": "javascript",
+   "explanation": "Starts a server on port 8000, sets a response status and header, then sends the body in two writes."
+  },
+  "useCases": [
+   {
+    "title": "Basic HTTP endpoint",
+    "scenario": "Serve a small JSON or text endpoint with explicit status and content-type headers."
+   },
+   {
+    "title": "Streaming response",
+    "scenario": "Send large or incrementally produced output without buffering the complete response."
+   },
+   {
+    "title": "Streaming request handling",
+    "scenario": "Consume incoming request data as chunks for application-defined processing."
+   }
+  ],
+  "related": [
+   "http.createServer()",
+   "http.Server",
+   "http.IncomingMessage",
+   "http.ServerResponse",
+   "server.listen()",
+   "response.writeHead()",
+   "response.write()",
+   "response.end()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you create and complete a basic HTTP response?",
+    "answer": "Use createServer() with a request listener receiving IncomingMessage and ServerResponse objects. Set the status and headers before writing the response, then call end() to complete it.",
+    "followUp": "How can a large response avoid buffering? Write it incrementally with response.write() and finish with response.end(), or pipe a readable stream into the response."
+   },
+   {
+    "question": "Why is streaming important in Node's HTTP API?",
+    "answer": "The request and response interfaces support streaming, so the entire body need not be held in memory. Read incoming chunks and send outgoing chunks as they become available.",
+    "followUp": "What is the practical consequence for body parsing? Application code must define its own parsing and backpressure strategy rather than expecting the HTTP module to parse arbitrary bodies."
+   },
+   {
+    "question": "How are status codes and headers handled?",
+    "answer": "Use writeHead() to send a status code and headers together, then write body data and call end(). The response must be completed with end(), optionally carrying the final body chunk.",
+    "followUp": "When should headers be set? Before the first body write, because beginning the response commits the headers."
+   }
+  ],
+  "keyPoints": [
+   "Import the module as node:http in modern CommonJS or ES module code.",
+   "Use writeHead() to specify the response status and headers before sending body data.",
+   "HTTP bodies can be processed incrementally rather than buffered in full.",
+   "The HTTP API exposes low-level primitives, leaving application-specific behavior to the developer."
+  ],
+  "gotchas": [
+   "Do not assume request or response bodies are buffered; consume or produce them as streams.",
+   "The API is low-level, so application code must explicitly implement higher-level protocol behavior."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Operations::Process errors and signals": {
+  "sourceUrl": "https://nodejs.org/api/process.html",
+  "sourceTitle": "Process",
+  "summary": "Handle uncaught failures and operating-system signals deliberately: log the problem, perform graceful shutdown where possible, and communicate failure through the exit status. Avoid hiding operational errors or using forced termination when pending work must complete.",
+  "explanation": "Node reports uncaught exceptions through the uncaughtException event and can receive operating-system signals as process events. Signal handlers can perform controlled shutdown work, while exitCode communicates failure without forcibly cutting off pending output; the process otherwise exits when its event loop has no remaining asynchronous work.",
+  "syntax": "process.on(eventName, listener)\nprocess.exit([code])\nprocess.exitCode = code",
+  "parameters": [
+   {
+    "name": "code",
+    "type": "number",
+    "description": "Optional numeric status used by process.exit(); omitted values use success or process.exitCode."
+   }
+  ],
+  "returns": "process.exit() does not return; it synchronously terminates the process. Signal and error event listeners return normally.",
+  "example": {
+   "title": "Handle shutdown and uncaught errors",
+   "code": "import process from 'node:process';\n\nprocess.on('SIGTERM', () => {\n  console.error('shutdown requested');\n  process.exitCode = 0;\n});\n\nprocess.on('uncaughtException', (error) => {\n  console.error(error);\n  process.exitCode = 1;\n});\n\nconsole.log('running; press Ctrl-C or send SIGTERM');",
+   "language": "typescript",
+   "explanation": "Run this file with Node and send SIGTERM to observe signal handling; an uncaught exception is logged and causes a nonzero exit status."
+  },
+  "useCases": [
+   {
+    "title": "Graceful service shutdown",
+    "scenario": "A service receives SIGTERM during deployment and must close resources before stopping."
+   },
+   {
+    "title": "Failing transparently on unexpected errors",
+    "scenario": "An uncaught exception reaches the event loop and operators need a visible failure."
+   },
+   {
+    "title": "Reporting a deferred exit status",
+    "scenario": "A command-line program must return a meaningful status after asynchronous output completes."
+   }
+  ],
+  "related": [
+   "process",
+   "process.exit()",
+   "process.exitCode",
+   "process.on()",
+   "'uncaughtException'",
+   "'unhandledRejection'",
+   "'exit'",
+   "SIGTERM"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What happens for an uncaught exception?",
+    "answer": "The uncaughtException event is emitted when an exception reaches the event loop without a handler. Node’s default behavior prints the stack trace to stderr and exits with code 1.",
+    "followUp": "Why is recovery risky? Because the process may be left in an unsafe state; log the failure, set a failure exit code, and terminate through a controlled shutdown path."
+   },
+   {
+    "question": "How should SIGTERM be handled?",
+    "answer": "Signal events are emitted when the process receives a signal. A handler can begin graceful shutdown, close resources, and set process.exitCode rather than abruptly terminating.",
+    "followUp": "What cannot be handled normally? SIGKILL cannot be intercepted, so external termination may prevent graceful cleanup."
+   },
+   {
+    "question": "How do exit status and forced exit differ?",
+    "answer": "Node normally exits with status 0 when no asynchronous operations remain. process.exit(code) forces synchronous termination, while process.exitCode records the eventual status without forcing immediate termination.",
+    "followUp": "Why prefer exitCode for normal failure reporting? It allows pending event-loop work, such as output or cleanup, to complete before termination."
+   }
+  ],
+  "keyPoints": [
+   "With no remaining asynchronous work, Node exits normally and reports success with status 0.",
+   "Register uncaughtException only to record the failure and start shutdown; it is not a general-purpose recovery mechanism.",
+   "Use process signal listeners to react to operating-system requests such as SIGTERM or SIGINT.",
+   "An omitted explicit exit code uses process.exitCode when available; otherwise it defaults to success.",
+   "The exit event is suitable for final synchronous bookkeeping, not asynchronous cleanup.",
+   "Fatal signal termination is represented by an exit status formed from 128 plus the signal number."
+  ],
+  "gotchas": [
+   "The exit event is too late for asynchronous cleanup; perform cleanup when handling the signal instead.",
+   "Do not use uncaughtException as ordinary recovery; treat an uncaught exception as a failed process.",
+   "Avoid process.exit() when pending writes or cleanup must finish, because it terminates immediately."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Performance::File streams": {
+  "sourceUrl": "https://nodejs.org/learn/modules/how-to-use-streams",
+  "sourceTitle": "How To Use Streams",
+  "summary": "File streams process large files incrementally through readable and writable streams. Backpressure prevents a fast producer from overwhelming the destination.",
+  "explanation": "A file read stream supplies chunks from a file and a write stream consumes them incrementally. Connecting them with pipeline lets the destination regulate the source: when buffering or the write queue reaches its limit, writes signal backpressure and data flow pauses until the destination emits drain.",
+  "syntax": "fs.createReadStream(path[, options]); fs.createWriteStream(path[, options]); readable.pipe(writable);",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Copy a file with streams",
+   "code": "import { createReadStream, createWriteStream } from 'node:fs';\nimport { pipeline } from 'node:stream/promises';\n\nawait pipeline(\n  createReadStream('input.bin'),\n  createWriteStream('output.bin')\n);",
+   "language": "javascript",
+   "explanation": "Copies a file incrementally while pipeline coordinates stream completion, errors, and backpressure."
+  },
+  "useCases": [
+   {
+    "title": "Large-file processing",
+    "scenario": "Copy, transform, or consume files too large to load efficiently into memory."
+   },
+   {
+    "title": "Incremental file output",
+    "scenario": "Send file data to a sequential output destination such as another file."
+   },
+   {
+    "title": "Backpressure-aware pipelines",
+    "scenario": "Throttle producers when a destination's buffer or write queue cannot keep up."
+   }
+  ],
+  "related": [
+   "fs.createReadStream()",
+   "fs.createWriteStream()",
+   "fs.ReadStream",
+   "fs.WriteStream",
+   "Readable",
+   "Writable",
+   "pipe()",
+   "highWaterMark"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why use file streams for large files?",
+    "answer": "A readable stream produces file chunks, while a writable stream consumes them. Because the data is handled incrementally, the whole file does not need to reside in memory.",
+    "followUp": "How does a writable stream signal that the producer is too fast? Its write() method returns false when the buffer or queue is full; the producer waits for drain before continuing."
+   },
+   {
+    "question": "How does backpressure work in a file-stream pipeline?",
+    "answer": "pipe() connects a readable source to a writable destination and coordinates flow between them. The writable side can apply backpressure so the readable source does not overwhelm it.",
+    "followUp": "What should manual piping code do after write() returns false? Stop producing data and wait for the writable stream's drain event."
+   },
+   {
+    "question": "Which APIs create file streams?",
+    "answer": "Use fs.createReadStream() and fs.createWriteStream() to open file streams. Their factory methods are the documented user-facing APIs, unlike the internal open() methods.",
+    "followUp": "How can a copy operation also handle failures and cleanup? Use stream/promises pipeline(), which provides a promise-based pipeline suitable for awaiting completion and handling rejection."
+   }
+  ],
+  "keyPoints": [
+   "createReadStream() exposes a file as a Readable that emits data progressively.",
+   "createWriteStream() provides a Writable destination for sequential file output.",
+   "A false write result means the producer should honor backpressure rather than continue sending data.",
+   "The drain event indicates that a paused producer can resume writing.",
+   "Streams are suited to large-file operations because processing proceeds as data flows instead of requiring one complete in-memory value."
+  ],
+  "gotchas": [
+   "Use createReadStream() and createWriteStream(), rather than the undocumented internal open() methods.",
+   "Avoid readFile() for large files when memory usage matters; prefer a read stream.",
+   "Manual writable-stream producers must stop writing after false and resume only after drain."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Performance::Streams and backpressure": {
+  "sourceUrl": "https://nodejs.org/learn/modules/backpressuring-in-streams",
+  "sourceTitle": "Backpressuring in Streams | Node.js Learn",
+  "summary": "Process data in chunks with Node.js streams instead of buffering everything. Respect writable backpressure: stop after write() returns false and resume when drain fires.",
+  "explanation": "A readable produces chunks and a writable consumes them through an internal queue. When the writable cannot accept more data, write() returns false; piping then pauses the readable until the writable emits drain, preventing unbounded buffering. The highWaterMark controls the queue threshold, while pipeline() can additionally coordinate completion and errors.",
+  "syntax": "readable.pipe(writable);",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Pipe a readable to a writable",
+   "code": "import { Readable, Writable } from 'node:stream';\n\nconst source = Readable.from(['one\\n', 'two\\n', 'three\\n']);\nconst sink = new Writable({\n  write(chunk, _encoding, callback) {\n    process.stdout.write(chunk);\n    setTimeout(callback, 50);\n  }\n});\n\nsource.pipe(sink);",
+   "language": "javascript",
+   "explanation": "The readable emits chunks incrementally, while pipe() coordinates flow with the slower writable."
+  },
+  "useCases": [
+   {
+    "title": "Process large inputs incrementally",
+    "scenario": "Large files or HTTP bodies"
+   },
+   {
+    "title": "Prevent unbounded buffering",
+    "scenario": "Fast producers with slower consumers"
+   },
+   {
+    "title": "Coordinate production with demand",
+    "scenario": "Custom readable implementations"
+   }
+  ],
+  "related": [
+   "node:stream",
+   "Readable",
+   "Writable",
+   "Transform",
+   "stream.pipeline()",
+   "highWaterMark",
+   "write()",
+   "drain"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Node.js signal writable backpressure?",
+    "answer": "A writable's write() returns false when its buffer has reached highWaterMark or its queue is busy. The producer must stop writing until drain is emitted, allowing the consumer to catch up.",
+    "followUp": "What does pipe() add? It connects readable and writable flow and establishes the backpressure handling needed to pause and resume data transfer."
+   },
+   {
+    "question": "Why use pipe() for a stream connection?",
+    "answer": "pipe() sets up the flow between a source and consumer and installs the required backpressure behavior. This lets the destination's capacity regulate the readable's output instead of accumulating data indefinitely.",
+    "followUp": "How would you handle errors and cleanup across a multi-stage stream chain? Use stream.pipeline(), which abstracts backpressure-related error handling as well as the flow connection."
+   },
+   {
+    "question": "How should a custom readable respond to push()?",
+    "answer": "push() also communicates demand for custom readable implementations. If push() returns false, the readable should stop obtaining data from its source; a true result permits it to continue.",
+    "followUp": "Why is this separate from writable backpressure? Readable demand is controlled by push() from the producer side, while writable capacity is reported by write() on the consumer side."
+   }
+  ],
+  "keyPoints": [
+   "Streams handle data incrementally in chunks, which avoids loading an entire large file or response into memory.",
+   "A writable signals that producers must slow down when its queue exceeds highWaterMark or is already busy.",
+   "Backpressure pauses the source while the destination catches up.",
+   "The drain event indicates that buffered writable data has cleared and production may resume.",
+   "Treat backpressure as a required flow-control contract rather than an optional optimization.",
+   "pipe() automates the event coordination needed to propagate backpressure between connected streams."
+  ],
+  "gotchas": [
+   "After write() returns false, stop writing and wait for the writable's drain event.",
+   "A custom readable should not push data unless its implementation is being asked to produce it.",
+   "Stream behavior can vary across Node.js versions and libraries, so verify assumptions against the relevant API documentation."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Performance::Transform streams": {
+  "sourceUrl": "https://nodejs.org/api/stream.html",
+  "sourceTitle": "Stream | Node.js v26.11.1 Documentation",
+  "summary": "Transform streams are Duplex streams that turn writable input into related readable output. They let pipelines process data incrementally rather than collecting the complete input first.",
+  "explanation": "A Transform is a Duplex stream: it accepts chunks through its writable side and produces related chunks through its readable side. Implement the _transform method to process each chunk, call the callback when processing finishes, and optionally use _flush for final output after all input has been handled.",
+  "syntax": "new stream.Transform([options])",
+  "parameters": [
+   {
+    "name": "chunk",
+    "type": "Buffer|string|any",
+    "description": "Input data chunk supplied to _transform for processing."
+   },
+   {
+    "name": "encoding",
+    "type": "string",
+    "description": "Encoding for a string chunk; ignored when chunk is a Buffer."
+   },
+   {
+    "name": "callback",
+    "type": "Function",
+    "description": "Function called after processing, optionally with an error."
+   }
+  ],
+  "returns": "A stream.Transform instance; transformed output is emitted through the readable side.",
+  "example": {
+   "title": "Uppercase a stream",
+   "code": "import { Transform } from 'node:stream';\n\nconst upper = new Transform({\n  transform(chunk, encoding, callback) {\n    callback(null, chunk.toString().toUpperCase());\n  }\n});\n\nupper.on('data', chunk => process.stdout.write(chunk));\nupper.end('hello, transform streams!\\n');",
+   "language": "javascript",
+   "explanation": "This runnable example creates a Transform stream that converts each incoming chunk to uppercase and emits it immediately."
+  },
+  "useCases": [
+   {
+    "title": "Reduce or expand streamed data with zlib transforms.",
+    "scenario": "Compression or decompression"
+   },
+   {
+    "title": "Apply cryptographic processing while data flows through a pipeline.",
+    "scenario": "Encryption or decryption"
+   },
+   {
+    "title": "Modify each incoming chunk, such as normalizing text or changing its representation.",
+    "scenario": "Content conversion"
+   }
+  ],
+  "related": [
+   "stream.Duplex",
+   "stream.Readable",
+   "stream.Writable",
+   "transform._transform()",
+   "transform._flush()",
+   "stream.pipeline()",
+   "zlib streams",
+   "crypto streams"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What distinguishes a Transform stream from other Duplex streams?",
+    "answer": "A Transform is a Duplex whose output is computed from its input, so it exposes both writable and readable interfaces. Unlike a general Duplex implementation, it provides the transformation relationship between the two sides.",
+    "followUp": "Can output size differ from input size? Yes. A transform may emit a different amount of data, a different number of chunks, or output at different times."
+   },
+   {
+    "question": "How do you implement a custom Transform?",
+    "answer": "Implement _transform(chunk, encoding, callback) to process each input chunk. Emit transformed data with this.push() or pass it through the callback, then call the callback when processing is complete.",
+    "followUp": "What should happen on failure? Pass an error to the callback, which causes the stream to signal the failure instead of producing the normal transformed result."
+   },
+   {
+    "question": "When would you use _flush?",
+    "answer": "_flush is optional and runs after all writable input has been consumed. It can emit remaining buffered or final output before calling its callback.",
+    "followUp": "When does the readable side end? Only after _flush has been called and completed, if _flush is implemented."
+   }
+  ],
+  "keyPoints": [
+   "Use a Transform when data must be converted as it travels through a pipeline.",
+   "The same object receives input through its writable side and exposes processed output through its readable side.",
+   "Node's documented examples include compression, encryption, and decryption streams.",
+   "Create a custom transform by extending the built-in stream.Transform class or by supplying transform options.",
+   "Transform inherits Duplex behavior, including separate readable and writable buffering.",
+   "The class coordinates writing input and reading generated output internally, so custom code normally implements _transform instead."
+  ],
+  "gotchas": [
+   "A custom implementation must provide _transform; _flush is optional and is intended for final data that requires end-of-input processing.",
+   "Do not invoke the transform callback before the current chunk has finished processing."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Platform APIs::Buffers": {
+  "sourceUrl": "https://nodejs.org/api/buffer.html",
+  "sourceTitle": "Buffer | Node.js v26.11.1 Documentation",
+  "summary": "Node.js Buffers represent fixed-length byte sequences and extend Uint8Array with APIs for text encoding, binary reads and writes, allocation, and copying. Use them for files, sockets, streams, and binary protocols.",
+  "explanation": "A Buffer is a fixed-size byte sequence backed by the Uint8Array model, with Node.js methods for encoding, decoding, allocation, copying, comparison, and binary reads or writes. Use Buffer.from for data-derived buffers and Buffer.alloc when newly allocated memory must be initialized; an ArrayBuffer-based Buffer can instead share memory with its source.",
+  "syntax": "Buffer.from(value[, encoding])\nBuffer.alloc(size[, fill[, encoding]])\nBuffer.allocUnsafe(size)",
+  "parameters": [
+   {
+    "name": "size",
+    "type": "number",
+    "description": "Number of bytes to allocate; allocation methods require the requested size."
+   },
+   {
+    "name": "value",
+    "type": "Array | Buffer | string | ArrayBuffer",
+    "description": "Source array, buffer, string, or ArrayBuffer used to create the Buffer."
+   },
+   {
+    "name": "encoding",
+    "type": "string",
+    "description": "Character encoding used when converting between strings and bytes; defaults to utf8 where applicable."
+   },
+   {
+    "name": "byteOffset",
+    "type": "number",
+    "description": "Optional byte offset into an ArrayBuffer source."
+   },
+   {
+    "name": "length",
+    "type": "number",
+    "description": "Optional number of bytes to expose from an ArrayBuffer source."
+   }
+  ],
+  "returns": "Buffer creation methods return a Buffer containing copied, encoded, initialized, or shared byte data, depending on the selected overload.",
+  "example": {
+   "title": "Encode text and write binary data",
+   "code": "const { Buffer } = require('node:buffer');\n\nconst encoded = Buffer.from('Node.js', 'utf8');\nconsole.log(encoded.toString('hex'));\nconsole.log(encoded.toString('utf8'));\n\nconst safe = Buffer.alloc(4);\nsafe.writeUInt32BE(0x12345678);\nconsole.log(safe.toString('hex'));",
+   "language": "javascript",
+   "explanation": "Creates a buffer from UTF-8 text, converts its bytes to hexadecimal, decodes it again, and writes a 32-bit big-endian integer into an initialized buffer."
+  },
+  "useCases": [
+   {
+    "title": "File I/O",
+    "scenario": "Read, transform, or write file contents without converting binary data into text."
+   },
+   {
+    "title": "Streams and sockets",
+    "scenario": "Process chunks emitted by readable streams or exchanged over network sockets."
+   },
+   {
+    "title": "Binary protocols",
+    "scenario": "Encode fields, parse byte offsets, and serialize messages for a binary wire format."
+   },
+   {
+    "title": "Text encoding",
+    "scenario": "Convert text to bytes or decode received bytes using a specified character encoding."
+   }
+  ],
+  "related": [
+   "Buffer.from()",
+   "Buffer.alloc()",
+   "Buffer.allocUnsafe()",
+   "buf.toString()",
+   "buf.writeUInt32BE()",
+   "Buffer.isBuffer()",
+   "Buffer.byteLength()",
+   "buffer.constants"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Buffer?",
+    "answer": "Buffer represents a fixed-length sequence of bytes and extends Uint8Array with Node-specific operations. It is widely accepted by Node APIs that work with binary data.",
+    "followUp": "How does it relate to Uint8Array? Buffer is a Uint8Array subclass, so it has typed-array behavior while adding methods for encoding, decoding, and binary manipulation."
+   },
+   {
+    "question": "How do you convert between strings and buffers?",
+    "answer": "Buffer.from(string[, encoding]) creates bytes from text, using utf8 by default unless another supported encoding is supplied. Calling buf.toString(encoding) decodes the bytes back to text.",
+    "followUp": "How would you inspect binary content? Use buf.toString('hex') or another suitable encoding, rather than assuming the bytes are UTF-8 text."
+   },
+   {
+    "question": "When should you use alloc versus allocUnsafe?",
+    "answer": "Buffer.alloc(size) returns an initialized buffer, while Buffer.allocUnsafe(size) returns an uninitialized one and can be faster. Unsafe memory must be filled or completely overwritten before its contents are used.",
+    "followUp": "When can sharing be useful? Buffer.from(arrayBuffer, offset, length) can expose a selected region without copying, but lifetime and mutation effects must be managed."
+   }
+  ],
+  "keyPoints": [
+   "Buffers store binary data with a fixed length, making them suitable for file contents, socket data, and protocol fields.",
+   "Buffers retain typed-array semantics while adding Node.js conveniences for common binary-data workflows.",
+   "Creating from an array copies its byte values, so later changes to the original array do not alter the Buffer.",
+   "Cloning a Buffer with Buffer.from creates independent storage rather than another view of the original bytes.",
+   "Use Buffer.alloc to request a buffer with a chosen byte length and optional initial fill value."
+  ],
+  "gotchas": [
+   "Buffer.alloc initializes memory and avoids exposing potentially sensitive bytes left by earlier allocations; the faster unsafe variant requires complete initialization before reading.",
+   "A Buffer made from an ArrayBuffer is a shared view, so changes through either view can affect the same underlying memory."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Platform APIs::Child processes": {
+  "sourceUrl": "https://nodejs.org/api/child_process.html",
+  "sourceTitle": "Child Process",
+  "summary": "Run external programs with Node.js child-process APIs. Prefer direct execution with separate argument arrays, consume stdio streams, and handle startup errors plus exit or close status.",
+  "explanation": "The node:child_process module starts another program either directly or through a shell. Prefer execFile for a direct executable and explicit argument array; consume its stdout and stderr streams, then handle error and close events to distinguish startup failure from termination.",
+  "syntax": "child_process.spawn(command[, args][, options])\nchild_process.execFile(file[, args][, options][, callback])",
+  "parameters": [
+   {
+    "name": "file/command",
+    "type": "string",
+    "description": "Executable file or command to run."
+   },
+   {
+    "name": "args",
+    "type": "string[]",
+    "description": "Separate command-line arguments; for execFile, an array of strings."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Configuration such as environment, working directory, stdio, encoding, timeout, and shell behavior."
+   },
+   {
+    "name": "callback",
+    "type": "function",
+    "description": "Called after exec or execFile completes with error, stdout, and stderr."
+   }
+  ],
+  "returns": "spawn() and execFile() return a ChildProcess object; execFile's callback receives error, stdout, and stderr when the child terminates.",
+  "example": {
+   "title": "Run a child process safely",
+   "code": "import { execFile } from 'node:child_process';\n\nconst child = execFile(process.execPath, ['-e', 'console.log(\"hello\")']);\nchild.stdout.on('data', (chunk) => process.stdout.write(chunk));\nchild.stderr.on('data', (chunk) => process.stderr.write(chunk));\nchild.on('error', (error) => console.error('spawn failed:', error.message));\nchild.on('close', (code, signal) => {\n  console.log(`closed: code=${code ?? 'null'} signal=${signal ?? 'null'}`);\n});",
+   "language": "typescript",
+   "explanation": "Runs Node directly with a separate argument array, forwards both output streams, and reports startup errors plus final termination."
+  },
+  "useCases": [
+   {
+    "title": "Safe command execution",
+    "scenario": "Launch a known executable with user-independent flags while preserving argument boundaries."
+   },
+   {
+    "title": "Streaming output",
+    "scenario": "Process continuous or large output incrementally through stdout and stderr streams."
+   },
+   {
+    "title": "Completion-based capture",
+    "scenario": "Collect command output after completion with the execFile callback."
+   },
+   {
+    "title": "Process lifecycle handling",
+    "scenario": "Observe termination and distinguish exit codes from signals."
+   }
+  ],
+  "related": [
+   "node:child_process",
+   "child_process.spawn()",
+   "child_process.exec()",
+   "child_process.execFile()",
+   "child_process.fork()",
+   "ChildProcess",
+   "subprocess.stdout",
+   "subprocess.stderr"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why choose execFile over exec for untrusted or separately constructed arguments?",
+    "answer": "execFile takes an executable plus an argument array and, by default, starts the executable directly rather than through a shell. This preserves argument boundaries and avoids shell parsing by default.",
+    "followUp": "What shell behaviors are lost? Shell-only features such as I/O redirection and file globbing are unavailable when no shell is spawned."
+   },
+   {
+    "question": "How does spawn handle large or continuous output?",
+    "answer": "spawn starts the child asynchronously without blocking the event loop. It exposes the child’s standard input, output, and error as streams, so output can be processed incrementally.",
+    "followUp": "How would you detect a process that could not start? Listen for the child error event; close is for the eventual termination notification."
+   },
+   {
+    "question": "How should exit handling be implemented?",
+    "answer": "The callback form of execFile runs when the child terminates and receives an error, stdout, and stderr. The child object also emits close with an exit code or terminating signal, allowing termination status to be handled explicitly.",
+    "followUp": "What does a null exit code imply? The process did not finish with a normal numeric exit code, commonly because a signal terminated it; inspect the signal argument."
+   }
+  ],
+  "keyPoints": [
+   "Use spawn when you need non-blocking process creation and stream-oriented interaction with a running child.",
+   "Pass the executable separately from an array of command-line arguments to keep each argument as its own value.",
+   "execFile is a direct-executable alternative to exec and avoids a shell unless configured otherwise.",
+   "Direct execution can be slightly more efficient than invoking the same command through exec's shell.",
+   "Use execFile's optional callback when collecting completed stdout and stderr instead of consuming streams manually.",
+   "Handle close when you need confirmation that the process ended and its standard-I/O streams are closed."
+  ],
+  "gotchas": [
+   "execFile does not provide shell features such as redirection or wildcard expansion unless you deliberately choose a shell."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Platform APIs::URL and URLSearchParams": {
+  "sourceUrl": "https://nodejs.org/api/url.html",
+  "sourceTitle": "URL | Node.js v26.11.1 Documentation",
+  "summary": "Use the WHATWG URL and URLSearchParams APIs to parse, construct, and update URLs safely. URL exposes structured URL components; URLSearchParams manages the query without manual string concatenation.",
+  "explanation": "The WHATWG URL API parses a URL into structured components, while its searchParams property exposes a mutable URLSearchParams object for reading and changing query entries. URLSearchParams can also be constructed independently from a query string or other supported input, then serialized as part of a URL.",
+  "syntax": "new URL(input[, base])\nnew URLSearchParams([init])",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "string | URL",
+    "description": "The URL constructor accepts a URL string and, when resolving a relative URL, an optional base URL."
+   },
+   {
+    "name": "base",
+    "type": "string | URL",
+    "description": "The optional base used to resolve a relative URL."
+   },
+   {
+    "name": "string",
+    "type": "string",
+    "description": "A query string used to initialize URLSearchParams."
+   },
+   {
+    "name": "init",
+    "type": "Iterable<[string, string]> | Record<string, string>",
+    "description": "An iterable or record of initial name-value pairs supported by the URLSearchParams constructor."
+   }
+  ],
+  "returns": "new URL(...) returns a URL object representing the parsed URL. new URLSearchParams(...) returns a URLSearchParams object representing query parameters.",
+  "example": {
+   "title": "Build and inspect a query string",
+   "code": "import { URL } from 'node:url';\n\nconst url = new URL('https://example.com/search');\nurl.searchParams.set('q', 'node.js');\nurl.searchParams.append('tag', 'runtime');\n\nconsole.log(url.href);\nconsole.log(url.searchParams.get('q'));",
+   "language": "javascript",
+   "explanation": "Creates a URL, updates its query through URLSearchParams, and reads a parameter without manually concatenating or escaping strings."
+  },
+  "useCases": [
+   {
+    "title": "Build encoded query URLs safely",
+    "scenario": "Constructing links with user-controlled search terms, filters, or pagination values."
+   },
+   {
+    "title": "Inspect and mutate request queries",
+    "scenario": "Reading, updating, or removing query parameters on incoming request URLs."
+   },
+   {
+    "title": "Work with standalone query data",
+    "scenario": "Parsing or generating query strings independently from a complete URL."
+   }
+  ],
+  "related": [
+   "URL",
+   "URLSearchParams",
+   "url.searchParams",
+   "url.search",
+   "url.href",
+   "URLSearchParams.prototype.append()",
+   "URLSearchParams.prototype.delete()",
+   "URLSearchParams.prototype.get()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the distinction between URL and URLSearchParams?",
+    "answer": "URL represents the complete structured address and exposes components such as protocol, hostname, pathname, and search. URLSearchParams focuses on the query portion and provides operations for reading and modifying name-value pairs.",
+    "followUp": "How would you modify a URL's query without replacing the whole URL? Use url.searchParams methods such as set(), append(), or delete(), then read url.href or url.toString()."
+   },
+   {
+    "question": "How do you change query parameters on an existing URL?",
+    "answer": "Access url.searchParams to obtain the query-parameter object. Mutating that object updates the URL instance, while assigning a completely new query string is done through the url.search setter.",
+    "followUp": "What happens if the same key occurs more than once? Use getAll() to retrieve all values, and append() when intentionally preserving multiple entries."
+   },
+   {
+    "question": "When would you use URLSearchParams independently of URL?",
+    "answer": "Construct URLSearchParams with a query string to parse it into entries, or use it as a standalone query builder. Its methods let code inspect, add, replace, delete, and serialize query parameters without unsafe string concatenation.",
+    "followUp": "How can you preserve repeated parameters? Represent them as repeated name-value pairs and use append() rather than set(), because set() replaces existing values for that name."
+   }
+  ],
+  "keyPoints": [
+   "Prefer the newer WHATWG URL API for standards-aligned URL parsing and construction.",
+   "A URL is parsed as structured data rather than treated as one undifferentiated string.",
+   "The URL instance exposes individual properties for the parsed components.",
+   "Use URLSearchParams to inspect and modify a URL's query section.",
+   "URLSearchParams is useful both through URL.searchParams and as an independent object.",
+   "A query string constructor parses text into a new parameter collection."
+  ],
+  "gotchas": [
+   "The searchParams property itself cannot be reassigned, but its returned object can change the URL's query.",
+   "When constructing URLSearchParams from a query string, an initial question mark is ignored."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Runtime foundations::Event loop": {
+  "sourceUrl": "https://nodejs.org/learn/asynchronous-work/event-loop-timers-and-nexttick",
+  "sourceTitle": "The Node.js Event Loop",
+  "summary": "Node.js runs JavaScript callbacks on a single event loop while delegating suitable asynchronous operations to the operating system or worker pool. Its phases coordinate timers, I/O, immediates, and completion callbacks; synchronous CPU-heavy work blocks progress.",
+  "explanation": "Node starts by running the input script, then repeatedly advances through event-loop phases. The poll phase handles most I/O callbacks, while timers and setImmediate callbacks have dedicated phases. Microtasks run between JavaScript turns, and expensive synchronous work keeps the single JavaScript thread from processing other callbacks until it finishes.",
+  "syntax": "setTimeout(callback[, delay[, ...args]])\nsetInterval(callback[, delay[, ...args]])\nsetImmediate(callback[, ...args])",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Event-loop scheduling",
+   "code": "const { readFile } = require('node:fs');\n\nconsole.log('start');\nsetTimeout(() => console.log('timer'), 0);\nsetImmediate(() => console.log('immediate'));\nreadFile(__filename, () => console.log('I/O callback'));\nqueueMicrotask(() => console.log('microtask'));\nconsole.log('end');",
+   "language": "javascript",
+   "explanation": "This runnable example schedules a timer, an immediate callback, file I/O, and a microtask. The exact ordering of the timer, immediate, and I/O callback can vary, but the synchronous logs occur before asynchronous callbacks."
+  },
+  "useCases": [
+   {
+    "title": "Scheduling timers",
+    "scenario": "Coordinate delayed or repeated asynchronous actions without blocking the JavaScript thread."
+   },
+   {
+    "title": "Handling I/O",
+    "scenario": "Process network, file, or other asynchronous results as callbacks become ready."
+   },
+   {
+    "title": "Preventing event-loop blocking",
+    "scenario": "Keep servers responsive by identifying synchronous or CPU-heavy callbacks that monopolize the loop."
+   },
+   {
+    "title": "Balancing CPU and I/O work",
+    "scenario": "Decide whether work belongs in JavaScript callbacks or should be delegated to the worker pool."
+   }
+  ],
+  "related": [
+   "process.nextTick()",
+   "setTimeout()",
+   "setInterval()",
+   "setImmediate()",
+   "poll phase",
+   "timers phase",
+   "Worker Pool",
+   "queueMicrotask()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the Node.js event loop?",
+    "answer": "Node executes the initial script and then enters the event loop. The loop uses phases, including timers, pending callbacks, poll, check, and close callbacks, to decide which callbacks to process.",
+    "followUp": "How can CPU-heavy work affect unrelated requests? It occupies the JavaScript thread synchronously, preventing the event loop from dispatching other callbacks until the work completes."
+   },
+   {
+    "question": "What happens during the poll phase?",
+    "answer": "The poll phase retrieves new I/O events and runs most I/O-related callbacks. It can wait when appropriate, while timers and setImmediate callbacks are handled in their respective phases.",
+    "followUp": "Why is a timer with a zero-millisecond delay not immediate? Its delay is only a threshold, and phase progression, OS scheduling, or other callbacks may postpone execution."
+   },
+   {
+    "question": "How should CPU-intensive work be handled?",
+    "answer": "Node provides a Worker Pool for expensive tasks such as file I/O, while JavaScript callbacks execute on the Event Loop. Keeping callbacks short prevents one request from delaying unrelated work.",
+    "followUp": "When should CPU-intensive JavaScript move off the main thread? When it would occupy the event loop long enough to harm responsiveness; worker threads or another process can isolate that work."
+   }
+  ],
+  "keyPoints": [
+   "The event loop lets Node handle asynchronous I/O without blocking the default JavaScript thread.",
+   "Node relies on the operating-system kernel for operations that can be performed asynchronously.",
+   "The timers phase runs callbacks scheduled by setTimeout and setInterval.",
+   "The poll phase collects I/O events and executes most associated callbacks.",
+   "Poll excludes callbacks belonging to timers, close handling, and setImmediate.",
+   "Application JavaScript, including initialization and callbacks, runs on the event loop.",
+   "Node uses a worker pool for expensive operations such as file-system I/O.",
+   "There is no explicit start call: Node enters the loop after the initial script completes."
+  ],
+  "gotchas": [
+   "A timer delay is a minimum threshold, not a promise that the callback runs at that exact time.",
+   "OS scheduling and earlier callbacks can postpone a timer beyond its requested delay.",
+   "In Node.js 20 and later, timers run after poll during each iteration, so phase ordering differs from older releases.",
+   "Long CPU-bound JavaScript or synchronous operations delay every callback sharing the event loop."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Runtime foundations::EventEmitter": {
+  "sourceUrl": "https://nodejs.org/api/events.html",
+  "sourceTitle": "Class: Eventemitter #",
+  "summary": "EventEmitter provides Node.js objects with named events and listener functions. Use it to publish events, control listener lifetime, and handle errors explicitly.",
+  "explanation": "EventEmitter lets an object publish named events and lets functions subscribe to them. Calling emit invokes matching listeners synchronously in registration order; on keeps a listener registered, once removes it after one delivery, and off or removeListener supports cleanup.",
+  "syntax": "import { EventEmitter } from 'node:events';\nconst emitter = new EventEmitter();\nemitter.on(eventName, listener);\nemitter.once(eventName, listener);\nemitter.emit(eventName, ...args);",
+  "parameters": [
+   {
+    "name": "eventName",
+    "type": "string | symbol",
+    "description": "Name of the event to publish or subscribe to; event names may be strings or symbols."
+   },
+   {
+    "name": "listener",
+    "type": "Function",
+    "description": "Function invoked when the named event is emitted."
+   },
+   {
+    "name": "...args",
+    "type": "any",
+    "description": "Values forwarded to each listener by emit."
+   }
+  ],
+  "returns": "on(), once(), off(), and removeListener() return the emitter for chaining. emit() returns true when at least one listener handled the event and false otherwise. listenerCount() returns a number; eventNames() returns event names.",
+  "example": {
+   "title": "One-time and error listeners",
+   "code": "import { EventEmitter } from 'node:events';\n\nconst bus = new EventEmitter();\nconst onReady = (name) => console.log(`${name} is ready`);\n\nbus.once('ready', onReady);\nbus.emit('ready', 'worker');\nbus.emit('ready', 'worker');\n\nbus.on('error', (error) => console.error(error.message));\nbus.emit('error', new Error('temporary failure'));",
+   "language": "javascript",
+   "explanation": "This runnable example registers a one-time listener, demonstrates synchronous event delivery, and handles an error event explicitly."
+  },
+  "useCases": [
+   {
+    "title": "Decouple publishers from subscribers",
+    "scenario": "A component announces state changes without knowing which consumers need them."
+   },
+   {
+    "title": "One-shot lifecycle handling",
+    "scenario": "A temporary response handler should run once and then disappear."
+   },
+   {
+    "title": "Centralized error handling",
+    "scenario": "A service reports failures through a standard event channel."
+   }
+  ],
+  "related": [
+   "EventEmitter.on()",
+   "EventEmitter.once()",
+   "EventEmitter.emit()",
+   "EventEmitter.off()",
+   "EventEmitter.removeListener()",
+   "EventEmitter.listenerCount()",
+   "EventEmitter.eventNames()",
+   "EventEmitter.setMaxListeners()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does EventEmitter dispatch listeners?",
+    "answer": "EventEmitter dispatches matching listeners synchronously, preserving their registration order. emit returns a boolean indicating whether listeners existed for the event, and it passes supplied arguments to each listener.",
+    "followUp": "How would you prevent a listener from running forever? Use once for a listener that should be removed automatically after its first event, or remove it explicitly with off or removeListener."
+   },
+   {
+    "question": "What is the difference between on and once?",
+    "answer": "on adds a listener and leaves it registered for future emissions. once adds a listener that is automatically removed after the next matching event.",
+    "followUp": "What should be considered when removing a listener? Removal requires the same function reference that was registered; anonymous replacements cannot remove the original listener."
+   },
+   {
+    "question": "Why is the error event important?",
+    "answer": "The error event has special handling: without an error listener, emitting error throws and can terminate the process. Register an error listener when the emitter can report failures.",
+    "followUp": "How can asynchronous rejection be integrated? Modern Node.js EventEmitter options can capture rejected listener promises, but the documented error-listener rule still applies to emitted error events."
+   }
+  ],
+  "keyPoints": [
+   "Import EventEmitter from node:events; it is the standard class for objects that publish named events.",
+   "An emitter associates event names with listener functions, allowing multiple subscribers for the same event.",
+   "Use on to subscribe and emit to publish; emit can provide arbitrary arguments to listeners.",
+   "Dispatch is synchronous and ordered, so listener side effects occur before emit returns unless a listener schedules asynchronous work.",
+   "Listeners receive the arguments supplied to emit, in the same order as the call.",
+   "Use the node:events built-in module rather than relying on a third-party event bus for this API."
+  ],
+  "gotchas": [
+   "Always register an error listener when an emitter may emit error; otherwise the emitted error is thrown.",
+   "Listeners run synchronously and in registration order, so a slow listener delays later listeners and the caller."
+  ],
+  "checkedAt": "2026-10-16"
+ }
+}

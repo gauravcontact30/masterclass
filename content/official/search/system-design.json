@@ -1,104 +1,139 @@
 {
  "Data::Denormalization": {
   "sourceUrl": "https://docs.aws.amazon.com/prescriptive-guidance/latest/database-decomposition/joins.md",
-  "sourceTitle": "Decoupling table relationships during database decomposition",
-  "summary": "Denormalization intentionally duplicates selected data across tables or records to simplify frequent reads and avoid joins. The tradeoff is extra storage and the need to keep copies synchronized.",
-  "explanation": "Denormalization intentionally stores selected fields redundantly in a read-oriented record or projection. Reads become simpler and can avoid joins, but every copied value creates additional write and consistency work when the source changes.",
+  "sourceTitle": "Joins (SQL Server)",
+  "summary": "Denormalization intentionally duplicates data across tables to reduce joins and simplify frequently used access paths. Apply it selectively when measurements show better performance or fewer complex dependencies.",
+  "explanation": "The card uses the current AWS Prescriptive Guidance page returned by the search results because it directly defines denormalization and explains when to apply it.",
   "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
    "title": "A denormalized read model",
-   "code": "const products = [\n  { id: \"p1\", name: \"Keyboard\", price: 49.99 },\n];\n\n// Read model: price is copied into the catalog projection.\nconst catalog = products.map(({ id, name, price }) => ({\n  id,\n  name,\n  price,\n}));\n\nconsole.log(catalog);",
-   "language": "typescript",
-   "explanation": "This runnable example shows a read-optimized projection that stores the fields a catalog query needs, avoiding a join at read time."
+   "code": "const orders = [\n  { id: 1, customerId: \"c1\", customerName: \"Ada\" },\n  { id: 2, customerId: \"c2\", customerName: \"Lin\" }\n];\n\nfunction ordersForCustomer(customerId) {\n  return orders.filter(order => order.customerId === customerId);\n}\n\nconsole.log(ordersForCustomer(\"c1\"));",
+   "language": "javascript",
+   "explanation": "The order view stores the customer name alongside the customer ID, so reads do not need a customer-table join; writes must update every duplicated copy."
   },
   "useCases": [
    {
-    "title": "Avoid repeated joins",
-    "scenario": "A read-heavy endpoint repeatedly combines the same related tables."
+    "title": "Reduce join work",
+    "scenario": "A read path repeatedly joins related tables and its latency is material."
    },
    {
-    "title": "Build a read model",
-    "scenario": "A service needs a consolidated product view containing product, pricing, and inventory fields."
+    "title": "Optimize hot fields",
+    "scenario": "A frequently requested field can be copied into the table serving the read."
    },
    {
-    "title": "Optimize hot access paths",
-    "scenario": "Frequently accessed fields improve performance when stored close to the requesting record."
+    "title": "Simplify access paths",
+    "scenario": "Several reads require complex dependencies that a targeted copy can remove."
    }
   ],
   "related": [
-   "normalization",
+   "database decomposition",
    "joins",
    "data access patterns",
-   "Product Catalog table"
+   "redundancy"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is denormalization and why use it?",
+    "answer": "Denormalization intentionally adds redundancy by combining or duplicating data across tables. The goal is to reduce joins or other access complexity for important reads.",
+    "followUp": "What should be denormalized first? Prioritize frequently accessed fields, then verify that the change improves the measured access pattern."
+   },
+   {
+    "question": "Should an entire schema be denormalized?",
+    "answer": "It is not an all-or-nothing design. Duplicate only the data that demonstrably improves performance or reduces complex dependencies, while leaving the rest normalized.",
+    "followUp": "How would you control its scope? Apply it selectively to the read paths and fields identified by access-pattern analysis."
+   },
+   {
+    "question": "How do you decide what to duplicate?",
+    "answer": "Start with data-access patterns and identify frequently accessed fields. Denormalize only where the resulting redundancy has a demonstrated benefit.",
+    "followUp": "What evidence would justify the change? Query measurements showing reduced access cost or simpler dependencies after duplication."
+   }
+  ],
   "keyPoints": [
-   "Denormalization deliberately duplicates related data instead of keeping every fact in one normalized location.",
-   "Choose duplicated fields from observed, frequent access patterns rather than duplicating an entire model.",
-   "Treat denormalization as selective optimization, not an all-or-nothing database design rule.",
-   "A consolidated read model can hold the fields needed by a common request and eliminate repeated joins.",
-   "Normalization minimizes redundancy; denormalization accepts redundancy to optimize access."
+   "Denormalization deliberately adds redundancy to the data model.",
+   "The duplicated information can be placed across multiple tables to serve reads directly.",
+   "Frequently read fields are the strongest candidates for duplication.",
+   "Use observed access patterns to select fields instead of applying a blanket rule.",
+   "A design can mix normalized and denormalized portions.",
+   "Require measurable performance improvement before accepting extra copies."
   ],
   "gotchas": [
-   "Do not denormalize automatically: update and delete costs can outweigh faster queries.",
-   "Use selective duplication based on measured access patterns and a clear performance or dependency benefit."
+   "Do not duplicate every field by default; limit redundancy to data that produces a demonstrated performance or dependency benefit.",
+   "Choose duplicated fields from measured access patterns rather than intuition."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Data::Partitioning and sharding": {
   "sourceUrl": "https://learn.microsoft.com/en-us/azure/well-architected/design-guides/partition-data",
-  "sourceTitle": "Design a data partitioning strategy - Azure",
-  "summary": "Partition data horizontally by a shard (partition) key so each shard holds a subset of rows and workload spreads across multiple stores. Choose a key that distributes work evenly and supports efficient routing.",
-  "explanation": "Horizontal partitioning divides rows among stores with the same schema, using a partition or shard key to determine placement. A well-chosen key distributes workload across shards, while including that key in requests lets routing direct operations to the relevant shard; related data can use the same key to preserve locality and support coordinated access.",
+  "sourceTitle": "Design a data partitioning strategy",
+  "summary": "Partitioning divides data into separate stores; horizontal partitioning, or sharding, gives each store the same schema and a subset of rows. A well-chosen partition key spreads data and workload across stores to improve scale and reduce contention.",
+  "explanation": "Horizontal partitioning, or sharding, divides a dataset into separate stores with the same schema. A partition key determines each item’s shard, allowing requests and storage to spread across machines; a suitable key distributes data evenly and avoids overloaded partitions, while routing logic sends each operation to the right shard.",
   "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Hash a shard key",
-   "code": "const shardFor = (key, shardCount) => {\n  let hash = 0;\n  for (const ch of key) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;\n  return hash % shardCount;\n};\n\nconsole.log(shardFor(\"customer-42\", 4));",
-   "language": "javascript",
-   "explanation": "This deterministic shard-key function maps each customer to one of four shards; production systems should use a well-tested hash and routing layer."
+   "title": "Route a key to a shard",
+   "code": "function shardFor(customerId: string, shardCount: number): number {\n  if (shardCount < 1) throw new Error(\"shardCount must be positive\");\n  let hash = 0;\n  for (const char of customerId) {\n    hash = (hash * 31 + char.charCodeAt(0)) | 0;\n  }\n  return (hash >>> 0) % shardCount;\n}\n\nconst shard = shardFor(\"customer-42\", 8);\nconsole.log(`Route to shard ${shard}`);",
+   "language": "typescript",
+   "explanation": "This deterministic example maps a customer identifier to one of eight shards; production systems should use a stable, well-distributed hash and account for resharding."
   },
   "useCases": [
    {
-    "title": "Scale storage horizontally",
-    "scenario": "Distribute a large dataset across multiple database stores."
+    "title": "Scale beyond one store",
+    "scenario": "A dataset or workload exceeds the practical capacity of one database instance."
    },
    {
-    "title": "Increase throughput",
-    "scenario": "Spread requests across machines to reduce contention."
+    "title": "Reduce contention",
+    "scenario": "Independent partitions need separate capacity or operational management."
    },
    {
-    "title": "Preserve data locality",
-    "scenario": "Keep related records together by using the same partition key."
+    "title": "Route by access key",
+    "scenario": "Requests can be routed using a stable attribute such as customer or tenant identity."
    }
   ],
   "related": [
    "horizontal partitioning",
    "shard",
-   "shard key",
    "partition key",
-   "workload distribution",
-   "range of shard keys"
+   "shard key",
+   "vertical partitioning",
+   "functional partitioning",
+   "hot partition",
+   "contention"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is horizontal partitioning, and why use it?",
+    "answer": "Horizontal partitioning divides data among stores that share a schema, with each shard holding a subset of rows. It can improve scalability, reduce contention, and optimize performance by spreading work across computers.",
+    "followUp": "How would you select a shard key? Analyze data size, workload, and query patterns, then choose a key that distributes data and traffic evenly while supporting common access paths."
+   },
+   {
+    "question": "What does a shard key do?",
+    "answer": "A shard key, also called a partition key, is an attribute used to decide which shard receives data. The application or platform uses it to route reads and writes to the relevant partition.",
+    "followUp": "What failure mode can a poor key create? A skewed distribution can produce a hot partition, so test cardinality and traffic distribution against expected growth."
+   },
+   {
+    "question": "What capacity concerns remain after partitioning?",
+    "answer": "Each partition must have sufficient capacity for its expected data size and throughput. Planning should include current and future scalability targets rather than only today’s workload.",
+    "followUp": "What should happen when one partition approaches its limit? Rebalance or reshard using a strategy that preserves routing correctness and distributes load more evenly."
+   }
+  ],
   "keyPoints": [
-   "Horizontal partitioning places subsets of rows in multiple stores while keeping their schemas consistent.",
-   "A shard is one partition containing the rows selected by partition-key values.",
-   "The shard key may be one attribute or a combination of attributes, and it determines placement.",
-   "The shard key is central to distributing data and workload evenly.",
-   "Shard key and partition key are alternative names for the routing attribute.",
-   "Key selection is the primary design decision because it controls distribution.",
-   "For example, product inventory can be divided according to product key values."
+   "Horizontal partitioning keeps the schema consistent across shards while assigning each shard a distinct subset of the data.",
+   "Separating data lets independent partitions be managed and accessed separately, reducing competition for shared resources.",
+   "Adding storage nodes can increase scale-out capacity instead of relying only on a larger single machine.",
+   "Partition-key values determine membership, so the key becomes part of the data-placement design.",
+   "Prefer a key with a distribution that prevents excessive concentration of records or requests.",
+   "Design placement against expected data size and workload, including future growth rather than only current measurements."
   ],
   "gotchas": [
-   "Choose the shard key carefully because changing it after deployment can be difficult.",
-   "A key that creates uneven partitions can overload individual shards and undermine scalability.",
-   "Sharding spreads work across machines, but it does not remove the need to evaluate contention and workload distribution."
+   "A skewed shard key can concentrate records and traffic in one hot partition, undermining scalability.",
+   "Sharding is not automatically beneficial: partitions still need enough resources for their data volume and throughput."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Data::Relational versus non-relational": {
   "sourceUrl": "https://aws.amazon.com/nosql/",
@@ -157,392 +192,526 @@
  "Data::Replication": {
   "sourceUrl": "https://docs.aws.amazon.com/documentdb/latest/developerguide/replication.html",
   "sourceTitle": "Amazon DocumentDB High availability and replication",
-  "summary": "Replication copies updates from a primary to replica instances, improving availability and allowing read traffic to scale horizontally. Replicas are eventually consistent, so reads can lag behind recent writes.",
-  "explanation": "Replication maintains replica instances from a primary so applications can distribute read-only queries and improve availability. Because updates reach replicas asynchronously, replica reads can be stale; monitor lag and size or scale replicas when writes or query load cause them to fall behind.",
+  "summary": "Replication copies primary data to replica instances to improve availability and distribute reads. Replicas are eventually consistent, so applications must accept possible lag behind the primary.",
+  "explanation": "Replication maintains replica instances from a primary so applications can distribute reads and continue serving when an instance is unavailable. Replicas are eventually consistent: updates reach them asynchronously, and lag can increase with heavy writes, long-running queries, or too many concurrent reads.",
   "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Route reads to replicas",
-   "code": "const cluster = new DocumentClient({});\n\nasync function readFromReplica(query) {\n  // Route read-only traffic to a replica-capable endpoint.\n  return cluster.query(query).promise();\n}",
+   "title": "Primary write and replica read",
+   "code": "const { MongoClient } = require(\"mongodb\");\n\nasync function main() {\n  const client = new MongoClient(process.env.DOCDB_URI);\n  await client.connect();\n  const primary = client.db(\"app\").collection(\"orders\");\n  await primary.insertOne({ id: 1, status: \"paid\" });\n  const replica = client.db(\"app\").collection(\"orders\");\n  console.log(await replica.find({ status: \"paid\" }).toArray());\n  await client.close();\n}\nmain().catch(console.error);",
    "language": "javascript",
-   "explanation": "Illustrates routing read-only work to a replicated database cluster; the exact client configuration depends on the deployment."
+   "explanation": "Writes go to the primary and reads can be directed to replica instances; production applications should configure separate endpoints and credentials as appropriate."
   },
   "useCases": [
    {
-    "title": "Read scaling",
-    "scenario": "Distribute read-only queries across replica instances for a read-heavy application."
+    "title": "Scale read throughput",
+    "scenario": "An application has more read traffic than one primary instance should handle."
    },
    {
-    "title": "Higher availability",
-    "scenario": "Keep serving reads through a primary-instance restart or failure."
+    "title": "Improve availability",
+    "scenario": "A database instance becomes unavailable and another instance must continue serving the application."
    },
    {
-    "title": "Workload isolation",
-    "scenario": "Separate long-running analytical reads from primary write traffic."
+    "title": "Trade freshness for capacity",
+    "scenario": "The application can tolerate slightly stale reads while replication catches up."
    }
   ],
   "related": [
    "replica instances",
    "read scaling",
-   "replica lag",
+   "replication lag",
    "primary instance",
    "read replicas",
-   "read operations",
-   "high availability"
+   "cluster volume"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "Why use replicas?",
+    "answer": "Use replica instances when the workload needs high availability or read scaling. They are dedicated to read operations on the cluster volume, allowing read traffic to be distributed without sending every read to the primary.",
+    "followUp": "What consistency tradeoff follows? Reads from replicas are eventually consistent, so applications requiring the newest write should read from the primary or otherwise tolerate lag."
+   },
+   {
+    "question": "What is replication lag?",
+    "answer": "Replication lag is the delay between an update on the primary and its availability on a replica. The documentation says it is typically 50 milliseconds or less, but it varies with the database-change rate and workload.",
+    "followUp": "How would you respond to rising lag? First identify whether writes, long queries, or concurrent reads are responsible, then scale instances, alter queries, or add replicas as appropriate."
+   },
+   {
+    "question": "What causes replica lag?",
+    "answer": "A high write rate, long-running queries competing with replication, and a very large number of concurrent replica queries can increase lag. These conditions cause replicas to fall behind or spend resources serving reads instead of applying changes.",
+    "followUp": "When should reads move to the primary? Move affected long-running or freshness-sensitive queries to the primary when replica contention or stale results are unacceptable."
+   }
+  ],
   "keyPoints": [
-   "Use replica instances to improve availability and distribute read traffic.",
-   "Replicas are suited to read-heavy workloads because their capacity is dedicated to reads.",
-   "Under normal conditions, replica results usually follow primary writes quickly.",
-   "Typical lag is low, but it varies with workload and is not a freshness guarantee.",
-   "Add replicas to distribute read demand when replicas themselves are overloaded."
+   "Replica instances provide both higher availability and more read capacity.",
+   "Replication is asynchronous from the application's perspective, so replicas can temporarily serve older data.",
+   "Normal replica visibility delay is usually well below 100 milliseconds after a primary update.",
+   "Lag is workload-dependent rather than a fixed guarantee.",
+   "Replicas are designed to handle read workloads independently of primary write processing.",
+   "The documented typical lag target is 50 milliseconds or less."
   ],
   "gotchas": [
-   "Reads from replicas may return data that does not yet include the primary's latest writes.",
-   "Heavy write throughput can increase replication lag and make replica data less current.",
-   "Long-running reads can compete with replication work and increase lag.",
-   "Excessive concurrent reads can overload replicas and delay replication."
+   "A successful primary write may not be immediately visible when the same data is read from a replica.",
+   "Heavy write traffic can make replicas lag behind the primary.",
+   "Long-running replica queries can compete with incoming replication and increase lag.",
+   "Excessive concurrent reads can also increase replica lag."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Distributed systems::Clock and ordering problems": {
   "sourceUrl": "https://aws.amazon.com/builders-library/leader-election-in-distributed-systems/?did=ba_card&trk=ba_card",
-  "sourceTitle": "Leader election in distributed systems",
-  "summary": "Avoid synchronized wall clocks as a correctness mechanism in distributed systems: imperfect synchronization makes them unreliable for ordering and coordination. Use wall-clock time for human consumption, and local elapsed durations when leases require time.",
-  "explanation": "In a distributed system, machines can disagree about wall-clock time because synchronization is imperfect and clocks can drift. Therefore, do not use synchronized wall-clock timestamps to coordinate operations or establish correctness. If leases require time, measure a local elapsed duration rather than depending on a globally agreed wall-clock value.",
+  "sourceTitle": "Leader Election in Distributed Systems",
+  "summary": "Avoid synchronized wall clocks for distributed correctness: clock skew can break ordering and coordination. Use time mainly for humans, and use locally measured elapsed durations when a lease requires timing.",
+  "explanation": "Distributed nodes cannot reliably agree closely enough on wall-clock readings to use them for ordering or coordination. Use time only for human-facing information when possible; when a lease needs time, measure a local elapsed duration rather than relying on a synchronized wall clock shared across servers.",
   "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Avoid wall-clock ordering",
-   "code": "// No runnable code is needed: the documented design rule is architectural.",
+   "title": "Use local elapsed time",
+   "code": "const start = performance.now();\nawait doWork();\nconst elapsedMs = performance.now() - start;\nif (elapsedMs > leaseDurationMs) {\n  throw new Error(\"lease expired\");\n}",
    "language": "typescript",
-   "explanation": "The rule is to avoid using synchronized wall-clock readings for distributed correctness or ordering; use local elapsed durations where a time-based lease is necessary."
+   "explanation": "Measure a local elapsed duration for a lease instead of comparing synchronized wall-clock timestamps."
   },
   "useCases": [
    {
-    "title": "Use logical or protocol-based ordering instead of wall-clock timestamps.",
-    "scenario": "Ordering events across multiple machines"
+    "title": "Coordinate leadership without timestamp agreement",
+    "scenario": "Leader election"
    },
    {
-    "title": "Avoid requiring servers to agree on the current wall-clock time.",
-    "scenario": "Coordinating distributed operations"
+    "title": "Expire leases using local duration",
+    "scenario": "Distributed leases"
    },
    {
-    "title": "Measure a local elapsed duration rather than relying on synchronized wall-clock time.",
-    "scenario": "Implementing leases"
+    "title": "Avoid wall-clock ordering across servers",
+    "scenario": "Event ordering"
    }
   ],
   "related": [
-   "leader election",
-   "leases",
-   "local elapsed time duration",
-   "wall-clock time",
-   "clock synchronization"
+   "Leader election",
+   "Leases",
+   "Local elapsed time duration",
+   "Wall-clock time",
+   "Clock synchronization"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "Why should distributed correctness avoid synchronized wall clocks?",
+    "answer": "Wall clocks are unsafe for correctness because separate servers may disagree about the current time. That disagreement can produce incorrect event ordering or coordination decisions.",
+    "followUp": "What should a time-based lease use? Use a locally measured elapsed duration, avoiding agreement on an absolute wall-clock timestamp."
+   },
+   {
+    "question": "When is time appropriate in a distributed system?",
+    "answer": "Use time for human consumption, such as displaying timestamps, rather than making distributed algorithms depend on exact wall-clock agreement. This keeps presentation concerns separate from correctness.",
+    "followUp": "Can leases use time at all? Yes, but they should use local elapsed duration instead of synchronized wall-clock time."
+   },
+   {
+    "question": "How can a lease avoid wall-clock ordering problems?",
+    "answer": "A lease can be based on how long the local process has been running under the lease. It does not require multiple servers to agree on an absolute timestamp.",
+    "followUp": "What problem does this avoid? It avoids failures caused by servers disagreeing about wall-clock time, including drift and leap-second effects."
+   }
+  ],
   "keyPoints": [
-   "Do not make distributed correctness depend on wall-clock time.",
-   "Synchronized clocks are not a dependable basis for ordering events across machines.",
-   "Avoid using clock agreement to coordinate distributed operations.",
-   "Use wall-clock time for human-facing purposes such as timestamps and diagnostics, not algorithmic correctness.",
-   "When a lease needs time, use a duration measured locally by the participating machine."
+   "Do not make distributed correctness depend on synchronized time.",
+   "Clock agreement is especially risky when deciding event order or coordinating actions across nodes.",
+   "Prefer timestamps for display, logging, and other human-facing purposes rather than algorithmic correctness.",
+   "If a lease needs time, base it on duration measured locally.",
+   "Avoid absolute wall-clock timestamps that require synchronization between servers."
   ],
   "gotchas": [
-   "Clock synchronization may not be accurate enough across a cluster for ordering or coordinating distributed operations.",
-   "Time-based leases still require care; the documented alternative is local elapsed duration, not synchronized wall-clock time.",
-   "Prefer elapsed durations to avoid failures caused by clock drift and disagreement about global time."
+   "Do not assume clock synchronization is sufficiently precise for ordering or coordinating distributed operations.",
+   "Wall-clock agreement can be disrupted by leap seconds and by clock drift caused by changing local conditions."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Distributed systems::Consensus": {
-  "sourceUrl": "https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/quorum-queues.html",
-  "sourceTitle": "Quorum queues for RabbitMQ on Amazon MQ",
-  "summary": "Consensus enables replicas to agree on a leader and on replicated decisions. Leader election handles failures, while a majority quorum prevents unsafe progress when too few replicas are available.",
-  "explanation": "Consensus coordinates replicas so they agree on one leader and on committed data. A leader typically proposes changes, followers replicate and vote, and a majority quorum makes a decision; if the leader fails, the remaining replicas elect a replacement. This preserves consistency and allows continued operation only when enough members remain.",
-  "syntax": "x-queue-type: quorum",
+  "sourceUrl": "https://learn.microsoft.com/en-us/azure/architecture/patterns/leader-election",
+  "sourceTitle": "Leader Election pattern - Azure Architecture Center",
+  "summary": "Consensus lets distributed participants agree despite failures. Leader election chooses one coordinator, while quorum requires majority participation so replicas can make consistent decisions and continue operating when some instances fail.",
+  "explanation": "Consensus coordinates distributed participants so they agree on a single decision despite failures. Leader election selects one coordinator, while quorum-based decisions require a majority of replicas; together they prevent conflicting leaders and preserve progress when some nodes fail.",
+  "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Majority-based leader failover",
-   "code": "class QuorumQueue:\n    def __init__(self, replicas):\n        self.replicas = replicas\n        self.leader = replicas[0]\n\n    def failover(self):\n        available = [r for r in self.replicas if r != self.leader]\n        if len(available) >= (len(self.replicas) // 2):\n            self.leader = available[0]\n            return self.leader\n        raise RuntimeError(\"No quorum\")\n\nqueue = QuorumQueue([\"a\", \"b\", \"c\"])\nprint(queue.failover())",
-   "language": "python",
-   "explanation": "A minimal runnable illustration of electing a replacement leader only when enough replicas remain to form a quorum."
+   "title": "Leader-candidate claim",
+   "code": "import { S3Client, PutObjectCommand } from \"@aws-sdk/client-s3\";\n\nconst client = new S3Client({});\nconst bucket = process.env.BUCKET!;\nconst key = `leader/${process.env.INSTANCE_ID}`;\n\nawait client.send(new PutObjectCommand({\n  Bucket: bucket,\n  Key: key,\n  Body: new Date().toISOString(),\n  IfNoneMatch: \"*\"\n}));\nconsole.log(\"leader candidate acquired\");",
+   "language": "typescript",
+   "explanation": "A candidate attempts an atomic object creation; only one succeeds for the same coordination key."
   },
   "useCases": [
    {
-    "title": "Fault-tolerant messaging",
-    "scenario": "Replicated queues need to remain available after a broker failure."
+    "title": "Work coordination",
+    "scenario": "A distributed worker pool needs exactly one instance assigning jobs."
    },
    {
-    "title": "Distributed coordination",
-    "scenario": "Several instances must coordinate exclusive work or shared state."
+    "title": "Failover management",
+    "scenario": "Replicated services must designate an active coordinator after failure."
    },
    {
-    "title": "Consistent replication",
-    "scenario": "Replicas must agree before accepting a replicated write."
+    "title": "Exclusive ownership",
+    "scenario": "Only one process may update shared state at a time."
    }
   ],
   "related": [
-   "Raft consensus algorithm",
-   "leader election",
-   "majority vote",
-   "quorum queues",
-   "replicas",
-   "followers"
+   "Leader Election pattern",
+   "Raft Consensus Algorithm",
+   "Paxos",
+   "leases",
+   "mutex",
+   "heartbeat",
+   "polling",
+   "quorum"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What problem does leader election solve?",
+    "answer": "Leader election gives one distributed participant special responsibility, such as assigning work, modifying data, or handling requests. It simplifies coordination because other participants can follow one coordinator.",
+    "followUp": "Why is a lease useful? A lease bounds leadership in time: if the leader cannot renew it, another candidate can acquire it."
+   },
+   {
+    "question": "How does quorum support consensus?",
+    "answer": "A quorum is the majority needed to make a replicated decision. In quorum queues, the leader and followers use Raft, and a new leader is elected by majority vote when the current leader is unavailable.",
+    "followUp": "Why not accept a decision from any replica? A single replica cannot establish agreement or safely tolerate failures; majority participation preserves a consistent decision."
+   },
+   {
+    "question": "When is a new leader elected?",
+    "answer": "A leader may become unreachable because it terminates or because a network failure separates it from other instances. Participants monitor it with heartbeats or polling and elect a replacement when it is unavailable.",
+    "followUp": "What prevents two leaders? The election mechanism must provide exclusive acquisition, typically through a mutex, lease, or consensus algorithm."
+   }
+  ],
   "keyPoints": [
-   "A consensus group commonly has one leader and one or more follower replicas.",
-   "Leader election lets replicas select a replacement leader after failure, using a majority decision.",
-   "After failover, surviving replicas continue replication under the newly elected leader.",
-   "Routing writes through one leader prevents competing replicas from concurrently making authoritative updates.",
-   "Leader election and distributed locking require a strongly consistent coordination mechanism."
+   "A mutex-based design grants leadership to the first participant that obtains the exclusive lock.",
+   "Followers need a liveness signal, commonly a heartbeat or polling, to detect that the current coordinator is no longer available.",
+   "Bully, Raft, and Chang–Roberts are examples of established leader-election algorithms."
   ],
   "gotchas": [
-   "A leader failure requires a majority vote to elect a replacement; without a majority, progress cannot safely continue.",
-   "Replica placement across failure domains helps maintain availability when one node is lost."
+   "Leadership lasts only while the lease can be renewed, so renewal and expiration behavior must be handled explicitly.",
+   "Leader selection must be backed by a reliable coordination mechanism rather than an unsynchronized local choice."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Distributed systems::Distributed transactions": {
-  "sourceUrl": "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/saga-patterns.html",
-  "sourceTitle": "Saga patterns",
-  "summary": "Prefer sagas for distributed workflows spanning service-owned databases. Execute local transactions, then use continuation or compensating transactions to recover from failures instead of relying on two-phase commit.",
-  "explanation": "A saga coordinates a distributed workflow as local transactions. Each successful step enables the next; when a later step fails, compensating transactions reverse the completed work. This avoids requiring a single coordinator for two-phase commit across separate service databases, but reaches consistency through recovery rather than one atomic commit.",
+  "sourceUrl": "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga",
+  "sourceTitle": "Saga Design Pattern - Azure Architecture Center",
+  "summary": "The saga pattern coordinates local transactions across services to maintain consistency without a global commit. When a step fails, it retries or runs compensating transactions to reverse completed effects.",
+  "explanation": "A saga coordinates independent local transactions instead of holding one distributed ACID transaction. Each successful step enables the next; on failure, the workflow either retries/continues or executes compensating transactions that reverse earlier effects, restoring consistency across services.",
   "syntax": "",
   "parameters": [],
-  "returns": "",
+  "returns": "A consistent final state across the participating services, achieved through successful local transactions or compensating recovery.",
   "example": {
-   "title": "Minimal saga with compensation",
-   "code": "from dataclasses import dataclass\nfrom typing import Callable\n\n@dataclass\nclass Step:\n    run: Callable[[], None]\n    compensate: Callable[[], None]\n\ncompleted = []\nsteps = [\n    Step(lambda: print(\"reserve inventory\"), lambda: print(\"release inventory\")),\n    Step(lambda: print(\"charge payment\"), lambda: print(\"refund payment\")),\n]\n\ntry:\n    for step in steps:\n        step.run()\n        completed.append(step)\nexcept Exception:\n    for step in reversed(completed):\n        step.compensate()",
+   "title": "Compensating a failed order saga",
+   "code": "from dataclasses import dataclass\n\n@dataclass\nclass OrderSaga:\n    order_id: str\n    state: str = \"NEW\"\n\n    def reserve_inventory(self):\n        self.state = \"INVENTORY_RESERVED\"\n\n    def compensate_inventory(self):\n        self.state = \"CANCELLED\"\n\n    def charge_payment(self, succeeds: bool):\n        if not succeeds:\n            self.compensate_inventory()\n            return\n        self.state = \"PAID\"\n\nsaga = OrderSaga(\"o-123\")\nsaga.reserve_inventory()\nsaga.charge_payment(succeeds=False)\nprint(saga.state)  # CANCELLED",
    "language": "python",
-   "explanation": "A minimal saga executes local steps and compensates completed steps in reverse order if a later step fails."
+   "explanation": "A simplified saga coordinates local steps and invokes a compensating action when a later step fails."
   },
   "useCases": [
    {
-    "title": "E-commerce checkout",
-    "scenario": "Order, inventory, and payment services must complete a business workflow across separate databases."
+    "title": "Multi-service order processing",
+    "scenario": "An order workflow reserves inventory, charges payment, and confirms shipment across separate services."
    },
    {
-    "title": "Resource provisioning",
-    "scenario": "A multi-step provisioning workflow can fail after earlier resources were created."
+    "title": "Long-running distributed workflows",
+    "scenario": "A long-running process crosses service or organizational boundaries and cannot hold a single database transaction."
    },
    {
-    "title": "Long-running business process",
-    "scenario": "A long-running process crosses service or trust boundaries and cannot hold a distributed lock."
+    "title": "Business-failure recovery",
+    "scenario": "A later business validation failure requires earlier reservations or updates to be reversed."
    }
   ],
   "related": [
+   "Saga distributed transactions pattern",
    "Saga orchestration pattern",
-   "Saga choreography pattern",
-   "Saga patterns",
-   "continuation principle",
-   "compensation principle",
-   "compensating transactions",
-   "pivot transactions",
-   "two-phase commit"
+   "Compensating transactions",
+   "Compensable transactions",
+   "Pivot transaction",
+   "Continuation principle",
+   "Compensation principle",
+   "Choreography"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is a saga, and how does it coordinate distributed work?",
+    "answer": "A saga splits a distributed business operation into local transactions across services. Each local transaction updates its own data and triggers the next step through an event or message; failure starts compensating work for completed steps.",
+    "followUp": "How does recovery differ between technical and business failures? A technical failure can use retry and forward recovery, while a business failure can use backward recovery through compensating transactions."
+   },
+   {
+    "question": "Why prefer a saga over two-phase commit in a microservice architecture?",
+    "answer": "Two-phase commit coordinates participants through prepare and commit, but it is unsuitable when services own separate databases without a shared coordinator. A saga avoids that global commit by using local commits and compensation.",
+    "followUp": "When should a single database be preferred? When operations can be consolidated there, because one database can provide transactional atomicity without distributed coordination."
+   },
+   {
+    "question": "How does saga orchestration work?",
+    "answer": "An orchestrated saga uses a central coordinator to direct the sequence of local transactions and invoke compensations when a step fails. This makes workflow control explicit and centralizes recovery decisions.",
+    "followUp": "What is the alternative coordination style? Choreography lets services trigger subsequent steps through events, avoiding a central coordinator but distributing workflow logic across services."
+   }
+  ],
   "keyPoints": [
-   "Model the distributed operation as ordered local transactions, each owned by its service.",
-   "On failure, undo completed effects with compensating transactions rather than rolling back every database atomically.",
-   "Use continuation for retrying and progressing after infrastructure failures; use compensation for reversing business effects.",
-   "Database-per-service architectures generally cannot use relational two-phase commit as their cross-service transaction mechanism.",
-   "A successful local update starts the next step, commonly through an event or message.",
-   "Orchestration centralizes workflow coordination in an orchestrator."
+   "A saga preserves cross-service consistency by coordinating several local transactions rather than using one global transaction.",
+   "Services advance the workflow by publishing events or messages after completing their local operation.",
+   "Failure recovery reverses completed effects with compensating transactions."
   ],
   "gotchas": [
-   "Failure handling may choose retry/forward recovery or compensation, so operations need explicit recovery behavior."
+   "After the irreversible pivot step, earlier compensations are no longer available, so later actions must finish successfully.",
+   "A successful pivot can leave the workflow dependent on completing every remaining action."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Distributed systems::Idempotency": {
-  "sourceUrl": "https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_prevent_interaction_failure_idempotent.md",
-  "sourceTitle": "REL04-BP04 Make all responses idempotent",
-  "summary": "Idempotency makes repeated identical requests have the same effect as one request. An idempotency token lets a service recognize retries, prevent duplicate side effects, and return the original response.",
-  "explanation": "The client creates a unique token for a logical request and sends that same token on every retry. The service records the token with the operation’s result; a repeated token returns the stored response instead of applying the mutation again. This lets clients retry after timeouts or connection failures without duplicate records or side effects.",
-  "syntax": "HTTP request header: Idempotency-Token: <unique-client-token>",
+  "sourceUrl": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_Idempotency.html",
+  "sourceTitle": "Examples",
+  "summary": "Idempotency makes repeated identical requests produce one effective mutation. A client token lets a service recognize retries and return the original successful result without applying the operation again.",
+  "explanation": "The client supplies a unique idempotency token with a mutating request. The service records the token and successful result; when the same caller retries with that token and unchanged parameters, it recognizes the duplicate and returns the earlier result instead of applying the mutation again.",
+  "syntax": "RunTask({ clientToken, cluster, taskDefinition, count })",
   "parameters": [
    {
-    "name": "idempotency token",
+    "name": "clientToken",
     "type": "string",
-    "description": "A client-generated idempotency token identifying one logical request; the same token is sent when the request is repeated."
+    "description": "Unique identifier for the logical request; reuse it for retries of that request."
+   },
+   {
+    "name": "cluster",
+    "type": "string",
+    "description": "ECS cluster in which the request is made."
+   },
+   {
+    "name": "taskDefinition",
+    "type": "string",
+    "description": "Task definition to run."
+   },
+   {
+    "name": "count",
+    "type": "integer",
+    "description": "Number of task instances to launch."
    }
   ],
-  "returns": "The original response for a repeated token; a newly processed response for a new token.",
+  "returns": "For a successful retry with the same client token and request parameters, the result of the original request is returned without further mutation.",
   "example": {
-   "title": "Retrying a payment safely",
-   "code": "const response = await fetch(\"https://api.example.com/payments\", {\n  method: \"POST\",\n  headers: {\n    \"Content-Type\": \"application/json\",\n    \"Idempotency-Key\": \"payment-8f3c\"\n  },\n  body: JSON.stringify({ amount: 2500, currency: \"USD\" })\n});\n\nconst payment = await response.json();",
-   "language": "javascript",
-   "explanation": "The client reuses the same idempotency key when retrying the request, allowing the service to return the original result without creating another payment."
+   "title": "Retrying an ECS RunTask request",
+   "code": "import { ECSClient, RunTaskCommand } from \"@aws-sdk/client-ecs\";\n\nconst client = new ECSClient({});\nconst clientToken = \"order-2025-03-08-001\";\n\nconst command = new RunTaskCommand({\n  clientToken,\n  cluster: \"my-cluster\",\n  taskDefinition: \"my-task:1\",\n  count: 1\n});\n\nconst first = await client.send(command);\nconst retry = await client.send(command);\n\nconsole.log(first.tasks?.map(task => task.taskArn));\nconsole.log(retry.tasks?.map(task => task.taskArn));",
+   "language": "typescript",
+   "explanation": "The same client token and request parameters let a retry return the original result without starting another task."
   },
   "useCases": [
    {
-    "title": "Prevent duplicate payments",
-    "scenario": "A client times out after submitting a payment and retries the request."
+    "title": "Safe timeout retries",
+    "scenario": "A client times out after submitting a mutating request and cannot tell whether the service completed it."
    },
    {
-    "title": "Deduplicate repeated deliveries",
-    "scenario": "A message or API request may be delivered more than once."
+    "title": "Duplicate-resistant task creation",
+    "scenario": "A caller retries a task-launch request after a transient network failure."
    },
    {
-    "title": "Make mutating APIs retryable",
-    "scenario": "A service mutates state but clients need safe retry behavior after transient failures."
+    "title": "Deduplicating repeated delivery",
+    "scenario": "An API receives the same request more than once because delivery or client logic is at least once."
    }
   ],
   "related": [
-   "retries",
-   "idempotency token",
-   "stored response",
-   "API requests",
-   "mutating request",
-   "side effects"
+   "client token",
+   "RunTask",
+   "ConflictException",
+   "idempotent request",
+   "retry"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What problem does idempotency solve in a distributed system?",
+    "answer": "Idempotency means repeated identical requests have the effect of one request. A service commonly achieves this by accepting a caller-generated token, associating it with the completed result, and returning that result for later retries.",
+    "followUp": "What should happen if the token is reused with different parameters? The service should reject the retry as a conflict, because the token identifies the original request and must not silently represent a different operation."
+   },
+   {
+    "question": "How should a client retry an idempotent API request?",
+    "answer": "The caller sends the same client token whenever it retries an API request. If the original mutation succeeded, the later request succeeds without performing another mutation and returns the original result.",
+    "followUp": "Why is the token caller-provided? It gives the caller a stable identity for one logical operation across uncertain network outcomes, including a lost response."
+   },
+   {
+    "question": "What makes two requests the same idempotent operation?",
+    "answer": "A client token is scoped to the API's request context described by the service. For ECS RunTask, requests with the same token and the same parameters are treated as retries, while changing request parameters can produce ConflictException.",
+    "followUp": "Can a token be used indefinitely? Only according to the service's documented retention and scope; clients should not assume global or permanent deduplication."
+   }
+  ],
   "keyPoints": [
-   "Idempotency makes repeated delivery of one logical request converge on one mutation, even when the network causes retries.",
-   "A client supplies a token that identifies the logical operation across attempts.",
-   "The service checks the token before deciding whether to execute the operation.",
-   "A duplicate request returns the previously stored result instead of applying the side effect again.",
-   "The first request performs the operation and records its result for later retries."
+   "Idempotency limits a mutating operation to one resource change even when the request is delivered repeatedly.",
+   "After a successful mutation, retries can complete successfully while leaving the resource unchanged.",
+   "The caller enables idempotent behavior by including a client token in the API request.",
+   "The token is a caller-chosen unique string that identifies one logical request.",
+   "A matching retry receives the original operation result rather than a newly created result."
   ],
   "gotchas": [
-   "The replayed response may reflect the original completed request rather than current resource state."
+   "Do not reuse a token across different logical requests; each request needs its own client token.",
+   "A retry must preserve the original parameters; changing them can make the request fail with a conflict rather than replaying the original result."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Framing the problem::Constraints and assumptions": {
-  "sourceUrl": "https://learn.microsoft.com/de-de/previous-versions/msp-n-p/ee658098(v=pandp.10)",
-  "sourceTitle": "Chapter 1: What is Software Architecture?",
-  "summary": "Write down the assumptions behind an architecture and define how to test them. Challenge unverified assumptions, while checking both explicit and implied requirements.",
-  "explanation": "Record architectural assumptions explicitly, then test or verify them instead of relying on unverified beliefs. Revisit assumptions as requirements and the design evolve, and check both explicit and implied requirements.",
+  "sourceUrl": "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/fundamentals",
+  "sourceTitle": "Solution Architect's Responsibilities and Guiding Principles",
+  "summary": "Record assumptions and constraints explicitly so stakeholders can challenge them. Validate high-risk assumptions before finalizing the architecture, and separate genuine business needs from early assumptions.",
+  "explanation": "Write assumptions as explicit, measurable statements alongside constraints such as latency, capacity, deployment boundaries, and operational requirements. Validate high-risk assumptions with a proof of concept or other evidence, and revisit them when requirements or environmental facts change.",
   "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Architecture assumptions checklist",
-   "code": "// No example: the selected official page is guidance rather than an API or runnable implementation.",
-   "language": "text",
-   "explanation": "The page provides architecture questions and principles, not executable code."
+   "title": "Record and validate design assumptions",
+   "code": "const assumptions = {\n  peakRequestsPerSecond: 1000,\n  maxResponseTimeMs: 200,\n  regions: 2,\n};\n\nfunction validateAssumptions(a) {\n  if (a.peakRequestsPerSecond <= 0) throw new Error(\"Invalid peak load\");\n  if (a.maxResponseTimeMs <= 0) throw new Error(\"Invalid latency target\");\n  if (a.regions < 1) throw new Error(\"At least one region is required\");\n  return a;\n}\n\nconsole.log(validateAssumptions(assumptions));",
+   "language": "typescript",
+   "explanation": "A small runnable checklist makes explicit assumptions measurable and testable before implementation."
   },
   "useCases": [
    {
-    "title": "Capture initial assumptions",
-    "scenario": "Starting a new system design"
+    "title": "Validate a high-risk component",
+    "scenario": "A new dependency or unfamiliar service could determine whether the design is feasible."
    },
    {
-    "title": "Expose hidden assumptions",
-    "scenario": "Reviewing an existing architecture"
+    "title": "Clarify whether a stated requirement is real",
+    "scenario": "A product request includes an unexplained deadline, performance target, or compliance rule."
    },
    {
-    "title": "Revalidate the design",
-    "scenario": "Evaluating changing requirements"
+    "title": "Bound the solution space",
+    "scenario": "The deployment environment, budget, or expected growth limits the available designs."
    },
    {
-    "title": "Compare tradeoffs",
-    "scenario": "Choosing between architectural options"
+    "title": "Preserve future options",
+    "scenario": "The system may need to evolve as usage or business priorities change."
    }
   ],
   "related": [
-   "architecture design principles",
-   "key assumptions",
-   "explicit requirements",
-   "implied requirements",
-   "tradeoffs",
-   "quality attributes"
+   "business requirements",
+   "proof of concepts (PoCs)",
+   "trade-offs",
+   "risk",
+   "technology options and constraints",
+   "usage constraints",
+   "deployment constraints",
+   "success criteria"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How should assumptions be handled during system design?",
+    "answer": "List the assumptions explicitly, attach measurable values where possible, and identify how each will be tested. High-risk or novel components should be validated with working code before the design is finalized.",
+    "followUp": "How do you prioritize validation? Start with assumptions whose failure would most strongly affect feasibility, reliability, cost, or the architecture choice."
+   },
+   {
+    "question": "How do you distinguish a constraint from an assumption?",
+    "answer": "Separate actual business constraints from early assumptions by asking why each request exists. Then define the real outcomes, boundaries, and success criteria that the design must satisfy.",
+    "followUp": "What if stakeholders disagree? Record the disagreement, identify the decision owner, and use a targeted experiment or clarified business objective to resolve it."
+   },
+   {
+    "question": "Why document constraints early?",
+    "answer": "Capture constraints early, including technology, usage, deployment, performance, security, and reliability limits. Early identification narrows the solution space and prevents late surprises.",
+    "followUp": "What should happen when a constraint changes? Reassess affected trade-offs and architecture decisions rather than preserving an obsolete design by habit."
+   }
+  ],
   "keyPoints": [
-   "List the assumptions that influence architectural decisions and attach a way to test each one.",
-   "Use an explicit review question to expose assumptions that might otherwise remain implicit.",
-   "Check that the architecture addresses both stated requirements and requirements inferred from context.",
-   "Avoid adding complexity merely to cover speculative needs; keep the design proportional to known requirements.",
-   "Expect constraints, requirements, and implementation choices to change, so make assumptions easy to revisit."
+   "For every assumption, record a concrete validation method rather than leaving it as an unexamined belief.",
+   "Use a proof of concept for assumptions involving unfamiliar or high-impact components before committing to the architecture.",
+   "Translate business boundaries into explicit design constraints covering cost, schedule, compliance, performance, and scale.",
+   "Avoid turning temporary assumptions into irreversible choices when future requirements or conditions remain uncertain."
   ],
   "gotchas": [
-   "Unverified assumptions can make the architecture fragile; document how each assumption will be tested or verified.",
-   "Treat the design as evolutionary rather than assuming the initial architecture can capture every future detail."
+   "Unverifiable assumptions can silently constrain the architecture; either test them or label the design as provisional.",
+   "Do not treat distributed-system conditions such as network reliability as facts without an explicit failure strategy."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Framing the problem::Functional requirements": {
-  "sourceUrl": "https://learn.microsoft.com/sl-si/training/modules/functional-consultant-skills/4-document-functional-requirements-artifacts",
-  "sourceTitle": "Document functional requirements and artifacts",
-  "summary": "Functional requirements state what a system must do and how users experience its behavior. Define them through user journeys, record who/what/why, split large requirements, and specify how satisfaction will be verified before selecting implementation technologies.",
-  "explanation": "Start with the user journey and express each requirement as observable behavior: who performs an action, what the system does, and why it matters. Break oversized requirements into smaller ones, define how each is satisfied, and capture exceptional paths as well as the successful path. Keep these statements focused on behavior rather than implementation so they can guide later design choices.",
+  "sourceUrl": "https://learn.microsoft.com/da-dk/training/modules/work-with-requirements/3-functional-requirements",
+  "sourceTitle": "Identify functional requirements",
+  "summary": "Functional requirements state what a solution must do and how it should behave. Agree on user outcomes, boundaries, and measurable completion conditions before selecting architecture or technology.",
+  "explanation": "Define each capability around a user or stakeholder outcome: identify who performs it, what the system does, and why it matters. Describe the normal journey, split oversized requirements, specify how success is recognized, and capture exceptions before choosing implementation technologies.",
   "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Order acceptance requirement",
-   "code": "def create_order(user_id, items):\n    if not user_id or not items:\n        raise ValueError(\"user_id and items are required\")\n    return {\"status\": \"accepted\", \"user_id\": user_id, \"items\": items}\n\nassert create_order(\"u-123\", [{\"sku\": \"book\", \"quantity\": 1}])[\"status\"] == \"accepted\"",
+   "title": "Functional requirement as a user flow",
+   "code": "def create_order(user, items):\n    if not user:\n        raise ValueError(\"user is required\")\n    if not items:\n        raise ValueError(\"at least one item is required\")\n    return {\"user\": user, \"items\": items, \"status\": \"created\"}\n\nassert create_order(\"u-123\", [\"book\"])[\"status\"] == \"created\"",
    "language": "python",
-   "explanation": "This small function demonstrates a functional requirement: accepting a user's order only when the required inputs are present."
+   "explanation": "A small executable example expresses a user action and its successful outcome without prescribing a storage or framework choice."
   },
   "useCases": [
    {
-    "title": "Feature definition",
-    "scenario": "Capturing behavior for a new feature"
+    "title": "Turn a feature request into a user journey",
+    "scenario": "A product team is defining an order workflow."
    },
    {
-    "title": "Requirements workshops",
-    "scenario": "Aligning stakeholders on expected outcomes"
+    "title": "Separate required behavior from implementation choices",
+    "scenario": "An architect is preparing a design review."
    },
    {
-    "title": "Acceptance planning",
-    "scenario": "Preparing behavior for validation"
+    "title": "Create stakeholder-checked acceptance criteria",
+    "scenario": "A delivery team is writing stories and tests."
    }
   ],
   "related": [
-   "Non-functional requirements",
-   "Acceptance criteria",
-   "User journey",
-   "Process mapping"
+   "non-functional requirements",
+   "acceptance criteria",
+   "user journey",
+   "process",
+   "scope creep",
+   "exceptions"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is a functional requirement?",
+    "answer": "A functional requirement states what the solution must do or how it should behave. It should identify who needs the behavior, what action or result is required, and why it matters.",
+    "followUp": "How would you make a requirement testable? Define clear acceptance criteria describing when the requirement is satisfied, then review that interpretation with the stakeholder."
+   },
+   {
+    "question": "How do you discover functional requirements?",
+    "answer": "Start from a user journey or process instead of an unstructured feature list. Describe how a user successfully completes the intended task, then decompose large requirements into smaller parts.",
+    "followUp": "What should you do when the journey has failures or unusual cases? Capture exceptions alongside the successful path so the design does not omit required behavior."
+   },
+   {
+    "question": "What makes a functional requirement usable for design and delivery?",
+    "answer": "Acceptance criteria make satisfaction explicit and help reveal whether a requirement is sufficiently detailed and appropriately sized. The stakeholder should review the criteria because they also help control scope.",
+    "followUp": "How does this affect architecture choices? First agree on the required behavior and boundaries; only then select components and technologies that support those outcomes."
+   }
+  ],
   "keyPoints": [
-   "Describe required system behavior and capabilities, not the technologies used to implement them.",
-   "For every requirement, identify the actor, the system behavior, and the reason the behavior is needed.",
-   "Define observable acceptance criteria so the team can tell when each requirement is complete."
+   "Functional requirements define the system’s required capabilities and observable behavior, unlike quality-focused constraints such as performance.",
+   "Record who needs the behavior, what the system must do, and why the behavior is valuable.",
+   "Break oversized requirements into smaller units that can be understood, checked, and delivered independently.",
+   "Model a process or user journey rather than collecting disconnected feature names.",
+   "Define the condition that proves completion so everyone shares the same interpretation of success.",
+   "Validate the completion criteria with the stakeholder before treating the requirement as agreed."
   ],
   "gotchas": [
-   "Avoid requirements that bundle too much behavior; split them into smaller, independently understandable parts."
+   "Do not document only the happy path; identify exceptional situations while describing the successful flow.",
+   "Guard the agreed boundary: explicitly challenge requirements that fall outside the original assumptions to avoid scope creep."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Framing the problem::Non-functional requirements": {
-  "sourceUrl": "https://learn.microsoft.com/en-gb/azure/architecture/guide/design-principles/build-for-business",
+  "sourceUrl": "https://learn.microsoft.com/en-us/azure/architecture/guide/design-principles/build-for-business",
   "sourceTitle": "Build for business needs",
-  "summary": "Non-functional requirements specify how well a system must operate, including measurable goals for latency, availability, durability, and consistency. State them explicitly because they shape architecture and technology choices.",
-  "explanation": "Treat non-functional requirements as measurable quality targets that describe how well a system must operate, not merely what it must do. Capture them per important user or system flow, then use them to guide architecture and technology choices.",
+  "summary": "Define nonfunctional requirements as measurable quality targets—such as scalability, availability, and latency—before selecting architecture or technology. Set targets per flow because availability, consistency, and recovery needs can differ across a workload.",
+  "explanation": "Start by separating what the system must do from how well it must do it. Record measurable targets for each important flow—such as latency, availability, consistency, scalability, and recovery—because those targets constrain architecture and technology choices. Different flows may need different targets rather than one workload-wide value.",
   "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Explicit system targets",
-   "code": "const requirements = {\n  latencyP95Ms: 200,\n  availability: 0.9999,\n  durability: \"no acknowledged data loss\",\n  consistency: \"strong for account balance\"\n};\n\nfunction validateRequirements(r) {\n  if (r.latencyP95Ms <= 0 || r.availability <= 0 || r.availability > 1) {\n    throw new Error(\"Invalid non-functional targets\");\n  }\n  return r;\n}\n\nconsole.log(validateRequirements(requirements));",
-   "language": "javascript",
-   "explanation": "This runnable example makes measurable latency, availability, durability, and consistency targets explicit before architecture decisions."
+   "title": "Explicit requirement targets",
+   "code": "requirements:\n  availability: 99.99%\n  latency_p95: 200ms\n  consistency: read-after-write\n  recovery_point_objective: 5m",
+   "language": "yaml",
+   "explanation": "A compact YAML record makes the measurable targets explicit before architecture choices are made."
   },
   "useCases": [
    {
-    "title": "Set response-time and availability targets",
-    "scenario": "Defining an API contract"
+    "title": "Capacity and latency planning",
+    "scenario": "A new API must support a known peak load without exceeding a response-time objective."
    },
    {
-    "title": "Match consistency and durability needs",
-    "scenario": "Choosing a storage system"
+    "title": "Availability and recovery design",
+    "scenario": "A payment path must remain usable during component failures and recover within a defined window."
    },
    {
-    "title": "Balance availability, consistency, and recovery",
-    "scenario": "Designing a multi-region service"
-   },
-   {
-    "title": "Translate scalability and latency goals into architecture",
-    "scenario": "Capacity planning"
+    "title": "Distributed data trade-offs",
+    "scenario": "A globally distributed application must choose between stronger consistency and greater availability."
    }
   ],
   "related": [
@@ -551,348 +720,465 @@
    "availability",
    "latency",
    "data consistency",
-   "disaster recovery"
+   "disaster recovery",
+   "service-level objectives (SLOs)",
+   "service-level agreements (SLAs)"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What are nonfunctional requirements, and why do they matter?",
+    "answer": "Functional requirements describe the behavior a solution must provide, while nonfunctional requirements describe how well it performs. Examples include scalability, availability, and latency, and they affect design and technology decisions.",
+    "followUp": "How should requirements vary within one system? Define them per user, data, or system flow, because different flows can have different availability, consistency, scalability, and recovery needs."
+   },
+   {
+    "question": "How do you make availability and recovery requirements actionable?",
+    "answer": "Translate vague quality goals into explicit targets for the relevant flows. Availability and recovery targets can include SLOs, SLAs, MTTR, MTBF, RTO, and RPO.",
+    "followUp": "Why define targets per workload or flow? A single target can overdesign low-value paths or underprotect critical ones."
+   },
+   {
+    "question": "How do availability and consistency interact in distributed systems?",
+    "answer": "Distributed designs must balance availability and consistency because network partitions cannot be completely avoided. Eventual consistency can be chosen when higher availability is more valuable than immediate consistency.",
+    "followUp": "What should be documented before selecting a datastore? State the required consistency model and the acceptable availability trade-off for each flow."
+   }
+  ],
   "keyPoints": [
-   "Functional requirements describe the system's behavior—what it does.",
-   "Non-functional requirements describe quality attributes and operational expectations rather than business behavior.",
-   "Explicitly identify scalability, availability, and latency targets during problem framing.",
-   "Use the targets to select architecture patterns, infrastructure, and data technologies.",
-   "Record requirements per flow because availability, scalability, consistency, and recovery needs can vary."
+   "First describe the required behavior; then specify the quality levels at which that behavior must operate.",
+   "At minimum, identify scalability, availability, and latency expectations before choosing an architecture.",
+   "Use the targets to compare architectures and technologies instead of selecting components before defining the constraints.",
+   "Set availability and recovery objectives per flow so the architecture reflects business-critical paths.",
+   "Use named operational metrics to express availability and recovery expectations precisely."
   ],
   "gotchas": [
-   "Do not assume one target fits every flow; critical paths may need different availability, consistency, or recovery guarantees."
+   "Do not apply one universal target to every flow; critical and noncritical paths may need different requirements.",
+   "Availability and consistency are not independent knobs in a partitioned distributed system; state the intended trade-off."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Framing the problem::Read and write ratios": {
-  "sourceUrl": "https://docs.aws.amazon.com/wellarchitected/latest/framework/perf_data_use_purpose_built_data_store.html",
-  "sourceTitle": "PERF03-BP01 Use a purpose-built data store that best supports your data access and storage requirements",
-  "summary": "Use the read/write ratio and access pattern to choose data stores and scaling techniques. Read-heavy workloads often benefit from caching or read replicas; write-heavy workloads need write-optimized designs.",
-  "explanation": "Measure the proportion of read queries relative to writes, then choose storage and scaling mechanisms that fit the dominant pattern. Read-heavy workloads commonly benefit from caching or read replicas, while write-heavy workloads require designs optimized for write throughput and consistency.",
+  "sourceUrl": "https://docs.aws.amazon.com/prescriptive-guidance/latest/aws-multi-region-fundamentals/fundamental-2.html",
+  "sourceTitle": "Multi-Region fundamental 2: Understanding the data",
+  "summary": "Classify a workload by its read/write mix before choosing a multi-Region architecture. Read-heavy workloads can use local reads with centralized writes, while write-heavy workloads need stronger write-placement and failover planning.",
+  "explanation": "Measure whether the workload is read-intensive or write-intensive, then choose a multi-Region data strategy accordingly. Read-heavy systems can serve reads locally while sending writes to one Region, whereas write-heavy systems may need partitioned writes or a primary-and-standby design; the choice also depends on consistency requirements.",
   "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Classify a workload",
-   "code": "# Read-heavy: cache and scale reads separately\nread_ratio=0.95\nwrite_ratio=0.05\nif read_ratio > write_ratio:\n    strategy=\"cache or read replicas; single write store\"\nelse:\n    strategy=\"prioritize write throughput and failover\" \nprint(strategy)",
+   "title": "Choose a strategy from the access pattern",
+   "code": "read_ratio = 90\nwrite_ratio = 10\n\nif read_ratio > write_ratio:\n    strategy = \"read-local/write-global\"\nelse:\n    strategy = \"write-partitioned or failover\"\n\nprint(strategy)",
    "language": "python",
-   "explanation": "A small runnable illustration of choosing architecture from the observed read/write mix."
+   "explanation": "A minimal runnable illustration of selecting a multi-Region strategy from the workload's dominant access pattern."
   },
   "useCases": [
    {
-    "title": "Add a cache",
-    "scenario": "Many repeated reads with relatively few writes"
+    "title": "Read-local, write-global",
+    "scenario": "Reads greatly outnumber writes and stale reads are acceptable."
    },
    {
-    "title": "Scale reads with replicas",
-    "scenario": "A relational database is read-heavy"
+    "title": "Simpler active-active reads",
+    "scenario": "Static or read-only content is served from multiple Regions."
    },
    {
-    "title": "Choose a relational store",
-    "scenario": "Complex, consistent, high-throughput queries"
+    "title": "Partition writes by ownership",
+    "scenario": "Users write frequently from different geographic locations."
    },
    {
-    "title": "Use local reads with centralized writes",
-    "scenario": "A multi-Region workload has more reads than writes"
+    "title": "Primary Region with standby failover",
+    "scenario": "Writes require a primary authority and controlled recovery."
    }
   ],
   "related": [
-   "read-heavy workloads",
-   "write-heavy workloads",
-   "caching layer",
-   "read replicas",
-   "Amazon ElastiCache",
-   "Amazon RDS",
-   "read local, write global"
+   "read-local/write-global strategy",
+   "write-intensive workloads",
+   "active-active multi-Region architecture",
+   "eventual consistency",
+   "Aurora global databases",
+   "write-partitioned strategy"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How does the read/write ratio influence a multi-Region architecture?",
+    "answer": "Classify the workload by whether reads or writes dominate. For read-intensive traffic, a read-local/write-global arrangement can keep reads near users while centralizing writes and asynchronously replicating the data.",
+    "followUp": "What consistency trade-off follows? Local replicas can lag the write Region, so the workload must tolerate eventual consistency."
+   },
+   {
+    "question": "Why are write-intensive workloads harder to distribute globally?",
+    "answer": "Read-intensive workloads generally allow simpler active-active designs, especially when the data is static or read-only. Write-intensive workloads introduce more coordination and conflict-handling concerns.",
+    "followUp": "How can write-heavy global traffic reduce cross-Region latency? Partition writes by an item or user key so each record has a designated home Region."
+   },
+   {
+    "question": "Describe the read-local/write-global pattern.",
+    "answer": "A read-local/write-global pattern sends every write to a database in one Region, replicates data asynchronously to other Regions, and permits reads in any Region. It is suitable when reads are a larger share of traffic and eventual consistency is acceptable.",
+    "followUp": "What is an alternative when writes are geographically distributed? Use a write-partitioned pattern that assigns each item to a Region, or use a primary Region with failover when centralized writes are appropriate."
+   }
+  ],
   "keyPoints": [
-   "Classify the workload as read-heavy or write-heavy before choosing a data store.",
-   "Quantify the read-to-write ratio as an explicit input to architecture decisions.",
-   "For read-dominant traffic, add a caching layer when repeated reads can be served without hitting the primary store.",
-   "Relational systems can scale read traffic by sending reads to replicas instead of the primary database.",
-   "When reads are complex and require consistency, use a relational option such as Amazon RDS.",
-   "The workload's read/write character should influence the multi-Region topology."
+   "Start by classifying the workload as read-intensive or write-intensive; this classification is the framing decision for the architecture.",
+   "The dominant access pattern is not merely descriptive: it guides the choice of multi-Region topology.",
+   "When reads substantially outnumber writes, a read-local/write-global strategy is a candidate.",
+   "In read-local/write-global, writes are centralized in one designated Region.",
+   "Other Regions receive the write Region's data asynchronously, enabling local read access.",
+   "The pattern allows read requests to use any participating Region, which supports geographically close reads.",
+   "Read-only or static-content workloads can use active-active multi-Region architecture with less engineering complexity than write-heavy workloads."
   ],
   "gotchas": [
-   "A read-local/write-global design can return stale data because writes replicate asynchronously across Regions; use it only when eventual consistency is acceptable."
+   "A read-local/write-global design can return stale local reads because replication is asynchronous; use it only when eventual consistency is acceptable.",
+   "Write-heavy workloads need an explicitly selected primary Region and engineered failover capability rather than assuming read scaling solves write capacity.",
+   "Cross-Region replication latency can make a nearby read stale after a remote write."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Reliability & operations::Capacity and cost": {
   "sourceUrl": "https://docs.aws.amazon.com/decision-guides/latest/decision-guides/choosing-aws-serverless-service.html",
   "sourceTitle": "Choosing an AWS serverless service",
-  "summary": "Capacity and cost depend on the pricing model: pay-per-use follows requests and duration, while provisioned capacity charges for reserved resources. Per-request pricing suits variable traffic but can cost more than provisioned capacity at sustained, high throughput.",
-  "explanation": "Choose a pricing model that matches traffic shape. Per-request pricing scales with invocations and can become costly at very high throughput, while reserved or provisioned capacity may be cheaper for sustained, predictable demand; dynamic allocation avoids paying for idle capacity when demand is uncertain.",
+  "summary": "Know Lambda’s cost per request and execution duration. Costs scale with traffic, runtime, and allocated resources, while automatic concurrency scaling can make total spend rise quickly during spikes.",
+  "explanation": "Lambda uses pay-per-use pricing: request volume and execution duration determine cost, while the selected memory allocation affects proportional CPU and resources. This makes cost rise with both traffic and runtime, and concurrency can create additional execution environments during spikes.",
   "syntax": "",
-  "parameters": [],
-  "returns": "",
+  "parameters": [
+   {
+    "name": "requests",
+    "type": "count",
+    "description": "Number of requests served by the function."
+   },
+   {
+    "name": "duration",
+    "type": "time",
+    "description": "Function execution duration."
+   },
+   {
+    "name": "memory",
+    "type": "GB",
+    "description": "Memory allocated to the function; CPU and resources are proportional to this allocation."
+   }
+  ],
+  "returns": "A cost estimate composed of request charges and duration-based compute charges.",
   "example": {
-   "title": "Estimate request cost",
-   "code": "const requestsPerMonth = 5_000_000;\nconst freeRequests = 1_000_000;\nconst requestPricePerMillion = 0.20;\n\nconst billableMillions = Math.max(0, requestsPerMonth - freeRequests) / 1_000_000;\nconst monthlyRequestCost = billableMillions * requestPricePerMillion;\n\nconsole.log(`Request cost: $${monthlyRequestCost.toFixed(2)}`);",
-   "language": "javascript",
-   "explanation": "This runnable example estimates monthly request charges after subtracting the documented free tier; execution-duration charges are not included."
+   "title": "Estimate request and duration cost",
+   "code": "const requests = 1_000_000;\nconst durationSeconds = 0.2;\nconst gbMemory = 1;\nconst requestCost = (requests / 1_000_000) * 0.20;\nconst computeCost = requests * durationSeconds * gbMemory * 0.0000166667;\nconsole.log({ requestCost, computeCost, total: requestCost + computeCost });",
+   "language": "typescript",
+   "explanation": "Estimates Lambda cost from request count, duration, and memory allocation."
   },
   "useCases": [
    {
-    "title": "Avoid idle capacity",
-    "scenario": "Traffic varies widely or can fall to zero."
+    "title": "Cost estimation",
+    "scenario": "Forecasting a serverless API budget from expected invocation volume and average runtime."
    },
    {
-    "title": "Use invocation-based billing",
-    "scenario": "Requests are short-lived and event-driven."
+    "title": "Pricing-model selection",
+    "scenario": "Comparing pay-per-use Lambda with capacity-based compute for a steady workload."
    },
    {
-    "title": "Compare provisioned capacity",
-    "scenario": "Demand is steady and predictable."
-   },
-   {
-    "title": "Evaluate nonlinear cost pressure",
-    "scenario": "Throughput may become very high."
+    "title": "Spike analysis",
+    "scenario": "Planning for burst traffic that may create many concurrent executions."
    }
   ],
   "related": [
-   "AWS Lambda",
-   "Amazon API Gateway",
-   "Amazon DynamoDB",
-   "AWS Fargate",
-   "Amazon Aurora Serverless",
-   "Step Functions Express",
-   "Amazon EventBridge"
+   "Lambda",
+   "Event Functions",
+   "execution duration",
+   "per-request scaling",
+   "capacity-based pricing",
+   "hybrid pricing"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What inputs determine Lambda Event Function cost?",
+    "answer": "Lambda cost is driven by the number of requests and how long the function runs. Execution duration is measured using the allocated memory dimension, so both workload volume and resource allocation matter.",
+    "followUp": "How would you reduce cost without simply lowering memory? Measure duration, remove unnecessary work, reduce invocation volume, and control concurrency where the workload permits."
+   },
+   {
+    "question": "Why can a traffic spike increase cost quickly?",
+    "answer": "Lambda can scale from zero to thousands of concurrent executions, and per-request scaling can create a new execution environment for each concurrent request. That makes capacity elastic, but a sudden traffic increase can produce a corresponding cost increase.",
+    "followUp": "What operational metric would you correlate with cost? Compare request count, concurrency, duration, and configured memory over the same time window."
+   },
+   {
+    "question": "How does pay-per-use differ from capacity-based pricing?",
+    "answer": "Pay-per-use pricing means there is no charge while the function is not running. For active workloads, charges reflect invocations and execution duration rather than an always-on instance allocation.",
+    "followUp": "When might capacity-based pricing be preferable? A steadier, predictable workload may justify reserved compute or throughput capacity instead of per-request billing."
+   }
+  ],
   "keyPoints": [
-   "Pay-per-use models charge for actual invocations and execution duration, avoiding idle-capacity charges.",
-   "Estimate request cost from two dimensions: invocation count and execution duration.",
-   "Capacity-based pricing charges for reserved compute or throughput rather than only completed requests.",
-   "Hybrid models provide request-based billing that grows linearly with traffic and require no upfront capacity commitment.",
-   "Compare cumulative request charges with reserved capacity when traffic is steady enough to forecast.",
-   "Automatic scaling can align spend with variable demand and reduce charges for unused capacity."
+   "Idle periods do not incur Lambda compute charges under the documented pay-per-use model.",
+   "Capacity follows demand automatically, allowing workloads to start at zero and expand substantially.",
+   "Per-request pricing is presented as a linear scaling model without an upfront capacity commitment."
   ],
   "gotchas": [
-   "Reserved or provisioned capacity can cost money during quiet periods; use it when demand is sustained and predictable.",
-   "Per-request pricing may lose its cost advantage at very high throughput."
+   "Traffic spikes can increase concurrent environments, so model concurrency rather than only daily request totals."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Reliability & operations::Circuit breakers and bulkheads": {
-  "sourceUrl": "https://learn.microsoft.com/en-us/dotnet/architecture/cloud-native/application-resiliency-patterns",
-  "sourceTitle": "Application resiliency patterns - .NET",
-  "summary": "Circuit breakers stop repeated calls to an unhealthy dependency, while bulkheads constrain work to isolated, fixed-size capacity. Together they prevent dependency failures or overload from consuming the whole application.",
-  "explanation": "A circuit breaker stops calls to a dependency after failures exceed a threshold, then periodically permits a trial call before restoring traffic. A bulkhead isolates work into bounded resource pools or queues so one failing or overloaded dependency cannot consume capacity needed by other operations.",
+  "sourceUrl": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/implement-resilient-applications/partial-failure-strategies",
+  "sourceTitle": "Strategies for handling partial failure - .NET",
+  "summary": "Circuit breakers stop calls to a dependency after failures indicate that continuing is pointless; bulkheads cap outstanding work so overload in one dependency does not exhaust shared resources.",
+  "explanation": "A circuit breaker tracks failures and stops calls that are likely to fail, then periodically permits a trial request to test recovery. A bulkhead limits concurrent work and optionally queues or rejects excess requests, isolating resource consumption so one overloaded dependency does not exhaust the client.",
   "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Minimal circuit breaker",
-   "code": "from dataclasses import dataclass\nfrom time import monotonic\n\n@dataclass\nclass CircuitBreaker:\n    failures: int = 0\n    opened_at: float = 0\n    threshold: int = 3\n    timeout: float = 5\n\n    def call(self, operation):\n        if self.opened_at and monotonic() - self.opened_at < self.timeout:\n            raise RuntimeError(\"circuit open\")\n        try:\n            result = operation()\n            self.failures = 0\n            self.opened_at = 0\n            return result\n        except Exception:\n            self.failures += 1\n            if self.failures >= self.threshold:\n                self.opened_at = monotonic()\n            raise\n\nbreaker = CircuitBreaker()\nprint(breaker.call(lambda: \"dependency response\"))",
-   "language": "python",
-   "explanation": "A minimal runnable illustration of failure counting, fast rejection while open, and reset after a successful trial call."
+   "title": "Policy composition",
+   "code": "using Polly; using Polly.CircuitBreaker; using Polly.Bulkhead;",
+   "language": "csharp",
+   "explanation": "The page describes the policies conceptually, but does not provide a complete runnable implementation."
   },
   "useCases": [
    {
-    "title": "Fail fast on persistent dependency failure",
-    "scenario": "A remote service returns repeated failures or timeouts."
+    "title": "Fail fast during dependency failure",
+    "scenario": "A remote service is timing out repeatedly and more attempts would amplify the incident."
    },
    {
-    "title": "Limit concurrency and queue growth",
-    "scenario": "One dependency receives a traffic spike or becomes slow."
+    "title": "Isolate dependency capacity",
+    "scenario": "One downstream integration is consuming too many client threads or connections."
    },
    {
-    "title": "Isolate resource pools",
-    "scenario": "Independent operations share process or service resources."
-   },
-   {
-    "title": "Probe and restore traffic gradually",
-    "scenario": "A dependency may recover after an uncertain interval."
+    "title": "Reject overload early",
+    "scenario": "Incoming work exceeds the available concurrency for a dependency."
    }
   ],
   "related": [
    "Retry pattern",
-   "Bulkhead Isolation policy",
+   "Polly Bulkhead Isolation policy",
    "SemaphoreSlim",
-   "fallback response",
-   "cached data"
+   "BulkheadPolicy",
+   "Circuit Breaker pattern"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How does a circuit breaker work?",
+    "answer": "A circuit breaker counts failed calls and opens after a configured threshold, causing later calls to fail immediately. After a timeout, it permits a trial call; success closes the circuit, while continued failure keeps it open.",
+    "followUp": "Why combine it with retries? Retries can handle transient faults, while the breaker stops retries and further calls when the fault persists."
+   },
+   {
+    "question": "What problem does a bulkhead solve?",
+    "answer": "A bulkhead puts an upper bound on outstanding calls to a dependency. It can use a fixed concurrent-work limit, optionally with a separate queue, and reject or shed work when capacity is exhausted.",
+    "followUp": "How can bulkhead state support operations? Policy telemetry can expose occupancy and overflow events, which can feed automated scaling or overload handling."
+   },
+   {
+    "question": "How do circuit breakers and bulkheads differ?",
+    "answer": "The patterns protect different failure boundaries. A circuit breaker prevents repeated calls to an unhealthy dependency; a bulkhead prevents one dependency or workload from consuming all client resources and affecting unrelated work.",
+    "followUp": "Which reacts sooner to a sudden capacity spike? A bulkhead can reject excess work immediately, whereas a breaker typically waits until failures are detected."
+   }
+  ],
   "keyPoints": [
-   "The breaker opens after a configured failure threshold and blocks subsequent dependency calls.",
-   "An open breaker should allow limited probe calls after a delay to test recovery.",
-   "A successful probe closes the breaker and restores normal traffic.",
-   "A bulkhead limits concurrent work with a fixed-size pool, protecting shared resources from a failing dependency."
+   "Configure a failure threshold that opens the circuit and blocks subsequent traffic to the affected service.",
+   "Use a recovery interval and a probe call to test whether the dependency is healthy again.",
+   "A successful probe restores normal traffic by closing the circuit.",
+   "Implement bulkhead isolation as a concurrency throttle that caps parallel operations.",
+   "A bulkhead may provide a bounded waiting queue in addition to its active-work capacity.",
+   "Reject excess work before execution when capacity is full, reducing pressure without waiting for dependency errors."
   ],
   "gotchas": [
-   "Retry and circuit breaking solve different problems: retries address likely-transient failures, while a circuit breaker prevents repeatedly attempting an operation likely to fail."
+   "Do not treat a circuit breaker as a replacement for retries: retries address transient faults, while the breaker prevents calls when failure is likely.",
+   "A full bulkhead should reject excess work promptly rather than allowing unbounded waiting or additional queue growth.",
+   "Bulkheads can shed overload before dependency failures accumulate; a circuit breaker generally needs observed failures before opening."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Reliability & operations::Failure modes": {
   "sourceUrl": "https://learn.microsoft.com/en-us/azure/well-architected/reliability/failure-mode-analysis",
   "sourceTitle": "Architecture strategies for performing failure mode analysis",
-  "summary": "Failure mode analysis enumerates where a workload can fail and which flows, components, customers, regions, or business processes each failure can affect. This exposes blast radius and guides mitigation design.",
-  "explanation": "Failure mode analysis examines critical workload flows component by component, identifies possible failure types, and records their blast radius so mitigations can reduce widespread impact.",
+  "summary": "Failure-mode analysis enumerates failures in critical workload flows, identifies affected dependencies and blast radius, and plans mitigations. The goal is to contain failures and preserve essential functionality when components or dependencies become unavailable.",
+  "explanation": "Failure-mode analysis maps critical flows to their dependencies and failure points, then evaluates each failure's blast radius and plans mitigation. Components should preserve core functionality when dependencies fail by using isolation, fallback behavior, or graceful degradation.",
   "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Map failure modes to affected flows",
-   "code": "failure_modes = {\n    \"regional outage\": \"region-dependent flows\",\n    \"availability zone outage\": \"zone-dependent flows\",\n    \"service outage\": \"flows using the unavailable service\",\n    \"misconfiguration\": \"misconfigured component and dependent flows\",\n    \"operator error\": \"affected component and its dependent flows\"\n}\n\nfor mode, impact in failure_modes.items():\n    print(f\"{mode}: {impact}\")",
+   "title": "Dependency failure classification",
+   "code": "def classify_failure(component, dependency_failed):\n    if dependency_failed:\n        return f\"Degrade {component} to its critical functionality\"\n    return f\"{component} operates normally\"\n\nprint(classify_failure(\"checkout\", True))",
    "language": "python",
-   "explanation": "A compact inventory connects each failure type to the flows and components whose availability may be affected."
+   "explanation": "A small runnable illustration of choosing a degraded path when a dependency fails."
   },
   "useCases": [
    {
-    "title": "Identify failure points",
-    "scenario": "Reviewing a new architecture"
+    "title": "Expose single points of failure",
+    "scenario": "Evaluating a new architecture before implementation"
    },
    {
     "title": "Map blast radius",
-    "scenario": "Assessing critical user journeys"
+    "scenario": "Planning resilience for a critical user journey"
    },
    {
-    "title": "Contain component failures",
-    "scenario": "Refactoring a monolith"
-   },
-   {
-    "title": "Choose mitigations",
-    "scenario": "Planning resilience improvements"
+    "title": "Test fallback and recovery paths",
+    "scenario": "Preparing operational validation"
    }
   ],
   "related": [
-   "Failure mode analysis",
-   "Blast radius",
-   "Critical flows",
-   "Regional outage",
-   "Availability zone outage",
-   "Service outage",
-   "Distributed denial-of-service (DDoS)",
-   "App or component misconfiguration"
+   "Failure mode analysis (FMA)",
+   "critical flows",
+   "blast radius",
+   "dependencies",
+   "single point of failure",
+   "graceful degradation",
+   "redundancy",
+   "fallback behavior"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is failure-mode analysis and why use it?",
+    "answer": "Failure-mode analysis identifies potential failure points in critical flows, including internal and external dependencies, and assesses the blast radius of each failure. The results guide mitigation and resilience design.",
+    "followUp": "How do you reduce blast radius? Isolate components, minimize strong dependencies, add redundancy, and provide fallback or degraded paths so unrelated functionality continues."
+   },
+   {
+    "question": "How do you perform failure-mode analysis?",
+    "answer": "A failure mode is a problem that can degrade or make one or more workload components unavailable. Analysis follows each critical flow step by step, identifies dependencies and failure points, and plans mitigations.",
+    "followUp": "What should be analyzed besides service outages? Include dependency latency, intermittent errors, partial data availability, malicious attacks, and other failures affecting the flow."
+   },
+   {
+    "question": "What should a component do when a dependency fails?",
+    "answer": "Graceful degradation lets a component continue its core function when a dependency is unavailable. For each failure mode, provide the most critical functionality through a fallback or reduced-capability path.",
+    "followUp": "How can the design avoid cascading failures? Detect dependency failures, minimize their effect on upstream and downstream systems, and verify isolation with failure tests."
+   }
+  ],
   "keyPoints": [
-   "Use FMA to list failure points and the workload flows that use them.",
-   "Analyze every flow step and estimate how far each failure type can spread.",
-   "Consider regional outages, availability-zone outages, service outages, attacks, misconfiguration, and operator error.",
-   "A regional outage can remove all workload components and flows hosted in that region.",
-   "A zone outage affects components and flows that depend on that zone.",
-   "A service outage affects flows that require the unavailable service and may affect their dependents.",
-   "Mitigate identified failures with redundancy across infrastructure, data, and networking."
+   "Start with critical flows, enumerate their components and dependencies, and identify where failures can occur.",
+   "Estimate which components and user-facing flows each failure can affect; this reveals the failure's blast radius.",
+   "Record both internal and external dependencies alongside flow documentation so hidden single points of failure become visible.",
+   "Reduce the effect of failures with redundancy across infrastructure, data, and networking, plus isolated application components."
   ],
   "gotchas": [
-   "Assess dependencies as well as the component itself; a dependency failure can enlarge the affected flow.",
-   "Blast radius is broader than a single service: record every affected workload, customer group, region, and business process."
+   "A hard dependency can define the application's effective availability, so its recovery and availability targets must align with the application's targets."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Reliability & operations::Observability": {
-  "sourceUrl": "https://learn.microsoft.com/en-us/azure/well-architected/operational-excellence/observability",
-  "sourceTitle": "Designing a monitoring system",
-  "summary": "Observability uses metrics, logs, traces, and events to understand system behavior and reliability. Define health indicators first, then collect structured, contextual telemetry and correlate it across components for diagnosis.",
-  "explanation": "Observability combines telemetry from metrics, logs, and traces to reveal system health and behavior. Define health indicators first, then collect structured, contextual signals from every component and connect them so dashboards, alerts, and investigations can explain failures and bottlenecks.",
+  "sourceUrl": "https://docs.aws.amazon.com/reference-architecture-diagrams/latest/observability-logs-traces-metrics/observability-logs-traces-metrics.html",
+  "sourceTitle": "Observability with Logs, Traces, and Metrics - Observability ...",
+  "summary": "Observability combines logs, metrics, and traces from applications, services, and containers. Collectors process and route these signals to data stores, where dashboards and visualizations help operators understand system behavior.",
+  "explanation": "Applications, services, and containers emit logs, metrics, and traces. Collectors transform and enrich these signals, forward them to suitable stores, and make the resulting data available for dashboards and visualizations.",
   "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Emit the three observability signals",
-   "code": "from prometheus_client import Counter, Histogram, start_http_server\nimport logging\nfrom opentelemetry import trace\n\nlogging.basicConfig(level=logging.INFO)\nrequests = Counter(\"requests_total\", \"Total requests\")\nlatency = Histogram(\"request_latency_seconds\", \"Request latency\")\ntracer = trace.get_tracer(__name__)\n\n@latency.time()\ndef handle_request():\n    with tracer.start_as_current_span(\"handle_request\"):\n        requests.inc()\n        logging.info(\"request handled\")\n\nstart_http_server(8000)\nhandle_request()",
-   "language": "python",
-   "explanation": "This small service emits a metric, a structured operational log, and a trace span so the signals can be correlated during diagnosis."
+   "title": "Architecture reference",
+   "code": "# No runnable example is provided because the fetched page is an architecture reference diagram rather than an executable API.",
+   "language": "text",
+   "explanation": "The page describes an observability architecture, not a standalone command or implementation."
   },
   "useCases": [
    {
-    "title": "Health monitoring",
-    "scenario": "Detecting reliability degradation through trends in latency, errors, or resource behavior."
+    "title": "Cross-service monitoring",
+    "scenario": "A distributed application needs a unified operational view."
    },
    {
-    "title": "Incident diagnosis",
-    "scenario": "Investigating an incident by correlating logs, metrics, and traces across services."
+    "title": "Signal enrichment",
+    "scenario": "Telemetry must be prepared before analysis."
    },
    {
-    "title": "Distributed performance analysis",
-    "scenario": "Following a request across microservices to locate latency bottlenecks."
-   },
-   {
-    "title": "Operational reporting",
-    "scenario": "Building dashboards and alerts around workload KPIs and service health indicators."
+    "title": "Dashboard-driven troubleshooting",
+    "scenario": "Operators need interactive investigation during incidents."
    }
   ],
   "related": [
-   "Telemetry",
-   "Logs",
-   "Metrics",
-   "Traces",
-   "Workload health indicators",
-   "KPIs",
-   "Performance metrics"
+   "Fluent Bit",
+   "Data Prepper",
+   "Amazon OpenSearch Dashboards",
+   "Amazon Managed Grafana",
+   "Amazon Managed Service for Prometheus",
+   "AWS Distro for OpenTelemetry"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What are the main signals in an observability architecture?",
+    "answer": "The three primary observability signals are logs, metrics, and traces. Applications, services, and containers produce them, after which collectors process and route them to storage systems.",
+    "followUp": "Why use collectors? They provide a processing and routing layer that can enrich signals and send them to stores suited to the data."
+   },
+   {
+    "question": "What role do collectors play?",
+    "answer": "Collectors such as Fluent Bit and Data Prepper transform and enrich telemetry before forwarding it. This separates signal production from backend-specific processing.",
+    "followUp": "What design benefit does this separation provide? Producers remain less coupled to storage and visualization tools, making the telemetry pipeline easier to adapt."
+   },
+   {
+    "question": "How is collected telemetry used operationally?",
+    "answer": "Users consume telemetry through interactive dashboards and visualizations. The reference names Amazon OpenSearch Dashboards and Amazon Managed Grafana as examples.",
+    "followUp": "How should a design choose between visualization tools? Match the tool to the stored signal types, operational workflows, and required exploration capabilities."
+   }
+  ],
   "keyPoints": [
-   "Observability infers internal system health from externally emitted telemetry.",
-   "The monitoring stack runs alongside the functional stack and analyzes workload behavior in production.",
-   "Traces expose request journeys and problems spanning multiple services.",
-   "Choose health indicators and KPIs before deciding what telemetry to collect."
+   "Instrument workloads and infrastructure to emit logs, metrics, and traces as the foundation of observability.",
+   "Place collectors between producers and storage when telemetry needs normalization or added context.",
+   "Route telemetry to separate stores when each signal requires a specialized backend.",
+   "Provide dashboards so operators can explore telemetry rather than relying only on raw records."
   ],
   "gotchas": [
-   "Prefer structured telemetry; unstructured records are harder to query and investigate.",
-   "Keep schemas and context consistent, including the emitting component and timestamps.",
-   "Disconnected signals make end-to-end diagnosis difficult; correlate all three across components."
+   "Raw telemetry may need transformation and enrichment before storage or analysis.",
+   "Choose signal stores deliberately rather than assuming one backend should handle every telemetry type."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Reliability & operations::Rate limiting and backpressure": {
-  "sourceUrl": "https://docs.aws.amazon.com/wellarchitected/latest/framework/rel_mitigate_interaction_failure_throttle_requests.html",
-  "sourceTitle": "REL05-BP02 Throttle requests - AWS Well-Architected Framework",
-  "summary": "Throttle incoming requests to prevent resource exhaustion during demand spikes. Token-bucket limits allow controlled rates and bounded bursts, while throttled clients retry later instead of amplifying overload.",
-  "explanation": "Rate limiting caps request volume or operation size over time so a downstream service stays within capacity. A token bucket permits bursts up to its bucket size, then rejects excess requests; callers should interpret overload signals, avoid retry storms, and retry later with bounded randomized delay.",
-  "syntax": "token_bucket.allow(request_cost) -> bool",
+  "sourceUrl": "https://learn.microsoft.com/en-us/azure/architecture/patterns/rate-limiting-pattern",
+  "sourceTitle": "Rate Limiting Pattern - Azure Architecture Center",
+  "summary": "Rate limiting deliberately restricts request throughput so a service stays within its capacity and avoids overload. Back-pressure signals such as HTTP 429 and Retry-After tell callers to slow down rather than create retry storms.",
+  "explanation": "A rate limiter admits requests only up to a configured threshold. Excess requests are rejected quickly with a throttling response, allowing callers to slow down instead of exhausting service resources; retries must be bounded and coordinated with the limiter to avoid retry storms.",
+  "syntax": "HTTP/1.1 429 Too Many Requests\nRetry-After: <delay>",
   "parameters": [],
-  "returns": "A request is admitted when capacity is available; otherwise it is rejected with a throttling indication such as HTTP 429.",
+  "returns": "Excess requests are rejected with a throttling response; Amazon API Gateway uses HTTP 429 Too Many Requests for rate-limit violations.",
   "example": {
-   "title": "Token-bucket admission control",
-   "code": "from dataclasses import dataclass\nfrom time import monotonic\n\n@dataclass\nclass TokenBucket:\n    rate: float\n    capacity: float\n    tokens: float = 0\n    updated: float = monotonic()\n\n    def allow(self, cost: float = 1) -> bool:\n        now = monotonic()\n        self.tokens = min(self.capacity, self.tokens + (now - self.updated) * self.rate)\n        self.updated = now\n        if self.tokens < cost:\n            return False\n        self.tokens -= cost\n        return True\n\nbucket = TokenBucket(rate=5, capacity=10, tokens=10)\nprint(bucket.allow())",
+   "title": "Per-client throttling with an explicit back-pressure signal",
+   "code": "from flask import Flask, jsonify, request\nfrom flask_limiter import Limiter\nfrom flask_limiter.util import get_remote_address\n\napp = Flask(__name__)\nlimiter = Limiter(get_remote_address, app=app, default_limits=[\"10 per second\"])\n\n@app.get(\"/items\")\n@limiter.limit(\"5 per second\")\ndef items():\n    return jsonify(items=[])\n\n@app.errorhandler(429)\ndef throttled(_):\n    response = jsonify(error=\"too many requests\")\n    response.status_code = 429\n    response.headers[\"Retry-After\"] = \"1\"\n    return response\n\nif __name__ == \"__main__\":\n    app.run()",
    "language": "python",
-   "explanation": "This runnable token-bucket example admits requests while tokens are available and rejects excess demand until tokens refill."
+   "explanation": "A Flask endpoint applies a per-client request limit and returns HTTP 429 with Retry-After when the limit is exceeded."
   },
   "useCases": [
    {
-    "title": "Prevent resource exhaustion",
-    "scenario": "Protecting an API or dependency from traffic spikes"
+    "title": "Overload protection",
+    "scenario": "Protecting an API from sudden demand spikes"
    },
    {
-    "title": "Enforce client or account limits",
-    "scenario": "Serving many clients fairly"
+    "title": "Fair resource allocation",
+    "scenario": "Sharing limited capacity among tenants or clients"
    },
    {
-    "title": "Bound burst traffic",
-    "scenario": "Absorbing bursts before controlled processing"
+    "title": "Quota compliance",
+    "scenario": "Keeping ingestion within a downstream service's quota"
    },
    {
-    "title": "Signal throttling and retry later",
-    "scenario": "Recovering from temporary overload"
+    "title": "Retry coordination",
+    "scenario": "Preventing retries from multiplying an outage"
    }
   ],
   "related": [
-   "throttling",
    "token bucket algorithm",
-   "HTTP 429 Too Many Requests",
-   "quotas",
-   "burst limits",
-   "retry storms",
-   "back-pressure signals"
+   "burst",
+   "HTTP 429",
+   "Retry-After",
+   "usage plan",
+   "API Gateway request throttling",
+   "per-client throttling",
+   "account-level throttling"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What problem does rate limiting solve?",
+    "answer": "Rate limiting controls request arrival so a service stays within its capacity. Requests under the threshold are processed, while excess requests are rejected with a throttling response; this prevents resource exhaustion and preserves responsiveness.",
+    "followUp": "How should a client react to throttling? Use the returned back-pressure signal, honor Retry-After when supplied, apply bounded retries with small random delays, and avoid synchronized retry bursts."
+   },
+   {
+    "question": "How does token-bucket throttling handle bursts?",
+    "answer": "A token-bucket limiter permits a configured steady-state rate and a bounded burst. Each request consumes a token; when the bucket cannot admit it, the gateway rejects the request with HTTP 429.",
+    "followUp": "What does the burst setting control? It limits how many requests can be accepted in a short surge before the steady-state rate governs admission."
+   },
+   {
+    "question": "Which scope should a rate limit use?",
+    "answer": "Rate limits can be applied at different scopes, such as per client, per method, or account-wide. The scope determines which callers share the quota and therefore affects fairness and isolation.",
+    "followUp": "Why can a local limiter be insufficient? If several application instances share a downstream quota, independent local counters may collectively exceed it; enforcement must be coordinated at the shared boundary."
+   }
+  ],
   "keyPoints": [
-   "Use throttling to shed excess demand before resource exhaustion causes broader failure.",
-   "Accept requests under the configured rate and reject excess requests with an explicit throttling response.",
-   "A token bucket models a steady rate while allowing bounded bursts.",
-   "Consumers should treat throttling as a recoverable overload signal and retry later rather than immediately flooding the service."
+   "Per-client limits protect shared capacity from one noisy caller.",
+   "Rate limiting absorbs unpredictable traffic spikes by restricting the admitted request rate.",
+   "Expose an explicit retry signal so callers can reduce pressure and schedule a later attempt."
   ],
   "gotchas": [
-   "Coordinate retries with rate limiting, and use few retries with small randomized delays."
+   "Uncoordinated or aggressive retries can amplify overload into a retry storm; propagate the throttling signal and cap retries."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Scaling & performance::Asynchronous processing": {
   "sourceUrl": "https://learn.microsoft.com/en-us/azure/architecture/patterns/queue-based-load-leveling",
@@ -946,284 +1232,364 @@
   "checkedAt": "2026-10-15"
  },
  "Scaling & performance::Caching strategies": {
-  "sourceUrl": "https://docs.aws.amazon.com/whitepapers/latest/database-caching-strategies-using-redis/caching-patterns.md",
-  "sourceTitle": "Caching patterns",
-  "summary": "Choose cache-aside for on-demand reads, write-through for immediate cache freshness, or write-behind when lower write latency and delayed persistence fit the workload.",
-  "explanation": "Cache-aside loads data only after a cache miss and commonly invalidates the cached item after a data-store update. Write-through updates the data store and cache during the same write, while write-behind postpones the data-store write; choose based on freshness, write latency, and durability requirements.",
+  "sourceUrl": "https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside",
+  "sourceTitle": "Cache-Aside pattern",
+  "summary": "Choose cache-aside for on-demand loading, write-through for immediate read-after-write freshness, or write-behind when delayed persistence suits a write-intensive workload.",
+  "explanation": "Cache-aside loads data into the cache only when requested: read the cache first, fetch a miss from the data store, store the result, and return it. For updates, write the data store and invalidate the corresponding cache entry. Write-through updates the data store and cache in one write operation, while write-behind postpones persistence to the data store.",
   "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Cache-aside read path",
-   "code": "async function getUser(id: string) {\n  const key = `user:${id}`;\n  const cached = await cache.get(key);\n  if (cached) return JSON.parse(cached);\n\n  const user = await database.findUser(id);\n  if (user) await cache.set(key, JSON.stringify(user), { ttl: 300 });\n  return user;\n}",
+   "title": "Cache-aside read",
+   "code": "async function getUser(id) {\n  const cached = await cache.get(id);\n  if (cached) return JSON.parse(cached);\n\n  const user = await db.findUser(id);\n  await cache.set(id, JSON.stringify(user), { ttl: 300 });\n  return user;\n}",
    "language": "typescript",
-   "explanation": "This cache-aside example checks the cache first, loads a miss from the database, and then stores the result for later reads."
+   "explanation": "A cache-aside read checks the cache first, then loads a miss from the data store and caches the result."
   },
   "useCases": [
    {
-    "title": "On-demand reads with cache-aside",
-    "scenario": "Read-heavy data where avoiding unnecessary cache population matters."
+    "title": "Cache-aside reads",
+    "scenario": "Read-heavy data where occasional misses are acceptable."
    },
    {
-    "title": "Fresh reads with write-through",
-    "scenario": "Read-after-write freshness is more important than minimum write latency."
+    "title": "Write-through freshness",
+    "scenario": "Read-heavy paths that require new values immediately after writes."
    },
    {
-    "title": "Lower-latency writes with write-behind",
-    "scenario": "Write-intensive workloads can tolerate delayed persistence."
+    "title": "Write-behind throughput",
+    "scenario": "Write-intensive workloads that can tolerate delayed data-store persistence."
    }
   ],
   "related": [
-   "cache-aside",
-   "lazy loading",
-   "write-through",
-   "write-back",
-   "cache miss",
-   "cache hit"
+   "read-through caching",
+   "lazy caching",
+   "cache invalidation",
+   "write-through caching",
+   "write-behind caching"
   ],
   "since": "",
-  "keyPoints": [
-   "Cache-aside populates the cache on demand: read the database after a miss, then cache the returned value.",
-   "Write-through updates the cache as part of the write path, keeping subsequent reads fresh.",
-   "A cache-aside read starts with the cache and consults the database only when the key is absent.",
-   "Write-behind writes to the cache first and persists to the database later, reducing synchronous write latency."
-  ],
-  "gotchas": [
-   "Write-behind can improve write-heavy performance, but delayed persistence requires careful handling of failures and durability."
-  ],
-  "checkedAt": "2026-10-15"
- },
- "Scaling & performance::Vertical and horizontal scaling": {
-  "sourceUrl": "https://learn.microsoft.com/en-us/azure/well-architected/performance-efficiency/scale-partition",
-  "sourceTitle": "Architecture strategies for optimizing scaling and partitioning - Microsoft Azure Well-Architected Framework",
-  "summary": "Vertical scaling increases capacity within an existing resource; horizontal scaling adds instances to distribute work. Match the method to the bottleneck: scale up for single-instance resource limits, or scale out when work can be distributed and resiliency matters.",
-  "explanation": "Vertical scaling increases the capacity of an existing resource, such as moving to a larger server. Horizontal scaling adds instances and distributes work across them. Choose based on the bottleneck: use vertical scaling when one instance needs more CPU or memory; use horizontal scaling when the workload can be distributed across multiple nodes and needs greater capacity or resiliency.",
-  "syntax": "",
-  "parameters": [],
-  "returns": "",
-  "example": {
-   "title": "Scaling decision",
-   "code": "# No runnable snippet: this concept is documented without a single universal command or API.\n",
-   "language": "text",
-   "explanation": "Scaling is selected by changing one resource or adding multiple resources; the exact implementation depends on the workload."
-  },
-  "useCases": [
+  "interview": [
    {
-    "title": "Increase one instance",
-    "scenario": "A single server is CPU- or memory-bound and the workload cannot yet be distributed."
+    "question": "How does cache-aside work?",
+    "answer": "Cache-aside checks the cache first. On a miss, the application reads the data store, adds the result to the cache, and returns it; updates write the store and invalidate the cache entry.",
+    "followUp": "How can cache-aside emulate read-through behavior? The application implements the cache lookup, data-store fallback, and cache population itself."
    },
    {
-    "title": "Distribute load",
-    "scenario": "Traffic or workload can be served by multiple application instances."
+    "question": "When would you choose write-through?",
+    "answer": "Write-through updates the data store and cache as part of one write operation. The write response is returned only after both updates succeed, giving readers the new value immediately after a successful write.",
+    "followUp": "When should it be preferred? Use it for read-heavy paths that require read-after-write freshness, accepting greater write latency and coordination."
    },
    {
-    "title": "Scale for availability",
-    "scenario": "A service needs higher capacity and improved resilience across nodes."
+    "question": "What is the trade-off of write-behind?",
+    "answer": "Write-behind writes to the cache first and postpones the data-store write, potentially until the cache entry is about to be removed. It can reduce write-path waiting but leaves persistence delayed.",
+    "followUp": "What workload suits it? Write-intensive applications benefit because services do not wait for data to be persisted synchronously."
    }
   ],
-  "related": [
-   "scaling up",
-   "scaling down",
-   "scaling out",
-   "scaling in",
-   "autoscaling",
-   "partitioning"
-  ],
-  "since": "",
   "keyPoints": [
-   "Horizontal scaling, or scaling out, increases capacity by adding instances.",
-   "Use vertical scaling when the bottleneck responds to more CPU, memory, or similar capacity on one instance.",
-   "Use horizontal scaling when work can be distributed and the system needs more capacity, traffic handling, or resiliency."
+   "Cache-aside populates entries lazily when an application requests data.",
+   "A cache miss triggers a data-store read followed by cache population.",
+   "The usual cache-aside update sequence is store first, then invalidate."
   ],
   "gotchas": [],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
+ },
+ "Scaling & performance::Vertical and horizontal scaling": {
+  "sourceUrl": "https://docs.cloud.google.com/architecture/framework/performance-optimization/elasticity",
+  "sourceTitle": "Take advantage of elasticity",
+  "summary": "Vertical scaling replaces existing components with higher-capacity ones; horizontal scaling adds replica nodes to distribute work. Choose one or combine both according to the bottleneck and changing load.",
+  "explanation": "Vertical scaling replaces an existing component with one that has more capacity, memory, or storage. Horizontal scaling adds or removes replica nodes so workload is distributed across multiple instances; use the direction that addresses the measured bottleneck, and combine them when necessary.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Select a scaling direction",
+   "code": "def choose_scaling(bottleneck):\n    if bottleneck in {\"cpu\", \"memory\", \"storage_per_node\"}:\n        return \"vertical: increase capacity of the existing component\"\n    if bottleneck in {\"request_rate\", \"replica_capacity\"}:\n        return \"horizontal: add replica nodes and distribute load\"\n    return \"measure the bottleneck first\"",
+   "language": "python",
+   "explanation": "Run the function with the constrained resource to choose a scaling direction; production systems often combine both approaches."
+  },
+  "useCases": [
+   {
+    "title": "Increase per-component capacity",
+    "scenario": "A component is constrained by its available memory, storage, or processing capacity."
+   },
+   {
+    "title": "Add replica capacity",
+    "scenario": "Demand exceeds the aggregate capacity of the current deployment."
+   },
+   {
+    "title": "Adjust capacity with demand",
+    "scenario": "Traffic fluctuates over time."
+   },
+   {
+    "title": "Combine scaling directions",
+    "scenario": "Different bottlenecks exist at different layers."
+   }
+  ],
+  "related": [
+   "horizontal scaling",
+   "vertical scaling",
+   "scale out",
+   "scale up",
+   "scale down",
+   "replica nodes",
+   "capacity",
+   "memory"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between vertical and horizontal scaling?",
+    "answer": "Vertical scaling changes the capacity of an existing component, while horizontal scaling adds replica nodes. Choose based on the constrained resource and workload architecture; systems can use both approaches.",
+    "followUp": "How would you scale when traffic grows but each request also needs more memory? Add replicas for aggregate traffic capacity and enlarge each component when per-replica memory is the limiting resource."
+   },
+   {
+    "question": "How do you respond to increased load with each method?",
+    "answer": "Scale horizontally by adding replica nodes when increased demand requires more overall capacity. Scale vertically by replacing existing components with ones that provide greater capacity, memory, or storage.",
+    "followUp": "What should happen when demand falls? Scale horizontally, vertically, or both by removing replicas or using smaller-capacity components."
+   },
+   {
+    "question": "How do you decide which scaling method to use?",
+    "answer": "The correct choice depends on the system's performance requirements and the bottleneck. Horizontal scaling increases node count; vertical scaling increases the capacity of existing components.",
+    "followUp": "Why might a hybrid strategy be useful? It lets the system add replicas for distributed demand while increasing per-component capacity where individual nodes remain constrained."
+   }
+  ],
+  "keyPoints": [
+   "Start with the workload's performance requirements and measured bottleneck; there is no universally correct scaling direction.",
+   "An architecture may need horizontal scaling, vertical scaling, or a combination as demand rises.",
+   "Capacity planning includes scale-down behavior, not only adding resources during peaks.",
+   "Horizontal scaling raises total capacity by adding replicas that can share the workload.",
+   "Vertical scaling raises the resources available to an existing component."
+  ],
+  "gotchas": [
+   "Adding nodes increases aggregate capacity, but it does not automatically fix a bottleneck inside one replica or a shared dependency.",
+   "Vertical scaling changes component size rather than replica count, so it cannot remove the single-component capacity ceiling."
+  ],
+  "checkedAt": "2026-10-16"
  },
  "Working through a design::Clarifying questions": {
   "sourceUrl": "https://learn.microsoft.com/en-us/training/modules/design-dynamics-365-deployment/questions",
   "sourceTitle": "Questions",
-  "summary": "Clarifying questions turn an open design prompt into concrete knowledge about users, workflows, pain points, desired outcomes, and important existing capabilities. Start broadly, then confirm your understanding by restating the answers.",
-  "explanation": "Clarifying questions turn an underspecified design request into explicit information about users, current processes, problems, and desired outcomes. Start broadly so stakeholders can describe their needs, then probe the existing solution and restate the answers to confirm shared understanding.",
+  "summary": "Clarifying questions turn an open design prompt into a bounded problem. Ask about users, current workflows, pain points, desired outcomes, and what the system must support, then prioritize the results.",
+  "explanation": "Use open-ended questions to discover the system's users, current workflows, desired outcomes, and constraints. Then restate the gathered information, distinguish essential requirements from optional enhancements, and turn the result into a concrete, bounded design problem.",
   "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Start with open-ended questions",
-   "code": "questions = [\n    \"Who will use the system?\",\n    \"What process should it support?\",\n    \"What problem should it solve?\"\n]\n\nfor question in questions:\n    print(question)",
-   "language": "python",
-   "explanation": "A minimal runnable prompt for collecting user, process, and problem requirements."
+   "title": "Clarify a system design prompt",
+   "code": "# No runnable snippet is needed for a requirements-clarification checklist.",
+   "language": "text",
+   "explanation": "The documentation presents questions rather than an executable command or code example."
   },
   "useCases": [
    {
-    "title": "Discover user context",
-    "scenario": "A stakeholder gives only a high-level product idea."
+    "title": "Discover the current workflow",
+    "scenario": "A stakeholder gives only a broad statement such as “build a better internal system.”"
    },
    {
-    "title": "Identify non-regression requirements",
-    "scenario": "A replacement system must preserve important behavior."
+    "title": "Separate essential needs from optional requests",
+    "scenario": "Several users request different features for the same product."
    },
    {
-    "title": "Align understanding",
-    "scenario": "Different stakeholders describe the problem differently."
+    "title": "Set expectations against the existing system",
+    "scenario": "A proposed replacement must preserve important behavior while fixing major pain points."
    }
   ],
   "related": [
-   "open-ended questions",
-   "user needs",
-   "current processes",
-   "system requirements",
-   "restating information"
+   "Need versus nice-to-have",
+   "Step 1 - Design",
+   "Capture Requirements and Create a Data-Flow Diagram",
+   "Questions"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What should you ask first when given an open system-design prompt?",
+    "answer": "Start with open-ended questions about the company, users, current tasks, and processes the system must support. This lets stakeholders describe their needs before the design narrows the problem.",
+    "followUp": "How would you identify the highest-value requirements? Ask which problems are largest and what the new system must improve, then validate the answers with stakeholders."
+   },
+   {
+    "question": "How do you discover requirements beyond the initial feature request?",
+    "answer": "Ask what works today, what must be at least as good as the current system, and which parts are most problematic or time-consuming. These questions expose existing expectations and improvement targets.",
+    "followUp": "How do you handle conflicting stakeholder expectations? Compare each request with the stated process goals, clarify implications, and confirm the agreed priority."
+   },
+   {
+    "question": "How do you turn a list of requests into a bounded design scope?",
+    "answer": "After collecting requirements, classify them as need-to-have or nice-to-have. The need-to-have set defines the minimum required for the system to work and should guide the design.",
+    "followUp": "What should happen when a proposed feature has unclear value? Ask whether it is relevant, whether every user needs it, and what implementing it would imply before including it."
+   }
+  ],
   "keyPoints": [
-   "Use multiple questions to uncover users’ needs before deciding how to build the system.",
-   "Identify the people who will use the system.",
-   "Ask which workflows the system must support.",
-   "Find the main pain point in the current process.",
-   "Clarify the intended outcome of the proposed system.",
-   "Discover which existing capability must not regress."
+   "Begin broadly so stakeholders can explain their organization, users, and needs without prematurely constraining the conversation.",
+   "Understand the present workflow before designing a replacement or improvement.",
+   "Ask stakeholders to identify the principal pain point, which helps prioritize the design effort.",
+   "Connect the proposed system to explicit outcomes rather than collecting features without a purpose.",
+   "Identify existing behavior or quality that the new design must preserve.",
+   "Create a scope boundary by classifying requirements into essential capabilities and optional enhancements."
   ],
   "gotchas": [
-   "Do not begin with a narrow solution proposal; let stakeholders describe their context and needs first.",
-   "Confirm your interpretation by paraphrasing what stakeholders said."
+   "Do not treat every requested feature as mandatory; explicitly separate minimum viable requirements from optional improvements.",
+   "Do not rely on an unverified interpretation; restate the requirements and confirm that your understanding is correct."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Working through a design::Evolving the design": {
   "sourceUrl": "https://learn.microsoft.com/en-us/azure/architecture/guide/design-principles/scale-out",
   "sourceTitle": "Design to scale out",
-  "summary": "As traffic grows by two orders of magnitude, evolve from a single tightly coupled deployment toward horizontally scaled, independently deployable components. Remove bottlenecks, offload expensive work, and automate capacity changes using live metrics.",
-  "explanation": "When traffic grows substantially, redesign around horizontal scaling rather than only making one machine larger. Split the system into independently scalable components, keep application instances stateless, distribute requests with load balancing, move expensive work to asynchronous background processing, and use autoscaling driven by live usage metrics.",
+  "summary": "For a 100x traffic increase, evolve from a fixed-server design to horizontal scaling: add or remove instances behind a load balancer, decouple components, automate scaling from live metrics, and control overload gracefully.",
+  "explanation": "When traffic increases sharply, move from scaling one machine to scaling out multiple stateless instances. Put a load balancer in front, automate instance counts from live metrics, isolate independently scalable components, and add flow control so overload degrades gracefully.",
   "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
    "title": "Stateless horizontally scalable service",
-   "code": "from fastapi import FastAPI\n\napp = FastAPI()\n\n@app.get(\"/health\")\ndef health():\n    return {\"status\": \"ok\"}",
-   "language": "python",
-   "explanation": "A stateless endpoint can run on multiple instances behind a load balancer, allowing capacity to grow by adding replicas."
+   "code": "import express from \"express\";\n\nconst app = express();\napp.get(\"/health\", (_req, res) => res.send(\"ok\"));\napp.listen(process.env.PORT ?? 8080);",
+   "language": "typescript",
+   "explanation": "A stateless HTTP service can be replicated behind a load balancer and autoscaled from live demand."
   },
   "useCases": [
    {
-    "title": "Scale-out web tier",
-    "scenario": "Web traffic increases substantially and front-end instances must be added without changing application behavior."
+    "title": "Elastic web APIs",
+    "scenario": "A stateless API must absorb unpredictable request spikes without manual capacity changes."
    },
    {
-    "title": "Independent component scaling",
-    "scenario": "One workload becomes hot while other workloads remain lightly used."
+    "title": "Independently scalable services",
+    "scenario": "A pipeline has independent stages with different throughput requirements."
    },
    {
-    "title": "Background job offloading",
-    "scenario": "CPU-intensive processing competes with interactive requests."
-   },
-   {
-    "title": "Metric-driven autoscaling",
-    "scenario": "Traffic varies unpredictably throughout the day."
+    "title": "Graceful overload handling",
+    "scenario": "A system must remain responsive when demand temporarily exceeds available capacity."
    }
   ],
   "related": [
    "horizontal scaling",
    "scale out",
-   "bottlenecks",
    "autonomous components",
-   "asynchronous communication",
+   "decoupled components",
+   "asynchronous communication protocols",
    "flow control",
-   "background jobs",
-   "autoscaling"
+   "graceful degradation",
+   "live usage metrics"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How would you evolve a service for a 100x traffic increase?",
+    "answer": "Scale horizontally by adding or removing application instances as demand changes. A load balancer distributes requests across those instances, while autoscaling uses live usage metrics to match capacity to demand.",
+    "followUp": "What if scaling instances does not improve latency? Find the actual bottleneck first; the constrained database, dependency, or network path may require its own scaling or redesign."
+   },
+   {
+    "question": "Why decompose the design instead of only adding more servers?",
+    "answer": "Separate the system into autonomous, decoupled components that communicate asynchronously. This lets each component scale independently and reduces the need to scale the whole application together.",
+    "followUp": "How can decoupled components handle bursts? Add flow control and queues or other asynchronous buffering, then degrade gracefully when capacity is exceeded."
+   },
+   {
+    "question": "What makes horizontal scaling operationally effective?",
+    "answer": "Use built-in autoscaling driven by live usage metrics, and design for instances to be added or removed. The application should remain functional as capacity changes rather than depending on a fixed server count.",
+    "followUp": "How should known traffic spikes differ from unknown spikes? Pre-scale for predictable peaks, while autoscaling responds to unexpected demand using current metrics."
+   }
+  ],
   "keyPoints": [
-   "Prefer horizontal scaling: add or remove instances as demand changes instead of relying solely on larger machines.",
-   "Separate workloads with different scaling needs so each can receive the capacity it requires.",
-   "Use autonomous, decoupled components and asynchronous communication to scale overloaded parts independently.",
-   "Give components independent state and communicate changes through events to reduce cross-component coupling.",
-   "Offload CPU- or I/O-heavy work to background jobs so front-end request handling remains responsive.",
-   "Configure autoscaling from live usage metrics and prefer the platform's built-in autoscaling capabilities."
+   "Treat a large traffic increase as a capacity problem solved by adding and removing instances, rather than only upgrading one host.",
+   "Capacity should track demand in both directions: add instances during growth and remove them when load falls.",
+   "Break the design into independently scalable components and use asynchronous communication to reduce coupling between scaling domains.",
+   "Use current utilization or other live signals to trigger automatic capacity changes instead of relying on manual intervention.",
+   "Independent component state makes it easier to add or remove instances without coordinating every component change."
   ],
   "gotchas": [
-   "Adding instances does not solve bottlenecks or synchronization points; identify and remove those constraints first.",
-   "Do not scale out blindly before locating the component that limits throughput.",
-   "Use flow control and graceful degradation when demand exceeds available capacity."
+   "Adding instances does not fix a bottleneck elsewhere; locate and resolve the limiting component before scaling out.",
+   "Protect the system during overload with flow control and deliberate graceful degradation.",
+   "Shared or tightly coupled state can prevent components from scaling independently; keep component state independent where possible."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Working through a design::High-level diagram": {
   "sourceUrl": "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/design-diagrams",
-  "sourceTitle": "Create architecture design diagrams - Microsoft Azure Well-Architected Framework",
-  "summary": "A high-level system diagram gives a broad view of a workload by showing its main components, relationships, and general data flow. Use it before refining the design into concrete technologies and integration points.",
-  "explanation": "Start with a broad workload view: identify the principal components, show their relationships, and draw arrows for interaction and dependency direction. Keep implementation technologies abstract at this stage; later, refine the blocks into concrete services and integration points.",
-  "syntax": "",
-  "parameters": [],
-  "returns": "A high-level system diagram showing major components, their relationships, and the general direction of data flow.",
-  "example": {
-   "title": "High-level system sketch",
-   "code": "```text\nClient → API → Service → Database\n          ↓\n       Queue → Worker\n```",
-   "language": "text",
-   "explanation": "A runnable text sketch showing major components and directional data flow before technology details are chosen."
-  },
-  "useCases": [
-   {
-    "title": "Establish the overall shape",
-    "scenario": "Beginning a system-design exercise"
-   },
-   {
-    "title": "Communicate architecture quickly",
-    "scenario": "Explaining an existing workload"
-   },
-   {
-    "title": "Bound a major workload section",
-    "scenario": "Planning a subsystem"
-   },
-   {
-    "title": "Create a refinement baseline",
-    "scenario": "Preparing detailed design work"
-   }
-  ],
-  "related": [
-   "Component diagram",
-   "Block diagram",
-   "Data-flow diagram (DFD)",
-   "Architecture design diagrams"
-  ],
-  "since": "",
-  "keyPoints": [
-   "Use the diagram to frame the whole system or one meaningful subsystem, not an isolated implementation detail.",
-   "Include only the major building blocks, how they relate, and the broad path data takes between them.",
-   "Draw directed arrows so readers can distinguish data movement, calls, and dependency direction.",
-   "Treat the high-level diagram as an abstraction layer that can later be refined into concrete technologies and integrations.",
-   "When data behavior needs more detail, extend the sketch to show transformations, storage, and system exits."
-  ],
-  "gotchas": [
-   "Do not jump directly to a technology-specific component diagram; first establish the generic block-level structure.",
-   "Use arrows deliberately: an undirected connection does not communicate which component initiates interaction or depends on another."
-  ],
-  "checkedAt": "2026-10-15"
- },
- "Working through a design::Identifying bottlenecks": {
-  "sourceUrl": "https://learn.microsoft.com/en-us/azure/architecture/patterns/throttling",
-  "sourceTitle": "Throttling pattern",
-  "summary": "Identify which resource or dependency saturates first, then limit traffic on that dimension at the relevant boundary. Continuously measure saturation and adapt limits as traffic changes.",
-  "explanation": "Identify the resource or dependency that reaches its limit first at each enforcement boundary. Measure signals such as concurrent requests, queue depth, CPU, memory, and downstream limits; then enforce a limit on that dimension and adapt it as traffic changes.",
+  "sourceTitle": "Architecture design diagrams",
+  "summary": "A high-level system diagram gives a broad view of a workload or major subsection. It identifies main components, their relationships, and the general direction of data flow before deeper design work.",
+  "explanation": "Start by representing the workload as a small set of major components, then connect them to show relationships and the approximate direction of data movement. Use arrows for interactions and dependencies, keeping implementation details for lower-level diagrams.",
   "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Throttle at the first saturated dimension",
-   "code": "const limit = component => {\n  const metrics = component.metrics;\n  return metrics.concurrentRequests >= metrics.maxConcurrentRequests\n    ? {throttle:true, reason:\"concurrency\"}\n    : metrics.cpuUtilization >= metrics.maxCpuUtilization\n      ? {throttle:true, reason:\"cpu\"}\n      : {throttle:false};\n};\n\nconsole.log(limit({\n  metrics: {\n    concurrentRequests: 100,\n    maxConcurrentRequests: 100,\n    cpuUtilization: 0.62,\n    maxCpuUtilization: 0.8\n  }\n}));",
-   "language": "javascript",
-   "explanation": "This runnable example checks multiple saturation signals and throttles on the first exhausted limit."
+   "title": "Minimal high-level system diagram",
+   "code": "flowchart LR\n  Client --> API\n  API --> Service\n  Service --> Database",
+   "language": "text",
+   "explanation": "A compact Mermaid diagram shows major components and the direction of interactions without detailing internal implementation."
   },
   "useCases": [
    {
-    "title": "Protect an overloaded service",
-    "scenario": "An API's concurrent work reaches its safe maximum before request rate does."
+    "title": "Communicate the overall architecture before specifying individual components.",
+    "scenario": "Early design review"
    },
    {
-    "title": "Control queue pressure",
-    "scenario": "A partition's queue depth grows faster than workers can drain it."
+    "title": "Break a workload into major components and show how they connect.",
+    "scenario": "Workload decomposition"
    },
    {
-    "title": "Respect dependency limits",
-    "scenario": "A downstream dependency imposes a quota below the application's throughput."
+    "title": "Switch to a data-flow diagram when tracing data movement is the primary objective.",
+    "scenario": "Data-centric modeling"
+   }
+  ],
+  "related": [
+   "Data-flow diagram",
+   "Architecture design diagrams",
+   "Component relationships",
+   "Data flow"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the purpose of a high-level system diagram?",
+    "answer": "A high-level system diagram gives a broad view of a workload or a major part of it. It identifies the main components, shows how they relate, and represents the general direction of data flow.",
+    "followUp": "How would you prevent the diagram from becoming too detailed? Keep it focused on major components and their relationships, leaving internal implementation for more detailed diagrams."
+   },
+   {
+    "question": "What information should the diagram contain?",
+    "answer": "It decomposes the workload into its main components and shows their relationships. It also captures the general flow of data through the system, which helps communicate the overall design before component-level details.",
+    "followUp": "What additional diagram could clarify movement of data in a data-centric system? A data-flow diagram can model how data moves through the system."
+   },
+   {
+    "question": "What do arrows mean in this diagram?",
+    "answer": "Arrows show the direction of interactions and dependencies between components. The diagram should therefore make communication paths directional rather than presenting components as an unconnected inventory.",
+    "followUp": "If the goal shifts to modeling data movement specifically, use a data-flow diagram rather than relying only on the high-level system diagram."
+   }
+  ],
+  "keyPoints": [
+   "Use this diagram to communicate the overall shape of a complete workload or one significant subsection.",
+   "Show the major components, how they relate, and the broad path data takes between them.",
+   "Make interactions and dependencies directional with arrows."
+  ],
+  "gotchas": [
+   "Do not treat the high-level diagram as a detailed view of every component; it is intended to cover the whole workload or a major subsection.",
+   "Use arrows deliberately: they communicate interaction and dependency direction, not merely visual connections."
+  ],
+  "checkedAt": "2026-10-16"
+ },
+ "Working through a design::Identifying bottlenecks": {
+  "sourceUrl": "https://learn.microsoft.com/en-us/azure/architecture/patterns/throttling",
+  "sourceTitle": "Throttling pattern",
+  "summary": "Find the resource or boundary that saturates first under representative load, then act on that dimension. Use measurement and targeted limits or capacity changes to keep the system within its SLOs.",
+  "explanation": "Identify the resource or architectural boundary that reaches its limit first by measuring utilization, latency, throughput, and saturation under representative load. Then align a limit or scaling action with that dimension—for example, throttle at the relevant boundary, add capacity, or isolate the bottleneck.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Find the first saturation point",
+   "code": "# Load-test progressively and inspect the component that saturates first.\nfor rate in 100 200 400 800; do\n  echo \"Run at ${rate} requests/second\"\n  # Replace with your load generator and metrics query.\n  sleep 1\ndone",
+   "language": "bash",
+   "explanation": "Increase load in controlled steps, then use latency and utilization metrics to locate the first saturated boundary before choosing a mitigation."
+  },
+  "useCases": [
+   {
+    "title": "Protect an API during bursts",
+    "scenario": "A shared API receives sudden traffic spikes and must keep latency within its SLO."
+   },
+   {
+    "title": "Contain noisy neighbors",
+    "scenario": "One tenant consumes disproportionate capacity in a multi-tenant service."
+   },
+   {
+    "title": "Protect a constrained partition",
+    "scenario": "A downstream partition reaches its throughput limit before the rest of the service."
    }
   ],
   "related": [
@@ -1231,20 +1597,40 @@
    "infrastructure utilization",
    "application state",
    "per-principal counters",
-   "concurrent in-flight requests",
-   "queue depth"
+   "gateway",
+   "partition",
+   "downstream dependency",
+   "service-level objectives (SLOs)"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How do you identify the first bottleneck in a distributed system?",
+    "answer": "Measure performance while increasing load and look for the boundary whose resource or latency reaches its limit first. That boundary is the bottleneck to address, rather than scaling unrelated components.",
+    "followUp": "How should the mitigation be placed? Set the limit or capacity action on the gateway, service, partition, or dependency that represents the saturating dimension."
+   },
+   {
+    "question": "What signals should a throttling control loop use?",
+    "answer": "Use low-latency signals from infrastructure utilization, application state, and per-principal counters. These signals let the system detect saturation and apply an appropriate response.",
+    "followUp": "Why include per-principal signals? They reveal whether one user or tenant is consuming the constrained resource and needs targeted protection."
+   },
+   {
+    "question": "What should you do after finding the bottleneck?",
+    "answer": "At the saturating boundary, cap consumption and throttle requests after usage exceeds the selected threshold. This keeps the workload within an operating range and helps preserve service-level objectives during high load.",
+    "followUp": "When might throttling be insufficient? If the bottleneck is persistent, increase or reorganize capacity instead of relying only on admission control."
+   }
+  ],
   "keyPoints": [
-   "Find the first exhausted resource or dependency and throttle according to that dimension.",
-   "Use fast signals from infrastructure, application state, and per-principal activity to detect saturation.",
-   "Continuously measure, enforce limits at explicit boundaries, and adjust limits when traffic patterns change.",
-   "Candidate bottlenecks include in-flight concurrency, queues, compute resources, and downstream quotas."
+   "Track resource consumption continuously and reject or delay excess work once the selected boundary crosses its limit.",
+   "A bottleneck response can be scoped to particular users or tenants, preventing a single principal from consuming the whole shared resource.",
+   "Define explicit enforcement points such as a gateway, service, partition, or downstream dependency so the response is predictable.",
+   "Revisit thresholds when workload behavior changes; static limits can become unsuitable as traffic patterns evolve.",
+   "The goal is not merely rejecting traffic; it is maintaining useful system behavior and SLOs during both spikes and prolonged demand."
   ],
   "gotchas": [
-   "Do not assume request rate is the bottleneck; inspect concurrency, queue depth, CPU, memory, and dependency limits.",
-   "Evaluate saturation at every relevant boundary, not only at the gateway."
+   "A limit attached to the wrong resource will not protect the actual bottleneck; place enforcement where the first saturation occurs.",
+   "Treat throttling as continuous feedback: measure the system, enforce limits, and adapt them as traffic changes."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  }
 }

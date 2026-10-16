@@ -2,7 +2,6 @@
 import { AdminError, AdminLoading, AdminFormMessage } from "./super-admin-feedback";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./ui/accordion";
 import { Card } from "./ui/card";
-import { Table as DataTable, TableHeader, TableBody, TableRow, TableHead, TableCell } from "./ui/table";
 
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel, FieldDescription } from "./ui/field";
@@ -10,12 +9,12 @@ import { AdminSelect } from "./super-admin-select";
 import { Textarea } from "@/components/ui/textarea";
 import {useCallback,useEffect,useState,useId} from 'react';
 import styles from './super-admin-dashboard.module.css';
+import { AdminTable } from './super-admin-table';
 type Row=Record<string,unknown>;
 type Operations={generatedAt:string;liveCount:number;openReports:number;live:Row[];traffic:Row[];pages:Row[];ai:Row[];reports:Row[];alerts:Row[];security:Row[]};
 const value=(item:unknown)=>item===null||item===undefined?'—':typeof item==='object'?JSON.stringify(item):String(item);
 function Records({title,rows,columns,query}:{title:string;rows:Row[];columns:string[];query:string}){
-  const [page,setPage]=useState(0);const filtered=rows.filter(row=>JSON.stringify(row).toLowerCase().includes(query.toLowerCase()));const count=Math.max(1,Math.ceil(filtered.length/20)),current=Math.min(page,count-1);
-  return <Card className={styles.panel}><h2>{title}</h2>{filtered.length?<><div className={styles.tableWrap}><DataTable><TableHeader><TableRow>{columns.map(key=><TableHead key={key}>{key.replaceAll('_',' ')}</TableHead>)}</TableRow></TableHeader><TableBody>{filtered.slice(current*20,current*20+20).map((row,index)=><TableRow key={String(row.id??row.session_id??index)}>{columns.map(key=><TableCell key={key}>{value(row[key])}</TableCell>)}</TableRow>)}</TableBody></DataTable></div><div className={styles.paging}><Button variant="outline" disabled={!current} onClick={()=>setPage(current-1)}>Previous</Button><span>{current+1} / {count}</span><Button variant="outline" disabled={current===count-1} onClick={()=>setPage(current+1)}>Next</Button></div></>:<p>No recorded activity in this window.</p>}</Card>;
+  return <AdminTable title={title} rows={rows} columns={columns} query={query}/>;
 }
 function Review({report,onSaved}:{report:Row;onSaved:()=>void}){
   const formId = useId();

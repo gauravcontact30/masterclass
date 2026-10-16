@@ -2,7 +2,7 @@
 import { AdminError, AdminLoading } from "./super-admin-feedback";
 import { Badge } from "./ui/badge";
 import { Card } from "./ui/card";
-import { Table as DataTable, TableHeader, TableBody, TableRow, TableHead, TableCell } from "./ui/table";
+import { AdminTable } from "./super-admin-table";
 import { Button } from "./ui/button";
 
 import { useCallback, useEffect, useState } from "react";
@@ -20,13 +20,17 @@ const pct = (n: number) => `${(n * 100).toFixed(n && n < 0.1 ? 1 : 0)}%`;
 const usd = (n: number | null) => n === null ? "Not reported" : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: n < 1 ? 4 : 2 }).format(n);
 
 function Breakdown({ title, rows, query, note }: { title: string; rows: AiBreakdown[]; query: string; note?: string }) {
-  const visible = rows.filter(row => row.key.toLowerCase().includes(query.toLowerCase()));
-  const top = Math.max(1, ...visible.map(row => row.calls));
-  return <Card className={styles.panel}><div className={styles.panelHeading}><h2>{title}</h2><Badge variant="secondary">{visible.length} rows</Badge></div>{note && <p className={styles.note}>{note}</p>}
-    {visible.length ? <div className={styles.tableWrap}><DataTable><TableHeader><TableRow><TableHead>name</TableHead><TableHead>calls</TableHead><TableHead>share</TableHead><TableHead>error rate</TableHead><TableHead>p50</TableHead><TableHead>p95</TableHead><TableHead>input tokens</TableHead><TableHead>output tokens</TableHead><TableHead>cost</TableHead><TableHead>fallbacks</TableHead></TableRow></TableHeader><TableBody>
-      {visible.map(row => <TableRow key={row.key}><TableCell>{row.key}</TableCell><TableCell>{count(row.calls)}</TableCell><TableCell><span className={styles.shareBar} style={{ "--share": `${(row.calls / top) * 100}%` } as React.CSSProperties} aria-hidden="true" /></TableCell><TableCell className={row.errorRate >= 0.1 ? styles.warn : undefined}>{pct(row.errorRate)}</TableCell><TableCell>{ms(row.p50)}</TableCell><TableCell>{ms(row.p95)}</TableCell><TableCell>{count(row.inputTokens)}</TableCell><TableCell>{count(row.outputTokens)}</TableCell><TableCell>{usd(row.costUsd)}</TableCell><TableCell>{row.fallbacks || "—"}</TableCell></TableRow>)}
-    </TableBody></DataTable></div> : <p className={styles.empty}>{query ? "No rows match your search." : "No AI calls recorded in this window."}</p>}
-  </Card>;
+  const top = Math.max(1, ...rows.map(row => row.calls));
+  return <AdminTable title={title} rows={rows as unknown as Record<string, unknown>[]} query={query} note={note} empty="No AI calls recorded in this window." rowKey={row => String(row.key)}
+    columns={[
+      { key: "key", label: "Name" },
+      { key: "calls", label: "Calls", filter: false, render: row => count(Number(row.calls)) },
+      { key: "share", label: "Share", filter: false, render: row => <span className={styles.shareBar} style={{ "--share": `${(Number(row.calls) / top) * 100}%` } as React.CSSProperties} aria-hidden="true" /> },
+      { key: "errorRate", label: "Error rate", filter: false, render: row => <span className={Number(row.errorRate) >= 0.1 ? styles.warn : undefined}>{pct(Number(row.errorRate))}</span> },
+      { key: "p50", label: "p50", filter: false, render: row => ms(row.p50 as number | null) }, { key: "p95", label: "p95", filter: false, render: row => ms(row.p95 as number | null) },
+      { key: "inputTokens", label: "Input tokens", filter: false, render: row => count(Number(row.inputTokens)) }, { key: "outputTokens", label: "Output tokens", filter: false, render: row => count(Number(row.outputTokens)) },
+      { key: "costUsd", label: "Cost", filter: false, render: row => usd(row.costUsd as number | null) }, { key: "fallbacks", label: "Fallbacks", filter: false, render: row => String(row.fallbacks || "—") },
+    ]} />;
 }
 
 function Trend({ days }: { days: AiInsights["daily"] }) {
@@ -133,8 +137,7 @@ export function SuperAdminAi({ days, query }: { days: number; query: string }) {
     <Breakdown title="By feature" rows={insights.features} query={query} note="Features are the app surfaces that asked: mentor (Study Buddy), answer (Search), lesson, quiz, interview, api-reference and more." />
     {insights.errors.length > 0 && <Card className={styles.panel}><div className={styles.panelHeading}><h2>Failures by status</h2><span>{count(totals.failures)} failed calls</span></div>
       <ul className={styles.findings}>{insights.errors.map(item => <li key={item.status}><b>{item.status === 502 ? "502 / network or timeout" : `HTTP ${item.status}`}</b>: {count(item.count)}</li>)}</ul></Card>}
-    {insights.slowest.length > 0 && <Card className={styles.panel}><div className={styles.panelHeading}><h2>Slowest calls</h2><span>Top 10</span></div><div className={styles.tableWrap}><DataTable><TableHeader><TableRow><TableHead>time</TableHead><TableHead>feature</TableHead><TableHead>provider</TableHead><TableHead>model</TableHead><TableHead>duration</TableHead><TableHead>status</TableHead></TableRow></TableHeader><TableBody>
-      {insights.slowest.map(row => <TableRow key={`${row.created_at}-${row.feature}-${row.duration_ms}`}><TableCell>{new Date(row.created_at).toLocaleString()}</TableCell><TableCell>{row.feature}</TableCell><TableCell>{row.provider}</TableCell><TableCell>{row.model}</TableCell><TableCell>{ms(row.duration_ms)}</TableCell><TableCell>{row.status}</TableCell></TableRow>)}
-    </TableBody></DataTable></div></Card>}
+    {insights.slowest.length > 0 && <AdminTable title="Slowest calls" rows={insights.slowest as unknown as Record<string, unknown>[]} query={query} note="The ten slowest calls in this window."
+      columns={["created_at", "feature", "provider", "model", { key: "duration_ms", label: "Duration", filter: false, render: row => ms(Number(row.duration_ms)) }, "status"]} />}
   </>;
 }

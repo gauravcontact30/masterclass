@@ -57,6 +57,7 @@ import lessonsData from "../lib/pro-learn/lessons.json";
 import { PRO_TRACKS } from "../lib/pro-learn/types";
 import { STEP_GUIDES } from "../lib/step-by-step/guides";
 import { TECHY_TOPICS } from "../lib/techy-content";
+import { AI_PULSE } from "../lib/landing-ai-pulse";
 import { CATEGORY_LABELS, PREPARATIONS, PREPARATION_GROUPS } from "../lib/study/preparations";
 import { COURSE_SUMMARIES } from "../lib/study/course-summaries";
 import { LEARNING_IMAGE_BUCKET, learningImageSlug, learningScenePrompt } from "../lib/learning-image";
@@ -87,7 +88,11 @@ const attempts = Math.max(1, Number(flag("attempts") ?? 4));
 const minScore = Math.min(5, Math.max(1, Number(flag("min-score") ?? 4)));
 const setName = flag("set") ?? "vocabulary";
 const report = flag("report") ?? `${setName}-images-report.jsonl`;
-const only = flag("only")?.split(",").map(name => name.trim().toLowerCase()).filter(Boolean);
+// --only-file takes one label per line, for lists too long (or too comma-laden) for --only.
+const onlyFile = flag("only-file");
+const only = onlyFile
+  ? readFileSync(onlyFile, "utf8").split(/\r?\n/).map(name => name.trim().toLowerCase()).filter(Boolean)
+  : flag("only")?.split(",").map(name => name.trim().toLowerCase()).filter(Boolean);
 
 /** One kind of card picture: where the subjects come from and how each is briefed, painted and stored. */
 type PictureSet = {
@@ -200,6 +205,11 @@ async function pictureSet(name: string): Promise<PictureSet> {
       points: topic.features, label: `techy: ${topic.id}`, parts: ["techy", topic.id],
     })),
   ]);
+  // The landing page's AI & agentic pulse carousel (components/landing-ai-pulse.tsx).
+  if (name === "pulse") return learningSet("topics", AI_PULSE.map(item => ({
+    name: item.title, context: "AI agents and agentic engineering", summary: item.definition,
+    points: item.points, label: `pulse: ${item.id}`, parts: ["ai-pulse", item.id],
+  })));
   if (name === "courses") return learningSet("courses", PREPARATION_GROUPS.flatMap(group => group.categories.map(category => ({
     name: CATEGORY_LABELS[category].en, context: `Learning path, ${group.label.en}`, summary: COURSE_SUMMARIES[category] ?? "",
     points: [`Includes: ${PREPARATIONS.filter(option => option.category === category).map(option => option.label.en).join(", ")}`],
@@ -229,7 +239,7 @@ async function pictureSet(name: string): Promise<PictureSet> {
       judge: jpeg => judgePicture(entry, jpeg),
     })),
   };
-  throw new Error(`--set must be "vocabulary", "aws", "topics", "api", "workflow", "docs", "notes", "lessons", "guides" or "courses", not "${name}"`);
+  throw new Error(`--set must be "vocabulary", "aws", "topics", "api", "workflow", "docs", "notes", "lessons", "guides", "courses" or "pulse", not "${name}"`);
 }
 
 /** A picture is done when its meaning is unmistakable from the picture alone and it carries no lettering. */

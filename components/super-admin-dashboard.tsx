@@ -2,9 +2,7 @@
 import { Alert, AlertDescription } from "./ui/alert";
 import { Skeleton } from "./ui/skeleton";
 import { Separator } from "./ui/separator";
-import { Badge } from "./ui/badge";
 import { Card } from "./ui/card";
-import { Table as DataTable, TableHeader, TableBody, TableRow, TableHead, TableCell } from "./ui/table";
 import { Button } from "./ui/button";
 
 import { Label } from "@/components/ui/label";
@@ -13,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Activity, ArrowLeft, Bot, ChevronDown, ChevronRight, CreditCard, Database, ExternalLink, Languages, LogOut, RefreshCw, PanelLeftClose, PanelLeftOpen, Server, ShieldCheck, UserRound, Users } from "lucide-react";
+import { Activity, ArrowLeft, Bot, Layers, Receipt, LifeBuoy, Megaphone, MousePointerClick, TrendingUp, ChevronDown, ChevronRight, CreditCard, Database, ExternalLink, Languages, LogOut, RefreshCw, PanelLeftClose, PanelLeftOpen, Server, ShieldCheck, UserRound, Users } from "lucide-react";
 import {SuperAdminOperations,AdminAccountControls} from "./super-admin-operations";
 import { SuperAdminAi } from "./super-admin-ai";
 import { SuperAdminBilling } from "./super-admin-billing";
@@ -22,6 +20,10 @@ import { SidebarTooltips } from "./sidebar-tooltips";
 import { DashboardPageHeader } from "./dashboard-page-header";
 import { Wordmark } from "./brand-mark";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { SuperAdminActivity } from "./super-admin-activity";
+import { AdminTable } from "./super-admin-table";
+import { SuperAdminTransactions } from "./super-admin-transactions";
+import { SuperAdminAnnouncements, SuperAdminInsights, SuperAdminLearnerSupport, SuperAdminQueue } from "./super-admin-support";
 import styles from "./super-admin-dashboard.module.css";
 import { useLanguage } from "./language-provider";
 
@@ -33,7 +35,7 @@ type Snapshot = {
   requests: { count: number; errors: number; p95: number | null };
   health: { databaseMs: number; processUptime: number; processMemory: number; hostMemory: number; hostUsedMemory: number; cpuCores: number; cpuSeconds: number; cpuPercent?:number|null; storage?:{total:number;available:number}|null; environment?:string; nodeVersion?:string; billingConfigured: boolean };
 };
-const sections = [{ id: "overview", label: "Overview", icon: Activity }, { id: "live", label: "Live learners", icon: Users }, { id: "analytics", label: "Learning analytics", icon: Activity }, { id: "ai", label: "AI analytics", icon: Bot }, { id: "infra", label: "Infrastructure", icon: Server }, { id: "moderation", label: "Moderation", icon: ShieldCheck }, { id: "logs", label: "Application logs", icon: Database }, { id: "users", label: "Users & access", icon: Users }, { id: "health", label: "System health", icon: Activity }, { id: "billing", label: "Revenue & billing", icon: CreditCard }, { id: "content", label: "Content & audit", icon: Database }, { id: "security", label: "Security", icon: ShieldCheck }] as const;
+const sections = [{ id: "overview", label: "Overview", icon: Activity }, { id: "activity", label: "User activities", icon: MousePointerClick }, { id: "insights", label: "Growth insights", icon: TrendingUp }, { id: "support", label: "Learner support", icon: LifeBuoy }, { id: "queue", label: "Generation queue", icon: Layers }, { id: "announcements", label: "Announcements", icon: Megaphone }, { id: "live", label: "Live learners", icon: Users }, { id: "analytics", label: "Learning analytics", icon: Activity }, { id: "ai", label: "AI analytics", icon: Bot }, { id: "infra", label: "Infrastructure", icon: Server }, { id: "moderation", label: "Moderation", icon: ShieldCheck }, { id: "logs", label: "Application logs", icon: Database }, { id: "users", label: "Users & access", icon: Users }, { id: "health", label: "System health", icon: Activity }, { id: "billing", label: "Revenue & billing", icon: CreditCard }, { id: "transactions", label: "Transactions", icon: Receipt }, { id: "content", label: "Content & audit", icon: Database }, { id: "security", label: "Security", icon: ShieldCheck }] as const;
 type Section = typeof sections[number]["id"];
 const money = (n: number, currency = "INR") => new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 2 }).format(n);
 function display(value: unknown): string {
@@ -42,13 +44,7 @@ function display(value: unknown): string {
   return String(value);
 }
 function Table({ title, rows, columns, query, note }: { title: string; rows: Row[]; columns: string[]; query: string; note?: string }) {
-  const filtered = rows.filter(row => display(row).toLowerCase().includes(query.toLowerCase()));
-  const [page, setPage] = useState(0);
-  const lastPage = Math.max(0, Math.ceil(filtered.length / 20) - 1);
-  const current = Math.min(page, lastPage);
-  return <Card className={styles.panel}><div className={styles.panelHeading}><h2>{title}</h2><Badge variant="secondary">{filtered.length} records</Badge></div>{note && <p className={styles.note}>{note}</p>}
-    {filtered.length ? <><div className={styles.tableWrap}><DataTable><TableHeader><TableRow>{columns.map(column => <TableHead key={column}>{column.replaceAll("_", " ")}</TableHead>)}</TableRow></TableHeader><TableBody>{filtered.slice(current * 20, (current + 1) * 20).map((row, i) => <TableRow key={display(row.id ?? row.event_id ?? i)}>{columns.map(column => <TableCell key={column}>{display(row[column])}</TableCell>)}</TableRow>)}</TableBody></DataTable></div><div className={styles.paging}><Button variant="outline" disabled={!current} onClick={() => setPage(current - 1)}>Previous</Button><span>Page {current + 1} of {lastPage + 1}</span><Button variant="outline" disabled={current === lastPage} onClick={() => setPage(current + 1)}>Next</Button></div></> : <p className={styles.empty}>{query ? "No records match your search." : "No recorded activity in this view yet."}</p>}
-  </Card>;
+  return <AdminTable title={title} rows={rows} columns={columns} query={query} note={note} />;
 }
 function Metric({ label, value, note }: { label: string; value: string | number; note: string }) { return <Card className={styles.metric}><span>{label}</span><strong>{value}</strong><small>{note}</small></Card>; }
 export function SuperAdminDashboard() {
@@ -135,6 +131,12 @@ export function SuperAdminDashboard() {
       {!data && !error && <div className={styles.loading} role="status"><span>Loading application monitoring...</span><div className={styles.metrics}>{[0,1,2,3].map(id=><Skeleton key={id} className={styles.metricSkeleton}/>)}</div></div>}
       {section === "billing" && <SuperAdminBilling />}
       {section === "infra" && <SuperAdminInfrastructure />}
+      {section === "activity" && <SuperAdminActivity days={days} query={query} />}
+      {section === "insights" && <SuperAdminInsights days={days} />}
+      {section === "support" && <SuperAdminLearnerSupport users={data?.users ?? []} />}
+      {section === "queue" && <SuperAdminQueue />}
+      {section === "transactions" && <SuperAdminTransactions />}
+      {section === "announcements" && <SuperAdminAnnouncements />}
       {["overview","live","analytics","moderation","security"].includes(section)&&<SuperAdminOperations section={section} days={days} query={query}/>}
       {section==="ai"&&<SuperAdminAi days={days} query={query}/>}
       {data && <>

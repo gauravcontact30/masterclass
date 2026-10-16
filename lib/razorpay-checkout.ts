@@ -42,3 +42,18 @@ export async function openSubscriptionCheckout(options: { key:string; subscripti
     checkout.open();
   });
 }
+export type OrderPayment = { razorpay_payment_id:string; razorpay_order_id:string; razorpay_signature:string };
+/** One-time order Checkout: resolves with the signed payment, or null when dismissed; rejects if the payment failed. */
+export async function openOrderCheckout(options: { key:string; order_id:string; amount:number; currency:string; name:string; description:string; prefill?:{ email?:string } }): Promise<OrderPayment | null> {
+  await loadCheckout();
+  return new Promise((resolve,reject) => {
+    if (!window.Razorpay) { reject(new Error("payment_unavailable")); return; }
+    let failed=false;
+    const checkout = new window.Razorpay({ ...options, theme:{ color:"#9a4a2c" },
+      handler:(payment:OrderPayment) => resolve(payment),
+      modal:{ ondismiss:() => { if (failed) reject(new Error("payment_failed")); else resolve(null); } },
+    });
+    checkout.on?.("payment.failed", () => { failed=true; });
+    checkout.open();
+  });
+}

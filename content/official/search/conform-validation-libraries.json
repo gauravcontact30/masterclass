@@ -1,147 +1,158 @@
 {
  "Complex forms::Field lists": {
-  "sourceUrl": "https://conform.guide/complex-structures",
-  "sourceTitle": "Nested object and Array",
-  "summary": "Field lists model repeating array fields in Conform. Use getFieldList() for row metadata, then attach insert, remove, and reorder intents to controls that modify the list.",
-  "explanation": "A field list represents an array of repeating form values. Get row metadata from the parent field with getFieldList(), then attach the form's insert, remove, or reorder intent to controls so users can change the list without manually managing indexed names.",
-  "syntax": "const items = fields.items.getFieldList();\nform.insert(name, options);\nform.remove(name, { index });\nform.reorder(name, { from, to });",
-  "parameters": [
-   {
-    "name": "field",
-    "type": "FieldMetadata",
-    "description": "The parent array field metadata used to create row metadata and identify the list."
-   },
-   {
-    "name": "options",
-    "type": "{ index?: number; defaultValue?: unknown }",
-    "description": "The insertion position and optional initial value for a new row."
-   },
-   {
-    "name": "options.index",
-    "type": "number",
-    "description": "The index of the row to remove."
-   },
-   {
-    "name": "options",
-    "type": "{ from: number; to: number }",
-    "description": "The current and destination indexes when moving a row."
-   }
-  ],
-  "returns": "getFieldList() returns metadata for each item in the array field; insert, remove, and reorder return button props for the corresponding intent controls.",
+  "sourceUrl": "https://conform.guide/intent-button",
+  "sourceTitle": "Intent button",
+  "summary": "Field lists let you render array fields and modify repeating rows through Conform's intent API. Use row metadata from getFieldList(), then attach insert, remove, or reorder button props to form controls.",
+  "explanation": "A field list represents an array-shaped form value. Obtain row metadata with getFieldList() from the parent field, render each row using its generated name and stable key, and attach insert, remove, or reorder intent props to buttons. The server receives the intent and applies the requested list change.",
+  "syntax": "fields.<arrayField>.getFieldList(); form.insert.getButtonProps(options); form.remove.getButtonProps(options); form.reorder.getButtonProps(options)",
+  "parameters": [],
+  "returns": "",
   "example": {
-   "title": "Manage a repeating task list",
-   "code": "import { useForm } from '@conform-to/react';\n\nexport default function TasksForm() {\n  const [form, fields] = useForm({\n    defaultValue: { tasks: ['Write docs'] },\n  });\n  const tasks = fields.tasks.getFieldList();\n\n  return (\n    <form {...form.props}>\n      <ul>\n        {tasks.map((task, index) => (\n          <li key={task.key}>\n            <input name={task.name} defaultValue={task.value} />\n            <button {...form.remove(fields.tasks.name, { index })}>Remove</button>\n          </li>\n        ))}\n      </ul>\n      <button {...form.insert(fields.tasks.name, { defaultValue: '' })}>Add</button>\n      <button {...form.reorder(fields.tasks.name, { from: 0, to: 1 })}>Move first</button>\n    </form>\n  );\n}",
+   "title": "Editable task list",
+   "code": "import { useForm } from '@conform-to/react';\n\nexport function TasksForm() {\n  const [form, fields] = useForm({ defaultValue: { tasks: [''] } });\n  const tasks = fields.tasks.getFieldList();\n\n  return <form id={form.id} onSubmit={form.onSubmit}>\n    {tasks.map((task, index) => (\n      <div key={task.key}>\n        <input name={task.name} />\n        <button type=\"submit\" {...form.remove.getButtonProps({\n          name: fields.tasks.name, index,\n        })}>Delete</button>\n        <button type=\"submit\" {...form.reorder.getButtonProps({\n          name: fields.tasks.name, from: index, to: 0,\n        })}>Top</button>\n      </div>\n    ))}\n    <button type=\"submit\" {...form.insert.getButtonProps({\n      name: fields.tasks.name,\n    })}>Add task</button>\n  </form>;\n}",
    "language": "tsx",
-   "explanation": "This form derives row metadata with getFieldList and uses the form intent methods to insert, remove, and reorder rows."
+   "explanation": "Gets metadata for each task, then uses intent button props to insert, remove, or move rows in the array."
   },
   "useCases": [
    {
-    "title": "Dynamic repeating rows",
-    "scenario": "Users can add multiple entries such as tasks, contacts, or tags."
+    "title": "Dynamic task editor",
+    "scenario": "A checklist where users can create and delete task rows."
    },
    {
-    "title": "Remove rows",
-    "scenario": "Users need to delete an unwanted array item."
+    "title": "Sortable list",
+    "scenario": "A prioritized collection whose items can be moved into a chosen order."
    },
    {
-    "title": "Reorder rows",
-    "scenario": "Users need to change the order of array items."
+    "title": "Repeatable form section",
+    "scenario": "A form section with optional, user-defined entries."
    }
   ],
   "related": [
-   "Nested object and Array",
-   "Intent button",
-   "parseSubmission",
-   "FormStateInput",
-   "useForm"
+   "getFieldList()",
+   "getFieldset()",
+   "form.insert",
+   "form.remove",
+   "form.reorder",
+   "getButtonProps()",
+   "Intent button"
   ],
   "since": "",
-  "keyPoints": [
-   "Call getFieldList() on the parent field metadata to obtain the repeating rows.",
-   "Each returned item includes an inferred field name, so row inputs can use the metadata directly.",
-   "Use insert, remove, and reorder intents to change the list."
+  "interview": [
+   {
+    "question": "How do you render fields for an array?",
+    "answer": "Call getFieldList() on the parent field metadata. It returns row metadata with inferred names, allowing each input to use the row's generated name.",
+    "followUp": "How should a row be rendered in a changing list? Use task.key as the React key and task.name for the input name so identity and submitted paths remain aligned."
+   },
+   {
+    "question": "How do you add a repeating row?",
+    "answer": "Use form.insert.getButtonProps with the array field name. Without an index, the new item is appended according to the documented intent-button behavior.",
+    "followUp": "How would you insert at a particular position? Supply the target index in the insert options, and provide a default value when the new row needs initial content."
+   },
+   {
+    "question": "How do you delete and reorder rows?",
+    "answer": "Use form.remove.getButtonProps with the array name and the row index. To move a row, use form.reorder.getButtonProps and provide its current from index and destination to index.",
+    "followUp": "What API change matters when upgrading? The former list helpers were merged into form.insert, form.remove, and form.reorder, while append and prepend were removed."
+   }
   ],
-  "gotchas": [],
-  "checkedAt": "2026-10-15"
+  "keyPoints": [
+   "Start with the parent array field and call getFieldList() to obtain metadata for its repeating rows.",
+   "Each returned row supplies an inferred field name, so individual inputs do not need manually assembled array paths.",
+   "The list supports three mutations: inserting a row, removing one, and changing row order.",
+   "Use the metadata key as the rendered row's stable identity when mapping the list.",
+   "Intent options target the array by passing the parent list field's name."
+  ],
+  "gotchas": [
+   "Use the current form metadata APIs rather than the removed legacy list hooks; array changes are performed through insert, remove, and reorder intents.",
+   "Use each row's generated key for rendering so React can track rows correctly while the list changes."
+  ],
+  "checkedAt": "2026-10-16"
  },
  "Complex forms::File inputs": {
   "sourceUrl": "https://conform.guide/file-upload",
   "sourceTitle": "File Upload",
-  "summary": "Validate uploaded files with a schema before accepting them. Configure multipart POST forms, enforce size limits per file, and add collection rules for multiple uploads.",
-  "explanation": "Use a multipart POST form and validate the submitted File values with a schema. For multiple uploads, validate each file individually and optionally validate the complete array for collection-level rules such as requiring at least one file.",
-  "syntax": "<form method=\"POST\" encType=\"multipart/form-data\">...</form>",
+  "summary": "Validate uploaded files with schema refinements for constraints such as size, and use multipart POST submission for the form. Multi-file inputs additionally need the multiple attribute and collection-level checks.",
+  "explanation": "Model the upload as a schema field, then add refinement checks for properties such as size. For a single file, validate the File value directly; for multiple uploads, validate the collection and apply the size rule to every member. Configure the form for multipart POST submission before sending the files.",
+  "syntax": "z.instanceof(File).refine((file) => file.size < 1024, \"File size must be less than 1kb\")",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Validate uploaded file sizes",
-   "code": "import { z } from 'zod';\n\nconst schema = z.object({\n  files: z\n    .array(z.instanceof(File).refine((file) => file.size < 1024, 'File size must be less than 1kb'))\n    .min(1, 'At least 1 file is required')\n    .refine(\n      (files) => files.every((file) => file.size < 1024),\n      'File size must be less than 1kb',\n    ),\n});",
+   "title": "Validate a single file's size",
+   "code": "import { z } from \"zod\";\n\nconst schema = z.object({\n  file: z\n    .instanceof(File)\n    .refine((file) => file.size < 1024, \"File size must be less than 1kb\"),\n});",
    "language": "typescript",
-   "explanation": "The schema requires at least one uploaded file and checks the size of each file before acceptance."
+   "explanation": "Define the upload field in the validation schema and reject files that exceed the chosen size threshold."
   },
   "useCases": [
    {
-    "title": "Enforce file-size limits",
-    "scenario": "Reject oversized uploads before storage or further processing."
+    "title": "Single-file size validation",
+    "scenario": "A profile or document form accepts one upload and must reject files above a configured byte limit."
    },
    {
-    "title": "Validate multiple files",
-    "scenario": "Accept several attachments in one form submission."
-   },
-   {
-    "title": "Require at least one file",
-    "scenario": "Prevent empty attachment submissions."
+    "title": "Multi-file size validation",
+    "scenario": "A gallery or batch-import form accepts several uploads and must ensure each member stays within the limit."
    }
   ],
   "related": [
    "File Upload",
+   "Validation",
    "useForm",
-   "allErrors"
+   "getInputProps"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is required for a browser form to submit files correctly?",
+    "answer": "Set the form encoding to multipart/form-data and use POST. Then validate the File value in the schema with a refinement that checks its size.",
+    "followUp": "How would you handle several files? Validate the collection, require the desired number of files, and refine it so every file satisfies the size rule."
+   },
+   {
+    "question": "How do you enforce a maximum file size?",
+    "answer": "Use a File schema field and add a refinement predicate that returns true only when the file size is below the permitted limit. The refinement supplies the message returned when the predicate fails.",
+    "followUp": "How can the same constraint be applied to multiple uploads? Use an every-style check over the files collection so one oversized file rejects the field."
+   },
+   {
+    "question": "What changes when accepting multiple files?",
+    "answer": "Add the multiple attribute to the file input. The documentation's multi-file pattern validates the collection and can also require at least one file before checking each file's size.",
+    "followUp": "What other upload constraints can be added? Add further schema checks for the file properties your application accepts, while retaining server-side validation."
+   }
+  ],
   "keyPoints": [
-   "Configure the form with multipart/form-data encoding and POST before processing uploads.",
-   "Create the file control using the same field metadata approach as other inputs.",
-   "Add the multiple attribute when the field should accept more than one file.",
-   "Apply a per-file refinement to reject files that exceed the permitted size.",
-   "Add a minimum array length when at least one upload is mandatory.",
-   "A collection-level refinement can ensure every file in a multi-file upload meets the size rule."
+   "Treat the file control as a regular Conform field when connecting it to form metadata.",
+   "A refinement can reject an individual upload when its size reaches the configured threshold.",
+   "A multi-file schema can enforce that at least one file is present.",
+   "For multiple uploads, apply the size predicate to every file rather than checking only one element."
   ],
   "gotchas": [
-   "For multiple files, field-level errors may omit per-file errors; use allErrors when every individual error must be displayed.",
-   "Per-file errors are associated with indexed paths such as files[0], not only with the files array."
+   "The form must use multipart/form-data and POST; otherwise the upload is not submitted in the expected format.",
+   "A multi-file field requires the input's multiple attribute in addition to collection validation."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Complex forms::Intent buttons": {
   "sourceUrl": "https://conform.guide/intent-button",
   "sourceTitle": "Intent button",
-  "summary": "Intent buttons let one form trigger actions other than its default submit behavior. The clicked submitter supplies an intent value that Conform can use to select the requested action.",
-  "explanation": "An intent button is a submit button whose name and value identify the action requested by the user. Conform preserves that submitter data in the form submission, so application code can branch on the intent—for example, adding an item to a cart instead of performing the primary form action.",
+  "summary": "Intent buttons let one form trigger different actions, such as alternative submissions, validation, field updates, or list operations. The clicked submitter serializes an intent that Conform can use to select the behavior.",
+  "explanation": "An intent button is a submit control whose name and value identify the requested action. Conform serializes that submitter with the form data, allowing validation, field-list operations, or application-specific behavior to be selected from one form.",
   "syntax": "<button type=\"submit\" name=\"intent\" value=\"action\">Action</button>",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Action button with an intent",
-   "code": "import { useForm } from '@conform-to/react/future';\n\nexport function CartForm() {\n  const [form, fields] = useForm();\n\n  return (\n    <form id={form.id} onSubmit={form.onSubmit}>\n      <input {...fields.productId} />\n      <button type=\"submit\" name=\"intent\" value=\"add-to-cart\">\n        Add to cart\n      </button>\n    </form>\n  );\n}",
+   "title": "Two actions in one form",
+   "code": "import { useForm } from '@conform-to/react';\n\nexport function CartForm() {\n  const [form] = useForm();\n\n  return (\n    <form {...form}>\n      <button type=\"submit\" name=\"intent\" value=\"add-to-cart\">\n        Add to cart\n      </button>\n      <button type=\"submit\" name=\"intent\" value=\"buy-now\">\n        Buy now\n      </button>\n    </form>\n  );\n}",
    "language": "tsx",
-   "explanation": "The submit button contributes an intent value, allowing the server or client handler to choose an action other than the form's default submission."
+   "explanation": "Give submit buttons the same intent field name and distinct values, then inspect the submitted intent to choose the action."
   },
   "useCases": [
    {
-    "title": "Multiple form actions",
-    "scenario": "Offer actions such as “Save draft” and “Publish” from the same form."
+    "title": "Choose among submission actions",
+    "scenario": "A shopping form needs separate Add to cart and Buy now actions without duplicating fields."
    },
    {
-    "title": "Targeted validation",
-    "scenario": "Run validation for one field or the entire form."
+    "title": "Validate a specific field",
+    "scenario": "A form should validate one field when its dedicated control is activated."
    },
    {
-    "title": "Field state controls",
-    "scenario": "Reset or update a field without creating a separate form."
-   },
-   {
-    "title": "Dynamic lists",
-    "scenario": "Insert, remove, or reorder entries in a field list."
+    "title": "Manage field-list items",
+    "scenario": "A dynamic list needs controls for adding, deleting, or reordering entries."
    }
   ],
   "related": [
@@ -149,71 +160,104 @@
    "Form Controls",
    "Validate intent",
    "Reset and Update intent",
-   "Insert, remove and reorder intents"
+   "Insert, remove and reorder intents",
+   "form.validate",
+   "form.reset",
+   "form.insert"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How do intent buttons distinguish multiple actions in one form?",
+    "answer": "The clicked submit button is included in the form data as the submitter. Buttons can share an intent field name while using different values, so server logic can distinguish actions such as adding an item or buying immediately.",
+    "followUp": "How can a form support field-list operations? Use Conform's insert, remove, and reorder intents, which encode the operation and its target in the button data."
+   },
+   {
+    "question": "How are built-in Conform intents represented?",
+    "answer": "Conform uses a reserved name with the serialized intent as its value for form controls. Helpers such as form.validate, form.reset, and form.insert simplify generating those controls.",
+    "followUp": "What does validation intent do? It marks the selected field as validated and returns its error when invalid; validation can also be triggered directly when the user leaves the field."
+   },
+   {
+    "question": "What can a validate intent trigger?",
+    "answer": "A validate intent can target a field, causing Conform to mark that field as validated and report its error if invalid. The same mechanism supports controls that reset or update fields and manipulate field lists.",
+    "followUp": "Which list operations are available? Conform documents insert, remove, and reorder intents for changing field-list items."
+   }
+  ],
   "keyPoints": [
-   "Use a submit button when an action must travel with the form submission.",
-   "Different submit buttons can request different behaviors while sharing one form.",
-   "Submission intents support form-control operations as well as application-specific actions.",
-   "Identify an intent through the reserved button name and a serialized value.",
-   "Built-in helpers expose common actions such as validation, reset, and insertion."
+   "The clicked submit button supplies the action marker in the submitted form data.",
+   "Multiple submit buttons can share one form while selecting different application behaviors.",
+   "Conform applies intent-based controls to validation and field manipulation, not only final form actions.",
+   "Built-in controls encode their operation through a reserved button name and serialized value.",
+   "Form metadata exposes helpers for constructing common intent buttons.",
+   "A validate intent lets a button request validation instead of relying only on ordinary submission."
   ],
   "gotchas": [
-   "Only the button that actually triggers submission contributes its intent to the form data; a generic button does not automatically do so.",
-   "Use the reserved intent name and serialize the intended action as its value; arbitrary button markup will not activate Conform's intent handling."
+   "Only the button that triggers submission contributes its intent to the form data; a non-submitting control will not identify the action.",
+   "Use Conform's reserved intent format for built-in control operations rather than treating every intent value as application-specific."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Form fundamentals::Field metadata": {
-  "sourceUrl": "https://conform.guide/api/react/future/useField",
-  "sourceTitle": "useField - Conform",
-  "summary": "Field metadata is a single object for rendering and validating a control. It provides the field’s name, generated id, errors, accessibility identifiers, and schema-derived HTML validation attributes.",
-  "explanation": "A field metadata object centralizes the values needed to render and validate a form control. Read its generated name and id for the input and label, use its errors and errorId for accessible feedback, and spread its validation attributes onto the control.",
+  "sourceUrl": "https://conform.guide/api/react/useField",
+  "sourceTitle": "useField",
+  "summary": "Field metadata is the object Conform exposes for a form field. It provides the field’s name, id, errors, and schema-derived HTML validation attributes for rendering controls and accessible error UI.",
+  "explanation": "Conform exposes each field as metadata on the object returned by useForm. Use properties such as id, name, errors, and schema-derived HTML validation attributes when rendering controls and their messages.",
   "syntax": "const [meta, form] = useField(name, options);",
   "parameters": [],
-  "returns": "A Field object containing field metadata and state, including id, name, errors, errorId, and schema-derived validation attributes.",
+  "returns": "",
   "example": {
-   "title": "Render a field from metadata",
-   "code": "const [form, fields] = useForm({\n  constraint: getZodConstraint(schema),\n});\n\nreturn (\n  <form id={form.id} onSubmit={form.onSubmit}>\n    <label htmlFor={fields.email.id}>Email</label>\n    <input {...getInputProps(fields.email, { type: 'email' })} />\n    {fields.email.errors && <p id={fields.email.errorId}>{fields.email.errors}</p>}\n  </form>\n);",
+   "title": "Reading field metadata",
+   "code": "import { useForm } from '@conform-to/react';\nimport { parseWithZod } from '@conform-to/zod';\nimport { z } from 'zod';\n\nconst schema = z.object({\n  email: z.string().email(),\n});\n\nexport function Signup() {\n  const [form, fields] = useForm({\n    onValidate({ formData }) {\n      return parseWithZod(formData, { schema });\n    },\n  });\n\n  return (\n    <form id={form.id} onSubmit={form.onSubmit}>\n      <label htmlFor={fields.email.id}>Email</label>\n      <input {...fields.email} type=\"email\" />\n      {fields.email.errors?.map((error) => (\n        <p key={error}>{error}</p>\n      ))}\n    </form>\n  );\n}",
    "language": "tsx",
-   "explanation": "Uses field metadata to connect the label, input, and error message while applying schema-derived HTML validation attributes."
+   "explanation": "The field metadata supplies the input's id, name, and validation attributes, while errors can be rendered from the same object."
   },
   "useCases": [
    {
-    "title": "Keep label and input identifiers aligned",
-    "scenario": "Render labels and controls"
+    "title": "Reusable field components",
+    "scenario": "Render a reusable input component that needs its own field name, id, errors, and constraints."
    },
    {
-    "title": "Connect errors with aria-describedby",
-    "scenario": "Display accessible validation feedback"
+    "title": "Accessible form markup",
+    "scenario": "Connect labels, controls, help text, and error messages with generated identifiers."
    },
    {
-    "title": "Populate native HTML validation attributes",
-    "scenario": "Apply schema constraints"
-   },
-   {
-    "title": "Avoid prop drilling with useField",
-    "scenario": "Build reusable field components"
+    "title": "Schema-driven browser validation",
+    "scenario": "Apply required, length, range, pattern, and other native constraints derived from a validation schema."
    }
   ],
   "related": [
-   "useField",
    "useForm",
-   "getZodConstraint",
-   "getInputProps"
+   "useField",
+   "getInputProps",
+   "useFormMetadata",
+   "Fieldset",
+   "ValidationAttributes"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How do you access field metadata with useForm?",
+    "answer": "The fieldset returned by useForm exposes each field as a property, so a field can be read through fields.fieldName. Its metadata includes identifiers, the field name, errors, and validation attributes derived from schema constraints.",
+    "followUp": "How would you access a field whose name is only known at runtime? Use form.getField(name), getFieldset(name), or getFieldList(name), depending on the field structure."
+   },
+   {
+    "question": "How should field metadata support accessible markup?",
+    "answer": "Use the field metadata's id on the control and connect the label with htmlFor. The name property supplies the submitted field name, while errorId can connect an error message through aria-describedby.",
+    "followUp": "How can a reusable component obtain metadata without prop drilling? Subscribe with useField inside a FormProvider and optionally provide formId for a non-nearest form context."
+   },
+   {
+    "question": "Where do a field's validation attributes come from?",
+    "answer": "When a schema is used, Conform can derive HTML validation attributes such as required, minLength, maxLength, pattern, min, max, step, and multiple. These attributes are populated on field metadata and can be passed to the control.",
+    "followUp": "What should be used when displaying every nested validation error? Use allErrors when the regular errors property does not provide the complete set needed."
+   }
+  ],
   "keyPoints": [
-   "Field metadata combines rendering identifiers and current validation state in one object.",
-   "Use the generated id on the input and pair it with the label's htmlFor.",
-   "Use the metadata name as the control's name, including the correct path for nested fields.",
-   "Read errors to decide whether to render feedback for the field.",
-   "Schema constraints can be rendered as native HTML validation attributes such as required, minLength, and pattern.",
-   "Use errorId for the error element and connect that element through aria-describedby when the field has an error."
+   "The fields object acts as a field map: read a field's metadata through its property name.",
+   "Native validation attributes provide accessibility benefits in addition to browser-side constraint checking.",
+   "The name metadata value represents the field's submitted name or path."
   ],
   "gotchas": [],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Form fundamentals::Validation timing": {
   "sourceUrl": "https://conform.guide/validation",
@@ -273,56 +317,79 @@
   "checkedAt": "2026-10-15"
  },
  "Schema integration::Coercion": {
-  "sourceUrl": "https://conform.guide/api/valibot/future/coerceFormValue",
-  "sourceTitle": "coerceFormValue",
-  "summary": "coerceFormValue preprocesses Valibot schemas for HTML form submissions. It strips empty values and converts strings into schema-defined numbers, booleans, dates, or bigints.",
-  "explanation": "coerceFormValue wraps a Valibot schema with preprocessing that removes empty strings or files and converts string form values according to the schema. Numbers are trimmed and passed to Number, booleans become true only for \"on\", and dates are parsed with Date, with timezone-less datetime strings normalized to UTC.",
-  "syntax": "coerceFormValue(schema)",
-  "parameters": [],
-  "returns": "An enhanced Valibot schema that strips empty form values and coerces submitted values to the types described by the schema.",
+  "sourceUrl": "https://conform.guide/api/valibot/future/configureCoercion",
+  "sourceTitle": "configureCoercion",
+  "summary": "Convert submitted form strings into schema-appropriate numbers, booleans, and dates. Configure custom converters when the defaults do not match the input format.",
+  "explanation": "configureCoercion creates helpers that preprocess form strings according to the schema. coerceFormValue also removes empty strings or files by passing undefined onward, while coerceStructure performs conversion without validation or empty-value stripping.",
+  "syntax": "configureCoercion(config?)",
+  "parameters": [
+   {
+    "name": "config",
+    "type": "object",
+    "description": "Optional configuration containing type-specific number, boolean, and date conversion functions."
+   },
+   {
+    "name": "schema",
+    "type": "Schema",
+    "description": "A Valibot schema to enhance with form-value preprocessing."
+   }
+  ],
+  "returns": "configureCoercion returns coerceFormValue and coerceStructure; each helper returns an enhanced schema.",
   "example": {
-   "title": "Coerce submitted form values",
-   "code": "import * as v from 'valibot';\nimport { coerceFormValue } from '@conform-to/valibot/future';\n\nconst schema = coerceFormValue(v.object({\n  amount: v.number(),\n  date: v.date(),\n  confirm: v.boolean(),\n}));\n\nconst result = v.parse(schema, {\n  amount: '42',\n  date: '2026-01-01T12:00:00.000',\n  confirm: 'on',\n});\n\nconsole.log(result.amount, result.date, result.confirm);",
+   "title": "Coerce typed form values",
+   "code": "import { configureCoercion } from '@conform-to/valibot/future';\nimport * as v from 'valibot';\n\nconst { coerceFormValue } = configureCoercion();\nconst schema = coerceFormValue(v.object({\n  age: v.number(),\n  subscribed: v.boolean(),\n  birthday: v.date(),\n}));\n\nconst value = v.parse(schema, {\n  age: '42',\n  subscribed: 'on',\n  birthday: '2000-01-01',\n});\n\nconsole.log(value.age, value.subscribed, value.birthday);",
    "language": "typescript",
-   "explanation": "This enhances a Valibot schema so submitted strings become a number, Date, and boolean during parsing."
+   "explanation": "Enhance a Valibot schema before parsing form data so the resulting values use the schema's number, boolean, and date types."
   },
   "useCases": [
    {
-    "title": "Numeric form fields",
-    "scenario": "Parsing HTML form submissions with numeric fields such as prices, quantities, or ages."
+    "title": "Validate typed submissions",
+    "scenario": "A validated form submission contains numeric, checkbox, or date fields represented as strings."
    },
    {
-    "title": "Date inputs",
-    "scenario": "Reading date inputs and validating them as JavaScript Date values."
+    "title": "Read typed form state",
+    "scenario": "A form UI needs current values in typed form before validation runs."
    },
    {
-    "title": "Boolean controls",
-    "scenario": "Handling checkbox or radio submissions that use the browser's default on value."
-   },
-   {
-    "title": "Schema-based preprocessing",
-    "scenario": "Applying consistent conversion rules before validating a mixed form schema."
+    "title": "Handle localized numeric input",
+    "scenario": "Users enter formatted numeric text such as values containing commas."
    }
   ],
   "related": [
    "configureCoercion",
-   "parseWithValibot",
-   "coerceStructure"
+   "coerceFormValue",
+   "coerceStructure",
+   "parseWithValibot"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What does coerceFormValue do?",
+    "answer": "coerceFormValue enhances a schema with preprocessing for form input. It strips empty values and converts strings according to number, boolean, date, and bigint schema types.",
+    "followUp": "How would you customize number parsing for localized input? Configure the number converter, for example by trimming text and removing commas before calling Number()."
+   },
+   {
+    "question": "How are common form values converted by default?",
+    "answer": "A number is trimmed and passed to Number, a boolean becomes true when its value is on, and a date is parsed with Date. Timezone-less datetime strings are normalized to UTC before parsing.",
+    "followUp": "What happens when number conversion receives an empty string? The empty-value rule runs first, so the schema receives undefined rather than a numeric conversion."
+   },
+   {
+    "question": "When should coerceStructure be used instead of coerceFormValue?",
+    "answer": "coerceStructure adds type conversion without validation or empty-value stripping. It is intended for reading typed current form values, and failed conversions produce type-specific sentinel values such as NaN, false, or Invalid Date.",
+    "followUp": "Why can structural conversion return a sentinel instead of an error? It must provide typed values while deferring validation to a separate schema parse."
+   }
+  ],
   "keyPoints": [
-   "Wrap the schema with coerceFormValue to add form-value cleanup and type conversion before validation.",
-   "Number fields accept submitted strings after whitespace is removed and are converted with Number.",
-   "Date fields convert submitted strings using the Date constructor.",
-   "BigInt schemas are also supported: input is trimmed before BigInt conversion.",
-   "Use configureCoercion when the default conversion rules do not match the application's form format."
+   "configureCoercion returns both validation-oriented and structural coercion helpers, sharing optional type converters.",
+   "Custom converters receive the submitted text and must return the corresponding typed value.",
+   "coerceStructure lets callers read typed form data while leaving validation to a later operation."
   ],
   "gotchas": [
-   "Empty strings and files are converted to undefined before the schema runs, so they are not preserved as ordinary values.",
-   "Checkbox-style boolean input is recognized only when its submitted value is on; other values do not become true.",
-   "A datetime string without a timezone is interpreted as UTC rather than using the local timezone."
+   "The default boolean conversion recognizes the browser checkbox value on; other strings are not accepted as true.",
+   "Date conversion uses the Date constructor and checks whether the resulting date is valid.",
+   "Although structural coercion supports bigint values, bigint is not one of the configurable type conversion functions."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-10-16"
  },
  "Schema integration::Zod integration": {
   "sourceUrl": "https://conform.guide/api/zod/parseWithZod",

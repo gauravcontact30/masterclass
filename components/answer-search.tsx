@@ -64,7 +64,7 @@ const MAX_CARDS = 24;
 /** One row, so the index stays a strip above the search box rather than a wall of cards. */
 const PER_PAGE = 3;
 /** Section tabs shown at once. The rest are a page turn away, not a side-scroll. */
-const SECTIONS_PER_PAGE = 3;
+const SECTIONS_PER_PAGE = 2;
 
 const cardKey = (question: string) => question.trim().toLowerCase().replace(/\s+/g, " ");
 const contentKey = (text: string) => text.trim().toLowerCase().replace(/\s+/g, " ");
@@ -510,7 +510,7 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
 /**
  * The catalogues, one tab each.
  *
- * Paged four at a time rather than scrolled sideways: there are twenty-odd
+ * Paged two at a time rather than scrolled sideways: there are twenty-odd
  * catalogues, and a strip that runs off the edge hides the ones at the end from
  * anyone who does not think to drag it. Only the open section is mounted, so
  * each catalogue keeps the search, category tabs and pager it always had.
