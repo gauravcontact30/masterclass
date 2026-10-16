@@ -58,6 +58,7 @@ import { PRO_TRACKS } from "../lib/pro-learn/types";
 import { STEP_GUIDES } from "../lib/step-by-step/guides";
 import { TECHY_TOPICS } from "../lib/techy-content";
 import { AI_PULSE } from "../lib/landing-ai-pulse";
+import { WORKFLOWS } from "../lib/landing-workflows";
 import { CATEGORY_LABELS, PREPARATIONS, PREPARATION_GROUPS } from "../lib/study/preparations";
 import { COURSE_SUMMARIES } from "../lib/study/course-summaries";
 import { LEARNING_IMAGE_BUCKET, learningImageSlug, learningScenePrompt } from "../lib/learning-image";
@@ -206,6 +207,11 @@ async function pictureSet(name: string): Promise<PictureSet> {
     })),
   ]);
   // The landing page's AI & agentic pulse carousel (components/landing-ai-pulse.tsx).
+  // The landing page's workflow blueprints (components/landing-workflows.tsx): one picture per brief.
+  if (name === "blueprints") return learningSet("topics", WORKFLOWS.map(workflow => ({
+    name: workflow.title, context: `${workflow.group} workflow for ${workflow.industry}`, summary: `${workflow.summary} Problem: ${workflow.problem} Outcome: ${workflow.outcome}`,
+    points: workflow.steps, label: `blueprints: ${workflow.id}`, parts: ["blueprints", workflow.id],
+  })));
   if (name === "pulse") return learningSet("topics", AI_PULSE.map(item => ({
     name: item.title, context: "AI agents and agentic engineering", summary: item.definition,
     points: item.points, label: `pulse: ${item.id}`, parts: ["ai-pulse", item.id],

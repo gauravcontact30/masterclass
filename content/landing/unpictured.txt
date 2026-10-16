@@ -107,14 +107,7 @@ LangChain: Streaming event hooks
 LangChain: Runnable listeners
 LangChain: Tool call interception
 LangChain: Tracing callbacks
-LangGraph: LangGraph learning module
-LangGraph: LangGraph architecture
-LangGraph: StateGraph
-LangGraph: START and END
 LangGraph: Nodes and partial updates
-LangGraph: Static edges
-LangGraph: Conditional edges
-LangGraph: Graph compilation
 LangGraph: Graph visualization
 LangGraph: Typed state schemas
 LangGraph: Input and output schemas
@@ -175,7 +168,6 @@ LangGraph: interrupt()
 LangGraph: Checkpointer hooks
 LangGraph: Node retry policies
 LangGraph: Stream event hooks
-LangSmith: LangSmith learning module
 LangSmith: LangSmith platform overview
 LangSmith: Organizations, workspaces and projects
 LangSmith: API keys and SDK setup
@@ -245,13 +237,8 @@ LangSmith: Custom evaluators
 LangSmith: Feedback submission
 LangSmith: Run rules
 LangSmith: Metadata and tags on runs
-LangFlow: LangFlow learning module
-LangFlow: Langflow overview
-LangFlow: Installation options
-LangFlow: Your first flow: Basic Prompting
 LangFlow: Projects and flow organization
 LangFlow: Flow JSON, export and templates
-LangFlow: Typed data: Message, JSON and Table
 LangFlow: Prompt design in flows
 LangFlow: Chat memory and sessions
 LangFlow: Branching: If-Else and Smart Router
@@ -532,7 +519,6 @@ React 19+ — Components, Actions & Server UI: Activity and View Transitions
 React 19+ — Components, Actions & Server UI: Conditional rendering
 React 19+ — Components, Actions & Server UI: Lists and keys
 React 19+ — Components, Actions & Server UI: Controlled inputs
-React 19+ — Components, Actions & Server UI: useActionState
 React 19+ — Components, Actions & Server UI: useTransition
 React 19+ — Components, Actions & Server UI: useDeferredValue
 React 19+ — Components, Actions & Server UI: useMemo and useCallback
@@ -547,7 +533,6 @@ React 19+ Hooks — State, Effects & Actions: Custom Hooks
 React 19+ Hooks — State, Effects & Actions: useState
 React 19+ Hooks — State, Effects & Actions: useReducer
 React 19+ Hooks — State, Effects & Actions: useEffect
-React 19+ Hooks — State, Effects & Actions: useLayoutEffect
 React 19+ Hooks — State, Effects & Actions: useInsertionEffect
 React 19+ Hooks — State, Effects & Actions: useRef
 React 19+ Hooks — State, Effects & Actions: useImperativeHandle
@@ -611,17 +596,14 @@ n8n: Expressions and field mapping
 n8n: Item linking
 n8n: Edit Fields node
 n8n: Code node
-n8n: Run once versus per item
 n8n: Dates, time zones and Luxon
 n8n: Binary data and files
 n8n: Schedule Trigger
 n8n: Webhook node
 n8n: Respond to Webhook
-n8n: Webhook authentication
 n8n: HTTP Request node
 n8n: API pagination
 n8n: API rate limits
-n8n: OAuth2 and credential scopes
 n8n: Polling triggers
 n8n: Webhook deduplication
 n8n: If and Switch nodes
@@ -629,7 +611,6 @@ n8n: Merge node
 n8n: Loop Over Items
 n8n: Wait node
 n8n: Filter and Sort nodes
-n8n: Aggregate and Split Out
 n8n: Remove Duplicates
 n8n: Sub-workflows
 n8n: Database nodes
@@ -642,7 +623,6 @@ n8n: AI Agent node
 n8n: Chat Trigger and conversational flows
 n8n: Chat model integrations
 n8n: Tools for n8n agents
-n8n: Structured Output Parser
 n8n: Memory nodes
 n8n: RAG in n8n
 n8n: Vector store nodes
@@ -654,10 +634,8 @@ n8n: Continue-on-error behavior
 n8n: Pinned data
 n8n: Execution history and replay
 n8n: Workflow testing
-n8n: Docker deployment
 n8n: PostgreSQL and backups
 n8n: Credential encryption key
-n8n: Queue mode and Redis
 n8n: Worker scaling and concurrency
 n8n: Task runners
 n8n: Reverse proxy and TLS
@@ -665,7 +643,6 @@ n8n: Execution pruning
 n8n: Source control and environments
 n8n: Projects and access control
 n8n: Monitoring and health checks
-n8n: Upgrades and rollback
 n8n: External hooks
 n8n: workflow.postExecute
 n8n: Frontend external hooks
@@ -683,23 +660,18 @@ Python: Input & output
 Python: Lists
 Python: Tuples
 Python: Dictionaries
-Python: Sets
 Python: Slicing
-Python: Comprehensions
 Python: Iterators & iterables
 Python: if / elif / else
 Python: for loops
 Python: while loops
 Python: break, continue & else
 Python: match statements
-Python: Functions
 Python: Arguments & defaults
 Python: *args & **kwargs
 Python: Lambda
 Python: Scope & closures
 Python: Decorators
-Python: Generators
-Python: Recursion
 Python: Classes & instances
 Python: Inheritance & MRO
 Python: Dunder methods
@@ -728,10 +700,8 @@ Python: Virtual environments
 Python: pip & dependencies
 Python: pyproject.toml
 Python: collections
-Python: itertools
 Python: datetime
 Python: re
-Python: NumPy
 Python: pandas
 Python: matplotlib
 Python: Jupyter
@@ -802,20 +772,13 @@ Cypress — End-to-End Testing & Network Control: Aliases
 Cypress — End-to-End Testing & Network Control: Cross-origin testing
 Cypress — End-to-End Testing & Network Control: Flake detection
 GitHub Actions: Workflow files
-GitHub Actions: Events and triggers
-GitHub Actions: Jobs and steps
-GitHub Actions: Runners
 GitHub Actions: Expressions and contexts
 GitHub Actions: Conditions
 GitHub Actions: Dependency caching
-GitHub Actions: Artifacts
-GitHub Actions: Job outputs
 GitHub Actions: Matrix builds
 GitHub Actions: Concurrency groups
-GitHub Actions: Service containers
 GitHub Actions: Composite actions
 GitHub Actions: Reusable workflows
-GitHub Actions: Environments
 GitHub Actions: Deployment jobs
 GitHub Actions: Variables and secrets
 GitHub Actions: Self-hosted runner isolation
@@ -823,7 +786,6 @@ GitHub Actions: GITHUB_TOKEN permissions
 GitHub Actions: Pinning actions
 GitHub Actions: pull_request_target risks
 GitHub Actions: Secret handling
-GitHub Actions: OIDC to cloud providers
 GitHub Actions: Dependency review
 System Design: Functional requirements
 System Design: Non-functional requirements

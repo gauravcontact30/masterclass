@@ -1,0 +1,696 @@
+/**
+ * The workflow diagrams in the landing page's closing "Make today chapter one" section
+ * (components/landing-workflows.tsx): six System Design patterns and six agentic AI workflows, each drawn as
+ * nodes and arrows on a 1000 × 380 canvas with numbered steps that match the callout pills under it.
+ */
+export type WorkflowNodeKind = "actor" | "service" | "store" | "queue" | "llm" | "tool" | "decision";
+/** A box centred on (x, y); `label` takes one line break, and `step` puts a numbered badge on its corner. */
+export type WorkflowNode = { id: string; label: string; x: number; y: number; kind: WorkflowNodeKind; step?: number };
+/** An arrow between two nodes; `via` bends it through a control point, `dashed` marks a background or failure path. */
+export type WorkflowEdge = { from: string; to: string; label?: string; dashed?: boolean; via?: [number, number] };
+export type Workflow = {
+  id: string; group: "System Design" | "LangChain" | "LangGraph" | "LangFlow" | "LangSmith";
+  title: string; summary: string; nodes: WorkflowNode[]; edges: WorkflowEdge[]; steps: string[];
+  /** Who meets this problem, the real-life problem it solves and what changes once it is in place. */
+  industry: string; problem: string; outcome: string;
+};
+
+export const WORKFLOW_WIDTH = 1000;
+export const WORKFLOW_HEIGHT = 380;
+export const NODE_WIDTH = 168;
+export const NODE_HEIGHT = 62;
+
+const n = (id: string, label: string, x: number, y: number, kind: WorkflowNodeKind, step?: number): WorkflowNode => ({ id, label, x, y, kind, ...(step ? { step } : {}) });
+
+export const WORKFLOWS: Workflow[] = [
+  {
+    id: "url-shortener", group: "System Design", title: "URL shortener",
+    summary: "How a link like sho.rt/abc123 is created once and resolved millions of times.",
+    industry: "Marketing & SaaS", problem: "Links in SMS, print and QR codes must stay short and resolve instantly at huge read volume.", outcome: "Billions of redirects served from cache in milliseconds.",
+    nodes: [
+      n("client", "Client\nbrowser / app", 100, 190, "actor", 1), n("lb", "Load balancer", 300, 190, "service", 2),
+      n("app", "Shortener\nservice", 500, 190, "service", 3), n("id", "ID generator\nBase62 encode", 500, 62, "service"),
+      n("cache", "Cache\nRedis", 700, 190, "store", 4), n("db", "Database\ncode → long URL", 900, 190, "store", 5),
+    ],
+    edges: [
+      { from: "client", to: "lb", label: "POST / GET" }, { from: "lb", to: "app" }, { from: "app", to: "id", label: "new id" },
+      { from: "app", to: "cache", label: "lookup" }, { from: "cache", to: "db", label: "miss", dashed: true },
+      { from: "app", to: "client", label: "6 · 301 redirect", via: [300, 350] },
+    ],
+    steps: [
+      "The client sends a long URL to shorten, or opens a short code.",
+      "A load balancer spreads requests across stateless app servers.",
+      "Writes take a unique ID and encode it in Base62: 7 characters give about 3.5 trillion codes.",
+      "Reads check the cache first, because a few hot links get most of the traffic.",
+      "On a miss, the database lookup fills the cache for the next reader.",
+      "The service answers with a 301/302 redirect to the long URL.",
+    ],
+  },
+  {
+    id: "rate-limiter", group: "System Design", title: "API rate limiter",
+    summary: "A token bucket in front of the API keeps one noisy client from starving everyone else.",
+    industry: "Public APIs", problem: "One buggy client or scraper can exhaust capacity for every other customer.", outcome: "Fair usage per key, with clear 429 errors instead of outages.",
+    nodes: [
+      n("client", "Client\nAPI key / IP", 100, 190, "actor", 1), n("gw", "API gateway", 300, 190, "service", 2),
+      n("limiter", "Rate limiter\ntoken bucket", 500, 190, "service", 3), n("redis", "Redis\ncounters per key", 300, 62, "store", 4),
+      n("rules", "Rules\nlimits per plan", 560, 62, "store"), n("api", "Backend\nservice", 760, 190, "service", 5),
+      n("reject", "429 Too Many\nRequests", 760, 318, "decision", 6),
+    ],
+    edges: [
+      { from: "client", to: "gw" }, { from: "gw", to: "limiter" }, { from: "limiter", to: "redis", label: "take token" },
+      { from: "limiter", to: "rules", label: "load limits", dashed: true }, { from: "limiter", to: "api", label: "allowed" },
+      { from: "limiter", to: "reject", label: "empty bucket" }, { from: "reject", to: "client", label: "Retry-After", via: [300, 400], dashed: true },
+    ],
+    steps: [
+      "Every request carries a key: a user ID, an API key or an IP address.",
+      "The gateway runs the limiter before any business code.",
+      "Token bucket: each key holds N tokens that refill at a fixed rate; the limits come from config per plan.",
+      "Redis keeps the counters and updates them atomically (INCR or a Lua script), so every server sees one count.",
+      "A request that gets a token goes through to the service.",
+      "An empty bucket returns 429 with a Retry-After header.",
+    ],
+  },
+  {
+    id: "cache-aside", group: "System Design", title: "Cache-aside caching",
+    summary: "The most common caching pattern: read through the cache, write to the database, then invalidate.",
+    industry: "E-Commerce", problem: "Product pages hammer the database during a sale and slow every shopper down.", outcome: "Most reads served from memory; the database handles only misses and writes.",
+    nodes: [
+      n("client", "Client", 100, 190, "actor"), n("app", "Application", 320, 190, "service", 1),
+      n("cache", "Cache\nRedis · TTL", 680, 62, "store", 2), n("db", "Database\nsource of truth", 680, 318, "store", 3),
+      n("writer", "Write path\nupdate a row", 900, 190, "service", 4),
+    ],
+    edges: [
+      { from: "client", to: "app", label: "GET /product/42" }, { from: "app", to: "cache", label: "get key" },
+      { from: "cache", to: "app", label: "hit", via: [430, 40] }, { from: "app", to: "db", label: "miss: query" },
+      { from: "db", to: "app", label: "row → set in cache", via: [430, 350] },
+      { from: "writer", to: "db", label: "1 · write" }, { from: "writer", to: "cache", label: "2 · delete key", dashed: true },
+    ],
+    steps: [
+      "The app asks the cache first, by a key such as product:42.",
+      "On a hit the value comes straight back from memory, in about a millisecond.",
+      "On a miss the app reads the database, then stores the row in the cache with a TTL.",
+      "Writes go to the database first, then delete the cached key so the next read loads fresh data.",
+      "The TTL caps how stale a value can get if an invalidation is ever missed.",
+    ],
+  },
+  {
+    id: "event-driven", group: "System Design", title: "Event-driven order processing",
+    summary: "A message broker decouples services so each one scales, fails and retries on its own.",
+    industry: "E-Commerce", problem: "A slow email or payment call should never block the checkout.", outcome: "Checkout replies at once while each team's service scales and retries alone.",
+    nodes: [
+      n("order", "Order service\nproducer", 100, 190, "service", 1), n("topic", "Topic / queue\nKafka · SQS", 340, 190, "queue", 2),
+      n("pay", "Payment\nconsumer", 620, 62, "service", 3), n("stock", "Inventory\nconsumer", 620, 190, "service", 4),
+      n("mail", "Email\nconsumer", 620, 318, "service"), n("psp", "Payment\nprovider", 880, 62, "actor"),
+      n("stockdb", "Stock DB", 880, 190, "store"), n("dlq", "Dead-letter\nqueue", 880, 318, "queue", 5),
+    ],
+    edges: [
+      { from: "order", to: "topic", label: "OrderPlaced" }, { from: "topic", to: "pay" }, { from: "topic", to: "stock" }, { from: "topic", to: "mail" },
+      { from: "pay", to: "psp", label: "charge" }, { from: "stock", to: "stockdb", label: "reserve" }, { from: "mail", to: "dlq", label: "fails 3×", dashed: true },
+    ],
+    steps: [
+      "The order service saves the order, publishes an OrderPlaced event and replies at once.",
+      "The broker stores the event durably; producers and consumers never call each other directly.",
+      "Each consumer group reads the event at its own pace and scales on its own.",
+      "Consumers are idempotent, so an event delivered twice (at-least-once delivery) does no harm.",
+      "A message that keeps failing moves to a dead-letter queue to inspect and replay.",
+    ],
+  },
+  {
+    id: "scalable-web", group: "System Design", title: "Scalable web architecture",
+    summary: "The classic path of a request, from DNS to replicated data, and where each layer adds scale.",
+    industry: "Tech & SaaS", problem: "A single server falls over the first time traffic grows 10×.", outcome: "Every layer scales out on its own, with no single point of failure.",
+    nodes: [
+      n("user", "Users", 100, 190, "actor"), n("dns", "DNS", 300, 62, "service", 1), n("cdn", "CDN\nstatic assets", 300, 190, "service", 2),
+      n("lb", "Load balancer", 500, 190, "service", 3), n("apps", "App servers\nauto-scaling", 700, 190, "service", 4),
+      n("cache", "Cache\nsessions · hot reads", 900, 62, "store", 5), n("primary", "Primary DB\nwrites", 900, 190, "store", 6),
+      n("replica", "Read replicas", 900, 318, "store"),
+    ],
+    edges: [
+      { from: "user", to: "dns", label: "resolve" }, { from: "user", to: "cdn" }, { from: "cdn", to: "lb", label: "dynamic" },
+      { from: "lb", to: "apps" }, { from: "apps", to: "cache" }, { from: "apps", to: "primary", label: "writes" },
+      { from: "apps", to: "replica", label: "reads" }, { from: "primary", to: "replica", label: "replicate", dashed: true },
+    ],
+    steps: [
+      "DNS resolves the domain to the nearest edge location.",
+      "A CDN serves images, scripts and cached pages close to the user.",
+      "The load balancer health-checks servers and spreads requests across availability zones.",
+      "Stateless app servers scale out and in with traffic.",
+      "Sessions and hot reads come from an in-memory cache.",
+      "Writes go to the primary; reads spread across replicas kept in sync by replication.",
+    ],
+  },
+  {
+    id: "sharding", group: "System Design", title: "Database sharding & replication",
+    summary: "Splitting one huge table across machines by a shard key, with a replica behind every shard.",
+    industry: "Social & Fintech", problem: "One database can no longer hold the rows or absorb the writes.", outcome: "Data and write load split evenly across machines, each with a standby.",
+    nodes: [
+      n("app", "Application", 100, 190, "service", 1), n("router", "Shard router\nhash(user_id)", 330, 190, "service", 2),
+      n("a", "Shard A\nkeys 0–33%", 610, 62, "store", 3), n("b", "Shard B\nkeys 34–66%", 610, 190, "store"), n("c", "Shard C\nkeys 67–100%", 610, 318, "store"),
+      n("ra", "Replica A", 880, 62, "store", 4), n("rb", "Replica B", 880, 190, "store"), n("rc", "Replica C", 880, 318, "store"),
+    ],
+    edges: [
+      { from: "app", to: "router", label: "user_id = 812" }, { from: "router", to: "a" }, { from: "router", to: "b", label: "hash → B" }, { from: "router", to: "c" },
+      { from: "a", to: "ra", label: "async copy", dashed: true }, { from: "b", to: "rb", dashed: true }, { from: "c", to: "rc", dashed: true },
+    ],
+    steps: [
+      "Every query carries the shard key, here user_id.",
+      "The router hashes the key (consistent hashing) to pick exactly one shard, so data spreads evenly.",
+      "Each shard holds a slice of the rows and takes only its share of the writes.",
+      "Every shard has replicas for read scaling and failover.",
+      "Adding a shard with consistent hashing moves only a fraction of the keys, not all of them.",
+      "Cross-shard joins are expensive, so pick a key that keeps related rows together.",
+    ],
+  },
+  {
+    id: "langchain-rag", group: "LangChain", title: "Retrieval-augmented generation (RAG)",
+    summary: "Index your documents once, then answer each question from the chunks that match it.",
+    industry: "Corporate knowledge", problem: "Models do not know your private documents and invent answers about them.", outcome: "Answers grounded in your own documents, with the sources cited.",
+    nodes: [
+      n("docs", "Documents\nPDF · web · DB", 100, 62, "actor", 1), n("split", "Loader &\ntext splitter", 300, 62, "tool", 2),
+      n("embed", "Embedding\nmodel", 500, 62, "llm", 3), n("vs", "Vector store\nchunks + vectors", 720, 62, "store"),
+      n("q", "User question", 100, 318, "actor"), n("ret", "Retriever\ntop-k similar", 720, 190, "tool", 4),
+      n("prompt", "Prompt template\ncontext + question", 400, 318, "tool", 5), n("llm", "Chat model", 640, 318, "llm", 6),
+      n("parse", "Output parser\nanswer + sources", 880, 318, "tool", 7),
+    ],
+    edges: [
+      { from: "docs", to: "split" }, { from: "split", to: "embed", label: "chunks" }, { from: "embed", to: "vs", label: "vectors" },
+      { from: "vs", to: "ret", label: "similarity search" }, { from: "q", to: "ret", label: "embed query" }, { from: "ret", to: "prompt", label: "top-k chunks" },
+      { from: "prompt", to: "llm" }, { from: "llm", to: "parse" },
+    ],
+    steps: [
+      "Document loaders read your sources into Document objects.",
+      "A text splitter cuts them into overlapping chunks small enough to embed.",
+      "Each chunk is embedded and saved in a vector store, once, ahead of time.",
+      "At question time the retriever embeds the query and fetches the most similar chunks.",
+      "A prompt template places those chunks next to the question.",
+      "The chat model answers from that context instead of from memory alone.",
+      "An output parser returns structured text, with the sources it used.",
+    ],
+  },
+  {
+    id: "langchain-agent", group: "LangChain", title: "Tool-calling agent loop",
+    summary: "An agent built with create_agent reasons, calls a tool, reads the result and repeats until it can answer.",
+    industry: "Tech & SaaS", problem: "A plain chatbot cannot look anything up or take an action.", outcome: "An assistant that searches, queries and calls APIs until the job is done.",
+    nodes: [
+      n("user", "User question", 100, 190, "actor", 1), n("agent", "Agent\nmodel + tool schemas", 380, 190, "llm", 2),
+      n("decide", "Tool call?", 640, 190, "decision", 3), n("tools", "Tools\nsearch · SQL · API", 880, 62, "tool", 4),
+      n("answer", "Final answer", 880, 318, "actor", 6), n("memory", "Memory\nchat history", 380, 318, "store", 7),
+    ],
+    edges: [
+      { from: "user", to: "agent" }, { from: "agent", to: "decide" }, { from: "decide", to: "tools", label: "yes" },
+      { from: "tools", to: "agent", label: "5 · observation", via: [600, 0] }, { from: "decide", to: "answer", label: "no" },
+      { from: "agent", to: "memory", label: "read / write", dashed: true },
+    ],
+    steps: [
+      "The question goes to an agent created with create_agent and a list of tools.",
+      "The model sees every tool's name, description and argument schema.",
+      "It either answers directly or emits a structured tool call.",
+      "The runtime runs the tool with the arguments the model chose.",
+      "The result comes back as an observation and the model reasons again; the loop repeats.",
+      "When no tool call is needed, the agent returns its final answer.",
+      "Memory keeps the conversation, so follow-up questions have context.",
+    ],
+  },
+  {
+    id: "langgraph-hitl", group: "LangGraph", title: "Stateful graph with human review",
+    summary: "Nodes, conditional edges and a checkpointer turn an agent into a graph that can loop, pause and resume.",
+    industry: "Banks & Regulated industries", problem: "Fully autonomous agents are too risky where one wrong action is costly.", outcome: "Agents that loop and use tools, but pause for a person before risky steps.",
+    nodes: [
+      n("start", "START", 100, 190, "actor"), n("agent", "Node: agent\ncalls the model", 300, 190, "llm", 1),
+      n("route", "Conditional\nedge", 500, 190, "decision", 2), n("tools", "Node: tools\nruns tool calls", 500, 62, "tool", 3),
+      n("review", "interrupt()\nhuman review", 700, 190, "actor", 4), n("end", "END", 900, 190, "actor", 6),
+      n("ckpt", "Checkpointer\nstate per thread", 500, 318, "store", 5),
+    ],
+    edges: [
+      { from: "start", to: "agent" }, { from: "agent", to: "route" }, { from: "route", to: "tools", label: "tool calls" },
+      { from: "tools", to: "agent", label: "loop back" }, { from: "route", to: "review", label: "risky" },
+      { from: "review", to: "end", label: "approved" }, { from: "route", to: "end", label: "done", via: [700, 340] },
+      { from: "agent", to: "ckpt", label: "save", dashed: true },
+    ],
+    steps: [
+      "State is a typed object (the messages plus your own fields) that every node reads and updates.",
+      "A conditional edge reads the state and picks the next node.",
+      "The tools node runs the requested calls and hands control back: a cycle, not a chain.",
+      "interrupt() pauses the graph so a person can approve or edit before a risky step.",
+      "A checkpointer saves state after every step for each thread, so a run can pause, resume or rewind.",
+      "The graph reaches END when the router finds no more work.",
+    ],
+  },
+  {
+    id: "langgraph-supervisor", group: "LangGraph", title: "Multi-agent supervisor",
+    summary: "One supervisor agent routes a task between specialist agents and decides when it is done.",
+    industry: "Research & Consulting", problem: "One giant prompt cannot research, code and write a report well at once.", outcome: "Specialist agents, each doing one job, coordinated by a supervisor.",
+    nodes: [
+      n("user", "User task", 100, 190, "actor", 1), n("sup", "Supervisor\nagent", 360, 190, "llm", 2),
+      n("final", "Final answer", 360, 62, "actor", 5), n("res", "Research agent\nweb search", 680, 62, "tool", 3),
+      n("code", "Coding agent\nruns code", 680, 190, "tool"), n("write", "Writer agent\ndrafts report", 680, 318, "tool"),
+      n("state", "Shared state\nmessages", 360, 318, "store", 4),
+    ],
+    edges: [
+      { from: "user", to: "sup" }, { from: "sup", to: "res", label: "handoff" }, { from: "sup", to: "code" }, { from: "sup", to: "write" },
+      { from: "write", to: "state", label: "results", dashed: true }, { from: "state", to: "sup", label: "back to supervisor", dashed: true },
+      { from: "sup", to: "final", label: "done" },
+    ],
+    steps: [
+      "A user task arrives at the supervisor.",
+      "The supervisor is a model that decides which specialist should act next.",
+      "Each worker is its own agent with its own prompt and tools; the supervisor hands off to it.",
+      "Workers write results into the shared graph state, and control returns to the supervisor.",
+      "When the task is complete, the supervisor writes the final answer.",
+    ],
+  },
+  {
+    id: "langflow", group: "LangFlow", title: "A visual RAG chatbot in Langflow",
+    summary: "Drag components onto the canvas, wire their ports, test in the Playground, then call it as an API.",
+    industry: "Corporate teams", problem: "Every chatbot prototype needs a developer to wire it up in code.", outcome: "Teams build, test and ship a grounded chatbot visually, as an API.",
+    nodes: [
+      n("in", "Chat Input", 100, 190, "actor", 1), n("file", "File +\ntext splitter", 320, 62, "tool"),
+      n("vs", "Vector store\nretriever", 560, 62, "store", 2), n("prompt", "Prompt\ncomponent", 320, 190, "tool"),
+      n("model", "Language model\ncomponent", 560, 190, "llm", 3), n("out", "Chat Output", 800, 190, "actor", 4),
+      n("play", "Playground\ntest runs", 560, 318, "service", 5), n("api", "API endpoint\n& MCP server", 800, 318, "service", 6),
+    ],
+    edges: [
+      { from: "in", to: "prompt", label: "question" }, { from: "file", to: "vs" }, { from: "vs", to: "prompt", label: "context" },
+      { from: "prompt", to: "model" }, { from: "model", to: "out" }, { from: "model", to: "play", label: "inspect", dashed: true },
+      { from: "out", to: "api", label: "deploy" },
+    ],
+    steps: [
+      "Build visually: drag components onto the canvas; Chat Input is where the message enters.",
+      "Wire a file loader and a vector store retriever into the Prompt to answer from your own data.",
+      "Choose the model in its component and set the key, temperature and system message there.",
+      "Chat Output shows the reply; every wire carries typed data between ports.",
+      "Test the flow in the Playground and inspect what each component produced.",
+      "Ship it: every flow can be called through the API, and flows can be served as MCP tools.",
+    ],
+  },
+  {
+    id: "langsmith", group: "LangSmith", title: "Trace, evaluate, improve",
+    summary: "LangSmith closes the loop: trace every run, turn real traffic into datasets and score each change.",
+    industry: "Tech & SaaS", problem: "LLM apps change behaviour silently whenever a prompt or model changes.", outcome: "Every change is measured against real data before it ships.",
+    nodes: [
+      n("app", "LLM app\nany framework", 100, 190, "service", 1), n("trace", "Traces\nruns · spans · tokens", 330, 190, "store", 2),
+      n("mon", "Dashboards\n& alerts", 330, 62, "service", 3), n("data", "Dataset\nexamples", 580, 190, "store", 4),
+      n("eval", "Evaluators\nLLM-as-judge · code", 830, 190, "tool", 5), n("exp", "Experiment\ncompare runs", 830, 318, "decision", 6),
+      n("fix", "Prompt / code\nfix", 500, 318, "llm", 7),
+    ],
+    edges: [
+      { from: "app", to: "trace", label: "log run" }, { from: "trace", to: "mon", label: "monitor" }, { from: "trace", to: "data", label: "save examples" },
+      { from: "data", to: "eval" }, { from: "eval", to: "exp", label: "scores" }, { from: "exp", to: "fix", label: "best version" },
+      { from: "fix", to: "app", label: "redeploy" },
+    ],
+    steps: [
+      "Turn on tracing (an environment variable or @traceable) and every run is logged.",
+      "Each trace shows the full tree of model and tool calls, with inputs, outputs, latency and cost.",
+      "Dashboards and alerts watch error rate, latency and user feedback in production.",
+      "Save interesting traces as examples in a dataset.",
+      "Evaluators score outputs: LLM-as-judge, exact match or your own code.",
+      "Run an experiment for each change and compare the scores side by side.",
+      "Ship the version that wins, and keep the loop running.",
+    ],
+  },
+  // More system design, each tied to the product it powers.
+  {
+    id: "payments", group: "System Design", title: "Payment processing that never charges twice",
+    summary: "Idempotency keys, a double-entry ledger and reconciliation keep money correct when networks fail.",
+    industry: "Fintech & E-Commerce", problem: "A timeout and a retry can charge a customer twice, or lose a payment that did go through.", outcome: "Exactly-once charges and a ledger that always balances with the provider.",
+    nodes: [
+      n("client", "Checkout\nclient", 100, 190, "actor", 1), n("api", "Payment API\nidempotency key", 300, 190, "service", 2),
+      n("ledger", "Ledger DB\ndouble-entry", 500, 62, "store", 4), n("psp", "Payment\nprovider (PSP)", 620, 190, "actor", 3),
+      n("hook", "Webhook\nhandler", 880, 190, "service", 5), n("recon", "Reconciliation\nnightly job", 720, 318, "queue", 6),
+    ],
+    edges: [
+      { from: "client", to: "api", label: "Idempotency-Key" }, { from: "api", to: "ledger", label: "pending" }, { from: "api", to: "psp", label: "charge once" },
+      { from: "psp", to: "hook", label: "result" }, { from: "hook", to: "ledger", label: "settled" }, { from: "hook", to: "recon", label: "mismatch", dashed: true },
+    ],
+    steps: [
+      "The client sends the payment with a unique Idempotency-Key, so a retry never charges twice.",
+      "The API checks the key first: a repeated request gets the first result back.",
+      "The provider is called once; its answer can arrive late, or not at all.",
+      "A double-entry ledger records the payment as pending, then settled, and is never edited in place.",
+      "Webhooks deliver the final status; the handler verifies the signature before trusting it.",
+      "A nightly job reconciles the ledger with provider reports and retries any mismatch.",
+    ],
+  },
+  {
+    id: "notifications", group: "System Design", title: "Notification service at scale",
+    summary: "One service turns product events into push, email and SMS, honouring preferences and priorities.",
+    industry: "Tech & SaaS", problem: "Every team sends messages its own way, so users get duplicates, spam and missed OTPs.", outcome: "One pipeline, the right channel per user, and urgent messages first.",
+    nodes: [
+      n("event", "Event source\norder · alert", 100, 190, "service", 1), n("notif", "Notification\nservice", 300, 190, "service", 2),
+      n("prefs", "Preferences\n& templates", 300, 62, "store"), n("queues", "Priority\nqueues", 500, 190, "queue", 3),
+      n("push", "Push worker\nAPNs · FCM", 760, 62, "tool", 4), n("email", "Email worker", 760, 190, "tool"), n("sms", "SMS worker", 760, 318, "tool"),
+      n("log", "Delivery log\nopens · bounces", 500, 318, "store", 5),
+    ],
+    edges: [
+      { from: "event", to: "notif", label: "publish" }, { from: "notif", to: "prefs", label: "lookup" }, { from: "notif", to: "queues" },
+      { from: "queues", to: "push" }, { from: "queues", to: "email" }, { from: "queues", to: "sms" }, { from: "sms", to: "log", label: "status", dashed: true },
+    ],
+    steps: [
+      "Services publish an event instead of sending messages themselves.",
+      "The notification service loads the user's channels, quiet hours and the right template.",
+      "Messages go onto priority queues, so an OTP never waits behind a newsletter.",
+      "Channel workers deliver through APNs/FCM, an email provider or an SMS gateway, with retries.",
+      "Every delivery, open and bounce is logged for analytics and de-duplication.",
+      "Per-user rate limits stop a burst of events from flooding anyone's phone.",
+    ],
+  },
+  {
+    id: "news-feed", group: "System Design", title: "Social news feed with fan-out",
+    summary: "Precomputing each follower's feed makes opening the app one fast read, even with millions of users.",
+    industry: "Social media", problem: "Building a feed by querying everyone you follow on every open is far too slow.", outcome: "Feeds open in milliseconds, and celebrity posts no longer melt the system.",
+    nodes: [
+      n("author", "Author posts", 100, 190, "actor", 1), n("post", "Post service", 300, 190, "service"), n("posts", "Posts DB", 300, 62, "store"),
+      n("fan", "Fan-out\nworkers", 500, 190, "queue", 2), n("feed", "Feed cache\nper follower", 700, 190, "store", 3),
+      n("reader", "Reader opens\nthe app", 900, 190, "actor", 4), n("celeb", "Celebrity posts\npulled on read", 500, 318, "service", 5),
+      n("rank", "Ranking model", 900, 62, "llm", 6),
+    ],
+    edges: [
+      { from: "author", to: "post" }, { from: "post", to: "posts", label: "save" }, { from: "post", to: "fan" }, { from: "fan", to: "feed", label: "push IDs" },
+      { from: "reader", to: "feed", label: "read" }, { from: "reader", to: "celeb", label: "merge" }, { from: "rank", to: "reader", label: "order" },
+    ],
+    steps: [
+      "A new post is saved once in the posts store.",
+      "Fan-out workers push the post ID into every follower's feed (fan-out on write).",
+      "Each feed is a capped list of post IDs in a cache, so reading it is one fast lookup.",
+      "Opening the app reads the precomputed feed instead of querying everyone you follow.",
+      "Accounts with millions of followers skip fan-out; their posts are merged in at read time.",
+      "A ranking model orders the merged list by predicted interest.",
+    ],
+  },
+  {
+    id: "chat", group: "System Design", title: "Real-time chat over WebSockets",
+    summary: "Persistent connections, ordered messages and presence: the core of every messaging app.",
+    industry: "Messaging & Collaboration", problem: "Polling for new messages wastes battery and still feels laggy.", outcome: "Messages arrive in order in under a second, and offline users still get notified.",
+    nodes: [
+      n("sender", "Sender app", 100, 190, "actor", 1), n("gw", "WebSocket\ngateway", 300, 190, "service", 2),
+      n("chat", "Chat service\nsequence IDs", 500, 190, "service", 3), n("store", "Message store\nwrite-heavy DB", 500, 62, "store", 4),
+      n("presence", "Presence\nRedis", 500, 318, "store"), n("pubsub", "Pub/Sub\nper channel", 700, 190, "queue", 5),
+      n("gw2", "Recipient\ngateway", 900, 190, "service"), n("push", "Push if offline", 880, 318, "tool", 6),
+    ],
+    edges: [
+      { from: "sender", to: "gw" }, { from: "gw", to: "chat" }, { from: "chat", to: "store", label: "persist" }, { from: "chat", to: "presence", label: "online?", dashed: true },
+      { from: "chat", to: "pubsub" }, { from: "pubsub", to: "gw2" }, { from: "pubsub", to: "push", label: "offline", dashed: true },
+    ],
+    steps: [
+      "Each app keeps one persistent WebSocket connection open.",
+      "Gateways hold millions of open connections and keep no other state.",
+      "The chat service stamps a per-conversation sequence ID, so messages stay in order.",
+      "Messages are written to a store built for heavy writes before delivery.",
+      "Pub/Sub routes each message to whichever gateway holds the recipient's connection.",
+      "If presence says the user is offline, a push notification goes out instead.",
+    ],
+  },
+  {
+    id: "video", group: "System Design", title: "Video upload & adaptive streaming",
+    summary: "Upload once, transcode in parallel, stream at the quality each viewer's network can take.",
+    industry: "Media & OTT", problem: "One large video file stutters on slow networks and wastes bandwidth on fast ones.", outcome: "Smooth playback everywhere, with quality adjusting second by second.",
+    nodes: [
+      n("up", "Creator upload", 100, 190, "actor", 1), n("raw", "Object storage\nraw video", 300, 190, "store"),
+      n("tq", "Transcode\nqueue", 500, 190, "queue", 2), n("tx", "Transcoders\n1080p · 720p · 480p", 700, 190, "tool", 3),
+      n("meta", "Metadata DB\nthumbnails", 700, 62, "store", 6), n("cdn", "CDN\nHLS / DASH segments", 900, 190, "service", 4),
+      n("player", "Player\nadaptive bitrate", 900, 318, "actor", 5),
+    ],
+    edges: [
+      { from: "up", to: "raw", label: "pre-signed URL" }, { from: "raw", to: "tq" }, { from: "tq", to: "tx" }, { from: "tx", to: "meta" },
+      { from: "tx", to: "cdn" }, { from: "cdn", to: "player", label: "segments" },
+    ],
+    steps: [
+      "The creator uploads the raw file straight to object storage with a pre-signed URL.",
+      "The upload event puts a transcode job on a queue.",
+      "Workers split the video into chunks and transcode them in parallel into several resolutions.",
+      "Short HLS/DASH segments are published to a CDN close to viewers.",
+      "The player measures bandwidth and switches quality segment by segment.",
+      "Thumbnails, captions and metadata are stored for search and recommendations.",
+    ],
+  },
+  {
+    id: "autocomplete", group: "System Design", title: "Search autocomplete (typeahead)",
+    summary: "Suggestions on every keystroke, served from a prefix trie rebuilt from real searches.",
+    industry: "E-Commerce", problem: "Shoppers abandon search when suggestions lag or miss what everyone is buying.", outcome: "Relevant suggestions in under 50 ms, refreshed with every day's trends.",
+    nodes: [
+      n("user", "Shopper types\n“iph”", 100, 190, "actor", 1), n("edge", "Edge cache\nhot prefixes", 300, 190, "service", 2),
+      n("svc", "Suggest\nservice", 500, 190, "service", 3), n("trie", "Prefix trie\ntop-k per node", 700, 190, "store"),
+      n("personal", "Personal\nhistory", 500, 62, "store", 6), n("logs", "Query logs\nclicks · orders", 700, 318, "store", 4),
+      n("build", "Batch builder\nhourly", 900, 318, "tool", 5),
+    ],
+    edges: [
+      { from: "user", to: "edge" }, { from: "edge", to: "svc", label: "miss" }, { from: "svc", to: "trie" }, { from: "svc", to: "personal", label: "blend" },
+      { from: "logs", to: "build" }, { from: "build", to: "trie", label: "swap in" }, { from: "svc", to: "logs", label: "log", dashed: true },
+    ],
+    steps: [
+      "Each keystroke sends the prefix, debounced by about 100 ms.",
+      "Popular prefixes are answered straight from the edge cache.",
+      "The suggest service reads a trie that keeps the top suggestions at every prefix node.",
+      "Every search is logged together with its clicks and purchases.",
+      "A batch job rebuilds the trie from fresh counts and swaps it in without downtime.",
+      "Recent personal searches are blended in before the list returns.",
+    ],
+  },
+  // Agentic AI that solves real problems, industry by industry.
+  {
+    id: "ecommerce-support", group: "LangGraph", title: "Customer support agent that resolves refunds",
+    summary: "A LangGraph agent answers order questions, applies the refund policy and hands big refunds to a person.",
+    industry: "E-Commerce", problem: "Support queues spike after every sale, and customers wait hours for simple refund answers.", outcome: "Routine tickets resolved in minutes; people handle the exceptions.",
+    nodes: [
+      n("cust", "Customer chat\n“Where is my order?”", 100, 190, "actor", 1), n("intent", "Intent router\nfast model", 300, 190, "llm", 2),
+      n("agent", "Support agent\nLangGraph", 500, 190, "llm", 3), n("orders", "Orders · courier\nAPI tools", 700, 62, "tool", 4),
+      n("policy", "Refund policy\nretrieval", 700, 190, "store"), n("approve", "Refund > ₹5,000\nhuman approval", 700, 318, "decision", 5),
+      n("done", "Resolution\nrefund + reply", 900, 190, "actor", 6), n("crm", "CRM + trace\nLangSmith", 900, 62, "service", 7),
+    ],
+    edges: [
+      { from: "cust", to: "intent" }, { from: "intent", to: "agent" }, { from: "agent", to: "orders", label: "look up" }, { from: "agent", to: "policy" },
+      { from: "agent", to: "approve", label: "large refund" }, { from: "approve", to: "done", label: "approved" },
+      { from: "policy", to: "done", label: "answer" }, { from: "done", to: "crm", label: "log" },
+    ],
+    steps: [
+      "A customer asks about a late order, a return or a refund in chat.",
+      "A small, fast model classifies the intent and loads the customer's recent orders.",
+      "A LangGraph agent plans the next step with the order history held in its state.",
+      "It calls order and courier APIs as tools and retrieves the exact refund-policy clause.",
+      "Refunds above a set amount pause with interrupt() until a human agent approves.",
+      "The agent issues the refund or replacement and replies with tracking and dates.",
+      "Every conversation is traced in LangSmith and logged to the CRM for quality review.",
+    ],
+  },
+  {
+    id: "healthcare-prior-auth", group: "LangGraph", title: "Prior-authorization assistant",
+    summary: "An agent assembles insurer approval requests from the medical record, criterion by criterion.",
+    industry: "Healthcare", problem: "Clinic staff spend hours a day on prior-auth forms, and missing details delay care by days.", outcome: "Complete, evidence-backed requests in minutes, always signed by a clinician.",
+    nodes: [
+      n("order", "Doctor orders\nan MRI", 100, 190, "actor", 1), n("ehr", "Read the EHR\ndiagnosis · history", 300, 190, "tool", 2),
+      n("criteria", "Payer criteria\nretrieval", 500, 62, "store", 3), n("check", "Criteria checker\nagent", 500, 190, "llm", 4),
+      n("gap", "Evidence missing?\nask the clinic", 500, 318, "decision", 5), n("draft", "Draft request\n+ evidence", 700, 190, "tool", 6),
+      n("sign", "Clinician\nsigns off", 900, 190, "actor", 7), n("submit", "Submit to payer\nFHIR API", 900, 62, "service"),
+    ],
+    edges: [
+      { from: "order", to: "ehr" }, { from: "ehr", to: "check" }, { from: "criteria", to: "check" }, { from: "check", to: "gap", label: "gaps" },
+      { from: "gap", to: "ehr", label: "re-query", dashed: true }, { from: "check", to: "draft", label: "all met" }, { from: "draft", to: "sign" }, { from: "sign", to: "submit" },
+    ],
+    steps: [
+      "A doctor orders a procedure that the insurer must approve first.",
+      "The agent pulls the diagnosis, history and earlier treatments from the EHR.",
+      "It retrieves that insurer's medical-necessity criteria for the procedure.",
+      "A checker node matches every criterion to evidence in the record, citing the source note.",
+      "If evidence is missing, the graph loops back and asks the clinic for it.",
+      "It drafts the authorization request with each criterion and its evidence attached.",
+      "A clinician reviews and signs before it is submitted through the payer's API.",
+    ],
+  },
+  {
+    id: "hospital-triage", group: "LangGraph", title: "Emergency triage & bed allocation",
+    summary: "An agent suggests acuity, checks live capacity and drafts the handoff; nurses make every call.",
+    industry: "Hospitals", problem: "Crowded emergency departments lose precious minutes to manual triage and phone calls for beds.", outcome: "Faster triage and bed assignment, with clinicians deciding every step.",
+    nodes: [
+      n("patient", "Patient arrives\nvitals · symptoms", 100, 190, "actor", 1), n("triage", "Triage agent\nESI suggestion", 300, 190, "llm", 2),
+      n("alert", "Critical signs?\npage the team", 300, 62, "decision", 3), n("beds", "Bed & staff\nplanner", 500, 190, "tool", 4),
+      n("capacity", "Live capacity\nbeds · nurses", 500, 62, "store"), n("handoff", "Handoff summary\nfor the ward", 700, 190, "tool", 5),
+      n("nurse", "Charge nurse\nconfirms", 900, 190, "actor", 6), n("audit", "Audit trail\nevery decision", 700, 318, "service", 7),
+    ],
+    edges: [
+      { from: "patient", to: "triage" }, { from: "triage", to: "alert" }, { from: "triage", to: "beds" }, { from: "beds", to: "capacity", label: "query" },
+      { from: "beds", to: "handoff" }, { from: "handoff", to: "nurse" }, { from: "handoff", to: "audit", label: "log", dashed: true },
+    ],
+    steps: [
+      "At arrival, vitals and symptoms are captured by a nurse or a kiosk.",
+      "A triage agent suggests an acuity level (ESI 1–5) and shows its reasons.",
+      "Critical patterns, such as stroke or sepsis signs, page the rapid-response team at once.",
+      "A planner tool checks live bed, ventilator and nurse capacity across wards.",
+      "It drafts a handoff summary for the receiving ward.",
+      "The charge nurse confirms or overrides; nothing moves without a person.",
+      "Every suggestion and override is logged for clinical audit.",
+    ],
+  },
+  {
+    id: "bank-fraud", group: "LangChain", title: "Fraud investigation copilot",
+    summary: "A LangChain agent with read-only tools gathers the evidence, so analysts only make the decision.",
+    industry: "Banking", problem: "Fraud analysts spend most of each case copying data out of a dozen systems.", outcome: "Cases arrive pre-investigated, and decisions take minutes instead of hours.",
+    nodes: [
+      n("alert", "Fraud alert\nrisk score 0.92", 100, 190, "actor", 1), n("agent", "Evidence agent\nread-only tools", 300, 190, "llm", 2),
+      n("txn", "Transactions\n& device data", 500, 62, "tool", 3), n("kyc", "KYC & account\nhistory", 500, 190, "store"),
+      n("lists", "Sanctions &\nwatchlists", 500, 318, "tool"), n("case", "Case summary\nreasons + links", 700, 190, "llm", 4),
+      n("analyst", "Analyst decides\nblock · clear", 900, 190, "actor", 5), n("sar", "SAR report\ndraft", 900, 318, "tool", 6),
+      n("evals", "Decisions →\nLangSmith evals", 900, 62, "service", 7),
+    ],
+    edges: [
+      { from: "alert", to: "agent" }, { from: "agent", to: "txn" }, { from: "agent", to: "kyc" }, { from: "agent", to: "lists" },
+      { from: "txn", to: "case" }, { from: "kyc", to: "case" }, { from: "lists", to: "case" }, { from: "case", to: "analyst" },
+      { from: "analyst", to: "sar", label: "confirmed" }, { from: "analyst", to: "evals", label: "feedback", dashed: true },
+    ],
+    steps: [
+      "The fraud model flags a transaction and opens a case.",
+      "An agent gathers evidence with read-only tools; it can never move money.",
+      "It pulls recent transactions, device and location signals, KYC history and watchlist hits.",
+      "It writes a case summary listing each risk reason, linked to its source record.",
+      "A human analyst blocks, clears or escalates the case.",
+      "For a confirmed case it drafts the suspicious activity report for compliance to file.",
+      "Analyst decisions become a LangSmith dataset to measure and improve the agent.",
+    ],
+  },
+  {
+    id: "insurance-claims", group: "LangGraph", title: "Motor insurance claims processing",
+    summary: "Documents, photos and policy rules are checked in parallel, and only risky claims reach an adjuster.",
+    industry: "Insurance", problem: "Simple claims wait weeks in the same queue as complex and suspicious ones.", outcome: "Low-risk claims paid the same day; adjusters focus on the hard cases.",
+    nodes: [
+      n("claim", "Claim filed\nphotos · FIR · bills", 100, 190, "actor", 1), n("read", "Document &\nimage reader", 300, 190, "llm", 2),
+      n("policy", "Policy cover\ncheck", 500, 62, "store", 3), n("damage", "Damage estimate\nvision model", 500, 190, "llm", 4),
+      n("fraud", "Fraud signals\nduplicates · history", 500, 318, "tool", 5), n("route", "Decision node\nroute by risk", 700, 190, "decision", 6),
+      n("pay", "Fast-track\npayout", 900, 62, "actor"), n("adjuster", "Adjuster review\nfull evidence", 900, 318, "actor", 7),
+    ],
+    edges: [
+      { from: "claim", to: "read" }, { from: "read", to: "policy" }, { from: "read", to: "damage" }, { from: "read", to: "fraud" },
+      { from: "policy", to: "route" }, { from: "damage", to: "route" }, { from: "fraud", to: "route" },
+      { from: "route", to: "pay", label: "low risk" }, { from: "route", to: "adjuster", label: "high value / risk" },
+    ],
+    steps: [
+      "The customer files a claim with photos, the police report and repair bills.",
+      "A multimodal model reads the documents and photos into structured fields.",
+      "The policy is checked: is the cover active, and what is the deductible?",
+      "A vision model estimates the repair cost from the damage photos.",
+      "Fraud checks look for reused photos, repeat claims and mismatched dates.",
+      "Low-risk, low-value claims are fast-tracked for a same-day payout.",
+      "Everything else goes to a human adjuster with the full evidence pack.",
+    ],
+  },
+  {
+    id: "corporate-helpdesk", group: "LangFlow", title: "HR & IT helpdesk agent",
+    summary: "A Langflow flow answers policy questions, runs approved IT actions and files tickets from Slack or Teams.",
+    industry: "Corporate", problem: "Helpdesks drown in repeat questions, and employees wait days for simple access requests.", outcome: "Repeat requests answered instantly; the team works on real problems.",
+    nodes: [
+      n("emp", "Employee asks\nSlack · Teams", 100, 190, "actor", 1), n("router", "Router\ncomponent", 300, 190, "decision", 2),
+      n("hr", "HR policy\nretrieval", 500, 62, "store", 3), n("it", "IT agent\nreset · access", 500, 190, "llm", 4),
+      n("ticket", "Create ticket\nJira · ServiceNow", 500, 318, "tool", 5), n("idp", "Identity tools\nOkta · AD", 700, 190, "tool"),
+      n("answer", "Answer in chat\nwith sources", 900, 190, "actor", 6),
+    ],
+    edges: [
+      { from: "emp", to: "router" }, { from: "router", to: "hr", label: "policy" }, { from: "router", to: "it" }, { from: "router", to: "ticket", label: "other" },
+      { from: "it", to: "idp" }, { from: "idp", to: "answer" }, { from: "hr", to: "answer" }, { from: "ticket", to: "answer", label: "ticket no." },
+    ],
+    steps: [
+      "An employee asks in Slack or Teams about leave balance, VPN access or a laptop issue.",
+      "A router component sends the question down the right branch of the flow.",
+      "Policy questions are answered from the HR handbook with retrieval, citing the page.",
+      "IT requests run approved tools, such as a password reset or a group-access request.",
+      "Anything unresolved becomes a ticket with the conversation attached.",
+      "The answer comes back in chat with its sources and the ticket number.",
+      "The whole flow is built visually in Langflow and served to chat through its API.",
+    ],
+  },
+  {
+    id: "sre-incident", group: "LangGraph", title: "On-call incident response agent",
+    summary: "An investigator agent reads logs, deploys and runbooks, then proposes a fix for the engineer to approve.",
+    industry: "Tech industry", problem: "At 3 a.m., the on-call engineer spends the first 30 minutes just gathering context.", outcome: "A cited root-cause hypothesis within minutes, and faster recovery.",
+    nodes: [
+      n("alert", "Pager alert\n5xx spike", 100, 190, "actor", 1), n("inv", "Investigator\nagent", 300, 190, "llm", 2),
+      n("logs", "Logs & metrics\nqueries", 500, 62, "tool", 3), n("deploys", "Recent deploys\n& diffs", 500, 190, "tool"),
+      n("runbook", "Runbooks &\npast incidents", 500, 318, "store", 4), n("hyp", "Root-cause\nhypothesis", 700, 190, "llm", 5),
+      n("approve", "Engineer approves\nrollback", 900, 190, "decision", 6), n("pm", "Postmortem\ndraft", 900, 318, "tool", 7),
+    ],
+    edges: [
+      { from: "alert", to: "inv" }, { from: "inv", to: "logs" }, { from: "inv", to: "deploys" }, { from: "inv", to: "runbook" },
+      { from: "logs", to: "hyp" }, { from: "deploys", to: "hyp" }, { from: "runbook", to: "hyp" }, { from: "hyp", to: "approve" },
+      { from: "approve", to: "pm", label: "resolved" },
+    ],
+    steps: [
+      "An alert fires: the error rate spikes on the checkout API.",
+      "An investigator agent opens the incident and plans what to check.",
+      "It queries logs and metrics and lists the deploys and config changes just before the spike.",
+      "It retrieves the matching runbook and similar past incidents.",
+      "It posts a root-cause hypothesis in the incident channel, with the evidence linked.",
+      "The on-call engineer approves the suggested rollback; the agent never acts alone.",
+      "After recovery it drafts the postmortem timeline for the team to edit.",
+    ],
+  },
+  {
+    id: "legal-contracts", group: "LangChain", title: "Contract review assistant",
+    summary: "Clause-by-clause review against the company playbook, with redlines a lawyer approves.",
+    industry: "Legal & Corporate", problem: "Legal teams become a bottleneck when every vendor contract needs a full manual read.", outcome: "First-pass review in minutes, so lawyers spend time only on real risks.",
+    nodes: [
+      n("pdf", "Contract PDF\nvendor MSA", 100, 190, "actor", 1), n("parse", "Parse & split\nby clause", 300, 190, "tool", 2),
+      n("playbook", "Company playbook\nretrieval", 500, 62, "store", 3), n("review", "Clause reviewer\nmodel", 500, 190, "llm", 4),
+      n("risk", "Risk flag\nred · amber · green", 700, 190, "decision", 5), n("redline", "Suggested\nredlines", 900, 190, "tool", 6),
+      n("lawyer", "Lawyer approves", 900, 318, "actor", 7), n("evals", "LangSmith evals\nvs. lawyer edits", 500, 318, "service", 8),
+    ],
+    edges: [
+      { from: "pdf", to: "parse" }, { from: "parse", to: "review", label: "clauses" }, { from: "playbook", to: "review" }, { from: "review", to: "risk" },
+      { from: "risk", to: "redline" }, { from: "redline", to: "lawyer" }, { from: "lawyer", to: "evals", label: "edits as data", dashed: true },
+    ],
+    steps: [
+      "A vendor contract arrives as a PDF.",
+      "It is parsed and split clause by clause: liability, termination, data protection, payment.",
+      "For each clause the company's negotiation playbook is retrieved.",
+      "A reviewer model compares the clause with the preferred and fallback positions.",
+      "Each clause gets a red, amber or green flag with the reason.",
+      "It proposes redlines in the playbook's own wording.",
+      "A lawyer accepts or edits every change before it goes back to the vendor.",
+      "The lawyer's edits become LangSmith evaluation data, so accuracy is tracked over time.",
+    ],
+  },
+  {
+    id: "supply-chain", group: "LangGraph", title: "Supply-chain disruption planner",
+    summary: "When a route breaks, agents find the affected orders, price the options and wait for a planner's choice.",
+    industry: "Logistics & Retail", problem: "A port strike or storm leaves planners rebuilding shipments by hand in spreadsheets.", outcome: "Ranked recovery options within the hour, and customers told the new dates.",
+    nodes: [
+      n("signal", "Disruption signal\nport strike · storm", 100, 190, "actor", 1), n("impact", "Impact agent\nwhich orders?", 300, 190, "llm", 2),
+      n("erp", "ERP orders\n& inventory", 300, 62, "store"), n("plan", "Planner agent\nreroute · resupply", 500, 190, "llm", 3),
+      n("quotes", "Carrier quotes\nAPI tools", 700, 62, "tool", 4), n("sim", "Cost & delay\nsimulation", 700, 190, "tool", 5),
+      n("approve", "Planner approves", 900, 190, "decision", 6), n("notify", "Customers &\nsuppliers notified", 900, 318, "service", 7),
+    ],
+    edges: [
+      { from: "signal", to: "impact" }, { from: "erp", to: "impact", label: "orders at risk" }, { from: "impact", to: "plan" }, { from: "plan", to: "quotes" },
+      { from: "plan", to: "sim", label: "options" }, { from: "quotes", to: "sim" }, { from: "sim", to: "approve" }, { from: "approve", to: "notify" },
+    ],
+    steps: [
+      "News, weather or carrier feeds report a disruption, such as a port strike.",
+      "An impact agent finds which open orders and products travel through that route.",
+      "A planner agent proposes options: reroute, switch supplier or ship from another warehouse.",
+      "It requests live quotes and transit times from carrier APIs.",
+      "Each option is simulated for cost, delay and stock-out risk.",
+      "A human planner picks an option; the agent never books on its own.",
+      "Affected customers and suppliers are notified with the new dates.",
+    ],
+  },
+  {
+    id: "coding-agent-evals", group: "LangSmith", title: "Release gate for a coding agent",
+    summary: "Golden tasks, CI and an LLM judge decide whether a new agent version is good enough to ship.",
+    industry: "Software & Tech", problem: "A prompt tweak that looks better in a demo quietly breaks real tasks in production.", outcome: "Every agent release is measured against the last one before users see it.",
+    nodes: [
+      n("agent", "Coding agent\nopens a PR", 100, 190, "llm", 1), n("ci", "CI tests\n& lint", 300, 190, "tool", 2),
+      n("judge", "LLM judge\nreview rubric", 500, 190, "llm", 3), n("golden", "Golden tasks\ndataset", 500, 62, "store", 4),
+      n("exp", "Experiment\nvs. baseline", 700, 190, "service", 5), n("gate", "Release gate\nscore ≥ baseline", 900, 190, "decision", 6),
+      n("ship", "Ship new\nagent version", 900, 318, "actor"), n("online", "Online evals\nlive traces", 700, 318, "service", 7),
+    ],
+    edges: [
+      { from: "golden", to: "agent", label: "run tasks" }, { from: "agent", to: "ci" }, { from: "ci", to: "judge" }, { from: "judge", to: "exp", label: "scores" },
+      { from: "exp", to: "gate" }, { from: "gate", to: "ship", label: "pass" }, { from: "ship", to: "online", label: "monitor" },
+    ],
+    steps: [
+      "The coding agent runs against a fixed set of real tasks from a golden dataset.",
+      "Its pull requests must pass the same CI tests and lint as human code.",
+      "An LLM judge scores each diff on a rubric: correctness, scope and readability.",
+      "Golden tasks with known answers keep the scoring honest across versions.",
+      "LangSmith experiments compare the new prompt or model with the baseline.",
+      "The release gate lets a version through only if it scores at least as well.",
+      "After release, online evaluators keep scoring live traces for regressions.",
+    ],
+  },
+];

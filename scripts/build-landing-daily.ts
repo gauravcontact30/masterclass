@@ -30,6 +30,13 @@ import type { DailyPool, PoolCard, PoolImage } from "../lib/landing-daily-types"
 
 /** Most cards kept per technology: enough for weeks of rotation without bloating the server bundle. */
 const PER_GROUP = 45;
+/**
+ * Fewest cards a technology keeps. The carousel gives every technology its own screen, so one with fewer than a
+ * screen of pictures is topped up with picture-less cards (the card shows its tag's icon panel) rather than left out.
+ */
+const MIN_GROUP = 12;
+/** A technology with at least one full screen of pictured cards shows only those: every card it shows has a picture. */
+const PER_SCREEN = 3;
 /** Topics left out for want of a picture, as the image generator labels them ("Catalogue: Topic"). */
 const waiting: string[] = [];
 
@@ -141,7 +148,9 @@ async function main() {
     const kept = candidates.filter((_, i) => live[i]);
     waiting.push(...candidates.filter((c, i) => !live[i] && c.image?.kind === "topics").map(c => (c.image as { parts: string[] }).parts.join(": ")));
     // Verified cards first, each half shuffled so consecutive days wander across categories.
-    const ordered = [...seeded(kept.filter(c => c.verified), group.tag), ...seeded(kept.filter(c => !c.verified), group.tag)].slice(0, PER_GROUP);
+    const pictured = [...seeded(kept.filter(c => c.verified), group.tag), ...seeded(kept.filter(c => !c.verified), group.tag)].slice(0, PER_GROUP);
+    const unpictured = candidates.filter((_, i) => !live[i]).map(c => ({ ...c, image: null }));
+    const ordered = [...pictured, ...[...seeded(unpictured.filter(c => c.verified), group.tag), ...seeded(unpictured.filter(c => !c.verified), group.tag)].slice(0, pictured.length >= PER_SCREEN ? 0 : Math.max(0, MIN_GROUP - pictured.length))];
     const cards: PoolCard[] = ordered.map(({ url: _url, verified: _verified, ...rest }) => rest);
     if (group.tag === "Agentic AI") {
       const pulseLive = await published(AI_PULSE.map(item => learningImageUrl("topics", ["ai-pulse", item.id])));

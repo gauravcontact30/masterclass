@@ -11,7 +11,8 @@ const ready = () => screen.findByText(/349/, {selector:"div.compactPrice"});
 test("offers signup, sign-in and current section navigation", async () => {
   render(<LandingPage/>); await ready();
   expect(screen.getByRole("heading",{level:1})).toHaveTextContent("school, exam and technology learning");
-  expect(screen.getByRole("link",{name:"Build my learning space"})).toHaveAttribute("href","/sign-up");
+  expect(screen.getByRole("heading",{name:/How real systems and AI agents get work done/})).toBeInTheDocument();
+  expect(screen.queryByRole("link",{name:"Build my learning space"})).not.toBeInTheDocument();
   expect(within(screen.getByRole("banner")).getByRole("link",{name:"Sign in"})).toHaveAttribute("href","/sign-in");
   expect(within(screen.getByRole("navigation",{name:"Main navigation"})).getByRole("link",{name:"Membership"})).toHaveAttribute("href","#pricing");
 });
@@ -83,5 +84,6 @@ test("failed pricing is disclosed while learning navigation remains available", 
   (fetch as jest.Mock).mockRejectedValue(new Error("offline"));
   render(<LandingPage/>);
   expect(await screen.findByText("Current pricing is temporarily unavailable.")).toBeInTheDocument();
-  expect(screen.getByRole("link",{name:"Build my learning space"})).toHaveAttribute("href","/sign-up");
+  expect(screen.getByRole("heading",{name:/How real systems and AI agents get work done/})).toBeInTheDocument();
+  expect(screen.queryByRole("link",{name:"Build my learning space"})).not.toBeInTheDocument();
 });

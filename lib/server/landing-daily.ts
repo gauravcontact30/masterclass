@@ -6,11 +6,13 @@ import { learningImageUrl } from "@/lib/learning-image";
 import { awsServiceImageUrl } from "@/lib/aws-service-image";
 import { vocabularyImageUrl } from "@/lib/vocabulary-image";
 
-/** Cards per carousel per day: 27 open and the last one locked behind a small payment. */
+/** Word cards per day: 27 open and the last one locked behind a small payment. */
 export const DAILY_COUNT = 28;
+/** Pulse cards come a screen at a time, and every screen is one technology's three cards. */
+export const PULSE_PER_PAGE = 3;
+/** Screens of pulse cards per day: Agentic AI first, then nine more technologies; the very last card is locked. */
+export const PULSE_PAGES = 10;
 const TONES: AiPulseTone[] = ["peach", "mint", "sky", "lavender", "butter", "rose", "sage"];
-/** How many of each day's pulse cards always come from the agentic AI group (the section's namesake). */
-const AGENTIC_SLOTS = 2;
 
 /** Days since the epoch on the India calendar, so the set turns over at midnight IST. */
 export function istDay(now = Date.now()) { return Math.floor((now + 5.5 * 3600_000) / 86_400_000); }
@@ -22,26 +24,25 @@ const data = pool as unknown as DailyPool;
 /**
  * The full set for one day, locked card included.
  *
- * Each day gives two cards from the agentic AI group, then deals the rest one per technology in turn, starting
- * where yesterday stopped; within a technology it walks the cards in order, so every card is shown before any
- * repeats. Words walk the word list the same way.
+ * Every screen is one technology: the first is always Agentic AI (the section's namesake), and the rest deal the
+ * other technologies in turn, starting where yesterday stopped. Each visit to a technology takes its next three
+ * cards, so every card is shown before any repeats. Words walk the word list the same way.
  */
 function fullDay(day: number): { pulse: PulseCard[]; words: DailyWord[] } {
-  const agentic = data.groups.find(group => group.tag === "Agentic AI" && group.cards.length);
-  const others = data.groups.filter(group => group !== agentic && group.cards.length);
-  const rest = DAILY_COUNT - (agentic ? AGENTIC_SLOTS : 0);
+  // A technology needs a full screen of its own cards to get one.
+  const groups = data.groups.filter(group => group.cards.length >= PULSE_PER_PAGE);
+  const agentic = groups.find(group => group.tag === "Agentic AI");
+  const others = groups.filter(group => group !== agentic);
+  const screen = (group: (typeof groups)[number], visit: number) => Array.from({ length: PULSE_PER_PAGE }, (_, k) => group.cards[(visit * PULSE_PER_PAGE + k) % group.cards.length]);
+  const rest = Math.min(PULSE_PAGES - (agentic ? 1 : 0), others.length);
   const picked = [
-    ...(agentic ? Array.from({ length: AGENTIC_SLOTS }, (_, k) => agentic.cards[(day * AGENTIC_SLOTS + k) % agentic.cards.length]) : []),
+    ...(agentic ? screen(agentic, day) : []),
     ...Array.from({ length: rest }, (_, k) => {
       const slot = day * rest + k;
-      const group = others[slot % others.length];
-      return group.cards[Math.floor(slot / others.length) % group.cards.length];
-    }),
+      return screen(others[slot % others.length], Math.floor(slot / others.length));
+    }).flat(),
   ];
-  // A technology with few cards can come round twice in one day; each card appears once.
-  const seen = new Set<string>();
-  const pulse = picked.filter(card => !seen.has(card.id) && !!seen.add(card.id))
-    .map(({ image, ...card }, i): PulseCard => ({ ...card, image: imageUrl(image), tone: TONES[(day + i) % TONES.length] }));
+  const pulse = picked.map(({ image, ...card }, i): PulseCard => ({ ...card, image: imageUrl(image), tone: TONES[(day + Math.floor(i / PULSE_PER_PAGE)) % TONES.length] }));
   const words = Array.from({ length: DAILY_COUNT }, (_, k): DailyWord => ({ ...data.words[(day * DAILY_COUNT + k) % data.words.length], tone: TONES[(day + k + 3) % TONES.length] }));
   return { pulse, words };
 }

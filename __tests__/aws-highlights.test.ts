@@ -1,4 +1,4 @@
-import { awsHighlights } from "@/lib/pro-learn/aws-highlights";
+import { awsHighlights, popularAwsHighlights } from "@/lib/pro-learn/aws-highlights";
 import { AWS_POPULARITY } from "@/lib/generation/guides/aws-popularity";
 
 test("the highlights are the curated teaching order, trimmed to what a card shows", () => {
@@ -22,4 +22,10 @@ test("asking for fewer returns fewer, and names stay unique", () => {
   const list = awsHighlights(6);
   expect(list).toHaveLength(6);
   expect(new Set(list.map(item => item.name)).size).toBe(6);
+});
+
+test("the Search page's popular list holds only the curated services, in teaching order", () => {
+  const popular = popularAwsHighlights();
+  expect(popular.map(item => item.name)).toEqual(AWS_POPULARITY);
+  expect(popular.length).toBeLessThan(awsHighlights().length);
 });

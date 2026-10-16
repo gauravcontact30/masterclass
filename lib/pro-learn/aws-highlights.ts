@@ -106,3 +106,13 @@ export function awsCategories(services: AwsHighlight[]): AwsCategory[] {
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 }
+
+/**
+ * Only the services in the curated popularity list (`aws-popularity.ts`), in that order: the Search page's
+ * "Popular AWS services" catalogue. The long tail of niche services stays in `awsHighlights()` for the
+ * generators, but a learner browsing the page sees only the services worth learning first.
+ */
+export function popularAwsHighlights(): AwsHighlight[] {
+  const ranked = new Set(AWS_POPULARITY);
+  return awsHighlights().filter(service => ranked.has(service.name));
+}
