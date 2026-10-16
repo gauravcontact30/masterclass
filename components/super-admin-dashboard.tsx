@@ -25,6 +25,7 @@ import { AdminTable } from "./super-admin-table";
 import { SuperAdminTransactions } from "./super-admin-transactions";
 import { SuperAdminAnnouncements, SuperAdminInsights, SuperAdminLearnerSupport, SuperAdminQueue } from "./super-admin-support";
 import styles from "./super-admin-dashboard.module.css";
+import side from "./super-admin-sidebar.module.css";
 import { useLanguage } from "./language-provider";
 
 type Row = Record<string, unknown>;
@@ -35,7 +36,16 @@ type Snapshot = {
   requests: { count: number; errors: number; p95: number | null };
   health: { databaseMs: number; processUptime: number; processMemory: number; hostMemory: number; hostUsedMemory: number; cpuCores: number; cpuSeconds: number; cpuPercent?:number|null; storage?:{total:number;available:number}|null; environment?:string; nodeVersion?:string; billingConfigured: boolean };
 };
-const sections = [{ id: "overview", label: "Overview", icon: Activity }, { id: "activity", label: "User activities", icon: MousePointerClick }, { id: "insights", label: "Growth insights", icon: TrendingUp }, { id: "support", label: "Learner support", icon: LifeBuoy }, { id: "queue", label: "Generation queue", icon: Layers }, { id: "announcements", label: "Announcements", icon: Megaphone }, { id: "live", label: "Live learners", icon: Users }, { id: "analytics", label: "Learning analytics", icon: Activity }, { id: "ai", label: "AI analytics", icon: Bot }, { id: "infra", label: "Infrastructure", icon: Server }, { id: "moderation", label: "Moderation", icon: ShieldCheck }, { id: "logs", label: "Application logs", icon: Database }, { id: "users", label: "Users & access", icon: Users }, { id: "health", label: "System health", icon: Activity }, { id: "billing", label: "Revenue & billing", icon: CreditCard }, { id: "transactions", label: "Transactions", icon: Receipt }, { id: "content", label: "Content & audit", icon: Database }, { id: "security", label: "Security", icon: ShieldCheck }] as const;
+// Grouped by the question an administrator arrives with; the flat list keeps the existing section ids.
+const groups = [
+  { label: "Monitor", items: [{ id: "overview", label: "Overview", icon: Activity }, { id: "activity", label: "User activities", icon: MousePointerClick }, { id: "live", label: "Live learners", icon: Users }, { id: "analytics", label: "Learning analytics", icon: Activity }, { id: "ai", label: "AI analytics", icon: Bot }, { id: "insights", label: "Growth insights", icon: TrendingUp }] },
+  { label: "People", items: [{ id: "users", label: "Users & access", icon: Users }, { id: "support", label: "Learner support", icon: LifeBuoy }, { id: "moderation", label: "Moderation", icon: ShieldCheck }, { id: "announcements", label: "Announcements", icon: Megaphone }] },
+  { label: "Revenue", items: [{ id: "billing", label: "Revenue & billing", icon: CreditCard }, { id: "transactions", label: "Transactions", icon: Receipt }] },
+  { label: "Content", items: [{ id: "content", label: "Content & audit", icon: Database }, { id: "queue", label: "Generation queue", icon: Layers }] },
+  { label: "System", items: [{ id: "infra", label: "Infrastructure", icon: Server }, { id: "health", label: "System health", icon: Activity }, { id: "logs", label: "Application logs", icon: Database }, { id: "security", label: "Security", icon: ShieldCheck }] },
+] as const;
+type SectionItem = (typeof groups)[number]["items"][number];
+const sections: readonly SectionItem[] = groups.flatMap((group): readonly SectionItem[] => group.items);
 type Section = typeof sections[number]["id"];
 const money = (n: number, currency = "INR") => new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 2 }).format(n);
 function display(value: unknown): string {
@@ -85,7 +95,12 @@ export function SuperAdminDashboard() {
   const table = (title: string, rows: Row[], columns: string[], note?: string) => <Table key={`${title}-${days}`} title={title} rows={rows} columns={columns} query={query} note={note} />;
   const mrr = data ? data.recurring.monthly * data.prices.monthly + data.recurring.yearly * data.prices.yearly / 12 : 0;
   const events = data?.events ?? [];
-  return <div className={`app-shell compact-workspace ${styles.shell}${collapsed ? " sidebar-collapsed" : ""}`}><aside className={`sidebar ${styles.sidebar}`}><SidebarTooltips collapsed={collapsed}/><div className="sidebar-brand-row"><Link href="/dashboard" className="wordmark" aria-label="Learning dashboard"><Wordmark /></Link><Button variant="ghost" className="sidebar-toggle" aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} aria-expanded={!collapsed} onClick={() => setCollapsed(value => !value)}>{collapsed ? <PanelLeftOpen size={17}/> : <PanelLeftClose size={17}/>}</Button></div>{!collapsed && <div className={styles.adminLabel}><ShieldCheck size={15} /> SUPER ADMIN</div>}<nav aria-label="Super admin">{sections.map(({ id, label, icon: Icon }) => <Button variant="ghost" key={id} aria-label={label} className={section === id ? "active" : ""} aria-current={section === id ? "page" : undefined} onClick={() => { setSection(id); setQuery(""); }}><Icon size={17} />{!collapsed && label}</Button>)}</nav><Link className={styles.back} href="/dashboard" aria-label="Learning dashboard"><ArrowLeft size={16} />{!collapsed && "Learning dashboard"}</Link></aside>
+  return <div className={`app-shell compact-workspace ${styles.shell}${collapsed ? " sidebar-collapsed" : ""}`}><aside className={`sidebar ${styles.sidebar} ${side.sidebar}`} data-collapsed={collapsed || undefined}><SidebarTooltips collapsed={collapsed}/><div className="sidebar-brand-row"><Link href="/dashboard" className="wordmark" aria-label="Learning dashboard"><Wordmark /></Link><Button variant="ghost" className="sidebar-toggle" aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} aria-expanded={!collapsed} onClick={() => setCollapsed(value => !value)}>{collapsed ? <PanelLeftOpen size={17}/> : <PanelLeftClose size={17}/>}</Button></div>{!collapsed && <div className={side.badge}><span className={side.badgeMark}><ShieldCheck size={15} /></span><span><b>Super admin</b><small>Control centre</small></span></div>}<nav aria-label="Super admin" className={side.nav}>{groups.map(group => <div key={group.label} className={side.group} role="group" aria-label={group.label}>
+        {!collapsed && <span className={side.groupLabel}>{group.label}</span>}
+        {group.items.map(({ id, label, icon: Icon }) => <button type="button" key={id} aria-label={label} title={collapsed ? label : undefined} className={side.item} aria-current={section === id ? "page" : undefined} onClick={() => { setSection(id); setQuery(""); }}>
+          <span className={side.icon}><Icon size={16} /></span>{!collapsed && <span className={side.label}>{label}</span>}
+        </button>)}
+      </div>)}</nav><Link className={side.back} href="/dashboard" aria-label="Learning dashboard"><span className={side.icon}><ArrowLeft size={16} /></span>{!collapsed && "Learning dashboard"}</Link></aside>
     <div className="main-shell"><header className={`topbar ${styles.adminHeader}`}>
       <div className={styles.headerIdentity}>
         <span className={styles.headerMark} aria-hidden="true"><ShieldCheck size={21} /></span>

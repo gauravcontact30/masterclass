@@ -9,7 +9,7 @@ import { Textarea } from "./ui/textarea";
 import { Field, FieldLabel, FieldDescription } from "./ui/field";
 import { AdminError, AdminFormMessage, AdminLoading } from "./super-admin-feedback";
 import { AdminSelect } from "./super-admin-select";
-import { AdminTable } from "./super-admin-table";
+import { AdminTable, Pager, PAGE_SIZE } from "./super-admin-table";
 import shell from "./super-admin-dashboard.module.css";
 import styles from "./super-admin-support.module.css";
 
@@ -44,6 +44,14 @@ function useAdminData<T>(url: string) {
   }, [url]);
   useEffect(() => { let live = true; queueMicrotask(() => { if (live) void load(); }); return () => { live = false; }; }, [load]);
   return { data, error, reload: load };
+}
+
+/** One page of a card list, five at a time like every admin table; the page clamps when items are removed. */
+function usePage<T>(items: T[]) {
+  const [page, setPage] = useState(1);
+  const pages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+  const current = Math.min(page, pages);
+  return { shown: items.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE), pager: <Pager page={current} pages={pages} total={items.length} onPage={setPage} /> };
 }
 
 function Mini({ label, value, note }: { label: string; value: string | number; note?: string }) {
@@ -158,11 +166,16 @@ export function SuperAdminQueue() {
       <Mini label="Expired leases" value={data.expiredLeases} note="Workers that died mid-job; picked up again automatically" />
     </div>
     <Records title="Failures by cause (30 days)" rows={data.failuresByCode} columns={["error_code", "failures", "last_seen"]} actions={<Button variant="outline" size="sm" onClick={() => void reload()}><RefreshCw size={14} />Refresh</Button>} />
-    <Card className={shell.panel}><h2>Failed jobs</h2>
-      {data.failed.length ? <ul className={styles.jobs}>{data.failed.map(job => <FailedJob key={String(job.id)} job={job} onDone={() => void reload()} />)}</ul> : <p className={shell.empty}>No failed jobs.</p>}
-    </Card>
+    <FailedJobs jobs={data.failed} onDone={() => void reload()} />
     <Records title="In flight" rows={data.inFlight} columns={["title", "status", "attempts", "user_id", "lease_until", "created_at"]} />
   </div>;
+}
+
+function FailedJobs({ jobs, onDone }: { jobs: Row[]; onDone: () => void }) {
+  const { shown, pager } = usePage(jobs);
+  return <Card className={shell.panel}><h2>Failed jobs</h2>
+    {jobs.length ? <><ul className={styles.jobs}>{shown.map(job => <FailedJob key={String(job.id)} job={job} onDone={onDone} />)}</ul>{pager}</> : <p className={shell.empty}>No failed jobs.</p>}
+  </Card>;
 }
 
 function FailedJob({ job, onDone }: { job: Row; onDone: () => void }) {
@@ -193,6 +206,7 @@ export function SuperAdminAnnouncements() {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ text: string; ok: boolean }>({ text: "", ok: true });
   const [now] = useState(() => Date.now());
+  const { shown, pager } = usePage(data?.announcements ?? []);
   async function create(event: React.FormEvent) {
     event.preventDefault(); setBusy(true); setResult({ text: "", ok: true });
     try {
@@ -220,7 +234,7 @@ export function SuperAdminAnnouncements() {
       <AdminFormMessage message={result.text} success={result.ok} />
     </Card>
     <Card className={shell.panel}><h2>All announcements</h2>
-      {!data ? <AdminLoading>Loading…</AdminLoading> : data.announcements.length ? <ul className={styles.announcements}>{data.announcements.map(item => <li key={item.id} data-tone={item.tone}>
+      {!data ? <AdminLoading>Loading…</AdminLoading> : data.announcements.length ? <><ul className={styles.announcements}>{shown.map(item => <li key={item.id} data-tone={item.tone}>
         <div><span className={styles.state} data-state={state(item)}>{state(item)}</span><b>{item.title}</b><p>{item.body}</p>
           <small>{item.tone} · from {when(item.starts_at)}{item.ends_at ? ` to ${when(item.ends_at)}` : ", no end"}</small></div>
         <div className={styles.inline}>
@@ -228,7 +242,7 @@ export function SuperAdminAnnouncements() {
           {state(item) === "live" && <Button size="sm" variant="outline" onClick={() => void change(item.id, { method: "PATCH", body: JSON.stringify({ id: item.id, ends_at: new Date().toISOString() }) })}>End now</Button>}
           <DeleteButton onConfirm={() => void change(item.id, { method: "DELETE" }, `/api/super-admin/announcements?id=${item.id}`)} />
         </div>
-      </li>)}</ul> : <p className={shell.empty}>No announcements yet.</p>}
+      </li>)}</ul>{pager}</> : <p className={shell.empty}>No announcements yet.</p>}
     </Card>
   </div>;
 }
