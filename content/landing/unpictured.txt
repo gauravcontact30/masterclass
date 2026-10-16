@@ -499,7 +499,6 @@ Next.js 16+ APIs — Directives, Functions, Hooks & Config: next dev
 Next.js 16+ APIs — Directives, Functions, Hooks & Config: next build
 Next.js 16+ APIs — Directives, Functions, Hooks & Config: next start
 Next.js 16+ APIs — Directives, Functions, Hooks & Config: Adapters
-React 19+ — Components, Actions & Server UI: Components & JSX
 React 19+ — Components, Actions & Server UI: Props and composition
 React 19+ — Components, Actions & Server UI: Refs and the DOM
 React 19+ — Components, Actions & Server UI: State with useState
@@ -507,7 +506,6 @@ React 19+ — Components, Actions & Server UI: Reducers & context
 React 19+ — Components, Actions & Server UI: Effects and synchronization
 React 19+ — Components, Actions & Server UI: useEffectEvent
 React 19+ — Components, Actions & Server UI: Actions and forms
-React 19+ — Components, Actions & Server UI: useOptimistic
 React 19+ — Components, Actions & Server UI: Form status
 React 19+ — Components, Actions & Server UI: Suspense and use
 React 19+ — Components, Actions & Server UI: Error boundaries
@@ -585,20 +583,14 @@ React 19+ Hooks — State, Effects & Actions: Hooks and the React Compiler
 React 19+ Hooks — State, Effects & Actions: Selector Hooks over external stores
 React 19+ Hooks — State, Effects & Actions: Deriving instead of storing
 React 19+ Hooks — State, Effects & Actions: Passing Hook results down
-n8n: n8n workflow architecture
-n8n: Cloud and self-hosted n8n
 n8n: Workflow editor and executions
-n8n: Manual and production executions
 n8n: Workflow settings and time zones
-n8n: Templates and reusable workflows
 n8n: Items and JSON data
 n8n: Expressions and field mapping
-n8n: Item linking
 n8n: Edit Fields node
 n8n: Code node
 n8n: Dates, time zones and Luxon
 n8n: Binary data and files
-n8n: Schedule Trigger
 n8n: Webhook node
 n8n: Respond to Webhook
 n8n: HTTP Request node
@@ -650,21 +642,13 @@ n8n: Error hook payloads
 n8n: The errorWorkflow setting
 n8n: Sub-workflow calls
 n8n: Response timing hooks
-Python: Variables & assignment
 Python: Numbers
 Python: Strings
-Python: Booleans & truthiness
 Python: None
 Python: Operators
 Python: Input & output
-Python: Lists
 Python: Tuples
-Python: Dictionaries
-Python: Slicing
 Python: Iterators & iterables
-Python: if / elif / else
-Python: for loops
-Python: while loops
 Python: break, continue & else
 Python: match statements
 Python: Arguments & defaults
@@ -771,15 +755,11 @@ Cypress — End-to-End Testing & Network Control: Custom commands
 Cypress — End-to-End Testing & Network Control: Aliases
 Cypress — End-to-End Testing & Network Control: Cross-origin testing
 Cypress — End-to-End Testing & Network Control: Flake detection
-GitHub Actions: Workflow files
 GitHub Actions: Expressions and contexts
 GitHub Actions: Conditions
 GitHub Actions: Dependency caching
-GitHub Actions: Matrix builds
 GitHub Actions: Concurrency groups
-GitHub Actions: Composite actions
 GitHub Actions: Reusable workflows
-GitHub Actions: Deployment jobs
 GitHub Actions: Variables and secrets
 GitHub Actions: Self-hosted runner isolation
 GitHub Actions: GITHUB_TOKEN permissions

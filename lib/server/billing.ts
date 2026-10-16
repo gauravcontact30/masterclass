@@ -10,7 +10,15 @@ export async function razorpay(path:string,body?:unknown) {
   const key=required("RAZORPAY_KEY_ID");
   if(key.startsWith("rzp_live_")&&process.env.ALLOW_LIVE_BILLING!=="true")throw new HttpError(503,"setup_required");
   const response=await fetch(`https://api.razorpay.com/v1/${path}`,{method:body?"POST":"GET",headers:{Authorization:`Basic ${Buffer.from(`${key}:${required("RAZORPAY_KEY_SECRET")}`).toString("base64")}`,"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(20000),cache:"no-store"});
-  if(!response.ok)throw new HttpError(502,"service_error");return response.json();
+  if(!response.ok){
+    // Keep Razorpay's own reason in the server log (never the request body), so a 502 is diagnosable.
+    const reason=await response.json().then(body=>body?.error,()=>undefined) as {code?:string;description?:string}|undefined;
+    console.error("razorpay_error",{resource:path.split("/")[0],status:response.status,code:reason?.code,description:reason?.description});
+    // A configured plan the account does not have is a setup fault, not a provider outage.
+    if(path.startsWith("plans/")&&(response.status===400||response.status===404))throw new HttpError(503,"billing_plan_mismatch");
+    throw new HttpError(502,"service_error");
+  }
+  return response.json();
 }
 export const razorpayOrder=z.object({id:z.string(),amount:z.number(),currency:z.string(),notes:z.object({user_id:z.string().optional(),kind:z.string().optional()}).passthrough().optional()}).passthrough();
 export async function createDownloadOrder(userId:string) {
