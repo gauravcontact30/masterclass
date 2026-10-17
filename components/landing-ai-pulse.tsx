@@ -1,6 +1,6 @@
 "use client";
 import { useState, type ReactNode } from "react";
-import { ArrowUpRight, Bot, Boxes, ChevronLeft, ChevronRight, Cloud, Code2, Database, FlaskConical, GitBranch, Network, Pause, Play, Sparkles, Workflow, Zap, type LucideIcon } from "lucide-react";
+import { ArrowUpRight, BookOpen, Bot, Boxes, Braces, ChevronLeft, ChevronRight, Cloud, Code2, Database, FlaskConical, GitBranch, Layers, Network, Pause, Play, Puzzle, Server, Sparkles, Workflow, Zap, type LucideIcon } from "lucide-react";
 import { problemPoints } from "@/lib/problem-points";
 import type { LockedTeaser, PulseCard } from "@/lib/landing-daily-types";
 import { LockedCard } from "./landing-locked-card";
@@ -15,7 +15,9 @@ export const AUTOPLAY_MS = 2 * 60 * 1000;
 const TAG_ICON: Record<string, LucideIcon> = {
   "Agentic AI": Bot, LangChain: Network, LangGraph: GitBranch, LangSmith: FlaskConical, LangFlow: Workflow, "Next.js 16+": Code2, "React 19+": Code2,
   AWS: Cloud, "Automation · n8n": Workflow, Python: Code2, Playwright: FlaskConical, Cypress: FlaskConical, "GitHub Actions": GitBranch,
-  "System Design": Boxes, Redis: Database, Inngest: Zap,
+  "System Design": Boxes, Redis: Database, Inngest: Zap, "Agentic AI terms": BookOpen, Git: GitBranch, JavaScript: Braces, "JavaScript puzzles": Puzzle,
+  TypeScript: Braces, NestJS: Server, Jest: FlaskConical, "React Testing Library": FlaskConical, TanStack: Layers, Zustand: Layers, Redux: Layers,
+  "Redux Toolkit": Layers, Vitest: FlaskConical, GraphQL: Network, "Node.js": Server, Express: Server, "Key TanStack libraries": Layers,
 };
 export const dayLabel = (day: string, hi: boolean) => new Intl.DateTimeFormat(hi ? "hi-IN" : "en-IN", { day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(`${day}T00:00:00Z`));
 

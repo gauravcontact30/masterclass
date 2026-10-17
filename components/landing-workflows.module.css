@@ -14,11 +14,17 @@
 
 /* Group filters. */
 .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
-.filters button { display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px 8px 13px; border: 1px solid var(--nb-rule); border-radius: 999px; background: var(--nb-sheet); color: var(--nb-text); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: background .2s ease, border-color .2s ease, color .2s ease; }
-.filters button span { min-width: 22px; padding: 1px 7px; border-radius: 999px; background: #f1efe8; font-size: 12px; font-variant-numeric: tabular-nums; color: var(--nb-muted); }
-.filters button:hover { border-color: color-mix(in srgb, var(--nb-graphite) 30%, var(--nb-rule)); }
-.filters button[aria-pressed="true"] { background: var(--nb-graphite); border-color: var(--nb-graphite); color: #fff; }
-.filters button[aria-pressed="true"] span { background: rgba(255, 255, 255, .18); color: #fff; }
+/* Each group's tab in that group's light tone (the slides use the same pairs); the pressed one fills with it. */
+.filters button { --tint: #f1efe8; --deep: var(--nb-graphite); display: inline-flex; align-items: center; gap: 7px; padding: 8px 8px 8px 13px; border: 1px solid color-mix(in srgb, var(--deep) 22%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--tint) 70%, #fff); color: var(--deep); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: background .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease; }
+.filters button[data-group="System Design"] { --tint: #e3eefc; --deep: #22508f; }
+.filters button[data-group="LangChain"] { --tint: #dff3e8; --deep: #1d6a45; }
+.filters button[data-group="LangGraph"] { --tint: #ece6fb; --deep: #4f3a9c; }
+.filters button[data-group="LangFlow"] { --tint: #fde8dc; --deep: #9a401b; }
+.filters button[data-group="LangSmith"] { --tint: #fbf1d0; --deep: #7a5800; }
+.filters button span { min-width: 22px; padding: 1px 7px; border-radius: 999px; background: color-mix(in srgb, var(--deep) 13%, #fff); font-size: 12px; font-variant-numeric: tabular-nums; color: var(--deep); }
+.filters button:hover { background: var(--tint); border-color: color-mix(in srgb, var(--deep) 45%, transparent); }
+.filters button[aria-pressed="true"] { background: var(--deep); border-color: var(--deep); color: #fff; box-shadow: 0 8px 18px -12px var(--deep); }
+.filters button[aria-pressed="true"] span { background: rgba(255, 255, 255, .2); color: #fff; }
 
 /* The carousel sheet. */
 .carousel { padding: clamp(14px, 2vw, 24px); border: 1px solid var(--nb-rule); border-radius: 26px; background: color-mix(in srgb, var(--nb-sheet) 92%, transparent); box-shadow: 0 1px 0 rgba(20, 20, 19, .03), 0 30px 60px -40px rgba(20, 20, 19, .35); }

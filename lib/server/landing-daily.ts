@@ -10,8 +10,9 @@ import { vocabularyImageUrl } from "@/lib/vocabulary-image";
 export const DAILY_COUNT = 28;
 /** Pulse cards come a screen at a time, and every screen is one technology's three cards. */
 export const PULSE_PER_PAGE = 3;
-/** Screens of pulse cards per day: Agentic AI first, then nine more technologies; the very last card is locked. */
-export const PULSE_PAGES = 10;
+/** Screens of pulse cards per day: Agentic AI first, then every other technology in the pool, so each one is covered
+ *  every day (the order rotates daily); the very last card is locked. */
+export const PULSE_PAGES = Number.POSITIVE_INFINITY;
 const TONES: AiPulseTone[] = ["peach", "mint", "sky", "lavender", "butter", "rose", "sage"];
 
 /** Days since the epoch on the India calendar, so the set turns over at midnight IST. */
@@ -24,8 +25,8 @@ const data = pool as unknown as DailyPool;
 /**
  * The full set for one day, locked card included.
  *
- * Every screen is one technology: the first is always Agentic AI (the section's namesake), and the rest deal the
- * other technologies in turn, starting where yesterday stopped. Each visit to a technology takes its next three
+ * Every screen is one technology: the first is always Agentic AI (the section's namesake), and the rest show
+ * every other technology, starting where yesterday stopped. Each visit to a technology takes its next three
  * cards, so every card is shown before any repeats. Words walk the word list the same way.
  */
 function fullDay(day: number): { pulse: PulseCard[]; words: DailyWord[] } {

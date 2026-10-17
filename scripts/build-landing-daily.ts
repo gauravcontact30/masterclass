@@ -47,9 +47,15 @@ type Group = { tag: string; docs: { label: string; href: string }; sources: () =
 const books = (match: (title: string) => boolean): Source[] => TECHNOLOGY_HANDBOOKS.filter(book => match(book.title)).map(book => ({ catalogue: book.title, topics: book.topics as Topic[] }));
 const titled = (title: string) => books(t => t === title);
 const starts = (prefix: string) => books(t => t.startsWith(prefix));
+/** Only the topics of a handbook that pass a test, for technologies carved out of a larger handbook. */
+const picked = (prefix: string, keep: (topic: Topic) => boolean): Source[] => starts(prefix).map(source => ({ ...source, topics: source.topics.filter(keep) }));
+/** The JavaScript topics interview puzzles are built on; they get their own "JavaScript puzzles" screen. */
+const PUZZLE_TOPICS = new Set(["Primitive values and coercion", "this and binding", "Variables and closures", "Promises and async", "Objects and prototypes", "Destructuring and spread", "Iterables and generators", "Promise combinators", "Modules and execution", "Array.prototype.sort and toSorted", "Classes and private fields", "Errors and resource cleanup"]);
+const EXPRESS_TOPICS = /^(express|express-session|express-rate-limit|express-validator|body-parser|serve-static)$/;
 
 const GROUPS: Group[] = [
-  { tag: "Agentic AI", docs: { label: "Anthropic: Building effective agents", href: "https://www.anthropic.com/engineering/building-effective-agents" }, sources: () => [...titled("Agentic AI"), { catalogue: "AI terms", topics: aiTerms() as Topic[] }] },
+  { tag: "Agentic AI", docs: { label: "Anthropic: Building effective agents", href: "https://www.anthropic.com/engineering/building-effective-agents" }, sources: () => titled("Agentic AI") },
+  { tag: "Agentic AI terms", docs: { label: "Anthropic: Building effective agents", href: "https://www.anthropic.com/engineering/building-effective-agents" }, sources: () => [{ catalogue: "AI terms", topics: aiTerms() as Topic[] }] },
   { tag: "LangChain", docs: { label: "LangChain docs", href: "https://docs.langchain.com/oss/python/langchain/overview" }, sources: () => titled("LangChain") },
   { tag: "LangGraph", docs: { label: "LangGraph docs", href: "https://docs.langchain.com/oss/python/langgraph/overview" }, sources: () => titled("LangGraph") },
   { tag: "LangSmith", docs: { label: "LangSmith docs", href: "https://docs.langchain.com/langsmith/home" }, sources: () => titled("LangSmith") },
@@ -65,6 +71,22 @@ const GROUPS: Group[] = [
   { tag: "System Design", docs: { label: "System Design Primer", href: "https://github.com/donnemartin/system-design-primer" }, sources: () => titled("System Design") },
   { tag: "Redis", docs: { label: "Redis docs", href: "https://redis.io/docs/latest/" }, sources: () => titled("Redis caching solutions") },
   { tag: "Inngest", docs: { label: "Inngest docs", href: "https://www.inngest.com/docs" }, sources: () => titled("Inngest services") },
+  { tag: "Git", docs: { label: "Git documentation", href: "https://git-scm.com/docs" }, sources: () => starts("Git —") },
+  { tag: "JavaScript", docs: { label: "MDN JavaScript reference", href: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference" }, sources: () => picked("JavaScript", topic => !PUZZLE_TOPICS.has(topic.name)) },
+  { tag: "JavaScript puzzles", docs: { label: "MDN JavaScript guide", href: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide" }, sources: () => picked("JavaScript", topic => PUZZLE_TOPICS.has(topic.name)) },
+  { tag: "TypeScript", docs: { label: "TypeScript handbook", href: "https://www.typescriptlang.org/docs/handbook/intro.html" }, sources: () => starts("TypeScript") },
+  { tag: "NestJS", docs: { label: "NestJS docs", href: "https://docs.nestjs.com" }, sources: () => starts("Nest.js —") },
+  { tag: "Jest", docs: { label: "Jest docs", href: "https://jestjs.io/docs/getting-started" }, sources: () => starts("Jest") },
+  { tag: "React Testing Library", docs: { label: "Testing Library docs", href: "https://testing-library.com/docs/react-testing-library/intro" }, sources: () => starts("React Testing Library") },
+  { tag: "TanStack", docs: { label: "TanStack docs", href: "https://tanstack.com" }, sources: () => titled("TanStack Virtual") },
+  { tag: "Zustand", docs: { label: "Zustand docs", href: "https://zustand.docs.pmnd.rs" }, sources: () => titled("Zustand") },
+  { tag: "Redux", docs: { label: "Redux docs", href: "https://redux.js.org" }, sources: () => titled("Redux") },
+  { tag: "Redux Toolkit", docs: { label: "Redux Toolkit docs", href: "https://redux-toolkit.js.org" }, sources: () => titled("Redux Toolkit") },
+  { tag: "Vitest", docs: { label: "Vitest docs", href: "https://vitest.dev/guide/" }, sources: () => starts("Vitest") },
+  { tag: "GraphQL", docs: { label: "GraphQL docs", href: "https://graphql.org/learn/" }, sources: () => starts("GraphQL") },
+  { tag: "Node.js", docs: { label: "Node.js docs", href: "https://nodejs.org/docs/latest/api/" }, sources: () => starts("Node.js —") },
+  { tag: "Express", docs: { label: "Express docs", href: "https://expressjs.com" }, sources: () => picked("Node.js Packages", topic => EXPRESS_TOPICS.test(topic.name)) },
+  { tag: "Key TanStack libraries", docs: { label: "TanStack docs", href: "https://tanstack.com" }, sources: () => books(title => ["TanStack Query", "TanStack Router", "TanStack Start", "TanStack Table", "TanStack Form"].includes(title)) },
 ];
 
 const official = new Map<string, Record<string, { sourceUrl?: string; sourceTitle?: string; summary?: string; keyPoints?: string[]; useCases?: { title: string; scenario: string }[] }>>();
