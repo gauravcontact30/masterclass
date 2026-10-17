@@ -21,7 +21,7 @@ const titleCase = (key: string) => key.replaceAll("_", " ").replace(/^\w/, c => 
 const QUICK_KEYS = /^(status|state|platform|kind|tier|role|device|format|event|level|tone|action|result)$/;
 
 /** An icon for a status-like value, chosen by meaning so every table shares one visual language. */
-function valueIcon(value: string): LucideIcon {
+export function valueIcon(value: string): LucideIcon {
   const v = value.toLowerCase();
   if (/(^|_)(active|success|succeeded|paid|captured|live|ok|resolved|published|ready|done|verified|completed?)$/.test(v)) return CheckCircle2;
   if (/(fail|error|banned|declined|rejected|refused|invalid)/.test(v)) return XCircle;
@@ -180,7 +180,7 @@ export function AdminTable({ title, rows, columns, note, query = "", empty, acti
         const sortable = column.sort !== false;
         const state = sort?.key === column.key ? sort.dir : null;
         return <TableHead key={column.key} aria-sort={state === "asc" ? "ascending" : state === "desc" ? "descending" : undefined}>
-          {sortable ? <button type="button" className={styles.sortButton} onClick={() => toggleSort(column.key)} title={`Sort by ${column.label}`}>{column.label}{state === "asc" ? <ArrowUp size={12} aria-hidden="true" /> : state === "desc" ? <ArrowDown size={12} aria-hidden="true" /> : <ArrowUpDown size={12} aria-hidden="true" className={styles.sortIdle} />}</button> : column.label}
+          {sortable ? <button type="button" className={styles.sortButton} onClick={() => toggleSort(column.key)} title={`Sort by ${column.label}`} aria-label={`Sort by ${column.label}`}>{column.label}{state === "asc" ? <ArrowUp size={12} aria-hidden="true" /> : state === "desc" ? <ArrowDown size={12} aria-hidden="true" /> : <ArrowUpDown size={12} aria-hidden="true" className={styles.sortIdle} />}</button> : column.label}
         </TableHead>;
       })}</TableRow></TableHeader>
         <TableBody>{shown.map((row, index) => <TableRow key={rowKey ? rowKey(row, index) : text(row.id ?? row.event_id ?? row.session_id ?? `${current}-${index}`)}>

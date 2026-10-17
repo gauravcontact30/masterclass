@@ -809,3 +809,14 @@ ul.learning-key-points.pointwise > li::before, .notes-bullets > li::before { con
   .super-admin-header-link > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .super-admin-header-link > svg:last-child { display: none; }
 }
+
+/* Tablets and small laptops (761–1100px, e.g. iPad portrait and landscape, 13" laptops): a slimmer sidebar leaves
+   the learning content more room. Applies to the learner dashboard and the admin console, which share the shell. */
+@media (min-width:761px) and (max-width:1100px){
+  .compact-workspace:not(.sidebar-collapsed) .sidebar{width:212px;padding-inline:16px}
+  .compact-workspace:not(.sidebar-collapsed) .main-shell{margin-left:212px;width:calc(100% - 212px)}
+}
+/* Nothing inside a dashboard may push the page sideways on a phone; wide tables scroll inside their own frame. */
+.main-shell{min-width:0}
+.workspace img,.workspace video{max-width:100%}
+@media (max-width:760px){.workspace,.main-shell main{overflow-x:clip}}

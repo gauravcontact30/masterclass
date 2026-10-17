@@ -27,3 +27,19 @@
 .back.back { display: flex; align-items: center; gap: 10px; margin: 12px 8px 18px; padding: 6px 10px 6px 6px; border: 1px dashed #e3d9c6; border-radius: 10px; color: #5e5d59; font-size: 13px; text-decoration: none; transition: background .2s ease, color .2s ease, border-color .2s ease; }
 .back.back:hover { border-color: #d97757; background: #fff; color: #9a4a2c; }
 .sidebar[data-collapsed] .back { justify-content: center; padding: 6px; }
+
+/* Phones and small tablets: the sidebar becomes a sticky strip of section chips you swipe sideways, so the
+   page content starts on the first screen instead of after twenty navigation rows. */
+@media (max-width: 760px) {
+  .sidebar.sidebar { position: sticky; top: 0; z-index: 30; width: 100%; max-height: none; padding: 10px 12px 6px; border-right: 0; border-bottom: 1px solid #e8e6dc; }
+  .badge { display: none; }
+  .sidebar .nav { display: flex; gap: 6px; padding: 2px 0 8px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scrollbar-width: none; }
+  .sidebar .nav::-webkit-scrollbar { display: none; }
+  .group { display: contents; }
+  .groupLabel { display: none; }
+  .sidebar .nav .item, .sidebar[data-collapsed] .nav .item { flex: none; width: auto; min-height: 38px; padding: 4px 12px 4px 4px; border: 1px solid #e8e6dc; border-radius: 999px; background: #fff; white-space: nowrap; scroll-snap-align: start; }
+  .sidebar .nav .item[aria-current="page"] { border-color: #b5573a; background: #fdf1ea; }
+  .sidebar .nav .item[aria-current="page"]::before { display: none; }
+  .icon { width: 28px; height: 28px; border-radius: 999px; }
+  .back.back { margin: 4px 0 2px; padding: 4px 10px 4px 4px; font-size: 12.5px; }
+}

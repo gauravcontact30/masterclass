@@ -23,6 +23,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
 import { SuperAdminActivity } from "./super-admin-activity";
 import { AdminTable } from "./super-admin-table";
 import { SuperAdminTransactions } from "./super-admin-transactions";
+import { SuperAdminPromotions } from "./super-admin-promotions";
 import { SuperAdminAnnouncements, SuperAdminInsights, SuperAdminLearnerSupport, SuperAdminQueue } from "./super-admin-support";
 import styles from "./super-admin-dashboard.module.css";
 import side from "./super-admin-sidebar.module.css";
@@ -40,6 +41,7 @@ type Snapshot = {
 const groups = [
   { label: "Monitor", items: [{ id: "overview", label: "Overview", icon: Activity }, { id: "activity", label: "User activities", icon: MousePointerClick }, { id: "live", label: "Live learners", icon: Users }, { id: "analytics", label: "Learning analytics", icon: Activity }, { id: "ai", label: "AI analytics", icon: Bot }, { id: "insights", label: "Growth insights", icon: TrendingUp }] },
   { label: "People", items: [{ id: "users", label: "Users & access", icon: Users }, { id: "support", label: "Learner support", icon: LifeBuoy }, { id: "moderation", label: "Moderation", icon: ShieldCheck }, { id: "announcements", label: "Announcements", icon: Megaphone }] },
+  { label: "Growth", items: [{ id: "promotions", label: "Promotional Tracking", icon: TrendingUp }] },
   { label: "Revenue", items: [{ id: "billing", label: "Revenue & billing", icon: CreditCard }, { id: "transactions", label: "Transactions", icon: Receipt }] },
   { label: "Content", items: [{ id: "content", label: "Content & audit", icon: Database }, { id: "queue", label: "Generation queue", icon: Layers }] },
   { label: "System", items: [{ id: "infra", label: "Infrastructure", icon: Server }, { id: "health", label: "System health", icon: Activity }, { id: "logs", label: "Application logs", icon: Database }, { id: "security", label: "Security", icon: ShieldCheck }] },
@@ -152,6 +154,7 @@ export function SuperAdminDashboard() {
       {section === "queue" && <SuperAdminQueue />}
       {section === "transactions" && <SuperAdminTransactions />}
       {section === "announcements" && <SuperAdminAnnouncements />}
+      {section === "promotions" && <SuperAdminPromotions days={days} query={query} />}
       {["overview","live","analytics","moderation","security"].includes(section)&&<SuperAdminOperations section={section} days={days} query={query}/>}
       {section==="ai"&&<SuperAdminAi days={days} query={query}/>}
       {data && <>

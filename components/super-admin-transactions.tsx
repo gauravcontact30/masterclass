@@ -1,12 +1,12 @@
 "use client";
 import { useEffect, useId, useRef, useState } from "react";
-import { CreditCard, RefreshCw, Search, SlidersHorizontal, X } from "lucide-react";
+import { CreditCard, Layers, RefreshCw, RotateCcw, Search, SlidersHorizontal, X } from "lucide-react";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Table as DataTable, TableHeader, TableBody, TableRow, TableHead, TableCell } from "./ui/table";
 import { AdminError } from "./super-admin-feedback";
 import { AdminSelect } from "./super-admin-select";
-import { Pager } from "./super-admin-table";
+import { Pager, valueIcon } from "./super-admin-table";
 import table from "./super-admin-table.module.css";
 import styles from "./super-admin-transactions.module.css";
 
@@ -84,9 +84,14 @@ export function SuperAdminTransactions() {
           <button type="button" className={table.filterButton} aria-pressed={open} aria-expanded={open} aria-controls={`${formId}-filters`} onClick={() => setOpen(value => !value)} title="Advanced filters">
             <SlidersHorizontal size={15} aria-hidden="true" /><span>Filters</span>{activeFilters > 0 && <span className={table.filterCount}>{activeFilters}</span>}
           </button>
+          <button type="button" className={table.iconButton} disabled={!activeFilters && !search} onClick={() => { setFilters(EMPTY); setSearch(""); setFocused(false); }} title="Reset search and filters" aria-label="Reset search and filters"><RotateCcw size={15} aria-hidden="true" /></button>
           <button type="button" className={table.filterButton} disabled={busy} onClick={() => setNonce(n => n + 1)} title="Refresh"><RefreshCw size={15} aria-hidden="true" /><span>Refresh</span></button>
         </div>
       </div>
+      {data && data.facets.statuses.length > 1 && <div className={table.chips} role="group" aria-label="Filter by status">
+        <button type="button" aria-pressed={filters.status === "all"} onClick={() => set("status")("all")}><Layers size={13} aria-hidden="true" />All</button>
+        {data.facets.statuses.map(status => { const Icon = valueIcon(status); return <button type="button" key={status} aria-pressed={filters.status === status} onClick={() => set("status")(filters.status === status ? "all" : status)}><Icon size={13} aria-hidden="true" />{label(status)}</button>; })}
+      </div>}
       {open && <div id={`${formId}-filters`} className={table.filters}>
         <div className={table.field}><label htmlFor={`${formId}-status`}>Status</label><AdminSelect id={`${formId}-status`} label="Status" value={filters.status} onValueChange={set("status")} options={[{ value: "all", label: "All statuses" }, ...(data?.facets.statuses ?? []).map(value => ({ value, label: label(value) }))]} /></div>
         <div className={table.field}><label htmlFor={`${formId}-type`}>Type</label><AdminSelect id={`${formId}-type`} label="Type" value={filters.type} onValueChange={set("type")} options={[{ value: "all", label: "All types" }, ...(data?.facets.types ?? []).map(value => ({ value, label: value }))]} /></div>
@@ -102,15 +107,15 @@ export function SuperAdminTransactions() {
         : data.rows.length ? <>
           <div className={`${table.tableWrap} ${styles.tableWrap}`} aria-busy={busy}><DataTable><TableHeader><TableRow>{["Date", "Payment ID", "Type", "Item", "Customer", "Method", "Amount", "Status", "Order / Invoice"].map(column => <TableHead key={column}>{column}</TableHead>)}</TableRow></TableHeader>
             <TableBody>{data.rows.map(row => <TableRow key={row.id}>
-              <TableCell className={styles.nowrap}>{when(row.createdAt)}</TableCell>
-              <TableCell><code className={styles.code}>{row.id}</code></TableCell>
-              <TableCell><span className={styles.type} data-type={row.type}>{row.type}</span></TableCell>
-              <TableCell className={styles.item}>{row.item}</TableCell>
-              <TableCell><span className={styles.customer}>{row.email ?? "—"}<small>{row.contact ?? ""}</small></span></TableCell>
-              <TableCell><span className={styles.customer}>{label(row.method)}<small>{row.methodDetail}</small></span></TableCell>
-              <TableCell className={styles.amount}>{money(row.amount, row.currency)}{row.refunded > 0 && <small>−{money(row.refunded, row.currency)} refunded</small>}{row.fee != null && <small>fee {money(row.fee, row.currency)}</small>}</TableCell>
-              <TableCell><span className={styles.status} data-status={row.status} title={row.error ?? undefined}>{label(row.status)}</span></TableCell>
-              <TableCell><span className={styles.customer}><code className={styles.code}>{row.orderId ?? "—"}</code><small>{row.invoiceId ?? ""}</small></span></TableCell>
+              <TableCell data-label="Date" className={styles.nowrap}>{when(row.createdAt)}</TableCell>
+              <TableCell data-label="Payment ID"><code className={styles.code}>{row.id}</code></TableCell>
+              <TableCell data-label="Type"><span className={styles.type} data-type={row.type}>{row.type}</span></TableCell>
+              <TableCell data-label="Item" className={styles.item}>{row.item}</TableCell>
+              <TableCell data-label="Customer"><span className={styles.customer}>{row.email ?? "—"}<small>{row.contact ?? ""}</small></span></TableCell>
+              <TableCell data-label="Method"><span className={styles.customer}>{label(row.method)}<small>{row.methodDetail}</small></span></TableCell>
+              <TableCell data-label="Amount" className={styles.amount}>{money(row.amount, row.currency)}{row.refunded > 0 && <small>−{money(row.refunded, row.currency)} refunded</small>}{row.fee != null && <small>fee {money(row.fee, row.currency)}</small>}</TableCell>
+              <TableCell data-label="Status"><span className={styles.status} data-status={row.status} title={row.error ?? undefined}>{label(row.status)}</span></TableCell>
+              <TableCell data-label="Order / Invoice"><span className={styles.customer}><code className={styles.code}>{row.orderId ?? "—"}</code><small>{row.invoiceId ?? ""}</small></span></TableCell>
             </TableRow>)}</TableBody></DataTable></div>
           <Pager page={data.page} pages={data.pages} total={data.total} size={data.pageSize} onPage={setPage} />
         </> : <p className={table.empty}>{activeFilters || search ? "No transactions match your search or filters." : "No payments through this website in this period yet."}</p>}
