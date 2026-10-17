@@ -1,6 +1,5 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { LandingSlider } from "@/components/landing-slider";
-import { LandingPaths } from "@/components/landing-paths";
 import { LandingNavbar } from "@/components/landing-navbar";
 
 const slides = () => screen.getAllByRole("article", { hidden: true });
@@ -60,7 +59,7 @@ describe("hero slider", () => {
 });
 
 describe("navbar", () => {
-  const links: [string, string][] = [["#library", "Library"], ["#paths", "Paths"]];
+  const links: [string, string][] = [["#library", "Library"], ["#workflows", "Workflows"]];
   test("starts transparent and turns solid once the page scrolls", () => {
     const { container } = render(<LandingNavbar links={links} />);
     const bar = container.querySelector("header")!;
@@ -108,17 +107,6 @@ describe("navbar", () => {
     fireEvent.click(screen.getByRole("button", { name: "Toggle navigation" }));
     expect(screen.queryByRole("link", { name: /Start learning/ })).not.toBeInTheDocument();
   });
-});
-
-test("the three learning paths link to the matching part of the courses page", () => {
-  render(<LandingPaths />);
-  const links: (string | null)[] = [];
-  for (const tab of screen.getAllByRole("tab")) {
-    fireEvent.click(tab);
-    links.push(screen.getByRole("tabpanel").querySelector("a")!.getAttribute("href"));
-  }
-  expect(links).toEqual(["/courses#cbse", "/courses#ssc", "/courses#technology"]);
-  expect([...document.querySelectorAll("img")].every(image => image.getAttribute("alt"))).toBe(true);
 });
 
 describe("navbar subscribe menu", () => {

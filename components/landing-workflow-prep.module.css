@@ -1,0 +1,28 @@
+/* Full detail and interview questions under each Workflow blueprint; tokens from landing-home.module.css .home,
+   --tint / --deep from the slide's group in landing-workflows.module.css. The question list itself is
+   components/interview-accordion.module.css. */
+.prep { display: grid; gap: 16px; min-width: 0; }
+
+/* Four detail cards, each its own light colour. */
+.detail { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.card { --wash: #eef4fd; --line: #cfdff6; --ink: #1d4479; display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: 16px; background: var(--wash); }
+.card[data-card="decisions"] { --wash: #eef8f2; --line: #cde9d8; --ink: #165536; }
+.card[data-card="pitfalls"] { --wash: #fdf0ef; --line: #f2d3cf; --ink: #8c2f22; }
+.card[data-card="metrics"] { --wash: #fdf8e8; --line: #f1e3b0; --ink: #654900; }
+.card h4 { display: flex; align-items: center; gap: 7px; margin: 0; font-size: 11.5px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--ink); }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 0; padding: 0; list-style: none; }
+.chips li { padding: 3px 9px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255, 255, 255, .75); font-size: 12.5px; line-height: 1.4; color: var(--nb-text); }
+.points { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.points li { position: relative; padding-left: 14px; font-size: 13px; line-height: 1.45; color: var(--nb-text); text-align: left; overflow-wrap: anywhere; }
+.points li::before { content: ""; position: absolute; left: 1px; top: .55em; width: 6px; height: 6px; border-radius: 50%; background: var(--ink); opacity: .6; }
+
+/* The interview questions' frame and heading. */
+.interview { padding: 14px; border: 1px solid color-mix(in srgb, var(--deep) 16%, var(--nb-rule)); border-radius: 20px; background: linear-gradient(180deg, color-mix(in srgb, var(--tint) 40%, #fff), #fff 70%); }
+.interview h4 { display: flex; align-items: center; gap: 8px; margin: 0; font-family: var(--nb-font); font-size: 18px; font-weight: 600; color: var(--nb-graphite); }
+.interview h4 svg { color: var(--deep); }
+
+/* Reserves room while the chunk loads, so the slide does not jump. */
+.loading { min-height: 320px; border: 1px dashed var(--nb-rule); border-radius: 20px; background: color-mix(in srgb, var(--tint) 25%, #fff); }
+
+@media (max-width: 1080px) { .detail { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .detail { grid-template-columns: 1fr; } }

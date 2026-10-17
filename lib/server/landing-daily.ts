@@ -42,7 +42,7 @@ function fullDay(day: number): { pulse: PulseCard[]; words: DailyWord[] } {
       return screen(others[slot % others.length], Math.floor(slot / others.length));
     }).flat(),
   ];
-  const pulse = picked.map(({ image, ...card }, i): PulseCard => ({ ...card, image: imageUrl(image), tone: TONES[(day + Math.floor(i / PULSE_PER_PAGE)) % TONES.length] }));
+  const pulse = picked.map(({ image, ...card }, i): PulseCard => ({ ...card, image: imageUrl(image), tone: TONES[(day + i) % TONES.length] }));
   const words = Array.from({ length: DAILY_COUNT }, (_, k): DailyWord => ({ ...data.words[(day * DAILY_COUNT + k) % data.words.length], tone: TONES[(day + k + 3) % TONES.length] }));
   return { pulse, words };
 }

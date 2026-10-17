@@ -1,7 +1,8 @@
 /**
- * The workflow diagrams in the landing page's closing "Make today chapter one" section
- * (components/landing-workflows.tsx): six System Design patterns and six agentic AI workflows, each drawn as
- * nodes and arrows on a 1000 × 380 canvas with numbered steps that match the callout pills under it.
+ * The landing page's Workflow blueprints (components/landing-workflows.tsx): System Design patterns and
+ * LangChain, LangGraph, LangFlow and LangSmith workflows, each drawn as nodes and arrows on a 1000 × 380 canvas
+ * with numbered steps that match the callout pills under it. Each one's full detail and interview questions
+ * live in lib/workflow-prep, loaded only when the section needs them.
  */
 export type WorkflowNodeKind = "actor" | "service" | "store" | "queue" | "llm" | "tool" | "decision";
 /** A box centred on (x, y); `label` takes one line break, and `step` puts a numbered badge on its corner. */
@@ -691,6 +692,202 @@ export const WORKFLOWS: Workflow[] = [
       "LangSmith experiments compare the new prompt or model with the baseline.",
       "The release gate lets a version through only if it scores at least as well.",
       "After release, online evaluators keep scoring live traces for regressions.",
+    ],
+  },
+  // A second round per category, so every filter has at least four blueprints.
+  {
+    id: "job-scheduler", group: "System Design", title: "Distributed job scheduler",
+    summary: "Cron at scale: due jobs are claimed by one leader, queued by priority and run by idempotent workers.",
+    industry: "Fintech & Banking", problem: "Statement runs, interest accruals and payment reminders must fire on time across many servers, exactly once in effect.", outcome: "Millions of scheduled jobs a day, none lost and none applied twice.",
+    nodes: [
+      n("api", "Schedule API\ncron · run-at", 100, 190, "service", 1), n("jobs", "Jobs table\nnext_run_at", 300, 190, "store", 2),
+      n("leader", "Scheduler\nleader-elected", 500, 190, "service", 3), n("lease", "Lease / lock\nZooKeeper · Redis", 500, 62, "store"),
+      n("queue", "Work queue\nby priority", 700, 190, "queue", 4), n("workers", "Worker pool\nidempotent jobs", 900, 190, "service", 5),
+      n("retry", "Retry & DLQ\nbackoff", 700, 318, "decision", 6),
+    ],
+    edges: [
+      { from: "api", to: "jobs", label: "insert" }, { from: "jobs", to: "leader", label: "due now" }, { from: "leader", to: "lease", label: "hold lease", dashed: true },
+      { from: "leader", to: "queue", label: "enqueue" }, { from: "queue", to: "workers" }, { from: "workers", to: "retry", label: "failure", dashed: true },
+      { from: "retry", to: "queue", label: "retry" },
+    ],
+    steps: [
+      "Teams register jobs through an API: a cron expression or a one-off run-at time, plus a payload.",
+      "Each job is a row with its next_run_at, indexed so “what is due now” is one cheap query.",
+      "One leader polls for due jobs; a lease in ZooKeeper, etcd or Redis makes sure only one scheduler leads at a time.",
+      "Due jobs go onto a queue by priority, and next_run_at moves forward in the same transaction.",
+      "Workers must be idempotent: at-least-once delivery means a job can run twice.",
+      "Failures retry with exponential backoff; after the last attempt they land in a dead-letter queue for a person.",
+    ],
+  },
+  {
+    id: "ride-matching", group: "System Design", title: "Ride-hailing driver matching",
+    summary: "Live driver positions in a geo index, candidates ranked by road ETA, and an offer that times out.",
+    industry: "Mobility & Delivery", problem: "Riders leave if no car is found in seconds, while drivers idle a few streets away.", outcome: "Matches in seconds from live positions, with fewer empty kilometres.",
+    nodes: [
+      n("drivers", "Driver apps\nGPS pings", 100, 62, "actor", 2), n("loc", "Location service\nin-memory", 330, 62, "service"),
+      n("geo", "Geo index\nH3 cells", 580, 62, "store", 3), n("rider", "Rider app\nrequests a ride", 100, 190, "actor", 1),
+      n("match", "Matching\nnearby drivers", 330, 190, "service", 4), n("eta", "ETA & pricing\nroad graph", 580, 190, "service", 5),
+      n("offer", "Offer to driver\n15 s to accept", 830, 190, "decision", 6), n("trip", "Trip service\nstate machine", 830, 318, "store", 7),
+    ],
+    edges: [
+      { from: "drivers", to: "loc", label: "location" }, { from: "loc", to: "geo", label: "update cell" }, { from: "rider", to: "match", label: "pickup" },
+      { from: "match", to: "geo", label: "nearby cells" }, { from: "match", to: "eta", label: "candidates" }, { from: "eta", to: "offer", label: "best driver" },
+      { from: "offer", to: "trip", label: "accepted" }, { from: "offer", to: "match", label: "declined", dashed: true, via: [580, 330] },
+    ],
+    steps: [
+      "A rider requests a ride, and the pickup point goes to the matching service.",
+      "Every online driver's app sends its GPS position every few seconds.",
+      "Positions live in an in-memory geo index split into cells (H3 hexagons or geohashes), so “drivers near me” is a lookup, not a scan.",
+      "Matching reads the rider's cell and its neighbours to collect candidate drivers.",
+      "Candidates are ranked by road ETA, not straight-line distance, and the fare is priced with current demand.",
+      "The best driver gets an offer with a short timeout; a decline or timeout moves to the next candidate.",
+      "An accepted ride becomes a trip with explicit states: assigned, arrived, started, completed.",
+    ],
+  },
+  {
+    id: "invoice-extraction", group: "LangChain", title: "Invoice data extraction",
+    summary: "A Pydantic schema and structured output turn PDFs and scans into checked, typed invoice records.",
+    industry: "Accounting & Finance", problem: "Clerks retype hundreds of invoices a day, and typos cause wrong or duplicate payments.", outcome: "Most invoices posted with no typing; people check only the exceptions.",
+    nodes: [
+      n("inbox", "Invoice inbox\nPDF · scans", 100, 190, "actor", 1), n("ocr", "Loader & OCR\ntext + layout", 300, 190, "tool", 2),
+      n("schema", "Pydantic schema\nvendor · lines · tax", 500, 62, "store", 3), n("llm", "Model with\nstructured output", 500, 190, "llm", 4),
+      n("check", "Validation\ntotals · PO match", 700, 190, "decision", 5), n("erp", "Post to ERP\naccounts payable", 900, 190, "service", 6),
+      n("review", "Human review\nqueue", 700, 318, "actor", 7),
+    ],
+    edges: [
+      { from: "inbox", to: "ocr" }, { from: "ocr", to: "llm", label: "text" }, { from: "schema", to: "llm", label: "schema" },
+      { from: "llm", to: "check", label: "JSON" }, { from: "check", to: "erp", label: "valid" }, { from: "check", to: "review", label: "mismatch", dashed: true },
+      { from: "review", to: "erp", label: "corrected" },
+    ],
+    steps: [
+      "Supplier invoices arrive by email as PDFs and phone scans.",
+      "A document loader extracts the text; scans go through OCR first.",
+      "The fields are defined once as a Pydantic schema: vendor, invoice number, dates, line items, tax and total.",
+      "with_structured_output binds the schema to the model, so it returns typed data instead of free text.",
+      "Code checks the result: line items add up to the total, the tax ID is valid and a purchase order matches.",
+      "Valid invoices post straight to accounts payable in the ERP.",
+      "Anything that fails a check goes to a person, with the fields and the source text side by side.",
+    ],
+  },
+  {
+    id: "sql-analytics", group: "LangChain", title: "Text-to-SQL analytics assistant",
+    summary: "An agent writes SQL from a plain-English question, behind read-only guardrails, and shows its query.",
+    industry: "Retail analytics", problem: "Business teams wait days for an analyst to write each one-off report.", outcome: "Self-serve answers in seconds, with the query shown so it can be trusted.",
+    nodes: [
+      n("user", "Manager asks\nsales by region?", 100, 190, "actor", 1), n("agent", "SQL agent\ntool-calling", 300, 190, "llm", 2),
+      n("schema", "Schema & examples\ntables · columns", 300, 62, "store", 3), n("write", "Write SQL\nquery tool", 500, 190, "tool", 4),
+      n("guard", "Guardrails\nread-only · LIMIT", 700, 190, "decision", 5), n("db", "Warehouse\nread replica", 900, 190, "store", 6),
+      n("answer", "Answer + chart\nSQL shown", 900, 318, "actor", 7),
+    ],
+    edges: [
+      { from: "user", to: "agent" }, { from: "schema", to: "agent", label: "relevant tables" }, { from: "agent", to: "write" },
+      { from: "write", to: "guard" }, { from: "guard", to: "db", label: "run" }, { from: "db", to: "answer", label: "rows" },
+      { from: "guard", to: "agent", label: "error · retry", dashed: true, via: [500, 330] },
+    ],
+    steps: [
+      "A manager asks a business question in plain English.",
+      "A tool-calling agent plans how to answer it.",
+      "Only the relevant table schemas, column notes and a few example queries are retrieved into the prompt.",
+      "The agent writes a SQL query with its query tool.",
+      "Guardrails run first: a read-only database user, an allow-list of tables and a row LIMIT; a failing query goes back to the agent with the error.",
+      "The query runs on a read replica, never on the production primary.",
+      "The answer comes back as a sentence and a chart, with the SQL shown so an analyst can check it.",
+    ],
+  },
+  {
+    id: "lead-qualifier", group: "LangFlow", title: "Property lead qualification",
+    summary: "A Langflow flow reads each enquiry, checks the CRM and routes hot buyers to a site visit.",
+    industry: "Real estate", problem: "Agents call every enquiry in order, so serious buyers wait while casual browsers get called first.", outcome: "Hot leads called within minutes, and agents spend their day on buyers ready to move.",
+    nodes: [
+      n("form", "Web form /\nWhatsApp lead", 100, 190, "actor", 1), n("hook", "Webhook\ncomponent", 300, 190, "service", 2),
+      n("extract", "Structured output\nbudget · area", 500, 190, "llm", 3), n("crm", "CRM lookup\nAPI Request", 500, 62, "tool", 4),
+      n("route", "If-Else\nhot · warm · cold", 700, 190, "decision", 5), n("visit", "Book site visit\nagent calendar", 900, 62, "tool", 6),
+      n("nurture", "Nurture email\nsequence", 900, 318, "service", 7),
+    ],
+    edges: [
+      { from: "form", to: "hook" }, { from: "hook", to: "extract", label: "lead JSON" }, { from: "extract", to: "crm", label: "existing?" },
+      { from: "extract", to: "route" }, { from: "route", to: "visit", label: "hot" }, { from: "route", to: "nurture", label: "warm · cold" },
+    ],
+    steps: [
+      "A buyer fills in a property enquiry form or sends a WhatsApp message.",
+      "Langflow's Webhook component starts the flow with the lead as JSON.",
+      "A structured-output step pulls out budget, preferred area, property type and timeline.",
+      "An API Request component checks the CRM, so a returning buyer is not treated as new.",
+      "An If-Else component routes by rules the sales team can change on the canvas.",
+      "Hot leads get a site visit booked into the nearest agent's calendar.",
+      "Warm and cold leads join a nurture email sequence with matching listings.",
+    ],
+  },
+  {
+    id: "review-triage", group: "LangFlow", title: "Guest review triage",
+    summary: "Every review is tagged, urgent ones reach the duty manager, and the rest get an approved reply.",
+    industry: "Hospitality", problem: "Hotels get hundreds of reviews a week, and a serious complaint can sit unanswered for days.", outcome: "Urgent issues reach a manager within the hour, and every review gets a reply.",
+    nodes: [
+      n("reviews", "Reviews\nGoogle · OTA · survey", 100, 190, "actor", 1), n("run", "Scheduled run\nflow API", 300, 190, "service", 2),
+      n("tag", "Classify\nsentiment · topic", 500, 190, "llm", 3), n("urgent", "If-Else\nurgent?", 700, 190, "decision", 4),
+      n("alert", "Alert duty\nmanager", 700, 318, "service", 5), n("voice", "Brand voice &\nreply examples", 900, 62, "store"),
+      n("reply", "Draft reply\nmanager approves", 900, 190, "tool", 6), n("report", "Weekly themes\nreport", 900, 318, "service", 7),
+    ],
+    edges: [
+      { from: "reviews", to: "run" }, { from: "run", to: "tag" }, { from: "tag", to: "urgent" }, { from: "urgent", to: "alert", label: "safety · billing" },
+      { from: "urgent", to: "reply", label: "routine" }, { from: "voice", to: "reply" }, { from: "reply", to: "report", label: "tags", dashed: true },
+    ],
+    steps: [
+      "Reviews arrive from Google, booking sites and post-stay surveys.",
+      "The flow runs every hour through Langflow's API, one review at a time.",
+      "A model tags each review: sentiment, topic (room, food, staff, noise) and language.",
+      "An If-Else component checks for urgent issues such as safety, hygiene or a billing error.",
+      "Urgent reviews alert the duty manager straight away.",
+      "Routine ones get a reply drafted in the brand's voice, which a manager approves before posting.",
+      "The tags roll up into a weekly report of what guests praise and complain about.",
+    ],
+  },
+  {
+    id: "prompt-experiments", group: "LangSmith", title: "Prompt & model experiments",
+    summary: "Versioned prompts, one dataset and side-by-side experiments decide which prompt and model ship.",
+    industry: "EdTech", problem: "The team argues about which tutor prompt is better from three hand-picked chats.", outcome: "Prompt and model choices made on hundreds of real questions, with cost in view.",
+    nodes: [
+      n("play", "Playground\ndraft versions", 100, 190, "tool", 1), n("prompts", "Prompts\nversioned · tagged", 300, 62, "store", 2),
+      n("data", "Dataset\nstudent questions", 300, 190, "store", 3), n("exp", "Experiments\nv1 · v2 · model B", 500, 190, "service", 4),
+      n("judge", "Evaluators\ncorrect · tone", 700, 62, "llm", 5), n("pair", "Pairwise\ncomparison", 700, 190, "decision", 6),
+      n("cost", "Cost & latency\nper run", 700, 318, "service"), n("prod", "Move the\nprod tag", 900, 190, "actor", 7),
+    ],
+    edges: [
+      { from: "play", to: "prompts", label: "save" }, { from: "prompts", to: "exp" }, { from: "data", to: "exp" }, { from: "exp", to: "judge" },
+      { from: "exp", to: "pair" }, { from: "exp", to: "cost", dashed: true }, { from: "judge", to: "pair", label: "scores" }, { from: "pair", to: "prod", label: "winner" },
+    ],
+    steps: [
+      "A tutor prompt is drafted and tweaked in the LangSmith Playground.",
+      "Each version is saved as a commit and tagged, so the app pulls a tag instead of pasted text.",
+      "A dataset holds a few hundred real student questions with reference answers.",
+      "One experiment per candidate: prompt v1, prompt v2 and a cheaper model, all on the same dataset.",
+      "Evaluators score each answer: correctness against the reference, and an LLM-as-judge for tone at the student's level.",
+      "A pairwise view shows which version wins example by example, next to its cost and latency.",
+      "The winner gets the prod tag, and the app picks it up without a code change.",
+    ],
+  },
+  {
+    id: "feedback-loop", group: "LangSmith", title: "Customer feedback to regression tests",
+    summary: "Thumbs-down answers are routed to reviewers, corrected, and kept as tests for every later release.",
+    industry: "Banking", problem: "Bad bot answers are found only when customers complain at a branch.", outcome: "Every bad answer becomes a test case, so the same mistake does not come back.",
+    nodes: [
+      n("user", "Customer chats\nwith the bot", 100, 190, "actor", 1), n("fb", "Feedback\nthumbs + comment", 300, 190, "service", 2),
+      n("trace", "Trace\nlinked by run ID", 300, 62, "store"), n("rule", "Automation rule\nnegative feedback", 500, 190, "decision", 3),
+      n("queue", "Annotation queue\nreviewers", 700, 190, "queue", 4), n("data", "Dataset\ncorrected answers", 900, 190, "store", 5),
+      n("online", "Online evaluator\nsampled traffic", 500, 318, "tool", 6), n("tests", "Regression run\nbefore release", 900, 318, "service", 7),
+    ],
+    edges: [
+      { from: "user", to: "fb" }, { from: "fb", to: "trace", label: "run ID" }, { from: "fb", to: "rule" }, { from: "online", to: "rule", label: "low score" },
+      { from: "rule", to: "queue" }, { from: "queue", to: "data", label: "corrected" }, { from: "data", to: "tests" },
+    ],
+    steps: [
+      "A customer asks the bank's assistant about a card charge or a loan.",
+      "A thumbs up or down, with an optional comment, is sent to LangSmith as feedback on that exact run.",
+      "An automation rule picks up runs with negative feedback.",
+      "They land in an annotation queue, where support leads read the trace and write the correct answer.",
+      "Corrected examples are added to a dataset.",
+      "An online evaluator also scores a sample of live traffic for accuracy and policy, feeding the same rule.",
+      "Before each release the dataset runs as a regression test, so a fixed mistake stays fixed.",
     ],
   },
 ];

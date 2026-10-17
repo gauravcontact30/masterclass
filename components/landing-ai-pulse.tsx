@@ -1,6 +1,7 @@
 "use client";
 import { useState, type ReactNode } from "react";
 import { ArrowUpRight, Bot, Boxes, ChevronLeft, ChevronRight, Cloud, Code2, Database, FlaskConical, GitBranch, Network, Pause, Play, Sparkles, Workflow, Zap, type LucideIcon } from "lucide-react";
+import { problemPoints } from "@/lib/problem-points";
 import type { LockedTeaser, PulseCard } from "@/lib/landing-daily-types";
 import { LockedCard } from "./landing-locked-card";
 import { useLanguage } from "./language-provider";
@@ -20,8 +21,8 @@ export const dayLabel = (day: string, hi: boolean) => new Intl.DateTimeFormat(hi
 
 /**
  * Today's learning pulse: twelve cards, three a screen, chosen afresh each day on the server
- * (lib/server/landing-daily.ts). Every card has the same blocks held to fixed line counts, and the last
- * block stretches, so cards in a row are the same height with no empty space.
+ * (lib/server/landing-daily.ts), each in its own light tone. Every card has the same blocks, cards in a row
+ * are the same height, and the industry panels hug their text.
  */
 export function LandingAiPulse({ cards, day, locked }: { cards: PulseCard[]; day: string; locked?: LockedTeaser | null }) {
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
@@ -67,8 +68,8 @@ export function PulseCardItem({ card, index, total, hi, text }: { card: PulseCar
               <div className={styles.block}><span className={styles.label}>{text("Core features & key points", "मुख्य विशेषताएँ और बिंदु")}</span><ul className={styles.points}>{card.points.slice(0, 3).map(point => <li key={point}>{point}</li>)}</ul></div>
               <div className={styles.block}><span className={styles.label}>{text("Real use cases", "वास्तविक उपयोग")}</span><ul className={styles.uses}>{card.useCases.slice(0, 2).map(use => <li key={use}>{use}</li>)}</ul></div>
             </>}
-          <div className={`${styles.block} ${styles.fill}`}><span className={styles.label}>{text("Real problems it solves, by industry", "उद्योग के अनुसार हल की गई समस्याएँ")}</span>
-            <dl className={styles.industries}>{card.industries.slice(0, 2).map(entry => <div key={entry.industry}><dt>{entry.industry}</dt><dd>{entry.problem}</dd></div>)}</dl></div>
+          <div className={styles.block}><span className={styles.label}>{text("Real problems it solves, by industry", "उद्योग के अनुसार हल की गई समस्याएँ")}</span>
+            <dl className={styles.industries}>{card.industries.slice(0, 2).map(entry => <div key={entry.industry}><dt>{entry.industry}</dt><dd><ul>{problemPoints(entry.problem).map(point => <li key={point}>{point}</li>)}</ul></dd></div>)}</dl></div>
           <a className={styles.source} href={card.source.href} target="_blank" rel="noopener noreferrer"><span>{text("Learn from", "यहाँ सीखें:")} {card.source.label}</span><ArrowUpRight size={15} aria-hidden="true" /></a>
         </div>
       </li>;

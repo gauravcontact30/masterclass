@@ -30,7 +30,7 @@
 .track::-webkit-scrollbar { display: none; }
 
 /* One slide: brief on the left, diagram on the right, step pills across the bottom. */
-.slide { scroll-snap-align: start; min-width: 0; display: grid; grid-template-columns: minmax(260px, 330px) minmax(0, 1fr); grid-template-areas: "brief board" "steps steps"; gap: 18px 22px; padding: 2px; }
+.slide { scroll-snap-align: start; min-width: 0; display: grid; grid-template-columns: minmax(260px, 330px) minmax(0, 1fr); grid-template-areas: "brief board" "steps steps" "prep prep"; gap: 18px 22px; padding: 2px; }
 .slide[data-group="System Design"] { --tint: #e3eefc; --deep: #22508f; }
 .slide[data-group="LangChain"] { --tint: #dff3e8; --deep: #1d6a45; }
 .slide[data-group="LangGraph"] { --tint: #ece6fb; --deep: #4f3a9c; }
@@ -105,10 +105,12 @@
 .badge circle { fill: var(--chip); }
 .badge text { fill: var(--chip-ink); }
 
+.prep { grid-area: prep; min-width: 0; }
+
 .carousel > :last-child { margin-top: 20px; }
 
 @media (max-width: 960px) {
-  .slide { grid-template-columns: 1fr; grid-template-areas: "brief" "board" "steps"; }
+  .slide { grid-template-columns: 1fr; grid-template-areas: "brief" "board" "steps" "prep"; }
   .brief { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
   .picture { aspect-ratio: auto; min-height: 100%; }
 }

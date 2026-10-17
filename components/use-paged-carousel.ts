@@ -12,7 +12,8 @@ export function usePagedCarousel<T extends HTMLElement>(itemCount: number, perSc
   const [playing, setPlaying] = useState(true);
   const [held, setHeld] = useState(false);
 
-  const measure = useCallback(() => { const el = track.current; if (!el) return; setPages(Math.max(1, Math.round(el.scrollWidth / el.clientWidth))); setPage(Math.round(el.scrollLeft / el.clientWidth)); }, []);
+  // A track with no width yet (hidden, or not laid out) would give NaN pages, so it keeps the last good values.
+  const measure = useCallback(() => { const el = track.current; if (!el || !el.clientWidth) return; setPages(Math.max(1, Math.round(el.scrollWidth / el.clientWidth))); setPage(Math.round(el.scrollLeft / el.clientWidth)); }, []);
   const goTo = useCallback((next: number) => { const el = track.current; if (!el) return; const wrapped = ((next % pages) + pages) % pages; el.scrollTo({ left: wrapped * el.clientWidth, behavior: "smooth" }); }, [pages]);
 
   useEffect(() => {

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
-import { BookOpen, CodeXml, Crown, Languages, Library, LogIn, Menu, MessageCircle, Route, Terminal, UserPlus, UserRound, X, type LucideIcon } from "lucide-react";
+import { BookOpen, CodeXml, Crown, GraduationCap, Languages, Layers, Library, LogIn, Menu, Terminal, UserPlus, UserRound, X, type LucideIcon } from "lucide-react";
 import { Wordmark } from "./brand-mark";
 import { LandingPlansMenu } from "./landing-plans-menu";
 import { useLanguage } from "./language-provider";
@@ -14,11 +14,11 @@ const PILL_TINTS = ["#f3dccd", "#dbe7e2", "#e3e2ee", "#f3ead6", "#dce8f3", "#e4e
 /** The matching deeper ink for each tint: icon colour, and the well fill when a link is active. */
 const PILL_INKS = ["#a84f36", "#3f6b55", "#5b5689", "#8a6212", "#2f5f82", "#5d6a14"];
 const NAV_ICONS: Record<string, LucideIcon> = {
-  "#paths": Route,
+  "#workflows": Layers,
   "#library": Library,
   "#techy": Terminal,
   "#api-docs": CodeXml,
-  "#study-engine": MessageCircle,
+  "#interview-prep": GraduationCap,
   "#pricing": Crown,
 };
 

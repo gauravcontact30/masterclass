@@ -27,7 +27,7 @@
 .card { --tint: #fdf1ea; --panel: #f9e1d3; --edge: #a64c2c;
   scroll-snap-align: start; display: flex; flex-direction: column; min-width: 0; overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--edge) 22%, transparent); border-radius: 20px;
-  background: linear-gradient(180deg, var(--tint) 0%, var(--nb-sheet) 72%);
+  background: linear-gradient(180deg, var(--panel) 0%, var(--tint) 45%);
   box-shadow: 0 1px 0 rgba(20, 20, 19, .03), 0 12px 32px -20px color-mix(in srgb, var(--edge) 45%, transparent);
   transition: transform .4s var(--ease-out), box-shadow .4s var(--ease-out); }
 .card[data-tone="peach"]    { --tint: #fdf1ea; --panel: #f9e1d3; --edge: #a64c2c; }
@@ -66,9 +66,15 @@
 .points li::before { content: ""; position: absolute; left: 2px; top: .55em; width: 7px; height: 7px; border-radius: 2px; background: var(--edge); opacity: .75; }
 .uses li::before { content: "→"; position: absolute; left: 0; top: 0; font-size: 13px; color: var(--edge); }
 .industries { display: grid; gap: 6px; margin: 0; }
-.industries div { padding: 8px 10px; border-radius: 10px; background: color-mix(in srgb, var(--panel) 65%, transparent); }
-.industries dt { font-size: 12px; font-weight: 700; color: var(--nb-graphite); }
-.industries dd { margin: 2px 0 0; font-size: 13px; line-height: 1.4; color: var(--nb-text); }
+/* Each industry panel gets its own light colour, independent of the card's tone. */
+.industries div { --ibg: #eaf3fd; --iedge: #2f63a3; padding: 7px 10px 7px 12px; border-radius: 10px; background: var(--ibg); border-left: 1px solid color-mix(in srgb, var(--iedge) 35%, transparent); }
+.industries div:nth-child(2) { --ibg: #fdf3dc; --iedge: #8a6512; }
+.industries div:nth-child(3) { --ibg: #ebf7f0; --iedge: #2f7a52; }
+.industries dt { font-size: 12px; font-weight: 700; letter-spacing: .02em; color: var(--iedge); }
+.industries dd { margin: 3px 0 0; }
+.industries dd ul { display: grid; gap: 3px; margin: 0; padding: 0; list-style: none; }
+.industries dd li { position: relative; padding-left: 13px; font-size: 13px; line-height: 1.4; color: var(--nb-text); text-align: left; }
+.industries dd li::before { content: ""; position: absolute; left: 1px; top: .55em; width: 5px; height: 5px; border-radius: 50%; background: var(--iedge); opacity: .7; }
 
 .source { margin-top: auto; display: inline-flex; align-items: center; gap: 6px; padding-top: 12px; border-top: 1px dashed color-mix(in srgb, var(--edge) 30%, transparent); font-size: 14px; font-weight: 600; color: var(--edge); text-decoration: none; }
 .source:hover { text-decoration: underline; text-underline-offset: 3px; }
@@ -106,17 +112,12 @@
 .pulse::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 1px 1px, rgba(20, 20, 19, .07) 1px, transparent 0) 0 0 / 22px 22px; mask-image: linear-gradient(180deg, #000, transparent 55%); pointer-events: none; }
 .pulse > * { position: relative; }
 
-/* ---- Equal-height cards with every word shown: nothing is clamped or cut with an ellipsis. Cards in a row stretch
-   to the tallest, and the industry block takes up the difference, so no card shows empty space. ---- */
-.track { align-items: stretch; }
-.card { height: 100%; }
+/* ---- Every word shown, nothing clamped. All cards share one grid row across every page, so stretching would size
+   each card to the tallest card in the whole carousel and leave a tall empty gap; each card hugs its content. ---- */
+.track { align-items: start; }
 .today { margin-left: 4px; padding-left: 10px; border-left: 1px solid var(--nb-cream-edge); font-weight: 600; letter-spacing: .04em; color: var(--nb-text); text-transform: none; }
 .category { margin: 0 0 -8px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--nb-muted); text-align: left; overflow-wrap: anywhere; }
 .card h3, .definition, .points li, .uses li, .sideSummary, .useWhen, .industries dd { overflow-wrap: anywhere; }
-/* The filler: its panels share whatever height the row's tallest card leaves over. */
-.fill { flex: 1; }
-.fill .industries { flex: 1; grid-auto-rows: 1fr; }
-.fill .industries div { display: flex; flex-direction: column; justify-content: center; }
 .source { min-width: 0; align-items: flex-start; }
 .source span { overflow-wrap: anywhere; }
 .source svg { flex-shrink: 0; margin-top: 2px; }

@@ -2,7 +2,7 @@
 // document generated in the dashboard actually finishes without a separate
 // `npm run worker` command. See scripts/dev-worker-loop.ts for what the loop
 // does and why the real deployment needs its own scheduler instead.
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 
 // Windows can't exec a .cmd shim directly without a shell; the args here are
 // all static and repo-controlled, never user input, so shell:true is safe.
@@ -10,12 +10,20 @@ const win = process.platform === "win32";
 const next = spawn("npx", ["next", "dev"], { stdio: "inherit", shell: win });
 const worker = spawn("npx", ["tsx", "--conditions=react-server", "--env-file=.env", "scripts/dev-worker-loop.ts"], { stdio: "inherit", shell: win });
 
+// With shell:true each child is a cmd.exe whose node grandchildren survive child.kill(), which left orphaned
+// worker loops (and next servers) running after Ctrl+C. On Windows, end the whole tree instead.
+function stop(child) {
+  if (child.exitCode !== null || !child.pid) return;
+  if (win) spawnSync("taskkill", ["/pid", String(child.pid), "/T", "/F"], { stdio: "ignore" });
+  else child.kill();
+}
+
 let shuttingDown = false;
 function shutdown(code) {
   if (shuttingDown) return;
   shuttingDown = true;
-  next.kill();
-  worker.kill();
+  stop(next);
+  stop(worker);
   process.exit(code ?? 0);
 }
 process.on("SIGINT", () => shutdown(0));

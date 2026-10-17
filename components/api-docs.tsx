@@ -1114,8 +1114,10 @@ export function ApiDocs() {
                                 if (expandAll) setExpandAll(false);
                                 if (packageId === pkg.id) setPackageId("all");
                               } else {
-                                setCollapsed((previous) => previous.filter((id) => id !== pkg.id));
+                                // One package open at a time: opening this one folds the others, the default-open agentic ones included.
+                                setCollapsed(() => [...AGENTIC_FRAMEWORK_IDS].filter((id) => id !== pkg.id));
                                 setOpen(pkg.id);
+                                if (expandAll) setExpandAll(false);
                               }
                             }}
                           >

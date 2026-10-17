@@ -25,7 +25,7 @@ function FileTree({ files, active, onSelect, prefix = "" }: { files: ExampleFile
   return <ul className={styles.tree}>{entries.map(entry => {
     const path = prefix + entry;
     const file = files.find(item => item.path === path);
-    return <li key={path}>{file ? <button type="button" title={path} aria-label={path} aria-pressed={active === path} onClick={() => onSelect(path)}><FileCode2 size={14} aria-hidden="true" /><span><ExpandedText text={entry} /></span></button> : <details open><summary><Folder size={14} aria-hidden="true" /><span><ExpandedText text={entry} /></span></summary><FileTree files={files} active={active} onSelect={onSelect} prefix={`${path}/`} /></details>}</li>;
+    return <li key={path}>{file ? <button type="button" title={path} aria-label={path} aria-pressed={active === path} onClick={() => onSelect(path)}><FileCode2 size={14} aria-hidden="true" /><span><ExpandedText text={entry} /></span></button> : <details open data-accordion="free"><summary><Folder size={14} aria-hidden="true" /><span><ExpandedText text={entry} /></span></summary><FileTree files={files} active={active} onSelect={onSelect} prefix={`${path}/`} /></details>}</li>;
   })}</ul>;
 }
 

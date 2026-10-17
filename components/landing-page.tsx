@@ -16,7 +16,6 @@ import { requestJson } from "@/lib/client";
 import { LibraryLedger } from "./library-ledger";
 import { anek } from "./landing-fonts";
 import { LandingOverview } from "./landing-overview";
-import { LandingPractice } from "./landing-practice";
 import { useReveal } from "./use-reveal";
 import { LandingFooter } from "./landing-footer";
 import { LandingApiDocs, LandingTechy } from "./landing-pro-sections";
@@ -29,10 +28,9 @@ import { LandingAiPulse } from "./landing-ai-pulse";
 import { LandingVocabulary } from "./landing-vocabulary";
 import { LandingNavbar } from "./landing-navbar";
 import { SubjectRibbon } from "./subject-ribbon";
-import { LandingPaths } from "./landing-paths";
-import { LandingStudyEngine } from "./landing-study-engine";
 import { StudentReviews } from "./student-reviews";
 import { LandingWorkflows } from "./landing-workflows";
+import { LandingInterview } from "./landing-interview";
 import { useLanguage } from "./language-provider";
 import styles from "./learn-landing.module.css";
 
@@ -46,7 +44,7 @@ export function LandingPage({ pro, library, prices: initialPrices, daily }: { pr
   useEffect(() => { if (initialPrices) return; let active = true; requestJson<LandingPrices>("/api/billing").then(data => { if (active) { setPrices(data); setPriceState("ready"); } }).catch(() => { if (active) setPriceState("error"); }); return () => { active = false; }; }, [initialPrices]);
   const money = (value: number) => new Intl.NumberFormat(hi ? "hi-IN" : "en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
   const savings = prices.monthly > 0 ? Math.max(0, Math.round((1 - prices.yearly / (prices.monthly * 12)) * 100)) : 0;
-  const navigation = [["#paths", text("Paths", "पथ")], ...(library ? [["#library", text("Library", "लाइब्रेरी")]] : []), ...(pro ? [["#techy", "Techy"], ["#api-docs", "API Docs"]] : []), ["#study-engine", text("How it answers", "उत्तर कैसे")], ["#pricing", text("Membership", "सदस्यता")]];
+  const navigation = [["#workflows", text("Workflows", "वर्कफ़्लो")], ...(library ? [["#library", text("Library", "लाइब्रेरी")]] : []), ...(pro ? [["#techy", "Techy"], ["#api-docs", "API Docs"]] : []), ["#interview-prep", text("Interview prep", "इंटरव्यू")], ["#pricing", text("Membership", "सदस्यता")]];
   const format = (value: number) => new Intl.NumberFormat(hi ? "hi-IN" : "en-IN").format(value);
   return <div className={`${styles.page} ${home.home} ${anek.variable} ${anek.className}`}><a className={styles.skip} href="#main-content">{text("Skip to content", "सामग्री पर जाएँ")}</a>
     <LandingNavbar links={navigation as [string, string][]} prices={priceState === "ready" ? prices : null} />
@@ -56,8 +54,8 @@ export function LandingPage({ pro, library, prices: initialPrices, daily }: { pr
     {library && <SubjectRibbon entries={library.entries} />}
     {daily && <><LandingAiPulse cards={daily.pulse} day={daily.day} locked={daily.locked?.pulse} /><LandingVocabulary words={daily.words} day={daily.day} locked={daily.locked?.word} /></>}
     <LandingWorkflows />
+    <LandingInterview />
     <LandingOverview counts={library?.counts} />
-    <LandingPaths />
     {library && <section ref={libraryRef} id="library" className={home.library} data-reveal={libraryReveal} aria-labelledby="library-title"><div className={`${home.inner} ${home.libraryInner}`}>
       <div className={home.sectionHead}>
         <h2 id="library-title">{text("Search the whole library before you join", "जुड़ने से पहले पूरी लाइब्रेरी खोजें")}</h2>
@@ -68,10 +66,8 @@ export function LandingPage({ pro, library, prices: initialPrices, daily }: { pr
       <LibraryLedger library={library} />
     </div></section>}
     {pro && <><LandingTechy data={pro.techy} /><LandingApiDocs data={pro.api} /></>}
-    <LandingPractice />
     <section id="pricing" className={styles.compactPricing}><div className={`${styles.container} ${styles.pricingLayout}`}><div className={styles.pricingCopy}><h2><ExpandedText text={text("Your goals.","आपके लक्ष्य।")} /> <em><ExpandedText text={text("One learning membership.","एक अध्ययन सदस्यता।")} /></em></h2><p><ExpandedText text={text("Every course and category in one plan: published notes, worked answers and practice in one focused space.","हर कोर्स और श्रेणी एक ही योजना में: प्रकाशित नोट्स, हल सहित उत्तर और अभ्यास एक ही जगह।")} /></p><div className={styles.billingToggle} role="group" aria-label={text("Billing period","भुगतान अवधि")}>{(["monthly","yearly"] as const).map(value=><button key={value} aria-pressed={cycle===value} onClick={()=>setCycle(value)}><ExpandedText text={value==="monthly"?text("Monthly","मासिक"):text("Yearly","वार्षिक")} />{value==="yearly"&&priceState==="ready"&&savings>0&&<span><ExpandedText text={text(`Save ${savings}%`,`${savings}% बचाएँ`)} /></span>}</button>)}</div><small><ExpandedText text={text("No course selection needed. Subscribe and start learning.","कोर्स चुनने की ज़रूरत नहीं। सदस्यता लें और सीखना शुरू करें।")} /></small></div><article className={styles.compactPlan}><div className={styles.planTop}><span><BookOpen size={17}/> LEARN IN APP</span><small><ExpandedText text={cycle==="monthly"?text("Monthly membership","मासिक सदस्यता"):text("Yearly membership","वार्षिक सदस्यता")} /></small></div><div className={styles.compactPrice}><ExpandedText text={priceState==="ready"?money(prices[cycle]):"—"} /><small><ExpandedText text={cycle==="monthly"?text("/ month","/ माह"):text("/ year","/ वर्ष")} /></small></div><p><ExpandedText text={priceState==="error"?text("Current pricing is temporarily unavailable.","वर्तमान मूल्य अभी उपलब्ध नहीं है।"):cycle==="yearly"&&priceState==="ready"?text(`${money(prices.yearly/12)}/month equivalent, billed yearly.`,`${money(prices.yearly/12)}/माह के बराबर, वार्षिक भुगतान।`):text("A steady rhythm for your learning.","आपकी पढ़ाई की नियमित गति।")} /></p><ul>{[text("Every course & category","हर कोर्स और श्रेणी"),text("Published lessons","प्रकाशित पाठ"),text("Worked answers","हल सहित उत्तर"),text("Timed practice","समयबद्ध अभ्यास"),text("Revision & bookmarks","पुनरावृत्ति और बुकमार्क"),text("English / Hindi","अंग्रेज़ी / हिन्दी")].map(item=><li key={item}><Check size={14}/><ExpandedText text={item} /></li>)}</ul><Link className={styles.primary} href={`/subscribe?plan=${cycle}`}><ExpandedText text={text("Subscribe now","अभी सदस्यता लें")} /><ArrowRight size={16}/></Link>{priceState==="ready"&&!prices.enabled&&<small className={styles.billingUnavailable}><ExpandedText text={text("Checkout is not enabled yet.","भुगतान अभी सक्षम नहीं है।")} /></small>}</article><p className={styles.compactPlanNote}><ExpandedText text={text("Access starts after payment verification. Cancel renewal in Membership; access continues through your paid period. Guide coverage varies. Revision notes and bookmarks are saved in your browser.","भुगतान सत्यापन के बाद पहुँच शुरू होती है। सदस्यता में नवीनीकरण रद्द करें; भुगतान अवधि तक पहुँच जारी रहेगी। गाइड का कवरेज अलग हो सकता है। नोट्स और बुकमार्क ब्राउज़र में सहेजे जाते हैं।")} /></p></div></section>
     <StudentReviews />
-    <LandingStudyEngine />
     </main>
     <LandingFooter />
   </div>;

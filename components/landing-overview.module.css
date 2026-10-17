@@ -30,17 +30,18 @@
 .overview a.cta:active { transform: scale(.98); }
 
 /* ---------- Tiles ---------- */
-.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(14px, 1.6vw, 24px); align-items: start; }
-.column { display: grid; gap: clamp(14px, 1.6vw, 24px); }
+/* Generous gutters: a turning tile swings its near edge toward the reader, and must not brush its neighbours. */
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(20px, 2.2vw, 34px); align-items: start; }
+.column { display: grid; align-content: start; gap: clamp(20px, 2.2vw, 34px); }
 
-.card { position: relative; display: flex; flex-direction: column; aspect-ratio: 365 / 515; padding: clamp(20px, 2.1vw, 32px); overflow: hidden; border-radius: 14px; }
+.card { position: relative; display: flex; flex-direction: column; padding: clamp(20px, 2.1vw, 32px); overflow: hidden; border-radius: 14px; }
 .card[data-tone="sage"] { background: #f0eee6; color: var(--ov-graphite); box-shadow: inset 0 0 0 1px #dedcd1; }
 .card[data-tone="highlight"] { background: var(--ov-highlight); color: var(--ov-graphite); }
 .card[data-tone="blush"] { background: #f3dccd; color: var(--ov-graphite); box-shadow: inset 0 0 0 1px #eecab6; }
 .overview .card h3 { position: relative; margin: auto 0 0; font-weight: 700; font-variation-settings: "wdth" 100; font-size: clamp(20px, 1.9vw, 28px); overflow-wrap: anywhere; line-height: 1.1; letter-spacing: -0.015em; }
 .overview .card p { position: relative; margin: clamp(18px, 2.4vw, 36px) 0 0; font-size: clamp(15px, 1.2vw, 17.5px); line-height: 1.42; text-wrap: pretty; }
 
-.photo { position: relative; aspect-ratio: 365 / 388; overflow: hidden; border-radius: 14px; }
+.photo { position: relative; overflow: hidden; border-radius: 14px; }
 .photo[data-tone="navy"] { background: var(--ov-navy); --tone: 143, 63, 35; }
 .photo[data-tone="kraft"] { background: var(--ov-kraft); --tone: 181, 82, 47; }
 .photo img { object-fit: cover; transition: transform .9s var(--ease-out); }
@@ -48,11 +49,45 @@
 .photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(var(--tone), .8) 0%, rgba(var(--tone), .2) 32%, rgba(var(--tone), 0) 56%); pointer-events: none; }
 .photo:hover img { transform: scale(1.04); }
 
+/* ---------- Flip: every tile turns over to a back in its own light colour ---------- */
+/* A far perspective keeps the turn flat enough to stay inside the tile's own footprint; the tile being turned sits
+   above its neighbours, and its height follows the taller face instead of overflowing the aspect ratio. */
+.flip { position: relative; z-index: 0; display: grid; min-height: 0; border-radius: 14px; perspective: 3200px; outline: none; cursor: pointer; }
+.flip:hover, .flip:focus-within { z-index: 2; }
+.flip[data-kind="text"] { aspect-ratio: 365 / 515; }
+.flip[data-kind="photo"] { aspect-ratio: 365 / 388; }
+.flip:focus-visible { box-shadow: 0 0 0 3px var(--ov-paper), 0 0 0 5px var(--ov-ink); }
+/* Both faces share one grid cell, so the tile is as tall as its taller face and nothing overflows. */
+.flipInner { display: grid; height: 100%; transform-style: preserve-3d; transition: transform .75s var(--ease-out); }
+.face { grid-area: 1 / 1; min-height: 100%; min-width: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.back { --b: #e3f3ea; --b-edge: #b4e0c6; --b-ink: #1d6a45;
+  display: flex; flex-direction: column; gap: 12px; padding: clamp(18px, 1.9vw, 28px); border-radius: 14px; transform: rotateY(180deg);
+  background: radial-gradient(90% 60% at 100% 0%, rgba(255, 255, 255, .7), transparent 70%), var(--b); box-shadow: inset 0 0 0 1px var(--b-edge); color: var(--ov-graphite); }
+.back[data-back="sky"] { --b: #e3eefc; --b-edge: #bcd3f4; --b-ink: #22508f; }
+.back[data-back="lavender"] { --b: #ece6fb; --b-edge: #d2c5f5; --b-ink: #4f3a9c; }
+.back[data-back="butter"] { --b: #fbf1d0; --b-edge: #f2dd95; --b-ink: #6f5200; }
+.back[data-back="rose"] { --b: #fbe4ea; --b-edge: #f2bfcc; --b-ink: #8f2a46; }
+.back[data-back="aqua"] { --b: #def2f2; --b-edge: #aedcdb; --b-ink: #11615f; }
+.overview .back h3 { margin: 0; font-weight: 700; font-variation-settings: "wdth" 100; font-size: clamp(18px, 1.6vw, 24px); line-height: 1.15; letter-spacing: -0.01em; color: var(--b-ink); overflow-wrap: anywhere; }
+.back ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.back li { position: relative; padding-left: 16px; font-size: clamp(13.5px, 1.05vw, 15.5px); line-height: 1.4; color: var(--ov-text); text-align: left; overflow-wrap: anywhere; }
+.back li::before { content: ""; position: absolute; left: 1px; top: .5em; width: 7px; height: 7px; border-radius: 2px; background: var(--b-ink); opacity: .75; }
+.overview .back a { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; margin-top: auto; padding: 8px 14px; border-radius: 999px; background: rgba(255, 255, 255, .8); box-shadow: inset 0 0 0 1px var(--b-edge); color: var(--b-ink); font-size: 14px; font-weight: 700; text-decoration: none; transition: background-color .2s ease; }
+.overview .back a:hover { background: #fff; }
+.flip:focus-within .flipInner { transform: rotateY(180deg); }
+@media (hover: hover) { .flip:hover .flipInner { transform: rotateY(180deg); } }
+/* Reduced motion: the back fades in place instead of turning. */
+@media (prefers-reduced-motion: reduce) {
+  .flipInner, .flip:hover .flipInner, .flip:focus-within .flipInner { transform: none; transition: none; }
+  .back { transform: none; opacity: 0; transition: opacity .2s ease; }
+  .flip:hover .back, .flip:focus-within .back { opacity: 1; }
+}
+
 /* ---------- Entrance: tiles rise in, column by column ---------- */
 @media (prefers-reduced-motion: no-preference) {
-  .overview[data-reveal="wait"] .card, .overview[data-reveal="wait"] .photo, .overview[data-reveal="wait"] .copy { opacity: 0; transform: translateY(26px); }
+  .overview[data-reveal="wait"] .flip, .overview[data-reveal="wait"] .copy { opacity: 0; transform: translateY(26px); }
   .overview[data-reveal="in"] .copy { animation: rise .9s var(--ease-out) both; }
-  .overview[data-reveal="in"] .card, .overview[data-reveal="in"] .photo { animation: rise .9s var(--ease-out) calc(120ms + var(--i) * 70ms) both; }
+  .overview[data-reveal="in"] .flip { animation: rise .9s var(--ease-out) calc(120ms + var(--i) * 70ms) both; }
 }
 @keyframes rise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
 
@@ -65,9 +100,11 @@
 @media (max-width: 640px) {
   .inner { width: calc(100% - 32px); }
   /* Columns dissolve into a two-up checkerboard: text, photo / photo, text / text, photo. */
-  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: stretch; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
   .column { display: contents; }
-  .card, .photo { aspect-ratio: auto; min-height: 236px; border-radius: 12px; }
+  .flip { aspect-ratio: auto; min-height: 236px; border-radius: 12px; }
+  .card, .photo, .back { border-radius: 12px; }
+  .back { padding: 16px; gap: 8px; }
   .card { padding: 16px; }
   .overview .card h3 { font-size: 22px; }
   .overview .card p { margin-top: 12px; font-size: 14px; }

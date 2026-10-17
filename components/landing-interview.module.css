@@ -1,0 +1,79 @@
+/* Interview prep carousel: a paper-world section like the pulse and workflow carousels; tokens from
+   landing-home.module.css .home. Each tone sets --tint (pale wash), --deep (readable accent) and --glow. */
+.section { position: relative; overflow: hidden; padding-block: clamp(56px, 7vw, 96px); border-block: 1px solid var(--nb-rule); background:
+  radial-gradient(50% 45% at 0% 0%, #fdf3dc 0%, transparent 70%),
+  radial-gradient(50% 50% at 100% 100%, #e4f4f4 0%, transparent 70%),
+  var(--nb-paper); }
+.section::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 1px 1px, rgba(20, 20, 19, .06) 1px, transparent 0) 0 0 / 22px 22px; mask-image: linear-gradient(180deg, #000, transparent 50%); pointer-events: none; }
+.section > * { position: relative; }
+
+.section [data-tone="0"] { --tint: #e3eefc; --deep: #22508f; --glow: #bcd3f4; }
+.section [data-tone="1"] { --tint: #dff3e8; --deep: #1d6a45; --glow: #b4e0c6; }
+.section [data-tone="2"] { --tint: #ece6fb; --deep: #4f3a9c; --glow: #d2c5f5; }
+.section [data-tone="3"] { --tint: #fde8dc; --deep: #9a401b; --glow: #f9c9ad; }
+.section [data-tone="4"] { --tint: #fbf1d0; --deep: #6f5200; --glow: #f2dd95; }
+.section [data-tone="5"] { --tint: #fbe4ea; --deep: #8f2a46; --glow: #f2bfcc; }
+.section [data-tone="6"] { --tint: #e8efe0; --deep: #3a5426; --glow: #c9dcb9; }
+.section [data-tone="7"] { --tint: #def2f2; --deep: #11615f; --glow: #aedcdb; }
+
+.head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 20px 40px; margin-bottom: 22px; }
+.headCopy { max-width: 760px; }
+.kicker { display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 6px 12px; border: 1px solid var(--nb-cream-edge); border-radius: 999px; background: var(--nb-sheet); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--nb-ink); }
+.kicker span { margin-left: 4px; padding-left: 10px; border-left: 1px solid var(--nb-cream-edge); letter-spacing: .04em; text-transform: none; color: var(--nb-text); }
+.head h2 { margin: 16px 0 12px; font-family: var(--nb-font); font-weight: 600; font-size: clamp(30px, 3.6vw, 50px); line-height: 1.06; letter-spacing: -0.02em; color: var(--nb-graphite); text-wrap: balance; }
+.head h2 em { font-style: italic; color: var(--nb-ink); }
+.lede { margin: 0; max-width: 64ch; font-size: 17px; line-height: 1.55; color: var(--nb-text); }
+
+.now { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 14px; color: var(--nb-muted); }
+.now b { color: var(--nb-graphite); }
+
+.track { display: grid; grid-auto-flow: column; grid-auto-columns: 100%; align-items: stretch; margin: 0; padding: 0; list-style: none; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
+.track::-webkit-scrollbar { display: none; }
+
+/* One slide: the picture-topped cover on the left, the questions on the right, on a sheet in the slide's tone. */
+.slide { scroll-snap-align: start; min-width: 0; display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); gap: 20px; padding: clamp(14px, 2vw, 22px); border: 1px solid color-mix(in srgb, var(--deep) 18%, var(--nb-rule)); border-radius: 26px;
+  background: radial-gradient(70% 60% at 100% 0%, color-mix(in srgb, var(--tint) 80%, transparent), transparent 70%), linear-gradient(180deg, color-mix(in srgb, var(--tint) 35%, #fff), #fff 75%);
+  box-shadow: 0 1px 0 rgba(20, 20, 19, .03), 0 30px 60px -40px color-mix(in srgb, var(--deep) 45%, transparent); }
+
+.cover { display: flex; flex-direction: column; overflow: hidden; align-self: start; border: 1px solid color-mix(in srgb, var(--deep) 16%, var(--nb-rule)); border-radius: 20px; background: linear-gradient(180deg, var(--tint), #fff 65%); }
+.picture { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: linear-gradient(135deg, var(--glow), var(--tint)); }
+.picture::after { content: ""; position: absolute; inset: auto 0 0; height: 36%; background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--tint) 60%, transparent)); pointer-events: none; }
+.picture img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--ease-out); }
+@media (prefers-reduced-motion: no-preference) { .slide:hover .picture img { transform: scale(1.03); } }
+.picture[data-empty="true"] { background: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--deep) 20%, transparent) 1px, transparent 0) 0 0 / 16px 16px, radial-gradient(70% 80% at 30% 20%, #fff, transparent 70%), linear-gradient(135deg, var(--glow), var(--tint)); }
+.placeholder { position: absolute; inset: 0; display: grid; place-items: center; color: var(--deep); }
+.placeholder svg { box-sizing: content-box; padding: 22px; border: 1px solid color-mix(in srgb, var(--deep) 25%, transparent); border-radius: 50%; background: rgba(255, 255, 255, .7); box-shadow: 0 12px 30px -16px var(--deep); }
+.tag { position: absolute; z-index: 1; left: 12px; top: 12px; display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; background: rgba(255, 255, 255, .92); backdrop-filter: blur(6px); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--deep); box-shadow: 0 4px 12px -6px rgba(20, 20, 19, .35); }
+.index { position: absolute; z-index: 1; right: 14px; bottom: 6px; font-family: Georgia, "Times New Roman", serif; font-size: 44px; font-weight: 700; line-height: 1; font-variant-numeric: lining-nums; color: rgba(255, 255, 255, .6); -webkit-text-stroke: 1.5px var(--deep); }
+
+.coverBody { display: flex; flex-direction: column; gap: 10px; padding: 16px 18px 18px; }
+.coverBody h3 { margin: 0; font-family: var(--nb-font); font-size: clamp(22px, 2vw, 28px); font-weight: 600; line-height: 1.1; letter-spacing: -0.01em; color: var(--nb-graphite); }
+.tagline { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--nb-text); text-align: left; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 4px 0 0; }
+.stats div { padding: 8px 6px; border: 1px solid color-mix(in srgb, var(--deep) 14%, transparent); border-radius: 12px; background: rgba(255, 255, 255, .8); text-align: center; }
+.stats dt { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--nb-muted); }
+.stats dd { margin: 2px 0 0; font-family: var(--nb-font); font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--deep); }
+.rating { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; font-size: 12px; color: var(--nb-muted); }
+
+.panel { min-width: 0; padding: 14px; border: 1px solid color-mix(in srgb, var(--deep) 14%, var(--nb-rule)); border-radius: 20px; background: rgba(255, 255, 255, .86); backdrop-filter: blur(4px); }
+/* Tabs inside a slide (Key TanStack libraries). */
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; padding: 0 0 12px; border-bottom: 1px solid color-mix(in srgb, var(--deep) 14%, var(--nb-rule)); }
+.tabs button { padding: 7px 14px; border: 1px solid color-mix(in srgb, var(--deep) 24%, transparent); border-radius: 12px; background: color-mix(in srgb, var(--tint) 65%, #fff); color: var(--deep); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: background .2s ease, color .2s ease; }
+.tabs button:hover { background: var(--tint); }
+.tabs button[aria-selected="true"] { background: var(--deep); border-color: var(--deep); color: #fff; box-shadow: 0 8px 18px -10px var(--deep); }
+.subtitle { margin: -4px 0 0; font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--deep); }
+.panel h4 { margin: 0; font-family: var(--nb-font); font-size: 19px; font-weight: 600; color: var(--nb-graphite); }
+.loading { display: grid; place-items: center; min-height: 420px; border: 1px dashed color-mix(in srgb, var(--deep) 25%, transparent); border-radius: 16px; background: color-mix(in srgb, var(--tint) 30%, #fff); font-size: 14px; color: var(--nb-muted); text-align: center; }
+
+.track + * { margin-top: 22px; }
+
+@media (max-width: 900px) {
+  .slide { grid-template-columns: 1fr; }
+  .cover { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
+  .picture { aspect-ratio: auto; min-height: 100%; }
+}
+@media (max-width: 620px) {
+  .cover { display: flex; }
+  .picture { aspect-ratio: 16 / 10; min-height: 0; }
+  .lede { font-size: 16px; }
+}

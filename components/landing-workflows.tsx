@@ -1,5 +1,6 @@
 "use client";
 import { useId, useMemo, useState, type ReactNode } from "react";
+import dynamic from "next/dynamic";
 import { Boxes, FlaskConical, GitBranch, Layers, Network, Workflow as WorkflowIcon, type LucideIcon } from "lucide-react";
 import { NODE_HEIGHT, NODE_WIDTH, WORKFLOW_HEIGHT, WORKFLOW_WIDTH, WORKFLOWS, type Workflow, type WorkflowEdge, type WorkflowNode, type WorkflowNodeKind } from "@/lib/landing-workflows";
 import { learningImageUrl } from "@/lib/learning-image";
@@ -8,6 +9,10 @@ import { useLanguage } from "./language-provider";
 import { usePagedCarousel } from "./use-paged-carousel";
 import home from "./landing-home.module.css";
 import styles from "./landing-workflows.module.css";
+import prepStyles from "./landing-workflow-prep.module.css";
+
+/** Full detail and interview questions: about 200 Q&As, so they load as their own chunk after the page. */
+const WorkflowPrep = dynamic(() => import("./landing-workflow-prep"), { ssr: false, loading: () => <div className={prepStyles.loading} aria-hidden="true" /> });
 
 type Group = Workflow["group"];
 type Text = (en: string, hindi: string) => string;
@@ -22,7 +27,8 @@ const labelWidth = (label: string) => label.length * 6.4 + 18;
 /**
  * Workflow blueprints: System Design patterns and agentic AI workflows from real industries, one a screen.
  * Each screen pairs a picture-topped brief (industry, problem, outcome) with a drawn diagram whose numbered badges
- * match the colour-coded step pills beneath it. Autoplay turns a screen every two minutes, as the pulse carousel does.
+ * match the colour-coded step pills beneath it, then its full detail and most-asked interview questions.
+ * Autoplay turns a screen every two minutes, as the pulse carousel does.
  */
 export function LandingWorkflows() {
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
@@ -35,8 +41,8 @@ export function LandingWorkflows() {
       <p className={styles.kicker}><Layers size={14} aria-hidden="true" />{text("Workflow blueprints", "वर्कफ़्लो ब्लूप्रिंट")}</p>
       <h2 id="workflows-title">{text("How real systems and ", "असली सिस्टम और ")}<em>{text("AI agents get work done", "AI एजेंट काम कैसे करते हैं")}</em></h2>
       <p className={styles.lede}>{text(
-        `${WORKFLOWS.length} step-by-step blueprints: the system design behind apps you use every day, and LangChain, LangGraph, LangFlow and LangSmith agents solving real problems across ${industries} industries, from e-commerce and banking to hospitals.`,
-        `${WORKFLOWS.length} चरण-दर-चरण ब्लूप्रिंट: रोज़ इस्तेमाल होने वाले ऐप्स के पीछे का सिस्टम डिज़ाइन, और LangChain, LangGraph, LangFlow व LangSmith एजेंट जो ई-कॉमर्स, बैंकिंग से लेकर अस्पतालों तक ${industries} उद्योगों की असली समस्याएँ हल करते हैं।`)}</p>
+        `${WORKFLOWS.length} step-by-step blueprints: the system design behind apps you use every day, and LangChain, LangGraph, LangFlow and LangSmith agents solving real problems across ${industries} industries, from e-commerce and banking to hospitals. Each comes with its tech stack, design decisions, common mistakes and the interview questions most asked about it.`,
+        `${WORKFLOWS.length} चरण-दर-चरण ब्लूप्रिंट: रोज़ इस्तेमाल होने वाले ऐप्स के पीछे का सिस्टम डिज़ाइन, और LangChain, LangGraph, LangFlow व LangSmith एजेंट जो ई-कॉमर्स, बैंकिंग से लेकर अस्पतालों तक ${industries} उद्योगों की असली समस्याएँ हल करते हैं। हर एक के साथ टेक स्टैक, डिज़ाइन निर्णय, आम गलतियाँ और सबसे ज़्यादा पूछे जाने वाले इंटरव्यू प्रश्न।`)}</p>
     </div>
     <div className={styles.filters} role="group" aria-label={text("Filter workflows", "वर्कफ़्लो छाँटें")}>
       {(["All", ...GROUPS] as const).map(option => {
@@ -93,6 +99,7 @@ function WorkflowSlide({ workflow, index, total, text }: Readonly<{ workflow: Wo
     <ol className={styles.steps} aria-label={text("Step by step", "चरण दर चरण")}>
       {workflow.steps.map((step, i) => <li key={step} data-tone={i % STEP_TONES}><b>{two(i + 1)}</b><span>{step}</span></li>)}
     </ol>
+    <div className={styles.prep}><WorkflowPrep id={workflow.id} text={text} /></div>
   </li>;
 }
 

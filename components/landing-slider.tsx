@@ -38,7 +38,7 @@ function slidesFor(technologies: number | undefined): Slide[] {
     { id: "career", src: "/images/landing/slide-interview.webp", focus: "55% 40%", tool: ["Interview", "इंटरव्यू"],
       title: ["Walk into your interview already fluent.", "इंटरव्यू में पूरी तैयारी के साथ जाएँ।"],
       body: ["Lessons, quizzes, interview practice and a live code lab for your technology career.", "आपके तकनीकी करियर के लिए पाठ, क्विज़, इंटरव्यू अभ्यास और लाइव कोड लैब।"],
-      link: { label: ["How it works", "यह कैसे काम करता है"], href: "#paths" },
+      link: { label: ["How it works", "यह कैसे काम करता है"], href: "#workflows" },
       alt: "Two friends practising interview answers together at a cafe table with a laptop and tea" },
   ];
 }

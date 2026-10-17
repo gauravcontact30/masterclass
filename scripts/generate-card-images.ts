@@ -59,6 +59,7 @@ import { STEP_GUIDES } from "../lib/step-by-step/guides";
 import { TECHY_TOPICS } from "../lib/techy-content";
 import { AI_PULSE } from "../lib/landing-ai-pulse";
 import { WORKFLOWS } from "../lib/landing-workflows";
+import { INTERVIEW_TECHS } from "../lib/interview-bank";
 import { CATEGORY_LABELS, PREPARATIONS, PREPARATION_GROUPS } from "../lib/study/preparations";
 import { COURSE_SUMMARIES } from "../lib/study/course-summaries";
 import { LEARNING_IMAGE_BUCKET, learningImageSlug, learningScenePrompt } from "../lib/learning-image";
@@ -212,6 +213,11 @@ async function pictureSet(name: string): Promise<PictureSet> {
     name: workflow.title, context: `${workflow.group} workflow for ${workflow.industry}`, summary: `${workflow.summary} Problem: ${workflow.problem} Outcome: ${workflow.outcome}`,
     points: workflow.steps, label: `blueprints: ${workflow.id}`, parts: ["blueprints", workflow.id],
   })));
+  // The landing page's interview carousel (components/landing-interview.tsx): one picture per technology.
+  if (name === "interview") return learningSet("topics", INTERVIEW_TECHS.map(tech => ({
+    name: tech.title, context: "Technical interview preparation", summary: tech.tagline,
+    points: [tech.tagline], label: `interview: ${tech.id}`, parts: ["interview", tech.id],
+  })));
   if (name === "pulse") return learningSet("topics", AI_PULSE.map(item => ({
     name: item.title, context: "AI agents and agentic engineering", summary: item.definition,
     points: item.points, label: `pulse: ${item.id}`, parts: ["ai-pulse", item.id],
@@ -245,7 +251,7 @@ async function pictureSet(name: string): Promise<PictureSet> {
       judge: jpeg => judgePicture(entry, jpeg),
     })),
   };
-  throw new Error(`--set must be "vocabulary", "aws", "topics", "api", "workflow", "docs", "notes", "lessons", "guides", "courses" or "pulse", not "${name}"`);
+  throw new Error(`--set must be "vocabulary", "aws", "topics", "api", "workflow", "docs", "notes", "lessons", "guides", "courses", "pulse", "blueprints" or "interview", not "${name}"`);
 }
 
 /** A picture is done when its meaning is unmistakable from the picture alone and it carries no lettering. */

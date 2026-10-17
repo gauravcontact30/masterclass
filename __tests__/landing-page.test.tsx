@@ -17,14 +17,6 @@ test("offers signup, sign-in and current section navigation", async () => {
   expect(within(screen.getByRole("navigation",{name:"Main navigation"})).getByRole("link",{name:"Membership"})).toHaveAttribute("href","#pricing");
 });
 
-test("switches the school preview to exam and technology paths", async () => {
-  render(<LandingPage/>); await ready();
-  fireEvent.click(screen.getByRole("tab",{name:"Exams",exact:true}));
-  expect(within(screen.getByRole("tabpanel")).getByRole("heading")).toHaveTextContent("Government & entrance exams");
-  fireEvent.click(screen.getByRole("tab",{name:"Technology",exact:true}));
-  expect(within(screen.getByRole("tabpanel")).getByRole("link")).toHaveAttribute("href","/courses#technology");
-});
-
 test("opens navigation and closes it on selection or Escape", async () => {
   render(<LandingPage/>); await ready();
   const toggle = screen.getByRole("button",{name:"Toggle navigation"});

@@ -70,12 +70,8 @@ export function WorkflowBuildGuide({ workflow, headingId }: { workflow: Workflow
   const authored = !!workflow.buildSteps?.length;
 
   function toggle(index: number) {
-    setOpen(previous => {
-      const next = new Set(previous);
-      if (next.has(index)) next.delete(index);
-      else next.add(index);
-      return next;
-    });
+    // One step open at a time: opening a step closes the one before it ("Expand all" still opens every step).
+    setOpen(previous => previous.has(index) ? new Set([...previous].filter(i => i !== index)) : new Set([index]));
   }
 
   return (
