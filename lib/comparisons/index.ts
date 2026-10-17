@@ -422,16 +422,24 @@ export const comparison = (id: string) => COMPARISONS.find(item => item.id === i
 /** Each comparison's question bank as its own chunk. */
 const LOADERS: Record<string, () => Promise<{ default: QuestionSet }>> = {
   "agent-workflow-chatbot": () => import("./banks/agent-workflow-chatbot"),
+  "fastapi-express": () => import("./banks/fastapi-express"),
+  "javascript-typescript": () => import("./banks/javascript-typescript"),
+  "jest-vitest": () => import("./banks/jest-vitest"),
   "langchain-langgraph-langsmith": () => import("./banks/langchain-langgraph-langsmith"),
   "langflow-langchain": () => import("./banks/langflow-langchain"),
   "mcp-a2a-function-calling": () => import("./banks/mcp-a2a-function-calling"),
   "n8n-langchain-langgraph": () => import("./banks/n8n-langchain-langgraph"),
   "nextjs-tanstack": () => import("./banks/nextjs-tanstack"),
+  "node-express-nestjs": () => import("./banks/node-express-nestjs"),
+  "playwright-cypress": () => import("./banks/playwright-cypress"),
   "rag-finetuning-prompting": () => import("./banks/rag-finetuning-prompting"),
   "react-nextjs": () => import("./banks/react-nextjs"),
   "redux-zustand-rtk": () => import("./banks/redux-zustand-rtk"),
+  "rest-graphql": () => import("./banks/rest-graphql"),
   "server-client-components": () => import("./banks/server-client-components"),
   "ssr-ssg-isr-ppr": () => import("./banks/ssr-ssg-isr-ppr"),
+  "unit-integration-e2e": () => import("./banks/unit-integration-e2e"),
+  "zod-pydantic": () => import("./banks/zod-pydantic"),
 };
 
 export const hasComparisonBank = (id: string) => id in LOADERS;
