@@ -30,6 +30,7 @@ export function InterviewQuestions({ set, text, heading, scroll = false }: Reado
         ? byStars(set.subjective).map((q, i) => <Item key={q.question} n={i + 1} stars={q.stars} question={q.question} text={text}>
           {q.code && <pre className={styles.code}><code>{q.code}</code></pre>}
           <p className={styles.answer}><Inline text={q.answer} /></p>
+          {q.source && <p className={styles.source}>{q.source}</p>}
         </Item>)
         : byStars(set.objective).map((q, i) => {
           const { options, answer } = arrangeOptions(q);
@@ -40,6 +41,7 @@ export function InterviewQuestions({ set, text, heading, scroll = false }: Reado
               {k === answer && <em><CircleCheck size={14} aria-hidden="true" />{text("Correct", "सही")}</em>}
             </li>)}</ol>
             <p className={styles.why}><b>{text("Why", "क्यों")}</b> <Inline text={q.why} /></p>
+            {q.source && <p className={styles.source}>{q.source}</p>}
           </Item>;
         })}
     </div>

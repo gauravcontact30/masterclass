@@ -1,0 +1,33 @@
+/* Membership: a plan card beside the map of dashboard areas it opens. Frame and CTA: landing-section.module.css. */
+.layout { display: grid; grid-template-columns: minmax(300px, 380px) minmax(0, 1fr); gap: clamp(24px, 3vw, 44px); align-items: start; }
+
+.plan { position: sticky; top: calc(var(--nav-h, 72px) + 20px); display: grid; gap: 14px; padding: 26px; border: 1px solid var(--nb-rule-2); border-radius: 14px; background: var(--nb-sheet); box-shadow: 0 24px 48px -36px rgba(143, 63, 35, .4); }
+.toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 10px; background: var(--nb-wash); }
+.toggle button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 38px; border: 0; border-radius: 8px; background: transparent; color: var(--nb-text); font-size: 15px; font-weight: 500; cursor: pointer; }
+.toggle button[aria-pressed="true"] { background: var(--nb-sheet); color: var(--nb-graphite); font-weight: 600; box-shadow: 0 1px 2px rgba(20, 20, 19, .08), 0 0 0 1px var(--nb-rule-2); }
+.toggle button span { padding: 2px 6px; border-radius: 6px; background: var(--nb-orange); color: var(--nb-ink-deep); font-size: 12px; font-weight: 600; }
+.price { display: flex; align-items: baseline; gap: 8px; margin-top: 6px; text-align: left; }
+.price b { font-size: clamp(40px, 4vw, 52px); font-weight: 600; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.price small { font-size: 15px; color: var(--nb-muted); }
+.priceNote { min-height: 1.5em; font-size: 14.5px; color: var(--nb-muted); text-align: left; }
+.subscribe { justify-content: center; width: 100%; min-height: 48px; }
+.unavailable { font-size: 13px; color: var(--nb-ink); }
+.fine { padding-top: 14px; border-top: 1px solid var(--nb-rule); font-size: 13px; line-height: 1.6; color: var(--nb-muted); }
+
+.map { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 36px; }
+.group h3 { padding-bottom: 10px; border-bottom: 1px solid var(--nb-graphite); font-size: 15px; font-weight: 600; }
+.group ul { margin: 0; padding: 0; list-style: none; }
+.group li { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 12px; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--nb-rule-2); }
+.group li > span { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--nb-rule); background: var(--nb-sheet); color: var(--nb-ink); }
+.group li div { display: grid; gap: 1px; min-width: 0; }
+.group li b { font-size: 15.5px; font-weight: 600; }
+.group li small { font-size: 13.5px; line-height: 1.4; color: var(--nb-muted); }
+
+@media (max-width: 980px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .plan { position: static; max-width: 520px; }
+}
+@media (max-width: 600px) {
+  .map { grid-template-columns: minmax(0, 1fr); }
+  .plan { padding: 20px; }
+}

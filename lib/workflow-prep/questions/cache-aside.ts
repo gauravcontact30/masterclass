@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "What is read-through caching?", "The cache itself loads missing data from the database through a configured loader, so application code only talks to the cache. It centralises logic but ties the cache to the data source."),
     s(2, "How do HTTP caching headers relate to application caching?", "`Cache-Control`, `ETag` and `Last-Modified` let browsers and CDNs cache responses and revalidate cheaply, reducing load before requests even reach your application cache."),
     s(2, "When is caching the wrong fix for slow queries?", "When a missing index, bad query or N+1 pattern is the real cause. Fix the query first; caching a slow query hides the problem and fails badly on cache misses."),
+    s(4, "How do you cache a paginated list that changes often?", "Cache the stable parts, such as each item by ID, and cache the ordered list of IDs per page with a short TTL or a version key bumped on writes. Clients then fetch the ID page and hydrate items from the per-item cache, so one edit invalidates one item, not every page."),
+    s(4, "How do you handle hot keys that overload a single cache node?", "Replicate the hot key across several keys with a random suffix and read from one at random, add a small in-process cache with a short TTL in front of Redis, or use client-side caching. Detect hot keys from cache metrics or Redis' hotkeys sampling."),
+    s(3, "How do you cache results computed from several data sources?", "Key the result by all its inputs, version each source, and invalidate when any source changes, often by including the source versions in the key. Prefer short TTLs when exact invalidation is impractical, and document the acceptable staleness."),
+    s(3, "When would you choose Memcached over Redis?", "Memcached suits a simple, multi-threaded key-value cache of small objects with LRU eviction and no persistence. Redis adds data structures, persistence, replication, pub/sub and Lua scripts, which you want for counters, leaderboards, rate limits or invalidation fan-out."),
+    s(3, "How do you cache data that has a per-request permission check?", "Cache the shared data without permissions applied, then apply the user's access check on every read, or include the permission scope in the key. Never cache a response filtered for one user under a key another user can hit."),
+    s(3, "What is probabilistic early expiration?", "Each reader recomputes a value slightly before its TTL ends with a probability that rises as expiry nears, so one request refreshes it early instead of many requests missing at once when it expires. It is a lock-free way to avoid stampedes."),
+    s(2, "How do you safely change the format of values already in the cache?", "Put a schema version in the key or value, deploy readers that understand both old and new formats, then writers that write the new one, and let old entries expire. Avoid a mass flush at peak, which would hit the database all at once."),
   ],
   objective: [
     o(5, "What should happen to a cache error in cache-aside?", ["Treat it as a miss and read the database", "Return a 500 to users", "Retry forever", "Crash the app"], 0, "The cache is an optimisation, not the source of truth."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "What should per-user cache keys include?", ["The user or tenant ID", "Only the path", "The server name", "A random number"], 0, "Prevents serving one user's data to another."),
     o(2, "ETag headers let clients…", ["Revalidate cheaply with If-None-Match", "Skip TLS", "Compress data", "Bypass auth"], 0, "A 304 avoids resending the body."),
     o(2, "Which race can leave stale data after a write in cache-aside?", ["A slow reader re-populating the old value", "Two writers updating different keys", "TTL jitter", "Compression"], 0, "Short TTLs or versioned values help."),
+    o(4, "What spreads load from one hot cache key?", ["Copies under suffixed keys read at random","A longer TTL only","Deleting the key","A bigger database"], 0, "Several copies put the reads on several nodes."),
+    o(4, "Probabilistic early expiration prevents…", ["Many requests recomputing at the same moment","All cache hits","Data replication","Key eviction"], 0, "One reader refreshes early, before the crowd misses."),
+    o(3, "Which store adds data structures and persistence beyond a plain cache?", ["Redis","Memcached","A CDN","A browser cookie"], 0, "Redis supports lists, sets, sorted sets, streams and persistence."),
+    o(3, "How should a frequently changing paginated list be cached?", ["Items by ID plus short-lived ID pages","Each full page forever","Not at all","Only the first page forever"], 0, "An edit then invalidates one item rather than every page."),
+    o(3, "A result built from three sources should be invalidated when…", ["Any of its sources changes","Only the first source changes","Never","The server restarts"], 0, "Its correctness depends on every input."),
+    o(3, "Responses filtered for one user must not be stored under…", ["A key another user can read","A versioned key","A key with a TTL","Redis"], 0, "That would leak one user's data to another."),
+    o(2, "What is a safe way to change cached value formats?", ["Version the key and let old entries expire","Flush the whole cache at peak","Edit values in place","Disable the database"], 0, "Gradual expiry avoids a stampede on the database."),
   ],
 };
 export default bank;

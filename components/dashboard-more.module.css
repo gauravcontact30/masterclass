@@ -1,0 +1,11 @@
+/* "See all in your dashboard": a short pill at the top-right of a three-card landing preview section.
+   The section's inner wrapper is position: relative (each section's `> *` rule), so wide screens pin it to the
+   corner beside the kicker; narrower screens give it its own right-aligned row so it never covers the heading. */
+.more { display: flex; width: fit-content; align-items: center; gap: 8px; margin: 0 0 16px auto; padding: 9px 16px; border: 1px dashed var(--nb-cream-edge, #e39a6d); border-radius: 999px; background: color-mix(in srgb, var(--nb-orange, #f3dccd) 35%, #fff); color: var(--nb-graphite, #141413); font-size: 14px; font-weight: 700; line-height: 1.2; text-decoration: none; white-space: nowrap; transition: background .2s ease, border-color .2s ease; }
+.more:hover { background: color-mix(in srgb, var(--nb-orange, #f3dccd) 60%, #fff); border-style: solid; }
+.more:focus-visible { outline: 2px solid var(--nb-graphite, #141413); outline-offset: 3px; }
+.icon, .arrow { flex: none; }
+.arrow { transition: transform .2s ease; }
+@media (prefers-reduced-motion: no-preference) { .more:hover .arrow { transform: translateX(3px); } }
+@media (min-width: 1100px) { .more { position: absolute; top: 0; right: 0; z-index: 1; margin: 0; } }
+@media (max-width: 420px) { .more { white-space: normal; } }

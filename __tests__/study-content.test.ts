@@ -3,7 +3,8 @@ import { SYSTEM_DESIGN_COURSES } from "@/lib/study/system-design-catalog";
 import { buildStudyPack } from "@/lib/study/content";
 import { STUDY_UNITS } from "@/lib/study/units";
 import { askRating, gradePaper } from "@/lib/study/types";
-import { canReadStudy, canReadTechnology, isSuperAdminUser, preparationSchema, PREPARATIONS, courseCategory } from "@/lib/study/preparations";
+import { canReadStudy, canReadTechnology, isSuperAdminUser, PREPARATIONS, courseCategory } from "@/lib/study/preparations";
+import { preparationSchema } from "@/lib/study/preparation-schema";
 
 test("every catalog course has bilingual lessons, answer keys, review rubrics and honest coverage", () => {
   expect(SCHOOL_COURSES).toHaveLength(168); expect(EXAM_COURSES).toHaveLength(20); expect(SYSTEM_DESIGN_COURSES).toHaveLength(12);

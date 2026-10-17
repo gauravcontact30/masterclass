@@ -4,7 +4,6 @@ import { proLearnRoute } from "@/lib/server/pro-learn-route";
 import { AI_PROVIDERS } from "@/lib/server/ai-providers";
 import { stepSearchOptionsSchema } from "@/lib/step-by-step/types";
 
-export const runtime = "nodejs";
 export const maxDuration = 180;
 export const POST = proLearnRoute("step-by-step", z.object({
   question: z.string().trim().min(3),

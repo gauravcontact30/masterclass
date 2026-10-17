@@ -5,7 +5,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { NativeSelectOption } from "@/components/ui/native-select";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
 
-import { PRO_LEVELS, PRO_TRACKS, trackById, type ProTrack } from "@/lib/pro-learn/types";
+import { PRO_LEVELS, PRO_TRACKS, trackById, type ProTrack } from "@/lib/pro-learn/tracks";
 import styles from "./pro-learn.module.css";
 import { DashboardPageHeader } from "./dashboard-page-header";
 

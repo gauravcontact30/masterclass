@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "What is model drift in hosted models?", "Changes in a provider's model behaviour over time or between versions; pin model versions where possible and rerun experiments when upgrading."),
     s(2, "Who should review experiment results?", "Engineers plus domain experts or product owners, who can judge whether score changes reflect what users value."),
     s(2, "How do you share prompt changes with the team?", "Link experiment comparisons in pull requests, summarise wins and trade-offs, and keep a changelog of production prompt versions."),
+    { ...s(4, "How do you configure experiment runs in LangSmith to save time and money?", "Use the experiment configuration options for repetitions, concurrency and caching: repetitions run each example several times to measure variance, concurrency runs examples in parallel, and caching reuses results so unchanged parts are not recomputed."), source: "Sourced from Docs by LangChain (MCP)" },
+    { ...s(4, "How do you set up a human pairwise comparison of two prompt versions?", "Run both prompts as experiments on the same dataset, select exactly those two experiments and add them to a pairwise annotation queue. LangSmith pairs runs from the two experiments, and reviewers decide whether run A, run B or both are better for each rubric item."), source: "Sourced from Docs by LangChain (MCP)" },
+    { ...s(3, "Where should the examples for a prompt experiment come from?", "Datasets can be built from manually curated test cases, historical production traces or synthetic data generation. Mixing real traces with curated edge cases gives a set that reflects both common and difficult inputs."), source: "Sourced from Docs by LangChain (MCP)" },
+    { ...s(3, "Which evaluator types can score a prompt experiment?", "Human review, code evaluators for rule-based checks, LLM-as-judge evaluators and pairwise comparisons. Use code checks for objective properties like format, and judges or humans for qualities such as helpfulness."), source: "Sourced from Docs by LangChain (MCP)" },
+    { ...s(3, "How do you check a new prompt keeps working after release?", "Configure online evaluators on the production project with a sampling rate, so a share of live runs is scored automatically, and add failing traces back to the dataset for the next offline experiment."), source: "Sourced from Docs by LangChain (MCP)" },
+    s(3, "How do you decide whether a small score difference between prompts is real?", "Repeat runs to measure variance, look at per-example differences rather than only averages, check the result holds across dataset slices, and treat a difference smaller than run-to-run noise as no difference."),
+    s(2, "How do you test a prompt's behaviour on very long inputs?", "Add examples at and near the context limit to the dataset, measure truncation, latency and whether key instructions are still followed, and compare strategies such as summarising or chunking long inputs."),
   ],
   objective: [
     o(5, "Which metric type decides between prompts?", ["A primary metric with guardrails", "Whichever looks best", "Prompt length", "Token count only"], 0, "Guardrails must not regress."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "When should important prompt experiments run?", ["On every change, automatically in CI", "Once a year", "Never", "Only after outages"], 0, "Catch regressions early."),
     o(2, "Prompt changes in pull requests should link…", ["Experiment comparisons", "Memes", "Nothing", "Server logs"], 0, "Reviewers see the evidence."),
     o(2, "Low temperature suits…", ["Deterministic tasks like extraction", "Creative brainstorming only", "Image generation", "Nothing"], 0, "Less variation between runs."),
+    { ...o(4, "Which experiment option measures run-to-run variance?", ["Repetitions","Caching","A smaller dataset","Turning off evaluators"], 0, "Running each example several times shows the noise."), source: "Sourced from Docs by LangChain (MCP)" },
+    { ...o(4, "A pairwise annotation queue for two prompts needs…", ["Exactly two experiments on the same dataset","One experiment","Five prompts","No dataset"], 0, "Runs from the two experiments are paired for review."), source: "Sourced from Docs by LangChain (MCP)" },
+    { ...o(3, "Dataset examples can come from…", ["Curated cases, production traces or synthetic data","Only the developer's memory","Random internet text","The model's own outputs only"], 0, "Mixed sources cover common and edge cases."), source: "Sourced from Docs by LangChain (MCP)" },
+    { ...o(3, "Online evaluators after release score…", ["A sampled share of production runs","Only the dataset","Every prompt draft","Old experiments"], 0, "Sampling keeps monitoring affordable."), source: "Sourced from Docs by LangChain (MCP)" },
+    { ...o(3, "Caching in experiment runs…", ["Reuses results so unchanged work is not recomputed","Hides failures","Changes the prompt","Deletes datasets"], 0, "It saves time and cost on repeat runs."), source: "Sourced from Docs by LangChain (MCP)" },
+    o(3, "A score gap smaller than run-to-run noise means…", ["No real difference","A clear winner","The dataset is perfect","The judge is broken"], 0, "Noise can create apparent gaps."),
+    o(2, "Long-input tests should measure…", ["Truncation, latency and instruction following","Font rendering","Upload speed","Disk space"], 0, "Long inputs often break instructions or hit limits."),
   ],
 };
 export default bank;

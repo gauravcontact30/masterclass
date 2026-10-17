@@ -27,7 +27,8 @@ import {
   Zap,
 } from "lucide-react";
 import { toast } from "sonner";
-import { PRO_LEVELS, PRO_TRACKS, trackById, type ContentSource, type QuizQuestion } from "@/lib/pro-learn/types";
+import { type ContentSource, type QuizQuestion } from "@/lib/pro-learn/types";
+import { PRO_LEVELS, PRO_TRACKS, trackById } from "@/lib/pro-learn/tracks";
 import { ProHero, readList, Select, SourceBadge, TrackSelect, useProLevel, useProTrack, writeList } from "./pro-learn-shared";
 import baseStyles from "./pro-learn.module.css";
 import styles from "./pro-quiz.module.css";

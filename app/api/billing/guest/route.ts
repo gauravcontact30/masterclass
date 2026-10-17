@@ -6,10 +6,9 @@ import { supabaseServer } from "@/lib/server/auth";
 import { rateLimit } from "@/lib/server/rate-limit";
 import { verifyHmac } from "@/lib/server/secrets";
 import { account } from "@/lib/server/repository";
-import { preparationSchema } from "@/lib/study/preparations";
+import { preparationSchema } from "@/lib/study/preparation-schema";
 import { createGuestCheckout, fulfilGuestCheckout, guestCheckoutById, guestEmail } from "@/lib/server/guest-billing";
 
-export const runtime = "nodejs";
 const inputSchema = z.discriminatedUnion("action", [
   z.object({ action:z.literal("checkout"), tier:z.enum(["monthly","yearly"]), email:guestEmail, name:z.string().trim().min(1).max(80), selections:preparationSchema.optional() }).strict(),
   z.object({ action:z.literal("verify"), checkoutId:z.uuid(), razorpay_payment_id:z.string().regex(/^pay_[a-zA-Z0-9]+$/), razorpay_subscription_id:z.string().regex(/^sub_[a-zA-Z0-9]+$/), razorpay_signature:z.string().regex(/^[a-f0-9]{64}$/i) }).strict(),

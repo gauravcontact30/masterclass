@@ -6,7 +6,6 @@ import { db, check } from "@/lib/server/db";
 import { AI_PROVIDERS, PROVIDER_LABELS, completeWithFallback, completeWithProvider, defaultProvider, learningProvider, providerConfigured, providerGrounded, providerModel, ProviderError } from "@/lib/server/ai-providers";
 import { summarizeAiEvents, type AiEventRow } from "@/lib/ai-insights";
 
-export const runtime = "nodejs";
 
 const PAGE = 1000;
 /** Enough for a busy 90-day window; beyond this the response says the sample was capped. */

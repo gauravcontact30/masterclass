@@ -6,7 +6,6 @@ import { STUDY_FILTERS } from "@/lib/notes-study";
 import { requireLearningUser as currentUser } from "@/lib/server/subscription-access";
 import { authConfigured, databaseConfigured, billingConfigured } from "@/lib/server/config";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "Notes" };
 type Filters = { q?: string | string[]; technology?: string | string[]; kind?: string | string[]; note?: string | string[] };
 const scalar = (value: string | string[] | undefined) => typeof value === "string" ? value : "";

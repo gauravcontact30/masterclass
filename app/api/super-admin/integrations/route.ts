@@ -4,7 +4,6 @@ import { inngest } from "@/lib/inngest/client";
 import { env } from "@/lib/env";
 import { z } from "zod";
 
-export const runtime = "nodejs";
 
 const integrationActionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("flush_cache") }),

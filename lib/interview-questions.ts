@@ -6,10 +6,13 @@
 
 /** How often interviewers ask it: 5 is asked almost every time the topic comes up, 1 is a rare deep cut. */
 export type Stars = 1 | 2 | 3 | 4 | 5;
-/** An open question with a model answer, the kind you talk through. */
-export type SubjectiveQuestion = { stars: Stars; question: string; answer: string; code?: string };
+/**
+ * An open question with a model answer, the kind you talk through. On both question kinds, `source` names where the
+ * facts were checked and is shown under the answer, e.g. "Sourced from Docs by LangChain (MCP)".
+ */
+export type SubjectiveQuestion = { stars: Stars; question: string; answer: string; code?: string; source?: string };
 /** A multiple-choice question: four options, the index of the right one and why it is right. */
-export type ObjectiveQuestion = { stars: Stars; question: string; options: [string, string, string, string]; answer: 0 | 1 | 2 | 3; why: string; code?: string };
+export type ObjectiveQuestion = { stars: Stars; question: string; options: [string, string, string, string]; answer: 0 | 1 | 2 | 3; why: string; code?: string; source?: string };
 export type QuestionSet = { subjective: SubjectiveQuestion[]; objective: ObjectiveQuestion[] };
 
 export const s = (stars: Stars, question: string, answer: string, code?: string): SubjectiveQuestion => ({ stars, question, answer, ...(code ? { code } : {}) });

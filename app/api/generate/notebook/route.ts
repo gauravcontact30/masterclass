@@ -7,7 +7,6 @@ import { buildNotebook, serializeNotebook } from "@/lib/artistic-notes/notebook"
 import { notebookRequestSchema, requestLimits } from "@/lib/artistic-notes/schema";
 import { recordEvent } from "@/lib/server/monitoring";
 
-export const runtime = "nodejs";
 export const maxDuration = 30;
 
 /** POST notebookRequestSchema JSON -> an nbformat 4.5 .ipynb download. */

@@ -4,7 +4,6 @@ import { authConfigured, billingConfigured, subscriptionPrice } from "@/lib/serv
 import { currentUser } from "@/lib/server/auth";
 import { privateMetadata } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
 export const metadata = { ...privateMetadata, title: "Subscribe" };
 
 /** Membership checkout for visitors without an account; members manage plans in the dashboard. */

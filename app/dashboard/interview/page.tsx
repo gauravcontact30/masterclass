@@ -4,7 +4,6 @@ import { requireLearningUser as currentUser } from "@/lib/server/subscription-ac
 import { authConfigured, databaseConfigured, billingConfigured } from "@/lib/server/config";
 import { proSectionContent } from "@/lib/server/pro-learn-pages";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "Interview · Professional Learn" };
 
 export default async function Page() {

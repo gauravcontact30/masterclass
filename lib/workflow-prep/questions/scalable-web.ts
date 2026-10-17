@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "How do you load-test before a big launch?", "Model realistic traffic (mix of endpoints, think time, peak rates) with tools like k6 or Locust, test against a production-like environment, ramp up gradually, watch every tier's metrics and fix the first bottleneck found."),
     s(2, "What is the thundering herd problem?", "Many clients or processes wake up and hit a resource at the same moment, for example after a cache expiry or a service restart. Jitter, request coalescing and gradual ramp-up prevent it."),
     s(2, "How do feature flags help scaling and releases?", "They separate deploying code from releasing features, allowing gradual rollouts, quick rollback without redeploying, and turning off expensive features during incidents."),
+    s(4, "How do you design a system that must survive a full region outage?", "Run active-active or warm-standby in a second region, replicate data asynchronously with a known recovery point, route users with health-checked DNS or a global load balancer, and rehearse failover regularly. Decide which features may degrade while running from one region."),
+    s(4, "How do you keep latency low as you add more services per request?", "Fan out calls in parallel rather than in sequence, set timeouts and budgets per hop, cache or precompute shared data, use backend-for-frontend aggregation, and trace requests to find the slowest dependency. Tail latency grows with every extra hop."),
+    s(3, "What does backpressure mean in a web system?", "When a downstream component cannot keep up, it signals upstream to slow down, by bounded queues, 429 or 503 responses, or slower acknowledgements, instead of accepting unlimited work and falling over. Without backpressure, overload spreads and causes cascading failure."),
+    s(3, "How do you scale reads with read replicas safely?", "Send reads that can tolerate slight staleness to replicas, keep reads after a user's own write on the primary or a caught-up replica, monitor replication lag, and remove lagging replicas from the pool automatically."),
+    s(3, "How do you handle a sudden traffic spike from a marketing email?", "Pre-scale before the send, serve the landing page from the CDN, queue sign-ups and other writes, shed non-essential features with flags, and stagger the email send so traffic arrives over minutes rather than seconds."),
+    s(3, "What is a bulkhead and when would you use one?", "A bulkhead isolates resources, such as separate thread pools, connection pools or instances, per dependency or customer class, so one failing dependency or noisy tenant cannot exhaust everything. Use it around slow or unreliable downstream calls."),
+    s(2, "How do you control cloud cost while scaling?", "Right-size instances from real utilisation, use auto-scaling with sensible minimums, move steady load to reserved or savings plans and batch work to spot capacity, cache aggressively, and track cost per request or per user as a metric alongside latency."),
   ],
   objective: [
     o(5, "What makes app servers safe to add or remove freely?", ["Being stateless", "Sticky sessions only", "Local file uploads", "In-memory sessions"], 0, "Any server can handle any request."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "When should sharding be considered?", ["When one primary cannot handle writes", "On day one", "When reads are slow only", "Never"], 0, "Try replicas and caching first."),
     o(2, "Blue-green deployment means…", ["Switching traffic between two environments", "Deploying twice a day", "Using two colours in the UI", "Testing in production only"], 0, "Instant rollback by switching back."),
     o(2, "Which practice tests resilience on purpose?", ["Chaos experiments or game days", "Code formatting", "Snapshot tests", "Linting"], 0, "Inject failures safely."),
+    o(4, "Calls to independent services in one request should be made…", ["In parallel with a time budget","Strictly one after another","Without timeouts","Only from the browser"], 0, "Parallel calls bound total latency by the slowest one."),
+    o(4, "Backpressure lets a slow component…", ["Signal upstream to send less work","Accept unlimited work","Delete its queue","Restart the load balancer"], 0, "Bounded work prevents overload from cascading."),
+    o(3, "Reads right after a user's own write should go to…", ["The primary or a caught-up replica","Any replica regardless of lag","The CDN","A backup snapshot"], 0, "Lagging replicas would show the user stale data."),
+    o(3, "A bulkhead protects a system by…", ["Isolating resource pools per dependency","Encrypting traffic","Compressing responses","Merging all thread pools"], 0, "One failing dependency cannot drain every resource."),
+    o(3, "Before a large marketing email, you should…", ["Pre-scale and stagger the send","Disable the CDN","Turn off auto-scaling","Shrink the database"], 0, "Warm capacity and spread arrivals absorb the spike."),
+    o(3, "Recovery point objective (RPO) describes…", ["How much data loss is acceptable","How fast pages load","How many servers run","The CDN cache size"], 0, "RPO is the window of writes you can afford to lose."),
+    o(2, "Which work suits cheaper spot capacity?", ["Interruptible batch jobs","The primary database","Login sessions","Payment authorisation"], 0, "Spot instances can be reclaimed at short notice."),
   ],
 };
 export default bank;

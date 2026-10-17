@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "What should be logged for agent actions?", "Every query, summary, suggestion, approval and executed action with who approved it and when, for postmortems and audits."),
     s(2, "What is a blast radius limit?", "A constraint so automated actions affect only a small scope at first (one region, one canary), limiting damage if the action is wrong."),
     s(2, "How do game days help?", "Practising simulated incidents tests runbooks, alerts and the agent's usefulness safely, revealing gaps before real outages."),
+    s(4, "How do you design the agent's investigation workflow?", "Start from the alert and affected service, gather recent deploys and config changes, query metrics and error rates for the service and its dependencies, pull sample error logs and traces, then rank hypotheses with evidence. Each step is a read-only tool call with a time budget."),
+    s(4, "How do you decide when the agent should page a human?", "Page immediately for customer-facing SLO breaches, security signals and anything the agent cannot explain within a few minutes. Let the agent handle low-severity, known-pattern alerts with a summary, and always escalate if a remediation needs approval."),
+    s(3, "How does the agent help during a long, multi-team incident?", "Maintain a live incident timeline from chat, alerts and actions, summarise the current state for people joining late, track owners and open tasks, and draft regular stakeholder updates for the incident commander to approve."),
+    s(3, "How do you detect a bad deploy quickly?", "Compare error rate, latency and saturation for the new version against the old during a canary, alert on significant differences, and let the agent link the anomaly to the specific deploy and suggest rollback for approval."),
+    s(3, "How do you handle incidents caused by third-party providers?", "Check provider status pages and your own synthetic checks against the provider, confirm whether errors come from their endpoints, switch to fallbacks or degraded modes where designed, and keep customers informed while waiting."),
+    s(3, "How do you capture knowledge from incidents so the agent improves?", "After each incident, store the confirmed root cause, signals that pointed to it and fixes that worked as structured data linked to the service. Update runbooks and add the incident as an evaluation case for the agent."),
+    s(2, "How do you prevent noisy, flapping alerts?", "Alert on symptoms users feel rather than every cause, use burn rates over sensible windows, add hysteresis so alerts do not fire and clear repeatedly, and review the noisiest alerts every month."),
   ],
   objective: [
     o(5, "What should the agent query instead of raw logs?", ["Aggregated metrics and top log patterns", "Every log line", "Random samples only", "Nothing"], 0, "Keeps context small and relevant."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "Customer data access for the agent should be…", ["Limited to what diagnostics require", "Unlimited", "Shared publicly", "Copied to logs"], 0, "This is the least-privilege principle."),
     o(2, "How can engineers stop the agent quickly?", ["An easy kill switch", "Rebooting servers", "Deleting the repository", "Calling the vendor"], 0, "Safety comes before automation."),
     o(2, "Which metric shows the agent is useful?", ["Time to a useful hypothesis", "Lines of logs read", "Model size", "Prompt length"], 0, "Faster diagnosis matters."),
+    o(4, "Investigation tools used by the agent should be…", ["Read-only with time budgets","Able to delete data","Unlimited in runtime","Shared admin accounts"], 0, "Investigation must not change production."),
+    o(4, "The agent should page a human immediately for…", ["Customer-facing SLO breaches","Every low-severity alert","Disk usage at 10%","Successful deploys"], 0, "Users are affected; people must be involved."),
+    o(3, "During a long incident, the agent can…", ["Keep a live timeline and draft updates","Close the incident itself","Silence all alerts","Merge code fixes"], 0, "It reduces coordination load on the commander."),
+    o(3, "A bad deploy is detected fastest by…", ["Comparing canary and stable metrics","Waiting for customer emails","Weekly reports","Reading commit messages"], 0, "Side-by-side comparison shows regressions early."),
+    o(3, "For a third-party outage you should first…", ["Confirm errors come from the provider's endpoints","Roll back your own code","Restart every server","Delete caches"], 0, "The fix depends on where the fault is."),
+    o(3, "Resolved incidents should become…", ["Evaluation cases and runbook updates","Deleted records","Marketing posts","New alerts only"], 0, "Past incidents teach the agent and the team."),
+    o(2, "Flapping alerts are reduced with…", ["Hysteresis and burn-rate windows","More alert rules","Lower thresholds","Paging everyone"], 0, "Alerts should not fire and clear repeatedly."),
   ],
 };
 export default bank;

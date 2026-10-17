@@ -5,7 +5,6 @@ import { requireLearningUser as currentUser } from "@/lib/server/subscription-ac
 import { authConfigured, billingConfigured, databaseConfigured } from "@/lib/server/config";
 import styles from "@/components/answer-search.module.css";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "Vocabulary" };
 
 export default async function VocabularyPage() {

@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "What is adaptive rate limiting?", "Adjusting limits automatically based on system health, such as lowering limits when latency or error rates rise (load shedding), so the system protects itself during incidents."),
     s(2, "Why might you return 503 instead of 429?", "429 means this client exceeded its limit. 503 means the service as a whole is overloaded or shedding load, regardless of the client's usage."),
     s(2, "How do you document rate limits for API users?", "Publish limits per plan and endpoint, the headers returned, recommended retry behaviour and how to request higher limits, and keep them versioned with the API docs."),
+    s(4, "How would you rate-limit a GraphQL API where one query can be very expensive?", "Compute a query cost before execution from depth, list sizes and field weights, reject queries above a maximum cost, and charge the cost against a per-client budget in a token bucket. Return the cost and remaining budget in the response extensions so clients can tune their queries."),
+    s(4, "How do you rate-limit WebSocket connections and messages?", "Limit connection attempts per user and IP at the gateway, cap concurrent connections per account, and apply a token bucket to messages inside each connection. Close or slow abusive connections with a clear close code rather than silently dropping messages."),
+    s(3, "How do you keep a limiter working when Redis is unavailable?", "Decide a failure mode per endpoint: fail open with a generous local in-memory limit for most APIs, fail closed for sensitive ones like login. Use short timeouts and a circuit breaker so the limiter never becomes the outage itself."),
+    s(3, "How would you limit outbound calls your service makes to a third-party API?", "Put a shared token bucket in front of the client library sized to the provider's quota, queue or delay calls when tokens run out, respect the provider's Retry-After, and spread the quota across workers through a central store."),
+    s(3, "How do you stop one large customer's batch job from starving others?", "Use per-tenant limits plus fair queuing: each tenant gets its own queue or weight, and a scheduler takes work round-robin or by weight, so one tenant's backlog waits behind its own share instead of blocking everyone."),
+    s(3, "How do you roll out a new, stricter limit safely?", "Run it in shadow mode first, logging who would have been limited without rejecting. Review the impact, notify affected customers, then enforce it gradually with a feature flag, watching 429 rates and support tickets."),
+    s(2, "What are the trade-offs of rate-limiting at the CDN or WAF layer?", "Edge limits stop floods before they reach your servers and absorb volumetric attacks cheaply, but they see less context, usually only IP, path and headers, so per-user or per-plan limits still belong in the API gateway or application."),
   ],
   objective: [
     o(5, "Where should rate limiting ideally happen?", ["At the gateway or edge", "Only in the database", "In the browser", "After the business logic"], 0, "Rejected requests should not reach the backend."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "Which headers describe remaining quota?", ["RateLimit-Remaining and RateLimit-Reset", "ETag", "Content-Length", "Accept"], 0, "Standardised rate-limit headers."),
     o(2, "Where should limits per plan be stored?", ["Configuration looked up by API key", "Hard-coded in each handler", "In the client", "In DNS"], 0, "Easy to change per plan."),
     o(2, "IPv6 limits are often applied to…", ["A prefix such as /64", "Each full address", "Only IPv4", "MAC addresses"], 0, "One user may hold many IPv6 addresses."),
+    o(4, "How should a GraphQL API limit expensive queries?", ["Charge a computed query cost against a budget","Count HTTP requests only","Block all nested queries","Limit by response size after sending"], 0, "One GraphQL request can cost far more than another, so cost is the fair unit."),
+    o(4, "What is shadow mode for a new limit?", ["Logging who would be limited without rejecting","Hiding the limit from documentation","Limiting only at night","Applying it to internal users only"], 0, "It shows the real impact before anyone is blocked."),
+    o(3, "If the limiter's store is down, a login endpoint should usually…", ["Fail closed","Fail open with no limit","Return 200 for everyone","Disable passwords"], 0, "Brute-force protection matters more than availability for login."),
+    o(3, "What keeps one tenant's backlog from starving others?", ["Fair queuing with per-tenant shares","A single FIFO queue","Bigger servers only","Disabling retries"], 0, "Each tenant waits behind its own work, not everyone's."),
+    o(3, "Calls to a third-party API with a 100 per second quota should be…", ["Shaped by a shared token bucket sized to the quota","Sent as fast as possible","Retried immediately on 429","Made from the browser"], 0, "Staying under the provider's quota avoids their 429s and bans."),
+    o(3, "What should limit messages inside an open WebSocket?", ["A per-connection token bucket","The HTTP 429 status","DNS TTLs","The TLS handshake"], 0, "Messages arrive on one connection, so the limit lives inside it."),
+    o(2, "What can an edge or WAF limiter usually not see?", ["The user's plan and account identity","The client IP","The request path","Request rate per IP"], 0, "Per-plan limits need application context the edge lacks."),
   ],
 };
 export default bank;

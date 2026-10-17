@@ -10,7 +10,6 @@ import { authConfigured, billingConfigured, databaseConfigured } from "@/lib/ser
 import { prepareHandbooks, prepareSearchTopics } from "@/lib/server/prepared-catalog";
 import { withApiReference } from "@/lib/server/handbook-api-reference";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "Search" };
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {

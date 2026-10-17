@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "How do you measure notification quality?", "Track delivery rate, open and click rates, unsubscribe and complaint rates, time to deliver, and the effect on user actions, comparing categories and channels."),
     s(2, "What is a fallback channel?", "If a push is not delivered or opened within a time window, send the same important message by email or SMS, so critical updates reach the user."),
     s(2, "How do you comply with privacy rules in notifications?", "Collect consent for marketing, honour opt-outs immediately, avoid sensitive data in message content, and keep audit logs of consent and sends."),
+    s(4, "How would you design the notification data model for many channels?", "Store one notification record per event and user with type, payload and template, then one delivery record per channel attempt with status, provider ID and timestamps. Preferences live per user, type and channel, so the router can decide channels without touching producers."),
+    s(4, "How do you guarantee an OTP arrives quickly even during a marketing blast?", "Put transactional messages on a separate high-priority queue with reserved worker capacity and provider throughput, use a dedicated sending number or subdomain, set a short validity and fall back to another provider or channel if delivery is not confirmed within seconds."),
+    s(3, "How do you let users unsubscribe in one click from an email?", "Include a signed unsubscribe link and the List-Unsubscribe and List-Unsubscribe-Post headers, process the request without a login, update preferences immediately for that category, and confirm on a page that offers to manage other categories."),
+    s(3, "How would you build a notification centre with unread counts?", "Store in-app notifications per user sorted by time, keep an unread counter updated on insert and on read, push changes over WebSocket or SSE, mark items read in batches, and paginate with cursors. Recompute the counter periodically to correct drift."),
+    s(3, "How do you A/B test notification content?", "Assign users to variants deterministically, send each variant's template, and measure open, click and conversion plus unsubscribe and complaint rates. Stop variants that raise opt-outs even if clicks rise, and keep a holdout group that receives nothing to measure the true lift."),
+    s(3, "How do you handle notifications for users with several devices?", "Register every device token per user, send push to all active devices, sync read state so reading on one clears the badge on the others, and expire tokens not seen for a while to avoid wasted sends."),
+    s(2, "How do you send WhatsApp business notifications?", "Use the WhatsApp Business Platform through a provider, send only pre-approved templates outside the 24-hour customer service window, get explicit opt-in, and track delivery and read webhooks just like other channels."),
   ],
   objective: [
     o(5, "Which messages may bypass marketing opt-outs per policy?", ["Critical security messages", "Promotions", "Newsletters", "Surveys"], 0, "Users still expect security alerts."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "Notifications should deep-link to…", ["The exact relevant screen", "The home page always", "The app store", "Nothing"], 0, "Saves the user steps."),
     o(2, "Bounced email addresses should be…", ["Suppressed from future sends", "Retried daily", "Ignored", "Shared with partners"], 0, "Protects sender reputation."),
     o(2, "Collapsing similar notifications avoids…", ["Flooding users with near-duplicates", "Delivery receipts", "Templates", "Localisation"], 0, "One message instead of ten."),
+    o(4, "Which design lets channels change without touching producers?", ["A router using stored user preferences","Producers calling providers directly","Hard-coded channels per service","Sending to every channel always"], 0, "Producers publish events; routing stays in one place."),
+    o(4, "What keeps OTPs fast during a marketing campaign?", ["A separate high-priority queue and capacity","Sending OTPs after the campaign","Larger email templates","Longer OTP validity"], 0, "Bulk sends must not delay security codes."),
+    o(3, "Which email header supports one-click unsubscribe?", ["List-Unsubscribe-Post","Content-Length","X-Frame-Options","Accept-Language"], 0, "Mail providers show an unsubscribe button using it."),
+    o(3, "Unread counts drift less if you…", ["Recompute them periodically","Never store them","Count on every page load from scratch","Store them only in the browser"], 0, "A periodic correction fixes missed updates."),
+    o(3, "A holdout group in notification tests…", ["Receives no notification to measure true lift","Receives every variant","Is the engineering team","Only gets SMS"], 0, "It shows what happens without the message."),
+    o(3, "Reading a notification on one device should…", ["Clear the badge on the user's other devices","Delete the other devices","Send the notification again","Do nothing elsewhere"], 0, "Read state must sync across devices."),
+    o(2, "Outside the 24-hour window, WhatsApp business messages must use…", ["Pre-approved templates","Any free text","SMS instead","Email headers"], 0, "Meta's rules require approved templates for business-initiated messages."),
   ],
 };
 export default bank;

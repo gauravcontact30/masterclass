@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import { BriefcaseBusiness, CornerDownLeft, GraduationCap, Layers, LayoutGrid, PanelsTopLeft, Search, X, type LucideIcon } from "lucide-react";
-import { PRO_TRACKS } from "@/lib/pro-learn/types";
+import { PRO_TRACKS } from "@/lib/pro-learn/tracks";
 import { CATEGORY_LABELS, PREPARATION_GROUPS, PREPARATIONS, type PreparationAccess } from "@/lib/study/preparations";
 import { SYSTEM_DESIGN_COURSES } from "@/lib/study/system-design-catalog";
 

@@ -5,19 +5,6 @@
 .shell :global(.page-intro) { border-bottom: 1px solid #e6e5e0; padding-bottom: 28px; }
 .shell :global(.page-intro h1) { font-family: inherit; font-size: clamp(28px, 3vw, 40px); font-weight: 650; letter-spacing: -1.3px; }
 .shell :global(.intro-mark) { display: none; }
-.shell :global(.dashboard-reference) { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; padding: 28px 32px; margin-bottom: 28px; border: 1px solid #e2ded6; border-radius: 8px; background: #fff; }
-.shell :global(.dashboard-reference > div > span) { color: #9b432c; font: 11px/1.5 ui-monospace, monospace; }
-.shell :global(.dashboard-reference h2) { margin: 10px 0; font-family: inherit; font-size: 27px; font-weight: 600; line-height: 1.25; letter-spacing: -.8px; }
-.shell :global(.dashboard-reference p) { max-width: 440px; font-size: 13px; line-height: 1.8; color: #6c6b64; }
-.shell :global(.dashboard-reference > div > a) { display: inline-flex; align-items: center; gap: 10px; color: #9b432c; font-size: 13px; font-weight: 650; margin-top: 22px; }
-.shell :global(.dashboard-reference nav) { align-self: center; display: grid; }
-.shell :global(.dashboard-reference nav a) { display: flex; align-items: center; gap: 14px; padding: 18px 12px; font-size: 14px; border-bottom: 1px solid #e6e5e0; }
-.shell :global(.dashboard-reference nav a:hover) { background: #faf8f4; }
-.shell :global(.dashboard-reference nav a > svg:first-child) { color: #9b432c; }
-.shell :global(.dashboard-reference nav a > svg:last-child) { margin-left: auto; }
-.shell :global(.dashboard-reference small) { display: block; margin-top: 5px; font-size: 11px; color: #6c6b64; }
-.shell :global(.dashboard-reference a:focus-visible) { outline: 2px solid #9b432c; outline-offset: 4px; }
 @media (max-width: 900px) {
   .shell :global(.workspace) { padding: 24px 18px; }
-  .shell :global(.dashboard-reference) { grid-template-columns: 1fr; gap: 16px; padding: 24px; }
 }

@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "When is event-driven design overkill?", "For simple CRUD apps with one team, low scale and strong consistency needs. A modular monolith with a database transaction is simpler until there is a real need to decouple."),
     s(2, "How do you test event-driven services?", "Unit-test handlers with sample events, use contract tests for event schemas between producers and consumers, run integration tests with a real broker in containers, and test duplicate and out-of-order delivery explicitly."),
     s(2, "What belongs in an event payload?", "The event type, a unique ID, the entity ID, a timestamp, a version, and the data consumers need (or a reference to fetch it). Avoid huge payloads and sensitive data that consumers do not need."),
+    s(4, "How do you handle a consumer that needs data from an event it never received?", "Either make events carry enough state (event-carried state transfer) so consumers do not need to call back, or let the consumer query the owning service's API on demand. For new consumers, backfill by replaying the log or loading a snapshot before consuming live events."),
+    s(4, "How do you design events so other teams can discover and trust them?", "Publish schemas in a registry with owners, versions and examples, use a consistent envelope (event ID, type, source, time, correlation ID), document guarantees such as ordering keys and retention, and treat event contracts like public APIs with deprecation periods."),
+    s(3, "What is the difference between a domain event and an integration event?", "A domain event records something meaningful inside one service's model and may carry internal detail. An integration event is the stable, public version published for other services, with only the fields they need, so internal refactors do not break consumers."),
+    s(3, "How do you handle a downstream service that is down for an hour?", "Messages wait in the broker, so the consumer catches up when it returns. Size retention to cover the outage, make catch-up idempotent, watch lag, and consider extra consumers to drain the backlog faster once it recovers."),
+    s(3, "How do you avoid an event loop between two services?", "Never react to your own published events, mark events with their source and a hop count or correlation ID, make handlers idempotent, and design flows as a directed graph so an update in service A does not trigger an update back in A through B."),
+    s(3, "When would you choose a stream processor such as Kafka Streams or Flink?", "When you need stateful work over events, such as joins, windows, aggregates or deduplication, with exactly-once state updates and fault-tolerant checkpoints, rather than handling each message independently in a simple consumer."),
+    s(2, "How do you keep personal data out of long-lived event logs?", "Publish references instead of personal fields, encrypt sensitive fields with per-user keys so deleting the key erases them (crypto-shredding), and set retention or compaction so data does not live longer than policy allows."),
   ],
   objective: [
     o(5, "An event describes…", ["Something that already happened", "An order to do something", "A database query", "A UI action only"], 0, "Commands ask; events announce."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "Which managed AWS queue needs minimal operations?", ["SQS", "Kafka on EC2", "RabbitMQ on VMs", "Redis on EC2"], 0, "Fully managed by AWS."),
     o(2, "Which pattern publishes events reliably from a DB transaction?", ["Outbox", "Inbox", "Adapter", "Facade"], 0, "Events are stored with the change."),
     o(2, "Events should avoid carrying…", ["Sensitive data consumers do not need", "An event ID", "A timestamp", "The entity ID"], 0, "Share only what is needed."),
+    o(4, "Event-carried state transfer means…", ["Events include the data consumers need","Consumers always call back for data","Events carry only an ID","State is stored in the broker config"], 0, "Consumers can act without a synchronous call to the owner."),
+    o(4, "An integration event differs from a domain event because it is…", ["A stable public contract for other services","Never persisted","Only used in tests","Always larger"], 0, "Public events shield consumers from internal model changes."),
+    o(3, "Where should event schemas be published?", ["A schema registry with owners and versions","Private chat messages","Only in producer code","Nowhere"], 0, "Shared schemas let teams discover and validate events."),
+    o(3, "What happens to events while a consumer is down, if retention is long enough?", ["They wait in the broker for catch-up","They are lost immediately","They go to the producer","They are converted to emails"], 0, "Durable brokers decouple producer and consumer uptime."),
+    o(3, "Which tool fits windowed joins and aggregates over events?", ["A stream processor like Flink","A cron job","A CDN","A load balancer"], 0, "Stream processors manage state and checkpoints for you."),
+    o(3, "Crypto-shredding removes personal data by…", ["Deleting the per-user encryption key","Rewriting every log segment","Renaming the topic","Restarting brokers"], 0, "Encrypted fields become unreadable once the key is gone."),
+    o(2, "What helps prevent infinite event loops between services?", ["Ignoring your own events and tracking the source","Bigger partitions","Shorter retention","More consumers"], 0, "Knowing an event's origin stops it bouncing back."),
   ],
 };
 export default bank;

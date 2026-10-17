@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "How do you handle very large result sets?", "Aggregate in SQL, return only the top rows with a count, and offer a download or BI link for full results."),
     s(2, "What should be logged?", "Question, user, retrieved schema, SQL, validation result, execution time, rows returned, cost and feedback."),
     s(2, "How do you roll out the assistant?", "Start with one well-modelled domain (sales or support), a group of analysts as early users, and expand domains as accuracy is proven."),
+    s(4, "How do you retrieve the right tables when the warehouse has thousands of them?", "Index table and column descriptions, sample values and common joins, retrieve the most relevant tables for each question with semantic search plus keyword matching, then give the model only those schemas. Learn from which tables successful past queries used."),
+    s(4, "How do you handle metrics that have a precise business definition, such as active users?", "Define them once in the semantic layer or as approved SQL snippets, have the assistant use those definitions instead of inventing calculations, and show which definition was applied in the answer."),
+    s(3, "How do you explain a generated query to a non-technical user?", "Translate the SQL into a short plain-language description of what was counted, filtered and grouped, list the tables and date range used, and let the user expand to see the full SQL."),
+    s(3, "How do you handle questions that need data from two systems?", "Answer only if both are joined in the warehouse with known keys, otherwise say the data lives in separate systems. Never join on fuzzy matches like names without telling the user about the risk."),
+    s(3, "How do you keep the assistant fast for repeated questions?", "Cache generated SQL by normalised question and user permissions, cache query results with short TTLs for dashboards, and suggest saved queries for common questions instead of regenerating SQL each time."),
+    s(3, "How do you let users correct a wrong answer?", "Let them flag the answer and edit the filters or the SQL, run the corrected query, store the pair as a new evaluation example after review, and use it as a few-shot example for similar questions."),
+    s(2, "How do you handle questions about the future, like next quarter's sales?", "Explain that the assistant reports historical data, offer the trend or a simple forecast only if an approved forecasting model or table exists, and label any projection clearly as an estimate."),
   ],
   objective: [
     o(5, "What schema context should be sent to the model?", ["Only relevant tables retrieved by description", "The entire warehouse", "No schema", "Random tables"], 0, "Smaller context, fewer mistakes."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "Which tool can define a semantic layer?", ["dbt metrics or Cube", "Photoshop", "Slack", "Excel macros only"], 0, "Shared metric definitions."),
     o(2, "What should be logged per question?", ["SQL, validation, rows, cost and feedback", "Only the question", "Nothing", "Only errors"], 0, "These logs are needed to improve."),
     o(2, "How are model candidates chosen?", ["Tested on your own evaluation set", "By popularity", "By release date", "By name"], 0, "Warehouse schemas vary widely."),
+    o(4, "With thousands of tables, the model should receive…", ["Only the retrieved relevant schemas","Every table's schema","No schema","Random tables"], 0, "Focused context improves accuracy and cost."),
+    o(4, "Metrics like 'active users' should use…", ["The approved semantic-layer definition","The model's own calculation","Whatever the user types","The largest number"], 0, "One definition keeps answers consistent."),
+    o(3, "A query explanation for business users should include…", ["What was counted, filtered and the date range","Only the raw SQL","The database password","The model's name"], 0, "Plain language builds trust."),
+    o(3, "Joining two systems on customer names is…", ["Risky and must be disclosed","Always exact","Required","Faster and safer"], 0, "Name matches create false joins."),
+    o(3, "Repeated questions are sped up by caching…", ["SQL and results scoped to permissions","Only the chart colours","Nothing","User passwords"], 0, "Caches must respect who may see the data."),
+    o(3, "User corrections should become…", ["Reviewed evaluation and few-shot examples","Ignored notes","Production SQL without review","Deleted logs"], 0, "Corrections improve future answers."),
+    o(2, "A question about next quarter's sales should…", ["Be answered only with a labelled, approved forecast","Get an invented number","Run a random query","Return last year's total as fact"], 0, "Projections must be clearly marked."),
   ],
 };
 export default bank;

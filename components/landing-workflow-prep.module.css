@@ -22,7 +22,6 @@
 .interview h4 svg { color: var(--deep); }
 
 /* Reserves room while the chunk loads, so the slide does not jump. */
-.loading { min-height: 320px; border: 1px dashed var(--nb-rule); border-radius: 20px; background: color-mix(in srgb, var(--tint) 25%, #fff); }
 
 @media (max-width: 1080px) { .detail { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 620px) { .detail { grid-template-columns: 1fr; } }

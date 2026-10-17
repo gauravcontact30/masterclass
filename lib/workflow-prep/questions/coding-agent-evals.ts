@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "What should be stored for each run?", "The diff, test results, logs, tool calls, tokens, cost, duration, sandbox image version and judge scores."),
     s(2, "How do you set the release threshold?", "Agree on minimum success rate, maximum allowed regression on solved tasks, and cost limits with product owners, and document them in the release process."),
     s(2, "How do production signals complement offline evals?", "Track acceptance of agent changes, reverted commits, user ratings and follow-up fixes in production, feeding new tasks back into the dataset."),
+    s(4, "How do you design tasks that test whether the agent reads the existing codebase?", "Use real repositories with conventions, helpers and tests already present, write tasks whose correct solution reuses existing utilities or follows established patterns, and grade both hidden tests and whether the diff duplicates code that already existed."),
+    s(4, "How do you evaluate the agent's ability to fix failing tests without cheating?", "Run hidden tests the agent cannot see, check that it did not edit or delete tests, skip assertions or special-case inputs, and review the diff for changes outside the intended scope."),
+    s(3, "How do you measure the cost and speed of a coding agent alongside quality?", "Record tokens, tool calls, wall-clock time and compute cost per task, report them with pass rates, and compare versions on a quality-per-cost basis so a small gain is not bought with a large cost increase."),
+    s(3, "How do you evaluate code review comments produced by an agent?", "Seed repositories with known bugs and style issues, measure how many real issues the agent finds and how many false alarms it raises, and have engineers rate whether comments are actionable."),
+    s(3, "How do you test the agent on tasks with ambiguous requirements?", "Include tasks where the right behaviour is to ask a clarifying question or state an assumption, grade whether it does so, and penalise confidently implementing the wrong interpretation."),
+    s(3, "How do you keep the evaluation environment realistic but safe?", "Run in sandboxed containers with the project's real toolchain and dependencies cached, no access to production secrets, network allow-lists for package registries, and resource and time limits per task."),
+    s(2, "How do you report evaluation results to engineering leadership?", "Show pass rates by task category with confidence intervals, the change against the production baseline, cost per task, notable regressions with example traces and a clear ship or hold recommendation."),
   ],
   objective: [
     o(5, "Which check should run before an LLM judge?", ["Tests, build and type checks", "A spelling check only", "Nothing", "A popularity vote"], 0, "Objective checks come first."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "Which tool helps inspect failed agent runs?", ["LangSmith traces", "A spreadsheet only", "A screenshot tool", "DNS logs"], 0, "Traces show each step."),
     o(2, "Cost per task matters because…", ["Agents can be expensive to run", "It is always free", "It affects test results", "It changes the dataset"], 0, "Release gates include cost limits."),
     o(2, "Task variety should include…", ["Bug fixes, features, refactors and tests", "Only bug fixes", "Only one language", "Only easy tasks"], 0, "Variety represents real work."),
+    o(4, "Hidden tests in agent evaluations prevent…", ["The agent tailoring code to visible tests","Fast runs","Using containers","Measuring cost"], 0, "Unseen tests check real correctness."),
+    o(4, "Editing or deleting tests to make them pass should be…", ["Detected and counted as failure","Rewarded","Ignored","Allowed for speed"], 0, "It hides the bug instead of fixing it."),
+    o(3, "Comparing versions fairly includes…", ["Quality per cost, not quality alone","Only the newest result","Lines of code written","Number of commits"], 0, "A small gain may not justify a big cost rise."),
+    o(3, "Review-comment quality is measured by…", ["Real issues found versus false alarms","Comment length","Number of emojis","Speed only"], 0, "Precision and recall matter for reviewers."),
+    o(3, "On an ambiguous task, good agent behaviour is to…", ["Ask or state its assumption","Pick any interpretation silently","Refuse every time","Delete the requirements"], 0, "Clarifying avoids building the wrong thing."),
+    o(3, "Agent evaluation sandboxes should have…", ["No production secrets and limited network","Admin access to production","Unlimited runtime","Shared developer laptops"], 0, "Evaluations must be realistic but safe."),
+    o(2, "Results for leadership should include…", ["Confidence intervals and a ship or hold call","Raw logs only","A single average","Model weights"], 0, "Uncertainty and a clear decision help them act."),
   ],
 };
 export default bank;

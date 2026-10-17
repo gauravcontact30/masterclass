@@ -1,28 +1,26 @@
 "use client";
-import { useId, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { Boxes, FlaskConical, GitBranch, Layers, Network, Workflow as WorkflowIcon, type LucideIcon } from "lucide-react";
-import { NODE_HEIGHT, NODE_WIDTH, WORKFLOW_HEIGHT, WORKFLOW_WIDTH, WORKFLOWS, type Workflow, type WorkflowEdge, type WorkflowNode, type WorkflowNodeKind } from "@/lib/landing-workflows";
+import { WORKFLOWS, type Workflow, type WorkflowNodeKind } from "@/lib/landing-workflows";
+import { STEP_TONES, WorkflowDiagram, two } from "./workflow-diagram";
 import { learningImageUrl } from "@/lib/learning-image";
-import { AUTOPLAY_MS, Controls, Dots } from "./landing-ai-pulse";
+import { AUTOPLAY_MS, Controls, Dots, PREVIEW_COUNT } from "./landing-ai-pulse";
+import { DashboardMore } from "./dashboard-more";
 import { useLanguage } from "./language-provider";
 import { usePagedCarousel } from "./use-paged-carousel";
 import home from "./landing-home.module.css";
 import styles from "./landing-workflows.module.css";
-import prepStyles from "./landing-workflow-prep.module.css";
+import { LearningLoader } from "./learning-loader";
 
 /** Full detail and interview questions: about 200 Q&As, so they load as their own chunk after the page. */
-const WorkflowPrep = dynamic(() => import("./landing-workflow-prep"), { ssr: false, loading: () => <div className={prepStyles.loading} aria-hidden="true" /> });
+const WorkflowPrep = dynamic(() => import("./landing-workflow-prep"), { ssr: false, loading: () => <LearningLoader size="inline" label="Loading the blueprint details…" /> });
 
 type Group = Workflow["group"];
 type Text = (en: string, hindi: string) => string;
 const GROUPS: Group[] = ["System Design", "LangChain", "LangGraph", "LangFlow", "LangSmith"];
 const GROUP_ICON: Record<Group, LucideIcon> = { "System Design": Boxes, LangChain: Network, LangGraph: GitBranch, LangFlow: WorkflowIcon, LangSmith: FlaskConical };
 const KIND_LABEL: Record<WorkflowNodeKind, string> = { actor: "Person / client", service: "Service", store: "Data store", queue: "Queue", llm: "Model / agent", tool: "Tool / step", decision: "Decision" };
-/** Seven light tones the step pills and their diagram badges cycle through, so badge 03 matches pill 03. */
-const STEP_TONES = 7;
-const two = (n: number) => String(n).padStart(2, "0");
-const labelWidth = (label: string) => label.length * 6.4 + 18;
 
 /**
  * Workflow blueprints: System Design patterns and agentic AI workflows from real industries, one a screen.
@@ -30,13 +28,21 @@ const labelWidth = (label: string) => label.length * 6.4 + 18;
  * match the colour-coded step pills beneath it, then its full detail and most-asked interview questions.
  * Autoplay turns a screen every two minutes, as the pulse carousel does.
  */
-export function LandingWorkflows() {
+/**
+ * `preview` (the landing page) shows the first three blueprints of each category; every blueprint, here and on
+ * /dashboard, carries its full set of 30+ subjective and 30+ objective interview questions.
+ */
+export function LandingWorkflows({ preview = false }: Readonly<{ preview?: boolean }>) {
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
   const [group, setGroup] = useState<Group | "All">("All");
-  const shown = useMemo(() => group === "All" ? WORKFLOWS : WORKFLOWS.filter(workflow => workflow.group === group), [group]);
+  const shown = useMemo(() => {
+    const all = group === "All" ? WORKFLOWS : WORKFLOWS.filter(workflow => workflow.group === group);
+    return preview ? all.slice(0, PREVIEW_COUNT) : all;
+  }, [group, preview]);
   const industries = new Set(WORKFLOWS.map(workflow => workflow.industry)).size;
 
   return <section id="workflows" className={styles.section} aria-labelledby="workflows-title"><div className={home.inner}>
+    {preview && <DashboardMore href="/dashboard#workflows" title={text(`See all ${WORKFLOWS.length} blueprints`, `सभी ${WORKFLOWS.length} ब्लूप्रिंट देखें`)} detail={text("Every blueprint with 30+ subjective and 30+ objective interview questions.", "हर ब्लूप्रिंट के साथ 30+ विषयगत और 30+ वस्तुनिष्ठ इंटरव्यू प्रश्न।")} />}
     <div className={styles.head}>
       <p className={styles.kicker}><Layers size={14} aria-hidden="true" />{text("Workflow blueprints", "वर्कफ़्लो ब्लूप्रिंट")}</p>
       <h2 id="workflows-title">{text("How real systems and ", "असली सिस्टम और ")}<em>{text("AI agents get work done", "AI एजेंट काम कैसे करते हैं")}</em></h2>
@@ -93,7 +99,7 @@ function WorkflowSlide({ workflow, index, total, text }: Readonly<{ workflow: Wo
       </div>
     </article>
     <div className={styles.board}>
-      <div className={styles.canvas}><Diagram workflow={workflow} /></div>
+      <div className={styles.canvas}><WorkflowDiagram workflow={workflow} /></div>
       <ul className={styles.legend} aria-label={text("Legend", "संकेत")}>{kinds.map(kind => <li key={kind} data-kind={kind}>{KIND_LABEL[kind]}</li>)}</ul>
     </div>
     <ol className={styles.steps} aria-label={text("Step by step", "चरण दर चरण")}>
@@ -112,60 +118,4 @@ function BriefPicture({ src, alt, icon, children }: Readonly<{ src: string | nul
       <img src={src} alt={alt} loading="lazy" decoding="async" onError={() => setFailed(true)} />}
     {children}
   </div>;
-}
-
-/** Where the line from a node's centre toward `toward` leaves its box. */
-function clip(node: WorkflowNode, toward: { x: number; y: number }, pad = 5) {
-  const dx = toward.x - node.x, dy = toward.y - node.y;
-  const t = Math.min(dx ? (NODE_WIDTH / 2 + pad) / Math.abs(dx) : Infinity, dy ? (NODE_HEIGHT / 2 + pad) / Math.abs(dy) : Infinity);
-  return { x: node.x + dx * t, y: node.y + dy * t };
-}
-
-function edgeGeometry(edge: WorkflowEdge, from: WorkflowNode, to: WorkflowNode) {
-  if (edge.via) {
-    const via = { x: edge.via[0], y: edge.via[1] };
-    const s = clip(from, via), e = clip(to, via);
-    return { d: `M${s.x},${s.y} Q${via.x},${via.y} ${e.x},${e.y}`, mid: { x: .25 * s.x + .5 * via.x + .25 * e.x, y: .25 * s.y + .5 * via.y + .25 * e.y } };
-  }
-  const s = clip(from, to), e = clip(to, from);
-  const mid = { x: (s.x + e.x) / 2, y: (s.y + e.y) / 2 };
-  // A label on a short level arrow would cover both boxes, so it rides just above them instead.
-  if (edge.label && from.y === to.y && Math.abs(e.x - s.x) < labelWidth(edge.label) + 8) mid.y = from.y - NODE_HEIGHT / 2 - 20;
-  return { d: `M${s.x},${s.y} L${e.x},${e.y}`, mid };
-}
-
-function Diagram({ workflow }: Readonly<{ workflow: Workflow }>) {
-  const id = useId().replaceAll(":", "");
-  const byId = new Map(workflow.nodes.map(node => [node.id, node]));
-  const edges = workflow.edges.map(edge => ({ edge, ...edgeGeometry(edge, byId.get(edge.from)!, byId.get(edge.to)!) }));
-  return <svg viewBox={`0 0 ${WORKFLOW_WIDTH} ${WORKFLOW_HEIGHT}`} role="img" aria-label={`${workflow.title} workflow: ${workflow.nodes.map(node => node.label.replace("\n", " ")).join(", ")}`}>
-    <defs>
-      <marker id={`arrow-${id}`} viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9 z" className={styles.arrowHead} /></marker>
-      <filter id={`lift-${id}`} x="-10%" y="-20%" width="120%" height="150%"><feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="#141413" floodOpacity=".08" /></filter>
-    </defs>
-    <g>{edges.map(({ edge, d }) => <g key={`${edge.from}-${edge.to}`}>
-      <path d={d} className={styles.edge} data-dashed={!!edge.dashed} markerEnd={`url(#arrow-${id})`} />
-      {!edge.dashed && <path d={d} className={styles.flow} />}
-    </g>)}</g>
-    <g filter={`url(#lift-${id})`}>{workflow.nodes.map(node => <NodeBox key={node.id} node={node} />)}</g>
-    <g>{edges.filter(({ edge }) => edge.label).map(({ edge, mid }) => {
-      const width = labelWidth(edge.label!);
-      return <g key={`label-${edge.from}-${edge.to}`} className={styles.edgeLabel}>
-        <rect x={mid.x - width / 2} y={mid.y - 10} width={width} height={20} rx={10} />
-        <text x={mid.x} y={mid.y + 4} textAnchor="middle">{edge.label}</text>
-      </g>;
-    })}</g>
-  </svg>;
-}
-
-function NodeBox({ node }: Readonly<{ node: WorkflowNode }>) {
-  const [title, detail] = node.label.split("\n");
-  const left = node.x - NODE_WIDTH / 2, top = node.y - NODE_HEIGHT / 2;
-  return <g className={styles.node} data-kind={node.kind}>
-    <rect x={left} y={top} width={NODE_WIDTH} height={NODE_HEIGHT} rx={node.kind === "decision" ? NODE_HEIGHT / 2 : 14} />
-    <rect className={styles.accent} x={left + 10} y={top + 14} width={4} height={NODE_HEIGHT - 28} rx={2} />
-    <text x={node.x + 5} y={detail ? node.y - 3 : node.y + 5} textAnchor="middle" className={styles.nodeTitle}>{title}</text>
-    {detail && <text x={node.x + 5} y={node.y + 16} textAnchor="middle" className={styles.nodeDetail}>{detail}</text>}
-    {node.step && <g className={styles.badge} data-tone={(node.step - 1) % STEP_TONES}><circle cx={left + 4} cy={top + 4} r={12.5} /><text x={left + 4} y={top + 8} textAnchor="middle">{two(node.step)}</text></g>}
-  </g>;
 }

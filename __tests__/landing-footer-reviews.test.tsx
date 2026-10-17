@@ -8,7 +8,7 @@ test("Move to top scrolls smoothly and respects reduced motion",()=>{
 });
 test("five sample reviews use initials, support direct selection, rotate and pause",()=>{
   jest.useFakeTimers();render(<StudentReviews/>);
-  expect(screen.getByText("STUDENT STORIES · SAMPLE REVIEWS")).toBeVisible();
+  expect(screen.getByText("Sample reviews")).toBeVisible();
   expect(screen.getAllByRole("button",{name:/Read sample review by/})).toHaveLength(5);
   expect(screen.queryByText("Illustrative profile · not a verified customer")).not.toBeInTheDocument();
   expect(screen.queryByRole("img",{name:/portrait/})).not.toBeInTheDocument();

@@ -4,7 +4,6 @@ import {required} from '@/lib/server/config';
 import {equalSecret} from '@/lib/server/secrets';
 import {db,check} from '@/lib/server/db';
 import {vercelEvents} from '@/lib/server/vercel-monitoring';
-export const runtime='nodejs';
 export async function POST(request:Request){return api(async()=>{
   const secret=required('VERCEL_LOG_DRAIN_SECRET'),projectId=required('VERCEL_PROJECT_ID');
   if(Number(request.headers.get('content-length'))>1048576)throw new HttpError(413,'request_too_large');

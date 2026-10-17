@@ -229,6 +229,8 @@
 .library .sectionHead p { color: var(--nb-text); }
 .library .sectionHead p b { color: var(--nb-ink); }
 .libraryInner { display: grid; gap: clamp(24px, 3vw, 36px); }
+/* The section header (landing-section.module.css) carries its own bottom margin; here the grid gap spaces it. */
+.libraryInner > header { margin-bottom: 0; }
 .libraryInner > .sectionHead { grid-template-columns: minmax(0, 1fr) minmax(0, 52ch); align-items: end; gap: 10px 48px; }
 @media (max-width: 900px) { .libraryInner > .sectionHead { grid-template-columns: minmax(0, 1fr); } }
 .libraryInner > .sectionHead p { max-width: 52ch; font-size: 17px; line-height: 1.55; }

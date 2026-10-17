@@ -11,7 +11,8 @@ afterEach(()=>jest.useRealTimers());
 test("labels fictional reviews as samples with slide semantics",()=>{
  render(<StudentReviews/>);
  expect(screen.getByRole("region",{name:"Sample student reviews"})).toHaveAttribute("aria-roledescription","carousel");
- expect(screen.getByText("STUDENT STORIES \u00b7 SAMPLE REVIEWS")).toBeVisible();
+ expect(screen.getByText("Sample reviews")).toBeVisible();
+ expect(screen.getByText(/illustrations, not quotes from real students/)).toBeVisible();
  expect(current()).toHaveTextContent("Aditi S.");
  expect(current()).toHaveAttribute("aria-roledescription","slide");
  expect(within(current()).getByRole("img",{name:"Sample rating 5 out of 5"})).toBeInTheDocument();

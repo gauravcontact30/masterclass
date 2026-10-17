@@ -1,6 +1,7 @@
 "use client";
 
 import { awsServiceImageUrl } from "@/lib/aws-service-image";
+import { LearningLoader } from "./learning-loader";
 import { learningImageUrl } from "@/lib/learning-image";
 import { vocabularyImageUrl } from "@/lib/vocabulary-image";
 import learningCard from "./learning-card.module.css";
@@ -14,7 +15,7 @@ import { Tabs, TabsList, TabsTab, TabsPanel } from "@/components/ui/tabs";
 import { SearchSectionIcon } from "./search-section-icon";
 import dynamic from "next/dynamic";
 import { DeferredHandbook } from "./deferred-handbook";
-const CodeLab = dynamic(() => import("./code-lab").then(module => module.CodeLab), { loading: () => <div style={{ minHeight: 240 }} role="status">Loading code editor?</div> });
+const CodeLab = dynamic(() => import("./code-lab").then(module => module.CodeLab), { loading: () => <LearningLoader size="inline" label="Loading the code editor…" /> });
 import { CodeFiles } from "./code-files";
 import { inferLanguage } from "@/lib/code-run";
 import { TerminalBlock } from "./terminal-block";

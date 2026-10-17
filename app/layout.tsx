@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import { AppProviders } from "@/components/app-providers";
 import { ExclusiveAccordions } from "@/components/exclusive-accordions";
@@ -29,5 +30,5 @@ export default function RootLayout({ children }: {children: React.ReactNode}) {
   // attributes to <body> before React hydrates, which React then reports as a
   // mismatch the reader can do nothing about. Suppressing it here covers this
   // element's own attributes only — a real mismatch inside the tree still warns.
-  return <html lang="en-IN" className="h-full antialiased"><body className="min-h-full" suppressHydrationWarning><AppProviders>{children}<StudentChatbot /><VisitTracker /><ExclusiveAccordions /></AppProviders></body></html>;
+  return <html lang="en-IN" className="h-full antialiased"><body className="min-h-full" suppressHydrationWarning><AppProviders>{children}{/* Both read the URL, so each streams in its own boundary instead of blocking the prerendered shell. */}<Suspense fallback={null}><StudentChatbot /></Suspense><Suspense fallback={null}><VisitTracker /></Suspense><ExclusiveAccordions /></AppProviders></body></html>;
 }

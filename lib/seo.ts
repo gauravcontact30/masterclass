@@ -30,6 +30,7 @@ export type PublicPage = { path: `/${string}`; title: string; label: string; des
 export const PUBLIC_PAGES: readonly PublicPage[] = [
   { path: "/", title: siteTitle, label: "Home", description: siteDescription, changeFrequency: "weekly", priority: 1 },
   { path: "/courses", title: "Courses & learning paths", label: "Courses", description: "Browse every MasterClass learning path: CBSE, NCERT, ICSE and ISC school foundations, SSC, banking, railways, defence, JEE and NEET exam preparation, IELTS vocabulary, technology interviews and system design.", changeFrequency: "weekly", priority: 0.9 },
+  { path: "/library", title: "Free learning library", label: "Library", description: "Interview questions with answers for 31 technologies, system design and AI agent workflow blueprints, an API reference for 60 technologies, technology handbooks and English vocabulary with Hindi meanings, free to read.", changeFrequency: "weekly", priority: 0.9 },
   { path: "/about", title: "About MasterClass", label: "About", description: "MasterClass is a bilingual English and Hindi learning space for school, competitive exams and technology careers, with study notes, worked answers and timed practice in one dashboard.", changeFrequency: "monthly", priority: 0.7 },
   { path: "/contact", title: "Contact & support", label: "Contact", description: "Get help with your MasterClass account, membership, billing or study content, and find answers to common questions.", changeFrequency: "yearly", priority: 0.5 },
   { path: "/privacy", title: "Privacy policy", label: "Privacy", description: "How MasterClass collects, uses and protects your account, payment and learning data, and what stays only in your browser.", changeFrequency: "yearly", priority: 0.3 },
@@ -59,6 +60,31 @@ export function pageMetadata(path: PublicPage["path"]): Metadata {
     alternates: { canonical: path },
     openGraph: { type: "website", url: path, siteName, title: home ? title : `${title} | ${siteName}`, description, locale: "en_IN", alternateLocale: ["hi_IN"], images: [ogImage] },
     twitter: { card: "summary_large_image", title: home ? title : `${title} | ${siteName}`, description, images: [ogImage.url] },
+  };
+}
+
+/**
+ * Complete metadata for a generated learning page (interview questions, blueprints, API reference, vocabulary,
+ * handbooks), which is not in PUBLIC_PAGES: canonical URL, Open Graph and Twitter cards, all from one title and
+ * description.
+ */
+export function learningMetadata({ path, title, description, keywords }: { path: `/${string}`; title: string; description: string; keywords?: string[] }): Metadata {
+  return {
+    title,
+    description,
+    ...(keywords?.length ? { keywords } : {}),
+    alternates: { canonical: path },
+    openGraph: { type: "article", url: path, siteName, title: `${title} | ${siteName}`, description, locale: "en_IN", images: [ogImage] },
+    twitter: { card: "summary_large_image", title: `${title} | ${siteName}`, description, images: [ogImage.url] },
+  };
+}
+
+/** BreadcrumbList structured data for a trail of [name, path] pairs, starting after Home. */
+export function breadcrumbSchema(trail: readonly (readonly [string, `/${string}`])[]) {
+  const origin = siteUrl().href;
+  return {
+    "@context": "https://schema.org", "@type": "BreadcrumbList",
+    itemListElement: [["Home", "/"] as const, ...trail].map(([name, path], index) => ({ "@type": "ListItem", position: index + 1, name, item: new URL(path, origin).href })),
   };
 }
 

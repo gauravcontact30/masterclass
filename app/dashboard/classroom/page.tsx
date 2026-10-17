@@ -10,7 +10,6 @@ const preparedCatalogues = CLASSROOM_CATALOGUES.map(catalogue => ({ ...catalogue
   topics: catalogue.topics.map(topic => ({ ...topic, prepared: classroomExplanation(catalogue.id, topic) })),
 }));
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "Class Room" };
 
 export default async function ClassRoomPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {

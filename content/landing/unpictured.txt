@@ -175,8 +175,6 @@ LangSmith: Framework-independent instrumentation
 LangSmith: Local development workflow
 LangSmith: LangChain, LangGraph and LangSmith roles
 LangSmith: Traces, runs and spans
-LangSmith: Automatic LangChain tracing
-LangSmith: traceable instrumentation
 LangSmith: Manual run instrumentation
 LangSmith: Parent-child trace relationships
 LangSmith: Distributed trace propagation
@@ -194,7 +192,6 @@ LangSmith: Dataset imports and exports
 LangSmith: Dataset versions
 LangSmith: Dataset splits
 LangSmith: Reference outputs
-LangSmith: Multiturn evaluation datasets
 LangSmith: Dataset maintenance
 LangSmith: Experiments
 LangSmith: Evaluation SDK
@@ -214,13 +211,10 @@ LangSmith: Annotation queues
 LangSmith: Human review rubrics
 LangSmith: Automation rules
 LangSmith: Production-to-evaluation loop
-LangSmith: Prompt and Context Hub
-LangSmith: Prompt versions and commits
 LangSmith: Prompt tags and promotion
 LangSmith: Prompt playground
 LangSmith: Prompt comparison and evaluation
 LangSmith: Prompt access and secrets
-LangSmith: LangSmith deployment options
 LangSmith: Agent Server
 LangSmith: Deployment configuration
 LangSmith: Assistants, threads and runs
@@ -233,7 +227,6 @@ LangSmith: Retention and data governance
 LangSmith: The traceable wrapper
 LangSmith: Manual run trees
 LangSmith: Tracing callbacks
-LangSmith: Custom evaluators
 LangSmith: Feedback submission
 LangSmith: Run rules
 LangSmith: Metadata and tags on runs
@@ -255,7 +248,6 @@ LangFlow: Retrieval flow
 LangFlow: Knowledge Base vs an external vector store
 LangFlow: Web data: URL and Web Search
 LangFlow: Choosing the right endpoint
-LangFlow: Streaming responses
 LangFlow: Calling flows from TypeScript
 LangFlow: Embedding the chat widget
 LangFlow: Serving flows as MCP tools
@@ -847,20 +839,14 @@ Git — Commands, Branching, Rebase & History: git diff
 Git — Commands, Branching, Rebase & History: git branch
 Git — Commands, Branching, Rebase & History: git switch
 Git — Commands, Branching, Rebase & History: git checkout
-Git — Commands, Branching, Rebase & History: git merge
-Git — Commands, Branching, Rebase & History: Fast-forward vs merge commit
 Git — Commands, Branching, Rebase & History: Resolving merge conflicts
 Git — Commands, Branching, Rebase & History: git merge --abort
-Git — Commands, Branching, Rebase & History: git merge --squash
-Git — Commands, Branching, Rebase & History: git tag
 Git — Commands, Branching, Rebase & History: Branching strategies
 Git — Commands, Branching, Rebase & History: What rebase is
-Git — Commands, Branching, Rebase & History: git rebase
 Git — Commands, Branching, Rebase & History: git rebase -i
 Git — Commands, Branching, Rebase & History: git rebase --onto
 Git — Commands, Branching, Rebase & History: Rebase vs merge
 Git — Commands, Branching, Rebase & History: What cherry-pick is
-Git — Commands, Branching, Rebase & History: git cherry-pick
 Git — Commands, Branching, Rebase & History: git rerere
 Git — Commands, Branching, Rebase & History: git revert
 Git — Commands, Branching, Rebase & History: git remote
@@ -879,7 +865,6 @@ Git — Commands, Branching, Rebase & History: git reset --mixed
 Git — Commands, Branching, Rebase & History: git reset --hard
 Git — Commands, Branching, Rebase & History: git commit --amend
 Git — Commands, Branching, Rebase & History: git reflog
-Git — Commands, Branching, Rebase & History: git stash
 Git — Commands, Branching, Rebase & History: git stash pop vs apply
 Git — Commands, Branching, Rebase & History: git clean
 Git — Commands, Branching, Rebase & History: git rm and git mv
@@ -892,11 +877,9 @@ Git — Commands, Branching, Rebase & History: git shortlog
 Git — Commands, Branching, Rebase & History: git grep
 Git — Commands, Branching, Rebase & History: git describe
 Git — Commands, Branching, Rebase & History: git diff --staged
-Git — Commands, Branching, Rebase & History: git range-diff
 Git — Commands, Branching, Rebase & History: git notes
 Git — Commands, Branching, Rebase & History: Objects, refs and the DAG
 Git — Commands, Branching, Rebase & History: git worktree
-Git — Commands, Branching, Rebase & History: git sparse-checkout
 Git — Commands, Branching, Rebase & History: Git hooks
 Git — Commands, Branching, Rebase & History: Signing commits
 Git — Commands, Branching, Rebase & History: git gc and git maintenance
@@ -926,45 +909,36 @@ JavaScript (ECMAScript 2026) — Language & Runtime: Promise.try
 JavaScript (ECMAScript 2026) — Language & Runtime: Array.prototype.map
 JavaScript (ECMAScript 2026) — Language & Runtime: Array.prototype.filter
 JavaScript (ECMAScript 2026) — Language & Runtime: Array.prototype.reduce
-JavaScript (ECMAScript 2026) — Language & Runtime: Array.prototype.find and findLast
 JavaScript (ECMAScript 2026) — Language & Runtime: Array.prototype.flat and flatMap
 JavaScript (ECMAScript 2026) — Language & Runtime: Array.prototype.slice and splice
 JavaScript (ECMAScript 2026) — Language & Runtime: Array.prototype.includes and indexOf
-JavaScript (ECMAScript 2026) — Language & Runtime: Array.prototype.some and every
 JavaScript (ECMAScript 2026) — Language & Runtime: Array.prototype.at
 JavaScript (ECMAScript 2026) — Language & Runtime: Array.from and Array.of
 JavaScript (ECMAScript 2026) — Language & Runtime: Array.prototype.join
 JavaScript (ECMAScript 2026) — Language & Runtime: String.prototype.split
-JavaScript (ECMAScript 2026) — Language & Runtime: String.prototype.replace and replaceAll
 JavaScript (ECMAScript 2026) — Language & Runtime: String.prototype.slice and substring
 JavaScript (ECMAScript 2026) — Language & Runtime: String.prototype.trim, padStart and padEnd
 JavaScript (ECMAScript 2026) — Language & Runtime: String.prototype.startsWith, endsWith and includes
 JavaScript (ECMAScript 2026) — Language & Runtime: String.prototype.matchAll
-JavaScript (ECMAScript 2026) — Language & Runtime: String.prototype.localeCompare
 JavaScript (ECMAScript 2026) — Language & Runtime: String.prototype.normalize
 JavaScript (ECMAScript 2026) — Language & Runtime: Object.keys, values and entries
 JavaScript (ECMAScript 2026) — Language & Runtime: Object.assign and object spread
 JavaScript (ECMAScript 2026) — Language & Runtime: Object.freeze and Object.seal
 JavaScript (ECMAScript 2026) — Language & Runtime: Object.fromEntries
-JavaScript (ECMAScript 2026) — Language & Runtime: Object.create and prototypes
 JavaScript (ECMAScript 2026) — Language & Runtime: Object.defineProperty and descriptors
 JavaScript (ECMAScript 2026) — Language & Runtime: JSON.stringify
 JavaScript (ECMAScript 2026) — Language & Runtime: JSON.parse and the reviver
-JavaScript (ECMAScript 2026) — Language & Runtime: structuredClone
 JavaScript (ECMAScript 2026) — Language & Runtime: Promise.all and Promise.allSettled
 JavaScript (ECMAScript 2026) — Language & Runtime: Promise.race and Promise.any
 JavaScript (ECMAScript 2026) — Language & Runtime: Promise.resolve, reject and chaining
 JavaScript (ECMAScript 2026) — Language & Runtime: Modules and execution
 JavaScript (ECMAScript 2026) — Language & Runtime: Variables and closures
-JavaScript (ECMAScript 2026) — Language & Runtime: Destructuring and spread
 JavaScript (ECMAScript 2026) — Language & Runtime: Objects and prototypes
 JavaScript (ECMAScript 2026) — Language & Runtime: Errors and resource cleanup
-JavaScript (ECMAScript 2026) — Language & Runtime: Promises and async
 JavaScript (ECMAScript 2026) — Language & Runtime: Primitive values and coercion
 JavaScript (ECMAScript 2026) — Language & Runtime: this and binding
 JavaScript (ECMAScript 2026) — Language & Runtime: Classes and private fields
 JavaScript (ECMAScript 2026) — Language & Runtime: Iterables and generators
-JavaScript (ECMAScript 2026) — Language & Runtime: Promise combinators
 JavaScript (ECMAScript 2026) — Language & Runtime: Array.prototype.sort and toSorted
 TypeScript 7 — Types, Compiler & Migration: What TypeScript 7 is
 TypeScript 7 — Types, Compiler & Migration: tsc and project references
@@ -998,40 +972,27 @@ TypeScript 7 — Types, Compiler & Migration: exactOptionalPropertyTypes
 TypeScript 7 — Types, Compiler & Migration: Build mode and incremental checks
 TypeScript 7 — Types, Compiler & Migration: TypeScript language service
 Nest.js — APIs, Architecture, Security & Testing: Modules
-Nest.js — APIs, Architecture, Security & Testing: Controllers and routes
 Nest.js — APIs, Architecture, Security & Testing: Providers and dependency injection
-Nest.js — APIs, Architecture, Security & Testing: Pipes and validation
 Nest.js — APIs, Architecture, Security & Testing: Guards and authentication
 Nest.js — APIs, Architecture, Security & Testing: Interceptors and filters
 Nest.js — APIs, Architecture, Security & Testing: Dynamic modules
 Nest.js — APIs, Architecture, Security & Testing: ModuleRef and lifecycle
-Nest.js — APIs, Architecture, Security & Testing: DTOs and class-transformer
-Nest.js — APIs, Architecture, Security & Testing: ValidationPipe
-Nest.js — APIs, Architecture, Security & Testing: Custom pipes
 Nest.js — APIs, Architecture, Security & Testing: JWT authentication
 Nest.js — APIs, Architecture, Security & Testing: Role guards
 Nest.js — APIs, Architecture, Security & Testing: Passport strategies
 Nest.js — APIs, Architecture, Security & Testing: Custom decorators
-Nest.js — APIs, Architecture, Security & Testing: Serialization
 Nest.js — APIs, Architecture, Security & Testing: OpenAPI documentation
 Nest.js — APIs, Architecture, Security & Testing: Testing controllers
 Nest.js — APIs, Architecture, Security & Testing: Testing e2e applications
 Nest.js — APIs, Architecture, Security & Testing: Queues and events
 Nest.js — APIs, Architecture, Security & Testing: Configuration module
 Jest — Unit Testing, Mocks & Coverage: Test structure
-Jest — Unit Testing, Mocks & Coverage: Matchers
-Jest — Unit Testing, Mocks & Coverage: Mock functions
 Jest — Unit Testing, Mocks & Coverage: Module mocking
 Jest — Unit Testing, Mocks & Coverage: Fake timers
-Jest — Unit Testing, Mocks & Coverage: Coverage
-Jest — Unit Testing, Mocks & Coverage: Setup and teardown
 Jest — Unit Testing, Mocks & Coverage: Async tests
-Jest — Unit Testing, Mocks & Coverage: Snapshot testing
 Jest — Unit Testing, Mocks & Coverage: Spies and implementations
 Jest — Unit Testing, Mocks & Coverage: Manual mocks
-Jest — Unit Testing, Mocks & Coverage: Mock timers and dates
 Jest — Unit Testing, Mocks & Coverage: Testing rejected promises
-Jest — Unit Testing, Mocks & Coverage: Test isolation
 Jest — Unit Testing, Mocks & Coverage: Jest configuration
 Jest — Unit Testing, Mocks & Coverage: Custom matchers
 React Testing Library — User-Centered UI Tests: Queries by role
@@ -1039,16 +1000,11 @@ React Testing Library — User-Centered UI Tests: Labels and accessible names
 React Testing Library — User-Centered UI Tests: userEvent interactions
 React Testing Library — User-Centered UI Tests: Async UI
 React Testing Library — User-Centered UI Tests: Testing forms
-React Testing Library — User-Centered UI Tests: Avoiding implementation details
 React Testing Library — User-Centered UI Tests: getByLabelText
 React Testing Library — User-Centered UI Tests: getByText and getByTestId
-React Testing Library — User-Centered UI Tests: within
-React Testing Library — User-Centered UI Tests: findBy and waitFor
 React Testing Library — User-Centered UI Tests: waitForElementToBeRemoved
-React Testing Library — User-Centered UI Tests: userEvent keyboard flows
 React Testing Library — User-Centered UI Tests: Dialogs and portals
 React Testing Library — User-Centered UI Tests: Form validation
-React Testing Library — User-Centered UI Tests: MSW and network boundaries
 React Testing Library — User-Centered UI Tests: Accessibility assertions
 React Testing Library — User-Centered UI Tests: Cleanup and isolation
 TanStack Virtual: useWindowVirtualizer
@@ -1116,17 +1072,11 @@ Redux: Stable dispatch identity
 Redux: Selecting inside list rows
 Redux: Hooks versus connect
 Redux: Reading state in handlers
-Redux: Hooks and the store Provider
 Redux: Single state tree
 Redux: Actions and action creators
 Redux: Pure reducers
 Redux: dispatch and subscribe
-Redux: combineReducers
-Redux: Immutable update patterns
-Redux: Normalized state
-Redux: Selectors
 Redux: Memoized selectors
-Redux: State machines
 Redux: Event-style actions
 Redux: Local versus global state
 Redux: Middleware pipeline
@@ -1151,9 +1101,7 @@ Redux Toolkit: usePrefetch
 Redux Toolkit: useQueryState and useQuerySubscription
 Redux Toolkit: selectFromResult
 Redux Toolkit: Typed useAppDispatch and useAppSelector
-Redux Toolkit: Tag-driven refetching
 Redux Toolkit: configureStore
-Redux Toolkit: createSlice
 Redux Toolkit: Immer draft updates
 Redux Toolkit: prepare callbacks
 Redux Toolkit: extraReducers
@@ -1230,7 +1178,6 @@ GraphQL — Schema, Servers, Clients & Tooling: input
 GraphQL — Schema, Servers, Clients & Tooling: interface
 GraphQL — Schema, Servers, Clients & Tooling: union
 GraphQL — Schema, Servers, Clients & Tooling: enum
-GraphQL — Schema, Servers, Clients & Tooling: scalar
 GraphQL — Schema, Servers, Clients & Tooling: directive
 GraphQL — Schema, Servers, Clients & Tooling: extend
 GraphQL — Schema, Servers, Clients & Tooling: schema
@@ -1282,7 +1229,6 @@ GraphQL — Schema, Servers, Clients & Tooling: @external / @requires / @provide
 GraphQL — Schema, Servers, Clients & Tooling: @shareable
 GraphQL — Schema, Servers, Clients & Tooling: Entity resolution
 GraphQL — Schema, Servers, Clients & Tooling: Apollo Router
-GraphQL — Schema, Servers, Clients & Tooling: GraphQL Mesh
 GraphQL — Schema, Servers, Clients & Tooling: Schema stitching
 GraphQL — Schema, Servers, Clients & Tooling: graphql-codegen
 GraphQL — Schema, Servers, Clients & Tooling: client-preset
@@ -1296,8 +1242,6 @@ GraphQL — Schema, Servers, Clients & Tooling: Operation allowlisting
 GraphQL — Schema, Servers, Clients & Tooling: Field-level authorisation
 GraphQL — Schema, Servers, Clients & Tooling: Rate limiting
 GraphQL — Schema, Servers, Clients & Tooling: Response caching
-GraphQL — Schema, Servers, Clients & Tooling: Automatic persisted queries
-GraphQL — Schema, Servers, Clients & Tooling: Batching
 GraphQL — Schema, Servers, Clients & Tooling: graphql-tools
 GraphQL — Schema, Servers, Clients & Tooling: Mocked schemas
 GraphQL — Schema, Servers, Clients & Tooling: MockedProvider
@@ -1308,26 +1252,18 @@ Node.js — Runtime, APIs, Streams & Operations: Event loop
 Node.js — Runtime, APIs, Streams & Operations: ES modules and imports
 Node.js — Runtime, APIs, Streams & Operations: fs and paths
 Node.js — Runtime, APIs, Streams & Operations: HTTP servers
-Node.js — Runtime, APIs, Streams & Operations: Streams and backpressure
-Node.js — Runtime, APIs, Streams & Operations: Process errors and signals
 Node.js — Runtime, APIs, Streams & Operations: CommonJS and package exports
 Node.js — Runtime, APIs, Streams & Operations: npm and dependency management
-Node.js — Runtime, APIs, Streams & Operations: EventEmitter
 Node.js — Runtime, APIs, Streams & Operations: Buffers
 Node.js — Runtime, APIs, Streams & Operations: URL and URLSearchParams
-Node.js — Runtime, APIs, Streams & Operations: File streams
-Node.js — Runtime, APIs, Streams & Operations: Transform streams
 Node.js — Runtime, APIs, Streams & Operations: Readable and writable streams
-Node.js — Runtime, APIs, Streams & Operations: HTTP fetch
 Node.js — Runtime, APIs, Streams & Operations: WebSocket servers
 Node.js — Runtime, APIs, Streams & Operations: Worker threads
 Node.js — Runtime, APIs, Streams & Operations: Child processes
 Node.js — Runtime, APIs, Streams & Operations: Diagnostics and logging
 Node.js — Runtime, APIs, Streams & Operations: Graceful shutdown
-Node.js Packages — Modules, Libraries & Middleware: express
 Node.js Packages — Modules, Libraries & Middleware: body-parser
 Node.js Packages — Modules, Libraries & Middleware: express-session
-Node.js Packages — Modules, Libraries & Middleware: express-rate-limit
 Node.js Packages — Modules, Libraries & Middleware: serve-static
 Node.js Packages — Modules, Libraries & Middleware: express-validator
 TanStack Query: useQueries

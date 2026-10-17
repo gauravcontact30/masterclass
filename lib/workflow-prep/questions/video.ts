@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "What is low-latency HLS?", "An extension that publishes partial segments and preload hints so live latency drops from tens of seconds to a few seconds, at the cost of more requests."),
     s(2, "How do you handle video deletion?", "Mark the video deleted, stop serving it, purge CDN caches, and delete renditions and originals from storage asynchronously according to retention rules."),
     s(2, "Which metrics show the platform is healthy?", "Upload success rate, transcoding queue time, time to publish, playback start time, rebuffering ratio, CDN hit rate and cost per streamed hour."),
+    s(4, "How do you design view counting that resists fraud?", "Count a view only after a minimum watch time, deduplicate by viewer and video within a window, filter bots by behaviour and known data-centre IPs, and aggregate counts asynchronously from playback events. Show approximate counts quickly and correct them after fraud analysis."),
+    s(4, "How would you add resumable playback across devices?", "Have the player send its position every few seconds and on pause to a progress service keyed by user and video, store the latest value in a fast store, and on open fetch the position and seek there. Ignore positions in the last few seconds so finished videos start fresh."),
+    s(3, "How do you handle videos that suddenly go viral?", "Most load is absorbed by the CDN, so pre-warm popular segments, enable origin shield, lower manifest cache times only if needed, and scale the metadata and view-count services, which still see a request per viewer."),
+    s(3, "How do you design video chapters and timestamps?", "Store chapters as a list of start times and titles with the video metadata, parse them from creator descriptions or generate them automatically from transcripts, and expose them in the player as markers and as deep links with a time parameter."),
+    s(3, "How do you support downloads for offline viewing?", "Let the app download an encrypted rendition at a chosen quality, protect it with DRM licences that allow offline playback for a limited period, limit the number of devices, and renew or revoke licences when the user reconnects."),
+    s(3, "How do you moderate live streams in near real time?", "Sample frames and audio continuously into classifiers, combine with user reports, show warnings or cut the stream when confidence is high, route uncertain cases to human moderators, and keep a short buffer so actions happen before most viewers see the content."),
+    s(2, "How do you choose which renditions to keep for old, rarely watched videos?", "Keep the source or a high-quality mezzanine plus a few common renditions, delete rarely used ones, move files to colder storage classes, and re-transcode on demand if a missing rendition is requested."),
   ],
   objective: [
     o(5, "What lets a player change quality mid-stream?", ["Segments at several bitrates listed in a manifest", "One big MP4 file", "WebSockets", "A larger buffer only"], 0, "This is adaptive bitrate streaming."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "Deleted videos must also be…", ["Purged from CDN caches", "Re-transcoded", "Shared", "Recommended"], 0, "Otherwise edges keep serving them."),
     o(2, "Why start playback at a conservative bitrate?", ["For a fast start before measuring bandwidth", "To save storage", "For DRM", "For captions"], 0, "Then step up quality."),
     o(2, "Which manifest extension does HLS use?", [".m3u8", ".mpd", ".mp4", ".srt"], 0, "DASH manifests use .mpd instead."),
+    o(4, "A view should usually count only after…", ["A minimum watch time","The page loads","The thumbnail renders","The user signs up"], 0, "Brief plays and bots would inflate counts."),
+    o(4, "Resume positions are stored…", ["Per user and video in a fast store","In the video file","In the CDN cache","In the manifest"], 0, "They change often and are read on every open."),
+    o(3, "During a viral spike, most segment traffic is served by…", ["The CDN","The transcoding cluster","The metadata database","The upload service"], 0, "Segments are cacheable and identical for every viewer."),
+    o(3, "Offline downloads stay protected through…", ["DRM licences with offline expiry","Plain MP4 files","Signed cookies only","Bigger bitrates"], 0, "Licences control how long and where content plays."),
+    o(3, "Video chapters are stored as…", ["Start times and titles with the metadata","Separate video files","CDN headers","Thumbnail names"], 0, "The player reads them to show markers."),
+    o(3, "Rarely watched old videos save money by…", ["Fewer renditions in colder storage","More renditions in hot storage","Deleting the source","Serving from the origin only"], 0, "Missing renditions can be regenerated on demand."),
+    o(2, "A short broadcast delay in live moderation lets you…", ["Act before most viewers see harmful content","Increase bitrate","Skip transcoding","Remove the CDN"], 0, "The buffer buys time for automated checks."),
   ],
 };
 export default bank;

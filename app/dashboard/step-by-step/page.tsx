@@ -6,7 +6,6 @@ import { SEARCH_FIXED_CATALOGUES } from "@/lib/step-by-step/technologies";
 import { requireLearningUser as currentUser } from "@/lib/server/subscription-access";
 import { authConfigured, billingConfigured, databaseConfigured } from "@/lib/server/config";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "On The Go" };
 
 export default async function StepByStepPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {

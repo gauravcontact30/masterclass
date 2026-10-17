@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "How long should payment records be kept?", "As long as tax, accounting and regulatory rules require (often several years), with sensitive data minimised, encrypted and access-controlled."),
     s(2, "How do you show payment status to users clearly?", "Show pending, success or failure with next steps, avoid asking users to pay again while a payment is pending, and send receipts by email once confirmed."),
     s(2, "What metrics matter for a payment system?", "Authorisation and success rates by method and issuer, latency, error types, refund and dispute rates, reconciliation mismatches and revenue per day, with alerts on sudden drops."),
+    s(5, "How do idempotency keys make payment APIs safe to retry?", "The client sends a unique key with each payment request. The server stores the key with the request hash and result in the same transaction as the payment, and on a retry with the same key returns the stored result instead of charging again. A different body with a reused key is rejected."),
+    s(4, "How do you design a double-entry ledger for a payments platform?", "Every money movement is a balanced transaction of debit and credit entries across accounts, such as customer, merchant, fees and settlement, so the sum is always zero. Entries are append-only; corrections are new reversing entries. Balances are derived from entries and reconciled against bank statements."),
+    s(4, "How do you reconcile your records with the payment provider?", "Daily, download the provider's settlement and transaction reports, match each item to your payments by provider ID and amount, flag mismatches such as missing captures, unexpected refunds or fee differences, and route unresolved items to a finance queue with an owner."),
+    s(3, "How would you handle a payment that times out with no response from the provider?", "Mark it unknown, never failed, then query the provider with the same idempotency key or payment ID until it reports a final state, and rely on webhooks and reconciliation as backstops. Tell the user the payment is being confirmed rather than inviting a second attempt."),
+    s(3, "How do you calculate and store taxes such as GST on payments?", "Compute tax at checkout from the place of supply, product category and customer's tax ID using a versioned rules table or tax service, store the tax breakdown on the invoice line items, and never recompute old invoices when rates change."),
+    s(3, "How do you let a customer change the card on a subscription?", "Collect the new card through the provider's hosted fields or SDK, which returns a token or payment method ID, attach it to the customer, run a zero-amount or small authorisation to verify it if required, set it as default, and retry any open failed invoice on it."),
+    s(2, "How do you handle currency conversion for an international checkout?", "Show the price in the buyer's currency using a rate locked for a short window, store both the presented amount and the settlement amount with the rate used, and let the provider or bank do the actual conversion. Record FX gains or losses in the ledger."),
   ],
   objective: [
     o(5, "Who should handle raw card numbers?", ["The payment provider's hosted fields or SDK", "Your API server", "Your database", "Your logs"], 0, "This keeps PCI scope minimal."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "While a payment is pending, the UI should…", ["Avoid asking the user to pay again", "Ask to pay again", "Show success", "Hide the order"], 0, "Double payments come from retries."),
     o(2, "Partial refunds must be tracked against…", ["The captured amount", "The cart size", "The user's age", "The tax rate only"], 0, "Never refund more than captured."),
     o(2, "Stored payment methods for subscriptions need…", ["The customer's consent mandate", "The card's CVV stored", "No consent", "A new card each month"], 0, "CVV must never be stored."),
+    o(5, "What should a server return for a retried request with the same idempotency key?", ["The stored result of the first request","A new charge","A 500 error","A random payment ID"], 0, "Retries must not move money twice."),
+    o(4, "In a double-entry ledger, each transaction's entries must…", ["Sum to zero across accounts","Update balances in place","Be deletable","Use floating-point amounts"], 0, "Balanced entries make every movement traceable."),
+    o(4, "A payment whose provider call timed out should be marked…", ["Unknown until confirmed","Failed immediately","Successful","Refunded"], 0, "It may have succeeded, so retrying blindly risks a double charge."),
+    o(3, "How are mistakes corrected in an append-only ledger?", ["With new reversing entries","By editing old rows","By deleting the account","By changing the balance column"], 0, "History stays intact and auditable."),
+    o(3, "What does daily reconciliation compare?", ["Your records with the provider's settlement report","Two copies of the frontend","Logs with metrics","Prices with competitors"], 0, "Mismatches reveal missed webhooks and fee errors."),
+    o(3, "Tax on an old invoice after a rate change should be…", ["Left as originally calculated","Recomputed with the new rate","Removed","Doubled"], 0, "Invoices are legal records of what was charged."),
+    o(2, "For a foreign-currency checkout, you should store…", ["Both amounts and the exchange rate used","Only the converted amount","Only the rate","Nothing extra"], 0, "Refunds and accounting need the original figures."),
   ],
 };
 export default bank;

@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "What should be monitored for a Langflow chatbot in production?", "Latency, error rates, token usage and cost, retrieval quality, user feedback and unanswered-question rates."),
     s(2, "How do you share a flow with a teammate?", "Export the flow JSON (without secrets) or share the project on the same server; teammates set their own global variables for credentials."),
     s(2, "Why add notes to components in a flow?", "Notes explain intent and settings to others and your future self, which matters because visual flows hide reasoning that code comments would capture."),
+    s(4, "How do you version flows so a change does not break a live chatbot?", "Export each flow as JSON into Git, review changes like code, keep separate flows or projects for development and production, and point the production integration at a specific flow ID that you only update after testing the new version in the Playground and with saved test questions."),
+    s(4, "How do you add a guardrail step to a Langflow chatbot?", "Insert a check before the model, such as a classifier or prompt that flags off-topic, unsafe or injection-like input, and route flagged messages to a fixed polite reply. Add an output check that confirms the answer cites retrieved context before sending it."),
+    s(3, "How do you route different questions to different flows or prompts?", "Add a classification step that labels the intent, then use conditional routing components to send each label to its own branch, such as billing, technical help or general chat, each with a prompt and retriever suited to it."),
+    s(3, "How do you write a custom component when no built-in one fits?", "Create a Python component class with typed inputs and outputs and a method that does the work, such as calling an internal API. Keep it small and single-purpose, handle errors clearly, and share it across flows rather than copying code."),
+    s(3, "How do you debug a flow that returns poor answers?", "Run it in the Playground and inspect each component's output in order: check what the retriever returned, what the prompt looked like after variables were filled, and what the model replied. Most bad answers trace back to retrieval or prompt assembly, not the model."),
+    s(3, "How do you schedule a flow to run regularly, such as nightly document ingestion?", "Trigger the ingestion flow through its API endpoint from an external scheduler like cron, a cloud scheduler or a workflow tool, authenticate with an API key, and log each run's result so failures are noticed."),
+    s(2, "How do you control who can edit flows in a team?", "Run Langflow with authentication enabled, give each person their own account, keep production flows in a project only maintainers edit, and treat exported flow files in Git as the reviewed source of truth."),
   ],
   objective: [
     o(5, "Which component splits documents into chunks?", ["Split Text", "Chat Output", "Prompt", "Webhook"], 0, "Chunks are then embedded."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "What should be stripped before sharing a flow export?", ["Secrets", "Component names", "Edges", "Notes"], 0, "Use global variables for keys."),
     o(2, "Multilingual chatbots need…", ["Multilingual embeddings and models", "English-only embeddings", "No retrieval", "One prompt per letter"], 0, "Retrieval must match languages."),
     o(2, "Which metric shows documents are missing answers?", ["Unanswered-question rate", "Upload size", "CPU", "Number of components"], 0, "Add content where it is high."),
+    o(4, "Where should exported flow JSON live for safe changes?", ["In Git with reviews","Only in someone's downloads folder","In the vector store","In the chat history"], 0, "Version control makes changes reviewable and reversible."),
+    o(4, "A guardrail before the model mainly…", ["Catches off-topic, unsafe or injection-like input","Speeds up retrieval","Changes the embedding model","Stores chat memory"], 0, "Bad input gets a safe fixed reply."),
+    o(3, "Different intents are handled by…", ["A classification step plus conditional routing","One giant prompt","Bigger chunk sizes","Disabling memory"], 0, "Each branch gets a prompt suited to its task."),
+    o(3, "When no built-in component fits, you…", ["Write a small custom Python component","Edit Langflow's source in production","Use a screenshot","Skip the step"], 0, "Custom components plug into the canvas like built-ins."),
+    o(3, "Most poor RAG answers trace back to…", ["Retrieval or prompt assembly","The browser","The font","The API key length"], 0, "Inspect component outputs in order to find it."),
+    o(3, "A nightly ingestion flow is triggered by…", ["An external scheduler calling the flow's API","Leaving the Playground open","A chat message","The vector store"], 0, "The API endpoint makes flows schedulable."),
+    o(2, "Production flows should be editable by…", ["Maintainers only, with authentication on","Anyone with the URL","Website visitors","No one, ever"], 0, "Access control prevents accidental breakage."),
   ],
 };
 export default bank;

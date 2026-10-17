@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "How often should leads be re-scored?", "On new activity (reply, click, viewing booked) and periodically for old leads, so tiers reflect current interest."),
     s(2, "What makes a lead 'hot'?", "Budget and location fit, a near move-in date, financing ready or pre-approved, and clear intent such as asking for a viewing."),
     s(2, "How do you report results to management?", "Dashboards of lead volume by source, response times, conversion by tier and agent, and revenue attributed to each channel."),
+    s(4, "How do you design the lead record so every system agrees on it?", "Define one schema with contact details, source, consent, budget, location, property type, timeline, score, tier and status, keep the CRM as the system of record, and have the flow write through the CRM API with a stable external ID so updates never create copies."),
+    s(4, "How do you qualify leads over WhatsApp conversations?", "Use approved templates for the first message, ask a few short questions one at a time, extract answers into the lead fields, stop when the score is clear, and hand over to an agent within the same chat with the collected details."),
+    s(3, "How do you attribute closed deals back to lead sources?", "Carry the source and campaign parameters from the first touch into the lead record, link deals to the lead in the CRM, and report conversion and revenue by source so marketing spend follows what actually closes."),
+    s(3, "How do you handle leads that come in outside office hours?", "Send an immediate acknowledgement with next steps and available viewing slots, queue the lead for the first agent shift by priority, and let hot leads trigger an on-call alert if the business supports it."),
+    s(3, "How do you keep agents from cherry-picking leads?", "Assign leads automatically by tier, area and agent capacity with round-robin within a team, track response times per agent, and reassign leads that are not contacted within the target time."),
+    s(3, "How do you use past deals to improve scoring?", "Label historical leads by whether they converted, compare the qualification answers of converted and lost leads, adjust rule weights or train a simple model, and validate the new scoring on recent leads before switching."),
+    s(2, "How do you handle a lead that asks to be deleted?", "Confirm the request, delete or anonymise the lead in the CRM and connected tools, remove them from campaigns, keep only what the law requires as proof of the request, and confirm completion."),
   ],
   objective: [
     o(5, "Who should decide routing tiers?", ["Visible rules, with the model extracting details", "The model alone", "Random assignment", "The lead"], 0, "Predictable and explainable."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "Which CRMs might the flow integrate with?", ["HubSpot, Salesforce or Zoho", "Figma", "GitHub", "Docker"], 0, "Integrate them through API tools."),
     o(2, "Management dashboards should show…", ["Volume, response times and conversion by tier", "Model weights", "Prompt text", "Server logs"], 0, "Focus on business outcomes."),
     o(2, "Marketing opt-outs must be…", ["Honoured immediately", "Ignored", "Delayed a month", "Shared with partners"], 0, "Consent rules require this."),
+    o(4, "The system of record for leads should be…", ["The CRM","The chat transcript","The Langflow canvas","A spreadsheet per agent"], 0, "One source avoids conflicting copies."),
+    o(4, "A stable external ID when writing leads prevents…", ["Duplicate records on updates","Faster responses","Consent tracking","Scoring"], 0, "Updates find the existing record."),
+    o(3, "The first WhatsApp message to a new lead must use…", ["An approved template","Any free text","An email","A voice note"], 0, "Business-initiated messages need templates."),
+    o(3, "Marketing spend should follow…", ["Conversion and revenue by source","Number of form views","Lead volume only","Agent preference"], 0, "Closed deals show which sources work."),
+    o(3, "Leads not contacted within the target time should be…", ["Reassigned","Deleted","Left alone","Marked hot"], 0, "Speed to contact drives conversion."),
+    o(3, "New scoring weights are validated on…", ["Recent leads before switching","No data","Only won deals","Agent opinions"], 0, "Validation shows the new scores rank better."),
+    o(2, "A deletion request requires…", ["Deleting or anonymising the lead across connected tools","Only unsubscribing from email","Ignoring it","Moving it to another CRM"], 0, "Personal data must be removed everywhere."),
   ],
 };
 export default bank;

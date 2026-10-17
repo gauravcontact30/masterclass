@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "How do you handle a viral post with millions of likes?", "Shard its counter, cache its hydrated data at every layer including the CDN for public views, and rate-limit write-heavy actions on it."),
     s(2, "What are the main metrics for a feed?", "Feed load latency, freshness (time from post to appearance), engagement rates, session length, hides and reports, and cache hit rates for hydration."),
     s(2, "How do privacy settings affect the feed?", "Each post carries its audience (public, followers, close friends); hydration checks the viewer's permission before returning a post, so changes in privacy take effect immediately."),
+    s(4, "Fan-out on write vs. fan-out on read: how do you choose?", "Fan-out on write pushes a new post ID into every follower's feed cache, giving fast reads but expensive writes for accounts with many followers. Fan-out on read assembles the feed at request time, cheap to write but slower to read. Most systems use a hybrid: push for normal users, pull for celebrities."),
+    s(4, "How would you design cursor pagination for an infinite feed?", "Return a page of posts with an opaque cursor containing the ranking score or timestamp and post ID of the last item. The next request fetches items after that position, which stays stable while new posts arrive and avoids the cost of OFFSET."),
+    s(3, "How do you add stories or other time-limited content to a feed?", "Store stories separately with an expiry time and a TTL, fetch them per followed user as a small ordered tray above the feed, cache recent stories per author, and remove them automatically when they expire rather than deleting from every feed."),
+    s(3, "How do you avoid the rich-get-richer problem in ranking?", "Blend exploration with exploitation: reserve a share of slots for fresh posts or less-seen authors, decay engagement signals over time, cap repeated exposure to the same author, and measure diversity alongside engagement."),
+    s(3, "How would you support a chronological feed option alongside a ranked one?", "Keep the same candidate set of followed posts and simply skip the ranking step, sorting by creation time. Store the user's choice, and cache the two orderings separately so switching does not invalidate the other."),
+    s(3, "How do you keep the feed fast on slow mobile networks?", "Send a small first page with compact post data and low-resolution image placeholders, prefetch the next page while the user scrolls, use HTTP compression and responsive images from the CDN, and cache the last feed locally for instant display on open."),
+    s(2, "How do you explain to users why a post appears in their feed?", "Record the main ranking reasons at serving time, such as following the author, a friend liked it or a topic match, and show a short 'why am I seeing this' label with controls to see less of that author or topic."),
   ],
   objective: [
     o(5, "What is usually stored in each user's feed cache?", ["Post IDs with scores", "Full post content and images", "Entire user profiles", "SQL queries"], 0, "Small IDs fit in memory; content is hydrated."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "How is a viral post's public view load handled?", ["Caching it at every layer including the CDN", "Disabling it", "Serving from the primary DB", "Rate-limiting reads to zero"], 0, "Caching spreads the read load."),
     o(2, "Social graph lookups need indexes in…", ["Both directions: followers and followees", "One direction only", "No direction", "Alphabetical order only"], 0, "Fan-out needs followers."),
     o(2, "Muted authors are best handled by…", ["Filtering at read time", "Rewriting every past feed", "Deleting their posts", "Blocking the author's account"], 0, "Read-time filtering is cheap and immediate."),
+    o(4, "Fan-out on write makes which operation cheap?", ["Reading the feed","Posting as a celebrity","Deleting a user","Changing privacy settings"], 0, "Feeds are precomputed, so reads are a cache lookup."),
+    o(4, "Why do feed APIs use cursors instead of OFFSET?", ["Positions stay stable as new posts arrive","Cursors use more memory","OFFSET is not supported by SQL","Cursors disable caching"], 0, "New posts would shift OFFSET pages and cause duplicates."),
+    o(3, "Stories that expire after 24 hours are best removed by…", ["A TTL on separately stored stories","Deleting them from every feed cache","A weekly batch job","Users manually"], 0, "Separate storage with expiry avoids touching millions of feeds."),
+    o(3, "Reserving slots for fresh posts helps…", ["Avoid rich-get-richer ranking","Reduce storage","Speed up writes","Encrypt posts"], 0, "New authors get a chance to be seen."),
+    o(3, "A chronological feed option needs…", ["The same candidates sorted by time","A completely separate social graph","No caching","A new database"], 0, "It is the ranked pipeline without the ranking step."),
+    o(3, "Which helps feeds load fast on slow networks?", ["Small first pages and image placeholders","Sending all posts at once","Disabling compression","Full-size images only"], 0, "Less data first means faster first paint."),
+    o(2, "A 'why am I seeing this' label is built from…", ["Ranking reasons recorded at serving time","Random text","The user's password","Server logs only"], 0, "Real reasons build trust and give useful controls."),
   ],
 };
 export default bank;

@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "What metrics matter for a scheduler?", "Schedule lag (actual start minus due time), queue depth, run duration, success and failure rates, retries, dead-letter counts and worker utilisation."),
     s(2, "How do you handle a job that was due while the scheduler was down?", "Decide a misfire policy per job: run once immediately, run every missed occurrence, or skip to the next schedule, and record the choice."),
     s(2, "How do you version job code safely?", "Keep job payloads backward compatible, version handlers, drain old versions before removing them, and avoid changing the meaning of queued jobs."),
+    s(4, "How do you guarantee a job runs exactly once in effect, even though delivery is at-least-once?", "Combine at-least-once delivery with an idempotent handler: give each run a unique run ID, record completion in the same transaction as the job's side effect or check a dedupe table before acting, and use idempotency keys when calling external APIs so a retry after a crash does nothing new."),
+    s(4, "How would you design a delayed-job queue, such as 'send this email in 3 days'?", "Store jobs with a due time in a table indexed by due time, or in a Redis sorted set scored by timestamp. A poller moves due jobs into the ready queue in small batches with SKIP LOCKED or an atomic pop, so millions of future jobs cost nothing until they are due."),
+    s(3, "How do you handle a job that keeps failing because of bad input?", "Classify the error as permanent, stop retrying, move the job to a dead-letter queue with its payload, error and attempt history, alert the owning team, and provide a tool to fix and replay it once the input or code is corrected."),
+    s(3, "How do you let users pause and resume a recurring schedule?", "Store a status on the schedule definition, skip creating new runs while paused, decide whether missed runs should be skipped or caught up on resume, and show the next run time so the behaviour is clear in the UI."),
+    s(3, "How do you run a job across many items, such as one million user records?", "Split it into chunks, enqueue a child job per chunk, track progress in a parent record, cap concurrency so the database is not overwhelmed, make each chunk idempotent, and finish with a completion job once all children succeed."),
+    s(3, "How do you prevent two scheduler instances from creating the same cron run?", "Elect one leader with a lease in a coordination store, or let every instance try to insert the run with a unique key on schedule ID plus scheduled time so only one insert succeeds and the rest are ignored."),
+    s(2, "How do you estimate worker capacity for a job system?", "Multiply jobs per second by average runtime to get the concurrent jobs needed, add headroom for peaks and retries, check per-worker memory and CPU, and auto-scale workers on queue depth and job age rather than CPU alone."),
   ],
   objective: [
     o(5, "What returns a stuck job to the queue when a worker dies?", ["Lease or visibility timeout expiry", "Manual restart only", "Deleting the job", "A new cron entry"], 0, "Another worker can then claim it."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "Changing the meaning of queued job payloads risks…", ["Old jobs being processed wrongly", "Faster processing", "Better logs", "Nothing"], 0, "Keep payloads compatible."),
     o(2, "Permanent errors should be…", ["Failed fast without retries", "Retried forever", "Hidden", "Ignored"], 0, "Retries cannot fix them."),
     o(2, "Kubernetes runs scheduled pods with…", ["CronJobs", "DaemonSets", "Ingress", "ConfigMaps"], 0, "Built-in cron for clusters."),
+    o(4, "Exactly-once effect is usually achieved with…", ["At-least-once delivery plus idempotent handlers","Exactly-once network delivery","Longer timeouts","Bigger workers"], 0, "Duplicates are expected; the handler makes them harmless."),
+    o(4, "Which structure suits millions of future-dated jobs in Redis?", ["A sorted set scored by due time","A plain list","A string per minute","A pub/sub channel"], 0, "Due jobs are fetched by score range cheaply."),
+    o(3, "A job failing on bad input should be…", ["Moved to a dead-letter queue after classification","Retried forever","Deleted silently","Run on another region"], 0, "Permanent errors need a person, not more retries."),
+    o(3, "A unique key on schedule ID plus scheduled time prevents…", ["Duplicate cron runs from several instances","Slow jobs","Long queues","Time-zone bugs"], 0, "Only one insert for each slot can succeed."),
+    o(3, "A million-item job is best processed as…", ["Idempotent chunks tracked by a parent","One giant transaction","A single worker loop with no checkpoints","A cron job every second"], 0, "Chunks can retry and scale independently."),
+    o(3, "Workers should usually auto-scale on…", ["Queue depth and job age","Disk size","Number of schedules defined","Time of day only"], 0, "These show work waiting, not just busy CPUs."),
+    o(2, "When a paused schedule resumes, you must decide…", ["Whether missed runs are skipped or caught up","Which database to use","The worker's language","The cron syntax"], 0, "Both are valid; users need to know which applies."),
   ],
 };
 export default bank;

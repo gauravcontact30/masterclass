@@ -1,5 +1,6 @@
 "use client";
 import { isCodeExampleTab } from "@/lib/code-example-tabs";
+import { LearningLoader } from "./learning-loader";
 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,7 +9,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import { TECHY_PUZZLES } from "@/lib/techy-additional-examples";
 import type { ServiceScope } from "@/lib/techy-services";
-const TechyServices = dynamic(() => import("./techy-services").then(module => module.TechyServices), { loading: () => <p role="status">Loading service atlas?</p> });
+const TechyServices = dynamic(() => import("./techy-services").then(module => module.TechyServices), { loading: () => <LearningLoader size="inline" label="Loading the service atlas…" /> });
 import { ArrowLeft, ArrowRight, Check, Code2, Copy, FileCode2, Folder, Layers, RotateCcw, Search } from "lucide-react";
 import { TECHY_TOPICS, TECHY_VOCABULARY, TECHY_EXAMPLES, type TechyTopic } from "@/lib/techy-content";
 import { highlightLines } from "@/lib/code-highlight";

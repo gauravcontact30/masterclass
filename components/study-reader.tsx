@@ -8,7 +8,7 @@ import { compactAbbreviations } from "@/lib/abbreviations";
 import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, PanelLeftClose, PanelLeftOpen, Clock, Bookmark } from "lucide-react";
 import { STUDY_SECTIONS, type StudyPack, type StudySection, type StudyPaper, type StudyQuestion, gradePaper, askRating } from "@/lib/study/types";
-import { labelledOption, optionLetter } from "@/lib/domain";
+import { labelledOption, optionLetter } from "@/lib/document-format";
 import { requestJson } from "@/lib/client";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
 import { courseCategory } from "@/lib/study/preparations";

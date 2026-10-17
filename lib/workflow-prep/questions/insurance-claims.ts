@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "How do you handle total loss cases?", "Compare repair cost with the vehicle's insured declared value; above a threshold, treat as total loss with salvage handling and settlement rules, always reviewed by an adjuster."),
     s(2, "What audit trail is needed?", "Every extraction, check result, model version, decision, human approval and communication, retained for regulatory and dispute purposes."),
     s(2, "How do you roll out automation safely?", "Start with assisted mode where adjusters see recommendations, measure agreement, then enable fast-track for the simplest claim types with audits of samples."),
+    s(4, "How do you design the claim state machine?", "Model explicit states such as reported, documents pending, assessing, awaiting approval, approved, settled, denied and appealed, with allowed transitions and who may trigger each. Store every transition with actor, time and reason, so the graph's progress and the audit trail are the same record."),
+    s(4, "How do you handle a claim that involves a third party, such as another driver?", "Capture third-party details at first notice of loss, check their insurer and liability split, open a recovery or subrogation sub-process when the other party is at fault, and keep the customer's settlement moving rather than waiting for recovery to finish."),
+    s(3, "How do you use telematics or dashcam data in claims?", "With consent, pull speed, location and impact data or video for the incident time window, use it to confirm the account of events and the severity of impact, and show the evidence to adjusters rather than letting it decide liability alone."),
+    s(3, "How do you handle health or travel insurance claims with the same workflow?", "Keep the graph structure (intake, cover check, evidence, assessment, approval, payment) but swap the domain-specific branches: medical bill parsing and network hospital checks for health, booking and delay evidence for travel."),
+    s(3, "How do you reduce the time to first payment for simple claims?", "Pre-approve low-value claims with complete documents and clean fraud signals, pay an interim amount for clear parts of larger claims, use instant bank transfers, and keep the customer informed at each step."),
+    s(3, "How do you detect duplicate claims across policies or insurers?", "Match on incident date, location, vehicle or person identifiers and document hashes across your own claims, and use industry claim databases where available to spot the same loss claimed with several insurers."),
+    s(2, "How do you calibrate the fast-track threshold over time?", "Audit a random sample of fast-tracked claims, compare their leakage and fraud rates with manually handled ones, and raise or lower the threshold gradually based on the results."),
   ],
   objective: [
     o(5, "How should policy cover be checked?", ["By deterministic rules against the policy system", "By the model's opinion", "By the customer", "By photo analysis"], 0, "Cover is a contractual fact."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "What must the audit trail include?", ["Checks, model versions, decisions and approvals", "Only payments", "Only photos", "Nothing"], 0, "The trail is needed for disputes."),
     o(2, "Which add-on affects settlement calculations?", ["Zero depreciation cover", "Paint colour", "Radio brand", "Tyre pressure"], 0, "It changes depreciation rules."),
     o(2, "How are claim branches tested?", ["With fixtures per branch and combined scenarios", "Only end to end in production", "Not at all", "By reading logs"], 0, "Test joins and routing too."),
+    o(4, "Every claim state transition should record…", ["Actor, time and reason","Only the new state","The customer's password","Nothing; states are temporary"], 0, "The transition log is the audit trail."),
+    o(4, "When another driver is at fault, the insurer usually…", ["Starts subrogation while settling its customer","Waits for the other insurer before paying","Denies the claim","Closes the case"], 0, "Recovery runs in parallel with the customer's settlement."),
+    o(3, "Telematics data in a claim should…", ["Support the adjuster's assessment with consent","Decide liability automatically","Be collected without consent","Replace the customer's statement"], 0, "Evidence informs; people decide."),
+    o(3, "Health and motor claims can share…", ["The overall graph structure","The same evidence rules","The same assessors","Identical documents"], 0, "Domain-specific branches plug into a common flow."),
+    o(3, "An interim payment helps by…", ["Paying the clear part of a larger claim early","Avoiding any assessment","Reducing premiums","Closing the claim"], 0, "Customers get money sooner while the rest is assessed."),
+    o(3, "Duplicate claims are found by matching…", ["Incident details and document hashes","Customer names only","Premium amounts","Agent IDs"], 0, "The same loss leaves matching fingerprints."),
+    o(2, "The fast-track threshold should be tuned using…", ["Audits of random fast-tracked claims","Customer complaints only","A fixed rule forever","The model's confidence alone"], 0, "Audits reveal leakage and fraud rates."),
   ],
 };
 export default bank;

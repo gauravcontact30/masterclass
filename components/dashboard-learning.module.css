@@ -1,0 +1,5 @@
+/* The landing learning sections on /dashboard: one rounded sheet under the dashboard's own panels, each section
+   keeping its landing look. Section anchors clear the sticky top bar. */
+.learning { margin-top: 24px; overflow: hidden; border: 1px solid #dedcd1; border-radius: 18px; background: var(--nb-paper); }
+.learning > section { scroll-margin-top: 80px; }
+.learning > section:first-child { border-top: 0; }

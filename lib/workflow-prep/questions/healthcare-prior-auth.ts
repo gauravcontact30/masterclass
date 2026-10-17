@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "How do you handle records in several languages or formats?", "Normalise to text with OCR where needed, keep the original document reference, and translate only for matching while quoting the original."),
     s(2, "What audit logs are required?", "Who accessed which records, what the system extracted, what was sent externally, and who approved submissions, retained per regulation."),
     s(2, "How do you roll out to clinics?", "Start with high-volume procedures with clear criteria, train staff on the review screen, measure time saved and accuracy, then expand procedure by procedure."),
+    s(4, "How do you design the data model for a prior-authorisation request?", "Store the request with patient, provider, payer and plan IDs, procedure and diagnosis codes, the policy version used, and one record per criterion with status, cited evidence (document, page, quote) and reviewer decision. Keep the generated packet and submission status linked for audit."),
+    s(4, "How do you keep the assistant up to date with codes and coverage rules that change every year?", "Load code sets and payer policies as versioned reference data with effective dates, select the version valid on the request's service date, re-run criterion extraction when a policy changes, and flag in-flight requests affected by the update."),
+    s(3, "How do you handle urgent or expedited prior-authorisation requests?", "Detect urgency from the order and clinician input, put the request on a priority queue with a tighter service target, notify the reviewer immediately, and use the payer's expedited submission route and timelines."),
+    s(3, "How do you track the payer's decision after submission?", "Record the submission reference, poll or receive status updates through the payer portal, clearinghouse or API, update the request status, and alert staff on denials or requests for more information with the payer's stated reason."),
+    s(3, "How do you reduce clinician time spent on each request?", "Pre-fill the packet from structured EHR data, show only the criteria still unresolved, highlight the exact evidence quotes, let reviewers accept or edit with one click, and learn which evidence types each payer usually requires."),
+    s(3, "How do you avoid automation bias in reviewers?", "Show confidence and missing evidence clearly, require reviewers to open cited evidence for low-confidence criteria, sample decisions for second review, and track how often reviewers change the draft; a rate near zero may mean rubber-stamping."),
+    s(2, "How do you report the assistant's impact to hospital leadership?", "Track turnaround time from order to submission, first-pass approval rate, denial reasons, staff minutes per request and the share of drafts accepted with no edits, compared with the period before rollout."),
   ],
   objective: [
     o(5, "What must each met criterion include?", ["A verbatim evidence quote with document reference", "A confident summary", "The model's opinion only", "Nothing"], 0, "Auditors must verify every claim."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "Scanned records need…", ["OCR with the original reference kept", "To be ignored", "Manual retyping only", "Deleting"], 0, "Quote the original source."),
     o(2, "Which FHIR resource holds clinical documents?", ["DocumentReference", "Patient only", "Bundle only", "Practitioner"], 0, "Points to notes and reports."),
     o(2, "Common denial reasons are useful for…", ["Fixing evidence gaps in future requests", "Marketing", "Ignoring payers", "Nothing"], 0, "Each denial teaches what to fix."),
+    o(4, "Each criterion record should store…", ["Status, cited evidence and the reviewer's decision","Only a yes or no","The model's temperature","The patient's photo"], 0, "Auditors need the evidence and who decided."),
+    o(4, "Which coverage rule version should be used when policies change mid-year?", ["The one in effect on the service date","Always the newest","The oldest on file","Whichever the model prefers"], 0, "Coverage rules are tied to dates."),
+    o(3, "Expedited requests should be…", ["Placed on a priority queue with tighter targets","Handled after routine ones","Submitted without review","Ignored until morning"], 0, "Urgent care cannot wait for the normal queue."),
+    o(3, "After submission, the system should…", ["Track the payer's status and reasons","Delete the packet","Assume approval","Email the patient the full record"], 0, "Denials and information requests need fast follow-up."),
+    o(3, "A near-zero edit rate by reviewers may indicate…", ["Rubber-stamping from automation bias","A perfect model","Network problems","Too many reviewers"], 0, "Some edits are expected if reviewers are reading closely."),
+    o(3, "Clinician time is reduced most by…", ["Pre-filling from EHR data and highlighting evidence","Longer forms","Removing citations","Adding more approval steps"], 0, "Reviewers focus only on unresolved criteria."),
+    o(2, "Which metric shows packets are complete first time?", ["First-pass approval rate","Number of logins","Server CPU","Page views"], 0, "Fewer resubmissions mean better packets."),
   ],
 };
 export default bank;

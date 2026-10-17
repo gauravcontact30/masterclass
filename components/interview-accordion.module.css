@@ -46,3 +46,5 @@
   .q { flex-basis: calc(100% - 70px); }
   .list[data-scroll="true"] { max-height: 480px; }
 }
+/* Where the question's facts were checked, such as "Sourced from Docs by LangChain (MCP)". */
+.source { margin: 0; font-size: 12px; line-height: 1.4; color: var(--nb-muted, #5e5d59); text-align: left; }

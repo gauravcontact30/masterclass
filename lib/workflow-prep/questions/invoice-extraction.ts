@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "How do you handle credit notes?", "Classify document type first; credit notes reduce payables and must be linked to the original invoice, with amounts validated as negative adjustments."),
     s(2, "What metrics matter for invoice automation?", "Field-level accuracy, straight-through processing rate, time from receipt to posting, exception rate by reason, duplicate catches and cost per invoice."),
     s(2, "How do you handle currencies and exchange rates?", "Extract the invoice currency, convert using the official rate for the posting date in code, and store both original and converted amounts."),
+    s(4, "How do you validate extracted line items against the invoice totals?", "Recompute line amounts from quantity and unit price, sum lines plus tax, freight and discounts, and compare with the stated subtotal, tax and grand total within a small rounding tolerance. Any mismatch sends the invoice to review with the failing check highlighted."),
+    s(4, "How do you route an invoice to the right approver?", "Look up approval rules by cost centre, amount band, supplier category and whether a PO exists, assign the approver from the organisation chart, escalate if they are absent or do not act within the deadline, and record every approval with time and comments."),
+    s(3, "How do you handle early-payment discounts?", "Extract the payment terms, such as 2/10 net 30, compute the discount deadline from the invoice date, prioritise those invoices in the approval queue, and schedule payment before the deadline when cash policy allows."),
+    s(3, "How do you extract data from invoices that arrive by email?", "Monitor a dedicated mailbox, separate the invoice attachments from other files, handle invoices embedded in the email body, record the sender and message ID for traceability, and reject or quarantine files with suspicious types."),
+    s(3, "How do you keep supplier master data clean while automating?", "Match extracted supplier names, tax IDs and bank details against the vendor master, never create a new vendor automatically, and send unknown or changed details to the vendor management team for verification."),
+    s(3, "How do you test the pipeline with sensitive financial documents?", "Use a held-out set of real invoices in a secure environment with access controls, plus synthetic invoices generated from templates for edge cases, and compare field-level accuracy without exporting the documents."),
+    s(2, "How do you handle withholding tax or TDS deductions on payments?", "Determine the applicable section and rate from the supplier's status and service type, calculate the deduction on the right base amount, record it separately in the ledger, and generate the certificates and filings required."),
   ],
   objective: [
     o(5, "What is three-way matching?", ["Invoice vs. purchase order vs. goods receipt", "Three OCR passes", "Three reviewers", "Three currencies"], 0, "Catches price and quantity errors."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "Which metric tracks exceptions?", ["Exception rate by reason", "Number of suppliers", "Font size", "Page count"], 0, "Fix the biggest causes."),
     o(2, "Multi-page line item tables must be…", ["Joined across pages", "Read from page one only", "Ignored", "Split into invoices"], 0, "Tables continue across pages."),
     o(2, "Which standard is used for e-invoices in Europe?", ["Peppol or UBL", "HTML", "PNG", "MP3"], 0, "Structured XML formats."),
+    o(4, "Extracted totals are validated by…", ["Recomputing lines, tax and totals within a tolerance","Trusting the model's total","Checking the font","Counting pages"], 0, "Arithmetic checks catch extraction errors."),
+    o(4, "Approver routing depends on…", ["Cost centre, amount band and PO status","The supplier's logo","Invoice file size","The time of upload"], 0, "Approval rules follow finance policy."),
+    o(3, "Terms of 2/10 net 30 mean…", ["2% discount if paid within 10 days, else due in 30","Pay 10% in 2 days","30 instalments","No discount"], 0, "Early payment earns the discount."),
+    o(3, "Unknown supplier details should be…", ["Sent to vendor management for verification","Used to create a new vendor automatically","Ignored","Paid immediately"], 0, "Automatic vendor creation invites fraud."),
+    o(3, "Invoices arriving by email should be traced by…", ["Sender and message ID","The subject line only","Nothing","The reviewer's name"], 0, "Traceability links the payment to its source."),
+    o(3, "Sensitive test invoices should stay…", ["In a secure environment with access controls","In public test repositories","In chat messages","On personal laptops"], 0, "Financial documents carry confidential data."),
+    o(2, "TDS deductions are recorded…", ["Separately in the ledger","Inside the invoice total","Only on paper","Not at all"], 0, "Separate records support certificates and filings."),
   ],
 };
 export default bank;

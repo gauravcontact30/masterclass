@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "How do you estimate cost savings?", "Multiply deflected tickets by the average handling cost per ticket, subtract running costs, and include time saved for employees waiting for answers."),
     s(2, "How do you handle outdated chat answers after a policy change?", "Re-index immediately, invalidate cached answers on that topic, and optionally notify employees who asked about it recently."),
     s(2, "How does Slack or Teams integration work?", "A bot app receives messages via webhooks, calls the Langflow flow API with the user's ID and session, and posts the answer back with buttons for feedback or escalation."),
+    s(4, "How do you design the helpdesk so it can take actions, not just answer questions?", "Expose a small set of approved, well-scoped tools such as checking leave balance, raising a ticket, requesting software from a catalogue and checking ticket status. Each tool calls the source system with the employee's identity and permissions, and anything that changes access or pay goes through the normal approval workflow."),
+    s(4, "How do you handle a question whose answer depends on the employee's role or grade?", "Read the employee's attributes from the HR system after sign-in, filter retrieval to policies that apply to their country, entity and grade, and state those attributes in the answer so the employee can spot a mismatch."),
+    s(3, "How do you answer questions about benefits that involve personal numbers?", "Fetch the employee's own data through a tool with their identity, never from shared documents, combine it with the general policy text, and avoid storing the personal numbers in chat logs longer than necessary."),
+    s(3, "How do you route a ticket to the right team automatically?", "Classify the request into categories that match the ticketing system's assignment groups, fill the category, priority and summary fields, and let the team re-route if wrong; feed those corrections back to improve classification."),
+    s(3, "How do you support managers with team-related questions?", "Check the manager relationship in the HR system before answering about direct reports, limit answers to data managers are allowed to see, and guide them to approval tasks waiting for them."),
+    s(3, "How do you handle a request that is urgent, such as a security incident or a lost laptop?", "Detect urgent intents with keywords and classification, skip the normal Q&A flow, create a high-priority ticket immediately, give the employee the emergency contact steps, and alert the on-call team."),
+    s(2, "How do you avoid the bot giving outdated IT instructions after a tool change?", "Tag knowledge articles with the systems they describe, retire articles when a system is replaced, prefer the newest article when two conflict, and run a periodic check for links and screenshots that no longer match."),
   ],
   objective: [
     o(5, "A good first IT task for the bot to automate is…", ["Sending the official password reset link", "Granting admin rights", "Deleting accounts", "Changing firewall rules"], 0, "Low-risk and reversible."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "What should be logged with privacy controls?", ["Categories, sources, tickets and feedback", "Everything forever", "Nothing", "Passwords"], 0, "Retention limits apply."),
     o(2, "Multilingual answers should cite…", ["The original policy", "A machine translation only", "Nothing", "Another employee"], 0, "HR verifies key translations."),
     o(2, "Slack integration passes to the flow…", ["The user ID and session", "The user's password", "Nothing", "The whole channel history"], 0, "For identity and memory."),
+    o(4, "Helpdesk actions that change access should…", ["Go through the normal approval workflow","Run immediately from chat","Be done by any employee","Skip logging"], 0, "Chat is a front door, not a bypass."),
+    o(4, "Role-dependent answers rely on…", ["Attributes from the HR system after sign-in","What the employee types about themselves","A random sample of policies","The bot's guess"], 0, "Trusted attributes pick the right policy."),
+    o(3, "Personal benefit figures should come from…", ["A tool using the employee's identity","Shared policy PDFs","Other employees' chats","The model's memory"], 0, "Personal data must come from the source system."),
+    o(3, "Ticket auto-routing improves through…", ["Feeding back teams' re-routing corrections","Never changing categories","Assigning everything to one team","Removing priorities"], 0, "Corrections show where classification fails."),
+    o(3, "Before answering about a direct report, the bot must check…", ["The manager relationship in the HR system","The manager's job title text","The employee's chat history","Nothing"], 0, "Only real managers may see team data."),
+    o(3, "A report of a lost laptop should…", ["Create a high-priority ticket and alert on-call","Get a policy article only","Wait for business hours","Be ignored"], 0, "Lost devices are security incidents."),
+    o(2, "Articles for a retired system should be…", ["Retired from the knowledge base","Kept as the top answer","Translated","Duplicated"], 0, "Outdated steps confuse employees."),
   ],
 };
 export default bank;

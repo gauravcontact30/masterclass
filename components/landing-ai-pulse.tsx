@@ -3,6 +3,7 @@ import { useState, type ReactNode } from "react";
 import { ArrowUpRight, BookOpen, Bot, Boxes, Braces, ChevronLeft, ChevronRight, Cloud, Code2, Database, FlaskConical, GitBranch, Layers, Network, Pause, Play, Puzzle, Server, Sparkles, Workflow, Zap, type LucideIcon } from "lucide-react";
 import { problemPoints } from "@/lib/problem-points";
 import type { LockedTeaser, PulseCard } from "@/lib/landing-daily-types";
+import { DashboardMore } from "./dashboard-more";
 import { LockedCard } from "./landing-locked-card";
 import { useLanguage } from "./language-provider";
 import { usePagedCarousel } from "./use-paged-carousel";
@@ -26,20 +27,30 @@ export const dayLabel = (day: string, hi: boolean) => new Intl.DateTimeFormat(hi
  * (lib/server/landing-daily.ts), each in its own light tone. Every card has the same blocks, cards in a row
  * are the same height, and the industry panels hug their text.
  */
-export function LandingAiPulse({ cards, day, locked }: { cards: PulseCard[]; day: string; locked?: LockedTeaser | null }) {
+/** Cards a landing-page preview shows; the rest of each learning section lives on /dashboard. */
+export const PREVIEW_COUNT = 3;
+
+/**
+ * `preview` (the landing page) shows the first three cards and a link to the full set on /dashboard, where the
+ * same section renders every card of the day, the locked bonus card included.
+ */
+export function LandingAiPulse({ cards: all, day, locked: lockedCard, preview = false }: { cards: PulseCard[]; day: string; locked?: LockedTeaser | null; preview?: boolean }) {
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
-  const { track, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(cards.length + (locked ? 1 : 0), 3, AUTOPLAY_MS);
+  const cards = preview ? all.slice(0, PREVIEW_COUNT) : all;
+  const locked = preview ? null : lockedCard;
+  const { track, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(cards.length + (locked ? 1 : 0), preview ? 3 : 2, AUTOPLAY_MS);
 
   return <section id="ai-pulse" className={styles.pulse} aria-labelledby="ai-pulse-title"><div className={home.inner}>
+    {preview && <DashboardMore href="/dashboard#ai-pulse" title={text(`See all ${all.length + (lockedCard ? 1 : 0)} cards`, `सभी ${all.length + (lockedCard ? 1 : 0)} कार्ड देखें`)} detail={text("Every technology, every day: the full pulse lives in your dashboard.", "हर तकनीक, हर दिन: पूरा पल्स आपके डैशबोर्ड में है।")} />}
     <div className={styles.head}>
       <div className={styles.headCopy}>
         <p className={styles.kicker}><Sparkles size={14} aria-hidden="true" />{text("AI & agentic pulse", "AI और एजेंटिक हलचल")}<span className={styles.today}>{text("New today", "आज नया")} · {dayLabel(day, hi)}</span></p>
         <h2 id="ai-pulse-title">{text("Today's learning across ", "आज की पढ़ाई: ")}<em>{text("AI, agents & the modern stack", "AI, एजेंट और आधुनिक स्टैक")}</em></h2>
-        <p className={styles.lede}>{text("A fresh set every day: agentic AI, LangChain, LangGraph, LangSmith, LangFlow, Next.js, React, AWS, n8n, Python, Playwright, Cypress, GitHub Actions, system design, Redis and Inngest, each card linked to its official source.", "हर दिन एक नया सेट: एजेंटिक AI, LangChain, LangGraph, LangSmith, LangFlow, Next.js, React, AWS, n8n, Python, Playwright, Cypress, GitHub Actions, सिस्टम डिज़ाइन, Redis और Inngest, हर कार्ड अपने आधिकारिक स्रोत से जुड़ा।")}</p>
+        <p className={styles.lede}>{text("A fresh set every day across 33 technologies: agentic AI and its terms, LangChain, LangGraph, LangSmith, LangFlow, Next.js, React, JavaScript, TypeScript, Node.js, Express, NestJS, GraphQL, the TanStack libraries, Redux, Zustand, testing with Jest, Vitest, RTL, Playwright and Cypress, AWS, Git, GitHub Actions, system design, Redis and more, each card linked to its official source.", "हर दिन एक नया सेट: एजेंटिक AI, LangChain, LangGraph, LangSmith, LangFlow, Next.js, React, AWS, n8n, Python, Playwright, Cypress, GitHub Actions, सिस्टम डिज़ाइन, Redis और Inngest, हर कार्ड अपने आधिकारिक स्रोत से जुड़ा।")}</p>
       </div>
       <Controls text={text} playing={playing} onPlay={() => setPlaying(p => !p)} page={page} pages={pages} goTo={goTo} previous={text("Previous cards", "पिछले कार्ड")} next={text("Next cards", "अगले कार्ड")} />
     </div>
-    <ul ref={track} className={styles.track} aria-roledescription="carousel" aria-label={text("Today's learning cards", "आज के अध्ययन कार्ड")} {...holdProps}>
+    <ul ref={track} className={preview ? styles.track : `${styles.track} ${styles.twoUp}`} aria-roledescription="carousel" aria-label={text("Today's learning cards", "आज के अध्ययन कार्ड")} {...holdProps}>
       {cards.map((card, i) => <PulseCardItem key={card.id} card={card} index={i} total={cards.length + (locked ? 1 : 0)} hi={hi} text={text} />)}
       {locked && <LockedCard teaser={locked} index={cards.length} total={cards.length + 1} text={text} render={full => <PulseCardItem card={full as PulseCard} index={cards.length} total={cards.length + 1} hi={hi} text={text} />} />}
     </ul>

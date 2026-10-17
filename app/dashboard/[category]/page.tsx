@@ -4,7 +4,6 @@ import { Workspace } from "@/components/workspace";
 import { CATEGORY_LABELS } from "@/lib/study/preparations";
 import { requireLearningUser as currentUser } from "@/lib/server/subscription-access";
 import { authConfigured, billingConfigured, databaseConfigured } from "@/lib/server/config";
-export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ category: string }> }): Promise<Metadata> {
   const { category } = await params;
   return { title: Object.hasOwn(CATEGORY_LABELS, category) ? CATEGORY_LABELS[category].en : "Your learning dashboard" };

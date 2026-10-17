@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "What happens when the commerce API is down?", "Tools return clear errors, the agent apologises and creates a ticket for follow-up rather than guessing, and alerts notify the team."),
     s(2, "How do you collect feedback after a conversation?", "Ask a short satisfaction question at the end, link it to the trace, and review low scores to improve prompts, tools or policies."),
     s(2, "How do you keep the bot's tone on-brand?", "Provide tone guidelines and examples in the system prompt, evaluate tone with an LLM judge on samples, and review a selection of conversations each week."),
+    s(4, "How do you design the agent's state for a support conversation?", "Keep structured fields separate from the message history: verified customer ID, order ID, order snapshot, detected intent, eligibility result, actions taken and their IDs, and escalation status. Tools read and write these fields, so decisions never depend on re-reading the chat."),
+    s(4, "How would you support a partial refund for one item in a multi-item order?", "Fetch the order lines, let the customer pick the item, check eligibility per line (return window, condition, final-sale flags), compute the amount including its share of discounts and tax, and call the refund tool with the line ID and an idempotency key."),
+    s(3, "How do you handle a customer who asks for something outside policy?", "Explain the policy plainly and offer the closest allowed alternative, such as store credit or an exchange. If the case has unusual circumstances, hand over to a human with a summary instead of bending the rule in the bot."),
+    s(3, "How do you keep the agent's answers about stock and delivery accurate?", "Never answer from the model's memory: call inventory and shipping tools for live data, show timestamps or carrier status as returned, and say when information is unavailable rather than estimating."),
+    s(3, "How do you support voice or phone channels with the same agent?", "Keep the agent logic channel-agnostic and add a speech-to-text and text-to-speech layer, shorten responses for speech, confirm critical details like order numbers by reading them back, and transfer to a person on the same call when needed."),
+    s(3, "How do you analyse conversations to improve the agent?", "Tag each conversation with intent, outcome and whether it was escalated, review a sample of failures weekly, cluster common reasons for escalation, and turn them into new tools, clearer policies or test cases."),
+    s(2, "How do you handle proactive messages, such as a delayed delivery notice?", "Trigger them from order events, not the chat agent, send through the notification system with the customer's preferred channel, and let a reply open a conversation with the agent preloaded with that order's context."),
   ],
   objective: [
     o(5, "Where should refund eligibility rules be enforced?", ["In code or a rules engine", "Only in the prompt", "By the customer", "In the CSS"], 0, "The model cannot override code."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "Customer history may be used to…", ["Apply goodwill rules for loyal customers", "Share data with others", "Block everyone", "Ignore policies"], 0, "Within privacy limits."),
     o(2, "Non-refund actions like address changes need…", ["Their own policy checks and authentication", "No checks", "Only the model's judgement", "A new app"], 0, "They need the same safety bar."),
     o(2, "Old turns in long chats should be…", ["Summarised", "Duplicated", "Sent to the customer", "Ignored entirely"], 0, "Keeps context within limits."),
+    o(4, "Decisions in the support agent should be based on…", ["Structured state fields from tools","Re-reading the chat each time","The model's memory","Customer sentiment only"], 0, "Structured state is reliable and auditable."),
+    o(4, "A partial refund must account for…", ["The item's share of discounts and tax","Only the list price","The shipping carrier's name","The chat length"], 0, "Otherwise the customer is over- or under-refunded."),
+    o(3, "An out-of-policy request should get…", ["The closest allowed alternative or a human handover","An exception granted by the bot","No reply","A refund anyway"], 0, "Bots must not bend policy on their own."),
+    o(3, "Delivery dates should come from…", ["Live shipping tool data","The model's guess","Last week's average","The product description"], 0, "Only live data is accurate."),
+    o(3, "On a voice channel, order numbers should be…", ["Read back for confirmation","Skipped","Spelled by the customer only once","Sent by email instead"], 0, "Speech recognition errors are common on numbers."),
+    o(3, "Escalation reasons should be clustered to…", ["Find new tools, policies or test cases","Blame agents","Delete conversations","Change the brand colours"], 0, "Common failure reasons show what to build next."),
+    o(2, "Proactive delay notices should be triggered by…", ["Order events through the notification system","The chat agent on a timer","Customers asking first","Manual emails only"], 0, "Events reach customers who never opened a chat."),
   ],
 };
 export default bank;

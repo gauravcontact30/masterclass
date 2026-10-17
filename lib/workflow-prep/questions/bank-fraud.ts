@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "What are PEP and sanctions screening?", "Checks of customers and counterparties against politically exposed persons and sanctions lists; matches raise risk and may require enhanced due diligence or blocking."),
     s(2, "How do you roll out the copilot?", "Pilot with a team on one alert type, compare metrics with a control group, gather feedback, validate with model risk teams, then expand."),
     s(2, "What should the copilot never do?", "Make final decisions, contact customers, close alerts, freeze accounts, or file reports without analyst approval."),
+    s(4, "How do you combine rules, machine learning and the copilot in a fraud programme?", "Rules catch known, explainable patterns and regulatory thresholds; machine-learning models score unusual behaviour in real time; the copilot helps analysts investigate the alerts both produce by gathering evidence and drafting narratives. Analyst outcomes feed back to tune rules and retrain models."),
+    s(4, "How do you prioritise the alert queue for analysts?", "Score each alert by risk, amount at stake, customer vulnerability and age, group related alerts into one case, put the highest combined priority first, and track time-to-decision against service targets so high-risk cases are never left waiting."),
+    s(3, "How do you detect account takeover from login and device signals?", "Compare each session with the customer's normal devices, locations, typing and navigation patterns, flag changes like a new device plus a password reset plus a new payee, and step up authentication before high-risk actions rather than after money moves."),
+    s(3, "How do you investigate authorised push payment scams where the customer sends the money?", "Look for scam signals such as a first payment to a new payee, unusual amounts, urgency in the payment reference, and remote-access software on the device. Warn the customer with specific scam messages and offer a delay or call-back for high-risk payments."),
+    s(3, "How do you reduce false positives without missing fraud?", "Segment thresholds by customer type, add context features such as known travel or salary days, review the top false-positive patterns with analysts, test changes on historical data, and watch fraud loss rates alongside alert volume after each change."),
+    s(3, "How do you share fraud intelligence across banks safely?", "Use industry schemes or consortium databases that exchange hashed or tokenised indicators such as mule account numbers and device fingerprints under legal agreements, so banks learn from each other without exposing customer data."),
+    s(2, "How do you keep the copilot's typology knowledge current?", "Load typologies and red-flag guidance as versioned documents from regulators and internal financial-crime teams, review and update them on a schedule, and show the version and date with each suggestion."),
   ],
   objective: [
     o(5, "Who decides the outcome of a fraud case?", ["The analyst", "The copilot", "The customer", "The detection model alone"], 0, "The copilot only assists."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "Typology suggestions should link to…", ["Internal playbooks", "Social media", "Random articles", "Nothing"], 0, "The copilot also teaches."),
     o(2, "Cached customer context speeds up…", ["Repeated questions within a case", "Model training", "Payments", "Logins"], 0, "Fewer repeated data calls."),
     o(2, "Contacting customers about fraud should be done by…", ["Authorised staff", "The copilot automatically", "The model provider", "Nobody"], 0, "Customer contact is a human action."),
+    o(4, "In a fraud programme the copilot mainly…", ["Helps analysts investigate alerts","Blocks payments on its own","Replaces rules and models","Sets interest rates"], 0, "Detection stays with rules and models; the copilot speeds investigation."),
+    o(4, "Related alerts for one customer should be…", ["Grouped into one case","Worked separately by different analysts","Ignored","Closed automatically"], 0, "One case gives the full picture once."),
+    o(3, "A new device, a password reset and a new payee together suggest…", ["Account takeover","A normal salary payment","A software update","A loan application"], 0, "The combination is a classic takeover pattern."),
+    o(3, "For a high-risk push payment, a good response is…", ["A specific scam warning and an optional delay","Silently approving it","Closing the account","Emailing a generic newsletter"], 0, "Customers authorise these payments, so warnings must persuade."),
+    o(3, "Threshold changes should be tested on…", ["Historical data before release","Live customers only","No data","A single analyst's opinion"], 0, "Back-testing shows the effect on alerts and losses."),
+    o(3, "Banks share fraud indicators safely through…", ["Consortium schemes with hashed or tokenised data","Public social media posts","Unencrypted spreadsheets","Customer emails"], 0, "Indicators help without exposing customer data."),
+    o(2, "Typology guidance shown by the copilot should carry…", ["Its version and date","No source","The analyst's password","The model's weights"], 0, "Analysts must know how current the guidance is."),
   ],
 };
 export default bank;

@@ -2,7 +2,8 @@ import "server-only";
 import { currentUser } from "./auth";
 import { db } from "./db";
 import { HttpError } from "./http";
-import { isSuperAdminUser, preparationSchema, PREPARATIONS, type PreparationAccess } from "@/lib/study/preparations";
+import { isSuperAdminUser, PREPARATIONS, type PreparationAccess } from "@/lib/study/preparations";
+import { preparationSchema } from "@/lib/study/preparation-schema";
 
 export async function preparationAccess(owner: string): Promise<PreparationAccess> {
   const user = await currentUser();

@@ -2,11 +2,12 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Equal, EqualNot, Quote, Sparkles, Volume2 } from "lucide-react";
 import type { DailyWord, LockedTeaser, RelatedWord } from "@/lib/landing-daily-types";
+import { DashboardMore } from "./dashboard-more";
 import { LockedCard } from "./landing-locked-card";
 import { vocabularyImageUrl } from "@/lib/vocabulary-image";
 import { useLanguage } from "./language-provider";
 import { usePagedCarousel } from "./use-paged-carousel";
-import { AUTOPLAY_MS, Controls, Dots, dayLabel } from "./landing-ai-pulse";
+import { AUTOPLAY_MS, Controls, Dots, dayLabel, PREVIEW_COUNT } from "./landing-ai-pulse";
 import home from "./landing-home.module.css";
 import pulse from "./landing-ai-pulse.module.css";
 import styles from "./landing-vocabulary.module.css";
@@ -17,9 +18,12 @@ const headword = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
  * Today's twelve English words, three cards a screen, chosen afresh each day on the server
  * (lib/server/landing-daily.ts): picture, pronunciation with audio, meaning, sentence, synonyms and antonyms.
  */
-export function LandingVocabulary({ words, day, locked }: { words: DailyWord[]; day: string; locked?: LockedTeaser | null }) {
+/** `preview` (the landing page) shows three words and a link to the day's full list on /dashboard. */
+export function LandingVocabulary({ words: all, day, locked: lockedCard, preview = false }: { words: DailyWord[]; day: string; locked?: LockedTeaser | null; preview?: boolean }) {
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
-  const { track, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(words.length + (locked ? 1 : 0), 3, AUTOPLAY_MS);
+  const words = preview ? all.slice(0, PREVIEW_COUNT) : all;
+  const locked = preview ? null : lockedCard;
+  const { track, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(words.length + (locked ? 1 : 0), preview ? 3 : 2, AUTOPLAY_MS);
   const [speaking, setSpeaking] = useState<string | null>(null);
   useEffect(() => () => { if ("speechSynthesis" in window) window.speechSynthesis.cancel(); }, []);
 
@@ -33,6 +37,7 @@ export function LandingVocabulary({ words, day, locked }: { words: DailyWord[]; 
   }
 
   return <section id="vocabulary" className={`${pulse.pulse} ${styles.section}`} aria-labelledby="vocabulary-title"><div className={home.inner}>
+    {preview && <DashboardMore href="/dashboard#vocabulary" title={text(`See all ${all.length + (lockedCard ? 1 : 0)} words`, `सभी ${all.length + (lockedCard ? 1 : 0)} शब्द देखें`)} detail={text("Pronunciation, Hindi meaning, synonyms and antonyms for every word.", "हर शब्द का उच्चारण, हिन्दी अर्थ, पर्यायवाची और विलोम।")} />}
     <div className={pulse.head}>
       <div className={pulse.headCopy}>
         <p className={pulse.kicker}><span className={styles.aa} aria-hidden="true">Aa</span>{text("Word power", "शब्द शक्ति")}<span className={pulse.today}>{text("New today", "आज नया")} · {dayLabel(day, hi)}</span></p>
@@ -41,7 +46,7 @@ export function LandingVocabulary({ words, day, locked }: { words: DailyWord[]; 
       </div>
       <Controls text={text} playing={playing} onPlay={() => setPlaying(p => !p)} page={page} pages={pages} goTo={goTo} previous={text("Previous words", "पिछले शब्द")} next={text("Next words", "अगले शब्द")} />
     </div>
-    <ul ref={track} className={pulse.track} aria-roledescription="carousel" aria-label={text("Today's English words", "आज के अंग्रेज़ी शब्द")} {...holdProps}>
+    <ul ref={track} className={preview ? pulse.track : `${pulse.track} ${pulse.twoUp}`} aria-roledescription="carousel" aria-label={text("Today's English words", "आज के अंग्रेज़ी शब्द")} {...holdProps}>
       {words.map((entry, i) => <WordCard key={entry.word} entry={entry} index={i} total={words.length + (locked ? 1 : 0)} speaking={speaking} onHear={hear} />)}
       {locked && <LockedCard teaser={locked} index={words.length} total={words.length + 1} text={text} render={full => <WordCard entry={{ ...(full as DailyWord), tone: locked.tone }} index={words.length} total={words.length + 1} speaking={speaking} onHear={hear} />} />}
     </ul>

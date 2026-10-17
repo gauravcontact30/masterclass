@@ -1,0 +1,6 @@
+/* Placeholder sidebar rows while a dashboard page loads: the same rhythm as the real links, shimmering in turn. */
+.rail { display: grid; gap: 14px; padding: 92px 22px 22px; }
+.rail span { height: 34px; border-radius: 10px; background: linear-gradient(90deg, rgba(250, 249, 245, .06), rgba(217, 119, 87, .22), rgba(250, 249, 245, .06)) 0 0 / 300% 100%; animation: shimmer 1.6s ease-in-out infinite; }
+.rail span:first-child { height: 42px; margin-bottom: 8px; }
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .rail span { animation: none; } }

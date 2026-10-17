@@ -59,3 +59,16 @@ export function codeLineNotes(code: string, path = "", language: CodeLanguage = 
     return `Continue the surrounding expression with ${text}.`;
   });
 }
+
+/** Generic notes that restate the syntax instead of explaining the line; the reader shows none of them. */
+const BOILERPLATE_NOTE = /^(?:Existing source comment documents|Open a block or collection|Close the current block|Blank line separates|Continue the surrounding expression|Supply this literal value|Finish the JSX element|Close the [\w.-]+ JSX element)/;
+
+/** Display-only: drop blank and whitespace-only lines so a code panel shows only lines that do something. */
+export function withoutBlankLines(code: string): string {
+  return code.split("\n").filter(line => line.trim()).join("\n");
+}
+
+/** Notes for the notes reader: only lines whose note says what the line does; braces, blanks and existing comments get none. */
+export function relevantCodeLineNotes(code: string, path = "", language: CodeLanguage = fileLanguage(code, path)): (string | null)[] {
+  return codeLineNotes(code, path, language, { explainFormatting: false }).map(note => note && !BOILERPLATE_NOTE.test(note) ? note : null);
+}

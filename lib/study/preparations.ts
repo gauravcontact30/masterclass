@@ -1,4 +1,3 @@
-import { z } from "zod";
 import preview from "@/lib/catalog-preview.json";
 import { BOARD_INFO, EXAM_COURSES } from "./catalog";
 import { bi, type Bilingual, type StudyCourse } from "./types";
@@ -36,8 +35,6 @@ export const PREPARATIONS: PreparationOption[] = [
   ...EXAM_COURSES.map(course => ({ id: course.id, category: courseCategory(course), label: course.title })),
   ...preview.technologies.map(tech => ({ id: `tech:${tech.id}`, category: "technology", label: bi(tech.title, tech.title_hi) })),
 ];
-const known = new Set(PREPARATIONS.map(option => option.id));
-export const preparationSchema = z.array(z.string().refine(id => known.has(id))).min(1).max(PREPARATIONS.length).refine(ids => new Set(ids).size === ids.length);
 /** `focused` is true only when the learner saved their own subset; otherwise `selections` is every category. */
 export type PreparationAccess = { selections: string[]; isSuperAdmin: boolean; focused?: boolean };
 export function canReadStudy(access: PreparationAccess, course: StudyCourse) { return access.isSuperAdmin || access.selections.includes(course.category === "course" ? "system-design" : course.board ? `${course.board}-${course.grade}` : course.id); }

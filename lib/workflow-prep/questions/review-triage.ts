@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "How fast should urgent reviews be handled?", "Within hours, ideally the same shift, with an alert to the duty manager and a documented follow-up action."),
     s(2, "How do you report results to leadership?", "Monthly summaries of rating trends, top issues fixed, response metrics and comparisons across properties."),
     s(2, "Why keep humans in the loop for posting?", "Public replies affect reputation and may have legal implications; managers catch tone problems, factual errors and sensitive situations."),
+    s(4, "How do you design the review record that flows through the triage pipeline?", "Store the platform, review ID, property, date, rating, text, language, detected topics, sentiment, urgency, assigned department, draft reply, approval status and posted reply ID. The review ID plus platform is the unique key that drives deduplication and status tracking."),
+    s(4, "How do you detect a trend, such as a sudden rise in cleanliness complaints?", "Count tagged topics per property per week, compare with the property's own baseline, alert when a topic rises well above normal, and include sample reviews so managers see what guests are saying."),
+    s(3, "How do you handle reviews that mention a specific staff member?", "Route praise to the staff member's manager for recognition, route complaints privately to the manager, and never name staff in public replies beyond what the hotel's policy allows."),
+    s(3, "How do you respond to a review that is factually wrong?", "Draft a calm, factual reply that thanks the guest, corrects the key point without arguing, and invites them to contact the hotel directly. Escalate to management before posting, and use the platform's dispute process only for policy violations."),
+    s(3, "How do you link reviews to operational systems like maintenance?", "When a review reports a fault such as broken air conditioning, create a maintenance ticket with the room number if stated, link it to the review, and mark the review resolved only when the ticket closes."),
+    s(3, "How do you compare guest satisfaction across properties fairly?", "Normalise for review volume and platform rating scales, compare topics rather than only average ratings, and show trends over time with confidence ranges for properties with few reviews."),
+    s(2, "How do you reply to reviews written in other languages?", "Detect the language, draft the reply in the same language using an approved style guide for that language, and show the manager a translation for approval before posting."),
   ],
   objective: [
     o(5, "Which reviews should trigger an immediate alert?", ["Safety, hygiene or discrimination issues", "Praise for breakfast", "Neutral comments", "Old reviews"], 0, "Urgent issues need action now."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "Leadership reports should include…", ["Rating trends and top issues fixed", "Model weights", "Raw logs", "Prompt text"], 0, "Leaders care about business outcomes."),
     o(2, "Why do humans approve public replies?", ["Reputation and legal risk", "Bots cannot type", "Platforms forbid AI", "To slow replies"], 0, "Managers catch tone issues."),
     o(2, "What does a good reply include?", ["Specific points and real fixes", "Generic templates only", "Booking numbers", "Blame on guests"], 0, "Sincere and specific."),
+    o(4, "The unique key for a review in the pipeline is…", ["Platform plus review ID","The guest's name","The rating","The review date"], 0, "It drives deduplication and tracking."),
+    o(4, "A rise in cleanliness complaints is detected by…", ["Comparing weekly topic counts with the property's baseline","Reading every review manually","Average rating only","The number of rooms"], 0, "Baselines reveal unusual spikes."),
+    o(3, "Complaints naming a staff member should go…", ["Privately to the manager","Into the public reply","To all staff","Nowhere"], 0, "Staff issues are handled privately."),
+    o(3, "A factually wrong review should get…", ["A calm factual reply after manager review","An argumentative reply","Immediate deletion requests","No response ever"], 0, "Other guests read the reply."),
+    o(3, "A review reporting a broken AC should create…", ["A linked maintenance ticket","Only a thank-you reply","A marketing email","A new tag only"], 0, "Operational fixes close the loop."),
+    o(3, "Comparing properties fairly requires…", ["Normalising for volume and rating scales","Only total review counts","Raw averages from mixed platforms","Star ratings from one guest"], 0, "Different platforms and volumes skew raw numbers."),
+    o(2, "A review in French should be answered…", ["In French, with a translation shown to the manager","In English only","With a machine translation of the review","Not at all"], 0, "Replying in the guest's language is courteous."),
   ],
 };
 export default bank;

@@ -7,7 +7,6 @@ import { protectWithArcjet } from "@/lib/arcjet";
 import { cacheFetch } from "@/lib/redis";
 import { inngest } from "@/lib/inngest/client";
 
-export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   // 1. Arcjet Security Shield Check

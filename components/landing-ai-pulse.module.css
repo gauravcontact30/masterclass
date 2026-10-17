@@ -10,7 +10,7 @@
 .kicker { display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 6px 12px; border: 1px solid var(--nb-cream-edge); border-radius: 999px; background: var(--nb-sheet); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--nb-ink); }
 .head h2 { margin: 16px 0 12px; font-family: var(--nb-font); font-weight: 600; font-size: clamp(30px, 3.6vw, 50px); line-height: 1.06; letter-spacing: -0.02em; color: var(--nb-graphite); text-wrap: balance; }
 .head h2 em { font-style: italic; color: var(--nb-ink); }
-.lede { margin: 0; max-width: 60ch; font-size: 17px; line-height: 1.55; color: var(--nb-text); }
+.lede { margin: 0; max-width: 60ch; font-size: 17px; line-height: 1.55; color: var(--nb-text); text-align: justify; text-justify: inter-word; -webkit-hyphens: auto; hyphens: auto; }
 
 .controls { display: flex; align-items: center; gap: 8px; padding: 6px; border: 1px solid var(--nb-rule); border-radius: 999px; background: color-mix(in srgb, var(--nb-sheet) 80%, transparent); backdrop-filter: blur(6px); }
 .controls button { display: grid; place-items: center; width: 38px; height: 38px; border: 0; border-radius: 50%; background: transparent; color: var(--nb-graphite); cursor: pointer; transition: background .2s ease; }
@@ -23,6 +23,10 @@
 .track::-webkit-scrollbar { display: none; }
 @media (max-width: 1080px) { .track { grid-auto-columns: calc((100% - var(--gap)) / 2); } }
 @media (max-width: 680px) { .track { --gap: 14px; grid-auto-columns: 100%; } }
+/* /dashboard (no `preview`): two cards a screen with justified, hyphenated card text; phones keep one. */
+.track.twoUp { grid-auto-columns: calc((100% - var(--gap)) / 2); }
+@media (max-width: 680px) { .track.twoUp { grid-auto-columns: 100%; } }
+.twoUp > li :is(p, li, dd) { text-align: justify; text-justify: inter-word; -webkit-hyphens: auto; hyphens: auto; }
 
 .card { --tint: #fdf1ea; --panel: #f9e1d3; --edge: #a64c2c;
   scroll-snap-align: start; display: flex; flex-direction: column; min-width: 0; overflow: hidden;

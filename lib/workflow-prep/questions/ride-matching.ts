@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "What are switchback experiments?", "Alternating between treatment and control over time windows within a city, because riders and drivers interact and per-user A/B tests would interfere with each other."),
     s(2, "Which metrics matter for ride matching?", "Time to match, pickup ETA, request-to-acceptance rate, cancellation rate, driver utilisation and earnings, and completion rate."),
     s(2, "How is privacy protected for riders and drivers?", "Mask phone numbers with proxy calling, share precise locations only during active trips, limit data retention and restrict internal access to trip histories."),
+    s(4, "How do you design scheduled rides booked hours in advance?", "Store the reservation with pickup time and location, start matching a configured window before pickup with wider search radius and incentives, notify the rider when a driver is assigned, and have a fallback that escalates priority or offers compensation if no driver accepts in time."),
+    s(4, "How do you keep the matching service available during a sudden city-wide surge?", "Shed non-critical work such as ETA refinements for distant drivers, widen batching intervals, cap requests per area with clear 'high demand' messaging, scale the city's matcher shard, and protect the trip state store with backpressure."),
+    s(3, "How do you design driver incentives without hurting the marketplace?", "Target incentives at areas and times where supply forecasts fall short, cap budgets per region, measure incremental supply with experiments rather than raw participation, and avoid incentives that pull drivers away from other busy areas."),
+    s(3, "How do you handle a rider's pickup point being inaccessible?", "Snap requested points to valid pickup spots on the road graph using map data and past successful pickups, suggest nearby better spots, allow chat or call between rider and driver through masked numbers, and update the pickup pin live."),
+    s(3, "How do you compute and show an upfront fare?", "Estimate route distance and time from the routing engine, apply the city's base, per-km and per-minute rates plus current surge and fees, lock the quote for a short time, and store it with the trip so the charged fare matches unless the route changes materially."),
+    s(3, "How would you add safety features such as ride check and sharing a trip?", "Detect anomalies like long unexpected stops or route deviations from the location stream, prompt both parties, offer one-tap emergency help, and let riders share a live trip link that shows the car and route to trusted contacts until the trip ends."),
+    s(2, "How do you store trip history for analytics without slowing the live system?", "Stream trip events through change data capture into a data lake or warehouse, keep only active trip state in the operational store, and build analytics, pricing models and dashboards from the warehouse copy."),
   ],
   objective: [
     o(5, "Where should the latest driver locations live?", ["An in-memory geospatial index", "A relational row per ping", "The CDN", "Rider phones"], 0, "Updates arrive every few seconds."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "Which metric shows matching quality for riders?", ["Pickup ETA and time to match", "App size", "Server count", "Map style"], 0, "Riders feel these directly."),
     o(2, "Driver pings should also go to…", ["A stream for analytics", "The relational trips table per ping", "Email", "The CDN"], 0, "Keep the hot path in memory."),
     o(2, "Cancellation after a grace period may…", ["Incur a fee", "Free a ride", "Ban the driver", "Restart the app"], 0, "Discourages late cancellations."),
+    o(4, "Matching for a scheduled ride starts…", ["A window before the pickup time","At booking time only","At the exact pickup second","After the rider arrives"], 0, "Drivers near the time and place are the useful candidates."),
+    o(4, "During a demand surge the matcher should first shed…", ["Non-critical refinements like distant ETAs","Trip state writes","Payments","Driver locations"], 0, "Core matching and trip consistency must keep working."),
+    o(3, "Driver incentives should be judged by…", ["Incremental supply measured in experiments","Number of drivers who opt in","Total budget spent","Social media mentions"], 0, "Paying drivers who would have driven anyway adds nothing."),
+    o(3, "Pickup pins are snapped to…", ["Valid road positions and past good pickups","The rider's home address","The nearest airport","Random nearby points"], 0, "Drivers need a reachable spot on the road."),
+    o(3, "An upfront fare quote should be…", ["Locked briefly and stored with the trip","Recomputed silently at the end","Hidden until arrival","Based on the driver's choice"], 0, "The charge should match what the rider accepted."),
+    o(3, "Route deviation alerts come from…", ["The live location stream compared to the planned route","Payment logs","App store reviews","Weekly reports"], 0, "Real-time location reveals unexpected stops or detours."),
+    o(2, "Historical trip analytics should run on…", ["A warehouse fed by change data capture","The live trip state store","The driver app","The matching cache"], 0, "Analytics should not load operational systems."),
   ],
 };
 export default bank;

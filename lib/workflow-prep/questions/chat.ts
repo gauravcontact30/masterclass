@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "What metrics matter for a chat system?", "Message delivery latency (send to delivered), delivery success rate, connection counts and churn, reconnect rate, push delivery rate, and storage growth."),
     s(2, "How do you test a chat system's reliability?", "Simulate network drops, reconnects and gateway crashes in load tests, check for lost or duplicated messages using sequence numbers, and run soak tests with millions of simulated connections."),
     s(2, "How do read receipts work with privacy settings?", "Respect users who turn read receipts off by not sending read events for them, and often not showing others' receipts to them either, applied consistently on server and clients."),
+    s(4, "How do you assign message IDs that sort correctly per conversation?", "Use a per-conversation sequence number assigned by the server that owns the conversation, or a time-ordered ID such as a Snowflake or ULID combined with the conversation ID. Clients store the highest sequence they have and ask for everything after it on reconnect."),
+    s(4, "How would you design message reactions and replies?", "Store reactions as small records keyed by message and user so each user has one reaction per emoji, keep aggregated counts on the message for fast display, and send reaction events through the same delivery path. Replies reference the parent message ID and can be shown as a thread."),
+    s(3, "How do you handle a user who is offline for weeks?", "Keep undelivered messages durable in the message store, not in gateway memory, send a push notification summary, and when the user reconnects page through missed messages by sequence number rather than pushing everything at once."),
+    s(3, "How do you implement disappearing messages?", "Store an expiry time with the conversation setting or message, have every client delete messages after the timer, and delete server-side copies with a TTL. Make clear in the UI that recipients can still take screenshots."),
+    s(3, "How would you add voice and video calls to a chat app?", "Use the chat channel for signalling (offer, answer and ICE candidates), WebRTC for peer-to-peer media, STUN to discover addresses and TURN relays when direct connections fail, and an SFU for group calls so each client uploads one stream."),
+    s(3, "How do you show an accurate 'last seen' without heavy load?", "Update last-seen in a fast store only on connect, disconnect and periodic heartbeats, coarsen it to minutes, publish changes only to contacts who have the chat open, and respect privacy settings that hide it."),
+    s(2, "How do you export a user's chat history on request?", "Run an asynchronous export job that pages through the user's conversations, includes media links or files, packages the result as an encrypted archive in object storage, and sends a time-limited download link."),
   ],
   objective: [
     o(5, "What lets clients fetch exactly the messages they missed?", ["The last received sequence number", "Device timestamps", "Message length", "The gateway IP"], 0, "Ask for everything after that number."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "Old conversations are best kept in…", ["Cheaper archive storage loaded on demand", "The hot cache forever", "The push service", "Client memory only"], 0, "Saves cost for rarely read data."),
     o(2, "Spam in chat is limited by…", ["Rate limits, reputation and reports", "Longer messages", "Bigger servers", "Turning off encryption"], 0, "Especially for new accounts."),
     o(2, "Read receipts for users who disabled them should…", ["Not be sent", "Be sent anyway", "Be sent by email", "Be delayed a day"], 0, "Respect privacy settings."),
+    o(4, "Per-conversation sequence numbers let clients…", ["Ask for everything after the last one they saw","Skip encryption","Avoid WebSockets","Delete old messages"], 0, "Missed messages are fetched precisely."),
+    o(4, "Where should undelivered messages live for offline users?", ["A durable message store","The gateway's memory","The sender's device only","The CDN"], 0, "Gateways restart; messages must survive."),
+    o(3, "Which protocol carries call media between users?", ["WebRTC","SMTP","FTP","DNS"], 0, "WebRTC handles real-time audio and video."),
+    o(3, "When peers cannot connect directly, calls use…", ["A TURN relay","A bigger WebSocket","An email fallback","A message queue"], 0, "TURN relays media through a server."),
+    o(3, "Reactions are best stored as…", ["One record per message, user and emoji","Text appended to the message","A new message each","Nothing, they are only local"], 0, "That enforces one reaction per user and allows counts."),
+    o(3, "Disappearing messages are removed from servers by…", ["A TTL on stored copies","Asking users to delete them","Restarting gateways","Encrypting them twice"], 0, "Server copies must expire too, not just client views."),
+    o(2, "Group video calls usually use an SFU so that…", ["Each client uploads one stream","Media skips encryption","No server is needed","Calls become audio only"], 0, "The SFU forwards streams instead of every peer sending to every other."),
   ],
 };
 export default bank;

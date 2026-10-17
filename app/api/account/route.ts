@@ -4,7 +4,8 @@ import { ensureDefaultLibrary } from "@/lib/server/default-library";
 import { check, db } from "@/lib/server/db";
 import { z } from "zod";
 import { preparationAccess, savePreparations } from "@/lib/server/preparations";
-import { canReadTechnology, preparationSchema } from "@/lib/study/preparations";
+import { canReadTechnology } from "@/lib/study/preparations";
+import { preparationSchema } from "@/lib/study/preparation-schema";
 export async function GET(monitorRequest?: Request) { return api(async () => {
   const id = await userId(); const user = await profile(id);
   const preparations = await preparationAccess(id);

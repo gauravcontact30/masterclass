@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "How do you roll out a new index safely?", "Load the new snapshot on a canary, compare suggestions and latency with the old one, then hot-swap across the fleet with the ability to roll back instantly."),
     s(2, "What should the suggestion response contain?", "The suggestion text, a highlight range for the matched prefix, a type (query, product, category), optional thumbnail or metadata, and an ID for click logging."),
     s(2, "How is privacy handled in query logs?", "Strip or hash personal data, require a minimum number of users per query before suggesting it, keep retention limited, and let users clear personal history."),
+    s(4, "How would you design a trie node to return top suggestions quickly?", "Store at each node a small precomputed list of the top K completions beneath it with their scores, so a lookup walks to the prefix node and returns that list without exploring the subtree. Rebuild these lists offline when counts change."),
+    s(4, "How do you combine global popularity with a user's context in ranking?", "Fetch top candidates by global score, then re-rank a short list with features such as the user's recent searches, location, language and time of day, using a lightweight model or weighted formula that runs in a few milliseconds."),
+    s(3, "How do you autocomplete entities such as products or places rather than queries?", "Index entity names, aliases and popular attributes, rank by entity popularity and availability, return rich results with type, image and ID, and navigate directly to the entity page when one is chosen instead of running a search."),
+    s(3, "How do you handle autocomplete for very short prefixes like one character?", "Serve precomputed results for all one- and two-character prefixes from cache or the edge, since they are few and very popular, and consider waiting for two characters before showing suggestions to reduce noise."),
+    s(3, "How do you keep suggestions fresh without rebuilding the whole index?", "Use a two-tier design: a large index rebuilt daily or hourly, plus a small real-time index fed by a stream of recent queries. Merge results from both at query time with a recency boost."),
+    s(3, "How do you design autocomplete for a search box inside an app with permissions?", "Only suggest items the user may see, by filtering on access lists in the index or per-tenant indices, never leak private titles through global popularity, and re-check access when the suggestion is opened."),
+    s(2, "How do you measure autocomplete latency from the user's point of view?", "Instrument the client to record time from keystroke to suggestions rendered, include network and rendering time, report p50 and p95 by region and device, and track abandoned responses that arrive after a newer keystroke."),
   ],
   objective: [
     o(5, "What makes prefix lookups fast in a typeahead?", ["Precomputed top-k lists in a trie", "Scanning the database", "Sorting on every request", "Full-text search per keystroke"], 0, "Lookup cost depends on prefix length."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "A viral new query is boosted by…", ["Recent velocity rather than total count", "Its length", "Alphabetical order", "Random chance"], 0, "This is how trending detection works."),
     o(2, "Bot traffic in logs should be…", ["Excluded from aggregation", "Counted twice", "Promoted", "Ignored only on weekends"], 0, "Bot traffic skews popularity counts."),
     o(2, "Where can popular prefix responses be cached?", ["At the CDN and in the browser", "Only in the database", "Nowhere", "In email"], 0, "Short TTLs keep them fresh."),
+    o(4, "Precomputed top-K lists at trie nodes make lookups…", ["Proportional to the prefix length","Proportional to the whole subtree","Require a database join","Slower"], 0, "The answer is stored at the prefix node."),
+    o(4, "Personalised re-ranking is applied to…", ["A short list of global top candidates","Every possible completion","Only offensive suggestions","Server logs"], 0, "A small list keeps re-ranking fast."),
+    o(3, "Fresh queries reach suggestions quickly through…", ["A small real-time index merged with the main one","A weekly full rebuild only","Manual curation","Browser caching"], 0, "The two-tier design balances freshness and cost."),
+    o(3, "One-character prefixes are best served from…", ["Precomputed cached results","A full scan per request","The user's history only","Nothing"], 0, "There are few of them and they are very hot."),
+    o(3, "Entity autocomplete should return…", ["Type, ID and image so the app can navigate directly","Only plain text","The raw query log","Search results pages"], 0, "Picking an entity goes straight to it."),
+    o(3, "In an app with permissions, suggestions must…", ["Include only items the user may access","Show every popular title","Ignore tenants","Be cached globally per prefix"], 0, "Suggestions can leak private names."),
+    o(2, "Real autocomplete latency should be measured…", ["From keystroke to rendered suggestions on the client","Only inside the index server","By CPU usage","By the number of shards"], 0, "Users feel network and rendering time too."),
   ],
 };
 export default bank;

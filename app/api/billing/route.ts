@@ -7,11 +7,10 @@ import { rateLimit } from "@/lib/server/rate-limit";
 import { razorpay, billingSubscription, reconcileSubscription, validateSubscriptionPlan } from "@/lib/server/billing";
 import { db, check } from "@/lib/server/db";
 import { savePreparations } from "@/lib/server/preparations";
-import { preparationSchema } from "@/lib/study/preparations";
+import { preparationSchema } from "@/lib/study/preparation-schema";
 import { verifyHmac } from "@/lib/server/secrets";
 import { entitlementTier } from "@/lib/domain";
 
-export const runtime = "nodejs";
 const terminal = ["cancelled", "completed", "expired"];
 const inputSchema = z.discriminatedUnion("action", [
   z.object({ action:z.literal("checkout"), tier:z.enum(["monthly","yearly"]), selections:preparationSchema.optional() }).strict(),

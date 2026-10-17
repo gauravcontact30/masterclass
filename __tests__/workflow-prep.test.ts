@@ -45,12 +45,12 @@ test("questions are ordered by how often they are asked", () => {
   expect(byStars([{ stars: 3 }, { stars: 5 }, { stars: 4 }]).map(q => q.stars)).toEqual([5, 4, 3]);
 });
 
-test.each(Object.entries(WORKFLOW_PREP))("%s has 25+ subjective and 25+ objective questions with its extra file", async (id, prep) => {
+test.each(Object.entries(WORKFLOW_PREP))("%s has 30+ subjective and 30+ objective questions with its extra file", async (id, prep) => {
   expect(hasMoreQuestions(id)).toBe(true);
   const more = await loadMoreQuestions(id);
   const subjective = [...prep.subjective, ...more.subjective]; const objective = [...prep.objective, ...more.objective];
-  expect(subjective.length).toBeGreaterThanOrEqual(25);
-  expect(objective.length).toBeGreaterThanOrEqual(25);
+  expect(subjective.length).toBeGreaterThanOrEqual(31);
+  expect(objective.length).toBeGreaterThanOrEqual(31);
   const questions = [...subjective, ...objective].map(q => q.question + (q.code ?? ""));
   expect(new Set(questions).size).toBe(questions.length);
   for (const q of [...more.subjective, ...more.objective]) expect(q.question).toMatch(/[?.…]$/);

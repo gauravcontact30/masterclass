@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { ArrowUpRight, NotebookText } from "lucide-react";
 import type { DocumentRecord } from "@/lib/domain";
-import { DOCUMENT_FORMAT } from "@/lib/domain";
+import { DOCUMENT_FORMAT } from "@/lib/document-format";
 import type { TechnologyGuide } from "@/lib/generation/guides";
 import { fill } from "@/lib/library";
 import { useLanguage } from "./language-provider";

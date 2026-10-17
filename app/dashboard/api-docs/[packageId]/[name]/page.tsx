@@ -5,7 +5,6 @@ import { API_PACKAGES } from '@/lib/api-docs';
 import { requireLearningUser as currentUser } from '@/lib/server/subscription-access';
 import { authConfigured,billingConfigured,databaseConfigured } from '@/lib/server/config';
 import styles from '@/components/api-docs.module.css';
-export const dynamic='force-dynamic';
 type Props={params:Promise<{packageId:string;name:string}>};
 export async function generateMetadata({params}:Props) { const {packageId,name}=await params;return {title:`${name} · ${packageId} · API Learning`}; }
 export default async function Page({params}:Props) {

@@ -1,14 +1,14 @@
 "use client";
 
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { useState, type CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, BookText, Braces, CheckCircle2, Code2, Eye, EyeOff, Languages, ListChecks, MessageSquareText, Puzzle, Search, Server, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BookText, Braces, Check, Code2, FileCode2, Languages, ListChecks, MessageSquareText, Puzzle, Search, Server, X } from "lucide-react";
 import type { LandingProPreview } from "@/lib/landing-pro-preview";
 import { ExpandedText } from "./expanded-text";
 import { useLanguage } from "./language-provider";
+import home from "./landing-home.module.css";
+import frame from "./landing-section.module.css";
 import styles from "./landing-pro-sections.module.css";
 
 /** Short pill label and logo (public/images/tech) per Techy topic id. */
@@ -25,6 +25,11 @@ function useText() {
   return { locale: language === "hi" ? "hi-IN" : "en-IN", text: (en: string, hindi: string) => language === "hi" ? hindi : en };
 }
 
+/**
+ * Techy, shown the way it feels to use: a terminal-style session on one real topic. Pick a topic, read its summary
+ * and key feature, then try its first interview question before revealing the model answer. Beside it, the six
+ * ways each topic can be practised in the dashboard.
+ */
 export function LandingTechy({ data }: { data: LandingProPreview["techy"] }) {
   const { text, locale } = useText();
   const [topicId, setTopicId] = useState(data.topics[0]?.id);
@@ -36,87 +41,123 @@ export function LandingTechy({ data }: { data: LandingProPreview["techy"] }) {
     { icon: MessageSquareText, title: text("Subjective test", "विषयनिष्ठ परीक्षा"), body: text("Answer out loud, then compare with a short model answer.", "खुद उत्तर दें, फिर संक्षिप्त आदर्श उत्तर से मिलाएँ।") },
     { icon: ListChecks, title: text("Objective quiz", "वस्तुनिष्ठ क्विज़"), body: text("The same concepts as multiple choice, with explanations.", "वही अवधारणाएँ बहुविकल्पीय रूप में, व्याख्या सहित।") },
     { icon: Code2, title: text("Code examples", "कोड उदाहरण"), body: text("Connected multi-file projects in an editor-style reader.", "एडिटर जैसे रीडर में जुड़ी हुई मल्टी-फ़ाइल परियोजनाएँ।") },
-    { icon: Puzzle, title: text("Code puzzles", "कोड पहेलियाँ"), body: text(`${count(data.puzzleCount)} predict-the-output challenges to sharpen your reading.`, `कोड पढ़ने की समझ के लिए ${count(data.puzzleCount)} आउटपुट पहेलियाँ।`) },
-    { icon: Languages, title: text("Corporate English", "कॉर्पोरेट अंग्रेज़ी"), body: text(`${count(data.vocabularyCount)} workplace words with synonyms and real sentences.`, `पर्यायवाची और वाक्यों सहित ${count(data.vocabularyCount)} कार्यस्थल शब्द।`) },
+    { icon: Puzzle, title: text("Code puzzles", "कोड पहेलियाँ"), body: text("Predict the output, then see why it prints what it does.", "आउटपुट का अनुमान लगाएँ, फिर देखें कि वह ऐसा क्यों छपता है।") },
+    { icon: Languages, title: text("Corporate English", "कॉर्पोरेट अंग्रेज़ी"), body: text("Workplace words with synonyms and real sentences.", "पर्यायवाची और असली वाक्यों सहित कार्यस्थल के शब्द।") },
   ];
   if (!topic) return null;
-  return <section id="techy" className={styles.techy} aria-labelledby="landing-techy-title">
-    <div className={styles.container}>
-      <div className={styles.intro}>
-        <div><h2 id="landing-techy-title">{text("Walk into the interview", "इंटरव्यू में जाएँ")} <em>{text("already fluent.", "पूरी तैयारी के साथ।")}</em></h2></div>
-        <div className={styles.introAside}><p><ExpandedText text={text("A curated library for engineers who ship: the frameworks, cloud services and testing tools teams actually hire for—explained, questioned and coded.", "काम करने वाले इंजीनियरों के लिए चुनी हुई लाइब्रेरी: वे फ़्रेमवर्क, क्लाउड सेवाएँ और टेस्टिंग टूल जिनके लिए टीमें भर्ती करती हैं—समझाए, पूछे और कोड किए गए।")} /></p>
-          <dl className={styles.stats}><div><dt>{text("Topics", "विषय")}</dt><dd>{count(data.topics.length)}</dd></div><div><dt>{text("Practice questions", "अभ्यास प्रश्न")}</dt><dd>{count(data.questionCount)}</dd></div><div><dt>{text("Learning modes", "सीखने के तरीके")}</dt><dd>{count(modes.length)}</dd></div></dl>
+  const pick = (id: string) => { setTopicId(id); setRevealed(false); };
+  return <section id="techy" className={frame.section} data-ground="wash" aria-labelledby="landing-techy-title"><div className={home.inner}>
+    <header className={frame.head}>
+      <div>
+        <p className={frame.kicker}><Code2 size={14} aria-hidden="true" />Techy<span>{text(`${count(data.topics.length)} topics`, `${count(data.topics.length)} विषय`)}</span></p>
+        <h2 id="landing-techy-title">{text("Walk into the interview ", "इंटरव्यू में जाएँ ")}<em>{text("already fluent.", "पूरी तैयारी के साथ।")}</em></h2>
+      </div>
+      <div>
+        <p className={frame.lede}><ExpandedText text={text("The frameworks, cloud services and testing tools teams hire for, each one explained, questioned and coded. Try a real topic below: read it, answer its first interview question, then check yourself against the model answer.", "वे फ़्रेमवर्क, क्लाउड सेवाएँ और टेस्टिंग टूल जिनके लिए टीमें भर्ती करती हैं, हर एक समझाया, पूछा और कोड किया गया। नीचे एक असली विषय आज़माएँ: पढ़ें, उसका पहला इंटरव्यू प्रश्न हल करें, फिर आदर्श उत्तर से मिलाएँ।")} /></p>
+        <dl className={frame.facts}>
+          <div><dt>{text("Practice questions", "अभ्यास प्रश्न")}</dt><dd>{count(data.questionCount)}</dd></div>
+          <div><dt>{text("Code puzzles", "कोड पहेलियाँ")}</dt><dd>{count(data.puzzleCount)}</dd></div>
+          <div><dt>{text("Workplace words", "कार्यस्थल शब्द")}</dt><dd>{count(data.vocabularyCount)}</dd></div>
+        </dl>
+      </div>
+    </header>
+    <div className={styles.techyGrid}>
+      <article className={styles.terminal} aria-label={text("Techy topic preview", "Techy विषय पूर्वावलोकन")}>
+        <div className={styles.termBar}><span className={styles.dots} aria-hidden="true"><i/><i/><i/></span><span className={styles.termPath}>~/techy/{topic.id}</span></div>
+        <div className={styles.topics} role="group" aria-label={text("Choose a topic", "विषय चुनें")}>
+          {data.topics.map(item => <button type="button" key={item.id} aria-pressed={item.id === topic.id} onClick={() => pick(item.id)} title={item.title} aria-label={item.title}>
+            {TECH_PILLS[item.id] && <Image src={`/images/tech/${TECH_PILLS[item.id].icon}.png`} alt="" width={14} height={14} />}
+            {TECH_PILLS[item.id]?.label ?? item.title}
+          </button>)}
         </div>
-      </div>
-      <div className={styles.techyGrid}>
-        <ul className={styles.modes}>{modes.map(mode => <li key={mode.title}><span className={styles.modeIcon}><mode.icon size={18} aria-hidden="true"/></span><div><h3>{mode.title}</h3><p>{mode.body}</p></div></li>)}</ul>
-        <article className={styles.preview} aria-label={text("Techy topic preview", "Techy विषय पूर्वावलोकन")}>
-          <header className={styles.previewBar}><span className={styles.dots} aria-hidden="true"><i/><i/><i/></span><span>techy / {topic.id}</span><small>{text("Preview", "पूर्वावलोकन")}</small></header>
-          <div className={styles.chips} role="group" aria-label={text("Choose a topic", "विषय चुनें")}>
-            {/* Two identical sets translate by half the track for a seamless loop; the copy is hidden from assistive tech and the tab order. */}
-            <div className={styles.chipTrack}>{[0, 1].map(copy => <div className={styles.chipSet} key={copy} aria-hidden={copy === 1 || undefined}>{data.topics.map((item, index) => <button key={item.id} data-tone={index % 15} tabIndex={copy === 1 ? -1 : undefined} aria-pressed={item.id === topic.id} onClick={() => { setTopicId(item.id); setRevealed(false); }} title={item.title} aria-label={item.title}>{TECH_PILLS[item.id] && <span className={styles.chipIcon} aria-hidden="true"><Image src={`/images/tech/${TECH_PILLS[item.id].icon}.png`} alt="" width={14} height={14} /></span>}<span className={styles.chipLabel}>{TECH_PILLS[item.id]?.label ?? item.title}</span></button>)}</div>)}</div>
+        <div className={styles.screen} key={topic.id}>
+          <p className={styles.prompt} aria-hidden="true"><b>❯</b> techy open {topic.id}</p>
+          <p className={styles.meta}>{topic.category} · {text(`${count(topic.questionCount)} questions`, `${count(topic.questionCount)} प्रश्न`)}</p>
+          <h3>{topic.title}</h3>
+          <p className={styles.summary}><ExpandedText text={topic.summary} /></p>
+          {topic.feature && <p className={styles.feature}><Check size={15} aria-hidden="true" /><ExpandedText text={topic.feature} /></p>}
+          <div className={styles.question}>
+            <p className={styles.qLabel}>{text(`Interview question 1 of ${count(topic.questionCount)}`, `इंटरव्यू प्रश्न 1 / ${count(topic.questionCount)}`)}</p>
+            <h4><ExpandedText text={topic.question} /></h4>
+            <button type="button" className={styles.reveal} aria-expanded={revealed} aria-controls="landing-techy-answer" onClick={() => setRevealed(value => !value)}><b aria-hidden="true">❯</b>{revealed ? text("Hide answer", "उत्तर छिपाएँ") : text("Reveal model answer", "आदर्श उत्तर देखें")}</button>
+            <p id="landing-techy-answer" className={styles.answer} hidden={!revealed}><ExpandedText text={topic.answer} /></p>
           </div>
-          <div className={styles.previewBody}>
-            <p className={styles.category}>{topic.category} · {text(`${count(topic.questionCount)} questions`, `${count(topic.questionCount)} प्रश्न`)}</p>
-            <h3>{topic.title}</h3>
-            <p className={styles.summary}><ExpandedText text={topic.summary} /></p>
-            <p className={styles.feature}><CheckCircle2 size={16} aria-hidden="true"/><ExpandedText text={topic.feature} /></p>
-            <div className={styles.question}>
-              <span>{text("INTERVIEW QUESTION 01", "इंटरव्यू प्रश्न 01")}</span>
-              <h4><ExpandedText text={topic.question} /></h4>
-              <button className={styles.reveal} aria-expanded={revealed} aria-controls="landing-techy-answer" onClick={() => setRevealed(value => !value)}>{revealed ? <EyeOff size={15} aria-hidden="true"/> : <Eye size={15} aria-hidden="true"/>}{revealed ? text("Hide answer", "उत्तर छिपाएँ") : text("Reveal model answer", "आदर्श उत्तर देखें")}</button>
-              <p id="landing-techy-answer" className={styles.answer} hidden={!revealed}><ExpandedText text={topic.answer} /></p>
-            </div>
-          </div>
-        </article>
+        </div>
+      </article>
+      <div className={styles.modes}>
+        <h3>{text("Six ways to practise every topic", "हर विषय के अभ्यास के छह तरीके")}</h3>
+        <ul>{modes.map(mode => <li key={mode.title}><span aria-hidden="true"><mode.icon size={17} /></span><div><h4>{mode.title}</h4><p>{mode.body}</p></div></li>)}</ul>
       </div>
-      <div className={styles.actions}><Link className={styles.primary} href="/dashboard/techy">{text("Open Techy", "Techy खोलें")}<ArrowRight size={16} aria-hidden="true"/></Link><small>{text("Included with your account · sign in to start practising", "आपके खाते में शामिल · अभ्यास के लिए साइन इन करें")}</small></div>
     </div>
-  </section>;
+    <div className={frame.actions}><Link className={frame.cta} href="/dashboard/techy">{text("Open Techy", "Techy खोलें")}<ArrowRight size={16} aria-hidden="true" /></Link><small>{text("Included with your account. Sign in to start practising.", "आपके खाते में शामिल। अभ्यास के लिए साइन इन करें।")}</small></div>
+  </div></section>;
 }
 
+/**
+ * API Docs as a working command palette: filter technologies and identifiers in one field, pick a technology,
+ * then narrow its identifiers by type. Every row is a real entry from the dashboard's reference.
+ */
 export function LandingApiDocs({ data }: { data: LandingProPreview["api"] }) {
   const { text, locale } = useText();
   const [query, setQuery] = useState("");
   const [packageId, setPackageId] = useState(data.packages.find(pkg => pkg.id === "nextjs")?.id ?? data.packages[0]?.id);
+  const [kind, setKind] = useState<string>("all");
   const normalized = query.trim().toLowerCase();
   const matches = data.packages.filter(pkg => !normalized || pkg.name.toLowerCase().includes(normalized) || pkg.sample.some(entry => entry.name.toLowerCase().includes(normalized)));
-  const selected = data.packages.find(pkg => pkg.id === packageId) ?? matches[0];
-  const typeOf = (kind: string) => data.types.find(type => type.k === kind);
-  const usedKinds = new Set(selected?.sample.map(entry => entry.kind));
+  const selected = matches.find(pkg => pkg.id === packageId) ?? matches[0];
+  const typeOf = (k: string) => data.types.find(type => type.k === k);
+  const usedKinds = data.types.filter(type => selected?.sample.some(entry => entry.kind === type.k));
+  const activeKind = usedKinds.some(type => type.k === kind) ? kind : "all";
+  const nameMatches = !!selected && !!normalized && !selected.name.toLowerCase().includes(normalized);
+  const entries = (selected?.sample ?? []).filter(entry => (activeKind === "all" || entry.kind === activeKind) && (!nameMatches || entry.name.toLowerCase().includes(normalized)));
   const count = (value: number) => value.toLocaleString(locale);
+  const choose = (id: string) => { setPackageId(id); setKind("all"); };
   const points = [
-    { icon: Search, title: text("Search across every stack", "हर स्टैक में खोजें"), body: text("Filter by package, identifier type and status in one place.", "पैकेज, पहचानकर्ता प्रकार और स्थिति से एक जगह फ़िल्टर करें।") },
+    { icon: Search, title: text("Search across every stack", "हर स्टैक में खोजें"), body: text("Filter by technology, identifier type and status in one place.", "तकनीक, पहचानकर्ता प्रकार और स्थिति से एक जगह फ़िल्टर करें।") },
     { icon: Braces, title: text("Signatures you can read", "पढ़ने योग्य सिग्नेचर"), body: text("Parameters, return values, key points and focused usage code.", "पैरामीटर, रिटर्न वैल्यू, मुख्य बिंदु और केंद्रित उपयोग कोड।") },
-    { icon: Server, title: text("Linked to the source", "मूल स्रोत से जुड़ा"), body: text("Every entry points to official docs for version-specific detail.", "हर प्रविष्टि संस्करण-विशेष जानकारी के लिए आधिकारिक डॉक्स से जुड़ी है।") },
+    { icon: Server, title: text("Linked to the source", "मूल स्रोत से जुड़ा"), body: text("Every entry points to its official docs for version-specific detail.", "हर प्रविष्टि संस्करण-विशेष जानकारी के लिए आधिकारिक डॉक्स से जुड़ी है।") },
   ];
-  return <section id="api-docs" className={styles.api} aria-labelledby="landing-api-title">
-    <div className={styles.container}>
-      <div className={styles.intro}>
-        <div><h2 id="landing-api-title">{text("Every identifier,", "हर पहचानकर्ता,")} <em>{text("one calm reference.", "एक शांत संदर्भ में।")}</em></h2></div>
-        <div className={styles.introAside}><p>{text("Hooks, classes, functions and CLI commands from AI tooling to databases, testing and cloud—organised so you find the right API in seconds.", "AI टूलिंग से डेटाबेस, टेस्टिंग और क्लाउड तक hooks, classes, functions और CLI कमांड—व्यवस्थित, ताकि सही API सेकंडों में मिले।")}</p>
-          <dl className={styles.stats}><div><dt>{text("Technologies", "तकनीकें")}</dt><dd>{count(data.packages.length)}</dd></div><div><dt>{text("Identifiers", "पहचानकर्ता")}</dt><dd>{count(data.identifierCount)}</dd></div><div><dt>{text("Identifier types", "प्रकार")}</dt><dd>{count(data.types.length)}</dd></div></dl>
+  return <section id="api-docs" className={frame.section} data-ground="paper" aria-labelledby="landing-api-title"><div className={home.inner}>
+    <header className={frame.head}>
+      <div>
+        <p className={frame.kicker}><FileCode2 size={14} aria-hidden="true" />API Docs<span>{text(`${count(data.identifierCount)} identifiers`, `${count(data.identifierCount)} पहचानकर्ता`)}</span></p>
+        <h2 id="landing-api-title">{text("Every identifier, ", "हर पहचानकर्ता, ")}<em>{text("one calm reference.", "एक शांत संदर्भ में।")}</em></h2>
+      </div>
+      <div>
+        <p className={frame.lede}>{text("Hooks, classes, functions and CLI commands, from AI tooling to databases, testing and cloud, organised so you find the right API in seconds. Search the real index below.", "AI टूलिंग से डेटाबेस, टेस्टिंग और क्लाउड तक hooks, classes, functions और CLI कमांड, व्यवस्थित ताकि सही API सेकंडों में मिले। नीचे असली सूची खोजें।")}</p>
+        <dl className={frame.facts}>
+          <div><dt>{text("Technologies", "तकनीकें")}</dt><dd>{count(data.packages.length)}</dd></div>
+          <div><dt>{text("Identifier types", "प्रकार")}</dt><dd>{count(data.types.length)}</dd></div>
+          <div><dt>{text("Status labels", "स्थिति लेबल")}</dt><dd>{count(data.statusCount)}</dd></div>
+        </dl>
+      </div>
+    </header>
+    <article className={styles.palette} aria-label={text("API reference preview", "API संदर्भ पूर्वावलोकन")}>
+      <div className={styles.paletteSearch}>
+        <Search size={18} aria-hidden="true" />
+        <input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder={text("Filter technologies or identifiers, e.g. useState", "तकनीक या पहचानकर्ता खोजें, जैसे useState")} aria-label={text("Filter technologies", "तकनीक खोजें")} />
+        {query && <button type="button" onClick={() => setQuery("")} aria-label={text("Clear search", "खोज साफ़ करें")}><X size={15} /></button>}
+      </div>
+      <div className={styles.paletteBody}>
+        <div className={styles.packages} role="group" aria-label={text("Technologies", "तकनीकें")}>
+          {matches.map(pkg => <button type="button" key={pkg.id} aria-pressed={pkg.id === selected?.id} onClick={() => choose(pkg.id)} style={{ "--accent": pkg.accent } as CSSProperties}><span aria-hidden="true">{pkg.icon}</span><b>{pkg.name}</b><small>{count(pkg.count)}</small></button>)}
+          {!matches.length && <p className={styles.noMatch} role="status">{text("No technology matches that search.", "इस खोज से कोई तकनीक नहीं मिली।")}</p>}
         </div>
-      </div>
-      <div className={styles.apiGrid}>
-        <article className={styles.console} aria-label={text("API reference preview", "API संदर्भ पूर्वावलोकन")}>
-          <header className={styles.previewBar}><span className={styles.dots} aria-hidden="true"><i/><i/><i/></span><span>api-docs / {selected?.id ?? ""}</span><small>{text("Preview", "पूर्वावलोकन")}</small></header>
-          <div className={styles.consoleBody}>
-            <div className={styles.packageColumn}>
-              <Label className={styles.search}><Search size={15} aria-hidden="true"/><Input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder={text("Filter technologies…", "तकनीक खोजें…")} aria-label={text("Filter technologies", "तकनीक खोजें")}/>{query && <button onClick={() => setQuery("")} aria-label={text("Clear search", "खोज साफ़ करें")}><X size={14}/></button>}</Label>
-              <div className={styles.packageList} role="group" aria-label={text("Technologies", "तकनीकें")}>{matches.map(pkg => <button key={pkg.id} aria-pressed={pkg.id === selected?.id} onClick={() => setPackageId(pkg.id)} style={{ "--accent": pkg.accent } as CSSProperties}><span aria-hidden="true">{pkg.icon}</span>{pkg.name}<small>{count(pkg.count)}</small></button>)}{!matches.length && <p className={styles.noMatch} role="status">{text("No technology matches that search.", "इस खोज से कोई तकनीक नहीं मिली।")}</p>}</div>
-            </div>
-            {selected && <div className={styles.entries}>
-              <div className={styles.entriesHead}><h3><span aria-hidden="true">{selected.icon}</span>{selected.name}</h3><span role="status">{text(`${count(selected.count)} identifiers`, `${count(selected.count)} पहचानकर्ता`)}</span></div>
-              <ul className={styles.entryList}>{selected.sample.map(entry => { const type = typeOf(entry.kind); return <li key={entry.name}><span className={styles.badge} style={{ "--badge": type?.c ?? "#87867f" } as CSSProperties} title={type?.label}>{entry.kind}</span><code>{entry.name}</code><small>{type?.label}</small></li>; })}</ul>
-              <div className={styles.legend}>{data.types.filter(type => usedKinds.has(type.k)).map(type => <span key={type.k}><i style={{ background: type.c }} aria-hidden="true"/>{type.label}</span>)}</div>
-            </div>}
+        {selected && <div className={styles.entries}>
+          <div className={styles.entriesHead}>
+            <h3><span aria-hidden="true">{selected.icon}</span>{selected.name}</h3>
+            <span role="status">{text(`${count(selected.count)} identifiers`, `${count(selected.count)} पहचानकर्ता`)}</span>
           </div>
-        </article>
-        <ul className={styles.apiPoints}>{points.map(point => <li key={point.title}><span className={styles.modeIcon}><point.icon size={18} aria-hidden="true"/></span><div><h3>{point.title}</h3><p>{point.body}</p></div></li>)}
-          <li className={styles.apiCta}><Link className={styles.primary} href="/dashboard/api-docs">{text("Browse the API reference", "API संदर्भ देखें")}<ArrowUpRight size={16} aria-hidden="true"/></Link><small>{text(`${count(data.statusCount)} status labels: stable, preview, experimental and deprecated`, `${count(data.statusCount)} स्थिति लेबल: स्थिर, प्रीव्यू, प्रायोगिक और अप्रचलित`)}</small></li>
-        </ul>
+          {usedKinds.length > 1 && <div className={styles.kinds} role="group" aria-label={text("Identifier type", "पहचानकर्ता प्रकार")}>
+            <button type="button" aria-pressed={activeKind === "all"} onClick={() => setKind("all")}>{text("All types", "सभी प्रकार")}</button>
+            {usedKinds.map(type => <button type="button" key={type.k} aria-pressed={activeKind === type.k} onClick={() => setKind(type.k)} style={{ "--badge": type.c } as CSSProperties}><i aria-hidden="true" />{type.label}</button>)}
+          </div>}
+          <ul className={styles.entryList}>{entries.map(entry => { const type = typeOf(entry.kind); return <li key={entry.name} style={{ "--badge": type?.c ?? "#87867f" } as CSSProperties}><span className={styles.badge} title={type?.label}>{entry.kind}</span><code>{entry.name}</code><small>{type?.label}</small></li>; })}</ul>
+          {!entries.length && <p className={styles.noMatch} role="status">{text("No identifier in this sample matches. The full reference has the rest.", "इस नमूने में कोई पहचानकर्ता नहीं मिला। पूरे संदर्भ में बाकी हैं।")}</p>}
+        </div>}
       </div>
-    </div>
-  </section>;
+      <ul className={styles.points}>{points.map(point => <li key={point.title}><point.icon size={17} aria-hidden="true" /><div><h4>{point.title}</h4><p>{point.body}</p></div></li>)}</ul>
+    </article>
+    <div className={frame.actions}><Link className={frame.cta} href="/dashboard/api-docs">{text("Browse the API reference", "API संदर्भ देखें")}<ArrowUpRight size={16} aria-hidden="true" /></Link><small>{text("Each entry is marked stable, preview, experimental or deprecated.", "हर प्रविष्टि स्थिर, प्रीव्यू, प्रायोगिक या अप्रचलित चिह्नित है।")}</small></div>
+  </div></section>;
 }

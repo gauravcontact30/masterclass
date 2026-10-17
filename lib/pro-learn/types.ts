@@ -1,21 +1,12 @@
 import { z } from "zod";
 import { learningDiagramSchema } from "./learning-diagram";
-import tracksData from "./tracks.json";
-import interviewData from "./interview.json";
+import { PRO_LEVELS, PRO_TRACKS, type InterviewItem, type ProTrack } from "./tracks";
+export { INTERVIEW_BANK, INTERVIEW_COMPANIES, INTERVIEW_LEVELS, PRO_LEVELS, PRO_TRACKS, trackById, type InterviewItem, type ProTrack } from "./tracks";
 import { learningProjectSchema, subjectiveQuestionSchema, objectiveQuestionSchema } from "@/lib/api-learning-schema";
 
-/** A learning track (technology) shared by Lessons, Quiz, Interview and Mentors. */
-export type ProTrack = { id: string; name: string; icon: string; focus: string; syllabus: string[] };
 export type LessonSection = { h: string; p: string[]; code?: string; key?: string[]; warn?: string[]; list?: string[] };
 export type ProLesson = { track: string; id: string; title: string; level: string; minutes: number; tag: string; summary: string; lead: string; sections: LessonSection[]; takeaways: string[] };
-export type InterviewItem = { cat: string; lvl: "Easy" | "Medium" | "Hard"; co: string[]; q: string; a: string };
 
-export const PRO_TRACKS: ProTrack[] = tracksData;
-export const INTERVIEW_COMPANIES: string[] = interviewData.companies;
-export const INTERVIEW_BANK = interviewData.questions as InterviewItem[];
-export const PRO_LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;
-export const INTERVIEW_LEVELS = ["All", "Easy", "Medium", "Hard"] as const;
-export const trackById = (id: string | null | undefined) => PRO_TRACKS.find(track => track.id === id);
 
 // Shared by browser and server so a generated payload is validated identically on both sides.
 export const vocabSchema = z.object({

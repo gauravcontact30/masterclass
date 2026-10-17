@@ -27,6 +27,7 @@ import { AnswerPanels, KnowledgeCheck } from "./knowledge-check";
 import { BookmarkButton, BookmarkPoint, BookmarkScope } from "./bookmarks";
 import { LearningRegion, LearningTools } from "./learning-marks";
 import { learningContentKey } from "@/lib/learning-marks";
+import { withoutBlankLines } from "@/lib/code-line-notes";
 import styles from "./notes-reader.module.css";
 
 /** Render each unique learning point once, using a list for multi-line prose. */
@@ -194,8 +195,8 @@ function StructuredNotes({ deck, title, language, technology, sourceHref, sectio
       {lesson.interview && lesson.interview.length > 0 && <><p className="notes-label"><ExpandedText text={hi ? "इंटरव्यू प्रश्न" : "Interview questions"} /></p>{lesson.interview.map((q, n) => <div className="notes-iv" key={q.question}>
         <p className="notes-iv-q"><span className="notes-iv-badge">Q{n + 1}</span><ExpandedText text={q.question} /></p>
         <AnswerPanels shortAnswer={q.definition} explanation={q.answer} hi={hi} />
-        {q.syntax && <pre className="notes-code notes-iv-syntax" aria-label={hi ? "सिंटैक्स" : "Syntax"}><code>{q.syntax}</code></pre>}
-        {q.code && <pre className="notes-code" aria-label={hi ? "कोड उदाहरण" : "Code example"}><code>{q.code}</code></pre>}
+        {q.syntax && <pre className="notes-code notes-iv-syntax" aria-label={hi ? "सिंटैक्स" : "Syntax"}><code>{withoutBlankLines(q.syntax)}</code></pre>}
+        {q.code && <pre className="notes-code" aria-label={hi ? "कोड उदाहरण" : "Code example"}><code>{withoutBlankLines(q.code)}</code></pre>}
         {q.similar.length > 0 && <div className="notes-iv-similar"><span className="notes-iv-similar-label"><ExpandedText text={hi ? "मिलते-जुलते प्रश्न" : "Similar questions"} /></span>{q.similar.map(s => <details className="notes-iv-acc" key={s.question}><summary><ExpandedText text={s.question} /></summary><p><ExpandedText text={s.answer} /></p></details>)}</div>}
       </div>)}</>}
     </LearningRegion></BookmarkScope></section>)}

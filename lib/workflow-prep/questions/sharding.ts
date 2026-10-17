@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "Which databases provide automatic sharding?", "Distributed SQL databases like CockroachDB, YugabyteDB, Spanner and TiDB, MongoDB with sharded clusters, Cassandra and DynamoDB partition automatically; Citus and Vitess add sharding to PostgreSQL and MySQL."),
     s(2, "How do you choose the number of shards?", "Estimate data size and throughput growth for several years, divide by what one node handles comfortably, and create more logical shards than nodes so you can rebalance without resharding."),
     s(2, "What is read-your-writes consistency?", "A guarantee that after a user writes, their own subsequent reads see that write, even if other users see it later. Implement by reading from the primary for a short time after a write, or tracking replication positions."),
+    s(4, "How would you choose a shard key for a social app's posts table?", "Choose the key that matches the main access path and spreads load: author ID keeps a user's posts together for profile pages, while a hash of post ID spreads writes evenly. Check that hot users will not create hot shards and that the common queries hit one shard."),
+    s(4, "How do you enforce a unique constraint, such as email, across shards?", "Keep a separate lookup table or service keyed by the unique value that maps to the owning record, insert into it first with its own uniqueness guarantee, then write the record. Alternatively shard by that value so uniqueness is checked within one shard."),
+    s(3, "How do you paginate results merged from many shards?", "Query each shard for its top N by the sort key, merge them in the router, and return the global top N with a cursor holding the last sort value. Avoid OFFSET pagination, which forces every shard to read and skip more rows as pages go deeper."),
+    s(3, "What is a secondary index in a sharded database and why is it tricky?", "An index on a column other than the shard key. A local index lives on each shard, so a lookup must query all shards; a global index is itself sharded by the indexed value, so lookups are fast but writes update two places and can drift without careful consistency."),
+    s(3, "How do you move a single large tenant to its own shard?", "Copy the tenant's data to the new shard while capturing changes, replay the change stream until caught up, briefly pause writes for that tenant, switch the directory entry to the new shard, resume, then delete the old copy after verification."),
+    s(3, "How do you handle analytics queries on a sharded OLTP database?", "Do not run them on the shards. Stream changes (CDC) into a warehouse or OLAP store such as BigQuery, Snowflake or ClickHouse, where full scans and joins across all data are cheap, and keep the OLTP shards for short transactional queries."),
+    s(2, "What is a split-brain in a replicated database and how is it prevented?", "Two nodes both believe they are primary and accept conflicting writes, usually after a network partition. It is prevented with a consensus or quorum-based election, fencing tokens or STONITH so the old primary cannot write, and clients that follow the elected leader."),
   ],
   objective: [
     o(5, "Which strategy spreads load evenly but makes range queries hard?", ["Hash-based sharding", "Range-based sharding", "Geo-based sharding", "No sharding"], 0, "Neighbouring keys land on different shards."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "How should migrations run across shards?", ["Automated and backward compatible", "By hand on each shard", "Only on one shard", "Never"], 0, "Track versions per shard."),
     o(2, "Semi-synchronous replication waits for…", ["At least one replica", "All replicas", "No replicas", "The client"], 0, "A middle ground between sync and async."),
     o(2, "Directory-based sharding uses…", ["A lookup service mapping keys to shards", "A hash function only", "Dates only", "Random placement"], 0, "Flexible but adds a dependency."),
+    o(4, "A unique email across shards is usually enforced with…", ["A lookup table keyed by email","A local index on each shard","Client-side checks only","A longer TTL"], 0, "One place must own the uniqueness decision."),
+    o(4, "Deep OFFSET pagination across shards is costly because…", ["Every shard reads and skips more rows","It uses too little memory","It skips the router","It needs a CDN"], 0, "Cursor pagination with the last sort value avoids it."),
+    o(3, "A local secondary index means lookups by that column…", ["Must query every shard","Hit exactly one shard","Need no index","Go to the cache only"], 0, "Each shard indexes only its own rows."),
+    o(3, "Where should cross-shard analytics run?", ["In a warehouse fed by change data capture","On the busiest OLTP shard","In the browser","In the load balancer"], 0, "Analytics scans would slow transactional traffic."),
+    o(3, "Moving a tenant to a new shard ends with…", ["Switching its directory entry after catch-up","Deleting the tenant first","Renaming the database","Restarting every client"], 0, "The directory points requests at the tenant's new home."),
+    o(3, "Split-brain happens when…", ["Two nodes both act as primary","A shard is empty","Replication is synchronous","An index is rebuilt"], 0, "Conflicting writes then diverge the data."),
+    o(2, "Sharding posts by author ID makes which query fast?", ["Loading one user's profile posts","A global trending feed","Counting all posts","Full-text search across users"], 0, "All of one author's posts live on one shard."),
   ],
 };
 export default bank;

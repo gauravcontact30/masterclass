@@ -1,6 +1,5 @@
 import { availableProviders, learningProvider, providerGrounded, PROVIDER_LABELS, type AiProvider } from "@/lib/server/ai-providers";
 
-export const runtime = "nodejs";
 
 const DESCRIPTIONS: Record<AiProvider, string> = {
   anthropic: "Answers from the model, tuned for the explanations and projects in this app.",

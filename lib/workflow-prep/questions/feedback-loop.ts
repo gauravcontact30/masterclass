@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "How do you report feedback trends to stakeholders?", "Dashboards of feedback rates by area, top failure categories, fixes shipped and their impact on negative feedback."),
     s(2, "How do you handle feedback on features that changed?", "Tag feedback with the app and prompt version, so old feedback is interpreted in context and not used to judge the new version unfairly."),
     s(2, "Who owns the feedback loop?", "A named team or person responsible for triage cadence, dataset quality and release gates, so feedback does not pile up unread."),
+    { ...s(4, "How does the online-to-offline feedback loop work in LangSmith?", "Online evaluators and user feedback flag poor production runs. You add those failing traces to a dataset, create targeted evaluators, validate the fix with an offline experiment on that dataset, then redeploy, so every real failure becomes a regression test."), source: "Sourced from Docs by LangChain (MCP)" },
+    { ...s(4, "How do single-run annotation queues help build datasets?", "Reviewers go through one run at a time against rubric items, which suits triaging issues and building datasets from production traces. Annotated runs can be exported directly to datasets, and single-run queues also support assertions, free-form acceptance criteria an offline evaluator can grade future runs against."), source: "Sourced from Docs by LangChain (MCP)" },
+    { ...s(3, "How do you stop several reviewers duplicating effort on the same feedback?", "Configure reservations on the annotation queue so an item is held for one reviewer for a set time, and set how many reviewers each run needs when you want independent second opinions."), source: "Sourced from Docs by LangChain (MCP)" },
+    { ...s(3, "What does running an online evaluator do to trace retention?", "When an online evaluator runs on any run in a trace, LangSmith upgrades the trace to extended data retention. This affects trace pricing but keeps the traces that met your evaluation criteria available for investigation."), source: "Sourced from Docs by LangChain (MCP)" },
+    s(3, "How do you use feedback to find which part of an agent is failing?", "Link feedback to the run tree, then look at intermediate steps for negatively rated runs: retrieval results, tool calls and their outputs, and the final generation. Grouping failures by the step where they went wrong points to the component to fix."),
+    s(3, "How do you balance fixing individual complaints with systemic improvements?", "Cluster feedback into themes, fix urgent individual harms immediately, but prioritise work by the size and severity of each cluster, so the team improves the issues that affect most users rather than the loudest complaint."),
+    s(2, "How do you report back to users that their feedback led to a fix?", "Record which feedback items each fix addressed, show a short in-product note or changelog entry when relevant, and for enterprise customers mention the improvement in account reviews."),
   ],
   objective: [
     o(5, "Which signal is implicit negative feedback?", ["Users regenerating or rephrasing the question", "Copying the answer", "Closing after success", "Thumbs up"], 0, "Retries suggest dissatisfaction."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "Who should own the feedback loop?", ["A named team or person", "Nobody", "The model", "Every user"], 0, "Otherwise feedback piles up."),
     o(2, "Copying an answer is usually…", ["A positive signal", "A negative signal", "Spam", "An error"], 0, "Users kept the answer."),
     o(2, "Stakeholder dashboards should show…", ["Feedback trends and fixes shipped", "Raw traces", "Model weights", "Prompt text"], 0, "Show impact over time."),
+    { ...o(4, "In the LangSmith loop, failing production traces are…", ["Added to a dataset for offline validation","Deleted immediately","Ignored until next year","Sent to customers"], 0, "Real failures become regression tests."), source: "Sourced from Docs by LangChain (MCP)" },
+    { ...o(4, "Assertions in single-run queues are…", ["Free-form acceptance criteria for future grading","Database constraints","Unit tests in code only","User passwords"], 0, "An offline evaluator can grade later runs against them."), source: "Sourced from Docs by LangChain (MCP)" },
+    { ...o(3, "Reservations on a queue prevent…", ["Two reviewers judging the same item at once","Data export","Online evaluation","Sampling"], 0, "Each item is held for one reviewer."), source: "Sourced from Docs by LangChain (MCP)" },
+    { ...o(3, "An online evaluator running on a trace causes…", ["An upgrade to extended data retention","The trace to be deleted","A new deployment","The prompt to change"], 0, "This affects trace pricing."), source: "Sourced from Docs by LangChain (MCP)" },
+    { ...o(3, "Annotated runs can be exported to…", ["Datasets","Production code","Billing","Prompts automatically"], 0, "They become future evaluation examples."), source: "Sourced from Docs by LangChain (MCP)" },
+    o(3, "Feedback is best prioritised by…", ["Cluster size and severity","The loudest single complaint","Alphabetical order","Submission time only"], 0, "Fixes should help the most users."),
+    o(2, "To find the failing step of an agent, inspect…", ["Intermediate steps in the run tree","Only the final answer","The user's browser","Billing logs"], 0, "Failures often start in retrieval or tool calls."),
   ],
 };
 export default bank;

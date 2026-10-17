@@ -4,7 +4,6 @@ import { Techy } from "@/components/techy";
 import { requireLearningUser as currentUser } from "@/lib/server/subscription-access";
 import { authConfigured, databaseConfigured, billingConfigured } from "@/lib/server/config";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "Techy · Professional Learn" };
 
 export default async function Page() {

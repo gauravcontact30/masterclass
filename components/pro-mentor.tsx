@@ -12,7 +12,7 @@ import { ProHero, SourceBadge, TrackSelect, useProLevel, useProTrack } from "./p
 import styles from "./pro-learn.module.css";
 import { LearningPath } from "./learning-studio";
 import { TechnologySections } from "./technology-sections";
-import { PRO_TRACKS } from "@/lib/pro-learn/types";
+import { PRO_TRACKS } from "@/lib/pro-learn/tracks";
 
 type ChatEntry = MentorMessage & { source?: ContentSource; failed?: boolean };
 // The API accepts at most 12 alternating turns that start with the learner.

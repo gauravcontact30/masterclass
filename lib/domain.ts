@@ -5,7 +5,8 @@ import { z } from "zod";
  * notes reader, copyable, and downloadable as plain text. The format is kept
  * on the request (rather than implied) so documents stay self-describing.
  */
-export const DOCUMENT_FORMAT = "notes" as const;
+import { DOCUMENT_FORMAT } from "./document-format";
+export { DOCUMENT_FORMAT, labelledOption, optionLetter } from "./document-format";
 export const requestSchema = z.object({
   technologyId: z.string().min(1).max(80),
   topicId: z.string().min(1).max(80),
@@ -80,15 +81,6 @@ export const objectiveQuestionSchema = z.object({
   explanation: z.string().min(20).max(2200),
 });
 export type ObjectiveQuestion = z.infer<typeof objectiveQuestionSchema>;
-/**
- * The label an option is referred to by, everywhere an objective question is
- * shown: the notes reader, the study test runner, the landing-page sample and
- * the plain-text export all number options A, B, C, D from the same helper, so
- * an answer written as "B" means the same option in every surface.
- */
-export const optionLetter = (index: number) => String.fromCharCode(65 + index);
-/** An option rendered with its label, e.g. `B. Check the learner's access on the server`. */
-export const labelledOption = (index: number, option: string) => `${optionLetter(index)}. ${option}`;
 /**
  * One catalogued service in a guide's service directory — the searchable card
  * grid the reader shows above the lessons for guides that cover a large

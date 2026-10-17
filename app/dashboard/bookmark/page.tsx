@@ -5,7 +5,6 @@ import { NOTES_TECHNOLOGIES } from "@/lib/server/notes-study-catalog";
 import { requireLearningUser as currentUser } from "@/lib/server/subscription-access";
 import { authConfigured, databaseConfigured, billingConfigured } from "@/lib/server/config";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "Bookmark" };
 export default async function Page() {
   const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser() : null;

@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "How do you keep data fresh for planning?", "Sync ERP and logistics data frequently, show data timestamps in plans, and re-run plans when key inputs change."),
     s(2, "How do you roll out the planner?", "Start with one region or product line in advisory mode, compare with planners' decisions, then expand and allow more automated steps."),
     s(2, "What should be logged?", "Signals received, affected orders identified, options computed, the chosen plan, approvals and changes written to the ERP."),
+    s(4, "How do you design the planner's graph from disruption to approved plan?", "A detection node turns signals into a disruption record, an impact node finds affected parts, orders and customers through the bill of materials, parallel branches generate options (expedite, reroute, reallocate, alternate supplier), a simulation node costs each with code, then an approval interrupt waits for the planner before writing changes back."),
+    s(4, "How do you balance cost against service level when choosing a plan?", "Score each option on total cost, number of late orders weighted by customer priority and penalties, and risk, show the trade-offs side by side, and let planners set weights per product line; never pick automatically when the options trade revenue against cost."),
+    s(3, "How do you handle a supplier's partial shipment?", "Record the received quantity, recompute shortages for the missing part, allocate the received stock to the highest-priority orders first, and trigger options only for the remaining gap."),
+    s(3, "How do you include carbon emissions in recovery options?", "Estimate emissions per option from mode, distance and weight using standard factors, show them next to cost and service impact, and let policy cap high-emission options such as air freight unless the business impact justifies it."),
+    s(3, "How would you forecast demand changes caused by a disruption?", "Combine the baseline forecast with known effects such as customers pulling orders forward or substituting products, use signals from order intake and sales teams, and show scenarios rather than a single number when uncertainty is high."),
+    s(3, "How do you keep the planner from recommending infeasible plans?", "Check every option against constraints in code: capacity at plants and warehouses, carrier availability, supplier qualification, minimum order quantities and customs lead times, and drop options that violate them before they reach planners."),
+    s(2, "How do you share disruption plans with suppliers and customers?", "Publish agreed changes through the existing portals or EDI messages, send revised dates and quantities, and record acknowledgements, so partners work from the same plan."),
   ],
   objective: [
     o(5, "Freight costs in the simulation should use…", ["Contracted rate tables and carrier APIs", "The model's estimate", "Social media", "Guesswork"], 0, "Prices must be exact."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "What should be logged for each plan?", ["Signals, options, approvals and ERP changes", "Only the final email", "Nothing", "Only errors"], 0, "This gives full traceability."),
     o(2, "Which ERP systems might be integrated?", ["SAP, Oracle or Dynamics", "Photoshop", "Figma", "Slack only"], 0, "Read orders and inventory."),
     o(2, "Parallel branches in the planner explore…", ["Suppliers, routes and reallocation together", "Only one option", "UI themes", "Billing"], 0, "Faster option generation."),
+    o(4, "Each recovery option is costed by…", ["A code-based simulation","The model's estimate","A fixed percentage","Supplier promises only"], 0, "Costs must be reproducible and correct."),
+    o(4, "When options trade revenue against cost, the choice should be…", ["Made by the planner with trade-offs shown","Made automatically by the cheapest rule","Random","Left to suppliers"], 0, "Business priorities need human judgement."),
+    o(3, "Partially received stock should be allocated to…", ["The highest-priority orders first","Orders in alphabetical order","The newest orders","Nobody until the rest arrives"], 0, "Priority allocation limits the damage."),
+    o(3, "Carbon impact of an option is estimated from…", ["Mode, distance and weight","The supplier's name","Order value only","The planner's location"], 0, "Standard factors convert transport into emissions."),
+    o(3, "Infeasible options are removed by…", ["Constraint checks in code before review","Asking the model politely","Planners noticing later","Customers"], 0, "Planners should only see workable plans."),
+    o(3, "Demand during a disruption is best shown as…", ["Scenarios when uncertainty is high","One exact number","Last year's figure","Zero"], 0, "Scenarios make uncertainty explicit."),
+    o(2, "Agreed plan changes are shared with partners through…", ["Existing portals or EDI messages","Personal phone calls only","Social media","Nothing"], 0, "Partners need the same plan in their systems."),
   ],
 };
 export default bank;

@@ -3,7 +3,6 @@ import { api, HttpError, jsonBody, sameOrigin } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rate-limit";
 import { checkDocumentation, importDocumentation, listDocumentationUpdates, readDocumentation } from "@/lib/server/documentation-updates";
 
-export const runtime = "nodejs";
 export const maxDuration = 60;
 const idSchema = z.string().regex(/^[a-z0-9][a-z0-9-]{0,79}$/);
 

@@ -5,7 +5,6 @@ import { ApiDocs } from "@/components/api-docs";
 import { requireLearningUser as currentUser } from "@/lib/server/subscription-access";
 import { authConfigured, databaseConfigured, billingConfigured } from "@/lib/server/config";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "API Docs · Developer Reference" };
 
 export default async function Page() {

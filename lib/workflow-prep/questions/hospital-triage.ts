@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "How do you involve clinicians in design?", "Co-design workflows with nurses and doctors, run usability tests in simulation, and keep a clinical champion group for feedback and governance."),
     s(2, "How do you handle language barriers at intake?", "Support interpreters and translated symptom forms, and avoid features that penalise patients who cannot describe symptoms in the local language."),
     s(2, "What should be logged for each suggestion?", "Inputs, model version, suggestion, contributing factors, rule triggers, nurse decision and override reason, with timestamps."),
+    s(4, "How do you design the system for an emergency department surge, such as a mass-casualty event?", "Provide a surge mode that switches to a simplified mass-casualty triage protocol, prioritises speed over detail, raises bed and staff alerts to command staff, and suspends non-essential suggestions. Rehearse it in drills so staff know how the tool behaves."),
+    s(4, "How do you combine nurse judgement and model suggestions in the record?", "Store the model's suggested level, its inputs and version, and the nurse's final level and reason separately. Reports can then show agreement rates and outcomes for both, without overwriting what the nurse decided."),
+    s(3, "How do you handle paediatric patients differently?", "Use age-specific vital sign ranges and paediatric triage criteria, validate the model separately on children, and route paediatric cases through rules that escalate on child-specific warning signs."),
+    s(3, "How do you predict patient deterioration after triage?", "Score early warning signals from repeated vitals and lab results over time, alert when the trend crosses a threshold, and re-prompt reassessment, since a patient's acuity can change while waiting."),
+    s(3, "How do you plan transfers when beds are full?", "Combine real-time bed status, expected discharges and forecast admissions, rank transfer options by clinical need and capability of receiving units or hospitals, and present them to bed managers with travel and handover requirements."),
+    s(3, "How do you test the system's behaviour with incomplete integrations?", "Simulate missing feeds such as no lab results or delayed vitals, confirm the tool shows clear warnings and falls back to rules instead of silently suggesting a lower acuity, and include these cases in the acceptance tests."),
+    s(2, "How do you train staff to use the triage assistant well?", "Run short sessions with real anonymised cases, explain what the model sees and cannot see, show how and when to override, and gather feedback during the first weeks of live use."),
   ],
   objective: [
     o(5, "The final say on a patient's acuity belongs to…", ["The triage nurse or clinician", "The model", "The bed optimiser", "The patient"], 0, "The system is advisory only."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "Real-time suggestions need…", ["Streaming data and a short latency budget", "Daily batches", "Manual exports", "Email delivery"], 0, "Triage happens in minutes."),
     o(2, "Implausible vital sign values should be…", ["Flagged for re-measurement", "Accepted", "Averaged", "Hidden"], 0, "Bad data leads to bad advice."),
     o(2, "Ongoing monitoring tracks…", ["Override rates and under-triage events", "Only uptime", "Only cost", "Nothing"], 0, "Safety needs continuous review."),
+    o(4, "In a mass-casualty event the system should…", ["Switch to a simplified surge triage protocol","Run its normal detailed flow","Turn off completely","Wait for IT approval"], 0, "Speed and simplicity matter most in a surge."),
+    o(4, "Model suggestions and nurse decisions should be stored…", ["Separately, with the nurse's final level and reason","As one merged value","Only the model's value","Only in chat logs"], 0, "Separate records allow honest comparison."),
+    o(3, "Paediatric triage requires…", ["Age-specific vital ranges and separate validation","The adult model unchanged","No rules","Only parent input"], 0, "Children's normal values differ from adults'."),
+    o(3, "Deterioration alerts are based on…", ["Trends in repeated vitals and labs","The admission time only","Bed colour","Insurance status"], 0, "Acuity can change while patients wait."),
+    o(3, "When a lab feed is missing, the tool should…", ["Warn clearly and fall back to rules","Assume normal results","Lower the acuity","Hide the patient"], 0, "Silent assumptions risk under-triage."),
+    o(3, "Transfer options are ranked by…", ["Clinical need and receiving capability","Alphabetical order","Distance only","Patient age only"], 0, "The right unit matters as much as an empty bed."),
+    o(2, "Staff training should show…", ["What the model sees and when to override","Only the login screen","The model's source code","Nothing; it is automatic"], 0, "Understanding limits builds safe trust."),
   ],
 };
 export default bank;

@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "How do you handle very long documents?", "Use hierarchical chunking (sections and paragraphs), store document summaries for coarse retrieval, then search within the chosen documents for detail."),
     s(2, "What is late chunking or contextual retrieval?", "Adding document-level context to each chunk before embedding (for example a short summary of where the chunk sits), so isolated chunks keep their meaning and retrieval improves."),
     s(2, "How do you control cost for a RAG service?", "Cache answers to repeated questions, limit context size, use cheaper models where quality allows, batch embedding jobs and avoid re-embedding unchanged content."),
+    s(4, "How do you combine keyword and vector search in a RAG system?", "Run a BM25 or full-text search and a vector search in parallel, merge the candidates with reciprocal rank fusion or weighted scores, then rerank the merged list. Keyword search catches exact terms such as product codes and names that embeddings often blur."),
+    s(4, "How do you split documents that mix headings, tables and code blocks?", "Start from the structure of the documents, splitting on headings and paragraphs, and test a few sizes on your evaluation set. Small chunks give precise matches but lose context; large chunks keep context but dilute relevance. A modest overlap keeps sentences that straddle a boundary retrievable."),
+    s(3, "What is a parent-child (small-to-big) retrieval strategy?", "Embed small child chunks for precise matching, but when one matches, return its larger parent section to the model. You get accurate retrieval and enough surrounding context to answer well."),
+    s(3, "How do you stop retrieved documents from carrying prompt injection into the model?", "Treat retrieved text as untrusted data: put it in clearly delimited context, instruct the model never to follow instructions found in documents, strip or flag suspicious patterns at ingestion, and limit what tools the model may call based on retrieved content."),
+    s(3, "How do you handle questions that compare two documents or time periods?", "Decompose the question into sub-questions, retrieve separately for each entity or period with metadata filters, and have the model compare the two evidence sets explicitly, citing both."),
+    s(3, "How do you evaluate retrieval separately from generation?", "Label the passages that answer each test question, then measure recall@k and mean reciprocal rank for retrieval alone. Judge generation separately for faithfulness to the retrieved context and answer relevance, so you know which half to fix."),
+    s(2, "How would you add a semantic cache to a RAG service?", "Embed each incoming question, look for a previously answered question above a high similarity threshold, scoped to the same user permissions and index version, and return the cached answer. Invalidate entries when the underlying documents change."),
   ],
   objective: [
     o(5, "What should a RAG app do when retrieved context lacks the answer?", ["Say it does not know", "Guess from training data", "Return the top chunk verbatim", "Retry forever"], 0, "This keeps answers grounded."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "Very long documents are best handled with…", ["Hierarchical chunking and summaries", "One giant chunk", "Skip them", "Truncate to one page"], 0, "Coarse then fine retrieval."),
     o(2, "What reduces RAG cost for repeated questions?", ["Caching answers", "Larger models", "More chunks", "Re-embedding daily"], 0, "Repeated questions are common."),
     o(2, "Which LangChain method turns a vector store into a retriever?", ["as_retriever()", "to_chain()", "retrieve()", "embed()"], 0, "It returns a retriever runnable."),
+    o(4, "Hybrid search mainly helps with…", ["Exact terms such as codes and names","Making embeddings smaller","Removing citations","Skipping reranking"], 0, "Keyword matching catches what embeddings blur."),
+    o(4, "Reciprocal rank fusion is used to…", ["Merge ranked lists from different retrievers","Compress documents","Encrypt chunks","Choose the model"], 0, "It combines rankings without comparable scores."),
+    o(3, "Small-to-big retrieval returns…", ["The parent section of a matched small chunk","Only the matched sentence","The whole corpus","A summary of all documents"], 0, "Precise matching plus enough context."),
+    o(3, "Instructions found inside retrieved documents should be…", ["Treated as untrusted data and not followed","Executed first","Added to the system prompt","Used as tool calls"], 0, "Documents can carry prompt injection."),
+    o(3, "Retrieval quality on its own is measured with…", ["Recall@k and MRR on labelled passages","Answer length","Token cost","User sign-ups"], 0, "Separating retrieval from generation shows what to fix."),
+    o(3, "Very small chunks tend to…", ["Match precisely but lose context","Always improve answers","Remove the need for reranking","Reduce index size"], 0, "Chunk size trades precision against context."),
+    o(2, "A semantic cache for RAG must be scoped by…", ["User permissions and index version","Time of day","Model temperature only","Browser type"], 0, "Cached answers must not cross access boundaries or outlive their sources."),
   ],
 };
 export default bank;

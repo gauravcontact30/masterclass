@@ -6,7 +6,7 @@ beforeEach(() => {
   localStorage.clear();
   global.fetch = jest.fn().mockResolvedValue({ok:true,json:async()=>({monthly:349,yearly:3499,enabled:true})});
 });
-const ready = () => screen.findByText(/349/, {selector:"div.compactPrice"});
+const ready = () => screen.findByText(/349/, {selector:"p.price b"});
 
 test("offers signup, sign-in and current section navigation", async () => {
   render(<LandingPage/>); await ready();
@@ -51,7 +51,7 @@ test("sample reviews step forwards and backwards", async () => {
 test("live pricing switches billing cycles and leads to membership setup", async () => {
   render(<LandingPage/>); await ready();
   fireEvent.click(screen.getByRole("button",{name:/Yearly/}));
-  expect(screen.getByText(/3,499/, {selector:"div.compactPrice"})).toBeInTheDocument();
+  expect(screen.getByText(/3,499/, {selector:"p.price b"})).toBeInTheDocument();
   expect(screen.getByText(/billed yearly/)).toBeInTheDocument();
   expect(screen.getByRole("link",{name:"Subscribe now"})).toHaveAttribute("href","/subscribe?plan=yearly");
 });
@@ -67,7 +67,7 @@ test("language changes stay local for a public visitor", async () => {
 
 test("server prices render immediately without an extra request", () => {
   render(<LandingPage prices={{monthly:499,yearly:4999,enabled:false}}/>);
-  expect(screen.getByText(/499/, {selector:"div.compactPrice"})).toBeInTheDocument();
+  expect(screen.getByText(/499/, {selector:"p.price b"})).toBeInTheDocument();
   expect(screen.getByText("Checkout is not enabled yet.")).toBeInTheDocument();
   expect(fetch).not.toHaveBeenCalled();
 });

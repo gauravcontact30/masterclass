@@ -24,6 +24,13 @@ const bank: QuestionSet = {
     s(2, "What is a limitation of liability clause?", "It caps the amount and types of damages a party can claim, often excluding indirect losses and setting a cap tied to contract value."),
     s(2, "How do you roll out the assistant in a legal team?", "Start with high-volume standard contracts like NDAs, compare with lawyer reviews, collect feedback, and expand to complex agreements once accuracy is proven."),
     s(2, "Why keep a clause library?", "Approved standard clauses let the assistant suggest consistent replacement language and speed up negotiations."),
+    s(4, "How do you structure the review output so lawyers can work through it quickly?", "Lead with a summary of blockers and high-risk deviations, then list each clause with its playbook position, the contract text, the deviation, risk level and a suggested redline. Link every item to its location in the document and let the lawyer accept, edit or dismiss it."),
+    s(4, "How do you review a contract on the other side's paper?", "Map their clauses to your clause library by meaning rather than heading, since numbering and titles differ, flag clauses with no match as unusual, and apply your playbook positions to the mapped clauses."),
+    s(3, "How do you handle governing law and dispute resolution clauses?", "Extract the chosen law, courts or arbitration seat and rules, compare with the playbook's acceptable options for the deal type and counterparty location, and flag combinations that make enforcement costly or uncertain."),
+    s(3, "How do you detect auto-renewal and notice traps?", "Extract renewal terms, notice periods and the method of notice, calculate the last date to give notice from the term dates, flag short or unusual notice windows, and push the deadline to the obligation tracker after signing."),
+    s(3, "How do you compare two versions of a contract during negotiation?", "Run a structural diff at clause level as well as a text diff, so moved or renumbered clauses are matched, then summarise which positions changed, which were accepted and which new risks the counterparty introduced."),
+    s(3, "How do you measure time saved for the legal team?", "Track review time per contract type before and after rollout, the share of contracts handled without escalation to senior lawyers, and turnaround time to first comments, while monitoring quality through sampled second reviews."),
+    s(2, "How do you handle contracts in several languages?", "Detect the language, review in the original using a model strong in that language, provide translations of flagged clauses for the reviewing lawyer, and note that the original language version governs unless the contract says otherwise."),
   ],
   objective: [
     o(5, "Suggested redlines become final only when…", ["A lawyer accepts them", "The model is confident", "The counterparty signs", "The sales team agrees"], 0, "Legal judgement stays with lawyers."),
@@ -48,6 +55,13 @@ const bank: QuestionSet = {
     o(2, "Amendments should be…", ["Linked to the clauses they modify", "Ignored", "Treated as new contracts only", "Deleted"], 0, "Keep a consolidated view."),
     o(2, "The assistant should be positioned as…", ["A review aid for lawyers", "A replacement for lawyers", "A negotiator", "A court"], 0, "Avoid unauthorised legal advice."),
     o(2, "Limitation of liability clauses usually…", ["Cap damages and exclude indirect losses", "Remove all liability", "Increase penalties", "Set delivery dates"], 0, "A key negotiation point."),
+    o(4, "The review output should start with…", ["Blockers and high-risk deviations","The full contract text","Formatting issues","The signature page"], 0, "Lawyers need the biggest risks first."),
+    o(4, "Clauses on the other side's paper are matched by…", ["Meaning against the clause library","Clause numbers","Page numbers","Font size"], 0, "Headings and numbering differ between drafts."),
+    o(3, "An auto-renewal clause requires tracking…", ["The last date to give notice","Only the start date","The signatory's email","The document's file size"], 0, "Missing the notice window renews the contract."),
+    o(3, "Version comparison during negotiation should be…", ["At clause level as well as text level","By file size","By page count","Manual only"], 0, "Moved clauses would otherwise look deleted."),
+    o(3, "Governing law clauses are checked against…", ["The playbook's acceptable options","The counterparty's logo","The contract's length","The model's preference"], 0, "Jurisdiction affects cost and enforceability."),
+    o(3, "Time savings should be measured alongside…", ["Quality from sampled second reviews","Number of pages printed","Office hours","Email volume"], 0, "Faster reviews must not miss risks."),
+    o(2, "For a contract in Spanish, flagged clauses should be…", ["Reviewed in the original with translations provided","Translated and the original discarded","Skipped","Reviewed only in English"], 0, "The original text usually governs."),
   ],
 };
 export default bank;

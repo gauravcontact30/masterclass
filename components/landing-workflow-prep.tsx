@@ -13,14 +13,15 @@ type Text = (en: string, hindi: string) => string;
  * Under each Workflow blueprint: its full detail (stack, decisions, mistakes, metrics) and the interview
  * questions most asked about it, subjective and objective, each rated by how often it comes up and opened
  * one at a time like an accordion. Loaded as its own chunk by components/landing-workflows.tsx. The first
- * three of each kind ship with it; the rest load when the blueprint's slide comes near the screen.
+ * three of each kind ship with it; the rest load when the blueprint's slide comes near the screen, on the landing
+ * page and on /dashboard alike. `full={false}` keeps just those three.
  */
-export default function WorkflowPrepPanel({ id, text }: Readonly<{ id: string; text: Text }>) {
+export default function WorkflowPrepPanel({ id, text, full = true }: Readonly<{ id: string; text: Text; full?: boolean }>) {
   const prep = WORKFLOW_PREP[id];
   const box = useRef<HTMLDivElement>(null);
   const [more, setMore] = useState<QuestionSet | null>(null);
   useEffect(() => {
-    const node = box.current; if (!node || !prep) return;
+    const node = box.current; if (!node || !prep || !full) return;
     let live = true;
     const load = () => loadMoreQuestions(id).then(set => { if (live) setMore(set); }).catch(() => undefined);
     // Without IntersectionObserver (old browsers, tests) the questions load straight away.
@@ -28,7 +29,7 @@ export default function WorkflowPrepPanel({ id, text }: Readonly<{ id: string; t
     const observer = new IntersectionObserver(entries => { if (entries.some(e => e.isIntersecting)) { observer.disconnect(); load(); } }, { rootMargin: "300px" });
     observer.observe(node);
     return () => { live = false; observer.disconnect(); };
-  }, [id, prep]);
+  }, [id, prep, full]);
   if (!prep) return null;
   const set: QuestionSet = more ? { subjective: [...prep.subjective, ...more.subjective], objective: [...prep.objective, ...more.objective] } : prep;
   return <div ref={box} className={styles.prep}>

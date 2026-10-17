@@ -6,7 +6,6 @@ import { db, check } from "@/lib/server/db";
 import { reconcileSubscription } from "@/lib/server/billing";
 import { sweepGuestCheckouts } from "@/lib/server/guest-billing";
 
-export const runtime="nodejs";
 export const maxDuration=300;
 /** Schedule every few minutes; webhooks remain the primary synchronization channel. */
 export async function POST(request:Request) {
