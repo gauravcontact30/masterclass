@@ -155,7 +155,7 @@ export function attribute({ visits, profiles, subscriptions, promotions, since }
     const platformsSeen = new Set<Platform>([...(c?.platforms ?? []), ...items.map(item => item.platform)]);
     const funnel: Funnel = c ? { visits: c.visits, visitors: c.visitorSet.size, sessions: c.sessionSet.size, signups: c.signups, members: c.members } : emptyFunnel();
     return {
-      campaign, platform: platformsSeen.size === 1 ? [...platformsSeen][0] : "mixed", title: items[0]?.title ?? "(not registered as a promotion)",
+      campaign, platform: (platformsSeen.size === 1 ? [...platformsSeen][0] : "mixed") as Platform | "mixed", title: items[0]?.title ?? "(not registered as a promotion)",
       status: items[0]?.status ?? "untracked", ...funnel, spend, costPerSignup: spend && funnel.signups ? spend / funnel.signups : null,
     };
   }).sort((a, b) => b.visits - a.visits || a.campaign.localeCompare(b.campaign));
