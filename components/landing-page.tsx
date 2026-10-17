@@ -29,6 +29,7 @@ import { SubjectRibbon } from "./subject-ribbon";
 import { StudentReviews } from "./student-reviews";
 import { LandingWorkflows } from "./landing-workflows";
 import { LandingInterview } from "./landing-interview";
+import { LandingComparisons } from "./landing-comparisons";
 import { LandingMembership } from "./landing-membership";
 import frame from "./landing-section.module.css";
 import { useLanguage } from "./language-provider";
@@ -53,6 +54,7 @@ export function LandingPage({ pro, library, prices: initialPrices, daily }: { pr
     {daily && <><LandingAiPulse cards={daily.pulse} day={daily.day} locked={daily.locked?.pulse} preview /><LandingVocabulary words={daily.words} day={daily.day} locked={daily.locked?.word} preview /></>}
     <LandingWorkflows preview />
     <LandingInterview preview />
+    <LandingComparisons />
     <LandingOverview counts={library?.counts} />
     {library && <section ref={libraryRef} id="library" className={`${frame.section} ${home.library}`} data-ground="paper" data-reveal={libraryReveal} aria-labelledby="library-title"><div className={`${home.inner} ${home.libraryInner}`}>
       <header className={frame.head}>

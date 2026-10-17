@@ -8,7 +8,8 @@ export default createConfig({
     "^server-only$": "<rootDir>/__tests__/mocks/server-only.ts",
     "^@t3-oss/env-nextjs$": "<rootDir>/__tests__/mocks/t3-env.ts",
     "^uncrypto$": "<rootDir>/node_modules/uncrypto/dist/crypto.node.cjs",
-    "^@arcjet/next$": "<rootDir>/__tests__/mocks/arcjet.ts"
+    "^@arcjet/next$": "<rootDir>/__tests__/mocks/arcjet.ts",
+    "^next/cache$": "<rootDir>/__tests__/mocks/next-cache.ts"
   },
   testMatch:["**/__tests__/**/*.test.[jt]s?(x)"],
   clearMocks:true,

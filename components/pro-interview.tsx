@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Search, Sparkles, Star, Timer, X } from "lucide-react";
-import { type ContentSource, type GeneratedInterview } from "@/lib/pro-learn/types";
+import type { ContentSource, GeneratedInterview } from "@/lib/pro-learn/types";
 import { INTERVIEW_BANK, INTERVIEW_COMPANIES, INTERVIEW_LEVELS, type InterviewItem } from "@/lib/pro-learn/tracks";
 import { ProMarkdown } from "./pro-markdown";
 import { dayIndex, ProHero, Select, SourceBadge } from "./pro-learn-shared";

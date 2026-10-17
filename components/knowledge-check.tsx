@@ -7,7 +7,7 @@ import { ExpandedText } from "@/components/expanded-text";
 
 import { useId, useState } from "react";
 import { BookOpenCheck, Check, RotateCcw } from "lucide-react";
-import { type ObjectiveQuestion } from "@/lib/domain";
+import type { ObjectiveQuestion } from "@/lib/domain";
 import { optionLetter } from "@/lib/document-format";
 import { Button } from "./ui/button";
 import styles from "./knowledge-check.module.css";

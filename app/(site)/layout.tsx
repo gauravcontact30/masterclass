@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { cacheLife } from "next/cache";
 import { Wordmark } from "@/components/brand-mark";
@@ -8,7 +9,7 @@ import styles from "./site.module.css";
 const NAV = PUBLIC_PAGES.filter(page => ["/courses", "/library", "/about", "/contact"].includes(page.path));
 const LEGAL = PUBLIC_PAGES.filter(page => ["/privacy", "/terms", "/refund-policy"].includes(page.path));
 /** The free learning library's sections, linked from every public page so each one is a click from anywhere. */
-const LIBRARY: [string, string][] = [["/interview-questions", "Interview questions"], ["/workflows", "Workflow blueprints"], ["/learn", "Technology handbooks"], ["/api-reference", "API reference"], ["/vocabulary", "English vocabulary"]];
+const LIBRARY: [string, string][] = [["/interview-questions", "Interview questions"], ["/compare", "Comparisons"], ["/workflows", "Workflow blueprints"], ["/learn", "Technology handbooks"], ["/api-reference", "API reference"], ["/vocabulary", "English vocabulary"]];
 
 /** The copyright year, cached for a day so the prerendered shell never reads the clock at request time. */
 async function CopyrightYear() {
@@ -30,7 +31,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       <nav aria-label="Learning library"><ul>{LIBRARY.map(([href, label]) => <li key={href}><Link href={href}>{label}</Link></li>)}</ul></nav>
       <nav aria-label="Site pages"><ul>{PUBLIC_PAGES.filter(page => page.path !== "/" && !LEGAL.includes(page)).map(page => <li key={page.path}><Link href={page.path}>{page.label}</Link></li>)}</ul></nav>
       <nav aria-label="Legal"><ul>{LEGAL.map(page => <li key={page.path}><Link href={page.path}>{page.title}</Link></li>)}</ul></nav>
-      <small>© <CopyrightYear /> MasterClass. All rights reserved.</small>
+      <small>© <Suspense fallback={null}><CopyrightYear /></Suspense> MasterClass. All rights reserved.</small>
     </footer>
   </div>;
 }

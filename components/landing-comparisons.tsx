@@ -1,0 +1,102 @@
+"use client";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Bot, Boxes, Cloud, Database, FlaskConical, GitCompareArrows, Layers, Monitor, Server, type LucideIcon } from "lucide-react";
+import { COMPARISONS, loadComparisonBank, type Comparison, type ComparisonGroup } from "@/lib/comparisons";
+import type { QuestionSet } from "@/lib/interview-questions";
+import { learningImageUrl } from "@/lib/learning-image";
+import { AUTOPLAY_MS, Controls, Dots } from "./landing-ai-pulse";
+import { CoverPicture } from "./landing-interview";
+import { InterviewQuestions } from "./interview-accordion";
+import { useLanguage } from "./language-provider";
+import { usePagedCarousel } from "./use-paged-carousel";
+import home from "./landing-home.module.css";
+import interview from "./landing-interview.module.css";
+import styles from "./landing-comparisons.module.css";
+
+type Text = (en: string, hindi: string) => string;
+/** Eight light tones the slides cycle through, shared with the interview carousel's stylesheet. */
+const TONES = 8;
+const two = (n: number) => String(n).padStart(2, "0");
+const GROUP_ICON: Record<ComparisonGroup, LucideIcon> = {
+  "AI & agents": Bot, Frontend: Monitor, "State & data fetching": Layers, "Backend & APIs": Server, Testing: FlaskConical,
+  "Data & storage": Database, "Cloud & DevOps": Cloud, "Python & data": Boxes, Architecture: GitCompareArrows,
+};
+
+/**
+ * Tech Topics comparisons: one slide per "what is the difference…" question, with its picture, a one-line definition
+ * and short description of each technology, an at-a-glance table and 40+ difference questions with answers.
+ * Autoplay turns a slide every two minutes and holds while the reader hovers or reads; a picker jumps to any
+ * comparison. Questions load per slide, when it is near. The same section runs on the landing page and /dashboard.
+ */
+export function LandingComparisons() {
+  const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
+  const { track, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(COMPARISONS.length, 1, AUTOPLAY_MS);
+  const groups = [...new Set(COMPARISONS.map(item => item.group))];
+  return <section id="tech-comparisons" className={interview.section} aria-labelledby="comparisons-title"><div className={home.inner}>
+    <div className={interview.head}>
+      <div className={interview.headCopy}>
+        <p className={interview.kicker}><GitCompareArrows size={14} aria-hidden="true" />{text("Tech Topics", "टेक टॉपिक्स")}<span>{COMPARISONS.length} {text("comparisons", "तुलनाएँ")}</span></p>
+        <h2 id="comparisons-title">{text("What is the difference ", "असल में अंतर ")}<em>{text("between them, really?", "क्या है?")}</em></h2>
+        <p className={interview.lede}>{text(
+          "The comparisons interviewers and teams ask about most, from LangChain, LangGraph and LangSmith to Redux, Zustand and Redux Toolkit. Each one defines every technology in a line, compares them at a glance and answers 40+ difference questions.",
+          "इंटरव्यू और टीमों में सबसे ज़्यादा पूछी जाने वाली तुलनाएँ, LangChain, LangGraph और LangSmith से Redux, Zustand और Redux Toolkit तक। हर तुलना में हर तकनीक की एक पंक्ति की परिभाषा, एक नज़र में तालिका और 40+ अंतर प्रश्नों के उत्तर।")}</p>
+      </div>
+      <Controls text={text} playing={playing} onPlay={() => setPlaying(p => !p)} page={page} pages={pages} goTo={goTo} previous={text("Previous comparison", "पिछली तुलना")} next={text("Next comparison", "अगली तुलना")} />
+    </div>
+    <label className={styles.picker}>
+      <span>{text("Jump to a comparison", "किसी तुलना पर जाएँ")}</span>
+      <select value={page} onChange={event => goTo(Number(event.target.value))}>
+        {groups.map(group => <optgroup key={group} label={group}>{COMPARISONS.map((item, i) => item.group === group && <option key={item.id} value={i}>{item.question}</option>)}</optgroup>)}
+      </select>
+    </label>
+    <ul ref={track} className={interview.track} aria-roledescription="carousel" aria-label={text("Technology comparisons", "तकनीकी तुलनाएँ")} {...holdProps}>
+      {COMPARISONS.map((item, i) => <ComparisonSlide key={item.id} item={item} index={i} total={COMPARISONS.length} near={Math.abs(i - page) <= 1} text={text} />)}
+    </ul>
+    <Dots pages={pages} page={page} running={running} goTo={goTo} label={n => text(`Show comparison ${n}`, `तुलना ${n} दिखाएँ`)} />
+  </div></section>;
+}
+
+function ComparisonSlide({ item, index, total, near, text }: Readonly<{ item: Comparison; index: number; total: number; near: boolean; text: Text }>) {
+  const [set, setSet] = useState<QuestionSet | null>(null);
+  const [failed, setFailed] = useState(false);
+  // The bank loads once, the first time the slide is on screen or next to it.
+  useEffect(() => {
+    if (!near || set) return;
+    let live = true;
+    loadComparisonBank(item.id).then(loaded => { if (live) setSet(loaded); }).catch(() => { if (live) setFailed(true); });
+    return () => { live = false; };
+  }, [near, set, item.id]);
+  const Icon = GROUP_ICON[item.group];
+  return <li className={interview.slide} data-tone={index % TONES} aria-roledescription="slide" aria-label={`${index + 1} / ${total}: ${item.question}`}>
+    <article className={interview.cover}>
+      <CoverPicture src={learningImageUrl("topics", ["comparisons", item.id])} alt={`Illustration comparing ${item.techs.map(tech => tech.name).join(", ")}`} icon={<Icon size={48} strokeWidth={1.3} aria-hidden="true" />}>
+        <span className={interview.tag}><Icon size={12} aria-hidden="true" />{item.group}</span>
+        <span className={interview.index} aria-hidden="true">{two(index + 1)}</span>
+      </CoverPicture>
+      <div className={interview.coverBody}>
+        <h3>{item.question}</h3>
+        <p className={interview.tagline}>{item.summary}</p>
+        <ul className={styles.techs}>{item.techs.map(tech => <li key={tech.name}>
+          <b>{tech.name}</b>
+          <span className={styles.definition}>{tech.definition}</span>
+          <span className={styles.description}>{tech.description}</span>
+        </li>)}</ul>
+        {item.source && <p className={styles.source}>{item.source}</p>}
+      </div>
+    </article>
+    <div className={interview.panel}>
+      <div className={styles.glance}>
+        <h4>{text("At a glance", "एक नज़र में")}</h4>
+        <div className={styles.tableScroll} tabIndex={0} role="region" aria-label={text(`${item.question} at a glance`, `${item.question} एक नज़र में`)}><table>
+          <thead><tr><th scope="col"><span className={styles.srOnly}>{text("Aspect", "पहलू")}</span></th>{item.techs.map(tech => <th key={tech.name} scope="col">{tech.name}</th>)}</tr></thead>
+          <tbody>{item.aspects.map(([aspect, ...values]) => <tr key={aspect}><th scope="row">{aspect}</th>{values.map((value, k) => <td key={k}>{value}</td>)}</tr>)}</tbody>
+        </table></div>
+      </div>
+      {set && set.subjective.length > 0
+        ? <InterviewQuestions key={item.id} set={set} text={text} scroll heading={<h4>{text(`${set.subjective.length} difference questions`, `${set.subjective.length} अंतर प्रश्न`)}</h4>} />
+        : <div className={interview.loading} role="status">{failed ? text("These questions could not load. Check your connection and try again.", "ये प्रश्न लोड नहीं हो सके। कनेक्शन जाँचें और फिर कोशिश करें।") : set ? text("Questions for this comparison are being written.", "इस तुलना के प्रश्न तैयार किए जा रहे हैं।") : text("Loading the questions…", "प्रश्न लोड हो रहे हैं…")}</div>}
+      <Link className={styles.more} href={`/compare/${item.id}`}>{text("Read the full comparison", "पूरी तुलना पढ़ें")} →</Link>
+    </div>
+  </li>;
+}

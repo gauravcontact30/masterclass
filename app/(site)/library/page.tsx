@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { apiPackages, handbooks, interviewTechs, vocabularyGroups, workflows } from "@/lib/public-learning";
 import { pageMetadata } from "@/lib/seo";
+import { COMPARISONS } from "@/lib/comparisons";
 import { PageIntro } from "../page-intro";
 import styles from "@/components/public-learning/library.module.css";
 
@@ -11,6 +12,7 @@ export default function LibraryHub() {
   const vocabulary = vocabularyGroups();
   const sections = [
     { href: "/interview-questions", title: "Interview questions", body: "Subjective and objective questions with model answers, most-asked first.", count: `${interviewTechs().length} technologies` },
+    { href: "/compare", title: "Technology comparisons", body: "The differences explained: definitions, a comparison table and 40+ difference questions each.", count: `${COMPARISONS.length} comparisons` },
     { href: "/workflows", title: "Workflow blueprints", body: "System design and AI agent architectures with diagrams, steps and interview questions.", count: `${workflows().length} blueprints` },
     { href: "/learn", title: "Technology handbooks", body: "Every topic explained with key points, syntax, a worked example and use cases.", count: `${handbooks().length} handbooks` },
     { href: "/api-reference", title: "API reference", body: "Hooks, classes, functions and CLI commands with syntax, parameters and examples.", count: `${apiPackages().length} technologies` },

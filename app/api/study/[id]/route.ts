@@ -4,7 +4,8 @@ import { account } from "@/lib/server/repository";
 import { findStudyCourse } from "@/lib/study/catalog";
 import { canReadStudy } from "@/lib/study/preparations";
 import { buildStudyPack } from "@/lib/study/content";
-import { attemptSchema, gradePaper } from "@/lib/study/types";
+import { gradePaper } from "@/lib/study/types";
+import { attemptSchema } from "@/lib/study/schemas";
 import type { Language } from "@/lib/domain";
 async function packFor(id: string, language: Language) {
   const owner = await userId(); const access = await preparationAccess(owner);

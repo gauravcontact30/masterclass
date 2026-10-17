@@ -111,7 +111,7 @@ function InterviewSlide({ tech, index, total, near, text, tab, onTab }: Readonly
 }
 
 /** The slide's picture with the tag and number laid over it; a missing one becomes a tinted panel with an icon. */
-function CoverPicture({ src, alt, icon, children }: Readonly<{ src: string | null; alt: string; icon: ReactNode; children: ReactNode }>) {
+export function CoverPicture({ src, alt, icon, children }: Readonly<{ src: string | null; alt: string; icon: ReactNode; children: ReactNode }>) {
   const [failed, setFailed] = useState(false);
   const empty = !src || failed;
   return <div className={styles.picture} data-empty={empty}>

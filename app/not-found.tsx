@@ -16,10 +16,10 @@ export default function NotFound() {
         {PUBLIC_PAGES.map(page => <Link key={page.path} href={page.path} style={{ color: "#c6613f" }}>{page.label}</Link>)}
         <Link href="/dashboard" style={{ color: "#c6613f" }}>Dashboard</Link>
       </nav>
-      {/* A mistyped or retired address still leads somewhere worth reading: the main learning sections. */}
+      {/* A mistyped or retired address still leads somewhere worth reading: the free learning library, no sign-in needed. */}
       <p style={{ color: "#5e5d59", lineHeight: 1.7, marginTop: 28 }}>Or carry on learning:</p>
       <nav aria-label="Learning sections" style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8, marginTop: 12 }}>
-        {[["/dashboard/search", "Search topics"], ["/dashboard/api-docs", "API Docs"], ["/dashboard/official-docs", "Official docs"], ["/dashboard/step-by-step", "Step-by-step guides"], ["/dashboard/notes", "Study notes"], ["/dashboard/vocabulary", "Vocabulary"], ["/dashboard/quiz", "Practice quiz"], ["/dashboard/interview", "Interview prep"]].map(([href, label]) =>
+        {[["/interview-questions", "Interview questions"], ["/workflows", "Workflow blueprints"], ["/learn", "Technology handbooks"], ["/api-reference", "API reference"], ["/vocabulary", "English vocabulary"]].map(([href, label]) =>
           <Link key={href} href={href} style={{ padding: "6px 12px", border: "1px solid #e39a6d", borderRadius: 999, background: "#fff", color: "#8f3f23", textDecoration: "none", fontSize: 14 }}>{label}</Link>)}
       </nav>
     </div>

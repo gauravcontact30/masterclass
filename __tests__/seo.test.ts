@@ -7,15 +7,19 @@ import sitemap from "@/app/sitemap";
 
 const original = { ...process.env };
 afterEach(() => { process.env = { ...original }; });
-test("only an explicitly enabled HTTPS deployment is indexable", () => {
+test("only an explicitly enabled HTTPS deployment is indexable", async () => {
   process.env.APP_URL = "https://learning.example.com";
   delete process.env.SEO_INDEXABLE;
   expect(isIndexable()).toBe(false);
-  expect(sitemap()).toEqual([]);
+  expect(await sitemap()).toEqual([]);
   expect(robots().rules).toEqual({ userAgent: "*", disallow: "/" });
   process.env.SEO_INDEXABLE = "true";
   expect(isIndexable()).toBe(true);
-  expect(sitemap().map(entry => entry.url)).toEqual(["https://learning.example.com/", "https://learning.example.com/courses", "https://learning.example.com/about", "https://learning.example.com/contact", "https://learning.example.com/privacy", "https://learning.example.com/terms", "https://learning.example.com/refund-policy"]);
+  const urls = (await sitemap()).map(entry => entry.url);
+  // Every registered public page, then the whole learning library, each listed once.
+  expect(urls.slice(0, PUBLIC_PAGES.length)).toEqual(PUBLIC_PAGES.map(page => `https://learning.example.com${page.path}`));
+  expect(urls).toEqual(expect.arrayContaining(["https://learning.example.com/library", "https://learning.example.com/interview-questions/react", "https://learning.example.com/workflows/url-shortener", "https://learning.example.com/api-reference/react", "https://learning.example.com/learn", "https://learning.example.com/vocabulary"]));
+  expect(new Set(urls).size).toBe(urls.length);
   expect(robots().sitemap).toBe("https://learning.example.com/sitemap.xml");
   expect(websiteSchema().url).toBe("https://learning.example.com/");
   process.env.APP_URL = "http://localhost:3000";

@@ -8,7 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ArrowUpRight,Bookmark,BookMarked,BookOpen,BookOpenText,CircleHelp,Code2,ChevronRight,Compass,FileCode2,GraduationCap,Languages,Layers,Library as LibraryIcon,Link2,LogOut,MessagesSquare,ListOrdered,PanelLeftClose,PanelLeftOpen,Search,Sparkles,Sun,RefreshCw,Users,Workflow } from "lucide-react";
-import { DocumentRecord,GenerationRequest,Language,Progress,Technology,Tier,Topic } from "@/lib/domain";
+import type { DocumentRecord,GenerationRequest,Language,Progress,Technology,Tier,Topic } from "@/lib/domain";
 import dynamic from "next/dynamic";
 import { uniqueLibraryDocuments } from "@/lib/library";
 const Library = dynamic(() => import("./library").then(module => module.Library), { loading: () => <LearningLoader size="inline" /> });

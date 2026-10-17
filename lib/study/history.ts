@@ -1,5 +1,6 @@
 import "server-only";
-import { appearanceSchema, type StudyPack, type StudyQuestion } from "./types";
+import type { StudyPack, StudyQuestion } from "./types";
+import { appearanceSchema } from "./schemas";
 const sourceUrl = "https://jeeadv.ac.in/past_qps/2025_1_English.pdf";
 /** Two independently solved, paraphrased questions verified against the official paper. */
 export function addVerifiedHistory(pack: StudyPack): StudyPack {

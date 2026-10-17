@@ -3,7 +3,7 @@ import { ExpandedText } from "@/components/expanded-text";
 
 import { useEffect,useState } from "react";
 import { Check,ArrowUpRight } from "lucide-react";
-import { Tier } from "@/lib/domain";
+import type { Tier } from "@/lib/domain";
 import { requestJson,errorKey } from "@/lib/client";
 import { PreparationPicker } from "./preparation-picker";
 import { TranslationKey } from "@/lib/i18n";

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { cacheLife } from "next/cache";
 import { PUBLIC_PAGES, isIndexable, siteUrl } from "@/lib/seo";
+import { COMPARISONS } from "@/lib/comparisons";
 import { apiPackageEntries, apiPackages, handbookSlug, handbooks, interviewTechs, vocabularyGroups, workflows } from "@/lib/public-learning";
 
 /**
@@ -25,6 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     library("/workflows", 0.9, "weekly"), ...workflows().map(item => library(`/workflows/${item.id}`, 0.8)),
     library("/learn", 0.9, "weekly"), ...handbooks().map(item => library(`/learn/${handbookSlug(item)}`, 0.7)),
     library("/api-reference", 0.8, "weekly"), ...api.flat(),
+    library("/compare", 0.9, "weekly"), ...COMPARISONS.map(item => library(`/compare/${item.id}`, 0.8)),
     library("/vocabulary", 0.8, "weekly"), ...vocabularyGroups().map(group => library(`/vocabulary/${group.slug}`, 0.6)),
   ];
 }

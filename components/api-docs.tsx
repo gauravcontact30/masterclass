@@ -42,7 +42,7 @@ import {
 import { API_DETAILS } from "@/lib/api-docs-details";
 import { agenticSection, agenticSections } from "@/lib/api-docs-agentic";
 import { apiDetailSchema, type ContentSource, type GeneratedApiDetail } from "@/lib/pro-learn/types";
-import { type CodeLanguage } from "@/lib/code-highlight";
+import type { CodeLanguage } from "@/lib/code-highlight";
 import styles from "./api-docs.module.css";
 import ref from "./api-reference.module.css";
 import projectStyles from "./api-project.module.css";

@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, BookOpen, Check, GraduationCap, MessageCircle, Sparkles } from "lucide-react";
-import { type GeneratedLesson, type LessonSection, type ProLesson } from "@/lib/pro-learn/types";
+import type { GeneratedLesson, LessonSection, ProLesson } from "@/lib/pro-learn/types";
 import { PRO_LEVELS, PRO_TRACKS, type ProTrack } from "@/lib/pro-learn/tracks";
 import { CodeBlock } from "./pro-markdown";
 import { dayIndex, ProHero, readList, TrackSelect, useProLevel, useProTrack, writeList } from "./pro-learn-shared";

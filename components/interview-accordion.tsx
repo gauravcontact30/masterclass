@@ -14,14 +14,15 @@ const LETTERS = ["A", "B", "C", "D"];
  * blueprints and the interview carousel on the landing page.
  */
 export function InterviewQuestions({ set, text, heading, scroll = false }: Readonly<{ set: QuestionSet; text: Text; heading?: ReactNode; scroll?: boolean }>) {
-  const [mode, setMode] = useState<Mode>("subjective");
+  const [mode, setMode] = useState<Mode>(set.subjective.length || !set.objective.length ? "subjective" : "objective");
   return <div className={styles.wrap}>
     <header className={styles.head}>
       {heading}
-      <div className={styles.modes} role="group" aria-label={text("Question type", "प्रश्न का प्रकार")}>
+      {/* A set with only one kind (the comparison banks are all subjective) needs no switch. */}
+      {set.subjective.length > 0 && set.objective.length > 0 && <div className={styles.modes} role="group" aria-label={text("Question type", "प्रश्न का प्रकार")}>
         <button type="button" aria-pressed={mode === "subjective"} onClick={() => setMode("subjective")}><MessageSquareText size={14} aria-hidden="true" />{text("Subjective", "विषयगत")}<span>{set.subjective.length}</span></button>
         <button type="button" aria-pressed={mode === "objective"} onClick={() => setMode("objective")}><ListChecks size={14} aria-hidden="true" />{text("Objective", "वस्तुनिष्ठ")}<span>{set.objective.length}</span></button>
-      </div>
+      </div>}
     </header>
     <p className={styles.key}><StarRow stars={5} />{text("= asked almost every time. Open a question to see the answer.", "= लगभग हर बार पूछा जाता है। उत्तर देखने के लिए प्रश्न खोलें।")}</p>
     {/* Keyed by mode so switching starts with every row closed and the list scrolled to the top. */}

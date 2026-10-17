@@ -5,6 +5,7 @@ import { LandingAiPulse } from "./landing-ai-pulse";
 import { LandingVocabulary } from "./landing-vocabulary";
 import { LandingWorkflows } from "./landing-workflows";
 import { LandingInterview } from "./landing-interview";
+import { LandingComparisons } from "./landing-comparisons";
 import home from "./landing-home.module.css";
 import styles from "./dashboard-learning.module.css";
 
@@ -23,5 +24,6 @@ export function DashboardLearning({ daily }: Readonly<{ daily: DashboardDaily | 
     </>}
     <LandingWorkflows />
     <LandingInterview />
+    <LandingComparisons />
   </div>;
 }

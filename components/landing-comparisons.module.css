@@ -1,0 +1,26 @@
+/* Tech Topics comparisons. The section, slide, cover and panel come from landing-interview.module.css (same tones);
+   this file adds the jump picker, the technology cards and the at-a-glance table. */
+.picker { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 18px; font-size: 14px; color: var(--nb-text); }
+.picker select { flex: 1 1 280px; max-width: 560px; min-height: 40px; padding: 0 12px; border: 1px solid var(--nb-rule-2); border-radius: 10px; background: var(--nb-sheet); color: var(--nb-graphite); font: inherit; }
+.picker select:focus-visible { outline: 3px solid var(--nb-ink); outline-offset: 2px; }
+
+.techs { display: grid; gap: 10px; margin: 14px 0 0; padding: 0; list-style: none; }
+.techs li { display: grid; gap: 3px; padding: 10px 12px; border-left: 3px solid var(--deep, var(--nb-ink)); border-radius: 0 10px 10px 0; background: color-mix(in srgb, var(--tint, #fdf1ea) 55%, #fff); }
+.techs b { font-size: 15px; color: var(--nb-graphite); }
+.definition { font-size: 14px; font-weight: 600; line-height: 1.45; color: var(--nb-text); }
+.description { font-size: 13.5px; line-height: 1.5; color: var(--nb-muted); }
+.source { margin: 10px 0 0; font-size: 12px; color: var(--nb-muted); }
+
+.glance { margin-bottom: 16px; }
+.glance h4 { margin: 0 0 8px; font-size: 15px; color: var(--nb-graphite); }
+.tableScroll { overflow-x: auto; border: 1px solid var(--nb-rule); border-radius: 12px; background: var(--nb-sheet); }
+.tableScroll:focus-visible { outline: 3px solid var(--nb-ink); outline-offset: 2px; }
+.tableScroll table { width: 100%; min-width: 480px; border-collapse: collapse; font-size: 13.5px; }
+.tableScroll th, .tableScroll td { padding: 8px 10px; border-bottom: 1px solid var(--nb-rule); text-align: left; vertical-align: top; line-height: 1.45; }
+.tableScroll thead th { background: color-mix(in srgb, var(--tint, #fdf1ea) 60%, #fff); color: var(--deep, var(--nb-ink)); font-size: 13px; }
+.tableScroll tbody th { width: 22%; color: var(--nb-text); font-weight: 600; }
+.tableScroll tr:last-child > * { border-bottom: 0; }
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.more { display: inline-block; margin-top: 14px; font-size: 14px; font-weight: 600; color: var(--deep, var(--nb-ink)); text-decoration: none; }
+.more:hover { text-decoration: underline; }

@@ -1,5 +1,6 @@
-import { z } from "zod";
 import type { Language, Tier } from "@/lib/domain";
+import type { Appearance } from "./schemas";
+export type { Appearance } from "./schemas";
 
 export type Bilingual = { en: string; hi: string };
 export const bi = (en: string, hi: string): Bilingual => ({ en, hi });
@@ -13,13 +14,6 @@ export type StudyUnit = {
   idea: Bilingual; rule: Bilingual; example: Bilingual; solution: Bilingual; mistake: Bilingual;
   question: Bilingual; options: Bilingual[]; correct: number; explanation: Bilingual;
 };
-export const appearanceSchema = z.object({
-  exam: z.string().min(1), year: z.number().int().min(1950).max(2100), paper: z.string().min(1),
-  questionNumber: z.string().min(1), sourceUrl: z.string().url(),
-  // A question occurrence needs a location, not just an exam's homepage.
-  sourcePage: z.number().int().positive(), verified: z.literal(true),
-});
-export type Appearance = z.infer<typeof appearanceSchema>;
 export type StudyQuestion = {
   id: string; unitId: string; type: "objective" | "subjective"; prompt: string;
   options?: string[]; correct?: number; answer: string; explanation: string; marks: number;
@@ -53,7 +47,6 @@ export function askRating(appearances: Appearance[], reviewedPaperIds: string[])
   return { occurrences: matches.size, reviewed: corpus.size, percent: corpus.size ? Math.round(matches.size / corpus.size * 100) : null };
 }
 
-export const attemptSchema = z.object({ paperId: z.string().max(120), language: z.enum(["en", "hi"]), answers: z.record(z.string().max(120), z.number().int().min(0).max(9)).refine(answers => Object.keys(answers).length <= 200) }).strict();
 export function gradePaper(paper: StudyPaper, questions: StudyQuestion[], answers: Record<string, number>) {
   const included = new Set(paper.questionIds);
   const objective = questions.filter(question => included.has(question.id) && question.type === "objective");
