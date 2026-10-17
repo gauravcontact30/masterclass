@@ -1,7 +1,8 @@
 -- Subscriptions bought without signing in. The row is created with the Razorpay
 -- subscription and linked to an account (found or created by email) only once
 -- Razorpay reports a paid mandate, from either the browser or the webhook.
-create table public.guest_checkouts (
+-- Idempotent: safe to run again where already applied ("if not exists", "create or replace"; grants repeat harmlessly).
+create table if not exists public.guest_checkouts (
   id uuid primary key,
   email text not null check (email = lower(email) and length(email) <= 254),
   name text not null default '' check (length(name) <= 80),
@@ -15,8 +16,8 @@ create table public.guest_checkouts (
   created_at timestamptz not null default now(),
   fulfilled_at timestamptz
 );
-create index guest_checkouts_email_created on public.guest_checkouts(email, created_at desc);
-create index guest_checkouts_open on public.guest_checkouts(created_at) where status = 'created';
+create index if not exists guest_checkouts_email_created on public.guest_checkouts(email, created_at desc);
+create index if not exists guest_checkouts_open on public.guest_checkouts(created_at) where status = 'created';
 alter table public.guest_checkouts enable row level security;
 revoke all on public.guest_checkouts from anon, authenticated;
 grant select, insert, update on public.guest_checkouts to service_role;

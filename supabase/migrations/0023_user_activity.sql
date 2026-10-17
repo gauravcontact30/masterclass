@@ -3,9 +3,11 @@
 -- recorded by /api/track through the service role. Learners never read this table.
 -- IPs are stored masked (last IPv4 octet / last 80 IPv6 bits zeroed) plus a salted hash for counting,
 -- never in full. Rows older than 180 days are removed by prune_monitoring().
+-- Idempotent: safe to run again on a database where it was already applied (tables and indexes use
+-- "if not exists", functions "create or replace", and grants and revokes repeat harmlessly).
 begin;
 
-create table public.site_visits (
+create table if not exists public.site_visits (
   id bigint generated always as identity primary key,
   created_at timestamptz not null default now(),
   event text not null check (event in ('page_view', 'page_leave')),
@@ -24,10 +26,10 @@ create table public.site_visits (
   language text, timezone text, screen text,
   duration_ms integer check (duration_ms is null or duration_ms between 0 and 86400000)
 );
-create index site_visits_time on public.site_visits(created_at desc);
-create index site_visits_visitor on public.site_visits(visitor_id, created_at desc);
-create index site_visits_user on public.site_visits(user_id, created_at desc) where user_id is not null;
-create index site_visits_session on public.site_visits(session_id);
+create index if not exists site_visits_time on public.site_visits(created_at desc);
+create index if not exists site_visits_visitor on public.site_visits(visitor_id, created_at desc);
+create index if not exists site_visits_user on public.site_visits(user_id, created_at desc) where user_id is not null;
+create index if not exists site_visits_session on public.site_visits(session_id);
 alter table public.site_visits enable row level security;
 revoke all on public.site_visits from anon, authenticated;
 grant select, insert, delete on public.site_visits to service_role;
@@ -38,7 +40,7 @@ grant usage on sequence public.site_visits_id_seq to service_role;
 -- Totals, trends, breakdowns, the people list and the recent visit log for one reporting window.
 -- Bots are counted but kept out of every other figure. A visitor who later signs in is attributed to
 -- their account for all of their visits, so one person is one row in "people".
-create function public.admin_user_activity(p_days integer default 7) returns jsonb
+create or replace function public.admin_user_activity(p_days integer default 7) returns jsonb
 language sql stable security definer set search_path = '' as $$
 with win as (select now() - make_interval(days => least(greatest(p_days, 1), 90)) as since),
 linked as (select visitor_id, (array_agg(user_id order by created_at desc))[1] as user_id from public.site_visits where user_id is not null group by visitor_id),
@@ -107,7 +109,7 @@ $$;
 
 -- One person's full trail: their visits (including those made before they signed in on the same browser),
 -- account, devices, sign-ins and the audit/admin events that concern them. p_person is a user id or "visitor:<id>".
-create function public.admin_person_timeline(p_person text) returns jsonb
+create or replace function public.admin_person_timeline(p_person text) returns jsonb
 language plpgsql stable security definer set search_path = '' as $$
 declare uid uuid; vid text;
 begin

@@ -8,6 +8,7 @@ import { learningImageUrl } from "@/lib/learning-image";
 import { AUTOPLAY_MS, Controls, Dots } from "./landing-ai-pulse";
 import { CoverPicture } from "./landing-interview";
 import { InterviewQuestions } from "./interview-accordion";
+import { Combobox } from "./ui/combobox";
 import { useLanguage } from "./language-provider";
 import { usePagedCarousel } from "./use-paged-carousel";
 import home from "./landing-home.module.css";
@@ -44,12 +45,14 @@ export function LandingComparisons() {
       </div>
       <Controls text={text} playing={playing} onPlay={() => setPlaying(p => !p)} page={page} pages={pages} goTo={goTo} previous={text("Previous comparison", "पिछली तुलना")} next={text("Next comparison", "अगली तुलना")} />
     </div>
-    <label className={styles.picker}>
-      <span>{text("Jump to a comparison", "किसी तुलना पर जाएँ")}</span>
-      <select value={page} onChange={event => goTo(Number(event.target.value))}>
-        {groups.map(group => <optgroup key={group} label={group}>{COMPARISONS.map((item, i) => item.group === group && <option key={item.id} value={i}>{item.question}</option>)}</optgroup>)}
-      </select>
-    </label>
+    <div className={styles.picker}>
+      <span id="comparison-jump-label">{text("Jump to a comparison", "किसी तुलना पर जाएँ")}</span>
+      {/* shadcn Combobox (Popover + Command): grouped by topic and searchable, so 37 comparisons stay quick to reach. */}
+      <Combobox value={COMPARISONS[page]?.id ?? ""} onChange={id => { const index = COMPARISONS.findIndex(item => item.id === id); if (index >= 0) goTo(index); }}
+        groups={groups.map(group => ({ label: group, options: COMPARISONS.filter(item => item.group === group).map(item => ({ value: item.id, label: item.question })) }))}
+        placeholder={text("Choose a comparison", "तुलना चुनें")} searchPlaceholder={text("Search comparisons, e.g. Redux", "तुलना खोजें, जैसे Redux")} emptyText={text("No comparison matches that search.", "इस खोज से कोई तुलना नहीं मिली।")}
+        clearLabel={text("Clear", "साफ़ करें")} ariaLabel={text("Jump to a comparison", "किसी तुलना पर जाएँ")} icon={GitCompareArrows} />
+    </div>
     <ul ref={track} className={interview.track} aria-roledescription="carousel" aria-label={text("Technology comparisons", "तकनीकी तुलनाएँ")} {...holdProps}>
       {COMPARISONS.map((item, i) => <ComparisonSlide key={item.id} item={item} index={i} total={COMPARISONS.length} near={Math.abs(i - page) <= 1} text={text} />)}
     </ul>
@@ -77,7 +80,7 @@ function ComparisonSlide({ item, index, total, near, text }: Readonly<{ item: Co
       <div className={interview.coverBody}>
         <h3>{item.question}</h3>
         <p className={interview.tagline}>{item.summary}</p>
-        <ul className={styles.techs}>{item.techs.map(tech => <li key={tech.name}>
+        <ul className={styles.techs}>{item.techs.map((tech, k) => <li key={tech.name} data-tint={(index + k) % 6}>
           <b>{tech.name}</b>
           <span className={styles.definition}>{tech.definition}</span>
           <span className={styles.description}>{tech.description}</span>

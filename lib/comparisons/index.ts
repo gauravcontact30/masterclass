@@ -421,9 +421,17 @@ export const comparison = (id: string) => COMPARISONS.find(item => item.id === i
 
 /** Each comparison's question bank as its own chunk. */
 const LOADERS: Record<string, () => Promise<{ default: QuestionSet }>> = {
+  "agent-workflow-chatbot": () => import("./banks/agent-workflow-chatbot"),
   "langchain-langgraph-langsmith": () => import("./banks/langchain-langgraph-langsmith"),
-  "redux-zustand-rtk": () => import("./banks/redux-zustand-rtk"),
+  "langflow-langchain": () => import("./banks/langflow-langchain"),
+  "mcp-a2a-function-calling": () => import("./banks/mcp-a2a-function-calling"),
+  "n8n-langchain-langgraph": () => import("./banks/n8n-langchain-langgraph"),
   "nextjs-tanstack": () => import("./banks/nextjs-tanstack"),
+  "rag-finetuning-prompting": () => import("./banks/rag-finetuning-prompting"),
+  "react-nextjs": () => import("./banks/react-nextjs"),
+  "redux-zustand-rtk": () => import("./banks/redux-zustand-rtk"),
+  "server-client-components": () => import("./banks/server-client-components"),
+  "ssr-ssg-isr-ppr": () => import("./banks/ssr-ssg-isr-ppr"),
 };
 
 export const hasComparisonBank = (id: string) => id in LOADERS;

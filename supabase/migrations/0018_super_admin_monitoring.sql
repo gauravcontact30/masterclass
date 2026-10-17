@@ -1,16 +1,18 @@
+-- Idempotent: safe to run again where already applied (tables and indexes "if not exists"; functions and
+-- triggers "create or replace"; grants and revokes repeat harmlessly).
 -- Private monitoring data: only server-side, verified super-admin routes can read it.
-create table public.monitor_events (
+create table if not exists public.monitor_events (
   id uuid primary key default gen_random_uuid(), created_at timestamptz not null default now(),
   kind text not null, actor_id text, resource text, action text not null,
   status integer, duration_ms numeric, bytes bigint, details jsonb not null default '{}'
 );
-create index monitor_events_time on public.monitor_events(created_at desc);
-create index monitor_events_kind_time on public.monitor_events(kind,created_at desc);
+create index if not exists monitor_events_time on public.monitor_events(created_at desc);
+create index if not exists monitor_events_kind_time on public.monitor_events(kind,created_at desc);
 alter table public.monitor_events enable row level security;
 revoke all on public.monitor_events from anon, authenticated;
 grant select, insert on public.monitor_events to service_role;
 
-create table public.billing_ledger (
+create table if not exists public.billing_ledger (
   event_id text primary key, created_at timestamptz not null default now(),
   event text not null, entity_id text, subscription_ref text, user_id text,
   amount bigint, currency text, invoice_id text
@@ -20,7 +22,7 @@ revoke all on public.billing_ledger from anon, authenticated;
 grant select, insert, update on public.billing_ledger to service_role;
 
 -- Record keys and changed column names, never credentials, document bodies or payment secrets.
-create function public.monitor_change() returns trigger language plpgsql security definer set search_path=public as $$
+create or replace function public.monitor_change() returns trigger language plpgsql security definer set search_path=public as $$
 declare before_row jsonb; after_row jsonb; row_data jsonb; changed jsonb;
 begin
   before_row := case when tg_op <> 'INSERT' then to_jsonb(old) else '{}'::jsonb end;
@@ -34,11 +36,11 @@ end $$;
 revoke all on function public.monitor_change() from public,anon,authenticated;
 do $$ declare t text; begin
   for t in select tablename from pg_tables where schemaname='public' and tablename not in ('monitor_events','billing_ledger','rate_limits','oauth_states') loop
-    execute format('create trigger monitor_changes after insert or update or delete on public.%I for each row execute function public.monitor_change()',t);
+    execute format('create or replace trigger monitor_changes after insert or update or delete on public.%I for each row execute function public.monitor_change()',t);
   end loop;
 end $$;
 
-create function public.monitor_auth_change() returns trigger language plpgsql security definer set search_path=public as $$
+create or replace function public.monitor_auth_change() returns trigger language plpgsql security definer set search_path=public as $$
 begin
   if old.raw_app_meta_data->>'role' is distinct from new.raw_app_meta_data->>'role' or old.banned_until is distinct from new.banned_until then
     insert into monitor_events(kind,actor_id,resource,action,details) values ('audit',auth.jwt()->>'sub','auth.users','access_changed',jsonb_build_object('record_id',new.id,'previous_role',old.raw_app_meta_data->>'role','role',new.raw_app_meta_data->>'role','banned_until',new.banned_until));
@@ -46,10 +48,10 @@ begin
   return new;
 end $$;
 revoke all on function public.monitor_auth_change() from public,anon,authenticated;
-create trigger monitor_auth_access after update on auth.users for each row execute function public.monitor_auth_change();
+create or replace trigger monitor_auth_access after update on auth.users for each row execute function public.monitor_auth_change();
 
 -- Auth-owned fields are projected explicitly. Never return tokens, passwords or raw metadata.
-create function public.super_admin_snapshot(p_days integer default 30) returns jsonb
+create or replace function public.super_admin_snapshot(p_days integer default 30) returns jsonb
 language sql security definer set search_path=public as $$
 select jsonb_build_object(
  'counts',jsonb_build_object('users',(select count(*) from auth.users),'documents',(select count(*) from documents),'activeSubscriptions',(select count(*) from subscriptions where status='active' and current_period_end>now()),'failedDocuments',(select count(*) from documents where status='failed')),

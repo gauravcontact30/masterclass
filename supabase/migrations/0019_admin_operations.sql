@@ -1,27 +1,29 @@
+-- Idempotent: safe to run again where already applied (tables and indexes "if not exists"; functions and
+-- triggers "create or replace"; grants and revokes repeat harmlessly).
 -- StockersAI-inspired operations adapted to MasterClass's verified-owner authorization.
 begin;
-create table public.learning_presence (
+create table if not exists public.learning_presence (
   user_id text not null, session_id uuid not null, path text not null,
   device text not null, started_at timestamptz not null default now(),
   last_seen_at timestamptz not null default now(), primary key(user_id,session_id)
 );
-create index learning_presence_seen on public.learning_presence(last_seen_at desc);
-create table public.content_reports (
+create index if not exists learning_presence_seen on public.learning_presence(last_seen_at desc);
+create table if not exists public.content_reports (
   id uuid primary key default gen_random_uuid(), user_id text not null,
   path text not null, reason text not null check(reason in ('incorrect','inappropriate','spam','broken')),
   description text not null check(length(description) between 10 and 2000),
   status text not null default 'open' check(status in ('open','reviewing','resolved','dismissed')),
   resolution text, reviewed_by text, created_at timestamptz not null default now(), updated_at timestamptz not null default now()
 );
-create index content_reports_status on public.content_reports(status,created_at desc);
+create index if not exists content_reports_status on public.content_reports(status,created_at desc);
 alter table public.learning_presence enable row level security;
 alter table public.content_reports enable row level security;
 revoke all on public.learning_presence,public.content_reports from anon,authenticated;
 grant select,insert,update,delete on public.learning_presence to service_role;
 grant select,insert,update on public.content_reports to service_role;
-create trigger monitor_changes after insert or update or delete on public.content_reports for each row execute function public.monitor_change();
+create or replace trigger monitor_changes after insert or update or delete on public.content_reports for each row execute function public.monitor_change();
 
-create function public.super_admin_operations(p_days integer default 30) returns jsonb
+create or replace function public.super_admin_operations(p_days integer default 30) returns jsonb
 language sql security definer set search_path=public as $$
 with activity as (select * from monitor_events where created_at > now()-make_interval(days=>least(greatest(p_days,1),90)))
 select jsonb_build_object(
@@ -41,7 +43,7 @@ select jsonb_build_object(
 $$;
 revoke all on function public.super_admin_operations(integer) from public,anon,authenticated;
 grant execute on function public.super_admin_operations(integer) to service_role;
-create function public.prune_monitoring() returns void language sql security definer set search_path=public as $$
+create or replace function public.prune_monitoring() returns void language sql security definer set search_path=public as $$
   delete from learning_presence where last_seen_at<now()-interval '1 day';
   delete from monitor_events where created_at<now()-interval '90 days' and kind in ('request','page','hosting','ai','uptime');
 $$;

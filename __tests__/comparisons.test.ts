@@ -15,12 +15,12 @@ test("every comparison has a unique id, 2+ technologies with definitions, and a 
   }
 });
 
-test("each written bank has 40+ unique difference questions with real answers", async () => {
+test("each written bank has 50+ unique difference questions with real answers", async () => {
   const written = COMPARISONS.filter(item => hasComparisonBank(item.id));
   expect(written.length).toBeGreaterThan(0);
   for (const item of written) {
     const set = await loadComparisonBank(item.id);
-    expect(set.subjective.length).toBeGreaterThanOrEqual(40);
+    expect(set.subjective.length).toBeGreaterThanOrEqual(50);
     expect(new Set(set.subjective.map(q => q.question)).size).toBe(set.subjective.length);
     for (const q of set.subjective) expect(q.answer.length).toBeGreaterThan(80);
   }

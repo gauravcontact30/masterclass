@@ -1,3 +1,5 @@
+-- Idempotent: safe to run again where already applied (tables and indexes "if not exists"; functions and
+-- triggers "create or replace"; grants and revokes repeat harmlessly).
 -- Super admin: learner support, generation queue control, announcements and
 -- learning insights. Every function is callable by service_role only — the
 -- verified super-admin API routes — and every mutation writes its audit event
@@ -5,7 +7,7 @@
 begin;
 
 -- ---------------------------------------------------------------- announcements
-create table public.announcements (
+create table if not exists public.announcements (
   id uuid primary key default gen_random_uuid(),
   title text not null check (length(title) between 3 and 120),
   body text not null check (length(body) between 3 and 600),
@@ -18,18 +20,18 @@ create table public.announcements (
   updated_at timestamptz not null default now(),
   constraint announcements_window check (ends_at is null or ends_at > starts_at)
 );
-create index announcements_live on public.announcements(active, starts_at desc);
+create index if not exists announcements_live on public.announcements(active, starts_at desc);
 -- Learners receive announcements through a server route, never the Data API.
 alter table public.announcements enable row level security;
 revoke all on public.announcements from anon, authenticated;
 grant select, insert, update, delete on public.announcements to service_role;
-create trigger monitor_changes after insert or update or delete on public.announcements
+create or replace trigger monitor_changes after insert or update or delete on public.announcements
   for each row execute function public.monitor_change();
 
 -- -------------------------------------------------------------- learner support
 -- One learner, everything support needs to answer "what happened to my account?".
 -- Definer because it reads auth.users; search_path is empty so every name is qualified.
-create function public.admin_learner(p_user uuid) returns jsonb
+create or replace function public.admin_learner(p_user uuid) returns jsonb
 language sql stable security definer set search_path = '' as $$
 select jsonb_build_object(
   'account', (select jsonb_build_object('id', u.id, 'email', u.email, 'created_at', u.created_at, 'last_sign_in_at', u.last_sign_in_at,
@@ -58,7 +60,7 @@ select jsonb_build_object(
 $$;
 
 -- Grant or take back download credits. The balance can never go negative.
-create function public.admin_adjust_credits(p_user text, p_delta integer, p_actor text, p_reason text) returns integer
+create or replace function public.admin_adjust_credits(p_user text, p_delta integer, p_actor text, p_reason text) returns integer
 language plpgsql set search_path = public as $$
 declare balance integer;
 begin
@@ -75,7 +77,7 @@ begin
 end $$;
 
 -- Give back this month's generation allowance, e.g. after a platform fault.
-create function public.admin_reset_usage(p_user text, p_actor text, p_reason text) returns integer
+create or replace function public.admin_reset_usage(p_user text, p_actor text, p_reason text) returns integer
 language plpgsql set search_path = public as $$
 declare previous integer; month_start date := date_trunc('month', now() at time zone 'UTC')::date;
 begin
@@ -91,7 +93,7 @@ end $$;
 -- Sign a learner out everywhere. Deleting sessions cascades to their refresh
 -- tokens, so no session can be renewed; an access token already issued stays
 -- valid until it expires (the project's JWT expiry, one hour by default).
-create function public.admin_revoke_sessions(p_user uuid, p_actor text, p_reason text) returns integer
+create or replace function public.admin_revoke_sessions(p_user uuid, p_actor text, p_reason text) returns integer
 language plpgsql security definer set search_path = '' as $$
 declare removed integer;
 begin
@@ -104,7 +106,7 @@ begin
 end $$;
 
 -- ------------------------------------------------------------- generation queue
-create function public.admin_queue() returns jsonb
+create or replace function public.admin_queue() returns jsonb
 language sql stable set search_path = public as $$
 select jsonb_build_object(
   'counts', coalesce((select jsonb_object_agg(status, total) from (select status, count(*) as total from documents group by status) s), '{}'),
@@ -124,7 +126,7 @@ $$;
 -- Put a failed generation back in the queue. `refunded` is left set: the learner
 -- was already refunded when it failed, so if the retry fails too they are not
 -- refunded a second time, and if it succeeds the retry was on the house.
-create function public.admin_retry_document(p_id uuid, p_actor text, p_reason text) returns text
+create or replace function public.admin_retry_document(p_id uuid, p_actor text, p_reason text) returns text
 language plpgsql set search_path = public as $$
 declare item documents;
 begin
@@ -142,7 +144,7 @@ begin
 end $$;
 
 -- ------------------------------------------------------------- learning insights
-create function public.admin_insights(p_days integer default 30) returns jsonb
+create or replace function public.admin_insights(p_days integer default 30) returns jsonb
 language sql stable security definer set search_path = '' as $$
 with win as (select now() - make_interval(days => least(greatest(p_days, 1), 90)) as since)
 select jsonb_build_object(

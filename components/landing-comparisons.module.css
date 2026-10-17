@@ -1,11 +1,17 @@
 /* Tech Topics comparisons. The section, slide, cover and panel come from landing-interview.module.css (same tones);
    this file adds the jump picker, the technology cards and the at-a-glance table. */
-.picker { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 18px; font-size: 14px; color: var(--nb-text); }
-.picker select { flex: 1 1 280px; max-width: 560px; min-height: 40px; padding: 0 12px; border: 1px solid var(--nb-rule-2); border-radius: 10px; background: var(--nb-sheet); color: var(--nb-graphite); font: inherit; }
-.picker select:focus-visible { outline: 3px solid var(--nb-ink); outline-offset: 2px; }
+.picker { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 18px; font-size: 14px; font-weight: 600; color: var(--nb-text); }
+.picker > :global(.combobox-trigger) { flex: 1 1 300px; max-width: 620px; }
 
 .techs { display: grid; gap: 10px; margin: 14px 0 0; padding: 0; list-style: none; }
-.techs li { display: grid; gap: 3px; padding: 10px 12px; border-left: 3px solid var(--deep, var(--nb-ink)); border-radius: 0 10px 10px 0; background: color-mix(in srgb, var(--tint, #fdf1ea) 55%, #fff); }
+.techs li { --chip: #eef4fc; --chip-edge: #2a5d9f; display: grid; gap: 3px; padding: 10px 12px; border-left: 3px solid var(--chip-edge); border-radius: 0 10px 10px 0; background: var(--chip); }
+/* Each technology in its own light colour, so the compared items read apart at a glance. */
+.techs li[data-tint="0"] { --chip: #eaf2fd; --chip-edge: #2a5d9f; }
+.techs li[data-tint="1"] { --chip: #e9f6ee; --chip-edge: #2f7a4f; }
+.techs li[data-tint="2"] { --chip: #f1ecfb; --chip-edge: #5b45a8; }
+.techs li[data-tint="3"] { --chip: #fdeee6; --chip-edge: #a24a24; }
+.techs li[data-tint="4"] { --chip: #fdf6dc; --chip-edge: #7d5b00; }
+.techs li[data-tint="5"] { --chip: #fcebf1; --chip-edge: #9a2f55; }
 .techs b { font-size: 15px; color: var(--nb-graphite); }
 .definition { font-size: 14px; font-weight: 600; line-height: 1.45; color: var(--nb-text); }
 .description { font-size: 13.5px; line-height: 1.5; color: var(--nb-muted); }
