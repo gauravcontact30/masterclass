@@ -26,9 +26,11 @@ export function sameOrigin(request: Request) {
 }
 export async function api(action: () => Promise<Response>, request?: Request) {
   const started = performance.now();
+  const requestId = crypto.randomUUID();
   function monitor(response: Response) {
+    response.headers.set("X-Request-ID", requestId);
     if (request && !new URL(request.url).pathname.startsWith("/api/super-admin")) {
-      const event = { kind: "request", action: request.method, resource: new URL(request.url).pathname, status: response.status, duration_ms: Math.round(performance.now() - started) };
+      const event = { kind: "request", action: request.method, resource: new URL(request.url).pathname, status: response.status, duration_ms: Math.round(performance.now() - started), details: { request_id: requestId } };
       // Never log query strings, cookies, request bodies or authorization headers.
       try { after(() => recordEvent(event)); } catch { /* No request context in direct unit tests. */ }
     }
@@ -41,7 +43,7 @@ export async function api(action: () => Promise<Response>, request?: Request) {
     // A 500 with no route and no message is not diagnosable. The pathname and
     // the error's own message are safe to log; the rule above still holds, so
     // no query string, cookie, body or authorization header goes near this.
-    if (status >= 500) console.error(JSON.stringify({ event: "api_error", code,
+    if (status >= 500) console.error(JSON.stringify({ event: "api_error", code, request_id: requestId,
       route: request ? new URL(request.url).pathname : undefined,
       errorType: error instanceof Error ? error.name : "unknown",
       message: error instanceof Error ? error.message : undefined }));

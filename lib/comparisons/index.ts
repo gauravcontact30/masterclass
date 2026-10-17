@@ -419,12 +419,40 @@ export const COMPARISONS: Comparison[] = [
 
 export const comparison = (id: string) => COMPARISONS.find(item => item.id === id);
 
+/**
+ * The Interview prep picture (topics folder, ["interview", id]) that best shows each compared technology, so every
+ * technology card carries a picture, and a comparison whose own cover was not published falls back to its first
+ * technology's. Keys are ComparedTech names; technologies without a close match get none.
+ */
+const TECH_PICTURE: Record<string, string> = {
+  LangChain: "langchain", LangGraph: "langgraph", LangSmith: "langsmith", LangFlow: "langflow", n8n: "agentic-ai",
+  Redux: "redux", "Redux Toolkit": "redux-toolkit", "Redux (Toolkit)": "redux-toolkit", Zustand: "zustand", "React Context": "react",
+  "Next.js 16": "nextjs", "React 19": "react", "TanStack Start": "tanstack", "TanStack Query & Router": "tanstack-libraries", "TanStack Query": "tanstack-libraries", "RTK Query": "redux-toolkit",
+  "Server Components": "nextjs", "Client Components": "react", SSG: "nextjs", ISR: "nextjs", SSR: "nextjs", PPR: "nextjs",
+  JavaScript: "javascript", TypeScript: "typescript", "Node.js": "nodejs", Express: "express", NestJS: "nestjs", REST: "system-design", GraphQL: "graphql",
+  FastAPI: "python", Zod: "typescript", Pydantic: "python", Jest: "jest", Vitest: "vitest", Playwright: "playwright", Cypress: "cypress",
+  "Unit tests": "jest", "Integration tests": "rtl", "End-to-end tests": "playwright", Redis: "redis", PostgreSQL: "system-design", MongoDB: "system-design",
+  Python: "python", NumPy: "python", pandas: "python", Polars: "python", PyTorch: "python", "TensorFlow + Keras": "python",
+  "AWS Lambda": "aws", "Amazon EC2": "aws", "Amazon ECS": "aws", "Amazon SQS": "aws", "Amazon SNS": "aws", "Apache Kafka": "system-design",
+  Docker: "github-actions", Kubernetes: "system-design", Git: "git", GitHub: "git", "GitHub Actions": "github-actions", "git merge": "git", "git rebase": "git",
+  Monolith: "system-design", Microservices: "system-design", "Cron job": "system-design", "Job queue": "redis", Inngest: "system-design",
+  "Prompt engineering": "agentic-terms", RAG: "agentic-terms", "Fine-tuning": "agentic-terms", Chatbot: "agentic-ai", "AI workflow": "agentic-ai", "AI agent": "agentic-ai",
+  "Function calling": "agentic-terms", MCP: "agentic-terms", A2A: "agentic-terms", "Vercel AI SDK": "agentic-ai",
+  Prisma: "nodejs", Drizzle: "nodejs", Mongoose: "nodejs", Supabase: "system-design", Neon: "system-design", Firebase: "system-design",
+  Clerk: "nextjs", "Auth.js": "nextjs", "Better Auth": "nextjs",
+};
+/** The Interview prep picture id for a compared technology, if one fits. */
+export const techPicture = (name: string): string | null => TECH_PICTURE[name] ?? null;
+
 /** Each comparison's question bank as its own chunk. */
 const LOADERS: Record<string, () => Promise<{ default: QuestionSet }>> = {
   "agent-workflow-chatbot": () => import("./banks/agent-workflow-chatbot"),
+  "clerk-authjs-betterauth": () => import("./banks/clerk-authjs-betterauth"),
+  "context-zustand-redux": () => import("./banks/context-zustand-redux"),
   "fastapi-express": () => import("./banks/fastapi-express"),
   "javascript-typescript": () => import("./banks/javascript-typescript"),
   "jest-vitest": () => import("./banks/jest-vitest"),
+  "lambda-ec2-ecs": () => import("./banks/lambda-ec2-ecs"),
   "langchain-langgraph-langsmith": () => import("./banks/langchain-langgraph-langsmith"),
   "langflow-langchain": () => import("./banks/langflow-langchain"),
   "mcp-a2a-function-calling": () => import("./banks/mcp-a2a-function-calling"),
@@ -432,12 +460,17 @@ const LOADERS: Record<string, () => Promise<{ default: QuestionSet }>> = {
   "nextjs-tanstack": () => import("./banks/nextjs-tanstack"),
   "node-express-nestjs": () => import("./banks/node-express-nestjs"),
   "playwright-cypress": () => import("./banks/playwright-cypress"),
+  "prisma-drizzle-mongoose": () => import("./banks/prisma-drizzle-mongoose"),
   "rag-finetuning-prompting": () => import("./banks/rag-finetuning-prompting"),
   "react-nextjs": () => import("./banks/react-nextjs"),
+  "redis-postgres-cache": () => import("./banks/redis-postgres-cache"),
   "redux-zustand-rtk": () => import("./banks/redux-zustand-rtk"),
   "rest-graphql": () => import("./banks/rest-graphql"),
   "server-client-components": () => import("./banks/server-client-components"),
+  "sql-nosql": () => import("./banks/sql-nosql"),
   "ssr-ssg-isr-ppr": () => import("./banks/ssr-ssg-isr-ppr"),
+  "supabase-neon-firebase": () => import("./banks/supabase-neon-firebase"),
+  "tanstack-query-rtk-query": () => import("./banks/tanstack-query-rtk-query"),
   "unit-integration-e2e": () => import("./banks/unit-integration-e2e"),
   "zod-pydantic": () => import("./banks/zod-pydantic"),
 };

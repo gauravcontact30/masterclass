@@ -1,0 +1,11 @@
+# Suggestion Box
+
+Apply `supabase/migrations/0025_suggestion_box.sql` to the same Supabase project configured by `NEXT_PUBLIC_SUPABASE_URL`. The service-role API key cannot run DDL, so use the Supabase SQL editor or your migration pipeline. No new application secrets are required.
+
+The landing header opens a guest-accessible submission modal. The public POST endpoint validates bounded fields and limits each network address to five submissions per hour. Email is optional and is not treated as verified identity. The response returns a private tracking code once; save it before closing or reloading the page. Tracking codes are not put into URLs or browser storage. The database stores only a SHA-256 hash of the random 256-bit secret. The public GET endpoint requires that secret in the Authorization header and returns only the suggestion and public reply/status history, excluding email, admin identity and priority. It limits reads to 30 per minute. No emails are sent.
+
+Super admin → Suggestion Box lists ten suggestions per page with server-side search across IDs, names, emails, titles, descriptions and replies. Status chips show global counts; filters include category, priority and inclusive UTC submission dates, plus newest/oldest/recently updated sorting. Admins can inspect a suggestion, set progress and internal priority, and append replies. Updates and history are committed in one transaction, with a version check to reject stale edits. Reload after a conflict, then review before saving again.
+
+Both tables use RLS with no direct anon/authenticated access. Admin endpoints use the existing verified-owner authorization. Only the service role can call the listing and update functions. All public data is rendered as text. The hosting proxy must overwrite forwarded IP headers for network-address rate limiting, consistent with the existing guest checkout endpoint.
+
+Validation: `node scripts/test-suggestions.mjs` checks migration execution, pagination, reply search, private-field exclusion, role isolation and atomic conflict handling. `npx jest --runInBand __tests__/suggestions.test.ts __tests__/landing-comparison-pagination.test.tsx` checks API boundaries and five-item comparison pagination.

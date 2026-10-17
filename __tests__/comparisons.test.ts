@@ -25,3 +25,17 @@ test("each written bank has 50+ unique difference questions with real answers", 
     for (const q of set.subjective) expect(q.answer.length).toBeGreaterThan(80);
   }
 });
+
+test("technology pictures reuse real Interview prep slides, and every comparison has one", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { INTERVIEW_TECHS } = require("@/lib/interview-bank") as typeof import("@/lib/interview-bank");
+  const { techPicture } = require("@/lib/comparisons") as typeof import("@/lib/comparisons");
+  const ids = new Set(INTERVIEW_TECHS.map(tech => tech.id));
+  const unmapped: string[] = [];
+  for (const item of COMPARISONS) {
+    const pictures = item.techs.map(tech => techPicture(tech.name));
+    for (const [k, id] of pictures.entries()) { if (id) expect(ids.has(id)).toBe(true); else unmapped.push(item.techs[k].name); }
+    expect(pictures.some(Boolean)).toBe(true);
+  }
+  expect(unmapped).toEqual([]);
+});

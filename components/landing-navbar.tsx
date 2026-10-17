@@ -4,6 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProp
 import Link from "next/link";
 import { BookOpen, CodeXml, Crown, GraduationCap, Languages, Layers, Library, LogIn, Menu, Terminal, UserPlus, UserRound, X, type LucideIcon } from "lucide-react";
 import { Wordmark } from "./brand-mark";
+import { SuggestionBox } from "./suggestion-box";
 import { LandingPlansMenu } from "./landing-plans-menu";
 import { useLanguage } from "./language-provider";
 import styles from "./landing-home.module.css";
@@ -102,6 +103,7 @@ export function LandingNavbar({ links, prices = null }: { links: [string, string
         })}
       </nav>
       <div className={styles.navActions}>
+        <SuggestionBox />
         <LandingPlansMenu prices={prices} open={plans} onOpenChange={openPlans} />
         <div ref={accountRef} className={styles.account}>
           <button type="button" className={styles.accountButton} aria-label={text("Account", "खाता")} aria-expanded={account} aria-controls="landing-account-menu" onClick={() => { setAccount(value => !value); setMenu(false); setPlans(false); }}>

@@ -1,13 +1,13 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Bot, Boxes, Cloud, Database, FlaskConical, GitCompareArrows, Layers, Monitor, Server, type LucideIcon } from "lucide-react";
-import { COMPARISONS, loadComparisonBank, type Comparison, type ComparisonGroup } from "@/lib/comparisons";
+import { COMPARISONS, loadComparisonBank, techPicture, type Comparison, type ComparisonGroup } from "@/lib/comparisons";
 import type { QuestionSet } from "@/lib/interview-questions";
 import { learningImageUrl } from "@/lib/learning-image";
 import { AUTOPLAY_MS, Controls, Dots } from "./landing-ai-pulse";
-import { CoverPicture } from "./landing-interview";
 import { InterviewQuestions } from "./interview-accordion";
+import { Pager } from "./super-admin-table";
 import { Combobox } from "./ui/combobox";
 import { useLanguage } from "./language-provider";
 import { usePagedCarousel } from "./use-paged-carousel";
@@ -34,6 +34,8 @@ export function LandingComparisons() {
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
   const { track, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(COMPARISONS.length, 1, AUTOPLAY_MS);
   const groups = [...new Set(COMPARISONS.map(item => item.group))];
+  const pickerPage = Math.floor(page / 5) + 1;
+  const pickerStart = (pickerPage - 1) * 5;
   return <section id="tech-comparisons" className={interview.section} aria-labelledby="comparisons-title"><div className={home.inner}>
     <div className={interview.head}>
       <div className={interview.headCopy}>
@@ -53,6 +55,12 @@ export function LandingComparisons() {
         placeholder={text("Choose a comparison", "तुलना चुनें")} searchPlaceholder={text("Search comparisons, e.g. Redux", "तुलना खोजें, जैसे Redux")} emptyText={text("No comparison matches that search.", "इस खोज से कोई तुलना नहीं मिली।")}
         clearLabel={text("Clear", "साफ़ करें")} ariaLabel={text("Jump to a comparison", "किसी तुलना पर जाएँ")} icon={GitCompareArrows} />
     </div>
+    <nav className={styles.visualPicker} aria-label={text("Browse illustrated comparisons", "??????? ?? ????? ?????")}>
+      {COMPARISONS.slice(pickerStart, pickerStart + 5).map((item, offset) => { const index = pickerStart + offset; return <button key={item.id} type="button" aria-current={index === page ? "true" : undefined} onClick={() => goTo(index)}>
+        <ChainPicture sources={[learningImageUrl("topics", ["comparisons", item.id]), ...item.techs.map(tech => techPicture(tech.name)).filter((id): id is string => !!id).map(id => learningImageUrl("topics", ["interview", id]))]} alt="" icon={<GitCompareArrows size={24} aria-hidden="true" />}><span className={styles.previewLabel}>{item.techs.map(tech => tech.name).join(" / ")}</span></ChainPicture>
+      </button>; })}
+    </nav>
+    <Pager page={pickerPage} pages={Math.ceil(COMPARISONS.length / 5)} total={COMPARISONS.length} size={5} onPage={next => goTo((next - 1) * 5)} />
     <ul ref={track} className={interview.track} aria-roledescription="carousel" aria-label={text("Technology comparisons", "तकनीकी तुलनाएँ")} {...holdProps}>
       {COMPARISONS.map((item, i) => <ComparisonSlide key={item.id} item={item} index={i} total={COMPARISONS.length} near={Math.abs(i - page) <= 1} text={text} />)}
     </ul>
@@ -73,14 +81,15 @@ function ComparisonSlide({ item, index, total, near, text }: Readonly<{ item: Co
   const Icon = GROUP_ICON[item.group];
   return <li className={interview.slide} data-tone={index % TONES} aria-roledescription="slide" aria-label={`${index + 1} / ${total}: ${item.question}`}>
     <article className={interview.cover}>
-      <CoverPicture src={learningImageUrl("topics", ["comparisons", item.id])} alt={`Illustration comparing ${item.techs.map(tech => tech.name).join(", ")}`} icon={<Icon size={48} strokeWidth={1.3} aria-hidden="true" />}>
+      <ChainPicture sources={[learningImageUrl("topics", ["comparisons", item.id]), ...item.techs.map(tech => techPicture(tech.name)).filter((id): id is string => !!id).map(id => learningImageUrl("topics", ["interview", id]))]} alt={`Illustration comparing ${item.techs.map(tech => tech.name).join(", ")}`} icon={<Icon size={48} strokeWidth={1.3} aria-hidden="true" />}>
         <span className={interview.tag}><Icon size={12} aria-hidden="true" />{item.group}</span>
         <span className={interview.index} aria-hidden="true">{two(index + 1)}</span>
-      </CoverPicture>
+      </ChainPicture>
       <div className={interview.coverBody}>
         <h3>{item.question}</h3>
         <p className={interview.tagline}>{item.summary}</p>
         <ul className={styles.techs}>{item.techs.map((tech, k) => <li key={tech.name} data-tint={(index + k) % 6}>
+          <TechThumb id={techPicture(tech.name)} name={tech.name} />
           <b>{tech.name}</b>
           <span className={styles.definition}>{tech.definition}</span>
           <span className={styles.description}>{tech.description}</span>
@@ -102,4 +111,28 @@ function ComparisonSlide({ item, index, total, near, text }: Readonly<{ item: Co
       <Link className={styles.more} href={`/compare/${item.id}`}>{text("Read the full comparison", "पूरी तुलना पढ़ें")} →</Link>
     </div>
   </li>;
+}
+
+/**
+ * The slide cover: the comparison's own picture first, then each compared technology's Interview prep picture,
+ * moving to the next source when one is missing; with none left it becomes a tinted panel with the group icon.
+ */
+function ChainPicture({ sources, alt, icon, children }: Readonly<{ sources: (string | null)[]; alt: string; icon: ReactNode; children: ReactNode }>) {
+  const usable = sources.filter((src): src is string => !!src);
+  const [index, setIndex] = useState(0);
+  const src = usable[index];
+  return <div className={interview.picture} data-empty={!src}>
+    {src ? /* eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP from the storage bucket, as on the interview slides. */
+      <img key={src} src={src} alt={alt} loading="lazy" decoding="async" onError={() => setIndex(i => i + 1)} /> : <span className={interview.placeholder}>{icon}</span>}
+    {children}
+  </div>;
+}
+
+/** A small picture of one technology, reused from its Interview prep slide; it hides itself when there is none. */
+function TechThumb({ id, name }: Readonly<{ id: string | null; name: string }>) {
+  const [failed, setFailed] = useState(false);
+  const src = id ? learningImageUrl("topics", ["interview", id]) : null;
+  if (!src || failed) return null;
+  // eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP thumbnail from the storage bucket.
+  return <img className={styles.thumb} src={src} alt={`Illustration of ${name}`} width={320} height={160} loading="lazy" decoding="async" onError={() => setFailed(true)} />;
 }

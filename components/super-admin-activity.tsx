@@ -44,6 +44,7 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
     try {
       const response = await fetch(`/api/super-admin/activity?days=${days}`, { cache: "no-store", signal });
       const body = await response.json().catch(() => ({}));
+      if (response.status === 401 || response.status === 403) setData(null);
       if (!response.ok) throw new Error(body.error ?? "service_error");
       if (!signal?.aborted) { setData(body); setError(""); }
     } catch (e) { if (!signal?.aborted && !(e instanceof DOMException)) setError(errorText(e instanceof Error ? e.message : "")); }
@@ -57,12 +58,13 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
   }, [refresh]);
 
   if (person) return <PersonTimeline person={person} onBack={() => setPerson(null)} />;
-  if (error) return <AdminError>{error}</AdminError>;
+  if (error && !data) return <AdminError>{error}<Button variant="outline" disabled={busy} onClick={() => void refresh()}>Retry activity</Button></AdminError>;
   if (!data) return <AdminLoading>Loading user activity…</AdminLoading>;
   const t = data.totals;
   const returning = Math.max(0, t.visitors - t.newVisitors);
 
   return <div className={styles.activity}>
+    {error && <AdminError>{error} Showing the last successful snapshot; figures may be out of date.</AdminError>}
     <div className={styles.liveBar}>
       <span className={styles.livePulse} aria-hidden="true" />
       <strong>{number(t.liveNow)}</strong> on the site now <span className={styles.liveSub}>({number(t.liveSignedIn)} signed in · active in the last 5 minutes)</span>

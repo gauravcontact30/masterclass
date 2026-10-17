@@ -1,5 +1,13 @@
 # Super admin monitoring
 
+## Trace investigation
+
+Logs, Health, Security and Content include a trace explorer over the latest 200 loaded events in the selected reporting window. Paste an exact request, actor, owner, record or event ID, or select an ID in the timeline to follow related entries. Filter failed responses (HTTP 400+), slow API requests (at least 1,000 ms), or database changes; inspect event details and export the filtered timeline. These relationships are not distributed spans and do not establish causation. Older events outside the snapshot require database or hosting logs.
+
+New responses from the shared `api()` wrapper include a server-generated `X-Request-ID`. Instrumented request events store the same ID in `details.request_id`, and server error logs include it. Caller-supplied IDs are not trusted. Existing events are not backfilled; the existing JSON details column needs no migration. Super admin requests remain excluded from the request event feed.
+
+Activity refresh failures retain the last successful snapshot with a stale-data warning and offer retry when no snapshot exists. Infrastructure configuration checks show unknown status until loaded, expose refresh errors, and disable cache actions until configuration is available. Configuration is not a provider uptime check. Table CSV exports neutralize formula prefixes, and active date filters exclude records with missing or invalid timestamps.
+
 Open `/dashboard/super-admin`, or choose **Super admin** in the learning dashboard account menu. Both the server page and API verify the current Supabase user and require a confirmed `garvcontact30@gmail.com` email. User-editable role metadata cannot grant access. Both sidebars show hover/focus tooltips when collapsed.
 
 ## Deployment

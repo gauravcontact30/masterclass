@@ -1,0 +1,9 @@
+.explorer { padding: 20px; display: grid; gap: 16px; min-width: 0; }
+.explorer h2 { font-size: 17px; font-weight: 650; }
+.explorer p { font-size: 13px; color: var(--muted-foreground); line-height: 1.6; max-width: 85ch; }
+.controls { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
+.controls label { display: grid; gap: 6px; font-size: 12px; font-weight: 600; flex: 1 1 220px; }
+.controls select { height: 36px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--background); color: var(--foreground); }
+.identity { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; text-align: left; cursor: pointer; }
+.details { max-width: 440px; max-height: 300px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 11px; padding: 10px; background: var(--muted); border-radius: 6px; }
+.identity:focus-visible, .controls select:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }

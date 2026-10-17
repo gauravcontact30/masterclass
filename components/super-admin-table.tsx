@@ -40,7 +40,7 @@ export function valueIcon(value: string): LucideIcon {
 }
 
 /** One CSV field, quoted when it holds a comma, quote or line break. */
-const csvField = (value: unknown) => { const s = text(value); return /[",\n\r]/.test(s) ? `"${s.replaceAll('"', '""')}"` : s; };
+const csvField = (value: unknown) => { const raw = text(value); const s = /^[\s]*[=+@-]/.test(raw) ? `'${raw}` : raw; return /[",\n\r]/.test(s) ? `"${s.replaceAll('"', '""')}"` : s; };
 
 /**
  * Every super admin table: icon chips for the main status-like column, a search box that suggests matching
@@ -79,6 +79,7 @@ export function AdminTable({ title, rows, columns, note, query = "", empty, acti
     for (const [key, value] of Object.entries(filters)) if (value && value !== "all" && text(row[key]) !== value) return false;
     if (dateKey && (range.from || range.to)) {
       const time = new Date(text(row[dateKey])).getTime();
+      if (!Number.isFinite(time)) return false;
       if (range.from && time < new Date(`${range.from}T00:00:00`).getTime()) return false;
       if (range.to && time > new Date(`${range.to}T23:59:59.999`).getTime()) return false;
     }

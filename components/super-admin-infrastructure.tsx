@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useForm, getFormProps, getInputProps } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod/v4";
 import { z } from "zod";
@@ -29,7 +29,9 @@ const inviteSchema = z.object({
 type InviteValues = z.infer<typeof inviteSchema>;
 
 export function SuperAdminInfrastructure() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [statusError, setStatusError] = useState("");
+  const [checkedAt, setCheckedAt] = useState<string | null>(null);
   const [flushing, setFlushing] = useState(false);
   const [warming, setWarming] = useState(false);
   const [status, setStatus] = useState<{
@@ -39,23 +41,22 @@ export function SuperAdminInfrastructure() {
     t3Env?: { nodeEnv: string; configuredKeys: string[] };
   } | null>(null);
 
-  useEffect(() => {
-    async function loadStatus() {
-      try {
-        setLoading(true);
-        const res = await fetch("/api/super-admin/integrations");
-        if (res.ok) {
-          const json = await res.json();
-          setStatus(json);
-        }
-      } catch {
-        // Non-blocking
-      } finally {
-        setLoading(false);
-      }
-    }
-    void loadStatus();
+  const loadStatus = useCallback(async (signal?: AbortSignal) => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/super-admin/integrations", { cache: "no-store", signal });
+      if (!res.ok) throw new Error("Unable to check infrastructure configuration.");
+      const json = await res.json();
+      if (!signal?.aborted) { setStatus(json); setStatusError(""); setCheckedAt(new Date().toLocaleTimeString()); }
+    } catch {
+      if (!signal?.aborted) setStatusError("Infrastructure check failed. Previously loaded configuration may be out of date.");
+    } finally { if (!signal?.aborted) setLoading(false); }
   }, []);
+  useEffect(() => {
+    const controller = new AbortController();
+    queueMicrotask(() => { if (!controller.signal.aborted) void loadStatus(controller.signal); });
+    return () => controller.abort();
+  }, [loadStatus]);
 
   async function handleFlushCache() {
     setFlushing(true);
@@ -131,6 +132,11 @@ export function SuperAdminInfrastructure() {
 
   return (
     <div className={styles.container}>
+      <div className={styles.actionRow}>
+        <p role="status">{loading ? "Checking configuration?" : checkedAt ? `Last checked ${checkedAt}. Configuration does not verify provider uptime.` : "Configuration not yet verified."}</p>
+        <Button variant="outline" disabled={loading} onClick={() => void loadStatus()}>Refresh configuration</Button>
+      </div>
+      {statusError && <p role="alert">{statusError}</p>}
       {/* Overview Cards Grid */}
       <div className={styles.grid}>
         {/* Redis & Upstash Card */}
@@ -145,7 +151,7 @@ export function SuperAdminInfrastructure() {
             </div>
             <Badge variant="outline" className={styles.badgeSuccess}>
               <CheckCircle2 size={12} className={styles.inlineIcon} />
-              {status?.redis?.status ?? "Connected"}
+              {status?.redis?.status ?? "Unknown"}
             </Badge>
           </div>
           <div className={styles.cardBody}>
@@ -161,7 +167,7 @@ export function SuperAdminInfrastructure() {
               <Button
                 variant="outline"
                 size="sm"
-                disabled={flushing}
+                disabled={flushing || loading || !status || !!statusError}
                 onClick={handleFlushCache}
                 className={styles.actionBtn}
               >
@@ -184,7 +190,7 @@ export function SuperAdminInfrastructure() {
             </div>
             <Badge variant="outline" className={styles.badgeSuccess}>
               <Zap size={12} className={styles.inlineIcon} />
-              {status?.inngest?.status ?? "Active"}
+              {status?.inngest?.status ?? "Unknown"}
             </Badge>
           </div>
           <div className={styles.cardBody}>
@@ -200,7 +206,7 @@ export function SuperAdminInfrastructure() {
               <Button
                 variant="outline"
                 size="sm"
-                disabled={warming}
+                disabled={warming || loading || !status || !!statusError}
                 onClick={handleWarmCache}
                 className={styles.actionBtn}
               >
@@ -223,7 +229,7 @@ export function SuperAdminInfrastructure() {
             </div>
             <Badge variant="outline" className={styles.badgeSuccess}>
               <CheckCircle2 size={12} className={styles.inlineIcon} />
-              {status?.arcjet?.status ?? "Active Shield"}
+              {status?.arcjet?.status ?? "Unknown"}
             </Badge>
           </div>
           <div className={styles.cardBody}>
@@ -250,7 +256,7 @@ export function SuperAdminInfrastructure() {
             </div>
             <Badge variant="outline" className={styles.badgeSuccess}>
               <Layers size={12} className={styles.inlineIcon} />
-              {status?.t3Env?.nodeEnv ?? "development"}
+              {status?.t3Env?.nodeEnv ?? "Unknown"}
             </Badge>
           </div>
           <div className={styles.cardBody}>
