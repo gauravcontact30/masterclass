@@ -1,47 +1,56 @@
 /* Suggestion Box: the landing header trigger and the guest dialog (Claude's warm paper world, see DESIGN.md). */
 
 /* ---------- Trigger ----------
-   Six light tones, each held ten seconds then cross-faded over ~1.2s (a 60s loop). A soft shimmer sweeps the
+   Six deep glass tones, each held five seconds then cross-faded over ~0.6s (a 30s loop). A soft shimmer sweeps the
    pill, the icon floats and a dot pulses, so it reads as "live" without moving the layout. */
 .trigger {
   position: relative; isolation: isolate; overflow: hidden; flex-shrink: 0;
   display: inline-flex; align-items: center; gap: 8px; height: var(--nav-control-h, 40px); padding: 0 14px 0 5px;
-  border: 1px solid #f0b89c; border-radius: 999px; background: #fde4d6; color: #8a3b1f;
+  border: 1px solid #f0b89c; border-radius: 999px; background: #3a2118; color: #ffd2bd;
   font: inherit; font-size: 13px; font-weight: 650; line-height: 1; white-space: nowrap; cursor: pointer;
-  box-shadow: 0 8px 22px -14px rgba(40, 22, 12, .7), inset 0 1px 0 rgba(255, 255, 255, .7);
-  animation: sb-tones 60s linear infinite;
+  box-shadow: 0 8px 22px -14px rgba(40, 22, 12, .7), inset 0 1px 0 rgba(255, 255, 255, .18);
+  animation: sb-tones 30s linear infinite;
   transition: transform .25s cubic-bezier(.2, .8, .2, 1), box-shadow .25s ease;
 }
 .trigger::after {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, .85) 48%, rgba(255, 255, 255, .2) 56%, transparent 70%);
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, .22) 48%, rgba(255, 255, 255, .06) 56%, transparent 70%);
   transform: translateX(-130%); animation: sb-shimmer 5s cubic-bezier(.45, 0, .2, 1) infinite;
 }
 .trigger:hover { transform: translateY(-1px); box-shadow: 0 12px 26px -14px rgba(40, 22, 12, .75), inset 0 1px 0 rgba(255, 255, 255, .7); }
 .trigger:active { transform: translateY(0) scale(.98); }
 .trigger:focus-visible { outline: 2px solid #fff; outline-offset: 2px; box-shadow: 0 0 0 4px #b5573a; }
-.triggerIcon { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: rgba(255, 255, 255, .72); box-shadow: 0 1px 2px rgba(40, 22, 12, .12); animation: sb-float 3.6s ease-in-out infinite; transition: rotate .3s ease; }
+.triggerIcon { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: #bcdcff; box-shadow: 0 0 0 2px rgba(255, 255, 255, .18), 0 2px 6px rgba(0, 0, 0, .25); color: #12314a; animation: sb-float 3.6s ease-in-out infinite, sb-circle 30s linear infinite; transition: rotate .3s ease; }
 .trigger:hover .triggerIcon { rotate: -10deg; }
 .liveDot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: sb-pulse 2.4s ease-out infinite; }
-/* The label: a flowing ribbon of deep, saturated inks (each ≥4.5:1 on every light pill tone), drifting left to
+/* The label: a flowing ribbon of light pastel inks (each ≥7:1 on every deep pill tone), drifting left to
    right in a seamless 7s loop. The gradient's first and last stops match, so the loop has no seam. */
 .triggerLabel {
-  background-image: linear-gradient(90deg, #9a3412, #be185d, #6d28d9, #1d4ed8, #115e59, #92400e, #9a3412);
-  background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent;
-  font-weight: 750; letter-spacing: .01em;
-  animation: sb-ink 7s linear infinite;
+  color: #ffd2bd; font-weight: 750; letter-spacing: .01em;
+  animation: sb-ink 30s linear infinite;
 }
-@keyframes sb-ink { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
-@media (forced-colors: active) { .triggerLabel { background: none; color: ButtonText; } }
+/* Every five seconds the text and the icon circle switch to a new light colour (a 30s loop of six, ~0.6s cross-fades);
+   the circle always takes a different pastel from the text, so the two read apart. */
+@keyframes sb-ink {
+  0%, 14.667% { color: #ffd2bd; } 16.667%, 31.333% { color: #bff0dc; } 33.333%, 48% { color: #dccfff; }
+  50%, 64.667% { color: #fff0a8; } 66.667%, 81.333% { color: #bcdcff; } 83.333%, 98% { color: #ffc4dd; } 100% { color: #ffd2bd; }
+}
+@keyframes sb-circle {
+  0%, 14.667% { background-color: #bcdcff; color: #12314a; } 16.667%, 31.333% { background-color: #ffc4dd; color: #3d1a2a; }
+  33.333%, 48% { background-color: #fff0a8; color: #3b2f08; } 50%, 64.667% { background-color: #ffd2bd; color: #3a2118; }
+  66.667%, 81.333% { background-color: #bff0dc; color: #15392b; } 83.333%, 98% { background-color: #dccfff; color: #28214d; }
+  100% { background-color: #bcdcff; color: #12314a; }
+}
+@media (forced-colors: active) { .triggerLabel { color: ButtonText; } }
 
 @keyframes sb-tones {
-  0%, 14.667%   { background-color: #fde4d6; border-color: #f0b89c; color: #8a3b1f; }
-  16.667%, 31.333% { background-color: #d8f1e4; border-color: #9fd4b8; color: #1f6040; }
-  33.333%, 48%  { background-color: #e7e2fb; border-color: #bfb3ef; color: #4b3a91; }
-  50%, 64.667%  { background-color: #fff0b8; border-color: #e6cb6c; color: #6b5200; }
-  66.667%, 81.333% { background-color: #dbeefc; border-color: #a6cdee; color: #1d5a85; }
-  83.333%, 98%  { background-color: #fbe0ea; border-color: #eeb0c6; color: #8c2c52; }
-  100%          { background-color: #fde4d6; border-color: #f0b89c; color: #8a3b1f; }
+  0%, 14.667%   { background-color: #3a2118; border-color: #f0b89c; color: #ffd2bd; }
+  16.667%, 31.333% { background-color: #15392b; border-color: #9fd4b8; color: #bff0dc; }
+  33.333%, 48%  { background-color: #28214d; border-color: #bfb3ef; color: #dccfff; }
+  50%, 64.667%  { background-color: #3b2f08; border-color: #e6cb6c; color: #fff0a8; }
+  66.667%, 81.333% { background-color: #12314a; border-color: #a6cdee; color: #bcdcff; }
+  83.333%, 98%  { background-color: #3d1a2a; border-color: #eeb0c6; color: #ffc4dd; }
+  100%          { background-color: #3a2118; border-color: #f0b89c; color: #ffd2bd; }
 }
 @keyframes sb-shimmer { 0%, 55% { transform: translateX(-130%); } 85%, 100% { transform: translateX(130%); } }
 @keyframes sb-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -2px; } }
@@ -50,9 +59,14 @@
   70%, 100% { box-shadow: 0 0 0 7px transparent; }
 }
 
-/* Narrow desktops (the link bar needs the room) and phones: a round icon button with the same tones and motion.
-   The label stays in the accessibility tree. */
-@media (min-width: 1081px) and (max-width: 1340px), (max-width: 640px) {
+/* Narrow desktops, where the link bar needs the room: the label stays visible, stacked on two short lines. */
+@media (min-width: 1081px) and (max-width: 1340px) {
+  .trigger { gap: 6px; padding: 0 10px 0 4px; }
+  .triggerLabel { display: block; width: 7.2ch; white-space: normal; font-size: 11px; line-height: 1.05; text-align: left; }
+  .liveDot { display: none; }
+}
+/* Phones: a round icon button with the same tones and motion. The label stays in the accessibility tree. */
+@media (max-width: 640px) {
   .trigger { width: var(--nav-control-h, 40px); padding: 0; justify-content: center; }
   .triggerLabel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .liveDot { position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; border: 1.5px solid #fff; }

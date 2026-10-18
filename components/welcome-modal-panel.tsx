@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookOpenCheck, ChevronLeft, ChevronRight, Clock3, Compass, GraduationCap, Languages, Pause, Play, ShieldCheck, Sparkles, Timer, type LucideIcon } from "lucide-react";
@@ -39,7 +39,8 @@ const INCLUDES: Pair[] = [["Every course and category, one membership", "हर 
 export default function WelcomeModalPanel({ open, onOpenChange, prices }: { open: boolean; onOpenChange: (open: boolean) => void; prices: LandingPrices | null }) {
   const { language } = useLanguage(); const hi = language === "hi"; const say = (pair: Pair) => pair[hi ? 1 : 0];
   const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
+  // Reduced motion: start paused; the learner can still play or step through. (Client-only: mounted after load.)
+  const [paused, setPaused] = useState(() => !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
   const [hold, setHold] = useState(false);
   const [cycle, setCycle] = useState<"monthly" | "yearly">("yearly");
   const running = open && !paused && !hold;
@@ -48,18 +49,19 @@ export default function WelcomeModalPanel({ open, onOpenChange, prices }: { open
     const timer = window.setTimeout(() => setIndex(i => (i + 1) % SLIDES.length), SLIDE_MS);
     return () => window.clearTimeout(timer);
   }, [running, index]);
-  // Reduced motion: start paused; the learner can still play or step through.
-  useEffect(() => { if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) setPaused(true); }, []);
   const go = (step: number) => setIndex(i => (i + step + SLIDES.length) % SLIDES.length);
   const money = (amount: number) => new Intl.NumberFormat(hi ? "hi-IN" : "en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
   const monthly = prices?.monthly ?? 299, yearly = prices?.yearly ?? 2999;
   const saving = Math.max(0, Math.round((1 - yearly / (monthly * 12)) * 100));
   const slide = SLIDES[index];
   const close = () => onOpenChange(false);
+  // Focus the dialog body, not the first carousel control (focus inside the tour pauses autoplay) and not a
+  // button lower down (on phones that scrolls the photo tour out of view).
+  const start = useRef<HTMLDivElement>(null);
 
   return <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className={`${styles.popup} p-0 gap-0 sm:max-w-[960px]`}>
-      <div className={styles.layout}>
+    <DialogContent initialFocus={start} className={`${styles.popup} p-0 gap-0 sm:max-w-240`}>
+      <div ref={start} tabIndex={-1} className={styles.layout}>
         <section className={styles.tour} aria-roledescription="carousel" aria-label={hi ? "मुख्य सुविधाएँ" : "Core features"}
           onPointerEnter={() => setHold(true)} onPointerLeave={() => setHold(false)} onFocus={() => setHold(true)} onBlur={() => setHold(false)}>
           {SLIDES.map((item, i) => <div key={item.src} className={styles.slide} data-active={i === index || undefined} aria-hidden="true">

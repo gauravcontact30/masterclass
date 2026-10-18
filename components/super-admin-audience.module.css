@@ -1,6 +1,6 @@
 /* Super admin → User activities → Audience explorer. Warm paper world (DESIGN.md); each dimension tab has its
    own light tone, so Countries, Cities, Pages and Sources read apart at a glance. */
-.explorer { --ink: #141413; --text: #3d3d3a; --soft: #6c6b63; --rule: #e8e6dc; --rule-2: #d9d6cb; --tone: #b5573a; --tone-soft: #fbeee6; display: grid; gap: 14px; min-width: 0; }
+.explorer { --ink: #141413; --text: #3d3d3a; --soft: #6c6b63; --rule: #e8e6dc; --rule-2: #d9d6cb; --tone: #b5573a; --tone-soft: #fbeee6; display: grid; gap: 22px; min-width: 0; }
 .explorer:has(.tab:nth-child(2)[aria-selected="true"]) { --tone: #2f6b55; --tone-soft: #e3f1ea; }
 .explorer:has(.tab:nth-child(3)[aria-selected="true"]) { --tone: #4b4594; --tone-soft: #ebe8f8; }
 .explorer:has(.tab:nth-child(4)[aria-selected="true"]) { --tone: #2f5f82; --tone-soft: #e2eef8; }
@@ -25,7 +25,7 @@
 .tab[aria-selected="true"] { background: var(--t-soft); color: var(--t); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t) 30%, transparent); }
 .tab:focus-visible, .chip:focus-visible, .export:focus-visible, .clear:focus-visible { outline: 2px solid var(--tone); outline-offset: 2px; }
 
-.summary { display: flex; flex-wrap: wrap; gap: 8px; }
+.summary { display: flex; flex-wrap: wrap; gap: 10px; }
 .summary > span { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 999px; background: var(--tone-soft); color: var(--text); font-size: 12.5px; }
 .summary b { color: var(--ink); font-variant-numeric: tabular-nums; }
 .summary svg { color: var(--tone); }
@@ -47,8 +47,8 @@
 .suggestions b { font-size: 13.5px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .suggestions small { font-size: 11.5px; color: var(--soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.controls { display: grid; gap: 8px; }
-.chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.controls { display: grid; gap: 14px; }
+.chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
 .chipsLabel { margin-right: 2px; font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #8a877d; }
 .chip { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 4px 11px; border: 1px solid var(--rule-2); border-radius: 999px; background: #fff; color: var(--text); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background-color .15s ease, border-color .15s ease, color .15s ease; }
 .chip svg { color: var(--tone); }
@@ -97,3 +97,9 @@
   .shareCell::before { display: none !important; }
 }
 @media (prefers-reduced-motion: reduce) { .tab, .chip, .search { transition: none; } }
+
+/* Breathing room: the header line, the tab strip and the table each sit apart, and the pager clears the
+   floating Study Buddy launcher in the bottom-right corner. */
+.head p { margin-top: 6px; }
+.explorer > nav, .explorer > :last-child { margin-bottom: 72px; }
+.table th, .table td { padding: 12px 14px; }

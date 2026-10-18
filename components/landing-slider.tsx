@@ -9,10 +9,10 @@ import styles from "./landing-home.module.css";
 
 const INTERVAL = 7000;
 type Pair = [string, string];
-type Slide = { id: string; src: string; focus: string; tool: Pair; title: Pair; body: Pair; link: { label: Pair; href: string }; alt: string };
+type Slide = { id: string; src: string; focus: string; tone: "clay" | "sage" | "violet" | "sky" | "honey"; tool: Pair; title: Pair; body: Pair; link: { label: Pair; href: string }; alt: string };
 
 /**
- * The landing hero: four AI-generated study scenes (each file's EXIF
+ * The landing hero: five full-HD (1920×1080) AI-generated study scenes (each file's EXIF
  * ImageDescription holds its prompt), full-bleed under the navbar. Each slide
  * carries its own headline and actions; autoplay pauses on hover, on focus,
  * with the pause button, and never starts for visitors who prefer reduced motion.
@@ -20,26 +20,31 @@ type Slide = { id: string; src: string; focus: string; tool: Pair; title: Pair; 
 function slidesFor(technologies: number | undefined): Slide[] {
   const count = technologies ? String(technologies) : "60+";
   return [
-    { id: "school", src: "/images/landing/slide-classroom.webp", focus: "30% 45%", tool: ["School", "स्कूल"],
-      title: ["Study smarter, from Class 6 to Class 12.", "कक्षा 6 से 12 तक, समझदारी से पढ़ें।"],
-      body: ["Concept notes, worked answers and diagrams for CBSE, NCERT, ICSE and ISC, in English or Hindi.", "CBSE, NCERT, ICSE और ISC के लिए अवधारणा नोट्स, हल सहित उत्तर और आरेख, अंग्रेज़ी या हिन्दी में।"],
-      link: { label: ["Explore school paths", "स्कूल पथ देखें"], href: "/courses#cbse" },
+    { id: "school", src: "/images/landing/slide-classroom.webp", focus: "30% 45%", tone: "clay", tool: ["School · Class 6–12", "स्कूल · कक्षा 6–12"],
+      title: ["Understand every chapter, not just memorise it.", "हर अध्याय समझें, सिर्फ़ रटें नहीं।"],
+      body: ["Concept notes, solved NCERT answers and clear diagrams for CBSE, ICSE and state boards, in English or हिन्दी.", "CBSE, ICSE और राज्य बोर्ड के लिए अवधारणा नोट्स, हल किए NCERT उत्तर और स्पष्ट आरेख, English या हिन्दी में।"],
+      link: { label: ["Explore school courses", "स्कूल कोर्स देखें"], href: "/courses#cbse" },
       alt: "A school student studying at a desk in the evening with a laptop, notebook and desk lamp" },
-    { id: "exams", src: "/images/landing/slide-exams.webp", focus: "48% 40%", tool: ["Exams", "परीक्षाएँ"],
-      title: ["Prepare for your exam with focused daily practice.", "रोज़ के एकाग्र अभ्यास से परीक्षा की तैयारी करें।"],
-      body: ["Foundations and timed practice for SSC, banking, railways, defence, JEE and NEET.", "SSC, बैंकिंग, रेलवे, रक्षा, JEE और NEET के लिए आधार और समयबद्ध अभ्यास।"],
-      link: { label: ["See exam paths", "परीक्षा पथ देखें"], href: "/courses#ssc" },
+    { id: "exams", src: "/images/landing/slide-exams.webp", focus: "48% 40%", tone: "sage", tool: ["Competitive exams", "प्रतियोगी परीक्षाएँ"],
+      title: ["Crack your exam with timed, real-pattern practice.", "समयबद्ध, असली पैटर्न के अभ्यास से परीक्षा पास करें।"],
+      body: ["SSC, banking, railways, defence, JEE and NEET: foundations, practice papers, full solutions and answer review.", "SSC, बैंकिंग, रेलवे, रक्षा, JEE और NEET: आधार, अभ्यास पत्र, पूरे हल और उत्तर समीक्षा।"],
+      link: { label: ["See exam preparation", "परीक्षा तैयारी देखें"], href: "/courses#ssc" },
       alt: "A student preparing for a competitive exam in a library with books, notes and a tablet" },
-    { id: "build", src: "/images/landing/slide-onthego.webp", focus: "68% 40%", tool: ["On The Go", "On The Go"],
-      title: ["Build real projects, one clear step at a time.", "असली प्रोजेक्ट बनाएँ, एक-एक स्पष्ट कदम से।"],
-      body: [`Guides for ${count} technologies with every command, the complete codebase and real use cases.`, `${count} तकनीकों के लिए गाइड: हर कमांड, पूरा कोडबेस और वास्तविक उपयोग।`],
+    { id: "build", src: "/images/landing/slide-onthego.webp", focus: "68% 40%", tone: "violet", tool: ["Technology courses", "तकनीकी कोर्स"],
+      title: ["Learn to code by building real projects.", "असली प्रोजेक्ट बनाकर कोडिंग सीखें।"],
+      body: [`Step-by-step guides for ${count} technologies, from React and Node.js to AI agents, with every command and the complete code.`, `React और Node.js से AI एजेंट तक, ${count} तकनीकों के चरण-दर-चरण गाइड, हर कमांड और पूरे कोड के साथ।`],
       link: { label: ["Browse technology", "तकनीक देखें"], href: "/courses#technology" },
       alt: "A young developer working at a sunlit desk with a laptop showing code and a second screen" },
-    { id: "career", src: "/images/landing/slide-interview.webp", focus: "55% 40%", tool: ["Interview", "इंटरव्यू"],
-      title: ["Walk into your interview already fluent.", "इंटरव्यू में पूरी तैयारी के साथ जाएँ।"],
-      body: ["Lessons, quizzes, interview practice and a live code lab for your technology career.", "आपके तकनीकी करियर के लिए पाठ, क्विज़, इंटरव्यू अभ्यास और लाइव कोड लैब।"],
-      link: { label: ["How it works", "यह कैसे काम करता है"], href: "#workflows" },
+    { id: "career", src: "/images/landing/slide-interview.webp", focus: "55% 40%", tone: "sky", tool: ["Interview prep", "इंटरव्यू तैयारी"],
+      title: ["Walk into your interview confident and ready.", "आत्मविश्वास और पूरी तैयारी के साथ इंटरव्यू दें।"],
+      body: ["Real interview questions, tech comparisons, quizzes and a live code lab for your next role.", "आपकी अगली नौकरी के लिए असली इंटरव्यू प्रश्न, तकनीकी तुलना, क्विज़ और लाइव कोड लैब।"],
+      link: { label: ["Practise interviews", "इंटरव्यू अभ्यास करें"], href: "#interview-prep" },
       alt: "Two friends practising interview answers together at a cafe table with a laptop and tea" },
+    { id: "anywhere", src: "/images/landing/slide-commute.webp", focus: "60% 35%", tone: "honey", tool: ["Learn anywhere", "कहीं भी सीखें"],
+      title: ["Turn every commute into a study session.", "हर सफ़र को पढ़ाई का समय बनाएँ।"],
+      body: ["Bite-size lessons, daily vocabulary and revision notes on your phone, with bookmarks that keep your place.", "फ़ोन पर छोटे पाठ, रोज़ की शब्दावली और रिवीज़न नोट्स, बुकमार्क के साथ जो आपकी जगह याद रखें।"],
+      link: { label: ["How it works", "यह कैसे काम करता है"], href: "#workflows" },
+      alt: "A student in a white shirt with earphones reading lessons on a phone by a train window at sunrise" },
   ];
 }
 
@@ -95,8 +100,10 @@ export function LandingSlider({ technologies }: { technologies?: number }) {
         const current = position === index;
         return <article key={slide.id} className={styles.heroSlide} data-active={current || undefined} aria-roledescription="slide"
           aria-label={`${position + 1} / ${total}`} aria-hidden={!current} inert={!current}>
-          <Image src={slide.src} alt={slide.alt} fill sizes="100vw" preload={position === 0} className={styles.heroImage} style={{ "--focus": slide.focus } as React.CSSProperties} />
+          <Image src={slide.src} alt={slide.alt} fill sizes="100vw" quality={85} preload={position === 0} className={styles.heroImage} style={{ "--focus": slide.focus } as React.CSSProperties} />
           <div className={styles.heroShade} />
+          <div className={styles.heroTint} data-tone={slide.tone} />
+          <p className={styles.heroKicker} data-tone={slide.tone}><span aria-hidden="true" />{pick(slide.tool)}</p>
           <div className={styles.heroCopy}>
             <h2>{pick(slide.title)}</h2>
             <p className={styles.heroBody}>{pick(slide.body)}</p>

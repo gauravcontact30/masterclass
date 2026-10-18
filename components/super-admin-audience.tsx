@@ -10,7 +10,7 @@ type Row = Record<string, unknown>;
 export type AudienceData = { countries: Row[]; cities: Row[]; pages: Row[]; referrers: Row[] };
 type Tab = "countries" | "cities" | "pages" | "sources";
 type Filter = { id: string; label: string; icon: LucideIcon; test: (row: Row) => boolean };
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 5;
 
 const num = (value: unknown) => typeof value === "number" || (typeof value === "string" && value !== "" && !Number.isNaN(Number(value))) ? Number(value) : null;
 const fmt = (value: unknown) => { const n = num(value); return n == null ? "—" : new Intl.NumberFormat("en-IN").format(n); };

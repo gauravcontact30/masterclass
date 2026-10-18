@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
   // Official learning cards are read from disk at request time (lib/server/official-content.ts).
   outputFileTracingIncludes: Object.fromEntries(["/dashboard/search", "/api/pro-learn/handbook", "/api/pro-learn/api-detail"].map(route => [route, ["./content/official/**/*.json"]])),
   // AVIF first (smallest), WebP as the fallback, for every next/image.
-  images: { formats: ["image/avif", "image/webp"], minimumCacheTTL: 60 * 60 * 24 * 30 },
+  images: { formats: ["image/avif", "image/webp"], qualities: [75, 85], minimumCacheTTL: 60 * 60 * 24 * 30 },
   experimental: {
     optimizePackageImports: [
       "lucide-react",

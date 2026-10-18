@@ -12,49 +12,49 @@ beforeEach(() => { jest.useFakeTimers(); mockMotion(false); });
 afterEach(() => jest.useRealTimers());
 
 describe("hero slider", () => {
-  test("four full-bleed scenes, each with its own headline, image and actions", () => {
+  test("five full-bleed HD scenes, each with its own headline, image and actions", () => {
     render(<LandingSlider technologies={61} />);
-    expect(slides()).toHaveLength(4);
-    expect(within(active()).getByRole("heading", { level: 2 })).toHaveTextContent("Study smarter, from Class 6 to Class 12.");
+    expect(slides()).toHaveLength(5);
+    expect(within(active()).getByRole("heading", { level: 2 })).toHaveTextContent("Understand every chapter, not just memorise it.");
     expect(within(active()).getByRole("img")).toHaveAttribute("alt", expect.stringContaining("school student"));
     expect(within(active()).getByRole("link", { name: /Start learning/ })).toHaveAttribute("href", "/sign-up");
-    expect(within(active()).getByRole("link", { name: "Explore school paths" })).toHaveAttribute("href", "/courses#cbse");
+    expect(within(active()).getByRole("link", { name: "Explore school courses" })).toHaveAttribute("href", "/courses#cbse");
     // Hidden slides are inert, so their links can't be tabbed to.
-    expect(slides().filter(slide => slide.hasAttribute("inert"))).toHaveLength(3);
+    expect(slides().filter(slide => slide.hasAttribute("inert"))).toHaveLength(4);
   });
 
   test("the technology slide quotes the real technology count", () => {
     render(<LandingSlider technologies={61} />);
-    fireEvent.click(screen.getByRole("button", { name: /On The Go/ }));
-    expect(active()).toHaveTextContent("Guides for 61 technologies");
+    fireEvent.click(screen.getByRole("button", { name: /Technology courses/ }));
+    expect(active()).toHaveTextContent("Step-by-step guides for 61 technologies");
   });
 
   test("autoplays; arrows step both ways and wrap; pause stops it", () => {
     render(<LandingSlider />);
     act(() => { jest.advanceTimersByTime(7000); });
-    expect(active()).toHaveTextContent("Prepare for your exam");
+    expect(active()).toHaveTextContent("Crack your exam");
     fireEvent.click(screen.getByRole("button", { name: "Previous slide" }));
-    expect(active()).toHaveTextContent("Study smarter");
+    expect(active()).toHaveTextContent("Understand every chapter");
     fireEvent.click(screen.getByRole("button", { name: "Previous slide" }));
-    expect(active()).toHaveTextContent("Walk into your interview");
+    expect(active()).toHaveTextContent("Turn every commute");
     fireEvent.click(screen.getByRole("button", { name: "Next slide" }));
-    expect(active()).toHaveTextContent("Study smarter");
+    expect(active()).toHaveTextContent("Understand every chapter");
     fireEvent.click(screen.getByRole("button", { name: "Pause slides" }));
     act(() => { jest.advanceTimersByTime(30000); });
-    expect(active()).toHaveTextContent("Study smarter");
+    expect(active()).toHaveTextContent("Understand every chapter");
   });
 
   test("keyboard and swipe navigate, and reduced motion never autoplays", () => {
     mockMotion(true);
     render(<LandingSlider />);
     act(() => { jest.advanceTimersByTime(30000); });
-    expect(active()).toHaveTextContent("Study smarter");
+    expect(active()).toHaveTextContent("Understand every chapter");
     const region = screen.getByRole("region", { name: "Learning with MasterClass" });
     fireEvent.keyDown(region, { key: "ArrowRight" });
-    expect(active()).toHaveTextContent("Prepare for your exam");
+    expect(active()).toHaveTextContent("Crack your exam");
     fireEvent.touchStart(region, { touches: [{ clientX: 300 }] });
     fireEvent.touchEnd(region, { changedTouches: [{ clientX: 120 }] });
-    expect(active()).toHaveTextContent("Build real projects");
+    expect(active()).toHaveTextContent("Learn to code by building real projects");
   });
 });
 

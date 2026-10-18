@@ -312,3 +312,31 @@
 @media (max-width: 899px) {
   .home main section:not(.heroSlider):not([data-own-heading]) h2 { font-size: clamp(26px, 6.6vw, 32px); text-wrap: balance; }
 }
+
+/* Hero overlay: a per-slide colour glow over the ink wash, and a kicker naming the learning path. */
+.heroTint { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: soft-light; opacity: .85;
+  background: radial-gradient(120% 90% at 0% 100%, var(--tint) 0%, transparent 60%), linear-gradient(115deg, var(--tint) 0%, transparent 55%); }
+.heroTint[data-tone="clay"] { --tint: #e0784f; }
+.heroTint[data-tone="sage"] { --tint: #3fae7d; }
+.heroTint[data-tone="violet"] { --tint: #7a63d6; }
+.heroTint[data-tone="sky"] { --tint: #3a8fd6; }
+.heroTint[data-tone="honey"] { --tint: #e3a72a; }
+.heroKicker { justify-self: start; display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 7px 14px 7px 10px; border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .32); background: rgba(20, 20, 19, .5); backdrop-filter: blur(10px); box-shadow: 0 12px 30px -16px rgba(0, 0, 0, .6);
+  color: #fff; font-size: 13px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.heroKicker > span { width: 8px; height: 8px; border-radius: 50%; background: var(--kick); box-shadow: 0 0 0 4px color-mix(in srgb, var(--kick) 30%, transparent); }
+.heroKicker[data-tone="clay"] { --kick: #ffb48f; }
+.heroKicker[data-tone="sage"] { --kick: #8fe3b9; }
+.heroKicker[data-tone="violet"] { --kick: #c7b8ff; }
+.heroKicker[data-tone="sky"] { --kick: #9fd0ff; }
+.heroKicker[data-tone="honey"] { --kick: #ffe08a; }
+.heroSlide[data-active] .heroCopy > :nth-child(4) { transition-delay: .56s; }
+@media (max-width: 640px) { .heroKicker { font-size: 11.5px; padding: 6px 12px 6px 9px; } }
+
+/* The learning-path badge sits on the middle of the right edge, sliding in when its slide becomes active. */
+.heroKicker { position: absolute; z-index: 2; right: max(32px, calc((100% - 1240px) / 2)); top: 50%; translate: 24px -50%; opacity: 0;
+  transition: opacity .7s var(--ease-out) .5s, translate .7s var(--ease-out) .5s; padding: 10px 18px 10px 14px; font-size: 14px; }
+.heroSlide[data-active] .heroKicker { opacity: 1; translate: 0 -50%; }
+@media (max-width: 640px) { .heroKicker { right: 16px; top: 96px; translate: 24px 0; padding: 6px 12px 6px 9px; font-size: 11.5px; }
+  .heroSlide[data-active] .heroKicker { translate: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .heroKicker { transition: none; } }
