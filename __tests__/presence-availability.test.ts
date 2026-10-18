@@ -5,6 +5,8 @@ jest.mock("@/lib/server/db", () => ({ db: jest.fn(), check: ({data}: {data: unkn
 jest.mock("@/lib/server/rate-limit", () => ({ rateLimit: jest.fn() }));
 jest.mock("@/lib/server/monitoring", () => ({ recordEvent: jest.fn() }));
 jest.mock("next/server", () => ({ after: jest.fn() }));
+jest.mock("@/lib/server/config", () => ({ authConfigured: () => true }));
+jest.mock("@/lib/server/auth", () => ({ currentUser: async () => ({ id: "test-user", email: "learner@example.com" }) }));
 jest.mock("@/lib/server/http", () => ({ ...jest.requireActual("@/lib/server/http"), userId: async () => "test-user" }));
 
 test("missing optional monitoring schema stops heartbeats and retries after the cooldown", async () => {

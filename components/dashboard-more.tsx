@@ -7,8 +7,8 @@ import styles from "./dashboard-more.module.css";
  * corner, leads to the rest, which live in the same section on /dashboard (components/dashboard-learning.tsx).
  * `detail` is the longer explanation, kept as the tooltip and the accessible description.
  */
-export function DashboardMore({ href, title, detail }: Readonly<{ href: string; title: string; detail: string }>) {
-  return <Link href={href} className={styles.more} title={detail} aria-label={`${title}. ${detail}`}>
+export function DashboardMore({ href, title, detail, className }: Readonly<{ href: string; title: string; detail: string; className?: string }>) {
+  return <Link href={href} className={className ? `${styles.more} ${className}` : styles.more} title={detail} aria-label={`${title}. ${detail}`}>
     <LayoutDashboard size={15} aria-hidden="true" className={styles.icon} />
     <span>{title}</span>
     <ArrowRight size={15} aria-hidden="true" className={styles.arrow} />

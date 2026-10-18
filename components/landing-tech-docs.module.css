@@ -182,3 +182,37 @@
 .slide > .articles li, .slide > .articles a { height: 100%; }
 @media (max-width: 960px) { .slide > .articles ul { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .slide > .articles ul { grid-template-columns: minmax(0, 1fr); } }
+
+/* "See all N platforms": 20px clear of the carousel above (doubled class outranks dashboard-more's own margin). */
+.seeAll.seeAll { margin-top: 20px; }
+
+/* CS fundamentals (DSA, OOPs). Dashboard: every concept as an expandable note across the slide's full width. */
+.slide > .concepts { grid-column: 1 / -1; display: grid; gap: 10px; }
+.concepts ol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.concept { border: 1px solid var(--nb-rule); border-radius: 14px; background: #fff; transition: border-color .15s ease; }
+.concept[open], .concept:hover { border-color: var(--glow); }
+.concept summary { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 10px; padding: 12px 14px; cursor: pointer; list-style: none; }
+.concept summary::-webkit-details-marker { display: none; }
+.concept summary:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; border-radius: 14px; }
+.conceptNo { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; background: var(--tint); color: var(--ink); font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.conceptHead { display: grid; gap: 3px; min-width: 0; }
+.conceptHead strong { font-size: 14.5px; font-weight: 650; line-height: 1.35; color: var(--nb-graphite); }
+.conceptHead small { font-size: 13px; line-height: 1.5; color: var(--nb-muted); }
+.conceptBody { display: grid; gap: 10px; padding: 0 14px 14px 50px; min-width: 0; }
+.conceptBody ul { display: grid; gap: 6px; margin: 0; padding-left: 18px; font-size: 13.5px; line-height: 1.55; color: var(--nb-text); }
+.conceptBody li::marker { color: var(--ink); }
+.complexity { display: flex; flex-wrap: wrap; gap: 4px 8px; padding: 8px 10px; border-radius: 10px; background: var(--tint); font-size: 13px; line-height: 1.5; color: var(--nb-graphite); }
+.complexity b { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
+.conceptBody .code pre { max-height: 300px; }
+@media (max-width: 960px) { .concepts ol { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 560px) { .conceptBody { padding-left: 14px; } .concept summary { grid-template-columns: auto minmax(0, 1fr); } .concept summary .level { grid-column: 2; justify-self: start; } }
+
+/* Landing preview: a few topics of each fundamental beside each other, below the first platform's panel. */
+.fundamentals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
+.fundamental { display: grid; align-content: start; gap: 12px; padding: clamp(14px, 2vw, 20px); border: 1px solid color-mix(in srgb, var(--glow) 70%, var(--nb-rule)); border-radius: 18px; background: radial-gradient(120% 90% at 0% 0%, var(--tint) 0%, transparent 60%), var(--nb-sheet); }
+.fundamental .brand { width: 44px; height: 44px; border-radius: 13px; animation: none; }
+.fundamental .brandRow h3 { font-size: 22px; }
+.fundamental .tagline { font-size: 14px; }
+.moreTopics { background: transparent !important; border-style: dashed !important; color: var(--ink) !important; }
+@media (max-width: 760px) { .fundamentals { grid-template-columns: minmax(0, 1fr); } }
+.concept summary .level { font-size: 12px; white-space: nowrap; }

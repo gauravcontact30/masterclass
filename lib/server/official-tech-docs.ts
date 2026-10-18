@@ -14,6 +14,9 @@ export function previewTechDocs(data: OfficialTechDocs) {
 export { slimTechDocs };
 import snapshot from "@/lib/generated/tech-docs-official.json";
 
+/** The whole live refresh normally takes ~6s; past this the committed snapshot is served instead. */
+const REFRESH_MS = 20_000;
+
 /**
  * The Technology docs content, read from the official websites at most once a day (revalidateTag("tech-docs")
  * refreshes it at once). Any page that fails keeps its committed snapshot copy from `npm run docs:tech`, and a
@@ -25,10 +28,16 @@ export async function officialTechDocs(): Promise<OfficialTechDocs> {
   cacheTag("tech-docs");
   const fallback = snapshot as OfficialTechDocs;
   if (process.env.TECH_DOCS_LIVE === "false") return fallback;
+  // A refresh that hangs (a stalled vendor, or a fetch stuck on the outer render) must finish well inside Next's
+  // ~50s cache-fill limit, or the whole landing page fails with "Filling a cache during prerender timed out".
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const deadline = new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error(`no response in ${REFRESH_MS}ms`)), REFRESH_MS); });
   try {
-    return await fetchOfficialTechDocs(fallback);
+    return await Promise.race([fetchOfficialTechDocs(fallback), deadline]);
   } catch (error) {
     console.error(JSON.stringify({ event: "tech_docs_refresh_failed", message: String(error) }));
     return fallback;
+  } finally {
+    clearTimeout(timer);
   }
 }

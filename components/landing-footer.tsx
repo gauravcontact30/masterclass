@@ -14,7 +14,7 @@ export function LandingFooter() {
     {title:text("School & boards","स्कूल और बोर्ड"),links:[["CBSE","/dashboard/cbse"],["NCERT","/dashboard/ncert"],["ICSE","/dashboard/icse"],["ISC","/dashboard/isc"],[text("Classes 6–12","कक्षा 6–12"),"/courses#cbse"]]},
     {title:text("Exam preparation","परीक्षा की तैयारी"),links:[["SSC","/dashboard/ssc"],[text("NDA & defence","NDA और रक्षा"),"/dashboard/defence"],[text("Banking & railways","बैंकिंग और रेलवे"),"/courses#ssc"],["JEE / IIT","/dashboard/engineering"],["NEET","/dashboard/medical"]]},
     {title:text("Courses & skills","कोर्स और कौशल"),links:[[text("System Design","सिस्टम डिज़ाइन"),"/dashboard/system-design"],[text("Technology courses","तकनीकी कोर्स"),"/dashboard/technology"],[text("English & IELTS","अंग्रेज़ी और IELTS"),"/dashboard/languages"],[text("Interview prep","इंटरव्यू की तैयारी"),"#interview-prep"],[text("Course overview","कोर्स परिचय"),"/courses"]]},
-    {title:text("Free library","मुफ़्त लाइब्रेरी"),links:[[text("Interview questions","इंटरव्यू प्रश्न"),"/interview-questions"],[text("Comparisons","तुलनाएँ"),"/compare"],[text("Workflow blueprints","वर्कफ़्लो ब्लूप्रिंट"),"/workflows"],[text("Technology handbooks","तकनीकी हैंडबुक"),"/learn"],[text("API reference","API संदर्भ"),"/api-reference"],[text("English vocabulary","अंग्रेज़ी शब्दावली"),"/vocabulary"]]},
+    {title:text("Free library","मुफ़्त लाइब्रेरी"),links:[[text("Interview questions","इंटरव्यू प्रश्न"),"/interview-questions"],[text("Comparisons","तुलनाएँ"),"/compare"],[text("Workflow blueprints","वर्कफ़्लो ब्लूप्रिंट"),"/workflows"],[text("Technology handbooks","तकनीकी हैंडबुक"),"/learn"],[text("API reference","API संदर्भ"),"/api-reference","plain"],[text("English vocabulary","अंग्रेज़ी शब्दावली"),"/vocabulary"]]},
     {title:text("Your learning space","आपका अध्ययन क्षेत्र"),links:[[text("Dashboard","डैशबोर्ड"),"/dashboard"],[text("My Library","मेरी लाइब्रेरी"),"/dashboard?tab=library"],[text("Monthly / yearly plans","मासिक / वार्षिक योजनाएँ"),"#pricing"],[text("Sign in","साइन इन"),"/sign-in"],[text("All courses","सभी कोर्स"),"/courses"]]},
     {title:text("Company","कंपनी"),links:[[text("About us","हमारे बारे में"),"/about"],[text("Contact us","संपर्क करें"),"/contact"],[text("Privacy policy","गोपनीयता नीति"),"/privacy"],[text("Terms & conditions","नियम और शर्तें"),"/terms"],[text("Cancellation & refunds","रद्दीकरण और रिफ़ंड"),"/refund-policy"]]},
   ];
@@ -48,7 +48,7 @@ function FooterLinks({ links, column = 0 }: { links: string[][]; column?: number
   return <ul className={styles.links} onMouseLeave={() => moveTo(null)} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) moveTo(null); }}>
     <span ref={pillRef} className={styles.pill} aria-hidden="true" data-visible={pill.visible || undefined}
       style={{ clipPath: `inset(${pill.top}px ${pill.right}px ${pill.bottom}px ${pill.left}px round 999px)`, backgroundColor: pill.tone }} />
-    {links.map(([label, href], index) => <li key={label}><Link className={navigationStyles.link} href={href}
-      onMouseEnter={event => moveTo(event.currentTarget, index)} onFocus={event => moveTo(event.currentTarget, index)}><ExpandedText text={label} /></Link></li>)}
+    {links.map(([label, href, plain], index) => <li key={label}><Link className={navigationStyles.link} href={href}
+      onMouseEnter={event => moveTo(event.currentTarget, index)} onFocus={event => moveTo(event.currentTarget, index)}>{plain ? label : <ExpandedText text={label} />}</Link></li>)}
   </ul>;
 }

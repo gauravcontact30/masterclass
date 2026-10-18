@@ -1,11 +1,20 @@
-import { api, jsonBody, sameOrigin, userId } from '@/lib/server/http';
+import { api, HttpError, jsonBody, sameOrigin } from '@/lib/server/http';
+import { authConfigured } from '@/lib/server/config';
+import { currentUser } from '@/lib/server/auth';
+import { isUntrackedEmail } from '@/lib/server/tracking-exclusions';
 import { db, check } from '@/lib/server/db';
 import { rateLimit } from '@/lib/server/rate-limit';
 import { recordEvent } from '@/lib/server/monitoring';
 import { presenceInput } from '@/lib/monitoring-input';
 let schemaRetryAt = 0;
 export async function POST(request: Request) { return api(async () => {
-  sameOrigin(request); const id = await userId();
+  sameOrigin(request);
+  if (!authConfigured()) throw new HttpError(503, 'setup_required');
+  const user = await currentUser();
+  if (!user) throw new HttpError(401, 'signin_required');
+  // The owner (and TRACKING_EXCLUDED_EMAILS) never show up in live presence or page-view events.
+  if (isUntrackedEmail(user.email)) return Response.json({ok:true,tracked:false});
+  const id = user.id;
   if (Date.now() < schemaRetryAt) return Response.json({ok:false,enabled:false,reason:'monitoring_setup_required'});
   await rateLimit(`presence:${id}`, 20, 60);
   const input = presenceInput.parse(await jsonBody(request, 2000));

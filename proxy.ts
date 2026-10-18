@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { redirectFor } from "@/lib/auth-routes";
 import { protectWithArcjet } from "@/lib/arcjet";
 import { checkRateLimit } from "@/lib/redis";
+import { isUntrackedEmail, UNTRACKED_COOKIE } from "@/lib/server/tracking-exclusions";
 
 /**
  * Next.js 16 Edge Proxy (replaces middleware.ts)
@@ -76,6 +77,18 @@ export default async function proxy(request: NextRequest) {
       });
 
       const { data } = await supabase.auth.getUser();
+      if (isUntrackedEmail(data.user?.email)) {
+        request.cookies.set(UNTRACKED_COOKIE, "1");
+        const refreshedCookies = response.cookies.getAll();
+        response = NextResponse.next({ request });
+        refreshedCookies.forEach(cookie => response.cookies.set(cookie));
+        response.cookies.set(UNTRACKED_COOKIE, "1", {
+          httpOnly: true, sameSite: "lax", secure: request.nextUrl.protocol === "https:",
+          path: "/", maxAge: 365 * 86400,
+        });
+        response.cookies.delete("mc_vid");
+        response.cookies.delete("mc_sid");
+      }
       const target = redirectFor({ pathname, signedIn: Boolean(data.user) });
       if (target) {
         const redirected = NextResponse.redirect(new URL(target, request.url));

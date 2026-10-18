@@ -6,6 +6,8 @@ import { authConfigured } from "@/lib/server/config";
 import { supabaseServer } from "@/lib/server/auth";
 import { db } from "@/lib/server/db";
 import { clientIp, geo, hashIp, maskIp, parseUserAgent } from "@/lib/server/visit-context";
+import { isUntrackedEmail, UNTRACKED_COOKIE } from "@/lib/server/tracking-exclusions";
+import { HttpError, jsonBody, sameOrigin } from "@/lib/server/http";
 
 /*
  * Page-view beacon for the super admin's User activities page (components/visit-tracker.tsx sends it).
@@ -35,11 +37,9 @@ const noContent = () => new Response(null, { status: 204, headers: { "Cache-Cont
 
 export async function POST(request: Request) {
   if (!authConfigured()) return noContent();
-  const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) return new Response(null, { status: 403 });
-  if (Number(request.headers.get("content-length")) > 4000) return new Response(null, { status: 413 });
+  try { sameOrigin(request); } catch { return new Response(null, { status: 403 }); }
   let input: z.infer<typeof bodySchema>;
-  try { input = bodySchema.parse(JSON.parse(await request.text())); } catch { return new Response(null, { status: 400 }); }
+  try { input = bodySchema.parse(await jsonBody(request, 4000)); } catch (error) { return new Response(null, { status: error instanceof HttpError ? error.status : 400 }); }
   // Super admin pages are not part of the audience being measured.
   if (input.path.startsWith("/dashboard/super-admin") || input.path.startsWith("/api/")) return noContent();
 
@@ -49,15 +49,26 @@ export async function POST(request: Request) {
 
   const store = await cookies();
   const secure = new URL(request.url).protocol === "https:";
+  if (store.get(UNTRACKED_COOKIE)?.value === "1") return noContent();
+
+  let userId: string | null = null;
+  try {
+    const { data } = await (await supabaseServer()).auth.getClaims();
+    userId = typeof data?.claims?.sub === "string" ? data.claims.sub : null;
+    // The owner (and TRACKING_EXCLUDED_EMAILS) are not part of the audience: write nothing, and remember the browser.
+    if (isUntrackedEmail(data?.claims?.email)) {
+      store.set(UNTRACKED_COOKIE, "1", { httpOnly: true, sameSite: "lax", secure, path: "/", maxAge: 365 * 86400 });
+      store.delete(VISITOR); store.delete(SESSION);
+      return noContent();
+    }
+  } catch { /* anonymous */ }
+
   const known = store.get(VISITOR)?.value;
   const visitorId = known && /^[\w-]{8,64}$/.test(known) ? known : randomUUID();
   const sessionId = store.get(SESSION)?.value && /^[\w-]{8,64}$/.test(store.get(SESSION)!.value) ? store.get(SESSION)!.value : randomUUID();
   // A first-party, HTTP-only id: one per browser for a year, and a session that ends after 30 idle minutes.
   store.set(VISITOR, visitorId, { httpOnly: true, sameSite: "lax", secure, path: "/", maxAge: 365 * 86400 });
   store.set(SESSION, sessionId, { httpOnly: true, sameSite: "lax", secure, path: "/", maxAge: SESSION_SECONDS });
-
-  let userId: string | null = null;
-  try { const { data } = await (await supabaseServer()).auth.getClaims(); userId = typeof data?.claims?.sub === "string" ? data.claims.sub : null; } catch { /* anonymous */ }
 
   const ua = parseUserAgent(request.headers.get("user-agent") ?? "");
   let referrerHost: string | null = null;

@@ -8,6 +8,7 @@ import { LandingInterview } from "./landing-interview";
 import { LandingComparisons } from "./landing-comparisons";
 import { LandingTechDocs } from "./landing-tech-docs";
 import type { OfficialTechDocs } from "@/lib/tech-docs-official";
+import type { TechConcept } from "@/lib/tech-docs";
 import home from "./landing-home.module.css";
 import styles from "./dashboard-learning.module.css";
 
@@ -18,7 +19,7 @@ export type DashboardDaily = { day: string; pulse: PulseCard[]; words: DailyWord
  * most-asked interview question) and Interview prep. The landing page previews three cards of each and links
  * here (components/dashboard-more.tsx), so these render the same components, in the landing page's tokens and font.
  */
-export function DashboardLearning({ daily, techDocs, locked = false }: Readonly<{ daily: DashboardDaily | null; techDocs?: OfficialTechDocs | null; locked?: boolean }>) {
+export function DashboardLearning({ daily, techDocs, concepts, locked = false }: Readonly<{ daily: DashboardDaily | null; techDocs?: OfficialTechDocs | null; concepts?: Record<string, TechConcept[]>; locked?: boolean }>) {
   return <div className={`${home.home} ${anek.variable} ${anek.className} ${styles.learning}`}>
     {daily && <>
       <LandingAiPulse cards={daily.pulse} day={daily.day} locked={daily.locked.pulse} />
@@ -28,6 +29,6 @@ export function DashboardLearning({ daily, techDocs, locked = false }: Readonly<
     <LandingInterview />
     {/* Without a membership (trial over), the full Tech Topics and Technology docs stay behind the plans screen. */}
     <LandingComparisons preview={locked} locked={locked} official={techDocs} />
-    <LandingTechDocs official={techDocs} preview={locked} locked={locked} />
+    <LandingTechDocs official={techDocs} preview={locked} locked={locked} concepts={locked ? undefined : concepts} />
   </div>;
 }

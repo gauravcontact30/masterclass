@@ -1,15 +1,18 @@
 /**
  * The "Technology docs" showcase on the landing page and the dashboard: six platforms, each with its current
- * release, the features worth learning first, a runnable quick start and hand-picked official learning material.
+ * release, the features worth learning first, a runnable quick start and hand-picked official learning material,
+ * plus two CS fundamentals (DSA and OOPs) whose detailed concept notes live in lib/tech-docs-concepts.ts.
  *
  * Versions and links were checked on 2026-10-18 against npm, nodejs.org/dist/index.json and each vendor's docs
  * (developer.salesforce.com answers bots with 403, so its links were checked by hand). Plain data, no zod: the
  * landing page imports this.
  */
-export type TechDocCategory = "frontend" | "backend" | "enterprise" | "ai";
+export type TechDocCategory = "frontend" | "backend" | "enterprise" | "ai" | "fundamentals";
 export type MaterialLevel = "beginner" | "intermediate" | "advanced";
 export type MaterialKind = "guide" | "tutorial" | "reference" | "release";
 export type TechMaterial = { id: string; title: string; summary: string; level: MaterialLevel; kind: MaterialKind; minutes: number; url: string; topics: string[] };
+/** One concept note for a CS fundamentals subject (lib/tech-docs-concepts.ts), shown on /dashboard only. */
+export type TechConcept = { id: string; title: string; level: MaterialLevel; summary: string; points: string[]; complexity?: string; code?: { lang: string; code: string } };
 export type TechDoc = {
   id: string; name: string; version: string; release: string; category: TechDocCategory;
   tone: { ink: string; tint: string; glow: string }; aliases: string[];
@@ -19,7 +22,7 @@ export type TechDoc = {
 };
 
 export const TECH_DOC_CATEGORIES: { id: TechDocCategory; label: string }[] = [
-  { id: "frontend", label: "Frontend" }, { id: "backend", label: "Runtime" }, { id: "enterprise", label: "Enterprise" }, { id: "ai", label: "AI platforms" },
+  { id: "frontend", label: "Frontend" }, { id: "backend", label: "Runtime" }, { id: "enterprise", label: "Enterprise" }, { id: "ai", label: "AI platforms" }, { id: "fundamentals", label: "CS fundamentals" },
 ];
 export const MATERIAL_LEVELS: { id: MaterialLevel; label: string }[] = [
   { id: "beginner", label: "Beginner" }, { id: "intermediate", label: "Intermediate" }, { id: "advanced", label: "Advanced" },
@@ -201,6 +204,79 @@ console.log(text);` },
       { id: "gw-openai", title: "OpenAI-compatible API", summary: "Point any OpenAI client at https://ai-gateway.vercel.sh/v1 and keep your existing code.", level: "intermediate", kind: "reference", minutes: 10, url: "https://vercel.com/docs/ai-gateway/openai-compat", topics: ["openai sdk", "chat completions"] },
       { id: "gw-byok", title: "Bring your own key", summary: "Use your own provider credentials through the gateway while keeping its routing and observability.", level: "advanced", kind: "guide", minutes: 8, url: "https://vercel.com/docs/ai-gateway/byok", topics: ["byok", "credentials"] },
       { id: "gw-observe", title: "Observability", summary: "Requests, tokens, latency and spend per model and project, for debugging and cost control.", level: "advanced", kind: "guide", minutes: 8, url: "https://vercel.com/docs/ai-gateway/observability", topics: ["observability", "spend", "logs"] },
+    ],
+  },
+  {
+    id: "dsa", name: "DSA", version: "24 topics", release: "Data structures & algorithms · interview core", category: "fundamentals",
+    tone: { ink: "#1f5f8b", tint: "#e4f0f8", glow: "#a9cde6" }, aliases: ["data structures", "algorithms", "dsa", "leetcode", "big o", "coding interview"],
+    tagline: "The data structures and algorithms behind every coding interview: complexity analysis, arrays to graphs, sorting, searching, greedy and dynamic programming.",
+    docs: "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/",
+    features: ["Big-O complexity", "Arrays & strings", "Linked lists", "Stacks & queues", "Hash tables", "Recursion & backtracking", "Sorting", "Binary search", "Two pointers & sliding window", "Trees & BST", "Heaps", "Tries", "Graphs: BFS & DFS", "Shortest paths", "Union-Find & MST", "Greedy", "Dynamic programming", "Bit manipulation", "Segment & Fenwick trees"],
+    quickStart: { file: "binary_search.py", code: `def binary_search(nums: list[int], target: int) -> int:
+    lo, hi = 0, len(nums) - 1
+    while lo <= hi:                 # O(log n): halve the range each step
+        mid = (lo + hi) // 2
+        if nums[mid] == target:
+            return mid
+        if nums[mid] < target:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return -1
+
+print(binary_search([1, 3, 5, 7, 9, 11], 7))   # 3` },
+    materials: [
+      { id: "dsa-mit-6006", title: "MIT 6.006 Introduction to Algorithms", summary: "MIT's full course: lectures, notes and problem sets on sorting, hashing, trees, graphs, shortest paths and dynamic programming.", level: "beginner", kind: "tutorial", minutes: 1800, url: "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/", topics: ["sorting", "hashing", "graphs", "dynamic programming"] },
+      { id: "dsa-py-ds", title: "Python: data structures", summary: "Lists as stacks and queues, deque, comprehensions, tuples, sets and dictionaries from the official Python tutorial.", level: "beginner", kind: "guide", minutes: 25, url: "https://docs.python.org/3/tutorial/datastructures.html", topics: ["lists", "stacks", "queues", "sets", "dictionaries"] },
+      { id: "dsa-py-complexity", title: "Time complexity of Python operations", summary: "The cost of every list, deque, set and dict operation in CPython, average and worst case.", level: "beginner", kind: "reference", minutes: 10, url: "https://wiki.python.org/moin/TimeComplexity", topics: ["big o", "complexity", "python"] },
+      { id: "dsa-algs4", title: "Algorithms, 4th edition (Sedgewick & Wayne)", summary: "Princeton's booksite: code and explanations for sorting, searching, graphs and strings, with Java implementations.", level: "intermediate", kind: "guide", minutes: 600, url: "https://algs4.cs.princeton.edu/home/", topics: ["sorting", "searching", "graphs", "strings"] },
+      { id: "dsa-ods", title: "Open Data Structures", summary: "A free textbook covering array lists, linked lists, skiplists, hash tables, binary trees, heaps, B-trees and graphs.", level: "intermediate", kind: "guide", minutes: 480, url: "https://opendatastructures.org/", topics: ["linked lists", "hash tables", "trees", "heaps"] },
+      { id: "dsa-java-collections", title: "Java Collections Framework overview", summary: "Oracle's guide to List, Set, Map, Queue and Deque, and which implementation (ArrayList, HashMap, TreeMap, ArrayDeque) to pick.", level: "intermediate", kind: "reference", minutes: 15, url: "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/doc-files/coll-overview.html", topics: ["java", "collections", "hashmap", "treemap"] },
+      { id: "dsa-cpp-containers", title: "C++ containers library", summary: "vector, deque, list, set, map, unordered_map and priority_queue, with the complexity of every operation.", level: "intermediate", kind: "reference", minutes: 20, url: "https://en.cppreference.com/w/cpp/container", topics: ["c++", "stl", "containers"] },
+      { id: "dsa-heapq", title: "heapq: heap queue algorithm", summary: "Python's binary min-heap: push, pop, heapify, nlargest and nsmallest, plus priority-queue recipes.", level: "intermediate", kind: "reference", minutes: 10, url: "https://docs.python.org/3/library/heapq.html", topics: ["heaps", "priority queue"] },
+      { id: "dsa-bisect", title: "bisect: binary search on sorted lists", summary: "bisect_left, bisect_right and insort: lower and upper bounds without writing the loop yourself.", level: "intermediate", kind: "reference", minutes: 8, url: "https://docs.python.org/3/library/bisect.html", topics: ["binary search", "sorted"] },
+      { id: "dsa-mit-6046", title: "MIT 6.046J Design and Analysis of Algorithms", summary: "The follow-on course: divide and conquer, amortisation, randomisation, network flow, NP-completeness.", level: "advanced", kind: "tutorial", minutes: 1800, url: "https://ocw.mit.edu/courses/6-046j-design-and-analysis-of-algorithms-spring-2015/", topics: ["divide and conquer", "greedy", "flows", "np"] },
+      { id: "dsa-erickson", title: "Algorithms by Jeff Erickson", summary: "A free, rigorous textbook on recursion, backtracking, dynamic programming, greedy algorithms and graph algorithms.", level: "advanced", kind: "guide", minutes: 900, url: "https://jeffe.cs.illinois.edu/teaching/algorithms/", topics: ["recursion", "dynamic programming", "graphs"] },
+      { id: "dsa-cp-algorithms", title: "CP-Algorithms", summary: "Competitive-programming reference: segment trees, Fenwick trees, DSU, string algorithms, shortest paths and number theory.", level: "advanced", kind: "reference", minutes: 120, url: "https://cp-algorithms.com/", topics: ["segment tree", "fenwick", "dsu", "strings"] },
+    ],
+  },
+  {
+    id: "oops", name: "OOPs", version: "23 topics", release: "Object-oriented programming · core to advanced", category: "fundamentals",
+    tone: { ink: "#7a3e9d", tint: "#f2e9f8", glow: "#d3b5e6" }, aliases: ["oop", "oops", "object oriented", "object-oriented programming", "solid", "design patterns", "lld"],
+    tagline: "Every object-oriented concept: classes and objects, the four pillars, interfaces, overloading and overriding, relationships, SOLID and design patterns.",
+    docs: "https://docs.oracle.com/javase/tutorial/java/concepts/",
+    features: ["Classes & objects", "Constructors", "Encapsulation", "Abstraction", "Inheritance", "Polymorphism", "Interfaces vs abstract classes", "Overloading & overriding", "Access modifiers", "Static members", "Composition & aggregation", "Composition over inheritance", "SOLID", "Dependency injection", "Generics", "Immutability", "Design patterns", "UML class diagrams"],
+    quickStart: { file: "Shapes.java", code: `abstract class Shape {                       // abstraction
+    abstract double area();
+}
+class Circle extends Shape {                 // inheritance
+    private final double r;                  // encapsulation
+    Circle(double r) { this.r = r; }
+    @Override double area() { return Math.PI * r * r; }
+}
+class Square extends Shape {
+    private final double side;
+    Square(double side) { this.side = side; }
+    @Override double area() { return side * side; }
+}
+// polymorphism: one call, each shape's own area()
+for (Shape s : List.of(new Circle(1), new Square(2)))
+    System.out.println(s.area());` },
+    materials: [
+      { id: "oop-oracle-concepts", title: "Object-oriented programming concepts", summary: "Oracle's introduction to objects, classes, inheritance, interfaces and packages, with Java examples.", level: "beginner", kind: "tutorial", minutes: 30, url: "https://docs.oracle.com/javase/tutorial/java/concepts/", topics: ["objects", "classes", "inheritance", "interfaces"] },
+      { id: "oop-oracle-classes", title: "Classes and objects", summary: "Declaring classes, fields, methods and constructors; creating objects; this; access control; static and nested classes.", level: "beginner", kind: "guide", minutes: 60, url: "https://docs.oracle.com/javase/tutorial/java/javaOO/index.html", topics: ["classes", "constructors", "access modifiers", "static"] },
+      { id: "oop-py-classes", title: "Python: classes", summary: "The official tutorial on Python classes: scopes, instance and class variables, inheritance, multiple inheritance and private names.", level: "beginner", kind: "tutorial", minutes: 35, url: "https://docs.python.org/3/tutorial/classes.html", topics: ["python", "classes", "inheritance", "mro"] },
+      { id: "oop-csharp-oop", title: "Object-oriented programming in C#", summary: "Microsoft's tutorial on abstraction, encapsulation, inheritance and polymorphism, built around a bank-account example.", level: "beginner", kind: "tutorial", minutes: 30, url: "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/tutorials/oop", topics: ["c#", "four pillars", "polymorphism"] },
+      { id: "oop-oracle-inheritance", title: "Interfaces and inheritance", summary: "Defining and implementing interfaces, default methods, overriding and hiding methods, super, abstract classes and Object's methods.", level: "intermediate", kind: "guide", minutes: 60, url: "https://docs.oracle.com/javase/tutorial/java/IandI/index.html", topics: ["interfaces", "inheritance", "abstract classes", "overriding"] },
+      { id: "oop-oracle-polymorphism", title: "Polymorphism", summary: "How the JVM calls the right overridden method for each object at run time (virtual method invocation).", level: "intermediate", kind: "guide", minutes: 10, url: "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html", topics: ["polymorphism", "dynamic dispatch"] },
+      { id: "oop-ts-classes", title: "TypeScript classes", summary: "Fields, constructors, getters and setters, implements, extends, member visibility, static members, abstract classes and generics.", level: "intermediate", kind: "reference", minutes: 30, url: "https://www.typescriptlang.org/docs/handbook/2/classes.html", topics: ["typescript", "classes", "visibility", "abstract"] },
+      { id: "oop-mdn-prototypes", title: "Inheritance and the prototype chain", summary: "How JavaScript objects inherit from other objects, and what class syntax does underneath.", level: "intermediate", kind: "guide", minutes: 25, url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Inheritance_and_the_prototype_chain", topics: ["javascript", "prototypes", "inheritance"] },
+      { id: "oop-oracle-generics", title: "Generics", summary: "Generic types and methods, bounded type parameters, wildcards and type erasure in Java.", level: "intermediate", kind: "guide", minutes: 45, url: "https://docs.oracle.com/javase/tutorial/java/generics/index.html", topics: ["generics", "wildcards", "type erasure"] },
+      { id: "oop-py-abc", title: "abc: abstract base classes", summary: "Python's ABC and @abstractmethod for declaring interfaces that subclasses must implement.", level: "intermediate", kind: "reference", minutes: 12, url: "https://docs.python.org/3/library/abc.html", topics: ["python", "abstract classes", "interfaces"] },
+      { id: "oop-cpp-virtual", title: "C++ virtual functions", summary: "virtual, override and final; dynamic dispatch through a base pointer; virtual destructors.", level: "advanced", kind: "reference", minutes: 20, url: "https://en.cppreference.com/w/cpp/language/virtual", topics: ["c++", "virtual", "overriding", "vtable"] },
+      { id: "oop-patterns", title: "Design patterns catalogue", summary: "All 22 classic patterns (creational, structural, behavioural) with the problem, structure and code in several languages.", level: "advanced", kind: "reference", minutes: 240, url: "https://refactoring.guru/design-patterns", topics: ["design patterns", "factory", "observer", "strategy"] },
+      { id: "oop-solid", title: "SOLID relevance (Robert C. Martin)", summary: "The author of the SOLID principles on why single responsibility, open/closed, Liskov, interface segregation and dependency inversion still matter.", level: "advanced", kind: "guide", minutes: 10, url: "https://blog.cleancoder.com/uncle-bob/2020/10/18/Solid-Relevance.html", topics: ["solid", "design principles"] },
+      { id: "oop-tell-dont-ask", title: "Tell, don't ask (Martin Fowler)", summary: "Put behaviour next to the data it uses instead of pulling data out of objects to decide for them.", level: "advanced", kind: "guide", minutes: 6, url: "https://martinfowler.com/bliki/TellDontAsk.html", topics: ["encapsulation", "design"] },
     ],
   },
 ];
