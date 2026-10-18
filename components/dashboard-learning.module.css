@@ -3,3 +3,11 @@
 .learning { margin-top: 24px; overflow: hidden; border: 1px solid #dedcd1; border-radius: 18px; background: var(--nb-paper); }
 .learning > section { scroll-margin-top: 80px; }
 .learning > section:first-child { border-top: 0; }
+
+/* Dashboard section introductions use the whole sheet; controls occupy their own row. */
+.learning [data-learning-header] { display: flex; flex-direction: column; align-items: stretch; width: 100%; max-width: none; gap: 18px; }
+.learning [data-learning-copy], .learning [data-learning-intro] { width: 100%; max-width: none; }
+.learning [data-learning-intro] { text-align: left; hyphens: none; }
+.learning [data-learning-header] h2 { max-width: none; text-wrap: pretty; }
+.learning [data-learning-header] > [data-learning-pagination] { align-self: flex-end; }
+.learning [data-learning-pagination] { margin-left: auto; width: fit-content; flex-shrink: 0; }

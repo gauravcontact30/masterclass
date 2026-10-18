@@ -15,14 +15,14 @@ describe("Technology docs: CS fundamentals", () => {
     expect(oops).toHaveTextContent("Encapsulation");
     // The detailed notes stay on the dashboard.
     expect(screen.queryByText("Concepts")).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /See all 8 docs & topics/ })).toHaveAttribute("href", "/dashboard#tech-docs");
+    expect(screen.getByRole("link", { name: new RegExp(`See all ${TECH_DOCS.length} docs & topics`) })).toHaveAttribute("href", "/dashboard#tech-docs");
   });
 
   test("the dashboard shows every concept, each with its key points", () => {
     render(<LandingTechDocs concepts={TECH_CONCEPTS} />);
     fireEvent.click(pageButton("OOPs"));
     const slide = screen.getByRole("article", { name: /OOPs/ });
-    expect(slide.querySelectorAll("details")).toHaveLength(TECH_CONCEPTS.oops.length);
+    expect(slide.querySelectorAll("details summary strong")).toHaveLength(TECH_CONCEPTS.oops.length);
     for (const title of ["Encapsulation and access modifiers", "Method overriding and dynamic dispatch", "SOLID principles", "Design patterns: creational, structural, behavioural"])
       expect(within(slide).getByText(title)).toBeInTheDocument();
     expect(within(slide).getByText(/S: Single Responsibility/)).toBeInTheDocument();

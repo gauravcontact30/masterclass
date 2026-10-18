@@ -9,6 +9,7 @@ import { AUTOPLAY_MS, Controls, Dots, PREVIEW_COUNT } from "./landing-ai-pulse";
 import { DashboardMore } from "./dashboard-more";
 import { useLanguage } from "./language-provider";
 import { usePagedCarousel } from "./use-paged-carousel";
+import { DashboardLessons } from "./dashboard-lessons";
 import home from "./landing-home.module.css";
 import styles from "./landing-workflows.module.css";
 import { LearningLoader } from "./learning-loader";
@@ -32,7 +33,7 @@ const KIND_LABEL: Record<WorkflowNodeKind, string> = { actor: "Person / client",
  * `preview` (the landing page) shows the first three blueprints of each category; every blueprint, here and on
  * /dashboard, carries its full set of 30+ subjective and 30+ objective interview questions.
  */
-export function LandingWorkflows({ preview = false }: Readonly<{ preview?: boolean }>) {
+export function LandingWorkflows({ expanded = false, preview = false }: Readonly<{ expanded?: boolean; preview?: boolean }>) {
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
   const [group, setGroup] = useState<Group | "All">("All");
   const shown = useMemo(() => {
@@ -43,14 +44,15 @@ export function LandingWorkflows({ preview = false }: Readonly<{ preview?: boole
 
   return <section id="workflows" className={styles.section} aria-labelledby="workflows-title"><div className={home.inner}>
     {preview && <DashboardMore href="/dashboard#workflows" title={text(`See all ${WORKFLOWS.length} blueprints`, `सभी ${WORKFLOWS.length} ब्लूप्रिंट देखें`)} detail={text("Every blueprint with 30+ subjective and 30+ objective interview questions.", "हर ब्लूप्रिंट के साथ 30+ विषयगत और 30+ वस्तुनिष्ठ इंटरव्यू प्रश्न।")} />}
-    <div className={styles.head}>
+    <div className={styles.head} data-learning-header>
       <p className={styles.kicker}><Layers size={14} aria-hidden="true" />{text("Workflow blueprints", "वर्कफ़्लो ब्लूप्रिंट")}</p>
       <h2 id="workflows-title">{text("How real systems and ", "असली सिस्टम और ")}<em>{text("AI agents get work done", "AI एजेंट काम कैसे करते हैं")}</em></h2>
-      <p className={styles.lede}>{text(
+      <p className={styles.lede} data-learning-intro>{text(
         `${WORKFLOWS.length} step-by-step blueprints: the system design behind apps you use every day, and LangChain, LangGraph, LangFlow and LangSmith agents solving real problems across ${industries} industries, from e-commerce and banking to hospitals. Each comes with its tech stack, design decisions, common mistakes and the interview questions most asked about it.`,
         `${WORKFLOWS.length} चरण-दर-चरण ब्लूप्रिंट: रोज़ इस्तेमाल होने वाले ऐप्स के पीछे का सिस्टम डिज़ाइन, और LangChain, LangGraph, LangFlow व LangSmith एजेंट जो ई-कॉमर्स, बैंकिंग से लेकर अस्पतालों तक ${industries} उद्योगों की असली समस्याएँ हल करते हैं। हर एक के साथ टेक स्टैक, डिज़ाइन निर्णय, आम गलतियाँ और सबसे ज़्यादा पूछे जाने वाले इंटरव्यू प्रश्न।`)}</p>
     </div>
-    <div className={styles.filters} role="group" aria-label={text("Filter workflows", "वर्कफ़्लो छाँटें")}>
+    {/* Remounted per filter so the page count and position start fresh. */}
+    <WorkflowCarousel key={group} workflows={shown} text={text} filters={<div className={styles.filters} role="group" aria-label={text("Filter workflows", "वर्कफ़्लो छाँटें")}>
       {(["All", ...GROUPS] as const).map(option => {
         const count = option === "All" ? WORKFLOWS.length : WORKFLOWS.filter(workflow => workflow.group === option).length;
         const Icon = option === "All" ? Layers : GROUP_ICON[option];
@@ -58,25 +60,26 @@ export function LandingWorkflows({ preview = false }: Readonly<{ preview?: boole
           <Icon size={14} aria-hidden="true" />{option === "All" ? text("All", "सभी") : option}<span>{count}</span>
         </button>;
       })}
-    </div>
-    {/* Remounted per filter so the page count and position start fresh. */}
-    <WorkflowCarousel key={group} workflows={shown} text={text} />
+    </div>} />
+    {expanded && <DashboardLessons section="workflows" />}
   </div></section>;
 }
 
-function WorkflowCarousel({ workflows, text }: Readonly<{ workflows: Workflow[]; text: Text }>) {
+function WorkflowCarousel({ workflows, text, filters }: Readonly<{ workflows: Workflow[]; text: Text; filters: ReactNode }>) {
   const { track, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(workflows.length, 1, AUTOPLAY_MS);
   const current = workflows[page];
-  return <div className={styles.carousel}>
+  return <>
     <div className={styles.toolbar}>
       <p className={styles.now} aria-live="polite">{current && <><b>{current.group}</b><span aria-hidden="true">·</span>{current.industry}</>}</p>
       <Controls text={text} playing={playing} onPlay={() => setPlaying(p => !p)} page={page} pages={pages} goTo={goTo} previous={text("Previous workflow", "पिछला वर्कफ़्लो")} next={text("Next workflow", "अगला वर्कफ़्लो")} />
     </div>
+    {filters}
+    <div className={styles.carousel}>
     <ul ref={track} className={styles.track} aria-roledescription="carousel" aria-label={text("Workflow blueprints", "वर्कफ़्लो ब्लूप्रिंट")} {...holdProps}>
       {workflows.map((workflow, i) => <WorkflowSlide key={workflow.id} workflow={workflow} index={i} total={workflows.length} text={text} />)}
     </ul>
     <Dots pages={pages} page={page} running={running} goTo={goTo} label={n => text(`Show workflow ${n}`, `वर्कफ़्लो ${n} दिखाएँ`)} />
-  </div>;
+  </div></>;
 }
 
 function WorkflowSlide({ workflow, index, total, text }: Readonly<{ workflow: Workflow; index: number; total: number; text: Text }>) {

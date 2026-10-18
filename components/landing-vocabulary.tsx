@@ -38,11 +38,11 @@ export function LandingVocabulary({ words: all, day, locked: lockedCard, preview
 
   return <section id="vocabulary" className={`${pulse.pulse} ${styles.section}`} aria-labelledby="vocabulary-title"><div className={home.inner}>
     {preview && <DashboardMore href="/dashboard#vocabulary" title={text(`See all ${all.length + (lockedCard ? 1 : 0)} words`, `सभी ${all.length + (lockedCard ? 1 : 0)} शब्द देखें`)} detail={text("Pronunciation, Hindi meaning, synonyms and antonyms for every word.", "हर शब्द का उच्चारण, हिन्दी अर्थ, पर्यायवाची और विलोम।")} />}
-    <div className={pulse.head}>
-      <div className={pulse.headCopy}>
+    <div className={pulse.head} data-learning-header>
+      <div className={pulse.headCopy} data-learning-copy>
         <p className={pulse.kicker}><span className={styles.aa} aria-hidden="true">Aa</span>{text("Word power", "शब्द शक्ति")}<span className={pulse.today}>{text("New today", "आज नया")} · {dayLabel(day, hi)}</span></p>
         <h2 id="vocabulary-title">{text("Today's English words, ", "आज के अंग्रेज़ी शब्द, ")}<em>{text("said and used well", "सही उच्चारण और प्रयोग")}</em></h2>
-        <p className={pulse.lede}>{text("Twelve new words every day. Hear each one, see what it means, read it in a real sentence and learn the words around it: what to say instead, and what it isn't.", "हर दिन बारह नए शब्द। हर शब्द सुनें, उसका अर्थ देखें, असली वाक्य में पढ़ें और उसके आसपास के शब्द सीखें: इसके बदले क्या कहें, और इसका उल्टा क्या है।")}</p>
+        <p className={pulse.lede} data-learning-intro>{text("Twelve new words every day. Hear each one, see what it means, read it in a real sentence and learn the words around it: what to say instead, and what it isn't.", "हर दिन बारह नए शब्द। हर शब्द सुनें, उसका अर्थ देखें, असली वाक्य में पढ़ें और उसके आसपास के शब्द सीखें: इसके बदले क्या कहें, और इसका उल्टा क्या है।")}</p>
       </div>
       <Controls text={text} playing={playing} onPlay={() => setPlaying(p => !p)} page={page} pages={pages} goTo={goTo} previous={text("Previous words", "पिछले शब्द")} next={text("Next words", "अगले शब्द")} />
     </div>

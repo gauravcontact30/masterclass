@@ -2,13 +2,16 @@
 import { Fragment, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { siAngular, siNodedotjs, siOpenrouter, siVercel, siVuedotjs } from "simple-icons";
 import {
-  ArrowUpRight, Binary, BookOpen, Bot, Boxes, Braces, Building2, Check, ChevronLeft, ChevronRight, Cloud, Code2, Copy, FileCode2, GraduationCap,
-  LayoutGrid, Megaphone, MonitorSmartphone, Pause, Play, RotateCcw, Rocket, Search, Server, SlidersHorizontal, Sprout, TrendingUp, X, type LucideIcon,
+  ArrowUpRight, Binary, BookOpen, Bot, Boxes, Braces, Building2, Check, ChevronLeft, ChevronRight, Cloud, Code2, FileCode2, GraduationCap,
+  LayoutGrid, Megaphone, MonitorSmartphone, RotateCcw, Rocket, Search, Server, SlidersHorizontal, Sprout, TrendingUp, X, type LucideIcon,
 } from "lucide-react";
 import { MATERIAL_KINDS, MATERIAL_LEVELS, TECH_DOC_CATEGORIES, TECH_DOCS, type MaterialKind, type MaterialLevel, type TechConcept, type TechDoc, type TechDocCategory, type TechMaterial } from "@/lib/tech-docs";
 import type { OfficialPage, OfficialTechDocs } from "@/lib/tech-docs-official";
 import { useLanguage } from "./language-provider";
+import { Controls } from "./landing-ai-pulse";
 import { DashboardMore } from "./dashboard-more";
+import { TechProjectEditor } from "./tech-project-editor";
+import { TECH_PROJECTS } from "@/lib/tech-doc-projects";
 import home from "./landing-home.module.css";
 import frame from "./landing-section.module.css";
 import styles from "./landing-tech-docs.module.css";
@@ -73,7 +76,6 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
   const [menu, setMenu] = useState(false);
   // The visible platform, by id: it stays put while filters change, and falls back to the first match.
   const [activeId, setActiveId] = useState(TECH_DOCS[0].id);
-  const [copied, setCopied] = useState("");
   // Each platform remembers which page of its materials is open.
   const [materialPage, setMaterialPage] = useState<Record<string, number>>({});
   const menuRef = useRef<HTMLDivElement>(null);
@@ -135,11 +137,9 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
     else if (event.key === "Enter" && listOpen && cursor >= 0) { event.preventDefault(); choose(suggestions[cursor]); }
     else if (event.key === "Escape") { if (listOpen) setFocusSuggest(false); else setQuery(""); }
   };
-  const go = (step: number) => { if (total) setActiveId(slides[(current + step + total) % total].tech.id); };
   const toggleLevel = (level: MaterialLevel) => setLevels(list => list.includes(level) ? list.filter(l => l !== level) : [...list, level]);
   const filtered = !!query || category !== "all" || levels.length > 0 || kind !== "all" || sort !== "recommended";
   const reset = () => { setQuery(""); setCategory("all"); setLevels([]); setKind("all"); setSort("recommended"); setMenu(false); };
-  const copy = async (tech: TechDoc) => { try { await navigator.clipboard.writeText(tech.quickStart.code); setCopied(tech.id); window.setTimeout(() => setCopied(""), 1600); } catch { /* clipboard blocked */ } };
   const versionOf = (tech: TechDoc) => official?.versions[tech.id];
   const categoryCount = (id: TechDocCategory | "all") => TECH_DOCS.filter(t => id === "all" || t.category === id).length;
 
@@ -178,12 +178,7 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
         </p>
         <p className={styles.tagline}>{docsPage?.complete && docsPage.description ? docsPage.description : tech.tagline}</p>
         <ul className={styles.features} aria-label={text("Core features", "मुख्य विशेषताएँ")}>{tech.features.map(f => <li key={f}><Marked text={f} terms={terms} /></li>)}</ul>
-        {showCode && <figure className={styles.code}>
-          <figcaption><Code2 size={14} aria-hidden="true" /><span>{tech.quickStart.file}</span>
-            <button type="button" onClick={() => void copy(tech)} aria-label={text("Copy quick start code", "क्विक स्टार्ट कोड कॉपी करें")}>{copied === tech.id ? <Check size={14} /> : <Copy size={14} />}{copied === tech.id ? text("Copied", "कॉपी हुआ") : text("Copy", "कॉपी")}</button>
-          </figcaption>
-          <pre tabIndex={0}><code>{tech.quickStart.code}</code></pre>
-        </figure>}
+        {showCode && TECH_PROJECTS[tech.id] && <TechProjectEditor key={tech.id} project={TECH_PROJECTS[tech.id]} />}
         <a className={styles.docsLink} href={tech.docs} target="_blank" rel="noopener noreferrer">{fundamental ? text("Start the course", "कोर्स शुरू करें") : text("Open the official docs", "आधिकारिक डॉक्स खोलें")} · {host(tech.docs)}<ArrowUpRight size={15} aria-hidden="true" /></a>
       </div>
       <div className={styles.materials}>
@@ -247,12 +242,13 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
   }
 
   return <section id="tech-docs" className={`${frame.section} ${styles.section}`} data-ground="paper" aria-labelledby={`${uid}-title`}><div className={home.inner}>
-    <header className={frame.head}>
+    <header className={frame.head} data-learning-header>
       <div>
         <p className={frame.kicker}><BookOpen size={14} aria-hidden="true" />{text("Technology docs", "तकनीकी डॉक्स")}<span>{TECH_DOCS.length - FUNDAMENTALS.length} {text("platforms", "प्लेटफ़ॉर्म")} + {FUNDAMENTALS.map(t => t.name).join(" & ")}</span></p>
         <h2 id={`${uid}-title`}>{text("Learn from the source, ", "स्रोत से सीखें, ")}<em>{text("latest releases.", "नवीनतम संस्करण।")}</em></h2>
       </div>
-      <p className={frame.lede}>{text("Angular 22, Vue 3.5, Salesforce API 68, Node.js 26, OpenRouter and the Vercel AI Gateway: every guide below is read from its official website, with the current release from the official registry. Plus the CS fundamentals every interview tests: DSA and OOPs, topic by topic.", "Angular 22, Vue 3.5, Salesforce API 68, Node.js 26, OpenRouter और Vercel AI Gateway: नीचे हर गाइड उसकी आधिकारिक वेबसाइट से ली गई है, और वर्तमान संस्करण आधिकारिक रजिस्ट्री से। साथ में हर इंटरव्यू के CS मूल विषय: DSA और OOPs, विषय-दर-विषय।")}</p>
+      <p className={frame.lede} data-learning-intro>{text("Angular, Vue, React, TypeScript, PostgreSQL, Docker, Salesforce, Node.js, OpenRouter and AI Gateway, plus DSA and OOPs. Explore official guides and complete multi-file projects with setup instructions, annotated code and expected results.", "Angular 22, Vue 3.5, Salesforce API 68, Node.js 26, OpenRouter और Vercel AI Gateway: नीचे हर गाइड उसकी आधिकारिक वेबसाइट से ली गई है, और वर्तमान संस्करण आधिकारिक रजिस्ट्री से। साथ में हर इंटरव्यू के CS मूल विषय: DSA और OOPs, विषय-दर-विषय।")}</p>
+      {!preview && total > 0 && <Controls text={text} playing={autoplay} onPlay={() => setAutoplay(value => !value)} page={current} pages={total} goTo={index => { const slide = slides[(index + total) % total]; if (slide) setActiveId(slide.tech.id); }} previous={text("Previous platform", "पिछला प्लेटफ़ॉर्म")} next={text("Next platform", "अगला प्लेटफ़ॉर्म")} />}
     </header>
 
     {!preview && <div className={styles.toolbar}>
@@ -296,7 +292,7 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
               {([["recommended", text("Recommended", "सुझाया क्रम")], ["quick", text("Quickest first", "सबसे छोटे पहले")], ["az", "A–Z"]] as [Sort, string][]).map(([id, label]) =>
                 <button key={id} type="button" aria-pressed={sort === id} onClick={() => setSort(id)}>{label}</button>)}
             </div>
-            <label className={styles.toggle}><input type="checkbox" checked={showCode} onChange={e => setShowCode(e.target.checked)} />{text("Show quick-start code", "क्विक-स्टार्ट कोड दिखाएँ")}</label>
+            <label className={styles.toggle}><input type="checkbox" checked={showCode} onChange={e => setShowCode(e.target.checked)} />{text("Show project code", "क्विक-स्टार्ट कोड दिखाएँ")}</label>
             <label className={styles.toggle}><input type="checkbox" checked={autoplay} onChange={e => setAutoplay(e.target.checked)} />{text("Autoplay every 2 minutes", "हर 2 मिनट में ऑटोप्ले")}</label>
             <button type="button" className={styles.resetButton} onClick={reset} disabled={!filtered}><RotateCcw size={14} aria-hidden="true" />{text("Reset search and filters", "खोज और फ़िल्टर रीसेट करें")}</button>
           </div>}
@@ -309,16 +305,12 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
       onPointerEnter={() => setHeld(true)} onPointerLeave={() => setHeld(false)} onFocusCapture={() => setHeld(true)} onBlurCapture={() => setHeld(false)}>
       <div className={styles.stage} aria-live={running ? "off" : "polite"}>{body}</div>
       {!preview && total > 0 && <nav className={styles.pager} aria-label={text("Technology docs pages", "तकनीकी डॉक्स पेज")}>
-        <button type="button" className={styles.arrow} onClick={() => go(-1)} disabled={total < 2} aria-label={text("Previous platform", "पिछला प्लेटफ़ॉर्म")}><ChevronLeft size={18} /></button>
         <ol className={styles.pages}>{slides.map((s, i) => <li key={s.tech.id}>
           <button type="button" aria-current={i === current ? "page" : undefined} onClick={() => setActiveId(s.tech.id)} style={{ "--ink": s.tech.tone.ink, "--tint": s.tech.tone.tint } as React.CSSProperties}>
             <span className={styles.pageIcon}><BrandIcon tech={s.tech} size={15} /></span><span className={styles.pageName}>{s.tech.name}</span><span className={styles.pageNo}>{i + 1}</span>
             {i === current && running && <i key={`run-${current}`} className={styles.progress} style={{ animationDuration: `${SLIDE_MS}ms` }} aria-hidden="true" />}
           </button>
         </li>)}</ol>
-        <span className={styles.count} aria-live="polite">{current + 1} / {total}</span>
-        <button type="button" className={styles.arrow} onClick={() => setAutoplay(a => !a)} aria-pressed={!autoplay} aria-label={autoplay ? text("Pause autoplay", "ऑटोप्ले रोकें") : text("Start autoplay", "ऑटोप्ले चलाएँ")}>{autoplay ? <Pause size={16} /> : <Play size={16} />}</button>
-        <button type="button" className={styles.arrow} onClick={() => go(1)} disabled={total < 2} aria-label={text("Next platform", "अगला प्लेटफ़ॉर्म")}><ChevronRight size={18} /></button>
       </nav>}
     </div>
     {preview && FUNDAMENTALS.length > 0 && <div className={styles.fundamentals}>

@@ -22,13 +22,13 @@ export type DashboardDaily = { day: string; pulse: PulseCard[]; words: DailyWord
 export function DashboardLearning({ daily, techDocs, concepts, locked = false }: Readonly<{ daily: DashboardDaily | null; techDocs?: OfficialTechDocs | null; concepts?: Record<string, TechConcept[]>; locked?: boolean }>) {
   return <div className={`${home.home} ${anek.variable} ${anek.className} ${styles.learning}`}>
     {daily && <>
-      <LandingAiPulse cards={daily.pulse} day={daily.day} locked={daily.locked.pulse} />
+      <LandingAiPulse expanded cards={daily.pulse} day={daily.day} locked={daily.locked.pulse} />
       <LandingVocabulary words={daily.words} day={daily.day} locked={daily.locked.word} />
     </>}
-    <LandingWorkflows />
-    <LandingInterview />
+    <LandingWorkflows expanded />
+    <LandingInterview expanded />
     {/* Without a membership (trial over), the full Tech Topics and Technology docs stay behind the plans screen. */}
-    <LandingComparisons preview={locked} locked={locked} official={techDocs} />
+    <LandingComparisons expanded={!locked} preview={locked} locked={locked} official={techDocs} />
     <LandingTechDocs official={techDocs} preview={locked} locked={locked} concepts={locked ? undefined : concepts} />
   </div>;
 }

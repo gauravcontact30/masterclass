@@ -10,6 +10,7 @@ import { InterviewQuestions, StarRow } from "./interview-accordion";
 import { InterviewTechNav, KIND_ICON } from "./interview-tech-nav";
 import { useLanguage } from "./language-provider";
 import { usePagedCarousel } from "./use-paged-carousel";
+import { DashboardLessons } from "./dashboard-lessons";
 import home from "./landing-home.module.css";
 import styles from "./landing-interview.module.css";
 
@@ -23,7 +24,7 @@ const two = (n: number) => String(n).padStart(2, "0");
  * questions in an accordion, and a light tone of its own. The navigator (search, filters, pages) jumps to a technology; autoplay turns a
  * slide every two minutes and holds while the reader hovers or reads. Questions load per slide, when it is near.
  */
-export function LandingInterview({ preview = false }: Readonly<{ preview?: boolean }>) {
+export function LandingInterview({ expanded = false, preview = false }: Readonly<{ expanded?: boolean; preview?: boolean }>) {
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
   // The landing page previews three technologies; /dashboard carries all of them with the navigator.
   const techs = preview ? INTERVIEW_TECHS.slice(0, PREVIEW_COUNT) : INTERVIEW_TECHS;
@@ -34,11 +35,11 @@ export function LandingInterview({ preview = false }: Readonly<{ preview?: boole
   const chooseTab = (id: string, tab: number) => setTabs(all => ({ ...all, [id]: tab }));
   return <section id="interview-prep" className={styles.section} aria-labelledby="interview-title"><div className={home.inner}>
     {preview && <DashboardMore href="/dashboard#interview-prep" title={text(`See all ${INTERVIEW_TECHS.length} technologies`, `सभी ${INTERVIEW_TECHS.length} तकनीकें देखें`)} detail={text("30+ subjective and 30+ objective questions for every technology, with search and filters.", "हर तकनीक के लिए 30+ विषयगत और 30+ वस्तुनिष्ठ प्रश्न, खोज और फ़िल्टर के साथ।")} />}
-    <div className={styles.head}>
-      <div className={styles.headCopy}>
+    <div className={styles.head} data-learning-header>
+      <div className={styles.headCopy} data-learning-copy>
         <p className={styles.kicker}><GraduationCap size={14} aria-hidden="true" />{text("Interview prep", "इंटरव्यू की तैयारी")}<span>{INTERVIEW_TECHS.length} {text("technologies", "तकनीकें")}</span></p>
         <h2 id="interview-title">{text("The questions interviewers ", "वे प्रश्न जो इंटरव्यू में ")}<em>{text("actually ask", "सच में पूछे जाते हैं")}</em></h2>
-        <p className={styles.lede}>{text(
+        <p className={styles.lede} data-learning-intro>{text(
           "Subjective and objective questions for every technology on this platform, from LangChain and Next.js to Git and AWS, each rated by how often it comes up. Open one to see a model answer, or the right option and why.",
           "इस प्लेटफ़ॉर्म की हर तकनीक के लिए विषयगत और वस्तुनिष्ठ प्रश्न, LangChain और Next.js से Git और AWS तक, हर एक पर रेटिंग कि वह कितनी बार पूछा जाता है। मॉडल उत्तर या सही विकल्प और उसका कारण देखने के लिए प्रश्न खोलें।")}</p>
       </div>
@@ -50,6 +51,7 @@ export function LandingInterview({ preview = false }: Readonly<{ preview?: boole
       {techs.map((tech, i) => <InterviewSlide key={tech.id} tech={tech} index={i} total={techs.length} near={Math.abs(i - page) <= 1} text={text} tab={tabs[tech.id] ?? 0} onTab={tab => chooseTab(tech.id, tab)} />)}
     </ul>
     <Dots pages={pages} page={page} running={running} goTo={goTo} label={n => text(`Show technology ${n}`, `तकनीक ${n} दिखाएँ`)} />
+    {expanded && <DashboardLessons section="interview" />}
   </div></section>;
 }
 

@@ -7,6 +7,7 @@
  * (developer.salesforce.com answers bots with 403, so its links were checked by hand). Plain data, no zod: the
  * landing page imports this.
  */
+import { ADDITIONAL_TECH_DOCS } from "./tech-docs-additions";
 export type TechDocCategory = "frontend" | "backend" | "enterprise" | "ai" | "fundamentals";
 export type MaterialLevel = "beginner" | "intermediate" | "advanced";
 export type MaterialKind = "guide" | "tutorial" | "reference" | "release";
@@ -279,4 +280,5 @@ for (Shape s : List.of(new Circle(1), new Square(2)))
       { id: "oop-tell-dont-ask", title: "Tell, don't ask (Martin Fowler)", summary: "Put behaviour next to the data it uses instead of pulling data out of objects to decide for them.", level: "advanced", kind: "guide", minutes: 6, url: "https://martinfowler.com/bliki/TellDontAsk.html", topics: ["encapsulation", "design"] },
     ],
   },
+  ...ADDITIONAL_TECH_DOCS,
 ];

@@ -14,6 +14,7 @@ import { Combobox } from "./ui/combobox";
 import { useLanguage } from "./language-provider";
 import { usePagedCarousel } from "./use-paged-carousel";
 import { DashboardMore } from "./dashboard-more";
+import { DashboardLessons } from "./dashboard-lessons";
 import home from "./landing-home.module.css";
 import interview from "./landing-interview.module.css";
 import styles from "./landing-comparisons.module.css";
@@ -34,7 +35,7 @@ const GROUP_ICON: Record<ComparisonGroup, LucideIcon> = {
  * comparison. Questions load per slide, when it is near. The same section runs on the landing page and /dashboard.
  * `preview` (the landing page, or a learner without a membership) shows only the first comparison and links on.
  */
-export function LandingComparisons({ preview = false, locked = false, official = null }: Readonly<{ preview?: boolean; locked?: boolean; official?: OfficialTechDocs | null }>) {
+export function LandingComparisons({ expanded = false, preview = false, locked = false, official = null }: Readonly<{ expanded?: boolean; preview?: boolean; locked?: boolean; official?: OfficialTechDocs | null }>) {
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
   const { track, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(preview ? 1 : COMPARISONS.length, 1, AUTOPLAY_MS);
   const shown = preview ? COMPARISONS.slice(0, 1) : COMPARISONS;
@@ -42,11 +43,11 @@ export function LandingComparisons({ preview = false, locked = false, official =
   const pickerPage = Math.floor(page / 5) + 1;
   const pickerStart = (pickerPage - 1) * 5;
   return <section id="tech-comparisons" className={interview.section} aria-labelledby="comparisons-title"><div className={home.inner}>
-    <div className={interview.head}>
-      <div className={interview.headCopy}>
+    <div className={interview.head} data-learning-header>
+      <div className={interview.headCopy} data-learning-copy>
         <p className={interview.kicker}><GitCompareArrows size={14} aria-hidden="true" />{text("Tech Topics", "टेक टॉपिक्स")}<span>{COMPARISONS.length} {text("comparisons", "तुलनाएँ")}</span></p>
         <h2 id="comparisons-title">{text("What is the difference ", "असल में अंतर ")}<em>{text("between them, really?", "क्या है?")}</em></h2>
-        <p className={interview.lede}>{text(
+        <p className={interview.lede} data-learning-intro>{text(
           "The comparisons interviewers and teams ask about most, from LangChain, LangGraph and LangSmith to Redux, Zustand and Redux Toolkit. Each one defines every technology in a line, compares them at a glance and answers 40+ difference questions.",
           "इंटरव्यू और टीमों में सबसे ज़्यादा पूछी जाने वाली तुलनाएँ, LangChain, LangGraph और LangSmith से Redux, Zustand और Redux Toolkit तक। हर तुलना में हर तकनीक की एक पंक्ति की परिभाषा, एक नज़र में तालिका और 40+ अंतर प्रश्नों के उत्तर।")}</p>
       </div>
@@ -71,6 +72,7 @@ export function LandingComparisons({ preview = false, locked = false, official =
     </ul>
     {!preview && <Dots pages={pages} page={page} running={running} goTo={goTo} label={n => text(`Show comparison ${n}`, `तुलना ${n} दिखाएँ`)} />}
     {preview && <DashboardMore href={locked ? "/dashboard?tab=plans" : "/dashboard#tech-comparisons"} title={locked ? text(`Subscribe to open all ${COMPARISONS.length} comparisons`, `सभी ${COMPARISONS.length} तुलनाएँ खोलने के लिए सदस्यता लें`) : text(`See all ${COMPARISONS.length} comparisons`, `सभी ${COMPARISONS.length} तुलनाएँ देखें`)} detail={text("Every comparison, its picker, table and 40+ questions are in your dashboard.", "हर तुलना, उसका चयनकर्ता, तालिका और 40+ प्रश्न आपके डैशबोर्ड में हैं।")} />}
+    {expanded && <DashboardLessons section="topics" />}
   </div></section>;
 }
 

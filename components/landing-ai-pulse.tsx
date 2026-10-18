@@ -7,6 +7,7 @@ import { DashboardMore } from "./dashboard-more";
 import { LockedCard } from "./landing-locked-card";
 import { useLanguage } from "./language-provider";
 import { usePagedCarousel } from "./use-paged-carousel";
+import { DashboardLessons } from "./dashboard-lessons";
 import home from "./landing-home.module.css";
 import styles from "./landing-ai-pulse.module.css";
 
@@ -34,7 +35,7 @@ export const PREVIEW_COUNT = 3;
  * `preview` (the landing page) shows the first three cards and a link to the full set on /dashboard, where the
  * same section renders every card of the day, the locked bonus card included.
  */
-export function LandingAiPulse({ cards: all, day, locked: lockedCard, preview = false }: { cards: PulseCard[]; day: string; locked?: LockedTeaser | null; preview?: boolean }) {
+export function LandingAiPulse({ cards: all, day, locked: lockedCard, preview = false, expanded = false }: { expanded?: boolean; cards: PulseCard[]; day: string; locked?: LockedTeaser | null; preview?: boolean }) {
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
   const cards = preview ? all.slice(0, PREVIEW_COUNT) : all;
   const locked = preview ? null : lockedCard;
@@ -42,11 +43,11 @@ export function LandingAiPulse({ cards: all, day, locked: lockedCard, preview = 
 
   return <section id="ai-pulse" className={styles.pulse} aria-labelledby="ai-pulse-title"><div className={home.inner}>
     {preview && <DashboardMore href="/dashboard#ai-pulse" title={text(`See all ${all.length + (lockedCard ? 1 : 0)} cards`, `सभी ${all.length + (lockedCard ? 1 : 0)} कार्ड देखें`)} detail={text("Every technology, every day: the full pulse lives in your dashboard.", "हर तकनीक, हर दिन: पूरा पल्स आपके डैशबोर्ड में है।")} />}
-    <div className={styles.head}>
-      <div className={styles.headCopy}>
+    <div className={styles.head} data-learning-header>
+      <div className={styles.headCopy} data-learning-copy>
         <p className={styles.kicker}><Sparkles size={14} aria-hidden="true" />{text("AI & agentic pulse", "AI और एजेंटिक हलचल")}<span className={styles.today}>{text("New today", "आज नया")} · {dayLabel(day, hi)}</span></p>
         <h2 id="ai-pulse-title">{text("Today's learning across ", "आज की पढ़ाई: ")}<em>{text("AI, agents & the modern stack", "AI, एजेंट और आधुनिक स्टैक")}</em></h2>
-        <p className={styles.lede}>{text("A fresh set every day across 33 technologies: agentic AI and its terms, LangChain, LangGraph, LangSmith, LangFlow, Next.js, React, JavaScript, TypeScript, Node.js, Express, NestJS, GraphQL, the TanStack libraries, Redux, Zustand, testing with Jest, Vitest, RTL, Playwright and Cypress, AWS, Git, GitHub Actions, system design, Redis and more, each card linked to its official source.", "हर दिन एक नया सेट: एजेंटिक AI, LangChain, LangGraph, LangSmith, LangFlow, Next.js, React, AWS, n8n, Python, Playwright, Cypress, GitHub Actions, सिस्टम डिज़ाइन, Redis और Inngest, हर कार्ड अपने आधिकारिक स्रोत से जुड़ा।")}</p>
+        <p className={styles.lede} data-learning-intro>{text("A fresh set every day across 33 technologies: agentic AI and its terms, LangChain, LangGraph, LangSmith, LangFlow, Next.js, React, JavaScript, TypeScript, Node.js, Express, NestJS, GraphQL, the TanStack libraries, Redux, Zustand, testing with Jest, Vitest, RTL, Playwright and Cypress, AWS, Git, GitHub Actions, system design, Redis and more, each card linked to its official source.", "हर दिन एक नया सेट: एजेंटिक AI, LangChain, LangGraph, LangSmith, LangFlow, Next.js, React, AWS, n8n, Python, Playwright, Cypress, GitHub Actions, सिस्टम डिज़ाइन, Redis और Inngest, हर कार्ड अपने आधिकारिक स्रोत से जुड़ा।")}</p>
       </div>
       <Controls text={text} playing={playing} onPlay={() => setPlaying(p => !p)} page={page} pages={pages} goTo={goTo} previous={text("Previous cards", "पिछले कार्ड")} next={text("Next cards", "अगले कार्ड")} />
     </div>
@@ -55,6 +56,7 @@ export function LandingAiPulse({ cards: all, day, locked: lockedCard, preview = 
       {locked && <LockedCard teaser={locked} index={cards.length} total={cards.length + 1} text={text} render={full => <PulseCardItem card={full as PulseCard} index={cards.length} total={cards.length + 1} hi={hi} text={text} />} />}
     </ul>
     <Dots pages={pages} page={page} running={running} goTo={goTo} label={n => text(`Show cards page ${n}`, `कार्ड पृष्ठ ${n} दिखाएँ`)} />
+    {expanded && <DashboardLessons section="pulse" />}
   </div></section>;
 }
 
@@ -90,7 +92,7 @@ export function PulseCardItem({ card, index, total, hi, text }: { card: PulseCar
 
 /** Play/pause, previous, the page counter and next; shared with the Word power carousel. */
 export function Controls({ text, playing, onPlay, page, pages, goTo, previous, next }: { text: (en: string, hindi: string) => string; playing: boolean; onPlay: () => void; page: number; pages: number; goTo: (page: number) => void; previous: string; next: string }) {
-  return <div className={styles.controls}>
+  return <div data-learning-pagination className={styles.controls}>
     <button type="button" onClick={onPlay} aria-label={playing ? text("Pause autoplay", "ऑटोप्ले रोकें") : text("Start autoplay", "ऑटोप्ले चलाएँ")}>{playing ? <Pause size={16} /> : <Play size={16} />}</button>
     <button type="button" onClick={() => goTo(page - 1)} aria-label={previous}><ChevronLeft size={18} /></button>
     <span className={styles.count} aria-live="polite">{String(page + 1).padStart(2, "0")}<i>/</i>{String(pages).padStart(2, "0")}</span>
