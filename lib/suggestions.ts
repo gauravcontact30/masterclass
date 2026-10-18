@@ -1,24 +1,19 @@
-import { z } from "zod";
-
+// Zod-free on purpose: the landing navbar imports this module, and zod must stay out of the landing bundle.
+// The request schemas live in lib/suggestions-schema.ts (server routes only).
 export const SUGGESTION_STATUSES = ["new", "reviewing", "planned", "in_progress", "completed", "declined"] as const;
 export const SUGGESTION_CATEGORIES = ["feature", "content", "bug", "accessibility", "other"] as const;
 export const SUGGESTION_PRIORITIES = ["low", "normal", "high", "urgent"] as const;
-export const suggestionSchema = z.object({
-  name: z.string().trim().min(1).max(80),
-  email: z.union([z.email().max(254), z.literal("")]).default(""),
-  category: z.enum(SUGGESTION_CATEGORIES),
-  title: z.string().trim().min(5).max(140),
-  body: z.string().trim().min(20).max(5000),
-  website: z.string().max(0).optional(),
-}).strict();
-export const suggestionUpdateSchema = z.object({
-  id: z.uuid(), version: z.number().int().positive(),
-  status: z.enum(SUGGESTION_STATUSES), priority: z.enum(SUGGESTION_PRIORITIES),
-  reply: z.string().trim().max(4000).default(""),
-}).strict();
+/** Fields the admin search box can be narrowed to. "all" also searches replies. */
+export const SUGGESTION_SCOPES = ["all", "title", "message", "contributor", "reply", "id"] as const;
+export const SUGGESTION_SORTS = ["newest", "oldest", "updated", "priority"] as const;
+export const SUGGESTION_PAGE_SIZE = 10;
+export type SuggestionStatus = (typeof SUGGESTION_STATUSES)[number];
+export type SuggestionCategory = (typeof SUGGESTION_CATEGORIES)[number];
+export type SuggestionPriority = (typeof SUGGESTION_PRIORITIES)[number];
 export type Suggestion = {
   id: string; name: string; email?: string | null; category: string; title: string; body: string;
   status: string; priority?: string; version: number; created_at: string; updated_at: string;
+  reply_count?: number; last_reply_at?: string | null;
 };
 export type SuggestionUpdate = { id: string; status: string; reply: string | null; created_at: string };
 export const suggestionLabel = (value: string) => value.replaceAll("_", " ").replace(/^./, c => c.toUpperCase());

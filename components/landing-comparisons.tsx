@@ -55,12 +55,12 @@ export function LandingComparisons() {
         placeholder={text("Choose a comparison", "तुलना चुनें")} searchPlaceholder={text("Search comparisons, e.g. Redux", "तुलना खोजें, जैसे Redux")} emptyText={text("No comparison matches that search.", "इस खोज से कोई तुलना नहीं मिली।")}
         clearLabel={text("Clear", "साफ़ करें")} ariaLabel={text("Jump to a comparison", "किसी तुलना पर जाएँ")} icon={GitCompareArrows} />
     </div>
-    <nav className={styles.visualPicker} aria-label={text("Browse illustrated comparisons", "??????? ?? ????? ?????")}>
+    <nav className={styles.visualPicker} aria-label={text("Browse illustrated comparisons", "चित्रों के साथ तुलनाएँ देखें")}>
       {COMPARISONS.slice(pickerStart, pickerStart + 5).map((item, offset) => { const index = pickerStart + offset; return <button key={item.id} type="button" aria-current={index === page ? "true" : undefined} onClick={() => goTo(index)}>
         <ChainPicture sources={[learningImageUrl("topics", ["comparisons", item.id]), ...item.techs.map(tech => techPicture(tech.name)).filter((id): id is string => !!id).map(id => learningImageUrl("topics", ["interview", id]))]} alt="" icon={<GitCompareArrows size={24} aria-hidden="true" />}><span className={styles.previewLabel}>{item.techs.map(tech => tech.name).join(" / ")}</span></ChainPicture>
       </button>; })}
     </nav>
-    <Pager page={pickerPage} pages={Math.ceil(COMPARISONS.length / 5)} total={COMPARISONS.length} size={5} onPage={next => goTo((next - 1) * 5)} />
+    <div className={styles.pickerPager}><Pager page={pickerPage} pages={Math.ceil(COMPARISONS.length / 5)} total={COMPARISONS.length} size={5} onPage={next => goTo((next - 1) * 5)} /></div>
     <ul ref={track} className={interview.track} aria-roledescription="carousel" aria-label={text("Technology comparisons", "तकनीकी तुलनाएँ")} {...holdProps}>
       {COMPARISONS.map((item, i) => <ComparisonSlide key={item.id} item={item} index={i} total={COMPARISONS.length} near={Math.abs(i - page) <= 1} text={text} />)}
     </ul>

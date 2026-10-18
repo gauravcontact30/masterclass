@@ -38,3 +38,32 @@ test("admin inbox requests server pages of ten and sends status filters", async 
   await waitFor(() => expect(fetcher.mock.calls.at(-1)?.[0]).toContain("status=planned"));
   expect(fetcher.mock.calls.at(-1)?.[0]).toContain("page=1");
 });
+
+test("admin can select rows and move them to a status in one bulk action", async () => {
+  const rows = [0, 1, 2].map(i => ({ id: `00000000-0000-4000-8000-00000000000${i}`, title: `Idea ${i}`, body: "Please add more practice for this.", name: "Learner", category: "feature", status: "new", priority: "normal", reply_count: 0, created_at: "2026-10-17T10:00:00Z" }));
+  const fetcher = jest.fn().mockImplementation(async (url: string, init?: RequestInit) => init?.method === "POST" ? reply({ affected: 2 }) : reply({ suggestions: rows, total: 3, counts: { new: 3 }, awaitingReply: 3, urgent: 0 }));
+  global.fetch = fetcher;
+  render(<SuperAdminSuggestions />);
+  fireEvent.click(await screen.findByRole("checkbox", { name: "Select Idea 0" }));
+  fireEvent.click(screen.getByRole("checkbox", { name: "Select Idea 2" }));
+  expect(screen.getByText("2 selected")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Set status" }));
+  fireEvent.click(await screen.findByRole("menuitem", { name: "Planned" }));
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith("/api/super-admin/suggestions", expect.objectContaining({ method: "POST" })));
+  const post = fetcher.mock.calls.find(([, init]) => init?.method === "POST");
+  expect(JSON.parse(post![1].body)).toEqual({ action: "update", status: "planned", ids: [rows[0].id, rows[2].id] });
+  expect(await screen.findByText("Updated 2 suggestions.")).toBeInTheDocument();
+});
+
+test("search scope, clear search and the basic-mode notice before migration 0026", async () => {
+  const fetcher = jest.fn().mockResolvedValue(reply({ suggestions: [], total: 0, counts: {}, legacy: true }));
+  global.fetch = fetcher;
+  render(<SuperAdminSuggestions />);
+  expect(await screen.findByRole("note")).toHaveTextContent("0026_suggestion_box_admin.sql");
+  expect(screen.getByRole("combobox", { name: "Search in" })).toBeDisabled();
+  fireEvent.change(screen.getByRole("searchbox", { name: "Search suggestions" }), { target: { value: "dark mode" } });
+  await waitFor(() => expect(fetcher.mock.calls.at(-1)?.[0]).toContain("search=dark+mode"));
+  fireEvent.click(screen.getByRole("button", { name: "Clear suggestion search" }));
+  await waitFor(() => expect(fetcher.mock.calls.at(-1)?.[0]).not.toContain("search="));
+  expect(screen.getByRole("searchbox", { name: "Search suggestions" })).toHaveValue("");
+});

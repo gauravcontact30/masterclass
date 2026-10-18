@@ -273,6 +273,22 @@
   .heroControls { left: 16px; right: 16px; bottom: 88px; gap: 16px; align-items: center; }
   .heroCount { display: none; }
   .heroArrow { width: 44px; height: 44px; }
+  /* Phones: every header action is a round icon (Suggestion Box, Plans, Account, Menu), so the bar fits 360px. */
+  .plansButton { width: var(--nav-control-h); padding: 0; justify-content: center; }
+  .plansButton span { display: none; }
+}
+@media (max-width: 420px) {
+  .home { --nav-control-h: 38px; }
+  .navActions { gap: 6px; }
+  .navMenu { width: 38px; height: 38px; }
+  .plansButton { height: 38px; }
+  .brand :global(.brand-lockup) { gap: 7px; }
+  .brand :global(.brand-mark) { width: 30px; height: 30px; }
+  .brand :global(.brand-name) { font-size: 21px; }
+}
+/* The smallest phones (320px): the mark alone stands for the wordmark; the link keeps its "MasterClass" name. */
+@media (max-width: 359px) {
+  .brand :global(.brand-name) { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .heroSlide, .heroSlide[data-active], .heroImage, .heroCopy > *, .navIndicator, .navbar { transition: none; }

@@ -103,7 +103,7 @@ export function LandingNavbar({ links, prices = null }: { links: [string, string
         })}
       </nav>
       <div className={styles.navActions}>
-        <SuggestionBox />
+        <SuggestionBox label={text("Suggestion Box", "सुझाव पेटी")} />
         <LandingPlansMenu prices={prices} open={plans} onOpenChange={openPlans} />
         <div ref={accountRef} className={styles.account}>
           <button type="button" className={styles.accountButton} aria-label={text("Account", "खाता")} aria-expanded={account} aria-controls="landing-account-menu" onClick={() => { setAccount(value => !value); setMenu(false); setPlans(false); }}>

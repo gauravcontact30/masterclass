@@ -1,7 +1,7 @@
 /** @jest-environment node */
 import { createHash } from "node:crypto";
 import { GET, POST } from "@/app/api/suggestions/route";
-import { GET as adminGet, PATCH } from "@/app/api/super-admin/suggestions/route";
+import { GET as adminGet, PATCH, POST as POST_ADMIN } from "@/app/api/super-admin/suggestions/route";
 import { db } from "@/lib/server/db";
 import { requireSuperAdmin } from "@/lib/server/super-admin";
 import { rateLimit } from "@/lib/server/rate-limit";
@@ -49,4 +49,58 @@ test("admin endpoints reject unauthorized reads and writes before DB access", as
 test("rate limits stop public inserts", async () => {
   (rateLimit as jest.Mock).mockRejectedValueOnce(new HttpError(429, "rate_limited"));
   expect((await POST(request(input))).status).toBe(429); expect(db).not.toHaveBeenCalled();
+});
+
+describe("admin tools (migration 0026)", () => {
+  const owner = { id: "owner-1" };
+  const adminRequest = (method: string, body: unknown) => new Request("http://localhost/api/super-admin/suggestions", { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  beforeEach(() => { (requireSuperAdmin as jest.Mock).mockResolvedValue(owner); (rateLimit as jest.Mock).mockResolvedValue(undefined); });
+
+  test("bulk updates call the service-role function with the acting admin", async () => {
+    const rpc = jest.fn().mockResolvedValue({ data: 2, error: null });
+    (db as jest.Mock).mockReturnValue({ rpc });
+    const response = await POST_ADMIN(adminRequest("POST", { action: "update", ids: [id, id.replace(/1$/, "2")], status: "planned" }));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ affected: 2 });
+    expect(rpc).toHaveBeenCalledWith("admin_bulk_update_suggestions", { p_ids: [id, id.replace(/1$/, "2")], p_status: "planned", p_priority: null, p_actor: "owner-1" });
+  });
+  test.each([
+    { action: "update", ids: [id] },
+    { action: "update", ids: [], status: "planned" },
+    { action: "update", ids: [id], status: "shipped" },
+    { action: "delete", ids: ["not-a-uuid"] },
+    { action: "delete", ids: Array.from({ length: 101 }, () => id) },
+  ])("rejects malformed bulk actions before any database call (%#)", async body => {
+    expect((await POST_ADMIN(adminRequest("POST", body))).status).toBe(400);
+    expect(db).not.toHaveBeenCalled();
+  });
+  test("bulk delete uses the delete function", async () => {
+    const rpc = jest.fn().mockResolvedValue({ data: 1, error: null });
+    (db as jest.Mock).mockReturnValue({ rpc });
+    expect((await POST_ADMIN(adminRequest("POST", { action: "delete", ids: [id] }))).status).toBe(200);
+    expect(rpc).toHaveBeenCalledWith("admin_delete_suggestions", { p_ids: [id] });
+  });
+  test("listing falls back to the 0025 function until 0026 is applied", async () => {
+    const rpc = jest.fn()
+      .mockResolvedValueOnce({ data: null, error: { code: "PGRST202", message: "Could not find the function admin_list_suggestions_v2" } })
+      .mockResolvedValueOnce({ data: { total: 0, suggestions: [], counts: {} }, error: null });
+    (db as jest.Mock).mockReturnValue({ rpc });
+    const response = await adminGet(new Request("http://localhost/api/super-admin/suggestions?scope=title&sort=priority&search=x"));
+    expect(await response.json()).toEqual({ total: 0, suggestions: [], counts: {}, legacy: true });
+    expect(rpc.mock.calls[1][0]).toBe("admin_list_suggestions");
+    expect(rpc.mock.calls[1][1]).toEqual(expect.objectContaining({ p_search: "x", p_sort: "newest" }));
+  });
+  test("CSV export quotes cells and neutralises spreadsheet formulas", async () => {
+    const row = { id, created_at: "2026-10-18T00:00:00Z", status: "new", priority: "normal", category: "bug", name: "=HYPERLINK(\"x\")", email: null, title: "Say \"hi\"", body: "+1 line", reply_count: 0 };
+    const rpc = jest.fn().mockResolvedValue({ data: { total: 1, suggestions: [row], counts: {} }, error: null });
+    (db as jest.Mock).mockReturnValue({ rpc });
+    const response = await adminGet(new Request("http://localhost/api/super-admin/suggestions?format=csv&status=new"));
+    expect(response.headers.get("content-type")).toContain("text/csv");
+    expect(response.headers.get("content-disposition")).toMatch(/attachment; filename="suggestions-\d{4}-\d{2}-\d{2}\.csv"/);
+    const text = await response.text();
+    expect(text).toContain(`"'=HYPERLINK(""x"")"`);
+    expect(text).toContain(`"Say ""hi"""`);
+    expect(text).toContain(`"'+1 line"`);
+    expect(rpc).toHaveBeenCalledWith("admin_list_suggestions_v2", expect.objectContaining({ p_limit: 1000, p_page: 1, p_status: "new" }));
+  });
 });

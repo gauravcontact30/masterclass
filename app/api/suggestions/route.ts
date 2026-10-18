@@ -4,7 +4,7 @@ import { api, HttpError, jsonBody, sameOrigin } from "@/lib/server/http";
 import { db } from "@/lib/server/db";
 import { adminError } from "@/lib/server/admin-rpc";
 import { rateLimit } from "@/lib/server/rate-limit";
-import { suggestionSchema } from "@/lib/suggestions";
+import { suggestionSchema } from "@/lib/suggestions-schema";
 
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
 const client = (request: Request) => hash(request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown");
