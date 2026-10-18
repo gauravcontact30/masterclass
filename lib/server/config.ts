@@ -7,7 +7,14 @@ export function required(name: string) {
 
 export const databaseConfigured = () => Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 export const authConfigured = () => Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+/** Length of the new-account trial in hours (TRIAL_HOURS, default 24; 0 turns the trial off). */
+export function trialHours() {
+  const hours = Number(process.env.TRIAL_HOURS ?? 24);
+  return Number.isFinite(hours) && hours >= 0 && hours <= 24 * 30 ? hours : 24;
+}
 export function quota(tier: string) {
+  // A trial may generate a few notes (TRIAL_GENERATIONS, default 3) so every feature can be tried.
+  if (tier === "trial") { const trial = Number(process.env.TRIAL_GENERATIONS ?? 3); return Number.isSafeInteger(trial) && trial >= 0 ? trial : 3; }
   // Legacy persisted "free" denotes an account without a paid subscription.
   if (tier !== "monthly" && tier !== "yearly") return 0;
   const amount = Number(process.env.PRO_MONTHLY_GENERATIONS ?? 50);

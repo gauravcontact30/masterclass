@@ -125,6 +125,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo }: { mod
             <section>
               <h1 className={styles.title}><ExpandedText text={t(mode === "signin" ? "signinTitle" : "signupTitle")} /></h1>
               <p className={styles.lead}><ExpandedText text={t(mode === "signin" ? "signinHelp" : "signupHelp")} /></p>
+              {mode === "signup" && <p className={styles.trial}><ExpandedText text={hi ? "हर नया खाता 1 दिन के निःशुल्क ट्रायल से शुरू होता है: पूरी पहुँच, कोई कार्ड नहीं।" : "Every new account starts with a 1-day free trial: full access, no card needed."} /></p>}
               {error && <p className={`error-banner ${styles.error}`} role="alert"><ExpandedText text={t(error)} /></p>}
               {/* method="post": even before hydration a submit never puts anything in the URL. */}
               <form method="post" onSubmit={submit} className={styles.form}>

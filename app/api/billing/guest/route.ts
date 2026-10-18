@@ -38,7 +38,8 @@ export async function POST(request: Request) {
     if (!result.user_id) return Response.json({ status:"processing", email:row.email, newAccount:false });
     // Never sign this browser in: paying does not prove the buyer owns the email.
     // Access comes only through a sign-in link delivered to that inbox.
-    const active = (await account(result.user_id)).tier !== "free";
+    // Paid tier only: a brand-new account is on its trial, which is not proof of payment.
+    const active = (await account(result.user_id)).paidTier !== "free";
     return Response.json({ status:active ? "active" : "processing", email:row.email, newAccount:result.created_user });
   }, request);
 }

@@ -31,3 +31,7 @@
   .map { grid-template-columns: minmax(0, 1fr); }
   .plan { padding: 20px; }
 }
+
+/* "Start a 1-day free trial" beneath the subscribe button. */
+.trial { margin: 10px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--nb-text, #3d3d3a); }
+.trial a { color: var(--nb-ink, #b5573a); font-weight: 650; text-underline-offset: 3px; }

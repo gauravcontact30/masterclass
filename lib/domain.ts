@@ -16,7 +16,8 @@ export const requestSchema = z.object({
 }).strict();
 export type GenerationRequest = z.infer<typeof requestSchema>;
 export type Language = "en" | "hi";
-export type Tier = "free" | "monthly" | "yearly";
+/** "trial" is the one-day full-access window after sign-up; it is never stored on a subscription row. */
+export type Tier = "free" | "trial" | "monthly" | "yearly";
 export type Topic = { id: string; technology_id: string; title: string; title_hi: string; full_track: boolean; version: number; references: string[] };
 export type Technology = { id: string; title: string; title_hi: string; category: string };
 // Rich sections remain optional so older saved curricula can still be read.
@@ -153,4 +154,9 @@ export function entitlementTier(subscription: { tier: Tier; status: string; curr
   if (["active", "cancelled", "completed"].includes(subscription.status) && Date.parse(subscription.current_period_end ?? "") > now) return subscription.tier;
   if (subscription.status === "pending" && Date.parse(subscription.grace_until ?? "") > now) return subscription.tier;
   return "free";
+}
+/** When a new account's full-access trial ends: `hours` after its profile was created (first sign-in). */
+export function trialEndsAt(createdAt: string | null | undefined, hours: number) {
+  const start = Date.parse(createdAt ?? "");
+  return Number.isFinite(start) && hours > 0 ? new Date(start + hours * 3_600_000).toISOString() : null;
 }

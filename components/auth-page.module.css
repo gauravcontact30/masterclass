@@ -148,3 +148,6 @@ button.switchLink:disabled{opacity:.6;cursor:default}
   .slide{animation:none}
   .dot::before,.input,.switchLink{transition:none}
 }
+
+/* The one-day trial note on the sign-up form. */
+.trial { margin: -4px 0 14px; padding: 8px 12px; border-radius: 10px; background: linear-gradient(100deg, #fdf1ea, #f3eefc); color: #3d3d3a; font-size: 13.5px; font-weight: 600; line-height: 1.45; }
