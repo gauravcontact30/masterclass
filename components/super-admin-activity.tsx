@@ -1,11 +1,12 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Clock, Download, MonitorSmartphone, MousePointerClick, Radio, RefreshCw, UserPlus, UserRound, Users } from "lucide-react";
+import { AppWindow, ArrowLeft, Clock, Compass, Download, Globe, Laptop, Megaphone, Monitor, MonitorSmartphone, Smartphone, Tablet, Terminal, MousePointerClick, Radio, RefreshCw, UserPlus, UserRound, Users } from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { AdminError, AdminLoading } from "./super-admin-feedback";
 import { AdminTable } from "./super-admin-table";
 import { AudienceExplorer } from "./super-admin-audience";
+import { siAndroid, siApple, siBrave, siFacebook, siFirefoxbrowser, siGoogle, siGooglechrome, siInstagram, siIos, siLinux, siMacos, siOpera, siSafari, siSamsung, siUbuntu, siWhatsapp, siYoutube, type SimpleIcon } from "simple-icons";
 import shell from "./super-admin-dashboard.module.css";
 import styles from "./super-admin-activity.module.css";
 
@@ -101,10 +102,10 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
     <AudienceExplorer days={days} fallback={{ countries: data.countries, cities: data.cities, pages: data.pages, referrers: data.referrers }} />
 
     <div className={styles.breakdowns}>
-      <Breakdown title="Devices" rows={data.devices} label="device" value="visitors" />
-      <Breakdown title="Browsers" rows={data.browsers} label="browser" value="visitors" />
-      <Breakdown title="Operating systems" rows={data.systems} label="os" value="visitors" />
-      <Breakdown title="Campaigns (UTM)" rows={data.campaigns} label="source" value="views" extra={row => `${show(row.medium)} · ${show(row.campaign)}`} empty="No tagged links visited yet. Add ?utm_source=… to links you share." />
+      <Breakdown title="Devices" icon={<MonitorSmartphone size={16} />} tone="sky" rows={data.devices} label="device" value="visitors" rowIcon={row => deviceIcon(show(row.device))} />
+      <Breakdown title="Browsers" icon={<Compass size={16} />} tone="lavender" rows={data.browsers} label="browser" value="visitors" rowIcon={row => brandIcon(show(row.browser), BROWSER_MARKS, <Globe size={15} />)} />
+      <Breakdown title="Operating systems" icon={<Terminal size={16} />} tone="mint" rows={data.systems} label="os" value="visitors" rowIcon={row => brandIcon(show(row.os), OS_MARKS, <AppWindow size={15} />)} />
+      <Breakdown title="Campaigns (UTM)" icon={<Megaphone size={16} />} tone="peach" rowIcon={row => brandIcon(show(row.source), CAMPAIGN_MARKS, <Megaphone size={15} />)} rows={data.campaigns} label="source" value="views" extra={row => `${show(row.medium)} · ${show(row.campaign)}`} empty="No tagged links visited yet. Add ?utm_source=… to links you share." />
     </div>
 
     <People rows={data.people} query={query} onOpen={(key, label) => setPerson({ key, label })} />
@@ -143,12 +144,35 @@ function HourGrid({ rows }: { rows: Activity["hours"] }) {
   })}</div>;
 }
 
-function Breakdown({ title, icon, rows, label, value, extra, empty }: { title: string; icon?: React.ReactNode; rows: Row[]; label: string; value: string; extra?: (row: Row) => string; empty?: string }) {
+// Brand marks (simple-icons, CC0) for the browsers and systems it covers. Windows and Edge are not in simple-icons,
+// so they and anything unrecognised get a neutral Lucide icon. Black marks are drawn in ink so they read on the tint.
+const BROWSER_MARKS: [RegExp, SimpleIcon][] = [[/samsung/i, siSamsung], [/opera/i, siOpera], [/brave/i, siBrave], [/firefox/i, siFirefoxbrowser], [/safari/i, siSafari], [/chrome|chromium/i, siGooglechrome]];
+const OS_MARKS: [RegExp, SimpleIcon][] = [[/android/i, siAndroid], [/ios|iphone|ipad/i, siIos], [/mac/i, siMacos], [/ubuntu/i, siUbuntu], [/linux/i, siLinux], [/apple/i, siApple]];
+const CAMPAIGN_MARKS: [RegExp, SimpleIcon][] = [[/^(ig|insta)/i, siInstagram], [/^(fb|facebook|meta)/i, siFacebook], [/youtube|^yt$/i, siYoutube], [/whatsapp|^wa$/i, siWhatsapp], [/google|^g$/i, siGoogle]];
+function SimpleMark({ icon }: { icon: SimpleIcon }) {
+  return <svg viewBox="0 0 24 24" width={15} height={15} fill={icon.hex === "000000" ? "#3d3d3a" : `#${icon.hex}`}><path d={icon.path} /></svg>;
+}
+function brandIcon(name: string, marks: [RegExp, SimpleIcon][], fallback: React.ReactNode) {
+  const hit = marks.find(([pattern]) => pattern.test(name));
+  if (hit) return <SimpleMark icon={hit[1]} />;
+  if (/edge/i.test(name)) return <Globe size={15} />;
+  if (/windows/i.test(name)) return <Monitor size={15} />;
+  return fallback;
+}
+function deviceIcon(name: string) {
+  const key = name.toLowerCase();
+  if (key.includes("tablet")) return <Tablet size={15} />;
+  if (key.includes("mobile") || key.includes("phone")) return <Smartphone size={15} />;
+  return key.includes("desktop") ? <Monitor size={15} /> : <Laptop size={15} />;
+}
+
+function Breakdown({ title, icon, rows, label, value, extra, empty, rowIcon, tone }: { title: string; icon?: React.ReactNode; rows: Row[]; label: string; value: string; extra?: (row: Row) => string; empty?: string; rowIcon?: (row: Row) => React.ReactNode; tone?: string }) {
   const max = Math.max(1, ...rows.map(row => Number(row[value]) || 0));
-  return <Card className={`${shell.panel} ${styles.breakdown}`}>
-    <h2>{icon}{title}</h2>
+  return <Card className={`${shell.panel} ${styles.breakdown}`} data-tone={tone}>
+    <h2>{icon && <span className={styles.titleIcon} aria-hidden="true">{icon}</span>}{title}</h2>
     {rows.length ? <ol>{rows.slice(0, 10).map((row, i) => <li key={`${show(row[label])}-${i}`}>
       <span className={styles.barFill} style={{ width: `${((Number(row[value]) || 0) / max) * 100}%` }} />
+      {rowIcon && <span className={styles.rowIcon} aria-hidden="true">{rowIcon(row)}</span>}
       <span className={styles.barLabel} title={show(row[label])}>{show(row[label])}{extra && <small>{extra(row)}</small>}</span>
       <strong>{number(Number(row[value]))}</strong>
     </li>)}</ol> : <p className={shell.empty}>{empty ?? "No data in this window yet."}</p>}

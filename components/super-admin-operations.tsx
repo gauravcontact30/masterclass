@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import {useCallback,useEffect,useState,useId} from 'react';
 import styles from './super-admin-dashboard.module.css';
 import { AdminTable } from './super-admin-table';
+import { ToneTiles } from './super-admin-overview-live';
+import { AlertTriangle, Flag, Radio } from 'lucide-react';
 type Row=Record<string,unknown>;
 type Operations={generatedAt:string;liveCount:number;openReports:number;live:Row[];traffic:Row[];pages:Row[];ai:Row[];reports:Row[];alerts:Row[];security:Row[]};
 const value=(item:unknown)=>item===null||item===undefined?'—':typeof item==='object'?JSON.stringify(item):String(item);
@@ -39,7 +41,11 @@ export function SuperAdminOperations({section,days,query}:{section:string;days:n
   const table=(title:string,rows:Row[],columns:string[])=><Records key={`${title}:${days}`} title={title} rows={rows} columns={columns} query={query}/>;
   if(!data)return error?<AdminError>{error}</AdminError>:<AdminLoading>Loading operations...</AdminLoading>;
   return <>{error&&<AdminError>{error} Showing the previous snapshot.</AdminError>}<div className={styles.toolbar}><span>Updated {new Date(data.generatedAt).toLocaleTimeString()} · refreshes every 30 seconds</span><Button variant="outline" className={styles.refresh} onClick={()=>void refresh()}>Refresh operations</Button></div>
-    {(section==='overview'||section==='live')&&<div className={styles.metrics}><Card className={styles.metric}><span>Live learners</span><strong>{data.liveCount}</strong><small>Signed-in users with a visible-page heartbeat in the last 90 seconds</small></Card><Card className={styles.metric}><span>Reports needing review</span><strong>{data.openReports}</strong><small>Open or reviewing reports across the platform</small></Card><Card className={styles.metric}><span>Application alerts</span><strong>{data.alerts.length}</strong><small>Routes with at least 3 server failures in 15 minutes</small></Card></div>}
+    {(section==='overview'||section==='live')&&<ToneTiles items={[
+      {label:'Live learners',value:String(data.liveCount),note:'Signed-in learners with a visible dashboard page in the last 90 s',icon:Radio,tone:'mint',pulse:data.liveCount>0},
+      {label:'Reports needing review',value:String(data.openReports),note:data.openReports?'Open Moderation to resolve them':'Nothing waiting for review',icon:Flag,tone:'butter'},
+      {label:'Application alerts',value:String(data.alerts.length),note:data.alerts.length?'Routes with 3+ server failures in 15 min':'No failing routes in the last 15 min',icon:AlertTriangle,tone:data.alerts.length?'rose':'sage',pulse:data.alerts.length>0},
+    ]}/>}
     {section==='overview'&&table('Needs attention',data.alerts,['resource','failures','last_seen'])}
     {section==='live'&&table('Live sessions',data.live,['email','path','device','started_at','last_seen_at'])}
     {section==='analytics'&&<><p className={styles.note}>Authenticated dashboard activity only. Views are client-reported; blocked tracking or hidden tabs reduce coverage. Daily groups use UTC. Load time measures full browser navigations when available.</p>{table('Daily learning activity',data.traffic,['day','views','learners','load_ms'])}{table('Popular learning pages',data.pages,['path','views','learners','load_ms'])}</>}

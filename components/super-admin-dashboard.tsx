@@ -161,7 +161,7 @@ export function SuperAdminDashboard() {
       {section === "transactions" && <SuperAdminTransactions />}
       {section === "announcements" && <SuperAdminAnnouncements />}
       {section === "promotions" && <SuperAdminPromotions days={days} query={query} />}
-      {section === "overview" && <OverviewLive snapshot={data} onRefreshSnapshot={refreshQuietly} />}
+      {(section === "overview" || section === "live") && <OverviewLive snapshot={data} onRefreshSnapshot={refreshQuietly} />}
       {["overview","live","analytics","moderation","security"].includes(section)&&<SuperAdminOperations section={section} days={days} query={query}/>}
       {section==="ai"&&<SuperAdminAi days={days} query={query}/>}
       {data && <>

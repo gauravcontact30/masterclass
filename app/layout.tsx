@@ -5,6 +5,7 @@ import { ExclusiveAccordions } from "@/components/exclusive-accordions";
 import { StudentChatbot } from "@/components/student-chatbot";
 import { VisitTracker } from "@/components/visit-tracker";
 import { SiteAnalytics } from "@/components/site-analytics";
+import { BackToTop } from "@/components/back-to-top";
 import "./globals.css";
 import { isIndexable, siteDescription, siteKeywords, siteName, siteTitle, siteUrl } from "@/lib/seo";
 export const metadata: Metadata = {
@@ -32,5 +33,5 @@ export default function RootLayout({ children }: {children: React.ReactNode}) {
   // attributes to <body> before React hydrates, which React then reports as a
   // mismatch the reader can do nothing about. Suppressing it here covers this
   // element's own attributes only — a real mismatch inside the tree still warns.
-  return <html lang="en-IN" className="h-full antialiased"><body className="min-h-full" suppressHydrationWarning><AppProviders>{children}{/* Both read the URL, so each streams in its own boundary instead of blocking the prerendered shell. */}<Suspense fallback={null}><StudentChatbot /></Suspense><Suspense fallback={null}><VisitTracker /></Suspense><ExclusiveAccordions /></AppProviders><SiteAnalytics /></body></html>;
+  return <html lang="en-IN" className="h-full antialiased"><body className="min-h-full" suppressHydrationWarning><AppProviders>{children}{/* Both read the URL, so each streams in its own boundary instead of blocking the prerendered shell. */}<Suspense fallback={null}><StudentChatbot /></Suspense><Suspense fallback={null}><VisitTracker /></Suspense><Suspense fallback={null}><BackToTop /></Suspense><ExclusiveAccordions /></AppProviders><SiteAnalytics /></body></html>;
 }

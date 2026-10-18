@@ -86,3 +86,17 @@
 .deviceList { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .deviceList li { display: grid; gap: 2px; padding: 8px 10px; border-radius: 10px; background: #f5f4ed; font-size: 13px; }
 .deviceList small { font-size: 12px; color: #5e5d59; }
+
+/* Devices / Browsers / Operating systems / Campaigns: each panel has its own light tone, a title icon well and a
+   brand or device mark on every row. Tones are scoped to .breakdown (CSS Modules need a local class). */
+.breakdown { --c: #9a4a2c; --c-soft: #fbe6dc; }
+.breakdown[data-tone="sky"] { --c: #2f5f82; --c-soft: #e2eef8; }
+.breakdown[data-tone="lavender"] { --c: #4b4594; --c-soft: #ebe8f8; }
+.breakdown[data-tone="mint"] { --c: #2f6b55; --c-soft: #e3f1ea; }
+.breakdown[data-tone="peach"] { --c: #9a4a2c; --c-soft: #fbe6dc; }
+.breakdown[data-tone] { border-top: 3px solid var(--c); background: linear-gradient(180deg, color-mix(in srgb, var(--c-soft) 45%, #fff), #fff 120px); }
+.breakdown[data-tone] .barFill { background: var(--c-soft); opacity: 1; }
+.titleIcon { display: inline-grid; place-items: center; width: 30px; height: 30px; margin-right: 4px; border-radius: 9px; background: var(--c-soft); color: var(--c); }
+.breakdown li { justify-content: flex-start; }
+.breakdown li strong { margin-left: auto; }
+.rowIcon { position: relative; display: inline-grid; place-items: center; flex-shrink: 0; width: 24px; height: 24px; border-radius: 7px; background: #fff; color: var(--c); box-shadow: 0 0 0 1px color-mix(in srgb, var(--c) 14%, transparent); }

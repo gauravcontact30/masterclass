@@ -96,3 +96,4 @@
   .reading li > span:last-child { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .dot::after, .ring, .stream li[data-new] { animation: none; } }
+.tilesOnly { margin-bottom: 18px; }
