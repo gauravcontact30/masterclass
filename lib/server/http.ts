@@ -31,7 +31,7 @@ export async function api(action: () => Promise<Response>, request?: Request) {
   const requestId = crypto.randomUUID();
   function monitor(response: Response) {
     response.headers.set("X-Request-ID", requestId);
-    // Browsers of untracked accounts (the owner; see tracking-exclusions.ts) stay out of the request log too.
+    // Opt out of successful-request analytics, but never let a client-set cookie hide security failures.
     const untracked = request?.headers.get("cookie")?.split(/;\s*/).includes(`${UNTRACKED_COOKIE}=1`);
     if (request && (!untracked || response.status >= 400) && !new URL(request.url).pathname.startsWith("/api/super-admin")) {
       const event = { kind: "request", action: request.method, resource: new URL(request.url).pathname, status: response.status, duration_ms: Math.round(performance.now() - started), details: { request_id: requestId } };

@@ -1,0 +1,30 @@
+import { PGlite } from "@electric-sql/pglite";
+import { readFile } from "node:fs/promises";
+import assert from "node:assert/strict";
+const db = new PGlite();
+const owner = "00000000-0000-4000-8000-000000000001";
+const learner = "00000000-0000-4000-8000-000000000002";
+try {
+  await db.exec(`create role anon; create role authenticated; create schema auth;
+    create table auth.users(id uuid, email text);
+    create table public.site_visits(user_id uuid, visitor_id text);
+    create table public.learning_presence(user_id text);
+    create table public.monitor_events(actor_id text, kind text);
+    insert into auth.users values ('${owner}', 'GarvContact30@gmail.com'), ('${learner}', 'learner@example.com');
+    insert into site_visits values ('${owner}', 'owner-browser'), (null, 'owner-browser'), ('${learner}', 'owner-browser');
+    insert into learning_presence values ('${owner}'), ('${learner}');
+    insert into monitor_events values ('${owner}', 'page'), ('${owner}', 'admin');`);
+  const migration = await readFile("supabase/migrations/0028_tracking_exclusion.sql", "utf8");
+  await db.exec(migration);
+  await db.exec(migration);
+  assert.deepEqual((await db.query("select user_id from site_visits")).rows, [{ user_id: learner }]);
+  assert.deepEqual((await db.query("select user_id from learning_presence")).rows, [{ user_id: learner }]);
+  assert.deepEqual((await db.query("select kind from monitor_events")).rows, [{ kind: "admin" }]);
+  await db.exec(`insert into site_visits values ('${owner}', 'another-browser');
+    insert into learning_presence values ('${owner}');
+    insert into monitor_events values ('${owner}', 'page'), ('${owner}', 'security');`);
+  assert.equal((await db.query("select * from site_visits")).rows.length, 1);
+  assert.equal((await db.query("select * from learning_presence")).rows.length, 1);
+  assert.equal((await db.query("select * from monitor_events")).rows.length, 2);
+  console.log("PASS: historical cleanup, insert guards, other users, audit retention, migration rerun.");
+} finally { await db.close(); }
