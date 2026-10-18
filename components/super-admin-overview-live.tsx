@@ -148,7 +148,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
         <dl className={styles.facts}><div><dt>Bounce rate</dt><dd>{live?.totals.bounceRate == null ? "—" : `${live.totals.bounceRate}%`}</dd></div><div><dt>Avg. session</dt><dd>{live?.totals.avgSessionSeconds == null ? "—" : `${Math.round(live.totals.avgSessionSeconds)} s`}</dd></div><div><dt>Sign-ins (24 h)</dt><dd>{n(new Set((live?.recent ?? []).filter(v => v.email).map(v => v.email)).size)}</dd></div></dl>
       </article>
 
-      <article className={styles.panel} data-tone="butter">
+      <article className={`${styles.panel} ${styles.full}`} data-tone="butter">
         <h3><Server size={16} aria-hidden="true" />System health<span>{h?.environment ?? ""}</span></h3>
         {h ? <dl className={styles.health}>
           <div><dt><Database size={13} aria-hidden="true" />Database</dt><dd data-tone={h.databaseMs > 800 ? "warn" : "ok"}>{n(h.databaseMs)} ms</dd></div>

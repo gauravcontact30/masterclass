@@ -21,6 +21,7 @@ import { DashboardPageHeader } from "./dashboard-page-header";
 import { Wordmark } from "./brand-mark";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { SuperAdminSuggestions } from "./super-admin-suggestions";
+import { OverviewLive } from "./super-admin-overview-live";
 import { SuperAdminTraces } from "./super-admin-traces";
 import { SuperAdminActivity } from "./super-admin-activity";
 import { AdminTable } from "./super-admin-table";
@@ -95,6 +96,8 @@ export function SuperAdminDashboard() {
     } catch (e) { if (!signal?.aborted) setError(e instanceof Error ? e.message : "Unable to load monitoring."); }
     finally { if (!signal?.aborted) setBusy(false); }
   }, [days]);
+  // The Overview live panels re-read the snapshot on their own 15-second rhythm.
+  const refreshQuietly = useCallback(() => { void refresh(); }, [refresh]);
   useEffect(() => { const controller = new AbortController(); queueMicrotask(() => { if (!controller.signal.aborted) void refresh(controller.signal); }); const interval = setInterval(() => { if (document.visibilityState === "visible") void refresh(controller.signal); }, 60000); return () => { controller.abort(); clearInterval(interval); }; }, [refresh]);
   const table = (title: string, rows: Row[], columns: string[], note?: string) => <Table key={`${title}-${days}`} title={title} rows={rows} columns={columns} query={query} note={note} />;
   const mrr = data ? data.recurring.monthly * data.prices.monthly + data.recurring.yearly * data.prices.yearly / 12 : 0;
@@ -158,6 +161,7 @@ export function SuperAdminDashboard() {
       {section === "transactions" && <SuperAdminTransactions />}
       {section === "announcements" && <SuperAdminAnnouncements />}
       {section === "promotions" && <SuperAdminPromotions days={days} query={query} />}
+      {section === "overview" && <OverviewLive snapshot={data} onRefreshSnapshot={refreshQuietly} />}
       {["overview","live","analytics","moderation","security"].includes(section)&&<SuperAdminOperations section={section} days={days} query={query}/>}
       {section==="ai"&&<SuperAdminAi days={days} query={query}/>}
       {data && <>
