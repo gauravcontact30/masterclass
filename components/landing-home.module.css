@@ -161,7 +161,7 @@
   linear-gradient(180deg, rgba(40, 22, 12, .6) 0%, rgba(40, 22, 12, 0) 24%),
   linear-gradient(90deg, rgba(40, 22, 12, .86) 0%, rgba(40, 22, 12, .55) 38%, rgba(40, 22, 12, 0) 68%),
   linear-gradient(0deg, rgba(40, 22, 12, .66) 0%, rgba(40, 22, 12, 0) 34%); }
-.heroCopy { position: absolute; left: max(32px, calc((100% - 1240px) / 2)); bottom: 168px; width: min(700px, calc(100% - 64px)); display: grid; gap: 22px; }
+.heroCopy { position: absolute; left: max(32px, calc((100% - 1240px) / 2)); bottom: 130px; width: min(700px, calc(100% - 64px)); display: grid; gap: 22px; }
 /* The page's one loud gesture: wide, heavy Anek headlines over the photograph. */
 .heroCopy h2 { margin: 0; font-family: var(--nb-font); font-weight: 700; font-variation-settings: "wdth" 118; font-size: clamp(40px, 5.2vw, 80px); line-height: .98; letter-spacing: -0.025em; text-wrap: balance; color: #fff; }
 .heroBody { margin: 0; max-width: 46ch; font-size: clamp(17px, 1.45vw, 20px); line-height: 1.55; color: rgba(255, 255, 255, .92); text-wrap: pretty; }
@@ -267,7 +267,7 @@
   .navbarInner { width: calc(100% - 24px); gap: 8px; }
   .heroSlider { height: 100svh; min-height: 640px; }
   .heroShade { background: linear-gradient(180deg, rgba(40, 22, 12, .6) 0%, rgba(40, 22, 12, 0) 20%), linear-gradient(0deg, rgba(40, 22, 12, .92) 0%, rgba(40, 22, 12, .58) 45%, rgba(40, 22, 12, 0) 72%); }
-  .heroCopy { left: 16px; width: calc(100% - 32px); bottom: 164px; gap: 14px; }
+  .heroCopy { left: 16px; width: calc(100% - 32px); bottom: 138px; gap: 14px; }
   .heroCopy h2 { font-size: 36px; font-variation-settings: "wdth" 108; }
   .heroBody { font-size: 16px; }
   .home .heroPrimary, .home .heroSecondary { height: 50px; padding: 0 20px; flex: 1 1 auto; justify-content: center; }
