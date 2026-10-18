@@ -101,5 +101,12 @@
 /* Breathing room: the header line, the tab strip and the table each sit apart, and the pager clears the
    floating Study Buddy launcher in the bottom-right corner. */
 .head p { margin-top: 6px; }
-.explorer > nav, .explorer > :last-child { margin-bottom: 72px; }
+.explorer > :last-child { margin-bottom: 8px; }
 .table th, .table td { padding: 12px 14px; }
+
+/* The dashboard sets .panel[data-slot="card"] to display:block, which cancelled the grid gap above: restore it here,
+   with roomier padding, so the tabs, summary, search, filters and table sit apart. */
+.explorer[data-slot="card"] { display: grid; gap: 22px; padding: 26px 26px 22px; }
+.explorer[data-slot="card"] .controls { gap: 16px; }
+.explorer[data-slot="card"] .head { padding-bottom: 4px; }
+.explorer[data-slot="card"] .tableWrap { margin-top: 4px; }

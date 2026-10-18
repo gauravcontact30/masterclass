@@ -56,3 +56,23 @@
 .visualPicker > button { min-width: 0; }
 @media (max-width: 760px) { .visualPicker { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 380px) { .visualPicker { grid-template-columns: minmax(0, 1fr); } }
+
+/* Official documentation for each compared technology, under the questions. */
+.officialDocs { display: grid; gap: 10px; margin-top: 18px; }
+.officialDocs h4 { margin: 0; font-size: 15px; color: var(--nb-graphite); }
+.officialDocs ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.officialDocs li { --chip: #eaf2fd; --chip-edge: #2a5d9f; }
+.officialDocs li[data-tint="1"] { --chip: #e9f6ee; --chip-edge: #2f7a4f; }
+.officialDocs li[data-tint="2"] { --chip: #f1ecfb; --chip-edge: #5b45a8; }
+.officialDocs a { display: grid; gap: 4px; height: 100%; padding: 12px 14px; border: 1px solid var(--nb-rule); border-top: 3px solid var(--chip-edge); border-radius: 12px; background: linear-gradient(180deg, var(--chip), #fff 60%); color: inherit; text-decoration: none; transition: transform .15s ease, box-shadow .15s ease; }
+.officialDocs a:hover { transform: translateY(-2px); box-shadow: 0 14px 26px -20px rgba(20, 20, 19, .5); }
+.officialDocs a:focus-visible { outline: 3px solid var(--chip-edge); outline-offset: 2px; }
+.officialDocs b { font-size: 14px; color: var(--chip-edge); }
+.docTitle { font-size: 13.5px; font-weight: 650; color: var(--nb-graphite); }
+.docText { font-size: 13px; line-height: 1.5; color: var(--nb-text); }
+.docSections { display: flex; flex-wrap: wrap; gap: 4px; }
+.docSections i { padding: 1px 7px; border-radius: 6px; background: #f5f4ed; font-size: 11.5px; font-style: normal; color: var(--nb-text); }
+.officialDocs small { font-size: 12px; color: var(--nb-muted); }
+/* A taller question list, so the right panel runs the height of the technology column beside it. */
+.tallPanel [data-scroll="true"][data-scroll] { max-height: 760px; }
+@media (max-width: 760px) { .tallPanel [data-scroll="true"][data-scroll] { max-height: 480px; } }

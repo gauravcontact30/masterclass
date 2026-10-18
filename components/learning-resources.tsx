@@ -28,7 +28,7 @@ function LearningResourceShelf({ technology }: { technology: string }) {
   if (!resources.length && !links.length) return null;
   return <section className={styles.resources} aria-label={`Visual resources for ${technology}`}>
     <header className={styles.header}><h3><Images size={16} aria-hidden="true" />Visual learning shelf</h3><span>{resources.length + links.length} resources</span></header>
-    <div className={styles.grid}>{visibleLinks.map(resource => <article key={resource.page} className={`${styles.card} ${learningCard.card}`}>
+    <div className={styles.grid}>{visibleLinks.map((resource, index) => <article key={`${resource.page}-${start + index}`} className={`${styles.card} ${learningCard.card}`}>
       <a className={`${styles.preview} ${styles.brandPreview}`} href={resource.page} target="_blank" rel="noopener noreferrer" aria-label={`Visit ${resource.title} (opens in a new tab)`}>
         <Image src={resource.src} alt="" width={240} height={160} sizes="112px" />
         <span><ExternalLink size={12} aria-hidden="true" />Visit</span>

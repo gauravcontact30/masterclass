@@ -181,7 +181,7 @@ function ServicePage({ services, hi, title, topics, showReferences, renderDetail
   return <section ref={section} className={title ? styles.categorySection : undefined} aria-labelledby={title ? id : undefined}>
     {title && <header className={styles.categoryHeading}><div><span><ExpandedText text={hi ? "अध्ययन श्रेणी" : "EXPLORE CATEGORY"} /></span><h3 id={id}><ExpandedText text={title} /></h3></div><small>{services.length} <ExpandedText text={topics ? (hi ? "विषय" : "topics") : hi ? "संदर्भ" : "references"} /></small></header>}
     <div className={styles.grid}>
-      {shown.map(service => <BookmarkSection key={service.awsId ?? service.name} title={service.name}><article aria-label={service.name} className={styles.card} data-tint={services.indexOf(service) % TINTS}>
+      {shown.map((service, index) => <BookmarkSection key={`${service.awsId ?? service.name}-${index}`} title={service.name}><article aria-label={service.name} className={styles.card} data-tint={services.indexOf(service) % TINTS}>
         <header><h4><ExpandedText text={service.name} /></h4><span className={styles.badge}><ExpandedText text={topics ? (hi ? "विषय" : "Topic") : service.kind === "capability" ? (hi ? "क्षमता" : "Capability") : (title ? (hi ? "सेवा" : "Service") : service.category)} /></span></header>
         <div className={styles.purpose}><span><ExpandedText text={topics ? (hi ? "मुख्य विचार" : "Key idea") : hi ? "मुख्य उद्देश्य" : "Core purpose"} /></span><p className={styles.summary}><ExpandedText text={service.summary} /></p></div>
         <div className={styles.block}><span className={styles.blockLabel}><ExpandedText text={hi ? "मुख्य विशेषताएँ" : "Key features"} /></span>

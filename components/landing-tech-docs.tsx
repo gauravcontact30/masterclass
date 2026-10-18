@@ -146,6 +146,9 @@ export function LandingTechDocs({ official, preview = false, locked = false }: R
     const at = preview ? 1 : Math.min(materialPage[tech.id] ?? 1, pages);
     const shown = items.slice((at - 1) * MATERIAL_PAGE, at * MATERIAL_PAGE);
     const turn = (n: number) => setMaterialPage(map => ({ ...map, [tech.id]: n }));
+    // Three headlines from the official blog, three community write-ups from Medium.
+    const feed = official?.articles?.[tech.id] ?? [];
+    const articles = [...feed.filter(a => a.source === "official").slice(0, 3), ...feed.filter(a => a.source === "medium").slice(0, 3)];
     body = <article key={tech.id} className={styles.slide} style={{ "--ink": tech.tone.ink, "--tint": tech.tone.tint, "--glow": tech.tone.glow } as React.CSSProperties}
       aria-roledescription="slide" aria-label={`${current + 1} / ${total}: ${tech.name}`}>
       <div className={styles.overview}>
@@ -199,6 +202,14 @@ export function LandingTechDocs({ official, preview = false, locked = false }: R
         </div>}
         {items.length ? null : <p className={styles.noItems}>{text("This platform matches your search; its materials are hidden by the level or type filter.", "यह प्लेटफ़ॉर्म खोज से मेल खाता है; स्तर या प्रकार फ़िल्टर से सामग्री छिपी है।")}</p>}
       </div>
+      {articles.length > 0 && <div className={styles.articles}>
+        <p className={styles.materialsHead}><span>{text("Latest articles", "नवीनतम लेख")}</span><b>{articles.length}</b><small>{text("Official blog and Medium community, newest first", "आधिकारिक ब्लॉग और Medium समुदाय, नवीनतम पहले")}</small></p>
+        <ul>{articles.map(a => <li key={a.url}><a href={a.url} target="_blank" rel="noopener noreferrer">
+          <span className={styles.articleSource} data-source={a.source}>{a.source === "official" ? text("Official blog", "आधिकारिक ब्लॉग") : text("Community · Medium", "समुदाय · Medium")}</span>
+          <b>{a.title}</b>
+          <small>{[a.author, a.date && shortDate(a.date)].filter(Boolean).join(" · ")}</small>
+        </a></li>)}</ul>
+      </div>}
     </article>;
   }
 

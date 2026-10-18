@@ -1,5 +1,5 @@
 /* User activities page. Built on the admin shell's panels and tables (super-admin-dashboard.module.css). */
-.activity { display: grid; gap: 18px; }
+.activity { display: grid; gap: 28px; padding-block: 8px 72px; }
 
 .liveBar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 14px 18px; border: 1px solid #d5efe0; border-radius: 14px; background: linear-gradient(90deg, #ebf7f0, #fff 70%); font-size: 15px; }
 .liveBar strong { font-size: 22px; font-variant-numeric: tabular-nums; }
@@ -100,3 +100,6 @@
 .breakdown li { justify-content: flex-start; }
 .breakdown li strong { margin-left: auto; }
 .rowIcon { position: relative; display: inline-grid; place-items: center; flex-shrink: 0; width: 24px; height: 24px; border-radius: 7px; background: #fff; color: var(--c); box-shadow: 0 0 0 1px color-mix(in srgb, var(--c) 14%, transparent); }
+/* User activities: every panel gets breathing room inside and between, and the last one clears the Study Buddy button. */
+.activity > [data-slot="card"] { padding-block: 22px; }
+.breakdowns { gap: 18px; }

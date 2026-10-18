@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-10-18T06:36:27.450Z",
+  "fetchedAt": "2026-10-18T08:40:19.445Z",
   "versions": {
     "ai-gateway": {
       "version": "AI SDK 7.0.143",
@@ -35,7 +35,7 @@
         "Where performance matters",
         "Want to learn more about Angular?"
       ],
-      "fetchedAt": "2026-10-18T06:36:25.943Z"
+      "fetchedAt": "2026-10-18T08:40:18.277Z"
     },
     "https://angular.dev/tutorials/learn-angular": {
       "url": "https://angular.dev/tutorials/learn-angular",
@@ -49,7 +49,7 @@
         "How to use this tutorial",
         "Using AI for Development"
       ],
-      "fetchedAt": "2026-10-18T06:36:25.900Z"
+      "fetchedAt": "2026-10-18T08:40:18.234Z"
     },
     "https://angular.dev/guide/signals": {
       "url": "https://angular.dev/guide/signals",
@@ -66,7 +66,7 @@
         "Executing side effects on non-reactive APIs",
         "Reading signals in OnPush components"
       ],
-      "fetchedAt": "2026-10-18T06:36:26.064Z"
+      "fetchedAt": "2026-10-18T08:40:18.489Z"
     },
     "https://angular.dev/guide/signals/linked-signal": {
       "url": "https://angular.dev/guide/signals/linked-signal",
@@ -81,7 +81,7 @@
         "Custom equality comparison",
         "Customizing the set operation"
       ],
-      "fetchedAt": "2026-10-18T06:36:26.046Z"
+      "fetchedAt": "2026-10-18T08:40:18.419Z"
     },
     "https://angular.dev/guide/signals/resource": {
       "url": "https://angular.dev/guide/signals/resource",
@@ -98,7 +98,7 @@
         "Chaining resources",
         "Reactive data fetching with httpResource"
       ],
-      "fetchedAt": "2026-10-18T06:36:26.058Z"
+      "fetchedAt": "2026-10-18T08:40:18.492Z"
     },
     "https://angular.dev/guide/forms/signals/overview": {
       "url": "https://angular.dev/guide/forms/signals/overview",
@@ -113,7 +113,7 @@
         "Prerequisites",
         "Setup"
       ],
-      "fetchedAt": "2026-10-18T06:36:25.983Z"
+      "fetchedAt": "2026-10-18T08:40:18.361Z"
     },
     "https://angular.dev/guide/zoneless": {
       "url": "https://angular.dev/guide/zoneless",
@@ -130,7 +130,7 @@
         "Requirements for Zoneless compatibility",
         "Testing and Debugging"
       ],
-      "fetchedAt": "2026-10-18T06:36:25.999Z"
+      "fetchedAt": "2026-10-18T08:40:18.422Z"
     },
     "https://angular.dev/guide/templates/defer": {
       "url": "https://angular.dev/guide/templates/defer",
@@ -147,7 +147,7 @@
         "Prefetching data with prefetch",
         "Testing @defer blocks"
       ],
-      "fetchedAt": "2026-10-18T06:36:26.085Z"
+      "fetchedAt": "2026-10-18T08:40:18.536Z"
     },
     "https://vuejs.org": {
       "url": "https://vuejs.org",
@@ -162,7 +162,7 @@
         "User-friendly",
         "Efficient"
       ],
-      "fetchedAt": "2026-10-18T06:36:25.835Z"
+      "fetchedAt": "2026-10-18T08:40:18.191Z"
     },
     "https://vuejs.org/guide/introduction.html": {
       "url": "https://vuejs.org/guide/introduction.html",
@@ -179,7 +179,7 @@
         "API Styles",
         "Still Got Questions?"
       ],
-      "fetchedAt": "2026-10-18T06:36:25.879Z"
+      "fetchedAt": "2026-10-18T08:40:18.210Z"
     },
     "https://vuejs.org/guide/essentials/reactivity-fundamentals.html": {
       "url": "https://vuejs.org/guide/essentials/reactivity-fundamentals.html",
@@ -195,7 +195,7 @@
         "reactive()",
         "Additional Ref Unwrapping Details"
       ],
-      "fetchedAt": "2026-10-18T06:36:25.932Z"
+      "fetchedAt": "2026-10-18T08:40:18.256Z"
     },
     "https://vuejs.org/guide/components/props.html": {
       "url": "https://vuejs.org/guide/components/props.html",
@@ -212,7 +212,7 @@
         "One-Way Data Flow",
         "Prop Validation"
       ],
-      "fetchedAt": "2026-10-18T06:36:25.927Z"
+      "fetchedAt": "2026-10-18T08:40:18.260Z"
     },
     "https://vuejs.org/guide/essentials/template-refs.html": {
       "url": "https://vuejs.org/guide/essentials/template-refs.html",
@@ -228,7 +228,7 @@
         "Refs inside v-for",
         "Function Refs"
       ],
-      "fetchedAt": "2026-10-18T06:36:25.893Z"
+      "fetchedAt": "2026-10-18T08:40:18.225Z"
     },
     "https://vuejs.org/guide/components/async.html": {
       "url": "https://vuejs.org/guide/components/async.html",
@@ -244,7 +244,7 @@
         "Lazy Hydration",
         "Using with Suspense"
       ],
-      "fetchedAt": "2026-10-18T06:36:25.882Z"
+      "fetchedAt": "2026-10-18T08:40:18.212Z"
     },
     "https://blog.vuejs.org/posts/vue-3-5": {
       "url": "https://blog.vuejs.org/posts/vue-3-5",
@@ -261,7 +261,7 @@
         "Custom Elements Improvements",
         "Other Notable Features"
       ],
-      "fetchedAt": "2026-10-18T06:36:25.783Z"
+      "fetchedAt": "2026-10-18T08:40:18.136Z"
     },
     "https://trailhead.salesforce.com/": {
       "url": "https://trailhead.salesforce.com/",
@@ -277,7 +277,7 @@
         "Take your skills further",
         "Get the Trailhead Dispatch in your inbox."
       ],
-      "fetchedAt": "2026-10-18T06:36:27.383Z"
+      "fetchedAt": "2026-10-18T08:40:19.153Z"
     },
     "https://developer.salesforce.com/docs/platform/lwc/guide/get-started-introduction.html": {
       "url": "https://developer.salesforce.com/docs/platform/lwc/guide/get-started-introduction.html",
@@ -288,7 +288,7 @@
       "description": "Use the Lightning Web Components (LWC) framework to build custom user interfaces, web and mobile apps, and digital experiences on the Salesforce Platf",
       "lead": "Use the Lightning Web Components (LWC) framework to build custom user interfaces, web and mobile apps, and digital experiences on the Salesforce Platform. Lightning web components are custom HTML elements built using HTML and JavaScript.",
       "sections": [],
-      "fetchedAt": "2026-10-18T06:36:25.908Z"
+      "fetchedAt": "2026-10-18T08:40:18.244Z"
     },
     "https://trailhead.salesforce.com/content/learn/modules/apex_database": {
       "url": "https://trailhead.salesforce.com/content/learn/modules/apex_database",
@@ -303,7 +303,7 @@
         "Skills you will gain",
         "Discover More"
       ],
-      "fetchedAt": "2026-10-18T06:36:27.396Z"
+      "fetchedAt": "2026-10-18T08:40:18.595Z"
     },
     "https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql.htm": {
       "url": "https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql.htm",
@@ -314,7 +314,7 @@
       "description": "Use the Salesforce Object Query Language (SOQL) to search your organization’s Salesforce data for specific information. SOQL is similar to the SELECT",
       "lead": "Use the Salesforce Object Query Language (SOQL) to search your organization’s Salesforce data for specific information. SOQL is similar to the SELECT statement in the widely used Structured Query Language (SQL) but is designed specifically for Salesforce data.",
       "sections": [],
-      "fetchedAt": "2026-10-18T06:36:25.920Z"
+      "fetchedAt": "2026-10-18T08:40:18.170Z"
     },
     "https://developer.salesforce.com/tools/salesforcecli": {
       "url": "https://developer.salesforce.com/tools/salesforcecli",
@@ -328,7 +328,7 @@
         "Choose your operating system",
         "Getting Started"
       ],
-      "fetchedAt": "2026-10-18T06:36:25.732Z"
+      "fetchedAt": "2026-10-18T08:40:18.045Z"
     },
     "https://www.salesforce.com/releases/": {
       "url": "https://www.salesforce.com/releases/",
@@ -345,7 +345,7 @@
         "Watch some of our key Winter ’27 Release feature updates in action.",
         "Explore curated demos by industry for the Winter ’27 Release."
       ],
-      "fetchedAt": "2026-10-18T06:36:26.123Z"
+      "fetchedAt": "2026-10-18T08:40:18.644Z"
     },
     "https://nodejs.org/docs/latest/api/": {
       "url": "https://nodejs.org/docs/latest/api/",
@@ -356,7 +356,7 @@
       "description": "",
       "lead": "",
       "sections": [],
-      "fetchedAt": "2026-10-18T06:36:25.758Z"
+      "fetchedAt": "2026-10-18T08:40:18.127Z"
     },
     "https://nodejs.org/en/learn/getting-started/introduction-to-nodejs": {
       "url": "https://nodejs.org/en/learn/getting-started/introduction-to-nodejs",
@@ -367,7 +367,7 @@
       "description": "Node.js is an open-source and cross-platform JavaScript runtime environment. It is a popular tool for almost any kind of project!",
       "lead": "Node.js is an open-source and cross-platform JavaScript runtime environment. It is a popular tool for almost any kind of project!",
       "sections": [],
-      "fetchedAt": "2026-10-18T06:36:26.042Z"
+      "fetchedAt": "2026-10-18T08:40:18.398Z"
     },
     "https://nodejs.org/api/typescript.html": {
       "url": "https://nodejs.org/api/typescript.html",
@@ -382,7 +382,7 @@
         "Full TypeScript support",
         "Type stripping"
       ],
-      "fetchedAt": "2026-10-18T06:36:25.806Z"
+      "fetchedAt": "2026-10-18T08:40:18.165Z"
     },
     "https://nodejs.org/api/test.html": {
       "url": "https://nodejs.org/api/test.html",
@@ -399,7 +399,7 @@
         "Skipping tests",
         "TODO tests"
       ],
-      "fetchedAt": "2026-10-18T06:36:26.312Z"
+      "fetchedAt": "2026-10-18T08:40:18.811Z"
     },
     "https://nodejs.org/api/sqlite.html": {
       "url": "https://nodejs.org/api/sqlite.html",
@@ -416,7 +416,7 @@
         "Class: Statement",
         "Class: SQLTagStore"
       ],
-      "fetchedAt": "2026-10-18T06:36:26.078Z"
+      "fetchedAt": "2026-10-18T08:40:18.522Z"
     },
     "https://nodejs.org/api/permissions.html": {
       "url": "https://nodejs.org/api/permissions.html",
@@ -429,7 +429,7 @@
       "sections": [
         "Process-based permissions"
       ],
-      "fetchedAt": "2026-10-18T06:36:25.875Z"
+      "fetchedAt": "2026-10-18T08:40:18.214Z"
     },
     "https://nodejs.org/en/blog/release/v26.0.0": {
       "url": "https://nodejs.org/en/blog/release/v26.0.0",
@@ -446,7 +446,7 @@
         "Semver-Patch Commits",
         "SHASUMS"
       ],
-      "fetchedAt": "2026-10-18T06:36:26.263Z"
+      "fetchedAt": "2026-10-18T08:40:18.730Z"
     },
     "https://openrouter.ai/docs": {
       "url": "https://openrouter.ai/docs",
@@ -463,7 +463,7 @@
         "Using the OpenAI SDK",
         "Using third-party SDKs"
       ],
-      "fetchedAt": "2026-10-18T06:36:26.255Z"
+      "fetchedAt": "2026-10-18T08:40:18.780Z"
     },
     "https://openrouter.ai/docs/quickstart": {
       "url": "https://openrouter.ai/docs/quickstart",
@@ -480,7 +480,7 @@
         "Using the OpenAI SDK",
         "Using third-party SDKs"
       ],
-      "fetchedAt": "2026-10-18T06:36:26.200Z"
+      "fetchedAt": "2026-10-18T08:40:18.707Z"
     },
     "https://openrouter.ai/docs/api-reference/overview": {
       "url": "https://openrouter.ai/docs/api-reference/overview",
@@ -495,7 +495,7 @@
         "Requests",
         "Responses"
       ],
-      "fetchedAt": "2026-10-18T06:36:26.233Z"
+      "fetchedAt": "2026-10-18T08:40:18.737Z"
     },
     "https://openrouter.ai/docs/guides/routing/model-fallbacks": {
       "url": "https://openrouter.ai/docs/guides/routing/model-fallbacks",
@@ -512,7 +512,7 @@
         "Using with the Anthropic Messages API",
         "Using with the OpenAI SDK"
       ],
-      "fetchedAt": "2026-10-18T06:36:26.163Z"
+      "fetchedAt": "2026-10-18T08:40:18.660Z"
     },
     "https://openrouter.ai/docs/features/provider-routing": {
       "url": "https://openrouter.ai/docs/features/provider-routing",
@@ -529,7 +529,7 @@
         "Floor Price Shortcut",
         "Advanced Sorting with Partition"
       ],
-      "fetchedAt": "2026-10-18T06:36:26.379Z"
+      "fetchedAt": "2026-10-18T08:40:18.891Z"
     },
     "https://openrouter.ai/docs/guides/features/tool-calling": {
       "url": "https://openrouter.ai/docs/guides/features/tool-calling",
@@ -545,7 +545,7 @@
         "A Simple Agentic Loop",
         "Best Practices and Advanced Patterns"
       ],
-      "fetchedAt": "2026-10-18T06:36:26.334Z"
+      "fetchedAt": "2026-10-18T08:40:18.851Z"
     },
     "https://openrouter.ai/docs/guides/features/structured-outputs": {
       "url": "https://openrouter.ai/docs/guides/features/structured-outputs",
@@ -562,7 +562,7 @@
         "Best Practices",
         "Example Implementation"
       ],
-      "fetchedAt": "2026-10-18T06:36:26.179Z"
+      "fetchedAt": "2026-10-18T08:40:18.671Z"
     },
     "https://vercel.com/docs/ai-gateway": {
       "url": "https://vercel.com/docs/ai-gateway",
@@ -578,7 +578,7 @@
         "Choose how to start",
         "Configure and operate AI Gateway"
       ],
-      "fetchedAt": "2026-10-18T06:36:27.085Z"
+      "fetchedAt": "2026-10-18T08:40:18.773Z"
     },
     "https://vercel.com/docs/ai-gateway/getting-started": {
       "url": "https://vercel.com/docs/ai-gateway/getting-started",
@@ -594,7 +594,7 @@
         "Make your first request",
         "Use AI Gateway with existing code"
       ],
-      "fetchedAt": "2026-10-18T06:36:27.054Z"
+      "fetchedAt": "2026-10-18T08:40:18.752Z"
     },
     "https://vercel.com/docs/ai-gateway/models-and-providers": {
       "url": "https://vercel.com/docs/ai-gateway/models-and-providers",
@@ -610,7 +610,7 @@
         "Specifying the model",
         "Dynamic model discovery"
       ],
-      "fetchedAt": "2026-10-18T06:36:26.416Z"
+      "fetchedAt": "2026-10-18T08:40:18.821Z"
     },
     "https://vercel.com/docs/ai-gateway/provider-options": {
       "url": "https://vercel.com/docs/ai-gateway/provider-options",
@@ -627,7 +627,7 @@
         "Provider timeouts",
         "Model fallbacks"
       ],
-      "fetchedAt": "2026-10-18T06:36:26.976Z"
+      "fetchedAt": "2026-10-18T08:40:19.282Z"
     },
     "https://vercel.com/docs/ai-gateway/openai-compat": {
       "url": "https://vercel.com/docs/ai-gateway/openai-compat",
@@ -644,7 +644,7 @@
         "Integration with existing tools",
         "List models"
       ],
-      "fetchedAt": "2026-10-18T06:36:26.862Z"
+      "fetchedAt": "2026-10-18T08:40:19.186Z"
     },
     "https://vercel.com/docs/ai-gateway/byok": {
       "url": "https://vercel.com/docs/ai-gateway/byok",
@@ -661,7 +661,7 @@
         "Regional inference",
         "Testing your credentials"
       ],
-      "fetchedAt": "2026-10-18T06:36:27.447Z"
+      "fetchedAt": "2026-10-18T08:40:19.443Z"
     },
     "https://vercel.com/docs/ai-gateway/observability": {
       "url": "https://vercel.com/docs/ai-gateway/observability",
@@ -677,7 +677,1519 @@
         "Team scope",
         "Project scope"
       ],
-      "fetchedAt": "2026-10-18T06:36:26.994Z"
+      "fetchedAt": "2026-10-18T08:40:19.300Z"
+    },
+    "https://docs.langchain.com/oss/python/langchain/overview": {
+      "url": "https://docs.langchain.com/oss/python/langchain/overview",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "LangChain overview",
+      "description": "LangChain provides create_agent: a minimal, highly configurable agent harness. Compose exactly the agent your use case needs from model, tools, prompt, and middleware.",
+      "lead": "LangChain provides create_agent: a minimal, highly configurable agent harness. Compose exactly the agent your use case needs from model, tools, prompt, and middleware.",
+      "sections": [
+        "Create an agent",
+        "Core benefits",
+        "Standard model interface",
+        "Highly configurable harness",
+        "Built on top of LangGraph"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.830Z"
+    },
+    "https://docs.langchain.com/oss/python/langgraph/overview": {
+      "url": "https://docs.langchain.com/oss/python/langgraph/overview",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "LangGraph overview",
+      "description": "Gain control with LangGraph to design agents that reliably handle complex tasks",
+      "lead": "Gain control with LangGraph to design agents that reliably handle complex tasks",
+      "sections": [
+        "Install",
+        "Core benefits",
+        "LangGraph ecosystem",
+        "LangSmith Observability",
+        "LangSmith Deployment"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.714Z"
+    },
+    "https://docs.langchain.com/langsmith/home": {
+      "url": "https://docs.langchain.com/langsmith/home",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "LangSmith Observability",
+      "description": "Instrument your LLM application, investigate traces, and monitor performance in production with LangSmith.",
+      "lead": "Fetch the complete documentation index at: /llms.txt",
+      "sections": [
+        "Documentation Index",
+        "Get started",
+        "Set up tracing",
+        "Trace a RAG application",
+        "Investigate and monitor"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.680Z"
+    },
+    "https://redux.js.org/introduction/getting-started": {
+      "url": "https://redux.js.org/introduction/getting-started",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Getting Started with Redux",
+      "description": "Redux is a JS library for predictable and maintainable global state management.",
+      "lead": "Redux is a JS library for predictable and maintainable global state management.",
+      "sections": [
+        "Installation",
+        "Basic Example",
+        "Learn Redux",
+        "Help and Discussion",
+        "Should You Use Redux?"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.216Z"
+    },
+    "https://redux-toolkit.js.org/introduction/getting-started": {
+      "url": "https://redux-toolkit.js.org/introduction/getting-started",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Getting Started with Redux Toolkit",
+      "description": "The Redux Toolkit package is intended to be the standard way to write Redux logic. It was originally created to help address three common concerns about Redux:",
+      "lead": "The Redux Toolkit package is intended to be the standard way to write Redux logic. It was originally created to help address three common concerns about Redux:",
+      "sections": [
+        "Purpose",
+        "Installation",
+        "Requirements",
+        "What's Included",
+        "RTK Query"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.833Z"
+    },
+    "https://zustand.docs.pmnd.rs/learn/getting-started/introduction": {
+      "url": "https://zustand.docs.pmnd.rs/learn/getting-started/introduction",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Introduction",
+      "description": "How to use Zustand",
+      "lead": "A small, fast, and scalable bearbones state management solution. Zustand has a comfy API based on hooks. It isn't boilerplatey or opinionated, but has enough convention to be explicit and flux-like.",
+      "sections": [
+        "# Installation",
+        "# First create a store",
+        "# Then bind your components, and that's it!"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.157Z"
+    },
+    "https://nextjs.org/docs": {
+      "url": "https://nextjs.org/docs",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Next.js Docs",
+      "description": "Welcome to the Next.js Documentation.",
+      "lead": "Next.js is a React framework for building full-stack web applications. You use React Components to build user interfaces, and Next.js for additional features and optimizations.",
+      "sections": [
+        "What is Next.js?",
+        "How to use the docs",
+        "App Router and Pages Router",
+        "Pre-requisite knowledge",
+        "Accessibility"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.477Z"
+    },
+    "https://tanstack.com/start/latest/docs/framework/react/overview": {
+      "url": "https://tanstack.com/start/latest/docs/framework/react/overview",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "TanStack Start Overview",
+      "description": "Build full-stack React applications with TanStack Start, including server rendering, streaming, server functions, and type-safe routing.",
+      "lead": "TanStack Start is stable. If you're upgrading from a release candidate, follow Migrate from the Release Candidate .",
+      "sections": [
+        "Dependencies",
+        "Should I use TanStack Start or just TanStack Router?",
+        "Are there limitations?",
+        "How is TanStack Start funded?",
+        "Ready to get started?"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.564Z"
+    },
+    "https://tanstack.com/query/latest/docs/framework/react/overview": {
+      "url": "https://tanstack.com/query/latest/docs/framework/react/overview",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Overview",
+      "description": "TanStack Query (formerly known as React Query) is often described as the missing data-fetching library for web applications, but in more technical terms, it makes fetching, caching, synchronizing and...",
+      "lead": "TanStack Query (formerly known as React Query) is often described as the missing data-fetching library for web applications, but in more technical terms, it makes fetching, caching, synchronizing and updating server state in your web applications a breeze.",
+      "sections": [
+        "Motivation",
+        "Enough talk, show me some code already!",
+        "You talked me into it, so what now?",
+        "Libraries",
+        "Blog"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.593Z"
+    },
+    "https://docs.n8n.io/": {
+      "url": "https://docs.n8n.io/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "n8n Docs",
+      "description": "Get set up on n8n, build your first workflow, and find inspiration for what to automate.",
+      "lead": "n8n is a fair-code licensed workflow automation tool that combines AI features with business process automation.",
+      "sections": [],
+      "fetchedAt": "2026-10-18T08:40:18.675Z"
+    },
+    "https://docs.langflow.org/": {
+      "url": "https://docs.langflow.org/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "What is Langflow?",
+      "description": "Langflow is an open-source, Python-based, customizable framework for building AI applications.",
+      "lead": "Langflow is an open-source, Python-based, customizable framework for building AI applications. It supports important AI functionality like agents and the Model Context Protocol (MCP), and it doesn't require you to use specific large language models (LLMs) or…",
+      "sections": [
+        "Application development and prototyping",
+        "Endless modifications and integrations"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.200Z"
+    },
+    "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview": {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Prompt engineering overview",
+      "description": "Learn when prompt engineering is the right solution, and find Claude prompting techniques and interactive tutorials.",
+      "lead": "Learn when prompt engineering is the right solution, and find Claude prompting techniques and interactive tutorials.",
+      "sections": [
+        "Before prompt engineering ",
+        "When to prompt engineer ",
+        "How to prompt engineer ",
+        "Prompt engineering tutorial "
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.651Z"
+    },
+    "https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview": {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Tool use with Claude",
+      "description": "Connect Claude to external tools and APIs. See where tools execute, when Claude calls them, and which tool fits your task.",
+      "lead": "Connect Claude to external tools and APIs. See where tools execute, when Claude calls them, and which tool fits your task.",
+      "sections": [
+        "How tool use works ",
+        "When Claude uses tools ",
+        "Choose a tool ",
+        "Pricing ",
+        "Next steps "
+      ],
+      "fetchedAt": "2026-10-18T08:40:19.068Z"
+    },
+    "https://modelcontextprotocol.io/docs/getting-started/intro": {
+      "url": "https://modelcontextprotocol.io/docs/getting-started/intro",
+      "ok": true,
+      "complete": false,
+      "status": 200,
+      "title": "What is the Model Context Protocol (MCP)?",
+      "description": "",
+      "lead": "",
+      "sections": [
+        "What can MCP enable?",
+        "Why does MCP matter?",
+        "Broad ecosystem support",
+        "Start Building",
+        "Build servers"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.555Z"
+    },
+    "https://a2a-protocol.org/latest/": {
+      "url": "https://a2a-protocol.org/latest/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "A2A Protocol",
+      "description": "The official documentation for the Agent2Agent (A2A) protocol. The A2A protocol is an open standard that allows different AI agents to securely communicate, collaborate, and solve complex problems together.",
+      "lead": "An open protocol enabling communication and interoperability between opaque agentic applications.",
+      "sections": [
+        "What is A2A Protocol? &para;",
+        "Key Features &para;",
+        "Get started with A2A &para;",
+        "How A2A Works with MCP &para;",
+        "What A2A Is Not &para;"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.333Z"
+    },
+    "https://react.dev/blog/2024/12/05/react-19": {
+      "url": "https://react.dev/blog/2024/12/05/react-19",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "React v19",
+      "description": "Additions since this post was originally shared with the React 19 RC in April:",
+      "lead": "Additions since this post was originally shared with the React 19 RC in April:",
+      "sections": [
+        "What’s new in React 19",
+        "New React DOM Static APIs",
+        "React Server Components",
+        "Improvements in React 19"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.435Z"
+    },
+    "https://react.dev/reference/rsc/server-components": {
+      "url": "https://react.dev/reference/rsc/server-components",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Server Components",
+      "description": "Server Components are a new type of Component that renders ahead of time, before bundling, in an environment separate from your client app or SSR server.",
+      "lead": "Server Components are a new type of Component that renders ahead of time, before bundling, in an environment separate from your client app or SSR server.",
+      "sections": [
+        "Note",
+        "Server Components without a Server",
+        "Server Components with a Server",
+        "Rendering a context provider in a Server Component",
+        "Adding interactivity to Server Components"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.338Z"
+    },
+    "https://react.dev/reference/rsc/use-client": {
+      "url": "https://react.dev/reference/rsc/use-client",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "'use client'",
+      "description": "'use client' is for use with React Server Components .",
+      "lead": "'use client' is for use with React Server Components .",
+      "sections": [
+        "Reference",
+        "Usage"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.405Z"
+    },
+    "https://nextjs.org/docs/app/guides/incremental-static-regeneration": {
+      "url": "https://nextjs.org/docs/app/guides/incremental-static-regeneration",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "How to implement Incremental Static Regeneration (ISR)",
+      "description": "Learn how to create or update static pages at runtime with Incremental Static Regeneration.",
+      "lead": "This guide covers ISR without Cache Components. If you are using cacheComponents , see ISR with Cache Components instead.",
+      "sections": [
+        "Reference",
+        "Examples",
+        "Troubleshooting",
+        "Caveats",
+        "Platform Support"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.611Z"
+    },
+    "https://developer.mozilla.org/en-US/docs/Web/JavaScript": {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "JavaScript",
+      "description": "JavaScript (JS) is a lightweight interpreted (or just-in-time compiled) programming language with first-class functions. While it is most well-known as the scripting language for Web pages, many non-browser environments also use it, such as Node.js, Apache…",
+      "lead": "JavaScript ( JS ) is a lightweight interpreted (or just-in-time compiled ) programming language with first-class functions . While it is most well-known as the scripting language for Web pages, many non-browser environments also use it, such as Node.js ,…",
+      "sections": [
+        "In this article",
+        "Beginner's tutorials",
+        "JavaScript guides",
+        "Reference",
+        "Help improve MDN"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.441Z"
+    },
+    "https://www.typescriptlang.org/docs/": {
+      "url": "https://www.typescriptlang.org/docs/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "TypeScript Documentation",
+      "description": "Find TypeScript starter projects: from Angular to React or Node.js and CLIs.",
+      "lead": "Quick introductions based on your background or preference.",
+      "sections": [],
+      "fetchedAt": "2026-10-18T08:40:18.506Z"
+    },
+    "https://expressjs.com/": {
+      "url": "https://expressjs.com/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Fast, unopinionated, minimalist web framework for Node.js",
+      "description": "Fast, unopinionated, minimalist web framework for Node.js",
+      "lead": "Express is a minimal and flexible Node.js web application framework that provides a robust set of features for web and mobile applications.",
+      "sections": [
+        "September 2026 Security Releases",
+        "Web Applications",
+        "APIs",
+        "Performance",
+        "Middleware"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.312Z"
+    },
+    "https://docs.nestjs.com/": {
+      "url": "https://docs.nestjs.com/",
+      "ok": true,
+      "complete": false,
+      "status": 200,
+      "title": "",
+      "description": "Nest is a framework for building efficient, scalable Node.js server-side applications. It uses progressive JavaScript, is built with TypeScript and combines elements of OOP (Object Oriented Programming), FP (Functional Programming), and FRP (Functional…",
+      "lead": "",
+      "sections": [],
+      "fetchedAt": "2026-10-18T08:40:18.131Z"
+    },
+    "https://graphql.org/learn/": {
+      "url": "https://graphql.org/learn/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Learn GraphQL",
+      "description": "Get hands-on with the fundamentals of GraphQL. Start with the basics and see how it compares to other technologies. Then move on to best practices for designing better APIs.",
+      "lead": "Get hands-on with the fundamentals of GraphQL. Start with the basics and see how it compares to other technologies. Then move on to best practices for designing better APIs.",
+      "sections": [
+        "What will you find here?",
+        "Getting started with GraphQL",
+        "Practical guidelines",
+        "Schema governance",
+        "Training Courses"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.321Z"
+    },
+    "https://fastapi.tiangolo.com/": {
+      "url": "https://fastapi.tiangolo.com/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "FastAPI &para;",
+      "description": "FastAPI framework, high performance, easy to learn, fast to code, ready for production",
+      "lead": "FastAPI framework, high performance, easy to learn, fast to code, ready for production",
+      "sections": [
+        "Sponsors &para;",
+        "Opinions &para;",
+        "FastAPI mini documentary &para;",
+        "Typer , the FastAPI of CLIs &para;",
+        "Requirements &para;"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.374Z"
+    },
+    "https://zod.dev/": {
+      "url": "https://zod.dev/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Zod",
+      "description": "Introduction to Zod - TypeScript-first schema validation library with static type inference",
+      "lead": "TypeScript-first schema validation with static type inference by @colinhacks",
+      "sections": [
+        "Introduction",
+        "Features",
+        "Installation",
+        "Requirements",
+        "Ecosystem"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.388Z"
+    },
+    "https://docs.pydantic.dev/latest/": {
+      "url": "https://docs.pydantic.dev/latest/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Pydantic Validation",
+      "description": "Pydantic is the most widely used data validation library for Python.",
+      "lead": "Pydantic is the most widely used data validation library for Python.",
+      "sections": [
+        "Why use Pydantic?",
+        "Pydantic examples",
+        "Who is using Pydantic?"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.516Z"
+    },
+    "https://jestjs.io/docs/getting-started": {
+      "url": "https://jestjs.io/docs/getting-started",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Getting Started",
+      "description": "Install Jest using your favorite package manager:",
+      "lead": "Install Jest using your favorite package manager:",
+      "sections": [
+        "Running from command line",
+        "Additional Configuration",
+        "Using with bundlers"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.282Z"
+    },
+    "https://vitest.dev/guide/": {
+      "url": "https://vitest.dev/guide/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Getting Started",
+      "description": "Next generation testing framework powered by Vite",
+      "lead": "Vitest (pronounced as \"veetest\" ) is a next generation testing framework powered by Vite.",
+      "sections": [
+        "Overview",
+        "Trying Vitest Online",
+        "Adding Vitest to Your Project",
+        "Writing Tests",
+        "Configuring Vitest"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.286Z"
+    },
+    "https://playwright.dev/docs/intro": {
+      "url": "https://playwright.dev/docs/intro",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Installation",
+      "description": "Playwright Test is an end-to-end test framework for modern web apps. It bundles test runner, assertions, isolation, parallelization and rich tooling. Playwright supports Chromium, WebKit and Firefox on Windows, Linux and macOS, locally or in CI, headless or…",
+      "lead": "Playwright Test is an end-to-end test framework for modern web apps. It bundles test runner, assertions, isolation, parallelization and rich tooling. Playwright supports Chromium, WebKit and Firefox on Windows, Linux and macOS, locally or in CI, headless or…",
+      "sections": [
+        "Introduction",
+        "Installing Playwright",
+        "What's Installed",
+        "Running the Example Test",
+        "HTML Test Reports"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.194Z"
+    },
+    "https://docs.cypress.io/app/get-started/why-cypress": {
+      "url": "https://docs.cypress.io/app/get-started/why-cypress",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Why Cypress?",
+      "description": "Why teams choose Cypress for end-to-end, component, and accessibility testing — its architecture, features, and trade-offs.",
+      "lead": "Cypress is a quality platform for teams shipping modern web applications. We bring together end-to-end testing, component testing, accessibility checks, and a clear view of test coverage into a connected workflow that runs locally and in CI, so you can catch…",
+      "sections": [
+        "Products",
+        "How Cypress grows with your team",
+        "Features",
+        "Solutions",
+        "Our mission"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.391Z"
+    },
+    "https://redux-toolkit.js.org/rtk-query/overview": {
+      "url": "https://redux-toolkit.js.org/rtk-query/overview",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "RTK Query Overview",
+      "description": "RTK Query is a powerful data fetching and caching tool. It is designed to simplify common cases for loading data in a web application, eliminating the need to hand-write data fetching & caching logic yourself .",
+      "lead": "RTK Query is a powerful data fetching and caching tool. It is designed to simplify common cases for loading data in a web application, eliminating the need to hand-write data fetching & caching logic yourself .",
+      "sections": [
+        "Motivation",
+        "What's included",
+        "Basic Usage",
+        "Further Information"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.530Z"
+    },
+    "https://react.dev/learn/passing-data-deeply-with-context": {
+      "url": "https://react.dev/learn/passing-data-deeply-with-context",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Passing Data Deeply with Context",
+      "description": "Usually, you will pass information from a parent component to a child component via props. But passing props can become verbose and inconvenient if you have to pass them through many components in the middle, or if many components in your app need the same…",
+      "lead": "Usually, you will pass information from a parent component to a child component via props. But passing props can become verbose and inconvenient if you have to pass them through many components in the middle, or if many components in your app need the same…",
+      "sections": [
+        "The problem with passing props",
+        "Context: an alternative to passing props",
+        "Using and providing context from the same component",
+        "Context passes through intermediate components",
+        "Before you use context"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.466Z"
+    },
+    "https://www.postgresql.org/docs/current/": {
+      "url": "https://www.postgresql.org/docs/current/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "PostgreSQL 18.6 Documentation",
+      "description": "PostgreSQL 18.6 Documentation The PostgreSQL Global Development Group Copyright © 1996–2026 The PostgreSQL Global Development Group Legal Notice Table of …",
+      "lead": "Copyright © 1996–2026 The PostgreSQL Global Development Group",
+      "sections": [
+        "The PostgreSQL Global Development Group"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.568Z"
+    },
+    "https://www.mongodb.com/docs/manual/": {
+      "url": "https://www.mongodb.com/docs/manual/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "What is MongoDB?",
+      "description": "Learn how to use the MongoDB document database to build modern applications with flexible schemas, a powerful query language, and full-text search support.",
+      "lead": "For the duration of public preview, Atlas Infinite clusters run the latest MongoDB 9.x version, using the Latest Version With Auto Upgrades release option in the Atlas UI. To learn more, see MongoDB Versions in Atlas.",
+      "sections": [
+        "Document Database",
+        "Transactions",
+        "High Availability",
+        "Horizontal Scaling"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.664Z"
+    },
+    "https://www.prisma.io/docs": {
+      "url": "https://www.prisma.io/docs",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Get started with Prisma",
+      "description": "Build your app with Prisma Composer and Prisma ORM, run it all locally, then deploy it to Prisma Compute, Prisma Postgres, and Storage. One CLI, one workflow.",
+      "lead": "Prisma is a complete TypeScript stack with one workflow: build your app and run all of it on your machine, then deploy it to the Prisma platform with one command. Check out the full-stack tutorial .",
+      "sections": [
+        "Build",
+        "Deploy",
+        "Prisma ORM",
+        "Pick your framework",
+        "Prisma ORM 7"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.514Z"
+    },
+    "https://orm.drizzle.team/docs/overview": {
+      "url": "https://orm.drizzle.team/docs/overview",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Drizzle ORM",
+      "description": "Drizzle ORM is a lightweight and performant TypeScript ORM with developer experience in mind.",
+      "lead": "Drizzle ORM is a headless TypeScript ORM with a head. 🐲",
+      "sections": [
+        "Headless ORM?",
+        "Why SQL-like?",
+        "Why not SQL-like?",
+        "Serverless?",
+        "Welcome on board!"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.561Z"
+    },
+    "https://mongoosejs.com/docs/": {
+      "url": "https://mongoosejs.com/docs/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Getting Started",
+      "description": "First be sure you have MongoDB and Node.js installed.",
+      "lead": "First be sure you have MongoDB and Node.js installed.",
+      "sections": [],
+      "fetchedAt": "2026-10-18T08:40:18.146Z"
+    },
+    "https://redis.io/docs/latest/": {
+      "url": "https://redis.io/docs/latest/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Welcome to Redis Docs",
+      "description": "Quickly set up a Redis cache, primary, vector or custom database",
+      "lead": "Quickly set up a Redis cache, primary, vector or custom database",
+      "sections": [
+        "Develop in your language",
+        "Redis for AI and search",
+        "From open source to production scale",
+        "Choose your next step",
+        "Data integration & observability"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.473Z"
+    },
+    "https://supabase.com/docs": {
+      "url": "https://supabase.com/docs",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Supabase Documentation",
+      "description": "Supabase is the Postgres development platform providing all the backend features you need to build a product.",
+      "lead": "Learn how to get up and running with Supabase through tutorials, APIs and platform resources.",
+      "sections": [
+        "Connect a framework",
+        "Build your backend",
+        "Extend your database",
+        "Use a client library",
+        "Migrate to Supabase"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.394Z"
+    },
+    "https://neon.com/docs/introduction": {
+      "url": "https://neon.com/docs/introduction",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Neon documentation",
+      "description": "Neon documentation root covers the full Neon backend platform: serverless Lakebase Postgres with branching and autoscaling, Managed Better Auth, Data API, Object Storage, Functions, and AI Gateway services. Use this page to reach quickstarts, framework…",
+      "lead": "Neon is the backend for apps and agents.",
+      "sections": [
+        "Getting started",
+        "Products",
+        "Connect your framework",
+        "AI tools and agents",
+        "Questions about Neon or Postgres? Join our Discord"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.484Z"
+    },
+    "https://firebase.google.com/docs": {
+      "url": "https://firebase.google.com/docs",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Firebase Documentation",
+      "description": "Developer documentation for Firebase",
+      "lead": "If you're already familiar with the suite of Firebase products, get started with the fundamentals of Firebase , like adding Firebase to your app!",
+      "sections": [
+        "Firebase developer documentation",
+        "Documentation and learning content"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.654Z"
+    },
+    "https://clerk.com/docs": {
+      "url": "https://clerk.com/docs",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Welcome to Clerk Docs",
+      "description": "Add complete user management to your application in minutes.",
+      "lead": "Clerk provides full-stack authentication and user management with products such as Organizations, Billing, and more. Have your agent use Clerk's CLI and Skills to get started, or explore the resources below.",
+      "sections": [
+        "Quickstarts & Tutorials",
+        "UI Components",
+        "SDK Reference",
+        "Customizing Clerk",
+        "Views"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.760Z"
+    },
+    "https://authjs.dev/getting-started": {
+      "url": "https://authjs.dev/getting-started",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "What is Auth.js?",
+      "description": "Authentication for the Web",
+      "lead": "Auth.js is a runtime agnostic library based on standard Web APIs that integrates deeply with multiple modern JavaScript frameworks to provide an authentication experience that’s simple to get started with, easy to extend, and always private and secure!",
+      "sections": [
+        "Official Providers",
+        "Supported Databases"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.219Z"
+    },
+    "https://www.better-auth.com/docs/introduction": {
+      "url": "https://www.better-auth.com/docs/introduction",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Introduction",
+      "description": "Introduction to Better Auth.",
+      "lead": "Better Auth is a framework-agnostic, universal authentication and authorization framework for TypeScript. It provides a comprehensive set of features out of the box and includes a plugin ecosystem that simplifies adding advanced functionalities. Whether you…",
+      "sections": [
+        "Features",
+        "AI resources"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.787Z"
+    },
+    "https://docs.aws.amazon.com/lambda/latest/dg/welcome.html": {
+      "url": "https://docs.aws.amazon.com/lambda/latest/dg/welcome.html",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "What is AWS Lambda?",
+      "description": "With AWS Lambda, you can run code without provisioning or managing servers.",
+      "lead": "AWS Lambda is a serverless compute service. With Lambda, you can run code without provisioning or managing servers. Lambda automatically manages the underlying infrastructure – including server maintenance, capacity provisioning, scaling, and patching – so…",
+      "sections": [],
+      "fetchedAt": "2026-10-18T08:40:18.053Z"
+    },
+    "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html": {
+      "url": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "What is Amazon EC2?",
+      "description": "Use Amazon EC2 for scalable computing capacity in the AWS Cloud so you can develop and deploy applications without hardware constraints.",
+      "lead": "Amazon Elastic Compute Cloud (Amazon EC2) provides on-demand, scalable computing capacity in the Amazon Web Services (AWS) Cloud. Using Amazon EC2 reduces hardware costs so you can develop and deploy applications faster. You can use Amazon EC2 to launch as…",
+      "sections": [
+        "Features of Amazon EC2",
+        "Related services",
+        "Access Amazon EC2",
+        "Pricing for Amazon EC2"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.055Z"
+    },
+    "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html": {
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "What is Amazon Elastic Container Service?",
+      "description": "Use Amazon ECS to deploy, manage, and scale containerized applications.",
+      "lead": "Join our upcoming container workshop series to learn best practices for Amazon ECS and AWS Fargate. Click here to sign up.",
+      "sections": [
+        "Terminology and components",
+        "Features",
+        "Provisioning",
+        "Pricing",
+        "Related services"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.052Z"
+    },
+    "https://docs.docker.com/get-started/": {
+      "url": "https://docs.docker.com/get-started/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Get started with Docker",
+      "description": "Choose a tutorial to build and run an application, work with an AI agent safely, or set up Docker for your organization.",
+      "lead": "Install what you need, then choose a tutorial that matches what you want to do.",
+      "sections": [
+        "Install what you need",
+        "Choose a tutorial"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.238Z"
+    },
+    "https://kubernetes.io/docs/concepts/overview/": {
+      "url": "https://kubernetes.io/docs/concepts/overview/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Overview",
+      "description": "Kubernetes is a portable, extensible, open source platform for managing containerized workloads and services that facilitate both declarative configuration and automation. It has a large, rapidly growing ecosystem. Kubernetes services, support, and tools are…",
+      "lead": "The name Kubernetes originates from Greek, meaning helmsman or pilot. K8s as an abbreviation results from counting the eight letters between the \"K\" and the \"s\". Google open sourced the Kubernetes project in 2014. Kubernetes combines over 15 years of Google's…",
+      "sections": [
+        "Why you need Kubernetes and what it can do",
+        "What Kubernetes is not",
+        "Historical context for Kubernetes",
+        "What's next"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.552Z"
+    },
+    "https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control": {
+      "url": "https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "1.1 Getting Started",
+      "description": "This chapter will be about getting started with Git. We will begin by explaining some background on version control tools, then move on to how to get Git running on your system and finally how to get it set up to start working with. At the end of this chapter…",
+      "lead": "This chapter will be about getting started with Git. We will begin by explaining some background on version control tools, then move on to how to get Git running on your system and finally how to get it set up to start working with. At the end of this chapter…",
+      "sections": [
+        "1. Getting Started",
+        "2. Git Basics",
+        "3. Git Branching",
+        "4. Git on the Server",
+        "5. Distributed Git"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.268Z"
+    },
+    "https://docs.github.com/en/get-started": {
+      "url": "https://docs.github.com/en/get-started",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Get started with GitHub documentation",
+      "description": "Learn how to start building, shipping, and maintaining software with GitHub. Explore our products, sign up for an account, and connect with the world's largest development community.",
+      "lead": "Learn how to start building, shipping, and maintaining software with GitHub. Explore our products, sign up for an account, and connect with the world's largest development community.",
+      "sections": [
+        "Recommended",
+        "Articles"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.528Z"
+    },
+    "https://docs.github.com/en/actions": {
+      "url": "https://docs.github.com/en/actions",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "GitHub Actions documentation",
+      "description": "Automate, customize, and execute your software development workflows right in your repository with GitHub Actions. You can discover, create, and share actions to perform any job you'd like, including CI/CD, and combine actions in a completely customized…",
+      "lead": "Automate, customize, and execute your software development workflows right in your repository with GitHub Actions. You can discover, create, and share actions to perform any job you'd like, including CI/CD, and combine actions in a completely customized…",
+      "sections": [
+        "Recommended",
+        "Articles"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.603Z"
+    },
+    "https://git-scm.com/docs/git-merge": {
+      "url": "https://git-scm.com/docs/git-merge",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Git - git-merge Documentation",
+      "description": "git-merge - Join two or more development histories together",
+      "lead": "git-merge - Join two or more development histories together",
+      "sections": [
+        "NAME",
+        "SYNOPSIS",
+        "DESCRIPTION",
+        "OPTIONS",
+        "PRE-MERGE CHECKS"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.381Z"
+    },
+    "https://git-scm.com/docs/git-rebase": {
+      "url": "https://git-scm.com/docs/git-rebase",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Git - git-rebase Documentation",
+      "description": "git-rebase - Reapply commits on top of another base tip",
+      "lead": "git-rebase - Reapply commits on top of another base tip",
+      "sections": [
+        "NAME",
+        "SYNOPSIS",
+        "DESCRIPTION",
+        "TRANSPLANTING A TOPIC BRANCH WITH --ONTO",
+        "MODE OPTIONS"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.500Z"
+    },
+    "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/welcome.html": {
+      "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/welcome.html",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "What is Amazon Simple Queue Service?",
+      "description": "Learn about the advantages of using Amazon SQS, such as reliability, scalability, and cost-effectiveness for decoupling application components.",
+      "lead": "Amazon Simple Queue Service (Amazon SQS) offers a secure, durable, and available hosted queue that lets you integrate and decouple distributed software systems and components. Amazon SQS offers common constructs such as dead-letter queues and cost allocation…",
+      "sections": [
+        "Benefits of using Amazon SQS",
+        "Basic Amazon SQS architecture",
+        "Differences between Amazon SQS, Amazon MQ, and Amazon SNS"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.141Z"
+    },
+    "https://docs.aws.amazon.com/sns/latest/dg/welcome.html": {
+      "url": "https://docs.aws.amazon.com/sns/latest/dg/welcome.html",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "What is Amazon SNS?",
+      "description": "This topic provides an introduction to Amazon SNS and how it facilitates asynchronous message delivery between publishers and subscribers through topics. Learn about the different endpoint types supported for message distribution, key features and…",
+      "lead": "Amazon Simple Notification Service (Amazon SNS) is a fully managed service that provides message delivery from publishers (producers) to subscribers (consumers). Publishers communicate asynchronously with subscribers by sending messages to a topic , which is…",
+      "sections": [
+        "How it works",
+        "Accessing Amazon SNS",
+        "Common Amazon SNS scenarios",
+        "Pricing for Amazon SNS"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.140Z"
+    },
+    "https://kafka.apache.org/documentation/": {
+      "url": "https://kafka.apache.org/documentation/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Documentation Redirect",
+      "description": "Apache Kafka",
+      "lead": "",
+      "sections": [],
+      "fetchedAt": "2026-10-18T08:40:18.149Z"
+    },
+    "https://www.inngest.com/docs": {
+      "url": "https://www.inngest.com/docs",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Introducing Inngest",
+      "description": "Build reliable background jobs, durable workflows, and AI agents in TypeScript, Python, and Go that survive failures, with no queues or infrastructure.",
+      "lead": "Build durable, observable, failure-resistant code with sandboxing, agent evals, and A/B tests built in.",
+      "sections": [
+        "The Inngest platform",
+        "Explore use cases",
+        "Start building",
+        "Coding agent resources",
+        "AI development tools"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.284Z"
+    },
+    "https://docs.python.org/3/tutorial/": {
+      "url": "https://docs.python.org/3/tutorial/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "The Python Tutorial",
+      "description": "Python is an easy to learn, powerful programming language. It has efficient high-level data structures and a simple but effective approach to object-oriented programming. Python’s elegant syntax an...",
+      "lead": "This tutorial is designed for programmers that are new to the Python language, not beginners who are new to programming.",
+      "sections": [
+        "This page",
+        "Navigation"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.203Z"
+    },
+    "https://numpy.org/doc/stable/user/absolute_beginners.html": {
+      "url": "https://numpy.org/doc/stable/user/absolute_beginners.html",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "NumPy: the absolute basics for beginners",
+      "description": "Welcome to the absolute beginner’s guide to NumPy!",
+      "lead": "Welcome to the absolute beginner’s guide to NumPy!",
+      "sections": [
+        "How to import NumPy",
+        "Reading the example code",
+        "Why use NumPy?",
+        "What is an “array”?",
+        "Array fundamentals"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.689Z"
+    },
+    "https://pandas.pydata.org/docs/getting_started/index.html": {
+      "url": "https://pandas.pydata.org/docs/getting_started/index.html",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Getting started",
+      "description": "pandas can be installed via conda from conda-forge .",
+      "lead": "pandas can be installed via conda from conda-forge .",
+      "sections": [
+        "Installation",
+        "Intro to pandas",
+        "Coming from…",
+        "Tutorials"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.351Z"
+    },
+    "https://docs.pola.rs/": {
+      "url": "https://docs.pola.rs/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Blazingly Fast DataFrame Library",
+      "description": "Polars is a blazingly fast DataFrame library for manipulating structured data. The core is written in Rust, and available for Python, R and NodeJS.",
+      "lead": "Polars is a blazingly fast DataFrame library for manipulating structured data. The core is written in Rust, and available for Python, R and NodeJS.",
+      "sections": [
+        "Key features",
+        "Philosophy",
+        "Example",
+        "Contributing",
+        "License"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.541Z"
+    },
+    "https://docs.pytorch.org/tutorials/beginner/basics/intro.html": {
+      "url": "https://docs.pytorch.org/tutorials/beginner/basics/intro.html",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Learn the Basics",
+      "description": "Go to the end to download the full example code.",
+      "lead": "Go to the end to download the full example code.",
+      "sections": [
+        "Running the Tutorial Code",
+        "How to Use this Guide"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.526Z"
+    },
+    "https://keras.io/getting_started/": {
+      "url": "https://keras.io/getting_started/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Getting started with Keras",
+      "description": "Keras documentation: Getting started with Keras",
+      "lead": "Are you a machine learning engineer looking for a Keras introduction one-pager? Read our guide Introduction to Keras for engineers .",
+      "sections": [
+        "Learning resources",
+        "Installing Keras 3",
+        "Configuring your backend",
+        "TensorFlow + Keras 2 backwards compatibility",
+        "Compatibility matrix"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.076Z"
+    },
+    "https://ai-sdk.dev/docs/introduction": {
+      "url": "https://ai-sdk.dev/docs/introduction",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "AI SDK by Vercel",
+      "description": "The AI SDK is the TypeScript toolkit for building AI applications and agents with React, Next.js, Vue, Svelte, Node.js, and more.",
+      "lead": "The AI SDK is the TypeScript toolkit for building AI applications and agents with React, Next.js, Vue, Svelte, Node.js, and more.",
+      "sections": [
+        "Why use the AI SDK?",
+        "Model Providers",
+        "Templates",
+        "Join our Community",
+        "llms.txt (for Cursor, Windsurf, Copilot, Claude etc.)"
+      ],
+      "fetchedAt": "2026-10-18T08:40:18.698Z"
     }
+  },
+  "articles": {
+    "vue": [
+      {
+        "title": "Announcing Vue 3.5",
+        "url": "https://blog.vuejs.org/posts/vue-3-5",
+        "date": "2024-09-01T00:00:00.000Z",
+        "author": null,
+        "source": "official"
+      },
+      {
+        "title": "Announcing VitePress 1.0",
+        "url": "https://blog.vuejs.org/posts/vitepress-1.0",
+        "date": "2024-03-21T00:00:00.000Z",
+        "author": null,
+        "source": "official"
+      },
+      {
+        "title": "Announcing Vue 3.4",
+        "url": "https://blog.vuejs.org/posts/vue-3-4",
+        "date": "2023-12-28T00:00:00.000Z",
+        "author": null,
+        "source": "official"
+      },
+      {
+        "title": "Vue 2 is Approaching End Of Life",
+        "url": "https://blog.vuejs.org/posts/vue-2-eol",
+        "date": "2023-12-15T00:00:00.000Z",
+        "author": null,
+        "source": "official"
+      },
+      {
+        "title": "Announcing Vue 3.3",
+        "url": "https://blog.vuejs.org/posts/vue-3-3",
+        "date": "2023-05-11T00:00:00.000Z",
+        "author": null,
+        "source": "official"
+      },
+      {
+        "title": "Volar: a New Beginning",
+        "url": "https://blog.vuejs.org/posts/volar-a-new-beginning",
+        "date": "2023-02-08T00:00:00.000Z",
+        "author": null,
+        "source": "official"
+      },
+      {
+        "title": "I Was Arrested for Guarding Too Much: A Trial About the Null Check That Never Fired",
+        "url": "https://medium.com/@pazpaz25/i-was-arrested-for-guarding-too-much-a-trial-about-the-null-check-that-never-fired-d35d8cf91773",
+        "date": "2026-10-16T20:11:16.000Z",
+        "author": "Izak T",
+        "source": "medium"
+      },
+      {
+        "title": "Best VueJS Web Development company in Rajasthan",
+        "url": "https://medium.com/@maniwebi08/best-vuejs-web-development-company-in-rajasthan-80a3f7d10a57",
+        "date": "2026-10-16T11:58:36.000Z",
+        "author": "mani webivalue",
+        "source": "medium"
+      },
+      {
+        "title": "Vue.js Basics: Reactivity Fundamentals : Understanding ref() Like a Human",
+        "url": "https://dilmina.medium.com/vue-js-basics-reactivity-fundamentals-understanding-ref-like-a-human-5993dad95977",
+        "date": "2026-10-15T12:06:57.000Z",
+        "author": "Eshan Dilmina",
+        "source": "medium"
+      },
+      {
+        "title": "Best VueJS Web Development company in Nigeria",
+        "url": "https://medium.com/@maniwebi08/best-vuejs-web-development-company-in-nigeria-8729e5133f4c",
+        "date": "2026-10-15T08:55:26.000Z",
+        "author": "mani webivalue",
+        "source": "medium"
+      },
+      {
+        "title": "Why Your Game Site Feels Laggy: Debugging a Main Thread Contention Problem",
+        "url": "https://medium.com/@tomsjson50/why-your-game-site-feels-laggy-debugging-a-main-thread-contention-problem-8f7165a9c7d3",
+        "date": "2026-10-14T09:44:27.000Z",
+        "author": "Tomsjson",
+        "source": "medium"
+      },
+      {
+        "title": "Next.js vs Vue.js: Which Is Better for Frontend Development in 2026?",
+        "url": "https://medium.com/@ankushnirmal82/next-js-vs-vue-js-which-is-better-for-frontend-development-in-2026-9f0a637280f4",
+        "date": "2026-10-13T14:07:32.000Z",
+        "author": "Ankushnirmal",
+        "source": "medium"
+      }
+    ],
+    "openrouter": [
+      {
+        "title": "Building Your First AI Router — A Hands-On Tutorial With Microsoft-Decision-1",
+        "url": "https://breathofcode.medium.com/building-your-first-ai-router-a-hands-on-tutorial-with-microsoft-decision-1-981e21940579",
+        "date": "2026-10-18T06:01:01.000Z",
+        "author": "Breath of Code",
+        "source": "medium"
+      },
+      {
+        "title": "Using Claude Code with OpenRouter Free Models, DeepSeek and more: A macOS Guide",
+        "url": "https://medium.com/@dariuszprzada/claude-code-with-deepseek-free-models-and-openrouter-a-macos-guide-0830fc4ef1c5",
+        "date": "2026-10-15T17:31:35.000Z",
+        "author": "Dariusz Przada",
+        "source": "medium"
+      },
+      {
+        "title": "The Great Budget AI Hack That Wasn’t: Trying to Run Claude Code on OpenRouter’s Free Tier",
+        "url": "https://medium.com/@hammadallauddin5/the-great-budget-ai-hack-that-wasnt-trying-to-run-claude-code-on-openrouter-s-free-tier-1a57f1fcbda3",
+        "date": "2026-10-10T23:37:20.000Z",
+        "author": "Hammad Allauddin",
+        "source": "medium"
+      },
+      {
+        "title": "Read This Before Signing Up to CoralBricks",
+        "url": "https://ai-agent-mistress.medium.com/read-this-before-signing-up-to-coralbricks-68fb6141a340",
+        "date": "2026-10-09T11:03:14.000Z",
+        "author": "AI Agent Mistress",
+        "source": "medium"
+      },
+      {
+        "title": "OpenRouter says its Stripe announcement needs no integration change",
+        "url": "https://medium.com/@dave_76259/openrouter-says-its-stripe-announcement-needs-no-integration-change-547c519db0c5",
+        "date": "2026-10-09T00:00:45.000Z",
+        "author": "Dave Kurian",
+        "source": "medium"
+      },
+      {
+        "title": "You Don’t Have to Leave the OpenAI API to Leave Single-Provider Risk",
+        "url": "https://medium.com/@nRouter.ai/you-dont-have-to-leave-the-openai-api-to-leave-single-provider-risk-560b81353817",
+        "date": "2026-10-08T09:49:22.000Z",
+        "author": "nRouter.ai",
+        "source": "medium"
+      }
+    ],
+    "angular": [
+      {
+        "title": "Signal Value Transforms, Routing Essentials, and Video Extension with Veo! ⚡",
+        "url": "https://blog.angular.dev/signal-value-transforms-routing-essentials-and-video-extension-with-veo-3846cae9283a",
+        "date": "2026-10-09T14:01:05.000Z",
+        "author": "Angular",
+        "source": "official"
+      },
+      {
+        "title": "Architecting the Modern Web: Debounce APIs, Rendering Strategies, and Automated AI Setup! ⚡",
+        "url": "https://blog.angular.dev/architecting-the-modern-web-debounce-apis-rendering-strategies-and-automated-ai-setup-826bc54ae3a9",
+        "date": "2026-09-25T13:59:49.000Z",
+        "author": "Angular",
+        "source": "official"
+      },
+      {
+        "title": "An update on Angular’s TypeScript 7-powered Compiler",
+        "url": "https://blog.angular.dev/an-update-on-angulars-typescript-7-powered-compiler-9619a35e2b0a",
+        "date": "2026-09-25T13:59:11.000Z",
+        "author": "Angular",
+        "source": "official"
+      },
+      {
+        "title": "Customizing Angular Aria Tabs Quickly with Google Antigravity CLI",
+        "url": "https://blog.angular.dev/customizing-angular-aria-tabs-quickly-with-google-antigravity-cli-39ff8e0271a4",
+        "date": "2026-09-02T01:50:59.000Z",
+        "author": "Angular",
+        "source": "official"
+      },
+      {
+        "title": "Styling Mastery and Declarative Form Submissions",
+        "url": "https://blog.angular.dev/styling-mastery-and-declarative-form-submissions-743bb9bd0b0e",
+        "date": "2026-08-28T11:01:01.000Z",
+        "author": "Angular",
+        "source": "official"
+      },
+      {
+        "title": "The Forms Evolution, Web AI, and Architectural Vision!",
+        "url": "https://blog.angular.dev/the-forms-evolution-web-ai-and-architectural-vision-4f96634b0ae3",
+        "date": "2026-08-14T13:01:03.000Z",
+        "author": "Angular",
+        "source": "official"
+      },
+      {
+        "title": "Mastering Host Directives in Angular v22: De-duplication, Merging, and Priority Rules",
+        "url": "https://dumildematos.medium.com/mastering-host-directives-in-angular-v22-de-duplication-merging-and-priority-rules-0873dc34f769",
+        "date": "2026-10-18T06:01:01.000Z",
+        "author": "Dumilde Matos",
+        "source": "medium"
+      },
+      {
+        "title": "What’s New in Angular 22, and Should You Upgrade Now?",
+        "url": "https://javascript.plainenglish.io/whats-new-in-angular-22-and-should-you-upgrade-now-a4a47ac5f72b",
+        "date": "2026-10-18T05:52:46.000Z",
+        "author": "CodePulse",
+        "source": "medium"
+      },
+      {
+        "title": "Three Things I Now Verify When Testing AI-Built Applications",
+        "url": "https://medium.com/@prakharshukla1729/three-things-i-now-verify-when-testing-ai-built-applications-f847d8b6d04d",
+        "date": "2026-10-17T20:12:57.000Z",
+        "author": "Prakharshukla",
+        "source": "medium"
+      },
+      {
+        "title": "i18n in Angular SSR: Translating Strings Is the Easy Part",
+        "url": "https://medium.com/@andriipap/i18n-in-angular-ssr-translating-strings-is-the-easy-part-28c42acd1402",
+        "date": "2026-10-17T18:41:19.000Z",
+        "author": "Andersseen",
+        "source": "medium"
+      },
+      {
+        "title": "7 Angular Habits That Are Quietly Hurting Your Code",
+        "url": "https://javascript.plainenglish.io/7-angular-habits-that-are-quietly-hurting-your-code-8163b88ec98e",
+        "date": "2026-10-17T14:50:09.000Z",
+        "author": "Bestte",
+        "source": "medium"
+      },
+      {
+        "title": "⚛️ React Design Patterns: 15 Practical Patterns Every React Developer Should Know",
+        "url": "https://medium.com/@omkartalekar1112/%EF%B8%8F-react-design-patterns-15-practical-patterns-every-react-developer-should-know-4a5b62a386a7",
+        "date": "2026-10-17T11:43:03.000Z",
+        "author": "Omkar Talekar",
+        "source": "medium"
+      }
+    ],
+    "node": [
+      {
+        "title": "Node.js 24.22.0 (LTS)",
+        "url": "https://nodejs.org/en/blog/release/v24.22.0",
+        "date": "2026-10-14T15:26:48.000Z",
+        "author": null,
+        "source": "official"
+      },
+      {
+        "title": "Node.js 26.12.0 (Current)",
+        "url": "https://nodejs.org/en/blog/release/v26.12.0",
+        "date": "2026-10-14T15:23:06.000Z",
+        "author": null,
+        "source": "official"
+      },
+      {
+        "title": "Wednesday, October 21, 2026 Security Releases",
+        "url": "https://nodejs.org/en/blog/vulnerability/october-2026-security-releases",
+        "date": "2026-10-14T03:00:00.000Z",
+        "author": null,
+        "source": "official"
+      },
+      {
+        "title": "Node.js 26.11.1 (Current)",
+        "url": "https://nodejs.org/en/blog/release/v26.11.1",
+        "date": "2026-10-07T23:56:26.000Z",
+        "author": null,
+        "source": "official"
+      },
+      {
+        "title": "Node.js 26.11.0 (Current)",
+        "url": "https://nodejs.org/en/blog/release/v26.11.0",
+        "date": "2026-10-07T14:45:09.000Z",
+        "author": null,
+        "source": "official"
+      },
+      {
+        "title": "Node.js 22.23.3 (LTS)",
+        "url": "https://nodejs.org/en/blog/release/v22.23.3",
+        "date": "2026-09-23T18:22:40.000Z",
+        "author": null,
+        "source": "official"
+      },
+      {
+        "title": "⚡ The API Quick Guide: Every Concept You Need, in One Fast Read",
+        "url": "https://medium.com/@omkartalekar1112/the-api-quick-guide-every-concept-you-need-in-one-fast-read-96156a80b882",
+        "date": "2026-10-18T05:33:32.000Z",
+        "author": "Omkar Talekar",
+        "source": "medium"
+      },
+      {
+        "title": "1,500 npm Packages Were Open to Takeover. No Password Needed",
+        "url": "https://martin128.medium.com/1-500-npm-packages-were-open-to-takeover-no-password-needed-faba8a76bc5d",
+        "date": "2026-10-18T04:11:01.000Z",
+        "author": "Martin",
+        "source": "medium"
+      },
+      {
+        "title": "Oxlint vs Biome vs ESLint in 2026: Real Next.js Benchmark | Waseem Anjum",
+        "url": "https://medium.com/@waseemaofficial/oxlint-vs-biome-vs-eslint-in-2026-real-next-js-benchmark-waseem-anjum-024506e07b2e",
+        "date": "2026-10-17T20:27:08.000Z",
+        "author": "Waseem Anjum",
+        "source": "medium"
+      },
+      {
+        "title": "Hono vs Express vs Fastify in 2026: Benchmarks + NestJS | Waseem Anjum",
+        "url": "https://medium.com/@waseemaofficial/hono-vs-express-vs-fastify-in-2026-benchmarks-nestjs-waseem-anjum-821ab09f98ab",
+        "date": "2026-10-17T20:06:24.000Z",
+        "author": "Waseem Anjum",
+        "source": "medium"
+      },
+      {
+        "title": "Your Store Has 1 Item Left. Two Customers Buy It Simultaneously. Both Orders Succeed.",
+        "url": "https://medium.com/@abdulrehmantech.me/your-store-has-1-item-left-two-customers-buy-it-simultaneously-both-orders-succeed-9e3e9394e33d",
+        "date": "2026-10-17T18:06:34.000Z",
+        "author": "Abdulrehman",
+        "source": "medium"
+      },
+      {
+        "title": "Bun vs Node.js in 2026: Bun 1.4 vs Node 26, Benchmarked | Waseem Anjum",
+        "url": "https://medium.com/@waseemaofficial/bun-vs-node-js-in-2026-bun-1-4-vs-node-26-benchmarked-waseem-anjum-6ed7d8f66c2b",
+        "date": "2026-10-17T17:44:29.000Z",
+        "author": "Waseem Anjum",
+        "source": "medium"
+      }
+    ],
+    "salesforce": [
+      {
+        "title": "What’s New in Salesforce Multi-Framework: Angular Is Now GA",
+        "url": "https://developer.salesforce.com/blogs/2026/10/whats-new-in-salesforce-multi-framework-angular-is-now-ga",
+        "date": "2026-10-15T15:00:43.000Z",
+        "author": "Alice Oh",
+        "source": "official"
+      },
+      {
+        "title": "Stop Credential Stuffing with B2C Commerce eCDN",
+        "url": "https://developer.salesforce.com/blogs/2026/10/stop-credential-stuffing-with-b2c-commerce-ecdn",
+        "date": "2026-10-14T15:00:41.000Z",
+        "author": "Sarah Welker",
+        "source": "official"
+      },
+      {
+        "title": "Salesforce Microfrontends: Embed Web Apps in Lightning",
+        "url": "https://developer.salesforce.com/blogs/2026/10/salesforce-microfrontends-embed-web-apps-in-lightning",
+        "date": "2026-10-13T15:00:48.000Z",
+        "author": "SANGEETA PATNAIK",
+        "source": "official"
+      },
+      {
+        "title": "Building Interactive UI with Headless Experience Layer",
+        "url": "https://developer.salesforce.com/blogs/2026/10/building-interactive-ui-with-hxl",
+        "date": "2026-10-07T17:55:57.000Z",
+        "author": "Akshata Sawant",
+        "source": "official"
+      },
+      {
+        "title": "Advanced Code Extension PySpark Examples for Batch Data Transforms",
+        "url": "https://developer.salesforce.com/blogs/2026/10/advanced-code-extension-pyspark-examples-for-batch-data-transforms",
+        "date": "2026-10-06T15:00:45.000Z",
+        "author": "Mark DeLaVergne",
+        "source": "official"
+      },
+      {
+        "title": "The Salesforce Developer’s Guide to the Winter ’27 Release",
+        "url": "https://developer.salesforce.com/blogs/2026/10/developers-guide-to-the-winter-27-release",
+        "date": "2026-10-05T17:00:50.000Z",
+        "author": "Mohith Shrivastava",
+        "source": "official"
+      },
+      {
+        "title": "CRM software Salesforce: cosa valutare prima di sceglierlo per i tuoi agenti",
+        "url": "https://medium.com/@nicoleabarnhillgu4oe/crm-software-salesforce-cosa-valutare-prima-di-sceglierlo-per-i-tuoi-agenti-78cff2d95753",
+        "date": "2026-10-18T05:52:38.000Z",
+        "author": "Gianluca Marchetti",
+        "source": "medium"
+      },
+      {
+        "title": "SFMC Tips #387 : Personalization: Using Real-Time Data Graph in Emails",
+        "url": "https://medium.com/@marketingcloudtips/personalization-using-real-time-data-graph-in-emails-89155331874e",
+        "date": "2026-10-18T04:54:15.000Z",
+        "author": "Nobuyuki Watanabe @marketingcloudtips",
+        "source": "medium"
+      },
+      {
+        "title": "One Org, Every Surface — Part 3: HXL Widgets 101",
+        "url": "https://medium.com/@nimitshah01/one-org-every-surface-part-3-hxl-widgets-101-451458eee346",
+        "date": "2026-10-18T00:37:44.000Z",
+        "author": "Nimit Shah",
+        "source": "medium"
+      },
+      {
+        "title": "SFMC Tips #386 : Personalization: Display Recommendation Cards in Enhanced Web Chat v2",
+        "url": "https://medium.com/@marketingcloudtips/personalization-display-recommendation-cards-in-enhanced-web-chat-v2-dc301ea9f07b",
+        "date": "2026-10-17T23:06:14.000Z",
+        "author": "Nobuyuki Watanabe @marketingcloudtips",
+        "source": "medium"
+      },
+      {
+        "title": "He Became a CEO After 9 Years. Then He Walked Away to Build His Own SaaS.",
+        "url": "https://medium.com/@mscode07/he-became-a-ceo-after-9-years-then-he-walked-away-to-build-his-own-saas-013a91758bd3",
+        "date": "2026-10-17T18:10:52.000Z",
+        "author": "mscode07",
+        "source": "medium"
+      },
+      {
+        "title": "NPSP to Nonprofit Cloud: Should You Move? A Decision Guide",
+        "url": "https://medium.com/@toukir.tf/npsp-to-nonprofit-cloud-should-you-move-a-decision-guide-723365d79192",
+        "date": "2026-10-17T14:41:01.000Z",
+        "author": "Toukir Ehmad",
+        "source": "medium"
+      }
+    ],
+    "ai-gateway": [
+      {
+        "title": "AI Gateway logs now show session affinity",
+        "url": "https://vercel.com/changelog/ai-gateway-logs-now-show-session-affinity",
+        "date": "2026-10-17T20:03:00.000Z",
+        "author": "Sam Chitgopekar",
+        "source": "official"
+      },
+      {
+        "title": "DeepSeek V4.1 Flash 1017 now available on AI Gateway",
+        "url": "https://vercel.com/changelog/deepseek-v4-1-flash-1017-now-available-on-ai-gateway",
+        "date": "2026-10-17T00:00:00.000Z",
+        "author": "Zachary Chen",
+        "source": "official"
+      },
+      {
+        "title": "Elorian AI's Glimpse now available on AI Gateway",
+        "url": "https://vercel.com/changelog/elorian-ai-glimpse-now-available-on-ai-gateway",
+        "date": "2026-10-16T00:00:00.000Z",
+        "author": "Jerilyn Zheng",
+        "source": "official"
+      },
+      {
+        "title": "Perplexity's Decider V1.2 models now available on AI Gateway",
+        "url": "https://vercel.com/changelog/perplexity-decider-v1-2-models-now-available-on-ai-gateway",
+        "date": "2026-10-16T00:00:00.000Z",
+        "author": "Jerilyn Zheng",
+        "source": "official"
+      },
+      {
+        "title": "Reflection AI's Beam now available on AI Gateway for free",
+        "url": "https://vercel.com/changelog/reflection-ai-beam-now-available-on-ai-gateway-for-free",
+        "date": "2026-10-16T00:00:00.000Z",
+        "author": "Jerilyn Zheng",
+        "source": "official"
+      },
+      {
+        "title": "Liquid AI's d1-ultra now available on AI Gateway",
+        "url": "https://vercel.com/changelog/liquid-ais-d1-ultra-now-available-on-ai-gateway",
+        "date": "2026-10-15T00:00:00.000Z",
+        "author": "Jerilyn Zheng",
+        "source": "official"
+      },
+      {
+        "title": "One Studio, Many Apps: Building an Indie Portfolio with Astro and Vercel",
+        "url": "https://medium.com/@dorangao/one-studio-many-apps-building-an-indie-portfolio-with-astro-and-vercel-b5c897d22dcb",
+        "date": "2026-10-17T21:13:31.000Z",
+        "author": "Doran Gao",
+        "source": "medium"
+      },
+      {
+        "title": "Why Every Designer Should Sketch With Bad Tools Sometimes",
+        "url": "https://medium.com/@toolzip/why-every-designer-should-sketch-with-bad-tools-sometimes-fe22a97873c9",
+        "date": "2026-10-17T04:27:25.000Z",
+        "author": "toolzip.app",
+        "source": "medium"
+      },
+      {
+        "title": "Vercel’s AI Elements is being deprecated. Here are the alternatives for shadcn/ui AI chat UI",
+        "url": "https://medium.com/@preetsuthar17/vercels-ai-elements-is-being-deprecated-here-are-the-alternatives-for-shadcn-ui-ai-chat-ui-c9c55f4c89ca",
+        "date": "2026-10-16T04:25:13.000Z",
+        "author": "Preet Suthar",
+        "source": "medium"
+      },
+      {
+        "title": "How I Deployed a Full-Stack App for Free using Neon, Render, and Vercel",
+        "url": "https://medium.com/@mdsenelen/how-i-deployed-a-full-stack-app-for-free-using-neon-render-and-vercel-d6e96457703e",
+        "date": "2026-10-15T13:06:08.000Z",
+        "author": "Merve Deniz Senelen",
+        "source": "medium"
+      },
+      {
+        "title": "From Prompt to Production: How Vercel Capitalizes on the AI Deployment Boom",
+        "url": "https://medium.com/@0xjacobzhao/from-prompt-to-production-how-vercel-capitalizes-on-the-ai-deployment-boom-d6c2340fc9c3",
+        "date": "2026-10-15T05:09:14.000Z",
+        "author": "BroadNotes by 0xjacobzhao",
+        "source": "medium"
+      },
+      {
+        "title": "Gemini 4 Argon Is on Vercel AI Gateway.",
+        "url": "https://medium.com/@vishalchauhan19600/gemini-4-argon-is-on-vercel-ai-gateway-b10ffdda5a55",
+        "date": "2026-10-15T04:33:01.000Z",
+        "author": "Vishal chauhan",
+        "source": "medium"
+      }
+    ]
   }
 }

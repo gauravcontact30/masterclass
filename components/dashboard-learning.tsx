@@ -27,7 +27,7 @@ export function DashboardLearning({ daily, techDocs, locked = false }: Readonly<
     <LandingWorkflows />
     <LandingInterview />
     {/* Without a membership (trial over), the full Tech Topics and Technology docs stay behind the plans screen. */}
-    <LandingComparisons preview={locked} locked={locked} />
+    <LandingComparisons preview={locked} locked={locked} official={techDocs} />
     <LandingTechDocs official={techDocs} preview={locked} locked={locked} />
   </div>;
 }

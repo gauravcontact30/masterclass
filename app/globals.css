@@ -820,3 +820,10 @@ ul.learning-key-points.pointwise > li::before, .notes-bullets > li::before { con
 .main-shell{min-width:0}
 .workspace img,.workspace video{max-width:100%}
 @media (max-width:760px){.workspace,.main-shell main{overflow-x:clip}}
+
+/* Paragraphs read as full-width justified blocks across the app (user request, 2026-10-18). :where() keeps this at
+   zero specificity, so any component that sets its own alignment still wins; centred containers (empty states,
+   status lines, anything named "center") keep centred text, and the last line stays left-aligned. */
+:where(p) { text-align: justify; text-justify: inter-word; text-align-last: auto; hyphens: auto; -webkit-hyphens: auto; }
+:where(.text-center, [class*="center" i], [class*="empty" i], [role="status"], [style*="text-align: center"], [style*="text-align:center"]) :where(p),
+:where(p.text-center, p[class*="center" i]) { text-align: inherit; }

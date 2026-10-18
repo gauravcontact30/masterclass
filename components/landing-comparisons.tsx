@@ -3,6 +3,8 @@ import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Bot, Boxes, Cloud, Database, FlaskConical, GitCompareArrows, Layers, Monitor, Server, type LucideIcon } from "lucide-react";
 import { COMPARISONS, loadComparisonBank, techPicture, type Comparison, type ComparisonGroup } from "@/lib/comparisons";
+import { COMPARISON_DOCS } from "@/lib/comparisons-official";
+import type { OfficialTechDocs } from "@/lib/tech-docs-official";
 import type { QuestionSet } from "@/lib/interview-questions";
 import { learningImageUrl } from "@/lib/learning-image";
 import { AUTOPLAY_MS, Controls, Dots } from "./landing-ai-pulse";
@@ -32,7 +34,7 @@ const GROUP_ICON: Record<ComparisonGroup, LucideIcon> = {
  * comparison. Questions load per slide, when it is near. The same section runs on the landing page and /dashboard.
  * `preview` (the landing page, or a learner without a membership) shows only the first comparison and links on.
  */
-export function LandingComparisons({ preview = false, locked = false }: Readonly<{ preview?: boolean; locked?: boolean }>) {
+export function LandingComparisons({ preview = false, locked = false, official = null }: Readonly<{ preview?: boolean; locked?: boolean; official?: OfficialTechDocs | null }>) {
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
   const { track, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(preview ? 1 : COMPARISONS.length, 1, AUTOPLAY_MS);
   const shown = preview ? COMPARISONS.slice(0, 1) : COMPARISONS;
@@ -65,14 +67,14 @@ export function LandingComparisons({ preview = false, locked = false }: Readonly
     </nav>
     <div className={styles.pickerPager}><Pager page={pickerPage} pages={Math.ceil(COMPARISONS.length / 5)} total={COMPARISONS.length} size={5} onPage={next => goTo((next - 1) * 5)} /></div></>}
     <ul ref={track} className={interview.track} aria-roledescription="carousel" aria-label={text("Technology comparisons", "तकनीकी तुलनाएँ")} {...holdProps}>
-      {shown.map((item, i) => <ComparisonSlide key={item.id} item={item} index={i} total={COMPARISONS.length} near={Math.abs(i - page) <= 1} text={text} />)}
+      {shown.map((item, i) => <ComparisonSlide key={item.id} item={item} index={i} total={COMPARISONS.length} near={Math.abs(i - page) <= 1} text={text} official={official} />)}
     </ul>
     {!preview && <Dots pages={pages} page={page} running={running} goTo={goTo} label={n => text(`Show comparison ${n}`, `तुलना ${n} दिखाएँ`)} />}
     {preview && <DashboardMore href={locked ? "/dashboard?tab=plans" : "/dashboard#tech-comparisons"} title={locked ? text(`Subscribe to open all ${COMPARISONS.length} comparisons`, `सभी ${COMPARISONS.length} तुलनाएँ खोलने के लिए सदस्यता लें`) : text(`See all ${COMPARISONS.length} comparisons`, `सभी ${COMPARISONS.length} तुलनाएँ देखें`)} detail={text("Every comparison, its picker, table and 40+ questions are in your dashboard.", "हर तुलना, उसका चयनकर्ता, तालिका और 40+ प्रश्न आपके डैशबोर्ड में हैं।")} />}
   </div></section>;
 }
 
-function ComparisonSlide({ item, index, total, near, text }: Readonly<{ item: Comparison; index: number; total: number; near: boolean; text: Text }>) {
+function ComparisonSlide({ item, index, total, near, text, official }: Readonly<{ item: Comparison; index: number; total: number; near: boolean; text: Text; official: OfficialTechDocs | null }>) {
   const [set, setSet] = useState<QuestionSet | null>(null);
   const [failed, setFailed] = useState(false);
   // The bank loads once, the first time the slide is on screen or next to it.
@@ -107,7 +109,7 @@ function ComparisonSlide({ item, index, total, near, text }: Readonly<{ item: Co
         {item.source && <p className={styles.source}>{item.source}</p>}
       </div>
     </article>
-    <div className={interview.panel}>
+    <div className={`${interview.panel} ${styles.tallPanel}`}>
       <div className={styles.glance}>
         <h4>{text("At a glance", "एक नज़र में")}</h4>
         <div className={styles.tableScroll} tabIndex={0} role="region" aria-label={text(`${item.question} at a glance`, `${item.question} एक नज़र में`)}><table>
@@ -118,6 +120,7 @@ function ComparisonSlide({ item, index, total, near, text }: Readonly<{ item: Co
       {set && set.subjective.length > 0
         ? <InterviewQuestions key={item.id} set={set} text={text} scroll heading={<h4>{text(`${set.subjective.length} difference questions`, `${set.subjective.length} अंतर प्रश्न`)}</h4>} />
         : <div className={interview.loading} role="status">{failed ? text("These questions could not load. Check your connection and try again.", "ये प्रश्न लोड नहीं हो सके। कनेक्शन जाँचें और फिर कोशिश करें।") : set ? text("Questions for this comparison are being written.", "इस तुलना के प्रश्न तैयार किए जा रहे हैं।") : text("Loading the questions…", "प्रश्न लोड हो रहे हैं…")}</div>}
+      <OfficialDocs item={item} official={official} text={text} />
       <Link className={styles.more} href={`/compare/${item.id}`}>{text("Read the full comparison", "पूरी तुलना पढ़ें")} →</Link>
     </div>
   </li>;
@@ -145,4 +148,27 @@ function TechThumb({ id, name }: Readonly<{ id: string | null; name: string }>) 
   if (!src || failed) return null;
   // eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP thumbnail from the storage bucket.
   return <img className={styles.thumb} src={src} alt={`Illustration of ${name}`} width={320} height={160} loading="lazy" decoding="async" onError={() => setFailed(true)} />;
+}
+
+/**
+ * Each compared technology's official documentation: the page's own title, summary and sections, read from the
+ * official website (lib/tech-docs-official.ts). Without fetched data it still links to the docs, with the slide's
+ * one-line definition.
+ */
+function OfficialDocs({ item, official, text }: Readonly<{ item: Comparison; official: OfficialTechDocs | null; text: Text }>) {
+  const docs = item.techs.map(tech => ({ tech, url: COMPARISON_DOCS[tech.name] })).filter((d): d is { tech: Comparison["techs"][number]; url: string } => !!d.url);
+  if (!docs.length) return null;
+  const host = (url: string) => new URL(url).host.replace(/^www\./, "");
+  return <div className={styles.officialDocs}>
+    <h4>{text("Official documentation", "आधिकारिक दस्तावेज़")}</h4>
+    <ul>{docs.map(({ tech, url }, k) => { const page = official?.pages[url]; return <li key={tech.name} data-tint={k % 6}>
+      <a href={url} target="_blank" rel="noopener noreferrer">
+        <b>{tech.name}</b>
+        <span className={styles.docTitle}>{page?.complete ? page.title : text("Official docs", "आधिकारिक डॉक्स")}</span>
+        <span className={styles.docText}>{page?.description || tech.definition}</span>
+        {!!page?.sections.length && <span className={styles.docSections}>{page.sections.slice(0, 3).map(s => <i key={s}>{s}</i>)}</span>}
+        <small>{host(url)} ↗</small>
+      </a>
+    </li>; })}</ul>
+  </div>;
 }

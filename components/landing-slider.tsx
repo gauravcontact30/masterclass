@@ -12,7 +12,7 @@ type Pair = [string, string];
 type Slide = { id: string; src: string; focus: string; tone: "clay" | "sage" | "violet" | "sky" | "honey"; tool: Pair; title: Pair; body: Pair; link: { label: Pair; href: string }; alt: string };
 
 /**
- * The landing hero: five full-HD (1920×1080) AI-generated study scenes (each file's EXIF
+ * The landing hero: five full-HD (1920×1080) study scenes painted by scripts/generate-hero-images.ts (each file's EXIF
  * ImageDescription holds its prompt), full-bleed under the navbar. Each slide
  * carries its own headline and actions; autoplay pauses on hover, on focus,
  * with the pause button, and never starts for visitors who prefer reduced motion.
@@ -20,31 +20,31 @@ type Slide = { id: string; src: string; focus: string; tone: "clay" | "sage" | "
 function slidesFor(technologies: number | undefined): Slide[] {
   const count = technologies ? String(technologies) : "60+";
   return [
-    { id: "school", src: "/images/landing/slide-classroom.webp", focus: "30% 45%", tone: "clay", tool: ["School · Class 6–12", "स्कूल · कक्षा 6–12"],
+    { id: "school", src: "/images/landing/hero-school.webp", focus: "68% 45%", tone: "clay", tool: ["School · Class 6–12", "स्कूल · कक्षा 6–12"],
       title: ["Understand every chapter, not just memorise it.", "हर अध्याय समझें, सिर्फ़ रटें नहीं।"],
       body: ["Concept notes, solved NCERT answers and clear diagrams for CBSE, ICSE and state boards, in English or हिन्दी.", "CBSE, ICSE और राज्य बोर्ड के लिए अवधारणा नोट्स, हल किए NCERT उत्तर और स्पष्ट आरेख, English या हिन्दी में।"],
       link: { label: ["Explore school courses", "स्कूल कोर्स देखें"], href: "/courses#cbse" },
-      alt: "A school student studying at a desk in the evening with a laptop, notebook and desk lamp" },
-    { id: "exams", src: "/images/landing/slide-exams.webp", focus: "48% 40%", tone: "sage", tool: ["Competitive exams", "प्रतियोगी परीक्षाएँ"],
+      alt: "A school student in uniform writing notes beside a laptop showing a cell diagram, in warm evening light" },
+    { id: "exams", src: "/images/landing/hero-exams.webp", focus: "66% 40%", tone: "sage", tool: ["Competitive exams", "प्रतियोगी परीक्षाएँ"],
       title: ["Crack your exam with timed, real-pattern practice.", "समयबद्ध, असली पैटर्न के अभ्यास से परीक्षा पास करें।"],
       body: ["SSC, banking, railways, defence, JEE and NEET: foundations, practice papers, full solutions and answer review.", "SSC, बैंकिंग, रेलवे, रक्षा, JEE और NEET: आधार, अभ्यास पत्र, पूरे हल और उत्तर समीक्षा।"],
       link: { label: ["See exam preparation", "परीक्षा तैयारी देखें"], href: "/courses#ssc" },
-      alt: "A student preparing for a competitive exam in a library with books, notes and a tablet" },
-    { id: "build", src: "/images/landing/slide-onthego.webp", focus: "68% 40%", tone: "violet", tool: ["Technology courses", "तकनीकी कोर्स"],
+      alt: "A student preparing for a competitive exam in a library, with a timer on a tablet, sticky notes and a stack of books" },
+    { id: "build", src: "/images/landing/hero-build.webp", focus: "70% 45%", tone: "violet", tool: ["Technology courses", "तकनीकी कोर्स"],
       title: ["Learn to code by building real projects.", "असली प्रोजेक्ट बनाकर कोडिंग सीखें।"],
       body: [`Step-by-step guides for ${count} technologies, from React and Node.js to AI agents, with every command and the complete code.`, `React और Node.js से AI एजेंट तक, ${count} तकनीकों के चरण-दर-चरण गाइड, हर कमांड और पूरे कोड के साथ।`],
       link: { label: ["Browse technology", "तकनीक देखें"], href: "/courses#technology" },
-      alt: "A young developer working at a sunlit desk with a laptop showing code and a second screen" },
-    { id: "career", src: "/images/landing/slide-interview.webp", focus: "55% 40%", tone: "sky", tool: ["Interview prep", "इंटरव्यू तैयारी"],
+      alt: "A young developer at a sunlit desk with two monitors showing code and an architecture diagram" },
+    { id: "career", src: "/images/landing/hero-career.webp", focus: "66% 45%", tone: "sky", tool: ["Interview prep", "इंटरव्यू तैयारी"],
       title: ["Walk into your interview confident and ready.", "आत्मविश्वास और पूरी तैयारी के साथ इंटरव्यू दें।"],
       body: ["Real interview questions, tech comparisons, quizzes and a live code lab for your next role.", "आपकी अगली नौकरी के लिए असली इंटरव्यू प्रश्न, तकनीकी तुलना, क्विज़ और लाइव कोड लैब।"],
       link: { label: ["Practise interviews", "इंटरव्यू अभ्यास करें"], href: "#interview-prep" },
-      alt: "Two friends practising interview answers together at a cafe table with a laptop and tea" },
-    { id: "anywhere", src: "/images/landing/slide-commute.webp", focus: "60% 35%", tone: "honey", tool: ["Learn anywhere", "कहीं भी सीखें"],
+      alt: "Two young professionals practising a technical interview at a table, with a system diagram on a whiteboard behind them" },
+    { id: "anywhere", src: "/images/landing/hero-anywhere.webp", focus: "62% 35%", tone: "honey", tool: ["Learn anywhere", "कहीं भी सीखें"],
       title: ["Turn every commute into a study session.", "हर सफ़र को पढ़ाई का समय बनाएँ।"],
       body: ["Bite-size lessons, daily vocabulary and revision notes on your phone, with bookmarks that keep your place.", "फ़ोन पर छोटे पाठ, रोज़ की शब्दावली और रिवीज़न नोट्स, बुकमार्क के साथ जो आपकी जगह याद रखें।"],
       link: { label: ["How it works", "यह कैसे काम करता है"], href: "#workflows" },
-      alt: "A student in a white shirt with earphones reading lessons on a phone by a train window at sunrise" },
+      alt: "A student with wireless earbuds learning on a phone by a metro window at sunrise, the city skyline behind" },
   ];
 }
 

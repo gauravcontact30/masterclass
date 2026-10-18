@@ -4,10 +4,26 @@
  * Used by `npm run docs:tech` (writes the committed snapshot) and by the daily-cached server refresh.
  */
 import { TECH_DOCS } from "./tech-docs";
+import { COMPARISON_DOCS } from "./comparisons-official";
 
 /** `complete`: the page gave its own title and description (a single-page-app shell only yields the site name). */
 export type OfficialPage = { url: string; ok: boolean; complete: boolean; status: number; title: string; description: string; lead: string; sections: string[]; fetchedAt: string };
-export type OfficialTechDocs = { fetchedAt: string; versions: Record<string, { version: string; date?: string; source: string }>; pages: Record<string, OfficialPage> };
+/** A headline from an official blog or a community feed: title, link and date only, never the article itself. */
+export type FeedArticle = { title: string; url: string; date: string | null; author: string | null; source: "official" | "medium" };
+export type OfficialTechDocs = { fetchedAt: string; versions: Record<string, { version: string; date?: string; source: string }>; pages: Record<string, OfficialPage>; articles?: Record<string, FeedArticle[]> };
+
+/**
+ * Where each platform's latest articles come from: its official blog or changelog feed (Angular's blog is on Medium),
+ * filtered when the feed covers more than the platform, and Medium's public tag feed for community write-ups.
+ */
+const FEEDS: Record<string, { official?: string; match?: RegExp; medium: string }> = {
+  angular: { official: "https://blog.angular.dev/feed", medium: "angular" },
+  vue: { official: "https://blog.vuejs.org/feed.rss", medium: "vuejs" },
+  salesforce: { official: "https://developer.salesforce.com/blogs/feed", medium: "salesforce" },
+  node: { official: "https://nodejs.org/en/feed/blog.xml", medium: "nodejs" },
+  openrouter: { medium: "openrouter" },
+  "ai-gateway": { official: "https://vercel.com/changelog/rss.xml", match: /ai gateway|ai sdk/i, medium: "vercel" },
+};
 
 const HEADERS = {
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0 Safari/537.36",
@@ -98,15 +114,54 @@ async function versions(fetcher: Fetch): Promise<OfficialTechDocs["versions"]> {
   return out;
 }
 
-/** Every official URL the showcase cites: each platform's docs home and each learning material. */
-export const officialUrls = () => [...new Set(TECH_DOCS.flatMap(tech => [tech.docs, ...tech.materials.map(m => m.url)]))];
+/**
+ * The part of the snapshot a page needs, without the extraction-only `lead` text: every page and feed by default,
+ * or only the listed URLs and platforms (the landing previews), which keeps the page payload small.
+ */
+export function slimTechDocs(data: OfficialTechDocs, only?: { urls: string[]; articles: string[] }): OfficialTechDocs {
+  const keep = only ? new Set(only.urls) : null;
+  const pages: OfficialTechDocs["pages"] = {};
+  for (const [url, p] of Object.entries(data.pages)) if (!keep || keep.has(url)) pages[url] = { ...p, lead: "" };
+  const articles = only ? Object.fromEntries(Object.entries(data.articles ?? {}).filter(([id]) => only.articles.includes(id))) : data.articles;
+  return { ...data, pages, articles };
+}
+
+/** Every official URL cited: each platform's docs home and materials, and each Tech Topics technology's docs. */
+export const officialUrls = () => [...new Set([...TECH_DOCS.flatMap(tech => [tech.docs, ...tech.materials.map(m => m.url)]), ...Object.values(COMPARISON_DOCS)])];
+
+const tag = (xml: string, name: string) => {
+  const m = xml.match(new RegExp(`<${name}[^>]*>([\\s\\S]*?)</${name}>`, "i"));
+  return m ? decode(m[1].replace(/^<!\[CDATA\[|\]\]>$/g, "")).replace(/<[^>]+>/g, "").trim() : "";
+};
+/** Items of an RSS or Atom feed, newest first as published. */
+export function parseFeed(xml: string, source: FeedArticle["source"]): FeedArticle[] {
+  return [...xml.matchAll(/<(item|entry)[\s>][\s\S]*?<\/\1>/gi)].map(([item]) => {
+    const atomLink = item.match(/<link[^>]+href=["']([^"']+)["']/i)?.[1];
+    const url = (atomLink ?? tag(item, "link")).split("?source=")[0];
+    const when = tag(item, "pubDate") || tag(item, "published") || tag(item, "updated");
+    const date = when && Number.isFinite(Date.parse(when)) ? new Date(when).toISOString() : null;
+    return { title: tag(item, "title"), url, date, author: tag(item, "dc:creator") || tag(item, "name") || null, source };
+  }).filter(a => a.title && /^https:\/\//.test(a.url));
+}
+async function feed(url: string, fetcher: Fetch, source: FeedArticle["source"]) {
+  try { const res = await fetcher(url, { headers: HEADERS, signal: AbortSignal.timeout(15_000) }); return res.ok ? parseFeed(await res.text(), source) : []; } catch { return []; }
+}
+async function articles(fetcher: Fetch): Promise<Record<string, FeedArticle[]>> {
+  const out: Record<string, FeedArticle[]> = {};
+  await Promise.all(Object.entries(FEEDS).map(async ([id, f]) => {
+    const [official, medium] = await Promise.all([f.official ? feed(f.official, fetcher, "official") : [], feed(`https://medium.com/feed/tag/${f.medium}`, fetcher, "medium")]);
+    const newest = (list: FeedArticle[]) => [...list].sort((a, b) => (b.date ?? "").localeCompare(a.date ?? "")).slice(0, 6);
+    out[id] = [...newest(official.filter(a => !f.match || f.match.test(a.title))), ...newest(medium)];
+  }));
+  return out;
+}
 
 /**
  * Fetch every official page and version. A page that fails keeps its previous complete copy from `previous`, so
  * one vendor's outage or bot wall never blanks a card.
  */
 export async function fetchOfficialTechDocs(previous: OfficialTechDocs | null, fetcher: Fetch = fetch): Promise<OfficialTechDocs> {
-  const [pages, current] = await Promise.all([Promise.all(officialUrls().map(url => page(url, fetcher))), versions(fetcher)]);
+  const [pages, current, latest] = await Promise.all([Promise.all(officialUrls().map(url => page(url, fetcher))), versions(fetcher), articles(fetcher)]);
   // A description shared by several pages of one site is boilerplate: use that page's own lead paragraph instead.
   // (Two URLs of the same page, with the same title, may share it legitimately.)
   const titles = new Map<string, Set<string>>();
@@ -120,5 +175,8 @@ export async function fetchOfficialTechDocs(previous: OfficialTechDocs | null, f
     const before = previous?.pages[fresh.url];
     merged[fresh.url] = fresh.complete || !before?.complete ? fresh : before;
   }
-  return { fetchedAt: new Date().toISOString(), versions: { ...previous?.versions, ...current }, pages: merged };
+  // A feed that came back empty keeps its previous headlines.
+  const feeds: Record<string, FeedArticle[]> = { ...previous?.articles };
+  for (const [id, list] of Object.entries(latest)) if (list.length) feeds[id] = list;
+  return { fetchedAt: new Date().toISOString(), versions: { ...previous?.versions, ...current }, pages: merged, articles: feeds };
 }

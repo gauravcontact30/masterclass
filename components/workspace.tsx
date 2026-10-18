@@ -104,7 +104,7 @@ export function Workspace({authEnabled,configured,billingEnabled,userEmail=null,
     if (item) { openedDocument.current = target; queueMicrotask(() => setNotesSelected(item)); }
   }, [documents]);
   const access=data?.preparations??{selections:[],isSuperAdmin:false};
-  const showSuperAdmin=authEnabled&&access.isSuperAdmin&&userEmail?.trim().toLowerCase()==="garvcontact30@gmail.com";
+  const showSuperAdmin=authEnabled&&access.isSuperAdmin;
   const activePreparation=category?PREPARATIONS.find(option=>option.id===initialPreparation):undefined;
   const needsPreparation=!!data&&!access.isSuperAdmin&&!access.selections.length;
   const confirmDoc=documents.find(d=>d.id===confirmId);

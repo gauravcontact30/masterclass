@@ -39,4 +39,12 @@ export const PREPARATIONS: PreparationOption[] = [
 export type PreparationAccess = { selections: string[]; isSuperAdmin: boolean; focused?: boolean };
 export function canReadStudy(access: PreparationAccess, course: StudyCourse) { return access.isSuperAdmin || access.selections.includes(course.category === "course" ? "system-design" : course.board ? `${course.board}-${course.grade}` : course.id); }
 export function canReadTechnology(access: PreparationAccess, technologyId: string) { return access.isSuperAdmin || access.selections.includes(`tech:${technologyId}`); }
-export function isSuperAdminUser(user: { email?: string; email_confirmed_at?: string | null } | null) { return Boolean(user?.email_confirmed_at && user.email?.trim().toLowerCase() === "garvcontact30@gmail.com"); }
+export const OWNER_EMAIL = "garvcontact30@gmail.com";
+export function isOwnerUser(user: { email?: string | null; email_confirmed_at?: string | null } | null) { return Boolean(user?.email_confirmed_at && user.email?.trim().toLowerCase() === OWNER_EMAIL); }
+/**
+ * The owner, or a confirmed account granted Super Admin from Users & access. The grant lives in Auth app_metadata,
+ * which only the service role can write (a user cannot set it on themselves).
+ */
+export function isSuperAdminUser(user: { email?: string | null; email_confirmed_at?: string | null; app_metadata?: Record<string, unknown> | null } | null) {
+  return isOwnerUser(user) || Boolean(user?.email_confirmed_at && user.app_metadata?.super_admin === true);
+}

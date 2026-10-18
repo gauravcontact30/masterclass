@@ -58,7 +58,7 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
     {daily && <><LandingAiPulse cards={daily.pulse} day={daily.day} locked={daily.locked?.pulse} preview /><LandingVocabulary words={daily.words} day={daily.day} locked={daily.locked?.word} preview /></>}
     <LandingWorkflows preview />
     <LandingInterview preview />
-    <LandingComparisons preview />
+    <LandingComparisons preview official={techDocs} />
     <LandingTechDocs official={techDocs} preview />
     <LandingOverview counts={library?.counts} />
     {library && <section ref={libraryRef} id="library" className={`${frame.section} ${home.library}`} data-ground="paper" data-reveal={libraryReveal} aria-labelledby="library-title"><div className={`${home.inner} ${home.libraryInner}`}>
