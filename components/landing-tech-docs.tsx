@@ -8,12 +8,15 @@ import {
 import { MATERIAL_KINDS, MATERIAL_LEVELS, TECH_DOC_CATEGORIES, TECH_DOCS, type MaterialKind, type MaterialLevel, type TechDoc, type TechDocCategory, type TechMaterial } from "@/lib/tech-docs";
 import type { OfficialPage, OfficialTechDocs } from "@/lib/tech-docs-official";
 import { useLanguage } from "./language-provider";
+import { DashboardMore } from "./dashboard-more";
 import home from "./landing-home.module.css";
 import frame from "./landing-section.module.css";
 import styles from "./landing-tech-docs.module.css";
 
 /** Autoplay: one platform every two minutes. */
 const SLIDE_MS = 120_000;
+/** Learning materials per page inside a slide. */
+const MATERIAL_PAGE = 4;
 const BRAND: Record<string, { path: string } | null> = { angular: siAngular, vue: siVuedotjs, node: siNodedotjs, openrouter: siOpenrouter, "ai-gateway": siVercel, salesforce: null };
 const CATEGORY_ICON: Record<TechDocCategory | "all", LucideIcon> = { all: LayoutGrid, frontend: MonitorSmartphone, backend: Server, enterprise: Building2, ai: Bot };
 const LEVEL_ICON: Record<MaterialLevel, LucideIcon> = { beginner: Sprout, intermediate: TrendingUp, advanced: Rocket };
@@ -42,8 +45,9 @@ function BrandIcon({ tech, size = 28 }: { tech: TechDoc; size?: number }) {
  * Technology docs: Angular 22+, Vue 3.5, Salesforce API 68+, Node.js 26, OpenRouter and the Vercel AI Gateway.
  * A carousel (one platform per slide, autoplay every two minutes) with numbered pagination, suggestion search,
  * icon filters and a "More options" menu. Titles, summaries and section lists come from each official page.
+ * `preview` (the landing page, or a learner without a membership) shows only the first platform's panel and links on.
  */
-export function LandingTechDocs({ official }: { official?: OfficialTechDocs | null }) {
+export function LandingTechDocs({ official, preview = false, locked = false }: Readonly<{ official?: OfficialTechDocs | null; preview?: boolean; locked?: boolean }>) {
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
   const uid = useId();
   const [query, setQuery] = useState("");
@@ -60,6 +64,8 @@ export function LandingTechDocs({ official }: { official?: OfficialTechDocs | nu
   // The visible platform, by id: it stays put while filters change, and falls back to the first match.
   const [activeId, setActiveId] = useState(TECH_DOCS[0].id);
   const [copied, setCopied] = useState("");
+  // Each platform remembers which page of its materials is open.
+  const [materialPage, setMaterialPage] = useState<Record<string, number>>({});
   const menuRef = useRef<HTMLDivElement>(null);
   const page = (url: string): OfficialPage | undefined => official?.pages[url];
 
@@ -68,7 +74,7 @@ export function LandingTechDocs({ official }: { official?: OfficialTechDocs | nu
   const materialText = (m: TechMaterial) => { const p = page(m.url); return norm([m.title, m.summary, p?.title, p?.description, ...(p?.sections ?? []), ...m.topics].join(" ")); };
   const techText = (t: TechDoc) => norm([t.name, t.version, t.release, t.tagline, page(t.docs)?.description, ...t.aliases, ...t.features].join(" "));
 
-  const slides = TECH_DOCS
+  const slides = (preview ? TECH_DOCS.slice(0, 1) : TECH_DOCS)
     .filter(tech => category === "all" || tech.category === category)
     .map(tech => {
       const techHit = !terms.length || matches(techText(tech));
@@ -82,7 +88,7 @@ export function LandingTechDocs({ official }: { official?: OfficialTechDocs | nu
   const total = slides.length;
   const current = Math.max(0, slides.findIndex(s => s.tech.id === activeId));
   const slide = slides[current];
-  const running = autoplay && !held && !menu && total > 1;
+  const running = !preview && autoplay && !held && !menu && total > 1;
   const nextId = slides[(current + 1) % Math.max(1, total)]?.tech.id;
   useEffect(() => {
     if (!running || !nextId) return;
@@ -136,6 +142,10 @@ export function LandingTechDocs({ official }: { official?: OfficialTechDocs | nu
     const { tech, items } = slide;
     const docsPage = page(tech.docs);
     const version = versionOf(tech);
+    const pages = Math.max(1, Math.ceil(items.length / MATERIAL_PAGE));
+    const at = preview ? 1 : Math.min(materialPage[tech.id] ?? 1, pages);
+    const shown = items.slice((at - 1) * MATERIAL_PAGE, at * MATERIAL_PAGE);
+    const turn = (n: number) => setMaterialPage(map => ({ ...map, [tech.id]: n }));
     body = <article key={tech.id} className={styles.slide} style={{ "--ink": tech.tone.ink, "--tint": tech.tone.tint, "--glow": tech.tone.glow } as React.CSSProperties}
       aria-roledescription="slide" aria-label={`${current + 1} / ${total}: ${tech.name}`}>
       <div className={styles.overview}>
@@ -160,8 +170,8 @@ export function LandingTechDocs({ official }: { official?: OfficialTechDocs | nu
         <a className={styles.docsLink} href={tech.docs} target="_blank" rel="noopener noreferrer">{text("Open the official docs", "आधिकारिक डॉक्स खोलें")} · {host(tech.docs)}<ArrowUpRight size={15} aria-hidden="true" /></a>
       </div>
       <div className={styles.materials}>
-        <p className={styles.materialsHead}><span>{text("Learning materials", "अध्ययन सामग्री")}</span><b>{items.length}</b></p>
-        {items.length ? <ol>{items.map(m => {
+        <p className={styles.materialsHead}><span>{text("Learning materials", "अध्ययन सामग्री")}</span><b>{items.length}</b>{pages > 1 && <small>{text(`Showing ${(at - 1) * MATERIAL_PAGE + 1}–${(at - 1) * MATERIAL_PAGE + shown.length}`, `${(at - 1) * MATERIAL_PAGE + 1}–${(at - 1) * MATERIAL_PAGE + shown.length} दिखाए गए`)}</small>}</p>
+        {items.length ? <ol key={at}>{shown.map(m => {
           const p = page(m.url); const KindIcon = KIND_ICON[m.kind]; const LevelIcon = LEVEL_ICON[m.level];
           const title = p?.complete ? p.title : m.title;
           return <li key={m.id}>
@@ -181,7 +191,13 @@ export function LandingTechDocs({ official }: { official?: OfficialTechDocs | nu
               </span>
             </a>
           </li>;
-        })}</ol> : <p className={styles.noItems}>{text("This platform matches your search; its materials are hidden by the level or type filter.", "यह प्लेटफ़ॉर्म खोज से मेल खाता है; स्तर या प्रकार फ़िल्टर से सामग्री छिपी है।")}</p>}
+        })}</ol> : null}
+        {!preview && pages > 1 && <div className={styles.materialPager} role="group" aria-label={text("Materials pages", "सामग्री पेज")}>
+          <button type="button" onClick={() => turn(at - 1)} disabled={at === 1} aria-label={text("Previous materials", "पिछली सामग्री")}><ChevronLeft size={15} /></button>
+          {Array.from({ length: pages }, (_, i) => <button key={i} type="button" aria-current={at === i + 1 ? "page" : undefined} onClick={() => turn(i + 1)} aria-label={text(`Materials page ${i + 1}`, `सामग्री पेज ${i + 1}`)}>{i + 1}</button>)}
+          <button type="button" onClick={() => turn(at + 1)} disabled={at === pages} aria-label={text("Next materials", "अगली सामग्री")}><ChevronRight size={15} /></button>
+        </div>}
+        {items.length ? null : <p className={styles.noItems}>{text("This platform matches your search; its materials are hidden by the level or type filter.", "यह प्लेटफ़ॉर्म खोज से मेल खाता है; स्तर या प्रकार फ़िल्टर से सामग्री छिपी है।")}</p>}
       </div>
     </article>;
   }
@@ -195,7 +211,7 @@ export function LandingTechDocs({ official }: { official?: OfficialTechDocs | nu
       <p className={frame.lede}>{text("Angular 22, Vue 3.5, Salesforce API 68, Node.js 26, OpenRouter and the Vercel AI Gateway: every guide below is read from its official website, with the current release from the official registry.", "Angular 22, Vue 3.5, Salesforce API 68, Node.js 26, OpenRouter और Vercel AI Gateway: नीचे हर गाइड उसकी आधिकारिक वेबसाइट से ली गई है, और वर्तमान संस्करण आधिकारिक रजिस्ट्री से।")}</p>
     </header>
 
-    <div className={styles.toolbar}>
+    {!preview && <div className={styles.toolbar}>
       <div className={styles.searchWrap}>
         <div className={styles.search}>
           <Search size={17} aria-hidden="true" className={styles.searchIcon} />
@@ -243,12 +259,12 @@ export function LandingTechDocs({ official }: { official?: OfficialTechDocs | nu
         </div>
       </div>
       {filtered && <p className={styles.active} role="status">{text(`${total} of ${TECH_DOCS.length} platforms shown`, `${TECH_DOCS.length} में से ${total} प्लेटफ़ॉर्म`)} <button type="button" onClick={reset}>{text("Clear all", "सब हटाएँ")}</button></p>}
-    </div>
+    </div>}
 
     <div className={styles.carousel} aria-roledescription="carousel" aria-label={text("Technology documentation", "तकनीकी दस्तावेज़")}
       onPointerEnter={() => setHeld(true)} onPointerLeave={() => setHeld(false)} onFocusCapture={() => setHeld(true)} onBlurCapture={() => setHeld(false)}>
       <div className={styles.stage} aria-live={running ? "off" : "polite"}>{body}</div>
-      {total > 0 && <nav className={styles.pager} aria-label={text("Technology docs pages", "तकनीकी डॉक्स पेज")}>
+      {!preview && total > 0 && <nav className={styles.pager} aria-label={text("Technology docs pages", "तकनीकी डॉक्स पेज")}>
         <button type="button" className={styles.arrow} onClick={() => go(-1)} disabled={total < 2} aria-label={text("Previous platform", "पिछला प्लेटफ़ॉर्म")}><ChevronLeft size={18} /></button>
         <ol className={styles.pages}>{slides.map((s, i) => <li key={s.tech.id}>
           <button type="button" aria-current={i === current ? "page" : undefined} onClick={() => setActiveId(s.tech.id)} style={{ "--ink": s.tech.tone.ink, "--tint": s.tech.tone.tint } as React.CSSProperties}>
@@ -261,6 +277,7 @@ export function LandingTechDocs({ official }: { official?: OfficialTechDocs | nu
         <button type="button" className={styles.arrow} onClick={() => go(1)} disabled={total < 2} aria-label={text("Next platform", "अगला प्लेटफ़ॉर्म")}><ChevronRight size={18} /></button>
       </nav>}
     </div>
+    {preview && <DashboardMore href={locked ? "/dashboard?tab=plans" : "/dashboard#tech-docs"} title={locked ? text(`Subscribe to open all ${TECH_DOCS.length} platforms`, `सभी ${TECH_DOCS.length} प्लेटफ़ॉर्म खोलने के लिए सदस्यता लें`) : text(`See all ${TECH_DOCS.length} platforms`, `सभी ${TECH_DOCS.length} प्लेटफ़ॉर्म देखें`)} detail={text("Every platform, guide, search and filter is in your dashboard.", "हर प्लेटफ़ॉर्म, गाइड, खोज और फ़िल्टर आपके डैशबोर्ड में है।")} />}
     <p className={styles.footnote}>{official ? text(`Guides read from the official websites, last refreshed ${shortDate(official.fetchedAt)}. Versions from npm and nodejs.org.`, `गाइड आधिकारिक वेबसाइटों से, अंतिम अपडेट ${shortDate(official.fetchedAt)}। संस्करण npm और nodejs.org से।`) : text("Links go to each platform's official documentation.", "लिंक हर प्लेटफ़ॉर्म के आधिकारिक दस्तावेज़ पर जाते हैं।")}</p>
   </div></section>;
 }

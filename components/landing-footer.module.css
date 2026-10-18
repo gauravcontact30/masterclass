@@ -2,10 +2,10 @@
 
 /* The whole footer logo is yellow, its spark included (the mark hard-codes the spark's fill). */
 .brand :global(.brand-mark) path[fill="#d97757"] { fill: #d97757; }
-/* The header's hover effect, in orange: one pill slides between a column's links. */
+/* The header's hover effect: one pill slides between a column's links, changing to each link's own colour. */
 .links{position:relative}
 .links li{position:relative;z-index:1}
-.pill{position:absolute;inset:-16px -24px;background:var(--nav-hover);opacity:0;pointer-events:none;transition:clip-path .38s cubic-bezier(.16,1,.3,1),opacity .2s ease}
+.pill{position:absolute;inset:-16px -24px;background:var(--nav-hover);opacity:0;pointer-events:none;transition:clip-path .38s cubic-bezier(.16,1,.3,1),opacity .2s ease,background-color .3s ease}
 .pill[data-visible]{opacity:1}
 @media (prefers-reduced-motion:reduce){.pill{transition:none}}
 .columns a{padding:7px 14px;margin:-7px -14px}

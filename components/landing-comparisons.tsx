@@ -11,6 +11,7 @@ import { Pager } from "./super-admin-table";
 import { Combobox } from "./ui/combobox";
 import { useLanguage } from "./language-provider";
 import { usePagedCarousel } from "./use-paged-carousel";
+import { DashboardMore } from "./dashboard-more";
 import home from "./landing-home.module.css";
 import interview from "./landing-interview.module.css";
 import styles from "./landing-comparisons.module.css";
@@ -29,10 +30,12 @@ const GROUP_ICON: Record<ComparisonGroup, LucideIcon> = {
  * and short description of each technology, an at-a-glance table and 40+ difference questions with answers.
  * Autoplay turns a slide every two minutes and holds while the reader hovers or reads; a picker jumps to any
  * comparison. Questions load per slide, when it is near. The same section runs on the landing page and /dashboard.
+ * `preview` (the landing page, or a learner without a membership) shows only the first comparison and links on.
  */
-export function LandingComparisons() {
+export function LandingComparisons({ preview = false, locked = false }: Readonly<{ preview?: boolean; locked?: boolean }>) {
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
-  const { track, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(COMPARISONS.length, 1, AUTOPLAY_MS);
+  const { track, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(preview ? 1 : COMPARISONS.length, 1, AUTOPLAY_MS);
+  const shown = preview ? COMPARISONS.slice(0, 1) : COMPARISONS;
   const groups = [...new Set(COMPARISONS.map(item => item.group))];
   const pickerPage = Math.floor(page / 5) + 1;
   const pickerStart = (pickerPage - 1) * 5;
@@ -45,9 +48,9 @@ export function LandingComparisons() {
           "The comparisons interviewers and teams ask about most, from LangChain, LangGraph and LangSmith to Redux, Zustand and Redux Toolkit. Each one defines every technology in a line, compares them at a glance and answers 40+ difference questions.",
           "इंटरव्यू और टीमों में सबसे ज़्यादा पूछी जाने वाली तुलनाएँ, LangChain, LangGraph और LangSmith से Redux, Zustand और Redux Toolkit तक। हर तुलना में हर तकनीक की एक पंक्ति की परिभाषा, एक नज़र में तालिका और 40+ अंतर प्रश्नों के उत्तर।")}</p>
       </div>
-      <Controls text={text} playing={playing} onPlay={() => setPlaying(p => !p)} page={page} pages={pages} goTo={goTo} previous={text("Previous comparison", "पिछली तुलना")} next={text("Next comparison", "अगली तुलना")} />
+      {!preview && <Controls text={text} playing={playing} onPlay={() => setPlaying(p => !p)} page={page} pages={pages} goTo={goTo} previous={text("Previous comparison", "पिछली तुलना")} next={text("Next comparison", "अगली तुलना")} />}
     </div>
-    <div className={styles.picker}>
+    {!preview && <><div className={styles.picker}>
       <span id="comparison-jump-label">{text("Jump to a comparison", "किसी तुलना पर जाएँ")}</span>
       {/* shadcn Combobox (Popover + Command): grouped by topic and searchable, so 37 comparisons stay quick to reach. */}
       <Combobox value={COMPARISONS[page]?.id ?? ""} onChange={id => { const index = COMPARISONS.findIndex(item => item.id === id); if (index >= 0) goTo(index); }}
@@ -60,11 +63,12 @@ export function LandingComparisons() {
         <ChainPicture sources={[learningImageUrl("topics", ["comparisons", item.id]), ...item.techs.map(tech => techPicture(tech.name)).filter((id): id is string => !!id).map(id => learningImageUrl("topics", ["interview", id]))]} alt="" icon={<GitCompareArrows size={24} aria-hidden="true" />}><span className={styles.previewLabel}>{item.techs.map(tech => tech.name).join(" / ")}</span></ChainPicture>
       </button>; })}
     </nav>
-    <div className={styles.pickerPager}><Pager page={pickerPage} pages={Math.ceil(COMPARISONS.length / 5)} total={COMPARISONS.length} size={5} onPage={next => goTo((next - 1) * 5)} /></div>
+    <div className={styles.pickerPager}><Pager page={pickerPage} pages={Math.ceil(COMPARISONS.length / 5)} total={COMPARISONS.length} size={5} onPage={next => goTo((next - 1) * 5)} /></div></>}
     <ul ref={track} className={interview.track} aria-roledescription="carousel" aria-label={text("Technology comparisons", "तकनीकी तुलनाएँ")} {...holdProps}>
-      {COMPARISONS.map((item, i) => <ComparisonSlide key={item.id} item={item} index={i} total={COMPARISONS.length} near={Math.abs(i - page) <= 1} text={text} />)}
+      {shown.map((item, i) => <ComparisonSlide key={item.id} item={item} index={i} total={COMPARISONS.length} near={Math.abs(i - page) <= 1} text={text} />)}
     </ul>
-    <Dots pages={pages} page={page} running={running} goTo={goTo} label={n => text(`Show comparison ${n}`, `तुलना ${n} दिखाएँ`)} />
+    {!preview && <Dots pages={pages} page={page} running={running} goTo={goTo} label={n => text(`Show comparison ${n}`, `तुलना ${n} दिखाएँ`)} />}
+    {preview && <DashboardMore href={locked ? "/dashboard?tab=plans" : "/dashboard#tech-comparisons"} title={locked ? text(`Subscribe to open all ${COMPARISONS.length} comparisons`, `सभी ${COMPARISONS.length} तुलनाएँ खोलने के लिए सदस्यता लें`) : text(`See all ${COMPARISONS.length} comparisons`, `सभी ${COMPARISONS.length} तुलनाएँ देखें`)} detail={text("Every comparison, its picker, table and 40+ questions are in your dashboard.", "हर तुलना, उसका चयनकर्ता, तालिका और 40+ प्रश्न आपके डैशबोर्ड में हैं।")} />}
   </div></section>;
 }
 

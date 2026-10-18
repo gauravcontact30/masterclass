@@ -125,7 +125,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
     <div className={styles.grid}>
       <article className={`${styles.panel} ${styles.wide}`} data-tone="mint">
         <h3><Radio size={16} aria-hidden="true" />Live visitor stream<span>{visits.length ? `${visits.length} views in 24 h` : ""}</span></h3>
-        {visits.length ? <ol className={styles.stream}>{visitRows.map(v => { const key = `${v.created_at}${v.visitor_id}`; const Device = DEVICE_ICON[(v.device || "desktop").toLowerCase()] ?? Laptop; const code = v.country ?? ""; return <li key={key} data-new={live && seen.size > 0 && !seen.has(key) || undefined}>
+        {visits.length ? <ol className={styles.stream}>{visitRows.map((v, i) => { const id = `${v.created_at}${v.visitor_id}`, key = `${id}-${i}`; const Device = DEVICE_ICON[(v.device || "desktop").toLowerCase()] ?? Laptop; const code = v.country ?? ""; return <li key={key} data-new={live && seen.size > 0 && !seen.has(id) || undefined}>
           <Flag code={code} />
           <span className={styles.who}><b>{v.email ?? (v.new_visitor ? "New visitor" : "Returning visitor")}</b><small>{[v.city, code ? countryName(code) : ""].filter(Boolean).join(", ") || "Location unknown"}</small></span>
           <span className={styles.what}><code title={v.title ?? v.path}>{v.path}</code><small><Device size={12} aria-hidden="true" />{[v.browser, v.os].filter(Boolean).join(" · ") || "Unknown device"}{v.referrer_host ? ` · from ${v.referrer_host}` : ""}</small></span>

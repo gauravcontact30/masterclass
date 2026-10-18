@@ -184,7 +184,7 @@ export function AdminTable({ title, rows, columns, note, query = "", empty, acti
           {sortable ? <button type="button" className={styles.sortButton} onClick={() => toggleSort(column.key)} title={`Sort by ${column.label}`} aria-label={`Sort by ${column.label}`}>{column.label}{state === "asc" ? <ArrowUp size={12} aria-hidden="true" /> : state === "desc" ? <ArrowDown size={12} aria-hidden="true" /> : <ArrowUpDown size={12} aria-hidden="true" className={styles.sortIdle} />}</button> : column.label}
         </TableHead>;
       })}</TableRow></TableHeader>
-        <TableBody>{shown.map((row, index) => <TableRow key={rowKey ? rowKey(row, index) : text(row.id ?? row.event_id ?? row.session_id ?? `${current}-${index}`)}>
+        <TableBody>{uniqueKeys(shown, (row, index) => rowKey ? rowKey(row, index) : text(row.id ?? row.event_id ?? `${current}-${index}`)).map(([row, key]) => <TableRow key={key}>
           {cols.map(column => <TableCell key={column.key} data-label={column.label}>{"render" in column && column.render ? column.render(row) : isDate(column.key) ? fmtDate(row[column.key]) : <span className={styles.cell}>{show(row[column.key])}</span>}</TableCell>)}
         </TableRow>)}</TableBody></DataTable></div>
       <div className={styles.footer}>
@@ -196,6 +196,15 @@ export function AdminTable({ title, rows, columns, note, query = "", empty, acti
 }
 
 /** "Showing 6–10 of 42", previous/next and numbered pages with the first and last always reachable. */
+/**
+ * Pairs each row with a key that is unique on this page. Rows can share an id (several events from one session, a
+ * person on two days); React would then reuse a stale row on the next page, so earlier rows seemed to pile up when
+ * paging back and forth. A repeat gets a #2, #3… suffix.
+ */
+export function uniqueKeys<T>(rows: T[], keyOf: (row: T, index: number) => string): [T, string][] {
+  const seen = new Map<string, number>();
+  return rows.map((row, index) => { const base = keyOf(row, index); const n = (seen.get(base) ?? 0) + 1; seen.set(base, n); return [row, n > 1 ? `${base}#${n}` : base]; });
+}
 export function Pager({ page, pages, total, onPage, size = PAGE_SIZE }: { page: number; pages: number; total: number; onPage: (page: number) => void; size?: number }) {
   if (!total) return null;
   const numbers = [...new Set([1, pages, page - 1, page, page + 1].filter(n => n >= 1 && n <= pages))].sort((a, b) => a - b);

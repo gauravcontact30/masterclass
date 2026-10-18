@@ -21,32 +21,34 @@ export function LandingFooter() {
   function moveTop(){const reduced=window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;window.scrollTo({top:0,behavior:reduced?"instant":"smooth"});document.getElementById("main-content")?.focus({preventScroll:true});}
   return <footer id="site-footer" className={styles.footer}><div className={styles.inner}>
     <div className={styles.intro}><div className={styles.brand}><Link href="/" aria-label="MasterClass home"><Wordmark/></Link><p><ExpandedText text={text("A clear path from your next lesson to your next goal.","अगले पाठ से अगले लक्ष्य तक एक स्पष्ट अध्ययन पथ।")} /></p></div><Link className={styles.invite} href="/dashboard?tab=plans"><BookOpen size={19}/><span><strong><ExpandedText text={text("Make room for learning","सीखने के लिए समय बनाएँ")} /></strong><small><ExpandedText text={text("Choose your preparation and membership","अपनी तैयारी और सदस्यता चुनें")} /></small></span><ArrowUpRight size={18}/></Link></div>
-    <div className={styles.columns}>{groups.map(group=><nav key={group.title} aria-label={group.title}><h3><ExpandedText text={group.title} /></h3><FooterLinks links={group.links} /></nav>)}</div>
+    <div className={styles.columns}>{groups.map(group=><nav key={group.title} aria-label={group.title}><h3><ExpandedText text={group.title} /></h3><FooterLinks links={group.links} column={groups.indexOf(group)} /></nav>)}</div>
     <div className={styles.bottom}><small>© {new Date().getFullYear()} MasterClass. <ExpandedText text={text("All rights reserved.","सर्वाधिकार सुरक्षित।")} /></small><span><Globe2 size={14}/> English / हिन्दी <i/> Learn in App</span><button onClick={moveTop}><ExpandedText text={text("Move to top","ऊपर जाएँ")} /><ArrowUp size={15}/></button></div>
   </div></footer>;
 }
 
-type Pill = { top: number; right: number; bottom: number; left: number; visible: boolean };
+type Pill = { top: number; right: number; bottom: number; left: number; visible: boolean; tone: string };
+/** Each link has its own hover colour; all keep the light link text at 4.5:1 or better. */
+const TONES = ["#bb5834", "#2f7a4f", "#5b45a8", "#1d5a85", "#9a2f55", "#11706a", "#8a5a00"];
 
 /**
- * A footer column's links with the header's hover effect: one orange pill that
+ * A footer column's links with the header's hover effect: one pill, in a different colour for each link, that
  * slides to the hovered or focused link (a full-size layer revealed with
  * clip-path, so it moves without layout) and fades out when the pointer leaves.
  */
-function FooterLinks({ links }: { links: string[][] }) {
+function FooterLinks({ links, column = 0 }: { links: string[][]; column?: number }) {
   const pillRef = useRef<HTMLSpanElement>(null);
-  const [pill, setPill] = useState<Pill>({ top: 0, right: 0, bottom: 0, left: 0, visible: false });
-  const moveTo = useCallback((link: HTMLElement | null) => {
+  const [pill, setPill] = useState<Pill>({ top: 0, right: 0, bottom: 0, left: 0, visible: false, tone: TONES[0] });
+  const moveTo = useCallback((link: HTMLElement | null, index = 0) => {
     const layer = pillRef.current;
     if (!link || !layer) { setPill(current => ({ ...current, visible: false })); return; }
     // Measured against the pill's own layer, which overhangs the list so no pill is ever cut off.
     const box = layer.getBoundingClientRect(), at = link.getBoundingClientRect();
-    setPill({ top: at.top - box.top, left: at.left - box.left, right: box.right - at.right, bottom: box.bottom - at.bottom, visible: true });
-  }, []);
+    setPill({ top: at.top - box.top, left: at.left - box.left, right: box.right - at.right, bottom: box.bottom - at.bottom, visible: true, tone: TONES[(column * 3 + index) % TONES.length] });
+  }, [column]);
   return <ul className={styles.links} onMouseLeave={() => moveTo(null)} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) moveTo(null); }}>
     <span ref={pillRef} className={styles.pill} aria-hidden="true" data-visible={pill.visible || undefined}
-      style={{ clipPath: `inset(${pill.top}px ${pill.right}px ${pill.bottom}px ${pill.left}px round 999px)` }} />
-    {links.map(([label, href]) => <li key={label}><Link className={navigationStyles.link} href={href}
-      onMouseEnter={event => moveTo(event.currentTarget)} onFocus={event => moveTo(event.currentTarget)}><ExpandedText text={label} /></Link></li>)}
+      style={{ clipPath: `inset(${pill.top}px ${pill.right}px ${pill.bottom}px ${pill.left}px round 999px)`, backgroundColor: pill.tone }} />
+    {links.map(([label, href], index) => <li key={label}><Link className={navigationStyles.link} href={href}
+      onMouseEnter={event => moveTo(event.currentTarget, index)} onFocus={event => moveTo(event.currentTarget, index)}><ExpandedText text={label} /></Link></li>)}
   </ul>;
 }
