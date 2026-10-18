@@ -7,7 +7,7 @@
 
 .head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 20px 40px; margin-bottom: 32px; }
 .headCopy { max-width: 720px; }
-.kicker { display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 6px 12px; border: 1px solid var(--nb-cream-edge); border-radius: 999px; background: var(--nb-sheet); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--nb-ink); }
+.kicker { display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 6px 12px; border: 1px solid var(--nb-cream-edge); border-radius: 999px; background: var(--nb-sheet); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--nb-ink); text-align: left; hyphens: manual; }
 .head h2 { margin: 16px 0 12px; font-family: var(--nb-font); font-weight: 600; font-size: clamp(30px, 3.6vw, 50px); line-height: 1.06; letter-spacing: -0.02em; color: var(--nb-graphite); text-wrap: balance; }
 .head h2 em { font-style: italic; color: var(--nb-ink); }
 .lede { margin: 0; max-width: 60ch; font-size: 17px; line-height: 1.55; color: var(--nb-text); text-align: justify; text-justify: inter-word; -webkit-hyphens: auto; hyphens: auto; }

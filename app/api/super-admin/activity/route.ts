@@ -13,7 +13,10 @@ export async function GET(request: Request) {
       return Response.json({ ...(await adminRpc<object>("admin_person_timeline", { p_person: person }, { not_found: 404 })), generatedAt: new Date().toISOString() });
     }
     const days = Number(params.get("days"));
-    const data = await adminRpc<object>("admin_user_activity", { p_days: [1, 7, 30, 90].includes(days) ? days : 7 });
+    const window = [1, 7, 30, 90].includes(days) ? days : 7;
+    // The Audience explorer's complete country/city/page/source lists (migration 0027; 503 migration_required before it).
+    if (params.get("view") === "breakdowns") return Response.json({ ...(await adminRpc<object>("admin_activity_breakdowns", { p_days: window })), generatedAt: new Date().toISOString() });
+    const data = await adminRpc<object>("admin_user_activity", { p_days: window });
     return Response.json({ ...data, generatedAt: new Date().toISOString() });
   }, request);
 }

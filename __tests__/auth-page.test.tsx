@@ -1,14 +1,14 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { AuthPage } from "@/components/auth-page";
+import { AuthPage, safeRedirect } from "@/components/auth-page";
+import { hardNavigate } from "@/lib/hard-navigate";
+const replace = hardNavigate as jest.Mock;
 
 const signInWithPassword = jest.fn();
 const signUp = jest.fn();
-const replace = jest.fn();
-const refresh = jest.fn();
 
 jest.mock("@/lib/supabase-browser", () => ({ supabaseBrowser: () => ({ auth: { signInWithPassword, signUp } }) }));
-jest.mock("next/navigation", () => ({ useRouter: () => ({ replace, refresh }) }));
+jest.mock("@/lib/hard-navigate", () => ({ hardNavigate: jest.fn() }));
 
 async function fillCredentials(email = "student@example.com", password = "hunter2pass") {
   const user = userEvent.setup();
@@ -137,4 +137,24 @@ test.each(["signin", "signup"] as const)("the eye button reveals and hides the p
   expect(screen.getByRole("button", { name: "Show password" })).toHaveAttribute("aria-pressed", "false");
   expect(signInWithPassword).not.toHaveBeenCalled();
   expect(signUp).not.toHaveBeenCalled();
+});
+
+test("after sign-in, the proxy's redirect target is followed only when it is an in-app path", async () => {
+  signInWithPassword.mockResolvedValue({ data: {}, error: null });
+  render(<AuthPage mode="signin" enabled redirectTo="/dashboard/super-admin" />);
+  const user = await fillCredentials();
+  await user.click(screen.getByRole("button", { name: "Sign in" }));
+  await waitFor(() => expect(replace).toHaveBeenCalledWith("/dashboard/super-admin"));
+  // The button stays busy while the dashboard loads, so a second tap cannot resubmit.
+  expect(screen.getByRole("button", { name: "Loading…" })).toBeDisabled();
+});
+
+test.each([
+  ["https://evil.example/dashboard", "/dashboard"], ["//evil.example", "/dashboard"], ["/dashboard\evil", "/dashboard"],
+  ["/api/admin", "/dashboard"], [undefined, "/dashboard"], ["/dashboard/notes?tab=1", "/dashboard/notes?tab=1"], ["/notes", "/notes"],
+])("safeRedirect(%p) → %p", (target, expected) => { expect(safeRedirect(target)).toBe(expected); });
+
+test("the form posts (never GET) and is an ordinary form even before hydration", () => {
+  render(<AuthPage mode="signin" enabled />);
+  expect(screen.getByRole("button", { name: "Sign in" }).closest("form")).toHaveAttribute("method", "post");
 });

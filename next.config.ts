@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   // once and streams its request-time parts (the signed-in user, live data) inside Suspense.
   cacheComponents: true,
   poweredByHeader: false,
+  // Dev only: phones and tablets open the dev server by this machine's LAN address (e.g. http://192.168.1.20:3000).
+  // Without this, Next.js blocks that origin's /_next assets and HMR socket, the page never hydrates, and buttons
+  // such as "Sign in" do nothing. Private ranges only; production ignores this setting.
+  allowedDevOrigins: ["192.168.*.*", "10.*.*.*", ...Array.from({ length: 16 }, (_, i) => `172.${16 + i}.*.*`), "*.local"],
   compress: true,
   reactStrictMode: true,
   compiler: {

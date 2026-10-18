@@ -1,10 +1,11 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Clock, Download, Globe2, MonitorSmartphone, MousePointerClick, Radio, RefreshCw, UserPlus, UserRound, Users } from "lucide-react";
+import { ArrowLeft, Clock, Download, MonitorSmartphone, MousePointerClick, Radio, RefreshCw, UserPlus, UserRound, Users } from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { AdminError, AdminLoading } from "./super-admin-feedback";
 import { AdminTable } from "./super-admin-table";
+import { AudienceExplorer } from "./super-admin-audience";
 import shell from "./super-admin-dashboard.module.css";
 import styles from "./super-admin-activity.module.css";
 
@@ -97,11 +98,9 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
       </Card>
     </div>
 
+    <AudienceExplorer days={days} fallback={{ countries: data.countries, cities: data.cities, pages: data.pages, referrers: data.referrers }} />
+
     <div className={styles.breakdowns}>
-      <Breakdown title="Top pages" rows={data.pages} label="path" value="views" extra={row => `${show(row.visitors)} visitors · ${row.avg_seconds == null ? "—" : `${show(row.avg_seconds)} s read`}`} />
-      <Breakdown title="Traffic sources" rows={data.referrers} label="referrer" value="views" extra={row => `${show(row.visitors)} visitors`} />
-      <Breakdown title="Countries" icon={<Globe2 size={15} />} rows={data.countries} label="country" value="visitors" extra={row => `${show(row.views)} views`} />
-      <Breakdown title="Cities" rows={data.cities} label="city" value="visitors" extra={row => show(row.country)} />
       <Breakdown title="Devices" rows={data.devices} label="device" value="visitors" />
       <Breakdown title="Browsers" rows={data.browsers} label="browser" value="visitors" />
       <Breakdown title="Operating systems" rows={data.systems} label="os" value="visitors" />

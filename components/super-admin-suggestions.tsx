@@ -204,7 +204,7 @@ export function SuperAdminSuggestions() {
             <td data-label="Replies"><span className={styles.replies} data-none={!row.reply_count || undefined}><MessageCircleReply size={13} aria-hidden="true" />{row.reply_count ?? "—"}</span></td>
             <td data-label="Submitted"><time dateTime={row.created_at} title={new Date(row.created_at).toLocaleString()}>{new Date(row.created_at).toLocaleDateString()}</time><small>{ago(row.created_at)}</small></td>
             <td className={styles.actionsCell}>
-              <Button variant="outline" size="sm" onClick={() => setSelected(row.id)}><MessageCircleReply size={14} />Review & reply</Button>
+              <Button variant="outline" size="sm" aria-label={`Review and reply: ${row.title}`} onClick={() => setSelected(row.id)}><MessageCircleReply size={14} /><span className={styles.reviewLabel}>Review</span></Button>
               <DropdownMenu><DropdownMenuTrigger className={styles.iconButton} aria-label={`More options for ${row.title}`}><Ellipsis size={16} /></DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem onClick={() => setSelected(row.id)}><MessageCircleReply size={14} />Review & reply</DropdownMenuItem>

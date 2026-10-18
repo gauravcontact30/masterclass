@@ -79,6 +79,12 @@ function ComparisonSlide({ item, index, total, near, text }: Readonly<{ item: Co
     return () => { live = false; };
   }, [near, set, item.id]);
   const Icon = GROUP_ICON[item.group];
+  // Only the visible slide and its neighbours render in full (table, technology cards, pictures). The other 30+
+  // are light shells, which cut this section from ~4,000 DOM nodes and 136 images to a few hundred, the largest
+  // share of the landing page's hydration work. A shell fills in as the reader (or autoplay) arrives.
+  if (!near) return <li className={interview.slide} data-tone={index % TONES} aria-roledescription="slide" aria-label={`${index + 1} / ${total}: ${item.question}`}>
+    <article className={interview.cover}><div className={interview.coverBody}><h3>{item.question}</h3><p className={interview.tagline}>{item.summary}</p></div></article>
+  </li>;
   return <li className={interview.slide} data-tone={index % TONES} aria-roledescription="slide" aria-label={`${index + 1} / ${total}: ${item.question}`}>
     <article className={interview.cover}>
       <ChainPicture sources={[learningImageUrl("topics", ["comparisons", item.id]), ...item.techs.map(tech => techPicture(tech.name)).filter((id): id is string => !!id).map(id => learningImageUrl("topics", ["interview", id]))]} alt={`Illustration comparing ${item.techs.map(tech => tech.name).join(", ")}`} icon={<Icon size={48} strokeWidth={1.3} aria-hidden="true" />}>

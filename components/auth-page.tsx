@@ -3,11 +3,11 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ExpandedText } from "@/components/expanded-text";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, Eye, EyeOff, Languages, MailCheck, Settings2 } from "lucide-react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { hardNavigate } from "@/lib/hard-navigate";
 import { en, TranslationKey } from "@/lib/i18n";
 import { useLanguage } from "./language-provider";
 import { Button } from "./ui/button";
@@ -22,9 +22,23 @@ function authErrorKey(error: { code?: string; message?: string }): TranslationKe
   return code in en ? code as TranslationKey : "service_error";
 }
 
-export function AuthPage({ mode, enabled, initialEmail = "" }: { mode: "signin" | "signup"; enabled: boolean; initialEmail?: string }) {
+/** Only same-site paths are followed after sign-in (never `//host` or a full URL), and only into the app. */
+export function safeRedirect(target: string | undefined) {
+  return target && /^\/(dashboard|notes|subscribe)(\/|\?|$)/.test(target) && !target.startsWith("//") ? target : "/dashboard";
+}
+/**
+ * A full navigation, not router.replace: the new session cookies then reach the proxy and server on the very
+ * first request, and the client router's cache (staleTimes.dynamic is 30s) cannot replay a signed-out
+ * redirect from moments earlier.
+ */
+const enterApp = (target: string) => hardNavigate(target);
+const noSubscribe = () => () => {};
+
+export function AuthPage({ mode, enabled, initialEmail = "", redirectTo }: { mode: "signin" | "signup"; enabled: boolean; initialEmail?: string; redirectTo?: string }) {
   const { t, language, setLanguage } = useLanguage();
-  const router = useRouter();
+  // False in the server HTML, true once React has hydrated. Until then the submit button stays disabled, so a tap
+  // on a slow phone connection cannot fall through to a native form submit that silently reloads the page.
+  const hydrated = useSyncExternalStore(noSubscribe, () => true, () => false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
@@ -50,21 +64,24 @@ export function AuthPage({ mode, enabled, initialEmail = "" }: { mode: "signin" 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true); setError(null);
+    let leaving = false;
     try {
       const auth = supabaseBrowser().auth;
       if (mode === "signin") {
         const { error } = await auth.signInWithPassword({ email, password });
         if (error) { setError(authErrorKey(error)); return; }
-        router.replace("/dashboard");
+        leaving = true; enterApp(safeRedirect(redirectTo));
+        return;
       } else {
         // full_name rides along in the user metadata; the on_auth_user_created
         // trigger copies it into public.profiles.name (migration 0003).
         const { data, error } = await auth.signUp({ email, password, options: { data: { full_name: name.trim() }, emailRedirectTo: `${window.location.origin}/auth/callback` } });
         if (error) { setError(authErrorKey(error)); return; }
         // With email confirmation on, Supabase returns no session until the link is opened.
-        if (data.session) router.replace("/dashboard"); else setSent(true);
+        if (data.session) { leaving = true; enterApp("/dashboard"); return; }
+        setSent(true);
       }
-    } catch { setError("service_error"); } finally { setBusy(false); }
+    } catch { setError("service_error"); } finally { if (!leaving) setBusy(false); }
   }
 
   return (
@@ -109,7 +126,8 @@ export function AuthPage({ mode, enabled, initialEmail = "" }: { mode: "signin" 
               <h1 className={styles.title}><ExpandedText text={t(mode === "signin" ? "signinTitle" : "signupTitle")} /></h1>
               <p className={styles.lead}><ExpandedText text={t(mode === "signin" ? "signinHelp" : "signupHelp")} /></p>
               {error && <p className={`error-banner ${styles.error}`} role="alert"><ExpandedText text={t(error)} /></p>}
-              <form onSubmit={submit} className={styles.form}>
+              {/* method="post": even before hydration a submit never puts anything in the URL. */}
+              <form method="post" onSubmit={submit} className={styles.form}>
                 {mode === "signup" && (
                   // The hint sits outside the label so it describes the field
                   // without becoming part of its accessible name.
@@ -133,7 +151,7 @@ export function AuthPage({ mode, enabled, initialEmail = "" }: { mode: "signin" 
                   </div>
                   {mode === "signup" && <small className={styles.hint} id="auth-password-hint"><ExpandedText text={t("authPasswordHint")} /></small>}
                 </div>
-                <Button className={styles.submit} type="submit" disabled={busy}><ExpandedText text={busy ? t("loading") : t(mode === "signin" ? "signin" : "signup")} /></Button>
+                <Button className={styles.submit} type="submit" disabled={busy || !hydrated} aria-busy={busy || !hydrated}><ExpandedText text={busy || !hydrated ? t("loading") : t(mode === "signin" ? "signin" : "signup")} /></Button>
               </form>
               {mode === "signin" && <p className={styles.switchRow}><button type="button" className={styles.switchLink} disabled={busy} onClick={() => void sendLink()}><ExpandedText text={hi ? "पासवर्ड नहीं है? मुझे साइन-इन लिंक ईमेल करें" : "No password? Email me a sign-in link"} /></button></p>}
               <p className={styles.switchRow}><Link className={styles.switchLink} href={mode === "signin" ? "/sign-up" : "/sign-in"}><ExpandedText text={t(mode === "signin" ? "noAccount" : "haveAccount")} /></Link></p>
