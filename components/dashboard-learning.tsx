@@ -6,6 +6,8 @@ import { LandingVocabulary } from "./landing-vocabulary";
 import { LandingWorkflows } from "./landing-workflows";
 import { LandingInterview } from "./landing-interview";
 import { LandingComparisons } from "./landing-comparisons";
+import { LandingTechDocs } from "./landing-tech-docs";
+import type { OfficialTechDocs } from "@/lib/tech-docs-official";
 import home from "./landing-home.module.css";
 import styles from "./dashboard-learning.module.css";
 
@@ -16,7 +18,7 @@ export type DashboardDaily = { day: string; pulse: PulseCard[]; words: DailyWord
  * most-asked interview question) and Interview prep. The landing page previews three cards of each and links
  * here (components/dashboard-more.tsx), so these render the same components, in the landing page's tokens and font.
  */
-export function DashboardLearning({ daily }: Readonly<{ daily: DashboardDaily | null }>) {
+export function DashboardLearning({ daily, techDocs }: Readonly<{ daily: DashboardDaily | null; techDocs?: OfficialTechDocs | null }>) {
   return <div className={`${home.home} ${anek.variable} ${anek.className} ${styles.learning}`}>
     {daily && <>
       <LandingAiPulse cards={daily.pulse} day={daily.day} locked={daily.locked.pulse} />
@@ -25,5 +27,6 @@ export function DashboardLearning({ daily }: Readonly<{ daily: DashboardDaily | 
     <LandingWorkflows />
     <LandingInterview />
     <LandingComparisons />
+    <LandingTechDocs official={techDocs} />
   </div>;
 }

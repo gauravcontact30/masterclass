@@ -6,7 +6,7 @@ import type { LandingPrices } from "./landing-page";
 const loadPanel = () => import("./welcome-modal-panel");
 const WelcomePanel = lazy(loadPanel);
 const SEEN_KEY = "mc:welcome:v1";
-const DELAY_MS = 5000;
+const DELAY_MS = 3000;
 const RETRY_MS = 4000;
 
 const seen = () => { try { return window.localStorage.getItem(SEEN_KEY) === "1"; } catch { return false; } };
@@ -15,7 +15,7 @@ const remember = () => { try { window.localStorage.setItem(SEEN_KEY, "1"); } cat
 const busy = () => !!document.querySelector("[role=dialog]:not([hidden]), dialog[open], [aria-modal=true]");
 
 /**
- * First-visit welcome: opens once, five seconds after the landing page loads. If the tab is hidden or another
+ * First-visit welcome: opens once, three seconds after the landing page loads. If the tab is hidden or another
  * dialog is open at that moment it waits and tries again, instead of giving up. `?welcome` always shows it.
  */
 export function WelcomeModal({ prices }: { prices: LandingPrices | null }) {

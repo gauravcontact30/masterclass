@@ -5,6 +5,7 @@ import { landingLibrary } from "@/lib/landing-library";
 import { landingProPreview } from "@/lib/landing-pro-preview";
 import { landingDaily } from "@/lib/server/landing-daily";
 import { billingConfigured } from "@/lib/server/config";
+import { officialTechDocs } from "@/lib/server/official-tech-docs";
 import { organizationSchema, pageMetadata, websiteSchema } from "@/lib/seo";
 export const metadata = pageMetadata("/");
 // The AI pulse and Word power carousels change at midnight IST. The page is cached with an hourly lifetime, so the
@@ -16,5 +17,5 @@ export default async function Home() {
   const pro = landingProPreview();
   // The same values /api/billing returns, rendered into the page instead of fetched after hydration.
   const prices = { monthly: Number(process.env.PRO_MONTHLY_PRICE_INR ?? 299), yearly: Number(process.env.PRO_YEARLY_PRICE_INR ?? 2999), enabled: billingConfigured() };
-  return <><JsonLd data={[websiteSchema(), organizationSchema()]} /><LandingPage pro={pro} library={landingLibrary(pro)} prices={prices} daily={landingDaily()} /></>;
+  return <><JsonLd data={[websiteSchema(), organizationSchema()]} /><LandingPage pro={pro} library={landingLibrary(pro)} prices={prices} daily={landingDaily()} techDocs={await officialTechDocs()} /></>;
 }

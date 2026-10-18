@@ -31,13 +31,15 @@ import { StudentReviews } from "./student-reviews";
 import { LandingWorkflows } from "./landing-workflows";
 import { LandingInterview } from "./landing-interview";
 import { LandingComparisons } from "./landing-comparisons";
+import { LandingTechDocs } from "./landing-tech-docs";
+import type { OfficialTechDocs } from "@/lib/tech-docs-official";
 import { LandingMembership } from "./landing-membership";
 import frame from "./landing-section.module.css";
 import { useLanguage } from "./language-provider";
 import styles from "./learn-landing.module.css";
 
 export type LandingPrices = { monthly: number; yearly: number; enabled: boolean };
-export function LandingPage({ pro, library, prices: initialPrices, daily }: { pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null } } }) {
+export function LandingPage({ pro, library, prices: initialPrices, daily, techDocs }: { pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null } } }) {
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
   // Prices rendered on the server arrive in the HTML, so the plan card never paints "—" and then shifts; the fetch is only the fallback.
@@ -57,6 +59,7 @@ export function LandingPage({ pro, library, prices: initialPrices, daily }: { pr
     <LandingWorkflows preview />
     <LandingInterview preview />
     <LandingComparisons />
+    <LandingTechDocs official={techDocs} />
     <LandingOverview counts={library?.counts} />
     {library && <section ref={libraryRef} id="library" className={`${frame.section} ${home.library}`} data-ground="paper" data-reveal={libraryReveal} aria-labelledby="library-title"><div className={`${home.inner} ${home.libraryInner}`}>
       <header className={frame.head}>

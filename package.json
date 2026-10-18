@@ -29,6 +29,7 @@
     "images:blueprints": "tsx --env-file-if-exists=.env scripts/generate-card-images.ts --set blueprints",
     "images:interview": "tsx --env-file-if-exists=.env scripts/generate-card-images.ts --set interview",
     "images:comparisons": "tsx --env-file-if-exists=.env scripts/generate-card-images.ts --set comparisons",
+    "docs:tech": "tsx scripts/fetch-tech-docs.ts",
     "landing:daily": "tsx --env-file-if-exists=.env scripts/build-landing-daily.ts",
     "landing:enrich": "tsx --env-file-if-exists=.env scripts/enrich-landing-daily.ts && tsx --env-file-if-exists=.env scripts/build-landing-daily.ts",
     "landing:words": "tsx --env-file-if-exists=.env scripts/enrich-landing-words.ts && tsx --env-file-if-exists=.env scripts/build-landing-daily.ts",

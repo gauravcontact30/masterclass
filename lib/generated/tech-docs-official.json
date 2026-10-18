@@ -1,0 +1,683 @@
+{
+  "fetchedAt": "2026-10-18T06:36:27.450Z",
+  "versions": {
+    "ai-gateway": {
+      "version": "AI SDK 7.0.143",
+      "source": "npmjs.com/package/ai"
+    },
+    "vue": {
+      "version": "3.5.44",
+      "source": "npmjs.com/package/vue"
+    },
+    "angular": {
+      "version": "22.2.3",
+      "source": "npmjs.com/package/@angular/core"
+    },
+    "node": {
+      "version": "v26.12.0",
+      "date": "2026-10-14",
+      "source": "nodejs.org/dist"
+    }
+  },
+  "pages": {
+    "https://angular.dev": {
+      "url": "https://angular.dev",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Angular v22 is here!",
+      "description": "New to Angular? Try our completely in browser tutorial lessons designed to give you hands on experience with Angular.",
+      "lead": "New to Angular? Try our completely in browser tutorial lessons designed to give you hands on experience with Angular.",
+      "sections": [
+        "Productivity Meets scalability",
+        "Features that actually help you solve problems",
+        "Enabling you to build smarter and faster",
+        "Where performance matters",
+        "Want to learn more about Angular?"
+      ],
+      "fetchedAt": "2026-10-18T06:36:25.943Z"
+    },
+    "https://angular.dev/tutorials/learn-angular": {
+      "url": "https://angular.dev/tutorials/learn-angular",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Welcome to the Angular tutorial",
+      "description": "Welcome! Let's learn the building blocks of Angular.",
+      "lead": "Welcome! Let's learn the building blocks of Angular.",
+      "sections": [
+        "How to use this tutorial",
+        "Using AI for Development"
+      ],
+      "fetchedAt": "2026-10-18T06:36:25.900Z"
+    },
+    "https://angular.dev/guide/signals": {
+      "url": "https://angular.dev/guide/signals",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Angular Signals",
+      "description": "Angular Signals is a system that granularly tracks how and where your state is used throughout an application, allowing the framework to optimize rendering updates.",
+      "lead": "Angular Signals is a system that granularly tracks how and where your state is used throughout an application, allowing the framework to optimize rendering updates.",
+      "sections": [
+        "What are signals?",
+        "Reactive contexts",
+        "Advanced derivations",
+        "Executing side effects on non-reactive APIs",
+        "Reading signals in OnPush components"
+      ],
+      "fetchedAt": "2026-10-18T06:36:26.064Z"
+    },
+    "https://angular.dev/guide/signals/linked-signal": {
+      "url": "https://angular.dev/guide/signals/linked-signal",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Dependent state with linkedSignal",
+      "description": "You can use the signal function to hold some state in your Angular code. Sometimes, this state depends on some other state. For example, imagine a component that lets the user select a shipping method for an order:",
+      "lead": "You can use the signal function to hold some state in your Angular code. Sometimes, this state depends on some other state. For example, imagine a component that lets the user select a shipping method for an order:",
+      "sections": [
+        "Accounting for previous state",
+        "Custom equality comparison",
+        "Customizing the set operation"
+      ],
+      "fetchedAt": "2026-10-18T06:36:26.046Z"
+    },
+    "https://angular.dev/guide/signals/resource": {
+      "url": "https://angular.dev/guide/signals/resource",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Async reactivity with resources",
+      "description": "All signal APIs are synchronous— signal , computed , input , etc. However, applications often need to deal with data that is available asynchronously. A Resource gives you a way to incorporate async data into your application's signal-based code and still…",
+      "lead": "All signal APIs are synchronous— signal , computed , input , etc. However, applications often need to deal with data that is available asynchronously. A Resource gives you a way to incorporate async data into your application's signal-based code and still…",
+      "sections": [
+        "Resource loaders",
+        "Resource status",
+        "Caching resource data with SSR",
+        "Chaining resources",
+        "Reactive data fetching with httpResource"
+      ],
+      "fetchedAt": "2026-10-18T06:36:26.058Z"
+    },
+    "https://angular.dev/guide/forms/signals/overview": {
+      "url": "https://angular.dev/guide/forms/signals/overview",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Forms with Angular Signals",
+      "description": "Signal Forms is a library that allows you to manage form state in Angular applications by building on the reactive foundation of signals. With automatic two-way binding, type-safe field access, and schema-based validation, Signal Forms help you create robust…",
+      "lead": "Signal Forms is a library that allows you to manage form state in Angular applications by building on the reactive foundation of signals. With automatic two-way binding, type-safe field access, and schema-based validation, Signal Forms help you create robust…",
+      "sections": [
+        "Why Signal Forms?",
+        "Prerequisites",
+        "Setup"
+      ],
+      "fetchedAt": "2026-10-18T06:36:25.983Z"
+    },
+    "https://angular.dev/guide/zoneless": {
+      "url": "https://angular.dev/guide/zoneless",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Angular without ZoneJS (Zoneless)",
+      "description": "The main advantages to removing ZoneJS as a dependency are:",
+      "lead": "The main advantages to removing ZoneJS as a dependency are:",
+      "sections": [
+        "Why use Zoneless?",
+        "Enabling Zoneless in an application",
+        "Removing ZoneJS",
+        "Requirements for Zoneless compatibility",
+        "Testing and Debugging"
+      ],
+      "fetchedAt": "2026-10-18T06:36:25.999Z"
+    },
+    "https://angular.dev/guide/templates/defer": {
+      "url": "https://angular.dev/guide/templates/defer",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Deferred loading with @defer",
+      "description": "Deferrable views, also known as @defer blocks, reduce the initial bundle size of your application by deferring the loading of code that is not strictly necessary for the initial rendering of a page. This often results in a faster initial load and improvement…",
+      "lead": "Deferrable views, also known as @defer blocks, reduce the initial bundle size of your application by deferring the loading of code that is not strictly necessary for the initial rendering of a page. This often results in a faster initial load and improvement…",
+      "sections": [
+        "Which dependencies are deferred?",
+        "How to manage different stages of deferred loading",
+        "Controlling deferred content loading with triggers",
+        "Prefetching data with prefetch",
+        "Testing @defer blocks"
+      ],
+      "fetchedAt": "2026-10-18T06:36:26.085Z"
+    },
+    "https://vuejs.org": {
+      "url": "https://vuejs.org",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "The Progressive JavaScript Framework",
+      "description": "An approachable, performant and versatile framework for building web user interfaces.",
+      "lead": "An approachable, performant and versatile framework for building web user interfaces.",
+      "sections": [
+        "Versatile",
+        "User-friendly",
+        "Efficient"
+      ],
+      "fetchedAt": "2026-10-18T06:36:25.835Z"
+    },
+    "https://vuejs.org/guide/introduction.html": {
+      "url": "https://vuejs.org/guide/introduction.html",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Introduction",
+      "description": "Vue (pronounced /vjuː/, like view ) is a JavaScript framework for building user interfaces. It builds on top of standard HTML, CSS, and JavaScript and provides a declarative, component-based programming model that helps you efficiently develop user interfaces…",
+      "lead": "Vue (pronounced /vjuː/, like view ) is a JavaScript framework for building user interfaces. It builds on top of standard HTML, CSS, and JavaScript and provides a declarative, component-based programming model that helps you efficiently develop user interfaces…",
+      "sections": [
+        "What is Vue?",
+        "The Progressive Framework",
+        "Single-File Components",
+        "API Styles",
+        "Still Got Questions?"
+      ],
+      "fetchedAt": "2026-10-18T06:36:25.879Z"
+    },
+    "https://vuejs.org/guide/essentials/reactivity-fundamentals.html": {
+      "url": "https://vuejs.org/guide/essentials/reactivity-fundamentals.html",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Reactivity Fundamentals",
+      "description": "With the Options API, we use the data option to declare reactive state of a component. The option value should be a function that returns an object. Vue will call the function when creating a new component instance, and wrap the returned object in its…",
+      "lead": "With the Options API, we use the data option to declare reactive state of a component. The option value should be a function that returns an object. Vue will call the function when creating a new component instance, and wrap the returned object in its…",
+      "sections": [
+        "Declaring Reactive State",
+        "Declaring Methods",
+        "reactive()",
+        "Additional Ref Unwrapping Details"
+      ],
+      "fetchedAt": "2026-10-18T06:36:25.932Z"
+    },
+    "https://vuejs.org/guide/components/props.html": {
+      "url": "https://vuejs.org/guide/components/props.html",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Props",
+      "description": "Vue components require explicit props declaration so that Vue knows what external props passed to the component should be treated as fallthrough attributes (which will be discussed in its dedicated section ).",
+      "lead": "Vue components require explicit props declaration so that Vue knows what external props passed to the component should be treated as fallthrough attributes (which will be discussed in its dedicated section ).",
+      "sections": [
+        "Props Declaration",
+        "Reactive Props Destructure",
+        "Prop Passing Details",
+        "One-Way Data Flow",
+        "Prop Validation"
+      ],
+      "fetchedAt": "2026-10-18T06:36:25.927Z"
+    },
+    "https://vuejs.org/guide/essentials/template-refs.html": {
+      "url": "https://vuejs.org/guide/essentials/template-refs.html",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Template Refs",
+      "description": "While Vue's declarative rendering model abstracts away most of the direct DOM operations for you, there may still be cases where we need direct access to the underlying DOM elements. To achieve this, we can use the special ref attribute:",
+      "lead": "While Vue's declarative rendering model abstracts away most of the direct DOM operations for you, there may still be cases where we need direct access to the underlying DOM elements. To achieve this, we can use the special ref attribute:",
+      "sections": [
+        "Accessing the Refs",
+        "Ref on Component",
+        "Refs inside v-for",
+        "Function Refs"
+      ],
+      "fetchedAt": "2026-10-18T06:36:25.893Z"
+    },
+    "https://vuejs.org/guide/components/async.html": {
+      "url": "https://vuejs.org/guide/components/async.html",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Async Components",
+      "description": "In large applications, we may need to divide the app into smaller chunks and only load a component from the server when it's needed. To make that possible, Vue has a defineAsyncComponent function:",
+      "lead": "In large applications, we may need to divide the app into smaller chunks and only load a component from the server when it's needed. To make that possible, Vue has a defineAsyncComponent function:",
+      "sections": [
+        "Basic Usage",
+        "Loading and Error States",
+        "Lazy Hydration",
+        "Using with Suspense"
+      ],
+      "fetchedAt": "2026-10-18T06:36:25.882Z"
+    },
+    "https://blog.vuejs.org/posts/vue-3-5": {
+      "url": "https://blog.vuejs.org/posts/vue-3-5",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Announcing Vue 3.5",
+      "description": "Today we are excited to announce the release of Vue 3.5 \"Tengen Toppa Gurren Lagann\"!",
+      "lead": "Today we are excited to announce the release of Vue 3.5 \"Tengen Toppa Gurren Lagann\"!",
+      "sections": [
+        "Reactivity System Optimizations",
+        "Reactive Props Destructure",
+        "SSR Improvements",
+        "Custom Elements Improvements",
+        "Other Notable Features"
+      ],
+      "fetchedAt": "2026-10-18T06:36:25.783Z"
+    },
+    "https://trailhead.salesforce.com/": {
+      "url": "https://trailhead.salesforce.com/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Build Salesforce and AI Skills",
+      "description": "Learn in-demand skills for free to drive your company and career forward. Skill up and become an Agentblazer who transforms how work gets done.",
+      "lead": "Learn for free with hands-on training on Trailhead. Build real-world expertise to solve business challenges and drive impact.",
+      "sections": [
+        "Turn learning into real-world impact",
+        "Learn what’s new in Salesforce",
+        "Take your skills further",
+        "Get the Trailhead Dispatch in your inbox."
+      ],
+      "fetchedAt": "2026-10-18T06:36:27.383Z"
+    },
+    "https://developer.salesforce.com/docs/platform/lwc/guide/get-started-introduction.html": {
+      "url": "https://developer.salesforce.com/docs/platform/lwc/guide/get-started-introduction.html",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Get Started with Lightning Web Components",
+      "description": "Use the Lightning Web Components (LWC) framework to build custom user interfaces, web and mobile apps, and digital experiences on the Salesforce Platf",
+      "lead": "Use the Lightning Web Components (LWC) framework to build custom user interfaces, web and mobile apps, and digital experiences on the Salesforce Platform. Lightning web components are custom HTML elements built using HTML and JavaScript.",
+      "sections": [],
+      "fetchedAt": "2026-10-18T06:36:25.908Z"
+    },
+    "https://trailhead.salesforce.com/content/learn/modules/apex_database": {
+      "url": "https://trailhead.salesforce.com/content/learn/modules/apex_database",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Apex Basics & Database",
+      "description": "Learn how to add business logic and manipulate data using Salesforce Apex programming language. Discover essential concepts to boost your development skills.",
+      "lead": "Use Apex to add business logic and manipulate your data in Salesforce.",
+      "sections": [
+        "Available on these trails",
+        "Skills you will gain",
+        "Discover More"
+      ],
+      "fetchedAt": "2026-10-18T06:36:27.396Z"
+    },
+    "https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql.htm": {
+      "url": "https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql.htm",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Salesforce Object Query Language (SOQL)",
+      "description": "Use the Salesforce Object Query Language (SOQL) to search your organization’s Salesforce data for specific information. SOQL is similar to the SELECT",
+      "lead": "Use the Salesforce Object Query Language (SOQL) to search your organization’s Salesforce data for specific information. SOQL is similar to the SELECT statement in the widely used Structured Query Language (SQL) but is designed specifically for Salesforce data.",
+      "sections": [],
+      "fetchedAt": "2026-10-18T06:36:25.920Z"
+    },
+    "https://developer.salesforce.com/tools/salesforcecli": {
+      "url": "https://developer.salesforce.com/tools/salesforcecli",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Salesforce CLI",
+      "description": "Salesforce CLI is a command-line interface for Salesforce DX features.",
+      "lead": "Salesforce CLI is a single command-line interface for all Salesforce DX features.",
+      "sections": [
+        "Choose your operating system",
+        "Getting Started"
+      ],
+      "fetchedAt": "2026-10-18T06:36:25.732Z"
+    },
+    "https://www.salesforce.com/releases/": {
+      "url": "https://www.salesforce.com/releases/",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "The Winter ’27 Release is here",
+      "description": "Dive into our Winter ’27 Release to explore product updates and the latest Agentforce innovations.",
+      "lead": "Ready to explore all our latest innovations? Dive into Trailhead, the Release-in-a-Box highlights deck, and more to see how we are delivering AI-driven innovation across every cloud and industry. Learn how your company can become an Agentic Enterprise, where…",
+      "sections": [
+        "Catch up quickly with \"Release Readiness.\"",
+        "Level up with our Release Readiness Trails.",
+        "Check out the latest product demos.",
+        "Watch some of our key Winter ’27 Release feature updates in action.",
+        "Explore curated demos by industry for the Winter ’27 Release."
+      ],
+      "fetchedAt": "2026-10-18T06:36:26.123Z"
+    },
+    "https://nodejs.org/docs/latest/api/": {
+      "url": "https://nodejs.org/docs/latest/api/",
+      "ok": true,
+      "complete": false,
+      "status": 200,
+      "title": "",
+      "description": "",
+      "lead": "",
+      "sections": [],
+      "fetchedAt": "2026-10-18T06:36:25.758Z"
+    },
+    "https://nodejs.org/en/learn/getting-started/introduction-to-nodejs": {
+      "url": "https://nodejs.org/en/learn/getting-started/introduction-to-nodejs",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Introduction to Node.js",
+      "description": "Node.js is an open-source and cross-platform JavaScript runtime environment. It is a popular tool for almost any kind of project!",
+      "lead": "Node.js is an open-source and cross-platform JavaScript runtime environment. It is a popular tool for almost any kind of project!",
+      "sections": [],
+      "fetchedAt": "2026-10-18T06:36:26.042Z"
+    },
+    "https://nodejs.org/api/typescript.html": {
+      "url": "https://nodejs.org/api/typescript.html",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Modules: TypeScript",
+      "description": "There are two ways to enable runtime TypeScript support in Node.js:",
+      "lead": "There are two ways to enable runtime TypeScript support in Node.js:",
+      "sections": [
+        "Enabling",
+        "Full TypeScript support",
+        "Type stripping"
+      ],
+      "fetchedAt": "2026-10-18T06:36:25.806Z"
+    },
+    "https://nodejs.org/api/test.html": {
+      "url": "https://nodejs.org/api/test.html",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Test runner",
+      "description": "The node:test module facilitates the creation of JavaScript tests. To access it:",
+      "lead": "The node:test module facilitates the creation of JavaScript tests. To access it:",
+      "sections": [
+        "Subtests",
+        "Rerunning failed tests",
+        "describe() and it() aliases",
+        "Skipping tests",
+        "TODO tests"
+      ],
+      "fetchedAt": "2026-10-18T06:36:26.312Z"
+    },
+    "https://nodejs.org/api/sqlite.html": {
+      "url": "https://nodejs.org/api/sqlite.html",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "SQLite",
+      "description": "The node:sqlite module facilitates working with SQLite databases. To access it:",
+      "lead": "The node:sqlite module facilitates working with SQLite databases. To access it:",
+      "sections": [
+        "Type conversion between JavaScript and SQLite",
+        "Class: Database",
+        "Class: Session",
+        "Class: Statement",
+        "Class: SQLTagStore"
+      ],
+      "fetchedAt": "2026-10-18T06:36:26.078Z"
+    },
+    "https://nodejs.org/api/permissions.html": {
+      "url": "https://nodejs.org/api/permissions.html",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Permissions",
+      "description": "Permissions can be used to control what system resources the Node.js process has access to or what actions the process can take with those resources.",
+      "lead": "Permissions can be used to control what system resources the Node.js process has access to or what actions the process can take with those resources.",
+      "sections": [
+        "Process-based permissions"
+      ],
+      "fetchedAt": "2026-10-18T06:36:25.875Z"
+    },
+    "https://nodejs.org/en/blog/release/v26.0.0": {
+      "url": "https://nodejs.org/en/blog/release/v26.0.0",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Node.js 26.0.0 (Current)",
+      "description": "Node.js® is a free, open-source, cross-platform JavaScript runtime environment that lets developers create servers, web apps, command line tools and scripts.",
+      "lead": "We're excited to announce the release of Node.js 26! Highlights include the Temporal API enabled by default, updates to the V8 JavaScript engine to 14.6, Undici to 8.0, and several important deprecations and removals as we continue to modernize the platform.",
+      "sections": [
+        "Notable Changes",
+        "Semver-Major Commits",
+        "Semver-Minor Commits",
+        "Semver-Patch Commits",
+        "SHASUMS"
+      ],
+      "fetchedAt": "2026-10-18T06:36:26.263Z"
+    },
+    "https://openrouter.ai/docs": {
+      "url": "https://openrouter.ai/docs",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Quickstart",
+      "description": "Get started with OpenRouter",
+      "lead": "",
+      "sections": [
+        "Using the OpenRouter API",
+        "Using the Client SDKs",
+        "Using the Agent SDK",
+        "Using the OpenAI SDK",
+        "Using third-party SDKs"
+      ],
+      "fetchedAt": "2026-10-18T06:36:26.255Z"
+    },
+    "https://openrouter.ai/docs/quickstart": {
+      "url": "https://openrouter.ai/docs/quickstart",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Quickstart",
+      "description": "Get started with OpenRouter",
+      "lead": "",
+      "sections": [
+        "Using the OpenRouter API",
+        "Using the Client SDKs",
+        "Using the Agent SDK",
+        "Using the OpenAI SDK",
+        "Using third-party SDKs"
+      ],
+      "fetchedAt": "2026-10-18T06:36:26.200Z"
+    },
+    "https://openrouter.ai/docs/api-reference/overview": {
+      "url": "https://openrouter.ai/docs/api-reference/overview",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "API Reference",
+      "description": "An overview of OpenRouter's API",
+      "lead": "",
+      "sections": [
+        "OpenAPI specification",
+        "Requests",
+        "Responses"
+      ],
+      "fetchedAt": "2026-10-18T06:36:26.233Z"
+    },
+    "https://openrouter.ai/docs/guides/routing/model-fallbacks": {
+      "url": "https://openrouter.ai/docs/guides/routing/model-fallbacks",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Model Fallbacks",
+      "description": "Automatic failover between models",
+      "lead": "",
+      "sections": [
+        "How it works",
+        "Fallback behavior",
+        "Pricing",
+        "Using with the Anthropic Messages API",
+        "Using with the OpenAI SDK"
+      ],
+      "fetchedAt": "2026-10-18T06:36:26.163Z"
+    },
+    "https://openrouter.ai/docs/features/provider-routing": {
+      "url": "https://openrouter.ai/docs/features/provider-routing",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Provider Routing",
+      "description": "Route requests to the best provider",
+      "lead": "",
+      "sections": [
+        "Price-Based Load Balancing (Default Strategy)",
+        "Provider Sorting",
+        "Nitro Shortcut",
+        "Floor Price Shortcut",
+        "Advanced Sorting with Partition"
+      ],
+      "fetchedAt": "2026-10-18T06:36:26.379Z"
+    },
+    "https://openrouter.ai/docs/guides/features/tool-calling": {
+      "url": "https://openrouter.ai/docs/guides/features/tool-calling",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Client Tools",
+      "description": "Use client tools in your prompts",
+      "lead": "",
+      "sections": [
+        "Request Body Examples",
+        "Interleaved Thinking",
+        "A Simple Agentic Loop",
+        "Best Practices and Advanced Patterns"
+      ],
+      "fetchedAt": "2026-10-18T06:36:26.334Z"
+    },
+    "https://openrouter.ai/docs/guides/features/structured-outputs": {
+      "url": "https://openrouter.ai/docs/guides/features/structured-outputs",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Structured Outputs",
+      "description": "Return structured data from your models",
+      "lead": "",
+      "sections": [
+        "Overview",
+        "Using Structured Outputs",
+        "Model Support",
+        "Best Practices",
+        "Example Implementation"
+      ],
+      "fetchedAt": "2026-10-18T06:36:26.179Z"
+    },
+    "https://vercel.com/docs/ai-gateway": {
+      "url": "https://vercel.com/docs/ai-gateway",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Call AI models across providers with Vercel AI Gateway",
+      "description": "Call AI models from any infrastructure through a managed gateway. Centralize credentials, request logs, spend budgets, routing, and provider failover.",
+      "lead": "AI Gateway is available on all plans . Your use of each AI provider is subject to their terms listed on each model's page and subject to Vercel's AI Product Terms .",
+      "sections": [
+        "Use AI Gateway across modalities and clients",
+        "Centralize multi-provider AI operations",
+        "Choose how to start",
+        "Configure and operate AI Gateway"
+      ],
+      "fetchedAt": "2026-10-18T06:36:27.085Z"
+    },
+    "https://vercel.com/docs/ai-gateway/getting-started": {
+      "url": "https://vercel.com/docs/ai-gateway/getting-started",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Getting Started with AI Gateway",
+      "description": "Set up AI Gateway with a coding agent, route the agent through AI Gateway, or make your first request with cURL, TypeScript, or Python.",
+      "lead": "Use AI Gateway from any environment to call models, connect coding agents, and inspect routing and spend. AI Gateway API keys belong to a Vercel team and work in local development, CI, external servers, and Vercel deployments.",
+      "sections": [
+        "Choose how to start",
+        "For agents",
+        "Make your first request",
+        "Use AI Gateway with existing code"
+      ],
+      "fetchedAt": "2026-10-18T06:36:27.054Z"
+    },
+    "https://vercel.com/docs/ai-gateway/models-and-providers": {
+      "url": "https://vercel.com/docs/ai-gateway/models-and-providers",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "AI Gateway Models and Providers",
+      "description": "Choose AI Gateway models and providers. Configure routing, fallbacks, timeouts, prompt caching, reasoning, and web search, and compare provider metrics.",
+      "lead": "The AI Gateway's unified API provides flexibility, allowing you to switch between different AI models and providers without rewriting parts of your application. This is useful for testing different models or when you want to change the underlying AI provider…",
+      "sections": [
+        "In this section",
+        "What are models and providers?",
+        "Specifying the model",
+        "Dynamic model discovery"
+      ],
+      "fetchedAt": "2026-10-18T06:36:26.416Z"
+    },
+    "https://vercel.com/docs/ai-gateway/provider-options": {
+      "url": "https://vercel.com/docs/ai-gateway/provider-options",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "AI Gateway Provider Routing and Fallbacks",
+      "description": "Configure provider routing, ordering, and fallback behavior in Vercel AI Gateway.",
+      "lead": "AI Gateway can route your AI model requests across multiple AI providers. Each provider offers different models, pricing, and performance characteristics. By default, Vercel AI Gateway dynamically chooses the default providers to give you the best experience…",
+      "sections": [
+        "Provider filtering, ordering, and sorting",
+        "Automatic caching",
+        "Session affinity",
+        "Provider timeouts",
+        "Model fallbacks"
+      ],
+      "fetchedAt": "2026-10-18T06:36:26.976Z"
+    },
+    "https://vercel.com/docs/ai-gateway/openai-compat": {
+      "url": "https://vercel.com/docs/ai-gateway/openai-compat",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "OpenAI Chat Completions API with AI Gateway",
+      "description": "Use OpenAI SDKs with the AI Gateway Chat Completions API. Configure the base URL and authentication for chat, streaming, tool calling, and embeddings.",
+      "lead": "AI Gateway provides OpenAI Chat Completions API endpoints, letting you use multiple AI providers through a familiar interface. You can use existing OpenAI client libraries, switch to AI Gateway with a URL change, and keep your current tools and workflows…",
+      "sections": [
+        "Base URL",
+        "Authentication",
+        "Supported endpoints",
+        "Integration with existing tools",
+        "List models"
+      ],
+      "fetchedAt": "2026-10-18T06:36:26.862Z"
+    },
+    "https://vercel.com/docs/ai-gateway/byok": {
+      "url": "https://vercel.com/docs/ai-gateway/byok",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "Bring Your Own Key (BYOK) to AI Gateway",
+      "description": "Learn how to configure your own provider keys with AI Gateway.",
+      "lead": "Using your own credentials with an external AI provider allows AI Gateway to authenticate requests on your behalf with no added markup . This approach is useful for using credits provided by the AI provider or executing AI queries that access private cloud…",
+      "sections": [
+        "Getting started",
+        "Request-scoped BYOK",
+        "Zero Data Retention (ZDR)",
+        "Regional inference",
+        "Testing your credentials"
+      ],
+      "fetchedAt": "2026-10-18T06:36:27.447Z"
+    },
+    "https://vercel.com/docs/ai-gateway/observability": {
+      "url": "https://vercel.com/docs/ai-gateway/observability",
+      "ok": true,
+      "complete": true,
+      "status": 200,
+      "title": "AI Gateway Observability",
+      "description": "Monitor AI Gateway requests in the Vercel dashboard. Inspect token usage, latency, spend, and logs at team, project, and API key scopes.",
+      "lead": "The AI Gateway logs spend, model usage, and observability metrics related to your requests, which you can use to monitor and debug.",
+      "sections": [
+        "Usage",
+        "Requests",
+        "Team scope",
+        "Project scope"
+      ],
+      "fetchedAt": "2026-10-18T06:36:26.994Z"
+    }
+  }
+}

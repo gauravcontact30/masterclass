@@ -5,7 +5,7 @@
    pill, the icon floats and a dot pulses, so it reads as "live" without moving the layout. */
 .trigger {
   position: relative; isolation: isolate; overflow: hidden; flex-shrink: 0;
-  display: inline-flex; align-items: center; gap: 8px; height: var(--nav-control-h, 40px); padding: 0 14px 0 5px;
+  display: inline-flex; align-items: center; gap: 8px; height: var(--nav-control-h, 40px); padding: 0 16px 0 5px;
   border: 1px solid #f0b89c; border-radius: 999px; background: #3a2118; color: #ffd2bd;
   font: inherit; font-size: 13px; font-weight: 650; line-height: 1; white-space: nowrap; cursor: pointer;
   box-shadow: 0 8px 22px -14px rgba(40, 22, 12, .7), inset 0 1px 0 rgba(255, 255, 255, .18);
@@ -26,7 +26,7 @@
 /* The label: a flowing ribbon of light pastel inks (each ≥7:1 on every deep pill tone), drifting left to
    right in a seamless 7s loop. The gradient's first and last stops match, so the loop has no seam. */
 .triggerLabel {
-  color: #ffd2bd; font-weight: 750; letter-spacing: .01em;
+  color: #ffd2bd; font-size: 14px; font-weight: 400; letter-spacing: .01em; line-height: 1; white-space: nowrap;
   animation: sb-ink 30s linear infinite;
 }
 /* Every five seconds the text and the icon circle switch to a new light colour (a 30s loop of six, ~0.6s cross-fades);
@@ -59,10 +59,9 @@
   70%, 100% { box-shadow: 0 0 0 7px transparent; }
 }
 
-/* Narrow desktops, where the link bar needs the room: the label stays visible, stacked on two short lines. */
+/* Narrow desktops, where the link bar needs the room: a slightly smaller one-line label, no live dot. */
 @media (min-width: 1081px) and (max-width: 1340px) {
-  .trigger { gap: 6px; padding: 0 10px 0 4px; }
-  .triggerLabel { display: block; width: 7.2ch; white-space: normal; font-size: 11px; line-height: 1.05; text-align: left; }
+  .trigger { gap: 7px; padding: 0 14px 0 4px; }
   .liveDot { display: none; }
 }
 /* Phones: a round icon button with the same tones and motion. The label stays in the accessibility tree. */

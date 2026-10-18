@@ -141,8 +141,9 @@
 }
 /* Narrower desktops: tighter link spacing so the row never overflows. */
 @media (min-width: 1081px) and (max-width: 1340px) {
-  .home .navLinks a { padding-right: 11px; }
-  .navLinks { gap: 2px; }
+  .home .navLinks a { gap: 6px; padding-right: 8px; }
+  /* Narrower bar so the Suggestion Box keeps its one-line label beside the icon. */
+  .navLinks { gap: 0; width: clamp(600px, 52vw, 700px); }
   .navActions { gap: 8px; }
 }
 .navMenu { display: none; width: 42px; height: 42px; place-items: center; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .36); background: transparent; color: inherit; cursor: pointer; }
