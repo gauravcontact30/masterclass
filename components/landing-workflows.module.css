@@ -7,13 +7,61 @@
 .section > * { position: relative; }
 
 .head { max-width: 780px; margin-bottom: 22px; }
+.head > .kicker { align-self: flex-start; width: fit-content; max-width: 100%; }
 .kicker { display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 6px 12px; border: 1px solid var(--nb-cream-edge); border-radius: 999px; background: var(--nb-sheet); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--nb-ink); }
 .head h2 { margin: 16px 0 12px; font-family: var(--nb-font); font-weight: 600; font-size: clamp(30px, 3.6vw, 50px); line-height: 1.06; letter-spacing: -0.02em; color: var(--nb-graphite); text-wrap: balance; }
 .head h2 em { font-style: italic; color: var(--nb-ink); }
 .lede { margin: 0; max-width: 68ch; font-size: 17px; line-height: 1.55; color: var(--nb-text); }
 
 /* Group filters. */
+.learningPaths { margin-block: 24px 32px; }
+.learningPaths > h3 { margin: 0 0 8px; font-size: 24px; color: var(--nb-graphite); }
+.learningPaths > p { margin: 0 0 18px; color: var(--nb-text); }
+.learningPaths > .curriculumSummary { padding: 16px 18px; border: 1px solid var(--nb-rule); border-radius: 12px; background: var(--nb-sheet); color: var(--nb-ink); font-size: clamp(16px, 1.5vw, 20px); line-height: 1.5; }
+.learningGrid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: start; }
+.studyTabs { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 20px 16px; }
+.studyTabs button { padding: 10px 16px; border: 1px solid var(--nb-rule); border-radius: 10px; font: inherit; cursor: pointer; color: var(--nb-ink); background: var(--nb-sheet); }
+.studyTabs button[aria-selected="true"] { background: var(--nb-ink); color: var(--nb-sheet); }
+.studyTabs button:focus-visible, .studyPanel:focus-visible { outline: 2px solid var(--nb-ink); outline-offset: 3px; }
+.studyPanel { width: 100%; min-width: 0; }
+.guidePanel { width: 100%; box-sizing: border-box; padding: 20px; margin-block: 14px; border: 1px solid var(--nb-rule); border-radius: 14px; background: var(--nb-paper); }
+.guidePanel h5 { margin: 0 0 10px; font-size: 18px; }
+.guidePanel .studyExample { margin-top: 14px; padding-left: 14px; border-left: 3px solid var(--nb-ink); }
+.studyFigure { margin: 16px 0; border: 1px solid var(--nb-rule); border-radius: 14px; overflow: hidden; }
+.studyDiagram { overflow-x: auto; background: var(--nb-paper); }
+.studyDiagram svg { display: block; width: 100%; min-width: 720px; }
+.studyFigure figcaption { padding: 14px 18px; border-top: 1px solid var(--nb-rule); font-size: 13px; }
+.learningCard { min-width: 0; border: 1px solid var(--nb-rule); border-radius: 16px; background: var(--nb-sheet); overflow-wrap: anywhere; }
+.learningCard summary { padding: 18px; cursor: pointer; color: var(--nb-ink); }
+.learningCard summary:focus-visible { outline: 2px solid var(--nb-ink); outline-offset: -4px; border-radius: 16px; }
+.learningCard summary > span { font-size: 12px; font-weight: 600; }
+.learningCard h4 { margin: 8px 0 0; font-size: 19px; line-height: 1.3; color: var(--nb-graphite); }
+.learningBody { padding: 0 18px 18px; font-size: 14px; line-height: 1.6; color: var(--nb-text); }
+.learningBody h5 { font-size: 14px; margin: 18px 0 6px; color: var(--nb-graphite); }
+.learningBody p { margin: 0; }
+.learningBody ul, .learningBody ol { padding-left: 22px; margin: 0; }
+.learningBody li + li { margin-top: 6px; }
+.learningBody a { color: var(--nb-ink); text-decoration: underline; text-underline-offset: 3px; }
+.learningCard summary small { display: block; margin-top: 8px; font-size: 12px; color: var(--nb-text); }
+.topicSearch { margin-block: 18px; }
+.topicSearch label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: var(--nb-graphite); }
+.topicSearch > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.topicSearch input { flex: 1 1 240px; min-width: 0; padding: 12px 14px; border: 1px solid var(--nb-rule); border-radius: 12px; background: var(--nb-sheet); color: var(--nb-graphite); font: inherit; }
+.topicSearch button { padding: 10px 14px; border: 1px solid var(--nb-rule); border-radius: 12px; background: var(--nb-sheet); color: var(--nb-ink); font: inherit; cursor: pointer; }
+.topicSearch input:focus-visible, .topicSearch button:focus-visible { outline: 2px solid var(--nb-ink); outline-offset: 2px; }
+.topicSearch > p { margin-top: 8px; font-size: 13px; color: var(--nb-text); }
+.topicList { display: grid; gap: 8px; }
+.topic { border: 1px solid var(--nb-rule); border-radius: 10px; }
+.topic > summary { padding: 10px 12px; font-weight: 600; }
+.topic > div { padding: 0 12px 12px; }
+.topic > div p + p { margin-top: 8px; }
+.topicPagination { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 12px; font-size: 13px; }
+.topicPagination button { padding: 8px 12px; border: 1px solid var(--nb-rule); border-radius: 10px; background: var(--nb-sheet); color: var(--nb-ink); font: inherit; cursor: pointer; }
+.topicPagination button:focus-visible { outline: 2px solid var(--nb-ink); outline-offset: 2px; }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+@media (max-width: 700px) { .learningGrid { grid-template-columns: minmax(0, 1fr); } }
 .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.filters button { max-width: 100%; text-align: left; overflow-wrap: anywhere; }
 /* Each group's tab in that group's light tone (the slides use the same pairs); the pressed one fills with it. */
 .filters button { --tint: #f1efe8; --deep: var(--nb-graphite); display: inline-flex; align-items: center; gap: 7px; padding: 8px 8px 8px 13px; border: 1px solid color-mix(in srgb, var(--deep) 22%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--tint) 70%, #fff); color: var(--deep); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: background .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease; }
 .filters button[data-group="System Design"] { --tint: #e3eefc; --deep: #22508f; }

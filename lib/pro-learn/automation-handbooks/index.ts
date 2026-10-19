@@ -9,6 +9,7 @@ import { DOCKER_TOPICS } from "./docker";
 import { AWS_DEVOPS_TOPICS } from "./aws-devops";
 import { AGENTIC_AI_TOPICS } from "./agentic-ai";
 import { AGENTIC_AI_CONCEPTS } from "./agentic-ai-concepts";
+import { AGENTIC_FOUNDATIONS } from "./agentic-ai-foundations";
 
 const official = (title: string, url: string) => ({ title, url, reviewedAt: "2026-09-20" });
 const create = (title: string, description: string, topics: TechnologyHandbook["topics"], sources: NonNullable<TechnologyHandbook["sources"]>): TechnologyHandbook => {
@@ -60,7 +61,7 @@ export const AUTOMATION_HANDBOOKS: TechnologyHandbook[] = [
     official("CodePipeline concepts", "https://docs.aws.amazon.com/codepipeline/latest/userguide/concepts.html"),
     official("ECR and ECS deployment tutorial", "https://docs.aws.amazon.com/codepipeline/latest/userguide/tutorials-ecs-ecr-codedeploy.html"),
   ]),
-  create("Agentic AI", "Twelve learning paths: Generative AI, LangChain and LangGraph agents, RAG, Vectorless RAG, Deep Agents, Guardrails, LLM Evaluation, LLM Gateways, agent design patterns, agent protocols and tools, agent memory and context, and production agents.", [...AGENTIC_AI_TOPICS, ...AGENTIC_AI_CONCEPTS], [
+  create("Agentic AI", "Start with individual concept cards in Agentic AI with LangChain and LangGraph, then explore Generative AI, RAG, Deep Agents, Guardrails, evaluation, gateways, design patterns, protocols, memory and production agents.", [...AGENTIC_FOUNDATIONS, ...AGENTIC_AI_TOPICS, ...AGENTIC_AI_CONCEPTS], [
     official("Agent foundations", "https://docs.langchain.com/oss/python/langchain/agents"),
     official("Retrieval", "https://docs.langchain.com/oss/python/deepagents/retrieval"),
     official("Deep Agents", "https://docs.langchain.com/oss/python/deepagents/overview"),

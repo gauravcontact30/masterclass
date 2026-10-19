@@ -24,7 +24,7 @@ export default function ContactPage() {
         : <p>Signed-in members can ask the Study Buddy assistant from any dashboard page, and manage billing from the Membership page.</p>}
       <ul>
         <li><strong>Account and sign-in:</strong> <Link href="/sign-in">sign in</Link> or <Link href="/sign-up">create an account</Link>.</li>
-        <li><strong>Membership and billing:</strong> open <Link href="/dashboard?tab=plans">plans in your dashboard</Link>.</li>
+        <li><strong>Membership and billing:</strong> open <Link href="/dashboard/plans">plans in your dashboard</Link>.</li>
         <li><strong>What each path covers:</strong> see <Link href="/courses">courses</Link>.</li>
       </ul>
       <h2>Frequently asked questions</h2>

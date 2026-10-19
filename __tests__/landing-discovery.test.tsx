@@ -13,7 +13,7 @@ test("a category opens its key points and Escape closes the modal", async () => 
   await user.click(screen.getByRole("button", { name: "System Design" }));
   expect(screen.getByRole("dialog")).toHaveTextContent("WhatsApp · Instagram · E-commerce · Payments · AI automation");
   expect(screen.getByRole("heading", { name: "Key points" })).toBeVisible();
-  expect(screen.getByRole("link", { name: "Choose monthly / yearly membership" })).toHaveAttribute("href", "/dashboard?tab=plans");
+  expect(screen.getByRole("link", { name: "Choose monthly / yearly membership" })).toHaveAttribute("href", "/dashboard/plans");
   await user.keyboard("{Escape}"); expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: "Pause categories" })); expect(screen.getByRole("button", { name: "Play categories" })).toHaveAttribute("aria-pressed", "true");
 });

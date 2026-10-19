@@ -71,7 +71,7 @@ export function LandingComparisons({ expanded = false, preview = false, locked =
       {shown.map((item, i) => <ComparisonSlide key={item.id} item={item} index={i} total={COMPARISONS.length} near={Math.abs(i - page) <= 1} text={text} official={official} />)}
     </ul>
     {!preview && <Dots pages={pages} page={page} running={running} goTo={goTo} label={n => text(`Show comparison ${n}`, `तुलना ${n} दिखाएँ`)} />}
-    {preview && <DashboardMore href={locked ? "/dashboard?tab=plans" : "/dashboard#tech-comparisons"} title={locked ? text(`Subscribe to open all ${COMPARISONS.length} comparisons`, `सभी ${COMPARISONS.length} तुलनाएँ खोलने के लिए सदस्यता लें`) : text(`See all ${COMPARISONS.length} comparisons`, `सभी ${COMPARISONS.length} तुलनाएँ देखें`)} detail={text("Every comparison, its picker, table and 40+ questions are in your dashboard.", "हर तुलना, उसका चयनकर्ता, तालिका और 40+ प्रश्न आपके डैशबोर्ड में हैं।")} />}
+    {preview && <DashboardMore href={locked ? "/dashboard/plans" : "/dashboard"} title={locked ? text(`Subscribe to open all ${COMPARISONS.length} comparisons`, `सभी ${COMPARISONS.length} तुलनाएँ खोलने के लिए सदस्यता लें`) : text(`See all ${COMPARISONS.length} comparisons`, `सभी ${COMPARISONS.length} तुलनाएँ देखें`)} detail={text("Every comparison, its picker, table and 40+ questions are in your dashboard.", "हर तुलना, उसका चयनकर्ता, तालिका और 40+ प्रश्न आपके डैशबोर्ड में हैं।")} />}
     {expanded && <DashboardLessons section="topics" />}
   </div></section>;
 }

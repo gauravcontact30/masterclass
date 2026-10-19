@@ -32,7 +32,7 @@ function edgeGeometry(edge: WorkflowEdge, from: WorkflowNode, to: WorkflowNode) 
   return { d: `M${s.x},${s.y} L${e.x},${e.y}`, mid };
 }
 
-export function WorkflowDiagram({ workflow }: Readonly<{ workflow: Workflow }>) {
+export function WorkflowDiagram({ workflow }: Readonly<{ workflow: Pick<Workflow, "title" | "nodes" | "edges"> }>) {
   const id = useId().replaceAll(":", "");
   const byId = new Map(workflow.nodes.map(node => [node.id, node]));
   const edges = workflow.edges.map(edge => ({ edge, ...edgeGeometry(edge, byId.get(edge.from)!, byId.get(edge.to)!) }));

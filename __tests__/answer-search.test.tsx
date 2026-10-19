@@ -1,6 +1,8 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { AnswerSearch } from "@/components/answer-search";
 import { AI_MODE_KEY } from "@/lib/ai-mode";
+import { AUTOMATION_HANDBOOKS } from "@/lib/pro-learn/automation-handbooks";
+import { AGENTIC_FOUNDATIONS, AGENTIC_FOUNDATIONS_CATEGORY } from "@/lib/pro-learn/automation-handbooks/agentic-ai-foundations";
 import type { AnchorHTMLAttributes } from "react";
 // prefetch is a Next-only prop; an <a> would warn about it.
 jest.mock("next/link", () => ({ __esModule: true, default: ({ prefetch, ...props }: AnchorHTMLAttributes<HTMLAnchorElement> & { prefetch?: boolean }) => { void prefetch; return <a {...props} />; } }));
@@ -36,6 +38,30 @@ const answer = {
 const matches = [{ id: "nextjs-turbopack", title: "Turbopack", technology: "nextjs", category: "Core performance", description: "The default bundler." }];
 const reply = (body: unknown, ok = true, status = 200) => ({ ok, status, json: async () => body });
 const answerCalls = () => (global.fetch as jest.Mock).mock.calls.filter(([url]) => url === "/api/pro-learn/answer");
+
+test("requested agentic concepts have individual cards and open authored lessons without generation", async () => {
+  const book = AUTOMATION_HANDBOOKS.find(item => item.title === "Agentic AI")!;
+  expect(AGENTIC_FOUNDATIONS).toHaveLength(65);
+  expect(new Set(AGENTIC_FOUNDATIONS.map(item => item.name)).size).toBe(65);
+  for (const topic of AGENTIC_FOUNDATIONS) {
+    expect(book.topics).toContain(topic);
+    expect(topic.prepared?.answer.steps).toHaveLength(2);
+    expect(topic.prepared?.answer.caveats).toHaveLength(1);
+    expect(topic.useCase?.scenario).toBeTruthy();
+  }
+  expect(book.categories.find(item => item.name === AGENTIC_FOUNDATIONS_CATEGORY)?.count)
+    .toBe(book.topics.filter(item => item.category === AGENTIC_FOUNDATIONS_CATEGORY).length);
+  render(<AnswerSearch technologyHandbooks={[book]} />);
+  fireEvent.click(screen.getByRole("tab", { name: new RegExp(`^${AGENTIC_FOUNDATIONS_CATEGORY}`) }));
+  expect(screen.getByRole("button", { name: "Explain this: Memory" })).toBeInTheDocument();
+  fireEvent.change(screen.getByRole("searchbox", { name: "Search Agentic AI" }), { target: { value: "Developer prompt" } });
+  const card = await screen.findByRole("button", { name: "Explain this: Developer prompt" });
+  fireEvent.click(card);
+  const article = await screen.findByRole("article", { name: `Developer prompt · ${AGENTIC_FOUNDATIONS_CATEGORY}` });
+  expect(article).toHaveTextContent("application-author instructions");
+  expect(article).toHaveTextContent("not when it is injected");
+  expect(answerCalls()).toHaveLength(0);
+});
 
 const PROVIDERS = {
   providers: [

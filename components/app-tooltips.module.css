@@ -1,0 +1,2 @@
+.tooltip { position: fixed; z-index: 10001; box-sizing: border-box; width: max-content; max-width: min(288px, calc(100vw - 16px)); padding: 9px 12px; border: 1px solid #55534e; border-radius: 8px; background: #262624; color: #faf9f5; box-shadow: 0 6px 20px #0003; font: 500 12px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; pointer-events: auto; }
+.tooltip[data-above="true"] { transform: translateY(-100%); }

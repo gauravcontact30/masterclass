@@ -37,7 +37,7 @@ export function LandingVocabulary({ words: all, day, locked: lockedCard, preview
   }
 
   return <section id="vocabulary" className={`${pulse.pulse} ${styles.section}`} aria-labelledby="vocabulary-title"><div className={home.inner}>
-    {preview && <DashboardMore href="/dashboard#vocabulary" title={text(`See all ${all.length + (lockedCard ? 1 : 0)} words`, `सभी ${all.length + (lockedCard ? 1 : 0)} शब्द देखें`)} detail={text("Pronunciation, Hindi meaning, synonyms and antonyms for every word.", "हर शब्द का उच्चारण, हिन्दी अर्थ, पर्यायवाची और विलोम।")} />}
+    {preview && <DashboardMore href="/dashboard" title={text(`See all ${all.length + (lockedCard ? 1 : 0)} words`, `सभी ${all.length + (lockedCard ? 1 : 0)} शब्द देखें`)} detail={text("Pronunciation, Hindi meaning, synonyms and antonyms for every word.", "हर शब्द का उच्चारण, हिन्दी अर्थ, पर्यायवाची और विलोम।")} />}
     <div className={pulse.head} data-learning-header>
       <div className={pulse.headCopy} data-learning-copy>
         <p className={pulse.kicker}><span className={styles.aa} aria-hidden="true">Aa</span>{text("Word power", "शब्द शक्ति")}<span className={pulse.today}>{text("New today", "आज नया")} · {dayLabel(day, hi)}</span></p>

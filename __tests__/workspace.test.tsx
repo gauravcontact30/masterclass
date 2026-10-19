@@ -5,7 +5,8 @@ import type { DocumentRecord } from "@/lib/domain";
 
 jest.mock("@/lib/client",()=>({requestJson:jest.fn(),errorKey:()=>"service_error"}));
 jest.mock("@/lib/supabase-browser",()=>({supabaseBrowser:()=>({auth:{signOut:jest.fn()}})}));
-jest.mock("next/navigation",()=>({useRouter:()=>({replace:jest.fn(),refresh:jest.fn()})}));
+const mockRouterPush = jest.fn();
+jest.mock("next/navigation",()=>({useRouter:()=>({push:mockRouterPush,replace:jest.fn(),refresh:jest.fn()})}));
 jest.mock("@/components/learning-presence",()=>({LearningPresence:()=>null}));
 jest.mock("@/components/membership",()=>({Membership:()=> <h2>Membership settings</h2>}));
 jest.mock("@/components/study-catalog",()=>({StudyCatalog:({beforeLibrary}:{beforeLibrary:React.ReactNode})=><>{beforeLibrary}</>}));
@@ -14,11 +15,22 @@ function mockLibrary({documents,onLearn,onCopyNotes,onDelete,onRetry}:{documents
 }
 jest.mock("@/components/library",()=>({Library:mockLibrary}));
 jest.mock("@/components/notes-library",()=>({NotesLibrary:mockLibrary}));
+jest.mock("@/components/documentation-refresh",()=>({DocumentationRefresh:()=>null}));
 jest.mock("@/components/notes-modal",()=>({NotesModal:({document,onClose}:{document:DocumentRecord;onClose:()=>void})=><div role="dialog" aria-label="Notes reader">{document.title}<button onClick={onClose}>Close reader</button></div>}));
 const document:DocumentRecord={id:"notes-1",user_id:"user-1",title:"React basics",request:{technologyId:"react",topicId:"react-state",format:"notes",language:"en",level:"beginner"},status:"ready",created_at:"2026-01-01",error_code:null,page_titles:[],storage_path:null,preview_paths:[],curriculum:{title:"React basics",minutes:20,objectives:["Learn state"],prerequisites:[],lessons:[],project:"Build a component",summary:"State drives rendering.",glossary:[]}};
 const account={profile:{language:"en" as const},account:{tier:"monthly" as const,used:1,limit:50,subscription:null,creditBalance:0},preparations:{selections:["tech:react"],isSuperAdmin:false},documents:[document],progress:[]};
 beforeEach(()=>{localStorage.clear();window.history.replaceState(null,"","/dashboard");jest.mocked(requestJson).mockImplementation(async(url)=>url==="/api/account"?account:url==="/api/catalog"?{technologies:[],topics:[]}:{document});});
 const renderWorkspace=(tab:"dashboard"|"library"="dashboard")=>render(<Workspace authEnabled configured billingEnabled initialTab={tab} initialAccount={account} userEmail="learner@example.com"/>);
+
+test("returning from Search navigates to the real dashboard route", async () => {
+ window.history.replaceState(null, "", "/dashboard/search");
+ render(<Workspace authEnabled configured billingEnabled initialCategory="search" notesContent={<p>Search content</p>} initialAccount={account} userEmail="learner@example.com" />);
+ await screen.findByText("Search content");
+ fireEvent.click(screen.getByRole("button", { name: "Dashboard", exact: true }));
+ expect(mockRouterPush).toHaveBeenLastCalledWith("/dashboard");
+ fireEvent.click(screen.getByRole("button", { name: "My library", exact: true }));
+ expect(mockRouterPush).toHaveBeenLastCalledWith("/dashboard/library");
+});
 
 test("loads the current account and exposes its saved notes",async()=>{
  renderWorkspace();expect(await screen.findByRole("heading",{name:"React basics"})).toBeVisible();

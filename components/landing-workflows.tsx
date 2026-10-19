@@ -3,6 +3,8 @@ import { useMemo, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { Boxes, FlaskConical, GitBranch, Layers, Network, Workflow as WorkflowIcon, type LucideIcon } from "lucide-react";
 import { WORKFLOWS, type Workflow, type WorkflowNodeKind } from "@/lib/landing-workflows";
+import { WORKFLOW_LESSONS } from "@/lib/workflow-learning";
+import { WorkflowLearning } from "./workflow-learning";
 import { STEP_TONES, WorkflowDiagram, two } from "./workflow-diagram";
 import { learningImageUrl } from "@/lib/learning-image";
 import { AUTOPLAY_MS, Controls, Dots, PREVIEW_COUNT } from "./landing-ai-pulse";
@@ -35,7 +37,9 @@ const KIND_LABEL: Record<WorkflowNodeKind, string> = { actor: "Person / client",
  */
 export function LandingWorkflows({ expanded = false, preview = false }: Readonly<{ expanded?: boolean; preview?: boolean }>) {
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
-  const [group, setGroup] = useState<Group | "All">("All");
+  const [group, setGroup] = useState<string>("All");
+  const groups = expanded ? [...new Set([...GROUPS, ...WORKFLOW_LESSONS.map(lesson => lesson.group)])] : GROUPS;
+  const lessons = expanded ? WORKFLOW_LESSONS.filter(lesson => group === "All" || lesson.group === group) : [];
   const shown = useMemo(() => {
     const all = group === "All" ? WORKFLOWS : WORKFLOWS.filter(workflow => workflow.group === group);
     return preview ? all.slice(0, PREVIEW_COUNT) : all;
@@ -43,7 +47,7 @@ export function LandingWorkflows({ expanded = false, preview = false }: Readonly
   const industries = new Set(WORKFLOWS.map(workflow => workflow.industry)).size;
 
   return <section id="workflows" className={styles.section} aria-labelledby="workflows-title"><div className={home.inner}>
-    {preview && <DashboardMore href="/dashboard#workflows" title={text(`See all ${WORKFLOWS.length} blueprints`, `सभी ${WORKFLOWS.length} ब्लूप्रिंट देखें`)} detail={text("Every blueprint with 30+ subjective and 30+ objective interview questions.", "हर ब्लूप्रिंट के साथ 30+ विषयगत और 30+ वस्तुनिष्ठ इंटरव्यू प्रश्न।")} />}
+    {preview && <DashboardMore href="/dashboard" title={text(`See all ${WORKFLOWS.length} blueprints`, `सभी ${WORKFLOWS.length} ब्लूप्रिंट देखें`)} detail={text("Every blueprint with 30+ subjective and 30+ objective interview questions.", "हर ब्लूप्रिंट के साथ 30+ विषयगत और 30+ वस्तुनिष्ठ इंटरव्यू प्रश्न।")} />}
     <div className={styles.head} data-learning-header>
       <p className={styles.kicker}><Layers size={14} aria-hidden="true" />{text("Workflow blueprints", "वर्कफ़्लो ब्लूप्रिंट")}</p>
       <h2 id="workflows-title">{text("How real systems and ", "असली सिस्टम और ")}<em>{text("AI agents get work done", "AI एजेंट काम कैसे करते हैं")}</em></h2>
@@ -52,20 +56,23 @@ export function LandingWorkflows({ expanded = false, preview = false }: Readonly
         `${WORKFLOWS.length} चरण-दर-चरण ब्लूप्रिंट: रोज़ इस्तेमाल होने वाले ऐप्स के पीछे का सिस्टम डिज़ाइन, और LangChain, LangGraph, LangFlow व LangSmith एजेंट जो ई-कॉमर्स, बैंकिंग से लेकर अस्पतालों तक ${industries} उद्योगों की असली समस्याएँ हल करते हैं। हर एक के साथ टेक स्टैक, डिज़ाइन निर्णय, आम गलतियाँ और सबसे ज़्यादा पूछे जाने वाले इंटरव्यू प्रश्न।`)}</p>
     </div>
     {/* Remounted per filter so the page count and position start fresh. */}
-    <WorkflowCarousel key={group} workflows={shown} text={text} filters={<div className={styles.filters} role="group" aria-label={text("Filter workflows", "वर्कफ़्लो छाँटें")}>
-      {(["All", ...GROUPS] as const).map(option => {
-        const count = option === "All" ? WORKFLOWS.length : WORKFLOWS.filter(workflow => workflow.group === option).length;
-        const Icon = option === "All" ? Layers : GROUP_ICON[option];
+    <div className={styles.filters} role="group" aria-label={text("Filter workflows", "वर्कफ़्लो छाँटें")}>
+      {["All", ...groups].map(option => {
+        const count = (option === "All" ? WORKFLOWS.length : WORKFLOWS.filter(workflow => workflow.group === option).length)
+          + (expanded ? WORKFLOW_LESSONS.filter(lesson => option === "All" || lesson.group === option).length : 0);
+        const Icon = GROUP_ICON[option as Group] ?? Layers;
         return <button key={option} type="button" aria-pressed={group === option} data-group={option} onClick={() => setGroup(option)}>
           <Icon size={14} aria-hidden="true" />{option === "All" ? text("All", "सभी") : option}<span>{count}</span>
         </button>;
       })}
-    </div>} />
+    </div>
+    {expanded && <WorkflowLearning key={`learning-${group}`} lessons={lessons} text={text} />}
+    {shown.length > 0 && <WorkflowCarousel key={`carousel-${group}`} workflows={shown} text={text} />}
     {expanded && <DashboardLessons section="workflows" />}
   </div></section>;
 }
 
-function WorkflowCarousel({ workflows, text, filters }: Readonly<{ workflows: Workflow[]; text: Text; filters: ReactNode }>) {
+function WorkflowCarousel({ workflows, text }: Readonly<{ workflows: Workflow[]; text: Text }>) {
   const { track, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(workflows.length, 1, AUTOPLAY_MS);
   const current = workflows[page];
   return <>
@@ -73,7 +80,6 @@ function WorkflowCarousel({ workflows, text, filters }: Readonly<{ workflows: Wo
       <p className={styles.now} aria-live="polite">{current && <><b>{current.group}</b><span aria-hidden="true">·</span>{current.industry}</>}</p>
       <Controls text={text} playing={playing} onPlay={() => setPlaying(p => !p)} page={page} pages={pages} goTo={goTo} previous={text("Previous workflow", "पिछला वर्कफ़्लो")} next={text("Next workflow", "अगला वर्कफ़्लो")} />
     </div>
-    {filters}
     <div className={styles.carousel}>
     <ul ref={track} className={styles.track} aria-roledescription="carousel" aria-label={text("Workflow blueprints", "वर्कफ़्लो ब्लूप्रिंट")} {...holdProps}>
       {workflows.map((workflow, i) => <WorkflowSlide key={workflow.id} workflow={workflow} index={i} total={workflows.length} text={text} />)}

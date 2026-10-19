@@ -1,0 +1,39 @@
+.stack { display: grid; gap: 24px; min-width: 0; margin-block: 24px; }
+.section { --tint: #eef6fc; --line: #cbdfea; --ink: #24516c; min-width: 0; padding: clamp(14px, 2vw, 24px); border: 1px solid var(--line); border-radius: 18px; background: var(--tint); color: #253445; }
+.section[data-tone="lavender"] { --tint: #f5f1fc; --line: #ded2ee; --ink: #60467e; }
+.overview { display: flex; align-items: flex-start; gap: 12px; }
+.overview > svg { flex-shrink: 0; margin-top: 3px; color: var(--ink); }
+.overview > div { min-width: 0; }
+.overview h2 { margin: 0; font-size: 18px; font-weight: 600; color: var(--ink); }
+.overview p, .footnote { margin: 8px 0 0; font-size: 13px; line-height: 1.7; color: #485466; overflow-wrap: anywhere; }
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 12px; margin: 18px 0; }
+.metrics > div { min-width: 0; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: #ffffffb8; }
+.metrics dt { font-size: 12px; color: #485466; line-height: 1.5; }
+.metrics dd { margin: 6px 0 0; font-size: 24px; font-weight: 600; color: var(--ink); }
+.records { min-width: 0; }
+.records [data-slot="card"] { min-width: 0; padding: 16px; border-color: var(--line); background: #ffffffb8; box-shadow: none; }
+/* Keep the table's search, filters, export and sorting; lay out its rows as labeled cards.
+   Explicit wrapping overrides the shared table's whitespace-nowrap utility. */
+.records [data-slot="table-container"] { overflow: visible; min-width: 0; }
+.records table { display: block; width: 100%; }
+.records thead { display: block; position: static; width: auto; height: auto; overflow: visible; clip: auto; }
+.records thead tr { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 10px; }
+.records th { display: block; height: auto; padding: 2px; background: transparent; white-space: normal; border: 0; }
+.records th button { height: auto; white-space: normal; text-align: left; }
+.records tbody { display: grid; gap: 14px; padding: 10px; }
+.records tbody tr { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 14px 20px; min-width: 0; width: 100%; margin: 0; padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: white; }
+.records tbody tr:nth-child(even) { background: var(--tint); }
+.records tbody td { display: flex; flex-direction: column; gap: 6px; min-width: 0; width: auto; max-width: none; padding: 0; border: 0; white-space: normal; overflow-wrap: anywhere; line-height: 1.65; color: #253445; }
+.records td::before { content: attr(data-label); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink); }
+.records td > * { min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.event { align-self: flex-start; padding: 3px 9px; border-radius: 6px; background: #eae2f4; color: #503769; font-weight: 600; }
+.refresh { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 9px; background: white; color: var(--ink); font-size: 13px; cursor: pointer; }
+.refresh:disabled { opacity: .6; cursor: wait; }
+.refresh:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.footnote { margin-top: 14px; }
+@media (max-width: 640px) {
+  .records [data-slot="card"] { padding: 12px; }
+  .records tbody { padding: 4px; }
+  .records tbody tr { padding: 14px; grid-template-columns: minmax(0, 1fr); }
+  .records th::before { content: none; }
+}

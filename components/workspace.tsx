@@ -6,6 +6,7 @@ import { ExpandedText } from "@/components/expanded-text";
 import { useCallback,useEffect,useMemo,useRef,useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { DASHBOARD_ROUTES, type WorkspaceTab } from "@/lib/dashboard-routes";
 import { toast } from "sonner";
 import { ArrowUpRight,Bookmark,BookMarked,BookOpen,BookOpenText,CircleHelp,Code2,ChevronRight,Compass,FileCode2,GraduationCap,Languages,Layers,Library as LibraryIcon,Link2,LogOut,MessagesSquare,ListOrdered,PanelLeftClose,PanelLeftOpen,Search,Sparkles,Sun,RefreshCw,Users,Workflow } from "lucide-react";
 import type { DocumentRecord,GenerationRequest,Language,Progress,Technology,Tier,Topic } from "@/lib/domain";
@@ -51,7 +52,7 @@ function Identity({email,isSuperAdmin,onNavigate}:{email:string|null;isSuperAdmi
       <button type="button" className="profile-menu-item profile-menu-item-destructive" disabled={busy} onClick={()=>void signOut()}><LogOut size={16}/><ExpandedText text={t("signout")} /></button>
     </PopoverContent>
   </Popover>;}
-export type WorkspaceTab="dashboard"|"library"|"plans"|"settings";
+export type { WorkspaceTab } from "@/lib/dashboard-routes";
 // Professional learning sections render their own page content instead of the study catalog.
 const PRO_SECTIONS=[{id:"official-docs",label:"Official Docs",icon:BookMarked},{id:"techy",label:"Techy",icon:Code2},{id:"api-docs",label:"API Docs",icon:FileCode2},{id:"workflow",label:"Workflow",icon:Workflow},{id:"lessons",label:"Lessons",icon:BookOpenText},{id:"quiz",label:"Quiz",icon:CircleHelp},{id:"interview",label:"Interview",icon:MessagesSquare}] as const;
 const isProSection=(category?:string)=>PRO_SECTIONS.some(section=>section.id===category);
@@ -77,22 +78,21 @@ function SearchNavRow({collapsed,active}:{collapsed:boolean;active:boolean}){con
     </button>
   </div>;}
 export function Workspace({authEnabled,configured,billingEnabled,userEmail=null,initialTab="dashboard",initialAccount=null,initialCategory,initialPreparation="",initialCourse,initialStudyCourses,notesContent,learning}:{notesContent?:React.ReactNode;learning?:React.ReactNode;initialStudyCourses?:StudyCourse[];initialPreparation?:string;initialCourse?:string;initialCategory?:string;authEnabled:boolean;configured:boolean;billingEnabled:boolean;userEmail?:string|null;initialTab?:WorkspaceTab;initialAccount?:AccountData|null}) {
-  const {t,language,setLanguage}=useLanguage();const [tab,setTab]=useState<WorkspaceTab>(initialTab);
+  const {t,language,setLanguage}=useLanguage();const router=useRouter();const tab=initialTab;
   const [learningQuery,setLearningQuery]=useState("");const [sidebarQuery,setSidebarQuery]=useState("");
   const [notesSelected,setNotesSelected]=useState<DocumentRecord|null>(null);const [refreshing,setRefreshing]=useState(false);
-  const [collapsed,setCollapsed]=useState(false);const [category,setCategory]=useState(initialCategory);
+  const [collapsed,setCollapsed]=useState(false);const category=initialCategory;
   // eslint-disable-next-line react-hooks/set-state-in-effect -- Reads a client-only preference after mount; initial `false` must match SSR output.
   useEffect(()=>{try{setCollapsed(localStorage.getItem("masterclass:sidebar-collapsed")==="1");}catch{}},[]);
   function toggleCollapsed(){setCollapsed(prev=>{const next=!prev;try{localStorage.setItem("masterclass:sidebar-collapsed",next?"1":"0");}catch{}return next;});}
-  function navigate(next:WorkspaceTab){setCategory(undefined);setLearningQuery("");setTab(next);setError(null);window.history.pushState(null,"",`/dashboard?tab=${next}`);}
-  useEffect(()=>{const restore=()=>{setCategory(window.location.pathname.split("/")[2]);const next=new URLSearchParams(window.location.search).get("tab");setTab(next==="library"||next==="plans"||next==="settings"?next:"dashboard");};window.addEventListener("popstate",restore);return()=>window.removeEventListener("popstate",restore);},[]);
+  function navigate(next:WorkspaceTab){router.push(DASHBOARD_ROUTES[next]);}
   const [catalog,setCatalog]=useState<{technologies:Technology[];topics:Topic[]}>({technologies:[],topics:[]});
   const [data,setData]=useState<AccountData|null>(initialAccount);const [loading,setLoading]=useState(configured);const [busy,setBusy]=useState(false);const [error,setError]=useState<TranslationKey|null>(null);const [confirmId,setConfirmId]=useState<string|null>(null);const [copiedId,setCopiedId]=useState<string|null>(null);const hydrated=useRef(false);
   const preparationKey=data?.preparations?.selections.join(",")??"";
   const refresh=useCallback(async()=>{if(!configured||!authEnabled)return;try{const result=await requestJson<AccountData>("/api/account");setData(result);if(!hydrated.current){setLanguage(result.profile.language,false);hydrated.current=true;}setError(null);}catch(e){setError(errorKey(e));}},[configured,authEnabled,setLanguage,setError,setData]);
   useEffect(()=>{let active=true;if(configured){void requestJson<typeof catalog>("/api/catalog").then(result=>{if(active)setCatalog(result);}).catch(e=>{if(active)setError(errorKey(e));}).finally(()=>{if(active)setLoading(false);});}Promise.resolve().then(refresh);return()=>{active=false;};},[configured,refresh,preparationKey]);
   useEffect(()=>{if(!data?.documents.some(d=>d.status==="queued"||d.status==="generating"))return;const interval=setInterval(()=>void refresh(),5000);return()=>clearInterval(interval);},[data,refresh]);
-  async function generate(input:GenerationRequest){setBusy(true);setError(null);try{const {document}=await requestJson<{document:DocumentRecord}>("/api/documents",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(input)});await refresh();if(document.status==="ready"){toast.success(`${document.title} — ${t("ready")}`);setNotesSelected(document);}else{toast(`${document.title} — ${t("generating")}…`);setTab("library");}}catch(e){const key=errorKey(e);setError(key);toast.error(t(key));}finally{setBusy(false);}}
+  async function generate(input:GenerationRequest){setBusy(true);setError(null);try{const {document}=await requestJson<{document:DocumentRecord}>("/api/documents",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(input)});await refresh();if(document.status==="ready"){toast.success(`${document.title} — ${t("ready")}`);setNotesSelected(document);}else{toast(`${document.title} — ${t("generating")}…`);navigate("library");}}catch(e){const key=errorKey(e);setError(key);toast.error(t(key));}finally{setBusy(false);}}
   async function deleteDocument(id:string){setBusy(true);setError(null);try{await requestJson(`/api/documents/${id}`,{method:"DELETE"});setConfirmId(null);await refresh();}catch(e){setError(errorKey(e));}finally{setBusy(false);}}
   async function copyNotes(item:DocumentRecord){setError(null);try{const {document}=await requestJson<{document:DocumentRecord}>(`/api/documents/${item.id}`);if(!document.curriculum)throw new Error("not_ready");const {curriculumNotes}=await import("@/lib/notes");await navigator.clipboard.writeText(curriculumNotes(document.curriculum,document.title,document.request.language));setCopiedId(item.id);setTimeout(()=>setCopiedId(id=>id===item.id?null:id),2500);}catch{setError("copyNotesFailed");}}
   const documents=useMemo(()=>uniqueLibraryDocuments(data?.documents??[]),[data?.documents]);const listed=new Set(documents.map(d=>d.id));const progress=(data?.progress??[]).filter(p=>listed.has(p.document_id));const continuing=progress.filter(p=>!p.completed).sort((a,b)=>(b.updated_at??"").localeCompare(a.updated_at??""))[0];const resumeDoc=documents.find(d=>d.id===continuing?.document_id&&d.status==="ready");

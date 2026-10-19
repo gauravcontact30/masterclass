@@ -16,8 +16,8 @@ test("paid users receive access; another account id does not",async()=>{
   await expect(requirePaidAccess("other")).rejects.toMatchObject({status:401});
 });
 test("paid pages redirect unpaid accounts to membership before rendering content",async()=>{
-  await expect(requireLearningUser()).rejects.toThrow("/dashboard?tab=plans");
-  expect(redirect).toHaveBeenCalledWith("/dashboard?tab=plans");
+  await expect(requireLearningUser()).rejects.toThrow("/dashboard/plans");
+  expect(redirect).toHaveBeenCalledWith("/dashboard/plans");
 });
 test("only the verified super admin bypasses a subscription",async()=>{
   jest.mocked(currentUser).mockResolvedValue({id:"admin",email:"garvcontact30@gmail.com",email_confirmed_at:"2026-01-01"} as never);
@@ -26,5 +26,5 @@ test("only the verified super admin bypasses a subscription",async()=>{
 });
 test("a signed-in Supabase account is still gated by its subscription",async()=>{
   jest.mocked(currentUser).mockResolvedValue({id:"learner",email:"student@example.com",app_metadata:{provider:"email"}} as never);
-  await expect(requireLearningUser()).rejects.toThrow("/dashboard?tab=plans");
+  await expect(requireLearningUser()).rejects.toThrow("/dashboard/plans");
 });

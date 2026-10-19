@@ -366,7 +366,7 @@ export function NotesModal({ document: initial, initialProgress, onClose, sample
           </details>
         </nav>
         <div ref={scroller} className={`study-notes-content ${styles.content}`} tabIndex={0} aria-label={initial.title}>
-          <StructuredNotes sourceHref={sample ? `/dashboard/notes?technology=${encodeURIComponent(initial.request.technologyId)}` : `/dashboard?tab=library&document=${encodeURIComponent(initial.id)}`} deck={deck} title={document!.title} language={document!.request.language} technology={document!.request.technologyId} sectionRef={sectionRef} idPrefix={idPrefix} />
+          <StructuredNotes sourceHref={sample ? `/dashboard/notes?technology=${encodeURIComponent(initial.request.technologyId)}` : `/dashboard/library?document=${encodeURIComponent(initial.id)}`} deck={deck} title={document!.title} language={document!.request.language} technology={document!.request.technologyId} sectionRef={sectionRef} idPrefix={idPrefix} />
           <div className={styles.finish}>
             {state.completed ? <p><Check size={16} aria-hidden="true" /><ExpandedText text={t("guideCompleted")} /></p> : <Button onClick={() => update({ completed: true, page: count }, 0)}><Check size={15} /><ExpandedText text={t("finishGuide")} /></Button>}
           </div>

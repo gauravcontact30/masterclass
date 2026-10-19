@@ -34,7 +34,7 @@ export function LandingInterview({ expanded = false, preview = false }: Readonly
   const [tabs, setTabs] = useState<Record<string, number>>({});
   const chooseTab = (id: string, tab: number) => setTabs(all => ({ ...all, [id]: tab }));
   return <section id="interview-prep" className={styles.section} aria-labelledby="interview-title"><div className={home.inner}>
-    {preview && <DashboardMore href="/dashboard#interview-prep" title={text(`See all ${INTERVIEW_TECHS.length} technologies`, `सभी ${INTERVIEW_TECHS.length} तकनीकें देखें`)} detail={text("30+ subjective and 30+ objective questions for every technology, with search and filters.", "हर तकनीक के लिए 30+ विषयगत और 30+ वस्तुनिष्ठ प्रश्न, खोज और फ़िल्टर के साथ।")} />}
+    {preview && <DashboardMore href="/dashboard" title={text(`See all ${INTERVIEW_TECHS.length} technologies`, `सभी ${INTERVIEW_TECHS.length} तकनीकें देखें`)} detail={text("30+ subjective and 30+ objective questions for every technology, with search and filters.", "हर तकनीक के लिए 30+ विषयगत और 30+ वस्तुनिष्ठ प्रश्न, खोज और फ़िल्टर के साथ।")} />}
     <div className={styles.head} data-learning-header>
       <div className={styles.headCopy} data-learning-copy>
         <p className={styles.kicker}><GraduationCap size={14} aria-hidden="true" />{text("Interview prep", "इंटरव्यू की तैयारी")}<span>{INTERVIEW_TECHS.length} {text("technologies", "तकनीकें")}</span></p>

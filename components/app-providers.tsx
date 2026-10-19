@@ -6,6 +6,7 @@ import { LearningMarksProvider } from "./learning-marks";
 import { InterviewFocusProvider } from "./interview-focus";
 import { RetiredTechnologyCleanup } from "./retired-technology-cleanup";
 import { VocabularyLookupProvider } from "./vocabulary-lookup-provider";
+import { AppTooltips } from "./app-tooltips";
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
@@ -16,6 +17,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
           <BookmarksProvider>
             <VocabularyLookupProvider>
               {children}
+              <AppTooltips />
             </VocabularyLookupProvider>
           </BookmarksProvider>
         </LearningMarksProvider>
