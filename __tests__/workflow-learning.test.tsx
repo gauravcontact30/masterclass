@@ -3,6 +3,7 @@ import { LandingWorkflows } from "@/components/landing-workflows";
 import { WORKFLOW_LESSONS } from "@/lib/workflow-learning";
 import { WORKFLOW_CURRICULUM } from "@/lib/workflow-curriculum";
 import { WORKFLOW_LESSON_GUIDES } from "@/lib/workflow-lesson-guides";
+import { learningPoints, WORKFLOW_DEFINITIONS } from "@/lib/workflow-presentation";
 import { ExclusiveAccordions } from "@/components/exclusive-accordions";
 
 jest.mock("next/dynamic", () => ({ __esModule: true, default: () => () => null }));
@@ -31,6 +32,24 @@ test("the landing preview keeps its existing category selection", () => {
   render(<LandingWorkflows preview />);
   expect(screen.queryByRole("region", { name: "Official documentation learning paths" })).not.toBeInTheDocument();
   expect(screen.queryByRole("button", { name: /^React 19\+/ })).not.toBeInTheDocument();
+});
+
+test("interview stars distinguish core essentials from extended practice with an honest legend", () => {
+  render(<LandingWorkflows expanded />);
+  fireEvent.click(screen.getByRole("button", { name: /^React 19\+/ }));
+  expect(screen.getByText(/Editorial study guidance, not measured interview frequency/)).toBeVisible();
+  expect(screen.getAllByRole("img", { name: "Interview prep priority: 5 out of 5 stars" })).toHaveLength(10);
+  fireEvent.click(screen.getByRole("button", { name: "Show more topics for React 19+" }));
+  expect(screen.getAllByRole("img", { name: "Interview prep priority: 4 out of 5 stars" })).toHaveLength(10);
+});
+
+test("pointwise presentation preserves every interview answer and numeric values", () => {
+  for (const curriculum of Object.values(WORKFLOW_CURRICULUM)) {
+    for (const topic of curriculum.topics) {
+      expect(learningPoints(topic.answer).join(" ")).toBe(topic.answer.replace(/\s+/g, " ").trim());
+    }
+  }
+  expect(learningPoints("Target 99.9% uptime. Measure p99 latency.")).toEqual(["Target 99.9% uptime.", "Measure p99 latency."]);
 });
 
 test("topic search reveals a matching path, answers, empty state and reset", () => {
@@ -81,18 +100,26 @@ test("long topic lists reveal more entries and search includes topics beyond the
   expect(screen.queryByRole("button", { name: "Show more topics for React 19+" })).not.toBeInTheDocument();
 });
 
-test("dashboard immediately displays the collection summary, questions and answers", () => {
+test("dashboard shows definitions immediately and expands lessons and answers on demand", () => {
   render(<><LandingWorkflows expanded /><ExclusiveAccordions /></>);
   expect(screen.getByText("52 topics per category across all 12 categories — 624 interview questions and answers")).toBeVisible();
   for (const lesson of WORKFLOW_LESSONS) {
     const first = WORKFLOW_CURRICULUM[lesson.group].topics[0];
-    expect(screen.getByText(first.question)).toBeVisible();
-    expect(screen.getByText(first.answer)).toBeVisible();
+    expect(screen.getByText(WORKFLOW_DEFINITIONS[lesson.id])).toBeVisible();
+    const card = screen.getByText(lesson.title).closest("details")!;
+    fireEvent.click(card.querySelector("summary")!);
+    // Native disclosure behavior is represented explicitly in jsdom.
+    card.open = true;
+    expect(within(card).getByText(first.question)).toBeVisible();
+    for (const point of learningPoints(first.answer)) expect(within(card).getByText(point)).toBeVisible();
   }
   fireEvent.click(screen.getByRole("button", { name: /^React 19\+/ }));
   fireEvent.click(screen.getByRole("button", { name: "Show all topics for React 19+" }));
   expect(screen.getByText("Showing 52 of 52 topics")).toBeVisible();
-  expect(screen.getByText("Does a compiler remove the need for good state design?")).toBeVisible();
+  const compiler = screen.getByText("React Compiler awareness").closest("details")!;
+  expect(compiler).not.toHaveAttribute("open");
+  compiler.open = true;
+  expect(within(compiler).getByText("Does a compiler remove the need for good state design?")).toBeVisible();
   expect(screen.queryByRole("button", { name: "Show all topics for React 19+" })).not.toBeInTheDocument();
 });
 
@@ -105,14 +132,14 @@ test.each(WORKFLOW_LESSONS)("$group has an in-app guide, image, workflow and pra
   const panel = screen.getByRole("tabpanel");
   expect(within(panel).getByRole("img", { name: new RegExp(lesson.title) })).toBeVisible();
   expect(within(panel).queryByRole("link")).not.toBeInTheDocument();
-  expect(within(panel).getByText(WORKFLOW_LESSON_GUIDES[lesson.id].sections[0].body)).toBeVisible();
+  for (const point of learningPoints(WORKFLOW_LESSON_GUIDES[lesson.id].sections[0].body)) expect(within(panel).getByText(point)).toBeVisible();
   const guideTab = screen.getByRole("tab", { name: "Learning guide" });
   fireEvent.keyDown(guideTab, { key: "ArrowRight" });
   expect(screen.getByRole("tab", { name: "Workflow" })).toHaveFocus();
   expect(screen.getByText(lesson.steps[0])).toBeVisible();
   fireEvent.click(screen.getByRole("tab", { name: "Practice" }));
-  expect(screen.getByText(lesson.exercise)).toBeVisible();
+  for (const point of learningPoints(lesson.exercise)) expect(screen.getByText(point)).toBeVisible();
   expect(screen.getByText(WORKFLOW_LESSON_GUIDES[lesson.id].verify[0])).toBeVisible();
   fireEvent.click(screen.getByRole("tab", { name: "Interview Q&A" }));
-  expect(screen.getByText(WORKFLOW_CURRICULUM[lesson.group].topics[0].answer)).toBeVisible();
+  for (const point of learningPoints(WORKFLOW_CURRICULUM[lesson.group].topics[0].answer)) expect(screen.getByText(point)).toBeVisible();
 });

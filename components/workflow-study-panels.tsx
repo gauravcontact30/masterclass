@@ -2,6 +2,7 @@
 import { useId, useState, type ReactNode } from "react";
 import type { WorkflowLesson } from "@/lib/workflow-learning";
 import { WORKFLOW_LESSON_GUIDES } from "@/lib/workflow-lesson-guides";
+import { learningPoints } from "@/lib/workflow-presentation";
 import { WorkflowDiagram } from "./workflow-diagram";
 import styles from "./landing-workflows.module.css";
 
@@ -37,7 +38,7 @@ export function WorkflowStudyPanels({ lesson, sources, children, text }: Readonl
       {tab === "guide" && <>
         {picture}
         {guide.sections.map(section => <article key={section.title} className={styles.guidePanel}>
-          <h5>{section.title}</h5><p>{section.body}</p>
+          <h5>{section.title}</h5><ul>{learningPoints(section.body).map((point, index) => <li key={index}>{point}</li>)}</ul>
           <p className={styles.studyExample}><strong>{text("Worked example", "उदाहरण")}: </strong>{section.example}</p>
         </article>)}
         <aside className={styles.guidePanel} aria-label={text("Source attribution", "स्रोत श्रेय")}>
@@ -48,7 +49,7 @@ export function WorkflowStudyPanels({ lesson, sources, children, text }: Readonl
       </>}
       {tab === "workflow" && <>{picture}<article className={styles.guidePanel}><h5>{text("Build step by step", "चरण दर चरण बनाएँ")}</h5><ol>{lesson.steps.map(step => <li key={step}>{step}</li>)}</ol></article></>}
       {tab === "practice" && <>
-        <article className={styles.guidePanel}><h5>{text("Your practical assignment", "आपका अभ्यास")}</h5><p>{lesson.exercise}</p></article>
+        <article className={styles.guidePanel}><h5>{text("Your practical assignment", "आपका अभ्यास")}</h5><ul>{learningPoints(lesson.exercise).map((point, index) => <li key={index}>{point}</li>)}</ul></article>
         <article className={styles.guidePanel}><h5>{text("Acceptance checks", "सफलता की जाँच")}</h5><ul>{guide.verify.map(check => <li key={check}>{check}</li>)}</ul></article>
         <article className={styles.guidePanel}><h5>{text("Explain your decisions", "अपने निर्णय समझाएँ")}</h5><p>{text("Describe the input, the state you retain, the failure path and the evidence that proves success. Compare one alternative and explain its tradeoff.", "इनपुट, सुरक्षित स्थिति, विफलता के रास्ते और सफलता के प्रमाण का वर्णन करें। एक विकल्प से तुलना करके उसका लाभ और सीमा समझाएँ।")}</p></article>
       </>}

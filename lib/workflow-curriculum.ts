@@ -202,3 +202,8 @@ export const WORKFLOW_CURRICULUM: Record<string, WorkflowCurriculum> = Object.fr
   }),
 );
 
+/** Editorial study order: the curated foundation set comes before extended practice. */
+export function interviewPriority(group: string, title: string): 4 | 5 {
+  return FOUNDATION_CURRICULUM[group]?.topics.some(topic => topic.title === title) ? 5 : 4;
+}
+

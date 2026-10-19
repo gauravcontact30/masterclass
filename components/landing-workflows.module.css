@@ -60,6 +60,52 @@
 .topicPagination button:focus-visible { outline: 2px solid var(--nb-ink); outline-offset: 2px; }
 .srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 @media (max-width: 700px) { .learningGrid { grid-template-columns: minmax(0, 1fr); } }
+/* In-app study cards use a light palette in every theme. */
+.learningPaths { padding: clamp(16px, 3vw, 32px); border: 1px solid #dce5ec; border-radius: 24px; background: #f7fafc; --nb-graphite: #182c3b; --nb-text: #405464; --nb-ink: #234e68; --nb-sheet: #fff; --nb-paper: #f5f9fc; --nb-rule: #d7e2e9; }
+.learningPaths > h3 { font-size: clamp(22px, 2.6vw, 30px); letter-spacing: -.025em; line-height: 1.2; }
+.learningPaths > .curriculumSummary { padding: 0; border: 0; background: transparent; font-size: 13px; color: #496278; }
+.learningPaths > .ratingLegend { margin: 16px 0; padding: 12px 16px; border: 1px solid #eadfbd; border-radius: 10px; background: #fff9e9; color: #695019; font-size: 12px; line-height: 1.7; }
+.learningGrid { gap: 14px; }
+.learningCard { --path-tint: #edf5fe; --path-accent: #285783; background: #fff; border-color: #d7e2e9; box-shadow: 0 3px 12px #203e5410; overflow: hidden; }
+.learningCard:nth-child(3n + 2) { --path-tint: #edf8f2; --path-accent: #286146; }
+.learningCard:nth-child(3n) { --path-tint: #f4f0fc; --path-accent: #61418b; }
+.learningCard > summary { position: relative; padding: 22px 62px 22px 22px; background: var(--path-tint); list-style: none; }
+.learningCard summary::-webkit-details-marker { display: none; }
+.learningCard > summary:hover { filter: brightness(.985); }
+.learningCard summary > .pathLabel { display: inline-block; font-size: 11px; letter-spacing: .04em; color: var(--path-accent); font-weight: 750; }
+.learningCard h4 { margin: 7px 0; font-size: clamp(17px, 2vw, 21px); }
+.learningCard summary > .pathDefinition { display: block; font-weight: 400; margin: 0; font-size: 14px; line-height: 1.6; color: #405464; }
+.learningCard summary > .disclosureIcon { position: absolute; right: 20px; top: 24px; display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid #b8cbd9; border-radius: 50%; background: #ffffffa6; font-size: 20px; line-height: 1; color: #234e68; }
+.learningCard[open] > summary > .disclosureIcon, .topic[open] > summary > .disclosureIcon { transform: rotate(180deg); }
+.learningBody { padding: 22px; border-top: 1px solid #d7e2e9; }
+.learningBody h5 { margin: 20px 0 10px; font-size: 15px; }
+.learningBody ul { list-style: none; padding-left: 0; }
+.learningBody ul > li { position: relative; padding-left: 25px; }
+.learningBody ul > li::before { content: "✦"; position: absolute; left: 2px; top: 0; font-size: 13px; color: #357864; }
+.learningBody li + li { margin-top: 9px; }
+.learningBody ol li::marker { color: #285783; font-weight: 700; }
+.studyTabs { padding: 6px; border: 1px solid #d7e2e9; border-radius: 12px; background: #f3f7fa; }
+.studyTabs button { flex: 1 1 auto; background: transparent; border-color: transparent; font-size: 13px; font-weight: 650; }
+.studyTabs button[aria-selected="true"] { background: #fff; border-color: #b8cbd9; color: #234e68; box-shadow: 0 2px 5px #203e5410; }
+.topic { background: #fbfdff; border-color: #dce5ec; }
+.topic > summary { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; padding: 15px; list-style: none; }
+.topic > summary > .topicTitle { flex: 1 1 220px; font-size: 14px; font-weight: 650; }
+.topic > summary > .priority { flex: 0 0 auto; color: #806016; background: #fff5d8; border: 1px solid #eddfb4; border-radius: 6px; padding: 3px 7px; font-size: 13px; letter-spacing: 2px; }
+.topic > summary > .disclosureIcon { flex: 0 0 auto; font-size: 20px; }
+.topic[open] > summary { border-bottom: 1px solid #dce5ec; background: #eff6fb; }
+.topic > div { padding: 16px; }
+.topic .learningPoints { margin-top: 12px; }
+.guidePanel { background: #f7fafc; }
+.guidePanel .studyExample { padding: 12px 14px; background: #eef7f2; border-left-color: #4e9273; border-radius: 0 8px 8px 0; }
+@media (max-width: 540px) {
+  .learningPaths { padding: 14px; border-radius: 16px; }
+  .learningCard > summary { padding: 18px 52px 18px 16px; }
+  .learningCard summary > .disclosureIcon { right: 14px; top: 18px; }
+  .learningBody { padding: 14px; }
+  .topic > summary > .topicTitle { flex-basis: 100%; }
+  .topic > summary > .disclosureIcon { margin-left: auto; }
+  .guidePanel { padding: 14px; }
+}
 .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
 .filters button { max-width: 100%; text-align: left; overflow-wrap: anywhere; }
 /* Each group's tab in that group's light tone (the slides use the same pairs); the pressed one fills with it. */
