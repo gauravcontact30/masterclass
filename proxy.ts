@@ -60,11 +60,17 @@ export default async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   if (url && key) {
-    const isMarketing =
-      pathname === "/" &&
-      !request.cookies.getAll().some(({ name }) => /^sb-.+-auth-token(?:\.\d+)?$/.test(name));
-
-    if (!isMarketing) {
+    const hasAuthCookie = request.cookies.getAll().some(({ name }) => /^sb-.+-auth-token(?:\.\d+)?$/.test(name));
+    // No cookie means there is no SSR session to refresh. Avoid a remote auth
+    // lookup for anonymous page/API visits, while retaining dashboard guards.
+    if (!hasAuthCookie) {
+      const target = redirectFor({ pathname, signedIn: false });
+      if (target) {
+        const redirected = NextResponse.redirect(new URL(target, request.url));
+        redirected.headers.set("Cache-Control", "private, no-store");
+        return redirected;
+      }
+    } else {
       const supabase = createServerClient(url, key, {
         cookies: {
           getAll: () => request.cookies.getAll(),
@@ -76,8 +82,11 @@ export default async function proxy(request: NextRequest) {
         },
       });
 
-      const { data } = await supabase.auth.getUser();
-      if (isUntrackedEmail(data.user?.email)) {
+      // Verify the signed JWT here; protected pages/APIs still fetch the current
+      // user and enforce roles/subscriptions in their server authorization layer.
+      const { data, error } = await supabase.auth.getClaims();
+      const claims = error ? undefined : data?.claims;
+      if (isUntrackedEmail(typeof claims?.email === "string" ? claims.email : undefined)) {
         request.cookies.set(UNTRACKED_COOKIE, "1");
         const refreshedCookies = response.cookies.getAll();
         response = NextResponse.next({ request });
@@ -89,7 +98,7 @@ export default async function proxy(request: NextRequest) {
         response.cookies.delete("mc_vid");
         response.cookies.delete("mc_sid");
       }
-      const target = redirectFor({ pathname, signedIn: Boolean(data.user) });
+      const target = redirectFor({ pathname, signedIn: Boolean(claims?.sub) });
       if (target) {
         const redirected = NextResponse.redirect(new URL(target, request.url));
         response.cookies.getAll().forEach((cookie) => redirected.cookies.set(cookie));

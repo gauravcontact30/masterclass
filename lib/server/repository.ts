@@ -10,14 +10,20 @@ export async function profile(id: string) {
   return check(await db().from("profiles").select("id,name,language,credit_balance,created_at").eq("id", id).single());
 }
 export async function account(id: string) {
-  const owner = await profile(id);
-  const subscription = check(await db().from("subscriptions").select("*").eq("user_id", id).maybeSingle());
+  // These reads are independent. Every paid learning route checks this account,
+  // so serial round trips here delay navigation throughout the dashboard.
+  const [owner, subscriptionResult, usageResult] = await Promise.all([
+    profile(id),
+    db().from("subscriptions").select("*").eq("user_id", id).maybeSingle(),
+    db().from("usage_periods").select("used").eq("user_id", id).eq("period", monthKey()).maybeSingle(),
+  ]);
+  const subscription = check(subscriptionResult);
   const paidTier = entitlementTier(subscription as {tier: Tier; status: string; current_period_end: string | null; grace_until: string | null} | null);
   // New accounts get full learning access for a day; afterwards the dashboard asks for a subscription.
   const trialEnds = trialEndsAt(owner?.created_at, trialHours());
   const trialActive = paidTier === "free" && !!trialEnds && Date.parse(trialEnds) > Date.now();
   const tier: Tier = trialActive ? "trial" : paidTier;
-  const usage = check(await db().from("usage_periods").select("used").eq("user_id", id).eq("period", monthKey()).maybeSingle());
+  const usage = check(usageResult);
   return { tier, paidTier, trialEndsAt: paidTier === "free" ? trialEnds : null, used: usage?.used ?? 0, limit: quota(tier), subscription, creditBalance: owner?.credit_balance ?? 0 };
 }
 export async function ownedDocument(id: string, owner: string, requireSubscription = true): Promise<DocumentRecord> {

@@ -26,15 +26,21 @@ test("returning from Search navigates to the real dashboard route", async () => 
  window.history.replaceState(null, "", "/dashboard/search");
  render(<Workspace authEnabled configured billingEnabled initialCategory="search" notesContent={<p>Search content</p>} initialAccount={account} userEmail="learner@example.com" />);
  await screen.findByText("Search content");
- fireEvent.click(screen.getByRole("button", { name: "Dashboard", exact: true }));
- expect(mockRouterPush).toHaveBeenLastCalledWith("/dashboard");
- fireEvent.click(screen.getByRole("button", { name: "My library", exact: true }));
- expect(mockRouterPush).toHaveBeenLastCalledWith("/dashboard/library");
+ expect(screen.getByRole("link", { name: "Dashboard", exact: true })).toHaveAttribute("href", "/dashboard");
+ expect(screen.getByRole("link", { name: "My library", exact: true })).toHaveAttribute("href", "/dashboard/library");
 });
 
 test("loads the current account and exposes its saved notes",async()=>{
  renderWorkspace();expect(await screen.findByRole("heading",{name:"React basics"})).toBeVisible();
  expect(requestJson).toHaveBeenCalledWith("/api/account");expect(requestJson).toHaveBeenCalledWith("/api/catalog");
+});
+
+test("initial account hydration fetches account and permission-filtered catalog only once", async () => {
+ jest.mocked(requestJson).mockClear();
+ render(<Workspace authEnabled configured billingEnabled userEmail="learner@example.com" />);
+ await waitFor(()=>expect(requestJson).toHaveBeenCalledWith("/api/catalog"));
+ expect(jest.mocked(requestJson).mock.calls.filter(([url])=>url==="/api/account")).toHaveLength(1);
+ expect(jest.mocked(requestJson).mock.calls.filter(([url])=>url==="/api/catalog")).toHaveLength(1);
 });
 test("My library exposes the same saved note actions",async()=>{
  renderWorkspace("library");expect(await screen.findByRole("region",{name:"Saved notes"})).toHaveTextContent("React basics");
