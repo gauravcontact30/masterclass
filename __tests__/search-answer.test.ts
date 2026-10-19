@@ -1,6 +1,8 @@
 /** @jest-environment node */
 import { searchAnswerSchema } from "@/lib/pro-learn/types";
 
+jest.mock("@/lib/redis", () => ({ cacheGet: jest.fn().mockResolvedValue(null), cacheSet: jest.fn().mockResolvedValue(undefined) }));
+
 const ENV = { ...process.env };
 const load = async () => import("@/lib/server/pro-learn-ai");
 const answer = {
@@ -24,7 +26,7 @@ const perplexityReply = (content: unknown) => ({
 
 beforeEach(() => {
   process.env = { ...ENV };
-  for (const key of ["ANTHROPIC_API_KEY", "ANTHROPIC_MODEL", "PERPLEXITY_API_KEY", "PERPLEXITY_MODEL"]) delete process.env[key];
+  for (const key of Object.keys(process.env)) if (key.endsWith("_API_KEY") || key === "VERCEL_OIDC_TOKEN") delete process.env[key];
   global.fetch = jest.fn() as jest.Mock;
 });
 afterAll(() => { process.env = ENV; });
@@ -58,7 +60,7 @@ test("the library is searched whether or not a model answers", async () => {
   expect(global.fetch).not.toHaveBeenCalled();
 });
 
-test("Perplexity is preferred for search, and its answer arrives with the hosts it read", async () => {
+test("Perplexity is preferred for search, and provider citations stay out of the learner response", async () => {
   process.env.ANTHROPIC_API_KEY = "sk-ant-test";
   process.env.ANTHROPIC_MODEL = "claude-sonnet-5";
   process.env.PERPLEXITY_API_KEY = "pplx-test";
@@ -69,7 +71,7 @@ test("Perplexity is preferred for search, and its answer arrives with the hosts 
   expect(result.provider).toBe("perplexity");
   expect(result.source).toBe("ai");
   expect(result.answer!.steps).toHaveLength(2);
-  expect(result.sources).toEqual(["nextjs.org"]);
+  expect(result).not.toHaveProperty("sources");
   expect(result.matches).toBeDefined();
   expect((global.fetch as jest.Mock).mock.calls[0][0]).toBe("https://api.perplexity.ai/chat/completions");
 });

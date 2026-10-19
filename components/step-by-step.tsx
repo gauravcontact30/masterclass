@@ -6,7 +6,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSPrope
 import { BookMarked, Check, CheckCircle2, ChevronLeft, ChevronRight, Copy, FileCode2, ListOrdered, Loader2, Pencil, RotateCcw, Search, SlidersHorizontal, Sparkles, Terminal, Trash2, X } from "lucide-react";
 import { useAiMode } from "@/lib/ai-mode";
 import { highlightLines } from "@/lib/code-highlight";
-import { inferLanguage } from "@/lib/code-run";
+
 import { codeLineNotes, fileLanguage } from "@/lib/code-line-notes";
 import { CodeLineComment } from "./code-line-comment";
 import { STEP_GUIDES } from "@/lib/step-by-step/guides";

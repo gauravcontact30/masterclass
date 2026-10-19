@@ -4,6 +4,10 @@ import { API_DETAILS } from "@/lib/api-docs-details";
 import { catalogApiDetail, enrichApiLearning } from "@/lib/api-learning";
 import { apiDetailSchema } from "@/lib/pro-learn/types";
 
+// This suite exercises fallback behavior when no generated official card exists.
+jest.mock("@/lib/server/official-content", () => ({ officialApiCard: jest.fn() }));
+jest.mock("@/lib/redis", () => ({ cacheGet: jest.fn().mockResolvedValue(null), cacheSet: jest.fn().mockResolvedValue(undefined) }));
+
 const pkg = API_PACKAGES.find(item => item.id === "react")!;
 const entry = pkg.entries.find(item => item.name === "useDeferredValue")!;
 
@@ -15,7 +19,7 @@ async function apiDetail(packageId: string, name: string, signal?: AbortSignal, 
 const ENV = { ...process.env };
 beforeEach(() => {
   process.env = { ...ENV };
-  for (const key of ["ANTHROPIC_API_KEY", "ANTHROPIC_MODEL", "PERPLEXITY_API_KEY", "PERPLEXITY_MODEL", "AI_GATEWAY_API_KEY", "VERCEL_OIDC_TOKEN"]) delete process.env[key];
+  for (const key of Object.keys(process.env)) if (key.endsWith("_API_KEY") || key === "VERCEL_OIDC_TOKEN") delete process.env[key];
 });
 afterAll(() => { process.env = ENV; });
 

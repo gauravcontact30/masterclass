@@ -6,6 +6,7 @@ import { BookOpen, CodeXml, Crown, GraduationCap, Languages, Layers, Library, Lo
 import { Wordmark } from "./brand-mark";
 import { SuggestionBox } from "./suggestion-box";
 import { LandingPlansMenu } from "./landing-plans-menu";
+import { scrollToSection } from "./hashless-navigation";
 import { useLanguage } from "./language-provider";
 import styles from "./landing-home.module.css";
 
@@ -29,7 +30,8 @@ const NAV_ICONS: Record<string, LucideIcon> = {
  * the pointer across the links and rests on the section currently in view;
  * each link has its own light pill colour, and the link under it turns dark.
  */
-export function LandingNavbar({ links, prices = null }: { links: [string, string][]; prices?: { monthly: number; yearly: number } | null }) {
+/** `links`: [section key ("#workflows"), label, the section's own page for crawlers and new tabs]. */
+export function LandingNavbar({ links, prices = null }: { links: [string, string, string?][]; prices?: { monthly: number; yearly: number } | null }) {
   const { language, setLanguage } = useLanguage();
   const hi = language === "hi";
   const text = (en: string, hindi: string) => hi ? hindi : en;
@@ -63,7 +65,7 @@ export function LandingNavbar({ links, prices = null }: { links: [string, string
   }, [links]);
 
   const moveTo = useCallback((href: string | null) => {
-    const link = href ? navRef.current?.querySelector<HTMLAnchorElement>(`a[href="${href}"]`) : null;
+    const link = href ? navRef.current?.querySelector<HTMLAnchorElement>(`a[data-section="${href.slice(1)}"]`) : null;
     const nav = navRef.current;
     // A full-width layer revealed with clip-path moves and resizes without triggering layout.
     setIndicator(link && nav ? { left: link.offsetLeft, right: nav.clientWidth - link.offsetLeft - link.offsetWidth, visible: true, href } : current => ({ ...current, visible: false, href: null }));
@@ -87,16 +89,22 @@ export function LandingNavbar({ links, prices = null }: { links: [string, string
     return () => { window.removeEventListener("keydown", onKey); document.removeEventListener("pointerdown", onPointer); };
   }, [account]);
 
-  return <header className={styles.navbar} data-solid={scrolled || menu || plans || undefined}>
+  return <header aria-label="Site header" className={styles.navbar} data-solid={scrolled || menu || plans || undefined}>
     <div className={styles.navbarInner}>
       <Link href="/" aria-label="MasterClass" className={styles.brand}><Wordmark /></Link>
       <nav ref={navRef} className={styles.navLinks} data-open={menu || undefined} aria-label={text("Main navigation", "मुख्य नेविगेशन")} onMouseLeave={() => moveTo(active)}>
         <span className={styles.navIndicator} aria-hidden="true" data-visible={indicator.visible || undefined} style={{ clipPath: `inset(0 ${indicator.right}px 0 ${indicator.left}px round 999px)`, backgroundColor: PILL_TINTS[Math.max(0, links.findIndex(([href]) => href === indicator.href)) % PILL_TINTS.length] }} />
-        {links.map(([href, label], index) => {
+        {links.map(([href, label, page], index) => {
           const Icon = NAV_ICONS[href] ?? BookOpen;
           const tone = { "--tint": PILL_TINTS[index % PILL_TINTS.length], "--tint-ink": PILL_INKS[index % PILL_INKS.length] } as CSSProperties;
-          return <a key={href} href={href} style={tone} aria-current={active === href ? "location" : undefined} data-on={(indicator.visible && indicator.href === href) || undefined}
-            onMouseEnter={() => moveTo(href)} onFocus={() => moveTo(href)} onClick={() => setMenu(false)}>
+          // The href is the section's own crawlable page; on this page a plain click smooth-scrolls to the section
+          // instead, leaving the address bar as it is (no #fragment routes). New-tab clicks still open the page.
+          return <a key={href} href={page ?? href} data-section={href.slice(1)} style={tone} aria-current={active === href ? "location" : undefined} data-on={(indicator.visible && indicator.href === href) || undefined}
+            onMouseEnter={() => moveTo(href)} onFocus={() => moveTo(href)} onClick={event => {
+              setMenu(false);
+              if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+              if (scrollToSection(href.slice(1))) { event.preventDefault(); setActive(href); }
+            }}>
             <span className={styles.navIconWell} aria-hidden="true"><Icon size={13} strokeWidth={2} className={styles.navIcon} /></span>
             <span>{label}</span>
           </a>;

@@ -159,8 +159,11 @@ test("the open answer carries the definition, steps, use cases and a multi-line 
   expect(screen.queryByText(/a monorepo pins versions centrally/)).not.toBeInTheDocument();
 
   const useCases = unfold("Where this comes up");
-  expect(useCases.querySelectorAll("li")).toHaveLength(2);
-  expect(within(useCases).getAllByRole("figure", { name: "Terminal" })[0]).toHaveTextContent("git switch -c upgrade/next-16");
+  expect(useCases.querySelectorAll("li")).toHaveLength(answer.useCases.length - 1);
+  const worked = screen.getByRole("region", { name: "Worked example" });
+  expect(worked).toHaveTextContent(answer.useCases[0].title);
+  expect(worked).toHaveTextContent(answer.useCases[0].scenario);
+  expect(useCases).toHaveTextContent(answer.useCases[1].title);
 
   // Short, high-signal sections stay open.
   expect(screen.getByRole("region", { name: "Worth remembering" })).toBeVisible();
@@ -176,7 +179,7 @@ test("the code example lists every file and opens the one that is clicked", asyn
   respond({ answer, provider: "perplexity", sources: [], matches: [] });
   render(<AnswerSearch initialQuestion="How do I upgrade to Next.js 16?" />);
   await screen.findByRole("heading", { level: 2, name: /Run next upgrade/ });
-  unfold("Code example");
+  unfold("Worked example");
 
   const tree = screen.getByRole("navigation", { name: "Example files" });
   expect(within(tree).getAllByRole("button").map(button => button.textContent)).toEqual(["layout.tsx", "page.tsx", "package.json"]);

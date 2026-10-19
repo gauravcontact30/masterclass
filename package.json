@@ -35,7 +35,7 @@
     "landing:words": "tsx --env-file-if-exists=.env scripts/enrich-landing-words.ts && tsx --env-file-if-exists=.env scripts/build-landing-daily.ts",
     "images:notes": "tsx --conditions=react-server --env-file-if-exists=.env scripts/generate-card-images.ts --set notes",
     "purge:legacy": "tsx --env-file=.env scripts/purge-legacy-documents.ts",
-    "sonar": "sonar-scanner",
+    "sonar": "sonar-scanner-npm",
     "test:coverage": "jest --coverage"
   },
   "dependencies": {

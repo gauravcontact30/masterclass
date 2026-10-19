@@ -3,6 +3,9 @@ import { TECHNOLOGY_HANDBOOKS } from "@/lib/pro-learn/technology-handbooks";
 import { LEARNING_MODULES, LEARNING_MODULE_CATEGORY } from "@/lib/pro-learn/learning-modules";
 import { dedupeAnswer } from "@/lib/pro-learn/dedupe-answer";
 import { prepareSearchTopics } from "@/lib/server/prepared-catalog";
+
+// Generated official-card enrichment is covered by the official-content suites.
+jest.mock("@/lib/server/official-content", () => ({ officialSearchCard: jest.fn() }));
 import { SearchSectionIcon } from "@/components/search-section-icon";
 import { LANGFLOW_ENTRIES } from "@/lib/api-docs-langflow";
 import { ObjectiveQuestions } from "@/components/api-interview-practice";

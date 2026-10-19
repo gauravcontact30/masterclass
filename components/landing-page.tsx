@@ -16,6 +16,7 @@ import { anek } from "./landing-fonts";
 import { LandingOverview } from "./landing-overview";
 import { useReveal } from "./use-reveal";
 import { LandingFooter } from "./landing-footer";
+import { LearningSlot } from "./learning-slot";
 import { LandingApiDocs, LandingTechy } from "./landing-pro-sections";
 import type { LandingProPreview } from "@/lib/landing-pro-preview";
 import type { LandingLibrary } from "@/lib/landing-library";
@@ -46,14 +47,17 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
   const [prices, setPrices] = useState<LandingPrices>(initialPrices ?? { monthly: 299, yearly: 2999, enabled: false }); const [priceState, setPriceState] = useState<"loading" | "ready" | "error">(initialPrices ? "ready" : "loading");
   const [libraryRef, libraryReveal] = useReveal<HTMLElement>();
   useEffect(() => { if (initialPrices) return; let active = true; requestJson<LandingPrices>("/api/billing").then(data => { if (active) { setPrices(data); setPriceState("ready"); } }).catch(() => { if (active) setPriceState("error"); }); return () => { active = false; }; }, [initialPrices]);
-  const navigation = [["#workflows", text("Workflows", "वर्कफ़्लो")], ...(library ? [["#library", text("Library", "लाइब्रेरी")]] : []), ...(pro ? [["#techy", "Techy"], ["#api-docs", "API Docs"]] : []), ["#interview-prep", text("Interview prep", "इंटरव्यू")], ["#pricing", text("Membership", "सदस्यता")]];
+  // [section on this page, label, the section's own crawlable page]: links are real URLs for search engines and
+  // new tabs, and smooth-scroll to the section here without a #fragment.
+  const navigation = [["#workflows", text("Workflows", "वर्कफ़्लो"), "/workflows"], ...(library ? [["#library", text("Library", "लाइब्रेरी"), "/library"]] : []), ...(pro ? [["#techy", "Techy", "/learn"], ["#api-docs", "API Docs", "/api-reference"]] : []), ["#interview-prep", text("Interview prep", "इंटरव्यू"), "/interview-questions"], ["#pricing", text("Membership", "सदस्यता"), "/subscribe"]];
   const format = (value: number) => new Intl.NumberFormat(hi ? "hi-IN" : "en-IN").format(value);
   return <div className={`${styles.page} ${home.home} ${anek.variable} ${anek.className}`}><a className={styles.skip} href="#main-content">{text("Skip to content", "सामग्री पर जाएँ")}</a>
-    <LandingNavbar links={navigation as [string, string][]} prices={priceState === "ready" ? prices : null} />
+    <LandingNavbar links={navigation as [string, string, string][]} prices={priceState === "ready" ? prices : null} />
     <WelcomeModal prices={priceState === "ready" ? prices : null} />
     <main id="main-content" tabIndex={-1}>
     <h1 className={home.srOnly}>{text("MasterClass: school, exam and technology learning in English and Hindi", "MasterClass: अंग्रेज़ी और हिन्दी में स्कूल, परीक्षा और तकनीक की पढ़ाई")}</h1>
     <LandingSlider technologies={library?.counts.technology} />
+    <LearningSlot surface="landing" page="home" section="after-slider" className={styles.learningSlot} />
     {library && <SubjectRibbon entries={library.entries} />}
     {daily && <><LandingAiPulse cards={daily.pulse} day={daily.day} locked={daily.locked?.pulse} preview /><LandingVocabulary words={daily.words} day={daily.day} locked={daily.locked?.word} preview /></>}
     <LandingWorkflows preview />
@@ -61,6 +65,7 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
     <LandingComparisons preview official={techDocs} />
     <LandingTechDocs official={techDocs} preview />
     <LandingOverview counts={library?.counts} />
+    <LearningSlot surface="landing" page="home" section="middle" className={styles.learningSlot} />
     {library && <section ref={libraryRef} id="library" className={`${frame.section} ${home.library}`} data-ground="paper" data-reveal={libraryReveal} aria-labelledby="library-title"><div className={`${home.inner} ${home.libraryInner}`}>
       <header className={frame.head}>
         <div>
@@ -80,8 +85,10 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
       <LibraryLedger library={library} />
     </div></section>}
     {pro && <><LandingTechy data={pro.techy} /><LandingApiDocs data={pro.api} /></>}
+    <LearningSlot surface="landing" page="home" section="before-plans" className={styles.learningSlot} />
     <LandingMembership prices={prices} priceState={priceState} cycle={cycle} onCycle={setCycle} />
     <StudentReviews />
+    <LearningSlot surface="landing" page="home" section="bottom" className={styles.learningSlot} />
     </main>
     <LandingFooter year={copyrightYear} />
   </div>;

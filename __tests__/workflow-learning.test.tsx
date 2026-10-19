@@ -55,7 +55,7 @@ test("pointwise presentation preserves every interview answer and numeric values
 test("topic search reveals a matching path, answers, empty state and reset", () => {
   render(<LandingWorkflows expanded />);
   const search = screen.getByRole("searchbox", { name: "Search core features and interview topics" });
-  expect(screen.getByRole("status")).toHaveTextContent("624 interview topics");
+  expect(within(screen.getByRole("region", { name: "Official documentation learning paths" })).getByRole("status")).toHaveTextContent("624 interview topics");
   fireEvent.change(search, { target: { value: "Reducers and concurrent updates" } });
   const title = screen.getByText("Resume a workflow from saved state");
   expect(title.closest("details")).toHaveAttribute("open");
@@ -65,11 +65,11 @@ test("topic search reveals a matching path, answers, empty state and reset", () 
   expect(screen.getByText(/No topics match this search/)).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "Clear search" }));
   expect(search).toHaveValue("");
-  expect(screen.getByRole("status")).toHaveTextContent("624 interview topics");
+  expect(within(screen.getByRole("region", { name: "Official documentation learning paths" })).getByRole("status")).toHaveTextContent("624 interview topics");
   fireEvent.change(search, { target: { value: "Reducers and concurrent updates" } });
   fireEvent.click(screen.getByRole("button", { name: /^React 19\+/ }));
   expect(screen.getByRole("searchbox")).toHaveValue("");
-  expect(screen.getByRole("status")).toHaveTextContent("52 interview topics");
+  expect(within(screen.getByRole("region", { name: "Official documentation learning paths" })).getByRole("status")).toHaveTextContent("52 interview topics");
 });
 
 test("every learning category has a complete interview curriculum and official references", () => {

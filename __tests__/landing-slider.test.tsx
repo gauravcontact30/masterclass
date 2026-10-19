@@ -128,6 +128,18 @@ describe("navbar", () => {
     fireEvent.click(screen.getByRole("button", { name: "Toggle navigation" }));
     expect(screen.queryByRole("link", { name: /Start learning/ })).not.toBeInTheDocument();
   });
+
+  test("section links point to real pages and smooth-scroll on the landing page without a #fragment", () => {
+    Element.prototype.scrollIntoView = jest.fn();
+    render(<><LandingNavbar links={[["#workflows", "Workflows", "/workflows"]]} /><section id="workflows">Workflows section</section></>);
+    const link = within(screen.getByRole("navigation", { name: "Main navigation" })).getByRole("link", { name: "Workflows" });
+    expect(link).toHaveAttribute("href", "/workflows");
+    const click = new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 });
+    link.dispatchEvent(click);
+    expect(click.defaultPrevented).toBe(true);
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({ block: "start" }));
+    expect(location.hash).toBe("");
+  });
 });
 
 describe("navbar subscribe menu", () => {

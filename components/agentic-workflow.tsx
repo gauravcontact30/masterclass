@@ -3,48 +3,13 @@ import { AccordionChevron, AccordionSummary } from "@/components/ui/accordion-ch
 
 import { useState, useMemo, useCallback, type CSSProperties } from "react";
 import Link from "next/link";
-import {
-  Sparkles,
-  ShieldCheck,
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  Search,
-  X,
-  SlidersHorizontal,
-  RotateCcw,
-  Code2,
-  Terminal,
-  ArrowRight,
-  Check,
-  CheckCheck,
-  Copy,
-  ExternalLink,
-  Layers,
-  Bot,
-  Workflow,
-  Binary,
-  Database,
-  CheckCircle2,
-  HelpCircle,
-  FileCode2,
-  ArrowUpRight,
-  MessageCircle,
-  GraduationCap,
-} from "lucide-react";
-import {
-  WORKFLOW_USECASES,
-  WORKFLOW_CATEGORIES,
-  getWorkflowFrameworkLearnings,
-  workflowFolder,
-  type WorkflowUsecase,
-  type WorkflowCategory,
-} from "@/lib/workflow-usecases";
+import { Sparkles, ShieldCheck, ChevronLeft, ChevronRight, ChevronDown, Search, X, SlidersHorizontal, RotateCcw, Code2, Terminal, ArrowRight, Check, Copy, Layers, Bot, Workflow, Binary, Database, CheckCircle2, FileCode2, ArrowUpRight, MessageCircle, GraduationCap } from "lucide-react";
+import { WORKFLOW_USECASES, WORKFLOW_CATEGORIES, getWorkflowFrameworkLearnings, workflowFolder, type WorkflowUsecase } from "@/lib/workflow-usecases";
 import type { AnswerFile } from "@/lib/pro-learn/types";
 import { CodeFiles } from "./code-files";
 import { WorkflowBuildGuide } from "./workflow-build-guide";
-import { Pager, pageWindow } from "./pager";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "./ui/card";
+import { Pager } from "./pager";
+import { CardContent, CardFooter, CardHeader } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import {
@@ -54,8 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Separator } from "./ui/separator";
-import { cn } from "cn";
+
+
 import {
   Dialog,
   DialogContent,

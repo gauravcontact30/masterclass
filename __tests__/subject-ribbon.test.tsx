@@ -2,6 +2,9 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { SubjectRibbon } from "@/components/subject-ribbon";
 import { LanguageProvider } from "@/components/language-provider";
 
+// Exercise the real modal without relying on Next's browser chunk loader in jsdom.
+jest.mock("next/dynamic", () => ({ __esModule: true, default: () => jest.requireActual("@/components/technology-modal").TechnologyModal }));
+
 describe("SubjectRibbon and TechnologyModal", () => {
   beforeEach(() => {
     localStorage.clear();

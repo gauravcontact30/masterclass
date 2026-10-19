@@ -101,7 +101,8 @@ test("a screen shows on the service or topic it depicts, and nowhere else", () =
   expect(titles("AWS X-Ray")).toContain("The service map");
   // Same catalogue, same category in some cases — and no picture, because none
   // of these screens is of them.
-  for (const name of ["Amazon S3", "Amazon EC2", "AWS KMS", "Amazon Cognito"]) expect(titles(name)).toEqual([]);
+  expect(titles("Amazon S3")).toContain("Amazon S3: buckets and objects");
+  for (const name of ["Amazon EC2", "AWS KMS", "Amazon Cognito"]) expect(titles(name)).toEqual([]);
 
   // A topic name is required: without one, only a category a picture explains
   // as a whole can bring it in.
@@ -168,7 +169,7 @@ test("the answer carries the technology's key points as well as the topic's own"
   openPrismaTopic("Relations");
   const remember = within(await screen.findByRole("dialog")).getByRole("region", { name: "Worth remembering" });
   expect(within(remember).getAllByRole("listitem").length).toBeGreaterThan(3);
-  expect(remember).toHaveTextContent(/One .?PrismaClient.? per process/);
+  expect(remember).toHaveTextContent(/The schema file is the source of truth/);
 });
 
 test("a topic in a category with its own points gets those first", async () => {
@@ -181,7 +182,7 @@ test("a topic in a category with its own points gets those first", async () => {
 test("real screens from the official docs are shown, each linked to the page it came from", async () => {
   openTopic("Docker", "Images, containers and layers");
   const dialog = await screen.findByRole("dialog");
-  const block = within(dialog).getByRole("region", { name: "Real screens from the official docs" });
+  const block = within(dialog).getByRole("region", { name: "Screens & learning resources" });
   const figure = within(block).getAllByRole("figure")[0];
   const image = within(figure).getByRole("img");
   expect(image).toHaveAttribute("src", expect.stringContaining("docker/docs"));
@@ -198,7 +199,7 @@ test("a screenshot that no longer resolves leaves the caption and the official l
   fireEvent.error(within(figure).getByRole("img"));
 
   expect(within(figure).queryByRole("img")).toBeNull();
-  expect(figure).toHaveTextContent(/no longer published at its original address/);
+  expect(figure).toHaveTextContent(/This preview could not be loaded/);
   expect(within(figure).getByRole("link")).toHaveAttribute("href", expect.stringContaining("docs.docker.com"));
 });
 

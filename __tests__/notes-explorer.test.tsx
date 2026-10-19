@@ -144,12 +144,12 @@ test("the Learn in App dialog opens on a compact header: short title, one meta r
   render(<TopicCard note={summary} />);
 
   // The card keeps its own name; only the reader uses the short one.
-  expect(screen.getByRole("heading", { name: /Claude.*Concepts/ })).toBeVisible();
+  expect(screen.getByRole("heading", { name: summary.title })).toBeVisible();
   expect(summary.readerTitle).toBe(full.readerTitle);
 
   fireEvent.click(screen.getByRole("button", { name: "Learn in App" }));
   const dialog = within(await screen.findByRole("dialog"));
-  expect(dialog.getByRole("heading", { name: /Claude.*Concepts/ })).toBeVisible();
+  expect(dialog.getByRole("heading", { name: full.readerTitle })).toBeVisible();
 
   // One meta row: technology label and category, without the old "LEARN IN APP ·" prefix.
   expect(dialog.getByText(summary.category)).toBeVisible();

@@ -8,7 +8,7 @@ jest.mock("@/lib/client",()=>({requestJson:jest.fn(),errorKey:()=>"service_error
 test.each([
   ["garvcontact30@gmail.com", true, true],
   ["garvcontact30@gmail.com", false, false],
-  ["student@example.test", true, false],
+  ["student@example.test", true, true],
   ["student@example.test", false, false],
 ])("header super admin access for %s with verified access %s", (email, isSuperAdmin, visible) => {
   render(<Workspace authEnabled configured={false} billingEnabled={false} userEmail={email} initialCategory="techy" notesContent={<div>Learning</div>} initialAccount={{profile:{language:"en"},account:{tier:"monthly",used:0,limit:50,creditBalance:0,subscription:null},preparations:{isSuperAdmin,selections:[]},documents:[],progress:[]}}/>);

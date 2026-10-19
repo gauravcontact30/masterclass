@@ -64,15 +64,11 @@ test("membership requires preparation before checkout and provides monthly/yearl
   await user.click(screen.getByRole("button", { name: "Save preparation" }));
   await waitFor(() => expect(requestJson).toHaveBeenCalledWith("/api/account", expect.objectContaining({ body: JSON.stringify({ selections: ["nda"] }) })));
 });
-test("landing sample gives worked feedback and pricing follows the billing toggle", async () => {
-  const user = userEvent.setup(); render(<LandingPage />);
-  await user.click(screen.getByRole("button", { name: /B.*19/ }));
-  expect(screen.getByRole("status")).toHaveTextContent("Count the four gaps");
-  await user.click(within(screen.getByRole("group", { name: "Sample topic" })).getByRole("button", { name: /System Design/ }));
-  expect(screen.queryByRole("status")).not.toBeInTheDocument();
-  await user.click(screen.getByRole("button", { name: /D.*Reconcile the original attempt/ }));
-  expect(screen.getByRole("status")).toHaveTextContent("timeout does not prove");
+test("landing learning sections remain available and pricing follows the billing toggle", async () => {
+  const user = userEvent.setup();
+  render(<LandingPage prices={{monthly:299,yearly:2999,enabled:true}} />);
+  expect(screen.getByRole("heading", {name:/How real systems and AI agents get work done/})).toBeVisible();
   await user.click(screen.getByRole("button", { name: /yearly/i }));
-  expect(screen.getByText("₹2,999")).toBeInTheDocument();
-  expect(screen.queryByText(/PDF|PPTX|download credits|free preview|start free/i)).not.toBeInTheDocument();
+  expect(screen.getByText(/2,999/, {selector:"p.price b"})).toBeVisible();
+  expect(screen.getByRole("link", {name:"Subscribe now"})).toHaveAttribute("href", "/subscribe?plan=yearly");
 });

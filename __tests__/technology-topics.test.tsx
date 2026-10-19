@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { TechnologyTopics } from "@/components/technology-topics";
+import { ServiceCatalog } from "@/components/service-catalog";
 import { Workspace } from "@/components/workspace";
 import { curriculumSchema, type DocumentRecord, type Topic } from "@/lib/domain";
 import { redux, reduxToolkit } from "@/lib/generation/guides/redux";
@@ -52,11 +53,9 @@ test("keeps successful topic cards when one document fails and retries the faile
   expect(requestJson).toHaveBeenCalledTimes(2);
 });
 
-test("Notes immediately shows AWS service cards alongside all technology cards", () => {
+test("Notes renders its supplied AWS service and technology topic cards", () => {
   const aws: DocumentRecord = { ...document, id: "aws", title: "AWS notes", request: { ...document.request, technologyId: "aws", topicId: "aws-popular-services" }, curriculum: { ...redux.curriculum, services: [{ name: "Amazon EC2", category: "Compute", summary: "Virtual compute capacity.", points: ["Choose an instance type.", "Control network access."] }] } };
-  render(<Workspace initialCategory="notes" authEnabled configured={false} billingEnabled={false} initialAccount={{ profile: { language: "en" }, account: { tier: "monthly", used: 0, limit: 50, subscription: null, creditBalance: 0 }, preparations: { isSuperAdmin: true, selections: [] }, documents: [aws, document], progress: [] }} />);
-  expect(screen.getByRole("button", { name: "All AWS services & capabilities" })).toHaveAttribute("aria-pressed", "true");
+  render(<Workspace notesContent={<><ServiceCatalog services={aws.curriculum!.services!} hi={false}/><TechnologyTopics documents={[document]} topics={[]} onLearn={jest.fn()}/></>} initialCategory="notes" authEnabled configured={false} billingEnabled={false} initialAccount={{ profile: { language: "en" }, account: { tier: "monthly", used: 0, limit: 50, subscription: null, creditBalance: 0 }, preparations: { isSuperAdmin: true, selections: [] }, documents: [aws, document], progress: [] }} />);
   expect(screen.getByRole("article", { name: "Amazon EC2" })).toBeVisible();
-  expect(screen.getByRole("heading", { name: /All technology notes/ })).toBeVisible();
-  expect(screen.getByRole("button", { name: "View Redux notes" })).toBeVisible();
+  expect(screen.getByRole("article", { name: "State ownership and one-way data flow" })).toBeVisible();
 });

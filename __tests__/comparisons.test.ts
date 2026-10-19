@@ -1,5 +1,6 @@
 /** @jest-environment node */
-import { COMPARISONS, hasComparisonBank, loadComparisonBank } from "@/lib/comparisons";
+import { COMPARISONS, hasComparisonBank, loadComparisonBank, techPicture } from "@/lib/comparisons";
+import { INTERVIEW_TECHS } from "@/lib/interview-bank";
 
 test("every comparison has a unique id, 2+ technologies with definitions, and a well-formed table", () => {
   expect(new Set(COMPARISONS.map(item => item.id)).size).toBe(COMPARISONS.length);
@@ -27,9 +28,6 @@ test("each written bank has 50+ unique difference questions with real answers", 
 });
 
 test("technology pictures reuse real Interview prep slides, and every comparison has one", () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { INTERVIEW_TECHS } = require("@/lib/interview-bank") as typeof import("@/lib/interview-bank");
-  const { techPicture } = require("@/lib/comparisons") as typeof import("@/lib/comparisons");
   const ids = new Set(INTERVIEW_TECHS.map(tech => tech.id));
   const unmapped: string[] = [];
   for (const item of COMPARISONS) {

@@ -14,6 +14,7 @@ import { Button } from "./ui/button";
 import { Wordmark } from "./brand-mark";
 import { AuthStory } from "./auth-carousel";
 import styles from "./auth-page.module.css";
+import { LearningSlot } from "./learning-slot";
 
 // Supabase reports failures with a stable `code`; fall back to a generic message
 // so an unmapped code never surfaces raw English from the API.
@@ -126,6 +127,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo }: { mod
               <h1 className={styles.title}><ExpandedText text={t(mode === "signin" ? "signinTitle" : "signupTitle")} /></h1>
               <p className={styles.lead}><ExpandedText text={t(mode === "signin" ? "signinHelp" : "signupHelp")} /></p>
               {mode === "signup" && <p className={styles.trial}><ExpandedText text={hi ? "हर नया खाता 1 दिन के निःशुल्क ट्रायल से शुरू होता है: पूरी पहुँच, कोई कार्ड नहीं।" : "Every new account starts with a 1-day free trial: full access, no card needed."} /></p>}
+              <LearningSlot surface={mode === "signin" ? "sign_in" : "sign_up"} page={mode === "signin" ? "sign-in" : "sign-up"} section="above-form" />
               {error && <p className={`error-banner ${styles.error}`} role="alert"><ExpandedText text={t(error)} /></p>}
               {/* method="post": even before hydration a submit never puts anything in the URL. */}
               <form method="post" onSubmit={submit} className={styles.form}>
@@ -159,6 +161,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo }: { mod
               {mode === "signup" && <p className={styles.hint}>{language === "hi"
                 ? <>खाता बनाकर आप हमारे <Link href="/terms">नियम और शर्तें</Link> और <Link href="/privacy">गोपनीयता नीति</Link> स्वीकार करते हैं।</>
                 : <>By creating an account you agree to our <Link href="/terms">Terms &amp; conditions</Link> and <Link href="/privacy">Privacy policy</Link>.</>}</p>}
+              <LearningSlot surface={mode === "signin" ? "sign_in" : "sign_up"} page={mode === "signin" ? "sign-in" : "sign-up"} section="below-form" />
             </section>
           )}
         </div>

@@ -72,14 +72,14 @@ test("comprehensive AWS directory has distinct sourced references and meaningful
 test("each AWS category has independent four-card pagination and search resets it", () => {
   const services = ["Core AWS Services", "Messaging & Integration"].flatMap(category => Array.from({ length: 7 }, (_, i) => ({ ...AWS_SERVICE_CATALOG[0], awsId: `${category}-${i}`, name: `${category} item ${i}`, category })));
   render(<ServiceCatalog services={services} hi={false} grouped />);
-  const core = within(screen.getByRole("region", { name: "Core AWS Services" }));
+  const core = within(screen.getByRole("region", { name: /Core AWS.*Services/ }));
   const messaging = within(screen.getByRole("region", { name: "Messaging & Integration" }));
   expect(core.getAllByRole("article")).toHaveLength(4);
   fireEvent.click(core.getByRole("button", { name: "Next" }));
   expect(core.getAllByRole("article")).toHaveLength(3);
   expect(messaging.getAllByRole("article")).toHaveLength(4);
   fireEvent.change(screen.getByRole("combobox", { name: "Search services" }), { target: { value: "Messaging" } });
-  expect(screen.queryByRole("region", { name: "Core AWS Services" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("region", { name: /Core AWS.*Services/ })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Clear search" }));
-  expect(within(screen.getByRole("region", { name: "Core AWS Services" })).getByRole("button", { name: "Previous" })).toBeDisabled();
+  expect(within(screen.getByRole("region", { name: /Core AWS.*Services/ })).getByRole("button", { name: "Previous" })).toBeDisabled();
 });

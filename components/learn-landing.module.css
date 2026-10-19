@@ -22,3 +22,6 @@
 .page .finalCta .primary{background:#141413;color:#fff!important;box-shadow:0 14px 28px -16px rgba(20,20,19,.6)}
 .page .finalCta .primary:hover{background:#3d3d3a;color:#fff!important}
 .page .finalCta :focus-visible{outline-color:#141413}
+
+/* Upload Learning content placed on the landing page (components/learning-slot.tsx). */
+.learningSlot { width: min(1200px, calc(100% - 32px)); margin: 28px auto; }

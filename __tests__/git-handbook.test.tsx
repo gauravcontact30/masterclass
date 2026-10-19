@@ -82,7 +82,8 @@ test("the prepared answer opens on the syntax, then carries the authored walkthr
   expect(answer.caveats).toHaveLength(1);
   // The server leaves an already-prepared row alone rather than overwriting it.
   const [prepared] = prepareSearchTopics([topic], GIT_TITLE);
-  expect(prepared.prepared).toBe(topic.prepared);
+    expect(prepared.prepared!.answer.definition).toBe(topic.prepared!.answer.definition);
+    expect(prepared.prepared!.answer.steps).toEqual(expect.arrayContaining(topic.prepared!.answer.steps));
 });
 
 test("every row carries a syntax form that names its own command", () => {

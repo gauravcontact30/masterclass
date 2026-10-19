@@ -13,18 +13,20 @@ import { Input } from "@/components/ui/input";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MessageSquarePlus, Activity, ArrowLeft, Bot, Layers, Receipt, LifeBuoy, Megaphone, MousePointerClick, TrendingUp, ChevronDown, ChevronRight, CreditCard, Database, ExternalLink, Languages, LogOut, RefreshCw, PanelLeftClose, PanelLeftOpen, Server, ShieldCheck, UserRound, Users } from "lucide-react";
+import { MessageSquarePlus, Activity, ArrowLeft, Bot, Layers, Receipt, LifeBuoy, Megaphone, MousePointerClick, TrendingUp, ChevronDown, ChevronRight, CreditCard, Database, ExternalLink, Languages, LogOut, RefreshCw, PanelLeftClose, PanelLeftOpen, Server, ShieldCheck, UploadCloud, UserRound, Users } from "lucide-react";
 import { SidebarTooltips } from "./sidebar-tooltips";
 import { DashboardPageHeader } from "./dashboard-page-header";
 import { Wordmark } from "./brand-mark";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { OverviewLive } from "./super-admin-overview-live";
 import { AdminTable } from "./super-admin-table";
+import { LearningSlot } from "./learning-slot";
 import styles from "./super-admin-dashboard.module.css";
 import side from "./super-admin-sidebar.module.css";
 import { useLanguage } from "./language-provider";
 
 const sectionLoading = () => <AdminLoading>Loading section...</AdminLoading>;
+const SuperAdminUploadLearning = dynamic(() => import("./super-admin-upload-learning").then(module => module.SuperAdminUploadLearning), { loading: sectionLoading });
 const SuperAdminNotepad = dynamic(() => import("./super-admin-notepad").then(module => module.SuperAdminNotepad), { loading: sectionLoading });
 const SuperAdminOperations = dynamic(() => import("./super-admin-operations").then(module => module.SuperAdminOperations), { loading: sectionLoading });
 const SuperAdminUsers = dynamic(() => import("./super-admin-users").then(module => module.SuperAdminUsers), { loading: sectionLoading });
@@ -56,7 +58,7 @@ const groups = [
   { label: "People", items: [{ id: "users", label: "Users & access", icon: Users }, { id: "suggestions", label: "Suggestion Box", icon: MessageSquarePlus }, { id: "support", label: "Learner support", icon: LifeBuoy }, { id: "moderation", label: "Moderation", icon: ShieldCheck }, { id: "announcements", label: "Announcements", icon: Megaphone }] },
   { label: "Growth", items: [{ id: "promotions", label: "Promotional Tracking", icon: TrendingUp }] },
   { label: "Revenue", items: [{ id: "billing", label: "Revenue & billing", icon: CreditCard }, { id: "transactions", label: "Transactions", icon: Receipt }] },
-  { label: "Content", items: [{ id: "content", label: "Content & audit", icon: Database }, { id: "queue", label: "Generation queue", icon: Layers }, { id: "notepad", label: "Notepad", icon: Receipt }] },
+  { label: "Content", items: [{ id: "content", label: "Content & audit", icon: Database }, { id: "queue", label: "Generation queue", icon: Layers }, { id: "notepad", label: "Notepad", icon: Receipt }, { id: "upload-learning", label: "Upload Learning", icon: UploadCloud }] },
   { label: "System", items: [{ id: "infra", label: "Infrastructure", icon: Server }, { id: "health", label: "System health", icon: Activity }, { id: "logs", label: "Application logs", icon: Database }, { id: "security", label: "Security", icon: ShieldCheck }] },
 ] as const;
 type SectionItem = (typeof groups)[number]["items"][number];
@@ -72,7 +74,8 @@ function Table({ title, rows, columns, query, note }: { title: string; rows: Row
   return <AdminTable title={title} rows={rows} columns={columns} query={query} note={note} />;
 }
 function Metric({ label, value, note }: { label: string; value: string | number; note: string }) { return <Card className={styles.metric}><span>{label}</span><strong>{value}</strong><small>{note}</small></Card>; }
-export function SuperAdminDashboard({ userId = "admin" }: { userId?: string }) {
+/** `isOwner` unlocks Upload Learning, which only the owner account may use (the API enforces it as well). */
+export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { userId?: string; isOwner?: boolean }) {
   const router = useRouter();
   const { language, setLanguage } = useLanguage();
   const [signingOut, setSigningOut] = useState(false);
@@ -113,9 +116,11 @@ export function SuperAdminDashboard({ userId = "admin" }: { userId?: string }) {
   const table = (title: string, rows: Row[], columns: string[], note?: string) => <Table key={`${title}-${days}`} title={title} rows={rows} columns={columns} query={query} note={note} />;
   const mrr = data ? data.recurring.monthly * data.prices.monthly + data.recurring.yearly * data.prices.yearly / 12 : 0;
   const events = data?.events ?? [];
+  // Writing pages have no reporting window or monitoring snapshot of their own.
+  const writing = section === "notepad" || section === "upload-learning";
   return <div className={`app-shell compact-workspace ${styles.shell}${collapsed ? " sidebar-collapsed" : ""}`}><aside className={`sidebar ${styles.sidebar} ${side.sidebar}`} data-collapsed={collapsed || undefined}><SidebarTooltips collapsed={collapsed}/><div className="sidebar-brand-row"><Link href="/dashboard" className="wordmark" aria-label="Learning dashboard"><Wordmark /></Link><Button variant="ghost" className="sidebar-toggle" aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} aria-expanded={!collapsed} onClick={() => setCollapsed(value => !value)}>{collapsed ? <PanelLeftOpen size={17}/> : <PanelLeftClose size={17}/>}</Button></div>{!collapsed && <div className={side.badge}><span className={side.badgeMark}><ShieldCheck size={15} /></span><span><b>Super admin</b><small>Control centre</small></span></div>}<nav aria-label="Super admin" className={side.nav}>{groups.map(group => <div key={group.label} className={side.group} role="group" aria-label={group.label}>
         {!collapsed && <span className={side.groupLabel}>{group.label}</span>}
-        {group.items.map(({ id, label, icon: Icon }) => <button type="button" key={id} aria-label={label} title={collapsed ? label : undefined} className={side.item} aria-current={section === id ? "page" : undefined} onClick={() => { if (id === "notepad") setNotepadOpened(true); setSection(id); setQuery(""); }}>
+        {group.items.filter(item => item.id !== "upload-learning" || isOwner).map(({ id, label, icon: Icon }) => <button type="button" key={id} aria-label={label} title={collapsed ? label : undefined} className={side.item} aria-current={section === id ? "page" : undefined} onClick={() => { if (id === "notepad") setNotepadOpened(true); setSection(id); setQuery(""); }}>
           <span className={side.icon}><Icon size={16} /></span>{!collapsed && <span className={side.label}>{label}</span>}
         </button>)}
       </div>)}</nav><Link className={side.back} href="/dashboard" aria-label="Learning dashboard"><span className={side.icon}><ArrowLeft size={16} /></span>{!collapsed && "Learning dashboard"}</Link></aside>
@@ -157,12 +162,14 @@ export function SuperAdminDashboard({ userId = "admin" }: { userId?: string }) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </header><main className={styles.main}><DashboardPageHeader eyebrow={section === "notepad" ? "Writing workspace" : section === "suggestions" ? "People · Feedback" : "Application monitoring"} title={section === "overview" ? "Your application, at a glance." : sections.find(s => s.id === section)?.label} description={section === "notepad" ? "Write, format and export documents. Drafts autosave in this browser every two minutes." : section === "suggestions" ? "Listen, triage and keep contributors informed. Replies appear in each contributor’s private tracking view." : "Keep a pulse on your learners, subscriptions, and platform."} icon={section === "suggestions" ? <MessageSquarePlus/> : <ShieldCheck/>}/>
-      {section !== "suggestions" && section !== "notepad" && <div className={styles.toolbar}><div className={styles.reportFilter}><Label htmlFor="admin-report-window">Reporting window</Label><AdminSelect id="admin-report-window" label="Reporting window" value={String(days)} onValueChange={value=>setDays(Number(value))} options={[{value:"1",label:"Last 24 hours"},{value:"7",label:"Last 7 days"},{value:"30",label:"Last 30 days"},{value:"90",label:"Last 90 days"}]} /></div><Input aria-label="Search displayed records" placeholder="Search displayed records…" value={query} onChange={e => setQuery(e.target.value)} /></div>}
+    </header><main className={styles.main}><DashboardPageHeader eyebrow={section === "upload-learning" ? "Content · Publishing" : section === "notepad" ? "Writing workspace" : section === "suggestions" ? "People · Feedback" : "Application monitoring"} title={section === "overview" ? "Your application, at a glance." : sections.find(s => s.id === section)?.label} description={section === "upload-learning" ? "Publish your Notepad documents to any page of the Learning Dashboard, the landing page, sign in, sign up or this console, and add your own Learning Dashboard pages." : section === "notepad" ? "Write, format and export documents. Drafts autosave in this browser every two minutes." : section === "suggestions" ? "Listen, triage and keep contributors informed. Replies appear in each contributor’s private tracking view." : "Keep a pulse on your learners, subscriptions, and platform."} icon={section === "suggestions" ? <MessageSquarePlus/> : section === "upload-learning" ? <UploadCloud/> : <ShieldCheck/>}/>
+      <LearningSlot surface="super_admin" page={section} section="top" />
+      {section !== "suggestions" && !writing && <div className={styles.toolbar}><div className={styles.reportFilter}><Label htmlFor="admin-report-window">Reporting window</Label><AdminSelect id="admin-report-window" label="Reporting window" value={String(days)} onValueChange={value=>setDays(Number(value))} options={[{value:"1",label:"Last 24 hours"},{value:"7",label:"Last 7 days"},{value:"30",label:"Last 30 days"},{value:"90",label:"Last 90 days"}]} /></div><Input aria-label="Search displayed records" placeholder="Search displayed records…" value={query} onChange={e => setQuery(e.target.value)} /></div>}
       {accountError && <Alert variant="destructive" className={styles.error}><AlertDescription>{accountError}</AlertDescription></Alert>}
-      {error && section !== "notepad" && <Alert variant="destructive" className={styles.error}><AlertDescription>{error}{data && " Displaying the last successful snapshot."}</AlertDescription></Alert>}
-      {!data && !error && section !== "notepad" && <div className={styles.loading} role="status"><span>Loading application monitoring...</span><div className={styles.metrics}>{[0,1,2,3].map(id=><Skeleton key={id} className={styles.metricSkeleton}/>)}</div></div>}
+      {error && !writing && <Alert variant="destructive" className={styles.error}><AlertDescription>{error}{data && " Displaying the last successful snapshot."}</AlertDescription></Alert>}
+      {!data && !error && !writing && <div className={styles.loading} role="status"><span>Loading application monitoring...</span><div className={styles.metrics}>{[0,1,2,3].map(id=><Skeleton key={id} className={styles.metricSkeleton}/>)}</div></div>}
       {notepadOpened && <div hidden={section !== "notepad"}><SuperAdminNotepad userId={userId} /></div>}
+      {section === "upload-learning" && isOwner && <SuperAdminUploadLearning userId={userId} />}
       {section === "billing" && <SuperAdminBilling />}
       {section === "infra" && <SuperAdminInfrastructure />}
       {section === "activity" && <SuperAdminActivity days={days} query={query} />}
@@ -186,5 +193,6 @@ export function SuperAdminDashboard({ userId = "admin" }: { userId?: string }) {
         {section === "logs" && <>{table("Application event log",events,["created_at","kind","resource","action","actor_id","status","duration_ms","details"],"Recent 200 events. Request paths exclude query strings; prompts and credentials are never included.")}</>}
         {section === "security" && <>{table("Auth security events", data.logins, ["created_at", "action", "actor_id", "ip_address"], "Includes failures when recorded by Supabase Auth. Repeated login failures should also be monitored in the provider's Auth logs.")}{table("Integration connections", data.integrations, ["user_id", "provider", "expires_at"], "Credentials are never included in monitoring responses.")}{table("API & export activity", events.filter(e => e.kind === "request" || e.kind === "export" || e.kind === "integration"), ["created_at", "kind", "actor_id", "resource", "action", "status", "duration_ms", "bytes"])}<Card className={styles.panel}><h2>Monitoring coverage</h2><p className={styles.note}>Tables show the most recent 200 records per feed; totals use the full database or selected time window. Monitoring starts after migration. Auth retention follows Supabase configuration. No automatic email alerts or sensitive-data exports are enabled.</p></Card></>}
       </>}
+      <LearningSlot surface="super_admin" page={section} section="bottom" />
     </main></div></div>;
 }

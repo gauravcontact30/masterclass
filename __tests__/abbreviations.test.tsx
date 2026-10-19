@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { ExpandedText } from "@/components/expanded-text";
 import { compactAbbreviations, expandAbbreviations } from "@/lib/abbreviations";
 

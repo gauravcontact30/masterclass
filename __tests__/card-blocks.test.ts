@@ -1,6 +1,9 @@
 import { prepareHandbooks } from "@/lib/server/prepared-catalog";
 import { TECHNOLOGY_HANDBOOKS } from "@/lib/pro-learn/technology-handbooks";
 
+// Validate authored rows independently of optional generated documentation.
+jest.mock("@/lib/server/official-content", () => ({ officialSearchCard: jest.fn() }));
+
 /**
  * A Search card carries three blocks — what the topic is, what is worth knowing
  * about it, and where it is used — and none of that may be shared with another

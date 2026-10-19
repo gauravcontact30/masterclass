@@ -64,7 +64,7 @@ test("clipboard failure is visible and does not report success", async () => {
   const { container } = render(<LessonCodeExamples examples={TOPIC_PROJECTS.python} hi={false} />);
   const first = within(container.querySelector("section > details") as HTMLElement);
   await user.click(first.getByRole("button", { name: "Copy file" }));
-  expect(await first.findByRole("status")).toHaveTextContent("Copy failed");
+    expect(await first.findByText("Copy failed. Select the code to copy it.")).toHaveAttribute("role", "status");
 });
 
 test("completion and personal notes survive closing and reopening the sample", async () => {

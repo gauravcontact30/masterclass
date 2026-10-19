@@ -19,10 +19,12 @@ const css = read("components/answer-search.module.css").replace(/\/\*[\s\S]*?\*\
 
 /** The declarations of one top-level rule, by exact selector. */
 function rule(selector: string): string {
+  const declarations: string[] = [];
   for (const block of css.split("}")) {
     const [head, body] = block.split("{");
-    if (head && body && head.trim() === selector) return body;
+    if (head && body && head.trim() === selector) declarations.push(body);
   }
+  if (declarations.length) return declarations.join("\n");
   throw new Error(`no rule for ${selector}`);
 }
 

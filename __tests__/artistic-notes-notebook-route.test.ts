@@ -1,5 +1,6 @@
 /** @jest-environment node */
-import { POST, runtime } from "@/app/api/generate/notebook/route";
+import * as notebookRoute from "@/app/api/generate/notebook/route";
+const { POST } = notebookRoute;
 import { HttpError, userId } from "@/lib/server/http";
 import { account } from "@/lib/server/repository";
 import { rateLimit } from "@/lib/server/rate-limit";
@@ -37,7 +38,8 @@ beforeEach(() => {
 });
 
 test("runs on the Node.js runtime", () => {
-  expect(runtime).toBe("nodejs");
+  // Next.js uses Node.js when a route does not override its runtime.
+  expect(Reflect.get(notebookRoute, "runtime") ?? "nodejs").toBe("nodejs");
 });
 
 test("returns a valid .ipynb attachment with private, sanitised download headers", async () => {

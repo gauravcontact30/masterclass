@@ -98,7 +98,7 @@ export const AGENTIC_FOUNDATIONS: AwsHighlight[] = lessons.map(([name, summary, 
   answer.useCases = [{ title: "In practice", scenario: example, example: "" }];
   return {
     name, category: AGENTIC_FOUNDATIONS_CATEGORY, summary,
-    points: [idea, clarification], useCase: { title: "Example", scenario: example },
+    points: [idea, clarification, example], useCase: { title: "Example", scenario: example },
     prepared: { kind: "interview", focus: summary, answer, ...(references[name] ? { sources: [references[name]] } : {}) },
   };
 });

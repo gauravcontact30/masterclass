@@ -13,8 +13,8 @@ test("offers signup, sign-in and current section navigation", async () => {
   expect(screen.getByRole("heading",{level:1})).toHaveTextContent("school, exam and technology learning");
   expect(screen.getByRole("heading",{name:/How real systems and AI agents get work done/})).toBeInTheDocument();
   expect(screen.queryByRole("link",{name:"Build my learning space"})).not.toBeInTheDocument();
-  expect(within(screen.getByRole("banner")).getByRole("link",{name:"Sign in"})).toHaveAttribute("href","/sign-in");
-  expect(within(screen.getByRole("navigation",{name:"Main navigation"})).getByRole("link",{name:"Membership"})).toHaveAttribute("href","#pricing");
+  expect(within(screen.getByRole("banner", {name:"Site header"})).getByRole("link",{name:"Sign in"})).toHaveAttribute("href","/sign-in");
+  expect(within(screen.getByRole("navigation",{name:"Main navigation"})).getByRole("link",{name:"Membership"})).toHaveAttribute("href","/subscribe");
 });
 
 test("opens navigation and closes it on selection or Escape", async () => {
@@ -30,7 +30,7 @@ test("opens navigation and closes it on selection or Escape", async () => {
 test("footer navigation points to real routes and existing page sections", async () => {
   render(<LandingPage/>); await ready();
   const footer=within(screen.getByRole("contentinfo"));
-  expect(footer.getAllByRole("navigation")).toHaveLength(5);
+  expect(footer.getAllByRole("navigation")).toHaveLength(6);
   expect(footer.getByRole("link",{name:"My Library"})).toHaveAttribute("href","/dashboard/library");
   for(const link of footer.getAllByRole("link")) {
     const href=link.getAttribute("href")!;

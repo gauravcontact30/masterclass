@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { learningDiagramSchema } from "./learning-diagram";
-import { PRO_LEVELS, PRO_TRACKS, type InterviewItem, type ProTrack } from "./tracks";
+import { PRO_LEVELS } from "./tracks";
 export { INTERVIEW_BANK, INTERVIEW_COMPANIES, INTERVIEW_LEVELS, PRO_LEVELS, PRO_TRACKS, trackById, type InterviewItem, type ProTrack } from "./tracks";
 import { learningProjectSchema, subjectiveQuestionSchema, objectiveQuestionSchema } from "@/lib/api-learning-schema";
 

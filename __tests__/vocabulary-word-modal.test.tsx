@@ -1,13 +1,7 @@
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { VocabularyWordModal } from "@/components/vocabulary-word-modal";
 import { VocabularyLookupProvider, triggerWordLookup } from "@/components/vocabulary-lookup-provider";
-import {
-  saveWordToVocabulary,
-  removeWordFromVocabulary,
-  getSavedVocabularyWords,
-  isWordSavedInVocabulary,
-  getVocabularyStorageKey,
-} from "@/lib/vocabulary-storage";
+import { getSavedVocabularyWords, isWordSavedInVocabulary } from "@/lib/vocabulary-storage";
 import type { WordLookup } from "@/lib/english-word";
 
 const mockLookup: WordLookup = {

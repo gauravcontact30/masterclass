@@ -1,0 +1,5 @@
+/* Top-of-page navigation progress (components/navigation-progress.tsx). */
+.bar { position: fixed; inset: 0 auto auto 0; z-index: 9999; height: 3px; width: 0; opacity: 0; pointer-events: none; background: linear-gradient(90deg, #d97757, #c6613f); box-shadow: 0 0 8px rgba(217, 119, 87, .55); }
+.bar[data-state="loading"] { opacity: 1; width: 85%; transition: opacity .2s ease .12s, width 8s cubic-bezier(.1, .7, .2, 1) .12s; }
+.bar[data-state="done"] { opacity: 0; width: 100%; transition: width .2s ease, opacity .25s ease .15s; }
+@media (prefers-reduced-motion: reduce) { .bar[data-state="loading"] { width: 100%; transition: opacity .2s ease .12s; } }
