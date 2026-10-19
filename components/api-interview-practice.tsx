@@ -1,5 +1,6 @@
+"use client";
+
 import { AccordionSummary } from "@/components/ui/accordion-chevron";
-﻿"use client";
 import {useId, useState} from 'react';
 import {CheckCircle2, ChevronDown, Lightbulb, MessageSquareText, Target, CornerDownRight} from 'lucide-react';
 import {RadioGroup, RadioGroupItem} from '@/components/ui/radio-group';
