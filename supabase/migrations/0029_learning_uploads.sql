@@ -1,9 +1,9 @@
 -- Upload Learning: Notepad documents the owner publishes to the Learning Dashboard, landing, sign-in, sign-up and
 -- Super Admin pages, plus custom Learning Dashboard pages, earlier versions of each upload, and view counts.
 -- Row level security is on with no policies, so every read and write goes through the server's validated
--- endpoints (owner-only for writes).
+-- endpoints (owner-only for writes). Safe to re-run: every object is created only if missing.
 begin;
-create table public.learning_pages (
+create table if not exists public.learning_pages (
   id uuid primary key default gen_random_uuid(),
   slug text not null unique check (slug ~ '^[a-z0-9][a-z0-9-]{0,59}$'),
   title text not null check (length(title) between 1 and 80),
@@ -14,7 +14,7 @@ create table public.learning_pages (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-create table public.learning_uploads (
+create table if not exists public.learning_uploads (
   id uuid primary key default gen_random_uuid(),
   title text not null check (length(title) between 1 and 160),
   summary text check (length(summary) <= 400),
@@ -46,7 +46,7 @@ create table public.learning_uploads (
   check (ends_at is null or starts_at is null or ends_at > starts_at)
 );
 -- The content of an upload before each edit that changed it, so any earlier version can be restored.
-create table public.learning_upload_revisions (
+create table if not exists public.learning_upload_revisions (
   id uuid primary key default gen_random_uuid(),
   upload_id uuid not null references public.learning_uploads(id) on delete cascade,
   version integer not null,
@@ -56,12 +56,12 @@ create table public.learning_upload_revisions (
   background text not null,
   created_at timestamptz not null default now()
 );
-create index learning_uploads_placement on public.learning_uploads(surface, page, status, pinned desc, position);
-create index learning_pages_order on public.learning_pages(position, title);
-create index learning_upload_revisions_parent on public.learning_upload_revisions(upload_id, version desc);
+create index if not exists learning_uploads_placement on public.learning_uploads(surface, page, status, pinned desc, position);
+create index if not exists learning_pages_order on public.learning_pages(position, title);
+create index if not exists learning_upload_revisions_parent on public.learning_upload_revisions(upload_id, version desc);
 
 -- Counts a view without a read-modify-write race.
-create function public.learning_upload_view(p_id uuid) returns void language sql security definer set search_path = public as $$
+create or replace function public.learning_upload_view(p_id uuid) returns void language sql security definer set search_path = public as $$
   update public.learning_uploads set views = views + 1 where id = p_id and status = 'published';
 $$;
 
