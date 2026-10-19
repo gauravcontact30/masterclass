@@ -1,4 +1,5 @@
 "use client";
+import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import { Fragment, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { siAngular, siNodedotjs, siOpenrouter, siVercel, siVuedotjs } from "simple-icons";
 import {
@@ -20,6 +21,10 @@ import styles from "./landing-tech-docs.module.css";
 const SLIDE_MS = 120_000;
 /** Learning materials per page inside a slide. */
 const MATERIAL_PAGE = 4;
+const TABS_PER_PAGE = 6;
+const FILTERS_PER_PAGE = 3;
+const FILTER_CATEGORIES = ["all", ...TECH_DOC_CATEGORIES.map(c => c.id)] as const;
+const FILTER_PAGES = Math.ceil(FILTER_CATEGORIES.length / FILTERS_PER_PAGE);
 const BRAND: Record<string, { path: string } | null> = { angular: siAngular, vue: siVuedotjs, node: siNodedotjs, openrouter: siOpenrouter, "ai-gateway": siVercel, salesforce: null };
 /** Subjects with no brand mark. */
 const SUBJECT_ICON: Record<string, LucideIcon> = { dsa: Binary, oops: Boxes };
@@ -67,6 +72,7 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
   const [focusSuggest, setFocusSuggest] = useState(false);
   const [cursor, setCursor] = useState(-1);
   const [category, setCategory] = useState<TechDocCategory | "all">("all");
+  const [filterPage, setFilterPage] = useState(0);
   const [levels, setLevels] = useState<MaterialLevel[]>([]);
   const [kind, setKind] = useState<MaterialKind | "all">("all");
   const [sort, setSort] = useState<Sort>("recommended");
@@ -76,6 +82,7 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
   const [menu, setMenu] = useState(false);
   // The visible platform, by id: it stays put while filters change, and falls back to the first match.
   const [activeId, setActiveId] = useState(TECH_DOCS[0].id);
+  const [tabNavigation, setTabNavigation] = useState({ key: "", page: 0 });
   // Each platform remembers which page of its materials is open.
   const [materialPage, setMaterialPage] = useState<Record<string, number>>({});
   const menuRef = useRef<HTMLDivElement>(null);
@@ -99,6 +106,17 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
 
   const total = slides.length;
   const current = Math.max(0, slides.findIndex(s => s.tech.id === activeId));
+  const tabPages = Math.ceil(total / TABS_PER_PAGE);
+  // Browsing tabs must not replace the open document (and jump the page height).
+  // A platform change or new search brings the selected platform's tabs back into view.
+  const tabKey = `${activeId}:${slides.map(s => s.tech.id).join(",")}`;
+  const tabPage = tabNavigation.key === tabKey
+    ? Math.min(tabNavigation.page, Math.max(0, tabPages - 1))
+    : Math.floor(current / TABS_PER_PAGE);
+  const tabStart = tabPage * TABS_PER_PAGE;
+  const turnTabs = (index: number) => {
+    if (index >= 0 && index < tabPages) setTabNavigation({ key: tabKey, page: index });
+  };
   const slide = slides[current];
   const running = !preview && autoplay && !held && !menu && total > 1;
   const nextId = slides[(current + 1) % Math.max(1, total)]?.tech.id;
@@ -129,7 +147,7 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
   const listOpen = focusSuggest && suggestions.length > 0;
 
   // A suggestion fills the search and brings its platform into view.
-  const choose = (s: Suggestion) => { setQuery(s.value); setFocusSuggest(false); setCursor(-1); setCategory("all"); setActiveId(s.tech.id); };
+  const choose = (s: Suggestion) => { setQuery(s.value); setFocusSuggest(false); setCursor(-1); setCategory("all"); setFilterPage(0); setActiveId(s.tech.id); };
 
   const onSearchKey = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "ArrowDown" && suggestions.length) { event.preventDefault(); setFocusSuggest(true); setCursor(c => (c + 1) % suggestions.length); }
@@ -139,7 +157,7 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
   };
   const toggleLevel = (level: MaterialLevel) => setLevels(list => list.includes(level) ? list.filter(l => l !== level) : [...list, level]);
   const filtered = !!query || category !== "all" || levels.length > 0 || kind !== "all" || sort !== "recommended";
-  const reset = () => { setQuery(""); setCategory("all"); setLevels([]); setKind("all"); setSort("recommended"); setMenu(false); };
+  const reset = () => { setQuery(""); setCategory("all"); setFilterPage(0); setLevels([]); setKind("all"); setSort("recommended"); setMenu(false); };
   const versionOf = (tech: TechDoc) => official?.versions[tech.id];
   const categoryCount = (id: TechDocCategory | "all") => TECH_DOCS.filter(t => id === "all" || t.category === id).length;
 
@@ -215,11 +233,11 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
         <p className={styles.materialsHead}><span>{text("Concepts", "अवधारणाएँ")}</span><b>{notes.length}</b><small>{text("Open a topic for its key points, complexity and code", "मुख्य बिंदु, जटिलता और कोड के लिए विषय खोलें")}</small></p>
         <ol>{notes.map((c, i) => { const LevelIcon = LEVEL_ICON[c.level];
           return <li key={c.id}><details className={styles.concept}>
-            <summary>
+            <AccordionSummary>
               <span className={styles.conceptNo}>{i + 1}</span>
               <span className={styles.conceptHead}><strong><Marked text={c.title} terms={terms} /></strong><small>{c.summary}</small></span>
               <span className={styles.level} data-level={c.level}><LevelIcon size={12} aria-hidden="true" />{MATERIAL_LEVELS.find(l => l.id === c.level)?.label}</span>
-            </summary>
+            </AccordionSummary>
             <div className={styles.conceptBody}>
               <ul>{c.points.map(point => <li key={point}>{point}</li>)}</ul>
               {c.complexity && <p className={styles.complexity}><b>{text("Complexity", "जटिलता")}</b>{c.complexity}</p>}
@@ -248,7 +266,7 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
         <h2 id={`${uid}-title`}>{text("Learn from the source, ", "स्रोत से सीखें, ")}<em>{text("latest releases.", "नवीनतम संस्करण।")}</em></h2>
       </div>
       <p className={frame.lede} data-learning-intro>{text("Angular, Vue, React, TypeScript, PostgreSQL, Docker, Salesforce, Node.js, OpenRouter and AI Gateway, plus DSA and OOPs. Explore official guides and complete multi-file projects with setup instructions, annotated code and expected results.", "Angular 22, Vue 3.5, Salesforce API 68, Node.js 26, OpenRouter और Vercel AI Gateway: नीचे हर गाइड उसकी आधिकारिक वेबसाइट से ली गई है, और वर्तमान संस्करण आधिकारिक रजिस्ट्री से। साथ में हर इंटरव्यू के CS मूल विषय: DSA और OOPs, विषय-दर-विषय।")}</p>
-      {!preview && total > 0 && <Controls text={text} playing={autoplay} onPlay={() => setAutoplay(value => !value)} page={current} pages={total} goTo={index => { const slide = slides[(index + total) % total]; if (slide) setActiveId(slide.tech.id); }} previous={text("Previous platform", "पिछला प्लेटफ़ॉर्म")} next={text("Next platform", "अगला प्लेटफ़ॉर्म")} />}
+      {total > 0 && <Controls text={text} playing={autoplay} onPlay={() => setAutoplay(value => !value)} page={current} pages={total} goTo={index => { const slide = slides[(index + total) % total]; if (slide) setActiveId(slide.tech.id); }} previous={text("Previous platform", "पिछला प्लेटफ़ॉर्म")} next={text("Next platform", "अगला प्लेटफ़ॉर्म")} />}
     </header>
 
     {!preview && <div className={styles.toolbar}>
@@ -272,9 +290,20 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
 
       <div className={styles.filters}>
         <div className={styles.chips} role="group" aria-label={text("Platform type", "प्लेटफ़ॉर्म प्रकार")}>
-          {(["all", ...TECH_DOC_CATEGORIES.map(c => c.id)] as const).map(id => { const Icon = CATEGORY_ICON[id]; const label = id === "all" ? text("All", "सभी") : TECH_DOC_CATEGORIES.find(c => c.id === id)!.label;
-            return <button key={id} type="button" className={styles.chip} aria-pressed={category === id} onClick={() => setCategory(id)} title={label} aria-label={`${label} (${categoryCount(id)})`}><Icon size={15} aria-hidden="true" /><span>{label}</span><small>{categoryCount(id)}</small></button>; })}
+          {FILTER_CATEGORIES.slice(filterPage * FILTERS_PER_PAGE, (filterPage + 1) * FILTERS_PER_PAGE).map(id => { const Icon = CATEGORY_ICON[id]; const label = id === "all" ? text("All", "सभी") : TECH_DOC_CATEGORIES.find(c => c.id === id)!.label;
+            return <button key={id} type="button" className={styles.chip} data-category={id} aria-pressed={category === id} onClick={() => setCategory(id)} title={label} aria-label={`${label} (${categoryCount(id)})`}><Icon size={15} aria-hidden="true" /><span>{label}</span><small>{categoryCount(id)}</small></button>; })}
         </div>
+        <nav className={styles.filterPagination} aria-label={text("Category filter pages", "श्रेणी फ़िल्टर पृष्ठ")}>
+          <span className={styles.filterSelection}>{text("Selected:", "चयनित:")} {category === "all" ? text("All", "सभी") : TECH_DOC_CATEGORIES.find(c => c.id === category)?.label}</span>
+          <div className={styles.tabControls}>
+            <button type="button" className={styles.arrow} disabled={filterPage === 0} onClick={() => setFilterPage(p => p - 1)} aria-label={text("Previous categories", "पिछली श्रेणियाँ")} title={text("Previous categories", "पिछली श्रेणियाँ")}><ChevronLeft size={18} aria-hidden="true" /></button>
+            <div className={styles.tabPageNumbers}>
+              {Array.from({ length: FILTER_PAGES }, (_, index) => <button type="button" className={styles.arrow} key={index} aria-label={text(`Category page ${index + 1}`, `श्रेणी पृष्ठ ${index + 1}`)} aria-current={index === filterPage ? "page" : undefined} onClick={() => setFilterPage(index)}>{index + 1}</button>)}
+            </div>
+            <span className={styles.count} role="status">{text(`Page ${filterPage + 1} of ${FILTER_PAGES}`, `पृष्ठ ${filterPage + 1} / ${FILTER_PAGES}`)}</span>
+            <button type="button" className={styles.arrow} disabled={filterPage === FILTER_PAGES - 1} onClick={() => setFilterPage(p => p + 1)} aria-label={text("Next categories", "अगली श्रेणियाँ")} title={text("Next categories", "अगली श्रेणियाँ")}><ChevronRight size={18} aria-hidden="true" /></button>
+          </div>
+        </nav>
         <div className={styles.chips} role="group" aria-label={text("Level", "स्तर")}>
           {MATERIAL_LEVELS.map(level => { const Icon = LEVEL_ICON[level.id];
             return <button key={level.id} type="button" className={styles.chip} data-level={level.id} aria-pressed={levels.includes(level.id)} onClick={() => toggleLevel(level.id)} title={level.label} aria-label={level.label}><Icon size={15} aria-hidden="true" /><span>{level.label}</span></button>; })}
@@ -305,12 +334,20 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
       onPointerEnter={() => setHeld(true)} onPointerLeave={() => setHeld(false)} onFocusCapture={() => setHeld(true)} onBlurCapture={() => setHeld(false)}>
       <div className={styles.stage} aria-live={running ? "off" : "polite"}>{body}</div>
       {!preview && total > 0 && <nav className={styles.pager} aria-label={text("Technology docs pages", "तकनीकी डॉक्स पेज")}>
-        <ol className={styles.pages}>{slides.map((s, i) => <li key={s.tech.id}>
+        <ol className={styles.pages}>{slides.slice(tabStart, tabStart + TABS_PER_PAGE).map((s, offset) => { const i = tabStart + offset; return <li key={s.tech.id}>
           <button type="button" aria-current={i === current ? "page" : undefined} onClick={() => setActiveId(s.tech.id)} style={{ "--ink": s.tech.tone.ink, "--tint": s.tech.tone.tint } as React.CSSProperties}>
             <span className={styles.pageIcon}><BrandIcon tech={s.tech} size={15} /></span><span className={styles.pageName}>{s.tech.name}</span><span className={styles.pageNo}>{i + 1}</span>
             {i === current && running && <i key={`run-${current}`} className={styles.progress} style={{ animationDuration: `${SLIDE_MS}ms` }} aria-hidden="true" />}
           </button>
-        </li>)}</ol>
+        </li>; })}</ol>
+        {tabPages > 1 && <div className={styles.tabControls}>
+          <div className={styles.tabPageNumbers}>
+            {Array.from({ length: tabPages }, (_, index) => <button key={index} type="button" className={styles.arrow} aria-label={text(`Technology tabs page ${index + 1}`, `तकनीकी टैब पृष्ठ ${index + 1}`)} aria-current={index === tabPage ? "page" : undefined} onClick={() => turnTabs(index)}>{index + 1}</button>)}
+          </div>
+          <button type="button" className={styles.arrow} disabled={tabPage === 0} onClick={() => turnTabs(tabPage - 1)} aria-label={text("Previous technology tabs", "पिछले तकनीकी टैब")} title={text("Previous technology tabs", "पिछले तकनीकी टैब")}><ChevronLeft size={18} aria-hidden="true" /></button>
+          <span className={styles.count} role="status">{text(`Page ${tabPage + 1} of ${tabPages}`, `पृष्ठ ${tabPage + 1} / ${tabPages}`)}</span>
+          <button type="button" className={styles.arrow} disabled={tabPage === tabPages - 1} onClick={() => turnTabs(tabPage + 1)} aria-label={text("Next technology tabs", "अगले तकनीकी टैब")} title={text("Next technology tabs", "अगले तकनीकी टैब")}><ChevronRight size={18} aria-hidden="true" /></button>
+        </div>}
       </nav>}
     </div>
     {preview && FUNDAMENTALS.length > 0 && <div className={styles.fundamentals}>

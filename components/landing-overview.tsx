@@ -58,7 +58,7 @@ export function LandingOverview({ counts }: { counts?: LandingLibrary["counts"] 
           <span>{text("Two languages.", "दो भाषाएँ।")}</span>
           <span>{text("A clear next step.", "अगला कदम साफ़।")}</span>
         </h2>
-        <p>{text("MasterClass brings school, competitive exams and technology careers into one bilingual study space.", "MasterClass स्कूल, प्रतियोगी परीक्षाओं और तकनीकी करियर को एक द्विभाषी अध्ययन क्षेत्र में लाता है।")}</p>
+        <p>{text("Your Learning Dashboard brings together daily AI updates, Word power, workflow blueprints, interview practice, technology comparisons and documentation, alongside school and exam preparation in English and Hindi.", "आपका Learning Dashboard रोज़ के AI अपडेट, Word power, वर्कफ़्लो ब्लूप्रिंट, इंटरव्यू अभ्यास, तकनीकी तुलना और दस्तावेज़ों को स्कूल और परीक्षा की तैयारी के साथ अंग्रेज़ी और हिन्दी में एक जगह लाता है।")}</p>
         <Link className={styles.cta} href="/sign-up">{text("Start learning", "सीखना शुरू करें")}</Link>
       </div>
 

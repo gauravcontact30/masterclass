@@ -1,4 +1,5 @@
 "use client";
+import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -285,7 +286,7 @@ export function NotesExporter() {
               <button type="button" onClick={() => setMarkup("")} className="rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-zinc-200 hover:bg-white/10">Clear</button>
             </div>
             <details className="group rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs text-zinc-300">
-              <summary className="cursor-pointer select-none font-semibold text-zinc-100">Markup cheat sheet</summary>
+              <AccordionSummary className="cursor-pointer select-none font-semibold text-zinc-100">Markup cheat sheet</AccordionSummary>
               <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 font-mono">
                 {[
                   ["# Heading", "new section"],

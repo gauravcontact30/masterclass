@@ -1,7 +1,7 @@
 "use client";
+import { AccordionSummary } from "@/components/ui/accordion-chevron";
 
 import { useState } from "react";
-import { ChevronRight } from "lucide-react";
 import type { ProTrack } from "@/lib/pro-learn/types";
 import { familyOfTrack, groupTracksByFamily, type TrackFamily } from "@/lib/pro-learn/families";
 import styles from "./technology-sections.module.css";
@@ -14,12 +14,11 @@ function Family({ family, tracks, selected, onSelect, counts, countLabel, emptyL
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return <details className={styles.family} data-active={defaultOpen} open={open} onToggle={event => setOpen(event.currentTarget.open)}>
-    <summary>
+    <AccordionSummary>
       <span className={styles.familyIcon} aria-hidden="true">{family.icon}</span>
       <span className={styles.familyText}><b>{family.name}</b><small>{family.blurb}</small></span>
       <span className={styles.familyCount}>{summaryCount}</span>
-      <ChevronRight className={styles.chevron} size={16} aria-hidden="true"/>
-    </summary>
+    </AccordionSummary>
     {open && <div className={styles.tracks}>
       {tracks.map(track => {
         const count = counts?.[track.id] ?? 0;

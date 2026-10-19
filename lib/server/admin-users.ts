@@ -1,3 +1,4 @@
+import { locationLabel } from "@/lib/visitor-location";
 import "server-only";
 import type { User } from "@supabase/supabase-js";
 import { db } from "./db";
@@ -80,7 +81,7 @@ async function withStats(users: AdminUser[]) {
   const [documents, progress, visits] = await Promise.all([
     db().from("documents").select("user_id").in("user_id", ids).limit(5000),
     db().from("learning_progress").select("user_id,completed").in("user_id", ids).limit(5000),
-    db().from("site_visits").select("user_id,created_at,city,country,device,browser").in("user_id", ids).eq("event", "page_view").gte("created_at", since).order("created_at", { ascending: false }).limit(5000),
+    db().from("site_visits").select("user_id,created_at,city,region,country,device,browser").in("user_id", ids).eq("event", "page_view").gte("created_at", since).order("created_at", { ascending: false }).limit(5000),
   ]);
   for (const user of users) {
     user.stats.documents = (documents.data ?? []).filter(row => row.user_id === user.id).length;
@@ -90,7 +91,7 @@ async function withStats(users: AdminUser[]) {
     const latest = mine[0];
     if (latest) {
       user.stats.lastSeen = latest.created_at;
-      user.stats.location = [latest.city, latest.country].filter(Boolean).join(", ") || null;
+      user.stats.location = locationLabel(latest);
       user.stats.device = [latest.device, latest.browser].filter(Boolean).join(" · ") || null;
     }
   }

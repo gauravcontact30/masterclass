@@ -1,4 +1,5 @@
 "use client";
+import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import { ExpandedText } from "@/components/expanded-text";
 
 
@@ -54,7 +55,7 @@ export function TechnologyTopics({ documents, topics, onLearn }: { documents: Do
       const note = entry as TopicNote;
       return <>
         {note.lesson && <details className={styles.details}>
-          <summary>{hi ? "उदाहरण और अभ्यास" : "Examples & practice"}</summary>
+          <AccordionSummary>{hi ? "उदाहरण और अभ्यास" : "Examples & practice"}</AccordionSummary>
           <h5>{hi ? "उदाहरण" : "Example"}</h5><ul>{noteLines(note.lesson.example).map((line, index) => <li key={index}>{line}</li>)}</ul>
           {note.lesson.code && <CodeLab title={note.lesson.title} code={note.lesson.code} />}
           <h5>{hi ? "अभ्यास" : "Practice"}</h5><ul>{noteLines(note.lesson.exercise).map((line, index) => <li key={index}>{line}</li>)}</ul>

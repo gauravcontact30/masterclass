@@ -39,7 +39,7 @@ import { useLanguage } from "./language-provider";
 import styles from "./learn-landing.module.css";
 
 export type LandingPrices = { monthly: number; yearly: number; enabled: boolean };
-export function LandingPage({ pro, library, prices: initialPrices, daily, techDocs }: { pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null } } }) {
+export function LandingPage({ pro, library, prices: initialPrices, daily, techDocs, copyrightYear }: { copyrightYear?: number; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null } } }) {
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
   // Prices rendered on the server arrive in the HTML, so the plan card never paints "—" and then shifts; the fetch is only the fallback.
@@ -65,7 +65,7 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
       <header className={frame.head}>
         <div>
           <p className={frame.kicker}><LibraryBig size={14} aria-hidden="true" />{text("Library", "लाइब्रेरी")}<span>{text(`${format(library.entries.length)} sample rows`, `${format(library.entries.length)} नमूना पंक्तियाँ`)}</span></p>
-          <h2 id="library-title">{text("Search the whole library ", "जुड़ने से पहले ")}<em>{text("before you join.", "पूरी लाइब्रेरी खोजें।")}</em></h2>
+        <h2 id="library-title">{text("Explore the dashboard library ", "जुड़ने से पहले ")}<em>{text("before you join.", "डैशबोर्ड लाइब्रेरी देखें।")}</em></h2>
         </div>
         <div>
           <p className={frame.lede}>{text("Every row below is a real entry from the dashboard: technology handbooks, API references, exam and class courses, vocabulary and Techy topics. Search for your subject and see exactly where it opens once you sign up.", "नीचे की हर पंक्ति डैशबोर्ड की असली प्रविष्टि है: तकनीकी हैंडबुक, API संदर्भ, परीक्षा व कक्षा कोर्स, शब्दावली और Techy विषय। अपना विषय खोजें और देखें कि साइन अप के बाद वह कहाँ खुलता है।")}</p>
@@ -83,6 +83,6 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
     <LandingMembership prices={prices} priceState={priceState} cycle={cycle} onCycle={setCycle} />
     <StudentReviews />
     </main>
-    <LandingFooter />
+    <LandingFooter year={copyrightYear} />
   </div>;
 }

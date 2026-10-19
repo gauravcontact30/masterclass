@@ -7,6 +7,7 @@ import { DashboardMore } from "./dashboard-more";
 import { LockedCard } from "./landing-locked-card";
 import { useLanguage } from "./language-provider";
 import { usePagedCarousel } from "./use-paged-carousel";
+import { useCarouselHeight } from "./use-carousel-height";
 import { DashboardLessons } from "./dashboard-lessons";
 import home from "./landing-home.module.css";
 import styles from "./landing-ai-pulse.module.css";
@@ -40,6 +41,7 @@ export function LandingAiPulse({ cards: all, day, locked: lockedCard, preview = 
   const cards = preview ? all.slice(0, PREVIEW_COUNT) : all;
   const locked = preview ? null : lockedCard;
   const { track, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(cards.length + (locked ? 1 : 0), preview ? 3 : 2, AUTOPLAY_MS);
+  useCarouselHeight(track);
 
   return <section id="ai-pulse" className={styles.pulse} aria-labelledby="ai-pulse-title"><div className={home.inner}>
     {preview && <DashboardMore href="/dashboard" title={text(`See all ${all.length + (lockedCard ? 1 : 0)} cards`, `सभी ${all.length + (lockedCard ? 1 : 0)} कार्ड देखें`)} detail={text("Every technology, every day: the full pulse lives in your dashboard.", "हर तकनीक, हर दिन: पूरा पल्स आपके डैशबोर्ड में है।")} />}
@@ -93,10 +95,10 @@ export function PulseCardItem({ card, index, total, hi, text }: { card: PulseCar
 /** Play/pause, previous, the page counter and next; shared with the Word power carousel. */
 export function Controls({ text, playing, onPlay, page, pages, goTo, previous, next }: { text: (en: string, hindi: string) => string; playing: boolean; onPlay: () => void; page: number; pages: number; goTo: (page: number) => void; previous: string; next: string }) {
   return <div data-learning-pagination className={styles.controls}>
-    <button type="button" onClick={onPlay} aria-label={playing ? text("Pause autoplay", "ऑटोप्ले रोकें") : text("Start autoplay", "ऑटोप्ले चलाएँ")}>{playing ? <Pause size={16} /> : <Play size={16} />}</button>
-    <button type="button" onClick={() => goTo(page - 1)} aria-label={previous}><ChevronLeft size={18} /></button>
+    <button type="button" disabled={pages <= 1} onClick={onPlay} aria-label={playing ? text("Pause autoplay", "ऑटोप्ले रोकें") : text("Start autoplay", "ऑटोप्ले चलाएँ")}>{playing ? <Pause size={16} /> : <Play size={16} />}</button>
+    <button type="button" disabled={pages <= 1} onClick={() => goTo(page - 1)} aria-label={previous}><ChevronLeft size={18} /></button>
     <span className={styles.count} aria-live="polite">{String(page + 1).padStart(2, "0")}<i>/</i>{String(pages).padStart(2, "0")}</span>
-    <button type="button" onClick={() => goTo(page + 1)} aria-label={next}><ChevronRight size={18} /></button>
+    <button type="button" disabled={pages <= 1} onClick={() => goTo(page + 1)} aria-label={next}><ChevronRight size={18} /></button>
   </div>;
 }
 

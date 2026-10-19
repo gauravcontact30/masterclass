@@ -2,7 +2,7 @@ import type { Metadata, MetadataRoute } from "next";
 
 // Never derive canonical URLs from a request Host header or a preview hostname.
 export function siteUrl(): URL {
-  const value = process.env.APP_URL || "http://localhost:3000";
+  const value = process.env.APP_URL || "https://www.masterclassbuddy.com";
   const url = new URL(value);
   if (!/^https?:$/.test(url.protocol) || url.username || url.password || url.pathname !== "/" || url.search || url.hash) {
     throw new Error("APP_URL must be an absolute HTTP(S) origin without a path, credentials, query, or fragment");
@@ -17,9 +17,9 @@ export function isIndexable(): boolean {
 }
 
 export const siteName = "MasterClass";
-export const siteTitle = "MasterClass | Learn in App · Exams, School & System Design";
-export const siteDescription = "Build your preparation dashboard with English and Hindi study notes, school and exam foundations, worked answers, practice tests and detailed system-design case studies. Learn in App with monthly or yearly membership.";
-export const siteKeywords = ["MasterClass", "online learning", "study notes in Hindi", "CBSE", "NCERT", "ICSE", "ISC", "SSC", "JEE", "NEET", "IELTS vocabulary", "system design", "technology interview preparation", "practice tests"];
+export const siteTitle = "MasterClass Buddy | Study Notes, Exam Prep & Coding Tutorials";
+export const siteDescription = "Learn with English and Hindi study notes, CBSE and NCERT lessons, exam practice, coding tutorials, interview questions and system design blueprints on MasterClass Buddy.";
+export const siteKeywords = ["MasterClass", "online learning", "study notes in Hindi", "CBSE", "NCERT", "ICSE", "ISC", "SSC", "JEE", "NEET", "IELTS vocabulary", "system design", "technology interview preparation", "practice tests", "MasterClass Buddy", "coding tutorials", "React interview questions", "Python tutorials", "AI agent workflows", "English vocabulary with Hindi meanings", "system design interview questions"];
 export const privateMetadata: Metadata = { robots: { index: false, follow: false } };
 
 /**
@@ -53,10 +53,16 @@ const ogImage = { url: "/opengraph-image", width: 1200, height: 630, alt: `${sit
 export function pageMetadata(path: PublicPage["path"]): Metadata {
   const { title, description } = publicPage(path);
   const home = path === "/";
+  const keywords = path === "/courses"
+    ? ["CBSE study notes", "NCERT solutions", "SSC exam preparation", "JEE preparation", "NEET preparation", "technology learning paths"]
+    : path === "/library"
+      ? ["free programming tutorials", "React interview questions", "system design blueprints", "AI agent workflows", "API reference", "English vocabulary with Hindi meanings"]
+      : home ? siteKeywords : undefined;
   return {
     // The home title already carries the brand; skip the "%s | MasterClass" template.
     title: home ? { absolute: title } : title,
     description,
+    ...(keywords ? { keywords } : {}),
     alternates: { canonical: path },
     openGraph: { type: "website", url: path, siteName, title: home ? title : `${title} | ${siteName}`, description, locale: "en_IN", alternateLocale: ["hi_IN"], images: [ogImage] },
     twitter: { card: "summary_large_image", title: home ? title : `${title} | ${siteName}`, description, images: [ogImage.url] },
@@ -90,7 +96,7 @@ export function breadcrumbSchema(trail: readonly (readonly [string, `/${string}`
 
 export function websiteSchema() {
   const url = siteUrl().href;
-  return { "@context": "https://schema.org", "@type": "WebSite", "@id": `${url}#website`, url, name: siteName, description: siteDescription, inLanguage: ["en", "hi"], publisher: { "@id": `${url}#organization` } };
+  return { "@context": "https://schema.org", "@type": "WebSite", "@id": `${url}#website`, url, name: siteName, alternateName: "MasterClass Buddy", description: siteDescription, inLanguage: ["en", "hi"], publisher: { "@id": `${url}#organization` } };
 }
 
 export function organizationSchema() {

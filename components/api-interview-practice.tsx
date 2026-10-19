@@ -1,3 +1,4 @@
+import { AccordionSummary } from "@/components/ui/accordion-chevron";
 ﻿"use client";
 import {useId, useState} from 'react';
 import {CheckCircle2, ChevronDown, Lightbulb, MessageSquareText, Target, CornerDownRight} from 'lucide-react';
@@ -9,7 +10,7 @@ import styles from './api-project.module.css';
 export function ApiInterviewPractice({detail}:{detail:GeneratedApiDetail}) {
   return <div className={styles.interview}>
     <header className={styles.practiceHeading}><span className={styles.sectionIcon}><MessageSquareText size={20} aria-hidden="true"/></span><div><h3>Subjective questions &amp; answers</h3><p>Build a clear explanation, then explore a follow-up.</p></div><span className={styles.count}>{detail.subjective.length} questions</span></header>
-    <div className={styles.questions}>{detail.subjective.map((item,index)=><details className={styles.question} key={item.question}><summary><span className={styles.questionNumber}>{String(index+1).padStart(2,'0')}</span><span>{item.question}</span><ChevronDown className={styles.disclosure} size={17} aria-hidden="true"/></summary><div className={styles.answerBody}><div className={styles.answerTitle}><Lightbulb size={15} aria-hidden="true"/>Answer</div><p>{item.answer}</p>{item.followUp&&<div className={styles.followUp}><strong><CornerDownRight size={15} aria-hidden="true"/>Similar question</strong><p>{item.followUp}</p></div>}</div></details>)}</div>
+    <div className={styles.questions}>{detail.subjective.map((item,index)=><details className={styles.question} key={item.question}><AccordionSummary><span className={styles.questionNumber}>{String(index+1).padStart(2,'0')}</span><span>{item.question}</span><ChevronDown className={styles.disclosure} size={17} aria-hidden="true"/></AccordionSummary><div className={styles.answerBody}><div className={styles.answerTitle}><Lightbulb size={15} aria-hidden="true"/>Answer</div><p>{item.answer}</p>{item.followUp&&<div className={styles.followUp}><strong><CornerDownRight size={15} aria-hidden="true"/>Similar question</strong><p>{item.followUp}</p></div>}</div></details>)}</div>
     <ObjectiveQuestions questions={detail.objective}/>
   </div>;
 }

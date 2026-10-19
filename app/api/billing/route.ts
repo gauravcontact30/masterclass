@@ -21,7 +21,7 @@ const inputSchema = z.discriminatedUnion("action", [
 function checkoutResponse(remote: z.infer<typeof billingSubscription>, tier: "monthly" | "yearly") {
   return Response.json({ subscriptionId:remote.id, keyId:required("RAZORPAY_KEY_ID"), tier, amount:Math.round(subscriptionPrice(tier)*100), currency:"INR" });
 }
-export async function GET(request?: Request) {
+export async function GET(request: Request) {
   return api(async () => Response.json({ enabled:billingConfigured(), currency:"INR", proLimit:quota("monthly"), monthly:subscriptionPrice("monthly"), yearly:subscriptionPrice("yearly") }), request);
 }
 export async function POST(request: Request) {

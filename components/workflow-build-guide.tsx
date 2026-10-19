@@ -1,7 +1,8 @@
 "use client";
+import { AccordionChevron } from "@/components/ui/accordion-chevron";
 
 import { useState } from "react";
-import { Check, CheckCircle2, ChevronDown, Copy, FileCode2, Terminal } from "lucide-react";
+import { Check, CheckCircle2, Copy, FileCode2, Terminal } from "lucide-react";
 import { getBuildSteps, workflowFolder, type BuildStep, type WorkflowUsecase } from "@/lib/workflow-usecases";
 import styles from "./workflow-build-guide.module.css";
 
@@ -115,7 +116,7 @@ export function WorkflowBuildGuide({ workflow, headingId }: { workflow: Workflow
                 <span className={styles.layer} data-layer={step.layer}>
                   {step.layer}
                 </span>
-                <ChevronDown size={16} className={styles.chevron} aria-hidden="true" />
+                <AccordionChevron />
               </button>
               <div id={panelId} hidden={!isOpen}>
                 {isOpen && <StepBody step={step} index={index} folder={folder} />}

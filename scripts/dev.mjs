@@ -3,15 +3,19 @@
 // `npm run worker` command. See scripts/dev-worker-loop.ts for what the loop
 // does and why the real deployment needs its own scheduler instead.
 import { spawn, spawnSync } from "node:child_process";
+import { createRequire } from "node:module";
 
-// Windows can't exec a .cmd shim directly without a shell; the args here are
-// all static and repo-controlled, never user input, so shell:true is safe.
+// Use package entry points directly so Windows needs no nested cmd/npx processes.
+// Webpack avoids the Turbopack HMR "cell no longer exists" failure seen locally.
+// Production builds still use Turbopack; npm run dev -- --turbopack can opt in.
+const require = createRequire(import.meta.url);
 const win = process.platform === "win32";
-const next = spawn("npx", ["next", "dev"], { stdio: "inherit", shell: win });
-const worker = spawn("npx", ["tsx", "--conditions=react-server", "--env-file=.env", "scripts/dev-worker-loop.ts"], { stdio: "inherit", shell: win });
+const args = process.argv.slice(2);
+const bundler = args.some(arg => ["--webpack", "--turbopack", "--turbo"].includes(arg)) ? [] : ["--webpack"];
+const next = spawn(process.execPath, [require.resolve("next/dist/bin/next"), "dev", ...bundler, ...args], { stdio: "inherit" });
+const worker = spawn(process.execPath, [require.resolve("tsx/cli"), "--conditions=react-server", "--env-file=.env", "scripts/dev-worker-loop.ts"], { stdio: "inherit" });
 
-// With shell:true each child is a cmd.exe whose node grandchildren survive child.kill(), which left orphaned
-// worker loops (and next servers) running after Ctrl+C. On Windows, end the whole tree instead.
+// Next and tsx spawn subprocesses. On Windows, stop their entire trees on Ctrl+C.
 function stop(child) {
   if (child.exitCode !== null || !child.pid) return;
   if (win) spawnSync("taskkill", ["/pid", String(child.pid), "/T", "/F"], { stdio: "ignore" });

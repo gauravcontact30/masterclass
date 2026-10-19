@@ -1,4 +1,5 @@
 "use client";
+import { AccordionChevron } from "@/components/ui/accordion-chevron";
 
 import { useState } from "react";
 import { ExternalLink, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
@@ -89,7 +90,7 @@ function OptionalWebsite({ title, url, restricted }: { title: string; url: strin
   const [open, setOpen] = useState(false);
   return <section id="official-website-content" className={styles.websiteSection}>
     <button type="button" className={styles.websiteToggle} aria-expanded={open} aria-controls="publisher-frame" onClick={() => setOpen(value => !value)}>
-      <span>{open ? "Hide official website" : "Browse official website"}</span><ChevronRight size={16} aria-hidden="true" />
+      <span>{open ? "Hide official website" : "Browse official website"}</span><AccordionChevron />
     </button>
     <p className={styles.notice}>Need the full API reference? Open the publisher’s documentation here.</p>
     {open && <div id="publisher-frame"><WebsiteFrame title={title} url={url} restricted={restricted} /></div>}

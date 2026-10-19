@@ -20,6 +20,7 @@ const GROUPS: { title: [string, string]; areas: Area[] }[] = [
   { title: ["Practise", "अभ्यास"], areas: [
     { icon: MessagesSquare, name: ["Interview prep", "इंटरव्यू की तैयारी"], note: ["Subjective and objective banks per technology", "हर तकनीक के विषयगत और वस्तुनिष्ठ प्रश्न"] },
     { icon: Workflow, name: ["Workflow blueprints", "वर्कफ़्लो ब्लूप्रिंट"], note: ["System design and AI agents, step by step", "सिस्टम डिज़ाइन और AI एजेंट, चरण दर चरण"] },
+    { icon: Code2, name: ["Tech Topics", "टेक टॉपिक्स"], note: ["Technology comparisons with interview questions", "इंटरव्यू प्रश्नों सहित तकनीकों की तुलना"] },
     { icon: Code2, name: ["Techy", "Techy"], note: ["Topics, code examples and puzzles", "विषय, कोड उदाहरण और पहेलियाँ"] },
     { icon: CircleHelp, name: ["Quiz", "क्विज़"], note: ["Timed practice with explanations", "व्याख्या सहित समयबद्ध अभ्यास"] },
   ] },
@@ -27,6 +28,7 @@ const GROUPS: { title: [string, string]; areas: Area[] }[] = [
     { icon: Search, name: ["Search with AI mode", "AI मोड के साथ खोज"], note: ["Answers from the notes, or from a model", "नोट्स से या मॉडल से उत्तर"] },
     { icon: FileCode2, name: ["API Docs", "API Docs"], note: ["Every identifier, linked to its source", "हर पहचानकर्ता, स्रोत से जुड़ा"] },
     { icon: BookMarked, name: ["Official Docs", "आधिकारिक डॉक्स"], note: ["Vendor documentation, summarised", "विक्रेता दस्तावेज़, संक्षेप में"] },
+    { icon: BookOpenText, name: ["Technology docs", "तकनीकी डॉक्स"], note: ["Platform guides, projects, DSA and OOPs", "प्लेटफ़ॉर्म गाइड, परियोजनाएँ, DSA और OOPs"] },
     { icon: BookOpenText, name: ["Lessons", "पाठ"], note: ["Published notes for every course", "हर कोर्स के प्रकाशित नोट्स"] },
   ] },
   { title: ["Your own space", "आपकी अपनी जगह"], areas: [

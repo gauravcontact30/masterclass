@@ -5,6 +5,9 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { AdminError, AdminLoading } from "./super-admin-feedback";
 import { AdminTable } from "./super-admin-table";
+import { SuperAdminHourly } from "./super-admin-hourly";
+import { SuperAdminLocations } from "./super-admin-locations";
+import { locationLabel } from "@/lib/visitor-location";
 import { AudienceExplorer } from "./super-admin-audience";
 import { siAndroid, siApple, siBrave, siFacebook, siFirefoxbrowser, siGoogle, siGooglechrome, siInstagram, siIos, siLinux, siMacos, siOpera, siSafari, siSamsung, siUbuntu, siWhatsapp, siYoutube, type SimpleIcon } from "simple-icons";
 import shell from "./super-admin-dashboard.module.css";
@@ -93,12 +96,10 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
         <div className={shell.panelHeading}><h2>Daily traffic</h2><span className={styles.legend}><i data-key="views" />Page views <i data-key="visitors" />Visitors <i data-key="new" />New</span></div>
         <DailyChart rows={data.daily} />
       </Card>
-      <Card className={`${shell.panel} ${styles.chartCard}`}>
-        <div className={shell.panelHeading}><h2>Busiest hours (IST)</h2></div>
-        <HourGrid rows={data.hours} />
-      </Card>
+      <SuperAdminHourly />
     </div>
 
+    <SuperAdminLocations days={days} query={query} />
     <AudienceExplorer days={days} fallback={{ countries: data.countries, cities: data.cities, pages: data.pages, referrers: data.referrers }} />
 
     <div className={styles.breakdowns}>
@@ -133,16 +134,7 @@ function DailyChart({ rows }: { rows: Activity["daily"] }) {
   </div>;
 }
 
-function HourGrid({ rows }: { rows: Activity["hours"] }) {
-  const byHour = new Map(rows.map(row => [row.hour, row.views]));
-  const max = Math.max(1, ...rows.map(row => row.views));
-  return <div className={styles.hours}>{Array.from({ length: 24 }, (_, hour) => {
-    const views = byHour.get(hour) ?? 0;
-    return <div key={hour} className={styles.hour} style={{ "--heat": views / max } as React.CSSProperties} title={`${String(hour).padStart(2, "0")}:00 IST — ${views} views`}>
-      <span>{String(hour).padStart(2, "0")}</span><small>{views}</small>
-    </div>;
-  })}</div>;
-}
+
 
 // Brand marks (simple-icons, CC0) for the browsers and systems it covers. Windows and Edge are not in simple-icons,
 // so they and anything unrecognised get a neutral Lucide icon. Black marks are drawn in ink so they read on the tint.
@@ -183,7 +175,7 @@ function People({ rows, query, onOpen }: { rows: Row[]; query: string; onOpen: (
   // Flattened so search, suggestions and filters see what the table shows.
   const view = useMemo(() => rows.map(row => ({
     ...row, person_label: row.email ? String(row.email) : `Visitor ${String(row.person).slice(8, 16)}`,
-    location: [row.city, row.country].filter(Boolean).join(", ") || null, device_info: [row.device, row.browser, row.os].filter(Boolean).join(" · ") || null,
+    location: locationLabel(row), device_info: [row.device, row.browser, row.os].filter(Boolean).join(" · ") || null,
     time_on_site: duration(Number(row.engaged_seconds)),
   })), [rows]);
   return <AdminTable title="People" rows={view} query={query}
@@ -202,7 +194,7 @@ function People({ rows, query, onOpen }: { rows: Row[]; query: string; onOpen: (
 function VisitLog({ rows, query, onOpen }: { rows: Row[]; query: string; onOpen: (key: string, label: string) => void }) {
   const view = useMemo(() => rows.map(row => ({
     ...row, who: row.email ? String(row.email) : `Visitor ${String(row.visitor_id).slice(0, 8)}`, kind: row.event === "page_view" ? "view" : "exit",
-    source: row.utm_source ?? row.referrer_host ?? null, location: [row.city, row.region, row.country].filter(Boolean).join(", ") || null,
+    source: row.utm_source ?? row.referrer_host ?? null, location: locationLabel(row),
     device_info: [row.device, row.browser, row.os].filter(Boolean).join(" · ") || null, read_for: row.duration_ms == null ? null : duration(Number(row.duration_ms) / 1000),
   })), [rows]);
   return <AdminTable title="Visit log" rows={view} query={query} note="The latest 500 page views and page exits (with time read). Export CSV for the whole window."
@@ -249,12 +241,12 @@ function PersonTimeline({ person, onBack }: { person: { key: string; label: stri
           {data.visits.length ? <ol className={styles.timeline}>{data.visits.slice(0, 200).map((visit, i) => <li key={i} data-event={String(visit.event)}>
             <time title={when(visit.created_at)}>{when(visit.created_at)}</time>
             <span>{visit.event === "page_view" ? "Viewed" : `Left after ${duration(Number(visit.duration_ms) / 1000)}`} <b>{show(visit.path)}</b>{visit.title ? <small>{show(visit.title)}</small> : null}</span>
-            <small>{[visit.device, visit.browser, visit.city, visit.country].filter(Boolean).join(" · ")}{visit.referrer_host ? ` · from ${show(visit.referrer_host)}` : ""}{visit.utm_source ? ` · campaign ${show(visit.utm_source)}` : ""}</small>
+            <small>{[visit.device, visit.browser, locationLabel(visit)].filter(Boolean).join(" · ")}{visit.referrer_host ? ` · from ${show(visit.referrer_host)}` : ""}{visit.utm_source ? ` · campaign ${show(visit.utm_source)}` : ""}</small>
           </li>)}</ol> : <p className={shell.empty}>No visits recorded.</p>}
         </Card>
         <div className={styles.sideStack}>
           <Card className={shell.panel}><h2>Devices &amp; locations</h2>
-            {data.devices.length ? <ul className={styles.deviceList}>{data.devices.map((device, i) => <li key={i}><b>{[device.device, device.browser, device.os].filter(Boolean).join(" · ")}</b><small>{[device.city, device.country].filter(Boolean).join(", ") || "Unknown location"} · {show(device.ip_masked)} · {show(device.screen)}</small><small>{show(device.hits)} events · last {ago(device.last_seen)}</small></li>)}</ul> : <p className={shell.empty}>None recorded.</p>}
+            {data.devices.length ? <ul className={styles.deviceList}>{data.devices.map((device, i) => <li key={i}><b>{[device.device, device.browser, device.os].filter(Boolean).join(" · ")}</b><small>{locationLabel(device)} · {show(device.ip_masked)} · {show(device.screen)}</small><small>{show(device.hits)} events · last {ago(device.last_seen)}</small></li>)}</ul> : <p className={shell.empty}>None recorded.</p>}
           </Card>
           <Card className={shell.panel}><h2>Sign-ins</h2>
             {data.logins.length ? <ul className={styles.deviceList}>{data.logins.slice(0, 20).map((login, i) => <li key={i}><b>{show(login.action)}</b><small>{when(login.created_at)} · {show(login.ip_address)}</small></li>)}</ul> : <p className={shell.empty}>{account ? "No sign-in events in the Auth log." : "Not signed in."}</p>}

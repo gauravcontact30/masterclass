@@ -1,0 +1,61 @@
+"use client";
+import { useMemo, useState } from "react";
+import { Search, SlidersHorizontal, ChevronLeft, ChevronRight, FileText, Star, X, Image as ImageIcon, GitBranch, Table2 } from "lucide-react";
+import { documentText, type NotepadFile } from "@/lib/notepad-library";
+import styles from "./super-admin-notepad.module.css";
+
+export function NotepadLibrary({ files, activeId, activeTitle, onOpen }: { files: NotepadFile[]; activeId: string; activeTitle: string; onOpen: (id: string) => void }) {
+  const [query, setQuery] = useState("");
+  const [filters, setFilters] = useState(false);
+  const [kind, setKind] = useState("all");
+  const [media, setMedia] = useState("all");
+  const [starred, setStarred] = useState(false);
+  const [sort, setSort] = useState("recent");
+  const [after, setAfter] = useState("");
+  const [page, setPage] = useState(1);
+  const [suggestions, setSuggestions] = useState(false);
+  const [highlight, setHighlight] = useState(-1);
+  const indexed = useMemo(() => files.map(file => ({ ...file, text: documentText(file.html) })), [files]);
+  const results = indexed.filter(file => {
+    const title = file.id === activeId ? activeTitle : file.title;
+    const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    return terms.every(term => `${title} ${file.text}`.toLowerCase().includes(term))
+      && (kind === "all" || file.kind === kind) && (!starred || file.starred)
+      && (!after || file.updatedAt.slice(0, 10) >= after)
+      && (media === "all" || media === "images" && /<img\b/i.test(file.html) || media === "tables" && /<table\b/i.test(file.html) || media === "diagrams" && file.html.includes("data-notepad-diagram"));
+  }).sort((a, b) => sort === "name" ? a.title.localeCompare(b.title) : sort === "oldest" ? a.updatedAt.localeCompare(b.updatedAt) : b.updatedAt.localeCompare(a.updatedAt));
+  const totalPages = Math.max(1, Math.ceil(results.length / 6));
+  const current = Math.min(page, totalPages);
+  const visible = results.slice((current - 1) * 6, current * 6);
+  const proposed = query.trim() ? results.slice(0, 5) : [];
+  const open = (id: string) => { onOpen(id); setSuggestions(false); setHighlight(-1); };
+  return <div className={styles.library}>
+    <div className={styles.libraryHead}><div><strong>My documents</strong><small>Saved in this browser · HTML exports include embedded images and diagrams.</small></div>
+      <div className={styles.librarySearch}>
+        <Search size={16} aria-hidden="true"/>
+        <input role="combobox" aria-label="Search saved documents" aria-autocomplete="list" aria-expanded={suggestions && proposed.length > 0} aria-controls="notepad-suggestions" aria-activedescendant={suggestions && highlight >= 0 ? `notepad-suggestion-${highlight}` : undefined} placeholder="Search names and contents…" value={query} onFocus={() => setSuggestions(true)} onBlur={() => setSuggestions(false)} onChange={e => { setQuery(e.target.value); setPage(1); setSuggestions(true); setHighlight(-1); }} onKeyDown={e => {
+          if (e.key === "Escape") setSuggestions(false);
+          if (e.key === "ArrowDown") { e.preventDefault(); setSuggestions(true); setHighlight(value => Math.min(value + 1, proposed.length - 1)); }
+          if (e.key === "ArrowUp") { e.preventDefault(); setHighlight(value => Math.max(0, value - 1)); }
+          if (e.key === "Enter" && suggestions && proposed[highlight]) { e.preventDefault(); open(proposed[highlight].id); }
+        }} />
+        {query && <button type="button" aria-label="Clear document search" onClick={() => { setQuery(""); setPage(1); }}><X size={15} aria-hidden="true"/></button>}
+        {suggestions && proposed.length > 0 && <ul id="notepad-suggestions" role="listbox" aria-label="Suggested documents" className={styles.suggestions}>{proposed.map((file, index) => <li role="option" id={`notepad-suggestion-${index}`} aria-selected={highlight === index} key={file.id} onMouseDown={e => e.preventDefault()} onClick={() => open(file.id)}><FileText size={16} aria-hidden="true"/><span><b>{file.id === activeId ? activeTitle : file.title || "Untitled document"}</b><small>{file.text.slice(0, 100) || "Empty document"}</small></span></li>)}</ul>}
+      </div>
+      <button type="button" aria-label="Filter saved documents" aria-expanded={filters} aria-controls="notepad-filters" onClick={() => setFilters(value => !value)}><SlidersHorizontal size={17} aria-hidden="true"/></button>
+    </div>
+    {filters && <div id="notepad-filters" className={styles.libraryFilters}>
+      <label>Status<select value={kind} onChange={e => { setKind(e.target.value); setPage(1); }}><option value="all">All documents</option><option value="draft">Drafts</option><option value="saved">Saved copies</option><option value="imported">Imported</option></select></label>
+      <label>Contains<select value={media} onChange={e => { setMedia(e.target.value); setPage(1); }}><option value="all">Any content</option><option value="images">Images</option><option value="tables">Tables</option><option value="diagrams">Workflows / diagrams</option></select></label>
+      <label>Sort<select value={sort} onChange={e => { setSort(e.target.value); setPage(1); }}><option value="recent">Recently saved</option><option value="oldest">Oldest saved</option><option value="name">Name A–Z</option></select></label>
+      <label>Saved since (UTC)<input type="date" value={after} onChange={e => { setAfter(e.target.value); setPage(1); }}/></label>
+      <button type="button" aria-label="Show starred documents" aria-pressed={starred} onClick={() => { setStarred(value => !value); setPage(1); }}><Star size={17} aria-hidden="true"/></button>
+      <button type="button" aria-label="Reset document filters" onClick={() => { setKind("all"); setMedia("all"); setAfter(""); setStarred(false); setSort("recent"); setPage(1); }}><X size={17} aria-hidden="true"/></button>
+    </div>}
+    <div role="tablist" aria-label="Saved documents" className={styles.documentTabs}>{visible.map((file, index) => <button key={file.id} type="button" role="tab" id={`notepad-tab-${file.id}`} aria-label={file.id === activeId ? activeTitle || "Untitled document" : file.title || "Untitled document"} aria-selected={file.id === activeId} aria-controls="notepad-document-panel" onClick={() => open(file.id)} onKeyDown={e => { if (e.key === "ArrowRight" || e.key === "ArrowLeft") { e.preventDefault(); const next = visible[(index + (e.key === "ArrowRight" ? 1 : -1) + visible.length) % visible.length]; document.getElementById(`notepad-tab-${next.id}`)?.focus(); open(next.id); } }}>
+      <FileText size={17} aria-hidden="true"/><span><b>{file.id === activeId ? activeTitle || "Untitled document" : file.title || "Untitled document"}</b><small>{file.kind} · {new Date(file.updatedAt).toLocaleDateString()}</small></span>{file.starred && <Star size={13} aria-hidden="true"/>}{/<img\b/i.test(file.html) && <ImageIcon size={13} aria-hidden="true"/>}{file.html.includes("data-notepad-diagram") ? <GitBranch size={13} aria-hidden="true"/> : /<table\b/i.test(file.html) && <Table2 size={13} aria-hidden="true"/>}
+    </button>)}</div>
+    {!results.length && <p className={styles.libraryEmpty}>No documents match your search and filters.</p>}
+    <div className={styles.pagination}><span>{results.length} document{results.length === 1 ? "" : "s"} · Page {current} of {totalPages}</span><button type="button" aria-label="Previous document page" disabled={current === 1} onClick={() => setPage(current - 1)}><ChevronLeft size={17} aria-hidden="true"/></button><button type="button" aria-label="Next document page" disabled={current === totalPages} onClick={() => setPage(current + 1)}><ChevronRight size={17} aria-hidden="true"/></button></div>
+  </div>;
+}

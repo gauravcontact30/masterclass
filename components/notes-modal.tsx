@@ -1,4 +1,5 @@
 "use client";
+import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { NativeSelectOption } from "@/components/ui/native-select";
@@ -197,7 +198,7 @@ function StructuredNotes({ deck, title, language, technology, sourceHref, sectio
         <AnswerPanels shortAnswer={q.definition} explanation={q.answer} hi={hi} />
         {q.syntax && <pre className="notes-code notes-iv-syntax" aria-label={hi ? "सिंटैक्स" : "Syntax"}><code>{withoutBlankLines(q.syntax)}</code></pre>}
         {q.code && <pre className="notes-code" aria-label={hi ? "कोड उदाहरण" : "Code example"}><code>{withoutBlankLines(q.code)}</code></pre>}
-        {q.similar.length > 0 && <div className="notes-iv-similar"><span className="notes-iv-similar-label"><ExpandedText text={hi ? "मिलते-जुलते प्रश्न" : "Similar questions"} /></span>{q.similar.map(s => <details className="notes-iv-acc" key={s.question}><summary><ExpandedText text={s.question} /></summary><p><ExpandedText text={s.answer} /></p></details>)}</div>}
+        {q.similar.length > 0 && <div className="notes-iv-similar"><span className="notes-iv-similar-label"><ExpandedText text={hi ? "मिलते-जुलते प्रश्न" : "Similar questions"} /></span>{q.similar.map(s => <details className="notes-iv-acc" key={s.question}><AccordionSummary><ExpandedText text={s.question} /></AccordionSummary><p><ExpandedText text={s.answer} /></p></details>)}</div>}
       </div>)}</>}
     </LearningRegion></BookmarkScope></section>)}
     <section ref={sectionRef(count + 1)} id={`${idPrefix}-${count + 1}`} tabIndex={-1} className={styles.anchor}>
@@ -361,7 +362,7 @@ export function NotesModal({ document: initial, initialProgress, onClose, sample
           <h3>{t("contents")}</h3>
           <ol>{contents.map(item => <li key={item.index}><button type="button" aria-current={item.index === position ? "location" : undefined} data-done={state.completed || (item.index >= 1 && item.index < lesson) ? "" : undefined} onClick={() => jump(item.index)}>{item.prefix ? <span className={styles.railIndex}>{item.prefix}</span> : <span className={styles.railIndex} aria-hidden="true">•</span>}<span className={styles.railLabel}>{compactAbbreviations(item.label)}</span></button></li>)}</ol>
           <details className={styles.myNotes} open={Boolean(state.notes)}>
-            <summary><NotebookPen size={14} aria-hidden="true" /><ExpandedText text={t("notes")} /></summary>
+            <AccordionSummary><NotebookPen size={14} aria-hidden="true" /><ExpandedText text={t("notes")} /></AccordionSummary>
             <Textarea aria-label={t("notes")} maxLength={20000} placeholder={t("notesHint")} value={state.notes} onChange={event => update({ notes: event.target.value }, 1500)} onBlur={() => void persist()} />
           </details>
         </nav>

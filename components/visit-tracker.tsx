@@ -42,8 +42,24 @@ export function VisitTracker() {
       open.current = { path: pathname, started: performance.now() };
     }, 400);
     const onHide = () => { if (document.visibilityState === "hidden") leave(); };
+    // Only UI labels and route paths: never typed text, form values or query strings.
+    const onClick = (event: MouseEvent) => {
+      if (pathname !== "/" && !pathname.startsWith("/dashboard")) return;
+      const control = event.target instanceof Element ? event.target.closest<HTMLElement>("a,button,summary,[data-track-option]") : null;
+      if (!control || control.closest('form,[contenteditable="true"],[data-track-ignore]')) return;
+      const option = (control.dataset.trackOption || control.getAttribute("aria-label") || control.textContent || "").trim().replace(/\s+/g, " ").slice(0, 100);
+      if (!option) return;
+      let targetPath: string | null = null;
+      if (control instanceof HTMLAnchorElement) {
+        try { const url = new URL(control.href); if (url.origin === location.origin) targetPath = `${url.pathname}${url.hash}`.slice(0, 300); } catch { /* not navigable */ }
+      }
+      const container = control.closest("[data-track-topic],article,section");
+      const topic = (container?.getAttribute("data-track-topic") || container?.querySelector("h2,h3,h1")?.textContent || container?.id || pathname.split("/").filter(Boolean).slice(1).join(" / ") || "General").trim().slice(0, 120);
+      send({ type: "interaction", path: pathname, topic, option, target_path: targetPath });
+    };
     document.addEventListener("visibilitychange", onHide);
-    return () => { clearTimeout(timer); document.removeEventListener("visibilitychange", onHide); };
+    document.addEventListener("click", onClick);
+    return () => { clearTimeout(timer); document.removeEventListener("visibilitychange", onHide); document.removeEventListener("click", onClick); leave(); };
   }, [pathname]);
 
   return null;

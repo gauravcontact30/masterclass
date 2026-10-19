@@ -1,4 +1,5 @@
 "use client";
+import { AccordionChevron } from "@/components/ui/accordion-chevron";
 
 import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 import Link from "next/link";
@@ -187,7 +188,7 @@ export function AgentBlueprint() {
                       {step.tech} · <code>{step.file}</code>
                     </span>
                   </span>
-                  <ChevronDown size={15} aria-hidden="true" className={styles.stepChevron} />
+                  <AccordionChevron />
                 </button>
                 <div id={`blueprint-step-${mode}-${step.num}`} className={styles.stepBody} hidden={!active}>
                   <p>{step.desc}</p>

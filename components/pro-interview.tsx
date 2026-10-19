@@ -1,4 +1,5 @@
 "use client";
+import { AccordionSummary } from "@/components/ui/accordion-chevron";
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -21,7 +22,7 @@ const DRILL_SIZE = 12;
 
 function QuestionCard({ item, onCompany }: { item: InterviewItem; onCompany: (company: string) => void }) {
   return <details className={styles.ivCard}>
-    <summary><span className={styles.ivQuestion}><span className={styles.questionLabel}>PRACTICE QUESTION</span>{item.q}</span><span className={styles.ivTags}><span className={styles.cat}>{item.cat}</span><span className={styles.level} data-level={item.lvl}>{item.lvl}</span><span className={styles.revealLabel}>Explore answer +</span></span></summary>
+    <AccordionSummary><span className={styles.ivQuestion}><span className={styles.questionLabel}>PRACTICE QUESTION</span>{item.q}</span><span className={styles.ivTags}><span className={styles.cat}>{item.cat}</span><span className={styles.level} data-level={item.lvl}>{item.lvl}</span><span className={styles.revealLabel}>Explore answer +</span></span></AccordionSummary>
     <div className={styles.ivAnswer}><ProMarkdown text={item.a}/><div className={styles.companies}><span>Asked at</span>{item.co.map(company => <button key={company} onClick={() => onCompany(company)} aria-label={`Show questions asked at ${company}`}>{company}</button>)}</div></div>
   </details>;
 }
@@ -68,7 +69,7 @@ export function ProInterview({ aiReady }: { aiReady: boolean }) {
     <section className={`${styles.card} ${styles.qotd}`} aria-label="Question of the day">
       <div className={styles.ivHead}><span className={styles.eyebrow}><Star size={12} style={{ verticalAlign: "-1px" }}/> Question of the day</span><span className={styles.cat}>{questionOfDay.cat}</span><span className={styles.level} data-level={questionOfDay.lvl}>{questionOfDay.lvl}</span></div>
       <details className={styles.ivCard} style={{ marginTop: 10 }}>
-        <summary><span className={styles.question} style={{ margin: 0 }}>{questionOfDay.q}</span><span className={styles.cat}>Reveal answer</span></summary>
+        <AccordionSummary><span className={styles.question} style={{ margin: 0 }}>{questionOfDay.q}</span><span className={styles.cat}>Reveal answer</span></AccordionSummary>
         <div className={styles.ivAnswer}><ProMarkdown text={questionOfDay.a}/><div className={styles.companies}><span>Asked at</span>{questionOfDay.co.map(company => <button key={company} onClick={() => showCompany(company)}>{company}</button>)}</div></div>
       </details>
     </section>

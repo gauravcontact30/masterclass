@@ -1,4 +1,5 @@
 "use client";
+import { AccordionSummary } from "@/components/ui/accordion-chevron";
 
 import learningCard from "./learning-card.module.css";
 import { useId, useState } from "react";
@@ -29,7 +30,7 @@ export function OfficialDocsDirectory({ docId }: { docId: string }) {
     {matches.length ? <ul className={styles.entries}>{matches.slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE).map(entry => <li key={`${entry.kind}-${entry.name}-${entry.category}`} className={learningCard.card}>
       <span className={styles.category}>{entry.category} · {entry.kind}</span>
       <h4><a href={entry.url} target="_blank" rel="noopener noreferrer">{entry.name} <span aria-hidden="true">↗</span></a></h4><p>{entry.summary}</p>
-      {!!entry.points?.length && <details><summary>Key points</summary><ul>{entry.points.map(point => <li key={point}>{point}</li>)}</ul></details>}
+      {!!entry.points?.length && <details><AccordionSummary>Key points</AccordionSummary><ul>{entry.points.map(point => <li key={point}>{point}</li>)}</ul></details>}
     </li>)}</ul> : <p>No references match. Try a shorter search or another category.</p>}
     <nav className={styles.pagination} aria-label={`${directory.title} pagination`}>
       <button type="button" disabled={current === 0} onClick={() => setPage(current - 1)}>Previous</button>

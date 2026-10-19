@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { useLanguage } from "./language-provider";
 import styles from "./landing-home.module.css";
+import { useVisiblePlayback } from "./use-visible-playback";
 
 const INTERVAL = 7000;
 type Pair = [string, string];
@@ -58,6 +59,8 @@ export function LandingSlider({ technologies }: { technologies?: number }) {
   const [held, setHeld] = useState(false);
   const [reduced, setReduced] = useState(false);
   const regionRef = useRef<HTMLElement>(null);
+  const visible = useVisiblePlayback(regionRef);
+  const [requested, setRequested] = useState(() => new Set([0]));
   const touchX = useRef<number | null>(null);
 
   useEffect(() => {
@@ -70,8 +73,12 @@ export function LandingSlider({ technologies }: { technologies?: number }) {
   }, []);
 
   const total = slides.length;
-  const running = playing && !held && !reduced;
-  const go = useCallback((next: number) => setIndex((next + total) % total), [total]);
+  const running = playing && !held && !reduced && visible;
+  const go = useCallback((next: number) => {
+    const target = (next + total) % total;
+    setRequested(previous => new Set([...previous, target, (target + 1) % total]));
+    setIndex(target);
+  }, [total]);
   useEffect(() => {
     if (!running) return;
     const timer = setTimeout(() => go(index + 1), INTERVAL);
@@ -100,7 +107,11 @@ export function LandingSlider({ technologies }: { technologies?: number }) {
         const current = position === index;
         return <article key={slide.id} className={styles.heroSlide} data-active={current || undefined} aria-roledescription="slide"
           aria-label={`${position + 1} / ${total}`} aria-hidden={!current} inert={!current}>
-          <Image src={slide.src} alt={slide.alt} fill sizes="100vw" quality={85} preload={position === 0} className={styles.heroImage} style={{ "--focus": slide.focus } as React.CSSProperties} />
+          {/* Only the LCP image is requested initially. Warm the next slide after it loads;
+              retain visited images so cross-fades and backwards navigation stay smooth. */}
+          {requested.has(position) && <Image src={slide.src} alt={slide.alt} fill sizes="100vw" quality={75} preload={position === 0}
+            onLoad={position === 0 ? () => setRequested(previous => previous.has(1) ? previous : new Set([...previous, 1])) : undefined}
+            className={styles.heroImage} style={{ "--focus": slide.focus } as React.CSSProperties} />}
           <div className={styles.heroShade} />
           <div className={styles.heroTint} data-tone={slide.tone} />
           <p className={styles.heroKicker} data-tone={slide.tone}><span aria-hidden="true" />{pick(slide.tool)}</p>

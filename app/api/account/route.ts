@@ -6,7 +6,7 @@ import { z } from "zod";
 import { preparationAccess, savePreparations } from "@/lib/server/preparations";
 import { canReadTechnology } from "@/lib/study/preparations";
 import { preparationSchema } from "@/lib/study/preparation-schema";
-export async function GET(monitorRequest?: Request) { return api(async () => {
+export async function GET(monitorRequest: Request) { return api(async () => {
   const id = await userId(); const user = await profile(id);
   const preparations = await preparationAccess(id);
   // Seed the shared default guides before listing, so a first-time library

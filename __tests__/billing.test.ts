@@ -19,7 +19,7 @@ function table(existing: unknown = null, conflict = false) {
 beforeEach(() => { jest.clearAllMocks(); Object.assign(process.env,{RAZORPAY_KEY_ID:"rzp_test_key",RAZORPAY_KEY_SECRET:"secret",RAZORPAY_WEBHOOK_SECRET:"webhook",BILLING_ENABLED:"true"}); jest.mocked(savePreparations).mockResolvedValue(undefined); process.env.RAZORPAY_MONTHLY_PLAN_ID = "plan_monthly"; process.env.RAZORPAY_YEARLY_PLAN_ID = "plan_yearly"; delete process.env.PRO_MONTHLY_PRICE_INR; delete process.env.PRO_YEARLY_PRICE_INR; table(); });
 test("public pricing offers only monthly and yearly; inactive accounts have zero allowance", async () => {
   process.env.FREE_MONTHLY_GENERATIONS = "100";
-  const data = await (await GET()).json(); expect(data).toMatchObject({ monthly: 299, yearly: 2999 });
+  const data = await (await GET(new Request("http://localhost/api/billing"))).json(); expect(data).toMatchObject({ monthly: 299, yearly: 2999 });
   expect(data).not.toHaveProperty("freeLimit"); expect(data).not.toHaveProperty("perDownload"); expect(quota("free")).toBe(0);
 });
 test.each([{ action: "buyDownloadCredit" }, { ...checkout, tier: "free" }, { ...checkout, selections: [] }, { ...checkout, selections: ["isSuperAdmin"] }])("rejects retired plans and invalid preparation before payment: %j", async body => {

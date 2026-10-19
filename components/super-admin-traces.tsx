@@ -1,4 +1,5 @@
 "use client";
+import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import { useMemo, useState } from "react";
 import { filterTraces, type TraceRow } from "@/lib/admin-traces";
 import { AdminTable } from "./super-admin-table";
@@ -21,7 +22,7 @@ export function SuperAdminTraces({ events, query, initialMode = "all" }: { event
     <AdminTable title="Trace timeline" rows={rows} query={query} note="Latest 200 loaded events in the selected reporting window. No match does not prove an event never occurred. Request IDs are available for newly instrumented requests." columns={[
       "created_at", "kind", "resource", "action", "status", "duration_ms",
       ...["request_id", "actor_id", "owner_id", "record_id"].map(key => ({ key, filter: false, render: (row: TraceRow) => row[key] ? <button type="button" className={styles.identity} onClick={() => setIdentity(String(row[key]))} title={`Trace ${String(row[key])}`}>{String(row[key])}</button> : "—" })),
-      { key: "details", sort: false, filter: false, render: row => <details><summary>Inspect event</summary><pre className={styles.details}>{JSON.stringify(row, null, 2)}</pre></details> },
+      { key: "details", sort: false, filter: false, render: row => <details><AccordionSummary>Inspect event</AccordionSummary><pre className={styles.details}>{JSON.stringify(row, null, 2)}</pre></details> },
     ]} />
   </Card>;
 }

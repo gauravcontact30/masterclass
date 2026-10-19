@@ -21,6 +21,7 @@
 /* Three cards a screen; each page is exactly one track width so autoplay turns a whole screen. */
 .track { --gap: 24px; display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 2 * var(--gap)) / 3); gap: var(--gap); margin: 0; padding: 0; list-style: none; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
 .track::-webkit-scrollbar { display: none; }
+.pulse .track { overflow-y: hidden; }
 @media (max-width: 1080px) { .track { grid-auto-columns: calc((100% - var(--gap)) / 2); } }
 @media (max-width: 680px) { .track { --gap: 14px; grid-auto-columns: 100%; } }
 /* /dashboard (no `preview`): two cards a screen with justified, hyphenated card text; phones keep one. */

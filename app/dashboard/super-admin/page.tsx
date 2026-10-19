@@ -9,5 +9,5 @@ export default async function SuperAdminPage() {
   const user = await currentUser();
   if (!user) redirect("/sign-in");
   if (!isSuperAdminUser(user)) notFound();
-  return <SuperAdminDashboard />;
+  return <SuperAdminDashboard userId={user.id} />;
 }

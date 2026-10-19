@@ -1,5 +1,16 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useVisiblePlayback } from "./use-visible-playback";
+import { useNearViewport } from "./use-near-viewport";
+
+const motionQuery = "(prefers-reduced-motion: reduce)";
+const readMotion = () => window.matchMedia?.(motionQuery).matches ?? false;
+const serverMotion = () => false;
+function subscribeMotion(update: () => void) {
+  const query = window.matchMedia?.(motionQuery);
+  query?.addEventListener("change", update);
+  return () => query?.removeEventListener("change", update);
+}
 
 /**
  * A scroll-snap track that turns one screen (one track width) at a time, with autoplay that waits `intervalMs`
@@ -7,6 +18,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
  */
 export function usePagedCarousel<T extends HTMLElement>(itemCount: number, perScreen: number, intervalMs: number) {
   const track = useRef<T>(null);
+  const visible = useVisiblePlayback(track);
+  const nearViewport = useNearViewport(track);
+  const reduced = useSyncExternalStore(subscribeMotion, readMotion, serverMotion);
   const [page, setPage] = useState(0);
   const [pages, setPages] = useState(Math.ceil(itemCount / perScreen));
   const [playing, setPlaying] = useState(true);
@@ -18,12 +32,21 @@ export function usePagedCarousel<T extends HTMLElement>(itemCount: number, perSc
 
   useEffect(() => {
     const el = track.current; if (!el) return; measure();
-    el.addEventListener("scroll", measure, { passive: true }); window.addEventListener("resize", measure);
-    return () => { el.removeEventListener("scroll", measure); window.removeEventListener("resize", measure); };
+    let frame = 0;
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(() => { frame = 0; measure(); });
+    };
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(schedule);
+    observer?.observe(el);
+    el.addEventListener("scroll", schedule, { passive: true }); window.addEventListener("resize", schedule);
+    return () => {
+      cancelAnimationFrame(frame);
+      observer?.disconnect();
+      el.removeEventListener("scroll", schedule); window.removeEventListener("resize", schedule);
+    };
   }, [measure]);
-  useEffect(() => { if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) setPlaying(false); }, []);
-  useEffect(() => { if (!playing || held) return; const timer = setTimeout(() => goTo(page + 1), intervalMs); return () => clearTimeout(timer); }, [playing, held, page, goTo, intervalMs]);
+  useEffect(() => { if (!playing || held || !visible || reduced) return; const timer = setTimeout(() => goTo(page + 1), intervalMs); return () => clearTimeout(timer); }, [playing, held, visible, reduced, page, goTo, intervalMs]);
 
   const holdProps = { onMouseEnter: () => setHeld(true), onMouseLeave: () => setHeld(false), onFocus: () => setHeld(true), onBlur: () => setHeld(false) };
-  return { track, page, pages, playing, setPlaying, running: playing && !held, goTo, holdProps };
+  return { track, nearViewport, page, pages, playing, setPlaying, running: playing && !held && visible && !reduced, goTo, holdProps };
 }

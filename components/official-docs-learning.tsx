@@ -1,3 +1,4 @@
+import { AccordionSummary } from "@/components/ui/accordion-chevron";
 ﻿import { ExternalLink } from "lucide-react";
 import type { OfficialTechnologyDoc } from "@/lib/official-docs-data";
 import { DOCS_PROJECTS } from "@/lib/official-docs-projects";
@@ -130,7 +131,7 @@ export function OfficialDocsLearning({ doc, idPrefix }: { doc: OfficialTechnolog
             const option = concepts[(offset + index * 2) % concepts.length];
             return <li key={option.title}>{option.title}</li>;
           })}</ol>
-          <details className={styles.answer}><summary>Show answer {index + 1}</summary><p><strong>Answer:</strong> <mark>{concept.title}</mark></p></details>
+          <details className={styles.answer}><AccordionSummary>Show answer {index + 1}</AccordionSummary><p><strong>Answer:</strong> <mark>{concept.title}</mark></p></details>
         </div>)}
       </section>
 
@@ -140,14 +141,14 @@ export function OfficialDocsLearning({ doc, idPrefix }: { doc: OfficialTechnolog
         <div className={styles.question}>
           <Difficulty level={2} />
           <h4>1. Explain an important architectural behavior of {doc.title}.</h4>
-          <details className={styles.answer}><summary>Show model answer 1</summary>
+          <details className={styles.answer}><AccordionSummary>Show model answer 1</AccordionSummary>
             <p><strong>Model answer:</strong> {doc.architecturePoints.slice(0, 2).join(" ")}</p>
           </details>
         </div>
         <div className={styles.question}>
           <Difficulty level={3} />
           <h4>2. When reviewing a {doc.title} implementation, what should you recommend and what pitfall should you flag?</h4>
-          <details className={styles.answer}><summary>Show model answer 2</summary>
+          <details className={styles.answer}><AccordionSummary>Show model answer 2</AccordionSummary>
             <p><strong>Recommend:</strong> {doc.bestPractices[0]}</p>
             <p><strong>Flag:</strong> {doc.commonGotchas[0]}</p>
           </details>

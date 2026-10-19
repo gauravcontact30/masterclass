@@ -1,11 +1,11 @@
 "use client";
+import { AccordionChevron } from "@/components/ui/accordion-chevron";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import {
   BrainCircuit,
   Boxes,
-  ChevronDown,
   ChevronsDownUp,
   ChevronsUpDown,
   Cloud,
@@ -228,7 +228,7 @@ export function ApiPackageIndex({
               <Icon size={15} aria-hidden="true" className={ref.indexIcon} />
               <span className={ref.indexName}>{category.label}</span>
               <span className={ref.count}>{category.packages.length}</span>
-              <ChevronDown size={14} aria-hidden="true" className={ref.groupChevron} />
+              <AccordionChevron />
             </button>
             <ul id={`api-index-list-${category.id}`} aria-label={category.label} hidden={!open}>
               {category.packages.map(pkg => (

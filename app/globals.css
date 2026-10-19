@@ -244,11 +244,7 @@ label .combobox-trigger{margin-top:11px;font-weight:400}
 .campus-image{display:block;width:100%;height:clamp(230px,34vw,430px)}
 .campus-slide figcaption{position:absolute;left:0;right:0;bottom:0;padding:64px 44px 26px;font-size:15px;color:var(--paper);
   background:linear-gradient(to top,#1b1436e6 0%,#1b1436a6 42%,transparent 100%)}
-.landing-campus .carousel-controls{position:absolute;right:44px;bottom:18px;margin:0;gap:12px;z-index:1}
-.landing-campus .carousel-controls>button{color:var(--paper)}
-.landing-campus .carousel-controls>button:hover{background:#ffffff26}
-.landing-campus .carousel-dots button{background:#ffffff59}
-.landing-campus .carousel-dots button[aria-current=true]{background:var(--gold)}
+
 .landing-campus-note{padding:10px 44px 0;font-size:12px;color:var(--paper-soft)}
 
 /* Hero: copy on the left spine, the guide stack as the one bold object. */
@@ -272,19 +268,6 @@ label .combobox-trigger{margin-top:11px;font-weight:400}
 .landing-step-text p{font-size:14px;line-height:1.8;color:var(--paper-dim);max-width:38ch}
 .landing-catalog-note{margin-top:46px;font-size:13px;color:var(--paper-soft);border-top:1px solid #ffffff14;padding-top:22px}
 
-.carousel-track{position:relative}
-.carousel-controls{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:28px}
-.carousel-controls>button{background:none;border:0;color:#8a7fae;display:grid;place-items:center;padding:6px;border-radius:50%}
-.carousel-controls>button:hover{background:#f5f4ed}
-.carousel-dots{display:flex;align-items:center;gap:8px}
-.carousel-dots button{width:7px;height:7px;border-radius:50%;background:#ddd6f0;border:0;padding:0;transition:width .2s,background .2s}
-.carousel-dots button[aria-current=true]{background:#d97757;width:20px;border-radius:5px}
-.landing-hero .carousel-controls{margin-top:44px}
-.landing-hero .carousel-controls>button{color:#e7e0fb}
-.landing-hero .carousel-controls>button:hover{background:#ffffff1a}
-.landing-hero .carousel-dots button{background:#ffffff40}
-.landing-hero .carousel-dots button[aria-current=true]{background:#e0a94a}
-
 .landing-features{padding-block:92px;max-width:1240px;margin:0 auto;border-top:1px solid #ffffff14}
 .landing-features>h2{font-size:clamp(26px,3.1vw,38px);max-width:16ch;margin-bottom:44px}
 /* Bento: the lead card takes two columns so the grid reads as hierarchy, not a card kit. */
@@ -306,10 +289,6 @@ label .combobox-trigger{margin-top:11px;font-weight:400}
 .testimonial-initials{display:grid;place-items:center;background:linear-gradient(135deg,var(--violet),var(--gold));color:#fff;font-weight:600;font-size:19px;letter-spacing:0}
 .landing-testimonial{font-family:var(--font-display),Georgia,"Nirmala UI",serif;font-style:italic;font-weight:400;font-size:clamp(18px,2.1vw,23px);line-height:1.58;color:var(--paper);display:block;margin:0;max-width:34ch}
 .testimonial-name{font-size:13px;color:var(--paper-soft);margin:0}
-.landing-testimonials .carousel-dots button{background:#ffffff33}
-.landing-testimonials .carousel-dots button[aria-current=true]{background:var(--gold)}
-.landing-testimonials .carousel-controls>button{color:var(--paper-soft)}
-.landing-testimonials .carousel-controls>button:hover{background:#ffffff14}
 
 .landing-pricing{padding-block:92px;max-width:1240px;margin:0 auto;border-top:1px solid #ffffff14}
 .landing-pricing>h2{font-size:clamp(24px,2.7vw,32px);text-align:center;margin-bottom:44px}
@@ -337,7 +316,7 @@ label .combobox-trigger{margin-top:11px;font-weight:400}
 @media(max-width:1150px){
 .landing-page section{padding-inline:30px}
 .campus-slide figcaption{padding-inline:30px}
-.landing-campus .carousel-controls{right:30px}
+
 .landing-hero{gap:40px;padding-block:40px 76px}
 .landing-step-list{gap:26px}
 .landing-feature-grid{grid-template-columns:repeat(2,1fr)}
@@ -357,7 +336,7 @@ label .combobox-trigger{margin-top:11px;font-weight:400}
 .landing-nav-actions{gap:14px}
 .landing-page section{padding-inline:20px}
 .campus-slide figcaption{padding:52px 20px 22px;font-size:13px}
-.landing-campus .carousel-controls{right:14px;bottom:12px;gap:8px}
+
 .landing-hero{padding-block:26px 56px}
 .landing-hero h1{letter-spacing:-1.2px}
 .landing-hero-body{font-size:15px}
@@ -418,7 +397,7 @@ button:disabled,select:disabled{cursor:not-allowed;opacity:.55}
 .landing-hero-note{font-size:14px}
 .landing-page .landing-campus{margin:0 auto;max-width:1240px;border-radius:20px;overflow:hidden;background:#e8e6dc}
 .campus-image{height:240px}.campus-slide figcaption{color:#fff;background:linear-gradient(transparent,#141413d9)}
-.landing-campus-note{padding:12px 24px;font-size:13px}.landing-campus .carousel-dots button[aria-current=true]{background:#fff}
+.landing-campus-note{padding:12px 24px;font-size:13px}
 .landing-steps,.landing-features,.landing-pricing{border-color:#dedcd1;padding-block:80px}
 .landing-step{border-color:#d1cfc5}.landing-step-index{color:#4d4c48;opacity:1;font-size:34px}.landing-step-text p,.landing-feature-grid article p{font-size:16px}
 .landing-page .landing-feature-grid article{background:#e8e6dc;border-color:#dedcd1;border-radius:16px;padding:32px}
@@ -668,9 +647,9 @@ button:disabled,select:disabled{cursor:not-allowed;opacity:.55}
 .sidebar-ai-mode:hover>.sidebar-tooltip,.sidebar-ai-mode:focus-visible>.sidebar-tooltip{opacity:1;visibility:visible}
 @media(prefers-reduced-motion:reduce){.sidebar-ai-switch,.sidebar-ai-switch i{transition:none}}
 @media(max-width:760px){
-  .compact-workspace .sidebar > nav:first-of-type{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;width:100%;min-width:0}
-  .compact-workspace .sidebar > nav:first-of-type > :is(button,a){min-width:0;gap:5px;padding:10px 5px;font-size:10px;justify-content:center}
-  .compact-workspace .sidebar > nav:first-of-type > :is(button,a) svg{width:16px;flex-shrink:0}
+  .compact-workspace :is(.sidebar > nav, .sidebar-options > nav):first-of-type{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;width:100%;min-width:0}
+  .compact-workspace :is(.sidebar > nav, .sidebar-options > nav):first-of-type > :is(button,a){min-width:0;gap:5px;padding:10px 5px;font-size:10px;justify-content:center}
+  .compact-workspace :is(.sidebar > nav, .sidebar-options > nav):first-of-type > :is(button,a) svg{width:16px;flex-shrink:0}
 }
 
 /* Shared learning-point treatment across notes, service references and course previews. */
@@ -699,10 +678,16 @@ ul.learning-key-points.pointwise > li::before, .notes-bullets > li::before { con
 /* Lines whose text a learner deleted collapse instead of leaving blank space (lib/learning-text-dom.ts). */
 [data-learning-emptied]{display:none!important}
 
-/* ---------- Sidebar: search above the learning space, compact rows, no visible scrollbar ---------- */
+/* ---------- Sidebar: search above the learning space and compact rows ---------- */
 .compact-workspace .sidebar{padding-block:20px 12px}
-.compact-workspace .sidebar .study-navigation,.compact-workspace .sidebar{scrollbar-width:none}
-.compact-workspace .sidebar .study-navigation::-webkit-scrollbar,.compact-workspace .sidebar::-webkit-scrollbar{display:none}
+@media(min-width:761px){
+  .compact-workspace .sidebar{overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;scrollbar-width:thin;scrollbar-color:#87867f #141413}
+  .compact-workspace .sidebar > *{flex-shrink:0}
+  .compact-workspace .sidebar::-webkit-scrollbar{width:6px}
+  .compact-workspace .sidebar::-webkit-scrollbar-track{background:#141413}
+  .compact-workspace .sidebar::-webkit-scrollbar-thumb{background:#87867f;border:1px solid #141413;border-radius:6px}
+  .compact-workspace .sidebar::-webkit-scrollbar-thumb:hover{background:#d97757}
+}
 .compact-workspace .sidebar-label{margin:14px 11px 6px;font-size:9px;letter-spacing:1.5px}
 .compact-workspace .sidebar nav{gap:1px}
 .compact-workspace .sidebar nav button,.compact-workspace .sidebar nav .sidebar-notes{min-height:33px;padding:7px 11px;font-size:12.5px;gap:10px;margin-bottom:1px;border-radius:7px}
@@ -743,7 +728,7 @@ ul.learning-key-points.pointwise > li::before, .notes-bullets > li::before { con
 .sidebar-collapsed .sidebar .sidebar-tooltip{display:none}
 
 /* The preparation section after Mentors scrolls independently of the fixed links. */
-.compact-workspace .sidebar > nav{flex-shrink:0}
+.compact-workspace :is(.sidebar > nav, .sidebar-options > nav){flex-shrink:0}
 .compact-workspace .sidebar .study-nav-shell{flex:1;min-height:0;border-top:1px solid #3d3d3a;margin-top:12px;padding-top:4px}
 .compact-workspace .sidebar .study-navigation{overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#87867f #262624;scrollbar-gutter:stable;padding-right:6px}
 .compact-workspace .sidebar .study-navigation::-webkit-scrollbar{display:block;width:6px}
@@ -753,15 +738,13 @@ ul.learning-key-points.pointwise > li::before, .notes-bullets > li::before { con
 @media(min-width:761px) and (max-height:800px){
   .compact-workspace .sidebar{padding-top:14px}
   .compact-workspace .sidebar .sidebar-label{margin-top:12px;margin-bottom:4px}
-  .compact-workspace .sidebar > nav button,.compact-workspace .sidebar > nav .sidebar-notes{min-height:28px;padding-top:5px;padding-bottom:5px}
+  .compact-workspace :is(.sidebar > nav, .sidebar-options > nav) button,.compact-workspace :is(.sidebar > nav, .sidebar-options > nav) .sidebar-notes{min-height:28px;padding-top:5px;padding-bottom:5px}
   .compact-workspace .sidebar .sidebar-search{margin-top:8px}
   .compact-workspace .sidebar .study-nav-shell{margin-top:8px}
 }
 @media(max-width:760px){.compact-workspace .sidebar .study-nav-shell{flex:none}.compact-workspace .sidebar .study-navigation{max-height:40dvh}}
 
 .super-admin-header-link{display:inline-flex;align-items:center;gap:7px;flex-shrink:0;min-height:34px;padding:7px 11px;border:1px solid #e8d3c9;border-radius:7px;background:#fbf4ef;color:#a64b30;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap}.super-admin-header-link:hover{background:#f4e5db;border-color:#d97757}@media(max-width:600px){.compact-workspace .topbar{flex-wrap:wrap;height:auto;min-height:62px;gap:10px;padding-block:12px}.compact-workspace .topbar-actions{margin-left:auto;gap:9px}.super-admin-header-link{padding:6px 8px;font-size:11px}}
-
-
 
 /* shadcn form controls share dashboard typography and interaction states. */
 [data-slot="native-select"]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23807870' stroke-width='1.8'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:34px!important}
@@ -778,21 +761,21 @@ ul.learning-key-points.pointwise > li::before, .notes-bullets > li::before { con
    the page rather than pinning ~300px of navigation over the content. */
 @media (max-width: 760px) {
   .app-shell.compact-workspace .sidebar { position: relative; max-height: none; }
-  .app-shell.compact-workspace .sidebar > nav:is(:first-of-type, .sidebar-pro-nav) {
+  .app-shell.compact-workspace :is(.sidebar > nav, .sidebar-options > nav):is(:first-of-type, .sidebar-pro-nav) {
     display: flex; flex-wrap: nowrap; gap: 6px; margin: 0 -15px; padding: 2px 15px;
     overflow-x: auto; overscroll-behavior-x: contain; scroll-padding-inline: 15px; scrollbar-width: none;
     -webkit-mask-image: linear-gradient(90deg, transparent, #000 12px, #000 calc(100% - 28px), transparent);
     mask-image: linear-gradient(90deg, transparent, #000 12px, #000 calc(100% - 28px), transparent);
   }
-  .app-shell.compact-workspace .sidebar > nav:is(:first-of-type, .sidebar-pro-nav)::-webkit-scrollbar { display: none; }
-  .app-shell.compact-workspace .sidebar > nav:is(:first-of-type, .sidebar-pro-nav) > :is(a, button) {
+  .app-shell.compact-workspace :is(.sidebar > nav, .sidebar-options > nav):is(:first-of-type, .sidebar-pro-nav)::-webkit-scrollbar { display: none; }
+  .app-shell.compact-workspace :is(.sidebar > nav, .sidebar-options > nav):is(:first-of-type, .sidebar-pro-nav) > :is(a, button) {
     flex: none; width: auto; min-width: 0; min-height: 36px; margin: 0; padding: 8px 12px; gap: 7px;
     font-size: 12px; white-space: nowrap; justify-content: flex-start;
   }
-  .app-shell.compact-workspace .sidebar > nav:first-of-type > .sidebar-search-row { flex: none; padding: 0 4px 0 0; }
-  .app-shell.compact-workspace .sidebar > nav:first-of-type > .sidebar-search-row > .sidebar-notes { flex: none; min-height: 36px; padding: 8px 6px 8px 12px; font-size: 12px; white-space: nowrap; }
-  .app-shell.compact-workspace .sidebar > .sidebar-pro-nav { margin-top: 6px; }
-  .app-shell.compact-workspace .sidebar > .sidebar-pro-nav > a > svg:last-child:not(:first-child) { display: none; }
+  .app-shell.compact-workspace :is(.sidebar > nav, .sidebar-options > nav):first-of-type > .sidebar-search-row { flex: none; padding: 0 4px 0 0; }
+  .app-shell.compact-workspace :is(.sidebar > nav, .sidebar-options > nav):first-of-type > .sidebar-search-row > .sidebar-notes { flex: none; min-height: 36px; padding: 8px 6px 8px 12px; font-size: 12px; white-space: nowrap; }
+  .app-shell.compact-workspace :is(.sidebar > .sidebar-pro-nav, .sidebar-options > .sidebar-pro-nav) { margin-top: 6px; }
+  .app-shell.compact-workspace :is(.sidebar > .sidebar-pro-nav, .sidebar-options > .sidebar-pro-nav) > a > svg:last-child:not(:first-child) { display: none; }
 }
 /* Tablet widths: breadcrumb + refresh + super admin + language + avatar don't
    fit beside a 200px sidebar, so the actions drop to a second line when needed. */
@@ -827,3 +810,47 @@ ul.learning-key-points.pointwise > li::before, .notes-bullets > li::before { con
 :where(p) { text-align: justify; text-justify: inter-word; text-align-last: auto; hyphens: auto; -webkit-hyphens: auto; }
 :where(.text-center, [class*="center" i], [class*="empty" i], [role="status"], [style*="text-align: center"], [style*="text-align:center"]) :where(p),
 :where(p.text-center, p[class*="center" i]) { text-align: inherit; }
+
+/* Shared shadcn accordion indicator; native disclosures keep their HTML semantics. */
+[data-slot="accordion-summary"] { position: relative; list-style: none; padding-inline-end: 52px !important; cursor: pointer; min-height: 44px; }
+[data-slot="accordion-summary"]::-webkit-details-marker { display: none; }
+[data-slot="accordion-summary"]::marker { content: ""; }
+[data-slot="accordion-summary"]::before, [data-slot="accordion-summary"]::after { content: none !important; }
+[data-slot="accordion-indicator"] { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; width: 30px; height: 30px; border: 1px solid var(--accordion-arrow-border, #dedcd1); border-radius: 10px; background: var(--accordion-arrow-surface, #f5f4ed); color: var(--accordion-arrow-ink, #4d4c48); pointer-events: none; transition: background-color .18s ease, border-color .18s ease, color .18s ease; }
+[data-slot="accordion-summary"] > [data-slot="accordion-indicator"] { position: absolute; inset-inline-end: 10px; top: 50%; translate: 0 -50%; }
+[data-slot="accordion-trigger"] > [data-slot="accordion-indicator"] { margin-inline-start: 12px; }
+[data-slot="accordion-indicator"] > svg { width: 16px; height: 16px; margin: 0 !important; stroke-width: 2; color: inherit !important; transition: transform .2s ease; }
+:is([data-slot="accordion-summary"], [data-slot="accordion-trigger"]):is(:hover, :focus-visible) > [data-slot="accordion-indicator"] { background: var(--accordion-arrow-hover-surface, #eeeae2); border-color: var(--accordion-arrow-hover-border, #b9a99a); color: var(--accordion-arrow-hover-ink, #292524); }
+details[open] > [data-slot="accordion-summary"] > [data-slot="accordion-indicator"], [data-slot="accordion-trigger"][aria-expanded="true"] > [data-slot="accordion-indicator"] { background: #f7e8de; border-color: #ddb79f; color: #914525; }
+details[open] > [data-slot="accordion-summary"] > [data-slot="accordion-indicator"] > svg, [data-slot="accordion-trigger"][aria-expanded="true"] > [data-slot="accordion-indicator"] > svg { transform: rotate(180deg); }
+[data-slot="accordion-summary"]:focus-visible { outline: 2px solid var(--ring, #b5573a); outline-offset: 3px; border-radius: 8px; }
+@media (prefers-reduced-motion: reduce) { [data-slot="accordion-indicator"], [data-slot="accordion-indicator"] > svg { transition: none; } }
+/* Stateful disclosure buttons use the same indicator as native/shadcn accordions. */
+[aria-expanded] > [data-slot="accordion-indicator"] { margin-inline-start: auto; }
+[aria-expanded]:is(:hover, :focus-visible) > [data-slot="accordion-indicator"] { background: var(--accordion-arrow-hover-surface, #eeeae2); border-color: var(--accordion-arrow-hover-border, #b9a99a); color: var(--accordion-arrow-hover-ink, #292524); }
+[aria-expanded="true"] > [data-slot="accordion-indicator"] { background: #f7e8de; border-color: #ddb79f; color: #914525; }
+[aria-expanded="true"] > [data-slot="accordion-indicator"] > svg { transform: rotate(180deg); }
+[data-slot="accordion-summary"] > [data-slot="accordion-indicator"], [aria-expanded] > [data-slot="accordion-indicator"] { flex: 0 0 30px; width: 30px; min-width: 30px; max-width: 30px; height: 30px; }
+.sidebar-collapsed :is(.study-main-trigger, .study-nav-trigger) > [data-slot="accordion-indicator"] { display: none; }
+
+/* Keep the learning sidebar header in place; only Dashboard through Interview scroll. */
+@media (min-width: 761px) {
+  .compact-workspace .sidebar.learning-sidebar { overflow: visible; }
+  .compact-workspace .learning-sidebar > .sidebar-options {
+    flex: 1 1 0%;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior-y: contain;
+    scrollbar-width: thin;
+    scrollbar-color: #87867f #141413;
+    scrollbar-gutter: stable;
+  }
+  .sidebar-options::-webkit-scrollbar { width: 6px; }
+  .sidebar-options::-webkit-scrollbar-track { background: #141413; }
+  .sidebar-options::-webkit-scrollbar-thumb { background: #87867f; border: 1px solid #141413; border-radius: 6px; }
+  .sidebar-options::-webkit-scrollbar-thumb:hover { background: #d97757; }
+}
+@media (max-width: 760px) {
+  .learning-sidebar > .sidebar-options { display: contents; }
+}

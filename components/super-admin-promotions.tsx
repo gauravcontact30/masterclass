@@ -5,6 +5,7 @@ import { Alert, AlertDescription } from "./ui/alert";
 import { Card } from "./ui/card";
 import { AdminTable } from "./super-admin-table";
 import { PLATFORMS, PLATFORM_LABEL, PROMOTION_FORMATS, PROMOTION_STATUSES, campaignSlug, utmLink, type Attribution, type Platform, type Promotion, type PromotionFormat } from "@/lib/promotions";
+import { SuperAdminDailySocial } from "./super-admin-daily-social";
 import styles from "./super-admin-promotions.module.css";
 
 type Data = Attribution & { promotions: Promotion[]; days: number; capped: boolean; generatedAt: string };
@@ -61,6 +62,7 @@ export function SuperAdminPromotions({ days, query }: Readonly<{ days: number; q
   const landingRows = useMemo(() => (data?.landingPages ?? []).map(item => ({ ...item, platform_name: PLATFORM_LABEL[item.platform] })), [data]);
 
   return <div className={styles.page}>
+    <SuperAdminDailySocial query={query} />
     {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
     {data?.capped && <Alert><AlertDescription>This window has more than 20,000 page views; the figures cover the first 20,000. Choose a shorter reporting window for exact numbers.</AlertDescription></Alert>}
     {!data && !error && <p className={styles.loading} role="status">Loading promotional tracking…</p>}

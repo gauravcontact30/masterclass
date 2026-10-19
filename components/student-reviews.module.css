@@ -3,7 +3,10 @@
 .stage { display: grid; gap: 16px; }
 
 .card { display: grid; gap: 16px; padding: clamp(24px, 3vw, 36px); border: 1px solid var(--nb-rule-2); border-radius: 14px; background: var(--nb-sheet); box-shadow: 0 24px 48px -36px rgba(143, 63, 35, .35); }
-.card[hidden] { display: none; }
+/* All quotes share a grid cell so switching quotes cannot move the content below. */
+.slides { display: grid; }
+.slides > .card { grid-area: 1 / 1; }
+.card[hidden] { display: grid; visibility: hidden; pointer-events: none; }
 .cardTop { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
 .area { display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 10px; border-radius: 6px; background: var(--nb-orange); color: var(--nb-ink-deep); font-size: 13.5px; font-weight: 600; }
 .stars { display: flex; gap: 3px; color: var(--nb-ink); }

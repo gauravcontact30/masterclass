@@ -17,5 +17,5 @@ export default async function Home() {
   const pro = landingProPreview();
   // The same values /api/billing returns, rendered into the page instead of fetched after hydration.
   const prices = { monthly: Number(process.env.PRO_MONTHLY_PRICE_INR ?? 299), yearly: Number(process.env.PRO_YEARLY_PRICE_INR ?? 2999), enabled: billingConfigured() };
-  return <><JsonLd data={[websiteSchema(), organizationSchema()]} /><LandingPage pro={pro} library={landingLibrary(pro)} prices={prices} daily={landingDaily()} techDocs={previewTechDocs(await officialTechDocs())} /></>;
+  return <><JsonLd data={[websiteSchema(), organizationSchema()]} /><LandingPage copyrightYear={new Date().getFullYear()} pro={pro} library={landingLibrary(pro)} prices={prices} daily={landingDaily()} techDocs={previewTechDocs(await officialTechDocs())} /></>;
 }

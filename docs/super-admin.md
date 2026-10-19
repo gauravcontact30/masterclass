@@ -32,3 +32,21 @@ The dashboard refreshes every minute while visible. Reporting windows affect bil
 ## Validation
 
 `node scripts/test-monitoring.mjs` checks SQL migration execution, role isolation, audit events, secret exclusion and payment deduplication with PGlite. Focused Jest tests cover API authorization, billing reconciliation, export behavior and tooltip accessibility. Production migration application and provider telemetry setup require deployment credentials not stored in this repository.
+
+## Daily busiest hours
+
+User activities includes a date-specific Busiest hours (IST) card. Its date selector is independent of the broader reporting-window selector; Today follows the current Asia/Kolkata calendar date. The card refreshes every 30 seconds while visible and displays the last successful update time.
+
+The protected `/api/super-admin/activity/hours?date=YYYY-MM-DD` endpoint reads non-bot page views within that day's IST boundaries. It returns all 24 hours, daily unique browser and account counts, sessions, and up to five most viewed routes per hour. Selecting an hour reveals its detail. Colors distinguish night, morning, afternoon, and evening. Unique visitor/session counts may overlap between hours and must not be summed into daily totals. If the 20,000-view read cap is reached, the card explicitly labels the report partial. No database migration is required.
+
+For Today, the current IST hour is highlighted with NOW and selected automatically. Follow current hour restores automatic selection after inspecting another hour. The detail panel shows first/latest tracked views, distinct routes, and traffic shares; the current-hour figures are partial through the latest refresh, not live-online counts. Historical dates never show a current-hour marker.
+
+## IP-based visitor location
+
+User activities includes a Visitor locations section with Country, State / region, and City views for the selected 1/7/30/90-day reporting window. It shows unique browsers, page views, sessions, signed-in users, last activity in IST, and location coverage. Counts are deduplicated separately within each location; do not sum cities to get country visitor totals. Search, filters, pagination, and export use the shared admin table.
+
+The protected `/api/super-admin/activity/locations` endpoint reads existing non-bot page-view records, with a 20,000-row limit explicitly marked partial. It returns private, non-cacheable aggregates and requires Super Admin authorization before accessing the database. No migration is needed.
+
+Promotional Tracking has a separate Daily visitor locations table (email, city, region, country, platform, page area, and time), keeping the existing four-column Daily visitor trace intact. Users and activity timelines show region where the underlying record provides it.
+
+Location comes from Vercel's `x-vercel-ip-city`, `x-vercel-ip-country-region`, and `x-vercel-ip-country` request headers already saved by `/api/track`. These describe the public IP location, not GPS, a street address, or verified residence. Region values may be ISO subdivision codes. VPNs, proxies, and mobile networks affect accuracy; local development and older records may have no location. No browser geolocation prompt or external geocoding service was added. Header reference: https://vercel.com/docs/headers/request-headers

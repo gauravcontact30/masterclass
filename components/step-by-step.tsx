@@ -1,8 +1,9 @@
 "use client";
+import { AccordionChevron, AccordionSummary } from "@/components/ui/accordion-chevron";
 
 import learningCard from "./learning-card.module.css";
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
-import { BookMarked, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Copy, FileCode2, ListOrdered, Loader2, Pencil, RotateCcw, Search, SlidersHorizontal, Sparkles, Terminal, Trash2, X } from "lucide-react";
+import { BookMarked, Check, CheckCircle2, ChevronLeft, ChevronRight, Copy, FileCode2, ListOrdered, Loader2, Pencil, RotateCcw, Search, SlidersHorizontal, Sparkles, Terminal, Trash2, X } from "lucide-react";
 import { useAiMode } from "@/lib/ai-mode";
 import { highlightLines } from "@/lib/code-highlight";
 import { inferLanguage } from "@/lib/code-run";
@@ -236,7 +237,7 @@ function ObjectivePractice({ item, index }: { item: ObjectiveQuestion; index: nu
   const [answerOpen, setAnswerOpen] = useState(false);
   const groupId = useId();
   return <details className={styles.interviewCard}>
-    <summary><span>{index + 1}. <InlineText text={item.question} /></span><AskRating rating={item.askRating} /></summary>
+    <AccordionSummary><span>{index + 1}. <InlineText text={item.question} /></span><AskRating rating={item.askRating} /></AccordionSummary>
     <fieldset className={styles.objectiveOptions}>
       <legend>Choose one option to reveal the answer</legend>
       {item.options.map((option, optionIndex) => <label key={optionIndex} data-selected={selected === optionIndex}>
@@ -247,7 +248,7 @@ function ObjectivePractice({ item, index }: { item: ObjectiveQuestion; index: nu
     {selected !== null && <div className={styles.interviewFeedback}>
       <p role="status">{selected === item.correctIndex ? 'Correct.' : 'Not quite.'} Correct answer: {String.fromCharCode(65 + item.correctIndex)}.</p>
       <details open={answerOpen} onToggle={event => setAnswerOpen(event.currentTarget.open)}>
-        <summary>Answer &amp; key points</summary>
+        <AccordionSummary>Answer &amp; key points</AccordionSummary>
         <p><strong><InlineText text={item.options[item.correctIndex]} /></strong></p>
         <p><InlineText text={item.answer} /></p>
         <Points points={item.keyPoints} label="Objective answer key points" />
@@ -263,7 +264,7 @@ function InterviewPractice({ guide, startNumber }: { guide: StepGuide; startNumb
       <h3 id="sec-subjective"><span className={styles.sectionNo}>{startNumber}</span>Most asked in interviews: Subjective questions</h3>
       <p className={styles.interviewNote}>Ask ratings are editorial preparation estimates, not measured interview frequency.</p>
       {interview.subjective.map((item, index) => <details className={styles.interviewCard} key={index}>
-        <summary><span>{index + 1}. <InlineText text={item.question} /></span><AskRating rating={item.askRating} /></summary>
+        <AccordionSummary><span>{index + 1}. <InlineText text={item.question} /></span><AskRating rating={item.askRating} /></AccordionSummary>
         <div className={styles.interviewAnswer}><p><InlineText text={item.answer} /></p><Points points={item.keyPoints} label="Subjective answer key points" /></div>
       </details>)}
     </section>
@@ -794,7 +795,7 @@ export function StepByStep({ initialQuestion = "", technologies = [] }: { initia
             }} />
           <InputGroupAddon align="block-end" className={styles.composerBar}>
             <Button type="button" variant="ghost" size="sm" aria-expanded={advanced} aria-controls={`${ids}-advanced`} onClick={() => setAdvanced(value => !value)}>
-              <SlidersHorizontal aria-hidden="true" />Advanced search<ChevronDown aria-hidden="true" className={advanced ? styles.flipped : undefined} />
+              <SlidersHorizontal aria-hidden="true" />Advanced search<AccordionChevron />
             </Button>
             <span className={styles.aiMode}>
               <Switch id={`${ids}-ai`} checked={aiMode} onCheckedChange={checked => setAiMode(checked)} />

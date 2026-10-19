@@ -11,7 +11,7 @@ import { AUTOPLAY_MS, Controls, Dots, PREVIEW_COUNT } from "./landing-ai-pulse";
 import { DashboardMore } from "./dashboard-more";
 import { useLanguage } from "./language-provider";
 import { usePagedCarousel } from "./use-paged-carousel";
-import { DashboardLessons } from "./dashboard-lessons";
+const DashboardLessons = dynamic(() => import("./dashboard-lessons").then(module => module.DashboardLessons));
 import home from "./landing-home.module.css";
 import styles from "./landing-workflows.module.css";
 import { LearningLoader } from "./learning-loader";
@@ -73,7 +73,7 @@ export function LandingWorkflows({ expanded = false, preview = false }: Readonly
 }
 
 function WorkflowCarousel({ workflows, text }: Readonly<{ workflows: Workflow[]; text: Text }>) {
-  const { track, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(workflows.length, 1, AUTOPLAY_MS);
+  const { track, nearViewport, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(workflows.length, 1, AUTOPLAY_MS);
   const current = workflows[page];
   return <>
     <div className={styles.toolbar}>
@@ -82,13 +82,13 @@ function WorkflowCarousel({ workflows, text }: Readonly<{ workflows: Workflow[];
     </div>
     <div className={styles.carousel}>
     <ul ref={track} className={styles.track} aria-roledescription="carousel" aria-label={text("Workflow blueprints", "वर्कफ़्लो ब्लूप्रिंट")} {...holdProps}>
-      {workflows.map((workflow, i) => <WorkflowSlide key={workflow.id} workflow={workflow} index={i} total={workflows.length} text={text} />)}
+      {workflows.map((workflow, i) => <WorkflowSlide key={workflow.id} workflow={workflow} near={nearViewport && Math.abs(i - page) <= 1} index={i} total={workflows.length} text={text} />)}
     </ul>
     <Dots pages={pages} page={page} running={running} goTo={goTo} label={n => text(`Show workflow ${n}`, `वर्कफ़्लो ${n} दिखाएँ`)} />
   </div></>;
 }
 
-function WorkflowSlide({ workflow, index, total, text }: Readonly<{ workflow: Workflow; index: number; total: number; text: Text }>) {
+function WorkflowSlide({ workflow, near, index, total, text }: Readonly<{ workflow: Workflow; near: boolean; index: number; total: number; text: Text }>) {
   const kinds = [...new Set(workflow.nodes.map(node => node.kind))];
   const Icon = GROUP_ICON[workflow.group];
   return <li className={styles.slide} data-group={workflow.group} aria-roledescription="slide" aria-label={`${index + 1} / ${total}: ${workflow.title}`}>
@@ -114,7 +114,7 @@ function WorkflowSlide({ workflow, index, total, text }: Readonly<{ workflow: Wo
     <ol className={styles.steps} aria-label={text("Step by step", "चरण दर चरण")}>
       {workflow.steps.map((step, i) => <li key={step} data-tone={i % STEP_TONES}><b>{two(i + 1)}</b><span>{step}</span></li>)}
     </ol>
-    <div className={styles.prep}><WorkflowPrep id={workflow.id} text={text} /></div>
+    <div className={styles.prep}>{near ? <WorkflowPrep id={workflow.id} text={text} /> : <LearningLoader size="inline" label="Blueprint details load as you approach this section" />}</div>
   </li>;
 }
 

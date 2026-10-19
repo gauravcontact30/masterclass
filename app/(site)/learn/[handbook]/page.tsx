@@ -1,3 +1,4 @@
+import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
@@ -58,7 +59,7 @@ async function Handbook({ params }: Props) {
         {topic.syntax && topic.syntax.length > 0 && <pre><code>{topic.syntax.join("\n")}</code></pre>}
         {topic.code?.[0] && <><p className={styles.meta}>Example: <code>{topic.code[0].path}</code></p><pre><code>{topic.code[0].code}</code></pre></>}
         {topic.useCase && <p><strong>{topic.useCase.title}:</strong> <InlineText text={topic.useCase.scenario} /></p>}
-        {topic.interview?.map(qa => <details key={qa.question} className={styles.qa}><summary><span className={styles.qNumber}>Q</span><span className={styles.qText}><InlineText text={qa.question} /></span></summary><div className={styles.answer}><p><InlineText text={qa.answer} /></p></div></details>)}
+        {topic.interview?.map(qa => <details key={qa.question} className={styles.qa}><AccordionSummary><span className={styles.qNumber}>Q</span><span className={styles.qText}><InlineText text={qa.question} /></span></AccordionSummary><div className={styles.answer}><p><InlineText text={qa.answer} /></p></div></details>)}
       </article>)}
     </section>)}
     {item.sources && item.sources.length > 0 && <section className={styles.section} aria-labelledby="sources"><h2 id="sources">Sources</h2><ul className={styles.prose}>{item.sources.map(source => <li key={source.url}><a href={source.url} rel="noopener">{source.title}</a></li>)}</ul></section>}

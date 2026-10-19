@@ -7,6 +7,13 @@ import sitemap from "@/app/sitemap";
 
 const original = { ...process.env };
 afterEach(() => { process.env = { ...original }; });
+test("production canonical fallback uses the deployed domain without enabling preview indexing", () => {
+  delete process.env.APP_URL;
+  delete process.env.SEO_INDEXABLE;
+  expect(siteUrl().href).toBe("https://www.masterclassbuddy.com/");
+  expect(isIndexable()).toBe(false);
+  expect(pageMetadata("/library").keywords).toContain("AI agent workflows");
+});
 test("only an explicitly enabled HTTPS deployment is indexable", async () => {
   process.env.APP_URL = "https://learning.example.com";
   delete process.env.SEO_INDEXABLE;

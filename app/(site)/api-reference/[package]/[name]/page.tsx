@@ -1,3 +1,4 @@
+import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
@@ -64,7 +65,7 @@ async function Entry({ params }: Props) {
     {card.example.code && <section className={styles.section} aria-labelledby="example"><h2 id="example">Example: {card.example.title}</h2><div className={styles.prose}><pre><code>{card.example.code}</code></pre>{card.example.explanation && <p><InlineText text={card.example.explanation} /></p>}</div></section>}
     {card.useCases.length > 0 && <section className={styles.section} aria-labelledby="uses"><h2 id="uses">When to use it</h2><div className={styles.cards}>{card.useCases.map(use => <article key={use.title}><h3>{use.title}</h3><p><InlineText text={use.scenario} /></p></article>)}</div></section>}
     {card.interview.length > 0 && <section className={styles.section} aria-labelledby="interview"><h2 id="interview">Interview questions</h2>{card.interview.map(item => <details key={item.question} className={styles.qa}>
-      <summary><span className={styles.qNumber}>Q</span><span className={styles.qText}><InlineText text={item.question} /></span></summary>
+      <AccordionSummary><span className={styles.qNumber}>Q</span><span className={styles.qText}><InlineText text={item.question} /></span></AccordionSummary>
       <div className={styles.answer}><p><InlineText text={item.answer} /></p>{item.followUp && <p><strong>Follow-up:</strong> <InlineText text={item.followUp} /></p>}</div>
     </details>)}</section>}
     {card.related.length > 0 && <section className={styles.section} aria-labelledby="related"><h2 id="related">Related</h2><ul className={styles.chips}>{card.related.map(name => <li key={name}><code>{name}</code></li>)}</ul></section>}

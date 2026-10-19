@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { SuperAdminDashboard } from "@/components/super-admin-dashboard";
+import { dailySocial } from "@/lib/daily-social";
 jest.mock("next/navigation", () => ({ useRouter: () => ({ replace: jest.fn(), refresh: jest.fn() }) }));
 const snapshot = {
   generatedAt:"2026-09-15T12:00:00Z", counts:{users:7,documents:10,activeSubscriptions:2,failedDocuments:0},
@@ -9,7 +10,7 @@ const snapshot = {
 };
 const operations={generatedAt:"2026-09-15T12:00:00Z",liveCount:0,openReports:0,live:[],traffic:[],pages:[],ai:[],reports:[],alerts:[],security:[]};
 test("loads real API shape, searches users and preserves labels when collapsed",async()=>{
-  global.fetch=jest.fn().mockImplementation((url:string)=>Promise.resolve({ok:true,status:200,json:async()=>url.includes("/operations")?operations:snapshot}));
+  global.fetch=jest.fn().mockImplementation((url:string)=>Promise.resolve({ok:true,status:200,json:async()=>url.includes("/promotions/daily")?{...dailySocial([], "2026-10-19"),generatedAt:"2026-10-19T06:00:00Z",capped:false}:url.includes("/operations")?operations:snapshot}));
   render(<SuperAdminDashboard/>);
   expect(await screen.findByText("Registered users")).toBeVisible();
   fireEvent.click(screen.getByRole("button",{name:"Users & access"}));

@@ -1,6 +1,7 @@
 "use client";
+import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import { Fragment, useState, type ReactNode } from "react";
-import { ChevronDown, CircleCheck, ListChecks, MessageSquareText } from "lucide-react";
+import { CircleCheck, ListChecks, MessageSquareText } from "lucide-react";
 import { arrangeOptions, byStars, type QuestionSet, type Stars } from "@/lib/interview-questions";
 import styles from "./interview-accordion.module.css";
 
@@ -52,12 +53,11 @@ export function InterviewQuestions({ set, text, heading, scroll = false }: Reado
 /** One accordion row: number, question and stars as the summary; the answer inside. */
 function Item({ n, stars, question, text, children }: Readonly<{ n: number; stars: Stars; question: string; text: Text; children: ReactNode }>) {
   return <details className={styles.item}>
-    <summary>
+    <AccordionSummary>
       <span className={styles.num} aria-hidden="true">{String(n).padStart(2, "0")}</span>
       <span className={styles.q}><Inline text={question} /></span>
       <StarRow stars={stars} label={text(`Asked often: ${stars} of 5`, `कितनी बार पूछा जाता है: 5 में से ${stars}`)} />
-      <ChevronDown className={styles.chevron} size={16} aria-hidden="true" />
-    </summary>
+    </AccordionSummary>
     <div className={styles.body}>{children}</div>
   </details>;
 }

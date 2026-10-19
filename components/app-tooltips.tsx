@@ -3,7 +3,7 @@ import { useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 import styles from "./app-tooltips.module.css";
 
-const CONTROLS = "button,a[href],summary,input:not([type=hidden]),select,textarea,[role=button],[role=tab],[role=option],[role=menuitem],[role=checkbox],[role=radio],[role=switch],[data-tooltip]";
+const CONTROLS = "button,a[href],summary,[role=button],[role=tab],[role=option],[role=menuitem],[role=checkbox],[role=radio],[role=switch],label[data-tooltip]";
 const ICONS = "svg.lucide,svg[aria-label],[data-feature-icon]";
 const clean = (value: string | null | undefined) => value?.replace(/\s+/g, " ").trim() ?? "";
 
@@ -41,7 +41,10 @@ export function AppTooltips() {
     let active: Element | null = null;
     let originalTitle: string | null = null;
     let dismissed: Element | null = null;
+    let suppressed: { element: Element; title: string }[] = [];
     function hide() {
+      suppressed.forEach(({ element, title }) => { if (!element.hasAttribute("title")) element.setAttribute("title", title); });
+      suppressed = [];
       if (active) {
         const references = clean(active.getAttribute("aria-describedby")).split(" ").filter(value => value && value !== id);
         if (references.length) active.setAttribute("aria-describedby", references.join(" ")); else active.removeAttribute("aria-describedby");
@@ -52,8 +55,20 @@ export function AppTooltips() {
     function show(event: Event) {
       if (!(event.target instanceof Element)) return;
       if (event.target.closest("[role=tooltip]")) return;
-      const target = event.target.closest(CONTROLS) ?? event.target.closest(ICONS);
-      if (!target || target === active || target === dismissed) return;
+      const target = event.target.closest(CONTROLS);
+      // Only actionable icons get tooltips. Text controls, fields and decorative glyphs do not.
+      const hoveredIcon = event.target.closest(ICONS);
+      const iconOnly = target && !clean(Array.from(target.childNodes).filter(node => !(node instanceof Element) || !node.matches("svg,[aria-hidden=true],.sr-only,[hidden]")).map(node => node.textContent).join(" "));
+      const eligible = target?.querySelector(ICONS) && (hoveredIcon || iconOnly || target.matches("label[data-tooltip]"));
+      if (!target || !eligible) {
+        hide();
+        for (let element: Element | null = event.target; element; element = element.parentElement) {
+          const title = element.getAttribute("title");
+          if (title !== null) { suppressed.push({ element, title }); element.removeAttribute("title"); }
+        }
+        return;
+      }
+      if (target === active || target === dismissed) return;
       // Keep the existing collapsed-sidebar tooltip and other explicitly managed tooltips.
       if (target.closest(".sidebar-collapsed .sidebar,[data-tooltip-disabled]")) { hide(); return; }
       const existing = clean(target.getAttribute("aria-describedby")).split(" ").some(ref => document.getElementById(ref)?.getAttribute("role") === "tooltip");

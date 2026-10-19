@@ -33,6 +33,19 @@ test("regular learner still schedules a visit", async () => {
   expect((await POST(request(JSON.stringify({ type: "view", path: "/dashboard" })))).status).toBe(204);
   expect(after).toHaveBeenCalledTimes(1);
 });
+
+test("option clicks use the interaction log and retain the visitor session", async () => {
+  (supabaseServer as jest.Mock).mockResolvedValue({ auth: { getClaims: async () => ({ data: { claims: { sub: "learner", email: "learner@example.com" } } }) } });
+  (after as jest.Mock).mockImplementationOnce(fn => fn());
+  const response = await POST(request(JSON.stringify({ type: "interaction", path: "/dashboard/notes", topic: "React", option: "Next topic", target_path: "/dashboard/techy" }), { "user-agent": "Mozilla/5.0 Chrome/130.0 Safari/537.36" }));
+  expect(response.status).toBe(204);
+  expect(recordEvent).toHaveBeenCalledWith(expect.objectContaining({ kind: "site_interaction", action: "click", resource: "/dashboard/notes", details: expect.objectContaining({ topic: "React", option: "Next topic", visitor_id: expect.any(String), session_id: expect.any(String) }) }));
+});
+
+test("query strings cannot be recorded as page paths", async () => {
+  expect((await POST(request(JSON.stringify({ type: "interaction", path: "/dashboard?secret=private", option: "Next" })))).status).toBe(400);
+  expect(after).not.toHaveBeenCalled();
+});
 test("oversized bodies without Content-Length are rejected", async () => {
   expect((await POST(request(JSON.stringify({ type: "view", path: "/", title: "x".repeat(5000) })))).status).toBe(413);
   expect(after).not.toHaveBeenCalled();

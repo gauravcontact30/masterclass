@@ -1,4 +1,5 @@
 "use client";
+import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import { Input } from "@/components/ui/input";
 import { BookmarkButton, BookmarkPoint, BookmarkSection } from "./bookmarks";
 import { ExpandedText } from "@/components/expanded-text";
@@ -161,10 +162,10 @@ function ServiceDepthSections({ name, hi }: { name: string; hi: boolean }) {
       <ul className={styles.points}>{depth.concepts.map((concept, index) => <li key={index}><ExpandedText text={concept} /></li>)}</ul>
     </div>
     <div className={styles.useCase}><span className={styles.blockLabel}><ExpandedText text={hi ? "उपयोग" : "Use case"} /></span><p><ExpandedText text={depth.useCase} /></p></div>
-    <details className={styles.qa}><summary><ExpandedText text={hi ? "इंटरव्यू प्रश्न (विषयनिष्ठ)" : "Interview questions · subjective"} /> <small>{depth.subjective.length}</small></summary>
+    <details className={styles.qa}><AccordionSummary><ExpandedText text={hi ? "इंटरव्यू प्रश्न (विषयनिष्ठ)" : "Interview questions · subjective"} /> <small>{depth.subjective.length}</small></AccordionSummary>
       {depth.subjective.map((item, index) => <section key={index}><h5>{index + 1}. <ExpandedText text={item.question} /></h5><p><ExpandedText text={item.answer} /></p></section>)}
     </details>
-    <details className={styles.qa}><summary><ExpandedText text={hi ? "वस्तुनिष्ठ प्रश्न" : "Objective questions"} /> <small>{depth.objective.length}</small></summary>
+    <details className={styles.qa}><AccordionSummary><ExpandedText text={hi ? "वस्तुनिष्ठ प्रश्न" : "Objective questions"} /> <small>{depth.objective.length}</small></AccordionSummary>
       {depth.objective.map((item, index) => <KnowledgeCheck key={index} question={{ ...item, shortAnswer: item.options[item.correct] }} />)}
     </details>
   </>;

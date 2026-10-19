@@ -1,8 +1,9 @@
 "use client";
+import { AccordionChevron } from "@/components/ui/accordion-chevron";
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronRight, GraduationCap, Landmark, Rocket, Languages, Code2, BookOpen, PanelTopOpen, PanelTopClose } from "lucide-react";
+import { GraduationCap, Landmark, Rocket, Languages, Code2, BookOpen, PanelTopOpen, PanelTopClose } from "lucide-react";
 import { PREPARATION_GROUPS, PREPARATIONS, CATEGORY_LABELS, type PreparationAccess } from "@/lib/study/preparations";
 import { SYSTEM_DESIGN_COURSES } from "@/lib/study/system-design-catalog";
 import { useLanguage } from "./language-provider";
@@ -28,14 +29,14 @@ export function StudyNavigation({ access, collapsed, category, preparation, cour
   // A new search reveals its first matching group without changing access.
   const openGroup = groupChoice.query === normalized ? groupChoice.id : normalized ? visibleGroups[0]?.id : null;
   return <div className="study-nav-shell">
-    <button className="study-mobile-toggle" aria-expanded={mobile} aria-controls="preparation-navigation" onClick={() => setMobile(value => !value)}>{mobile ? <PanelTopClose size={17}/> : <PanelTopOpen size={17}/>} {hi ? "तैयारी खोजें" : "Browse preparation"}<ChevronRight size={14}/></button>
+    <button className="study-mobile-toggle" aria-expanded={mobile} aria-controls="preparation-navigation" onClick={() => setMobile(value => !value)}>{mobile ? <PanelTopClose size={17}/> : <PanelTopOpen size={17}/>} {hi ? "तैयारी खोजें" : "Browse preparation"}<AccordionChevron /></button>
     <nav id="preparation-navigation" className={`study-navigation ${mobile ? "study-mobile-open" : ""}`} aria-label={hi ? "तैयारी की श्रेणियाँ" : "Preparation categories"}>
       
       {visibleGroups.map(group => {
         const GroupIcon = ({ government: Landmark, entrance: Rocket, boards: GraduationCap, languages: Languages, technology: Code2 })[group.id];
         const groupOpen = openGroup === group.id;
         return <section key={group.id} className="study-nav-group" data-category={group.id}>
-          <h3><button className="study-main-trigger" title={group.label[language]} aria-label={group.label[language]} aria-expanded={groupOpen} aria-controls={`mainnav-${group.id}`} onClick={() => { setGroupChoice({ query: normalized, id: groupOpen ? null : group.id }); setChildChoice({ query: normalized, id: null }); }}><GroupIcon size={16} aria-hidden="true"/>{!collapsed && <><span>{group.label[language]}</span><ChevronRight size={14}/></>}</button></h3>
+          <h3><button className="study-main-trigger" title={group.label[language]} aria-label={group.label[language]} aria-expanded={groupOpen} aria-controls={`mainnav-${group.id}`} onClick={() => { setGroupChoice({ query: normalized, id: groupOpen ? null : group.id }); setChildChoice({ query: normalized, id: null }); }}><GroupIcon size={16} aria-hidden="true"/>{!collapsed && <><span>{group.label[language]}</span><AccordionChevron /></>}</button></h3>
           <div id={`mainnav-${group.id}`} className="study-subnav-slide" data-open={groupOpen} aria-hidden={!groupOpen} inert={!groupOpen}><div className="study-subnav-inner">
             {group.matching.map(id => {
               const children = id === "system-design" ? SYSTEM_DESIGN_COURSES.map(item => ({ id: item.id, label: item.title, url: `/dashboard/${id}?course=${item.id}`, active: course === item.id }))
@@ -43,7 +44,7 @@ export function StudyNavigation({ access, collapsed, category, preparation, cour
               const matches = children.filter(child => !normalized || `${child.label.en} ${child.label.hi} ${CATEGORY_LABELS[id].en} ${CATEGORY_LABELS[id].hi} ${group.label.en} ${group.label.hi}`.toLocaleLowerCase().includes(normalized));
               const childOpen = childChoice.query === normalized ? childChoice.id === id : !!normalized && group.matching[0] === id;
               if (collapsed) return <Link className="study-short-link" key={id} href={`/dashboard/${id}`} title={CATEGORY_LABELS[id][language]} aria-label={CATEGORY_LABELS[id][language]} aria-current={category === id ? "page" : undefined}>{CATEGORY_LABELS[id].en.slice(0, 3).toUpperCase()}</Link>;
-              return <div key={id} className="study-nav-category"><button className="study-nav-trigger" aria-expanded={childOpen} aria-controls={`subnav-${id}`} onClick={() => setChildChoice({ query: normalized, id: childOpen ? null : id })}><BookOpen size={14}/><span>{CATEGORY_LABELS[id][language]}</span><small aria-hidden="true">{children.length}</small><ChevronRight size={13}/></button>
+              return <div key={id} className="study-nav-category"><button className="study-nav-trigger" aria-expanded={childOpen} aria-controls={`subnav-${id}`} onClick={() => setChildChoice({ query: normalized, id: childOpen ? null : id })}><BookOpen size={14}/><span>{CATEGORY_LABELS[id][language]}</span><small aria-hidden="true">{children.length}</small><AccordionChevron /></button>
                 <div id={`subnav-${id}`} className="study-subnav-slide" data-open={childOpen} aria-hidden={!childOpen} inert={!childOpen}><div className="study-subnav-inner"><Link className="study-all-link" href={`/dashboard/${id}`} aria-current={category === id && !preparation && !course ? "page" : undefined}>{CATEGORY_LABELS[id][language]}</Link>{matches.map(child => <Link key={child.id} href={child.url} aria-current={child.active ? "page" : undefined} onClick={() => setMobile(false)}>{child.label[language]}</Link>)}</div></div>
               </div>;
             })}

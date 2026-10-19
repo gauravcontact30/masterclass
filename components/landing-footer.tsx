@@ -8,7 +8,7 @@ import { Wordmark } from "./brand-mark";
 import { useLanguage } from "./language-provider";
 import styles from "./landing-footer.module.css";
 import navigationStyles from "./navigation-link.module.css";
-export function LandingFooter() {
+export function LandingFooter({ year }: { year?: number }) {
   const {language}=useLanguage();const hi=language==="hi";const text=(en:string,hindi:string)=>hi?hindi:en;
   const groups=[
     {title:text("School & boards","स्कूल और बोर्ड"),links:[["CBSE","/dashboard/cbse"],["NCERT","/dashboard/ncert"],["ICSE","/dashboard/icse"],["ISC","/dashboard/isc"],[text("Classes 6–12","कक्षा 6–12"),"/courses#cbse"]]},
@@ -22,7 +22,7 @@ export function LandingFooter() {
   return <footer id="site-footer" className={styles.footer}><div className={styles.inner}>
     <div className={styles.intro}><div className={styles.brand}><Link href="/" aria-label="MasterClass home"><Wordmark/></Link><p><ExpandedText text={text("A clear path from your next lesson to your next goal.","अगले पाठ से अगले लक्ष्य तक एक स्पष्ट अध्ययन पथ।")} /></p></div><Link className={styles.invite} href="/dashboard/plans"><BookOpen size={19}/><span><strong><ExpandedText text={text("Make room for learning","सीखने के लिए समय बनाएँ")} /></strong><small><ExpandedText text={text("Choose your preparation and membership","अपनी तैयारी और सदस्यता चुनें")} /></small></span><ArrowUpRight size={18}/></Link></div>
     <div className={styles.columns}>{groups.map(group=><nav key={group.title} aria-label={group.title}><h3><ExpandedText text={group.title} /></h3><FooterLinks links={group.links} column={groups.indexOf(group)} /></nav>)}</div>
-    <div className={styles.bottom}><small>© {new Date().getFullYear()} MasterClass. <ExpandedText text={text("All rights reserved.","सर्वाधिकार सुरक्षित।")} /></small><span><Globe2 size={14}/> English / हिन्दी <i/> Learn in App</span><button onClick={moveTop}><ExpandedText text={text("Move to top","ऊपर जाएँ")} /><ArrowUp size={15}/></button></div>
+    <div className={styles.bottom}><small>© {year} MasterClass. <ExpandedText text={text("All rights reserved.","सर्वाधिकार सुरक्षित।")} /></small><span><Globe2 size={14}/> English / हिन्दी <i/> Learn in App</span><button onClick={moveTop}><ExpandedText text={text("Move to top","ऊपर जाएँ")} /><ArrowUp size={15}/></button></div>
   </div></footer>;
 }
 

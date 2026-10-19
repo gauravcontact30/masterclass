@@ -12,6 +12,27 @@ beforeEach(() => { jest.useFakeTimers(); mockMotion(false); });
 afterEach(() => jest.useRealTimers());
 
 describe("hero slider", () => {
+  test("requests only the first image initially and warms the next after load", async () => {
+    const { container } = render(<LandingSlider />);
+    expect(container.querySelectorAll("img")).toHaveLength(1);
+    await act(async () => { fireEvent.load(container.querySelector("img")!); });
+    expect(container.querySelectorAll("img")).toHaveLength(2);
+    fireEvent.click(screen.getByRole("button", { name: /Technology courses/ }));
+    expect(within(active()).getByRole("img")).toHaveAttribute("alt", expect.stringContaining("young developer"));
+  });
+
+  test("does not autoplay while the browser tab is hidden", () => {
+    render(<LandingSlider />);
+    Object.defineProperty(document, "visibilityState", { configurable: true, value: "hidden" });
+    fireEvent(document, new Event("visibilitychange"));
+    act(() => { jest.advanceTimersByTime(14000); });
+    expect(active()).toHaveTextContent("Understand every chapter");
+    Object.defineProperty(document, "visibilityState", { configurable: true, value: "visible" });
+    fireEvent(document, new Event("visibilitychange"));
+    act(() => { jest.advanceTimersByTime(7000); });
+    expect(active()).toHaveTextContent("Crack your exam");
+  });
+
   test("five full-bleed HD scenes, each with its own headline, image and actions", () => {
     render(<LandingSlider technologies={61} />);
     expect(slides()).toHaveLength(5);

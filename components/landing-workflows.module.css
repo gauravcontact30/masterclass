@@ -122,8 +122,9 @@
 
 /* The carousel sheet. */
 .carousel { padding: clamp(14px, 2vw, 24px); border: 1px solid var(--nb-rule); border-radius: 26px; background: color-mix(in srgb, var(--nb-sheet) 92%, transparent); box-shadow: 0 1px 0 rgba(20, 20, 19, .03), 0 30px 60px -40px rgba(20, 20, 19, .35); }
-.toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 18px; margin-bottom: 16px; }
-.now { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 14px; color: var(--nb-muted); }
+.toolbar { display: flex; flex-direction: column; align-items: stretch; gap: 10px; margin-bottom: 16px; }
+.toolbar > [data-learning-pagination] { align-self: flex-end; margin-inline-start: auto; }
+.now { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; font-size: 14px; color: var(--nb-muted); }
 .now b { color: var(--nb-graphite); font-weight: 700; }
 
 .track { display: grid; grid-auto-flow: column; grid-auto-columns: 100%; margin: 0; padding: 0; list-style: none; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }

@@ -1,4 +1,5 @@
 "use client";
+import { AccordionChevron } from "@/components/ui/accordion-chevron";
 
 import { ImportedDocumentation } from "./documentation-refresh";
 import learningCard from "./learning-card.module.css";
@@ -9,7 +10,6 @@ import {
   BookOpen,
   Check,
   CheckCircle2,
-  ChevronDown,
   GripVertical,
   ChevronLeft,
   ChevronRight,
@@ -485,11 +485,7 @@ export function OfficialDocs() {
               >
                 <SlidersHorizontal size={13} aria-hidden="true" />
                 <span>Filters</span>
-                <ChevronDown
-                  size={13}
-                  aria-hidden="true"
-                  className={`${styles.filterChevron} ${advanced ? styles.flipped : ""}`}
-                />
+                <AccordionChevron />
               </Button>
             </div>
           </div>

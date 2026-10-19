@@ -1,3 +1,4 @@
+import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import Link from "next/link";
 import { faqSchema, pageMetadata } from "@/lib/seo";
 import { PageIntro } from "../page-intro";
@@ -28,7 +29,7 @@ export default function ContactPage() {
         <li><strong>What each path covers:</strong> see <Link href="/courses">courses</Link>.</li>
       </ul>
       <h2>Frequently asked questions</h2>
-      <div className={styles.faq}>{FAQ.map(item => <details key={item.question}><summary>{item.question}</summary><p>{item.answer}</p></details>)}</div>
+      <div className={styles.faq}>{FAQ.map(item => <details key={item.question}><AccordionSummary>{item.question}</AccordionSummary><p>{item.answer}</p></details>)}</div>
     </div>
   </>;
 }

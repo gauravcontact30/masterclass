@@ -3,7 +3,7 @@
 import { useState, type CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, BookText, Braces, Check, Code2, FileCode2, Languages, ListChecks, MessageSquareText, Puzzle, Search, Server, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BookText, Braces, Check, ChevronLeft, ChevronRight, Code2, FileCode2, Languages, ListChecks, MessageSquareText, Puzzle, Search, Server, X } from "lucide-react";
 import type { LandingProPreview } from "@/lib/landing-pro-preview";
 import { ExpandedText } from "./expanded-text";
 import { useLanguage } from "./language-provider";
@@ -19,6 +19,7 @@ const TECH_PILLS: Record<string, { label: string; icon: string }> = {
   docker: { label: "Docker", icon: "docker" }, python: { label: "Python", icon: "python" }, javascript: { label: "JS Puzzles", icon: "javascript" },
   "aws-ai": { label: "AWS AI", icon: "aws" }, "aws-all": { label: "AWS Atlas", icon: "aws" }, "aws-devops": { label: "AWS DevOps", icon: "aws" },
 };
+const TECHY_PAGE_SIZE = 6;
 
 function useText() {
   const { language } = useLanguage();
@@ -34,6 +35,9 @@ export function LandingTechy({ data }: { data: LandingProPreview["techy"] }) {
   const { text, locale } = useText();
   const [topicId, setTopicId] = useState(data.topics[0]?.id);
   const [revealed, setRevealed] = useState(false);
+  const [topicPage, setTopicPage] = useState(0);
+  const topicPages = Math.ceil(data.topics.length / TECHY_PAGE_SIZE);
+  const currentPage = Math.min(topicPage, Math.max(0, topicPages - 1));
   const topic = data.topics.find(item => item.id === topicId) ?? data.topics[0];
   const count = (value: number) => value.toLocaleString(locale);
   const modes = [
@@ -65,11 +69,17 @@ export function LandingTechy({ data }: { data: LandingProPreview["techy"] }) {
       <article className={styles.terminal} aria-label={text("Techy topic preview", "Techy विषय पूर्वावलोकन")}>
         <div className={styles.termBar}><span className={styles.dots} aria-hidden="true"><i/><i/><i/></span><span className={styles.termPath}>~/techy/{topic.id}</span></div>
         <div className={styles.topics} role="group" aria-label={text("Choose a topic", "विषय चुनें")}>
-          {data.topics.map(item => <button type="button" key={item.id} aria-pressed={item.id === topic.id} onClick={() => pick(item.id)} title={item.title} aria-label={item.title}>
+          {data.topics.slice(currentPage * TECHY_PAGE_SIZE, (currentPage + 1) * TECHY_PAGE_SIZE).map(item => <button type="button" key={item.id} aria-pressed={item.id === topic.id} onClick={() => pick(item.id)} title={item.title} aria-label={item.title}>
             {TECH_PILLS[item.id] && <Image src={`/images/tech/${TECH_PILLS[item.id].icon}.png`} alt="" width={14} height={14} />}
             {TECH_PILLS[item.id]?.label ?? item.title}
           </button>)}
         </div>
+        {topicPages > 1 && <nav className={styles.topicPagination} aria-label={text("Techy topic pages", "Techy विषय पृष्ठ")}>
+          <button type="button" disabled={currentPage === 0} onClick={() => setTopicPage(currentPage - 1)} aria-label={text("Previous Techy topics", "पिछले Techy विषय")} title={text("Previous Techy topics", "पिछले Techy विषय")}><ChevronLeft size={16} aria-hidden="true" /></button>
+          {Array.from({ length: topicPages }, (_, index) => <button type="button" key={index} aria-label={text(`Techy topics page ${index + 1}`, `Techy विषय पृष्ठ ${index + 1}`)} aria-current={currentPage === index ? "page" : undefined} onClick={() => setTopicPage(index)}>{index + 1}</button>)}
+          <span role="status">{text(`Page ${currentPage + 1} of ${topicPages}`, `पृष्ठ ${currentPage + 1} / ${topicPages}`)}</span>
+          <button type="button" disabled={currentPage === topicPages - 1} onClick={() => setTopicPage(currentPage + 1)} aria-label={text("Next Techy topics", "अगले Techy विषय")} title={text("Next Techy topics", "अगले Techy विषय")}><ChevronRight size={16} aria-hidden="true" /></button>
+        </nav>}
         <div className={styles.screen} key={topic.id}>
           <p className={styles.prompt} aria-hidden="true"><b>❯</b> techy open {topic.id}</p>
           <p className={styles.meta}>{topic.category} · {text(`${count(topic.questionCount)} questions`, `${count(topic.questionCount)} प्रश्न`)}</p>

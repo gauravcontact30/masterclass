@@ -1,4 +1,5 @@
 "use client";
+import { AccordionChevron } from "@/components/ui/accordion-chevron";
 
 import { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from "@/components/ui/native-select";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,6 @@ import {
   Quote,
   ArrowLeft,
   ArrowUpRight,
-  ChevronDown,
   FileCode2,
   GraduationCap,
   MessageCircle,
@@ -957,7 +957,7 @@ export function ApiDocs() {
                 onClick={() => setShowTypes((previous) => !previous)}
               >
                 <span>{types.length ? `${types.length} of ${API_TYPES.length} selected` : `All ${API_TYPES.length} types`}</span>
-                <ChevronDown size={14} aria-hidden="true" className={showTypes ? ref.flipped : undefined} />
+                <AccordionChevron />
               </button>
               <p className={ref.cardHint}>Classes, hooks, functions, components and more.</p>
             </div>
@@ -1133,7 +1133,7 @@ export function ApiDocs() {
                                 ? pkg.entries.length
                                 : `${pkg.entries.length} of ${full?.entries.length}`}
                             </span>
-                            <ChevronDown size={16} aria-hidden="true" className={ref.chevron} />
+                            <AccordionChevron />
                           </button>
                         </h3>
                         <a

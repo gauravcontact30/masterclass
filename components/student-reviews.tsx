@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useVisiblePlayback } from "./use-visible-playback";
 import Image from "next/image";
 import { ArrowLeft, ArrowRight, BookA, MessagesSquare, Pause, Play, Quote, Sparkles, Star, Workflow, FileCode2, MessageSquareQuote, type LucideIcon } from "lucide-react";
 import { useLanguage } from "./language-provider";
@@ -27,10 +28,11 @@ const snapshot=()=>Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)
  * about. It rotates every 5.5s, and stops while hovered, focused, paused or when reduced motion is preferred.
  */
 export function StudentReviews(){
+  const section=useRef<HTMLElement>(null);const visible=useVisiblePlayback(section);
   const {language}=useLanguage();const hi=language==="hi";const lang=hi?1:0;
-  const reduced=useSyncExternalStore(subscribe,snapshot,()=>false);const [index,setIndex]=useState(0);const [paused,setPaused]=useState(false);const [hover,setHover]=useState(false);const [focus,setFocus]=useState(false);const rotating=!reduced&&!paused&&!hover&&!focus;
+  const reduced=useSyncExternalStore(subscribe,snapshot,()=>false);const [index,setIndex]=useState(0);const [paused,setPaused]=useState(false);const [hover,setHover]=useState(false);const [focus,setFocus]=useState(false);const rotating=visible&&!reduced&&!paused&&!hover&&!focus;
   useEffect(()=>{if(!rotating)return;const timer=setTimeout(()=>setIndex(value=>(value+1)%samples.length),5500);return()=>clearTimeout(timer);},[index,rotating]);
-  return <section id="reviews" className={frame.section} data-ground="paper" aria-label={hi?"नमूना छात्र समीक्षा":"Sample student reviews"} aria-roledescription="carousel" onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} onFocus={()=>setFocus(true)} onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget))setFocus(false);}}><div className={home.inner}>
+  return <section ref={section} id="reviews" className={frame.section} data-ground="paper" aria-label={hi?"नमूना छात्र समीक्षा":"Sample student reviews"} aria-roledescription="carousel" onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} onFocus={()=>setFocus(true)} onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget))setFocus(false);}}><div className={home.inner}>
     <header className={frame.head}>
       <div>
         <p className={frame.kicker}><MessageSquareQuote size={14} aria-hidden="true"/>{hi?"छात्रों की कहानियाँ":"Student stories"}<span>{hi?"नमूना समीक्षाएँ":"Sample reviews"}</span></p>
@@ -40,7 +42,7 @@ export function StudentReviews(){
     </header>
     <div className={styles.layout}>
       <div className={styles.stage}>
-        <div aria-live={rotating?"off":"polite"}>{samples.map((item,i)=><article key={item.id} hidden={index!==i} role="group" aria-roledescription="slide" aria-label={hi?`नमूना समीक्षा ${i+1} / ${samples.length}`:`Sample review ${i+1} of ${samples.length}`} className={styles.card}>
+        <div className={styles.slides} aria-live={rotating?"off":"polite"}>{samples.map((item,i)=><article key={item.id} hidden={index!==i} role="group" aria-roledescription="slide" aria-label={hi?`नमूना समीक्षा ${i+1} / ${samples.length}`:`Sample review ${i+1} of ${samples.length}`} className={styles.card}>
           <div className={styles.cardTop}>
             <span className={styles.area}><item.area.icon size={14} aria-hidden="true"/>{item.area.name[lang]}</span>
             <div role="img" aria-label={hi?`नमूना रेटिंग ${item.rating} / 5`:`Sample rating ${item.rating} out of 5`} className={styles.stars}>{[1,2,3,4,5].map(star=><Star key={star} size={15} fill={star<=item.rating?"currentColor":"none"} aria-hidden="true"/>)}</div>

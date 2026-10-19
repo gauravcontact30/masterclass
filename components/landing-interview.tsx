@@ -1,4 +1,5 @@
 "use client";
+import dynamic from "next/dynamic";
 import { useEffect, useState, type ReactNode } from "react";
 import { GraduationCap } from "lucide-react";
 import { bankIds, INTERVIEW_TECHS, loadInterviewBank, type InterviewTech } from "@/lib/interview-bank";
@@ -10,7 +11,7 @@ import { InterviewQuestions, StarRow } from "./interview-accordion";
 import { InterviewTechNav, KIND_ICON } from "./interview-tech-nav";
 import { useLanguage } from "./language-provider";
 import { usePagedCarousel } from "./use-paged-carousel";
-import { DashboardLessons } from "./dashboard-lessons";
+const DashboardLessons = dynamic(() => import("./dashboard-lessons").then(module => module.DashboardLessons));
 import home from "./landing-home.module.css";
 import styles from "./landing-interview.module.css";
 
@@ -28,7 +29,7 @@ export function LandingInterview({ expanded = false, preview = false }: Readonly
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
   // The landing page previews three technologies; /dashboard carries all of them with the navigator.
   const techs = preview ? INTERVIEW_TECHS.slice(0, PREVIEW_COUNT) : INTERVIEW_TECHS;
-  const { track, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(techs.length, 1, AUTOPLAY_MS);
+  const { track, nearViewport, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(techs.length, 1, AUTOPLAY_MS);
   const current = techs[page];
   // The open library tab per tabbed technology, shared by the navigator and the slide.
   const [tabs, setTabs] = useState<Record<string, number>>({});
@@ -48,7 +49,7 @@ export function LandingInterview({ expanded = false, preview = false }: Readonly
     {!preview && <InterviewTechNav techs={techs} current={page} onPick={goTo} tones={TONES} text={text} tab={tabs[current?.id] ?? 0} onTab={tab => chooseTab(current.id, tab)} />}
     <p className={styles.now} aria-live="polite"><b>{current?.title}</b><span aria-hidden="true">·</span>{text(`Topic ${page + 1} of ${techs.length}`, `विषय ${page + 1} / ${techs.length}`)}</p>
     <ul ref={track} className={styles.track} aria-roledescription="carousel" aria-label={text("Interview questions by technology", "तकनीक के अनुसार इंटरव्यू प्रश्न")} {...holdProps}>
-      {techs.map((tech, i) => <InterviewSlide key={tech.id} tech={tech} index={i} total={techs.length} near={Math.abs(i - page) <= 1} text={text} tab={tabs[tech.id] ?? 0} onTab={tab => chooseTab(tech.id, tab)} />)}
+      {techs.map((tech, i) => <InterviewSlide key={tech.id} tech={tech} index={i} total={techs.length} near={nearViewport && Math.abs(i - page) <= 1} text={text} tab={tabs[tech.id] ?? 0} onTab={tab => chooseTab(tech.id, tab)} />)}
     </ul>
     <Dots pages={pages} page={page} running={running} goTo={goTo} label={n => text(`Show technology ${n}`, `तकनीक ${n} दिखाएँ`)} />
     {expanded && <DashboardLessons section="interview" />}

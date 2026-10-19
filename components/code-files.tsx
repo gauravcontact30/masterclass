@@ -1,7 +1,8 @@
 "use client";
+import { AccordionChevron } from "@/components/ui/accordion-chevron";
 
 import { useId, useMemo, useRef, useState } from "react";
-import { ChevronDown, Copy, Check, File, Folder } from "lucide-react";
+import { Copy, Check, File, Folder } from "lucide-react";
 import { highlightLines } from "@/lib/code-highlight";
 import { inferLanguage, languageLabel } from "@/lib/code-run";
 import type { AnswerFile } from "@/lib/pro-learn/types";
@@ -63,7 +64,7 @@ export function CodeFiles({ files, label = "Code example", className, annotate =
     <figcaption className={styles.bar}>
       <span className={styles.dots} aria-hidden="true"><i /><i /><i /></span>
       <button type="button" className={styles.disclose} aria-expanded={open} onClick={() => setOpen(value => !value)}>
-        <ChevronDown size={14} aria-hidden="true" data-open={open || undefined} />
+        <AccordionChevron />
         <span>{label}</span>
       </button>
       <span className={styles.count}>{files.length} file{files.length === 1 ? "" : "s"} · {languageLabel(language)}</span>

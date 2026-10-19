@@ -8,6 +8,7 @@ import { db } from "@/lib/server/db";
 import { clientIp, geo, hashIp, maskIp, parseUserAgent } from "@/lib/server/visit-context";
 import { isUntrackedEmail, UNTRACKED_COOKIE } from "@/lib/server/tracking-exclusions";
 import { HttpError, jsonBody, sameOrigin } from "@/lib/server/http";
+import { recordEvent } from "@/lib/server/monitoring";
 
 /*
  * Page-view beacon for the super admin's User activities page (components/visit-tracker.tsx sends it).
@@ -18,8 +19,9 @@ const VISITOR = "mc_vid", SESSION = "mc_sid";
 const SESSION_SECONDS = 30 * 60;
 const text = (max: number) => z.string().trim().max(max).optional().nullable().transform(value => value || null);
 const bodySchema = z.object({
-  type: z.enum(["view", "leave"]),
-  path: z.string().trim().min(1).max(300).regex(/^\//),
+  type: z.enum(["view", "leave", "interaction"]),
+  path: z.string().trim().min(1).max(300).regex(/^\/(?!\/)[^?#]*$/),
+  topic: text(120), option: text(100), target_path: z.string().max(300).regex(/^\/(?!\/)[^?]*$/).optional().nullable(),
   title: text(200), referrer: text(500), language: text(35), timezone: text(60), screen: text(20),
   duration: z.number().int().min(0).max(86_400_000).optional(),
   utm: z.object({ source: text(80), medium: text(80), campaign: text(120) }).partial().optional(),
@@ -74,12 +76,30 @@ export async function POST(request: Request) {
   let referrerHost: string | null = null;
   try { if (input.referrer) { const host = new URL(input.referrer).host; referrerHost = host && host !== new URL(request.url).host ? host.replace(/^www\./, "") : null; } } catch { /* not a URL */ }
 
+  // Carry the session's source across client-side routes and reloads, including midnight.
+  const sourceSchema = z.object({ source: text(80), medium: text(80), campaign: text(120), referrer: text(120) });
+  let prior: z.infer<typeof sourceSchema> | null = null;
+  try { prior = sourceSchema.parse(JSON.parse(store.get("mc_attribution")?.value || "null")); } catch { /* no valid source */ }
+  const attribution = input.utm?.source || referrerHost
+    ? { source: input.utm?.source || null, medium: input.utm?.medium || null, campaign: input.utm?.campaign || null, referrer: referrerHost }
+    : prior || { source: null, medium: null, campaign: null, referrer: null };
+  store.set("mc_attribution", JSON.stringify(attribution), { httpOnly: true, sameSite: "lax", secure, path: "/", maxAge: SESSION_SECONDS });
+
+  if (input.type === "interaction") {
+    if (!input.option || ua.isBot) return noContent();
+    after(() => recordEvent({ kind: "site_interaction", action: "click", actor_id: userId, resource: input.path, details: {
+      visitor_id: visitorId, session_id: sessionId, topic: input.topic, option: input.option, target_path: input.target_path,
+      utm_source: attribution.source, utm_medium: attribution.medium, utm_campaign: attribution.campaign, referrer_host: attribution.referrer,
+    } }));
+    return noContent();
+  }
+
   const row = {
     event: input.type === "view" ? "page_view" : "page_leave",
     visitor_id: visitorId, session_id: sessionId, user_id: userId,
     new_visitor: input.type === "view" && !known,
-    path: input.path, title: input.title, referrer_host: referrerHost,
-    utm_source: input.utm?.source ?? null, utm_medium: input.utm?.medium ?? null, utm_campaign: input.utm?.campaign ?? null,
+    path: input.path, title: input.title, referrer_host: attribution.referrer,
+    utm_source: attribution.source, utm_medium: attribution.medium, utm_campaign: attribution.campaign,
     ...geo(request.headers), ip_masked: ip ? maskIp(ip) : null, ip_hash: ipHash,
     browser: ua.browser, os: ua.os, device: ua.device, is_bot: ua.isBot,
     language: input.language, timezone: input.timezone, screen: input.screen,

@@ -1,4 +1,5 @@
 "use client";
+import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import { useId, useState, type KeyboardEvent } from "react";
 import { Check, Copy, Download, FileCode2, Pencil, RotateCcw, Terminal } from "lucide-react";
 import type { TechProject } from "@/lib/tech-doc-projects";
@@ -43,6 +44,6 @@ export function TechProjectEditor({ project }: { project: TechProject }) {
       {editing ? <textarea aria-label={`Edit ${current.name}`} spellCheck={false} value={current.code} onChange={event => { const code = event.target.value; setFiles(all => all.map((item, index) => index === active ? { ...item, code } : item)); }} /> : <pre><code>{current.code.split("\n").map((line, index) => <span className={styles.line} key={index}><span className={styles.lineNumber} aria-hidden="true">{index + 1}</span><span><Highlight line={line} />{"\n"}</span></span>)}</code></pre>}
     </div>
     <div className={styles.status} role="status">{status || `${current.name} · UTF-8 · ${current.code.split("\n").length} lines`}</div>
-    <details className={styles.run} open><summary><Terminal size={15} aria-hidden="true" />Run locally</summary><p>{project.prerequisites}</p><p>Save each file using the path in its tab. Edits stay in this workspace until you leave the technology; download files to keep them.</p><pre tabIndex={0}>{project.commands}</pre><p><b>Expected result</b><br />{project.expected}</p></details>
+    <details className={styles.run} open><AccordionSummary><Terminal size={15} aria-hidden="true" />Run locally</AccordionSummary><p>{project.prerequisites}</p><p>Save each file using the path in its tab. Edits stay in this workspace until you leave the technology; download files to keep them.</p><pre tabIndex={0}>{project.commands}</pre><p><b>Expected result</b><br />{project.expected}</p></details>
   </section>;
 }

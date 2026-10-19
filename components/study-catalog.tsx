@@ -1,4 +1,5 @@
 "use client";
+import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import { ExpandedText } from "@/components/expanded-text";
 
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
@@ -71,7 +72,7 @@ export function StudyCatalog({beforeLibrary,category,preparations,onPlans,initia
           </div>
           <CardHeading id={titleId} className={libraryStyles.title} title={title}>{title}</CardHeading>
           <p className={libraryStyles.sub}><span>{categoryLabel}</span>{course.subjects.map(id=><span key={id}>{SUBJECTS[id][language]}</span>)}</p>
-          <details className={libraryStyles.coverage}><summary>{hi?"कवरेज देखें":"View coverage"}</summary><p>{course.scope[language]} {course.category!=="course"&&(hi?"आधारभूत पाठ और मौलिक अभ्यास; पूरा पाठ्यक्रम नहीं।":"Foundation lessons and original practice; not a complete syllabus.")}</p></details>
+          <details className={libraryStyles.coverage}><AccordionSummary>{hi?"कवरेज देखें":"View coverage"}</AccordionSummary><p>{course.scope[language]} {course.category!=="course"&&(hi?"आधारभूत पाठ और मौलिक अभ्यास; पूरा पाठ्यक्रम नहीं।":"Foundation lessons and original practice; not a complete syllabus.")}</p></details>
           <div className={libraryStyles.actions}>
             <Button size="sm" className={libraryStyles.learn} disabled={opening} aria-label={`${t("learn")}: ${course.title[language]}`} onClick={()=>{setPack(null);setSelected(course.id);setOpening(true);}}><BookOpen size={14} aria-hidden="true"/>{opening&&selected===course.id?hi?"खुल रहा है…":"Opening…":t("learn")}</Button>
           </div>

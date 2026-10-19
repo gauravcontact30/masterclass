@@ -20,14 +20,15 @@ const REFRESH_MS = 20_000;
 /**
  * The Technology docs content, read from the official websites at most once a day (revalidateTag("tech-docs")
  * refreshes it at once). Any page that fails keeps its committed snapshot copy from `npm run docs:tech`, and a
- * total failure serves the snapshot, so the section never renders empty. TECH_DOCS_LIVE=false serves the snapshot only.
+ * total failure serves the snapshot, so the section never renders empty. Live refresh is opt-in:
+ * TECH_DOCS_LIVE=true. By default, deploy the snapshot refreshed by `npm run docs:tech`.
  */
 export async function officialTechDocs(): Promise<OfficialTechDocs> {
   "use cache";
   cacheLife("days");
   cacheTag("tech-docs");
   const fallback = snapshot as OfficialTechDocs;
-  if (process.env.TECH_DOCS_LIVE === "false") return fallback;
+  if (process.env.TECH_DOCS_LIVE !== "true") return fallback;
   // A refresh that hangs (a stalled vendor, or a fetch stuck on the outer render) must finish well inside Next's
   // ~50s cache-fill limit, or the whole landing page fails with "Filling a cache during prerender timed out".
   let timer: ReturnType<typeof setTimeout> | undefined;

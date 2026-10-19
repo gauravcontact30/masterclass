@@ -1,4 +1,5 @@
 "use client";
+import { AccordionSummary } from "@/components/ui/accordion-chevron";
 
 import { awsServiceImageUrl } from "@/lib/aws-service-image";
 import { LearningLoader } from "./learning-loader";
@@ -862,7 +863,7 @@ function Block({ icon, title, children, className = "", tone, fold, count }: {
   return <section className={`${styles.block} ${className}`.trim()} data-tone={tone} aria-label={title}>
     {fold
       ? <details className={styles.fold}>
-          <summary className={styles.blockTitle}>{head}<ChevronDown size={15} className={styles.foldMark} aria-hidden="true" /></summary>
+          <AccordionSummary className={styles.blockTitle}>{head}<ChevronDown size={15} className={styles.foldMark} aria-hidden="true" /></AccordionSummary>
           <div className={styles.foldBody}>{children}</div>
         </details>
       : <><h3 className={styles.blockTitle}>{head}</h3>{children}</>}

@@ -1,4 +1,5 @@
 "use client";
+import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import { useId, useState } from "react";
 import type { WorkflowLesson } from "@/lib/workflow-learning";
 import { WORKFLOW_CURRICULUM, interviewPriority, type WorkflowTopic } from "@/lib/workflow-curriculum";
@@ -42,7 +43,7 @@ export function WorkflowLearning({ lessons, text }: Readonly<{ lessons: Workflow
     {matching.length === 0 && <p>{text("No topics match this search in the selected category. Clear the search or choose another category.", "इस श्रेणी में कोई विषय नहीं मिला। खोज हटाएँ या दूसरी श्रेणी चुनें।")}</p>}
     <p className={styles.ratingLegend}>{text("Interview prep priority: ★★★★★ Core essentials · ★★★★☆ Extended practice. Editorial study guidance, not measured interview frequency.", "इंटरव्यू तैयारी प्राथमिकता: ★★★★★ मुख्य आधार · ★★★★☆ विस्तृत अभ्यास। ये अध्ययन सुझाव हैं, इंटरव्यू आवृत्ति के आँकड़े नहीं।")}</p>
     <div className={styles.learningGrid}>{matching.map(({ lesson, topics, sources }, index) => <details className={styles.learningCard} data-accordion="free" key={`${lesson.id}-${Boolean(term)}`} open={Boolean(term) || index === 0}>
-      <summary><span className={styles.pathLabel}>{lesson.group}</span><h4>{lesson.title}</h4><span className={styles.pathDefinition}>{WORKFLOW_DEFINITIONS[lesson.id]}</span><small>{text(`${topics.length} core features & interview topics`, `${topics.length} मुख्य फ़ीचर और इंटरव्यू विषय`)}</small><span className={styles.disclosureIcon} aria-hidden="true">&#8964;</span></summary>
+      <AccordionSummary><span className={styles.pathLabel}>{lesson.group}</span><h4>{lesson.title}</h4><span className={styles.pathDefinition}>{WORKFLOW_DEFINITIONS[lesson.id]}</span><small>{text(`${topics.length} core features & interview topics`, `${topics.length} मुख्य फ़ीचर और इंटरव्यू विषय`)}</small></AccordionSummary>
       <div className={styles.learningBody}>
         <p>{lesson.summary}</p>
         <h5>{text("Core concepts", "मुख्य अवधारणाएँ")}</h5>
@@ -63,7 +64,7 @@ function TopicList({ topics, group, text, revealMatches }: Readonly<{ topics: Wo
   const remaining = topics.length - visible;
   return <>
     <div className={styles.topicList}>{topics.slice(0, visible).map((topic, index) => <details className={styles.topic} data-accordion="free" key={topic.title} open={revealMatches || index === 0}>
-      <summary><span className={styles.topicTitle}>{topic.title}</span><span className={styles.priority} role="img" aria-label={text(`Interview prep priority: ${interviewPriority(group, topic.title)} out of 5 stars`, `इंटरव्यू तैयारी प्राथमिकता: 5 में से ${interviewPriority(group, topic.title)} सितारे`)} title={interviewPriority(group, topic.title) === 5 ? text("Core essentials — prepare first", "मुख्य आधार — पहले तैयार करें") : text("Extended practice — deepen your understanding", "विस्तृत अभ्यास — समझ बढ़ाएँ")}><span aria-hidden="true">{interviewPriority(group, topic.title) === 5 ? "★★★★★" : "★★★★☆"}</span></span><span className={styles.disclosureIcon} aria-hidden="true">⌄</span></summary>
+      <AccordionSummary><span className={styles.topicTitle}>{topic.title}</span><span className={styles.priority} role="img" aria-label={text(`Interview prep priority: ${interviewPriority(group, topic.title)} out of 5 stars`, `इंटरव्यू तैयारी प्राथमिकता: 5 में से ${interviewPriority(group, topic.title)} सितारे`)} title={interviewPriority(group, topic.title) === 5 ? text("Core essentials — prepare first", "मुख्य आधार — पहले तैयार करें") : text("Extended practice — deepen your understanding", "विस्तृत अभ्यास — समझ बढ़ाएँ")}><span aria-hidden="true">{interviewPriority(group, topic.title) === 5 ? "★★★★★" : "★★★★☆"}</span></span></AccordionSummary>
       <div><p><strong>{topic.question}</strong></p><ul className={styles.learningPoints}>{learningPoints(topic.answer).map((point, index) => <li key={index}>{point}</li>)}</ul></div>
     </details>)}</div>
     <div className={styles.topicPagination}>

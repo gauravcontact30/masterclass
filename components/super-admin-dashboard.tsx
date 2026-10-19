@@ -1,4 +1,6 @@
 "use client";
+import dynamic from "next/dynamic";
+import { AdminLoading } from "./super-admin-feedback";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Skeleton } from "./ui/skeleton";
 import { Separator } from "./ui/separator";
@@ -12,27 +14,33 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MessageSquarePlus, Activity, ArrowLeft, Bot, Layers, Receipt, LifeBuoy, Megaphone, MousePointerClick, TrendingUp, ChevronDown, ChevronRight, CreditCard, Database, ExternalLink, Languages, LogOut, RefreshCw, PanelLeftClose, PanelLeftOpen, Server, ShieldCheck, UserRound, Users } from "lucide-react";
-import {SuperAdminOperations} from "./super-admin-operations";
-import {SuperAdminUsers} from "./super-admin-users";
-import { SuperAdminAuthActivity } from "./super-admin-auth-activity";
-import { SuperAdminAi } from "./super-admin-ai";
-import { SuperAdminBilling } from "./super-admin-billing";
-import { SuperAdminInfrastructure } from "./super-admin-infrastructure";
 import { SidebarTooltips } from "./sidebar-tooltips";
 import { DashboardPageHeader } from "./dashboard-page-header";
 import { Wordmark } from "./brand-mark";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
-import { SuperAdminSuggestions } from "./super-admin-suggestions";
 import { OverviewLive } from "./super-admin-overview-live";
-import { SuperAdminTraces } from "./super-admin-traces";
-import { SuperAdminActivity } from "./super-admin-activity";
 import { AdminTable } from "./super-admin-table";
-import { SuperAdminTransactions } from "./super-admin-transactions";
-import { SuperAdminPromotions } from "./super-admin-promotions";
-import { SuperAdminAnnouncements, SuperAdminInsights, SuperAdminLearnerSupport, SuperAdminQueue } from "./super-admin-support";
 import styles from "./super-admin-dashboard.module.css";
 import side from "./super-admin-sidebar.module.css";
 import { useLanguage } from "./language-provider";
+
+const sectionLoading = () => <AdminLoading>Loading section...</AdminLoading>;
+const SuperAdminNotepad = dynamic(() => import("./super-admin-notepad").then(module => module.SuperAdminNotepad), { loading: sectionLoading });
+const SuperAdminOperations = dynamic(() => import("./super-admin-operations").then(module => module.SuperAdminOperations), { loading: sectionLoading });
+const SuperAdminUsers = dynamic(() => import("./super-admin-users").then(module => module.SuperAdminUsers), { loading: sectionLoading });
+const SuperAdminAuthActivity = dynamic(() => import("./super-admin-auth-activity").then(module => module.SuperAdminAuthActivity), { loading: sectionLoading });
+const SuperAdminAi = dynamic(() => import("./super-admin-ai").then(module => module.SuperAdminAi), { loading: sectionLoading });
+const SuperAdminBilling = dynamic(() => import("./super-admin-billing").then(module => module.SuperAdminBilling), { loading: sectionLoading });
+const SuperAdminInfrastructure = dynamic(() => import("./super-admin-infrastructure").then(module => module.SuperAdminInfrastructure), { loading: sectionLoading });
+const SuperAdminSuggestions = dynamic(() => import("./super-admin-suggestions").then(module => module.SuperAdminSuggestions), { loading: sectionLoading });
+const SuperAdminTraces = dynamic(() => import("./super-admin-traces").then(module => module.SuperAdminTraces), { loading: sectionLoading });
+const SuperAdminActivity = dynamic(() => import("./super-admin-activity").then(module => module.SuperAdminActivity), { loading: sectionLoading });
+const SuperAdminTransactions = dynamic(() => import("./super-admin-transactions").then(module => module.SuperAdminTransactions), { loading: sectionLoading });
+const SuperAdminPromotions = dynamic(() => import("./super-admin-promotions").then(module => module.SuperAdminPromotions), { loading: sectionLoading });
+const SuperAdminAnnouncements = dynamic(() => import("./super-admin-support").then(module => module.SuperAdminAnnouncements), { loading: sectionLoading });
+const SuperAdminInsights = dynamic(() => import("./super-admin-support").then(module => module.SuperAdminInsights), { loading: sectionLoading });
+const SuperAdminLearnerSupport = dynamic(() => import("./super-admin-support").then(module => module.SuperAdminLearnerSupport), { loading: sectionLoading });
+const SuperAdminQueue = dynamic(() => import("./super-admin-support").then(module => module.SuperAdminQueue), { loading: sectionLoading });
 
 type Row = Record<string, unknown>;
 type Snapshot = {
@@ -48,7 +56,7 @@ const groups = [
   { label: "People", items: [{ id: "users", label: "Users & access", icon: Users }, { id: "suggestions", label: "Suggestion Box", icon: MessageSquarePlus }, { id: "support", label: "Learner support", icon: LifeBuoy }, { id: "moderation", label: "Moderation", icon: ShieldCheck }, { id: "announcements", label: "Announcements", icon: Megaphone }] },
   { label: "Growth", items: [{ id: "promotions", label: "Promotional Tracking", icon: TrendingUp }] },
   { label: "Revenue", items: [{ id: "billing", label: "Revenue & billing", icon: CreditCard }, { id: "transactions", label: "Transactions", icon: Receipt }] },
-  { label: "Content", items: [{ id: "content", label: "Content & audit", icon: Database }, { id: "queue", label: "Generation queue", icon: Layers }] },
+  { label: "Content", items: [{ id: "content", label: "Content & audit", icon: Database }, { id: "queue", label: "Generation queue", icon: Layers }, { id: "notepad", label: "Notepad", icon: Receipt }] },
   { label: "System", items: [{ id: "infra", label: "Infrastructure", icon: Server }, { id: "health", label: "System health", icon: Activity }, { id: "logs", label: "Application logs", icon: Database }, { id: "security", label: "Security", icon: ShieldCheck }] },
 ] as const;
 type SectionItem = (typeof groups)[number]["items"][number];
@@ -64,7 +72,7 @@ function Table({ title, rows, columns, query, note }: { title: string; rows: Row
   return <AdminTable title={title} rows={rows} columns={columns} query={query} note={note} />;
 }
 function Metric({ label, value, note }: { label: string; value: string | number; note: string }) { return <Card className={styles.metric}><span>{label}</span><strong>{value}</strong><small>{note}</small></Card>; }
-export function SuperAdminDashboard() {
+export function SuperAdminDashboard({ userId = "admin" }: { userId?: string }) {
   const router = useRouter();
   const { language, setLanguage } = useLanguage();
   const [signingOut, setSigningOut] = useState(false);
@@ -85,6 +93,7 @@ export function SuperAdminDashboard() {
   }
   const [collapsed, setCollapsed] = useState(false);
   const [section, setSection] = useState<Section>("overview");
+  const [notepadOpened, setNotepadOpened] = useState(false);
   const [days, setDays] = useState(30); const [query, setQuery] = useState("");
   const [data, setData] = useState<Snapshot | null>(null); const [error, setError] = useState(""); const [busy, setBusy] = useState(true);
   const refresh = useCallback(async (signal?: AbortSignal) => {
@@ -106,7 +115,7 @@ export function SuperAdminDashboard() {
   const events = data?.events ?? [];
   return <div className={`app-shell compact-workspace ${styles.shell}${collapsed ? " sidebar-collapsed" : ""}`}><aside className={`sidebar ${styles.sidebar} ${side.sidebar}`} data-collapsed={collapsed || undefined}><SidebarTooltips collapsed={collapsed}/><div className="sidebar-brand-row"><Link href="/dashboard" className="wordmark" aria-label="Learning dashboard"><Wordmark /></Link><Button variant="ghost" className="sidebar-toggle" aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} aria-expanded={!collapsed} onClick={() => setCollapsed(value => !value)}>{collapsed ? <PanelLeftOpen size={17}/> : <PanelLeftClose size={17}/>}</Button></div>{!collapsed && <div className={side.badge}><span className={side.badgeMark}><ShieldCheck size={15} /></span><span><b>Super admin</b><small>Control centre</small></span></div>}<nav aria-label="Super admin" className={side.nav}>{groups.map(group => <div key={group.label} className={side.group} role="group" aria-label={group.label}>
         {!collapsed && <span className={side.groupLabel}>{group.label}</span>}
-        {group.items.map(({ id, label, icon: Icon }) => <button type="button" key={id} aria-label={label} title={collapsed ? label : undefined} className={side.item} aria-current={section === id ? "page" : undefined} onClick={() => { setSection(id); setQuery(""); }}>
+        {group.items.map(({ id, label, icon: Icon }) => <button type="button" key={id} aria-label={label} title={collapsed ? label : undefined} className={side.item} aria-current={section === id ? "page" : undefined} onClick={() => { if (id === "notepad") setNotepadOpened(true); setSection(id); setQuery(""); }}>
           <span className={side.icon}><Icon size={16} /></span>{!collapsed && <span className={side.label}>{label}</span>}
         </button>)}
       </div>)}</nav><Link className={side.back} href="/dashboard" aria-label="Learning dashboard"><span className={side.icon}><ArrowLeft size={16} /></span>{!collapsed && "Learning dashboard"}</Link></aside>
@@ -148,11 +157,12 @@ export function SuperAdminDashboard() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </header><main className={styles.main}><DashboardPageHeader eyebrow={section === "suggestions" ? "People · Feedback" : "Application monitoring"} title={section === "overview" ? "Your application, at a glance." : sections.find(s => s.id === section)?.label} description={section === "suggestions" ? "Listen, triage and keep contributors informed. Replies appear in each contributor’s private tracking view." : "Keep a pulse on your learners, subscriptions, and platform."} icon={section === "suggestions" ? <MessageSquarePlus/> : <ShieldCheck/>}/>
-      {section !== "suggestions" && <div className={styles.toolbar}><div className={styles.reportFilter}><Label htmlFor="admin-report-window">Reporting window</Label><AdminSelect id="admin-report-window" label="Reporting window" value={String(days)} onValueChange={value=>setDays(Number(value))} options={[{value:"1",label:"Last 24 hours"},{value:"7",label:"Last 7 days"},{value:"30",label:"Last 30 days"},{value:"90",label:"Last 90 days"}]} /></div><Input aria-label="Search displayed records" placeholder="Search displayed records…" value={query} onChange={e => setQuery(e.target.value)} /></div>}
+    </header><main className={styles.main}><DashboardPageHeader eyebrow={section === "notepad" ? "Writing workspace" : section === "suggestions" ? "People · Feedback" : "Application monitoring"} title={section === "overview" ? "Your application, at a glance." : sections.find(s => s.id === section)?.label} description={section === "notepad" ? "Write, format and export documents. Drafts autosave in this browser every two minutes." : section === "suggestions" ? "Listen, triage and keep contributors informed. Replies appear in each contributor’s private tracking view." : "Keep a pulse on your learners, subscriptions, and platform."} icon={section === "suggestions" ? <MessageSquarePlus/> : <ShieldCheck/>}/>
+      {section !== "suggestions" && section !== "notepad" && <div className={styles.toolbar}><div className={styles.reportFilter}><Label htmlFor="admin-report-window">Reporting window</Label><AdminSelect id="admin-report-window" label="Reporting window" value={String(days)} onValueChange={value=>setDays(Number(value))} options={[{value:"1",label:"Last 24 hours"},{value:"7",label:"Last 7 days"},{value:"30",label:"Last 30 days"},{value:"90",label:"Last 90 days"}]} /></div><Input aria-label="Search displayed records" placeholder="Search displayed records…" value={query} onChange={e => setQuery(e.target.value)} /></div>}
       {accountError && <Alert variant="destructive" className={styles.error}><AlertDescription>{accountError}</AlertDescription></Alert>}
-      {error && <Alert variant="destructive" className={styles.error}><AlertDescription>{error}{data && " Displaying the last successful snapshot."}</AlertDescription></Alert>}
-      {!data && !error && <div className={styles.loading} role="status"><span>Loading application monitoring...</span><div className={styles.metrics}>{[0,1,2,3].map(id=><Skeleton key={id} className={styles.metricSkeleton}/>)}</div></div>}
+      {error && section !== "notepad" && <Alert variant="destructive" className={styles.error}><AlertDescription>{error}{data && " Displaying the last successful snapshot."}</AlertDescription></Alert>}
+      {!data && !error && section !== "notepad" && <div className={styles.loading} role="status"><span>Loading application monitoring...</span><div className={styles.metrics}>{[0,1,2,3].map(id=><Skeleton key={id} className={styles.metricSkeleton}/>)}</div></div>}
+      {notepadOpened && <div hidden={section !== "notepad"}><SuperAdminNotepad userId={userId} /></div>}
       {section === "billing" && <SuperAdminBilling />}
       {section === "infra" && <SuperAdminInfrastructure />}
       {section === "activity" && <SuperAdminActivity days={days} query={query} />}

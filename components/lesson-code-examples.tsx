@@ -1,4 +1,5 @@
 "use client";
+import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import { ExpandedText } from "@/components/expanded-text";
 import { useEffect, useId, useRef, useState } from "react";
 import { Check, Code2, Copy, FileCode2, Folder, FolderOpen, Play, Square, Terminal } from "lucide-react";
@@ -27,13 +28,13 @@ function FileTree({ files, active, onSelect, prefix = "" }: { files: ExampleFile
   return <ul className={styles.tree}>{entries.map(entry => {
     const path = prefix + entry;
     const file = files.find(item => item.path === path);
-    return <li key={path}>{file ? <button type="button" title={path} aria-label={path} aria-pressed={active === path} onClick={() => onSelect(path)}><FileCode2 size={14} aria-hidden="true" /><span><ExpandedText text={entry} /></span></button> : <details open data-accordion="free"><summary><Folder size={14} aria-hidden="true" /><span><ExpandedText text={entry} /></span></summary><FileTree files={files} active={active} onSelect={onSelect} prefix={`${path}/`} /></details>}</li>;
+    return <li key={path}>{file ? <button type="button" title={path} aria-label={path} aria-pressed={active === path} onClick={() => onSelect(path)}><FileCode2 size={14} aria-hidden="true" /><span><ExpandedText text={entry} /></span></button> : <details open data-accordion="free"><AccordionSummary><Folder size={14} aria-hidden="true" /><span><ExpandedText text={entry} /></span></AccordionSummary><FileTree files={files} active={active} onSelect={onSelect} prefix={`${path}/`} /></details>}</li>;
   })}</ul>;
 }
 
 export function CodeApiReference({ references, hi }: { references: ApiReference[]; hi: boolean }) {
   return <div className={styles.references}>{references.map((api, index) => <details key={`${api.name}-${index}`} open={index === 0}>
-    <summary><code>{api.name}</code><span><ExpandedText text={api.kind} /></span></summary>
+    <AccordionSummary><code>{api.name}</code><span><ExpandedText text={api.kind} /></span></AccordionSummary>
     <CodeLab title={api.name} code={api.signature} explanation={api.returns} editable={false} />
     {api.params.length > 0 && <div className={styles.tableScroll}><table><caption><ExpandedText text={hi ? "पैरामीटर, आर्ग्युमेंट और प्रॉपर्टी" : "Parameters, arguments & properties"} /></caption><thead><tr><th><ExpandedText text={hi ? "नाम" : "Name"} /></th><th><ExpandedText text={hi ? "प्रकार" : "Type"} /></th><th><ExpandedText text={hi ? "उपयोग" : "How to use it"} /></th></tr></thead><tbody>{api.params.map(param => <tr key={param.name}><td><code>{param.name}</code></td><td><code>{param.type}</code></td><td><ExpandedText text={param.description} /></td></tr>)}</tbody></table></div>}
     <p><strong><ExpandedText text={hi ? "रिटर्न प्रकार और मान" : "Return type & value"} />: </strong><ExpandedText text={api.returns} /></p>
@@ -109,7 +110,7 @@ function ExampleWorkspace({ example, hi, id }: { example: CodeExample; hi: boole
       </div>
     </div>
     {example.completeness === "snippet" && <p className={styles.excerptNote}><ExpandedText text={hi ? "पाठ का कोड अंश · आवश्यक सेटअप के लिए पाठ और API संदर्भ देखें।" : "Lesson excerpt · See the lesson and API reference for the surrounding setup."} /></p>}
-    {example.setup.length > 0 && <details className={styles.run} open><summary><Terminal size={15} aria-hidden="true" /><ExpandedText text={hi ? "सेटअप और चलाने के चरण" : "Set up & run"} /></summary><ol>{example.setup.map((step, index) => <li key={index}><ExpandedText text={step} /></li>)}</ol></details>}
+    {example.setup.length > 0 && <details className={styles.run} open><AccordionSummary><Terminal size={15} aria-hidden="true" /><ExpandedText text={hi ? "सेटअप और चलाने के चरण" : "Set up & run"} /></AccordionSummary><ol>{example.setup.map((step, index) => <li key={index}><ExpandedText text={step} /></li>)}</ol></details>}
     {example.expectedOutput && <div className={styles.result}><span><Check size={14} aria-hidden="true" /><ExpandedText text={hi ? "अपेक्षित परिणाम" : "Expected result"} /></span><pre>{example.expectedOutput}</pre></div>}
     {example.apiReference?.length ? <CodeApiReference references={example.apiReference} hi={hi} /> : null}
   </div>;
@@ -121,14 +122,14 @@ export function LessonCodeExamples({ examples, hi }: { examples: CodeExample[]; 
   return <section className={styles.examples} aria-label={hi ? "कोड उदाहरण" : "Code examples"}>
     <div className={styles.exampleHeading}><span><ExpandedText text={hi ? "कोड से सीखें" : "LEARN BY BUILDING"} /></span><span><ExpandedText text={String(examples.length).padStart(2, "0")} /> <ExpandedText text={hi ? "उदाहरण" : "examples"} /></span></div>
     {examples.map((example, index) => <details className={styles.exampleAccordion} key={`${example.kind}-${index}`} open={index === 0}>
-      <summary>
+      <AccordionSummary>
         <span className={styles.exampleIndex} aria-hidden="true"><ExpandedText text={String(index + 1).padStart(2, "0")} /></span>
         <span className={styles.exampleSummary}>
           <span className={styles.exampleKind}><ExpandedText text={example.kind === "concept" ? hi ? "मूल अवधारणा" : "Core concept" : hi ? "व्यावहारिक उदाहरण" : "Applied example"} /></span>
           <span className={styles.exampleTitle}><ExpandedText text={example.title} /></span>
         </span>
         <span className={styles.exampleFiles} aria-hidden="true">{example.files.length} <ExpandedText text={hi ? "फ़ाइलें" : example.files.length === 1 ? "file" : "files"} /></span>
-      </summary>
+      </AccordionSummary>
       <ExampleWorkspace example={example} hi={hi} id={`${id}-workspace-${index}`} />
     </details>)}
   </section>;

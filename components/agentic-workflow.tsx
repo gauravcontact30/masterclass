@@ -1,4 +1,5 @@
 "use client";
+import { AccordionChevron, AccordionSummary } from "@/components/ui/accordion-chevron";
 
 import { useState, useMemo, useCallback, type CSSProperties } from "react";
 import Link from "next/link";
@@ -362,9 +363,6 @@ function WorkflowStudioReader({
                   <SelectTrigger
                     aria-label="Select workflow topology"
                     className={mechStyles.readerTopologySelect}
-                    onChange={(e: any) => {
-                      if (e.target?.value) onSelect(e.target.value);
-                    }}
                   >
                     <SelectValue placeholder="Select workflow topology..." />
                   </SelectTrigger>
@@ -763,7 +761,7 @@ function WorkflowStudioReader({
                       ))}
                     </ol>
                     <details className={cardStyles.answer}>
-                      <summary>Show answer {index + 1}</summary>
+                      <AccordionSummary>Show answer {index + 1}</AccordionSummary>
                       <p>
                         <strong>Answer:</strong> <mark>{q.answer}</mark>
                       </p>
@@ -790,7 +788,7 @@ function WorkflowStudioReader({
                       {index + 1}. {sq.question}
                     </h4>
                     <details className={cardStyles.answer}>
-                      <summary>Show model answer</summary>
+                      <AccordionSummary>Show model answer</AccordionSummary>
                       <p>{sq.answer}</p>
                     </details>
                   </div>
@@ -1078,11 +1076,7 @@ export function AgenticWorkflowDashboard() {
               >
                 <SlidersHorizontal size={13} aria-hidden="true" />
                 <span>Filters</span>
-                <ChevronDown
-                  size={13}
-                  aria-hidden="true"
-                  className={`${styles.filterChevron} ${advanced ? styles.flipped : ""}`}
-                />
+                <AccordionChevron />
               </Button>
             </div>
           </div>

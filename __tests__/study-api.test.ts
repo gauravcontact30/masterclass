@@ -10,7 +10,7 @@ jest.mock("@/lib/server/repository", () => ({ account: jest.fn() }));
 const context = (id: string) => ({ params: Promise.resolve({ id }) });
 beforeEach(() => { jest.mocked(userId).mockResolvedValue("student"); jest.mocked(preparationAccess).mockResolvedValue({ selections: ["cbse-10"], isSuperAdmin: false }); jest.mocked(account).mockResolvedValue({ tier: "free", used: 0, limit: 3, subscription: null, creditBalance: 0 }); });
 test("list returns only selected preparation and forged URLs do not expose other notes", async () => {
-  const response = await list(); const data = await response.json(); expect(data.courses).toHaveLength(8);
+  const response = await list(new Request("http://localhost/api/study")); const data = await response.json(); expect(data.courses).toHaveLength(8);
   const denied = await GET(new Request("http://localhost/api/study/neet"), context("neet")); expect(denied.status).toBe(404);
   const deniedDesign = await GET(new Request("http://localhost/api/study/design-payments?admin=true"), context("design-payments")); expect(deniedDesign.status).toBe(404);
 });
@@ -28,7 +28,7 @@ test("grading rejects hidden question IDs and cross-origin submissions", async (
 });
 test("verified server admin access includes every published guide", async () => {
   jest.mocked(preparationAccess).mockResolvedValue({ selections: [], isSuperAdmin: true });
-  expect((await (await list()).json()).courses).toHaveLength(200);
+  expect((await (await list(new Request("http://localhost/api/study"))).json()).courses).toHaveLength(200);
   const response = await GET(new Request("http://localhost/api/study/design-payments"), context("design-payments"));
   expect((await response.json()).pack.lessons).toHaveLength(8);
 });

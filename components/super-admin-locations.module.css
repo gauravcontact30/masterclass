@@ -1,0 +1,8 @@
+.panel { min-width: 0; padding: 20px; border: 1px solid #d6e5dc; border-radius: 16px; background: #f1f8f3; }
+.panel header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.panel h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 18px; }
+.panel p { font-size: 13px; line-height: 1.6; color: #526158; }
+.panel button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 8px 12px; border: 1px solid #cbdcd1; border-radius: 9px; background: white; cursor: pointer; }
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 16px; }
+.tabs button[aria-pressed=true] { background: #dcefe2; border-color: #7aa88b; }
+@media (max-width: 480px) { .panel { padding: 12px; } .panel button { min-height: 44px; } }

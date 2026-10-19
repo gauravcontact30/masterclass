@@ -1,4 +1,5 @@
 "use client";
+import { AccordionSummary } from "@/components/ui/accordion-chevron";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Bell, ExternalLink, RefreshCw } from "lucide-react";
@@ -159,5 +160,5 @@ export function ImportedDocumentation({ technologyId }: { technologyId: string }
     return () => { controller.abort(); window.removeEventListener("documentation-updated", load); };
   }, [technologyId]);
   if (!source) return null;
-  return <details className={styles.imported}><summary>Imported official documentation · fetched {date(source.retrievedAt)}</summary><a href={source.url} target="_blank" rel="noopener noreferrer">Read original source <ExternalLink size={12} aria-hidden="true" /></a><section className={styles.source}><h3>{source.title}</h3><p>{source.text}</p></section></details>;
+  return <details className={styles.imported}><AccordionSummary>Imported official documentation · fetched {date(source.retrievedAt)}</AccordionSummary><a href={source.url} target="_blank" rel="noopener noreferrer">Read original source <ExternalLink size={12} aria-hidden="true" /></a><section className={styles.source}><h3>{source.title}</h3><p>{source.text}</p></section></details>;
 }
