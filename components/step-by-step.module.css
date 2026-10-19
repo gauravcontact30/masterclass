@@ -428,3 +428,14 @@
 
 /* The generated picture runs flush across the top of a card, over its top padding. */
 .cardPicture { margin-top: -18px; }
+
+/* Phones: justified text on a ~300px column opens wide gaps between words, so it reads left-aligned there. */
+@media (max-width: 640px) {
+  .prose,
+.points li,
+.bullets li,
+.cardText,
+.compareHead p,
+.differenceRows dd,
+.stepBody p { text-align: start; }
+}

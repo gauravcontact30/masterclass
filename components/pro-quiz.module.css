@@ -1392,3 +1392,17 @@
     padding: 12px 14px;
   }
 }
+
+/* Phones: justified text on a ~300px column opens wide gaps between words, so it reads left-aligned there. */
+@media (max-width: 640px) {
+  .sectionSubtitle { text-align: start; }
+  .questionHeading { text-align: start; }
+  .hintBanner { text-align: start; }
+  .explanationText { text-align: start; }
+  .vocabCard p { text-align: start; }
+  .scoreVerdictDesc { text-align: start; }
+  .reviewItemQ { text-align: start; }
+  .reviewExplanation { text-align: start; }
+  .modeCard p { text-align: start; }
+  .presetCard p { text-align: start; }
+}

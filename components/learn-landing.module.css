@@ -25,3 +25,8 @@
 
 /* Upload Learning content placed on the landing page (components/learning-slot.tsx). */
 .learningSlot { width: min(1200px, calc(100% - 32px)); margin: 28px auto; }
+
+/* Phones: justified text on a ~300px column opens wide gaps between words, so it reads left-aligned there. */
+@media (max-width: 640px) {
+  .compactPlanNote.compactPlanNote { text-align: start; }
+}

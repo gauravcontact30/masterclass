@@ -64,7 +64,7 @@
 .card h3 { margin: 0; font-family: var(--nb-font); font-size: 22px; font-weight: 600; line-height: 1.2; letter-spacing: -0.01em; color: var(--nb-graphite); }
 
 .block { display: flex; flex-direction: column; gap: 6px; }
-.label { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--edge); }
+.label { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--edge); }
 .definition { margin: 0; font-size: 15px; line-height: 1.55; color: var(--nb-text); text-align: left; }
 .points, .uses { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
 .points li, .uses li { position: relative; padding-left: 18px; font-size: 14px; line-height: 1.45; color: var(--nb-text); }
@@ -85,8 +85,9 @@
 .source:hover { text-decoration: underline; text-underline-offset: 3px; }
 
 .dots { display: flex; justify-content: center; gap: 8px; margin-top: 28px; }
-.dots button { position: relative; overflow: hidden; width: 28px; height: 6px; padding: 0; border: 0; border-radius: 999px; background: var(--nb-rule); cursor: pointer; transition: width .3s var(--ease-out), background .3s ease; }
-.dots button[aria-current="true"] { width: 56px; background: color-mix(in srgb, var(--nb-ink) 30%, var(--nb-rule)); }
+/* A 24px tall tap area (transparent borders, background clipped to the padding box) around a 6px bar. */
+.dots button { position: relative; overflow: hidden; box-sizing: border-box; width: 28px; height: 24px; padding: 0; border: 0; border-block: 9px solid transparent; background-clip: padding-box; border-radius: 999px; background-color: var(--nb-rule); cursor: pointer; transition: width .3s var(--ease-out), background .3s ease; }
+.dots button[aria-current="true"] { width: 56px; background-color: color-mix(in srgb, var(--nb-ink) 30%, var(--nb-rule)); }
 /* The active dot fills over the two-minute wait, so the reader can see when the page will turn. */
 .timer { position: absolute; inset: 0; transform-origin: left; background: var(--nb-ink); animation: fill linear forwards; }
 @keyframes fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
@@ -126,3 +127,9 @@
 .source { min-width: 0; align-items: flex-start; }
 .source span { overflow-wrap: anywhere; }
 .source svg { flex-shrink: 0; margin-top: 2px; }
+
+/* Phones: justified text on a ~300px column opens wide gaps between words, so it reads left-aligned there. */
+@media (max-width: 640px) {
+  .lede { text-align: start; }
+  .twoUp > li :is(p, li, dd) { text-align: start; }
+}

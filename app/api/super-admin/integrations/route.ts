@@ -1,4 +1,5 @@
 import { requireSuperAdmin } from "@/lib/server/super-admin";
+import { HttpError, sameOrigin } from "@/lib/server/http";
 import { redis, cacheSet } from "@/lib/redis";
 import { inngest } from "@/lib/inngest/client";
 import { env } from "@/lib/env";
@@ -56,6 +57,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    // Admin actions only from this site's own pages (blocks cross-site request forgery).
+    sameOrigin(request);
     const user = await requireSuperAdmin();
     const body = await request.json();
     const parsed = integrationActionSchema.safeParse(body);
@@ -119,6 +122,8 @@ export async function POST(request: Request) {
 
     return Response.json({ error: "Unsupported action" }, { status: 400 });
   } catch (error) {
+    // Sign-in, permission and origin failures keep their status; nothing internal is echoed back for them.
+    if (error instanceof HttpError) return Response.json({ error: error.code }, { status: error.status });
     const message = error instanceof Error ? error.message : "Execution failed";
     return Response.json({ error: message }, { status: 500 });
   }

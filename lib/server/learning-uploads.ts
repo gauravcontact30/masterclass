@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import { cacheLife, cacheTag, revalidateTag } from "next/cache";
 import { db } from "./db";
 import { currentUser } from "./auth";
 import { account } from "./repository";
@@ -22,6 +23,7 @@ export async function requireOwner() {
   return user;
 }
 
+const LEARNING_TAG = "learning-content";
 const missing = (error: { code?: string; message: string }) => error.code === "42P01" || error.code === "42703" || error.code === "PGRST205" || error.code === "PGRST202" || /could not find the (table|function)|column .* does not exist/i.test(error.message);
 function rows<T>({ data, error }: { data: T | null; error: { code?: string; message: string } | null }): T {
   if (error) { if (missing(error)) throw new HttpError(503, "migration_required"); throw new Error(error.message); }
@@ -58,16 +60,32 @@ async function viewer(): Promise<"signed_out" | "signed_in" | "member"> {
   return tier === "free" ? "signed_in" : "member";
 }
 
+/**
+ * Published rows for a page, shared by every visitor and cached (tag "learning-content", cleared on every owner
+ * write), so a page view costs no database round trip. Schedule and audience are applied per request below.
+ */
+async function publishedRows(surface: LearningSurface, pages: string[]): Promise<UploadRow[]> {
+  "use cache";
+  cacheLife({ stale: 30, revalidate: 60, expire: 300 });
+  cacheTag(LEARNING_TAG);
+  const result = await db().from("learning_uploads").select("*").eq("surface", surface).in("page", pages).eq("status", "published")
+    .order("pinned", { ascending: false }).order("position").order("created_at");
+  if (result.error) { if (missing(result.error)) return []; throw new Error(result.error.message); }
+  return result.data as UploadRow[];
+}
+/** Clears the cached public content after the owner changes anything, on every server instance. */
+const published = () => revalidateTag(LEARNING_TAG, { expire: 0 });
+
 /** Published uploads for one page of one surface, pinned first then in order, that the current visitor may see right now. */
 export async function publishedBlocks(surface: LearningSurface, page: string): Promise<LearningBlock[]> {
   // Content placed on the Super Admin console is for admins only, whatever the public endpoint is asked for.
   if (surface === "super_admin" && !isSuperAdminUser(await currentUser().catch(() => null))) return [];
-  const pages = surface === "super_admin" ? [page, "all"] : [page];
-  const result = await db().from("learning_uploads").select("*").eq("surface", surface).in("page", pages).eq("status", "published")
-    .order("pinned", { ascending: false }).order("position").order("created_at");
-  if (result.error) { if (missing(result.error)) return []; throw new Error(result.error.message); }
-  const now = Date.now(); const who = await viewer();
-  return (result.data as UploadRow[]).filter(row => (!row.starts_at || Date.parse(row.starts_at) <= now) && (!row.ends_at || Date.parse(row.ends_at) > now)
+  const rows = await publishedRows(surface, surface === "super_admin" ? [page, "all"] : [page]);
+  if (!rows.length) return [];
+  const now = Date.now();
+  // Only look up who is visiting (an auth and an account read) when some upload is targeted.
+  const who = rows.some(row => row.audience !== "everyone") ? await viewer() : "signed_out";
+  return rows.filter(row => (!row.starts_at || Date.parse(row.starts_at) <= now) && (!row.ends_at || Date.parse(row.ends_at) > now)
     && (row.audience === "everyone" || (row.audience === "signed_out" && who === "signed_out") || (row.audience === "signed_in" && who !== "signed_out") || (row.audience === "members" && who === "member")))
     .map(toBlock);
 }
@@ -120,7 +138,9 @@ export async function listUploads(): Promise<LearningUpload[]> {
   return (rows(await db().from("learning_uploads").select("*").order("updated_at", { ascending: false })) as UploadRow[]).map(toUpload);
 }
 export async function createUpload(input: UploadInput, ownerId: string) {
-  return toUpload(rows(await db().from("learning_uploads").insert({ ...toRow(input), created_by: ownerId }).select("*").single()) as UploadRow);
+  const created = toUpload(rows(await db().from("learning_uploads").insert({ ...toRow(input), created_by: ownerId }).select("*").single()) as UploadRow);
+  published();
+  return created;
 }
 /** Updates an upload; when its content changes, the previous content is kept as a revision and the version goes up. */
 export async function updateUpload(id: string, input: Partial<UploadInput>) {
@@ -132,13 +152,15 @@ export async function updateUpload(id: string, input: Partial<UploadInput>) {
   const patch = { ...toRow(input), updated_at: new Date().toISOString(), ...(contentChanged ? { version: before.version + 1 } : {}) };
   const row = rows(await db().from("learning_uploads").update(patch).eq("id", id).select("*").maybeSingle()) as UploadRow | null;
   if (!row) throw new HttpError(404, "not_found");
+  published();
   return toUpload(row);
 }
 /** One change applied to many uploads at once (publish, hide, unpublish to draft, pin). */
 export async function bulkUpdate(ids: string[], changes: Pick<Partial<UploadInput>, "status" | "pinned">) {
   rows(await db().from("learning_uploads").update({ ...toRow(changes), updated_at: new Date().toISOString() }).in("id", ids));
+  published();
 }
-export async function deleteUploads(ids: string[]) { rows(await db().from("learning_uploads").delete().in("id", ids)); }
+export async function deleteUploads(ids: string[]) { rows(await db().from("learning_uploads").delete().in("id", ids)); published(); }
 
 export async function listRevisions(uploadId: string): Promise<LearningRevision[]> {
   return (rows(await db().from("learning_upload_revisions").select("*").eq("upload_id", uploadId).order("version", { ascending: false }).limit(50)) as RevisionRow[]).map(toRevision);
@@ -180,4 +202,5 @@ export async function deletePage(id: string) {
   if (!page) throw new HttpError(404, "not_found");
   rows(await db().from("learning_uploads").delete().eq("surface", "dashboard").eq("page", `learn:${page.slug}`));
   rows(await db().from("learning_pages").delete().eq("id", id));
+  published();
 }

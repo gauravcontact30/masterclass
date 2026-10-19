@@ -810,6 +810,8 @@ ul.learning-key-points.pointwise > li::before, .notes-bullets > li::before { con
 :where(p) { text-align: justify; text-justify: inter-word; text-align-last: auto; hyphens: auto; -webkit-hyphens: auto; }
 :where(.text-center, [class*="center" i], [class*="empty" i], [role="status"], [style*="text-align: center"], [style*="text-align:center"]) :where(p),
 :where(p.text-center, p[class*="center" i]) { text-align: inherit; }
+/* Phones: a ~300px justified column opens wide gaps between words, so paragraphs read left-aligned there. */
+@media (max-width: 640px) { :where(p) { text-align: start; } }
 
 /* Shared shadcn accordion indicator; native disclosures keep their HTML semantics. */
 [data-slot="accordion-summary"] { position: relative; list-style: none; padding-inline-end: 52px !important; cursor: pointer; min-height: 44px; }

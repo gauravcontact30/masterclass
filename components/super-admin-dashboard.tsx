@@ -26,6 +26,7 @@ import side from "./super-admin-sidebar.module.css";
 import { useLanguage } from "./language-provider";
 
 const sectionLoading = () => <AdminLoading>Loading section...</AdminLoading>;
+const SuperAdminSecurityCenter = dynamic(() => import("./super-admin-security").then(module => module.SuperAdminSecurityCenter), { loading: sectionLoading });
 const SuperAdminUploadLearning = dynamic(() => import("./super-admin-upload-learning").then(module => module.SuperAdminUploadLearning), { loading: sectionLoading });
 const SuperAdminNotepad = dynamic(() => import("./super-admin-notepad").then(module => module.SuperAdminNotepad), { loading: sectionLoading });
 const SuperAdminOperations = dynamic(() => import("./super-admin-operations").then(module => module.SuperAdminOperations), { loading: sectionLoading });
@@ -178,6 +179,7 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
       {section === "support" && <SuperAdminLearnerSupport users={data?.users ?? []} />}
       {section === "queue" && <SuperAdminQueue />}
       {section === "transactions" && <SuperAdminTransactions />}
+      {section === "security" && <SuperAdminSecurityCenter days={days} />}
       {section === "announcements" && <SuperAdminAnnouncements />}
       {section === "promotions" && <SuperAdminPromotions days={days} query={query} />}
       {(section === "overview" || section === "live") && <OverviewLive snapshot={data} onRefreshSnapshot={refreshQuietly} />}

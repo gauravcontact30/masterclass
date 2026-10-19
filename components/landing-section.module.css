@@ -38,3 +38,8 @@
   .facts > div { padding-right: 14px; margin-right: 14px; }
   .facts dd { font-size: 22px; }
 }
+
+/* Phones: justified text on a ~300px column opens wide gaps between words, so it reads left-aligned there. */
+@media (max-width: 640px) {
+  .lede { text-align: start; }
+}

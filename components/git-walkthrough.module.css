@@ -14,3 +14,9 @@
 .caution { margin-top: 20px; padding: 12px; border-radius: 8px; background: #fff5e5; }
 @media (max-width: 600px) { .lesson { margin: 10px; padding: 12px; } }
 .lesson[data-embedded] { margin: 12px 0 0; padding: 16px 0 0; border: 0; border-top: 1px solid var(--card-line, #dedee3); border-radius: 0; background: transparent; font-family: inherit; }
+
+/* Phones: justified text on a ~300px column opens wide gaps between words, so it reads left-aligned there. */
+@media (max-width: 640px) {
+  .lesson[data-embedded] p,
+.lesson[data-embedded] .setup li { text-align: start; }
+}

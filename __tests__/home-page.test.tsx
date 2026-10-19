@@ -1,5 +1,5 @@
 ﻿/** @jest-environment node */
-import Home, { metadata } from "@/app/page";
+import Home, { metadata } from "@/app/(landing)/page";
 import { JsonLd } from "@/components/json-ld";
 import { LandingPage } from "@/components/landing-page";
 

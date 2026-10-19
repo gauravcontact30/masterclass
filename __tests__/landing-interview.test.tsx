@@ -61,6 +61,19 @@ test("the visible slide loads its questions into the accordion with star ratings
   expect(within(screen.getByRole("listitem", { name: "31 / 31: Key TanStack libraries" })).getByRole("status")).toHaveTextContent("Loading questions");
 });
 
+test("the landing preview shows the 7 most asked of each kind and links to the full set in the dashboard", async () => {
+  render(<LanguageProvider><LandingInterview preview /></LanguageProvider>);
+  const slides = within(screen.getByRole("list", { name: "Interview questions by technology" })).getAllByRole("listitem");
+  expect(slides).toHaveLength(3);
+  const slide = slides[0];
+  await within(slide).findByRole("heading", { name: /questions$/ });
+  expect(within(slide).getAllByRole("img", { name: /Asked often: \d of 5/ })).toHaveLength(7);
+  expect(within(slide).getByRole("link", { name: /Showing the 7 most asked of \d+\. See all \d+ subjective questions in the dashboard/ })).toHaveAttribute("href", "/dashboard");
+  fireEvent.click(within(slide).getByRole("button", { name: /Objective/ }));
+  expect(slide.querySelectorAll("[data-correct='true']")).toHaveLength(7);
+  expect(within(slide).getByRole("link", { name: /See all \d+ objective questions/ })).toBeInTheDocument();
+});
+
 test("Key TanStack libraries switches between a tab per library", async () => {
   renderSection();
   const slide = screen.getByRole("listitem", { name: "31 / 31: Key TanStack libraries" });

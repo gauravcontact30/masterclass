@@ -1,7 +1,8 @@
 "use client";
 import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import { Fragment, useState, type ReactNode } from "react";
-import { CircleCheck, ListChecks, MessageSquareText } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, CircleCheck, ListChecks, MessageSquareText } from "lucide-react";
 import { arrangeOptions, byStars, type QuestionSet, type Stars } from "@/lib/interview-questions";
 import styles from "./interview-accordion.module.css";
 
@@ -13,9 +14,12 @@ const LETTERS = ["A", "B", "C", "D"];
  * Subjective and objective interview questions behind a two-way switch, most asked first, each rated in stars
  * and opened like an accordion. Colours come from the parent's --deep and --tint. Used by the Workflow
  * blueprints and the interview carousel on the landing page.
+ * `limit` shows only the most asked few of each kind (the landing preview), with a link to the full set at `moreHref`.
  */
-export function InterviewQuestions({ set, text, heading, scroll = false }: Readonly<{ set: QuestionSet; text: Text; heading?: ReactNode; scroll?: boolean }>) {
+export function InterviewQuestions({ set, text, heading, scroll = false, limit, moreHref = "/dashboard" }: Readonly<{ set: QuestionSet; text: Text; heading?: ReactNode; scroll?: boolean; limit?: number; moreHref?: string }>) {
   const [mode, setMode] = useState<Mode>(set.subjective.length || !set.objective.length ? "subjective" : "objective");
+  const cap = <T,>(list: T[]) => limit ? list.slice(0, limit) : list;
+  const total = mode === "subjective" ? set.subjective.length : set.objective.length;
   return <div className={styles.wrap}>
     <header className={styles.head}>
       {heading}
@@ -29,12 +33,12 @@ export function InterviewQuestions({ set, text, heading, scroll = false }: Reado
     {/* Keyed by mode so switching starts with every row closed and the list scrolled to the top. */}
     <div key={mode} className={styles.list} data-scroll={scroll}>
       {mode === "subjective"
-        ? byStars(set.subjective).map((q, i) => <Item key={q.question} n={i + 1} stars={q.stars} question={q.question} text={text}>
+        ? cap(byStars(set.subjective)).map((q, i) => <Item key={q.question} n={i + 1} stars={q.stars} question={q.question} text={text}>
           {q.code && <pre className={styles.code}><code>{q.code}</code></pre>}
           <p className={styles.answer}><Inline text={q.answer} /></p>
           {q.source && <p className={styles.source}>{q.source}</p>}
         </Item>)
-        : byStars(set.objective).map((q, i) => {
+        : cap(byStars(set.objective)).map((q, i) => {
           const { options, answer } = arrangeOptions(q);
           return <Item key={q.question} n={i + 1} stars={q.stars} question={q.question} text={text}>
             {q.code && <pre className={styles.code}><code>{q.code}</code></pre>}
@@ -47,6 +51,10 @@ export function InterviewQuestions({ set, text, heading, scroll = false }: Reado
           </Item>;
         })}
     </div>
+    {limit && total > limit && <Link className={styles.more} href={moreHref}>
+      {text(`Showing the ${limit} most asked of ${total}. See all ${total} ${mode} questions in the dashboard`, `सबसे ज़्यादा पूछे गए ${limit} / ${total}। डैशबोर्ड में सभी ${total} ${mode === "subjective" ? "विषयगत" : "वस्तुनिष्ठ"} प्रश्न देखें`)}
+      <ArrowRight size={15} aria-hidden="true" />
+    </Link>}
   </div>;
 }
 

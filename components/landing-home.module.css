@@ -196,7 +196,7 @@
 /* The right edge leaves room for the fixed Study Buddy launcher in the corner. */
 .heroControls { position: absolute; left: max(32px, calc((100% - 1240px) / 2)); right: max(256px, calc((100% - 1240px) / 2 + 224px)); bottom: 40px; z-index: 2; display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; }
 .heroSegments { display: flex; gap: 20px; flex: 1; max-width: 760px; }
-.heroSegment { flex: 1; min-width: 0; display: grid; gap: 10px; padding: 6px 0; border: 0; background: transparent; color: rgba(255, 255, 255, .72); font: inherit; font-size: 14px; font-weight: 500; text-align: left; cursor: pointer; transition: color .2s ease; }
+.heroSegment { flex: 1; min-width: 0; min-height: 24px; align-content: center; display: grid; gap: 10px; padding: 6px 0; border: 0; background: transparent; color: rgba(255, 255, 255, .72); font: inherit; font-size: 14px; font-weight: 500; text-align: left; cursor: pointer; transition: color .2s ease; }
 .heroSegment:hover, .heroSegment[aria-current] { color: #fff; }
 .heroSegment span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .heroSegment i { display: block; height: 3px; border-radius: 3px; background: rgba(255, 255, 255, .28); overflow: hidden; }
@@ -357,3 +357,8 @@
 @media (max-width: 640px) { .heroKicker { right: 16px; top: 96px; translate: 24px 0; padding: 6px 12px 6px 9px; font-size: 11.5px; }
   .heroSlide[data-active] .heroKicker { translate: 0 0; } }
 @media (prefers-reduced-motion: reduce) { .heroKicker { transition: none; } }
+
+/* Phones: justified text on a ~300px column opens wide gaps between words, so it reads left-aligned there. */
+@media (max-width: 640px) {
+  .home :where(p) { text-align: start; }
+}

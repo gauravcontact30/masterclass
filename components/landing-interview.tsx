@@ -19,6 +19,8 @@ type Text = (en: string, hindi: string) => string;
 /** Eight light tones the slides cycle through, defined in landing-interview.module.css. */
 const TONES = 8;
 const two = (n: number) => String(n).padStart(2, "0");
+/** The landing preview shows this many of the most asked subjective and objective questions; /dashboard shows all. */
+const LANDING_QUESTIONS = 7;
 
 /**
  * Interview prep: one slide per technology, each with its picture, its most-asked subjective and objective
@@ -49,14 +51,14 @@ export function LandingInterview({ expanded = false, preview = false }: Readonly
     {!preview && <InterviewTechNav techs={techs} current={page} onPick={goTo} tones={TONES} text={text} tab={tabs[current?.id] ?? 0} onTab={tab => chooseTab(current.id, tab)} />}
     <p className={styles.now} aria-live="polite"><b>{current?.title}</b><span aria-hidden="true">·</span>{text(`Topic ${page + 1} of ${techs.length}`, `विषय ${page + 1} / ${techs.length}`)}</p>
     <ul ref={track} className={styles.track} aria-roledescription="carousel" aria-label={text("Interview questions by technology", "तकनीक के अनुसार इंटरव्यू प्रश्न")} {...holdProps}>
-      {techs.map((tech, i) => <InterviewSlide key={tech.id} tech={tech} index={i} total={techs.length} near={nearViewport && Math.abs(i - page) <= 1} text={text} tab={tabs[tech.id] ?? 0} onTab={tab => chooseTab(tech.id, tab)} />)}
+      {techs.map((tech, i) => <InterviewSlide key={tech.id} tech={tech} index={i} total={techs.length} near={nearViewport && Math.abs(i - page) <= 1} text={text} tab={tabs[tech.id] ?? 0} onTab={tab => chooseTab(tech.id, tab)} preview={preview} />)}
     </ul>
     <Dots pages={pages} page={page} running={running} goTo={goTo} label={n => text(`Show technology ${n}`, `तकनीक ${n} दिखाएँ`)} />
     {expanded && <DashboardLessons section="interview" />}
   </div></section>;
 }
 
-function InterviewSlide({ tech, index, total, near, text, tab, onTab }: Readonly<{ tech: InterviewTech; index: number; total: number; near: boolean; text: Text; tab: number; onTab: (tab: number) => void }>) {
+function InterviewSlide({ tech, index, total, near, text, tab, onTab, preview = false }: Readonly<{ tech: InterviewTech; index: number; total: number; near: boolean; text: Text; tab: number; onTab: (tab: number) => void; preview?: boolean }>) {
   const ids = bankIds(tech);
   const [sets, setSets] = useState<Record<string, QuestionSet>>({});
   const [failed, setFailed] = useState(false);
@@ -106,7 +108,7 @@ function InterviewSlide({ tech, index, total, near, text, tab, onTab }: Readonly
       </div>}
       <div {...(tech.tabs ? { role: "tabpanel", id: panelId, "aria-labelledby": `${panelId}-${tech.tabs[tab].id}` } : {})}>
         {set
-          ? <InterviewQuestions key={id} set={set} text={text} scroll heading={<h4>{text(`${title} questions`, `${title} प्रश्न`)}</h4>} />
+          ? <InterviewQuestions key={id} set={set} text={text} scroll limit={preview ? LANDING_QUESTIONS : undefined} heading={<h4>{text(`${title} questions`, `${title} प्रश्न`)}</h4>} />
           : <div className={styles.loading} role="status">{failed ? text("These questions could not load. Check your connection and try again.", "ये प्रश्न लोड नहीं हो सके। कनेक्शन जाँचें और फिर कोशिश करें।") : text("Loading questions…", "प्रश्न लोड हो रहे हैं…")}</div>}
       </div>
     </div>

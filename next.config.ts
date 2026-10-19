@@ -50,6 +50,11 @@ const nextConfig: NextConfig = {
           { key: "Content-Security-Policy", value: "frame-ancestors 'none'; object-src 'none'; base-uri 'self'" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // HTTPS only, for two years, on every subdomain (browsers ignore this header on plain-http localhost).
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+          // Pages opened from here (or that open this site) cannot reach back into its window. "allow-popups" keeps
+          // OAuth sign-in and the Razorpay checkout, which open popups that report back, working.
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
         ],
       },
       ...["/api/:path*", "/auth/:path*", "/dashboard/:path*", "/sign-in/:path*", "/sign-up/:path*"].map(source => ({

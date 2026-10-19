@@ -648,3 +648,11 @@
 .cardPicture img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .3s ease; }
 .card:hover .cardPicture img { transform: scale(1.03); }
 @media (prefers-reduced-motion: reduce) { .card:hover .cardPicture img { transform: none; } }
+
+/* Phones: justified text on a ~300px column opens wide gaps between words, so it reads left-aligned there. */
+@media (max-width: 640px) {
+  .grid[data-walkthrough] .cardSummary,
+.grid[data-walkthrough] .point,
+.grid[data-walkthrough] .useItem,
+.grid[data-walkthrough] .industryProblem { text-align: start; }
+}

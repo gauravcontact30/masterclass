@@ -5,7 +5,7 @@
 .skip:focus { top: 12px; }
 .header { display: flex; align-items: center; gap: 28px; padding: 18px clamp(16px, 4vw, 48px); border-bottom: 1px solid #e8e6dc; background: #faf9f5; }
 .nav { display: flex; gap: 22px; margin-right: auto; font-size: 14px; }
-.nav a, .actions a:not(.cta) { color: #5e5d59; text-decoration: none; }
+.nav a, .actions a:not(.cta) { display: inline-flex; align-items: center; min-height: 32px; color: #5e5d59; text-decoration: none; }
 .nav a:hover, .actions a:not(.cta):hover { color: #c6613f; }
 .actions { display: flex; align-items: center; gap: 16px; font-size: 14px; }
 .cta { padding: 9px 16px; border-radius: 9px; background: #d97757; color: #fff; font-weight: 600; text-decoration: none; }
@@ -13,7 +13,8 @@
 .main { flex: 1; width: 100%; max-width: 920px; margin: 0 auto; padding: 48px clamp(16px, 4vw, 32px) 72px; outline: none; }
 .footer { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 36px; padding: 28px clamp(16px, 4vw, 48px); border-top: 1px solid #e8e6dc; background: #faf9f5; font-size: 13px; color: #73726c; }
 .footer ul { display: flex; flex-wrap: wrap; gap: 18px; margin: 0; padding: 0; list-style: none; }
-.footer a { color: #5e5d59; }
+.footer a { display: inline-flex; align-items: center; min-height: 28px; color: #5e5d59; }
+.footer small { font-size: 12px; }
 .footer small { margin-left: auto; }
 
 .breadcrumb ol { display: flex; gap: 8px; margin: 0 0 20px; padding: 0; list-style: none; font-size: 12px; color: #87867f; }

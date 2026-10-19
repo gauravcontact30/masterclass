@@ -57,6 +57,19 @@ function Identity({email,isSuperAdmin,onNavigate}:{email:string|null;isSuperAdmi
 export type { WorkspaceTab } from "@/lib/dashboard-routes";
 // Professional learning sections render their own page content instead of the study catalog.
 const PRO_SECTIONS=[{id:"official-docs",label:"Official Docs",icon:BookMarked},{id:"techy",label:"Techy",icon:Code2},{id:"api-docs",label:"API Docs",icon:FileCode2},{id:"workflow",label:"Workflow",icon:Workflow},{id:"lessons",label:"Lessons",icon:BookOpenText},{id:"quiz",label:"Quiz",icon:CircleHelp},{id:"interview",label:"Interview",icon:MessagesSquare}] as const;
+/**
+ * The catalogue is the same on every dashboard page, and each page mounts its own Workspace, so one request is shared
+ * across navigations for a minute instead of refetching 40 KB on every click. Refresh asks for a fresh copy.
+ */
+let catalogCache:{at:number;request:Promise<{technologies:Technology[];topics:Topic[]}>}|null=null;
+function loadCatalog(fresh=false){
+  if(process.env.NODE_ENV==="test")return requestJson<{technologies:Technology[];topics:Topic[]}>("/api/catalog");
+  if(!fresh&&catalogCache&&Date.now()-catalogCache.at<60000)return catalogCache.request;
+  const request=requestJson<{technologies:Technology[];topics:Topic[]}>("/api/catalog");
+  catalogCache={at:Date.now(),request};
+  request.catch(()=>{if(catalogCache?.request===request)catalogCache=null;});
+  return request;
+}
 const isProSection=(category?:string)=>PRO_SECTIONS.some(section=>section.id===category);
 const AI_SEARCH_LABEL="Search";
 const STEP_BY_STEP_LABEL="On The Go";
@@ -93,7 +106,7 @@ export function Workspace({authEnabled,configured,billingEnabled,userEmail=null,
   const preparationKey=data?.preparations?.selections.join(",")??"";
   const catalogReady=!authEnabled||data!==null;
   const refresh=useCallback(async()=>{if(!configured||!authEnabled)return;try{const result=await requestJson<AccountData>("/api/account");setData(result);if(!hydrated.current){setLanguage(result.profile.language,false);hydrated.current=true;}setError(null);}catch(e){setError(errorKey(e));}},[configured,authEnabled,setLanguage,setError,setData]);
-  useEffect(()=>{let active=true;if(configured&&catalogReady){void requestJson<typeof catalog>("/api/catalog").then(result=>{if(active)setCatalog(result);}).catch(e=>{if(active)setError(errorKey(e));}).finally(()=>{if(active)setLoading(false);});}return()=>{active=false;};},[configured,catalogReady,preparationKey]);
+  useEffect(()=>{let active=true;if(configured&&catalogReady){void loadCatalog().then(result=>{if(active)setCatalog(result);}).catch(e=>{if(active)setError(errorKey(e));}).finally(()=>{if(active)setLoading(false);});}return()=>{active=false;};},[configured,catalogReady,preparationKey]);
   useEffect(()=>{Promise.resolve().then(refresh);},[refresh]);
   useEffect(()=>{if(!data?.documents.some(d=>d.status==="queued"||d.status==="generating"))return;const interval=setInterval(()=>void refresh(),5000);return()=>clearInterval(interval);},[data,refresh]);
   async function generate(input:GenerationRequest){setBusy(true);setError(null);try{const {document}=await requestJson<{document:DocumentRecord}>("/api/documents",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(input)});await refresh();if(document.status==="ready"){toast.success(`${document.title} — ${t("ready")}`);setNotesSelected(document);}else{toast(`${document.title} — ${t("generating")}…`);navigate("library");}}catch(e){const key=errorKey(e);setError(key);toast.error(t(key));}finally{setBusy(false);}}
@@ -112,7 +125,7 @@ export function Workspace({authEnabled,configured,billingEnabled,userEmail=null,
   const activePreparation=category?PREPARATIONS.find(option=>option.id===initialPreparation):undefined;
   const needsPreparation=!!data&&!access.isSuperAdmin&&!access.selections.length;
   const confirmDoc=documents.find(d=>d.id===confirmId);
-  async function reload(){setRefreshing(true);try{const result=await requestJson<typeof catalog>("/api/catalog");setCatalog(result);await refresh();}catch(e){setError(errorKey(e));}finally{setRefreshing(false);}}
+  async function reload(){setRefreshing(true);try{const result=await loadCatalog(true);setCatalog(result);await refresh();}catch(e){setError(errorKey(e));}finally{setRefreshing(false);}}
   // Dashboard and My Library share one search and filters panel (inside StudyCatalog); their libraries render beneath it.
   const libraries=<>{!category&&tab==="library"&&<NotesLibrary externalQuery={data?learningQuery:undefined} onQueryChange={data?setLearningQuery:undefined} documents={documents} technologies={catalog.technologies} topics={catalog.topics} progress={progress} loading={loading} busy={busy} copiedId={copiedId} onLearn={setNotesSelected} onCopyNotes={item=>void copyNotes(item)} onRetry={request=>void generate(request)} onDelete={item=>setConfirmId(item.id)}/>}{!learningQuery&&resumeDoc&&(!category||category==="technology")&&<button className="resume-strip" onClick={()=>setNotesSelected(resumeDoc)}><BookOpen size={20}/><span><small><ExpandedText text={t("resume")} /></small><strong><ExpandedText text={resumeDoc.title} /></strong></span><ArrowUpRight size={18}/></button>}{(!category&&tab!=="library"||category==="technology")&&(access.isSuperAdmin||access.selections.some(id=>id.startsWith("tech:")))&&<Library externalQuery={learningQuery} onQueryChange={setLearningQuery} documents={initialPreparation.startsWith("tech:")&&category==="technology"?documents.filter(doc=>doc.request.technologyId===initialPreparation.slice(5)):documents} technologies={catalog.technologies} topics={catalog.topics} progress={progress} loading={loading} busy={busy} copiedId={copiedId} onLearn={setNotesSelected} onCopyNotes={item=>void copyNotes(item)} onRetry={request=>void generate(request)} onDelete={item=>setConfirmId(item.id)}/>}</>;
   const pro=isProSection(category)||category==="learn";
