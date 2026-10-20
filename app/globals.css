@@ -856,3 +856,7 @@ details[open] > [data-slot="accordion-summary"] > [data-slot="accordion-indicato
 @media (max-width: 760px) {
   .learning-sidebar > .sidebar-options { display: contents; }
 }
+/* Super Admin content editing (components/content-editing.tsx): an editable card or section in edit mode, and one
+   removed for all users (shown faded, with Restore, only to the Super Admin). */
+[data-content-item]{position:relative;outline:1px dashed #3f8f7866;outline-offset:-1px}
+[data-content-item][data-removed=true]>:not(span){opacity:.35;filter:grayscale(1)}

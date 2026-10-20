@@ -10,7 +10,11 @@ import type { QuestionSet } from "@/lib/interview-questions";
 import { learningImageUrl } from "@/lib/learning-image";
 import { AUTOPLAY_MS, Controls, Dots } from "./landing-ai-pulse";
 import { InterviewQuestions } from "./interview-accordion";
-import { Pager } from "./super-admin-table";
+import { Editable, useContentItem, useContentText, useVisibleContent } from "./content-editing";
+import { contentKey } from "@/lib/content-overrides";
+
+const compareKey = (item: Comparison) => contentKey("compare", item.id);
+import { Pager } from "./super-admin-pager";
 import { Combobox } from "./ui/combobox";
 import { useLanguage } from "./language-provider";
 import { usePagedCarousel } from "./use-paged-carousel";
@@ -38,15 +42,18 @@ const GROUP_ICON: Record<ComparisonGroup, LucideIcon> = {
  */
 export function LandingComparisons({ expanded = false, preview = false, locked = false, official = null }: Readonly<{ expanded?: boolean; preview?: boolean; locked?: boolean; official?: OfficialTechDocs | null }>) {
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
-  const { track, nearViewport, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(preview ? 1 : COMPARISONS.length, 1, AUTOPLAY_MS);
-  const shown = preview ? COMPARISONS.slice(0, 1) : COMPARISONS;
-  const groups = [...new Set(COMPARISONS.map(item => item.group))];
+  const items = useVisibleContent(COMPARISONS, compareKey);
+  const section = useContentItem("section:tech-comparisons", "section");
+  const { track, nearViewport, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(preview ? 1 : items.length, 1, AUTOPLAY_MS);
+  const shown = preview ? items.slice(0, 1) : items;
+  const groups = [...new Set(items.map(item => item.group))];
   const pickerPage = Math.floor(page / 5) + 1;
   const pickerStart = (pickerPage - 1) * 5;
-  return <section id="tech-comparisons" className={interview.section} aria-labelledby="comparisons-title"><div className={home.inner}>
+  if (section.hidden) return null;
+  return <section id="tech-comparisons" className={interview.section} aria-labelledby="comparisons-title" {...section.props}>{section.toolbar}<div className={home.inner}>
     <div className={interview.head} data-learning-header>
       <div className={interview.headCopy} data-learning-copy>
-        <p className={interview.kicker}><GitCompareArrows size={14} aria-hidden="true" />{text("Tech Topics", "टेक टॉपिक्स")}<span>{COMPARISONS.length} {text("comparisons", "तुलनाएँ")}</span></p>
+        <p className={interview.kicker}><GitCompareArrows size={14} aria-hidden="true" />{text("Tech Topics", "टेक टॉपिक्स")}<span>{items.length} {text("comparisons", "तुलनाएँ")}</span></p>
         <h2 id="comparisons-title">{text("What is the difference ", "असल में अंतर ")}<em>{text("between them, really?", "क्या है?")}</em></h2>
         <p className={interview.lede} data-learning-intro>{text(
           "The comparisons interviewers and teams ask about most, from LangChain, LangGraph and LangSmith to Redux, Zustand and Redux Toolkit. Each one defines every technology in a line, compares them at a glance and answers 40+ difference questions.",
@@ -57,22 +64,22 @@ export function LandingComparisons({ expanded = false, preview = false, locked =
     {!preview && <><div className={styles.picker}>
       <span id="comparison-jump-label">{text("Jump to a comparison", "किसी तुलना पर जाएँ")}</span>
       {/* shadcn Combobox (Popover + Command): grouped by topic and searchable, so 37 comparisons stay quick to reach. */}
-      <Combobox value={COMPARISONS[page]?.id ?? ""} onChange={id => { const index = COMPARISONS.findIndex(item => item.id === id); if (index >= 0) goTo(index); }}
-        groups={groups.map(group => ({ label: group, options: COMPARISONS.filter(item => item.group === group).map(item => ({ value: item.id, label: item.question })) }))}
+      <Combobox value={items[page]?.id ?? ""} onChange={id => { const index = items.findIndex(item => item.id === id); if (index >= 0) goTo(index); }}
+        groups={groups.map(group => ({ label: group, options: items.filter(item => item.group === group).map(item => ({ value: item.id, label: item.question })) }))}
         placeholder={text("Choose a comparison", "तुलना चुनें")} searchPlaceholder={text("Search comparisons, e.g. Redux", "तुलना खोजें, जैसे Redux")} emptyText={text("No comparison matches that search.", "इस खोज से कोई तुलना नहीं मिली।")}
         clearLabel={text("Clear", "साफ़ करें")} ariaLabel={text("Jump to a comparison", "किसी तुलना पर जाएँ")} icon={GitCompareArrows} />
     </div>
     <nav className={styles.visualPicker} aria-label={text("Browse illustrated comparisons", "चित्रों के साथ तुलनाएँ देखें")}>
-      {COMPARISONS.slice(pickerStart, pickerStart + 5).map((item, offset) => { const index = pickerStart + offset; return <button key={item.id} type="button" aria-current={index === page ? "true" : undefined} onClick={() => goTo(index)}>
+      {items.slice(pickerStart, pickerStart + 5).map((item, offset) => { const index = pickerStart + offset; return <button key={item.id} type="button" aria-current={index === page ? "true" : undefined} onClick={() => goTo(index)}>
         <ChainPicture sources={[learningImageUrl("topics", ["comparisons", item.id]), ...item.techs.map(tech => techPicture(tech.name)).filter((id): id is string => !!id).map(id => learningImageUrl("topics", ["interview", id]))]} alt="" icon={<GitCompareArrows size={24} aria-hidden="true" />}><span className={styles.previewLabel}>{item.techs.map(tech => tech.name).join(" / ")}</span></ChainPicture>
       </button>; })}
     </nav>
-    <div className={styles.pickerPager}><Pager page={pickerPage} pages={Math.ceil(COMPARISONS.length / 5)} total={COMPARISONS.length} size={5} onPage={next => goTo((next - 1) * 5)} /></div></>}
+    <div className={styles.pickerPager}><Pager page={pickerPage} pages={Math.ceil(items.length / 5)} total={items.length} size={5} onPage={next => goTo((next - 1) * 5)} /></div></>}
     <ul ref={track} className={interview.track} aria-roledescription="carousel" aria-label={text("Technology comparisons", "तकनीकी तुलनाएँ")} {...holdProps}>
-      {shown.map((item, i) => <ComparisonSlide key={item.id} item={item} index={i} total={COMPARISONS.length} near={nearViewport && Math.abs(i - page) <= 1} text={text} official={official} />)}
+      {shown.map((item, i) => <ComparisonSlide key={item.id} item={item} index={i} total={items.length} near={nearViewport && Math.abs(i - page) <= 1} text={text} official={official} />)}
     </ul>
     {!preview && <Dots pages={pages} page={page} running={running} goTo={goTo} label={n => text(`Show comparison ${n}`, `तुलना ${n} दिखाएँ`)} />}
-    {preview && <DashboardMore href={locked ? "/dashboard/plans" : "/dashboard"} title={locked ? text(`Subscribe to open all ${COMPARISONS.length} comparisons`, `सभी ${COMPARISONS.length} तुलनाएँ खोलने के लिए सदस्यता लें`) : text(`See all ${COMPARISONS.length} comparisons`, `सभी ${COMPARISONS.length} तुलनाएँ देखें`)} detail={text("Every comparison, its picker, table and 40+ questions are in your dashboard.", "हर तुलना, उसका चयनकर्ता, तालिका और 40+ प्रश्न आपके डैशबोर्ड में हैं।")} />}
+    {preview && <DashboardMore href={locked ? "/dashboard/plans" : "/dashboard"} title={locked ? text(`Subscribe to open all ${items.length} comparisons`, `सभी ${items.length} तुलनाएँ खोलने के लिए सदस्यता लें`) : text(`See all ${items.length} comparisons`, `सभी ${items.length} तुलनाएँ देखें`)} detail={text("Every comparison, its picker, table and 40+ questions are in your dashboard.", "हर तुलना, उसका चयनकर्ता, तालिका और 40+ प्रश्न आपके डैशबोर्ड में हैं।")} />}
     {expanded && <DashboardLessons section="topics" />}
   </div></section>;
 }
@@ -88,21 +95,24 @@ function ComparisonSlide({ item, index, total, near, text, official }: Readonly<
     return () => { live = false; };
   }, [near, set, item.id]);
   const Icon = GROUP_ICON[item.group];
+  const k = compareKey(item);
+  const card = useContentItem(k, "comparison");
+  const question = useContentText(k, "question", item.question), summary = useContentText(k, "summary", item.summary);
   // Only the visible slide and its neighbours render in full (table, technology cards, pictures). The other 30+
   // are light shells, which cut this section from ~4,000 DOM nodes and 136 images to a few hundred, the largest
   // share of the landing page's hydration work. A shell fills in as the reader (or autoplay) arrives.
   if (!near) return <li className={interview.slide} data-tone={index % TONES} aria-roledescription="slide" aria-label={`${index + 1} / ${total}: ${item.question}`}>
-    <article className={interview.cover}><div className={interview.coverBody}><h3>{item.question}</h3><p className={interview.tagline}>{item.summary}</p></div></article>
+    <article className={interview.cover}><div className={interview.coverBody}><h3>{question}</h3><p className={interview.tagline}>{summary}</p></div></article>
   </li>;
-  return <li className={interview.slide} data-tone={index % TONES} aria-roledescription="slide" aria-label={`${index + 1} / ${total}: ${item.question}`}>
+  return <li className={interview.slide} data-tone={index % TONES} aria-roledescription="slide" aria-label={`${index + 1} / ${total}: ${item.question}`} {...card.props}>{card.toolbar}
     <article className={interview.cover}>
       <ChainPicture sources={[learningImageUrl("topics", ["comparisons", item.id]), ...item.techs.map(tech => techPicture(tech.name)).filter((id): id is string => !!id).map(id => learningImageUrl("topics", ["interview", id]))]} alt={`Illustration comparing ${item.techs.map(tech => tech.name).join(", ")}`} icon={<Icon size={48} strokeWidth={1.3} aria-hidden="true" />}>
         <span className={interview.tag}><Icon size={12} aria-hidden="true" />{item.group}</span>
         <span className={interview.index} aria-hidden="true">{two(index + 1)}</span>
       </ChainPicture>
       <div className={interview.coverBody}>
-        <h3>{item.question}</h3>
-        <p className={interview.tagline}>{item.summary}</p>
+        <h3><Editable k={k} f="question">{item.question}</Editable></h3>
+        <p className={interview.tagline}><Editable k={k} f="summary" multiline>{item.summary}</Editable></p>
         <ul className={styles.techs}>{item.techs.map((tech, k) => <li key={tech.name} data-tint={(index + k) % 6}>
           <TechThumb id={techPicture(tech.name)} name={tech.name} />
           <b>{tech.name}</b>

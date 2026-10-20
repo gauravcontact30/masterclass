@@ -18,8 +18,26 @@ export function isIndexable(): boolean {
 
 export const siteName = "MasterClass";
 export const siteTitle = "MasterClass Buddy | Study Notes, Exam Prep & Coding Tutorials";
-export const siteDescription = "Learn with English and Hindi study notes, CBSE and NCERT lessons, exam practice, coding tutorials, interview questions and system design blueprints on MasterClass Buddy.";
-export const siteKeywords = ["MasterClass", "online learning", "study notes in Hindi", "CBSE", "NCERT", "ICSE", "ISC", "SSC", "JEE", "NEET", "IELTS vocabulary", "system design", "technology interview preparation", "practice tests", "MasterClass Buddy", "coding tutorials", "React interview questions", "Python tutorials", "AI agent workflows", "English vocabulary with Hindi meanings", "system design interview questions"];
+export const siteDescription = "Learn in English and Hindi with an AI tutor: CBSE and NCERT notes, SSC, JEE and NEET practice, coding tutorials and interview questions on MasterClass Buddy.";
+/**
+ * Site-wide keywords, grouped by what MasterClass sells: bilingual learning, the AI tutor, school and competitive
+ * exams, coding and interview preparation, and the membership. Google ignores the keywords tag; Bing and others
+ * still read it, and the same terms are used in titles, descriptions and structured data, which do count.
+ */
+export const siteKeywords = [
+  // Brand
+  "MasterClass", "MasterClass Buddy",
+  // Bilingual, AI-assisted learning
+  "online learning platform India", "learn in Hindi and English", "Hindi medium study notes", "study notes in Hindi", "AI tutor", "AI study assistant", "ask doubts online", "personalised study plan",
+  // School and competitive exams
+  "CBSE", "NCERT", "NCERT solutions", "ICSE", "ISC", "SSC", "SSC CGL preparation", "banking exam preparation", "railway exam preparation", "JEE", "NEET", "practice tests", "mock tests with solutions", "IELTS vocabulary",
+  // Coding and careers
+  "learn coding online", "learn coding in Hindi", "coding tutorials", "programming for beginners", "full stack developer course", "React tutorial", "Next.js tutorial", "Python tutorials", "JavaScript interview questions", "React interview questions", "technology interview preparation", "system design", "system design interview questions", "AI agent workflows", "LangChain tutorial", "AWS tutorial",
+  // Vocabulary and communication
+  "English vocabulary with Hindi meanings", "spoken English words", "corporate English vocabulary",
+  // Membership
+  "affordable online courses", "learning membership India",
+];
 export const privateMetadata: Metadata = { robots: { index: false, follow: false } };
 
 /**
@@ -50,14 +68,18 @@ const ogImage = { url: "/opengraph-image", width: 1200, height: 630, alt: `${sit
  * Complete metadata for a public page. Next.js replaces (not merges) nested
  * objects such as openGraph between segments, so each page gets the full set.
  */
+/** Keywords for each public page, matched to what that page actually offers. */
+const PAGE_KEYWORDS: Partial<Record<PublicPage["path"], string[]>> = {
+  "/courses": ["online courses India", "CBSE study notes", "NCERT solutions", "ICSE and ISC notes", "SSC exam preparation", "banking exam preparation", "railway exam preparation", "defence exam preparation", "JEE preparation", "NEET preparation", "IELTS vocabulary", "technology learning paths", "learning paths in Hindi"],
+  "/library": ["free learning library", "free programming tutorials", "interview questions with answers", "React interview questions", "system design blueprints", "AI agent workflows", "API reference", "technology handbooks", "English vocabulary with Hindi meanings"],
+  "/about": ["about MasterClass", "bilingual learning platform", "Hindi and English education", "online learning India", "AI tutor for students"],
+  "/contact": ["MasterClass support", "membership help", "billing support", "contact MasterClass"],
+};
+
 export function pageMetadata(path: PublicPage["path"]): Metadata {
   const { title, description } = publicPage(path);
   const home = path === "/";
-  const keywords = path === "/courses"
-    ? ["CBSE study notes", "NCERT solutions", "SSC exam preparation", "JEE preparation", "NEET preparation", "technology learning paths"]
-    : path === "/library"
-      ? ["free programming tutorials", "React interview questions", "system design blueprints", "AI agent workflows", "API reference", "English vocabulary with Hindi meanings"]
-      : home ? siteKeywords : undefined;
+  const keywords = PAGE_KEYWORDS[path] ?? (home ? siteKeywords : undefined);
   return {
     // The home title already carries the brand; skip the "%s | MasterClass" template.
     title: home ? { absolute: title } : title,
@@ -96,12 +118,25 @@ export function breadcrumbSchema(trail: readonly (readonly [string, `/${string}`
 
 export function websiteSchema() {
   const url = siteUrl().href;
-  return { "@context": "https://schema.org", "@type": "WebSite", "@id": `${url}#website`, url, name: siteName, alternateName: "MasterClass Buddy", description: siteDescription, inLanguage: ["en", "hi"], publisher: { "@id": `${url}#organization` } };
+  return { "@context": "https://schema.org", "@type": "WebSite", "@id": `${url}#website`, url, name: siteName, alternateName: "MasterClass Buddy", description: siteDescription, inLanguage: ["en", "hi"], keywords: siteKeywords.join(", "), publisher: { "@id": `${url}#organization` } };
 }
 
 export function organizationSchema() {
   const url = siteUrl().href;
-  return { "@context": "https://schema.org", "@type": "EducationalOrganization", "@id": `${url}#organization`, name: siteName, url, logo: new URL("/icon.svg", url).href, description: siteDescription, areaServed: "IN", knowsLanguage: ["en", "hi"] };
+  // The membership, as search engines should describe the business: one plan, monthly or yearly, in rupees.
+  const offer = (name: string, price: number, unit: "MON" | "ANN") => ({
+    "@type": "Offer", name, price: String(price), priceCurrency: "INR", url: new URL("/subscribe", url).href, availability: "https://schema.org/InStock",
+    priceSpecification: { "@type": "UnitPriceSpecification", price: String(price), priceCurrency: "INR", unitCode: unit, referenceQuantity: { "@type": "QuantitativeValue", value: 1, unitCode: unit } },
+  });
+  return {
+    "@context": "https://schema.org", "@type": "EducationalOrganization", "@id": `${url}#organization`, name: siteName, alternateName: "MasterClass Buddy", url,
+    logo: new URL("/icon.svg", url).href, description: siteDescription, slogan: "Learn in English and Hindi, with an AI tutor beside you.", areaServed: "IN", knowsLanguage: ["en", "hi"],
+    knowsAbout: ["CBSE", "NCERT", "ICSE", "SSC exams", "JEE", "NEET", "IELTS vocabulary", "JavaScript", "TypeScript", "React", "Next.js", "Python", "Node.js", "System design", "AWS", "Git", "AI agents", "LangChain", "English vocabulary"],
+    hasOfferCatalog: { "@type": "OfferCatalog", name: "MasterClass membership", itemListElement: [
+      offer("Monthly membership", Number(process.env.PRO_MONTHLY_PRICE_INR ?? 299), "MON"),
+      offer("Yearly membership", Number(process.env.PRO_YEARLY_PRICE_INR ?? 2999), "ANN"),
+    ] },
+  };
 }
 
 export function webPageSchema(path: PublicPage["path"]) {

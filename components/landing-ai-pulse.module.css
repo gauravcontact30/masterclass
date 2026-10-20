@@ -133,3 +133,6 @@
   .lede { text-align: start; }
   .twoUp > li :is(p, li, dd) { text-align: start; }
 }
+
+/* The landing preview's pointer to the full card (members and trial users see every block in the dashboard). */
+.more { margin: 0; padding: 10px 12px; border: 1px dashed #d8d4c6; border-radius: 10px; font-size: 12.5px; line-height: 1.5; color: #5e5d59; text-align: left; }

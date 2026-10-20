@@ -11,6 +11,8 @@ import { InterviewQuestions, StarRow } from "./interview-accordion";
 import { InterviewTechNav, KIND_ICON } from "./interview-tech-nav";
 import { useLanguage } from "./language-provider";
 import { usePagedCarousel } from "./use-paged-carousel";
+import { Editable, useContentItem, useVisibleContent } from "./content-editing";
+import { contentKey } from "@/lib/content-overrides";
 const DashboardLessons = dynamic(() => import("./dashboard-lessons").then(module => module.DashboardLessons));
 import home from "./landing-home.module.css";
 import styles from "./landing-interview.module.css";
@@ -20,7 +22,9 @@ type Text = (en: string, hindi: string) => string;
 const TONES = 8;
 const two = (n: number) => String(n).padStart(2, "0");
 /** The landing preview shows this many of the most asked subjective and objective questions; /dashboard shows all. */
-const LANDING_QUESTIONS = 7;
+/** Questions per technology on the landing preview; members and trial users see all of them in the dashboard. */
+const LANDING_QUESTIONS = 3;
+const techKey = (tech: InterviewTech) => contentKey("interview", tech.id);
 
 /**
  * Interview prep: one slide per technology, each with its picture, its most-asked subjective and objective
@@ -30,18 +34,21 @@ const LANDING_QUESTIONS = 7;
 export function LandingInterview({ expanded = false, preview = false }: Readonly<{ expanded?: boolean; preview?: boolean }>) {
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
   // The landing page previews three technologies; /dashboard carries all of them with the navigator.
-  const techs = preview ? INTERVIEW_TECHS.slice(0, PREVIEW_COUNT) : INTERVIEW_TECHS;
+  const visible = useVisibleContent(INTERVIEW_TECHS, techKey);
+  const techs = preview ? visible.slice(0, PREVIEW_COUNT) : visible;
+  const section = useContentItem("section:interview-prep", "section");
   const { track, nearViewport, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(techs.length, 1, AUTOPLAY_MS);
   const current = techs[page];
   // The open library tab per tabbed technology, shared by the navigator and the slide.
   const [tabs, setTabs] = useState<Record<string, number>>({});
   const chooseTab = (id: string, tab: number) => setTabs(all => ({ ...all, [id]: tab }));
-  return <section id="interview-prep" className={styles.section} aria-labelledby="interview-title"><div className={home.inner}>
+  if (section.hidden) return null;
+  return <section id="interview-prep" className={styles.section} aria-labelledby="interview-title" {...section.props}>{section.toolbar}<div className={home.inner}>
     {preview && <DashboardMore href="/dashboard" title={text(`See all ${INTERVIEW_TECHS.length} technologies`, `सभी ${INTERVIEW_TECHS.length} तकनीकें देखें`)} detail={text("30+ subjective and 30+ objective questions for every technology, with search and filters.", "हर तकनीक के लिए 30+ विषयगत और 30+ वस्तुनिष्ठ प्रश्न, खोज और फ़िल्टर के साथ।")} />}
     <div className={styles.head} data-learning-header>
       <div className={styles.headCopy} data-learning-copy>
         <p className={styles.kicker}><GraduationCap size={14} aria-hidden="true" />{text("Interview prep", "इंटरव्यू की तैयारी")}<span>{INTERVIEW_TECHS.length} {text("technologies", "तकनीकें")}</span></p>
-        <h2 id="interview-title">{text("The questions interviewers ", "वे प्रश्न जो इंटरव्यू में ")}<em>{text("actually ask", "सच में पूछे जाते हैं")}</em></h2>
+        <h2 id="interview-title"><Editable k="section:interview-prep" f={`heading.${language}`}>{text("The questions interviewers ", "वे प्रश्न जो इंटरव्यू में ")}</Editable><em><Editable k="section:interview-prep" f={`emphasis.${language}`}>{text("actually ask", "सच में पूछे जाते हैं")}</Editable></em></h2>
         <p className={styles.lede} data-learning-intro>{text(
           "Subjective and objective questions for every technology on this platform, from LangChain and Next.js to Git and AWS, each rated by how often it comes up. Open one to see a model answer, or the right option and why.",
           "इस प्लेटफ़ॉर्म की हर तकनीक के लिए विषयगत और वस्तुनिष्ठ प्रश्न, LangChain और Next.js से Git और AWS तक, हर एक पर रेटिंग कि वह कितनी बार पूछा जाता है। मॉडल उत्तर या सही विकल्प और उसका कारण देखने के लिए प्रश्न खोलें।")}</p>
@@ -77,16 +84,18 @@ function InterviewSlide({ tech, index, total, near, text, tab, onTab, preview = 
   const panelId = `interview-${tech.id}-panel`;
   const pick = (k: number) => { onTab(k); setFailed(false); };
 
-  return <li className={styles.slide} data-tone={index % TONES} aria-roledescription="slide" aria-label={`${index + 1} / ${total}: ${tech.title}`}>
+  const k = techKey(tech);
+  const card = useContentItem(k, "technology");
+  return <li className={styles.slide} data-tone={index % TONES} aria-roledescription="slide" aria-label={`${index + 1} / ${total}: ${tech.title}`} {...card.props}>{card.toolbar}
     <article className={styles.cover}>
       <CoverPicture src={learningImageUrl("topics", ["interview", tech.id])} alt={`Illustration of ${tech.title}`} icon={<Icon size={48} strokeWidth={1.3} aria-hidden="true" />}>
         <span className={styles.tag}><Icon size={12} aria-hidden="true" />{text("Interview prep", "इंटरव्यू")}</span>
         <span className={styles.index} aria-hidden="true">{two(index + 1)}</span>
       </CoverPicture>
       <div className={styles.coverBody}>
-        <h3>{tech.title}</h3>
+        <h3><Editable k={k} f="title">{tech.title}</Editable></h3>
         {active && <p className={styles.subtitle}>{active.title}</p>}
-        <p className={styles.tagline}>{active?.tagline ?? tech.tagline}</p>
+        <p className={styles.tagline}>{active ? active.tagline : <Editable k={k} f="tagline" multiline>{tech.tagline}</Editable>}</p>
         <dl className={styles.stats}>
           <div><dt>{text("Subjective", "विषयगत")}</dt><dd>{set ? set.subjective.length : "–"}</dd></div>
           <div><dt>{text("Objective", "वस्तुनिष्ठ")}</dt><dd>{set ? set.objective.length : "–"}</dd></div>

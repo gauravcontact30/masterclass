@@ -9,6 +9,7 @@ import { isSuperAdminUser } from "@/lib/study/preparations";
 import { currentUser } from "@/lib/server/auth";
 import { authConfigured,databaseConfigured,billingConfigured } from "@/lib/server/config";
 import { legacyDashboardRoute } from "@/lib/dashboard-routes";
+import { contentOverrides } from "@/lib/server/content-overrides";
 export default async function Dashboard({searchParams}:{searchParams:Promise<{tab?:string|string[]}>}){
   const {tab}=await searchParams;
   if(tab!==undefined)redirect(legacyDashboardRoute(tab));
@@ -16,6 +17,7 @@ export default async function Dashboard({searchParams}:{searchParams:Promise<{ta
   if(authConfigured()&&!user)redirect("/sign-in");
   // Members, trial users and the super admin get the full sections; an unpaid account after its trial gets previews.
   // If the account can't be read these stay open: they show public documentation, and the learning APIs gate themselves.
-  const locked=!!user&&!isSuperAdminUser(user)&&await account(user.id).then(a=>a.tier==="free",()=>false);
-  return <Workspace authEnabled={authConfigured()} configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email??null} learning={<DashboardLearning daily={landingDaily()} techDocs={locked?previewTechDocs(await officialTechDocs()):slimTechDocs(await officialTechDocs())} concepts={locked?undefined:TECH_CONCEPTS} locked={locked} />} />;
+  const superAdmin=!!user&&isSuperAdminUser(user);
+  const [locked,overrides,docs]=await Promise.all([!!user&&!superAdmin&&account(user.id).then(a=>a.tier==="free",()=>false),contentOverrides(),officialTechDocs()]);
+  return <Workspace authEnabled={authConfigured()} configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email??null} learning={<DashboardLearning daily={landingDaily()} techDocs={locked?previewTechDocs(docs):slimTechDocs(docs)} concepts={locked?undefined:TECH_CONCEPTS} locked={locked} overrides={overrides} canEdit={superAdmin} />} />;
 }

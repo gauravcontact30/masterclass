@@ -1,7 +1,8 @@
 "use client";
 import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import { Fragment, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
-import { siAngular, siNodedotjs, siOpenrouter, siVercel, siVuedotjs } from "simple-icons";
+import { TECH_DOC_BRANDS } from "@/lib/tech-doc-brands";
+import { Editable, useContentItem } from "./content-editing";
 import {
   ArrowUpRight, Binary, BookOpen, Bot, Boxes, Braces, Building2, Check, ChevronLeft, ChevronRight, Cloud, Code2, FileCode2, GraduationCap,
   LayoutGrid, Megaphone, MonitorSmartphone, RotateCcw, Rocket, Search, Server, SlidersHorizontal, Sprout, TrendingUp, X, type LucideIcon,
@@ -26,7 +27,7 @@ const TABS_PER_PAGE = 6;
 const FILTERS_PER_PAGE = 3;
 const FILTER_CATEGORIES = ["all", ...TECH_DOC_CATEGORIES.map(c => c.id)] as const;
 const FILTER_PAGES = Math.ceil(FILTER_CATEGORIES.length / FILTERS_PER_PAGE);
-const BRAND: Record<string, { path: string } | null> = { angular: siAngular, vue: siVuedotjs, node: siNodedotjs, openrouter: siOpenrouter, "ai-gateway": siVercel, salesforce: null };
+const BRAND = TECH_DOC_BRANDS;
 /** Subjects with no brand mark. */
 const SUBJECT_ICON: Record<string, LucideIcon> = { dsa: Binary, oops: Boxes };
 const CATEGORY_ICON: Record<TechDocCategory | "all", LucideIcon> = { all: LayoutGrid, frontend: MonitorSmartphone, backend: Server, enterprise: Building2, ai: Bot, fundamentals: Braces };
@@ -68,6 +69,7 @@ function BrandIcon({ tech, size = 28 }: { tech: TechDoc; size?: number }) {
  */
 export function LandingTechDocs({ official, preview = false, locked = false, concepts }: Readonly<{ official?: OfficialTechDocs | null; preview?: boolean; locked?: boolean; concepts?: Record<string, TechConcept[]> }>) {
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
+  const section = useContentItem("section:tech-docs", "section");
   const uid = useId();
   const [query, setQuery] = useState("");
   const [focusSuggest, setFocusSuggest] = useState(false);
@@ -260,11 +262,12 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
     </article>;
   }
 
-  return <section id="tech-docs" className={`${frame.section} ${styles.section}`} data-ground="paper" aria-labelledby={`${uid}-title`}><div className={home.inner}>
+  if (section.hidden) return null;
+  return <section id="tech-docs" className={`${frame.section} ${styles.section}`} data-ground="paper" aria-labelledby={`${uid}-title`} {...section.props}>{section.toolbar}<div className={home.inner}>
     <header className={frame.head} data-learning-header>
       <div>
         <p className={frame.kicker}><BookOpen size={14} aria-hidden="true" />{text("Technology docs", "तकनीकी डॉक्स")}<span>{TECH_DOCS.length - FUNDAMENTALS.length} {text("platforms", "प्लेटफ़ॉर्म")} + {FUNDAMENTALS.map(t => t.name).join(" & ")}</span></p>
-        <h2 id={`${uid}-title`}>{text("Learn from the source, ", "स्रोत से सीखें, ")}<em>{text("latest releases.", "नवीनतम संस्करण।")}</em></h2>
+        <h2 id={`${uid}-title`}><Editable k="section:tech-docs" f={`heading.${language}`}>{text("Learn from the source, ", "स्रोत से सीखें, ")}</Editable><em><Editable k="section:tech-docs" f={`emphasis.${language}`}>{text("latest releases.", "नवीनतम संस्करण।")}</Editable></em></h2>
       </div>
       <p className={frame.lede} data-learning-intro>{text("Angular, Vue, React, TypeScript, PostgreSQL, Docker, Salesforce, Node.js, OpenRouter and AI Gateway, plus DSA and OOPs. Explore official guides and complete multi-file projects with setup instructions, annotated code and expected results.", "Angular 22, Vue 3.5, Salesforce API 68, Node.js 26, OpenRouter और Vercel AI Gateway: नीचे हर गाइड उसकी आधिकारिक वेबसाइट से ली गई है, और वर्तमान संस्करण आधिकारिक रजिस्ट्री से। साथ में हर इंटरव्यू के CS मूल विषय: DSA और OOPs, विषय-दर-विषय।")}</p>
       {total > 0 && <Controls text={text} playing={autoplay} onPlay={() => setAutoplay(value => !value)} page={current} pages={total} goTo={index => { const slide = slides[(index + total) % total]; if (slide) setActiveId(slide.tech.id); }} previous={text("Previous platform", "पिछला प्लेटफ़ॉर्म")} next={text("Next platform", "अगला प्लेटफ़ॉर्म")} />}

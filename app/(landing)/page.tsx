@@ -1,12 +1,14 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { LandingPage } from "@/components/landing-page";
 import { JsonLd } from "@/components/json-ld";
-import { landingLibrary } from "@/lib/landing-library";
+import { landingLibrary, previewLibrary } from "@/lib/landing-library";
 import { landingProPreview } from "@/lib/landing-pro-preview";
 import { landingDaily } from "@/lib/server/landing-daily";
 import { billingConfigured } from "@/lib/server/config";
 import { officialTechDocs, previewTechDocs } from "@/lib/server/official-tech-docs";
 import { organizationSchema, pageMetadata, websiteSchema } from "@/lib/seo";
+import { contentOverrides } from "@/lib/server/content-overrides";
+import { blogTeasers } from "@/lib/coffee-and-code";
 export const metadata = pageMetadata("/");
 /** The pulse and Word power previews show three cards each (PREVIEW_COUNT in components/landing-ai-pulse.tsx). */
 const DAILY_PREVIEW = 3;
@@ -23,5 +25,7 @@ export default async function Home() {
   const day = landingDaily();
   const daily = { ...day, pulse: day.pulse.slice(0, DAILY_PREVIEW), words: day.words.slice(0, DAILY_PREVIEW), totals: { pulse: day.pulse.length, words: day.words.length } };
   const prices = { monthly: Number(process.env.PRO_MONTHLY_PRICE_INR ?? 299), yearly: Number(process.env.PRO_YEARLY_PRICE_INR ?? 2999), enabled: billingConfigured() };
-  return <><JsonLd data={[websiteSchema(), organizationSchema()]} /><LandingPage copyrightYear={new Date().getFullYear()} pro={pro} library={landingLibrary(pro)} prices={prices} daily={daily} techDocs={previewTechDocs(await officialTechDocs())} /></>;
+  // Super Admin content edits apply to the landing previews too; a save expires both this page and the overrides.
+  const [docs, overrides] = await Promise.all([officialTechDocs(), contentOverrides()]);
+  return <><JsonLd data={[websiteSchema(), organizationSchema()]} /><LandingPage copyrightYear={new Date().getFullYear()} pro={pro} library={previewLibrary(landingLibrary(pro))} prices={prices} daily={daily} techDocs={previewTechDocs(docs)} overrides={overrides} coffee={blogTeasers(3)} /></>;
 }

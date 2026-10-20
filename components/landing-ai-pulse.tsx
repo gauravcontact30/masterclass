@@ -9,6 +9,8 @@ import { useLanguage } from "./language-provider";
 import { usePagedCarousel } from "./use-paged-carousel";
 import { useCarouselHeight } from "./use-carousel-height";
 import { DashboardLessons } from "./dashboard-lessons";
+import { Editable, useContentItem, useVisibleContent } from "./content-editing";
+import { contentKey } from "@/lib/content-overrides";
 import home from "./landing-home.module.css";
 import styles from "./landing-ai-pulse.module.css";
 
@@ -31,6 +33,7 @@ export const dayLabel = (day: string, hi: boolean) => new Intl.DateTimeFormat(hi
  */
 /** Cards a landing-page preview shows; the rest of each learning section lives on /dashboard. */
 export const PREVIEW_COUNT = 3;
+const pulseKey = (card: PulseCard) => contentKey("pulse", card.id);
 
 /**
  * `preview` (the landing page) shows the first three cards and a link to the full set on /dashboard, where the
@@ -38,23 +41,26 @@ export const PREVIEW_COUNT = 3;
  */
 export function LandingAiPulse({ cards: all, total = all.length, day, locked: lockedCard, preview = false, expanded = false }: { expanded?: boolean; cards: PulseCard[]; total?: number; day: string; locked?: LockedTeaser | null; preview?: boolean }) {
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
-  const cards = preview ? all.slice(0, PREVIEW_COUNT) : all;
+  const shown = useVisibleContent(all, pulseKey);
+  const cards = preview ? shown.slice(0, PREVIEW_COUNT) : shown;
+  const section = useContentItem("section:ai-pulse", "section");
   const locked = preview ? null : lockedCard;
   const { track, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(cards.length + (locked ? 1 : 0), preview ? 3 : 2, AUTOPLAY_MS);
   useCarouselHeight(track);
+  if (section.hidden) return null;
 
-  return <section id="ai-pulse" className={styles.pulse} aria-labelledby="ai-pulse-title"><div className={home.inner}>
+  return <section id="ai-pulse" className={styles.pulse} aria-labelledby="ai-pulse-title" {...section.props}>{section.toolbar}<div className={home.inner}>
     {preview && <DashboardMore href="/dashboard" title={text(`See all ${total + (lockedCard ? 1 : 0)} cards`, `सभी ${total + (lockedCard ? 1 : 0)} कार्ड देखें`)} detail={text("Every technology, every day: the full pulse lives in your dashboard.", "हर तकनीक, हर दिन: पूरा पल्स आपके डैशबोर्ड में है।")} />}
     <div className={styles.head} data-learning-header>
       <div className={styles.headCopy} data-learning-copy>
         <p className={styles.kicker}><Sparkles size={14} aria-hidden="true" />{text("AI & agentic pulse", "AI और एजेंटिक हलचल")}<span className={styles.today}>{text("New today", "आज नया")} · {dayLabel(day, hi)}</span></p>
-        <h2 id="ai-pulse-title">{text("Today's learning across ", "आज की पढ़ाई: ")}<em>{text("AI, agents & the modern stack", "AI, एजेंट और आधुनिक स्टैक")}</em></h2>
-        <p className={styles.lede} data-learning-intro>{text("A fresh set every day across 33 technologies: agentic AI and its terms, LangChain, LangGraph, LangSmith, LangFlow, Next.js, React, JavaScript, TypeScript, Node.js, Express, NestJS, GraphQL, the TanStack libraries, Redux, Zustand, testing with Jest, Vitest, RTL, Playwright and Cypress, AWS, Git, GitHub Actions, system design, Redis and more, each card linked to its official source.", "हर दिन एक नया सेट: एजेंटिक AI, LangChain, LangGraph, LangSmith, LangFlow, Next.js, React, AWS, n8n, Python, Playwright, Cypress, GitHub Actions, सिस्टम डिज़ाइन, Redis और Inngest, हर कार्ड अपने आधिकारिक स्रोत से जुड़ा।")}</p>
+        <h2 id="ai-pulse-title"><Editable k="section:ai-pulse" f={`heading.${language}`}>{text("Today's learning across ", "आज की पढ़ाई: ")}</Editable><em><Editable k="section:ai-pulse" f={`emphasis.${language}`}>{text("AI, agents & the modern stack", "AI, एजेंट और आधुनिक स्टैक")}</Editable></em></h2>
+        <p className={styles.lede} data-learning-intro><Editable k="section:ai-pulse" f={`lede.${language}`} multiline>{text("A fresh set every day across 33 technologies: agentic AI and its terms, LangChain, LangGraph, LangSmith, LangFlow, Next.js, React, JavaScript, TypeScript, Node.js, Express, NestJS, GraphQL, the TanStack libraries, Redux, Zustand, testing with Jest, Vitest, RTL, Playwright and Cypress, AWS, Git, GitHub Actions, system design, Redis and more, each card linked to its official source.", "हर दिन एक नया सेट: एजेंटिक AI, LangChain, LangGraph, LangSmith, LangFlow, Next.js, React, AWS, n8n, Python, Playwright, Cypress, GitHub Actions, सिस्टम डिज़ाइन, Redis और Inngest, हर कार्ड अपने आधिकारिक स्रोत से जुड़ा।")}</Editable></p>
       </div>
       <Controls text={text} playing={playing} onPlay={() => setPlaying(p => !p)} page={page} pages={pages} goTo={goTo} previous={text("Previous cards", "पिछले कार्ड")} next={text("Next cards", "अगले कार्ड")} />
     </div>
     <ul ref={track} className={preview ? styles.track : `${styles.track} ${styles.twoUp}`} aria-roledescription="carousel" aria-label={text("Today's learning cards", "आज के अध्ययन कार्ड")} {...holdProps}>
-      {cards.map((card, i) => <PulseCardItem key={card.id} card={card} index={i} total={cards.length + (locked ? 1 : 0)} hi={hi} text={text} />)}
+      {cards.map((card, i) => <PulseCardItem key={card.id} card={card} index={i} total={cards.length + (locked ? 1 : 0)} hi={hi} text={text} compact={preview} />)}
       {locked && <LockedCard teaser={locked} index={cards.length} total={cards.length + 1} text={text} render={full => <PulseCardItem card={full as PulseCard} index={cards.length} total={cards.length + 1} hi={hi} text={text} />} />}
     </ul>
     <Dots pages={pages} page={page} running={running} goTo={goTo} label={n => text(`Show cards page ${n}`, `कार्ड पृष्ठ ${n} दिखाएँ`)} />
@@ -63,17 +69,24 @@ export function LandingAiPulse({ cards: all, total = all.length, day, locked: lo
 }
 
 /** One topic card: picture, definition, key points (or the two sides of a comparison), use cases, industry problems and its source. */
-export function PulseCardItem({ card, index, total, hi, text }: { card: PulseCard; index: number; total: number; hi: boolean; text: (en: string, hindi: string) => string }) {
+/**
+ * `compact` (the landing preview) keeps the essentials, the definition and the top key points, and leaves the use
+ * cases and industry problems to members and trial users in the dashboard.
+ */
+export function PulseCardItem({ card, index, total, hi, text, compact = false }: { card: PulseCard; index: number; total: number; hi: boolean; text: (en: string, hindi: string) => string; compact?: boolean }) {
   const Icon = TAG_ICON[card.tag] ?? Sparkles;
-  return <li className={styles.card} data-tone={card.tone} data-compare={!!card.compare} aria-roledescription="slide" aria-label={`${index + 1} / ${total}: ${card.title}`}>
+  const k = pulseKey(card);
+  const item = useContentItem(k);
+  const definition = hi && card.hiDefinition ? "hiDefinition" : "definition";
+  return <li className={styles.card} data-tone={card.tone} data-compare={!!card.compare} aria-roledescription="slide" aria-label={`${index + 1} / ${total}: ${card.title}`} {...item.props}>{item.toolbar}
         <PulsePicture src={card.image} alt={`Illustration of how ${card.title} works`} icon={<Icon size={44} strokeWidth={1.4} aria-hidden="true" />}>
           <span className={styles.kind}><Icon size={12} aria-hidden="true" />{card.tag}</span>
           <span className={styles.index} aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
         </PulsePicture>
         <div className={styles.body}>
-          <p className={styles.category}>{card.category}</p>
-          <h3>{card.compare ? <>{card.compare[0].heading} <span className={styles.vs}>vs.</span> {card.compare[1].heading}</> : card.title}</h3>
-          <div className={styles.block}><span className={styles.label}>{text("Definition", "परिभाषा")}</span><p className={styles.definition}>{hi && card.hiDefinition ? card.hiDefinition : card.definition}</p></div>
+          <p className={styles.category}><Editable k={k} f="category">{card.category}</Editable></p>
+          <h3>{card.compare ? <>{card.compare[0].heading} <span className={styles.vs}>vs.</span> {card.compare[1].heading}</> : <Editable k={k} f="title">{card.title}</Editable>}</h3>
+          <div className={styles.block}><span className={styles.label}>{text("Definition", "परिभाषा")}</span><p className={styles.definition}><Editable k={k} f={definition} multiline>{(hi && card.hiDefinition ? card.hiDefinition : card.definition)}</Editable></p></div>
           {card.compare
             ? <div className={styles.block}><span className={styles.label}>{text("Each one, explained", "हर एक, अलग से")}</span>
               <div className={styles.compare}>{card.compare.map((side, n) => <section key={side.heading} className={styles.side} aria-label={side.heading}>
@@ -82,11 +95,11 @@ export function PulseCardItem({ card, index, total, hi, text }: { card: PulseCar
                 <p className={styles.useWhen}><b>{text("Use when", "कब चुनें")}</b> {side.useWhen}</p>
               </section>)}</div></div>
             : <>
-              <div className={styles.block}><span className={styles.label}>{text("Core features & key points", "मुख्य विशेषताएँ और बिंदु")}</span><ul className={styles.points}>{card.points.slice(0, 3).map(point => <li key={point}>{point}</li>)}</ul></div>
-              <div className={styles.block}><span className={styles.label}>{text("Real use cases", "वास्तविक उपयोग")}</span><ul className={styles.uses}>{card.useCases.slice(0, 2).map(use => <li key={use}>{use}</li>)}</ul></div>
+              <div className={styles.block}><span className={styles.label}>{text("Core features & key points", "मुख्य विशेषताएँ और बिंदु")}</span><ul className={styles.points}>{card.points.slice(0, compact ? 2 : 3).map((point, n) => <li key={point}><Editable k={k} f={`points.${n}`} multiline>{point}</Editable></li>)}</ul></div>
+              {!compact && <div className={styles.block}><span className={styles.label}>{text("Real use cases", "वास्तविक उपयोग")}</span><ul className={styles.uses}>{card.useCases.slice(0, 2).map((use, n) => <li key={use}><Editable k={k} f={`useCases.${n}`} multiline>{use}</Editable></li>)}</ul></div>}
             </>}
-          <div className={styles.block}><span className={styles.label}>{text("Real problems it solves, by industry", "उद्योग के अनुसार हल की गई समस्याएँ")}</span>
-            <dl className={styles.industries}>{card.industries.slice(0, 2).map(entry => <div key={entry.industry}><dt>{entry.industry}</dt><dd><ul>{problemPoints(entry.problem).map(point => <li key={point}>{point}</li>)}</ul></dd></div>)}</dl></div>
+          {compact ? <p className={styles.more}>{text("Use cases and industry problems are in the full card on your dashboard.", "उपयोग और उद्योग की समस्याएँ डैशबोर्ड के पूरे कार्ड में हैं।")}</p> : <div className={styles.block}><span className={styles.label}>{text("Real problems it solves, by industry", "उद्योग के अनुसार हल की गई समस्याएँ")}</span>
+            <dl className={styles.industries}>{card.industries.slice(0, 2).map(entry => <div key={entry.industry}><dt>{entry.industry}</dt><dd><ul>{problemPoints(entry.problem).map(point => <li key={point}>{point}</li>)}</ul></dd></div>)}</dl></div>}
           <a className={styles.source} href={card.source.href} target="_blank" rel="noopener noreferrer"><span>{text("Learn from", "यहाँ सीखें:")} {card.source.label}</span><ArrowUpRight size={15} aria-hidden="true" /></a>
         </div>
       </li>;

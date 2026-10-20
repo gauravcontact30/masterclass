@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { ArrowDown, ArrowUp, ArrowUpDown, Ban, Briefcase, Camera, CheckCircle2, ChevronLeft, ChevronRight, CircleDot, Clock, Download, Layers, Monitor, PauseCircle, RotateCcw, Search, Send, SlidersHorizontal, Smartphone, Tablet, ThumbsUp, X, XCircle, PlayCircle, type LucideIcon } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Ban, Briefcase, Camera, CheckCircle2, CircleDot, Clock, Download, Layers, Monitor, PauseCircle, RotateCcw, Search, Send, SlidersHorizontal, Smartphone, Tablet, ThumbsUp, X, XCircle, PlayCircle, type LucideIcon } from "lucide-react";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Table as DataTable, TableHeader, TableBody, TableRow, TableHead, TableCell } from "./ui/table";
@@ -9,7 +9,8 @@ import styles from "./super-admin-table.module.css";
 
 type Row = Record<string, unknown>;
 export type AdminColumn = string | { key: string; label?: string; render?: (row: Row) => ReactNode; filter?: boolean; sort?: boolean };
-export const PAGE_SIZE = 5;
+import { Pager, PAGE_SIZE } from "./super-admin-pager";
+export { Pager, PAGE_SIZE } from "./super-admin-pager";
 const PAGE_SIZES = [5, 10, 25, 50];
 
 const text = (value: unknown) => value === null || value === undefined || value === "" ? "" : typeof value === "object" ? JSON.stringify(value) : String(value);
@@ -204,17 +205,4 @@ export function AdminTable({ title, rows, columns, note, query = "", empty, acti
 export function uniqueKeys<T>(rows: T[], keyOf: (row: T, index: number) => string): [T, string][] {
   const seen = new Map<string, number>();
   return rows.map((row, index) => { const base = keyOf(row, index); const n = (seen.get(base) ?? 0) + 1; seen.set(base, n); return [row, n > 1 ? `${base}#${n}` : base]; });
-}
-export function Pager({ page, pages, total, onPage, size = PAGE_SIZE }: { page: number; pages: number; total: number; onPage: (page: number) => void; size?: number }) {
-  if (!total) return null;
-  const numbers = [...new Set([1, pages, page - 1, page, page + 1].filter(n => n >= 1 && n <= pages))].sort((a, b) => a - b);
-  return <nav className={styles.pager} aria-label="Pages">
-    <span>Showing {(page - 1) * size + 1}–{Math.min(total, page * size)} of {total}</span>
-    <div>
-      <button type="button" disabled={page <= 1} onClick={() => onPage(page - 1)} aria-label="Previous page"><ChevronLeft size={14} /></button>
-      {numbers.map((n, i) => <span key={n} className={styles.pageGroup}>{i > 0 && n - numbers[i - 1] > 1 && <span className={styles.gap}>…</span>}
-        <button type="button" aria-current={n === page ? "page" : undefined} onClick={() => onPage(n)}>{n}</button></span>)}
-      <button type="button" disabled={page >= pages} onClick={() => onPage(page + 1)} aria-label="Next page"><ChevronRight size={14} /></button>
-    </div>
-  </nav>;
 }

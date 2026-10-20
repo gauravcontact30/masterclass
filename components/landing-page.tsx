@@ -35,13 +35,17 @@ import { LandingComparisons } from "./landing-comparisons";
 import { LandingTechDocs } from "./landing-tech-docs";
 import type { OfficialTechDocs } from "@/lib/tech-docs-official";
 import { LandingMembership } from "./landing-membership";
-import { LandingAskAi } from "./landing-ask-ai";
+import { LandingPathFinder } from "./landing-path-finder";
+import { LandingCoffee } from "./landing-coffee";
+import type { BlogTeaser } from "@/lib/coffee-and-code";
+import { ContentProvider } from "./content-editing";
+import type { ContentOverrides } from "@/lib/content-overrides";
 import frame from "./landing-section.module.css";
 import { useLanguage } from "./language-provider";
 import styles from "./learn-landing.module.css";
 
 export type LandingPrices = { monthly: number; yearly: number; enabled: boolean };
-export function LandingPage({ pro, library, prices: initialPrices, daily, techDocs, copyrightYear }: { copyrightYear?: number; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
+export function LandingPage({ pro, library, prices: initialPrices, daily, techDocs, copyrightYear, overrides, coffee }: { overrides?: ContentOverrides; coffee?: BlogTeaser[]; copyrightYear?: number; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
   // Prices rendered on the server arrive in the HTML, so the plan card never paints "—" and then shifts; the fetch is only the fallback.
@@ -53,7 +57,7 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
   const navigation = [["#interview-prep", text("Interview prep", "इंटरव्यू"), "/interview-questions"], ["#workflows", text("Workflows", "वर्कफ़्लो"), "/workflows"], ...(library ? [["#library", text("Library", "लाइब्रेरी"), "/library"]] : []), ...(pro ? [["#techy", "Techy", "/learn"], ["#api-docs", "API Docs", "/api-reference"]] : []), ["#pricing", text("Membership", "सदस्यता"), "/subscribe"]];
   const font = landingFont(hi);
   const format = (value: number) => new Intl.NumberFormat(hi ? "hi-IN" : "en-IN").format(value);
-  return <div className={`${styles.page} ${home.home} ${font.variable} ${font.className}`}><a className={styles.skip} href="#main-content">{text("Skip to content", "सामग्री पर जाएँ")}</a>
+  return <ContentProvider overrides={overrides}><div className={`${styles.page} ${home.home} ${font.variable} ${font.className}`}><a className={styles.skip} href="#main-content">{text("Skip to content", "सामग्री पर जाएँ")}</a>
     <LandingNavbar links={navigation as [string, string, string][]} prices={priceState === "ready" ? prices : null} />
     <WelcomeModal prices={priceState === "ready" ? prices : null} />
     <main id="main-content" tabIndex={-1}>
@@ -64,16 +68,17 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
     <LandingSlider technologies={library?.counts.technology} />
     <LearningSlot surface="landing" page="home" section="after-slider" className={styles.learningSlot} />
     <LandingOverview counts={library?.counts} />
-    <LandingAskAi />
+    <LandingPathFinder />
     {library && <SubjectRibbon entries={library.entries} />}
     <LandingInterview preview />
     {daily && <LandingAiPulse cards={daily.pulse} total={daily.totals?.pulse} day={daily.day} locked={daily.locked?.pulse} preview />}
     <LandingWorkflows preview />
+    {coffee && <LandingCoffee posts={coffee} />}
     <LearningSlot surface="landing" page="home" section="middle" className={styles.learningSlot} />
     {library && <section ref={libraryRef} id="library" className={`${frame.section} ${home.library}`} data-ground="paper" data-reveal={libraryReveal} aria-labelledby="library-title"><div className={`${home.inner} ${home.libraryInner}`}>
       <header className={frame.head}>
         <div>
-          <p className={frame.kicker}><LibraryBig size={14} aria-hidden="true" />{text("Library", "लाइब्रेरी")}<span>{text(`${format(library.entries.length)} sample rows`, `${format(library.entries.length)} नमूना पंक्तियाँ`)}</span></p>
+          <p className={frame.kicker}><LibraryBig size={14} aria-hidden="true" />{text("Library", "लाइब्रेरी")}<span>{text(`${format(library.total)} sample rows`, `${format(library.total)} नमूना पंक्तियाँ`)}</span></p>
         <h2 id="library-title">{text("Explore the dashboard library ", "जुड़ने से पहले ")}<em>{text("before you join.", "डैशबोर्ड लाइब्रेरी देखें।")}</em></h2>
         </div>
         <div>
@@ -98,5 +103,5 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
     <LearningSlot surface="landing" page="home" section="bottom" className={styles.learningSlot} />
     </main>
     <LandingFooter year={copyrightYear} />
-  </div>;
+  </div></ContentProvider>;
 }

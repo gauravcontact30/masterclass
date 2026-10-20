@@ -81,7 +81,8 @@ async function withStats(users: AdminUser[]) {
   const [documents, progress, visits] = await Promise.all([
     db().from("documents").select("user_id").in("user_id", ids).limit(5000),
     db().from("learning_progress").select("user_id,completed").in("user_id", ids).limit(5000),
-    db().from("site_visits").select("user_id,created_at,city,region,country,device,browser").in("user_id", ids).eq("event", "page_view").gte("created_at", since).order("created_at", { ascending: false }).limit(5000),
+    // site_visits.user_id is uuid; a seeded text id like "student-user" would fail the query for every row on the page.
+    db().from("site_visits").select("user_id,created_at,city,region,country,device,browser").in("user_id", ids.filter(id => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))).eq("event", "page_view").gte("created_at", since).order("created_at", { ascending: false }).limit(5000),
   ]);
   for (const user of users) {
     user.stats.documents = (documents.data ?? []).filter(row => row.user_id === user.id).length;

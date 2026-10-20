@@ -10,6 +10,7 @@ const library: LandingLibrary = {
     { id: "course:ssc-cgl", kind: "course", title: "SSC CGL", hi: "एसएससी सीजीएल", note: "SSC & Recruitment", meta: "SSC & Recruitment" },
     { id: "word:succinct", kind: "word", title: "succinct", hi: "संक्षिप्त", note: "Expressed briefly and clearly.", meta: "Workplace speaking" },
   ],
+  total: 4,
   counts: { technology: 61, api: 54, course: 42, word: 2091, techy: 15, handbookTopics: 4649, apiIdentifiers: 5402, techyQuestions: 300 },
 };
 
@@ -92,4 +93,17 @@ test("try chips offer only searches that match a real entry, and run one when cl
   await user.click(chips[1]);
   expect(screen.getByRole("combobox", { name: "Search the library" })).toHaveValue("succinct");
   expect(screen.getByRole("article", { name: "Preview: succinct" })).toBeInTheDocument();
+});
+
+test("a preview ledger loads the full list once, the first time a visitor reaches for it", async () => {
+  const full = [...library.entries, { id: "tech:vue", kind: "technology" as const, title: "Vue", note: "Reactive views.", meta: "12 topics" }];
+  const fetchMock = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ entries: full }) });
+  global.fetch = fetchMock as unknown as typeof fetch;
+  const user = userEvent.setup();
+  render(<LibraryLedger library={{ ...library, total: 5 }} />);
+  await user.click(screen.getByRole("combobox", { name: "Search the library" }));
+  await user.type(screen.getByRole("combobox", { name: "Search the library" }), "vue");
+  expect(await within(screen.getByRole("list", { name: "Library entries" })).findByText("Vue")).toBeInTheDocument();
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  expect(fetchMock).toHaveBeenCalledWith("/api/landing/library");
 });

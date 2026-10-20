@@ -7,7 +7,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { setAuthNotice } from "@/lib/auth-notice";
-import { ArrowLeft, ArrowUpRight, Eye, EyeOff, Languages, MailCheck, Settings2 } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Eye, EyeOff, Languages, Loader2, MailCheck, Settings2, Sparkles } from "lucide-react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 import { hardNavigate } from "@/lib/hard-navigate";
 import { en, TranslationKey } from "@/lib/i18n";
@@ -17,6 +17,9 @@ import { Wordmark } from "./brand-mark";
 import { AuthStory } from "./auth-carousel";
 import styles from "./auth-page.module.css";
 import { LearningSlot } from "./learning-slot";
+import { LearningPathView } from "./learning-path-view";
+import { requestJson } from "@/lib/client";
+import type { LearningPath } from "@/lib/learning-path";
 
 // Supabase reports failures with a stable `code`; fall back to a generic message
 // so an unmapped code never surfaces raw English from the API.
@@ -46,7 +49,7 @@ const LINK_ERRORS: Record<LinkError, [en: string, hi: string]> = {
 const RESEND_WAIT = 60;
 const noSubscribe = () => () => {};
 
-export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkError }: { mode: "signin" | "signup"; enabled: boolean; initialEmail?: string; redirectTo?: string; linkError?: LinkError }) {
+export function AuthPage({ mode, enabled, initialEmail = "", initialGoal = "", redirectTo, linkError }: { mode: "signin" | "signup"; enabled: boolean; initialEmail?: string; initialGoal?: string; redirectTo?: string; linkError?: LinkError }) {
   const { t, language, setLanguage } = useLanguage();
   // False in the server HTML, true once React has hydrated. Until then the submit button stays disabled, so a tap
   // on a slow phone connection cannot fall through to a native form submit that silently reloads the page.
@@ -54,6 +57,9 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
   const [name, setName] = useState("");
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
+  const [goal, setGoal] = useState(initialGoal);
+  const [plan, setPlan] = useState<LearningPath | null>(null);
+  const [planState, setPlanState] = useState<"idle" | "loading" | "error">("idle");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<TranslationKey | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -83,6 +89,14 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
     <ExpandedText text={resendIn > 0 ? (hi ? `${resendIn} सेकंड में फिर भेज सकते हैं` : `Resend available in ${resendIn}s`) : (hi ? "पुष्टि ईमेल फिर से भेजें" : "Resend confirmation email")} />
   </button>;
 
+  /** A first look at the plan the dashboard will open with: week 1 of a 4-week path for the stated goal. */
+  async function previewPlan() {
+    if (goal.trim().length < 3) return;
+    setPlanState("loading");
+    try { setPlan(await requestJson<LearningPath>("/api/learning-path", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ goal: goal.trim(), weeks: 4, language }) })); setPlanState("idle"); }
+    catch { setPlanState("error"); }
+  }
+
   // Accounts created at guest checkout have no password until the owner sets one.
   async function sendLink() {
     if (!email.trim()) { setError("invalid_request"); return; }
@@ -111,8 +125,9 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
         return;
       } else {
         // full_name rides along in the user metadata; the on_auth_user_created
-        // trigger copies it into public.profiles.name (migration 0003).
-        const { data, error } = await auth.signUp({ email, password, options: { data: { full_name: name.trim() }, emailRedirectTo: `${window.location.origin}/auth/callback` } });
+        // trigger copies it into public.profiles.name (migration 0003). learning_goal (optional) is read by the
+        // dashboard coach to open with a starter plan, on whichever device the confirmation link is opened.
+        const { data, error } = await auth.signUp({ email, password, options: { data: { full_name: name.trim(), ...(goal.trim().length >= 3 ? { learning_goal: goal.trim().slice(0, 300) } : {}) }, emailRedirectTo: `${window.location.origin}/auth/callback` } });
         if (error) { setError(authErrorKey(error)); return; }
         // An already-confirmed address gets a decoy user with no identities and no email at all. Say so, instead
         // of sending the visitor to wait for a confirmation that will never arrive. (An unconfirmed address gets
@@ -204,6 +219,20 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
                   </div>
                   {mode === "signup" && <small className={styles.hint} id="auth-password-hint"><ExpandedText text={t("authPasswordHint")} /></small>}
                 </div>
+                {mode === "signup" && <div className={styles.field}>
+                  <Label className={styles.label} htmlFor="auth-goal"><ExpandedText text={hi ? "आप क्या सीखना चाहते हैं? (वैकल्पिक)" : "What do you want to learn? (optional)"} /></Label>
+                  <div className={styles.goalRow}>
+                    <Input className={styles.input} id="auth-goal" type="text" maxLength={300} aria-describedby="auth-goal-hint" placeholder={hi ? "जैसे: 3 महीने में बैकएंड डेवलपर बनना" : "e.g. Become a backend developer in 3 months"} value={goal} onChange={e => { setGoal(e.target.value); setPlan(null); }} />
+                    <button type="button" className={styles.goalButton} disabled={goal.trim().length < 3 || planState === "loading"} onClick={() => void previewPlan()}>
+                      {planState === "loading" ? <Loader2 size={15} className={styles.spin} aria-hidden="true" /> : <Sparkles size={15} aria-hidden="true" />}<ExpandedText text={hi ? "योजना देखें" : "Preview my plan"} />
+                    </button>
+                  </div>
+                  <small className={styles.hint} id="auth-goal-hint"><ExpandedText text={hi ? "AI आपके लक्ष्य से एक शुरुआती योजना बनाएगा; डैशबोर्ड उसी से खुलेगा।" : "AI turns your goal into a starter plan, and your dashboard opens with it."} /></small>
+                  <div aria-live="polite">
+                    {planState === "error" && <small className={styles.hint}><ExpandedText text={hi ? "अभी योजना नहीं बन सकी। आप फिर भी खाता बना सकते हैं।" : "The preview is unavailable right now. You can still create your account."} /></small>}
+                    {plan && <div className={styles.planPreview}><LearningPathView path={plan} hi={hi} limit={1} /></div>}
+                  </div>
+                </div>}
                 <Button className={styles.submit} type="submit" disabled={busy || !hydrated} aria-busy={busy || !hydrated}><ExpandedText text={busy || !hydrated ? t("loading") : t(mode === "signin" ? "signin" : "signup")} /></Button>
               </form>
               {mode === "signup" && error === "user_already_exists" && <p className={styles.switchRow}><Link className={styles.switchLink} href={`/sign-in?email=${encodeURIComponent(email.trim())}`}><ExpandedText text={t("signin")} /><ArrowUpRight size={15} aria-hidden="true" /></Link></p>}

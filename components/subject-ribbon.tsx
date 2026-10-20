@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
+
+const noSubscribe = () => () => {};
 import Image from "next/image";
 import type { LibraryEntry } from "@/lib/landing-library";
 import dynamic from "next/dynamic";
@@ -57,6 +59,9 @@ export function SubjectRibbon({ entries }: { entries?: LibraryEntry[] }) {
   const { language } = useLanguage();
   const hi = language === "hi";
   const [activeTech, setActiveTech] = useState<TechnologyInfo | null>(null);
+  // The second copy only makes the marquee loop seamlessly. It is aria-hidden and decorative, so it is added after
+  // hydration instead of doubling the ribbon's server HTML (31 pills and 31 images).
+  const hydrated = useSyncExternalStore(noSubscribe, () => true, () => false);
 
   const handlePillClick = async (techId: string, label: string) => {
     const { TECHNOLOGIES_CATALOG } = await import("@/lib/technology-catalog");
@@ -102,7 +107,7 @@ export function SubjectRibbon({ entries }: { entries?: LibraryEntry[] }) {
         aria-label={hi ? "लोकप्रिय तकनीकें और कौशल" : "Popular technologies and skills"}
       >
         <div className={styles.ribbonTrack}>
-          {[0, 1].map(copy => (
+          {(hydrated ? [0, 1] : [0]).map(copy => (
             <ul
               key={copy}
               className={styles.ribbonSet}

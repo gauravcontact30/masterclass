@@ -10,6 +10,8 @@ export type LibraryKind = "technology" | "api" | "course" | "word" | "techy";
 export type LibraryEntry = { id: string; kind: LibraryKind; title: string; hi?: string; note: string; meta: string };
 export type LandingLibrary = {
   entries: LibraryEntry[];
+  /** Rows in the full ledger; the landing page ships only the first ones (previewLibrary) and fetches the rest on use. */
+  total: number;
   /** True catalogue sizes; the entries are a representative slice of them. */
   counts: Record<LibraryKind, number> & { handbookTopics: number; apiIdentifiers: number; techyQuestions: number };
 };
@@ -38,12 +40,23 @@ export function landingLibrary(pro: LandingProPreview): LandingLibrary {
     return taken < WORDS_PER_CATEGORY;
   }).map(entry => ({ id: `word:${entry.word}`, kind: "word", title: entry.word, hi: entry.hindi?.split(";")[0].trim() || undefined, note: clip(entry.meaning), meta: entry.category }));
   const techy: LibraryEntry[] = pro.techy.topics.map(topic => ({ id: `techy:${topic.id}`, kind: "techy", title: topic.title, note: clip(topic.summary), meta: `${topic.questionCount} questions` }));
+  const entries = [...technologies, ...api, ...courses, ...words, ...techy];
   return {
-    entries: [...technologies, ...api, ...courses, ...words, ...techy],
+    entries, total: entries.length,
     counts: {
       technology: technologies.length, api: api.length, course: courses.length, word: ENGLISH_EXAM_VOCABULARY.length, techy: techy.length,
       handbookTopics: TECHNOLOGY_HANDBOOKS.reduce((sum, handbook) => sum + handbook.topics.length, 0),
       apiIdentifiers: pro.api.identifierCount, techyQuestions: pro.techy.questionCount,
     },
   };
+}
+
+/** Rows the landing ledger shows before a visitor searches or filters; the full list loads from /api/landing/library. */
+export const LEDGER_PREVIEW_ROWS = 40;
+/**
+ * The ledger as the landing page ships it: the first rows only, with the real totals. The full ledger was ~50 KB of
+ * page data that most visitors never search.
+ */
+export function previewLibrary(library: LandingLibrary): LandingLibrary {
+  return { ...library, entries: library.entries.slice(0, LEDGER_PREVIEW_ROWS) };
 }

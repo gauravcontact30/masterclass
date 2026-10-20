@@ -14,6 +14,10 @@ const DashboardLessons = dynamic(() => import("./dashboard-lessons").then(module
 import home from "./landing-home.module.css";
 import styles from "./landing-workflows.module.css";
 import { LearningLoader } from "./learning-loader";
+import { Editable, useContentItem, useContentEditing } from "./content-editing";
+import { contentKey } from "@/lib/content-overrides";
+
+const workflowKey = (workflow: Workflow) => contentKey("workflow", workflow.id);
 
 /** The official-docs learning paths (~180 KB of curriculum and guides) only show on /dashboard, so they are their own chunk. */
 const WorkflowLearning = dynamic(() => import("./workflow-learning").then(module => module.WorkflowLearning), { loading: () => <LearningLoader size="inline" label="Loading the learning paths…" /> });
@@ -21,7 +25,7 @@ const WorkflowLearning = dynamic(() => import("./workflow-learning").then(module
 const WorkflowPrep = dynamic(() => import("./landing-workflow-prep"), { ssr: false, loading: () => <LearningLoader size="inline" label="Loading the blueprint details…" /> });
 
 /** The landing preview shows this many of the most asked subjective and objective questions per blueprint; /dashboard shows all. */
-const LANDING_QUESTIONS = 7;
+const LANDING_QUESTIONS = 3;
 
 type Group = Workflow["group"];
 type Text = (en: string, hindi: string) => string;
@@ -44,20 +48,24 @@ export function LandingWorkflows({ expanded = false, preview = false }: Readonly
   const [group, setGroup] = useState<string>("All");
   const groups = expanded ? [...new Set([...GROUPS, ...WORKFLOW_LESSONS.map(lesson => lesson.group)])] : GROUPS;
   const lessons = expanded ? WORKFLOW_LESSONS.filter(lesson => group === "All" || lesson.group === group) : [];
+  const { overrides, editing } = useContentEditing();
+  const section = useContentItem("section:workflows", "section");
   const shown = useMemo(() => {
-    const all = group === "All" ? WORKFLOWS : WORKFLOWS.filter(workflow => workflow.group === group);
+    const visible = editing ? WORKFLOWS : WORKFLOWS.filter(workflow => !overrides[workflowKey(workflow)]?.deleted);
+    const all = group === "All" ? visible : visible.filter(workflow => workflow.group === group);
     return preview ? all.slice(0, PREVIEW_COUNT) : all;
-  }, [group, preview]);
+  }, [group, preview, overrides, editing]);
   const industries = new Set(WORKFLOWS.map(workflow => workflow.industry)).size;
 
-  return <section id="workflows" className={styles.section} aria-labelledby="workflows-title"><div className={home.inner}>
+  if (section.hidden) return null;
+  return <section id="workflows" className={styles.section} aria-labelledby="workflows-title" {...section.props}>{section.toolbar}<div className={home.inner}>
     {preview && <DashboardMore href="/dashboard" title={text(`See all ${WORKFLOWS.length} blueprints`, `सभी ${WORKFLOWS.length} ब्लूप्रिंट देखें`)} detail={text("Every blueprint with 30+ subjective and 30+ objective interview questions.", "हर ब्लूप्रिंट के साथ 30+ विषयगत और 30+ वस्तुनिष्ठ इंटरव्यू प्रश्न।")} />}
     <div className={styles.head} data-learning-header>
       <p className={styles.kicker}><Layers size={14} aria-hidden="true" />{text("Workflow blueprints", "वर्कफ़्लो ब्लूप्रिंट")}</p>
-      <h2 id="workflows-title">{text("How real systems and ", "असली सिस्टम और ")}<em>{text("AI agents get work done", "AI एजेंट काम कैसे करते हैं")}</em></h2>
-      <p className={styles.lede} data-learning-intro>{text(
+      <h2 id="workflows-title"><Editable k="section:workflows" f={`heading.${language}`}>{text("How real systems and ", "असली सिस्टम और ")}</Editable><em><Editable k="section:workflows" f={`emphasis.${language}`}>{text("AI agents get work done", "AI एजेंट काम कैसे करते हैं")}</Editable></em></h2>
+      <p className={styles.lede} data-learning-intro><Editable k="section:workflows" f={`lede.${language}`} multiline>{text(
         `${WORKFLOWS.length} step-by-step blueprints: the system design behind apps you use every day, and LangChain, LangGraph, LangFlow and LangSmith agents solving real problems across ${industries} industries, from e-commerce and banking to hospitals. Each comes with its tech stack, design decisions, common mistakes and the interview questions most asked about it.`,
-        `${WORKFLOWS.length} चरण-दर-चरण ब्लूप्रिंट: रोज़ इस्तेमाल होने वाले ऐप्स के पीछे का सिस्टम डिज़ाइन, और LangChain, LangGraph, LangFlow व LangSmith एजेंट जो ई-कॉमर्स, बैंकिंग से लेकर अस्पतालों तक ${industries} उद्योगों की असली समस्याएँ हल करते हैं। हर एक के साथ टेक स्टैक, डिज़ाइन निर्णय, आम गलतियाँ और सबसे ज़्यादा पूछे जाने वाले इंटरव्यू प्रश्न।`)}</p>
+        `${WORKFLOWS.length} चरण-दर-चरण ब्लूप्रिंट: रोज़ इस्तेमाल होने वाले ऐप्स के पीछे का सिस्टम डिज़ाइन, और LangChain, LangGraph, LangFlow व LangSmith एजेंट जो ई-कॉमर्स, बैंकिंग से लेकर अस्पतालों तक ${industries} उद्योगों की असली समस्याएँ हल करते हैं। हर एक के साथ टेक स्टैक, डिज़ाइन निर्णय, आम गलतियाँ और सबसे ज़्यादा पूछे जाने वाले इंटरव्यू प्रश्न।`)}</Editable></p>
     </div>
     {/* Remounted per filter so the page count and position start fresh. */}
     <div className={styles.filters} role="group" aria-label={text("Filter workflows", "वर्कफ़्लो छाँटें")}>
@@ -95,19 +103,21 @@ function WorkflowCarousel({ workflows, text, preview }: Readonly<{ workflows: Wo
 function WorkflowSlide({ workflow, near, index, total, text, preview }: Readonly<{ workflow: Workflow; near: boolean; index: number; total: number; text: Text; preview: boolean }>) {
   const kinds = [...new Set(workflow.nodes.map(node => node.kind))];
   const Icon = GROUP_ICON[workflow.group];
-  return <li className={styles.slide} data-group={workflow.group} aria-roledescription="slide" aria-label={`${index + 1} / ${total}: ${workflow.title}`}>
+  const k = workflowKey(workflow);
+  const item = useContentItem(k, "blueprint");
+  return <li className={styles.slide} data-group={workflow.group} aria-roledescription="slide" aria-label={`${index + 1} / ${total}: ${workflow.title}`} {...item.props}>{item.toolbar}
     <article className={styles.brief}>
       <BriefPicture src={learningImageUrl("topics", ["blueprints", workflow.id])} alt={`Illustration of ${workflow.title}`} icon={<Icon size={46} strokeWidth={1.3} aria-hidden="true" />}>
         <span className={styles.tag}><Icon size={12} aria-hidden="true" />{workflow.group}</span>
         <span className={styles.index} aria-hidden="true">{two(index + 1)}<i>/{two(total)}</i></span>
       </BriefPicture>
       <div className={styles.briefBody}>
-        <p className={styles.industry}>{workflow.industry}</p>
-        <h3>{workflow.title}</h3>
-        <p className={styles.summary}>{workflow.summary}</p>
+        <p className={styles.industry}><Editable k={k} f="industry">{workflow.industry}</Editable></p>
+        <h3><Editable k={k} f="title">{workflow.title}</Editable></h3>
+        <p className={styles.summary}><Editable k={k} f="summary" multiline>{workflow.summary}</Editable></p>
         <dl className={styles.facts}>
-          <div data-fact="problem"><dt>{text("Real-life problem", "असली समस्या")}</dt><dd>{workflow.problem}</dd></div>
-          <div data-fact="outcome"><dt>{text("Outcome", "नतीजा")}</dt><dd>{workflow.outcome}</dd></div>
+          <div data-fact="problem"><dt>{text("Real-life problem", "असली समस्या")}</dt><dd><Editable k={k} f="problem" multiline>{workflow.problem}</Editable></dd></div>
+          <div data-fact="outcome"><dt>{text("Outcome", "नतीजा")}</dt><dd><Editable k={k} f="outcome" multiline>{workflow.outcome}</Editable></dd></div>
         </dl>
       </div>
     </article>

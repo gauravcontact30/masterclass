@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeferredValue, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useCallback, useDeferredValue, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { ArrowUpRight, BookA, Code2, FileCode2, LayoutDashboard, Lock, RotateCcw, Search, SlidersHorizontal, X, type LucideIcon } from "lucide-react";
 import type { LandingLibrary, LibraryEntry, LibraryKind } from "@/lib/landing-library";
@@ -50,7 +50,19 @@ const haystack = (entry: LibraryEntry) => normalise(`${entry.title} ${entry.hi ?
  * sign-up, shown on a light tablet with the site open in a browser. "Try"
  * chips under the list run real searches.
  */
-export function LibraryLedger({ library }: { library: LandingLibrary }) {
+export function LibraryLedger({ library: initial }: { library: LandingLibrary }) {
+  // The page ships the first rows only; the full ledger loads once, the first time a visitor searches or filters.
+  const [entries, setEntries] = useState(initial.entries);
+  const total = initial.total ?? initial.entries.length;
+  const loading = useRef(false);
+  const loadAll = useCallback(() => {
+    if (loading.current || entries.length >= total) return;
+    loading.current = true;
+    fetch("/api/landing/library").then(response => response.ok ? response.json() : null)
+      .then((full: { entries?: LibraryEntry[] } | null) => { if (full?.entries?.length) setEntries(full.entries); })
+      .catch(() => { loading.current = false; });
+  }, [entries.length, total]);
+  const library = useMemo(() => ({ ...initial, entries, total }), [initial, entries, total]);
   const { language } = useLanguage();
   const hi = language === "hi";
   const text = (en: string, hindi: string) => hi ? hindi : en;
@@ -69,7 +81,7 @@ export function LibraryLedger({ library }: { library: LandingLibrary }) {
 
   const format = (value: number) => new Intl.NumberFormat(hi ? "hi-IN" : "en-IN").format(value);
   const tabs: { id: Filter; label: string; count: number }[] = [
-    { id: "all", label: text("Everything", "सब कुछ"), count: library.entries.length },
+    { id: "all", label: text("Everything", "सब कुछ"), count: library.total },
     { id: "technology", label: text("Technologies", "तकनीकें"), count: library.counts.technology },
     { id: "api", label: text("API reference", "API संदर्भ"), count: library.counts.api },
     { id: "course", label: text("Exams & classes", "परीक्षा व कक्षाएँ"), count: library.counts.course },
@@ -117,7 +129,7 @@ export function LibraryLedger({ library }: { library: LandingLibrary }) {
     else if (event.key === "Escape") { if (showSuggestions) setSuggestOpen(false); else if (query) setQuery(""); }
   };
 
-  return <section className={styles.ledger} aria-labelledby={`${ids}-title`}>
+  return <section className={styles.ledger} aria-labelledby={`${ids}-title`} onPointerEnter={loadAll} onFocusCapture={loadAll}>
     <h2 id={`${ids}-title`} className={styles.srOnly}>{text("Search the MasterClass library", "MasterClass लाइब्रेरी खोजें")}</h2>
     <div className={styles.top}>
       <div className={styles.searchRow}>
