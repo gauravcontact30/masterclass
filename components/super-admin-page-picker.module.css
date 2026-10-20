@@ -1,0 +1,59 @@
+/* Upload Learning's page picker: a trigger like the console selects, and a searchable, filterable panel. */
+.trigger { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 6px 10px 6px 7px; border: 1px solid var(--input, #dedbd0); border-radius: 8px; background: var(--card, #fff); color: #3d3d3a; font: inherit; text-align: left; cursor: pointer; box-shadow: 0 1px 2px rgb(0 0 0 / .025); }
+.trigger:hover:not(:disabled) { border-color: #b7b3a7; background: #fff; }
+.trigger:focus-visible { outline: none; border-color: var(--ring, #b96d50); box-shadow: 0 0 0 3px rgb(185 109 80 / .18); }
+.trigger:disabled { cursor: not-allowed; opacity: .7; }
+.triggerText { display: grid; flex: 1; min-width: 0; line-height: 1.25; }
+.triggerText strong { overflow: hidden; font-size: 13px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.triggerText small { font-size: 11.5px; color: #6c6b63; }
+.chevron { flex-shrink: 0; color: #6c6b63; transition: transform .15s; }
+.trigger[data-popup-open] .chevron { transform: rotate(180deg); }
+
+.panel { --popover: #fffdf8; --popover-foreground: #3d3d3a; max-width: calc(100vw - 32px); gap: 8px; padding: 8px; border: 1px solid #e8e6dc; border-radius: 12px; box-shadow: 0 12px 32px rgb(35 33 28 / .14); }
+
+.searchBox { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 6px 0 10px; border: 1px solid #dedbd0; border-radius: 8px; background: #fff; color: #6c6b63; }
+.searchBox:focus-within { border-color: #b96d50; box-shadow: 0 0 0 3px rgb(185 109 80 / .15); }
+.searchBox input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent; color: #3d3d3a; font: inherit; font-size: 13px; }
+.clear { display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 6px; background: #f0eee6; color: #5e5d59; cursor: pointer; }
+.clear:hover { background: #e6e3d8; color: #3d3d3a; }
+.clear:focus-visible { outline: 2px solid #b96d50; outline-offset: 1px; }
+
+.filters { display: flex; flex-wrap: wrap; gap: 5px; }
+.filters button { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px; border: 1px solid #e3e0d5; border-radius: 999px; background: #fff; color: #5e5d59; font: inherit; font-size: 11.5px; font-weight: 500; cursor: pointer; }
+.filters button span { min-width: 16px; padding: 0 4px; border-radius: 999px; background: #f0eee6; font-size: 10.5px; text-align: center; }
+.filters button:hover:not(:disabled) { border-color: #c9c5b8; color: #3d3d3a; }
+.filters button[aria-pressed="true"] { border-color: #3d3d3a; background: #3d3d3a; color: #fff; }
+.filters button[aria-pressed="true"] span { background: rgb(255 255 255 / .2); }
+.filters button:disabled { opacity: .45; cursor: default; }
+.filters button:focus-visible { outline: 2px solid #b96d50; outline-offset: 1px; }
+
+.list { max-height: 320px; margin: 0; padding: 0; overflow-y: auto; list-style: none; overscroll-behavior: contain; }
+.heading { display: flex; align-items: center; gap: 5px; padding: 8px 8px 4px; font-size: 11px; font-weight: 600; color: #85837a; }
+.option { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 7px; cursor: pointer; }
+.option[data-active] { background: #f0eee6; }
+.option[aria-selected="true"] strong { color: #8a4b33; }
+.optionText { display: grid; flex: 1; min-width: 0; line-height: 1.3; }
+.optionText strong { font-size: 13px; font-weight: 500; }
+.optionText strong mark { padding: 0 1px; border-radius: 3px; background: #fbe7a8; color: inherit; }
+.optionText small { overflow: hidden; font-size: 11px; color: #85837a; text-overflow: ellipsis; white-space: nowrap; }
+.groupTag { flex-shrink: 0; padding: 2px 7px; border-radius: 999px; background: #f3f1ea; font-size: 10.5px; color: #6c6b63; }
+.check { flex-shrink: 0; color: #8a4b33; }
+
+/* One light tint per sidebar group, so the groups read apart at a glance. */
+.optionIcon { display: grid; flex-shrink: 0; place-items: center; width: 28px; height: 28px; border-radius: 7px; background: #f0eee6; color: #5e5d59; }
+.optionIcon[data-group="learning"] { background: #e3f1e8; color: #2f6b47; }
+.optionIcon[data-group="professional"] { background: #e2edf8; color: #2d5b8a; }
+.optionIcon[data-group="exams"] { background: #fbf0d4; color: #87631a; }
+.optionIcon[data-group="account"] { background: #efe7f7; color: #5f4386; }
+.optionIcon[data-group="custom"] { background: #fbe6dd; color: #8a4b33; }
+
+.empty { display: grid; justify-items: center; gap: 6px; padding: 18px 10px; color: #6c6b63; text-align: center; }
+.empty p { margin: 0; font-size: 13px; }
+.empty div { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.empty button { height: 28px; padding: 0 10px; border: 1px solid #dedbd0; border-radius: 7px; background: #fff; color: #3d3d3a; font: inherit; font-size: 12px; cursor: pointer; }
+.empty button:hover { border-color: #b7b3a7; }
+
+.footer { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 0; padding: 6px 4px 0; border-top: 1px solid #efede5; font-size: 11px; color: #85837a; }
+.footer kbd { padding: 0 5px; border: 1px solid #e3e0d5; border-radius: 4px; background: #fff; font: inherit; font-size: 10.5px; }
+@media (max-width: 520px) { .footer { display: none; } }
+@media (prefers-reduced-motion: reduce) { .chevron { transition: none; } }

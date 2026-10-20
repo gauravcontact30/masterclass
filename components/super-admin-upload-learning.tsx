@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
 import { AdminSelect } from "./super-admin-select";
+import { AdminPagePicker } from "./super-admin-page-picker";
 import { LearningBlockView, LEARNING_CHANGED } from "./learning-slot";
 import { sanitizeNotepadHtml } from "@/lib/notepad";
 import { documentText, readNotepadCollection, type NotepadFile } from "@/lib/notepad-library";
@@ -250,7 +251,7 @@ function Composer({ userId, draft, setDraft, pages, onDone, onError }: { userId:
           return <button type="button" role="radio" key={surface.value} aria-checked={draft.surface === surface.value} onClick={() => setSurface(surface.value)} title={surface.help}><Icon size={18} aria-hidden="true" /><span>{surface.label}</span></button>;
         })}</div>
         <div className={styles.placementRow}>
-          <Field label="Page" htmlFor={`${id}-page`} hint={SURFACES.find(s => s.value === draft.surface)?.help}><AdminSelect id={`${id}-page`} label="Page" value={draft.page} onValueChange={page => setDraft({ ...draft, page, section: draft.surface === "dashboard" && page.startsWith("learn:") ? "main" : draft.section === "main" ? "top" : draft.section })} options={pageOptions} disabled={pageOptions.length < 2} /></Field>
+          <Field label="Page" htmlFor={`${id}-page`} hint={SURFACES.find(s => s.value === draft.surface)?.help}><AdminPagePicker id={`${id}-page`} value={draft.page} onChange={page => setDraft({ ...draft, page, section: draft.surface === "dashboard" && page.startsWith("learn:") ? "main" : draft.section === "main" ? "top" : draft.section })} options={pageOptions} disabled={pageOptions.length < 2} hrefFor={page => placementHref(draft.surface, page)} /></Field>
           <div className={styles.wireframe} role="radiogroup" aria-label="Section of the page">
             {WIREFRAMES[draft.surface].map((part, index) => typeof part === "string"
               ? sections.some(s => s.value === part) && <button type="button" role="radio" key={part} aria-checked={draft.section === part} onClick={() => set("section")(part)}><MousePointerClick size={13} aria-hidden="true" />{SECTIONS[draft.surface].find(s => s.value === part)?.label}</button>

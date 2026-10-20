@@ -20,7 +20,7 @@ const page = { id: "22222222-2222-4222-8222-222222222222", slug: "deep-dives", t
 
 describe("placement catalog", () => {
   it("adds custom pages to the Learning Dashboard page list", () => {
-    expect(surfacePages("dashboard", [page]).at(-1)).toEqual({ value: "learn:deep-dives", label: "Deep dives (your page)" });
+    expect(surfacePages("dashboard", [page]).at(-1)).toEqual({ value: "learn:deep-dives", label: "Deep dives (your page)", group: "custom" });
     expect(surfacePages("sign_in")).toEqual([{ value: "sign-in", label: "Sign in" }]);
     expect(SECTIONS.landing.map(s => s.value)).toContain("before-plans");
   });
