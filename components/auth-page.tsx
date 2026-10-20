@@ -114,11 +114,19 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
         // trigger copies it into public.profiles.name (migration 0003).
         const { data, error } = await auth.signUp({ email, password, options: { data: { full_name: name.trim() }, emailRedirectTo: `${window.location.origin}/auth/callback` } });
         if (error) { setError(authErrorKey(error)); return; }
+        // An already-confirmed address gets a decoy user with no identities and no email at all. Say so, instead
+        // of sending the visitor to wait for a confirmation that will never arrive. (An unconfirmed address gets
+        // its real user back and a fresh email, so it takes the normal path below.)
+        if (data.user && data.user.identities?.length === 0) {
+          setError("user_already_exists");
+          toast.info(hi ? "यह ईमेल पहले से पंजीकृत है" : "This email already has an account", { description: hi ? "साइन इन करें, या पासवर्ड न हो तो साइन-इन लिंक मँगवाएँ।" : "Sign in instead, or ask for a sign-in link if you have no password." });
+          return;
+        }
         // With email confirmation on, Supabase returns no session until the link is opened.
         if (data.session && data.user?.email_confirmed_at) { setAuthNotice("created"); leaving = true; enterApp("/dashboard"); return; }
         if (data.session) await auth.signOut();
         setSent(true); setResendIn(RESEND_WAIT);
-        toast.success(hi ? "खाता बन गया" : "Account created successfully", { description: hi ? `हमने ${email.trim()} पर पुष्टि लिंक भेजा है। साइन इन करने से पहले उसे खोलें।` : `We sent a confirmation link to ${email.trim()}. Open it before signing in.`, duration: 8000 });
+        toast.success(hi ? "खाता बन गया" : "Account created successfully", { description: hi ? `हमने ${email.trim()} पर पुष्टि लिंक भेजा है। साइन इन करने से पहले उसे खोलें (स्पैम फ़ोल्डर भी देखें)।` : `We sent a confirmation link to ${email.trim()}. Open it before signing in (check spam too).`, duration: 8000 });
       }
     } catch { setError("service_error"); } finally { if (!leaving) setBusy(false); }
   }
@@ -198,6 +206,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
                 </div>
                 <Button className={styles.submit} type="submit" disabled={busy || !hydrated} aria-busy={busy || !hydrated}><ExpandedText text={busy || !hydrated ? t("loading") : t(mode === "signin" ? "signin" : "signup")} /></Button>
               </form>
+              {mode === "signup" && error === "user_already_exists" && <p className={styles.switchRow}><Link className={styles.switchLink} href={`/sign-in?email=${encodeURIComponent(email.trim())}`}><ExpandedText text={t("signin")} /><ArrowUpRight size={15} aria-hidden="true" /></Link></p>}
               {mode === "signin" && <p className={styles.switchRow}><button type="button" className={styles.switchLink} disabled={busy} onClick={() => void sendLink()}><ExpandedText text={hi ? "पासवर्ड नहीं है? मुझे साइन-इन लिंक ईमेल करें" : "No password? Email me a sign-in link"} /></button></p>}
               <p className={styles.switchRow}><Link className={styles.switchLink} href={mode === "signin" ? "/sign-up" : "/sign-in"}><ExpandedText text={t(mode === "signin" ? "noAccount" : "haveAccount")} /></Link></p>
               {mode === "signup" && <p className={styles.hint}>{language === "hi"

@@ -1,0 +1,36 @@
+/* App toasts in the site's paper-and-clay palette (same values as the auth pages and the confirm-signup email).
+   Sonner runs unstyled here, so these rules own the whole card; its own CSS still handles stacking and motion.
+   The [data-sonner-toaster] prefix outranks Sonner's injected [data-sonner-toast] [data-icon] rules. */
+[data-sonner-toaster] .toast{
+  --toast-accent:#c6613f;--toast-tint:#fbeee8;
+  position:relative;display:flex;align-items:flex-start;gap:12px;width:100%;box-sizing:border-box;
+  padding:14px 44px 14px 14px;background:#fffdf8;color:#3d3d3a;
+  border:1px solid #e8e6dc;border-radius:14px;
+  box-shadow:0 1px 2px rgb(20 20 19 / 5%),0 12px 32px -10px rgb(20 20 19 / 22%);
+}
+[data-sonner-toaster] .success{--toast-accent:#c6613f;--toast-tint:#fbeee8}
+[data-sonner-toaster] .error{--toast-accent:#b53333;--toast-tint:#fbeaea}
+[data-sonner-toaster] .warning{--toast-accent:#9a6a12;--toast-tint:#fbf2df}
+[data-sonner-toaster] .info,[data-sonner-toaster] .default{--toast-accent:#5e5d59;--toast-tint:#f0eee6}
+
+[data-sonner-toaster] .toast .icon{
+  flex:none;display:grid;place-items:center;width:30px;height:30px;margin:0;
+  border-radius:9px;background:var(--toast-tint);color:var(--toast-accent);
+}
+[data-sonner-toaster] .toast .content{flex:1;min-width:0;display:grid;gap:3px;padding-top:1px}
+[data-sonner-toaster] .toast .title{font-size:13.5px;font-weight:600;line-height:1.4;color:#141413}
+[data-sonner-toaster] .toast .description{font-size:12.5px;line-height:1.55;color:#73726c;overflow-wrap:anywhere}
+
+[data-sonner-toaster] .toast .closeButton{
+  position:absolute;top:10px;right:10px;left:auto;transform:none;
+  display:grid;place-items:center;width:26px;height:26px;padding:0;
+  border:0;border-radius:8px;background:transparent;color:#87867f;cursor:pointer;
+}
+[data-sonner-toaster] .toast .closeButton:hover{background:#f0eee6;color:#141413}
+[data-sonner-toaster] .toast .closeButton:focus-visible{outline:2px solid #d97757;outline-offset:1px}
+
+[data-sonner-toaster] .toast .actionButton{
+  flex:none;align-self:center;height:30px;padding:0 12px;border:0;border-radius:8px;
+  background:#d97757;color:#fff;font-size:12.5px;font-weight:600;cursor:pointer;
+}
+[data-sonner-toaster] .toast .actionButton:hover{background:#c6613f}

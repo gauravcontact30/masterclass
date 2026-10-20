@@ -11,7 +11,7 @@ const resend = jest.fn();
 const confirmed = { data: { user: { id: "u1", email_confirmed_at: "2026-10-20T00:00:00Z" } }, error: null };
 
 jest.mock("@/lib/supabase-browser", () => ({ supabaseBrowser: () => ({ auth: { signInWithPassword, signUp, signOut, resend } }) }));
-jest.mock("sonner", () => ({ toast: Object.assign(jest.fn(), { success: jest.fn(), error: jest.fn() }) }));
+jest.mock("sonner", () => ({ toast: Object.assign(jest.fn(), { success: jest.fn(), error: jest.fn(), info: jest.fn() }) }));
 jest.mock("@/lib/hard-navigate", () => ({ hardNavigate: jest.fn() }));
 
 async function fillCredentials(email = "student@example.com", password = "hunter2pass") {
@@ -222,4 +222,17 @@ test.each([
 ] as const)("an emailed-link problem (%s) is explained on the sign-in page", (linkError, text) => {
   render(<AuthPage mode="signin" enabled linkError={linkError} />);
   expect(screen.getByRole("alert")).toHaveTextContent(text);
+});
+
+test("sign-up with an already-registered address says so instead of waiting for an email that never comes", async () => {
+  const { toast } = jest.requireMock("sonner") as { toast: { info: jest.Mock } };
+  // Supabase's decoy for a confirmed address: 200, a user with no identities, and no email sent.
+  signUp.mockResolvedValue({ data: { user: { id: "decoy", email_confirmed_at: null, identities: [] }, session: null }, error: null });
+  render(<AuthPage mode="signup" enabled />);
+  const user = await fillCredentials("taken@example.com");
+  await user.click(screen.getByRole("button", { name: "Start learning" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("An account with this email already exists");
+  expect(screen.queryByText(/Sent to taken@example.com/)).not.toBeInTheDocument();
+  expect(toast.info).toHaveBeenCalledWith("This email already has an account", expect.anything());
+  expect(screen.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/sign-in?email=taken%40example.com");
 });

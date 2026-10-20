@@ -22,7 +22,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
           </BookmarksProvider>
         </LearningMarksProvider>
       </InterviewFocusProvider>
-      <Toaster position="bottom-right" richColors closeButton />
+      <Toaster position="bottom-right" closeButton />
     </LanguageProvider>
   );
 }
