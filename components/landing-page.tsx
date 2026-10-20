@@ -35,6 +35,7 @@ import { LandingComparisons } from "./landing-comparisons";
 import { LandingTechDocs } from "./landing-tech-docs";
 import type { OfficialTechDocs } from "@/lib/tech-docs-official";
 import { LandingMembership } from "./landing-membership";
+import { LandingAskAi } from "./landing-ask-ai";
 import frame from "./landing-section.module.css";
 import { useLanguage } from "./language-provider";
 import styles from "./learn-landing.module.css";
@@ -49,7 +50,7 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
   useEffect(() => { if (initialPrices) return; let active = true; requestJson<LandingPrices>("/api/billing").then(data => { if (active) { setPrices(data); setPriceState("ready"); } }).catch(() => { if (active) setPriceState("error"); }); return () => { active = false; }; }, [initialPrices]);
   // [section on this page, label, the section's own crawlable page]: links are real URLs for search engines and
   // new tabs, and smooth-scroll to the section here without a #fragment.
-  const navigation = [["#workflows", text("Workflows", "वर्कफ़्लो"), "/workflows"], ...(library ? [["#library", text("Library", "लाइब्रेरी"), "/library"]] : []), ...(pro ? [["#techy", "Techy", "/learn"], ["#api-docs", "API Docs", "/api-reference"]] : []), ["#interview-prep", text("Interview prep", "इंटरव्यू"), "/interview-questions"], ["#pricing", text("Membership", "सदस्यता"), "/subscribe"]];
+  const navigation = [["#interview-prep", text("Interview prep", "इंटरव्यू"), "/interview-questions"], ["#workflows", text("Workflows", "वर्कफ़्लो"), "/workflows"], ...(library ? [["#library", text("Library", "लाइब्रेरी"), "/library"]] : []), ...(pro ? [["#techy", "Techy", "/learn"], ["#api-docs", "API Docs", "/api-reference"]] : []), ["#pricing", text("Membership", "सदस्यता"), "/subscribe"]];
   const font = landingFont(hi);
   const format = (value: number) => new Intl.NumberFormat(hi ? "hi-IN" : "en-IN").format(value);
   return <div className={`${styles.page} ${home.home} ${font.variable} ${font.className}`}><a className={styles.skip} href="#main-content">{text("Skip to content", "सामग्री पर जाएँ")}</a>
@@ -57,15 +58,17 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
     <WelcomeModal prices={priceState === "ready" ? prices : null} />
     <main id="main-content" tabIndex={-1}>
     <h1 className={home.srOnly}>{text("MasterClass: school, exam and technology learning in English and Hindi", "MasterClass: अंग्रेज़ी और हिन्दी में स्कूल, परीक्षा और तकनीक की पढ़ाई")}</h1>
+    {/* Order (2026-10-20): the promise (slider, what you get), something to try at once (Study Buddy), the highest-intent
+        sections (interview prep, the daily pulse, blueprints), proof of depth (library, comparisons, docs), then social
+        proof straight before the ask (reviews, membership). */}
     <LandingSlider technologies={library?.counts.technology} />
     <LearningSlot surface="landing" page="home" section="after-slider" className={styles.learningSlot} />
-    {library && <SubjectRibbon entries={library.entries} />}
-    {daily && <><LandingAiPulse cards={daily.pulse} total={daily.totals?.pulse} day={daily.day} locked={daily.locked?.pulse} preview /><LandingVocabulary words={daily.words} total={daily.totals?.words} day={daily.day} locked={daily.locked?.word} preview /></>}
-    <LandingWorkflows preview />
-    <LandingInterview preview />
-    <LandingComparisons preview official={techDocs} />
-    <LandingTechDocs official={techDocs} preview />
     <LandingOverview counts={library?.counts} />
+    <LandingAskAi />
+    {library && <SubjectRibbon entries={library.entries} />}
+    <LandingInterview preview />
+    {daily && <LandingAiPulse cards={daily.pulse} total={daily.totals?.pulse} day={daily.day} locked={daily.locked?.pulse} preview />}
+    <LandingWorkflows preview />
     <LearningSlot surface="landing" page="home" section="middle" className={styles.learningSlot} />
     {library && <section ref={libraryRef} id="library" className={`${frame.section} ${home.library}`} data-ground="paper" data-reveal={libraryReveal} aria-labelledby="library-title"><div className={`${home.inner} ${home.libraryInner}`}>
       <header className={frame.head}>
@@ -85,10 +88,13 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
       </header>
       <LibraryLedger library={library} />
     </div></section>}
+    <LandingComparisons preview official={techDocs} />
+    <LandingTechDocs official={techDocs} preview />
     {pro && <><LandingTechy data={pro.techy} /><LandingApiDocs data={pro.api} /></>}
+    {daily && <LandingVocabulary words={daily.words} total={daily.totals?.words} day={daily.day} locked={daily.locked?.word} preview />}
+    <StudentReviews />
     <LearningSlot surface="landing" page="home" section="before-plans" className={styles.learningSlot} />
     <LandingMembership prices={prices} priceState={priceState} cycle={cycle} onCycle={setCycle} />
-    <StudentReviews />
     <LearningSlot surface="landing" page="home" section="bottom" className={styles.learningSlot} />
     </main>
     <LandingFooter year={copyrightYear} />

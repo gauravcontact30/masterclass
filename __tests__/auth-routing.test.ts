@@ -34,22 +34,26 @@ describe("GET /auth/callback", () => {
   function request(url: string) { return new Request(url) as unknown as Parameters<typeof GET>[0]; }
 
   it("exchanges a confirmation code for a session and opens the dashboard", async () => {
-    const exchangeCodeForSession = jest.fn().mockResolvedValue({ error: null });
+    const exchangeCodeForSession = jest.fn().mockResolvedValue({ data: { user: { email_confirmed_at: new Date().toISOString() } }, error: null });
     (supabaseServer as jest.Mock).mockResolvedValue({ auth: { exchangeCodeForSession } });
 
     const response = await GET(request("http://localhost:3000/auth/callback?code=abc123"));
 
     expect(exchangeCodeForSession).toHaveBeenCalledWith("abc123");
-    expect(response.headers.get("location")).toBe("http://localhost:3000/dashboard");
+    // Just confirmed: the dashboard says so.
+    expect(response.headers.get("location")).toBe("http://localhost:3000/dashboard?notice=verified");
   });
 
   it("sends the visitor back to sign-in when the link is invalid or expired", async () => {
-    const exchangeCodeForSession = jest.fn().mockResolvedValue({ error: { message: "expired" } });
+    const exchangeCodeForSession = jest.fn().mockResolvedValue({ data: {}, error: { message: "expired" } });
     (supabaseServer as jest.Mock).mockResolvedValue({ auth: { exchangeCodeForSession } });
 
     const response = await GET(request("http://localhost:3000/auth/callback?code=stale"));
 
-    expect(response.headers.get("location")).toBe("http://localhost:3000/sign-in");
+    // A code that will not exchange most often means the link was opened in another browser.
+    expect(response.headers.get("location")).toBe("http://localhost:3000/sign-in?error=link_other_device");
+    const expired = await GET(request("http://localhost:3000/auth/callback?error=access_denied&error_code=otp_expired"));
+    expect(expired.headers.get("location")).toBe("http://localhost:3000/sign-in?error=link_expired");
   });
 
   it("sends the visitor to sign-in when the link carries no code at all", async () => {

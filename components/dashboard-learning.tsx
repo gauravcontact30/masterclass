@@ -23,14 +23,14 @@ export type DashboardDaily = { day: string; pulse: PulseCard[]; words: DailyWord
 export function DashboardLearning({ daily, techDocs, concepts, locked = false }: Readonly<{ daily: DashboardDaily | null; techDocs?: OfficialTechDocs | null; concepts?: Record<string, TechConcept[]>; locked?: boolean }>) {
   const font = landingFont(useLanguage().language === "hi");
   return <div className={`${home.home} ${font.variable} ${font.className} ${styles.learning}`}>
-    {daily && <>
-      <LandingAiPulse expanded cards={daily.pulse} day={daily.day} locked={daily.locked.pulse} />
-      <LandingVocabulary words={daily.words} day={daily.day} locked={daily.locked.word} />
-    </>}
-    <LandingWorkflows expanded />
+    {/* Order (2026-10-20): today's pulse first (the reason to come back daily), then the highest-intent practice
+        (interview prep, blueprints), then reference depth (comparisons, docs), and the day's words last. */}
+    {daily && <LandingAiPulse expanded cards={daily.pulse} day={daily.day} locked={daily.locked.pulse} />}
     <LandingInterview expanded />
+    <LandingWorkflows expanded />
     {/* Without a membership (trial over), the full Tech Topics and Technology docs stay behind the plans screen. */}
     <LandingComparisons expanded={!locked} preview={locked} locked={locked} official={techDocs} />
     <LandingTechDocs official={techDocs} preview={locked} locked={locked} concepts={locked ? undefined : concepts} />
+    {daily && <LandingVocabulary words={daily.words} day={daily.day} locked={daily.locked.word} />}
   </div>;
 }

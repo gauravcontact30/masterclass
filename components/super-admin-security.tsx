@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Ban, Bot, Brush, CheckCircle2, Clock, Database, Download, EyeOff, FileCheck2, Fingerprint, Gauge, Globe2, History, KeyRound, Lock, PlugZap, RefreshCw, Scale, Search, ServerCrash, ShieldAlert, ShieldCheck, Siren, Sparkles, Target, UserCog, UserX, Webhook, XCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { AlertTriangle, Ban, Bot, Brush, CheckCircle2, Clock, Database, Download, EyeOff, FileCheck2, Fingerprint, Gauge, Globe2, History, KeyRound, Lock, PlugZap, RefreshCw, Scale, ServerCrash, ShieldAlert, ShieldCheck, Siren, Sparkles, Target, UserCog, UserX, Webhook, XCircle } from "lucide-react";
 import { AdminError } from "./super-admin-feedback";
+import { TraceTable } from "./super-admin-trace-table";
 import styles from "./super-admin-security.module.css";
 
 /*
@@ -60,10 +61,6 @@ export function SuperAdminSecurityCenter({ days }: { days: number }) {
     return () => controller.abort();
   }, [span, nonce]);
 
-  const recent = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return (data?.recent ?? []).filter(r => !q || [r.ip, r.path, r.reason, r.requestId, r.ua].some(v => v?.toLowerCase().includes(q)));
-  }, [data, query]);
   const top = Math.max(1, ...(data?.timeline ?? []).map(t => t.count));
   const reasonTop = Math.max(1, ...(data?.byCode ?? []).map(c => c.count));
   const live = headers ? HEADERS.filter(([name]) => headers[name]).length : null;
@@ -131,7 +128,7 @@ export function SuperAdminSecurityCenter({ days }: { days: number }) {
       <section className={styles.card} data-tone="peach" aria-labelledby="sec-sources">
         <h3 id="sec-sources"><Siren size={16} aria-hidden="true" />Top sources</h3>
         {data.sources.length ? <ul className={styles.sources}>{data.sources.map(s => <li key={s.ip} data-suspicious={s.suspicious || undefined}>
-          <div><code>{s.ip}</code>{s.suspicious && <span className={styles.flag}><AlertTriangle size={11} aria-hidden="true" />Suspicious</span>}<button type="button" onClick={() => setQuery(s.ip)}>Trace</button></div>
+          <div><code>{s.ip}</code>{s.suspicious && <span className={styles.flag}><AlertTriangle size={11} aria-hidden="true" />Suspicious</span>}<button type="button" onClick={() => { setQuery(`ip:${s.ip}`); document.getElementById("sec-log")?.scrollIntoView({ behavior: "smooth", block: "start" }); }}>Trace</button></div>
           <small>{s.count} blocked · {s.admin} on admin API · last {when(s.last)}</small>
           <small>{s.codes.join(", ")}</small>
         </li>)}</ul> : <p className={styles.empty}>No sources to show.</p>}
@@ -142,24 +139,7 @@ export function SuperAdminSecurityCenter({ days }: { days: number }) {
       </section>
     </div>}
 
-    {data && <section className={styles.card} data-tone="slate" aria-labelledby="sec-log">
-      <div className={styles.logHead}>
-        <h3 id="sec-log"><Search size={16} aria-hidden="true" />Trace blocked requests</h3>
-        <div className={styles.search}><Search size={14} aria-hidden="true" /><input type="search" aria-label="Search blocked requests" placeholder="IP, path, reason or request id…" value={query} onChange={e => setQuery(e.target.value)} /></div>
-      </div>
-      {recent.length ? <div className={styles.tableWrap}><table className={styles.table}>
-        <thead><tr><th>When</th><th>Request</th><th>Status</th><th>Reason</th><th>Source</th><th>Request id</th></tr></thead>
-        <tbody>{recent.map((r, i) => <tr key={`${r.requestId ?? i}`}>
-          <td data-label="When">{when(r.at)}</td>
-          <td data-label="Request"><code>{r.method} {r.path}</code></td>
-          <td data-label="Status"><span className={styles.status}>{r.status}</span></td>
-          <td data-label="Reason">{r.reason}</td>
-          <td data-label="Source"><code>{r.ip ?? "—"}</code>{r.ua && <small title={r.ua}>{r.ua.slice(0, 48)}</small>}</td>
-          <td data-label="Request id"><code className={styles.small}>{r.requestId ?? "—"}</code></td>
-        </tr>)}</tbody>
-      </table></div> : <p className={styles.empty}>{query ? "No blocked request matches your search." : "No blocked requests in this window."}</p>}
-      <p className={styles.note}>Recorded for every API request refused for sign-in, permission, origin, size or rate limits, with the source address and browser, and kept 90 days.{data.truncated ? " Showing the most recent 5,000 failed requests." : ""} The request id matches the X-Request-ID response header and the server logs.</p>
-    </section>}
+    {data && <TraceTable rows={data.recent} query={query} onQuery={setQuery} truncated={data.truncated} />}
   </div>;
 }
 

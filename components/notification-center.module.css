@@ -1,0 +1,24 @@
+/* Notification bell and panel (notification-center.tsx). */
+.bell { position: relative; display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid #e8e6dc; border-radius: 999px; background: #fff; color: #3d3d3a; cursor: pointer; }
+.bell:hover { border-color: #d97757; color: #c6613f; }
+.badge { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border: 2px solid #fff; border-radius: 999px; background: #c6613f; color: #fff; font-size: 10px; font-weight: 700; line-height: 14px; text-align: center; }
+.panel { width: min(380px, calc(100vw - 24px)) !important; padding: 0 !important; overflow: hidden; border-radius: 16px !important; }
+.head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 14px; border-bottom: 1px solid #e8e6dc; background: #faf9f5; }
+.head h2 { font-size: 14px; font-weight: 700; color: #141413; }
+.head button { display: inline-flex; align-items: center; gap: 5px; min-height: 28px; padding: 2px 9px; border: 1px solid #e8e6dc; border-radius: 999px; background: #fff; font-size: 11.5px; font-weight: 600; color: #5e5d59; cursor: pointer; }
+.list { max-height: min(440px, 60vh); overflow-y: auto; }
+.list li + li { border-top: 1px solid #f0eee6; }
+.list li > a, .list li > button { display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 11px 14px; border: 0; background: transparent; text-align: left; color: inherit; cursor: pointer; }
+.list li > a:hover, .list li > button:hover { background: #faf9f5; }
+.list li[data-unread] { background: #fffaf6; }
+.icon { display: grid; place-items: center; flex-shrink: 0; width: 30px; height: 30px; border-radius: 9px; background: #f0eee6; color: #5e5d59; }
+.icon[data-kind="email_verified"], .icon[data-kind="account_created"] { background: #eff9f3; color: #2a7a4e; }
+.icon[data-kind="sign_in"] { background: #f1f7fe; color: #2f6fb5; }
+.icon[data-kind="security"] { background: #fdf2f4; color: #b23a5a; }
+.icon[data-kind="billing"] { background: #fefaea; color: #8a6a0c; }
+.text { display: grid; gap: 2px; flex: 1; min-width: 0; }
+.text b { font-size: 13px; font-weight: 650; color: #141413; }
+.text small { font-size: 12px; line-height: 1.45; color: #5e5d59; overflow-wrap: anywhere; }
+.text time { font-size: 11px; color: #87867f; }
+.dot { flex-shrink: 0; width: 8px; height: 8px; margin-top: 6px; border-radius: 50%; background: #c6613f; }
+.empty { padding: 22px 14px; font-size: 12.5px; color: #73726c; text-align: center; }

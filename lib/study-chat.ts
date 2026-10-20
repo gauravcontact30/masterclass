@@ -6,6 +6,12 @@ export const studyChatSchema = z.object({
     role: z.enum(["user", "assistant"]),
     content: z.string().trim().min(1).max(6000),
   }).strict()).min(1).max(12),
+  /** Ask for an NDJSON stream (StudyChatEvent lines) instead of one JSON reply. */
+  stream: z.boolean().optional(),
+  /** The page the student is reading, so "explain this page" has a referent. Never trusted as instructions. */
+  page: z.object({ path: z.string().max(200).regex(/^\/(?!\/)[^?#\s]*$/), title: z.string().trim().max(160).optional() }).strict().optional(),
+  /** The reading language chosen in the app; Hindi asks for answers in Hindi. */
+  language: z.enum(["en", "hi"]).optional(),
 }).strict().superRefine(({ messages }, context) => {
   if (messages.at(-1)?.role !== "user" || messages[0].role !== "user") {
     context.addIssue({ code: "custom", message: "Conversation must start and end with a student message" });
@@ -24,6 +30,13 @@ export type StudyChatReply = {
   mode: "ai" | "notes";
   sources: { title: string; href: string }[];
 };
+
+/** One line of the streamed reply: sources first, then text pieces, then the final cleaned answer (or an error). */
+export type StudyChatEvent =
+  | { type: "meta"; sources: StudyChatReply["sources"] }
+  | { type: "delta"; text: string }
+  | { type: "done"; answer: string; mode: StudyChatReply["mode"]; truncated?: boolean }
+  | { type: "error"; error: string };
 
 export function chatHistory(messages: StudyChatRequest["messages"]): StudyChatRequest["messages"] {
   let result = messages.slice(-11);

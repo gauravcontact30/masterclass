@@ -1,10 +1,19 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { supabaseServer } from "@/lib/server/auth";
-// Target of the confirmation link Supabase emails on sign-up. Exchanging the
-// code here is what actually sets the session cookies.
+// Target of the PKCE links Supabase emails (confirmation with the default template, magic sign-in links) and of
+// OAuth. Exchanging the code here sets the session cookies. It only works in the browser that started the flow;
+// app/auth/confirm handles the cross-device token-hash links.
 export async function GET(request: NextRequest) {
-  const code = new URL(request.url).searchParams.get("code");
+  const params = new URL(request.url).searchParams;
+  // Supabase sends expired or reused links back here with an error instead of a code.
+  const failed = params.get("error_code") ?? params.get("error");
+  if (failed) return NextResponse.redirect(new URL(`/sign-in?error=${failed === "otp_expired" ? "link_expired" : "link_invalid"}`, request.url));
+  const code = params.get("code");
   if (!code) return NextResponse.redirect(new URL("/sign-in", request.url));
-  const { error } = await (await supabaseServer()).auth.exchangeCodeForSession(code);
-  return NextResponse.redirect(new URL(error ? "/sign-in" : "/dashboard", request.url));
+  const { data, error } = await (await supabaseServer()).auth.exchangeCodeForSession(code);
+  if (error) return NextResponse.redirect(new URL("/sign-in?error=link_other_device", request.url));
+  // A first sign-in right after confirming is "verified"; a magic link or OAuth return is a plain sign-in.
+  const confirmedAt = data.user?.email_confirmed_at ? Date.parse(data.user.email_confirmed_at) : 0;
+  const notice = Date.now() - confirmedAt < 10 * 60_000 ? "verified" : "signed_in";
+  return NextResponse.redirect(new URL(`/dashboard?notice=${notice}`, request.url));
 }

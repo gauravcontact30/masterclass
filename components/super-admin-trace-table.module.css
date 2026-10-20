@@ -1,0 +1,21 @@
+/* Blocked-request trace (super-admin-trace-table.tsx): search with suggestions, icon filters. */
+.searchBox { position: relative; flex: 0 1 420px; min-width: 0; }
+.searchBox > div { width: 100%; }
+.clear { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; min-height: 28px; padding: 2px 9px; border: 1px solid #dbe1e7; border-radius: 999px; background: #f6f7f9; font: inherit; font-size: 11.5px; font-weight: 600; color: #48586a; cursor: pointer; }
+.clear:hover { border-color: #b5573a; color: #b5573a; }
+.suggestions { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 5; display: grid; max-height: 300px; overflow-y: auto; padding: 4px; border: 1px solid #dbe1e7; border-radius: 12px; background: #fff; box-shadow: 0 12px 30px #1414131a; }
+.suggestions li { display: grid; gap: 1px; padding: 7px 10px; border-radius: 8px; cursor: pointer; }
+.suggestions li[aria-selected="true"], .suggestions li:hover { background: #f1f7fe; }
+.suggestions code { font-family: ui-monospace, Consolas, monospace; font-size: 12px; color: #141413; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.suggestions small { font-size: 11px; color: #73726c; }
+.filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.filters button { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 4px 11px; border: 1px solid #dbe1e7; border-radius: 999px; background: #fff; font: inherit; font-size: 12px; font-weight: 600; color: #3d3d3a; cursor: pointer; }
+.filters button svg { color: #48586a; }
+.filters button b { min-width: 18px; padding: 0 6px; border-radius: 999px; background: #eef1f4; font-size: 11px; font-variant-numeric: tabular-nums; text-align: center; }
+.filters button[aria-pressed="true"] { border-color: #48586a; background: #48586a; color: #fff; }
+.filters button[aria-pressed="true"] svg { color: #fff; }
+.filters button[aria-pressed="true"] b { background: #ffffff33; }
+.filters button:disabled { opacity: .45; cursor: default; }
+@media (max-width: 560px) { .filters button span { display: none; } }
+.link { padding: 0; border: 0; background: none; cursor: pointer; text-align: left; }
+.link:hover code { text-decoration: underline; text-underline-offset: 3px; color: #2f6fb5; }

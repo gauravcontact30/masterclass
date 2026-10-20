@@ -6,8 +6,12 @@ const replace = hardNavigate as jest.Mock;
 
 const signInWithPassword = jest.fn();
 const signUp = jest.fn();
+const signOut = jest.fn().mockResolvedValue({ error: null });
+const resend = jest.fn();
+const confirmed = { data: { user: { id: "u1", email_confirmed_at: "2026-10-20T00:00:00Z" } }, error: null };
 
-jest.mock("@/lib/supabase-browser", () => ({ supabaseBrowser: () => ({ auth: { signInWithPassword, signUp } }) }));
+jest.mock("@/lib/supabase-browser", () => ({ supabaseBrowser: () => ({ auth: { signInWithPassword, signUp, signOut, resend } }) }));
+jest.mock("sonner", () => ({ toast: Object.assign(jest.fn(), { success: jest.fn(), error: jest.fn() }) }));
 jest.mock("@/lib/hard-navigate", () => ({ hardNavigate: jest.fn() }));
 
 async function fillCredentials(email = "student@example.com", password = "hunter2pass") {
@@ -21,7 +25,7 @@ async function fillCredentials(email = "student@example.com", password = "hunter
 }
 
 test("signs in with email and password, then lands on the dashboard", async () => {
-  signInWithPassword.mockResolvedValue({ data: {}, error: null });
+  signInWithPassword.mockResolvedValue(confirmed);
   render(<AuthPage mode="signin" enabled />);
 
   const user = await fillCredentials();
@@ -140,7 +144,7 @@ test.each(["signin", "signup"] as const)("the eye button reveals and hides the p
 });
 
 test("after sign-in, the proxy's redirect target is followed only when it is an in-app path", async () => {
-  signInWithPassword.mockResolvedValue({ data: {}, error: null });
+  signInWithPassword.mockResolvedValue(confirmed);
   render(<AuthPage mode="signin" enabled redirectTo="/dashboard/super-admin" />);
   const user = await fillCredentials();
   await user.click(screen.getByRole("button", { name: "Sign in" }));
@@ -157,4 +161,65 @@ test.each([
 test("the form posts (never GET) and is an ordinary form even before hydration", () => {
   render(<AuthPage mode="signin" enabled />);
   expect(screen.getByRole("button", { name: "Sign in" }).closest("form")).toHaveAttribute("method", "post");
+});
+
+test("a successful sign-in leaves a one-shot notice for the dashboard's confirmation toast", async () => {
+  sessionStorage.clear();
+  signInWithPassword.mockResolvedValue(confirmed);
+  render(<AuthPage mode="signin" enabled />);
+  const user = await fillCredentials();
+  await user.click(screen.getByRole("button", { name: "Sign in" }));
+  await waitFor(() => expect(replace).toHaveBeenCalled());
+  expect(sessionStorage.getItem("mc:auth-notice")).toBe("signed_in");
+});
+
+test("an account whose email is not confirmed cannot enter, and can ask for the email again", async () => {
+  signInWithPassword.mockResolvedValue({ data: { user: { id: "u1", email_confirmed_at: null } }, error: null });
+  resend.mockResolvedValue({ error: null });
+  render(<AuthPage mode="signin" enabled />);
+  const user = await fillCredentials();
+  await user.click(screen.getByRole("button", { name: "Sign in" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("Confirm your email first");
+  expect(signOut).toHaveBeenCalled();
+  expect(replace).not.toHaveBeenCalled();
+  await user.click(screen.getByRole("button", { name: "Resend confirmation email" }));
+  await waitFor(() => expect(resend).toHaveBeenCalledWith(expect.objectContaining({ type: "signup", email: "student@example.com" })));
+  expect(await screen.findByRole("button", { name: /Resend available in \d+s/ })).toBeDisabled();
+});
+
+test("Supabase's own email_not_confirmed refusal offers the resend too", async () => {
+  signInWithPassword.mockResolvedValue({ data: {}, error: { code: "email_not_confirmed", message: "Email not confirmed" } });
+  render(<AuthPage mode="signin" enabled />);
+  const user = await fillCredentials();
+  await user.click(screen.getByRole("button", { name: "Sign in" }));
+  expect(await screen.findByRole("button", { name: "Resend confirmation email" })).toBeInTheDocument();
+});
+
+test("sign-up confirms the account was created, shows where the email went and waits before a resend", async () => {
+  const { toast } = jest.requireMock("sonner") as { toast: { success: jest.Mock } };
+  signUp.mockResolvedValue({ data: { user: { id: "u1", email_confirmed_at: null }, session: null }, error: null });
+  render(<AuthPage mode="signup" enabled />);
+  const user = await fillCredentials("new@example.com");
+  await user.click(screen.getByRole("button", { name: "Start learning" }));
+  expect(await screen.findByText(/Sent to new@example.com/)).toBeInTheDocument();
+  expect(toast.success).toHaveBeenCalledWith("Account created successfully", expect.objectContaining({ description: expect.stringContaining("new@example.com") }));
+  expect(screen.getByRole("button", { name: /Resend available in/ })).toBeDisabled();
+});
+
+test("a project that auto-confirms still signs the new learner in, with a welcome notice", async () => {
+  sessionStorage.clear();
+  signUp.mockResolvedValue({ data: { user: { id: "u1", email_confirmed_at: "2026-10-20T00:00:00Z" }, session: { access_token: "t" } }, error: null });
+  render(<AuthPage mode="signup" enabled />);
+  const user = await fillCredentials("new@example.com");
+  await user.click(screen.getByRole("button", { name: "Start learning" }));
+  await waitFor(() => expect(replace).toHaveBeenCalledWith("/dashboard"));
+  expect(sessionStorage.getItem("mc:auth-notice")).toBe("created");
+});
+
+test.each([
+  ["link_expired", "That confirmation link has expired"],
+  ["link_other_device", "opened in a different browser"],
+] as const)("an emailed-link problem (%s) is explained on the sign-in page", (linkError, text) => {
+  render(<AuthPage mode="signin" enabled linkError={linkError} />);
+  expect(screen.getByRole("alert")).toHaveTextContent(text);
 });

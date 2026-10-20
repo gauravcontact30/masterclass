@@ -65,7 +65,7 @@ export async function GET(request: Request) {
       targets: count(blocked, r => `${r.action} ${r.resource ?? ""}`).slice(0, 10).map(([name, n]) => ({ name, count: n })),
       sources: [...ips.values()].sort((a, b) => b.count - a.count).slice(0, 12).map(s => ({ ...s, codes: [...s.codes], paths: [...s.paths].slice(0, 5), suspicious: s.count >= 20 || s.admin >= 5 })),
       timeline: timeline.map(([at, n]) => ({ at, count: n })),
-      recent: blocked.slice(0, 60).map(r => ({ at: r.created_at, method: r.action, path: r.resource, status: r.status, reason: label(r.details?.code ?? String(r.status)), ip: r.details?.ip ?? null, ua: r.details?.ua ?? null, requestId: r.details?.request_id ?? null })),
+      recent: blocked.slice(0, 500).map(r => ({ at: r.created_at, method: r.action, path: r.resource, status: r.status, reason: label(r.details?.code ?? String(r.status)), ip: r.details?.ip ?? null, ua: r.details?.ua ?? null, requestId: r.details?.request_id ?? null })),
       logs: securityLogs(blocked, feed),
       implementations: {
         arcjet: !!process.env.ARCJET_KEY, rateLimitStore: !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN),

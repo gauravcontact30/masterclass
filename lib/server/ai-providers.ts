@@ -2,7 +2,7 @@ import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { monitorAi, recordFallback } from "./ai-monitoring";
 import { databaseConfigured } from "./config";
-import { stripCompletionCitations } from "@/lib/strip-citations";
+import { stripCitations, stripCompletionCitations } from "@/lib/strip-citations";
 
 /**
  * One completion interface over the models that can write learning content.
@@ -276,4 +276,125 @@ async function completeRaw(provider: AiProvider, system: string, messages: Provi
     : signal;
   if (isCompatible(provider)) return completeCompatible(provider, system, messages, maxTokens, deadline, feature, options);
   throw new Error(`provider_unknown:${provider}`);
+}
+
+/**
+ * The reader-visible part of a growing completion: reasoning blocks removed (an unclosed one hides everything after
+ * it), citation markers stripped, and a trailing "[" held back until it is known not to start a marker.
+ */
+export function visibleStreamText(raw: string) {
+  const text = stripCitations(raw.replace(/<think>[\s\S]*?(<\/think>|$)/gi, ""));
+  const open = text.lastIndexOf("[");
+  return open >= 0 && !text.slice(open).includes("]") && text.length - open < 8 ? text.slice(0, open) : text;
+}
+
+/**
+ * A streamed completion: `onText` receives each new piece of reader-visible text as it arrives. Anthropic and every
+ * OpenAI-compatible provider stream natively; the Vercel AI Gateway streams through the AI SDK. Like
+ * completeWithFallback, a refused or rate-limited provider hands over to the next one, but only before the first piece
+ * arrives: after that the reader has seen part of an answer and a failure is final. The resolved `text` is the
+ * complete cleaned answer, which callers should prefer over the concatenated pieces.
+ */
+export async function streamWithFallback(provider: AiProvider, system: string, messages: ProviderMessage[], maxTokens: number, onText: (piece: string) => void, signal?: AbortSignal, feature = "mentor", options?: CompleteOptions): Promise<ProviderCompletion> {
+  const order = [provider, ...availableProviders().filter(item => item !== provider)];
+  let refusal: unknown;
+  for (const candidate of order) {
+    let started = false;
+    try {
+      return await streamRaw(candidate, `${system}\n\n${NO_CITATIONS}`, messages, maxTokens, piece => { started = true; onText(piece); }, signal, feature, candidate === provider ? options : { ...options, model: undefined });
+    } catch (failure) {
+      if (signal?.aborted || started) throw failure;
+      if (!providerRefused(failure) && !providerRateLimited(failure)) throw failure;
+      refusal = failure;
+      console.error(JSON.stringify({ event: "ai_provider_fallback", feature, from: candidate, reason: failure instanceof Error ? failure.message.slice(0, 120) : "unknown" }));
+      await recordFallback(feature, candidate, failureStatus(failure));
+    }
+  }
+  throw refusal;
+}
+
+async function streamRaw(provider: AiProvider, system: string, messages: ProviderMessage[], maxTokens: number, onText: (piece: string) => void, signal: AbortSignal | undefined, feature: string, options?: CompleteOptions): Promise<ProviderCompletion> {
+  if (!providerConfigured(provider)) throw new Error(`provider_unconfigured:${provider}`);
+  const deadline = options?.timeoutMs ? AbortSignal.any([...(signal ? [signal] : []), AbortSignal.timeout(options.timeoutMs)]) : signal;
+  // Every source yields raw text; this turns it into reader-visible pieces.
+  let raw = "", sent = "";
+  const push = (chunk: string) => {
+    raw += chunk;
+    const visible = visibleStreamText(raw);
+    if (visible.length > sent.length && visible.startsWith(sent)) { onText(visible.slice(sent.length)); sent = visible; }
+  };
+  const finish = (model: string, truncated: boolean): ProviderCompletion => {
+    if (truncated && !options?.allowTruncated) throw new Error("truncated");
+    const text = stripCompletionCitations(raw.replace(/<think>[\s\S]*?(<\/think>|$)/gi, "")).trim();
+    if (!text) throw new Error("empty_completion");
+    return { text, provider, model, truncated };
+  };
+
+  if (provider === "anthropic") {
+    const model = options?.model || providerModel("anthropic");
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, timeout: options?.timeoutMs ?? 75000, maxRetries: 0 });
+    const final = await monitorAi(feature, model, async () => {
+      const stream = client.messages.stream({ model, max_tokens: maxTokens, system, messages }, { signal });
+      stream.on("text", push);
+      return stream.finalMessage();
+    }, "anthropic");
+    return finish(model, final.stop_reason === "max_tokens");
+  }
+
+  if (provider === "gateway") {
+    const model = options?.model || providerModel("gateway");
+    const result = await monitorAi(feature, model, async () => {
+      const { streamText } = await import("ai");
+      try {
+        const stream = streamText({ model, instructions: system, messages, maxOutputTokens: maxTokens, temperature: 0.2, maxRetries: 0, abortSignal: deadline });
+        for await (const piece of stream.textStream) push(piece);
+        const [finishReason, usage] = await Promise.all([stream.finishReason, stream.totalUsage]);
+        return { finishReason, usage: { input_tokens: usage.inputTokens, output_tokens: usage.outputTokens } };
+      } catch (failure) {
+        const status = (failure as { statusCode?: unknown })?.statusCode;
+        if (typeof status === "number") throw new ProviderError("gateway", status);
+        throw failure;
+      }
+    }, "gateway");
+    return finish(model, result.finishReason === "length");
+  }
+
+  if (!isCompatible(provider)) throw new Error(`provider_unknown:${provider}`);
+  const spec = COMPATIBLE[provider];
+  const model = options?.model || providerModel(provider);
+  const key = process.env[spec.keyEnv] ?? "";
+  const result = await monitorAi(feature, model, async () => {
+    const response = await fetch(spec.endpoint, {
+      method: "POST",
+      headers: { ...(spec.auth ? spec.auth(key) : { Authorization: `Bearer ${key}` }), "Content-Type": "application/json", Accept: "text/event-stream" },
+      body: JSON.stringify({
+        model, stream: true, ...(spec.openAiLimits ? { max_completion_tokens: maxTokens } : { max_tokens: maxTokens, temperature: 0.2 }),
+        messages: [{ role: "system", content: system }, ...messages], ...spec.body,
+      }),
+      signal: deadline,
+    });
+    if (!response.ok || !response.body) { await response.text().catch(() => ""); throw new ProviderError(provider, response.status); }
+    // Server-sent events: "data: {json}" lines, ending with "data: [DONE]".
+    const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+    let buffer = "", finishReason: string | undefined, usage: CompatibleResponse["usage"];
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += value;
+      const lines = buffer.split("\n"); buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        const data = line.startsWith("data:") ? line.slice(5).trim() : "";
+        if (!data || data === "[DONE]") continue;
+        try {
+          const event = JSON.parse(data) as { choices?: { delta?: { content?: string }; finish_reason?: string | null }[]; usage?: CompatibleResponse["usage"] };
+          const choice = event.choices?.[0];
+          if (choice?.delta?.content) push(choice.delta.content);
+          if (choice?.finish_reason) finishReason = choice.finish_reason;
+          if (event.usage) usage = event.usage;
+        } catch { /* a keep-alive or partial line */ }
+      }
+    }
+    return { finishReason, usage: { input_tokens: usage?.prompt_tokens, output_tokens: usage?.completion_tokens, cost: usage?.cost } };
+  }, provider);
+  return finish(model, result.finishReason === "length");
 }
