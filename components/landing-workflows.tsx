@@ -4,7 +4,6 @@ import dynamic from "next/dynamic";
 import { Boxes, FlaskConical, GitBranch, Layers, Network, Workflow as WorkflowIcon, type LucideIcon } from "lucide-react";
 import { WORKFLOWS, type Workflow, type WorkflowNodeKind } from "@/lib/landing-workflows";
 import { WORKFLOW_LESSONS } from "@/lib/workflow-learning";
-import { WorkflowLearning } from "./workflow-learning";
 import { STEP_TONES, WorkflowDiagram, two } from "./workflow-diagram";
 import { learningImageUrl } from "@/lib/learning-image";
 import { AUTOPLAY_MS, Controls, Dots, PREVIEW_COUNT } from "./landing-ai-pulse";
@@ -16,8 +15,13 @@ import home from "./landing-home.module.css";
 import styles from "./landing-workflows.module.css";
 import { LearningLoader } from "./learning-loader";
 
+/** The official-docs learning paths (~180 KB of curriculum and guides) only show on /dashboard, so they are their own chunk. */
+const WorkflowLearning = dynamic(() => import("./workflow-learning").then(module => module.WorkflowLearning), { loading: () => <LearningLoader size="inline" label="Loading the learning paths…" /> });
 /** Full detail and interview questions: about 200 Q&As, so they load as their own chunk after the page. */
 const WorkflowPrep = dynamic(() => import("./landing-workflow-prep"), { ssr: false, loading: () => <LearningLoader size="inline" label="Loading the blueprint details…" /> });
+
+/** The landing preview shows this many of the most asked subjective and objective questions per blueprint; /dashboard shows all. */
+const LANDING_QUESTIONS = 7;
 
 type Group = Workflow["group"];
 type Text = (en: string, hindi: string) => string;
@@ -32,8 +36,8 @@ const KIND_LABEL: Record<WorkflowNodeKind, string> = { actor: "Person / client",
  * Autoplay turns a screen every two minutes, as the pulse carousel does.
  */
 /**
- * `preview` (the landing page) shows the first three blueprints of each category; every blueprint, here and on
- * /dashboard, carries its full set of 30+ subjective and 30+ objective interview questions.
+ * `preview` (the landing page) shows the first three blueprints of each category, each with its 7 most asked
+ * subjective and 7 most asked objective interview questions; /dashboard carries every blueprint with its full set.
  */
 export function LandingWorkflows({ expanded = false, preview = false }: Readonly<{ expanded?: boolean; preview?: boolean }>) {
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
@@ -67,12 +71,12 @@ export function LandingWorkflows({ expanded = false, preview = false }: Readonly
       })}
     </div>
     {expanded && <WorkflowLearning key={`learning-${group}`} lessons={lessons} text={text} />}
-    {shown.length > 0 && <WorkflowCarousel key={`carousel-${group}`} workflows={shown} text={text} />}
+    {shown.length > 0 && <WorkflowCarousel key={`carousel-${group}`} workflows={shown} text={text} preview={preview} />}
     {expanded && <DashboardLessons section="workflows" />}
   </div></section>;
 }
 
-function WorkflowCarousel({ workflows, text }: Readonly<{ workflows: Workflow[]; text: Text }>) {
+function WorkflowCarousel({ workflows, text, preview }: Readonly<{ workflows: Workflow[]; text: Text; preview: boolean }>) {
   const { track, nearViewport, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(workflows.length, 1, AUTOPLAY_MS);
   const current = workflows[page];
   return <>
@@ -82,13 +86,13 @@ function WorkflowCarousel({ workflows, text }: Readonly<{ workflows: Workflow[];
     </div>
     <div className={styles.carousel}>
     <ul ref={track} className={styles.track} aria-roledescription="carousel" aria-label={text("Workflow blueprints", "वर्कफ़्लो ब्लूप्रिंट")} {...holdProps}>
-      {workflows.map((workflow, i) => <WorkflowSlide key={workflow.id} workflow={workflow} near={nearViewport && Math.abs(i - page) <= 1} index={i} total={workflows.length} text={text} />)}
+      {workflows.map((workflow, i) => <WorkflowSlide key={workflow.id} workflow={workflow} near={nearViewport && Math.abs(i - page) <= 1} index={i} total={workflows.length} text={text} preview={preview} />)}
     </ul>
     <Dots pages={pages} page={page} running={running} goTo={goTo} label={n => text(`Show workflow ${n}`, `वर्कफ़्लो ${n} दिखाएँ`)} />
   </div></>;
 }
 
-function WorkflowSlide({ workflow, near, index, total, text }: Readonly<{ workflow: Workflow; near: boolean; index: number; total: number; text: Text }>) {
+function WorkflowSlide({ workflow, near, index, total, text, preview }: Readonly<{ workflow: Workflow; near: boolean; index: number; total: number; text: Text; preview: boolean }>) {
   const kinds = [...new Set(workflow.nodes.map(node => node.kind))];
   const Icon = GROUP_ICON[workflow.group];
   return <li className={styles.slide} data-group={workflow.group} aria-roledescription="slide" aria-label={`${index + 1} / ${total}: ${workflow.title}`}>
@@ -114,7 +118,7 @@ function WorkflowSlide({ workflow, near, index, total, text }: Readonly<{ workfl
     <ol className={styles.steps} aria-label={text("Step by step", "चरण दर चरण")}>
       {workflow.steps.map((step, i) => <li key={step} data-tone={i % STEP_TONES}><b>{two(i + 1)}</b><span>{step}</span></li>)}
     </ol>
-    <div className={styles.prep}>{near ? <WorkflowPrep id={workflow.id} text={text} /> : <LearningLoader size="inline" label="Blueprint details load as you approach this section" />}</div>
+    <div className={styles.prep}>{near ? <WorkflowPrep id={workflow.id} text={text} limit={preview ? LANDING_QUESTIONS : undefined} /> : <LearningLoader size="inline" label="Blueprint details load as you approach this section" />}</div>
   </li>;
 }
 

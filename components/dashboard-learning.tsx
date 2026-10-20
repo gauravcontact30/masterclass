@@ -1,6 +1,7 @@
 "use client";
 import type { DailyWord, LockedTeaser, PulseCard } from "@/lib/landing-daily-types";
-import { anek } from "./landing-fonts";
+import { landingFont } from "./landing-fonts";
+import { useLanguage } from "./language-provider";
 import { LandingAiPulse } from "./landing-ai-pulse";
 import { LandingVocabulary } from "./landing-vocabulary";
 import { LandingWorkflows } from "./landing-workflows";
@@ -20,7 +21,8 @@ export type DashboardDaily = { day: string; pulse: PulseCard[]; words: DailyWord
  * here (components/dashboard-more.tsx), so these render the same components, in the landing page's tokens and font.
  */
 export function DashboardLearning({ daily, techDocs, concepts, locked = false }: Readonly<{ daily: DashboardDaily | null; techDocs?: OfficialTechDocs | null; concepts?: Record<string, TechConcept[]>; locked?: boolean }>) {
-  return <div className={`${home.home} ${anek.variable} ${anek.className} ${styles.learning}`}>
+  const font = landingFont(useLanguage().language === "hi");
+  return <div className={`${home.home} ${font.variable} ${font.className} ${styles.learning}`}>
     {daily && <>
       <LandingAiPulse expanded cards={daily.pulse} day={daily.day} locked={daily.locked.pulse} />
       <LandingVocabulary words={daily.words} day={daily.day} locked={daily.locked.word} />

@@ -31,6 +31,16 @@ export function geo(headers: Headers) {
   return { country: read("x-vercel-ip-country"), region: read("x-vercel-ip-country-region"), city: read("x-vercel-ip-city") };
 }
 
+/**
+ * The postal code and approximate coordinates of the request's network (Vercel headers), when present. These locate a
+ * city or ISP hub, never a street or village; columns from migration 0030.
+ */
+export function geoPoint(headers: Headers) {
+  const coordinate = (name: string, limit: number) => { const value = Number(headers.get(name)); return headers.get(name) && Number.isFinite(value) && Math.abs(value) <= limit ? value : null; };
+  const postal = headers.get("x-vercel-ip-postal-code")?.trim().slice(0, 20) || null;
+  return { postal_code: postal, latitude: coordinate("x-vercel-ip-latitude", 90), longitude: coordinate("x-vercel-ip-longitude", 180) };
+}
+
 export function clientIp(headers: Headers) {
   return (headers.get("x-forwarded-for")?.split(",")[0] ?? headers.get("x-real-ip") ?? "").trim();
 }

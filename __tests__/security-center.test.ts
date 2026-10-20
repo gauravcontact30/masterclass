@@ -29,8 +29,14 @@ describe("security API", () => {
       event(403, "/api/documents", { security: true, code: "invalid_origin", ip: "198.51.100.4" }),
       event(500, "/api/catalog", {}),
     ];
-    const query = { select: jest.fn(), eq: jest.fn(), gte: jest.fn(), order: jest.fn(), limit: jest.fn().mockResolvedValue({ data: rows, error: null }) };
-    for (const key of ["select", "eq", "gte", "order"] as const) query[key].mockReturnValue(query);
+    const feed = [
+      { created_at: new Date().toISOString(), kind: "audit", action: "access_changed", actor_id: "owner", resource: "auth.users", status: null, details: { previous_role: "user", role: "super_admin" } },
+      { created_at: new Date().toISOString(), kind: "export", action: "user_activity_csv", actor_id: "owner", resource: "site_visits", status: null, details: {} },
+      { created_at: new Date().toISOString(), kind: "ai", action: "fallback", actor_id: null, resource: "answer", status: 502, details: { provider: "openrouter" } },
+    ];
+    // First query: failed requests. Second: the audit, admin, export, integration and AI feed.
+    const query = { select: jest.fn(), eq: jest.fn(), in: jest.fn(), gte: jest.fn(), order: jest.fn(), limit: jest.fn().mockResolvedValueOnce({ data: rows, error: null }).mockResolvedValueOnce({ data: feed, error: null }) };
+    for (const key of ["select", "eq", "in", "gte", "order"] as const) query[key].mockReturnValue(query);
     (db as jest.Mock).mockReturnValue({ from: jest.fn().mockReturnValue(query) });
     const response = await GET(new Request("http://localhost/api/super-admin/security?days=7"));
     expect(response.status).toBe(200);
@@ -40,6 +46,13 @@ describe("security API", () => {
     expect(body.byCode[0]).toEqual({ name: "Not allowed (admin only)", count: 6 });
     expect(body.recent[0]).toMatchObject({ ip: "203.0.113.9", reason: "Not allowed (admin only)" });
     expect(body.posture.every((p: { configured: unknown }) => typeof p.configured === "boolean")).toBe(true);
+    // One log per protection, from the blocked requests and the event feed.
+    expect(body.logs.rateLimits).toMatchObject({ count: 1, rows: [{ actor: "198.51.100.4", target: "Rate limit hit", status: 429 }] });
+    expect(body.logs.crossSite.count).toBe(1);
+    expect(body.logs.privileged.rows[0]).toMatchObject({ action: "access_changed", detail: "previous role: user · role: super_admin" });
+    expect(body.logs.exports.count).toBe(1);
+    expect(body.logs.ai.rows[0]).toMatchObject({ action: "fallback", status: 502 });
+    expect(Object.values(body.implementations).every(value => typeof value === "boolean")).toBe(true);
   });
 });
 

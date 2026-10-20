@@ -7,6 +7,7 @@ import { AdminError, AdminLoading } from "./super-admin-feedback";
 import { AdminTable } from "./super-admin-table";
 import { SuperAdminHourly } from "./super-admin-hourly";
 import { SuperAdminLocations } from "./super-admin-locations";
+import { SuperAdminNewUserLocations } from "./super-admin-new-user-locations";
 import { locationLabel } from "@/lib/visitor-location";
 import { AudienceExplorer } from "./super-admin-audience";
 import { siAndroid, siApple, siBrave, siFacebook, siFirefoxbrowser, siGoogle, siGooglechrome, siInstagram, siIos, siLinux, siMacos, siOpera, siSafari, siSamsung, siUbuntu, siWhatsapp, siYoutube, type SimpleIcon } from "simple-icons";
@@ -100,6 +101,7 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
     </div>
 
     <SuperAdminLocations days={days} query={query} />
+    <SuperAdminNewUserLocations days={days} query={query} />
     <AudienceExplorer days={days} fallback={{ countries: data.countries, cities: data.cities, pages: data.pages, referrers: data.referrers }} />
 
     <div className={styles.breakdowns}>

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Ban, CheckCircle2, Clock, Fingerprint, Globe2, KeyRound, Lock, RefreshCw, Search, ServerCrash, ShieldAlert, ShieldCheck, Siren, Target, UserX, XCircle } from "lucide-react";
+import { AlertTriangle, Ban, Bot, Brush, CheckCircle2, Clock, Database, Download, EyeOff, FileCheck2, Fingerprint, Gauge, Globe2, History, KeyRound, Lock, PlugZap, RefreshCw, Scale, Search, ServerCrash, ShieldAlert, ShieldCheck, Siren, Sparkles, Target, UserCog, UserX, Webhook, XCircle } from "lucide-react";
 import { AdminError } from "./super-admin-feedback";
 import styles from "./super-admin-security.module.css";
 
@@ -17,7 +17,12 @@ type Data = {
   timeline: { at: string; count: number }[];
   recent: { at: string; method: string; path: string | null; status: number | null; reason: string; ip: string | null; ua: string | null; requestId: string | null }[];
   posture: { name: string; what: string; configured: boolean }[];
+  logs?: Logs;
+  implementations?: { arcjet: boolean; rateLimitStore: boolean; webhookSignatures: boolean; encryption: boolean; visitorHashing: boolean };
 };
+type LogEntry = { at: string; actor: string | null; action: string; target: string | null; status: number | null; detail: string | null };
+type Log = { count: number; rows: LogEntry[] };
+type Logs = { privileged: Log; audit: Log; exports: Log; integrations: Log & { rejected: Log }; ai: Log; rateLimits: Log; crossSite: Log; oversized: Log };
 const HEADERS: [string, string][] = [
   ["content-security-policy", "Content Security Policy (blocks framing, plugins, base hijacking)"], ["strict-transport-security", "HTTPS only (HSTS)"],
   ["x-frame-options", "Clickjacking protection"], ["x-content-type-options", "No MIME sniffing"], ["referrer-policy", "Referrer kept private"],
@@ -105,6 +110,9 @@ export function SuperAdminSecurityCenter({ days }: { days: number }) {
       </section>
     </div>
 
+    {data && <Implementations data={data} headersLive={live} />}
+    {data?.logs && <SecurityLogs logs={data.logs} />}
+
     {data && <div className={styles.grid}>
       <section className={styles.card} data-tone="rose" aria-labelledby="sec-timeline">
         <h3 id="sec-timeline"><ShieldAlert size={16} aria-hidden="true" />Blocked over time</h3>
@@ -153,6 +161,68 @@ export function SuperAdminSecurityCenter({ days }: { days: number }) {
       <p className={styles.note}>Recorded for every API request refused for sign-in, permission, origin, size or rate limits, with the source address and browser, and kept 90 days.{data.truncated ? " Showing the most recent 5,000 failed requests." : ""} The request id matches the X-Request-ID response header and the server logs.</p>
     </section>}
   </div>;
+}
+
+type Status = "live" | "off" | "always";
+/**
+ * One light card per protective layer this application implements: what it is for (in one line), how it works here,
+ * whether it is configured in this environment, and the figure from this window that shows it working.
+ */
+function Implementations({ data, headersLive }: { data: Data; headersLive: number | null }) {
+  const on = data.implementations; const t = data.totals; const logs = data.logs;
+  const live = (value: boolean | undefined): Status => value === undefined ? "always" : value ? "live" : "off";
+  const cards: { tone: string; icon: typeof ShieldCheck; title: string; purpose: string; how: string; status: Status; metric?: string }[] = [
+    { tone: "rose", icon: Bot, title: "Edge shield & bot detection", purpose: "Stops SQL-injection and XSS probes and scraping bots before they reach the application.", how: "Arcjet runs in the proxy on every request; search engines and uptime monitors stay allowed.", status: live(on?.arcjet), metric: "Blocks are listed in the Arcjet dashboard" },
+    { tone: "butter", icon: Gauge, title: "Rate limiting", purpose: "Prevents password guessing, scraping and runaway AI costs from one source.", how: "Upstash sliding window of 60 API calls a minute per address, plus tighter limits on sign-in, checkout and tracking.", status: live(on?.rateLimitStore), metric: `${t.rateLimited} requests slowed down` },
+    { tone: "lavender", icon: Fingerprint, title: "Authentication & sessions", purpose: "Proves who is making each request, so private learning data stays private.", how: "Supabase Auth with HTTP-only cookies, refreshed in the proxy; protected routes redirect to sign-in.", status: "always", metric: `${t.unauthenticated} anonymous calls refused` },
+    { tone: "peach", icon: UserCog, title: "Role-based admin access", purpose: "Keeps this console and its data to Super Admins, even if a link leaks.", how: "Every /api/super-admin route checks the signed-in role on the server before reading anything.", status: "always", metric: `${t.adminProbes} admin API probes refused` },
+    { tone: "mint", icon: Database, title: "Row level security", purpose: "The database itself refuses rows that are not yours: a second wall behind the app code.", how: "Postgres RLS policies on public tables; the service key never reaches the browser.", status: "always" },
+    { tone: "sky", icon: Globe2, title: "Cross-site request protection", purpose: "Stops other websites from submitting actions with a signed-in learner’s cookies (CSRF).", how: "State-changing requests must come from this site’s own origin; cookies are SameSite.", status: "always", metric: `${t.crossSite} cross-site requests blocked` },
+    { tone: "slate", icon: Scale, title: "Input validation & size limits", purpose: "Rejects malformed or oversized input before it reaches the database or an AI model.", how: "Strict Zod schemas and request body limits on every API route.", status: "always", metric: logs ? `${logs.oversized.count} oversized requests refused` : undefined },
+    { tone: "sky", icon: Lock, title: "Browser security headers", purpose: "Tells browsers to block clickjacking, MIME sniffing, HTTP downgrades and unwanted device access.", how: "CSP frame-ancestors, HSTS, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy and COOP on every response.", status: headersLive == null ? "always" : headersLive > 0 ? "live" : "off", metric: headersLive == null ? undefined : `${headersLive} of ${HEADERS.length} headers live` },
+    { tone: "peach", icon: Webhook, title: "Webhook signatures", purpose: "Only Razorpay can mark a payment as paid; forged callbacks are rejected.", how: "Each payment webhook’s HMAC signature is checked with the shared secret before it is processed.", status: live(on?.webhookSignatures), metric: logs ? `${logs.integrations.rejected.count} bad signatures rejected` : undefined },
+    { tone: "lavender", icon: KeyRound, title: "Credential encryption", purpose: "A leaked database backup does not expose connected-account tokens.", how: "Integration credentials are encrypted with AES-256-GCM before they are stored.", status: live(on?.encryption) },
+    { tone: "mint", icon: EyeOff, title: "Privacy-preserving analytics", purpose: "Counts visitors and locations without keeping anyone’s full IP address.", how: "The last part of each IP is zeroed, and distinct networks are counted by a keyed hash.", status: live(on?.visitorHashing) },
+    { tone: "rose", icon: Brush, title: "HTML sanitisation", purpose: "Stops stored cross-site scripting through notes and published documents.", how: "User-written HTML is cleaned against an allowlist of tags and attributes before it is shown.", status: "always" },
+    { tone: "butter", icon: History, title: "Audit trail & retention", purpose: "Answers who changed what and when, after an incident or a dispute.", how: "Database triggers record role, ban and table changes; admin actions are logged; request logs are kept 90 days.", status: "always", metric: logs ? `${logs.privileged.count + logs.audit.count} audit entries` : undefined },
+    { tone: "slate", icon: Sparkles, title: "AI provider safeguards", purpose: "Keeps AI features working, and visible, when a provider fails or throttles.", how: "Failed completions fall back to another provider and every fallback is recorded.", status: "always", metric: logs ? `${logs.ai.count} fallbacks or failures` : undefined },
+  ];
+  const labelOf: Record<Status, string> = { live: "Configured", off: "Not configured here", always: "Built in" };
+  return <section aria-labelledby="sec-impl" className={styles.block}>
+    <div className={styles.blockHead}><h3 id="sec-impl"><ShieldCheck size={16} aria-hidden="true" />Security implementations</h3><p>Each protective layer in this application, what it is for and whether it is active in this environment.</p></div>
+    <ul className={styles.implGrid}>{cards.map(({ tone, icon: Icon, title, purpose, how, status, metric }) => <li key={title} className={styles.card} data-tone={tone}>
+      <div className={styles.implHead}><span className={styles.tileIcon} aria-hidden="true"><Icon size={15} /></span><h4>{title}</h4><span className={styles.badge} data-status={status}>{labelOf[status]}</span></div>
+      <p className={styles.purpose}><b>Purpose:</b> {purpose}</p>
+      <p className={styles.how}>{how}</p>
+      {metric && <p className={styles.metric}>{metric}</p>}
+    </li>)}</ul>
+  </section>;
+}
+
+/** One light card per security log: why the log exists, its count in the window and its latest entries. */
+function SecurityLogs({ logs }: { logs: Logs }) {
+  const integrations: Log = { count: logs.integrations.count + logs.integrations.rejected.count, rows: [...logs.integrations.rejected.rows, ...logs.integrations.rows].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 25) };
+  const sections: { tone: string; icon: typeof ShieldCheck; title: string; purpose: string; log: Log; empty: string }[] = [
+    { tone: "lavender", icon: UserCog, title: "Privileged changes", purpose: "Role grants, bans, credit and usage adjustments: the actions that change what someone can do.", log: logs.privileged, empty: "No privileged changes in this window." },
+    { tone: "slate", icon: FileCheck2, title: "Database audit trail", purpose: "Row changes recorded by database triggers, to reconstruct what happened to a record.", log: logs.audit, empty: "No audited table changes in this window." },
+    { tone: "sky", icon: Download, title: "Data exports", purpose: "Every download of notes, notebooks or activity CSVs, so bulk data leaving the site is visible.", log: logs.exports, empty: "No exports in this window." },
+    { tone: "peach", icon: PlugZap, title: "Webhooks & integrations", purpose: "Calls to connected services, and webhooks rejected for a bad signature (possible forgery).", log: integrations, empty: "No integration calls or rejected webhooks." },
+    { tone: "rose", icon: Clock, title: "Rate-limit log", purpose: "Sources that sent too many requests: brute force, scrapers or a broken client.", log: logs.rateLimits, empty: "Nobody hit a rate limit." },
+    { tone: "mint", icon: Globe2, title: "Cross-site blocks", purpose: "State-changing requests that came from another website, the signature of a CSRF attempt.", log: logs.crossSite, empty: "No cross-site requests blocked." },
+    { tone: "butter", icon: Sparkles, title: "AI provider fallbacks", purpose: "AI calls that failed or switched provider: outages, throttling or abusive prompts.", log: logs.ai, empty: "Every AI call succeeded first time." },
+    { tone: "slate", icon: Scale, title: "Oversized requests", purpose: "Bodies larger than a route allows, often a denial-of-service or upload-abuse attempt.", log: logs.oversized, empty: "No oversized requests." },
+  ];
+  return <section aria-labelledby="sec-logs" className={styles.block}>
+    <div className={styles.blockHead}><h3 id="sec-logs"><History size={16} aria-hidden="true" />Security logs</h3><p>The latest 25 entries of each log; counts cover the whole window.</p></div>
+    <div className={styles.grid}>{sections.map(({ tone, icon: Icon, title, purpose, log, empty }) => <section key={title} className={styles.card} data-tone={tone} aria-label={title}>
+      <h3><Icon size={16} aria-hidden="true" />{title}<span className={styles.count}>{log.count.toLocaleString("en-IN")}</span></h3>
+      <p className={styles.purpose}><b>Purpose:</b> {purpose}</p>
+      {log.rows.length ? <ol className={styles.logList}>{log.rows.map((r, i) => <li key={`${r.at}-${i}`}>
+        <div><code>{r.action}</code>{r.status != null && <span className={styles.status}>{r.status}</span>}<time dateTime={r.at}>{when(r.at)}</time></div>
+        <small>{[r.target && `Target: ${r.target}`, r.actor && `By: ${r.actor}`, r.detail].filter(Boolean).join(" · ") || "No further detail recorded"}</small>
+      </li>)}</ol> : <p className={styles.empty}><CheckCircle2 size={15} aria-hidden="true" />{empty}</p>}
+    </section>)}</div>
+  </section>;
 }
 
 function Tile({ tone, icon: Icon, label, value, note }: { tone: string; icon: typeof ShieldCheck; label: string; value: number; note: string }) {

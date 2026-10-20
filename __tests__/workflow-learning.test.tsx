@@ -6,7 +6,8 @@ import { WORKFLOW_LESSON_GUIDES } from "@/lib/workflow-lesson-guides";
 import { learningPoints, WORKFLOW_DEFINITIONS } from "@/lib/workflow-presentation";
 import { ExclusiveAccordions } from "@/components/exclusive-accordions";
 
-jest.mock("next/dynamic", () => ({ __esModule: true, default: () => () => null }));
+// The learning paths are a next/dynamic chunk in the component; resolve that one synchronously, stub the rest.
+jest.mock("next/dynamic", () => ({ __esModule: true, default: (loader: () => unknown) => String(loader).includes("workflow-learning") ? jest.requireActual("@/components/workflow-learning").WorkflowLearning : () => null }));
 jest.mock("@/components/dashboard-lessons", () => ({ DashboardLessons: () => null }));
 
 test("dashboard filters switch between new learning paths and existing diagram blueprints", () => {

@@ -11,11 +11,12 @@ import type { OfficialPage, OfficialTechDocs } from "@/lib/tech-docs-official";
 import { useLanguage } from "./language-provider";
 import { Controls } from "./landing-ai-pulse";
 import { DashboardMore } from "./dashboard-more";
-import { TechProjectEditor } from "./tech-project-editor";
-import { TECH_PROJECTS } from "@/lib/tech-doc-projects";
+import dynamic from "next/dynamic";
 import home from "./landing-home.module.css";
 import frame from "./landing-section.module.css";
 import styles from "./landing-tech-docs.module.css";
+/** The quick-start project files and editor (~28 KB) load as their own chunk, after the page. */
+const TechProjectPanel = dynamic(() => import("./tech-project-panel"), { ssr: false });
 
 /** Autoplay: one platform every two minutes. */
 const SLIDE_MS = 120_000;
@@ -196,7 +197,7 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
         </p>
         <p className={styles.tagline}>{docsPage?.complete && docsPage.description ? docsPage.description : tech.tagline}</p>
         <ul className={styles.features} aria-label={text("Core features", "मुख्य विशेषताएँ")}>{tech.features.map(f => <li key={f}><Marked text={f} terms={terms} /></li>)}</ul>
-        {showCode && TECH_PROJECTS[tech.id] && <TechProjectEditor key={tech.id} project={TECH_PROJECTS[tech.id]} />}
+        {showCode && <TechProjectPanel key={tech.id} techId={tech.id} />}
         <a className={styles.docsLink} href={tech.docs} target="_blank" rel="noopener noreferrer">{fundamental ? text("Start the course", "कोर्स शुरू करें") : text("Open the official docs", "आधिकारिक डॉक्स खोलें")} · {host(tech.docs)}<ArrowUpRight size={15} aria-hidden="true" /></a>
       </div>
       <div className={styles.materials}>

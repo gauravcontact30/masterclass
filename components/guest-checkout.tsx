@@ -10,7 +10,7 @@ import { useLanguage } from "./language-provider";
 import { requestJson, errorKey } from "@/lib/client";
 import { openSubscriptionCheckout, type SubscriptionPayment } from "@/lib/razorpay-checkout";
 import type { TranslationKey } from "@/lib/i18n";
-import { anek } from "./landing-fonts";
+import { landingFont } from "./landing-fonts";
 import styles from "./guest-checkout.module.css";
 
 type Tier = "monthly" | "yearly";
@@ -60,7 +60,7 @@ export function GuestCheckout({ initialTier, enabled, prices }: { initialTier: T
     try { await verify(paid.checkoutId, paid.payment); } catch (caught) { setError(errorKey(caught)); } finally { setBusy(false); }
   }
 
-  return <div className={`${styles.page} ${anek.variable}`}>
+  return <div className={`${styles.page} ${landingFont(language === "hi").variable}`}>
     <header className={styles.top}>
       <Link href="/" className={styles.back}><ArrowLeft size={15} aria-hidden="true" /><ExpandedText text={text("Home", "होम")} /></Link>
       <Link href="/" aria-label="MasterClass" className={styles.brand}><Wordmark /></Link>

@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 import { LibraryBig } from "lucide-react";
 import { requestJson } from "@/lib/client";
 import { LibraryLedger } from "./library-ledger";
-import { anek } from "./landing-fonts";
+import { landingFont } from "./landing-fonts";
 import { LandingOverview } from "./landing-overview";
 import { useReveal } from "./use-reveal";
 import { LandingFooter } from "./landing-footer";
@@ -40,7 +40,7 @@ import { useLanguage } from "./language-provider";
 import styles from "./learn-landing.module.css";
 
 export type LandingPrices = { monthly: number; yearly: number; enabled: boolean };
-export function LandingPage({ pro, library, prices: initialPrices, daily, techDocs, copyrightYear }: { copyrightYear?: number; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null } } }) {
+export function LandingPage({ pro, library, prices: initialPrices, daily, techDocs, copyrightYear }: { copyrightYear?: number; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
   // Prices rendered on the server arrive in the HTML, so the plan card never paints "—" and then shifts; the fetch is only the fallback.
@@ -50,8 +50,9 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
   // [section on this page, label, the section's own crawlable page]: links are real URLs for search engines and
   // new tabs, and smooth-scroll to the section here without a #fragment.
   const navigation = [["#workflows", text("Workflows", "वर्कफ़्लो"), "/workflows"], ...(library ? [["#library", text("Library", "लाइब्रेरी"), "/library"]] : []), ...(pro ? [["#techy", "Techy", "/learn"], ["#api-docs", "API Docs", "/api-reference"]] : []), ["#interview-prep", text("Interview prep", "इंटरव्यू"), "/interview-questions"], ["#pricing", text("Membership", "सदस्यता"), "/subscribe"]];
+  const font = landingFont(hi);
   const format = (value: number) => new Intl.NumberFormat(hi ? "hi-IN" : "en-IN").format(value);
-  return <div className={`${styles.page} ${home.home} ${anek.variable} ${anek.className}`}><a className={styles.skip} href="#main-content">{text("Skip to content", "सामग्री पर जाएँ")}</a>
+  return <div className={`${styles.page} ${home.home} ${font.variable} ${font.className}`}><a className={styles.skip} href="#main-content">{text("Skip to content", "सामग्री पर जाएँ")}</a>
     <LandingNavbar links={navigation as [string, string, string][]} prices={priceState === "ready" ? prices : null} />
     <WelcomeModal prices={priceState === "ready" ? prices : null} />
     <main id="main-content" tabIndex={-1}>
@@ -59,7 +60,7 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
     <LandingSlider technologies={library?.counts.technology} />
     <LearningSlot surface="landing" page="home" section="after-slider" className={styles.learningSlot} />
     {library && <SubjectRibbon entries={library.entries} />}
-    {daily && <><LandingAiPulse cards={daily.pulse} day={daily.day} locked={daily.locked?.pulse} preview /><LandingVocabulary words={daily.words} day={daily.day} locked={daily.locked?.word} preview /></>}
+    {daily && <><LandingAiPulse cards={daily.pulse} total={daily.totals?.pulse} day={daily.day} locked={daily.locked?.pulse} preview /><LandingVocabulary words={daily.words} total={daily.totals?.words} day={daily.day} locked={daily.locked?.word} preview /></>}
     <LandingWorkflows preview />
     <LandingInterview preview />
     <LandingComparisons preview official={techDocs} />

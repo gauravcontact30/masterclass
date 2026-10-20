@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { GuestCheckout } from "@/components/guest-checkout";
 import { openSubscriptionCheckout } from "@/lib/razorpay-checkout";
 
-jest.mock("@/components/landing-fonts", () => ({ anek: { variable: "anek" } }));
+jest.mock("@/components/landing-fonts", () => ({ landingFont: () => ({ variable: "anek", className: "anek" }) }));
 const signInWithOtp = jest.fn(async () => ({ error: null }));
 jest.mock("@/lib/supabase-browser", () => ({ supabaseBrowser: () => ({ auth: { signInWithOtp } }) }));
 jest.mock("@/lib/razorpay-checkout", () => ({ openSubscriptionCheckout: jest.fn() }));

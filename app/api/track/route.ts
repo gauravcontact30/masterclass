@@ -5,7 +5,7 @@ import { z } from "zod";
 import { authConfigured } from "@/lib/server/config";
 import { supabaseServer } from "@/lib/server/auth";
 import { db } from "@/lib/server/db";
-import { clientIp, geo, hashIp, maskIp, parseUserAgent } from "@/lib/server/visit-context";
+import { clientIp, geo, geoPoint, hashIp, maskIp, parseUserAgent } from "@/lib/server/visit-context";
 import { isUntrackedEmail, UNTRACKED_COOKIE } from "@/lib/server/tracking-exclusions";
 import { HttpError, jsonBody, sameOrigin } from "@/lib/server/http";
 import { recordEvent } from "@/lib/server/monitoring";
@@ -105,9 +105,12 @@ export async function POST(request: Request) {
     language: input.language, timezone: input.timezone, screen: input.screen,
     duration_ms: input.type === "leave" ? input.duration ?? null : null,
   };
+  const point = geoPoint(request.headers);
   after(async () => {
     try {
-      const { error } = await db().from("site_visits").insert(row);
+      let { error } = await db().from("site_visits").insert({ ...row, ...point });
+      // Before migration 0030 the postal code and coordinate columns do not exist: keep the visit without them.
+      if (error && (error.code === "PGRST204" || error.code === "42703")) ({ error } = await db().from("site_visits").insert(row));
       if (error && error.code !== "42P01" && error.code !== "PGRST205") console.error("visit_write_failed", error.code);
     } catch { console.error("visit_write_unavailable"); }
   });

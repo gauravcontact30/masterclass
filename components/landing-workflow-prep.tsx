@@ -14,9 +14,10 @@ type Text = (en: string, hindi: string) => string;
  * questions most asked about it, subjective and objective, each rated by how often it comes up and opened
  * one at a time like an accordion. Loaded as its own chunk by components/landing-workflows.tsx. The first
  * three of each kind ship with it; the rest load when the blueprint's slide comes near the screen, on the landing
- * page and on /dashboard alike. `full={false}` keeps just those three.
+ * page and on /dashboard alike. `full={false}` keeps just those three; `limit` (the landing preview) shows only the
+ * most asked few of each kind, with a link to the full set on /dashboard.
  */
-export default function WorkflowPrepPanel({ id, text, full = true }: Readonly<{ id: string; text: Text; full?: boolean }>) {
+export default function WorkflowPrepPanel({ id, text, full = true, limit }: Readonly<{ id: string; text: Text; full?: boolean; limit?: number }>) {
   const prep = WORKFLOW_PREP[id];
   const box = useRef<HTMLDivElement>(null);
   const [more, setMore] = useState<QuestionSet | null>(null);
@@ -35,7 +36,7 @@ export default function WorkflowPrepPanel({ id, text, full = true }: Readonly<{ 
   return <div ref={box} className={styles.prep}>
     <Detail prep={prep} text={text} />
     <section className={styles.interview} aria-label={text("Interview questions", "इंटरव्यू प्रश्न")}>
-      <InterviewQuestions set={set} text={text} scroll heading={<h4><GraduationCap size={17} aria-hidden="true" />{text("Most-asked interview questions", "सबसे ज़्यादा पूछे जाने वाले इंटरव्यू प्रश्न")}</h4>} />
+      <InterviewQuestions set={set} text={text} scroll limit={limit} heading={<h4><GraduationCap size={17} aria-hidden="true" />{text("Most-asked interview questions", "सबसे ज़्यादा पूछे जाने वाले इंटरव्यू प्रश्न")}</h4>} />
     </section>
   </div>;
 }

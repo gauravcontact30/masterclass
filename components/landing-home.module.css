@@ -21,7 +21,7 @@
   --nb-graphite: #141413;
   --nb-text: #3d3d3a;
   --nb-muted: #5e5d59;
-  --nb-font: var(--font-anek), "Anek Devanagari", system-ui, sans-serif;
+  --nb-font: var(--font-anek), system-ui, sans-serif;
   /* Older section stylesheets read these names. */
   --cc-ground: var(--nb-paper);
   --cc-paper: var(--nb-sheet);

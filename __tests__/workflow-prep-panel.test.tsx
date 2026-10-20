@@ -41,3 +41,20 @@ test("an unknown workflow renders nothing", () => {
   const { container } = render(<WorkflowPrep id="nope" text={text} />);
   expect(container).toBeEmptyDOMElement();
 });
+
+test("the landing preview (limit) shows the 7 most asked of each kind and links to the full set in the dashboard", async () => {
+  const { container } = render(<WorkflowPrep id="url-shortener" text={text} limit={7} />);
+  // The rest of the questions load after the shipped three; the cap applies once they arrive.
+  await screen.findByRole("link", { name: /Showing the 7 most asked of \d+\. See all \d+ subjective questions in the dashboard/ });
+  expect(container.querySelectorAll("details")).toHaveLength(7);
+  fireEvent.click(screen.getByRole("button", { name: /Objective/ }));
+  expect(container.querySelectorAll("details")).toHaveLength(7);
+  expect(screen.getByRole("link", { name: /See all \d+ objective questions in the dashboard/ })).toHaveAttribute("href", "/dashboard");
+});
+
+test("without a limit (/dashboard) every question shows", async () => {
+  const { container } = render(<WorkflowPrep id="url-shortener" text={text} />);
+  await screen.findByRole("button", { name: /Subjective\s*([8-9]|\d\d)/ });
+  expect(container.querySelectorAll("details").length).toBeGreaterThan(7);
+  expect(screen.queryByRole("link", { name: /most asked of/ })).not.toBeInTheDocument();
+});

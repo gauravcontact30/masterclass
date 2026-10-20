@@ -1,12 +1,16 @@
-import { Anek_Devanagari } from "next/font/google";
+import { Anek_Devanagari, Anek_Latin } from "next/font/google";
 
 /**
- * The landing page's one family: Anek covers Latin and Devanagari in the same
- * design, so English and Hindi share one voice. Its width axis (75 to 125)
- * carries the display type; body text stays at the default width.
+ * The landing page's one family, Anek, in two cuts of the same design: Anek Latin for English and Anek Devanagari
+ * (Latin and Devanagari together) for Hindi, so English and Hindi share one voice. Its width axis (75 to 125) carries
+ * the display type; body text stays at the default width. Both set --font-anek; pick one with `landingFont`.
+ *
+ * Why two: Anek Devanagari's Devanagari file is ~700 KB, and its unicode-range also covers ₹ (U+20B9), so English
+ * pages downloaded it for every price, Hindi gloss and "हिन्दी" toggle. English now never references that face.
  */
-export const anek = Anek_Devanagari({
-  // Only Latin is preloaded: the Devanagari file is ~700 KB and preloading it made every visitor download it before
-  // the hero heading could paint (mobile LCP). It still loads on demand, through its unicode-range, when Hindi shows.
-  subsets: ["latin"], axes: ["wdth"], display: "swap", variable: "--font-anek",
-});
+export const anekLatin = Anek_Latin({ subsets: ["latin"], axes: ["wdth"], display: "swap", variable: "--font-anek" });
+/** Not preloaded: it is only needed once a reader switches to Hindi. */
+export const anekDevanagari = Anek_Devanagari({ subsets: ["devanagari", "latin"], axes: ["wdth"], display: "swap", variable: "--font-anek", preload: false });
+
+/** The Anek cut for the reading language. */
+export const landingFont = (hindi: boolean) => hindi ? anekDevanagari : anekLatin;
