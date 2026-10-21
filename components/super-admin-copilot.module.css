@@ -1,0 +1,65 @@
+/* AI copilot at the top of the Super Admin pages (super-admin-copilot.tsx); palette shared with the Overview AI briefing. */
+.copilot { display: grid; gap: 14px; margin-block: 16px; padding: 18px; border: 1px solid #ddd4f5; border-radius: 18px; background: radial-gradient(120% 140% at 0% 0%, #f5f2fd, #faf9f5 60%, #f1f7fe); min-width: 0; }
+.head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
+.head > div { flex: 1 1 280px; min-width: 0; }
+.head h2 { font-size: 17px; font-weight: 650; color: #141413; }
+.head p { margin-top: 2px; font-size: 12.5px; line-height: 1.5; color: #5e5d59; }
+.mark { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: #fff; color: #5b45a8; }
+.copilot button { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 6px 14px; border: 0; border-radius: 999px; background: #5b45a8; color: #fff; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.copilot button:disabled { opacity: .6; cursor: progress; }
+.copilot .secondary, .copilot .ghost { border: 1px solid #ddd4f5; background: #fff; color: #5b45a8; }
+.copilot .ghost { min-height: 30px; padding: 4px 10px; font-size: 12px; }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.kpi { display: grid; align-content: start; gap: 3px; min-height: 96px; padding: 12px; border: 1px solid #e8e6dc; border-radius: 12px; background: #fff; min-width: 0; }
+.kpi > span { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #5e5d59; }
+.kpi strong { font-size: 21px; font-weight: 650; color: #141413; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.kpi small { font-size: 11.5px; line-height: 1.45; color: #73716a; }
+.skeleton { background: linear-gradient(90deg, #f3f1ea, #fff, #f3f1ea); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+.delta { display: inline-flex; align-items: center; gap: 2px; justify-self: start; padding: 1px 7px; border-radius: 999px; background: #f1efe8; color: #5e5d59; font-size: 11px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.delta[data-tone="good"] { background: #eff9f3; color: #2a7a4e; }
+.delta[data-tone="bad"] { background: #fdf2f4; color: #b23a5a; }
+
+.analysis, .block, .draft { display: grid; gap: 8px; min-width: 0; }
+.analysisHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.analysis h3 { font-size: 14px; font-weight: 650; color: #141413; }
+.copilot h4 { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #5b45a8; }
+.summary { font-size: 14px; line-height: 1.6; color: #141413; }
+.findings { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.findings li { padding: 10px 12px; border: 1px solid #e8e6dc; border-left-width: 4px; border-radius: 12px; background: #fff; }
+.findings li[data-level="high"] { border-left-color: #b23a5a; }
+.findings li[data-level="medium"] { border-left-color: #a95425; }
+.findings li[data-level="low"] { border-left-color: #2a7a4e; }
+.findings li > div { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.findings b { font-size: 13.5px; font-weight: 650; color: #141413; }
+.findings p { margin-top: 3px; font-size: 12.5px; line-height: 1.5; color: #5e5d59; }
+.level { padding: 1px 8px; border-radius: 999px; background: #fef5ee; color: #a95425; font-size: 10.5px; font-weight: 650; letter-spacing: 0; text-transform: capitalize; }
+li[data-level="high"] .level { background: #fdf2f4; color: #b23a5a; }
+li[data-level="low"] .level { background: #eff9f3; color: #2a7a4e; }
+
+.draft { padding: 12px 14px; border: 1px dashed #c9bdf0; border-radius: 12px; background: #fff; }
+.draft b { font-size: 14px; color: #141413; }
+.draft p { font-size: 13px; line-height: 1.55; color: #3d3d3a; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+.ask { display: grid; gap: 8px; padding-top: 4px; border-top: 1px solid #e8e6dc; }
+.ask label { display: flex; align-items: center; gap: 6px; padding-top: 10px; font-size: 12.5px; font-weight: 650; color: #141413; }
+.ask input { flex: 1 1 260px; min-width: 0; min-height: 38px; padding: 8px 12px; border: 1px solid #ddd4f5; border-radius: 999px; background: #fff; font: inherit; font-size: 13px; color: #141413; }
+.ask input:focus { outline: 2px solid #5b45a860; outline-offset: 1px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.copilot .chips button { min-height: 30px; padding: 4px 12px; border: 1px solid #ddd4f5; background: #fff; color: #3d3d3a; font-size: 12px; font-weight: 500; text-align: left; }
+.copilot .chips button:hover:not(:disabled) { border-color: #5b45a8; color: #5b45a8; }
+.answers { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.answers li { padding: 10px 12px; border: 1px solid #e8e6dc; border-radius: 12px; background: #fff; }
+.answers b { font-size: 13px; color: #5b45a8; }
+.answers p { margin-top: 4px; font-size: 13px; line-height: 1.55; color: #141413; white-space: pre-line; }
+.answers small { display: block; margin-top: 4px; font-size: 11px; color: #73716a; }
+
+.empty, .source, .note { font-size: 12px; line-height: 1.55; color: #5e5d59; }
+.note { color: #2a7a4e; }
+.error { padding: 9px 12px; border-radius: 10px; background: #fdf2f4; color: #8e2f4c; font-size: 12.5px; }
+@media (max-width: 560px) { .copilot { padding: 14px; } .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kpi strong { font-size: 18px; } }
+@media (prefers-reduced-motion: reduce) { .spin, .skeleton { animation: none; } }

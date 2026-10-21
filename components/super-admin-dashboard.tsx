@@ -24,6 +24,7 @@ import { LearningSlot } from "./learning-slot";
 import styles from "./super-admin-dashboard.module.css";
 import side from "./super-admin-sidebar.module.css";
 import { useLanguage } from "./language-provider";
+import { COPILOT_META, isCopilotPage } from "@/lib/admin-pages";
 
 const sectionLoading = () => <AdminLoading>Loading section...</AdminLoading>;
 const SuperAdminSecurityCenter = dynamic(() => import("./super-admin-security").then(module => module.SuperAdminSecurityCenter), { loading: sectionLoading });
@@ -43,6 +44,7 @@ const SuperAdminNewUserLocations = dynamic(() => import("./super-admin-new-user-
 const SuperAdminActivity = dynamic(() => import("./super-admin-activity").then(module => module.SuperAdminActivity), { loading: sectionLoading });
 const SuperAdminTransactions = dynamic(() => import("./super-admin-transactions").then(module => module.SuperAdminTransactions), { loading: sectionLoading });
 const SuperAdminPromotions = dynamic(() => import("./super-admin-promotions").then(module => module.SuperAdminPromotions), { loading: sectionLoading });
+const SuperAdminCopilot = dynamic(() => import("./super-admin-copilot").then(module => module.SuperAdminCopilot), { loading: sectionLoading });
 const SuperAdminAnnouncements = dynamic(() => import("./super-admin-support").then(module => module.SuperAdminAnnouncements), { loading: sectionLoading });
 const SuperAdminInsights = dynamic(() => import("./super-admin-support").then(module => module.SuperAdminInsights), { loading: sectionLoading });
 const SuperAdminLearnerSupport = dynamic(() => import("./super-admin-support").then(module => module.SuperAdminLearnerSupport), { loading: sectionLoading });
@@ -166,12 +168,13 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </header><main className={styles.main}><DashboardPageHeader eyebrow={section === "upload-learning" ? "Content · Publishing" : section === "notepad" ? "Writing workspace" : section === "suggestions" ? "People · Feedback" : "Application monitoring"} title={section === "overview" ? "Your application, at a glance." : sections.find(s => s.id === section)?.label} description={section === "upload-learning" ? "Publish your Notepad documents to any page of the Learning Dashboard, the landing page, sign in, sign up or this console, and add your own Learning Dashboard pages." : section === "notepad" ? "Write, format and export documents. Drafts autosave in this browser every two minutes." : section === "suggestions" ? "Listen, triage and keep contributors informed. Replies appear in each contributor’s private tracking view." : "Keep a pulse on your learners, subscriptions, and platform."} icon={section === "suggestions" ? <MessageSquarePlus/> : section === "upload-learning" ? <UploadCloud/> : <ShieldCheck/>}/>
+    </header><main className={styles.main}><DashboardPageHeader eyebrow={section === "upload-learning" ? "Content · Publishing" : section === "notepad" ? "Writing workspace" : section === "suggestions" ? "People · Feedback" : "Application monitoring"} title={section === "overview" ? "Your application, at a glance." : sections.find(s => s.id === section)?.label} description={section === "upload-learning" ? "Publish your Notepad documents to any page of the Learning Dashboard, the landing page, sign in, sign up or this console, and add your own Learning Dashboard pages." : section === "notepad" ? "Write, format and export documents. Drafts autosave in this browser every two minutes." : section === "suggestions" ? "Listen, triage and keep contributors informed. Replies appear in each contributor’s private tracking view." : isCopilotPage(section) ? COPILOT_META[section].description : "Keep a pulse on your learners, subscriptions, and platform."} icon={section === "suggestions" ? <MessageSquarePlus/> : section === "upload-learning" ? <UploadCloud/> : <ShieldCheck/>}/>
       <LearningSlot surface="super_admin" page={section} section="top" />
       {section !== "suggestions" && !writing && <div className={styles.toolbar}><div className={styles.reportFilter}><Label htmlFor="admin-report-window">Reporting window</Label><AdminSelect id="admin-report-window" label="Reporting window" value={String(days)} onValueChange={value=>setDays(Number(value))} options={[{value:"1",label:"Last 24 hours"},{value:"7",label:"Last 7 days"},{value:"30",label:"Last 30 days"},{value:"90",label:"Last 90 days"}]} /></div><Input aria-label="Search displayed records" placeholder="Search displayed records…" value={query} onChange={e => setQuery(e.target.value)} /></div>}
       {accountError && <Alert variant="destructive" className={styles.error}><AlertDescription>{accountError}</AlertDescription></Alert>}
       {error && !writing && <Alert variant="destructive" className={styles.error}><AlertDescription>{error}{data && " Displaying the last successful snapshot."}</AlertDescription></Alert>}
       {!data && !error && !writing && <div className={styles.loading} role="status"><span>Loading application monitoring...</span><div className={styles.metrics}>{[0,1,2,3].map(id=><Skeleton key={id} className={styles.metricSkeleton}/>)}</div></div>}
+      {isCopilotPage(section) && <SuperAdminCopilot key={section} page={section} title={sections.find(s => s.id === section)?.label ?? section} days={days} query={query} />}
       {notepadOpened && <div hidden={section !== "notepad"}><SuperAdminNotepad userId={userId} /></div>}
       {section === "upload-learning" && isOwner && <SuperAdminUploadLearning userId={userId} />}
       {section === "billing" && <SuperAdminBilling />}

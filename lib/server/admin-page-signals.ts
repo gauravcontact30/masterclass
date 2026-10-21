@@ -44,6 +44,7 @@ function trend(label: string, current: number, previous: number, days: number, b
   if (delta === null || Math.abs(delta) < threshold || (badWhen === "down" ? delta > 0 : delta < 0)) return null;
   return { severity: Math.abs(delta) >= 60 ? "high" : "medium", title: `${label} ${delta > 0 ? "up" : "down"} ${Math.abs(delta)}% vs previous ${days} day${days === 1 ? "" : "s"}`, detail: `${current.toLocaleString("en-IN")} now against ${previous.toLocaleString("en-IN")} in the previous window.` };
 }
+const pick = <T extends object, K extends keyof T>(item: T, keys: K[]) => Object.fromEntries(keys.map(key => [key, item[key]])) as Pick<T, K>;
 const compact = (items: (Finding | null | false | undefined)[]) => items.filter((item): item is Finding => !!item);
 
 type Progress = { user_id: string; document_id: string; page: number; completed: boolean; updated_at: string };
@@ -413,14 +414,14 @@ async function infra(w: Win): Promise<Built> {
       { label: "Host memory used", value: hostUsed, format: "percent", note: "This serverless instance's host", better: "down" },
       { label: "Free disk", value: free, format: "percent", note: "Writable storage on this instance", better: "up" },
     ],
-    watch: { note: "API routes ranked by total server time (requests × latency): where capacity goes.", columns: [{ key: "route", label: "Route" }, { key: "requests", label: "Requests" }, { key: "p50_ms", label: "p50 ms" }, { key: "p95_ms", label: "p95 ms" }, { key: "mb", label: "MB served" }, { key: "errors", label: "5xx" }], rows: routes.slice(0, 30).map(({ total_ms, error_rate, last_error, ...r }) => r) },
+    watch: { note: "API routes ranked by total server time (requests × latency): where capacity goes.", columns: [{ key: "route", label: "Route" }, { key: "requests", label: "Requests" }, { key: "p50_ms", label: "p50 ms" }, { key: "p95_ms", label: "p95 ms" }, { key: "mb", label: "MB served" }, { key: "errors", label: "5xx" }], rows: routes.slice(0, 30).map(r => pick(r, ["route", "requests", "p50_ms", "p95_ms", "mb", "errors"])) },
     findings: compact([
       ...routes.filter(r => r.requests >= 20 && (r.p95_ms ?? 0) > 2000).slice(0, 3).map((r): Finding => ({ severity: (r.p95_ms ?? 0) > 5000 ? "high" : "medium", title: `${r.route} p95 is ${((r.p95_ms ?? 0) / 1000).toFixed(1)} s`, detail: `${r.requests} requests; add caching or move slow work to a background job.` })),
       hostUsed !== null && hostUsed > 85 && { severity: "high", title: `Host memory ${hostUsed}% used`, detail: "Instances near their memory limit restart; check for large in-memory work." },
       free !== null && free < 10 && { severity: "high", title: `Only ${free}% disk free`, detail: "Temporary files may be filling the instance." },
       trend("Request volume", requests.length, prevRequests, w.days, "up", 100),
     ]),
-    facts: { requests: requests.length, previousRequests: prevRequests, p95Ms: p95, bytesServed: bytes, host: { processMemoryMb: Math.round(host.processMemory / 1_048_576), heapMb: Math.round(host.heapUsed / 1_048_576), hostMemoryUsedPercent: hostUsed, cpuCores: host.cpuCores, cpuPercent: host.cpuPercent, freeDiskPercent: free, uptimeSeconds: host.processUptime, environment: host.environment }, heaviestRoutes: routes.slice(0, 15).map(({ last_error, ...r }) => r), requestsPerDay: perDay(requests.map(e => e.created_at)) },
+    facts: { requests: requests.length, previousRequests: prevRequests, p95Ms: p95, bytesServed: bytes, host: { processMemoryMb: Math.round(host.processMemory / 1_048_576), heapMb: Math.round(host.heapUsed / 1_048_576), hostMemoryUsedPercent: hostUsed, cpuCores: host.cpuCores, cpuPercent: host.cpuPercent, freeDiskPercent: free, uptimeSeconds: host.processUptime, environment: host.environment }, heaviestRoutes: routes.slice(0, 15).map(r => pick(r, ["route", "requests", "p50_ms", "p95_ms", "total_ms", "mb", "errors", "error_rate"])), requestsPerDay: perDay(requests.map(e => e.created_at)) },
     capped: requests.length >= ROWS,
   };
 }
@@ -448,7 +449,7 @@ async function health(w: Win): Promise<Built> {
       { label: "p95 latency", value: p95, previous: prevP95, format: "ms", note: "95% of requests completed within this time", better: "down" },
       { label: "Database round trip", value: dbMs, format: "ms", note: dbMs === null ? "The database did not answer" : "Measured just now from this server", better: "down" },
     ],
-    watch: { note: "Routes with server errors or a p95 above 3 s, most errors first.", columns: [{ key: "route", label: "Route" }, { key: "requests", label: "Requests" }, { key: "errors", label: "5xx" }, { key: "error_rate", label: "Error %" }, { key: "p95_ms", label: "p95 ms" }, { key: "last_error", label: "Last error" }], rows: failing.slice(0, 30).map(({ total_ms, mb, p50_ms, ...r }) => r) },
+    watch: { note: "Routes with server errors or a p95 above 3 s, most errors first.", columns: [{ key: "route", label: "Route" }, { key: "requests", label: "Requests" }, { key: "errors", label: "5xx" }, { key: "error_rate", label: "Error %" }, { key: "p95_ms", label: "p95 ms" }, { key: "last_error", label: "Last error" }], rows: failing.slice(0, 30).map(r => pick(r, ["route", "requests", "errors", "error_rate", "p95_ms", "last_error"])) },
     findings: compact([
       lastHour >= 10 && { severity: "high", title: `Possible incident: ${lastHour} server errors in the last hour`, detail: `Busiest failing route: ${failing[0]?.route ?? "unknown"}. Check Application logs for the error signature.` },
       availability !== null && availability < 99 && { severity: availability < 95 ? "high" : "medium", title: `Availability ${availability}%`, detail: `${errors.length} of ${requests.length} requests failed with a server error.` },
@@ -456,7 +457,7 @@ async function health(w: Win): Promise<Built> {
       dbMs === null && { severity: "high", title: "The database did not answer", detail: "Check Supabase status and the service-role key; every page that reads data is affected." },
       dbMs !== null && dbMs > 800 && { severity: "medium", title: `Database round trip ${dbMs} ms`, detail: "Check the function region matches the database region (vercel.json)." },
     ]),
-    facts: { requests: requests.length, previousRequests: previous.length, serverErrors: errors.length, previousServerErrors: prevErrors.length, serverErrorsLastHour: lastHour, clientErrors, availability, previousAvailability: prevAvailability, p95Ms: p95, previousP95Ms: prevP95, databaseRoundTripMs: dbMs, statusCodes: tally(requests.map(e => String(e.status ?? "none"))), errorsPerDay: perDay(errors.map(e => e.created_at)), failingRoutes: failing.slice(0, 15).map(({ last_error, total_ms, ...r }) => r) },
+    facts: { requests: requests.length, previousRequests: previous.length, serverErrors: errors.length, previousServerErrors: prevErrors.length, serverErrorsLastHour: lastHour, clientErrors, availability, previousAvailability: prevAvailability, p95Ms: p95, previousP95Ms: prevP95, databaseRoundTripMs: dbMs, statusCodes: tally(requests.map(e => String(e.status ?? "none"))), errorsPerDay: perDay(errors.map(e => e.created_at)), failingRoutes: failing.slice(0, 15).map(r => pick(r, ["route", "requests", "errors", "error_rate", "p50_ms", "p95_ms"])) },
     capped: requests.length >= ROWS,
   };
 }

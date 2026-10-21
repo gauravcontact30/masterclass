@@ -202,6 +202,8 @@ const toIso = (local: string) => local ? new Date(local).toISOString() : null;
 export function SuperAdminAnnouncements() {
   const formId = useId();
   const { data, error, reload } = useAdminData<{ announcements: Announcement[] }>("/api/super-admin/announcements");
+  // The page's AI copilot can publish a drafted announcement; show it here without a manual refresh.
+  useEffect(() => { const changed = () => void reload(); window.addEventListener("admin:announcements-changed", changed); return () => window.removeEventListener("admin:announcements-changed", changed); }, [reload]);
   const [form, setForm] = useState({ title: "", body: "", tone: "info", starts: "", ends: "" });
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ text: string; ok: boolean }>({ text: "", ok: true });
