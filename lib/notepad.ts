@@ -1,4 +1,31 @@
-export const PAPER_COLORS = [{ name: "White", value: "#ffffff" }, { name: "Ivory", value: "#fffbed" }, { name: "Mint", value: "#eff8f1" }, { name: "Sky", value: "#eff6ff" }, { name: "Lavender", value: "#f5f0ff" }, { name: "Rose", value: "#fff1f2" }];
+/** Light paper tones only, so body text stays readable. The first six are the originals; saved documents keep them. */
+export const PAPER_COLORS = [
+  { name: "White", value: "#ffffff" },
+  { name: "Ivory", value: "#fffbed" },
+  { name: "Mint", value: "#eff8f1" },
+  { name: "Sky", value: "#eff6ff" },
+  { name: "Lavender", value: "#f5f0ff" },
+  { name: "Rose", value: "#fff1f2" },
+  { name: "Cream", value: "#fdf6e3" },
+  { name: "Parchment", value: "#f6efdf" },
+  { name: "Linen", value: "#faf0e6" },
+  { name: "Sand", value: "#f5ecd9" },
+  { name: "Peach", value: "#fff0e5" },
+  { name: "Apricot", value: "#ffe9d6" },
+  { name: "Blush", value: "#fdeef4" },
+  { name: "Lilac", value: "#f3eafb" },
+  { name: "Periwinkle", value: "#eceffd" },
+  { name: "Ice", value: "#ecf8fc" },
+  { name: "Aqua", value: "#e8f8f5" },
+  { name: "Sage", value: "#eef3e8" },
+  { name: "Pistachio", value: "#f1f8e4" },
+  { name: "Lemon", value: "#fffbd6" },
+  { name: "Butter", value: "#fff6cc" },
+  { name: "Pearl", value: "#f7f7f4" },
+  { name: "Mist", value: "#f1f4f6" },
+  { name: "Stone", value: "#eeece6" },
+  { name: "Silver", value: "#ebedf0" },
+];
 
 /** Keep imported/pasted documents inert, including documents restored from browser storage. */
 export function sanitizeNotepadHtml(html: string): string {

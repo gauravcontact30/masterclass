@@ -43,16 +43,28 @@
 .empty { padding: 18px 4px; font-size: 13px; color: var(--soft); }
 
 .stream, .traces, .reading { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.stream li { display: grid; grid-template-columns: 20px minmax(0, 1fr) minmax(0, 1.3fr) auto; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: #fff; border: 1px solid color-mix(in srgb, var(--c) 10%, var(--rule)); }
+/* Column headings over the row lists, on the same grid as their rows (border width included in the padding). */
+.listHead { display: grid; align-items: end; gap: 10px; margin-bottom: -2px; padding: 0 11px; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: color-mix(in srgb, var(--c) 70%, #6c6b63); }
+.listHead > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.streamHead { grid-template-columns: 20px minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, auto) 60px; }
+.streamHead > span:nth-child(n + 4), .tracesHead > span:last-child { text-align: right; }
+.readingHead { grid-template-columns: minmax(0, 1fr) 64px 52px 64px; gap: 12px; }
+.tracesHead { grid-template-columns: 52px minmax(0, 1fr) 46px minmax(90px, 160px) 58px; }
+.stream li { display: grid; grid-template-columns: 20px minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, auto) 60px; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: #fff; border: 1px solid color-mix(in srgb, var(--c) 10%, var(--rule)); }
 .stream li[data-new] { animation: ol-arrive 1.6s ease-out; }
 @keyframes ol-arrive { from { background: var(--c-soft); transform: translateY(-3px); } to { background: #fff; transform: none; } }
 .who, .what { display: grid; min-width: 0; }
 .who b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--ink); }
 .who small, .what small { display: flex; align-items: center; gap: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11.5px; color: var(--soft); }
 .what code, .reading code, .path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-geist-mono, ui-monospace), monospace; font-size: 12.5px; color: var(--c); }
-.stream time, .traces time { font-size: 11.5px; color: var(--soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.spent { display: grid; justify-items: end; min-width: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.spent b { display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 600; color: var(--ink); white-space: nowrap; }
+.spent b svg { color: var(--c); }
+.spent b[data-open] { color: var(--c); }
+.spent small { font-size: 11.5px; color: var(--soft); white-space: nowrap; }
+.stream time, .traces time { justify-self: end; font-size: 11.5px; color: var(--soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-.reading li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 10px; background: #fff; border: 1px solid color-mix(in srgb, var(--c) 10%, var(--rule)); }
+.reading li { display: grid; grid-template-columns: minmax(0, 1fr) 64px 52px 64px; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 10px; background: #fff; border: 1px solid color-mix(in srgb, var(--c) 10%, var(--rule)); }
 .reading li > span { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text); font-variant-numeric: tabular-nums; }
 .reading li > span svg { color: var(--c); }
 .devices { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
@@ -87,8 +99,10 @@
 
 @media (max-width: 1100px) { .grid { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 640px) {
+  .listHead { display: none; }
   .stream li { grid-template-columns: 20px minmax(0, 1fr) auto; }
   .what { grid-column: 2 / -1; grid-row: 2; }
+  .spent { grid-column: 2 / -1; grid-row: 3; justify-items: start; text-align: left; }
   .traces li { grid-template-columns: 44px minmax(0, 1fr) 44px; }
   .duration { grid-column: 1 / 3; }
   .traces time { justify-self: end; }

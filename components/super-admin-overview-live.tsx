@@ -6,8 +6,9 @@ import { Pager } from "./super-admin-table";
 import styles from "./super-admin-overview-live.module.css";
 
 type Row = Record<string, unknown>;
-type Visit = { created_at: string; event: string; email?: string | null; visitor_id: string; session_id: string; new_visitor?: boolean; path: string; title?: string | null; country?: string | null; city?: string | null; region?: string | null; device?: string | null; browser?: string | null; os?: string | null; duration_ms?: number | null; referrer_host?: string | null };
-type Live = { generatedAt: string; totals: { liveNow: number; liveSignedIn: number; pageViews: number; visitors: number; bounceRate: number | null; avgSessionSeconds: number | null }; hours: { hour: number; views: number }[]; recent: Visit[] };
+type Visit = { created_at: string; event: string; person?: string; email?: string | null; visitor_id: string; session_id: string; new_visitor?: boolean; path: string; title?: string | null; country?: string | null; city?: string | null; region?: string | null; device?: string | null; browser?: string | null; os?: string | null; duration_ms?: number | null; referrer_host?: string | null };
+type Live = { generatedAt: string; totals: { liveNow: number; liveSignedIn: number; pageViews: number; visitors: number; bounceRate: number | null; avgSessionSeconds: number | null }; hours: { hour: number; views: number }[]; recent: Visit[]; people?: Person[] };
+type Person = { person: string; sessions: number; engaged_seconds: number; first_seen: string };
 export type OverviewSnapshot = { generatedAt: string; events: Row[]; requests: { count: number; errors: number; p95: number | null }; health: { databaseMs: number; processUptime: number; processMemory: number; hostMemory: number; hostUsedMemory: number; cpuCores: number; cpuPercent?: number | null; environment?: string; nodeVersion?: string } };
 
 const REFRESH_MS = 15_000;
@@ -21,6 +22,12 @@ const since = (iso: unknown, now: number) => {
   const s = Math.max(0, (now - new Date(String(iso)).getTime()) / 1000);
   return s < 10 ? "now" : s < 60 ? `${Math.round(s)}s ago` : s < 3600 ? `${Math.round(s / 60)}m ago` : s < 86400 ? `${Math.round(s / 3600)}h ago` : `${Math.round(s / 86400)}d ago`;
 };
+const spent = (seconds: number) => {
+  const s = Math.max(0, Math.round(seconds));
+  return s < 60 ? `${s}s` : s < 3600 ? `${Math.floor(s / 60)}m ${s % 60}s` : `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`;
+};
+// A page still open (no leave beacon) counts as being read for at most the session's 30 idle minutes.
+const OPEN_MS = 30 * 60_000;
 const bytes = (value: number) => value >= 1 << 30 ? `${(value / (1 << 30)).toFixed(1)} GB` : `${Math.round(value / (1 << 20))} MB`;
 const uptime = (seconds: number) => seconds >= 86400 ? `${Math.floor(seconds / 86400)}d ${Math.floor((seconds % 86400) / 3600)}h` : seconds >= 3600 ? `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m` : `${Math.round(seconds / 60)}m`;
 const DEVICE_ICON: Record<string, LucideIcon> = { mobile: Smartphone, tablet: Tablet, desktop: Laptop };
@@ -67,6 +74,29 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
 
   const visits = useMemo(() => (live?.recent ?? []).filter(v => v.event === "page_view"), [live]);
+  // Time spent per stream row: the page's own read time (its leave beacon, or a live clock while still open)
+  // and the person's total engaged time on the platform in the 24 h window.
+  const timing = useMemo(() => {
+    const recent = live?.recent ?? [];
+    const leaves = new Map<string, number[]>(), latest = new Map<string, number>(), opened = new Map<string, number>();
+    for (const v of recent) {
+      const at = Date.parse(v.created_at);
+      if (v.event === "page_leave" && v.duration_ms != null) { const key = `${v.session_id}|${v.path}`; leaves.set(key, [...(leaves.get(key) ?? []), at]); }
+      if (v.event === "page_view") latest.set(v.session_id, Math.max(latest.get(v.session_id) ?? 0, at));
+    }
+    const durations = new Map(recent.filter(v => v.event === "page_leave").map(v => [`${v.session_id}|${v.path}|${Date.parse(v.created_at)}`, v.duration_ms ?? 0]));
+    const page = (v: Visit) => {
+      const at = Date.parse(v.created_at), key = `${v.session_id}|${v.path}`;
+      const left = (leaves.get(key) ?? []).filter(t => t >= at).sort((a, b) => a - b)[0];
+      if (left != null) return { ms: durations.get(`${key}|${left}`) ?? 0, open: false };
+      if (latest.get(v.session_id) === at && now - at < OPEN_MS) return { ms: now - at, open: true };
+      return null;
+    };
+    for (const v of recent) { const p = v.event === "page_view" && v.person ? page(v) : null; if (p?.open) opened.set(v.person!, (opened.get(v.person!) ?? 0) + p.ms); }
+    const people = new Map((live?.people ?? []).map(p => [p.person, p]));
+    const total = (v: Visit) => { const p = v.person ? people.get(v.person) : undefined; return p ? { seconds: Number(p.engaged_seconds) + (opened.get(p.person) ?? 0) / 1000, sessions: Number(p.sessions) } : null; };
+    return { page, total };
+  }, [live, now]);
   const lastHour = useMemo(() => (live?.recent ?? []).filter(v => v.event === "page_view" && now - Date.parse(v.created_at) < 3600_000), [live, now]);
   const reading = useMemo(() => {
     const recent = (live?.recent ?? []).filter(v => now - Date.parse(v.created_at) < 30 * 60_000);
@@ -125,18 +155,22 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
     <div className={styles.grid}>
       <article className={`${styles.panel} ${styles.wide}`} data-tone="mint">
         <h3><Radio size={16} aria-hidden="true" />Live visitor stream<span>{visits.length ? `${visits.length} views in 24 h` : ""}</span></h3>
-        {visits.length ? <ol className={styles.stream}>{visitRows.map((v, i) => { const id = `${v.created_at}${v.visitor_id}`, key = `${id}-${i}`; const Device = DEVICE_ICON[(v.device || "desktop").toLowerCase()] ?? Laptop; const code = v.country ?? ""; return <li key={key} data-new={live && seen.size > 0 && !seen.has(id) || undefined}>
+        {visits.length ? <><div className={`${styles.listHead} ${styles.streamHead}`} aria-hidden="true"><span /><span>Visitor · location</span><span>Page · device</span><span>Time spent</span><span>When</span></div><ol className={styles.stream}>{visitRows.map((v, i) => { const id = `${v.created_at}${v.visitor_id}`, key = `${id}-${i}`; const Device = DEVICE_ICON[(v.device || "desktop").toLowerCase()] ?? Laptop; const code = v.country ?? ""; return <li key={key} data-new={live && seen.size > 0 && !seen.has(id) || undefined}>
           <Flag code={code} />
           <span className={styles.who}><b>{v.email ?? (v.new_visitor ? "New visitor" : "Returning visitor")}</b><small>{[v.city, code ? countryName(code) : ""].filter(Boolean).join(", ") || "Location unknown"}</small></span>
           <span className={styles.what}><code title={v.title ?? v.path}>{v.path}</code><small><Device size={12} aria-hidden="true" />{[v.browser, v.os].filter(Boolean).join(" · ") || "Unknown device"}{v.referrer_host ? ` · from ${v.referrer_host}` : ""}</small></span>
+          {(() => { const p = timing.page(v), t = timing.total(v); return <span className={styles.spent} title="Time on this page · total time on the platform in the last 24 h">
+            <b data-open={p?.open || undefined}><Timer size={12} aria-hidden="true" />{p ? `${spent(p.ms / 1000)}${p.open ? " · reading" : ""}` : "—"}</b>
+            <small>{t ? `${spent(t.seconds)} on site · ${t.sessions} ${t.sessions === 1 ? "session" : "sessions"}` : "Total time unknown"}</small>
+          </span>; })()}
           <time dateTime={v.created_at}>{since(v.created_at, now)}</time>
-        </li>; })}</ol> : <p className={styles.empty}>{live ? "No page views recorded in the last 24 hours yet." : "Connecting to live tracking…"}</p>}
+        </li>; })}</ol></> : <p className={styles.empty}>{live ? "No page views recorded in the last 24 hours yet." : "Connecting to live tracking…"}</p>}
         <Pager page={Math.min(visitPage, pagesOf(visits, STREAM_PAGE))} pages={pagesOf(visits, STREAM_PAGE)} total={visits.length} size={STREAM_PAGE} onPage={setVisitPage} />
       </article>
 
       <article className={styles.panel} data-tone="sky">
         <h3><BookOpenText size={16} aria-hidden="true" />Being read right now<span>last 30 min</span></h3>
-        {reading.length ? <ul className={styles.reading}>{readRows.map(([path, e]) => <li key={path}><code>{path}</code><span><Users size={12} aria-hidden="true" />{e.visitors.size}</span><span><MousePointerClick size={12} aria-hidden="true" />{e.views}</span><span><Timer size={12} aria-hidden="true" />{e.reads ? `${Math.round(e.readMs / e.reads / 1000)} s` : "—"}</span></li>)}</ul> : <p className={styles.empty}>Nobody has opened a page in the last 30 minutes.</p>}
+        {reading.length ? <><div className={`${styles.listHead} ${styles.readingHead}`} aria-hidden="true"><span>Page</span><span>Visitors</span><span>Views</span><span>Avg. read</span></div><ul className={styles.reading}>{readRows.map(([path, e]) => <li key={path}><code>{path}</code><span><Users size={12} aria-hidden="true" />{e.visitors.size}</span><span><MousePointerClick size={12} aria-hidden="true" />{e.views}</span><span><Timer size={12} aria-hidden="true" />{e.reads ? `${Math.round(e.readMs / e.reads / 1000)} s` : "—"}</span></li>)}</ul></> : <p className={styles.empty}>Nobody has opened a page in the last 30 minutes.</p>}
         {reading.length > READING_PAGE && <Pager page={Math.min(readPage, pagesOf(reading, READING_PAGE))} pages={pagesOf(reading, READING_PAGE)} total={reading.length} size={READING_PAGE} onPage={setReadPage} />}
         {devices.length > 0 && <div className={styles.devices}>{devices.map(([device, count]) => { const Icon = DEVICE_ICON[device] ?? Laptop; return <span key={device}><Icon size={13} aria-hidden="true" />{device} <b>{count}</b></span>; })}<small>visitors in the last hour</small></div>}
       </article>
@@ -145,13 +179,13 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
         <h3><Route size={16} aria-hidden="true" />Request tracing
           <span className={styles.filters} role="group" aria-label="Trace filter">{(["all", "errors", "slow"] as const).map(f => <button key={f} type="button" aria-pressed={traceFilter === f} onClick={() => { setTraceFilter(f); setTracePage(1); }}>{f === "all" ? <Activity size={12} aria-hidden="true" /> : f === "errors" ? <AlertTriangle size={12} aria-hidden="true" /> : <Clock size={12} aria-hidden="true" />}{f === "all" ? "All" : f === "errors" ? "Errors" : "Slow ≥1 s"}</button>)}</span>
         </h3>
-        {traces.length ? <ol className={styles.traces}>{traceRows.map((e, i) => { const status = e.status == null ? null : Number(e.status); const ms = Number(e.duration_ms) || 0; const id = (e.details as { request_id?: string } | null)?.request_id; return <li key={`${String(e.created_at)}-${i}`}>
+        {traces.length ? <><div className={`${styles.listHead} ${styles.tracesHead}`} aria-hidden="true"><span>Method</span><span>Route</span><span>Status</span><span>Duration</span><span>When</span></div><ol className={styles.traces}>{traceRows.map((e, i) => { const status = e.status == null ? null : Number(e.status); const ms = Number(e.duration_ms) || 0; const id = (e.details as { request_id?: string } | null)?.request_id; return <li key={`${String(e.created_at)}-${i}`}>
           <span className={styles.method}>{String(e.action ?? "—")}</span>
           <code className={styles.path} title={String(e.resource ?? "")}>{String(e.resource ?? "—")}</code>
           <span className={styles.status} data-tone={statusTone(status)}>{status ?? "—"}</span>
           <span className={styles.duration}><i style={{ width: `${Math.max(3, (ms / slowest) * 100)}%` }} data-slow={ms >= 1000 || undefined} /><small>{ms ? `${n(ms)} ms` : "—"}</small></span>
           <time dateTime={String(e.created_at)} title={id ? `Request ID ${id}` : undefined}>{since(e.created_at, now)}</time>
-        </li>; })}</ol> : <p className={styles.empty}>{requests.length ? "No requests match this filter." : "No API requests recorded in this window."}</p>}
+        </li>; })}</ol></> : <p className={styles.empty}>{requests.length ? "No requests match this filter." : "No API requests recorded in this window."}</p>}
         <Pager page={Math.min(tracePage, pagesOf(traces, TRACE_PAGE))} pages={pagesOf(traces, TRACE_PAGE)} total={traces.length} size={TRACE_PAGE} onPage={setTracePage} />
       </article>
 

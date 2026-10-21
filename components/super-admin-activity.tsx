@@ -105,10 +105,10 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
     <AudienceExplorer days={days} fallback={{ countries: data.countries, cities: data.cities, pages: data.pages, referrers: data.referrers }} />
 
     <div className={styles.breakdowns}>
-      <Breakdown title="Devices" icon={<MonitorSmartphone size={16} />} tone="sky" rows={data.devices} label="device" value="visitors" rowIcon={row => deviceIcon(show(row.device))} />
-      <Breakdown title="Browsers" icon={<Compass size={16} />} tone="lavender" rows={data.browsers} label="browser" value="visitors" rowIcon={row => brandIcon(show(row.browser), BROWSER_MARKS, <Globe size={15} />)} />
-      <Breakdown title="Operating systems" icon={<Terminal size={16} />} tone="mint" rows={data.systems} label="os" value="visitors" rowIcon={row => brandIcon(show(row.os), OS_MARKS, <AppWindow size={15} />)} />
-      <Breakdown title="Campaigns (UTM)" icon={<Megaphone size={16} />} tone="peach" rowIcon={row => brandIcon(show(row.source), CAMPAIGN_MARKS, <Megaphone size={15} />)} rows={data.campaigns} label="source" value="views" extra={row => `${show(row.medium)} · ${show(row.campaign)}`} empty="No tagged links visited yet. Add ?utm_source=… to links you share." />
+      <Breakdown title="Devices" icon={<MonitorSmartphone size={16} />} tone="sky" rows={data.devices} label="device" value="visitors" heads={["Device", "Visitors"]} rowIcon={row => deviceIcon(show(row.device))} />
+      <Breakdown title="Browsers" icon={<Compass size={16} />} tone="lavender" rows={data.browsers} label="browser" value="visitors" heads={["Browser", "Visitors"]} rowIcon={row => brandIcon(show(row.browser), BROWSER_MARKS, <Globe size={15} />)} />
+      <Breakdown title="Operating systems" icon={<Terminal size={16} />} tone="mint" rows={data.systems} label="os" value="visitors" heads={["Operating system", "Visitors"]} rowIcon={row => brandIcon(show(row.os), OS_MARKS, <AppWindow size={15} />)} />
+      <Breakdown title="Campaigns (UTM)" icon={<Megaphone size={16} />} tone="peach" rowIcon={row => brandIcon(show(row.source), CAMPAIGN_MARKS, <Megaphone size={15} />)} rows={data.campaigns} label="source" value="views" heads={["Source · medium · campaign", "Views"]} extra={row => `${show(row.medium)} · ${show(row.campaign)}`} empty="No tagged links visited yet. Add ?utm_source=… to links you share." />
     </div>
 
     <People rows={data.people} query={query} onOpen={(key, label) => setPerson({ key, label })} />
@@ -160,16 +160,16 @@ function deviceIcon(name: string) {
   return key.includes("desktop") ? <Monitor size={15} /> : <Laptop size={15} />;
 }
 
-function Breakdown({ title, icon, rows, label, value, extra, empty, rowIcon, tone }: { title: string; icon?: React.ReactNode; rows: Row[]; label: string; value: string; extra?: (row: Row) => string; empty?: string; rowIcon?: (row: Row) => React.ReactNode; tone?: string }) {
+function Breakdown({ title, icon, rows, label, value, heads, extra, empty, rowIcon, tone }: { title: string; icon?: React.ReactNode; rows: Row[]; label: string; value: string; heads: [string, string]; extra?: (row: Row) => string; empty?: string; rowIcon?: (row: Row) => React.ReactNode; tone?: string }) {
   const max = Math.max(1, ...rows.map(row => Number(row[value]) || 0));
   return <Card className={`${shell.panel} ${styles.breakdown}`} data-tone={tone}>
     <h2>{icon && <span className={styles.titleIcon} aria-hidden="true">{icon}</span>}{title}</h2>
-    {rows.length ? <ol>{rows.slice(0, 10).map((row, i) => <li key={`${show(row[label])}-${i}`}>
+    {rows.length ? <><div className={styles.breakdownHead} aria-hidden="true"><span>{heads[0]}</span><span>{heads[1]}</span></div><ol>{rows.slice(0, 10).map((row, i) => <li key={`${show(row[label])}-${i}`}>
       <span className={styles.barFill} style={{ width: `${((Number(row[value]) || 0) / max) * 100}%` }} />
       {rowIcon && <span className={styles.rowIcon} aria-hidden="true">{rowIcon(row)}</span>}
       <span className={styles.barLabel} title={show(row[label])}>{show(row[label])}{extra && <small>{extra(row)}</small>}</span>
       <strong>{number(Number(row[value]))}</strong>
-    </li>)}</ol> : <p className={shell.empty}>{empty ?? "No data in this window yet."}</p>}
+    </li>)}</ol></> : <p className={shell.empty}>{empty ?? "No data in this window yet."}</p>}
   </Card>;
 }
 

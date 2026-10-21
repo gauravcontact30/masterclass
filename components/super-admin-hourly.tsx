@@ -87,7 +87,7 @@ export function SuperAdminHourly() {
           <div><dt>Latest tracked view (IST)</dt><dd>{trackedTime(detail.lastSeen)}</dd></div>
         </dl>
         {viewingCurrent && <p className={styles.note}>Counts cover this hour so far, through the last successful refresh. They are page-view activity, not a count of people currently online.</p>}
-        <h4>Most viewed routes</h4>{detail.pages.length ? <ul>{detail.pages.map(page => <li key={page.path}><span>{page.path}</span><strong>{page.views} views · {(page.views / detail.views * 100).toFixed(0)}%</strong></li>)}</ul> : <p>No visits recorded in this hour yet.</p>}
+        <h4>Most viewed routes</h4>{detail.pages.length ? <ul><li className={styles.listHead} aria-hidden="true"><span>Route</span><strong>Views · share</strong></li>{detail.pages.map(page => <li key={page.path}><span>{page.path}</span><strong>{page.views} views · {(page.views / detail.views * 100).toFixed(0)}%</strong></li>)}</ul> : <p>No visits recorded in this hour yet.</p>}
       </section>}
       {snapshot.capped && <p role="status">Partial report: showing the first 20,000 page views for this day.</p>}
       <p className={styles.note}>Updated {new Date(snapshot.generatedAt).toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" })} IST · Refreshes every 30 seconds. Visitors are unique browsers; hourly counts may overlap. Bots excluded.</p>

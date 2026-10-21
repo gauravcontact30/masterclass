@@ -69,8 +69,8 @@ function Card({ tone, icon: Icon, title, purpose, rows, empty }: Readonly<{ tone
   return <section className={styles.card} data-tone={tone} aria-label={`New users by ${title.toLowerCase()}`}>
     <h3><span aria-hidden="true"><Icon size={15} /></span>{title}<small>{rows.length}</small></h3>
     <p className={styles.purpose}>{purpose}</p>
-    {rows.length ? <ol className={styles.list}>{rows.slice(0, 8).map(row => <li key={row.name}>
+    {rows.length ? <><div className={styles.listHead} aria-hidden="true"><span>{title}</span><span>Share</span><span>Users</span></div><ol className={styles.list}>{rows.slice(0, 8).map(row => <li key={row.name}>
       <span title={row.name}>{row.name}</span><i aria-hidden="true"><b style={{ width: `${(row.count / top) * 100}%` }} /></i><strong>{row.count}</strong>
-    </li>)}</ol> : <p className={styles.empty}>{empty}</p>}
+    </li>)}</ol></> : <p className={styles.empty}>{empty}</p>}
   </section>;
 }

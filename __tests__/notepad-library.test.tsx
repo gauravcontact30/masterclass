@@ -27,12 +27,17 @@ test("migrates the old draft and keeps it when a new named document is created",
 test("paginates documents and supports keyboard search suggestions and media filters", async () => {
   seed(Array.from({ length: 8 }, (_, index) => file(String(index + 1), index === 7 ? { html: '<p>Unique architecture</p><img src="data:image/png;base64,YQ==">' } : {})));
   await open();
-  expect(screen.getAllByRole("tab")).toHaveLength(6);
-  fireEvent.click(screen.getByRole("button", { name: "Next document page" }));
+  expect(screen.getAllByRole("tab")).toHaveLength(3);
+  expect(screen.getByText("Showing 1–3 of 8")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Next page" }));
+  expect(screen.getAllByRole("tab")).toHaveLength(3);
+  fireEvent.click(screen.getByRole("button", { name: "3" }));
   expect(screen.getAllByRole("tab")).toHaveLength(2);
+  expect(screen.getByRole("button", { name: "3" })).toHaveAttribute("aria-current", "page");
   const search = screen.getByRole("combobox", { name: "Search saved documents" });
   fireEvent.change(search, { target: { value: "Unique architecture" } });
   expect(screen.getByRole("option", { name: /Document 8/ })).toBeInTheDocument();
+  expect(screen.getByRole("option", { name: /Document 8/ }).querySelector("mark")).toHaveTextContent(/unique/i);
   fireEvent.keyDown(search, { key: "ArrowDown" }); fireEvent.keyDown(search, { key: "Enter" });
   expect(screen.getByRole("textbox", { name: "Document content" })).toHaveTextContent("Unique architecture");
   fireEvent.click(screen.getByRole("button", { name: "Clear document search" }));

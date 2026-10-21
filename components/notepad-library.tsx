@@ -1,8 +1,26 @@
 "use client";
 import { useMemo, useState } from "react";
-import { Search, SlidersHorizontal, ChevronLeft, ChevronRight, FileText, Star, X, Image as ImageIcon, GitBranch, Table2 } from "lucide-react";
+import { Search, SlidersHorizontal, FileText, Star, X, Image as ImageIcon, GitBranch, Table2 } from "lucide-react";
 import { documentText, type NotepadFile } from "@/lib/notepad-library";
+import { Pager } from "./super-admin-pager";
 import styles from "./super-admin-notepad.module.css";
+
+/** Documents per page in My documents. */
+const PER_PAGE = 3;
+
+/** Wraps each search term in <mark> so a suggestion shows why it matched. */
+function Highlight({ text, terms }: { text: string; terms: string[] }) {
+  if (!terms.length) return <>{text}</>;
+  const pattern = new RegExp(`(${terms.map(term => term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`, "gi");
+  return <>{text.split(pattern).map((part, index) => index % 2 ? <mark key={index}>{part}</mark> : part)}</>;
+}
+
+/** About 100 characters of the document around the first term it contains, so content matches are visible. */
+const snippet = (text: string, terms: string[]) => {
+  const at = Math.min(...terms.map(term => text.toLowerCase().indexOf(term)).filter(index => index >= 0));
+  if (!Number.isFinite(at) || at < 40) return text.slice(0, 100);
+  return `…${text.slice(at - 30, at + 70)}`;
+};
 
 export function NotepadLibrary({ files, activeId, activeTitle, onOpen }: { files: NotepadFile[]; activeId: string; activeTitle: string; onOpen: (id: string) => void }) {
   const [query, setQuery] = useState("");
@@ -16,18 +34,18 @@ export function NotepadLibrary({ files, activeId, activeTitle, onOpen }: { files
   const [suggestions, setSuggestions] = useState(false);
   const [highlight, setHighlight] = useState(-1);
   const indexed = useMemo(() => files.map(file => ({ ...file, text: documentText(file.html) })), [files]);
+  const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const results = indexed.filter(file => {
     const title = file.id === activeId ? activeTitle : file.title;
-    const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
     return terms.every(term => `${title} ${file.text}`.toLowerCase().includes(term))
       && (kind === "all" || file.kind === kind) && (!starred || file.starred)
       && (!after || file.updatedAt.slice(0, 10) >= after)
       && (media === "all" || media === "images" && /<img\b/i.test(file.html) || media === "tables" && /<table\b/i.test(file.html) || media === "diagrams" && file.html.includes("data-notepad-diagram"));
   }).sort((a, b) => sort === "name" ? a.title.localeCompare(b.title) : sort === "oldest" ? a.updatedAt.localeCompare(b.updatedAt) : b.updatedAt.localeCompare(a.updatedAt));
-  const totalPages = Math.max(1, Math.ceil(results.length / 6));
+  const totalPages = Math.max(1, Math.ceil(results.length / PER_PAGE));
   const current = Math.min(page, totalPages);
-  const visible = results.slice((current - 1) * 6, current * 6);
-  const proposed = query.trim() ? results.slice(0, 5) : [];
+  const visible = results.slice((current - 1) * PER_PAGE, current * PER_PAGE);
+  const proposed = terms.length ? results.slice(0, 5) : [];
   const open = (id: string) => { onOpen(id); setSuggestions(false); setHighlight(-1); };
   return <div className={styles.library}>
     <div className={styles.libraryHead}><div><strong>My documents</strong><small>Saved in this browser · HTML exports include embedded images and diagrams.</small></div>
@@ -39,8 +57,8 @@ export function NotepadLibrary({ files, activeId, activeTitle, onOpen }: { files
           if (e.key === "ArrowUp") { e.preventDefault(); setHighlight(value => Math.max(0, value - 1)); }
           if (e.key === "Enter" && suggestions && proposed[highlight]) { e.preventDefault(); open(proposed[highlight].id); }
         }} />
-        {query && <button type="button" aria-label="Clear document search" onClick={() => { setQuery(""); setPage(1); }}><X size={15} aria-hidden="true"/></button>}
-        {suggestions && proposed.length > 0 && <ul id="notepad-suggestions" role="listbox" aria-label="Suggested documents" className={styles.suggestions}>{proposed.map((file, index) => <li role="option" id={`notepad-suggestion-${index}`} aria-selected={highlight === index} key={file.id} onMouseDown={e => e.preventDefault()} onClick={() => open(file.id)}><FileText size={16} aria-hidden="true"/><span><b>{file.id === activeId ? activeTitle : file.title || "Untitled document"}</b><small>{file.text.slice(0, 100) || "Empty document"}</small></span></li>)}</ul>}
+        {query && <button type="button" aria-label="Clear document search" onClick={() => { setQuery(""); setPage(1); setHighlight(-1); }}><X size={15} aria-hidden="true"/></button>}
+        {suggestions && proposed.length > 0 && <ul id="notepad-suggestions" role="listbox" aria-label="Suggested documents" className={styles.suggestions}>{proposed.map((file, index) => <li role="option" id={`notepad-suggestion-${index}`} aria-selected={highlight === index} key={file.id} onMouseDown={e => e.preventDefault()} onClick={() => open(file.id)}><FileText size={16} aria-hidden="true"/><span><b><Highlight text={(file.id === activeId ? activeTitle : file.title) || "Untitled document"} terms={terms}/></b><small>{file.text ? <Highlight text={snippet(file.text, terms)} terms={terms}/> : "Empty document"}</small></span></li>)}</ul>}
       </div>
       <button type="button" aria-label="Filter saved documents" aria-expanded={filters} aria-controls="notepad-filters" onClick={() => setFilters(value => !value)}><SlidersHorizontal size={17} aria-hidden="true"/></button>
     </div>
@@ -56,6 +74,6 @@ export function NotepadLibrary({ files, activeId, activeTitle, onOpen }: { files
       <FileText size={17} aria-hidden="true"/><span><b>{file.id === activeId ? activeTitle || "Untitled document" : file.title || "Untitled document"}</b><small>{file.kind} · {new Date(file.updatedAt).toLocaleDateString()}</small></span>{file.starred && <Star size={13} aria-hidden="true"/>}{/<img\b/i.test(file.html) && <ImageIcon size={13} aria-hidden="true"/>}{file.html.includes("data-notepad-diagram") ? <GitBranch size={13} aria-hidden="true"/> : /<table\b/i.test(file.html) && <Table2 size={13} aria-hidden="true"/>}
     </button>)}</div>
     {!results.length && <p className={styles.libraryEmpty}>No documents match your search and filters.</p>}
-    <div className={styles.pagination}><span>{results.length} document{results.length === 1 ? "" : "s"} · Page {current} of {totalPages}</span><button type="button" aria-label="Previous document page" disabled={current === 1} onClick={() => setPage(current - 1)}><ChevronLeft size={17} aria-hidden="true"/></button><button type="button" aria-label="Next document page" disabled={current === totalPages} onClick={() => setPage(current + 1)}><ChevronRight size={17} aria-hidden="true"/></button></div>
+    <div className={styles.pagination}><Pager page={current} pages={totalPages} total={results.length} size={PER_PAGE} onPage={setPage}/></div>
   </div>;
 }

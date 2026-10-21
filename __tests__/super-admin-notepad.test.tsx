@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { SuperAdminNotepad } from "@/components/super-admin-notepad";
 import { notepadDocument, sanitizeNotepadHtml } from "@/lib/notepad";
 
@@ -72,13 +72,47 @@ test("saving on unmount preserves work before the next autosave", async () => {
 test("icon actions are labelled and the light paper color persists and exports", async () => {
   const view = render(<SuperAdminNotepad userId="alice" />);
   await act(async () => {});
-  for (const button of screen.getAllByRole("button")) expect(button.querySelector("svg")).not.toBeNull();
-  fireEvent.click(screen.getByRole("button", { name: "Document background: Mint" }));
+  // Numbered page buttons in the My documents pager are text by design; every other action is an icon.
+  for (const button of screen.getAllByRole("button").filter(button => !button.closest("nav[aria-label='Pages']"))) expect(button.querySelector("svg")).not.toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Document background: White" }));
+  expect(within(screen.getByRole("listbox", { name: "Document background color" })).getAllByRole("option")).toHaveLength(25);
+  fireEvent.click(screen.getByRole("option", { name: "Mint" }));
+  expect(screen.queryByRole("listbox")).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Save draft" }));
   expect(savedFile().background).toBe("#eff8f1");
   view.unmount();
   render(<SuperAdminNotepad userId="alice" />);
   await act(async () => {});
   expect(screen.getByRole("textbox", { name: "Document content" })).toHaveStyle({ backgroundColor: "#eff8f1" });
+  expect(screen.getByRole("button", { name: "Document background: Mint" })).toBeInTheDocument();
   expect(notepadDocument("Notes", "<p>Test</p>", "#eff8f1")).toContain("background:#eff8f1");
+});
+
+test("inserted tables carry a header row with one heading per column", async () => {
+  const exec = jest.fn(() => true);
+  Object.defineProperty(document, "execCommand", { value: exec, configurable: true });
+  render(<SuperAdminNotepad userId="alice" />);
+  await act(async () => {});
+  fireEvent.click(screen.getByRole("button", { name: "Insert table" }));
+  fireEvent.change(screen.getByLabelText("Columns"), { target: { value: "4" } });
+  fireEvent.click(screen.getByRole("button", { name: "Add table" }));
+  const html = (exec.mock.calls as unknown as [string, boolean, string][]).find(([name]) => name === "insertHTML")![2];
+  const table = new DOMParser().parseFromString(html, "text/html").querySelector("table")!;
+  expect([...table.querySelectorAll("thead th")].map(th => th.textContent)).toEqual(["Column 1", "Column 2", "Column 3", "Column 4"]);
+  expect(table.querySelectorAll("tbody tr")).toHaveLength(3);
+});
+
+test("the tools panel collapses and expands while words, zoom and save status stay visible", async () => {
+  render(<SuperAdminNotepad userId="alice" />);
+  await act(async () => {});
+  const toggle = screen.getByRole("button", { name: "Tools" });
+  expect(toggle).toHaveAttribute("aria-expanded", "true");
+  fireEvent.click(toggle);
+  expect(toggle).toHaveAttribute("aria-expanded", "false");
+  expect(screen.queryByRole("button", { name: "Insert table" })).toBeNull();
+  expect(screen.getByRole("button", { name: "Zoom in" })).toBeVisible();
+  expect(screen.getByText(/\d+ words/)).toBeVisible();
+  expect(localStorage.getItem("masterclass:notepad-tools")).toBe("closed");
+  fireEvent.click(toggle);
+  expect(screen.getByRole("button", { name: "Insert table" })).toBeVisible();
 });

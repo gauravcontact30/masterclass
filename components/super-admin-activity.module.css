@@ -41,6 +41,8 @@
 @media (max-width: 1200px) { .breakdowns { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 620px) { .breakdowns { grid-template-columns: 1fr; } }
 .breakdown h2 { display: flex; align-items: center; gap: 6px; }
+.breakdownHead { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 6px; padding: 0 8px 6px; border-bottom: 1px solid #e8e6dc; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #5e5d59; }
+.breakdown[data-tone] .breakdownHead { color: color-mix(in srgb, var(--c) 70%, #6c6b63); }
 .breakdown ol { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
 .breakdown li { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 30px; padding: 4px 8px; border-radius: 8px; overflow: hidden; }
 .barFill { position: absolute; inset: 0 auto 0 0; background: #f3dccd; opacity: .7; border-radius: 8px; }

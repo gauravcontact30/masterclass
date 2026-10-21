@@ -44,4 +44,5 @@
 .detail li { display: flex; justify-content: space-between; gap: 8px; padding: 5px 0; }
 .detail li span { overflow-wrap: anywhere; }
 .detail li strong { white-space: nowrap; }
+.detail li.listHead { padding: 0 0 5px; border-bottom: 1px solid #e0e7df; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #5e5d59; }
 @media(max-width: 420px) { .hours { grid-template-columns: repeat(4, minmax(0, 1fr)); } }

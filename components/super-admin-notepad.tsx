@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type ComponentProps } from "react";
-import { Bold, Italic, Underline, Strikethrough, Subscript, Superscript, Undo2, Redo2, Scissors, Copy, ClipboardPaste, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, AlignJustify, IndentIncrease, IndentDecrease, Eraser, Highlighter, Minus, Unlink, Link2, FilePlus2, Save, FileDown, Printer, ImagePlus, Table2, FilePlus, Download, X, Check, Type, Heading, ALargeSmall, Palette, PaintBucket, Star, Files, Trash2, GitBranch, ZoomIn, ZoomOut, Upload, type LucideIcon } from "lucide-react";
+import { Bold, Italic, Underline, Strikethrough, Subscript, Superscript, Undo2, Redo2, Scissors, Copy, ClipboardPaste, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, AlignJustify, IndentIncrease, IndentDecrease, Eraser, Highlighter, Minus, Unlink, Link2, FilePlus2, Save, FileDown, Printer, ImagePlus, Table2, FilePlus, Download, X, Check, Type, Heading, ALargeSmall, PaintBucket, Star, Files, Trash2, GitBranch, ZoomIn, ZoomOut, Upload, type LucideIcon, ChevronDown, Wrench } from "lucide-react";
 import { sanitizeNotepadHtml, notepadDocument, PAPER_COLORS } from "@/lib/notepad";
 import { newNotepadFile, readNotepadCollection, workflowHtml, type NotepadFile } from "@/lib/notepad-library";
 import { NotepadLibrary } from "./notepad-library";
+import { PaperPicker } from "./notepad-paper-picker";
 import styles from "./super-admin-notepad.module.css";
 
 const COMMAND_ICONS: Record<string, LucideIcon> = { bold: Bold, italic: Italic, underline: Underline, strikeThrough: Strikethrough, subscript: Subscript, superscript: Superscript, undo: Undo2, redo: Redo2, insertUnorderedList: List, insertOrderedList: ListOrdered, justifyLeft: AlignLeft, justifyCenter: AlignCenter, justifyRight: AlignRight, justifyFull: AlignJustify, indent: IndentIncrease, outdent: IndentDecrease, removeFormat: Eraser, hiliteColor: Highlighter, insertHTML: FilePlus, insertHorizontalRule: Minus, unlink: Unlink };
@@ -33,6 +34,9 @@ export function SuperAdminNotepad({ userId }: { userId: string }) {
   const [diagramType, setDiagramType] = useState("workflow");
   const [diagramText, setDiagramText] = useState("Plan\nReview\nPublish");
   const [zoom, setZoom] = useState(100);
+  // Tools panel open/closed is a per-viewer convenience, so it is remembered in this browser only.
+  const [toolsOpen, setToolsOpen] = useState(true);
+  const toggleTools = () => setToolsOpen(value => { try { localStorage.setItem("masterclass:notepad-tools", value ? "closed" : "open"); } catch {} return !value; });
   const fileInput = useRef<HTMLInputElement>(null);
   const imageInput = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("Untitled document");
@@ -92,6 +96,7 @@ export function SuperAdminNotepad({ userId }: { userId: string }) {
     let cancelled = false;
     queueMicrotask(() => {
     if (cancelled) return;
+    try { if (localStorage.getItem("masterclass:notepad-tools") === "closed") setToolsOpen(false); } catch {}
     try {
       storedRef.current = localStorage.getItem(key);
       const collection = readNotepadCollection(storedRef.current);
@@ -208,7 +213,12 @@ export function SuperAdminNotepad({ userId }: { userId: string }) {
     </div>
     <input hidden aria-label="Import document file" ref={fileInput} type="file" accept=".txt,.html,.htm,.md,.json" onChange={e => { void openFile(e.target.files?.[0]); e.target.value = ""; }} />
     <input hidden ref={imageInput} type="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple onChange={e => { void images(e.target.files); e.target.value = ""; }} />
-    <div className={styles.ribbon} aria-label="Document formatting">
+    <div className={styles.tools}>
+    <div className={styles.toolsHead}>
+      <button type="button" className={styles.toolsToggle} aria-expanded={toolsOpen} aria-controls="notepad-tools" onClick={toggleTools}><Wrench size={15} aria-hidden="true"/><span>Tools</span><ChevronDown size={15} aria-hidden="true"/></button>
+      <div className={styles.status}><span>{words} words</span><span className={styles.zoom}><IconButton label="Zoom out" icon={ZoomOut} disabled={zoom <= 60} onClick={() => setZoom(value => value - 10)}/>{zoom}%<IconButton label="Zoom in" icon={ZoomIn} disabled={zoom >= 160} onClick={() => setZoom(value => value + 10)}/></span><span role="status">{status}</span><span className={styles.shortcut}>Ctrl/⌘+S saves draft · Shift+Ctrl/⌘+S exports</span></div>
+    </div>
+    <div id="notepad-tools" className={styles.ribbon} role="group" aria-label="Document formatting" hidden={!toolsOpen}>
       <div className={styles.group} aria-label="Clipboard and history">{tool("Undo", "undo")}{tool("Redo", "redo")}{(["cut", "copy", "paste"] as const).map(action => <IconButton key={action} label={action[0].toUpperCase() + action.slice(1)} icon={action === "cut" ? Scissors : action === "copy" ? Copy : ClipboardPaste} onMouseDown={e => e.preventDefault()} onClick={() => void clipboard(action)} />)}</div>
       <div className={styles.group}>
         <label className={styles.iconField} data-tooltip="Paragraph style"><Heading size={18} aria-hidden="true"/><select aria-label="Paragraph style" defaultValue="p" onChange={e => command("formatBlock", e.target.value)}>{["p", "h1", "h2", "h3", "blockquote", "pre"].map((tag, i) => <option key={tag} value={tag}>{["Normal text", "Heading 1", "Heading 2", "Heading 3", "Quote", "Code"][i]}</option>)}</select></label>
@@ -232,7 +242,8 @@ export function SuperAdminNotepad({ userId }: { userId: string }) {
         <IconButton type="button" label="Insert link" icon={Link2} onMouseDown={e => e.preventDefault()} onClick={() => { const url = window.prompt("Link URL (https://…)"); if (url && /^https?:\/\//i.test(url)) command("createLink", url); else if (url) setError("Use an http:// or https:// link."); }} />
         {tool("Remove link", "unlink")}
       </div>
-      <div className={styles.group} role="group" aria-label="Document background color"><Palette size={17} aria-hidden="true"/>{PAPER_COLORS.map(color => <IconButton key={color.value} label={`Document background: ${color.name}`} icon={PaintBucket} aria-pressed={background === color.value} style={{ backgroundColor: color.value }} onClick={() => { backgroundRef.current = color.value; setBackground(color.value); changed(); }} />)}</div>
+      <div className={styles.group}><PaperPicker value={background} onChange={color => { backgroundRef.current = color; setBackground(color); changed(); }}/></div>
+    </div>
     </div>
     {clearOpen && <div className={styles.options} role="alertdialog" aria-label="Clear document confirmation"><p>Clear all content in this document? A recovery copy will be saved first.</p><IconButton label="Confirm clear document" icon={Check} onClick={() => {
       if (!persist()) return;
@@ -242,11 +253,10 @@ export function SuperAdminNotepad({ userId }: { userId: string }) {
       editor.current!.innerHTML = ""; selection.current = null; changed(); persist(); setClearOpen(false);
     }} /><IconButton label="Cancel clear document" icon={X} onClick={() => setClearOpen(false)} /></div>}
     {diagramOpen && <form className={styles.options} aria-label="Workflow and diagram builder" onSubmit={e => { e.preventDefault(); command("insertHTML", workflowHtml(diagramText, diagramType === "decision")); setDiagramOpen(false); }}><label>Diagram type<select value={diagramType} onChange={e => { setDiagramType(e.target.value); setDiagramText(e.target.value === "decision" ? "Ready to publish?\nPublish\nRevise" : "Plan\nReview\nPublish"); }}><option value="workflow">Workflow</option><option value="decision">Decision diagram</option></select></label><label>{diagramType === "decision" ? "Decision, yes outcome, no outcome (one per line)" : "Workflow steps (one per line, up to 12)"}<textarea aria-label="Diagram contents" rows={4} maxLength={2000} required value={diagramText} onChange={e => setDiagramText(e.target.value)}/></label><IconButton type="submit" label="Insert diagram" icon={Check}/><IconButton label="Cancel diagram" icon={X} onClick={() => setDiagramOpen(false)}/><small>Text and diagram cells remain editable. HTML and Notepad JSON exports preserve them.</small></form>}
-    {tableOpen && <form className={styles.options} onSubmit={e => { e.preventDefault(); command("insertHTML", `<table><tbody>${Array.from({ length: rows }, () => `<tr>${"<td><br></td>".repeat(columns)}</tr>`).join("")}</tbody></table><p><br></p>`); setTableOpen(false); }}><label>Rows<input type="number" min="1" max="20" required value={rows} onChange={e => setRows(Number(e.target.value))} /></label><label>Columns<input type="number" min="1" max="10" required value={columns} onChange={e => setColumns(Number(e.target.value))} /></label><IconButton type="submit" label="Add table" icon={Check} /><IconButton type="button" label="Cancel" icon={X} onClick={() => setTableOpen(false)} /></form>}
+    {tableOpen && <form className={styles.options} onSubmit={e => { e.preventDefault(); command("insertHTML", `<table><thead><tr>${Array.from({ length: columns }, (_, index) => `<th>Column ${index + 1}</th>`).join("")}</tr></thead><tbody>${Array.from({ length: rows }, () => `<tr>${"<td><br></td>".repeat(columns)}</tr>`).join("")}</tbody></table><p><br></p>`); setTableOpen(false); }}><label>Body rows<input type="number" min="1" max="20" required value={rows} onChange={e => setRows(Number(e.target.value))} /></label><label>Columns<input type="number" min="1" max="10" required value={columns} onChange={e => setColumns(Number(e.target.value))} /></label><IconButton type="submit" label="Add table" icon={Check} /><IconButton type="button" label="Cancel" icon={X} onClick={() => setTableOpen(false)} /></form>}
     {saveAs && <form className={styles.options} aria-label="Save as" onSubmit={e => { e.preventDefault(); download(); }}><label>Document / file name<input aria-label="Export document name" maxLength={120} required value={exportName} onChange={e => setExportName(e.target.value)}/></label><label>File format<select value={format} onChange={e => setFormat(e.target.value)}><option value="html">HTML — formatting, tables and images</option><option value="json">Notepad JSON - reopen with all content</option><option value="txt">Plain text — text only</option></select></label><IconButton type="submit" label="Download file" icon={Download} /><IconButton type="button" label="Cancel" icon={X} onClick={() => setSaveAs(false)} /><small>{exportCopy ? "Creates a separate saved document in your library and downloads it." : "Downloads this document. HTML / Notepad JSON retain embedded images, tables and diagrams; plain text omits them."} Use Print / PDF for a PDF copy.</small></form>}
     {error && <div className={styles.error} role="alert">{error}<IconButton type="button" label="Dismiss" icon={X} onClick={() => setError("")} /></div>}
     <div className={styles.canvas}><div ref={editor} className={styles.paper} style={{ backgroundColor: background, zoom: zoom / 100 }} contentEditable suppressContentEditableWarning role="textbox" aria-label="Document content" aria-multiline="true" spellCheck onInput={changed} onKeyDown={e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") { e.preventDefault(); if (e.shiftKey) openExport(true); else persist(); } }} onPaste={e => { e.preventDefault(); const html = e.clipboardData.getData("text/html"); if (html) command("insertHTML", sanitizeNotepadHtml(html)); else command("insertText", e.clipboardData.getData("text/plain")); }} onDrop={e => { e.preventDefault(); setError("Use Insert images or Import document to add files; paste text with Ctrl+V / ⌘V."); }} /></div>
-    <footer className={styles.status}><span>{words} words</span><span className={styles.zoom}><IconButton label="Zoom out" icon={ZoomOut} disabled={zoom <= 60} onClick={() => setZoom(value => value - 10)}/>{zoom}%<IconButton label="Zoom in" icon={ZoomIn} disabled={zoom >= 160} onClick={() => setZoom(value => value + 10)}/></span><span role="status">{status}</span><span>Ctrl/⌘+S saves draft · Shift+Ctrl/⌘+S exports</span></footer>
     </div>
   </section>;
 }
