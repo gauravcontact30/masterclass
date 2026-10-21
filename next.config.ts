@@ -20,6 +20,10 @@ const nextConfig: NextConfig = {
   // AVIF first (smallest), WebP as the fallback, for every next/image.
   images: { formats: ["image/avif", "image/webp"], qualities: [75, 85], minimumCacheTTL: 60 * 60 * 24 * 30 },
   experimental: {
+    // Group CSS per route by cost instead of merging stylesheets app-wide: the default merged the dashboard's and
+    // Super Admin's styles into chunks the landing page had to download before first paint. Graph mode is
+    // Turbopack-only, so webpack (`next dev --webpack`) and next/jest keep the default.
+    cssChunking: process.env.TURBOPACK ? "graph" : true,
     optimizePackageImports: [
       "lucide-react",
       "@upstash/redis",

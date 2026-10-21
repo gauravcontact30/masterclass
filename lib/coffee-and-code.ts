@@ -1,4 +1,3 @@
-import { learningImageUrl } from "./learning-image";
 
 /*
  * Coffee & Code: short, practical engineering articles in the Learning Dashboard. Each post is a list of typed
@@ -13,7 +12,8 @@ export type BlogLanguage = "typescript" | "tsx" | "javascript" | "python" | "bas
 export type BlogBlock =
   | { kind: "paragraph"; text: string }
   | { kind: "heading"; text: string }
-  | { kind: "code"; language: BlogLanguage; code: string; caption?: string }
+  /** `file`: the name shown in the code editor's tab; derived from the caption when absent (see articleFiles). */
+  | { kind: "code"; language: BlogLanguage; code: string; caption?: string; file?: string }
   | { kind: "qa"; question: string; answer: string }
   | { kind: "image"; src: string | null; alt: string; caption: string }
   | { kind: "callout"; tone: "tip" | "warning" | "note"; text: string }
@@ -21,14 +21,17 @@ export type BlogBlock =
   | { kind: "quote"; text: string; cite?: string };
 export type BlogPost = {
   slug: string; title: string; dek: string; topic: string; techId: string; tone: BlogTone;
+  /** Card cover painted through the AI Gateway (scripts/generate-lesson-covers.ts); the tone shows without one. */
+  cover?: string;
   author: string; published: string; minutes: number; tags: string[]; blocks: BlogBlock[];
 };
 
-const cover = (techId: string) => learningImageUrl("topics", ["interview", techId]);
+// Covers painted through the AI Gateway (scripts/generate-lesson-covers.ts coffee:<slug>), shown on the cards and in the article.
+const COVERS = "/images/landing/coffee";
 
 export const BLOG_POSTS: BlogPost[] = [
   {
-    slug: "useeffect-is-not-a-lifecycle", title: "useEffect is not a lifecycle method", topic: "React", techId: "react", tone: "sky",
+    slug: "useeffect-is-not-a-lifecycle", title: "useEffect is not a lifecycle method", topic: "React", techId: "react", tone: "sky", cover: `${COVERS}/useeffect-is-not-a-lifecycle.webp`,
     dek: "Most bugs with useEffect come from using it to compute values. Effects are for syncing with things outside React.",
     author: "MasterClass team", published: "2026-10-14", minutes: 6, tags: ["React", "Hooks", "Performance"],
     blocks: [
@@ -42,11 +45,11 @@ export const BLOG_POSTS: BlogPost[] = [
       { kind: "list", items: ["Subscribing to a browser API such as resize or online events", "Connecting to a WebSocket or a third-party widget", "Sending analytics after something appeared on screen"] },
       { kind: "qa", question: "Should I fetch data in useEffect?", answer: "You can, but you then handle race conditions, caching and loading states yourself. In Next.js, fetch in a Server Component; in a client app, use a data library such as TanStack Query." },
       { kind: "qa", question: "Why does my effect run twice in development?", answer: "React Strict Mode mounts, unmounts and remounts components in development to check that every effect cleans up after itself. If the double run causes a bug, the cleanup function is missing." },
-      { kind: "image", src: cover("react"), alt: "Illustration of React components exchanging data", caption: "Render computes what to show; effects only reach outside React." },
+      { kind: "image", src: `${COVERS}/useeffect-is-not-a-lifecycle.webp`, alt: "Illustration of React components exchanging data", caption: "Render computes what to show; effects only reach outside React." },
     ],
   },
   {
-    slug: "server-and-client-components", title: "Where to put 'use client' in a Next.js app", topic: "Next.js", techId: "nextjs", tone: "mint",
+    slug: "server-and-client-components", title: "Where to put 'use client' in a Next.js app", topic: "Next.js", techId: "nextjs", tone: "mint", cover: `${COVERS}/server-and-client-components.webp`,
     dek: "Every component is a Server Component until you opt out. Put the boundary as low in the tree as you can.",
     author: "MasterClass team", published: "2026-10-12", minutes: 7, tags: ["Next.js", "React", "Architecture"],
     blocks: [
@@ -58,11 +61,11 @@ export const BLOG_POSTS: BlogPost[] = [
       { kind: "callout", tone: "warning", text: "Props passed from a Server Component to a Client Component must be serializable: plain data, not functions or class instances." },
       { kind: "qa", question: "Can a Client Component render a Server Component?", answer: "Not by importing it, but it can receive one as children. The server renders it and passes the result through the client component." },
       { kind: "qa", question: "Does 'use client' mean the component skips server rendering?", answer: "No. Client Components are still rendered to HTML on the server for the first load; the directive means their code is also sent to the browser to hydrate." },
-      { kind: "image", src: cover("nextjs"), alt: "Illustration of a Next.js page split between server and browser", caption: "The server does the data work; the browser only gets what must be interactive." },
+      { kind: "image", src: `${COVERS}/server-and-client-components.webp`, alt: "Illustration of a Next.js page split between server and browser", caption: "The server does the data work; the browser only gets what must be interactive." },
     ],
   },
   {
-    slug: "closures-in-five-minutes", title: "JavaScript closures in five minutes", topic: "JavaScript", techId: "javascript", tone: "butter",
+    slug: "closures-in-five-minutes", title: "JavaScript closures in five minutes", topic: "JavaScript", techId: "javascript", tone: "butter", cover: `${COVERS}/closures-in-five-minutes.webp`,
     dek: "A closure is a function that remembers the variables from where it was created. Here is why that matters.",
     author: "MasterClass team", published: "2026-10-10", minutes: 5, tags: ["JavaScript", "Fundamentals", "Interview"],
     blocks: [
@@ -73,11 +76,11 @@ export const BLOG_POSTS: BlogPost[] = [
       { kind: "qa", question: "Why does the var loop print 3 three times?", answer: "var is function-scoped, so all three callbacks close over the same i. By the time they run, the loop has finished and i is 3. let gives each iteration its own binding." },
       { kind: "qa", question: "Where do closures show up in real code?", answer: "Event handlers, React hooks (a stale value in useEffect is a closure over an old render), memoization helpers, and module patterns that keep state private." },
       { kind: "callout", tone: "note", text: "A closure keeps the whole variable alive, not a copy of its value. Change the variable later and the function sees the new value." },
-      { kind: "image", src: cover("javascript"), alt: "Illustration of nested JavaScript scopes", caption: "Inner functions carry their surrounding scope with them." },
+      { kind: "image", src: `${COVERS}/closures-in-five-minutes.webp`, alt: "Illustration of nested JavaScript scopes", caption: "Inner functions carry their surrounding scope with them." },
     ],
   },
   {
-    slug: "python-async-without-confusion", title: "Python async and await without the confusion", topic: "Python", techId: "python", tone: "lavender",
+    slug: "python-async-without-confusion", title: "Python async and await without the confusion", topic: "Python", techId: "python", tone: "lavender", cover: `${COVERS}/python-async-without-confusion.webp`,
     dek: "async code is fast only when tasks wait at the same time. asyncio.gather is how you make that happen.",
     author: "MasterClass team", published: "2026-10-08", minutes: 6, tags: ["Python", "asyncio", "Performance"],
     blocks: [
@@ -87,11 +90,11 @@ export const BLOG_POSTS: BlogPost[] = [
       { kind: "callout", tone: "warning", text: "Calling a blocking function such as time.sleep or a synchronous HTTP client inside async code freezes the whole event loop. Use the async version, or asyncio.to_thread." },
       { kind: "qa", question: "When should I use threads or processes instead?", answer: "Use asyncio for many slow I/O waits, threads for blocking libraries you cannot change, and processes (multiprocessing) for CPU-heavy work, which async does not speed up." },
       { kind: "qa", question: "What does gather do if one task fails?", answer: "By default the first exception is raised from gather and the other tasks keep running. Pass return_exceptions=True to get exceptions back as results instead." },
-      { kind: "image", src: cover("python"), alt: "Illustration of Python tasks running on an event loop", caption: "One event loop, many waits in flight." },
+      { kind: "image", src: `${COVERS}/python-async-without-confusion.webp`, alt: "Illustration of Python tasks running on an event loop", caption: "One event loop, many waits in flight." },
     ],
   },
   {
-    slug: "rebase-or-merge", title: "Git rebase or merge? A rule you can remember", topic: "Git", techId: "git", tone: "peach",
+    slug: "rebase-or-merge", title: "Git rebase or merge? A rule you can remember", topic: "Git", techId: "git", tone: "peach", cover: `${COVERS}/rebase-or-merge.webp`,
     dek: "Rebase your own unshared work to keep history clean; merge shared branches so nobody's history is rewritten.",
     author: "MasterClass team", published: "2026-10-06", minutes: 5, tags: ["Git", "Workflow", "Teamwork"],
     blocks: [
@@ -102,11 +105,11 @@ export const BLOG_POSTS: BlogPost[] = [
       { kind: "qa", question: "Why --force-with-lease instead of --force?", answer: "It refuses to overwrite the remote branch if someone else pushed to it since your last fetch, so you cannot silently delete their work." },
       { kind: "qa", question: "What does interactive rebase add?", answer: "git rebase -i lets you squash, reorder, reword or drop commits before you open a pull request, so reviewers see a tidy story." },
       { kind: "list", items: ["Your own branch, not pushed or not shared: rebase", "A branch others build on: merge", "Cleaning up before review: interactive rebase"] },
-      { kind: "image", src: cover("git"), alt: "Illustration of Git branches being combined", caption: "Same changes, two different histories." },
+      { kind: "image", src: `${COVERS}/rebase-or-merge.webp`, alt: "Illustration of Git branches being combined", caption: "Same changes, two different histories." },
     ],
   },
   {
-    slug: "typescript-narrowing", title: "Let TypeScript prove it: narrowing in practice", topic: "TypeScript", techId: "typescript", tone: "rose",
+    slug: "typescript-narrowing", title: "Let TypeScript prove it: narrowing in practice", topic: "TypeScript", techId: "typescript", tone: "rose", cover: `${COVERS}/typescript-narrowing.webp`,
     dek: "Instead of casting with 'as', write checks the compiler understands. Then the types follow your logic.",
     author: "MasterClass team", published: "2026-10-04", minutes: 6, tags: ["TypeScript", "Types", "Safety"],
     blocks: [
@@ -118,11 +121,11 @@ export const BLOG_POSTS: BlogPost[] = [
       { kind: "qa", question: "When is 'as' acceptable?", answer: "When you know more than the compiler can, for example right after validating data with a schema library. Even then, a type guard function is safer because it does the check." },
       { kind: "qa", question: "What is a type guard?", answer: "A function whose return type is 'value is T'. When it returns true, TypeScript narrows the argument to T in the calling code." },
       { kind: "callout", tone: "tip", text: "Validate external data (API responses, form input) at the boundary with a schema, then let narrowing carry the types through the rest of the code." },
-      { kind: "image", src: cover("typescript"), alt: "Illustration of types being checked", caption: "Checks the compiler can follow beat casts it has to trust." },
+      { kind: "image", src: `${COVERS}/typescript-narrowing.webp`, alt: "Illustration of types being checked", caption: "Checks the compiler can follow beat casts it has to trust." },
     ],
   },
   {
-    slug: "rate-limiter-token-bucket", title: "Design a rate limiter with a token bucket", topic: "System design", techId: "system-design", tone: "sage",
+    slug: "rate-limiter-token-bucket", title: "Design a rate limiter with a token bucket", topic: "System design", techId: "system-design", tone: "sage", cover: `${COVERS}/rate-limiter-token-bucket.webp`,
     dek: "A classic interview question with a small, real implementation: refill tokens over time, spend one per request.",
     author: "MasterClass team", published: "2026-10-02", minutes: 8, tags: ["System design", "Interview", "APIs"],
     blocks: [
@@ -134,11 +137,11 @@ export const BLOG_POSTS: BlogPost[] = [
       { kind: "qa", question: "Token bucket or fixed window?", answer: "A fixed window (100 requests per minute) is simpler but allows a double burst at the window edge. The token bucket smooths that out at the cost of storing a timestamp per client." },
       { kind: "qa", question: "What should the client see when limited?", answer: "HTTP 429 Too Many Requests with a Retry-After header, so well-behaved clients know when to try again." },
       { kind: "callout", tone: "note", text: "Key the bucket by what you want to limit: an API key, a signed-in user id, or an IP address for anonymous traffic." },
-      { kind: "image", src: cover("system-design"), alt: "Illustration of requests flowing through a rate limiter", caption: "Bursts are absorbed; the average rate holds." },
+      { kind: "image", src: `${COVERS}/rate-limiter-token-bucket.webp`, alt: "Illustration of requests flowing through a rate limiter", caption: "Bursts are absorbed; the average rate holds." },
     ],
   },
   {
-    slug: "redis-cache-aside", title: "Caching with Redis: the cache-aside pattern", topic: "Redis", techId: "redis", tone: "sand",
+    slug: "redis-cache-aside", title: "Caching with Redis: the cache-aside pattern", topic: "Redis", techId: "redis", tone: "sand", cover: `${COVERS}/redis-cache-aside.webp`,
     dek: "Read from the cache first, fall back to the database, then store the result with an expiry. Simple, and it scales.",
     author: "MasterClass team", published: "2026-09-30", minutes: 6, tags: ["Redis", "Caching", "Backend"],
     blocks: [
@@ -150,10 +153,36 @@ export const BLOG_POSTS: BlogPost[] = [
       { kind: "qa", question: "What is a cache stampede?", answer: "When a popular key expires, many requests miss at once and all hit the database. Add a little random jitter to expiry times, or let one request rebuild the value while others wait briefly." },
       { kind: "qa", question: "What should not be cached?", answer: "Data that must be exact at every read, such as account balances, and anything personal unless the key includes the user and the expiry is short." },
       { kind: "callout", tone: "tip", text: "Always set an expiry. A cache without one slowly turns into a second, out-of-date database." },
-      { kind: "image", src: cover("redis"), alt: "Illustration of an application reading from a cache before the database", caption: "Hit the cache first; fall back to the source of truth." },
+      { kind: "image", src: `${COVERS}/redis-cache-aside.webp`, alt: "Illustration of an application reading from a cache before the database", caption: "Hit the cache first; fall back to the source of truth." },
     ],
   },
 ];
+
+const EXTENSION: Record<BlogLanguage, string> = { typescript: "ts", tsx: "tsx", javascript: "js", python: "py", bash: "sh", json: "json" };
+/**
+ * An article's code blocks as one small project for the code editor: each block becomes a file, named by its
+ * `file`, else a file name in its caption ("add-to-cart.tsx is the only client code…"), else the caption's lead
+ * word ("Before: …" → before.tsx), else example-<n>. Names are unique; `paths[i]` is block i's file (or null).
+ */
+export function articleFiles(post: Pick<BlogPost, "blocks">) {
+  const used = new Set<string>();
+  const files: { path: string; code: string; note: string }[] = [];
+  let count = 0;
+  const paths = post.blocks.map(block => {
+    if (block.kind !== "code") return null;
+    count++;
+    const ext = EXTENSION[block.language];
+    const named = block.caption?.match(/\b[\w-]+\.(?:tsx?|jsx?|py|sh|json)\b/)?.[0];
+    const lead = block.caption?.match(/^([A-Za-z][\w -]{0,18}):/)?.[1].trim().toLowerCase().replace(/\s+/g, "-");
+    const base = block.file ?? named ?? (lead ? `${lead}.${ext}` : `example-${count}.${ext}`);
+    let path = base;
+    for (let n = 2; used.has(path); n++) path = base.replace(/(\.[a-z]+)$/, `-${n}$1`);
+    used.add(path);
+    files.push({ path, code: block.code, note: block.caption ?? "" });
+    return path;
+  });
+  return { files, paths };
+}
 
 export const BLOG_TOPICS = [...new Set(BLOG_POSTS.map(post => post.topic))];
 export const blogPost = (slug: string) => BLOG_POSTS.find(post => post.slug === slug) ?? null;
@@ -161,6 +190,6 @@ export const blogPost = (slug: string) => BLOG_POSTS.find(post => post.slug === 
 export const blogPreview = (post: BlogPost) => post.blocks.find((block): block is Extract<BlogBlock, { kind: "paragraph" }> => block.kind === "paragraph")?.text ?? post.dek;
 
 /** What the landing page teases: card fields only, never the article bodies. */
-export type BlogTeaser = Pick<BlogPost, "slug" | "title" | "dek" | "topic" | "tone" | "minutes">;
+export type BlogTeaser = Pick<BlogPost, "slug" | "title" | "dek" | "topic" | "tone" | "minutes" | "cover">;
 export const blogTeasers = (count = 3): BlogTeaser[] => [...BLOG_POSTS].sort((a, b) => b.published.localeCompare(a.published)).slice(0, count)
-  .map(({ slug, title, dek, topic, tone, minutes }) => ({ slug, title, dek, topic, tone, minutes }));
+  .map(({ slug, title, dek, topic, tone, minutes, cover }) => ({ slug, title, dek, topic, tone, minutes, cover }));

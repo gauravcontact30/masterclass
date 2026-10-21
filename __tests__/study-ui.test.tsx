@@ -67,7 +67,8 @@ test("membership requires preparation before checkout and provides monthly/yearl
 test("landing learning sections remain available and pricing follows the billing toggle", async () => {
   const user = userEvent.setup();
   render(<LandingPage prices={{monthly:299,yearly:2999,enabled:true}} />);
-  expect(screen.getByRole("heading", {name:/How real systems and AI agents get work done/})).toBeVisible();
+  // Lower sections are split into their own chunks (next/dynamic), so they arrive a tick after the first render.
+  expect(await screen.findByRole("heading", {name:/How real systems and AI agents get work done/})).toBeVisible();
   await user.click(screen.getByRole("button", { name: /yearly/i }));
   expect(screen.getByText(/2,999/, {selector:"p.price b"})).toBeVisible();
   expect(screen.getByRole("link", {name:"Subscribe now"})).toHaveAttribute("href", "/subscribe?plan=yearly");

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { api, HttpError, jsonBody, sameOrigin } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rate-limit";
-import { checkDocumentation, importDocumentation, listDocumentationUpdates, readDocumentation } from "@/lib/server/documentation-updates";
+import { cachedDocumentation, checkDocumentation, importDocumentation, listDocumentationUpdates } from "@/lib/server/documentation-updates";
 
 export const maxDuration = 60;
 const idSchema = z.string().regex(/^[a-z0-9][a-z0-9-]{0,79}$/);
@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   return api(async () => {
     const id = new URL(request.url).searchParams.get("id");
     if (id) {
-      const record = await readDocumentation(idSchema.parse(id));
+      const record = await cachedDocumentation(idSchema.parse(id));
       return Response.json({ published: record?.published ?? null, pending: record?.pending ?? null, importedAt: record?.importedAt ?? null });
     }
     return Response.json({ updates: await listDocumentationUpdates() });

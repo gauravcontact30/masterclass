@@ -98,7 +98,7 @@ export default function WelcomeModalPanel({ open, onOpenChange, prices, onCurren
             <div><strong>{hi ? "1-दिन का निःशुल्क ट्रायल" : "1-day free trial"}</strong><span>{hi ? "पहले साइन-इन से शुरू · फिर कोई प्लान चुनें" : "Starts at your first sign-in · then pick a plan"}</span></div>
           </div>
 
-          {prices && onCurrency && prices.currency && <CurrencyPicker value={prices.currency} options={prices.currencies} onChange={onCurrency} hi={hi} />}
+          {prices && onCurrency && prices.currency && <CurrencyPicker value={prices.currency} options={prices.currencies} local={prices.local} onChange={onCurrency} hi={hi} />}
           <div className={styles.plans} role="radiogroup" aria-label={hi ? "प्लान" : "Plans"}>
             {(["monthly", "yearly"] as const).map(value => <button key={value} type="button" role="radio" aria-checked={cycle === value} className={styles.plan} onClick={() => setCycle(value)}>
               <span className={styles.planName}>{value === "monthly" ? (hi ? "मासिक" : "Monthly") : (hi ? "वार्षिक" : "Yearly")}{value === "yearly" && saving > 0 && <b>{hi ? `${saving}% बचत` : `Save ${saving}%`}</b>}</span>

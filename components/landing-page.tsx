@@ -9,45 +9,52 @@
  */
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { loadPrices } from "./currency-picker";
-import { LandingFeatures } from "./landing-features";
 import type { Currency } from "@/lib/pricing";
 import { LibraryBig } from "lucide-react";
-import { LibraryLedger } from "./library-ledger";
 import { landingFont } from "./landing-fonts";
 import { LandingOverview } from "./landing-overview";
 import { useReveal } from "./use-reveal";
-import { LandingFooter } from "./landing-footer";
 import { LearningSlot } from "./learning-slot";
-import { LandingApiDocs, LandingTechy } from "./landing-pro-sections";
 import type { LandingProPreview } from "@/lib/landing-pro-preview";
 import type { LandingLibrary } from "@/lib/landing-library";
 import type { DailyWord, LockedTeaser, PulseCard } from "@/lib/landing-daily-types";
 import home from "./landing-home.module.css";
 import { LandingSlider } from "./landing-slider";
-import { LandingAiPulse } from "./landing-ai-pulse";
-import { LandingVocabulary } from "./landing-vocabulary";
 import { LandingNavbar } from "./landing-navbar";
 import { WelcomeModal } from "./welcome-modal";
 import { SubjectRibbon } from "./subject-ribbon";
-import { StudentReviews } from "./student-reviews";
-import { LandingWorkflows } from "./landing-workflows";
-import { LandingInterview } from "./landing-interview";
-import { LandingComparisons } from "./landing-comparisons";
-import { LandingTechDocs } from "./landing-tech-docs";
 import type { OfficialTechDocs } from "@/lib/tech-docs-official";
 import { LandingMembership } from "./landing-membership";
 import { LandingPathFinder } from "./landing-path-finder";
-import { LandingCoffee } from "./landing-coffee";
 import type { BlogTeaser } from "@/lib/coffee-and-code";
 import { ContentProvider } from "./content-editing";
 import type { ContentOverrides } from "@/lib/content-overrides";
 import frame from "./landing-section.module.css";
 import { useLanguage } from "./language-provider";
 import styles from "./learn-landing.module.css";
+import { LandingInterview } from "./landing-interview";
+import { LandingAiPulse } from "./landing-ai-pulse";
+import { LandingFeatures } from "./landing-features";
+
+// Sections below the first screens are split into their own chunks. They still render on the server (the HTML and
+// what search engines read are unchanged); in the browser each hydrates on its own, so no single long task blocks input.
+// The interview, AI pulse and feature sections stay in the main chunk: the others share their carousel controls and
+// accordions, and a shared module imported only by split chunks is copied into each of them.
+const LibraryLedger = dynamic(() => import("./library-ledger").then(m => m.LibraryLedger));
+const LandingFooter = dynamic(() => import("./landing-footer").then(m => m.LandingFooter));
+const LandingVocabulary = dynamic(() => import("./landing-vocabulary").then(m => m.LandingVocabulary));
+const StudentReviews = dynamic(() => import("./student-reviews").then(m => m.StudentReviews));
+const LandingWorkflows = dynamic(() => import("./landing-workflows").then(m => m.LandingWorkflows));
+const LandingComparisons = dynamic(() => import("./landing-comparisons").then(m => m.LandingComparisons));
+const LandingTechDocs = dynamic(() => import("./landing-tech-docs").then(m => m.LandingTechDocs));
+const LandingCoffee = dynamic(() => import("./landing-coffee").then(m => m.LandingCoffee));
+const LandingApiDocs = dynamic(() => import("./landing-pro-sections").then(m => m.LandingApiDocs));
+const LandingTechy = dynamic(() => import("./landing-pro-sections").then(m => m.LandingTechy));
 
 /** `international`: other currencies are offered, so the page re-prices itself where the visitor is (it is cached in rupees). */
-export type LandingPrices = { monthly: number; yearly: number; enabled: boolean; currency?: Currency; currencies?: Currency[]; inr?: { monthly: number; yearly: number }; international?: boolean };
+export type LandingPrices = { monthly: number; yearly: number; enabled: boolean; currency?: Currency; currencies?: Currency[]; local?: Currency; inr?: { monthly: number; yearly: number }; international?: boolean };
 export function LandingPage({ pro, library, prices: initialPrices, daily, techDocs, copyrightYear, overrides, coffee }: { overrides?: ContentOverrides; coffee?: BlogTeaser[]; copyrightYear?: number; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");

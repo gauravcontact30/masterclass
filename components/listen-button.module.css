@@ -1,7 +1,9 @@
 .listen { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 6px 12px; border: 1px solid #e3d6cc; border-radius: 999px; background: #fff7f2; color: #9a4a2c; font-family: inherit; font-size: 12.5px; font-weight: 600; line-height: 1; cursor: pointer; transition: background .15s ease, border-color .15s ease, color .15s ease; white-space: nowrap; }
 .listen:hover { border-color: #d97757; background: #fdeee6; }
 .listen:focus-visible { outline: 3px solid #d97757; outline-offset: 2px; }
-.listen[data-compact] { justify-content: center; width: 34px; padding: 0; }
+.listen { justify-content: center; width: 36px; min-height: 36px; padding: 0; }
+.listen[data-compact] { width: 34px; min-height: 34px; }
+.listen[data-state="playing"] { width: auto; padding: 0 10px; }
 .listen[data-state="playing"], .listen[data-state="paused"] { border-color: #b5573a; background: #b5573a; color: #fff; }
 .listen[data-tone="dark"] { border-color: rgba(255, 255, 255, .25); background: rgba(31, 30, 29, .72); color: #f5f4ee; backdrop-filter: blur(4px); }
 .listen[data-tone="dark"]:hover { border-color: #d97757; background: rgba(31, 30, 29, .9); }

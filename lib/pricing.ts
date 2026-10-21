@@ -5,23 +5,27 @@
  * currency comes from the visitor's country, and a picker lets them choose another. Client-safe: the landing page
  * formats these.
  */
-export const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED", "SGD", "CAD", "AUD", "JPY", "CHF", "SAR", "QAR", "NZD", "ZAR", "MYR", "NPR", "LKR", "BDT"] as const;
+// The ten most used currencies for this audience, rupees first (the default). A visitor whose country uses another
+// currency sees US dollars.
+export const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED", "SAR", "SGD", "CAD", "AUD", "JPY"] as const;
 export type Currency = (typeof CURRENCIES)[number];
 export type Cycle = "monthly" | "yearly";
 export const isCurrency = (value: unknown): value is Currency => typeof value === "string" && (CURRENCIES as readonly string[]).includes(value);
 
-export const CURRENCY_LABELS: Record<Currency, string> = {
-  INR: "₹ INR · Indian rupee", USD: "$ USD · US dollar", EUR: "€ EUR · Euro", GBP: "£ GBP · British pound", AED: "AED · UAE dirham",
-  SGD: "S$ SGD · Singapore dollar", CAD: "C$ CAD · Canadian dollar", AUD: "A$ AUD · Australian dollar", JPY: "¥ JPY · Japanese yen",
-  CHF: "CHF · Swiss franc", SAR: "SAR · Saudi riyal", QAR: "QAR · Qatari riyal", NZD: "NZ$ NZD · New Zealand dollar", ZAR: "R ZAR · South African rand",
-  MYR: "RM MYR · Malaysian ringgit", NPR: "NPR · Nepalese rupee", LKR: "LKR · Sri Lankan rupee", BDT: "৳ BDT · Bangladeshi taka",
+export const CURRENCY_INFO: Record<Currency, { symbol: string; name: string; hiName: string }> = {
+  INR: { symbol: "₹", name: "Indian rupee", hiName: "भारतीय रुपया" }, USD: { symbol: "$", name: "US dollar", hiName: "अमेरिकी डॉलर" },
+  EUR: { symbol: "€", name: "Euro", hiName: "यूरो" }, GBP: { symbol: "£", name: "British pound", hiName: "ब्रिटिश पाउंड" },
+  AED: { symbol: "د.إ", name: "UAE dirham", hiName: "यूएई दिरहम" }, SAR: { symbol: "﷼", name: "Saudi riyal", hiName: "सऊदी रियाल" },
+  SGD: { symbol: "S$", name: "Singapore dollar", hiName: "सिंगापुर डॉलर" }, CAD: { symbol: "C$", name: "Canadian dollar", hiName: "कनाडाई डॉलर" },
+  AUD: { symbol: "A$", name: "Australian dollar", hiName: "ऑस्ट्रेलियाई डॉलर" }, JPY: { symbol: "¥", name: "Japanese yen", hiName: "जापानी येन" },
 };
 
 // Eurozone members (ISO 3166-1 alpha-2), plus the European microstates that use the euro.
 const EURO = "AT BE HR CY EE FI FR DE GR IE IT LV LT LU MT NL PT SK SI ES AD MC SM VA ME XK".split(" ");
 const BY_COUNTRY: Record<string, Currency> = {
-  IN: "INR", US: "USD", GB: "GBP", AE: "AED", SG: "SGD", CA: "CAD", AU: "AUD", JP: "JPY", CH: "CHF", LI: "CHF", SA: "SAR", QA: "QAR",
-  NZ: "NZD", ZA: "ZAR", MY: "MYR", NP: "NPR", LK: "LKR", BD: "BDT", ...Object.fromEntries(EURO.map(code => [code, "EUR" as const])),
+  // Nepal and Bhutan peg to the rupee, which is accepted there.
+  IN: "INR", NP: "INR", BT: "INR", US: "USD", GB: "GBP", AE: "AED", SA: "SAR", SG: "SGD", CA: "CAD", AU: "AUD", JP: "JPY",
+  ...Object.fromEntries(EURO.map(code => [code, "EUR" as const])),
 };
 /** The currency a country uses where we show it, US dollars for any other country, rupees in India or when unknown. */
 export function currencyForCountry(country: string | null | undefined): Currency {
@@ -38,4 +42,5 @@ export function formatPrice(amount: number, currency: Currency = "INR", hi = fal
   return new Intl.NumberFormat(hi ? "hi-IN" : "en-IN", { style: "currency", currency, minimumFractionDigits: digits, maximumFractionDigits: digits }).format(amount);
 }
 /** Prices as the client receives them: in `currency`, and the rupee amounts actually billed. */
-export type ShownPrices = { currency: Currency; monthly: number; yearly: number; inr: Record<Cycle, number>; rate: number; rateDate?: string | null; currencies: Currency[] };
+/** `local`: the currency of the country the visitor was located in, marked in the picker. */
+export type ShownPrices = { currency: Currency; monthly: number; yearly: number; inr: Record<Cycle, number>; rate: number; rateDate?: string | null; currencies: Currency[]; local?: Currency };

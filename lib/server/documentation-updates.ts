@@ -1,5 +1,6 @@
 import "server-only";
 import { createHash } from "node:crypto";
+import { cacheLife, cacheTag, revalidateTag } from "next/cache";
 import { OFFICIAL_DOCS } from "@/lib/official-docs-data";
 import { fetchDocumentation } from "@/lib/generation/sources";
 import type { DocumentationRecord, DocumentationUpdate } from "@/lib/documentation-updates";
@@ -7,6 +8,10 @@ import { db } from "./db";
 import { HttpError } from "./http";
 
 const bucket = "documentation-updates";
+// Reads for the GET route are cached (every record is a Storage download, and the list fetched all of them per
+// request, a 2.8 s median in Request tracing); each write expires the record's tag and the list's.
+const LIST_TAG = "documentation-updates";
+const recordTag = (id: string) => `documentation-update:${id}`;
 let provision: Promise<void> | undefined;
 async function storage() {
   const client = db().storage;
@@ -52,7 +57,18 @@ export function documentationStatus(id: string, record: DocumentationRecord | nu
   };
 }
 
+/** readDocumentation for the GET route, cached until the record is next written. */
+export async function cachedDocumentation(id: string): Promise<DocumentationRecord | null> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(recordTag(id), LIST_TAG);
+  return readDocumentation(id);
+}
+
 export async function listDocumentationUpdates() {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(LIST_TAG);
   const { data, error } = await (await storage()).list("", { limit: 1000 });
   if (error || !data) throw new HttpError(503, "documentation_storage_unavailable");
   const names = new Set(data.map(file => file.name));
@@ -67,6 +83,8 @@ export async function listDocumentationUpdates() {
 async function writeDocumentation(id: string, record: DocumentationRecord) {
   const { error } = await (await storage()).upload(`${id}.json`, JSON.stringify(record), { upsert: true, contentType: "application/json", cacheControl: "0" });
   if (error) throw new HttpError(503, "documentation_storage_unavailable");
+  revalidateTag(recordTag(id), { expire: 0 });
+  revalidateTag(LIST_TAG, { expire: 0 });
   return documentationStatus(id, record);
 }
 

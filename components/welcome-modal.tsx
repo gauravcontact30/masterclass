@@ -16,8 +16,10 @@ const remember = () => { try { window.localStorage.setItem(SEEN_KEY, "1"); } cat
 const busy = () => !!document.querySelector("[role=dialog]:not([hidden]), dialog[open], [aria-modal=true]");
 
 /**
- * First-visit welcome: opens once, three seconds after the landing page loads. If the tab is hidden or another
- * dialog is open at that moment it waits and tries again, instead of giving up. `?welcome` always shows it.
+ * First-visit welcome: opens once, three seconds after the visitor first scrolls, taps or types. Waiting for that
+ * first input keeps its large photo from becoming the page's Largest Contentful Paint, which browsers stop measuring
+ * at the first input. If the tab is hidden or another dialog is open at that moment it waits and tries again,
+ * instead of giving up. `?welcome` always shows it, three seconds after load.
  */
 export function WelcomeModal({ prices, onCurrency }: { prices: LandingPrices | null; onCurrency?: (currency: Currency) => void }) {
   const [open, setOpen] = useState(false);
@@ -30,8 +32,11 @@ export function WelcomeModal({ prices, onCurrency }: { prices: LandingPrices | n
       if (document.visibilityState !== "visible" || busy()) { timer = window.setTimeout(attempt, RETRY_MS); return; }
       void loadPanel().then(() => { remember(); setMounted(true); setOpen(true); });
     };
-    timer = window.setTimeout(attempt, DELAY_MS);
-    return () => window.clearTimeout(timer);
+    if (params.has("welcome")) { timer = window.setTimeout(attempt, DELAY_MS); return () => window.clearTimeout(timer); }
+    const inputs = ["pointerdown", "keydown", "scroll", "wheel", "touchstart"] as const;
+    const arm = () => { inputs.forEach(type => window.removeEventListener(type, arm)); timer = window.setTimeout(attempt, DELAY_MS); };
+    inputs.forEach(type => window.addEventListener(type, arm, { once: true, passive: true }));
+    return () => { inputs.forEach(type => window.removeEventListener(type, arm)); window.clearTimeout(timer); };
   }, []);
   return mounted ? <Suspense fallback={null}><WelcomePanel open={open} onOpenChange={setOpen} prices={prices} onCurrency={onCurrency} /></Suspense> : null;
 }

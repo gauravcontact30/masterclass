@@ -37,17 +37,6 @@
 .float { position: absolute; right: 0; bottom: 0; width: min(78%, 340px); }
 .layout[data-flip] .float { right: auto; left: 0; }
 
-.mock { display: grid; gap: 11px; padding: 18px; border: 1px solid var(--nb-cream-edge); border-radius: 18px; background: rgba(255, 255, 255, .96); box-shadow: 0 30px 60px -30px rgba(20, 20, 19, .55); color: #141413; font-size: 13.5px; }
-.mockLabel { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #b5573a; }
-
-.searchBox { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border: 1px solid #e3e0d6; border-radius: 12px; background: #faf9f5; color: #3d3d3a; }
-.answer { display: grid; gap: 8px; padding: 12px 14px; border-radius: 14px; background: #f1f7fe; }
-.answer strong { font-size: 14.5px; }
-.answer ul { display: grid; gap: 5px; padding: 0; list-style: none; font-size: 12.5px; color: #3d3d3a; }
-.answer li { display: flex; align-items: center; gap: 6px; }
-.answer svg { flex-shrink: 0; color: #2563c9; }
-.related { display: flex; flex-wrap: wrap; gap: 6px; }
-.related span { padding: 3px 9px; border-radius: 999px; background: #fff; border: 1px solid #cfe1f6; color: #2563c9; font-size: 11.5px; font-weight: 600; }
 
 .cover { display: grid; place-items: center; aspect-ratio: 3 / 1.2; border-radius: 12px; background: radial-gradient(circle at 25% 30%, #fff 0, transparent 45%), linear-gradient(135deg, #cfe1f6, #ddd4f5 55%, #f5dac6); }
 .cover span { color: #b5573a; font-size: 26px; }
@@ -58,10 +47,6 @@
 .readMore { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 9px; background: #1f1e1d; color: #f5f4ee; font: 600 12px/1 ui-monospace, Menlo, Consolas, monospace; }
 .readMore b { color: #d97757; }
 
-.note { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid #ece6d2; border-radius: 12px; background: #fffdf7; }
-.note span { flex: 1; font-weight: 600; }
-.note b { color: #d97757; letter-spacing: 1px; }
-.note i { font-style: normal; color: #e3e0d6; }
 
 @media (prefers-reduced-motion: reduce) { .details li, .details li:hover { transition: none; transform: none; } }
 @media (max-width: 900px) {

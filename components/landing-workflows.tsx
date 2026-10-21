@@ -2,7 +2,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { Boxes, FlaskConical, GitBranch, Layers, Network, Workflow as WorkflowIcon, type LucideIcon } from "lucide-react";
-import { WORKFLOWS, type Workflow, type WorkflowNodeKind } from "@/lib/landing-workflows";
+import { WORKFLOW_HEIGHT, WORKFLOW_WIDTH, WORKFLOWS, type Workflow, type WorkflowNodeKind } from "@/lib/landing-workflows";
 import { WORKFLOW_LESSONS } from "@/lib/workflow-learning";
 import { STEP_TONES, WorkflowDiagram, two } from "./workflow-diagram";
 import { learningImageUrl } from "@/lib/learning-image";
@@ -124,7 +124,8 @@ function WorkflowSlide({ workflow, near, index, total, text, preview }: Readonly
       </div>
     </article>
     <div className={styles.board}>
-      <div className={styles.canvas}><WorkflowDiagram workflow={workflow} /></div>
+      {/* A diagram is a few hundred SVG nodes: it is drawn as the section nears the screen, in an empty frame of the same size till then. */}
+      <div className={styles.canvas}>{near ? <WorkflowDiagram workflow={workflow} /> : <svg viewBox={`0 0 ${WORKFLOW_WIDTH} ${WORKFLOW_HEIGHT}`} aria-hidden="true" />}</div>
       <ul className={styles.legend} aria-label={text("Legend", "संकेत")}>{kinds.map(kind => <li key={kind} data-kind={kind}>{KIND_LABEL[kind]}</li>)}</ul>
     </div>
     <ol className={styles.steps} aria-label={text("Step by step", "चरण दर चरण")}>

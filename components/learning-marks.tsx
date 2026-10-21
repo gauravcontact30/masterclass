@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useId, useMemo, useR
 import { Highlighter, Eraser, Trash2 } from "lucide-react";
 import { MARKER_COLORS, anchorText, locateAnchor, type LearningMark, type MarkerColor, type TextAnchor } from "@/lib/learning-marks";
 import { renderPersonalText, restorePersonalText, selectionAnchor, textModel, wordAtPoint } from "@/lib/learning-text-dom";
-import { onAuthChange } from "@/lib/auth-listener";
+import { maybeSignedIn, onAuthChange } from "@/lib/auth-listener";
 import styles from "./learning-marks.module.css";
 
 type SelectionTarget = { regionId: string; contentKey: string; anchor: TextAnchor };
@@ -101,6 +101,7 @@ export function LearningMarksProvider({ children }: { children: ReactNode }) {
     const controller = new AbortController(); loading.current = controller;
     const generation = epoch.current;
     const commit = (next: State) => { stateRef.current = next; setState(next); };
+    if (!maybeSignedIn()) { commit({ userId: null, marks: [], status: "signin" }); return; }
     try {
       const marks: LearningMark[] = [];
       let cursor: string | null = null, owner: string | null = null;

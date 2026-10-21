@@ -30,3 +30,6 @@
 @media (max-width: 640px) {
   .compactPlanNote.compactPlanNote { text-align: start; }
 }
+/* Sections past the first screens skip layout and paint until they near the viewport; the remembered size keeps the
+   scrollbar and #section links steady once each has been seen. */
+.page main>section:nth-of-type(n+4){content-visibility:auto;contain-intrinsic-size:auto 900px}

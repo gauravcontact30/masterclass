@@ -3,6 +3,9 @@ import { api, sameOrigin, jsonBody } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rate-limit";
 import { learningPages, publishedBlocks, recordView } from "@/lib/server/learning-uploads";
 
+// A first visit may generate a missing study pack after the response (text, a cover and two figures).
+export const maxDuration = 300;
+
 /*
  * Published Upload Learning content for one page of a surface (`?surface=landing&page=home`), or the visible
  * custom Learning Dashboard pages for the sidebar (`?pages=1`). Read by the client-side slots on each page.

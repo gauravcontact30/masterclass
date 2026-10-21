@@ -53,5 +53,6 @@ export async function visitorPrices(headers: Headers, chosen?: string | null): P
   const wanted = visitorCurrency(headers, chosen);
   const currency = wanted === "INR" || rates[wanted] ? wanted : rates.USD ? "USD" : "INR";
   const rate = currency === "INR" ? 1 : rates[currency]!;
-  return { ...base, currency, monthly: round(inr.monthly * rate, currency), yearly: round(inr.yearly * rate, currency), rate, rateDate: date, currencies };
+  const local = currencyForCountry(country);
+  return { ...base, currency, monthly: round(inr.monthly * rate, currency), yearly: round(inr.yearly * rate, currency), rate, rateDate: date, currencies, local: currencies.includes(local) ? local : undefined };
 }

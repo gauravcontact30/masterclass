@@ -45,7 +45,7 @@ export function LandingCoffee({ posts }: Readonly<{ posts: BlogTeaser[] }>) {
   });
   if (section.hidden || !shown.length) return null;
   const slides = shown.map(post => ({
-    id: post.slug, tone: COVERS[post.tone], kicker: post.topic, title: post.title, text: post.dek,
+    id: post.slug, image: post.cover, tone: COVERS[post.tone], kicker: post.topic, title: post.title, text: post.dek,
     meta: hi ? `${post.minutes} मिनट पढ़ें` : `${post.minutes} min read`,
     href: `/sign-in?redirect=${encodeURIComponent(`/dashboard/coffee-and-code/${post.slug}`)}`, cta: hi ? "पूरा पढ़ें" : "Read article",
   }));

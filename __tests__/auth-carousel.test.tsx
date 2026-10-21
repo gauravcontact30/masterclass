@@ -95,6 +95,14 @@ test("dot navigation jumps straight to a slide and marks it current", () => {
 
 test("fourth slide offers only monthly and yearly subscriptions", () => {
  render(<AuthStory />); fireEvent.click(screen.getByRole("button", {name:"Go to slide 4"}));
- expect(screen.getByText("Pro Monthly")).toBeVisible(); expect(screen.getByText("Pro Yearly")).toBeVisible();
+ expect(screen.getByText(/subscribe monthly or yearly/i)).toBeVisible();
  expect(screen.queryByText(/free|per download/i)).not.toBeInTheDocument();
+});
+
+test("every slide has its own photograph", () => {
+ const { container } = render(<AuthStory />);
+ const sources = [...container.querySelectorAll("img")].map(img => img.getAttribute("src") ?? "");
+ expect(sources).toHaveLength(4);
+ expect(new Set(sources).size).toBe(4);
+ sources.forEach(src => expect(decodeURIComponent(src)).toMatch(/\/images\/auth\/(guide|formats|languages|plans)\.webp/));
 });

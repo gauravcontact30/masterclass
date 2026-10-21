@@ -11,7 +11,7 @@ import { hasUnlock, recordUnlock, rememberUnlock, UNLOCK_PRICE_INR, unlockKey } 
 
 /*
  * The locked last card of the landing page's AI pulse and Word power carousels.
- * GET returns the card's content when this reader has unlocked it; POST "order" opens a Razorpay order for
+ * GET returns the card's content when this reader has unlocked it, else `{ locked, price }`; POST "order" opens a Razorpay order for
  * ₹2, and POST "verify" checks the Checkout signature, re-reads the payment from Razorpay, records it and
  * returns the content. The content is never in the page HTML, so blurring cannot be undone in the browser.
  */
@@ -35,7 +35,8 @@ export async function GET(request: Request) {
     const found = lockedCard(input.kind, input.day, input.id);
     if (!found) throw new HttpError(404, "not_found");
     if (!(await hasUnlock(unlockKey(input.kind, input.day, input.id), await viewer()))) {
-      return Response.json({ error: "payment_required", price: UNLOCK_PRICE_INR, available: razorpayConfigured() }, { status: 402 });
+      // Still locked is the expected answer for most readers, not a failure: a 200 keeps it out of the error counts.
+      return Response.json({ locked: true, price: UNLOCK_PRICE_INR, available: razorpayConfigured() });
     }
     return Response.json({ card: found });
   }, request);

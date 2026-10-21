@@ -14,16 +14,16 @@ import { CoverCarousel, type CarouselSlide } from "./landing-carousel";
  * One landing section per Learning Dashboard feature the rest of the page does not already show: AI Search,
  * featured lessons with their study packs, and notes and bookmarks. Each is its own <section>: what it does, four
  * details, how it works in three steps and a way in, beside a picture painted through Vercel AI Gateway
- * (scripts/generate-feature-images.ts) with either a small drawn preview of the feature floating on it (decorative,
- * hidden from assistive technology) or, for Featured lessons, a carousel of real lessons that moves every 15
- * seconds, ending with today's AI pulse headline. Coffee & Code reuses FeatureSection. Learner features only.
+ * (scripts/generate-feature-images.ts) with a carousel floating on it that moves every 15 seconds: what AI Search
+ * does, the featured lessons (ending with today's AI pulse headline) or what notes and bookmarks do, each card with
+ * its own painted cover. Coffee & Code reuses FeatureSection. Learner features only.
  */
 export type Copy = [en: string, hi: string];
 export type Feature = {
   id: string; icon: LucideIcon; kicker: Copy; title: Copy; emphasis: Copy; lede: Copy;
   details: { icon: LucideIcon; title: Copy; body: Copy }[]; steps: Copy[];
   image: { src: string; focus: string }; badge: { icon: LucideIcon; label: Copy };
-  cta: { href: string; label: Copy }; note: Copy; preview?: (hi: boolean) => ReactNode;
+  cta: { href: string; label: Copy }; note: Copy;
 };
 
 const FEATURES: Feature[] = [
@@ -40,13 +40,6 @@ const FEATURES: Feature[] = [
     steps: [["Ask in plain words", "सरल शब्दों में पूछें"], ["Read the answer card", "उत्तर कार्ड पढ़ें"], ["Open a related topic", "संबंधित विषय खोलें"]],
     image: { src: "/images/landing/feature-search.webp", focus: "40% 45%" }, badge: { icon: Sparkles, label: ["AI answer card", "AI उत्तर कार्ड"] },
     cta: { href: "/sign-up", label: ["Try AI Search", "AI सर्च आज़माएँ"] }, note: ["Included in every membership", "हर सदस्यता में शामिल"],
-    preview: hi => <div className={styles.mock}>
-      <div className={styles.searchBox}><Search size={15} aria-hidden="true" /><span>{hi ? "React में useEffect कब चलता है?" : "When does useEffect run in React?"}</span></div>
-      <div className={styles.answer}><strong>{hi ? "रेंडर कमिट होने के बाद" : "After the render is committed"}</strong>
-        <ul>{(hi ? ["निर्भरताएँ बदलने पर फिर चलता है", "अगली बार से पहले क्लीनअप चलता है"] : ["Re-runs when dependencies change", "Cleanup runs before the next run"]).map(item => <li key={item}><Check size={12} aria-hidden="true" />{item}</li>)}</ul>
-        <p className={styles.related}>{(hi ? ["useLayoutEffect", "निर्भरता सूची"] : ["useLayoutEffect", "Dependency arrays"]).map(item => <span key={item}>{item}</span>)}</p>
-      </div>
-    </div>,
   },
   {
     id: "lesson-packs", icon: Sparkles, kicker: ["Featured lessons", "विशेष पाठ"],
@@ -75,10 +68,6 @@ const FEATURES: Feature[] = [
     steps: [["Read a topic", "विषय पढ़ें"], ["Bookmark what matters", "ज़रूरी चीज़ें बुकमार्क करें"], ["Revise from one list", "एक सूची से दोहराएँ"]],
     image: { src: "/images/landing/feature-notes.webp", focus: "60% 50%" }, badge: { icon: Star, label: ["Revise what matters first", "पहले ज़रूरी चीज़ें दोहराएँ"] },
     cta: { href: "/sign-up", label: ["Start your notes", "अपने नोट्स शुरू करें"] }, note: ["English and Hindi", "अंग्रेज़ी और हिन्दी"],
-    preview: hi => <div className={styles.mock}>
-      <p className={styles.mockLabel}><BookMarked size={13} aria-hidden="true" />{hi ? "आपके बुकमार्क" : "Your bookmarks"}</p>
-      {(hi ? [["क्लोज़र", 5], ["इवेंट लूप", 4], ["होइस्टिंग", 3]] as const : [["Closures", 5], ["Event loop", 4], ["Hoisting", 3]] as const).map(([name, stars]) => <div key={name} className={styles.note}><span>{name}</span><b>{"★".repeat(stars)}<i>{"★".repeat(5 - stars)}</i></b></div>)}
-    </div>,
   },
 ];
 
@@ -97,6 +86,26 @@ const LESSONS: Lesson[] = [
   { id: "langflow", title: "LangFlow", text: ["Drag, connect and test LLM pipelines visually, then take them to code.", "LLM पाइपलाइन को खींचकर, जोड़कर और परखकर दृश्य रूप में बनाएँ, फिर कोड में ले जाएँ।"], minutes: 7 },
   { id: "system-design", title: "System Design", text: ["Load balancers, caching, sharding and queues: design systems that scale.", "लोड बैलेंसर, कैशिंग, शार्डिंग और क्यू: बड़े पैमाने के सिस्टम डिज़ाइन करें।"], minutes: 12 },
   { id: "n8n", title: "n8n", text: ["Automate work with triggers, nodes and AI steps, self-hosted or in the cloud.", "ट्रिगर, नोड और AI कदमों से काम स्वचालित करें, ख़ुद होस्ट करें या क्लाउड में।"], minutes: 7 },
+];
+
+type Card = { id: string; title: Copy; text: Copy };
+// The AI Search carousel; covers are painted by scripts/generate-lesson-covers.ts (search:<id>).
+const SEARCH: Card[] = [
+  { id: "plain-words", title: ["Ask in plain words", "सरल शब्दों में पूछें"], text: ["Type the question the way you would ask a friend; no keywords to guess.", "प्रश्न वैसे ही लिखें जैसे किसी दोस्त से पूछते; कीवर्ड का अंदाज़ा नहीं लगाना।"] },
+  { id: "answer-card", title: ["An answer card, not links", "लिंक नहीं, एक उत्तर कार्ड"], text: ["The answer comes first, then the key points that make it stick.", "पहले उत्तर आता है, फिर वे मुख्य बिंदु जो उसे याद रखने में मदद करते हैं।"] },
+  { id: "related-topics", title: ["Related topics", "संबंधित विषय"], text: ["Every answer shows what else its area covers, so one question leads to the next.", "हर उत्तर बताता है कि उसके क्षेत्र में और क्या है, ताकि एक प्रश्न अगले तक ले जाए।"] },
+  { id: "by-technology", title: ["Explore by technology", "तकनीक के अनुसार खोजें"], text: ["Not sure what to ask yet? Browse topics technology by technology.", "अभी पता नहीं क्या पूछें? तकनीक के अनुसार विषय देखें।"] },
+  { id: "history-kept", title: ["Your history, kept", "आपका इतिहास सुरक्षित"], text: ["Earlier questions stay one click away, and asking again is instant.", "पिछले प्रश्न एक क्लिक पर रहते हैं, और दोबारा पूछना तुरंत होता है।"] },
+  { id: "two-languages", title: ["English or Hindi", "अंग्रेज़ी या हिन्दी"], text: ["Ask in either language and read the answer in the one you prefer.", "किसी भी भाषा में पूछें और उत्तर अपनी पसंद की भाषा में पढ़ें।"] },
+];
+// The Notes & bookmarks carousel; covers are painted by scripts/generate-lesson-covers.ts (notes:<id>).
+const NOTES: Card[] = [
+  { id: "topic-notes", title: ["Focused topic notes", "केंद्रित विषय नोट्स"], text: ["Every chapter boiled down to what you need to remember, with diagrams and examples.", "हर अध्याय उतना ही, जितना याद रखना ज़रूरी है, आरेख और उदाहरणों के साथ।"] },
+  { id: "priority-stars", title: ["Five-star topics first", "पहले पाँच सितारा विषय"], text: ["Topics are ranked by how often they come up in interviews and exams.", "विषय इस क्रम में हैं कि वे इंटरव्यू और परीक्षा में कितनी बार आते हैं।"] },
+  { id: "bookmarks", title: ["Bookmark from anywhere", "कहीं से भी बुकमार्क करें"], text: ["Save lessons, questions and topics with one tap while you read.", "पढ़ते-पढ़ते एक टैप में पाठ, प्रश्न और विषय सहेजें।"] },
+  { id: "revision-list", title: ["One revision list", "एक दोहराने की सूची"], text: ["Everything you saved waits in one list, ready the evening before the test.", "आपका सहेजा सब कुछ एक सूची में, परीक्षा से पहले की शाम के लिए तैयार।"] },
+  { id: "offline-notes", title: ["Revise offline", "ऑफ़लाइन दोहराएँ"], text: ["Download study notes for the train, the library or the exam hall queue.", "ट्रेन, लाइब्रेरी या परीक्षा हॉल की कतार के लिए स्टडी नोट्स डाउनलोड करें।"] },
+  { id: "two-languages", title: ["English and Hindi", "अंग्रेज़ी और हिन्दी"], text: ["Read the same notes in English or Hindi, whichever helps you remember.", "वही नोट्स अंग्रेज़ी या हिन्दी में पढ़ें, जिसमें आपको बेहतर याद रहे।"] },
 ];
 
 /** One feature section: copy, details, how it works and a way in, beside its picture with `float` on it. */
@@ -124,8 +133,7 @@ export function FeatureSection({ feature, index, total, float, section }: { feat
       <div className={styles.visual}>
         <div className={styles.photo} aria-hidden="true"><Image src={feature.image.src} alt="" fill sizes="(max-width: 900px) 92vw, 560px" style={{ objectPosition: feature.image.focus }} /></div>
         <span className={styles.badge} aria-hidden="true"><Badge size={14} />{pick(feature.badge.label)}</span>
-        {/* A drawn preview is decorative; a carousel is real content. */}
-        <div className={styles.float} aria-hidden={float ? undefined : true}>{float ?? feature.preview?.(hi)}</div>
+        {float && <div className={styles.float}>{float}</div>}
       </div>
     </div>
   </section>;
@@ -138,8 +146,15 @@ export function LandingFeatures({ latest }: { latest?: LatestPulse | null }) {
   const today = (day: string) => new Intl.DateTimeFormat(hi ? "hi-IN" : "en-IN", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Kolkata" }).format(new Date(`${day}T12:00:00+05:30`));
   const slides: CarouselSlide[] = [
     ...LESSONS.map(lesson => ({ id: lesson.id, image: `/images/landing/lessons/${lesson.id}.webp`, kicker: hi ? "विशेष पाठ" : "Featured lesson", title: lesson.title, text: hi ? lesson.text[1] : lesson.text[0], meta: minutes(lesson.minutes), href: "/sign-up", cta: hi ? "और पढ़ें" : "Read more" })),
-    ...(latest ? [{ id: `ai-latest-${latest.day}`, image: latest.image || "/images/landing/lessons/ai-latest.webp", kicker: hi ? `AI ताज़ा · ${today(latest.day)}` : `AI latest · ${today(latest.day)}`, title: latest.title, text: latest.text, meta: today(latest.day), href: "/sign-up", cta: hi ? "और पढ़ें" : "Read more" }] : []),
+    ...(latest ? [{ id: `ai-latest-${latest.day}`, image: "/images/landing/lessons/ai-latest.webp", kicker: hi ? `AI ताज़ा · ${today(latest.day)}` : `AI latest · ${today(latest.day)}`, title: latest.title, text: latest.text, meta: today(latest.day), href: "/sign-up", cta: hi ? "और पढ़ें" : "Read more" }] : []),
   ];
-  return <>{FEATURES.map((feature, index) => <FeatureSection key={feature.id} feature={feature} index={index} total={FEATURES.length}
-    float={feature.id === "lesson-packs" ? <CoverCarousel slides={slides} label={hi ? "विशेष पाठ" : "Featured lessons"} /> : undefined} />)}</>;
+  const cards = (list: Card[], folder: string, kicker: string): CarouselSlide[] => list.map(card => ({ id: card.id, image: `/images/landing/${folder}/${card.id}.webp`, kicker, title: hi ? card.title[1] : card.title[0], text: hi ? card.text[1] : card.text[0], href: "/sign-up", cta: hi ? "और पढ़ें" : "Read more" }));
+  const notes = cards(NOTES, "notes", hi ? "नोट्स और बुकमार्क" : "Notes & bookmarks");
+  const search = cards(SEARCH, "search", hi ? "AI सर्च" : "AI Search");
+  const carousels: Record<string, ReactNode> = {
+    "ai-search": <CoverCarousel slides={search} label={hi ? "AI सर्च" : "AI Search"} />,
+    "lesson-packs": <CoverCarousel slides={slides} label={hi ? "विशेष पाठ" : "Featured lessons"} />,
+    "notes-bookmarks": <CoverCarousel slides={notes} label={hi ? "नोट्स और बुकमार्क" : "Notes & bookmarks"} />,
+  };
+  return <>{FEATURES.map((feature, index) => <FeatureSection key={feature.id} feature={feature} index={index} total={FEATURES.length} float={carousels[feature.id]} />)}</>;
 }

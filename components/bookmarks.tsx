@@ -5,7 +5,7 @@ import { Bookmark, BookmarkCheck, BookA } from "lucide-react";
 import { toast } from "sonner";
 import type { BookmarkDraft, BookmarkSource, SavedBookmark } from "@/lib/bookmarks";
 import { bookmarkIdentity } from "@/lib/bookmark-identity";
-import { onAuthChange } from "@/lib/auth-listener";
+import { maybeSignedIn, onAuthChange } from "@/lib/auth-listener";
 import { triggerWordLookup } from "./vocabulary-lookup-provider";
 // The zod schemas load on first use: this provider sits in the root layout, so a
 // static import would put zod in every page's first-load JavaScript.
@@ -35,6 +35,7 @@ export function BookmarksProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     if (lock.current) return;
     const generation = ++epoch.current;
+    if (!maybeSignedIn()) { setState({ items: [], owner: null, status: "signin" }); return; }
     setState({ items: [], owner: null, status: "loading" });
     try {
       let after: number | null = 0;

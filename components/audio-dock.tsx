@@ -1,6 +1,6 @@
 "use client";
 import { useId, useSyncExternalStore } from "react";
-import { Headphones, Loader2, Pause, Play, SkipBack, SkipForward, X } from "lucide-react";
+import { Loader2, Pause, Play, SkipBack, SkipForward, Volume2, X } from "lucide-react";
 import { audioState, seekPart, serverAudioState, setSpeed, setVoice, stop, subscribe, toggle } from "@/lib/audio-lecture";
 import { SPEEDS, VOICES } from "@/lib/audio-voices";
 import { useLanguage } from "./language-provider";
@@ -22,7 +22,7 @@ export function AudioDock() {
   const group = (gender: "female" | "male") => VOICES.filter(voice => voice.gender === gender).map(voice => <option key={voice.id} value={voice.id}>{voice.id} · {voice.style[hi ? 1 : 0]}</option>);
   return <section className={styles.dock} aria-label={text("Audio lecture", "ऑडियो लेक्चर")}>
     <div className={styles.head}>
-      <span className={styles.mark} aria-hidden="true">{busy ? <Loader2 size={16} className={styles.spin} /> : <Headphones size={16} />}</span>
+      <span className={styles.mark} aria-hidden="true">{busy ? <Loader2 size={16} className={styles.spin} /> : <Volume2 size={16} />}</span>
       <div className={styles.now}>
         <strong title={audio.title}>{audio.title}</strong>
         <span aria-live="polite">{audio.status === "error" ? text("Audio is unavailable right now. Try again in a moment.", "ऑडियो अभी उपलब्ध नहीं है। थोड़ी देर में फिर कोशिश करें।")

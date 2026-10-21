@@ -16,7 +16,7 @@ const CYCLES: Cycle[] = ["monthly", "yearly"];
  * each linking straight into guest checkout with that plan preselected.
  * Prices are null until the landing page has loaded them, and show as "—".
  */
-export type PlansMenuPrices = { monthly: number; yearly: number; currency?: Currency; currencies?: Currency[]; inr?: { monthly: number; yearly: number } };
+export type PlansMenuPrices = { monthly: number; yearly: number; currency?: Currency; currencies?: Currency[]; local?: Currency; inr?: { monthly: number; yearly: number } };
 export function LandingPlansMenu({ prices, open, onOpenChange, onCurrency }: { prices: PlansMenuPrices | null; open: boolean; onOpenChange: (open: boolean) => void; onCurrency?: (currency: Currency) => void }) {
   const { language } = useLanguage();
   const hi = language === "hi";
@@ -28,11 +28,13 @@ export function LandingPlansMenu({ prices, open, onOpenChange, onCurrency }: { p
   const money = (value: number) => formatPrice(value, prices?.currency, hi);
   const savings = prices && prices.monthly > 0 ? Math.max(0, Math.round((1 - prices.yearly / (prices.monthly * 12)) * 100)) : 0;
 
-  // Closes on Escape (returning focus to the trigger) and on any click outside.
+  // Closes on Escape (returning focus to the trigger) and on any click outside. The currency list is portalled to
+  // <body>, so a click or Escape in it belongs to the menu and must not close it.
   useEffect(() => {
     if (!open) return;
-    const onKey = (event: globalThis.KeyboardEvent) => { if (event.key === "Escape") { onOpenChange(false); buttonRef.current?.focus(); } };
-    const onPointer = (event: PointerEvent) => { if (!rootRef.current?.contains(event.target as Node)) onOpenChange(false); };
+    const inCurrencyList = (target: EventTarget | null) => target instanceof Element && !!target.closest('[data-slot="select-content"]');
+    const onKey = (event: globalThis.KeyboardEvent) => { if (event.key === "Escape" && !inCurrencyList(event.target)) { onOpenChange(false); buttonRef.current?.focus(); } };
+    const onPointer = (event: PointerEvent) => { if (!rootRef.current?.contains(event.target as Node) && !inCurrencyList(event.target)) onOpenChange(false); };
     window.addEventListener("keydown", onKey);
     document.addEventListener("pointerdown", onPointer);
     return () => { window.removeEventListener("keydown", onKey); document.removeEventListener("pointerdown", onPointer); };
@@ -62,7 +64,7 @@ export function LandingPlansMenu({ prices, open, onOpenChange, onCurrency }: { p
         </button>)}
       </div>
       <div id={`${id}-panel`} className={styles.plansPanel} role="tabpanel" aria-labelledby={`${id}-tab-${cycle}`}>
-        {prices && onCurrency && prices.currency && <CurrencyPicker value={prices.currency} options={prices.currencies} onChange={onCurrency} hi={hi} />}
+        {prices && onCurrency && prices.currency && <CurrencyPicker value={prices.currency} options={prices.currencies} local={prices.local} onChange={onCurrency} hi={hi} />}
         <p className={styles.plansPrice}>{prices ? money(prices[cycle]) : "—"}<small>{cycle === "monthly" ? text("/ month", "/ माह") : text("/ year", "/ वर्ष")}</small></p>
         <p className={styles.plansNote}>{cycle === "yearly" && prices
           ? text(`${money(prices.yearly / 12)}/month equivalent, billed yearly.`, `${money(prices.yearly / 12)}/माह के बराबर, वार्षिक भुगतान।`)

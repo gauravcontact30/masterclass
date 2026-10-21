@@ -20,3 +20,15 @@ export function onAuthChange(callback: (event: AuthChangeEvent, session: Session
   }).catch(() => { /* No listener means no live account switch; a reload still reflects it. */ });
   return () => { cancelled = true; unsubscribe?.(); };
 }
+
+/**
+ * Whether this browser may hold a session: Supabase keeps it in a readable `sb-<project>-auth-token` cookie (chunked
+ * as `.0`, `.1`… when large). Without one, account-only calls (bookmarks, learning marks) can only answer 401, so
+ * guests skip them; those 401s were most of the API errors in Request tracing. Without Supabase configured the
+ * server serves a demo account, so the answer is always yes.
+ */
+export function maybeSignedIn(): boolean {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return true;
+  if (typeof document === "undefined") return false;
+  return document.cookie.split(/;\s*/).some(cookie => /^sb-[^=]+-auth-token(\.\d+)?=./.test(cookie));
+}

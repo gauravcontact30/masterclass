@@ -87,6 +87,10 @@ export async function publishedBlocks(surface: LearningSurface, page: string): P
   if (surface === "super_admin" && !isSuperAdminUser(await currentUser().catch(() => null))) return [];
   const rows = await publishedRows(surface, surface === "super_admin" ? [page, "all"] : [page]);
   if (!rows.length) return [];
+  // Uploads published before study packs existed (or before migration 0033) never got one: the first visit to their
+  // page queues it after the response, and the "generating" claim keeps concurrent visits from starting another.
+  const unpacked = rows.filter(row => row.surface === "dashboard" && row.pack_status === "none");
+  if (unpacked.length) after(async () => { for (const row of unpacked) await refreshStudyPack(row.id).catch(error => console.error(`learning uploads: study pack for ${row.id}`, error)); });
   const now = Date.now();
   // Only look up who is visiting (an auth and an account read) when some upload is targeted.
   const who = rows.some(row => row.audience !== "everyone") ? await viewer() : "signed_out";

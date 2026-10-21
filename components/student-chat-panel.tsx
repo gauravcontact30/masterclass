@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Fragment, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowUp, BookOpen, Check, Code2, Copy, GraduationCap, Play, RefreshCw, RotateCcw, Square, X } from "lucide-react";
+import { ArrowUp, BookOpen, Check, Code2, Copy, GraduationCap, Moon, Play, RefreshCw, RotateCcw, Square, Sun, X } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
 import { chatHistory, type StudyChatEvent, type StudyChatReply, type StudyChatRequest } from "@/lib/study-chat";
 import { runJavaScriptPuzzle, type PuzzleResult } from "@/lib/javascript-sandbox";
@@ -85,6 +85,14 @@ function restore(): { mode: Mode; messages: Message[] } | null {
   } catch { return null; }
 }
 
+const THEME_KEY = "masterclass:study-buddy-theme";
+type Theme = "light" | "dark";
+/** The visitor's last choice, else the system's light or dark setting. The panel only renders in the browser. */
+function initialTheme(): Theme {
+  try { const saved = localStorage.getItem(THEME_KEY); if (saved === "light" || saved === "dark") return saved; } catch { /* storage blocked */ }
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
 export default function StudentChatPanel({ open, onOpenChange, prompt }: { open: boolean; onOpenChange: (open: boolean) => void; prompt?: (StudyBuddyRequest & { id: number }) | null }) {
   const pathname = usePathname();
   const { language } = useLanguage();
@@ -93,6 +101,8 @@ export default function StudentChatPanel({ open, onOpenChange, prompt }: { open:
   const [saved] = useState(restore);
   const [mode, setMode] = useState<Mode>(saved?.mode ?? "study");
   const [messages, setMessages] = useState<Message[]>(saved?.messages ?? []);
+  const [theme, setTheme] = useState<Theme>(initialTheme);
+  const toggleTheme = () => setTheme(current => { const next = current === "dark" ? "light" : "dark"; try { localStorage.setItem(THEME_KEY, next); } catch { /* the choice lasts this visit */ } return next; });
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -206,10 +216,11 @@ export default function StudentChatPanel({ open, onOpenChange, prompt }: { open:
   const lastAnswer = messages.findLastIndex(m => m.role === "assistant");
 
   return <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className={styles.panel} showCloseButton={false}>
+    <DialogContent className={styles.panel} data-theme={theme} showCloseButton={false}>
       <header className={styles.header}>
-        <span className={styles.avatar}><GraduationCap size={24} /></span>
+        <span className={styles.avatar} aria-hidden="true">✻</span>
         <div><DialogTitle className={styles.title}>Study Buddy</DialogTitle><DialogDescription className={styles.subtitle}>Your space to ask, learn and practice.</DialogDescription></div>
+        <button aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"} onClick={toggleTheme}>{theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}</button>
         <button aria-label="Start a new conversation" title="New conversation" disabled={busy || running} onClick={reset}><RotateCcw size={17} /></button>
         <button aria-label="Close Study Buddy" onClick={() => onOpenChange(false)}><X size={20} /></button>
       </header>

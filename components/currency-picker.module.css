@@ -1,6 +1,8 @@
 .picker { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; }
 .picker label { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: inherit; }
-.picker select { min-height: 36px; padding: 4px 30px 4px 10px; border: 1px solid #d8d6cc; border-radius: 10px; background: #fff; color: #141413; font: inherit; cursor: pointer; }
-.picker select:focus-visible { outline: 3px solid #d97757; outline-offset: 1px; }
-.picker select:disabled { opacity: .6; cursor: not-allowed; }
+/* Stands in for the Select trigger while it loads: same size, border and contents. */
+.placeholder { display: inline-flex; align-items: center; gap: 8px; height: 40px; min-width: 160px; padding: 0 10px 0 6px; border: 1px solid #d8d6cc; border-radius: 12px; background: #fff; color: #141413; font-size: 13px; }
+.placeholder b { font-weight: 600; }
+.placeholder > span:not(:first-child) { overflow: hidden; color: #6b6a65; text-overflow: ellipsis; white-space: nowrap; }
+.placeholder svg { margin-left: auto; color: #6b6a65; }
 .billed { display: block; margin-top: 4px; font-size: 12px; line-height: 1.45; color: #6b6a65; }

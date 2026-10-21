@@ -7,7 +7,9 @@ const source = { sourceKey: "agentic-ai-lesson-6", title: "Agentic AI essentials
 const saved: SavedBookmark = { ...source, points: ["Use bounded tool loops."], id: "a".repeat(64), savedAt: "2026-09-14T12:00:00.000Z" };
 const json = (data: unknown, ok = true) => Promise.resolve({ ok, status: ok ? 200 : 500, json: async () => data });
 let records: SavedBookmark[];
+// A signed-in browser: account calls are skipped without a Supabase session cookie.
 beforeEach(() => {
+  document.cookie = "sb-test-auth-token=signed-in; path=/";
   records = [];
   global.fetch = jest.fn((_url, init) => {
     if (init?.method === "PUT") { records = [saved]; return json({ userId: "alice", bookmark: saved }); }
@@ -60,4 +62,13 @@ test("a failed save never shows the note as bookmarked", async () => {
   await waitFor(() => expect(button).toBeEnabled());
   expect(button).toHaveAttribute("aria-pressed", "false");
   expect(screen.queryByRole("heading", { name: source.title })).not.toBeInTheDocument();
+});
+
+test("a guest without a session cookie never asks the server for bookmarks", async () => {
+  document.cookie = "sb-test-auth-token=; path=/; max-age=0";
+  const fetchMock = jest.fn();
+  global.fetch = fetchMock as unknown as typeof fetch;
+  render(<BookmarksProvider><BookmarkButton bookmark={{ title: "Closures", technology: "JavaScript", source: "/x", kind: "topic", text: "t" } as never} /></BookmarksProvider>);
+  await new Promise(resolve => setTimeout(resolve, 20));
+  expect(fetchMock).not.toHaveBeenCalled();
 });

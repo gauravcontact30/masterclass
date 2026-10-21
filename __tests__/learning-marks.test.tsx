@@ -10,7 +10,9 @@ const originalFetch = global.fetch;
 const key = learningContentKey("node", "Event loop");
 let saved: LearningMark[];
 let failSave = false;
+// A signed-in browser: account calls are skipped without a Supabase session cookie.
 beforeEach(() => {
+  document.cookie = "sb-test-auth-token=signed-in; path=/";
   saved = []; failSave = false;
   Object.defineProperty(globalThis, "Highlight", { configurable: true, value: class extends Set<Range> { priority = 0; constructor(...ranges: Range[]) { super(ranges); } } });
   Object.defineProperty(CSS, "highlights", { configurable: true, value: new Map() });

@@ -1,10 +1,12 @@
 "use client";
-import { useEffect, useState, useSyncExternalStore, type FocusEvent, type ReactNode } from "react";
-import { ArrowLeftRight, BookOpen, Check, CodeXml, Crown, Library, ListChecks, NotebookPen, Pause, Play, Sparkles } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState, useSyncExternalStore, type FocusEvent } from "react";
+import { Library, Pause, Play } from "lucide-react";
 import { useLanguage } from "./language-provider";
 import styles from "./auth-page.module.css";
 
-export type AuthSlide = { id: string; title: string; body: string; art: ReactNode };
+/** `image`: the slide's photograph, painted through the AI Gateway (scripts/generate-auth-images.ts). */
+export type AuthSlide = { id: string; title: string; body: string; image: string };
 type CarouselLabels = { region: string; pause: string; play: string; goTo: (n: number) => string; position: (n: number, total: number) => string };
 
 const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
@@ -69,7 +71,7 @@ export function AuthCarousel({ slides, labels, intervalMs = 5000 }: { slides: Au
       <div className={styles.slides} aria-live={rotating ? "off" : "polite"}>
         {slides.map((slide, i) => (
           <div key={slide.id} role="group" aria-roledescription="slide" aria-label={labels.position(i + 1, slides.length)} hidden={i !== index} className={styles.slide}>
-            <div className={styles.art} aria-hidden="true">{slide.art}</div>
+            <div className={styles.art} aria-hidden="true"><div className={styles.photo}><Image src={slide.image} alt="" fill sizes="(max-width: 899px) 1px, 460px" preload={i === 0} loading={i === 0 ? undefined : "lazy"} /></div></div>
             <h2 className={styles.slideTitle}>{slide.title}</h2>
             <p className={styles.slideBody}>{slide.body}</p>
           </div>
@@ -83,38 +85,10 @@ export function AuthCarousel({ slides, labels, intervalMs = 5000 }: { slides: Au
 export function AuthStory() {
   const { t } = useLanguage();
   const fill = (template: string, values: Record<string, number>) => template.replace(/\{(\w+)\}/g, (_, key: string) => String(values[key] ?? ""));
-  const slides: AuthSlide[] = [
-    { id: "guide", title: t("authSlide1Title"), body: t("authSlide1Body"), art: (
-      <div className={styles.artGuide}>
-        <div className={styles.docCard}>
-          <div className={styles.docHead}><span className={styles.docIcon}><BookOpen size={15} /></span><strong>Next.js 16</strong><span className={styles.docChip}>{t("beginner")}</span></div>
-          {[86, 70, 78, 54].map(width => <div key={width} className={styles.docRow}><Check size={12} /><i style={{ width: `${width}%` }} /></div>)}
-        </div>
-        <span className={styles.docSpark}><Sparkles size={18} /></span>
-      </div>
-    ) },
-    { id: "formats", title: t("authSlide2Title"), body: t("authSlide2Body"), art: (
-      <div className={styles.artFormats}>
-        <span className={styles.formatTile}><NotebookPen size={22} />{t("authFormatNotes")}</span>
-        <span className={styles.formatTile}><CodeXml size={22} />Code</span>
-        <span className={styles.formatTile}><ListChecks size={22} />Q&amp;A</span>
-        <span className={styles.formatReader}><BookOpen size={15} />{t("learn")}</span>
-      </div>
-    ) },
-    { id: "languages", title: t("authSlide3Title"), body: t("authSlide3Body"), art: (
-      <div className={styles.artLanguages}>
-        <span className={styles.glyph}>A</span>
-        <span className={styles.swap}><ArrowLeftRight size={16} /></span>
-        <span className={`${styles.glyph} ${styles.glyphHi}`}>अ</span>
-      </div>
-    ) },
-    { id: "plans", title: t("authSlide4Title"), body: t("authSlide4Body"), art: (
-      <div className={styles.artPlans}>
-        <span className={styles.planTicket}><Sparkles size={16} />{t("monthly")}</span>
-        <span className={styles.planTicket}><Crown size={16} />{t("yearly")}</span>
-      </div>
-    ) },
-  ];
+  const slides: AuthSlide[] = (["guide", "formats", "languages", "plans"] as const).map((id, at) => {
+    const n = at + 1 as 1 | 2 | 3 | 4;
+    return { id, title: t(`authSlide${n}Title`), body: t(`authSlide${n}Body`), image: `/images/auth/${id}.webp` };
+  });
   return (
     <aside className={styles.story}>
       <p className={styles.tagline}><span aria-hidden="true">✦</span>{t("brandLine")}</p>

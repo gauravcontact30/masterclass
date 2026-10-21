@@ -3,9 +3,17 @@ import { z } from "zod";
 import { gateway, generateImage, generateText, Output } from "ai";
 import { db } from "./db";
 import { providerConfigured, providerModel } from "./ai-providers";
-import { documentText } from "@/lib/notepad-library";
 import { LEARNING_IMAGE_BUCKET, learningScenePrompt } from "@/lib/learning-image";
 import type { StudyPack } from "@/lib/learning-uploads";
+
+const ENTITIES: Record<string, string> = { nbsp: " ", amp: "&", lt: "<", gt: ">", quot: "\"", apos: "'", "#39": "'" };
+/** The upload's text without markup (DOMParser is browser-only): one line per block, entities decoded, code kept as written. */
+function htmlText(html: string) {
+  return html.replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi, " ").replace(/<br\s*\/?>|<\/(p|div|li|h[1-6]|tr|pre|blockquote)>/gi, "\n").replace(/<[^>]+>/g, " ")
+    .replace(/&(#x[0-9a-f]+|#\d+|[a-z]+\d*);/gi, (entity, name: string) => name[0] !== "#" ? ENTITIES[name.toLowerCase()] ?? entity
+      : String.fromCodePoint(name[1].toLowerCase() === "x" ? parseInt(name.slice(2), 16) : Number(name.slice(1))))
+    .replace(/[ \t]+/g, " ").replace(/\s*\n\s*/g, "\n").trim();
+}
 
 /*
  * The study pack behind a Learning Dashboard upload's "Read more" window, made through Vercel AI Gateway: the text
@@ -80,7 +88,7 @@ async function store(path: string, webp: Buffer) {
 export async function buildStudyPack(upload: { id: string; title: string; summary: string | null; html: string; tags: string[]; version: number }): Promise<{ thumbnailUrl: string | null; pack: StudyPack }> {
   if (!providerConfigured("gateway")) throw new Error("ai_gateway_not_configured");
   const model = providerModel("gateway");
-  const article = clip(documentText(upload.html), 24_000);
+  const article = clip(htmlText(upload.html), 24_000);
   const { output } = await generateText({
     model: gateway(model),
     system: SYSTEM,

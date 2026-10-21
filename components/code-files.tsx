@@ -36,10 +36,10 @@ function buildTree(files: AnswerFile[]): TreeRow[] {
   return rows;
 }
 
-export function CodeFiles({ files, label = "Code example", className, annotate = true, lineComments = annotate, includeConfigTabs = true, explainFormatting = true, hoverComments = false, skin }: { files: AnswerFile[]; label?: string; className?: string; annotate?: boolean; lineComments?: boolean; includeConfigTabs?: boolean; explainFormatting?: boolean; hoverComments?: boolean; /** "apple": the neutral light Xcode look, with plain tabs instead of pastel ones. */ skin?: "apple" }) {
+export function CodeFiles({ files, label = "Code example", className, annotate = true, lineComments = annotate, includeConfigTabs = true, explainFormatting = true, hoverComments = false, skin, initialPath }: { files: AnswerFile[]; label?: string; /** The file open first (the tab this example is about); otherwise the first tab. */ initialPath?: string; className?: string; annotate?: boolean; lineComments?: boolean; includeConfigTabs?: boolean; explainFormatting?: boolean; hoverComments?: boolean; /** "apple": the neutral light Xcode look, with plain tabs instead of pastel ones. */ skin?: "apple" }) {
   const id = useId();
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const [active, setActive] = useState(() => Math.max(0, files.findIndex(file => isCodeExampleTab(file.path, includeConfigTabs))));
+  const [active, setActive] = useState(() => { const chosen = initialPath ? files.findIndex(file => file.path === initialPath) : -1; return chosen >= 0 ? chosen : Math.max(0, files.findIndex(file => isCodeExampleTab(file.path, includeConfigTabs))); });
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
   const [open, setOpen] = useState(true);

@@ -10,7 +10,7 @@ import styles from "./landing-membership.module.css";
 import { formatPrice, type Currency } from "@/lib/pricing";
 import { BilledNote, CurrencyPicker } from "./currency-picker";
 
-export type MembershipPrices = { monthly: number; yearly: number; enabled: boolean; currency?: Currency; currencies?: Currency[]; inr?: { monthly: number; yearly: number } };
+export type MembershipPrices = { monthly: number; yearly: number; enabled: boolean; currency?: Currency; currencies?: Currency[]; local?: Currency; inr?: { monthly: number; yearly: number } };
 type Area = { icon: LucideIcon; name: [string, string]; note: [string, string] };
 
 /** What the membership opens, in the dashboard's own names and sidebar icons, grouped by how people use it. */
@@ -66,7 +66,7 @@ export function LandingMembership({ prices, priceState, cycle, onCycle, onCurren
             {value === "yearly" && priceState === "ready" && savings > 0 && <span><ExpandedText text={text(`Save ${savings}%`, `${savings}% बचाएँ`)} /></span>}
           </button>)}
         </div>
-        {onCurrency && prices.currency && <CurrencyPicker value={prices.currency} options={prices.currencies} onChange={onCurrency} hi={hi} />}
+        {onCurrency && prices.currency && <CurrencyPicker value={prices.currency} options={prices.currencies} local={prices.local} onChange={onCurrency} hi={hi} />}
         <p className={styles.price}><b><ExpandedText text={priceState === "ready" ? money(prices[cycle]) : "—"} /></b><small><ExpandedText text={cycle === "monthly" ? text("/ month", "/ माह") : text("/ year", "/ वर्ष")} /></small></p>
         <p className={styles.priceNote}><ExpandedText text={priceState === "error" ? text("Current pricing is temporarily unavailable.", "वर्तमान मूल्य अभी उपलब्ध नहीं है।") : cycle === "yearly" && priceState === "ready" ? text(`${money(prices.yearly / 12)}/month equivalent, billed yearly.`, `${money(prices.yearly / 12)}/माह के बराबर, वार्षिक भुगतान।`) : text("Billed monthly. Cancel renewal any time.", "मासिक भुगतान। नवीनीकरण कभी भी रद्द करें।")} /></p>
         <BilledNote prices={prices} cycle={cycle} hi={hi} />

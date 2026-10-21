@@ -53,7 +53,7 @@ const noSubscribe = () => () => {};
  * The landing page's route planner: the visitor completes "I want to ___ in N weeks" and gets a three-stage plan
  * (foundation, practice, project) through this app's own catalog (/api/learning-path), shown as three light cards
  * on a route line. Before the first plan the cards show an example. Topic links go through sign-in, and "Start this
- * plan free" carries the goal to sign-up so the dashboard opens with the same plan.
+ * plan free" goes to sign-up.
  */
 export function LandingPathFinder() {
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
@@ -167,7 +167,7 @@ export function LandingPathFinder() {
           })}
         </ol>
         {path && <div className={styles.finish}>
-          <Link className={styles.start} href={`/sign-up?goal=${encodeURIComponent(path.goal)}`}>{text("Start this plan free", "यह योजना मुफ़्त शुरू करें")}</Link>
+          <Link className={styles.start} href="/sign-up">{text("Start this plan free", "यह योजना मुफ़्त शुरू करें")}</Link>
           <small>{path.source === "ai" ? text("Planned by AI from MasterClass notes. Adjust the pace to suit you.", "AI ने MasterClass नोट्स से बनाया। अपनी गति से बदलें।") : text("Planned from your goal's keywords because AI planning is unavailable right now.", "AI अभी उपलब्ध न होने से आपके लक्ष्य के शब्दों से बनाया।")}</small>
         </div>}
       </div>

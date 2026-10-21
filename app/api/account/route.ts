@@ -7,12 +7,16 @@ import { preparationAccess, savePreparations } from "@/lib/server/preparations";
 import { canReadTechnology } from "@/lib/study/preparations";
 import { preparationSchema } from "@/lib/study/preparation-schema";
 export async function GET(monitorRequest: Request) { return api(async () => {
-  const id = await userId(); const user = await profile(id);
-  const preparations = await preparationAccess(id);
-  // Seed the shared default guides before listing, so a first-time library
-  // is never empty. Idempotent, and a failure here must not break the page.
-  if (preparations.isSuperAdmin || preparations.selections.some(id => id.startsWith("tech:"))) await ensureDefaultLibrary(id).catch(error => console.error(JSON.stringify({ event: "default_library_seed_failed", message: String(error) })));
-  const [subscription, items, learning] = await Promise.all([account(id), documents(id), progress(id)]);
+  const id = await userId();
+  // The profile row and the preparations (auth metadata) are independent reads; this route is on every dashboard
+  // load, so its round trips run side by side rather than one after another.
+  const [user, preparations] = await Promise.all([profile(id), preparationAccess(id)]);
+  // Seed the shared default guides before listing, so a first-time library is never empty. Only the document list
+  // waits for it. Idempotent, and a failure here must not break the page.
+  const seed = preparations.isSuperAdmin || preparations.selections.some(id => id.startsWith("tech:"))
+    ? ensureDefaultLibrary(id).catch(error => console.error(JSON.stringify({ event: "default_library_seed_failed", message: String(error) })))
+    : Promise.resolve();
+  const [subscription, items, learning] = await Promise.all([account(id), seed.then(() => documents(id)), progress(id)]);
   const visible = items.filter(item => canReadTechnology(preparations, item.request.technologyId));
   return Response.json({ profile: user, preparations, account: subscription, documents: visible, progress: learning.filter(item => visible.some(doc => doc.id === item.document_id)) });
 }, monitorRequest); }

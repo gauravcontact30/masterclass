@@ -102,7 +102,7 @@ export function GuestCheckout({ initialTier, enabled, prices: located }: { initi
           <div className={styles.steps}>
             <section className={styles.step} aria-labelledby="step-plan">
               <h2 id="step-plan"><span>1</span><ExpandedText text={text("Choose a plan", "योजना चुनें")} /></h2>
-              <CurrencyPicker value={prices.currency} options={prices.currencies} onChange={switchCurrency} disabled={busy} hi={hi} />
+              <CurrencyPicker value={prices.currency} options={prices.currencies} local={prices.local} onChange={switchCurrency} disabled={busy} hi={hi} />
               <div className={styles.plans} role="radiogroup" aria-labelledby="step-plan">
                 {(["monthly", "yearly"] as const).map(value => <button key={value} type="button" role="radio" aria-checked={tier === value} className={styles.plan} onClick={() => setTier(value)} disabled={busy}>
                   <span className={styles.planName}><ExpandedText text={value === "monthly" ? text("Monthly", "मासिक") : text("Yearly", "वार्षिक")} />{value === "yearly" && saving > 0 && <em><ExpandedText text={text(`Save ${saving}%`, `${saving}% बचाएँ`)} /></em>}</span>

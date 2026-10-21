@@ -16,7 +16,10 @@
 .readMore { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 12px; border: 1px solid #3a3936; border-radius: 9px; background: #1f1e1d; color: #f5f4ee; font: 600 12px/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace; text-decoration: none; }
 .readMore b { color: #d97757; }
 .readMore svg { color: #d97757; }
-.readMore:hover { border-color: #d97757; }
+/* The landing page sets `.page a { color: inherit }`, which outranks a single class and turned this text dark on dark;
+   the doubled class wins in every state. */
+.readMore.readMore, .readMore.readMore:hover, .readMore.readMore:visited { color: #fff; }
+.readMore:hover { border-color: #d97757; background: #2a2826; }
 .readMore:focus-visible { outline: 3px solid #d97757; outline-offset: 2px; }
 .controls { display: flex; align-items: center; justify-content: center; gap: 4px; }
 .controls > button { display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 9px; background: transparent; color: #3d3d3a; cursor: pointer; }
