@@ -20,6 +20,7 @@ let events:Set<string>;
 let ledger:Row[];
 let invoiceRows:Row[];
 let remoteCalls:string[];
+let createdBodies:Row[];
 const post=(body:unknown,origin="http://localhost")=>billing(new Request("http://localhost/api/billing",{method:"POST",headers:{origin,"Content-Type":"application/json"},body:JSON.stringify(body)}));
 const sign=(text:string,secret="checkout-secret")=>createHmac("sha256",secret).update(text).digest("hex");
 async function sendEvent(event:string,extra:Row={}) {
@@ -28,7 +29,7 @@ async function sendEvent(event:string,extra:Row={}) {
 }
 beforeEach(()=>{
   Object.assign(process.env,{RAZORPAY_KEY_ID:"rzp_test_key",RAZORPAY_KEY_SECRET:"checkout-secret",RAZORPAY_WEBHOOK_SECRET:"webhook-secret",RAZORPAY_MONTHLY_PLAN_ID:"plan_monthly",RAZORPAY_YEARLY_PLAN_ID:"plan_yearly",BILLING_ENABLED:"true",ALLOW_LIVE_BILLING:"false",PRO_MONTHLY_PRICE_INR:"299",PRO_YEARLY_PRICE_INR:"2999"});
-  local=null;events=new Set();ledger=[];invoiceRows=[];remoteCalls=[];
+  local=null;events=new Set();ledger=[];invoiceRows=[];remoteCalls=[];createdBodies=[];
   remote={id:"sub_flow",plan_id:"plan_monthly",status:"created",current_end:null,notes:{user_id:"student"}};
   jest.mocked(db).mockReturnValue({from:(table:string)=>{
     let operation="read";let value:Row={};const filters:Row={};
@@ -55,7 +56,7 @@ beforeEach(()=>{
     const path=String(url).replace("https://api.razorpay.com/v1/","");remoteCalls.push(path);
     let result:unknown;
     if(path.startsWith("plans/")){const yearly=path.endsWith("yearly");result={id:yearly?"plan_yearly":"plan_monthly",period:yearly?"yearly":"monthly",interval:1,item:{amount:yearly?299900:29900,currency:"INR"}};}
-    else if(path==="subscriptions"){const body=JSON.parse(String(init?.body));remote={...remote,plan_id:body.plan_id};result=remote;}
+    else if(path==="subscriptions"){const body=JSON.parse(String(init?.body));createdBodies.push(body);remote={...remote,plan_id:body.plan_id,...(body.start_at?{id:"sub_renewal",status:"created",paid_count:0,current_end:null}:{})};result=remote;}
     else if(path.endsWith("/cancel")){const body=JSON.parse(String(init?.body));if(!body.cancel_at_cycle_end)remote={...remote,status:"cancelled"};result=remote;}
     else if(path.startsWith("invoices?"))result={items:invoiceRows};
     else if(path===`subscriptions/${remote.id}`)result=remote;
@@ -84,6 +85,42 @@ test.each(["monthly","yearly"] as const)("%s checkout, signed verification, rene
   const end=local?.current_period_end;remote={...remote,status:"cancelled",current_end:null};
   await sendEvent("subscription.cancelled");expect(local?.current_period_end).toBe(end);
   expect(entitlementTier(local as never,Date.parse(end)+1)).toBe("free");
+});
+
+test("a member whose UPI mandate was revoked sets up a renewal that starts when the paid period ends",async()=>{
+  await post({action:"checkout",tier:"monthly"});
+  remote={...remote,status:"active",paid_count:1,current_end:Math.floor(Date.now()/1000)+86400*20};
+  await post({action:"verify",razorpay_payment_id:"pay_flow",razorpay_subscription_id:"sub_flow",razorpay_signature:sign("pay_flow|sub_flow")});
+  const end=local?.current_period_end;
+  // Revoked from the customer's UPI app: Razorpay cancels at once, keeping the paid period.
+  remote={...remote,status:"cancelled"};await sendEvent("subscription.cancelled");
+  expect(local).toMatchObject({status:"cancelled",current_period_end:end});
+  const response=await post({action:"checkout",tier:"monthly"});
+  expect(response.status).toBe(200);
+  expect(await response.json()).toMatchObject({subscriptionId:"sub_renewal"});
+  expect(createdBodies.at(-1)).toMatchObject({start_at:Math.ceil(Date.parse(end)/1000)});
+  expect(local).toMatchObject({provider_ref:"sub_renewal",status:"created",current_period_end:end,cancel_at_cycle_end:false});
+  expect(entitlementTier(local as never)).toBe("monthly");
+  // The renewal mandate is authorised but not yet charged: the paid period carries over.
+  remote={...remote,status:"authenticated"};
+  expect(await (await post({action:"verify",razorpay_payment_id:"pay_renew",razorpay_subscription_id:"sub_renewal",razorpay_signature:sign("pay_renew|sub_renewal")})).json()).toEqual({verified:true,active:true});
+  expect(local?.current_period_end).toBe(end);
+  // A late event for the revoked subscription does not touch its replacement.
+  const renewal=remote;remote={...remote,id:"sub_flow",status:"cancelled"};await sendEvent("subscription.cancelled");remote=renewal;
+  expect(local?.provider_ref).toBe("sub_renewal");
+  // First charge at the old period's end.
+  remote={...remote,status:"active",paid_count:1,current_end:Math.floor(Date.parse(end)/1000)+86400*30};
+  await sendEvent("subscription.charged");
+  expect(local?.current_period_end).toBe(new Date(remote.current_end*1000).toISOString());
+  expect(entitlementTier(local as never,Date.parse(end)+1)).toBe("monthly");
+});
+
+test("an abandoned renewal keeps the paid period and nothing after it",async()=>{
+  local={user_id:"student",provider_ref:"sub_renewal",tier:"monthly",status:"created",current_period_end:new Date(Date.now()+86400e3).toISOString(),synced_at:new Date(0).toISOString(),cancel_at_cycle_end:false};
+  remote={id:"sub_renewal",plan_id:"plan_monthly",status:"created",paid_count:0,current_end:null,notes:{user_id:"student"}};
+  expect(entitlementTier(local as never)).toBe("monthly");
+  expect(entitlementTier(local as never,Date.now()+2*86400e3)).toBe("free");
+  expect(entitlementTier({...local,current_period_end:null} as never)).toBe("free");
 });
 
 test("forged signatures, another account's reference, and cross-origin calls cannot grant access",async()=>{

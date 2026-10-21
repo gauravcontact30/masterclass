@@ -7,6 +7,7 @@ import { contentKey } from "@/lib/content-overrides";
 import { Editable, useContentItem } from "./content-editing";
 import { CodeBlock } from "./pro-markdown";
 import styles from "./coffee-and-code.module.css";
+import { ListenButton } from "./listen-button";
 
 const date = (iso: string) => new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${iso}T00:00:00Z`));
 const CALLOUT = { tip: { icon: Lightbulb, label: "Tip" }, warning: { icon: AlertTriangle, label: "Watch out" }, note: { icon: Info, label: "Note" } } as const;
@@ -43,8 +44,9 @@ export function CoffeeArticle({ post, related }: Readonly<{ post: BlogPost; rela
       <h1 id="article-title"><Editable k={k} f="title">{post.title}</Editable></h1>
       <p className={styles.lead}><Editable k={k} f="dek" multiline>{post.dek}</Editable></p>
       <p className={styles.byline}><span>{post.author}</span><time dateTime={post.published}>{date(post.published)}</time><span><Clock size={13} aria-hidden="true" />{post.minutes} min read</span></p>
+      <ListenButton id={`blog:${post.slug}`} title={post.title} text={button => [post.title, post.dek, (button.closest("article")?.querySelector("[data-article-body]") as HTMLElement | null)?.innerText ?? ""].join(". ")} />
     </header>
-    <div className={styles.blocks}>{post.blocks.map((block, index) => <Block key={index} block={block} k={k} f={`blocks.${index}`} />)}</div>
+    <div className={styles.blocks} data-article-body="">{post.blocks.map((block, index) => <Block key={index} block={block} k={k} f={`blocks.${index}`} />)}</div>
     {related.length > 0 && <aside className={styles.related} aria-labelledby="related-title">
       <h2 id="related-title">Keep reading</h2>
       <ul>{related.map(next => <li key={next.slug} className={styles.relatedItem} data-tone={next.tone}><Link href={`/dashboard/coffee-and-code/${next.slug}`} prefetch={false}><span>{next.topic}</span>{next.title}</Link></li>)}</ul>

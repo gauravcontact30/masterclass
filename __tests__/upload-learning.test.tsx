@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { SuperAdminUploadLearning, placementHref } from "@/components/super-admin-upload-learning";
 import { LearningSlot } from "@/components/learning-slot";
+import { layoutDiagram } from "@/components/learning-cards";
 import { SECTIONS, slugify, surfacePages } from "@/lib/learning-uploads";
 
 const USER = "owner-1";
@@ -109,5 +110,48 @@ describe("LearningSlot", () => {
     global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ blocks: [] }) });
     render(<LearningSlot surface="dashboard" page="learn:empty" section="main" fallback={<p>Nothing yet</p>} />);
     expect(await screen.findByText("Nothing yet")).toBeInTheDocument();
+  });
+});
+
+describe("Learning Dashboard cards", () => {
+  const pack = {
+    description: "Hooks let function components keep state.", model: "anthropic/claude-sonnet-5", generatedAt: "2026-10-21T02:00:00Z",
+    interview: [{ question: "What does useState return?", answer: "A value and a setter." }, { question: "Why keep hook order stable?", answer: "React matches state by call order." }],
+    workflow: [{ title: "Render", detail: "React calls the component." }, { title: "Commit", detail: "React updates the DOM." }],
+    diagram: { title: "Render cycle", nodes: [{ id: "state", label: "State change" }, { id: "render", label: "Render" }, { id: "commit", label: "Commit" }], edges: [{ from: "state", to: "render" }, { from: "render", to: "commit", label: "diff" }] },
+    images: [{ url: "https://example.supabase.co/storage/v1/object/public/learning-images/uploads/a/v1-figure-1.webp", caption: "State flowing into a render" }],
+  };
+  it("shows a card with thumbnail, description and date, and opens the lesson with its study pack", async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ blocks: [
+      { ...upload, id: "a", surface: "dashboard", page: "notes", section: "top", title: "React hooks", summary: null, html: "<p>Full lesson body</p>", thumbnailUrl: "https://example.supabase.co/thumb.webp", studyPack: pack, publishedAt: "2026-10-21T02:40:00Z" },
+    ] }) });
+    const { container } = render(<LearningSlot surface="dashboard" page="notes" section="top" />);
+    expect(await screen.findByRole("heading", { name: "React hooks" })).toBeInTheDocument();
+    expect(screen.getByText("Hooks let function components keep state.")).toBeInTheDocument();
+    expect(container.querySelector("time")).toHaveAttribute("dateTime", "2026-10-21T02:40:00Z");
+    expect(container.querySelector('img[src="https://example.supabase.co/thumb.webp"]')).toBeInTheDocument();
+    expect(screen.queryByText("Full lesson body")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /read more: react hooks/i }));
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("Full lesson body")).toBeInTheDocument();
+    expect(within(dialog).getByText("What does useState return?")).toBeInTheDocument();
+    expect(within(dialog).getAllByText("Commit")).toHaveLength(2);
+    expect(within(dialog).getByRole("img", { name: /render cycle/i })).toBeInTheDocument();
+    expect(within(dialog).getByAltText("State flowing into a render")).toBeInTheDocument();
+  });
+  it("says the study pack is on its way when it has not been generated yet", async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ blocks: [{ ...upload, id: "b", surface: "dashboard", page: "quiz", section: "top", title: "Fresh upload" }] }) });
+    render(<LearningSlot surface="dashboard" page="quiz" section="top" />);
+    fireEvent.click(await screen.findByRole("button", { name: /read more: fresh upload/i }));
+    expect(await screen.findByText(/being prepared/i)).toBeInTheDocument();
+  });
+  it("lays a diagram out top to bottom, side by side where it branches", () => {
+    const { nodes, height } = layoutDiagram({ nodes: [{ id: "a", label: "A" }, { id: "b", label: "B" }, { id: "c", label: "C" }, { id: "d", label: "D" }], edges: [{ from: "a", to: "b" }, { from: "a", to: "c" }, { from: "b", to: "d" }, { from: "d", to: "a" }] });
+    const y = Object.fromEntries(nodes.map(node => [node.id, node.y]));
+    const x = Object.fromEntries(nodes.map(node => [node.id, node.x]));
+    expect(y.b).toBeGreaterThan(y.a);
+    expect(y.b).toBe(y.c);
+    expect(x.b).not.toBe(x.c);
+    expect(Number.isFinite(height)).toBe(true);
   });
 });

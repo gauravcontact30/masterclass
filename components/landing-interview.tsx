@@ -16,6 +16,7 @@ import { contentKey } from "@/lib/content-overrides";
 const DashboardLessons = dynamic(() => import("./dashboard-lessons").then(module => module.DashboardLessons));
 import home from "./landing-home.module.css";
 import styles from "./landing-interview.module.css";
+import { ListenButton } from "./listen-button";
 
 type Text = (en: string, hindi: string) => string;
 /** Eight light tones the slides cycle through, defined in landing-interview.module.css. */
@@ -94,6 +95,7 @@ function InterviewSlide({ tech, index, total, near, text, tab, onTab, preview = 
       </CoverPicture>
       <div className={styles.coverBody}>
         <h3><Editable k={k} f="title">{tech.title}</Editable></h3>
+        <ListenButton id={`interview:${tech.id}`} title={tech.title} text={() => [tech.title, active ? `${active.title}. ${active.tagline}` : tech.tagline].join(". ")} />
         {active && <p className={styles.subtitle}>{active.title}</p>}
         <p className={styles.tagline}>{active ? active.tagline : <Editable k={k} f="tagline" multiline>{tech.tagline}</Editable>}</p>
         <dl className={styles.stats}>

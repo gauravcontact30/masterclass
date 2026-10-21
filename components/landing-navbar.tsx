@@ -9,6 +9,8 @@ import { LandingPlansMenu } from "./landing-plans-menu";
 import { scrollToSection } from "./hashless-navigation";
 import { useLanguage } from "./language-provider";
 import styles from "./landing-home.module.css";
+import type { Currency } from "@/lib/pricing";
+import type { PlansMenuPrices } from "./landing-plans-menu";
 
 type Indicator = { left: number; right: number; visible: boolean; href: string | null };
 /** Each link's own light pill colour, in link order (repeats if there are more links). */
@@ -31,7 +33,7 @@ const NAV_ICONS: Record<string, LucideIcon> = {
  * each link has its own light pill colour, and the link under it turns dark.
  */
 /** `links`: [section key ("#workflows"), label, the section's own page for crawlers and new tabs]. */
-export function LandingNavbar({ links, prices = null }: { links: [string, string, string?][]; prices?: { monthly: number; yearly: number } | null }) {
+export function LandingNavbar({ links, prices = null, onCurrency }: { links: [string, string, string?][]; prices?: PlansMenuPrices | null; onCurrency?: (currency: Currency) => void }) {
   const { language, setLanguage } = useLanguage();
   const hi = language === "hi";
   const text = (en: string, hindi: string) => hi ? hindi : en;
@@ -112,7 +114,7 @@ export function LandingNavbar({ links, prices = null }: { links: [string, string
       </nav>
       <div className={styles.navActions}>
         <SuggestionBox label={text("Suggestion Box", "सुझाव पेटी")} />
-        <LandingPlansMenu prices={prices} open={plans} onOpenChange={openPlans} />
+        <LandingPlansMenu prices={prices} open={plans} onOpenChange={openPlans} onCurrency={onCurrency} />
         <div ref={accountRef} className={styles.account}>
           <button type="button" className={styles.accountButton} aria-label={text("Account", "खाता")} aria-expanded={account} aria-controls="landing-account-menu" onClick={() => { setAccount(value => !value); setMenu(false); setPlans(false); }}>
             <UserRound size={19} strokeWidth={1.9} aria-hidden="true" />

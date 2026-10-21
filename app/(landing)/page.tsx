@@ -5,6 +5,7 @@ import { landingLibrary, previewLibrary } from "@/lib/landing-library";
 import { landingProPreview } from "@/lib/landing-pro-preview";
 import { landingDaily } from "@/lib/server/landing-daily";
 import { billingConfigured } from "@/lib/server/config";
+import { internationalBilling } from "@/lib/server/pricing";
 import { officialTechDocs, previewTechDocs } from "@/lib/server/official-tech-docs";
 import { organizationSchema, pageMetadata, websiteSchema } from "@/lib/seo";
 import { contentOverrides } from "@/lib/server/content-overrides";
@@ -24,8 +25,9 @@ export default async function Home() {
   // the "See all N" links, and /dashboard reads the full set itself.
   const day = landingDaily();
   const daily = { ...day, pulse: day.pulse.slice(0, DAILY_PREVIEW), words: day.words.slice(0, DAILY_PREVIEW), totals: { pulse: day.pulse.length, words: day.words.length } };
-  const prices = { monthly: Number(process.env.PRO_MONTHLY_PRICE_INR ?? 299), yearly: Number(process.env.PRO_YEARLY_PRICE_INR ?? 2999), enabled: billingConfigured() };
+  // Cached for everyone, so it is priced in rupees; with international billing on, the page re-prices itself for the visitor.
+  const prices = { monthly: Number(process.env.PRO_MONTHLY_PRICE_INR ?? 299), yearly: Number(process.env.PRO_YEARLY_PRICE_INR ?? 2999), enabled: billingConfigured(), currency: "INR" as const, international: internationalBilling() };
   // Super Admin content edits apply to the landing previews too; a save expires both this page and the overrides.
   const [docs, overrides] = await Promise.all([officialTechDocs(), contentOverrides()]);
-  return <><JsonLd data={[websiteSchema(), organizationSchema()]} /><LandingPage copyrightYear={new Date().getFullYear()} pro={pro} library={previewLibrary(landingLibrary(pro))} prices={prices} daily={daily} techDocs={previewTechDocs(docs)} overrides={overrides} coffee={blogTeasers(3)} /></>;
+  return <><JsonLd data={[websiteSchema(), organizationSchema()]} /><LandingPage copyrightYear={new Date().getFullYear()} pro={pro} library={previewLibrary(landingLibrary(pro))} prices={prices} daily={daily} techDocs={previewTechDocs(docs)} overrides={overrides} coffee={blogTeasers(8)} /></>;
 }

@@ -14,16 +14,32 @@ export type LearningTone = "ivory" | "sky" | "mint" | "lavender" | "rose" | "pea
 export type LearningDevice = "all" | "desktop" | "mobile";
 export type LearningLanguage = "all" | "en" | "hi";
 
+export type PackStatus = "none" | "generating" | "ready" | "failed";
+/**
+ * What the Learning Dashboard's "Read more" window shows besides the document, generated through Vercel AI Gateway
+ * when an upload is published there (migration 0033). The diagram is a small directed graph the window lays out.
+ */
+export type StudyPack = {
+  description: string;
+  interview: { question: string; answer: string }[];
+  workflow: { title: string; detail: string }[];
+  diagram: { title: string; nodes: { id: string; label: string }[]; edges: { from: string; to: string; label?: string }[] };
+  images: { url: string; caption: string }[];
+  model: string; generatedAt: string;
+};
+
 /** One uploaded document as the public slot receives it. */
 export type LearningBlock = {
   id: string; title: string; summary: string | null; html: string; background: string; surface: LearningSurface; page: string; section: string;
   layout: LearningLayout; tone: LearningTone; position: number; showTitle: boolean; pinned: boolean;
   device: LearningDevice; language: LearningLanguage; ctaLabel: string | null; ctaUrl: string | null; tags: string[];
+  /** Absent before migration 0033 and until the pack has been generated. */
+  thumbnailUrl?: string | null; studyPack?: StudyPack | null; publishedAt?: string | null;
 };
 /** The same document with everything the owner configures, for the admin page. */
 export type LearningUpload = LearningBlock & {
   status: LearningStatus; audience: LearningAudience; startsAt: string | null; endsAt: string | null; sourceFileId: string | null;
-  views: number; version: number; createdAt: string; updatedAt: string;
+  views: number; version: number; createdAt: string; updatedAt: string; packStatus?: PackStatus; packError?: string | null;
 };
 /** An earlier version of an upload's content, kept on every edit that changed it. */
 export type LearningRevision = { id: string; uploadId: string; version: number; title: string; summary: string | null; html: string; background: string; createdAt: string };

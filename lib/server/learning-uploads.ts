@@ -1,12 +1,14 @@
 import "server-only";
 import { z } from "zod";
 import { cacheLife, cacheTag, revalidateTag } from "next/cache";
+import { after } from "next/server";
 import { db } from "./db";
 import { currentUser } from "./auth";
 import { account } from "./repository";
 import { HttpError } from "./http";
+import { buildStudyPack } from "./learning-study-pack";
 import { isOwnerUser, isSuperAdminUser } from "@/lib/study/preparations";
-import { isSafeCtaUrl, slugify, type LearningBlock, type LearningPage, type LearningRevision, type LearningSurface, type LearningUpload } from "@/lib/learning-uploads";
+import { isSafeCtaUrl, slugify, type LearningBlock, type LearningPage, type LearningRevision, type LearningSurface, type LearningUpload, type PackStatus, type StudyPack } from "@/lib/learning-uploads";
 
 /*
  * Storage for Upload Learning. Only the owner account (OWNER_EMAIL) may write; anyone may read what is published,
@@ -35,6 +37,8 @@ type UploadRow = {
   layout: LearningUpload["layout"]; tone: LearningUpload["tone"]; show_title: boolean; position: number; pinned: boolean; audience: LearningUpload["audience"];
   device: LearningUpload["device"]; language: LearningUpload["language"]; cta_label: string | null; cta_url: string | null; tags: string[] | null;
   status: LearningUpload["status"]; starts_at: string | null; ends_at: string | null; views: number | string; version: number; created_at: string; updated_at: string;
+  // Migration 0033; absent before it is applied.
+  thumbnail_url?: string | null; study_pack?: StudyPack | null; pack_status?: PackStatus; pack_error?: string | null; published_at?: string | null;
 };
 type PageRow = { id: string; slug: string; title: string; description: string | null; icon: string; position: number; visible: boolean; created_at: string; updated_at: string };
 type RevisionRow = { id: string; upload_id: string; version: number; title: string; summary: string | null; html: string; background: string; created_at: string };
@@ -43,10 +47,11 @@ const toBlock = (row: UploadRow): LearningBlock => ({
   id: row.id, title: row.title, summary: row.summary, html: row.html, background: row.background, surface: row.surface, page: row.page, section: row.section,
   layout: row.layout, tone: row.tone, position: row.position, showTitle: row.show_title, pinned: row.pinned, device: row.device, language: row.language,
   ctaLabel: row.cta_label, ctaUrl: row.cta_url, tags: row.tags ?? [],
+  thumbnailUrl: row.thumbnail_url ?? null, studyPack: row.study_pack ?? null, publishedAt: row.published_at ?? row.starts_at ?? row.updated_at,
 });
 const toUpload = (row: UploadRow): LearningUpload => ({
   ...toBlock(row), status: row.status, audience: row.audience, startsAt: row.starts_at, endsAt: row.ends_at, sourceFileId: row.source_file_id,
-  views: Number(row.views) || 0, version: row.version, createdAt: row.created_at, updatedAt: row.updated_at,
+  views: Number(row.views) || 0, version: row.version, createdAt: row.created_at, updatedAt: row.updated_at, packStatus: row.pack_status ?? "none", packError: row.pack_error ?? null,
 });
 const toPage = (row: PageRow): LearningPage => ({ id: row.id, slug: row.slug, title: row.title, description: row.description, icon: row.icon, position: row.position, visible: row.visible, createdAt: row.created_at, updatedAt: row.updated_at });
 const toRevision = (row: RevisionRow): LearningRevision => ({ id: row.id, uploadId: row.upload_id, version: row.version, title: row.title, summary: row.summary, html: row.html, background: row.background, createdAt: row.created_at });
@@ -138,9 +143,10 @@ export async function listUploads(): Promise<LearningUpload[]> {
   return (rows(await db().from("learning_uploads").select("*").order("updated_at", { ascending: false })) as UploadRow[]).map(toUpload);
 }
 export async function createUpload(input: UploadInput, ownerId: string) {
-  const created = toUpload(rows(await db().from("learning_uploads").insert({ ...toRow(input), created_by: ownerId }).select("*").single()) as UploadRow);
+  const row = rows(await db().from("learning_uploads").insert({ ...toRow(input), created_by: ownerId }).select("*").single()) as UploadRow;
   published();
-  return created;
+  whenPublished([row]);
+  return toUpload(row);
 }
 /** Updates an upload; when its content changes, the previous content is kept as a revision and the version goes up. */
 export async function updateUpload(id: string, input: Partial<UploadInput>) {
@@ -153,14 +159,57 @@ export async function updateUpload(id: string, input: Partial<UploadInput>) {
   const row = rows(await db().from("learning_uploads").update(patch).eq("id", id).select("*").maybeSingle()) as UploadRow | null;
   if (!row) throw new HttpError(404, "not_found");
   published();
+  whenPublished([row], contentChanged);
   return toUpload(row);
 }
 /** One change applied to many uploads at once (publish, hide, unpublish to draft, pin). */
 export async function bulkUpdate(ids: string[], changes: Pick<Partial<UploadInput>, "status" | "pinned">) {
-  rows(await db().from("learning_uploads").update({ ...toRow(changes), updated_at: new Date().toISOString() }).in("id", ids));
+  const changed = rows(await db().from("learning_uploads").update({ ...toRow(changes), updated_at: new Date().toISOString() }).in("id", ids).select("*")) as UploadRow[];
   published();
+  if (changes.status === "published") whenPublished(changed);
 }
 export async function deleteUploads(ids: string[]) { rows(await db().from("learning_uploads").delete().in("id", ids)); published(); }
+
+// ----- Study packs (migration 0033) -----
+/**
+ * After a response that published uploads: stamps when each first went live, and for Learning Dashboard uploads
+ * without a pack (or whose content just changed) generates one. Both are skipped quietly before migration 0033.
+ */
+function whenPublished(changed: UploadRow[], contentChanged = false) {
+  const live = changed.filter(row => row.status === "published");
+  if (!live.length) return;
+  after(async () => {
+    const stamp = await db().from("learning_uploads").update({ published_at: new Date().toISOString() }).in("id", live.map(row => row.id)).is("published_at", null);
+    if (stamp.error) { if (!missing(stamp.error)) console.error("learning uploads: published_at", stamp.error.message); return; }
+    published();
+    for (const row of live) {
+      if (row.surface !== "dashboard" || (!contentChanged && row.pack_status && row.pack_status !== "none")) continue;
+      await refreshStudyPack(row.id).catch(error => console.error(`learning uploads: study pack for ${row.id}`, error));
+    }
+  });
+}
+/**
+ * Generates an upload's thumbnail, illustrations and study pack through Vercel AI Gateway and saves them. A pack
+ * already being generated is left alone unless `force` (the owner's Regenerate, which also recovers a run that
+ * died). Returns null when another run holds it.
+ */
+export async function refreshStudyPack(id: string, force = false): Promise<LearningUpload | null> {
+  let claim = db().from("learning_uploads").update({ pack_status: "generating", pack_error: null }).eq("id", id);
+  if (!force) claim = claim.neq("pack_status", "generating");
+  const row = rows(await claim.select("*").maybeSingle()) as UploadRow | null;
+  if (!row) { if (force) throw new HttpError(404, "not_found"); return null; }
+  try {
+    const { thumbnailUrl, pack } = await buildStudyPack({ id: row.id, title: row.title, summary: row.summary, html: row.html, tags: row.tags ?? [], version: row.version });
+    const saved = rows(await db().from("learning_uploads").update({ thumbnail_url: thumbnailUrl ?? row.thumbnail_url ?? null, study_pack: pack, pack_status: "ready", pack_error: null }).eq("id", id).select("*").maybeSingle()) as UploadRow | null;
+    published();
+    return saved ? toUpload(saved) : null;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    await db().from("learning_uploads").update({ pack_status: "failed", pack_error: message.slice(0, 300) }).eq("id", id);
+    published();
+    throw error;
+  }
+}
 
 export async function listRevisions(uploadId: string): Promise<LearningRevision[]> {
   return (rows(await db().from("learning_upload_revisions").select("*").eq("upload_id", uploadId).order("version", { ascending: false }).limit(50)) as RevisionRow[]).map(toRevision);

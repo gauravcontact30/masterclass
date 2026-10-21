@@ -28,6 +28,7 @@ import { byInterviewPriority, NOTES_PAGE_SIZE, notesPage, searchStudyNotes, shor
 import styles from "./notes-explorer.module.css";
 import { LearningPicture } from "@/components/learning-picture";
 import { learningImageUrl } from "@/lib/learning-image";
+import { ListenButton } from "./listen-button";
 
 export function NotesExplorer({ notes, technologies, initialQuery = "", initialTechnology = "", initialKind = "", initialNote = "" }: {
   notes: NotesSummary[]; technologies: NotesTechnology[]; initialQuery?: string; initialTechnology?: string; initialKind?: string; initialNote?: string;
@@ -110,7 +111,7 @@ export function TopicCard({ note: rawNote, initiallyOpen = false }: { note: Note
   return <BookmarkScope value={{ sourceKey: note.id, title: note.title, technology: note.technology, href: `/dashboard/notes?note=${encodeURIComponent(note.id)}` }}><article id={note.id} className={`${styles.card} ${learningCard.card}`} aria-labelledby={`${id}-title`} data-expanded={open && !useModal}>
     <LearningPicture variant="card" className={styles.cardPicture} src={learningImageUrl("notes", [note.id])} alt={`Illustration of ${note.title}`} />
     <LearningRegion contentKey={learningContentKey(note.technology, note.title)}>
-    <header className={styles.cardHeader}><h3 id={`${id}-title`}><ExpandedText text={note.title} /></h3><span className={styles.badge}><ExpandedText text={note.kinds.includes("AWS services") ? "SERVICE" : note.kinds.includes("Glossary") ? "GLOSSARY" : "TOPIC"} /></span></header>
+    <header className={styles.cardHeader}><h3 id={`${id}-title`}><ExpandedText text={note.title} /></h3><span className={styles.badge}><ExpandedText text={note.kinds.includes("AWS services") ? "SERVICE" : note.kinds.includes("Glossary") ? "GLOSSARY" : "TOPIC"} /></span><ListenButton id={`note:${note.id}`} title={note.title} text={() => [note.title, note.description, ...note.points].join(". ")} compact /></header>
     <BookmarkButton points={[note.description, ...note.points]} /><div className={styles.purpose}><h4>Definition</h4><p><BookmarkPoint text={note.description}><ExpandedText text={shortDefinition(note.description)} /></BookmarkPoint></p></div>
     </LearningRegion>
     <div className={styles.cardMeta}><span><GraduationCap size={15} /> Interview prep</span><Priority value={note.priority} /></div>

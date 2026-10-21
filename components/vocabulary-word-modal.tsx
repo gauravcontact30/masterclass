@@ -15,6 +15,7 @@ import {
   VOCABULARY_UPDATED_EVENT,
 } from "@/lib/vocabulary-storage";
 import styles from "./vocabulary-word-modal.module.css";
+import { ListenButton } from "./listen-button";
 
 export interface VocabularyWordModalProps {
   word: string | null;
@@ -288,6 +289,7 @@ export function VocabularyWordModal({
                     <span className={styles.hearButtonLabel}>Hear it</span>
                   </button>
                 )}
+                {entry?.word && <ListenButton id={`word:${entry.word}`} title={entry.word} text={button => (button.closest("[aria-labelledby='vocab-modal-title']") as HTMLElement | null)?.innerText.replace(/Hear it|Listen|Pause|Resume/g, " ") ?? entry.word} compact />}
               </div>
               <div className={styles.subMeta}>
                 {entry?.pronunciation && (

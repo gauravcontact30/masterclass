@@ -1,0 +1,33 @@
+/* The floating card carousel on the landing feature sections. Slides stack in one grid cell and cross-fade. */
+.carousel { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--nb-cream-edge, #e8e6dc); border-radius: 22px; background: rgba(255, 255, 255, .97); box-shadow: 0 30px 60px -30px rgba(20, 20, 19, .55); color: #141413; }
+.viewport { display: grid; }
+.slide { grid-area: 1 / 1; display: grid; gap: 0; overflow: hidden; border-radius: 14px; background: #fff; opacity: 0; visibility: hidden; transition: opacity .6s ease, visibility 0s linear .6s; }
+.slide[data-active] { opacity: 1; visibility: visible; transition: opacity .6s ease, visibility 0s; }
+.cover { position: relative; aspect-ratio: 3 / 1.75; overflow: hidden; background: linear-gradient(135deg, #cfe1f6, #ddd4f5 55%, #f5dac6); }
+.cover img { object-fit: cover; transition: transform 15s linear; }
+.slide[data-active] .cover img { transform: scale(1.06); }
+.kicker { position: absolute; left: 10px; bottom: 10px; max-width: calc(100% - 20px); overflow: hidden; padding: 5px 10px; border-radius: 999px; background: rgba(31, 30, 29, .8); backdrop-filter: blur(4px); color: #f5f4ee; font-size: 11.5px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.body { display: grid; gap: 6px; padding: 12px 4px 4px; }
+.title { font-size: 16px; font-weight: 650; line-height: 1.3; letter-spacing: -.01em; }
+.text { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 13px; line-height: 1.5; color: #5e5d59; }
+.foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
+.meta { font-size: 11.5px; color: #6b6a65; }
+.actions { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; }
+.readMore { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 12px; border: 1px solid #3a3936; border-radius: 9px; background: #1f1e1d; color: #f5f4ee; font: 600 12px/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace; text-decoration: none; }
+.readMore b { color: #d97757; }
+.readMore svg { color: #d97757; }
+.readMore:hover { border-color: #d97757; }
+.readMore:focus-visible { outline: 3px solid #d97757; outline-offset: 2px; }
+.controls { display: flex; align-items: center; justify-content: center; gap: 4px; }
+.controls > button { display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 9px; background: transparent; color: #3d3d3a; cursor: pointer; }
+.controls > button:hover { background: #f0eee6; }
+.controls button:focus-visible { outline: 3px solid #d97757; outline-offset: 1px; }
+.dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; max-width: 240px; }
+/* A 24px tap target around a small dot. */
+.dots button { position: relative; width: 24px; height: 24px; border: 0; background: transparent; cursor: pointer; }
+.dots button::after { content: ""; position: absolute; inset: 9px; border-radius: 50%; background: #d6d3c8; transition: background .2s ease, inset .2s ease; }
+.dots button[aria-current="true"]::after { inset: 8px 4px; border-radius: 4px; background: #b5573a; }
+@media (prefers-reduced-motion: reduce) {
+  .slide, .slide[data-active] { transition: none; }
+  .cover img, .slide[data-active] .cover img { transition: none; transform: none; }
+}

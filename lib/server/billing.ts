@@ -49,13 +49,15 @@ export async function reconcileSubscription(ref:string,eventId:string) {
   // A delayed webhook for a finished subscription must not affect its replacement.
   // apply_subscription also checks the reference atomically if a replacement races this read.
   if(current&&current.provider_ref!==remote.id)return;
-  const end = remote.paid_count === 0 ? null : remote.current_end ? new Date(remote.current_end*1000).toISOString() :
+  // A renewal set up after a revoked mandate carries the old paid period until its first charge.
+  const carried = local?.current_period_end && Date.parse(local.current_period_end) > Date.now() ? local.current_period_end : null;
+  const end = remote.paid_count === 0 ? carried : remote.current_end ? new Date(remote.current_end*1000).toISOString() :
     ["cancelled", "completed", "pending", "halted", "paused"].includes(remote.status) ? local?.current_period_end ?? null : null;
   check(await db().rpc("apply_subscription",{p_event:eventId,p_user:owner,p_ref:remote.id,p_tier:tier,p_status:remote.status,p_end:end,p_synced:syncedAt,p_cancel:remote.status === "cancelled" || (local?.cancel_at_cycle_end??false)}));
   return remote;
 }
 
-/** Never charge a plan whose price or billing interval differs from the offer. */
+/** Never charge a plan whose price or billing interval differs from the offer. Every visitor is charged in rupees. */
 export async function validateSubscriptionPlan(tier: "monthly" | "yearly") {
   const id = required(tier === "monthly" ? "RAZORPAY_MONTHLY_PLAN_ID" : "RAZORPAY_YEARLY_PLAN_ID");
   const plan = z.object({ id:z.string(), period:z.string(), interval:z.number(), item:z.object({ amount:z.number(), currency:z.string() }) }).parse(await razorpay(`plans/${encodeURIComponent(id)}`));

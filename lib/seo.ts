@@ -18,7 +18,7 @@ export function isIndexable(): boolean {
 
 export const siteName = "MasterClass";
 export const siteTitle = "MasterClass Buddy | Study Notes, Exam Prep & Coding Tutorials";
-export const siteDescription = "Learn in English and Hindi with an AI tutor: CBSE and NCERT notes, SSC, JEE and NEET practice, coding tutorials and interview questions on MasterClass Buddy.";
+export const siteDescription = "Learn in English and Hindi with an AI tutor and audio lectures: CBSE and NCERT notes, SSC, JEE and NEET practice, coding, AI agents and interview questions.";
 /**
  * Site-wide keywords, grouped by what MasterClass sells: bilingual learning, the AI tutor, school and competitive
  * exams, coding and interview preparation, and the membership. Google ignores the keywords tag; Bing and others
@@ -29,12 +29,18 @@ export const siteKeywords = [
   "MasterClass", "MasterClass Buddy",
   // Bilingual, AI-assisted learning
   "online learning platform India", "learn in Hindi and English", "Hindi medium study notes", "study notes in Hindi", "AI tutor", "AI study assistant", "ask doubts online", "personalised study plan",
+  "audio lectures", "listen to lessons online", "learn by listening", "AI search for students", "online courses for international students",
   // School and competitive exams
-  "CBSE", "NCERT", "NCERT solutions", "ICSE", "ISC", "SSC", "SSC CGL preparation", "banking exam preparation", "railway exam preparation", "JEE", "NEET", "practice tests", "mock tests with solutions", "IELTS vocabulary",
+  "CBSE", "NCERT", "NCERT solutions", "NCERT notes class 10", "NCERT notes class 12", "ICSE", "ISC", "SSC", "SSC CGL preparation", "UPSC preparation", "IBPS PO preparation", "banking exam preparation", "RRB NTPC preparation", "railway exam preparation", "CTET preparation", "defence exam preparation", "JEE", "NEET", "practice tests", "mock tests with solutions", "IELTS vocabulary",
   // Coding and careers
-  "learn coding online", "learn coding in Hindi", "coding tutorials", "programming for beginners", "full stack developer course", "React tutorial", "Next.js tutorial", "Python tutorials", "JavaScript interview questions", "React interview questions", "technology interview preparation", "system design", "system design interview questions", "AI agent workflows", "LangChain tutorial", "AWS tutorial",
+  "learn coding online", "learn coding in Hindi", "coding tutorials", "programming for beginners", "full stack developer course", "React tutorial", "Next.js tutorial", "Python tutorials", "JavaScript interview questions", "React interview questions", "technology interview preparation", "coding interview preparation", "frontend interview questions", "Node.js interview questions", "Python interview questions", "system design", "system design interview questions", "system design course",
+  "Next.js 16 tutorial", "React hooks explained", "AWS tutorial", "AWS services explained", "AWS interview questions",
+  // AI engineering
+  "agentic AI course", "AI agents tutorial", "AI agent workflows", "generative AI course", "generative AI in Hindi", "LangChain tutorial", "LangGraph tutorial", "LangSmith tutorial", "LangFlow tutorial", "n8n automation tutorial", "latest AI news for developers",
   // Vocabulary and communication
-  "English vocabulary with Hindi meanings", "spoken English words", "corporate English vocabulary",
+  "English vocabulary with Hindi meanings", "spoken English words", "corporate English vocabulary", "word of the day with Hindi meaning",
+  // Articles
+  "Coffee & Code", "software engineering articles", "web development blog",
   // Membership
   "affordable online courses", "learning membership India",
 ];
@@ -131,7 +137,7 @@ export function organizationSchema() {
   return {
     "@context": "https://schema.org", "@type": "EducationalOrganization", "@id": `${url}#organization`, name: siteName, alternateName: "MasterClass Buddy", url,
     logo: new URL("/icon.svg", url).href, description: siteDescription, slogan: "Learn in English and Hindi, with an AI tutor beside you.", areaServed: "IN", knowsLanguage: ["en", "hi"],
-    knowsAbout: ["CBSE", "NCERT", "ICSE", "SSC exams", "JEE", "NEET", "IELTS vocabulary", "JavaScript", "TypeScript", "React", "Next.js", "Python", "Node.js", "System design", "AWS", "Git", "AI agents", "LangChain", "English vocabulary"],
+    knowsAbout: ["CBSE", "NCERT", "ICSE", "SSC exams", "JEE", "NEET", "IELTS vocabulary", "JavaScript", "TypeScript", "React", "Next.js", "Python", "Node.js", "System design", "AWS", "Git", "AI agents", "Agentic AI", "Generative AI", "LangChain", "LangGraph", "LangSmith", "LangFlow", "n8n", "English vocabulary"],
     hasOfferCatalog: { "@type": "OfferCatalog", name: "MasterClass membership", itemListElement: [
       offer("Monthly membership", Number(process.env.PRO_MONTHLY_PRICE_INR ?? 299), "MON"),
       offer("Yearly membership", Number(process.env.PRO_YEARLY_PRICE_INR ?? 2999), "ANN"),

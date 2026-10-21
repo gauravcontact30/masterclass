@@ -1,0 +1,81 @@
+/* Landing feature sections: copy (details, how it works, a way in) beside an AI Gateway picture with a drawn preview
+   floating on it, alternating sides. Colours are the Claude Code tokens on `.home`. */
+.feature { overflow: hidden; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: clamp(36px, 6vw, 88px); }
+.layout[data-flip] .visual { order: -1; }
+.copy { display: grid; gap: 20px; justify-items: start; min-width: 0; }
+.title { font-weight: 600; font-size: clamp(30px, 3.4vw, 46px); line-height: 1.08; letter-spacing: -0.02em; text-wrap: balance; }
+.title em { font-style: italic; color: var(--nb-ink); }
+
+/* Four details, two by two */
+.details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 100%; padding: 0; list-style: none; }
+.details li { display: flex; gap: 12px; padding: 14px; border: 1px solid var(--nb-rule); border-radius: 16px; background: var(--nb-sheet); transition: border-color .2s ease, transform .2s ease; }
+.details li:hover { border-color: var(--nb-cream-edge); transform: translateY(-2px); }
+.details h3 { font-size: 15px; font-weight: 650; line-height: 1.3; color: var(--nb-graphite); }
+.details p { margin-top: 4px; font-size: 13.5px; line-height: 1.55; color: var(--nb-text); }
+.detailIcon { display: grid; place-items: center; flex-shrink: 0; width: 36px; height: 36px; border-radius: 11px; background: linear-gradient(135deg, #fbe9e1, #f6d7c8); color: var(--nb-ink); }
+
+/* How it works: three numbered steps joined by a rule */
+.how { display: grid; gap: 10px; width: 100%; }
+.howLabel { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--nb-muted); }
+.howSteps { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; }
+.howSteps::before { content: ""; position: absolute; top: 15px; left: 16px; right: 16px; height: 1px; background: repeating-linear-gradient(90deg, var(--nb-cream-edge) 0 6px, transparent 6px 12px); }
+.howSteps li { position: relative; display: grid; gap: 8px; font-size: 14px; font-weight: 600; line-height: 1.35; color: var(--nb-graphite); }
+.howSteps span { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--nb-button); color: #fff; font-size: 13px; font-weight: 700; box-shadow: 0 0 0 5px var(--nb-paper); }
+.feature[data-ground="wash"] .howSteps span { box-shadow: 0 0 0 5px var(--nb-wash); }
+
+/* The picture, with an offset accent behind it, a badge and the drawn preview floating on it */
+.visual { position: relative; min-width: 0; padding: 0 0 56px 28px; }
+.layout[data-flip] .visual { padding: 0 28px 56px 0; }
+.visual::before { content: ""; position: absolute; inset: 28px 0 84px 0; border-radius: 32px; background: linear-gradient(135deg, rgba(217, 119, 87, .22), rgba(221, 212, 245, .45)); transform: translate(-28px, 0) rotate(-2deg); }
+.layout[data-flip] .visual::before { transform: translate(28px, 0) rotate(2deg); }
+.photo { position: relative; aspect-ratio: 4 / 3; overflow: hidden; border: 1px solid var(--nb-rule); border-radius: 28px; background: var(--nb-sheet); box-shadow: 0 40px 80px -48px rgba(20, 20, 19, .55); }
+.photo img { object-fit: cover; }
+.badge { position: absolute; top: 18px; right: 18px; display: inline-flex; align-items: center; gap: 7px; padding: 8px 13px; border-radius: 999px; background: rgba(31, 30, 29, .82); backdrop-filter: blur(6px); color: #f5f4ee; font-size: 12.5px; font-weight: 600; box-shadow: 0 10px 24px -14px rgba(0, 0, 0, .6); }
+.layout[data-flip] .badge { right: auto; left: 18px; }
+.badge svg { color: #d97757; }
+.float { position: absolute; right: 0; bottom: 0; width: min(78%, 340px); }
+.layout[data-flip] .float { right: auto; left: 0; }
+
+.mock { display: grid; gap: 11px; padding: 18px; border: 1px solid var(--nb-cream-edge); border-radius: 18px; background: rgba(255, 255, 255, .96); box-shadow: 0 30px 60px -30px rgba(20, 20, 19, .55); color: #141413; font-size: 13.5px; }
+.mockLabel { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #b5573a; }
+
+.searchBox { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border: 1px solid #e3e0d6; border-radius: 12px; background: #faf9f5; color: #3d3d3a; }
+.answer { display: grid; gap: 8px; padding: 12px 14px; border-radius: 14px; background: #f1f7fe; }
+.answer strong { font-size: 14.5px; }
+.answer ul { display: grid; gap: 5px; padding: 0; list-style: none; font-size: 12.5px; color: #3d3d3a; }
+.answer li { display: flex; align-items: center; gap: 6px; }
+.answer svg { flex-shrink: 0; color: #2563c9; }
+.related { display: flex; flex-wrap: wrap; gap: 6px; }
+.related span { padding: 3px 9px; border-radius: 999px; background: #fff; border: 1px solid #cfe1f6; color: #2563c9; font-size: 11.5px; font-weight: 600; }
+
+.cover { display: grid; place-items: center; aspect-ratio: 3 / 1.2; border-radius: 12px; background: radial-gradient(circle at 25% 30%, #fff 0, transparent 45%), linear-gradient(135deg, #cfe1f6, #ddd4f5 55%, #f5dac6); }
+.cover span { color: #b5573a; font-size: 26px; }
+.coverTitle { font-size: 15.5px; line-height: 1.3; }
+.coverText { font-size: 12.5px; line-height: 1.5; color: #5e5d59; }
+.coverFoot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; font-size: 11.5px; color: #6b6a65; }
+.coverFoot > span:first-child { display: inline-flex; align-items: center; gap: 5px; }
+.readMore { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 9px; background: #1f1e1d; color: #f5f4ee; font: 600 12px/1 ui-monospace, Menlo, Consolas, monospace; }
+.readMore b { color: #d97757; }
+
+.note { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid #ece6d2; border-radius: 12px; background: #fffdf7; }
+.note span { flex: 1; font-weight: 600; }
+.note b { color: #d97757; letter-spacing: 1px; }
+.note i { font-style: normal; color: #e3e0d6; }
+
+@media (prefers-reduced-motion: reduce) { .details li, .details li:hover { transition: none; transform: none; } }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .layout[data-flip] .visual { order: 0; }
+  .visual, .layout[data-flip] .visual { width: min(100%, 620px); justify-self: center; }
+}
+@media (max-width: 560px) {
+  .details { grid-template-columns: minmax(0, 1fr); }
+  .howSteps { gap: 8px; font-size: 13px; }
+  .visual, .layout[data-flip] .visual { padding: 0; }
+  .visual::before, .layout[data-flip] .visual::before { transform: none; inset: 18px -8px auto; height: 70%; }
+  /* Under the picture, overlapping its bottom edge, so the photo stays visible on a narrow screen. */
+  .float, .layout[data-flip] .float { position: relative; inset: auto; width: auto; margin: -44px 12px 0; }
+  .badge { top: 12px; right: 12px; }
+  .layout[data-flip] .badge { left: 12px; }
+}

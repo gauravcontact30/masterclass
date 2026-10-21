@@ -7,16 +7,24 @@
 /** How often interviewers ask it: 5 is asked almost every time the topic comes up, 1 is a rare deep cut. */
 export type Stars = 1 | 2 | 3 | 4 | 5;
 /**
+ * A company where the question is publicly reported as asked, with the page that reports it (an interview-experience
+ * post, a Glassdoor or LeetCode Discuss thread). Never added without a `url`: an unsourced company name reads as fact.
+ */
+export type CompanyReport = { company: string; url: string };
+/**
  * An open question with a model answer, the kind you talk through. On both question kinds, `source` names where the
  * facts were checked and is shown under the answer, e.g. "Sourced from Docs by LangChain (MCP)".
  */
-export type SubjectiveQuestion = { stars: Stars; question: string; answer: string; code?: string; source?: string };
+export type SubjectiveQuestion = { stars: Stars; question: string; answer: string; code?: string; source?: string; companies?: CompanyReport[] };
 /** A multiple-choice question: four options, the index of the right one and why it is right. */
-export type ObjectiveQuestion = { stars: Stars; question: string; options: [string, string, string, string]; answer: 0 | 1 | 2 | 3; why: string; code?: string; source?: string };
+export type ObjectiveQuestion = { stars: Stars; question: string; options: [string, string, string, string]; answer: 0 | 1 | 2 | 3; why: string; code?: string; source?: string; companies?: CompanyReport[] };
 export type QuestionSet = { subjective: SubjectiveQuestion[]; objective: ObjectiveQuestion[] };
 
 export const s = (stars: Stars, question: string, answer: string, code?: string): SubjectiveQuestion => ({ stars, question, answer, ...(code ? { code } : {}) });
 export const o = (stars: Stars, question: string, options: [string, string, string, string], answer: 0 | 1 | 2 | 3, why: string, code?: string): ObjectiveQuestion => ({ stars, question, options, answer, why, ...(code ? { code } : {}) });
+
+/** Attaches the companies a question is reported at: `asked(s(5, "…", "…"), { company: "Amazon", url: "https://…" })`. */
+export const asked = <T extends SubjectiveQuestion | ObjectiveQuestion>(question: T, ...companies: CompanyReport[]): T => ({ ...question, companies });
 
 /** FNV-1a: a stable number per question, so its option order is the same on every render. */
 function hash(text: string) {

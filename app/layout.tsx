@@ -8,6 +8,7 @@ import { SiteAnalytics } from "@/components/site-analytics";
 import { BackToTop } from "@/components/back-to-top";
 import { HashlessNavigation } from "@/components/hashless-navigation";
 import { NavigationProgress } from "@/components/navigation-progress";
+import { AudioDockHost } from "@/components/audio-dock-host";
 import "./globals.css";
 import { isIndexable, siteDescription, siteKeywords, siteName, siteTitle, siteUrl } from "@/lib/seo";
 export const metadata: Metadata = {
@@ -35,5 +36,5 @@ export default function RootLayout({ children }: {children: React.ReactNode}) {
   // attributes to <body> before React hydrates, which React then reports as a
   // mismatch the reader can do nothing about. Suppressing it here covers this
   // element's own attributes only — a real mismatch inside the tree still warns.
-  return <html lang="en-IN" className="h-full antialiased"><body className="min-h-full" suppressHydrationWarning><AppProviders>{children}{/* Both read the URL, so each streams in its own boundary instead of blocking the prerendered shell. */}<Suspense fallback={null}><StudentChatbot /></Suspense><Suspense fallback={null}><VisitTracker /></Suspense><Suspense fallback={null}><BackToTop /></Suspense><Suspense fallback={null}><HashlessNavigation /></Suspense><Suspense fallback={null}><NavigationProgress /></Suspense><ExclusiveAccordions /></AppProviders><SiteAnalytics /></body></html>;
+  return <html lang="en-IN" className="h-full antialiased"><body className="min-h-full" suppressHydrationWarning><AppProviders>{children}{/* Both read the URL, so each streams in its own boundary instead of blocking the prerendered shell. */}<Suspense fallback={null}><StudentChatbot /></Suspense><Suspense fallback={null}><VisitTracker /></Suspense><Suspense fallback={null}><BackToTop /></Suspense><Suspense fallback={null}><HashlessNavigation /></Suspense><Suspense fallback={null}><NavigationProgress /></Suspense><ExclusiveAccordions /><AudioDockHost /></AppProviders><SiteAnalytics /></body></html>;
 }

@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { AdminSelect } from "./super-admin-select";
 import { AdminPagePicker } from "./super-admin-page-picker";
 import { LearningBlockView, LEARNING_CHANGED } from "./learning-slot";
+import { ListenButton } from "./listen-button";
 import { sanitizeNotepadHtml } from "@/lib/notepad";
 import { documentText, readNotepadCollection, type NotepadFile } from "@/lib/notepad-library";
 import {
@@ -25,6 +26,8 @@ import styles from "./super-admin-upload-learning.module.css";
  * widths. Library: every upload with views, versions, bulk actions and restore. Pages: custom Learning Dashboard
  * pages. Placements: what is shown where, at a glance. Everything is stored in Supabase (migration 0029).
  */
+/** Where an upload's AI Gateway thumbnail and study pack stand (migration 0033). */
+const PACK_LABELS: Record<NonNullable<LearningUpload["packStatus"]>, string> = { none: "not made yet", generating: "being made…", ready: "ready", failed: "failed" };
 type Draft = {
   id: string | null; title: string; summary: string; html: string; background: string; sourceFileId: string | null; sourceName: string;
   surface: LearningSurface; page: string; section: string; layout: LearningLayout; tone: LearningTone; showTitle: boolean; pinned: boolean;
@@ -372,10 +375,12 @@ function Library({ uploads, pages, now, loading, onEdit, onChanged, onError }: {
         <p className={styles.meta}>{LAYOUTS.find(l => l.value === u.layout)?.label} · {AUDIENCES.find(a => a.value === u.audience)?.label}{u.device !== "all" ? ` · ${DEVICES.find(d => d.value === u.device)?.label}` : ""}{u.language !== "all" ? ` · ${u.language === "en" ? "English" : "हिन्दी"}` : ""} · {readingMinutes(u.html)} min · v{u.version}</p>
         {(u.startsAt || u.endsAt) && <p className={styles.meta}><CalendarClock size={12} aria-hidden="true" />{u.startsAt ? `from ${when(u.startsAt)}` : ""}{u.endsAt ? ` until ${when(u.endsAt)}` : ""}</p>}
         {u.tags.length > 0 && <ul className={styles.cardTags}>{u.tags.map(t => <li key={t}>{t}</li>)}</ul>}
+        {u.surface === "dashboard" && <p className={styles.meta} title={u.packError ?? undefined}><Sparkles size={12} aria-hidden="true" />Thumbnail & study pack: {PACK_LABELS[u.packStatus ?? "none"]}{u.packStatus === "failed" && u.packError ? ` (${u.packError})` : ""}</p>}
         <p className={styles.updated}>Updated {when(u.updatedAt)}</p>
         <div className={styles.rowActions}>
           <button type="button" onClick={() => onEdit(u)} aria-label={`Edit ${u.title}`} title="Edit"><Pencil size={14} /></button>
           <button type="button" onClick={() => setPreview(u)} aria-label={`Preview ${u.title}`} title="Preview"><Eye size={14} /></button>
+          <ListenButton id={`upload:${u.id}`} title={u.title} text={() => `${u.title}. ${u.summary ?? ""} ${u.html}`} compact />
           <button type="button" onClick={() => setHistory(u)} aria-label={`Version history of ${u.title}`} title="Version history"><History size={14} /></button>
           <button type="button" disabled={busy} onClick={() => void patch(u, { position: u.position - 1 }, `Moved “${u.title}” up.`)} aria-label={`Move ${u.title} up`} title="Move up"><ArrowUp size={14} /></button>
           <button type="button" disabled={busy} onClick={() => void patch(u, { position: u.position + 1 }, `Moved “${u.title}” down.`)} aria-label={`Move ${u.title} down`} title="Move down"><ArrowDown size={14} /></button>
@@ -383,6 +388,7 @@ function Library({ uploads, pages, now, loading, onEdit, onChanged, onError }: {
             : <button type="button" disabled={busy} onClick={() => void patch(u, { status: "published" }, `Published “${u.title}”.`)} aria-label={`Publish ${u.title}`} title="Publish"><Send size={14} /></button>}
           <button type="button" disabled={busy} onClick={() => void patch(u, { pinned: !u.pinned }, `${u.pinned ? "Unpinned" : "Pinned"} “${u.title}”.`)} aria-label={`${u.pinned ? "Unpin" : "Pin"} ${u.title}`} title={u.pinned ? "Unpin" : "Pin"}>{u.pinned ? <PinOff size={14} /> : <Pin size={14} />}</button>
           <button type="button" disabled={busy} onClick={() => void duplicate(u)} aria-label={`Duplicate ${u.title}`} title="Duplicate as draft"><Copy size={14} /></button>
+          {u.surface === "dashboard" && <button type="button" disabled={busy || u.packStatus === "generating"} onClick={() => void act(() => send("/api/super-admin/learning-uploads", "POST", { studyPack: u.id }), `Made the thumbnail and study pack for “${u.title}”.`)} aria-label={`${u.packStatus === "ready" ? "Regenerate" : "Generate"} the thumbnail and study pack of ${u.title}`} title={`${u.packStatus === "ready" ? "Regenerate" : "Generate"} thumbnail & study pack (Vercel AI Gateway, about a minute)`}><Sparkles size={14} /></button>}
           <a href={placementHref(u.surface, u.page)} target="_blank" rel="noreferrer" aria-label={`Open the page showing ${u.title}`} title="Open the page"><ExternalLink size={14} /></a>
           <button type="button" className={styles.danger} disabled={busy} onClick={() => setConfirm([u])} aria-label={`Delete ${u.title}`} title="Delete"><Trash2 size={14} /></button>
         </div>

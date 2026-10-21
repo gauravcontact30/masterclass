@@ -11,6 +11,8 @@ import { requestJson, errorKey } from "@/lib/client";
 import { openSubscriptionCheckout, type SubscriptionPayment } from "@/lib/razorpay-checkout";
 import type { TranslationKey } from "@/lib/i18n";
 import { landingFont } from "./landing-fonts";
+import { BilledNote, CurrencyPicker, loadPrices, rememberedCurrency, type VisitorPrices } from "./currency-picker";
+import { formatPrice } from "@/lib/pricing";
 import styles from "./guest-checkout.module.css";
 
 type Tier = "monthly" | "yearly";
@@ -21,7 +23,7 @@ type Outcome = { status: "active" | "processing" | "conflict"; email: string; ne
  * Membership checkout for visitors who are not signed in. Payment comes first;
  * the server then finds or creates the account for the email given here.
  */
-export function GuestCheckout({ initialTier, enabled, prices }: { initialTier: Tier; enabled: boolean; prices: Record<Tier, number> }) {
+export function GuestCheckout({ initialTier, enabled, prices: located }: { initialTier: Tier; enabled: boolean; prices: Pick<VisitorPrices, "monthly" | "yearly"> & Partial<VisitorPrices> }) {
   const { t, language, setLanguage } = useLanguage();
   const hi = language === "hi";
   const text = (en: string, hindi: string) => hi ? hindi : en;
@@ -33,7 +35,17 @@ export function GuestCheckout({ initialTier, enabled, prices }: { initialTier: T
   const [notice, setNotice] = useState<TranslationKey | null>(null);
   const [paid, setPaid] = useState<{ checkoutId: string; payment: SubscriptionPayment } | null>(null);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
-  const money = (amount: number) => new Intl.NumberFormat(hi ? "hi-IN" : "en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
+  // Priced where the visitor is (on the server); a currency they picked before replaces it.
+  const [prices, setPrices] = useState<VisitorPrices>(() => ({ currency: "INR", currencies: ["INR"], rate: 1, ...located, inr: located.inr ?? { monthly: located.monthly, yearly: located.yearly } }));
+  useEffect(() => {
+    const chosen = rememberedCurrency();
+    if (!chosen || chosen === located.currency || !located.currencies?.includes(chosen)) return;
+    let live = true;
+    loadPrices(chosen).then(next => { if (live) setPrices(current => ({ ...current, ...next })); }, () => {});
+    return () => { live = false; };
+  }, [located]);
+  const switchCurrency = (currency: VisitorPrices["currency"]) => { setError(null); loadPrices(currency).then(next => setPrices(current => ({ ...current, ...next })), caught => setError(errorKey(caught))); };
+  const money = (amount: number) => formatPrice(amount, prices.currency, hi);
   const saving = Math.max(0, Math.round((1 - prices.yearly / (prices.monthly * 12)) * 100));
   const json = (body: unknown) => ({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
@@ -46,7 +58,7 @@ export function GuestCheckout({ initialTier, enabled, prices }: { initialTier: T
     event.preventDefault();
     setBusy(true); setError(null); setNotice(null);
     try {
-      const checkout = await requestJson<Checkout>("/api/billing/guest", json({ action: "checkout", tier, email, name }));
+      const checkout = await requestJson<Checkout>("/api/billing/guest", json({ action: "checkout", tier, currency: prices.currency, email, name }));
       const payment = await openSubscriptionCheckout({ key: checkout.keyId, subscription_id: checkout.subscriptionId, name: "MasterClass", description: tier === "yearly" ? t("yearly") : t("monthly"), prefill: checkout.prefill });
       if (!payment) { setNotice("checkout_closed"); return; }
       setPaid({ checkoutId: checkout.checkoutId, payment });
@@ -90,11 +102,13 @@ export function GuestCheckout({ initialTier, enabled, prices }: { initialTier: T
           <div className={styles.steps}>
             <section className={styles.step} aria-labelledby="step-plan">
               <h2 id="step-plan"><span>1</span><ExpandedText text={text("Choose a plan", "योजना चुनें")} /></h2>
+              <CurrencyPicker value={prices.currency} options={prices.currencies} onChange={switchCurrency} disabled={busy} hi={hi} />
               <div className={styles.plans} role="radiogroup" aria-labelledby="step-plan">
                 {(["monthly", "yearly"] as const).map(value => <button key={value} type="button" role="radio" aria-checked={tier === value} className={styles.plan} onClick={() => setTier(value)} disabled={busy}>
                   <span className={styles.planName}><ExpandedText text={value === "monthly" ? text("Monthly", "मासिक") : text("Yearly", "वार्षिक")} />{value === "yearly" && saving > 0 && <em><ExpandedText text={text(`Save ${saving}%`, `${saving}% बचाएँ`)} /></em>}</span>
                   <strong>{money(prices[value])}<small><ExpandedText text={value === "monthly" ? text(" / month", " / माह") : text(" / year", " / वर्ष")} /></small></strong>
                   <small><ExpandedText text={value === "monthly" ? text("Flexible, cancel any time", "लचीला, कभी भी रद्द करें") : text(`${money(prices.yearly / 12)}/month, billed yearly`, `${money(prices.yearly / 12)}/माह, वार्षिक भुगतान`)} /></small>
+                  <BilledNote prices={prices} cycle={value} hi={hi} />
                 </button>)}
               </div>
             </section>
@@ -113,6 +127,7 @@ export function GuestCheckout({ initialTier, enabled, prices }: { initialTier: T
             <p className={styles.summaryLabel}>LEARN IN APP</p>
             <p className={styles.summaryPlan}><ExpandedText text={tier === "monthly" ? text("Monthly membership", "मासिक सदस्यता") : text("Yearly membership", "वार्षिक सदस्यता")} /></p>
             <p className={styles.summaryPrice}>{money(prices[tier])}<small><ExpandedText text={tier === "monthly" ? text(" / month", " / माह") : text(" / year", " / वर्ष")} /></small></p>
+            <BilledNote prices={prices} cycle={tier} hi={hi} />
             <ul>{[text("Every course & category included", "हर कोर्स और श्रेणी शामिल"), text("Published lessons & worked answers", "प्रकाशित पाठ और हल सहित उत्तर"), text("Timed practice", "समयबद्ध अभ्यास"), text("English / Hindi", "अंग्रेज़ी / हिन्दी")].map(item => <li key={item}><Check size={14} aria-hidden="true" /><ExpandedText text={item} /></li>)}</ul>
             <p className={styles.summaryMeta}><ExpandedText text={text("No course selection needed — focus your dashboard any time after you join.", "कोर्स चुनने की ज़रूरत नहीं — जुड़ने के बाद कभी भी अपना डैशबोर्ड केंद्रित करें।")} /></p>
             <button type="submit" className={styles.pay} disabled={busy || !enabled}>

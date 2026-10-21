@@ -13,6 +13,7 @@ import { Editable, useContentItem, useVisibleContent } from "./content-editing";
 import { contentKey } from "@/lib/content-overrides";
 import home from "./landing-home.module.css";
 import styles from "./landing-ai-pulse.module.css";
+import { ListenButton } from "./listen-button";
 
 /** How long a screen of three cards stays before the carousel turns the page. */
 export const AUTOPLAY_MS = 2 * 60 * 1000;
@@ -86,6 +87,9 @@ export function PulseCardItem({ card, index, total, hi, text, compact = false }:
         <div className={styles.body}>
           <p className={styles.category}><Editable k={k} f="category">{card.category}</Editable></p>
           <h3>{card.compare ? <>{card.compare[0].heading} <span className={styles.vs}>vs.</span> {card.compare[1].heading}</> : <Editable k={k} f="title">{card.title}</Editable>}</h3>
+          <ListenButton id={`pulse:${card.title}`} title={card.title} text={() => card.compare
+            ? [card.title, ...card.compare.map(side => `${side.heading}. ${side.title}. ${side.summary} Use when ${side.useWhen}`)].join(". ")
+            : [card.title, hi && card.hiDefinition ? card.hiDefinition : card.definition, ...card.points, ...card.useCases].join(". ")} />
           <div className={styles.block}><span className={styles.label}>{text("Definition", "परिभाषा")}</span><p className={styles.definition}><Editable k={k} f={definition} multiline>{(hi && card.hiDefinition ? card.hiDefinition : card.definition)}</Editable></p></div>
           {card.compare
             ? <div className={styles.block}><span className={styles.label}>{text("Each one, explained", "हर एक, अलग से")}</span>

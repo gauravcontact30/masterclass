@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ArrowRight, Check, Crown } from "lucide-react";
 import { useLanguage } from "./language-provider";
 import styles from "./landing-home.module.css";
+import { formatPrice, type Currency } from "@/lib/pricing";
+import { BilledNote, CurrencyPicker } from "./currency-picker";
 
 type Cycle = "monthly" | "yearly";
 const CYCLES: Cycle[] = ["monthly", "yearly"];
@@ -14,7 +16,8 @@ const CYCLES: Cycle[] = ["monthly", "yearly"];
  * each linking straight into guest checkout with that plan preselected.
  * Prices are null until the landing page has loaded them, and show as "—".
  */
-export function LandingPlansMenu({ prices, open, onOpenChange }: { prices: { monthly: number; yearly: number } | null; open: boolean; onOpenChange: (open: boolean) => void }) {
+export type PlansMenuPrices = { monthly: number; yearly: number; currency?: Currency; currencies?: Currency[]; inr?: { monthly: number; yearly: number } };
+export function LandingPlansMenu({ prices, open, onOpenChange, onCurrency }: { prices: PlansMenuPrices | null; open: boolean; onOpenChange: (open: boolean) => void; onCurrency?: (currency: Currency) => void }) {
   const { language } = useLanguage();
   const hi = language === "hi";
   const text = (en: string, hindi: string) => hi ? hindi : en;
@@ -22,7 +25,7 @@ export function LandingPlansMenu({ prices, open, onOpenChange }: { prices: { mon
   const rootRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const id = useId();
-  const money = (value: number) => new Intl.NumberFormat(hi ? "hi-IN" : "en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
+  const money = (value: number) => formatPrice(value, prices?.currency, hi);
   const savings = prices && prices.monthly > 0 ? Math.max(0, Math.round((1 - prices.yearly / (prices.monthly * 12)) * 100)) : 0;
 
   // Closes on Escape (returning focus to the trigger) and on any click outside.
@@ -59,10 +62,12 @@ export function LandingPlansMenu({ prices, open, onOpenChange }: { prices: { mon
         </button>)}
       </div>
       <div id={`${id}-panel`} className={styles.plansPanel} role="tabpanel" aria-labelledby={`${id}-tab-${cycle}`}>
+        {prices && onCurrency && prices.currency && <CurrencyPicker value={prices.currency} options={prices.currencies} onChange={onCurrency} hi={hi} />}
         <p className={styles.plansPrice}>{prices ? money(prices[cycle]) : "—"}<small>{cycle === "monthly" ? text("/ month", "/ माह") : text("/ year", "/ वर्ष")}</small></p>
         <p className={styles.plansNote}>{cycle === "yearly" && prices
           ? text(`${money(prices.yearly / 12)}/month equivalent, billed yearly.`, `${money(prices.yearly / 12)}/माह के बराबर, वार्षिक भुगतान।`)
           : text("Billed monthly. Cancel renewal any time.", "मासिक भुगतान। नवीनीकरण कभी भी रद्द करें।")}</p>
+        {prices && <BilledNote prices={prices} cycle={cycle} hi={hi} />}
         <ul>{[text("Every course & category", "हर कोर्स और श्रेणी"), text("Notes, worked answers & practice", "नोट्स, हल सहित उत्तर और अभ्यास"), text("English / Hindi", "अंग्रेज़ी / हिन्दी")].map(item => <li key={item}><Check size={14} aria-hidden="true" />{item}</li>)}</ul>
         <Link className={styles.plansCta} href={`/subscribe?plan=${cycle}`} onClick={() => onOpenChange(false)}>
           {cycle === "monthly" ? text("Subscribe monthly", "मासिक सदस्यता लें") : text("Subscribe yearly", "वार्षिक सदस्यता लें")}<ArrowRight size={16} aria-hidden="true" />

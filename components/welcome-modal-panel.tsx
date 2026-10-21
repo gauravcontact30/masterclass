@@ -7,6 +7,8 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dial
 import { useLanguage } from "./language-provider";
 import type { LandingPrices } from "./landing-page";
 import styles from "./welcome-modal.module.css";
+import { formatPrice, type Currency } from "@/lib/pricing";
+import { BilledNote, CurrencyPicker } from "./currency-picker";
 
 const SLIDE_MS = 5000;
 type Pair = [string, string];
@@ -36,7 +38,7 @@ const SLIDES: Slide[] = [
 const INCLUDES: Pair[] = [["Every course and category, one membership", "हर कोर्स और श्रेणी, एक सदस्यता"], ["Practice tests with solutions", "हल सहित अभ्यास परीक्षाएँ"], ["English and हिन्दी", "English और हिन्दी"]];
 
 /** The first-visit welcome: a five-slide autoplay tour of the core features beside the free trial and the two plans. */
-export default function WelcomeModalPanel({ open, onOpenChange, prices }: { open: boolean; onOpenChange: (open: boolean) => void; prices: LandingPrices | null }) {
+export default function WelcomeModalPanel({ open, onOpenChange, prices, onCurrency }: { open: boolean; onOpenChange: (open: boolean) => void; prices: LandingPrices | null; onCurrency?: (currency: Currency) => void }) {
   const { language } = useLanguage(); const hi = language === "hi"; const say = (pair: Pair) => pair[hi ? 1 : 0];
   const [index, setIndex] = useState(0);
   // Reduced motion: start paused; the learner can still play or step through. (Client-only: mounted after load.)
@@ -50,7 +52,7 @@ export default function WelcomeModalPanel({ open, onOpenChange, prices }: { open
     return () => window.clearTimeout(timer);
   }, [running, index]);
   const go = (step: number) => setIndex(i => (i + step + SLIDES.length) % SLIDES.length);
-  const money = (amount: number) => new Intl.NumberFormat(hi ? "hi-IN" : "en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
+  const money = (amount: number) => formatPrice(amount, prices?.currency, hi);
   const monthly = prices?.monthly ?? 299, yearly = prices?.yearly ?? 2999;
   const saving = Math.max(0, Math.round((1 - yearly / (monthly * 12)) * 100));
   const slide = SLIDES[index];
@@ -96,6 +98,7 @@ export default function WelcomeModalPanel({ open, onOpenChange, prices }: { open
             <div><strong>{hi ? "1-दिन का निःशुल्क ट्रायल" : "1-day free trial"}</strong><span>{hi ? "पहले साइन-इन से शुरू · फिर कोई प्लान चुनें" : "Starts at your first sign-in · then pick a plan"}</span></div>
           </div>
 
+          {prices && onCurrency && prices.currency && <CurrencyPicker value={prices.currency} options={prices.currencies} onChange={onCurrency} hi={hi} />}
           <div className={styles.plans} role="radiogroup" aria-label={hi ? "प्लान" : "Plans"}>
             {(["monthly", "yearly"] as const).map(value => <button key={value} type="button" role="radio" aria-checked={cycle === value} className={styles.plan} onClick={() => setCycle(value)}>
               <span className={styles.planName}>{value === "monthly" ? (hi ? "मासिक" : "Monthly") : (hi ? "वार्षिक" : "Yearly")}{value === "yearly" && saving > 0 && <b>{hi ? `${saving}% बचत` : `Save ${saving}%`}</b>}</span>
@@ -103,6 +106,7 @@ export default function WelcomeModalPanel({ open, onOpenChange, prices }: { open
               <span className={styles.planNote}>{value === "yearly" ? (hi ? `${money(yearly / 12)}/माह के बराबर` : `${money(yearly / 12)}/month equivalent`) : (hi ? "कभी भी रद्द करें" : "Cancel any time")}</span>
             </button>)}
           </div>
+          {prices && <BilledNote prices={prices} cycle={cycle} hi={hi} />}
           <ul className={styles.includes}>{INCLUDES.map(item => <li key={item[0]}><ShieldCheck size={14} aria-hidden="true" />{say(item)}</li>)}</ul>
 
           <div className={styles.actions}>

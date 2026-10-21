@@ -2,10 +2,11 @@
 import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import { Fragment, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { ArrowRight, CircleCheck, ListChecks, MessageSquareText } from "lucide-react";
-import { arrangeOptions, byStars, type QuestionSet, type Stars } from "@/lib/interview-questions";
+import { ArrowRight, Building2, CircleCheck, ListChecks, MessageSquareText } from "lucide-react";
+import { arrangeOptions, byStars, type CompanyReport, type QuestionSet, type Stars } from "@/lib/interview-questions";
 import styles from "./interview-accordion.module.css";
 import { Editable, useContentItem, useVisibleContent } from "./content-editing";
+import { ListenButton } from "./listen-button";
 
 /** A stable key per built-in question (they have no ids): FNV-1a of the question text. */
 function questionKey(q: { question: string }) {
@@ -47,6 +48,7 @@ export function InterviewQuestions({ set, text, heading, scroll = false, limit, 
         ? cap(byStars(subjective)).map((q, i) => <Item key={q.question} k={questionKey(q)} n={i + 1} stars={q.stars} question={q.question} text={text}>
           {q.code && <pre className={styles.code}><code>{q.code}</code></pre>}
           <p className={styles.answer}><Editable k={questionKey(q)} f="answer" multiline render={inline}>{q.answer}</Editable></p>
+          <Companies list={q.companies} text={text} />
           {q.source && <p className={styles.source}>{q.source}</p>}
         </Item>)
         : cap(byStars(objective)).map((q, i) => {
@@ -58,6 +60,7 @@ export function InterviewQuestions({ set, text, heading, scroll = false, limit, 
               {k === answer && <em><CircleCheck size={14} aria-hidden="true" />{text("Correct", "सही")}</em>}
             </li>)}</ol>
             <p className={styles.why}><b>{text("Why", "क्यों")}</b> <Editable k={questionKey(q)} f="why" multiline render={inline}>{q.why}</Editable></p>
+            <Companies list={q.companies} text={text} />
             {q.source && <p className={styles.source}>{q.source}</p>}
           </Item>;
         })}
@@ -80,8 +83,20 @@ function Item({ k, n, stars, question, text, children }: Readonly<{ k: string; n
       <span className={styles.q}><Editable k={k} f="question" multiline render={inline}>{question}</Editable></span>
       <StarRow stars={stars} label={text(`Asked often: ${stars} of 5`, `कितनी बार पूछा जाता है: 5 में से ${stars}`)} />
     </AccordionSummary>
-    <div className={styles.body}>{children}</div>
+    <div className={styles.body}>
+      <ListenButton id={`question:${k}`} title={question} text={button => `${question}. ${button.parentElement?.innerText.replace(button.innerText, "") ?? ""}`} />
+      {children}
+    </div>
   </details>;
+}
+
+/** The companies a question is reported at, each linking to the page that reports it. */
+function Companies({ list, text }: Readonly<{ list?: CompanyReport[]; text: Text }>) {
+  if (!list?.length) return null;
+  return <p className={styles.companies}>
+    <Building2 size={13} aria-hidden="true" /><span>{text("Reported at", "यहाँ पूछा गया")}</span>
+    {list.map(c => <a key={c.company + c.url} href={c.url} target="_blank" rel="noopener noreferrer">{c.company}</a>)}
+  </p>;
 }
 
 /** Five stars, `stars` of them filled; decorative when there is no label. */

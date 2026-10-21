@@ -1,15 +1,18 @@
 import { z } from "zod";
 import { api, jsonBody, sameOrigin } from "@/lib/server/http";
 import {
-  bulkUpdate, createUpload, deleteUploads, learningPages, listRevisions, listUploads, requireOwner, restoreRevision, updateUpload, uploadFields, uploadInput,
+  bulkUpdate, createUpload, deleteUploads, learningPages, listRevisions, listUploads, refreshStudyPack, requireOwner, restoreRevision, updateUpload, uploadFields, uploadInput,
 } from "@/lib/server/learning-uploads";
 
 /*
  * Upload Learning, for the owner account only: list every upload with the custom pages (or one upload's earlier
  * versions with `?revisions=<id>`), publish a Notepad document, restore an earlier version, change one upload or
  * many at once, and delete uploads. Bodies may carry embedded images, so they are allowed up to 4.4 MB.
+ * POST `{ studyPack: id }` regenerates an upload's thumbnail and study pack through Vercel AI Gateway; publishing
+ * to the Learning Dashboard starts the same work after the response, which is why the route may run 300 seconds.
  */
 const MAX_BODY = 4_400_000;
+export const maxDuration = 300;
 
 export async function GET(request: Request) {
   return api(async () => {
@@ -22,11 +25,13 @@ export async function GET(request: Request) {
 }
 
 const restore = z.object({ restore: z.string().uuid() });
+const studyPack = z.object({ studyPack: z.string().uuid() });
 export async function POST(request: Request) {
   return api(async () => {
     sameOrigin(request); const owner = await requireOwner();
     const body = await jsonBody(request, MAX_BODY);
     if (body && typeof body === "object" && "restore" in body) return Response.json({ upload: await restoreRevision(restore.parse(body).restore) });
+    if (body && typeof body === "object" && "studyPack" in body) return Response.json({ upload: await refreshStudyPack(studyPack.parse(body).studyPack, true) });
     return Response.json({ upload: await createUpload(uploadInput.parse(body), owner.id) }, { status: 201 });
   }, request);
 }

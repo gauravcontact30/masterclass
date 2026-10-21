@@ -17,6 +17,7 @@ const paymentSchema = z.object({
   description: z.string().nullable().optional(), email: z.string().nullable().optional(), contact: z.string().nullable().optional(),
   fee: z.number().nullable().optional(), tax: z.number().nullable().optional(), error_description: z.string().nullable().optional(),
   error_code: z.string().nullable().optional(), error_source: z.string().nullable().optional(), error_step: z.string().nullable().optional(), error_reason: z.string().nullable().optional(),
+  base_amount: z.number().nullable().optional(), base_currency: z.string().nullable().optional(),
   international: z.boolean().nullable().optional(), acquirer_data: z.record(z.string(), z.unknown()).nullable().optional(),
   bank: z.string().nullable().optional(), wallet: z.string().nullable().optional(), vpa: z.string().nullable().optional(),
   card: z.object({ network: z.string().nullable().optional(), last4: z.string().nullable().optional() }).passthrough().nullable().optional(),
@@ -30,6 +31,8 @@ export type Transaction = {
   id: string; createdAt: string; type: "Membership" | "Card unlock" | "Download credit" | "Other"; item: string;
   customer: string; email: string | null; contact: string | null; method: string; methodDetail: string;
   amount: number; currency: string; status: string; refunded: number; fee: number | null; tax: number | null;
+  /** The amount and refund in rupees, for totals: an international payment's `amount` is in the buyer's currency, and Razorpay settles (and charges fees) in rupees. */
+  inr: number; refundedInr: number;
   orderId: string | null; invoiceId: string | null; error: string | null; international: boolean;
   /** Bank and network reference numbers, for tracing a payment with a customer's bank. */
   references: { label: string; value: string }[];
@@ -38,6 +41,10 @@ export type Transaction = {
 };
 const REFERENCES: [string, string][] = [["rrn", "Bank reference (RRN)"], ["upi_transaction_id", "UPI transaction ID"], ["auth_code", "Authorisation code"], ["bank_transaction_id", "Bank transaction ID"], ["arn", "Acquirer reference (ARN)"]];
 
+function rupees(payment: Payment) {
+  const rate = payment.currency !== "INR" && payment.base_amount != null && payment.base_currency === "INR" && payment.amount > 0 ? payment.base_amount / payment.amount : 1;
+  return { inr: Math.round(payment.amount * rate) / 100, refundedInr: Math.round((payment.amount_refunded ?? 0) * rate) / 100 };
+}
 function describe(payment: Payment): Transaction {
   const notes = payment.notes && !Array.isArray(payment.notes) ? payment.notes : {};
   const kind = String(notes.kind ?? "");
@@ -52,7 +59,7 @@ function describe(payment: Payment): Transaction {
     customer: payment.email || payment.contact || "—", email: payment.email ?? null, contact: payment.contact ?? null,
     method: payment.method ?? "—", methodDetail: detail, amount: payment.amount / 100, currency: payment.currency,
     status: payment.refund_status === "full" ? "refunded" : payment.refund_status === "partial" ? "partially refunded" : payment.status,
-    refunded: (payment.amount_refunded ?? 0) / 100, fee: payment.fee == null ? null : payment.fee / 100, tax: payment.tax == null ? null : payment.tax / 100,
+    refunded: (payment.amount_refunded ?? 0) / 100, ...rupees(payment), fee: payment.fee == null ? null : payment.fee / 100, tax: payment.tax == null ? null : payment.tax / 100,
     orderId: payment.order_id ?? null, invoiceId: payment.invoice_id ?? null, error: payment.error_description ?? null, international: !!payment.international,
     references: REFERENCES.flatMap(([key, label]) => { const value = payment.acquirer_data?.[key]; return value ? [{ label, value: String(value) }] : []; }),
     failure: payment.status === "failed" ? { ...explainFailure(raw), ...raw, stepText: describeStep(raw.step) } : null,
@@ -99,13 +106,13 @@ const PAGE_SIZE = 5;
 /** The day a timestamp falls on in India, as YYYY-MM-DD. */
 const istDay = (ms: number) => new Date(ms + 330 * 60_000).toISOString().slice(0, 10);
 const paid = (row: Transaction) => row.status === "captured" || row.status.includes("refunded");
-const sum = (list: Transaction[], pick: (row: Transaction) => number | null = row => row.amount) => list.reduce((total, row) => total + (pick(row) ?? 0), 0);
+const sum = (list: Transaction[], pick: (row: Transaction) => number | null = row => row.inr) => list.reduce((total, row) => total + (pick(row) ?? 0), 0);
 
 /** Totals, trend, mix, failure reasons and top customers over the filtered rows, for the cards above the table. */
 function insights(rows: Transaction[], all: Transaction[], now = Date.now()) {
   const captured = rows.filter(paid); const failed = rows.filter(row => row.status === "failed");
   const attempts = captured.length + failed.length;
-  const fees = sum(captured, row => row.fee); const refunded = sum(rows, row => row.refunded);
+  const fees = sum(captured, row => row.fee); const refunded = sum(rows, row => row.refundedInr);
   // A failure is recovered when the same customer paid successfully afterwards.
   const recovered = failed.filter(row => all.some(other => paid(other) && other.createdAt > row.createdAt
     && ((!!row.email && other.email === row.email) || (!!row.contact && other.contact === row.contact)))).length;
@@ -113,8 +120,8 @@ function insights(rows: Transaction[], all: Transaction[], now = Date.now()) {
   const reasons = new Map<string, { key: string; title: string; party: string; expected: boolean; count: number; amount: number; action: string; last: string }>();
   for (const row of failed) {
     const f = row.failure!; const hit = reasons.get(f.key);
-    if (hit) { hit.count += 1; hit.amount += row.amount; if (row.createdAt > hit.last) hit.last = row.createdAt; }
-    else reasons.set(f.key, { key: f.key, title: f.title, party: f.party, expected: f.expected, count: 1, amount: row.amount, action: f.action, last: row.createdAt });
+    if (hit) { hit.count += 1; hit.amount += row.inr; if (row.createdAt > hit.last) hit.last = row.createdAt; }
+    else reasons.set(f.key, { key: f.key, title: f.title, party: f.party, expected: f.expected, count: 1, amount: row.inr, action: f.action, last: row.createdAt });
   }
   const parties = new Map<string, number>();
   for (const row of failed) parties.set(row.failure!.party, (parties.get(row.failure!.party) ?? 0) + 1);
@@ -123,7 +130,7 @@ function insights(rows: Transaction[], all: Transaction[], now = Date.now()) {
     for (const row of rows) {
       const name = key(row); const hit = map.get(name) ?? { name, count: 0, amount: 0, paid: 0, failed: 0 };
       hit.count += 1;
-      if (paid(row)) { hit.paid += 1; hit.amount += row.amount; }
+      if (paid(row)) { hit.paid += 1; hit.amount += row.inr; }
       if (row.status === "failed") hit.failed += 1;
       map.set(name, hit);
     }
@@ -133,7 +140,7 @@ function insights(rows: Transaction[], all: Transaction[], now = Date.now()) {
   for (const row of rows) {
     if (row.customer === "—") continue;
     const hit = customers.get(row.customer) ?? { customer: row.customer, contact: row.email ? row.contact : null, count: 0, amount: 0, failed: 0, last: row.createdAt };
-    if (paid(row)) { hit.count += 1; hit.amount += row.amount - row.refunded; }
+    if (paid(row)) { hit.count += 1; hit.amount += row.inr - row.refundedInr; }
     if (row.status === "failed") hit.failed += 1;
     if (row.createdAt > hit.last) hit.last = row.createdAt;
     customers.set(row.customer, hit);
@@ -145,7 +152,7 @@ function insights(rows: Transaction[], all: Transaction[], now = Date.now()) {
   return {
     attempts, successRate: attempts ? captured.length / attempts : null, averageTicket: captured.length ? sum(captured) / captured.length : null,
     fees, tax: sum(captured, row => row.tax), net: sum(captured) - refunded - fees, lost: sum(failed), recovered,
-    refundCount: rows.filter(row => row.refunded > 0).length, customers: new Set(rows.map(row => row.customer).filter(c => c !== "—")).size,
+    refundCount: rows.filter(row => row.refundedInr > 0).length, customers: new Set(rows.map(row => row.customer).filter(c => c !== "—")).size,
     international: rows.filter(row => row.international).length,
     reasons: [...reasons.values()].sort((a, b) => b.count - a.count),
     byParty: [...parties].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count),
@@ -183,7 +190,7 @@ export async function GET(request: Request) {
     const captured = rows.filter(paid);
     return Response.json({
       rows: rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), page, pages, total: rows.length, pageSize: PAGE_SIZE,
-      summary: { count: rows.length, captured: sum(captured), refunded: rows.reduce((total, row) => total + row.refunded, 0), failed: rows.filter(row => row.status === "failed").length, unlocks: rows.filter(row => row.type === "Card unlock" && row.status === "captured").length },
+      summary: { count: rows.length, captured: sum(captured), refunded: rows.reduce((total, row) => total + row.refundedInr, 0), failed: rows.filter(row => row.status === "failed").length, unlocks: rows.filter(row => row.type === "Card unlock" && row.status === "captured").length },
       insights: insights(rows, all),
       // Suggestions for the search box: distinct emails, phones, items and ids containing what was typed.
       suggestions: q ? [...new Set(all.flatMap(row => [row.email, row.contact, row.item, row.id, row.orderId]).filter((value): value is string => !!value && value.toLowerCase().includes(q) && value.toLowerCase() !== q))].sort((x, y) => x.length - y.length).slice(0, 6) : [],

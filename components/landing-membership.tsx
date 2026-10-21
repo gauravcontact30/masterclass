@@ -7,8 +7,10 @@ import { useLanguage } from "./language-provider";
 import home from "./landing-home.module.css";
 import frame from "./landing-section.module.css";
 import styles from "./landing-membership.module.css";
+import { formatPrice, type Currency } from "@/lib/pricing";
+import { BilledNote, CurrencyPicker } from "./currency-picker";
 
-export type MembershipPrices = { monthly: number; yearly: number; enabled: boolean };
+export type MembershipPrices = { monthly: number; yearly: number; enabled: boolean; currency?: Currency; currencies?: Currency[]; inr?: { monthly: number; yearly: number } };
 type Area = { icon: LucideIcon; name: [string, string]; note: [string, string] };
 
 /** What the membership opens, in the dashboard's own names and sidebar icons, grouped by how people use it. */
@@ -42,10 +44,10 @@ const GROUPS: { title: [string, string]; areas: Area[] }[] = [
  * One membership, shown as what it opens: the plan card (billing toggle, live price, subscribe) beside a map of the
  * dashboard areas it unlocks. Prices come from the landing page, which renders them on the server.
  */
-export function LandingMembership({ prices, priceState, cycle, onCycle }: Readonly<{ prices: MembershipPrices; priceState: "loading" | "ready" | "error"; cycle: "monthly" | "yearly"; onCycle: (cycle: "monthly" | "yearly") => void }>) {
+export function LandingMembership({ prices, priceState, cycle, onCycle, onCurrency }: Readonly<{ prices: MembershipPrices; priceState: "loading" | "ready" | "error"; cycle: "monthly" | "yearly"; onCycle: (cycle: "monthly" | "yearly") => void; onCurrency?: (currency: Currency) => void }>) {
   const { language } = useLanguage(); const hi = language === "hi"; const lang = hi ? 1 : 0;
   const text = (en: string, hindi: string) => hi ? hindi : en;
-  const money = (value: number) => new Intl.NumberFormat(hi ? "hi-IN" : "en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
+  const money = (value: number) => formatPrice(value, prices.currency, hi);
   const savings = prices.monthly > 0 ? Math.max(0, Math.round((1 - prices.yearly / (prices.monthly * 12)) * 100)) : 0;
   const areaCount = GROUPS.reduce((sum, group) => sum + group.areas.length, 0);
   return <section id="pricing" className={frame.section} data-ground="wash" aria-labelledby="membership-title"><div className={home.inner}>
@@ -64,8 +66,10 @@ export function LandingMembership({ prices, priceState, cycle, onCycle }: Readon
             {value === "yearly" && priceState === "ready" && savings > 0 && <span><ExpandedText text={text(`Save ${savings}%`, `${savings}% बचाएँ`)} /></span>}
           </button>)}
         </div>
+        {onCurrency && prices.currency && <CurrencyPicker value={prices.currency} options={prices.currencies} onChange={onCurrency} hi={hi} />}
         <p className={styles.price}><b><ExpandedText text={priceState === "ready" ? money(prices[cycle]) : "—"} /></b><small><ExpandedText text={cycle === "monthly" ? text("/ month", "/ माह") : text("/ year", "/ वर्ष")} /></small></p>
         <p className={styles.priceNote}><ExpandedText text={priceState === "error" ? text("Current pricing is temporarily unavailable.", "वर्तमान मूल्य अभी उपलब्ध नहीं है।") : cycle === "yearly" && priceState === "ready" ? text(`${money(prices.yearly / 12)}/month equivalent, billed yearly.`, `${money(prices.yearly / 12)}/माह के बराबर, वार्षिक भुगतान।`) : text("Billed monthly. Cancel renewal any time.", "मासिक भुगतान। नवीनीकरण कभी भी रद्द करें।")} /></p>
+        <BilledNote prices={prices} cycle={cycle} hi={hi} />
         <Link className={`${frame.cta} ${styles.subscribe}`} href={`/subscribe?plan=${cycle}`}><ExpandedText text={text("Subscribe now", "अभी सदस्यता लें")} /><ArrowRight size={16} aria-hidden="true" /></Link>
         <p className={styles.trial}><ExpandedText text={text("New here? ", "नए हैं? ")} /><Link href="/sign-up"><ExpandedText text={text("Start a 1-day free trial", "1 दिन का निःशुल्क ट्रायल शुरू करें")} /></Link><ExpandedText text={text(": full access, no card needed.", ": पूरी पहुँच, कोई कार्ड नहीं।")} /></p>
         {priceState === "ready" && !prices.enabled && <small className={styles.unavailable}><ExpandedText text={text("Checkout is not enabled yet.", "भुगतान अभी सक्षम नहीं है।")} /></small>}

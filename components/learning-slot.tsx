@@ -1,18 +1,23 @@
 "use client";
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { ArrowUpRight, Pin } from "lucide-react";
 import { sanitizeNotepadHtml } from "@/lib/notepad";
 import { TONES, type LearningBlock, type LearningSurface } from "@/lib/learning-uploads";
 import { useLanguage } from "./language-provider";
 import styles from "./learning-slot.module.css";
+import { ListenButton } from "./listen-button";
 
 /*
  * Where Upload Learning content appears. Each page places one slot per section; slots on the same page share a
  * single request. Content is fetched after hydration (the landing page is cached, so it cannot be rendered in),
  * sanitised again in the browser, and nothing renders at all when the section has no published content.
  * Device targeting is CSS (no layout shift, no hydration difference); language follows the visitor's EN/Hi choice.
+ * On the Learning Dashboard every upload is a card that opens the full lesson and its study pack (learning-cards).
  */
+// Dashboard cards and their "Read more" window load only where they are used, never in the landing bundle.
+const LearningCards = dynamic(() => import("./learning-cards").then(module => module.LearningCards), { ssr: false });
 const requests = new Map<string, Promise<LearningBlock[]>>();
 /** Fired by the admin page after a publish, so open slots show the change without a reload. */
 export const LEARNING_CHANGED = "learning-content:changed";
@@ -58,7 +63,7 @@ export function LearningSlot({ surface, page, section, className, fallback = nul
   if (!shown) return null;
   if (!shown.length) return fallback;
   return <section className={`${styles.slot} ${className ?? ""}`} data-section={section} aria-label="Featured learning">
-    {shown.map(block => <LearningBlockView key={block.id} block={block} />)}
+    {surface === "dashboard" ? <LearningCards blocks={shown} /> : shown.map(block => <LearningBlockView key={block.id} block={block} />)}
   </section>;
 }
 
@@ -76,12 +81,13 @@ export function LearningBlockView({ block }: { block: ViewBlock }) {
   const tags = block.tags?.length ? <ul className={styles.tags} aria-label="Topics">{block.tags.map(tag => <li key={tag}>{tag}</li>)}</ul> : null;
   const body = <div className={styles.body} dangerouslySetInnerHTML={{ __html: block.clean }} />;
   const device = block.device && block.device !== "all" ? block.device : undefined;
+  const listen = <ListenButton id={`upload:${block.id}`} title={block.title} text={() => `${block.title}. ${block.summary ?? ""} ${block.clean}`} />;
   if (block.layout === "accordion") return <details className={styles.block} data-layout="accordion" data-device={device} style={style}>
-    <summary><strong>{block.pinned && <Pin size={13} aria-label="Pinned" />}{block.title}</strong>{block.summary && <span>{block.summary}</span>}</summary>{body}{(cta || tags) && <footer className={styles.footer}>{tags}{cta}</footer>}
+    <summary><strong>{block.pinned && <Pin size={13} aria-label="Pinned" />}{block.title}</strong>{block.summary && <span>{block.summary}</span>}</summary>{body}<footer className={styles.footer}>{tags}{listen}{cta}</footer>
   </details>;
   return <article className={styles.block} data-layout={block.layout} data-device={device} style={style}>
     {block.showTitle && <header><h2>{block.pinned && <Pin size={14} aria-label="Pinned" />}{block.title}</h2>{block.summary && <p>{block.summary}</p>}</header>}
     {body}
-    {(cta || tags) && <footer className={styles.footer}>{tags}{cta}</footer>}
+    <footer className={styles.footer}>{tags}{listen}{cta}</footer>
   </article>;
 }

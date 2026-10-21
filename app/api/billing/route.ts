@@ -2,6 +2,8 @@ import { z } from "zod";
 import { randomUUID } from "node:crypto";
 import { api, userId, jsonBody, sameOrigin, HttpError } from "@/lib/server/http";
 import { required, billingConfigured, quota, subscriptionPrice } from "@/lib/server/config";
+import { visitorPrices } from "@/lib/server/pricing";
+import { CURRENCIES } from "@/lib/pricing";
 import { profile } from "@/lib/server/repository";
 import { rateLimit } from "@/lib/server/rate-limit";
 import { razorpay, billingSubscription, reconcileSubscription, validateSubscriptionPlan } from "@/lib/server/billing";
@@ -13,16 +15,21 @@ import { entitlementTier } from "@/lib/domain";
 
 const terminal = ["cancelled", "completed", "expired"];
 const inputSchema = z.discriminatedUnion("action", [
-  z.object({ action:z.literal("checkout"), tier:z.enum(["monthly","yearly"]), selections:preparationSchema.optional() }).strict(),
+  z.object({ action:z.literal("checkout"), tier:z.enum(["monthly","yearly"]), currency:z.enum(CURRENCIES).optional(), selections:preparationSchema.optional() }).strict(),
   z.object({ action:z.literal("verify"), razorpay_payment_id:z.string().regex(/^pay_[a-zA-Z0-9]+$/), razorpay_subscription_id:z.string().regex(/^sub_[a-zA-Z0-9]+$/), razorpay_signature:z.string().regex(/^[a-f0-9]{64}$/i) }).strict(),
   z.object({ action:z.literal("cancel") }).strict(),
   z.object({ action:z.literal("refresh") }).strict(),
 ]);
+/** Every visitor is charged in rupees; their own currency is shown converted (see lib/server/pricing). */
 function checkoutResponse(remote: z.infer<typeof billingSubscription>, tier: "monthly" | "yearly") {
   return Response.json({ subscriptionId:remote.id, keyId:required("RAZORPAY_KEY_ID"), tier, amount:Math.round(subscriptionPrice(tier)*100), currency:"INR" });
 }
+/** Prices converted into the visitor's currency (located by country, or `?currency=` from the picker), with the rupee amounts billed. */
 export async function GET(request: Request) {
-  return api(async () => Response.json({ enabled:billingConfigured(), currency:"INR", proLimit:quota("monthly"), monthly:subscriptionPrice("monthly"), yearly:subscriptionPrice("yearly") }), request);
+  return api(async () => {
+    const prices = await visitorPrices(request.headers, new URL(request.url).searchParams.get("currency"));
+    return Response.json({ enabled:billingConfigured(), proLimit:quota("monthly"), ...prices }, { headers:{ "Cache-Control":"private, no-store", Vary:"x-vercel-ip-country" } });
+  }, request);
 }
 export async function POST(request: Request) {
   return api(async () => {
@@ -57,7 +64,9 @@ export async function POST(request: Request) {
       return Response.json({ ok:true });
     }
     if (!billingConfigured()) throw new HttpError(503,"setup_required");
+    // `currency` is only the one the visitor was shown; the charge is always the rupee plan.
     const planId = required(input.tier === "monthly" ? "RAZORPAY_MONTHLY_PLAN_ID" : "RAZORPAY_YEARLY_PLAN_ID");
+    let renewFrom: number | null = null;
     if (existing) {
       const remote = billingSubscription.parse(await razorpay(`subscriptions/${encodeURIComponent(existing.provider_ref)}`));
       if (["created","authenticated"].includes(remote.status) && !existing.cancel_at_cycle_end) {
@@ -66,14 +75,18 @@ export async function POST(request: Request) {
         if (input.selections) await savePreparations(owner,input.selections);
         return checkoutResponse(remote,input.tier);
       }
+      if (!terminal.includes(remote.status)) throw new HttpError(409,"subscription_exists");
+      // Cancelled with paid time left (a UPI mandate revoked from the customer's app, or renewal
+      // cancelled here): the new subscription's first charge falls when that time ends.
       const paidUntil = Math.max(remote.current_end ? remote.current_end * 1000 : 0, Date.parse(existing.current_period_end ?? "") || 0);
-      if (!terminal.includes(remote.status) || paidUntil > Date.now()) throw new HttpError(409,"subscription_exists");
+      if (paidUntil > Date.now()) renewFrom = paidUntil;
     }
     await validateSubscriptionPlan(input.tier);
     if (input.selections) await savePreparations(owner,input.selections);
-    const remote = billingSubscription.parse(await razorpay("subscriptions", { plan_id:planId, total_count:input.tier === "monthly" ? 120 : 10, quantity:1, customer_notify:1, notes:{ user_id:owner } }));
-    // A created mandate is never a paid entitlement. Webhooks/verification establish access.
-    const row = { user_id:owner, provider_ref:remote.id, tier:input.tier, status:"created", synced_at:new Date(0).toISOString(), current_period_end:null, grace_until:null, cancel_at_cycle_end:false };
+    const remote = billingSubscription.parse(await razorpay("subscriptions", { plan_id:planId, total_count:input.tier === "monthly" ? 120 : 10, quantity:1, customer_notify:1, notes:{ user_id:owner }, ...(renewFrom ? { start_at:Math.ceil(renewFrom / 1000) } : {}) }));
+    // A created mandate is never a paid entitlement. Webhooks/verification establish access;
+    // a renewal only carries forward the period already paid for.
+    const row = { user_id:owner, provider_ref:remote.id, tier:input.tier, status:"created", synced_at:new Date(0).toISOString(), current_period_end:renewFrom ? new Date(renewFrom).toISOString() : null, grace_until:null, cancel_at_cycle_end:false };
     const inserted = existing
       ? await db().from("subscriptions").update(row).eq("user_id",owner).eq("provider_ref",existing.provider_ref).select("provider_ref").maybeSingle()
       : await db().from("subscriptions").insert(row).select("provider_ref").single();

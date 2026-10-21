@@ -1,6 +1,7 @@
 "use client";
 import { lazy, Suspense, useEffect, useState } from "react";
 import type { LandingPrices } from "./landing-page";
+import type { Currency } from "@/lib/pricing";
 
 // The dialog, carousel and plans load only for a first-time visitor, after the page has settled.
 const loadPanel = () => import("./welcome-modal-panel");
@@ -18,7 +19,7 @@ const busy = () => !!document.querySelector("[role=dialog]:not([hidden]), dialog
  * First-visit welcome: opens once, three seconds after the landing page loads. If the tab is hidden or another
  * dialog is open at that moment it waits and tries again, instead of giving up. `?welcome` always shows it.
  */
-export function WelcomeModal({ prices }: { prices: LandingPrices | null }) {
+export function WelcomeModal({ prices, onCurrency }: { prices: LandingPrices | null; onCurrency?: (currency: Currency) => void }) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -32,5 +33,5 @@ export function WelcomeModal({ prices }: { prices: LandingPrices | null }) {
     timer = window.setTimeout(attempt, DELAY_MS);
     return () => window.clearTimeout(timer);
   }, []);
-  return mounted ? <Suspense fallback={null}><WelcomePanel open={open} onOpenChange={setOpen} prices={prices} /></Suspense> : null;
+  return mounted ? <Suspense fallback={null}><WelcomePanel open={open} onOpenChange={setOpen} prices={prices} onCurrency={onCurrency} /></Suspense> : null;
 }

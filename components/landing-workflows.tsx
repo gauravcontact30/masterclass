@@ -16,6 +16,7 @@ import styles from "./landing-workflows.module.css";
 import { LearningLoader } from "./learning-loader";
 import { Editable, useContentItem, useContentEditing } from "./content-editing";
 import { contentKey } from "@/lib/content-overrides";
+import { ListenButton } from "./listen-button";
 
 const workflowKey = (workflow: Workflow) => contentKey("workflow", workflow.id);
 
@@ -114,6 +115,7 @@ function WorkflowSlide({ workflow, near, index, total, text, preview }: Readonly
       <div className={styles.briefBody}>
         <p className={styles.industry}><Editable k={k} f="industry">{workflow.industry}</Editable></p>
         <h3><Editable k={k} f="title">{workflow.title}</Editable></h3>
+        <ListenButton id={`workflow:${workflow.id}`} title={workflow.title} text={() => [workflow.title, workflow.summary, `The real-life problem. ${workflow.problem}`, `The outcome. ${workflow.outcome}`].join(". ")} />
         <p className={styles.summary}><Editable k={k} f="summary" multiline>{workflow.summary}</Editable></p>
         <dl className={styles.facts}>
           <div data-fact="problem"><dt>{text("Real-life problem", "असली समस्या")}</dt><dd><Editable k={k} f="problem" multiline>{workflow.problem}</Editable></dd></div>

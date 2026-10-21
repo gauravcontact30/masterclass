@@ -151,7 +151,8 @@ export function lessonTitles(deck: Curriculum) { return deck.lessons.map(lesson 
 export function monthKey(date = new Date()) { return date.toISOString().slice(0, 7) + "-01"; }
 export function entitlementTier(subscription: { tier: Tier; status: string; current_period_end: string | null; grace_until?: string | null } | null, now = Date.now()): Tier {
   if (!subscription) return "free";
-  if (["active", "cancelled", "completed"].includes(subscription.status) && Date.parse(subscription.current_period_end ?? "") > now) return subscription.tier;
+  // created/authenticated only carry an end when they renew a paid period (a new checkout has none).
+  if (["active", "cancelled", "completed", "created", "authenticated"].includes(subscription.status) && Date.parse(subscription.current_period_end ?? "") > now) return subscription.tier;
   if (subscription.status === "pending" && Date.parse(subscription.grace_until ?? "") > now) return subscription.tier;
   return "free";
 }
