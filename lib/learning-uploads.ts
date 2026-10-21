@@ -19,11 +19,14 @@ export type PackStatus = "none" | "generating" | "ready" | "failed";
  * What the Learning Dashboard's "Read more" window shows besides the document, generated through Vercel AI Gateway
  * when an upload is published there (migration 0033). The diagram is a small directed graph the window lays out.
  */
+/** What a diagram box stands for; it picks the box's colour. Packs generated before these fields existed have none. */
+export const DIAGRAM_KINDS = ["client", "edge", "service", "data"] as const;
+export type DiagramNode = { id: string; label: string; detail?: string; kind?: (typeof DIAGRAM_KINDS)[number] };
 export type StudyPack = {
   description: string;
   interview: { question: string; answer: string }[];
   workflow: { title: string; detail: string }[];
-  diagram: { title: string; nodes: { id: string; label: string }[]; edges: { from: string; to: string; label?: string }[] };
+  diagram: { title: string; nodes: DiagramNode[]; edges: { from: string; to: string; label?: string; dashed?: boolean }[] };
   images: { url: string; caption: string }[];
   model: string; generatedAt: string;
 };

@@ -1,8 +1,8 @@
 "use client";
 import { useId, useMemo, useState, type CSSProperties } from "react";
 import { Dialog } from "@base-ui/react/dialog";
-import { ArrowRight, BookOpen, CalendarClock, GitBranch, Images, ListOrdered, MessageCircleQuestion, Pin, Sparkles, X } from "lucide-react";
-import { TONES, readingMinutes, type LearningBlock, type StudyPack } from "@/lib/learning-uploads";
+import { ArrowRight, BookOpen, CalendarClock, ChevronDown, GitBranch, Images, ListOrdered, MessageCircleQuestion, Pin, Sparkles, X } from "lucide-react";
+import { TONES, readingMinutes, type DiagramNode, type LearningBlock, type StudyPack } from "@/lib/learning-uploads";
 import { useLanguage } from "./language-provider";
 import styles from "./learning-cards.module.css";
 import { ListenButton } from "./listen-button";
@@ -107,7 +107,7 @@ function LessonWindow({ block, copy, hi }: { block: CardBlock; copy: Copy; hi: b
       {pack && shown.includes("interview") && <section className={styles.section} aria-labelledby={`${block.id}-interview`}>
         <h3 id={`${block.id}-interview`}><MessageCircleQuestion size={17} aria-hidden="true" />{copy.interview}</h3>
         <ol className={styles.questions}>{pack.interview.map((item, index) => <li key={index}>
-          <details open={index === 0}><summary><span className={styles.qNumber}>Q{index + 1}</span>{item.question}</summary><p>{item.answer}</p></details>
+          <details name={`${block.id}-questions`} open={index === 0}><summary><span className={styles.qNumber}>Q{index + 1}</span><span className={styles.qText}>{item.question}</span><ChevronDown size={18} className={styles.qChevron} aria-hidden="true" /></summary><p>{item.answer}</p></details>
         </li>)}</ol>
       </section>}
       {pack && shown.includes("workflow") && <section className={styles.section} aria-labelledby={`${block.id}-workflow`}>
@@ -133,12 +133,15 @@ function Figure({ url, caption }: { url: string; caption: string }) {
 }
 
 // ----- Diagram -----
-const BOX_W = 168, BOX_H = 54, GAP_X = 28, GAP_Y = 48, PAD = 14;
-type Placed = { id: string; label: string; x: number; y: number };
+// Box sizes match the system-design sketches the diagram is modelled on; the svg scales down to fit the window.
+const BOX_W = 266, BOX_H = 98, GAP_X = 52, GAP_Y = 104, PAD = 28, TAG_ROOM = 44, LOOP_DIP = 130;
+type Kind = NonNullable<DiagramNode["kind"]>;
+type Placed = DiagramNode & { kind: Kind; step?: number; col: number; row: number; x: number; y: number };
 /**
- * Lays a diagram out top to bottom: each node's row is the longest path to it from a node nothing points at, so a
- * flow reads downward and branches sit side by side. Edges that close a cycle are left out of the ranking (they
- * are still drawn, looping round the side), so a loop back to the start never pushes the start down.
+ * Lays a diagram out left to right: the longest chain of edges is the main flow on one row, numbered 01, 02…;
+ * every other node sits above (then below) the node it connects to. Ranks come from the longest path to each node
+ * from a node nothing points at, leaving out edges that close a cycle, so a response back to the start is drawn as
+ * a loop under the row instead of pushing the start along.
  */
 export function layoutDiagram({ nodes, edges }: Pick<StudyPack["diagram"], "nodes" | "edges">) {
   const out = new Map<string, string[]>(nodes.map(node => [node.id, []]));
@@ -159,19 +162,39 @@ export function layoutDiagram({ nodes, edges }: Pick<StudyPack["diagram"], "node
   // Reverse post-order is a topological order of the forward edges.
   const level = new Map(nodes.map(node => [node.id, 0]));
   for (const id of order.reverse()) for (const [from, to] of forward) if (from === id) level.set(to, Math.max(level.get(to)!, level.get(id)! + 1));
-  const rows: string[][] = [];
-  for (const node of nodes) (rows[level.get(node.id)!] ??= []).push(node.id);
-  const filled = rows.filter(Boolean);
-  const widest = Math.max(1, ...filled.map(row => row.length));
-  const width = PAD * 2 + widest * BOX_W + (widest - 1) * GAP_X;
-  const height = PAD * 2 + filled.length * BOX_H + Math.max(0, filled.length - 1) * GAP_Y;
-  const labels = new Map(nodes.map(node => [node.id, node.label]));
+  // The main flow: walk back from the deepest node through predecessors one rank up.
+  const spine: string[] = [];
+  for (let id = nodes.reduce<string | undefined>((best, node) => best === undefined || level.get(node.id)! > level.get(best)! ? node.id : best, undefined); id !== undefined;) {
+    spine.unshift(id);
+    const at = level.get(id)!, current = id;
+    id = forward.find(([from, to]) => to === current && level.get(from) === at - 1)?.[0];
+  }
+  const slot = new Map<string, { col: number; row: number }>(spine.map((id, col) => [id, { col, row: 0 }]));
+  const taken = new Set(spine.map((_, col) => `${col}:0`));
+  const linked = (id: string) => edges.find(edge => (edge.from === id && slot.has(edge.to)) || (edge.to === id && slot.has(edge.from)));
+  const rest = nodes.filter(node => !slot.has(node.id)).sort((a, b) => level.get(a.id)! - level.get(b.id)!);
+  while (rest.length) {
+    // Next, a node joined to one already placed; failing that, any node, in the column of its rank.
+    const node = rest.splice(Math.max(0, rest.findIndex(node => linked(node.id))), 1)[0];
+    const link = linked(node.id);
+    const anchor = link ? slot.get(link.from === node.id ? link.to : link.from)! : { col: Math.min(level.get(node.id)!, spine.length - 1), row: 0 };
+    // Away from the main row: up first, then down, further out until a free spot.
+    const signs = anchor.row < 0 ? [-1] : anchor.row > 0 ? [1] : [-1, 1];
+    let row: number | undefined;
+    for (let step = 1; row === undefined; step++) row = signs.map(sign => anchor.row + sign * step).find(r => !taken.has(`${anchor.col}:${r}`));
+    slot.set(node.id, { col: anchor.col, row }); taken.add(`${anchor.col}:${row}`);
+  }
+  const spots = [...slot.values()], top = Math.min(0, ...spots.map(spot => spot.row)), bottom = Math.max(0, ...spots.map(spot => spot.row));
+  const cols = Math.max(1, ...spots.map(spot => spot.col + 1));
   const placed = new Map<string, Placed>();
-  filled.forEach((row, y) => {
-    const start = (width - (row.length * BOX_W + (row.length - 1) * GAP_X)) / 2;
-    row.forEach((id, x) => placed.set(id, { id, label: labels.get(id) ?? id, x: start + x * (BOX_W + GAP_X), y: PAD + y * (BOX_H + GAP_Y) }));
-  });
-  return { width, height, nodes: [...placed.values()], placed };
+  for (const node of nodes) {
+    const { col, row } = slot.get(node.id)!, step = spine.indexOf(node.id);
+    const kind = node.kind ?? (step === 0 ? "client" : step === spine.length - 1 && spine.length > 2 ? "data" : "service");
+    placed.set(node.id, { ...node, kind, step: step < 0 ? undefined : step + 1, col, row, x: PAD + col * (BOX_W + GAP_X), y: PAD + TAG_ROOM + (row - top) * (BOX_H + GAP_Y) });
+  }
+  const loops = edges.some(edge => { const from = placed.get(edge.from), to = placed.get(edge.to); return !!from && !!to && from.row === to.row && to.col < from.col; });
+  const floor = PAD + TAG_ROOM + (bottom - top) * (BOX_H + GAP_Y) + BOX_H;
+  return { width: PAD * 2 + cols * BOX_W + (cols - 1) * GAP_X, height: floor + (loops ? LOOP_DIP + PAD : PAD), floor, nodes: [...placed.values()], placed };
 }
 
 /** Breaks a label into at most two lines of about 20 characters. */
@@ -185,34 +208,55 @@ function lines(label: string) {
   return out.map(line => line.length > 24 ? `${line.slice(0, 23)}…` : line);
 }
 
+/** Where an edge runs and where its label sits: straight between neighbours, over the top when it skips ahead, up or down a column, and a loop underneath back along the row. */
+function route(from: Placed, to: Placed, floor: number) {
+  if (from.row === to.row && to.col === from.col + 1) {
+    const y = from.y + BOX_H / 2;
+    return { d: `M${from.x + BOX_W + 8} ${y}H${to.x - 6}`, tag: [from.x + BOX_W + GAP_X / 2, from.y - 30] };
+  }
+  if (from.row === to.row && to.col > from.col) {
+    const x1 = from.x + BOX_W * 0.7, x2 = to.x + BOX_W * 0.3, y = from.y - 4, lift = 70;
+    return { d: `M${x1} ${y}C${x1} ${y - lift} ${x2} ${y - lift} ${x2} ${y - 6}`, tag: [(x1 + x2) / 2, y - lift * 0.75] };
+  }
+  if (from.row === to.row) {
+    const x1 = from.x + BOX_W * 0.24, x2 = to.x + BOX_W * 0.78, y = from.y + BOX_H + 2, dip = floor + LOOP_DIP;
+    return { d: `M${x1} ${y}C${x1 - 60} ${dip} ${x2 + 60} ${dip} ${x2 - 2} ${y + 10}`, tag: [(x1 + x2) / 2, y + (dip - y) * 0.75] };
+  }
+  const up = to.row < from.row;
+  const x1 = from.x + BOX_W / 2, y1 = up ? from.y - 4 : from.y + BOX_H + 4, x2 = to.x + BOX_W / 2, y2 = up ? to.y + BOX_H + 6 : to.y - 6;
+  if (x1 === x2) return { d: `M${x1} ${y1}V${y2}`, tag: [x1, (y1 + y2) / 2] };
+  const bend = (y2 - y1) / 2;
+  return { d: `M${x1} ${y1}C${x1} ${y1 + bend} ${x2} ${y2 - bend} ${x2} ${y2}`, tag: [(x1 + x2) / 2, (y1 + y2) / 2] };
+}
+
 function Diagram({ diagram }: { diagram: StudyPack["diagram"] }) {
-  const { width, height, nodes, placed } = useMemo(() => layoutDiagram(diagram), [diagram]);
+  const { width, height, floor, nodes, placed } = useMemo(() => layoutDiagram(diagram), [diagram]);
   // useId has characters url(#…) does not accept.
   const arrow = `arrow-${useId().replace(/[^\w-]/g, "")}`;
   const summary = diagram.edges.map(edge => `${placed.get(edge.from)?.label} → ${placed.get(edge.to)?.label}${edge.label ? ` (${edge.label})` : ""}`).join("; ");
   return <figure className={styles.diagram}>
     {diagram.title && <figcaption>{diagram.title}</figcaption>}
     <div className={styles.diagramScroll}>
-      <svg viewBox={`0 0 ${width} ${height}`} style={{ minWidth: Math.min(width, 560) }} role="img" aria-label={`${diagram.title}. ${summary}`}>
-        <defs><marker id={arrow} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" className={styles.arrowHead} /></marker></defs>
+      <svg viewBox={`0 0 ${width} ${height}`} style={{ minWidth: Math.min(width, 760), maxWidth: width }} role="img" aria-label={`${diagram.title}. ${summary}`}>
+        <defs><marker id={arrow} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" className={styles.arrowHead} /></marker></defs>
         {diagram.edges.map((edge, index) => {
           const from = placed.get(edge.from), to = placed.get(edge.to);
           if (!from || !to) return null;
-          const down = to.y > from.y;
-          // Downward edges leave the bottom and enter the top; the rest loop round the right-hand side.
-          const [x1, y1, x2, y2] = down ? [from.x + BOX_W / 2, from.y + BOX_H, to.x + BOX_W / 2, to.y] : [from.x + BOX_W, from.y + BOX_H / 2, to.x + BOX_W, to.y + BOX_H / 2];
-          const d = down ? `M${x1} ${y1} C${x1} ${y1 + GAP_Y / 2} ${x2} ${y2 - GAP_Y / 2} ${x2} ${y2 - 2}` : `M${x1} ${y1} C${x1 + 46} ${y1} ${x2 + 46} ${y2} ${x2 + 2} ${y2}`;
-          const mx = down ? (x1 + x2) / 2 : Math.max(x1, x2) + 34, my = (y1 + y2) / 2;
+          const { d, tag: [tx, ty] } = route(from, to, floor);
+          const pill = edge.label ? edge.label.length * 8 + 28 : 0;
           return <g key={index}>
-            <path d={d} className={styles.edge} markerEnd={`url(#${arrow})`} />
-            {edge.label && <g transform={`translate(${mx} ${my})`}><rect x={-edge.label.length * 3.2 - 6} y={-9} width={edge.label.length * 6.4 + 12} height={18} rx={9} className={styles.edgeTag} /><text textAnchor="middle" dy="4" className={styles.edgeText}>{edge.label}</text></g>}
+            <path d={d} className={styles.edge} data-dashed={edge.dashed || undefined} data-back={(from.row === to.row && to.col < from.col) || undefined} markerEnd={`url(#${arrow})`} />
+            {edge.label && <g transform={`translate(${tx} ${ty})`}><rect x={-pill / 2} y={-15} width={pill} height={30} rx={15} className={styles.edgeTag} /><text textAnchor="middle" dy="5.5" className={styles.edgeText}>{edge.label}</text></g>}
           </g>;
         })}
-        {nodes.map((node, index) => {
-          const text = lines(node.label);
-          return <g key={node.id} transform={`translate(${node.x} ${node.y})`}>
-            <rect width={BOX_W} height={BOX_H} rx={12} className={styles.node} data-first={index === 0 || undefined} />
-            <text x={BOX_W / 2} y={BOX_H / 2 - (text.length - 1) * 8 + 4} textAnchor="middle" className={styles.nodeText}>{text.map((line, i) => <tspan key={i} x={BOX_W / 2} dy={i ? 16 : 0}>{line}</tspan>)}</text>
+        {nodes.map(node => {
+          const text = lines(node.label), top = (BOX_H - text.length * 24 - (node.detail ? 26 : 0)) / 2;
+          return <g key={node.id} transform={`translate(${node.x} ${node.y})`} data-kind={node.kind} className={styles.box}>
+            <rect width={BOX_W} height={BOX_H} rx={16} className={styles.node} />
+            <rect x={16} y={24} width={5} height={BOX_H - 48} rx={2.5} className={styles.bar} />
+            <text textAnchor="middle" className={styles.nodeText}>{text.map((line, i) => <tspan key={i} x={BOX_W / 2 + 6} y={top + 19 + i * 24}>{line}</tspan>)}</text>
+            {node.detail && <text x={BOX_W / 2 + 6} y={top + text.length * 24 + 20} textAnchor="middle" className={styles.nodeDetail}>{node.detail}</text>}
+            {node.step && <g transform="translate(6 8)" data-tone={(node.step - 1) % 5} className={styles.badge}><circle r={18} /><text textAnchor="middle" dy="5">{String(node.step).padStart(2, "0")}</text></g>}
           </g>;
         })}
       </svg>

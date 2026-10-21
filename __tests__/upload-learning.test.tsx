@@ -145,13 +145,20 @@ describe("Learning Dashboard cards", () => {
     fireEvent.click(await screen.findByRole("button", { name: /read more: fresh upload/i }));
     expect(await screen.findByText(/being prepared/i)).toBeInTheDocument();
   });
-  it("lays a diagram out top to bottom, side by side where it branches", () => {
-    const { nodes, height } = layoutDiagram({ nodes: [{ id: "a", label: "A" }, { id: "b", label: "B" }, { id: "c", label: "C" }, { id: "d", label: "D" }], edges: [{ from: "a", to: "b" }, { from: "a", to: "c" }, { from: "b", to: "d" }, { from: "d", to: "a" }] });
-    const y = Object.fromEntries(nodes.map(node => [node.id, node.y]));
-    const x = Object.fromEntries(nodes.map(node => [node.id, node.x]));
-    expect(y.b).toBeGreaterThan(y.a);
-    expect(y.b).toBe(y.c);
-    expect(x.b).not.toBe(x.c);
-    expect(Number.isFinite(height)).toBe(true);
+  it("lays a diagram out left to right: main flow in a row, side nodes above, responses looping back", () => {
+    const { nodes, height, floor } = layoutDiagram({
+      nodes: [{ id: "client", label: "Client" }, { id: "lb", label: "Load balancer" }, { id: "app", label: "Shortener" }, { id: "ids", label: "ID generator" }, { id: "cache", label: "Cache", kind: "data" }, { id: "db", label: "Database" }],
+      edges: [{ from: "client", to: "lb" }, { from: "lb", to: "app" }, { from: "app", to: "ids", label: "new id" }, { from: "app", to: "cache" }, { from: "cache", to: "db", dashed: true }, { from: "app", to: "client", label: "301 redirect" }],
+    });
+    const at = Object.fromEntries(nodes.map(node => [node.id, node]));
+    const flow = ["client", "lb", "app", "cache", "db"];
+    expect(flow.map(id => at[id].step)).toEqual([1, 2, 3, 4, 5]);
+    expect(new Set(flow.map(id => at[id].y)).size).toBe(1);
+    flow.slice(1).forEach((id, index) => expect(at[id].x).toBeGreaterThan(at[flow[index]].x));
+    expect(at.ids.x).toBe(at.app.x);
+    expect(at.ids.y).toBeLessThan(at.app.y);
+    expect(at.ids.step).toBeUndefined();
+    expect([at.client.kind, at.app.kind, at.cache.kind, at.db.kind]).toEqual(["client", "service", "data", "data"]);
+    expect(height).toBeGreaterThan(floor);
   });
 });

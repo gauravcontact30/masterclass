@@ -4,7 +4,7 @@ import { gateway, generateImage, generateText, Output } from "ai";
 import { db } from "./db";
 import { providerConfigured, providerModel } from "./ai-providers";
 import { LEARNING_IMAGE_BUCKET, learningScenePrompt } from "@/lib/learning-image";
-import type { StudyPack } from "@/lib/learning-uploads";
+import { DIAGRAM_KINDS, type StudyPack } from "@/lib/learning-uploads";
 
 const ENTITIES: Record<string, string> = { nbsp: " ", amp: "&", lt: "<", gt: ">", quot: "\"", apos: "'", "#39": "'" };
 /** The upload's text without markup (DOMParser is browser-only): one line per block, entities decoded, code kept as written. */
@@ -33,8 +33,13 @@ const draftSchema = z.object({
   workflow: z.array(z.object({ title: z.string().describe("A short step name."), detail: z.string().describe("One or two sentences.") })).describe("Four to seven steps in order."),
   diagram: z.object({
     title: z.string(),
-    nodes: z.array(z.object({ id: z.string().describe("A short slug, unique in the diagram."), label: z.string().describe("At most four words.") })).describe("Three to nine parts."),
-    edges: z.array(z.object({ from: z.string(), to: z.string(), label: z.string().optional().describe("At most three words.") })),
+    nodes: z.array(z.object({
+      id: z.string().describe("A short slug, unique in the diagram."),
+      label: z.string().describe("At most three words, e.g. 'Load balancer'."),
+      detail: z.string().describe("A one-to-three word subtitle, e.g. 'Redis' or 'browser / app'."),
+      kind: z.enum(DIAGRAM_KINDS).describe("client: who starts the flow; edge: gateways, load balancers, CDNs; service: code that does the work; data: caches, databases, queues, storage."),
+    })).describe("Four to eight parts."),
+    edges: z.array(z.object({ from: z.string(), to: z.string(), label: z.string().optional().describe("At most three words naming what passes, e.g. 'POST / GET'."), dashed: z.boolean().optional().describe("True when the hop only happens sometimes, such as a cache miss or a retry.") })),
   }),
   thumbnailScene: z.string().describe("A concrete visual scene for the cover picture, with no text in it."),
   illustrations: z.array(z.object({ scene: z.string().describe("A concrete visual scene, with no text in it."), caption: z.string().describe("What the picture explains, in one short sentence.") })).describe("Two pictures that explain key ideas."),
@@ -44,7 +49,7 @@ const SYSTEM = [
   "You turn a learning article into a study pack for students preparing for technical interviews.",
   "Stay faithful to the article; where it is thin, use well-established facts about its topic. Never invent APIs or version numbers.",
   "Write in clear, simple English. Interview answers are to the point: lead with the answer, then the one reason or example that makes it stick.",
-  "The diagram shows how the parts of the topic connect or flow; every edge must join ids that exist in nodes.",
+  "The diagram reads left to right like a system-design sketch: a main flow of four to six nodes in order, from whoever starts it to where the data ends up; at most two side nodes hanging off one of them; and optionally one edge from a later node back to the first for the response. Every edge must join ids that exist in nodes.",
   "Picture scenes describe objects and actions only; pictures must contain no text, letters, numbers, code or logos.",
 ].join("\n");
 
@@ -53,10 +58,10 @@ const clip = (text: string, max: number) => text.trim().replace(/\s+/g, " ").sli
 /** Keeps the parts of a model's diagram that make a valid graph: unique ids, edges between known nodes. */
 export function cleanDiagram(diagram: z.infer<typeof draftSchema>["diagram"]): StudyPack["diagram"] {
   const seen = new Set<string>();
-  const nodes = diagram.nodes.map(node => ({ id: clip(node.id, 40), label: clip(node.label, 40) })).filter(node => node.id && node.label && !seen.has(node.id) && seen.add(node.id)).slice(0, 10);
+  const nodes = diagram.nodes.map(node => ({ id: clip(node.id, 40), label: clip(node.label, 40), ...(node.detail?.trim() ? { detail: clip(node.detail, 40) } : {}), ...(DIAGRAM_KINDS.includes(node.kind) ? { kind: node.kind } : {}) })).filter(node => node.id && node.label && !seen.has(node.id) && seen.add(node.id)).slice(0, 10);
   const ids = new Set(nodes.map(node => node.id));
   const edges = diagram.edges.filter(edge => ids.has(edge.from) && ids.has(edge.to) && edge.from !== edge.to).slice(0, 16)
-    .map(edge => ({ from: edge.from, to: edge.to, ...(edge.label?.trim() ? { label: clip(edge.label, 30) } : {}) }));
+    .map(edge => ({ from: edge.from, to: edge.to, ...(edge.label?.trim() ? { label: clip(edge.label, 30) } : {}), ...(edge.dashed ? { dashed: true } : {}) }));
   return { title: clip(diagram.title, 80), nodes, edges };
 }
 
