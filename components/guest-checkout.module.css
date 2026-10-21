@@ -17,7 +17,7 @@
   min-height: 100dvh;
   background: var(--paper);
   color: var(--graphite);
-  font-family: var(--font-anek), system-ui, sans-serif;
+  font-family: "MC Currency", var(--font-anek), system-ui, sans-serif;
 }
 .page :focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
 

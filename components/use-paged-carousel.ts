@@ -31,13 +31,15 @@ export function usePagedCarousel<T extends HTMLElement>(itemCount: number, perSc
   const goTo = useCallback((next: number) => { const el = track.current; if (!el) return; const wrapped = ((next % pages) + pages) % pages; el.scrollTo({ left: wrapped * el.clientWidth, behavior: "smooth" }); }, [pages]);
 
   useEffect(() => {
-    const el = track.current; if (!el) return; measure();
+    const el = track.current; if (!el) return;
     let frame = 0;
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(() => { frame = 0; measure(); });
     };
+    // No synchronous measure on mount: reading scrollWidth right after hydration forced a layout per carousel
+    // (~400 ms on the landing page). ResizeObserver reports the first size once layout has run anyway.
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(schedule);
-    observer?.observe(el);
+    if (observer) observer.observe(el); else schedule();
     el.addEventListener("scroll", schedule, { passive: true }); window.addEventListener("resize", schedule);
     return () => {
       cancelAnimationFrame(frame);

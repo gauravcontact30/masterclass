@@ -119,7 +119,10 @@ export default async function proxy(request: NextRequest) {
 
   const duration = Date.now() - startTime;
   response.headers.set("Server-Timing", `edge;dur=${duration}`);
-  response.headers.set("Cache-Control", "private, no-store");
+  // Signed-in visitors were redirected away from "/" above, so the landing page is the same prerendered page for
+  // everyone who reaches it: leave its caching to Next.js so the CDN, the back/forward cache and crawlers get it fast.
+  // Dashboard, auth and API responses are per-user and stay uncached.
+  if (pathname !== "/") response.headers.set("Cache-Control", "private, no-store");
 
   return response;
 }

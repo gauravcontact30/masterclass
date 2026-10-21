@@ -130,10 +130,15 @@ export function SuperAdminInfrastructure() {
     shouldRevalidate: "onInput",
   });
 
+  // getInputProps includes the field's `key`; React needs it passed directly, ahead of the spread
+  // (a key after a spread falls back to createElement, which flags the <option> children as an unkeyed list).
+  const { key: emailKey, ...emailProps } = getInputProps(fields.email, { type: "email" });
+  const { key: roleKey, ...roleProps } = getInputProps(fields.role, { type: "text" });
+
   return (
     <div className={styles.container}>
       <div className={styles.actionRow}>
-        <p role="status">{loading ? "Checking configuration?" : checkedAt ? `Last checked ${checkedAt}. Configuration does not verify provider uptime.` : "Configuration not yet verified."}</p>
+        <p role="status">{loading ? "Checking configuration…" : checkedAt ? `Last checked ${checkedAt}. Configuration does not verify provider uptime.` : "Configuration not yet verified."}</p>
         <Button variant="outline" disabled={loading} onClick={() => void loadStatus()}>Refresh configuration</Button>
       </div>
       {statusError && <p role="alert">{statusError}</p>}
@@ -293,8 +298,8 @@ export function SuperAdminInfrastructure() {
                 User Email Address
               </label>
               <input
-                {...getInputProps(fields.email, { type: "email" })}
-                key={fields.email.key}
+                key={emailKey}
+                {...emailProps}
                 placeholder="colleague@domain.com"
                 className={styles.textInput}
               />
@@ -310,8 +315,8 @@ export function SuperAdminInfrastructure() {
                 Assigned Role / Tier
               </label>
               <select
-                {...getInputProps(fields.role, { type: "text" })}
-                key={fields.role.key}
+                key={roleKey}
+                {...roleProps}
                 className={styles.selectInput}
               >
                 <option value="pro">Pro Learner (All Categories & Features)</option>

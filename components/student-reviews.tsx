@@ -42,7 +42,7 @@ export function StudentReviews(){
     </header>
     <div className={styles.layout}>
       <div className={styles.stage}>
-        <div className={styles.slides} aria-live={rotating?"off":"polite"}>{samples.map((item,i)=><article key={item.id} hidden={index!==i} role="group" aria-roledescription="slide" aria-label={hi?`नमूना समीक्षा ${i+1} / ${samples.length}`:`Sample review ${i+1} of ${samples.length}`} className={styles.card}>
+        <div className={styles.slides} aria-live={rotating?"off":"polite"}>{samples.map((item,i)=><div key={item.id} hidden={index!==i} role="group" aria-roledescription="slide" aria-label={hi?`नमूना समीक्षा ${i+1} / ${samples.length}`:`Sample review ${i+1} of ${samples.length}`} className={styles.card}>
           <div className={styles.cardTop}>
             <span className={styles.area}><item.area.icon size={14} aria-hidden="true"/>{item.area.name[lang]}</span>
             <div role="img" aria-label={hi?`नमूना रेटिंग ${item.rating} / 5`:`Sample rating ${item.rating} out of 5`} className={styles.stars}>{[1,2,3,4,5].map(star=><Star key={star} size={15} fill={star<=item.rating?"currentColor":"none"} aria-hidden="true"/>)}</div>
@@ -50,7 +50,7 @@ export function StudentReviews(){
           <Quote size={30} strokeWidth={1.4} aria-hidden="true" className={styles.mark}/>
           <blockquote>{item.quote[lang]}</blockquote>
           <div className={styles.profile}><Avatar item={item} tone={i%3} className={styles.avatar} size={56}/><div><strong>{item.name}</strong><span>{item.focus[lang]}</span></div></div>
-        </article>)}</div>
+        </div>)}</div>
         <div className={styles.controls}>
           <button type="button" aria-label={hi?"पिछली समीक्षा":"Previous review"} onClick={()=>setIndex(value=>(value+samples.length-1)%samples.length)}><ArrowLeft size={17}/></button>
           <span>{String(index+1).padStart(2,"0")} <i>/ {String(samples.length).padStart(2,"0")}</i></span>
@@ -59,7 +59,7 @@ export function StudentReviews(){
           {rotating&&<span key={index} className={styles.timer} aria-hidden="true"/>}
         </div>
       </div>
-      <div className={styles.index} role="group" aria-label={hi?"समीक्षा चुनें":"Choose a review"}>{samples.map((item,i)=><button type="button" key={item.id} aria-label={hi?`${item.name} की नमूना समीक्षा`:`Read sample review by ${item.name}`} aria-pressed={index===i} onClick={()=>setIndex(i)}>
+      <div className={styles.index} role="group" aria-label={hi?"समीक्षा चुनें":"Choose a review"}>{samples.map((item,i)=><button type="button" key={item.id} aria-pressed={index===i} onClick={()=>setIndex(i)}>
         <Avatar item={item} tone={i%3} className={styles.selectorAvatar} size={40}/>
         <span className={styles.who}><b>{item.name}</b><small>{item.focus[lang]}</small></span>
         <span className={styles.whoArea}><item.area.icon size={15} aria-hidden="true"/><span>{item.area.name[lang]}</span></span>

@@ -4,6 +4,11 @@
 
 .sample-notes-pagination{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px;font-size:13px;color:#5e5d59}
 
+/* Currency signs (₹, ₩, ₺…; not €, which Anek's Latin file has) from the device's own font. Anek Latin keeps them in
+   its 83 KB latin-ext file, so the one "₹299" on the landing page downloaded that whole file late and repainted the
+   page. A device without these fonts, or a font without the glyph, falls through to Anek as before. */
+@font-face{font-family:"MC Currency";src:local("Segoe UI"),local("Roboto"),local("Noto Sans"),local("Arial");unicode-range:U+20A0-20AB,U+20AD-20C4;font-weight:100 900;font-display:swap}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline{
