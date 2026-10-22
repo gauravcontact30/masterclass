@@ -1,4 +1,5 @@
 import "server-only";
+import { takeDaily } from "./daily-rotation";
 import { ENGLISH_EXAM_VOCABULARY } from "@/lib/pro-learn/english-exam-vocabulary";
 import { TECHNOLOGY_HANDBOOKS } from "@/lib/pro-learn/technology-handbooks";
 import { SEARCH_FIXED_CATALOGUES } from "@/lib/step-by-step/technologies";
@@ -55,8 +56,8 @@ export function landingLibrary(pro: LandingProPreview): LandingLibrary {
 export const LEDGER_PREVIEW_ROWS = 40;
 /**
  * The ledger as the landing page ships it: the first rows only, with the real totals. The full ledger was ~50 KB of
- * page data that most visitors never search.
+ * page data that most visitors never search. `day` (istDay) walks the rows a page a day, so every shelf takes a turn.
  */
-export function previewLibrary(library: LandingLibrary): LandingLibrary {
-  return { ...library, entries: library.entries.slice(0, LEDGER_PREVIEW_ROWS) };
+export function previewLibrary(library: LandingLibrary, day = 0): LandingLibrary {
+  return { ...library, entries: takeDaily(library.entries, day, LEDGER_PREVIEW_ROWS) };
 }

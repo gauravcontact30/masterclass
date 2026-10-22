@@ -28,7 +28,7 @@ function useText() {
 
 /**
  * Techy, shown the way it feels to use: a terminal-style session on one real topic. Pick a topic, read its summary
- * and key feature, then try its first interview question before revealing the model answer. Beside it, the six
+ * and key feature, then try today's interview question before revealing the model answer. Beside it, the six
  * ways each topic can be practised in the dashboard.
  */
 export function LandingTechy({ data }: { data: LandingProPreview["techy"] }) {
@@ -57,7 +57,7 @@ export function LandingTechy({ data }: { data: LandingProPreview["techy"] }) {
         <h2 id="landing-techy-title">{text("Walk into the interview ", "इंटरव्यू में जाएँ ")}<em>{text("already fluent.", "पूरी तैयारी के साथ।")}</em></h2>
       </div>
       <div>
-        <p className={frame.lede}><ExpandedText text={text("The frameworks, cloud services and testing tools teams hire for, each one explained, questioned and coded. Try a real topic below: read it, answer its first interview question, then check yourself against the model answer.", "वे फ़्रेमवर्क, क्लाउड सेवाएँ और टेस्टिंग टूल जिनके लिए टीमें भर्ती करती हैं, हर एक समझाया, पूछा और कोड किया गया। नीचे एक असली विषय आज़माएँ: पढ़ें, उसका पहला इंटरव्यू प्रश्न हल करें, फिर आदर्श उत्तर से मिलाएँ।")} /></p>
+        <p className={frame.lede}><ExpandedText text={text("The frameworks, cloud services and testing tools teams hire for, each one explained, questioned and coded. Try a real topic below: read it, answer today's interview question, then check yourself against the model answer.", "वे फ़्रेमवर्क, क्लाउड सेवाएँ और टेस्टिंग टूल जिनके लिए टीमें भर्ती करती हैं, हर एक समझाया, पूछा और कोड किया गया। नीचे एक असली विषय आज़माएँ: पढ़ें, आज का इंटरव्यू प्रश्न हल करें, फिर आदर्श उत्तर से मिलाएँ।")} /></p>
         <dl className={frame.facts}>
           <div><dt>{text("Practice questions", "अभ्यास प्रश्न")}</dt><dd>{count(data.questionCount)}</dd></div>
           <div><dt>{text("Code puzzles", "कोड पहेलियाँ")}</dt><dd>{count(data.puzzleCount)}</dd></div>
@@ -87,7 +87,7 @@ export function LandingTechy({ data }: { data: LandingProPreview["techy"] }) {
           <p className={styles.summary}><ExpandedText text={topic.summary} /></p>
           {topic.feature && <p className={styles.feature}><Check size={15} aria-hidden="true" /><ExpandedText text={topic.feature} /></p>}
           <div className={styles.question}>
-            <p className={styles.qLabel}>{text(`Interview question 1 of ${count(topic.questionCount)}`, `इंटरव्यू प्रश्न 1 / ${count(topic.questionCount)}`)}</p>
+            <p className={styles.qLabel}>{text(`Interview question ${count(topic.questionNumber)} of ${count(topic.questionCount)}`, `इंटरव्यू प्रश्न ${count(topic.questionNumber)} / ${count(topic.questionCount)}`)}</p>
             <h4><ExpandedText text={topic.question} /></h4>
             <button type="button" className={styles.reveal} aria-expanded={revealed} aria-controls="landing-techy-answer" onClick={() => setRevealed(value => !value)}><b aria-hidden="true">❯</b>{revealed ? text("Hide answer", "उत्तर छिपाएँ") : text("Reveal model answer", "आदर्श उत्तर देखें")}</button>
             <p id="landing-techy-answer" className={styles.answer} hidden={!revealed}><ExpandedText text={topic.answer} /></p>
@@ -110,7 +110,8 @@ export function LandingTechy({ data }: { data: LandingProPreview["techy"] }) {
 export function LandingApiDocs({ data }: { data: LandingProPreview["api"] }) {
   const { text, locale } = useText();
   const [query, setQuery] = useState("");
-  const [packageId, setPackageId] = useState(data.packages.find(pkg => pkg.id === "nextjs")?.id ?? data.packages[0]?.id);
+  // The server puts today's technology first (landingProPreview rotates them daily).
+  const [packageId, setPackageId] = useState(data.packages[0]?.id);
   const [kind, setKind] = useState<string>("all");
   const normalized = query.trim().toLowerCase();
   const matches = data.packages.filter(pkg => !normalized || pkg.name.toLowerCase().includes(normalized) || pkg.sample.some(entry => entry.name.toLowerCase().includes(normalized)));

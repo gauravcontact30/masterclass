@@ -6,6 +6,7 @@ import type { LearningPath, PathStage } from "@/lib/learning-path";
 import { PLAN_LENGTHS, stageSpans } from "@/lib/learning-path-stages";
 import { requestJson } from "@/lib/client";
 import { useLanguage } from "./language-provider";
+import { pickDaily, rotateDaily } from "@/lib/daily-rotation";
 import { stageWeeks } from "./learning-path-view";
 import home from "./landing-home.module.css";
 import styles from "./landing-path-finder.module.css";
@@ -34,30 +35,75 @@ const STAGES: { icon: LucideIcon; en: string; hi: string }[] = [
 ];
 const note = (id: string) => `/dashboard/notes?technology=${id}`;
 const t = (id: string, title: string) => ({ id, title, href: note(id) });
-/** Shown before the first plan, quieter than a real one, so a visitor sees what the planner returns. */
-const SAMPLE: { en: PathStage[]; hi: PathStage[] } = {
-  en: [
-    { stage: 1, from: 1, to: 2, focus: "Modern JavaScript and Git", technologies: [t("javascript", "JavaScript"), t("git", "Git & GitHub")], tasks: ["Work through the JavaScript notes and run each example", "Commit every exercise to a GitHub repository"], outcome: "You can write and explain everyday JavaScript" },
-    { stage: 2, from: 3, to: 3, focus: "Typed React components", technologies: [t("typescript", "TypeScript"), t("react", "React 19+")], tasks: ["Build five small components with typed props", "Take the React quiz and review every miss"], outcome: "You can build an interactive page in React" },
-    { stage: 3, from: 4, to: 4, focus: "Portfolio app with Next.js", technologies: [t("nextjs", "Next.js 16+")], tasks: ["Ship a small Next.js app with two routes", "Practice ten React interview questions"], outcome: "A live project you can walk an interviewer through" },
-  ],
-  hi: [
-    { stage: 1, from: 1, to: 2, focus: "आधुनिक JavaScript और Git", technologies: [t("javascript", "JavaScript"), t("git", "Git & GitHub")], tasks: ["JavaScript नोट्स पढ़ें और हर उदाहरण चलाएँ", "हर अभ्यास GitHub पर सहेजें"], outcome: "रोज़मर्रा का JavaScript लिख और समझा सकेंगे" },
-    { stage: 2, from: 3, to: 3, focus: "टाइप्ड React कंपोनेंट", technologies: [t("typescript", "TypeScript"), t("react", "React 19+")], tasks: ["टाइप्ड props वाले पाँच छोटे कंपोनेंट बनाएँ", "React क्विज़ दें और गलतियाँ दोबारा देखें"], outcome: "React में एक इंटरैक्टिव पेज बना सकेंगे" },
-    { stage: 3, from: 4, to: 4, focus: "Next.js से पोर्टफ़ोलियो ऐप", technologies: [t("nextjs", "Next.js 16+")], tasks: ["दो रूट वाला छोटा Next.js ऐप बनाएँ", "React के दस इंटरव्यू प्रश्नों का अभ्यास करें"], outcome: "एक चालू प्रोजेक्ट, जिसे इंटरव्यू में समझा सकें" },
-  ],
-};
+/** Shown before the first plan, quieter than a real one, so a visitor sees what the planner returns; one a day. */
+const SAMPLES: { label: [string, string]; en: PathStage[]; hi: PathStage[] }[] = [
+  { label: ["frontend developer", "फ्रंटएंड डेवलपर"],
+    en: [
+      { stage: 1, from: 1, to: 2, focus: "Modern JavaScript and Git", technologies: [t("javascript", "JavaScript"), t("git", "Git & GitHub")], tasks: ["Work through the JavaScript notes and run each example", "Commit every exercise to a GitHub repository"], outcome: "You can write and explain everyday JavaScript" },
+      { stage: 2, from: 3, to: 3, focus: "Typed React components", technologies: [t("typescript", "TypeScript"), t("react", "React 19+")], tasks: ["Build five small components with typed props", "Take the React quiz and review every miss"], outcome: "You can build an interactive page in React" },
+      { stage: 3, from: 4, to: 4, focus: "Portfolio app with Next.js", technologies: [t("nextjs", "Next.js 16+")], tasks: ["Ship a small Next.js app with two routes", "Practice ten React interview questions"], outcome: "A live project you can walk an interviewer through" },
+    ],
+    hi: [
+      { stage: 1, from: 1, to: 2, focus: "आधुनिक JavaScript और Git", technologies: [t("javascript", "JavaScript"), t("git", "Git & GitHub")], tasks: ["JavaScript नोट्स पढ़ें और हर उदाहरण चलाएँ", "हर अभ्यास GitHub पर सहेजें"], outcome: "रोज़मर्रा का JavaScript लिख और समझा सकेंगे" },
+      { stage: 2, from: 3, to: 3, focus: "टाइप्ड React कंपोनेंट", technologies: [t("typescript", "TypeScript"), t("react", "React 19+")], tasks: ["टाइप्ड props वाले पाँच छोटे कंपोनेंट बनाएँ", "React क्विज़ दें और गलतियाँ दोबारा देखें"], outcome: "React में एक इंटरैक्टिव पेज बना सकेंगे" },
+      { stage: 3, from: 4, to: 4, focus: "Next.js से पोर्टफ़ोलियो ऐप", technologies: [t("nextjs", "Next.js 16+")], tasks: ["दो रूट वाला छोटा Next.js ऐप बनाएँ", "React के दस इंटरव्यू प्रश्नों का अभ्यास करें"], outcome: "एक चालू प्रोजेक्ट, जिसे इंटरव्यू में समझा सकें" },
+    ] },
+  { label: ["AI agent builder", "AI एजेंट बिल्डर"],
+    en: [
+      { stage: 1, from: 1, to: 2, focus: "Python and calling a model", technologies: [t("python", "Python"), t("langchain", "LangChain")], tasks: ["Work through the Python notes on functions and async", "Call a chat model and stream its answer"], outcome: "You can script a model call and read its output" },
+      { stage: 2, from: 3, to: 3, focus: "Tools, memory and retrieval", technologies: [t("langgraph", "LangGraph")], tasks: ["Give an agent two tools and log each step", "Add retrieval over your own notes"], outcome: "An agent that looks things up before it answers" },
+      { stage: 3, from: 4, to: 4, focus: "A deployed study assistant", technologies: [t("agentic-ai", "Agentic AI")], tasks: ["Ship the agent behind a small web page", "Practice ten agentic AI interview questions"], outcome: "A working agent you can demo and explain" },
+    ],
+    hi: [
+      { stage: 1, from: 1, to: 2, focus: "Python और मॉडल को कॉल करना", technologies: [t("python", "Python"), t("langchain", "LangChain")], tasks: ["functions और async पर Python नोट्स पढ़ें", "एक चैट मॉडल को कॉल करें और उत्तर स्ट्रीम करें"], outcome: "मॉडल कॉल की स्क्रिप्ट लिख और उसका आउटपुट पढ़ सकेंगे" },
+      { stage: 2, from: 3, to: 3, focus: "टूल, मेमोरी और रिट्रीवल", technologies: [t("langgraph", "LangGraph")], tasks: ["एजेंट को दो टूल दें और हर कदम लॉग करें", "अपने नोट्स पर रिट्रीवल जोड़ें"], outcome: "ऐसा एजेंट जो उत्तर देने से पहले जानकारी खोजे" },
+      { stage: 3, from: 4, to: 4, focus: "डिप्लॉय किया गया स्टडी असिस्टेंट", technologies: [t("agentic-ai", "Agentic AI")], tasks: ["एजेंट को एक छोटे वेब पेज के पीछे चलाएँ", "Agentic AI के दस इंटरव्यू प्रश्नों का अभ्यास करें"], outcome: "एक चालू एजेंट, जिसे दिखा और समझा सकें" },
+    ] },
+  { label: ["DevOps engineer", "DevOps इंजीनियर"],
+    en: [
+      { stage: 1, from: 1, to: 2, focus: "Linux, Git and containers", technologies: [t("git", "Git & GitHub"), t("docker", "Docker")], tasks: ["Containerise a small app with a Dockerfile", "Write a compose file for the app and its database"], outcome: "You can build and run any app in a container" },
+      { stage: 2, from: 3, to: 3, focus: "Cloud basics on AWS", technologies: [t("aws", "AWS")], tasks: ["Deploy the container to a managed service", "Set up logs and one alarm"], outcome: "Your app runs in the cloud and you can see its health" },
+      { stage: 3, from: 4, to: 4, focus: "A CI/CD pipeline", technologies: [t("github-actions", "GitHub Actions")], tasks: ["Test and deploy on every push", "Practice ten DevOps interview questions"], outcome: "A pipeline you can draw and defend in an interview" },
+    ],
+    hi: [
+      { stage: 1, from: 1, to: 2, focus: "Linux, Git और कंटेनर", technologies: [t("git", "Git & GitHub"), t("docker", "Docker")], tasks: ["Dockerfile से एक छोटा ऐप कंटेनर में चलाएँ", "ऐप और डेटाबेस के लिए compose फ़ाइल लिखें"], outcome: "कोई भी ऐप कंटेनर में बना और चला सकेंगे" },
+      { stage: 2, from: 3, to: 3, focus: "AWS पर क्लाउड की बुनियाद", technologies: [t("aws", "AWS")], tasks: ["कंटेनर को एक मैनेज्ड सेवा पर डिप्लॉय करें", "लॉग और एक अलार्म सेट करें"], outcome: "आपका ऐप क्लाउड पर चलेगा और उसकी सेहत दिखेगी" },
+      { stage: 3, from: 4, to: 4, focus: "एक CI/CD पाइपलाइन", technologies: [t("github-actions", "GitHub Actions")], tasks: ["हर push पर टेस्ट और डिप्लॉय करें", "DevOps के दस इंटरव्यू प्रश्नों का अभ्यास करें"], outcome: "ऐसी पाइपलाइन जिसे इंटरव्यू में बना और समझा सकें" },
+    ] },
+  { label: ["data engineer", "डेटा इंजीनियर"],
+    en: [
+      { stage: 1, from: 1, to: 2, focus: "SQL and Python for data", technologies: [t("sql", "SQL"), t("python", "Python")], tasks: ["Write joins and window functions on a sample dataset", "Load a CSV with Python and clean it"], outcome: "You can query, join and clean real data" },
+      { stage: 2, from: 3, to: 3, focus: "Pipelines and scheduling", technologies: [t("postgresql", "PostgreSQL")], tasks: ["Build a daily job that loads new rows", "Add checks that stop bad data"], outcome: "A pipeline that runs on its own and fails loudly" },
+      { stage: 3, from: 4, to: 4, focus: "A small analytics warehouse", technologies: [t("aws", "AWS")], tasks: ["Model a fact table and two dimensions", "Practice ten data engineering interview questions"], outcome: "A project that shows data from source to dashboard" },
+    ],
+    hi: [
+      { stage: 1, from: 1, to: 2, focus: "डेटा के लिए SQL और Python", technologies: [t("sql", "SQL"), t("python", "Python")], tasks: ["नमूना डेटा पर joins और window functions लिखें", "Python से CSV लोड करें और साफ़ करें"], outcome: "असली डेटा को क्वेरी, जोड़ और साफ़ कर सकेंगे" },
+      { stage: 2, from: 3, to: 3, focus: "पाइपलाइन और शेड्यूलिंग", technologies: [t("postgresql", "PostgreSQL")], tasks: ["नई पंक्तियाँ लोड करने वाला रोज़ का जॉब बनाएँ", "ख़राब डेटा रोकने वाली जाँच जोड़ें"], outcome: "ऐसी पाइपलाइन जो खुद चले और गड़बड़ी साफ़ बताए" },
+      { stage: 3, from: 4, to: 4, focus: "एक छोटा एनालिटिक्स वेयरहाउस", technologies: [t("aws", "AWS")], tasks: ["एक fact टेबल और दो dimensions बनाएँ", "डेटा इंजीनियरिंग के दस इंटरव्यू प्रश्नों का अभ्यास करें"], outcome: "स्रोत से डैशबोर्ड तक डेटा दिखाने वाला प्रोजेक्ट" },
+    ] },
+];
+/** The panel's colour for the day and its three stage cards' light tints (landing-path-finder.module.css). */
+const THEMES: { panel: string; tints: [string, string, string] }[] = [
+  { panel: "pine", tints: ["mint", "sky", "butter"] },
+  { panel: "indigo", tints: ["lavender", "peach", "sky"] },
+  { panel: "plum", tints: ["rose", "butter", "mint"] },
+  { panel: "ocean", tints: ["aqua", "sand", "lavender"] },
+  { panel: "cocoa", tints: ["peach", "sage", "sky"] },
+  { panel: "navy", tints: ["sky", "mint", "rose"] },
+  { panel: "olive", tints: ["butter", "aqua", "peach"] },
+];
 const noSubscribe = () => () => {};
 
 /**
  * The landing page's route planner: the visitor completes "I want to ___ in N weeks" and gets a three-stage plan
  * (foundation, practice, project) through this app's own catalog (/api/learning-path), shown as three light cards
  * on a route line. Before the first plan the cards show an example. Topic links go through sign-in, and "Start this
- * plan free" goes to sign-up.
+ * plan free" goes to sign-up. The example, the order of the ready-made goals and the colours change daily (`day`, istDay).
  */
-export function LandingPathFinder() {
+export function LandingPathFinder({ day = 0 }: { day?: number }) {
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
   const id = useId();
+  const sample = pickDaily(SAMPLES, day); const theme = pickDaily(THEMES, day); const goals = rotateDaily(GOALS, day);
   // False in the server HTML: until React hydrates, a click would fall through to a native submit that reloads the page.
   const hydrated = useSyncExternalStore(noSubscribe, () => true, () => false);
   const [goal, setGoal] = useState("");
@@ -87,13 +133,13 @@ export function LandingPathFinder() {
   if (path) mode = "result"; else if (loading) mode = "loading";
   const placeholders = stageSpans(weeks).map(([from, to], i): PathStage => ({ stage: (i + 1) as 1 | 2 | 3, from, to, focus: "", technologies: [], tasks: [], outcome: "" }));
   const spans = stageSpans(weeks);
-  let stages: PathStage[] = SAMPLE[hi ? "hi" : "en"].map((stage, i) => ({ ...stage, from: spans[i][0], to: spans[i][1] }));
+  let stages: PathStage[] = sample[hi ? "hi" : "en"].map((stage, i) => ({ ...stage, from: spans[i][0], to: spans[i][1] }));
   if (path) stages = path.stages; else if (loading) stages = placeholders;
-  let heading = text(`Example: frontend developer in ${weeks} weeks`, `उदाहरण: ${weeks} हफ़्तों में फ्रंटएंड डेवलपर`);
+  let heading = text(`Example: ${sample.label[0]} in ${weeks} weeks`, `उदाहरण: ${weeks} हफ़्तों में ${sample.label[1]}`);
   if (path) heading = text(`Your ${path.weeks}-week route`, `आपका ${path.weeks} हफ़्तों का रास्ता`);
   else if (loading) heading = text("Mapping your route…", "आपका रास्ता बन रहा है…");
 
-  return <section id="path-finder" className={styles.section} aria-labelledby={`${id}-title`}><div className={home.inner}>
+  return <section id="path-finder" className={styles.section} data-theme={theme.panel} aria-labelledby={`${id}-title`}><div className={home.inner}>
     <div className={styles.panel}>
       <div className={styles.intro}>
         <h2 id={`${id}-title`}>{text("Plan your route", "अपना रास्ता तय कीजिए")}</h2>
@@ -123,7 +169,7 @@ export function LandingPathFinder() {
         <div className={styles.tries}>
           <span>{text("Or try", "या आज़माएँ")}</span>
           <ul id={`${id}-goals`}>
-            {(moreGoals ? GOALS : GOALS.slice(0, SHOWN)).map(([label, labelHi, en, hindi]) => {
+            {(moreGoals ? goals : goals.slice(0, SHOWN)).map(([label, labelHi, en, hindi]) => {
               const value = hi ? hindi : en;
               return <li key={label}><button type="button" aria-pressed={path?.goal === value} disabled={loading || !hydrated} onClick={() => void plan(value)}>{hi ? labelHi : label}</button></li>;
             })}
@@ -147,7 +193,7 @@ export function LandingPathFinder() {
         <ol className={styles.stages}>
           {stages.map((stage, i) => {
             const meta = STAGES[i]; const Icon = meta.icon;
-            return <li key={stage.stage} className={styles.stage} style={{ "--i": i } as CSSProperties} data-stage={stage.stage}>
+            return <li key={stage.stage} className={styles.stage} style={{ "--i": i } as CSSProperties} data-stage={stage.stage} data-tint={theme.tints[i]}>
               <span className={styles.marker} aria-hidden="true"><Icon size={16} /></span>
               <article className={styles.card}>
                 <header className={styles.cardHead}>

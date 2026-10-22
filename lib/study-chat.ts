@@ -33,6 +33,8 @@ export type StudyChatReply = {
 
 /** One line of the streamed reply: sources first, then text pieces, then the final cleaned answer (or an error). */
 export type StudyChatEvent =
+  /** Keep-alive while the server is still working (cold start, rate limits, a model that has not written yet). */
+  | { type: "ping" }
   | { type: "meta"; sources: StudyChatReply["sources"] }
   | { type: "delta"; text: string }
   | { type: "done"; answer: string; mode: StudyChatReply["mode"]; truncated?: boolean }

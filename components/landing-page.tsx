@@ -14,7 +14,7 @@ import { loadPrices } from "./currency-picker";
 import type { Currency } from "@/lib/pricing";
 import { LibraryBig } from "lucide-react";
 import { landingFont } from "./landing-fonts";
-import { LandingOverview } from "./landing-overview";
+import { LandingNews } from "./landing-news";
 import { useReveal } from "./use-reveal";
 import { LearningSlot } from "./learning-slot";
 import type { LandingProPreview } from "@/lib/landing-pro-preview";
@@ -55,7 +55,8 @@ const LandingTechy = dynamic(() => import("./landing-pro-sections").then(m => m.
 
 /** `international`: other currencies are offered, so the page re-prices itself where the visitor is (it is cached in rupees). */
 export type LandingPrices = { monthly: number; yearly: number; enabled: boolean; currency?: Currency; currencies?: Currency[]; local?: Currency; inr?: { monthly: number; yearly: number }; international?: boolean };
-export function LandingPage({ pro, library, prices: initialPrices, daily, techDocs, copyrightYear, overrides, coffee }: { overrides?: ContentOverrides; coffee?: BlogTeaser[]; copyrightYear?: number; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
+/** `today`: the India-calendar day number (istDay); the sections that turn over daily pick their content from it. */
+export function LandingPage({ pro, library, prices: initialPrices, daily, techDocs, copyrightYear, overrides, coffee, today = 0, featuredDoc }: { today?: number; featuredDoc?: string; overrides?: ContentOverrides; coffee?: BlogTeaser[]; copyrightYear?: number; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
   // Prices rendered on the server arrive in the HTML, so the plan card never paints "—" and then shifts; the fetch is only the fallback.
@@ -79,10 +80,10 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
         docs), then social proof straight before the ask (reviews, membership). */}
     <LandingSlider technologies={library?.counts.technology} />
     <LearningSlot surface="landing" page="home" section="after-slider" className={styles.learningSlot} />
-    <LandingOverview counts={library?.counts} />
-    <LandingPathFinder />
+    <LandingNews />
+    <LandingPathFinder day={today} />
     {library && <SubjectRibbon entries={library.entries} />}
-    <LandingInterview preview />
+    <LandingInterview preview day={today} />
     {daily && <LandingAiPulse cards={daily.pulse} total={daily.totals?.pulse} day={daily.day} locked={daily.locked?.pulse} preview />}
     <LandingWorkflows preview />
     {coffee && <LandingCoffee posts={coffee} />}
@@ -107,7 +108,7 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
       <LibraryLedger library={library} />
     </div></section>}
     <LandingComparisons preview official={techDocs} />
-    <LandingTechDocs official={techDocs} preview />
+    <LandingTechDocs official={techDocs} preview featured={featuredDoc} />
     {pro && <><LandingTechy data={pro.techy} /><LandingApiDocs data={pro.api} /></>}
     {daily && <LandingVocabulary words={daily.words} total={daily.totals?.words} day={daily.day} locked={daily.locked?.word} preview />}
     <StudentReviews />

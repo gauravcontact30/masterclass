@@ -2,7 +2,7 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import { LandingTechy } from "@/components/landing-pro-sections";
 
 const data = {
-  topics: Array.from({ length: 15 }, (_, index) => ({ id: `topic-${index}`, title: `Topic ${index + 1}`, category: "Technology", summary: "Summary", feature: "Feature", question: "Question", answer: "Answer", questionCount: 1 })),
+  topics: Array.from({ length: 15 }, (_, index) => ({ id: `topic-${index}`, title: `Topic ${index + 1}`, category: "Technology", summary: "Summary", feature: "Feature", question: "Question", answer: "Answer", questionNumber: 1, questionCount: 1 })),
   questionCount: 15, puzzleCount: 0, vocabularyCount: 0,
 };
 

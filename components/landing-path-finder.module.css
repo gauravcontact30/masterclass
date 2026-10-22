@@ -6,6 +6,13 @@
   --card: #fbfaf5; --card-line: #e6e2d3; --muted: #56635d; --mint: #e3efe8; --mint-ink: #1f463c;
   padding-block: 40px; scroll-margin-top: 80px;
 }
+/* The panel colour changes daily (data-theme); pine is the default above. Each keeps the paper text readable. */
+.section[data-theme="indigo"] { --pine: #1f2452; --pine-2: #2a3170; --pine-3: #3b4389; --sage: #b7bdf0; }
+.section[data-theme="plum"] { --pine: #3a1d34; --pine-2: #4e2847; --pine-3: #66365d; --sage: #e2b6d4; }
+.section[data-theme="ocean"] { --pine: #0f3340; --pine-2: #174656; --pine-3: #23596b; --sage: #9fd3df; }
+.section[data-theme="cocoa"] { --pine: #3a2a1e; --pine-2: #4c3828; --pine-3: #634a36; --sage: #e0c3a5; }
+.section[data-theme="navy"] { --pine: #1a2a40; --pine-2: #243855; --pine-3: #34496b; --sage: #a9c3e6; }
+.section[data-theme="olive"] { --pine: #2c3318; --pine-2: #3b4422; --pine-3: #4e5930; --sage: #c9d59c; }
 .panel { display: grid; gap: 28px; padding: clamp(20px, 4vw, 40px); border-radius: 26px; background: var(--pine); color: var(--paper); overflow: hidden; }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 /* The landing sheet justifies and hyphenates every paragraph; short planner copy reads better ragged-right. */
@@ -53,7 +60,7 @@
 .routeHead p { margin: 0; font-size: 14px; line-height: 1.6; color: var(--sage); }
 .reset { display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 14px; border: 1px solid var(--pine-3); border-radius: 10px; background: transparent; font: inherit; font-size: 13.5px; color: var(--paper); cursor: pointer; }
 .reset:hover { border-color: var(--sage); }
-.problem { margin: 0; padding: 10px 14px; border-left: 3px solid var(--signal); border-radius: 6px; background: #12291f; font-size: 13.5px; line-height: 1.5; color: var(--paper); }
+.problem { margin: 0; padding: 10px 14px; border-left: 3px solid var(--signal); border-radius: 6px; background: color-mix(in srgb, var(--pine) 80%, #000); font-size: 13.5px; line-height: 1.5; color: var(--paper); }
 
 .stages { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin: 0; padding: 0; list-style: none; }
 .stage { position: relative; display: grid; grid-template-rows: auto 1fr; gap: 14px; min-width: 0; }
@@ -63,9 +70,16 @@
 .stage:last-child .marker { background: var(--signal); color: var(--ink); }
 
 /* Each stage card has its own light colour: foundation mint, practice sky, project butter. */
-.stage[data-stage="1"] { --tint: #eaf5ee; --tint-strong: #d5ebdd; --tint-ink: #1f5a45; --tint-band: #ddeee3; }
-.stage[data-stage="2"] { --tint: #eaf2fb; --tint-strong: #d3e3f5; --tint-ink: #1f4a78; --tint-band: #dce9f7; }
-.stage[data-stage="3"] { --tint: #fdf6e0; --tint-strong: #f6e6b3; --tint-ink: #6b4d0a; --tint-band: #f8ecc6; }
+/* Light tints for the stage cards; the component picks three per day to suit the panel colour. */
+.stage[data-tint="mint"] { --tint: #eaf5ee; --tint-strong: #d5ebdd; --tint-ink: #1f5a45; --tint-band: #ddeee3; }
+.stage[data-tint="sky"] { --tint: #eaf2fb; --tint-strong: #d3e3f5; --tint-ink: #1f4a78; --tint-band: #dce9f7; }
+.stage[data-tint="butter"] { --tint: #fdf6e0; --tint-strong: #f6e6b3; --tint-ink: #6b4d0a; --tint-band: #f8ecc6; }
+.stage[data-tint="lavender"] { --tint: #f1eefc; --tint-strong: #ddd6f6; --tint-ink: #4a3a8c; --tint-band: #e7e1f9; }
+.stage[data-tint="peach"] { --tint: #fdf1e8; --tint-strong: #f7dac5; --tint-ink: #7a4115; --tint-band: #fae5d5; }
+.stage[data-tint="rose"] { --tint: #fceef2; --tint-strong: #f5d3dd; --tint-ink: #7d2944; --tint-band: #f8e0e7; }
+.stage[data-tint="aqua"] { --tint: #e8f6f7; --tint-strong: #c9e9ec; --tint-ink: #145a63; --tint-band: #d8eff1; }
+.stage[data-tint="sand"] { --tint: #faf4e8; --tint-strong: #eeddb9; --tint-ink: #6b4d14; --tint-band: #f4e8cf; }
+.stage[data-tint="sage"] { --tint: #eff4eb; --tint-strong: #d6e3cc; --tint-ink: #3d5a2a; --tint-band: #e2ebdb; }
 .card { display: grid; align-content: start; gap: 12px; min-width: 0; padding: 18px 18px 0; border-radius: 18px; background: var(--tint, var(--card)); color: var(--ink); box-shadow: 0 1px 0 #ffffff inset, 0 14px 30px #0b1d1730; overflow: hidden; }
 .stage:last-child .card { box-shadow: 0 0 0 2px var(--signal), 0 14px 30px #0b1d1730; }
 .cardHead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 10px; }

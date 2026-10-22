@@ -217,7 +217,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
           )}
         </div>
       </main>
-      <AuthStory />
+      <AuthStory mode={mode} />
     </div>
   );
 }

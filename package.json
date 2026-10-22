@@ -28,6 +28,7 @@
     "images:pulse": "tsx --env-file-if-exists=.env scripts/generate-card-images.ts --set pulse",
     "images:blueprints": "tsx --env-file-if-exists=.env scripts/generate-card-images.ts --set blueprints",
     "images:interview": "tsx --env-file-if-exists=.env scripts/generate-card-images.ts --set interview",
+    "images:news": "tsx --env-file-if-exists=.env scripts/generate-news-covers.ts",
     "images:comparisons": "tsx --env-file-if-exists=.env scripts/generate-card-images.ts --set comparisons",
     "docs:tech": "tsx scripts/fetch-tech-docs.ts",
     "landing:daily": "tsx --env-file-if-exists=.env scripts/build-landing-daily.ts",

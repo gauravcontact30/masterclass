@@ -1,3 +1,4 @@
+import { takeDaily } from "./daily-rotation";
 
 /*
  * Coffee & Code: short, practical engineering articles in the Learning Dashboard. Each post is a list of typed
@@ -191,5 +192,9 @@ export const blogPreview = (post: BlogPost) => post.blocks.find((block): block i
 
 /** What the landing page teases: card fields only, never the article bodies. */
 export type BlogTeaser = Pick<BlogPost, "slug" | "title" | "dek" | "topic" | "tone" | "minutes" | "cover">;
-export const blogTeasers = (count = 3): BlogTeaser[] => [...BLOG_POSTS].sort((a, b) => b.published.localeCompare(a.published)).slice(0, count)
-  .map(({ slug, title, dek, topic, tone, minutes, cover }) => ({ slug, title, dek, topic, tone, minutes, cover }));
+/** The newest `count` articles; with `day` (istDay), the carousel instead starts on a different article each day. */
+export const blogTeasers = (count = 3, day?: number): BlogTeaser[] => {
+  const newest = [...BLOG_POSTS].sort((a, b) => b.published.localeCompare(a.published));
+  return (day === undefined ? newest.slice(0, count) : takeDaily(newest, day, count))
+    .map(({ slug, title, dek, topic, tone, minutes, cover }) => ({ slug, title, dek, topic, tone, minutes, cover }));
+};

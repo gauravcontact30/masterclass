@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // NEXT_DIST_DIR lets a second local server (a Turbopack trial, a perf check) run beside `npm run dev` without
+  // sharing its build folder. Unset everywhere else.
+  ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
   // Cache Components: `use cache` + cacheLife/cacheTag and Partial Prerendering. Each route ships a static shell at
   // once and streams its request-time parts (the signed-in user, live data) inside Suspense.
   cacheComponents: true,

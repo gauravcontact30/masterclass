@@ -41,9 +41,9 @@ describe("new user locations", () => {
   ];
   const report = newUserLocations(users, visits);
 
-  test("each user's first located visit, newest users first", () => {
+  test("location from the first located visit, first seen at the very first visit, newest users first", () => {
     expect(report.users.map(u => u.id)).toEqual(["b", "a", "c"]);
-    expect(report.users[1]).toMatchObject({ country: "India", state: "Maharashtra", city: "Pune", postalCode: "411001", firstSeenAt: "2026-10-18T10:02:00Z", nearby: { name: "Mumbai" } });
+    expect(report.users[1]).toMatchObject({ country: "India", state: "Maharashtra", city: "Pune", postalCode: "411001", firstSeenAt: "2026-10-18T10:01:00Z", nearby: { name: "Mumbai" } });
   });
   test("no location is invented: missing data stays empty", () => {
     expect(report.users[0]).toMatchObject({ name: "Unnamed learner", city: "Lucknow", postalCode: null, nearby: null });
@@ -51,9 +51,21 @@ describe("new user locations", () => {
   });
   test("tallies per level for the cards", () => {
     expect(report).toMatchObject({ total: 3, located: 2 });
-    expect(report.countries).toEqual([{ name: "India", count: 2 }]);
-    expect(report.states).toEqual([{ name: "Maharashtra, India", count: 1 }, { name: "Uttar Pradesh, India", count: 1 }]);
-    expect(report.postalAreas).toEqual([{ name: "411001 · Pune", count: 1 }]);
-    expect(report.nearby).toEqual([{ name: "Mumbai", count: 1 }]);
+    expect(report.countries).toEqual([{ name: "India", count: 2, country: "IN" }]);
+    expect(report.states.map(({ name, count }) => ({ name, count }))).toEqual([{ name: "Maharashtra, India", count: 1 }, { name: "Uttar Pradesh, India", count: 1 }]);
+    expect(report.postalAreas).toEqual([{ name: "PIN 411001", count: 1, country: "IN", detail: "Pune, Maharashtra" }]);
+    expect(report.nearby).toEqual([expect.objectContaining({ name: "Mumbai", count: 1, country: "IN", detail: expect.stringMatching(/^Maharashtra · avg \d+ km$/) })]);
+    expect(report.coverage).toEqual({ postal: 1, nearby: 1 });
+  });
+  test("time spent per India-calendar day comes from the leave beacons", () => {
+    const timed = newUserLocations([{ id: "a", name: "Asha", created_at: "2026-10-18T10:00:00Z" }], [
+      { user_id: "a", created_at: "2026-10-18T10:01:00Z", event: "page_view", session_id: "s1" },
+      { user_id: "a", created_at: "2026-10-18T10:06:00Z", event: "page_leave", session_id: "s1", duration_ms: 300_000 },
+      // 19:00 UTC on the 18th is already the 19th in India.
+      { user_id: "a", created_at: "2026-10-18T19:00:00Z", event: "page_view", session_id: "s2" },
+      { user_id: "a", created_at: "2026-10-18T19:02:00Z", event: "page_leave", session_id: "s2", duration_ms: 120_000 },
+    ], Date.parse("2026-10-19T06:00:00Z"));
+    expect(timed.users[0].activity).toMatchObject({ totalMs: 420_000, todayMs: 120_000, activeDays: 2, avgPerDayMs: 210_000, sessions: 2, pages: 2, days: [{ day: "2026-10-19", ms: 120_000 }, { day: "2026-10-18", ms: 300_000 }] });
+    expect(timed.time).toMatchObject({ totalMs: 420_000, todayMs: 120_000, activeToday: 1 });
   });
 });

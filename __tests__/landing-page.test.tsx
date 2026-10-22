@@ -69,7 +69,8 @@ test("server prices render immediately without an extra request", () => {
   render(<LandingPage prices={{monthly:499,yearly:4999,enabled:false}}/>);
   expect(screen.getByText(/499/, {selector:"p.price b"})).toBeInTheDocument();
   expect(screen.getByText("Checkout is not enabled yet.")).toBeInTheDocument();
-  expect(fetch).not.toHaveBeenCalled();
+  // The "Fresh in tech" carousel loads its stories after the page; nothing else should be requested.
+  expect((fetch as jest.Mock).mock.calls.filter(([url]) => url !== "/api/landing/news")).toEqual([]);
 });
 
 test("failed pricing is disclosed while learning navigation remains available", async () => {

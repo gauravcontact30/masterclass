@@ -5,6 +5,7 @@ import { GraduationCap } from "lucide-react";
 import { bankIds, INTERVIEW_TECHS, loadInterviewBank, type InterviewTech } from "@/lib/interview-bank";
 import type { QuestionSet } from "@/lib/interview-questions";
 import { learningImageUrl } from "@/lib/learning-image";
+import { takeDaily } from "@/lib/daily-rotation";
 import { AUTOPLAY_MS, Controls, Dots, PREVIEW_COUNT } from "./landing-ai-pulse";
 import { DashboardMore } from "./dashboard-more";
 import { InterviewQuestions, StarRow } from "./interview-accordion";
@@ -31,12 +32,13 @@ const techKey = (tech: InterviewTech) => contentKey("interview", tech.id);
  * Interview prep: one slide per technology, each with its picture, its most-asked subjective and objective
  * questions in an accordion, and a light tone of its own. The navigator (search, filters, pages) jumps to a technology; autoplay turns a
  * slide every two minutes and holds while the reader hovers or reads. Questions load per slide, when it is near.
+ * The landing preview (`day`, istDay) shows the next three technologies each day, and the slide tones move on with them.
  */
-export function LandingInterview({ expanded = false, preview = false }: Readonly<{ expanded?: boolean; preview?: boolean }>) {
+export function LandingInterview({ expanded = false, preview = false, day = 0 }: Readonly<{ expanded?: boolean; preview?: boolean; day?: number }>) {
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
   // The landing page previews three technologies; /dashboard carries all of them with the navigator.
   const visible = useVisibleContent(INTERVIEW_TECHS, techKey);
-  const techs = preview ? visible.slice(0, PREVIEW_COUNT) : visible;
+  const techs = preview ? takeDaily(visible, day, PREVIEW_COUNT) : visible;
   const section = useContentItem("section:interview-prep", "section");
   const { track, nearViewport, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(techs.length, 1, AUTOPLAY_MS);
   const current = techs[page];
@@ -59,14 +61,14 @@ export function LandingInterview({ expanded = false, preview = false }: Readonly
     {!preview && <InterviewTechNav techs={techs} current={page} onPick={goTo} tones={TONES} text={text} tab={tabs[current?.id] ?? 0} onTab={tab => chooseTab(current.id, tab)} />}
     <p className={styles.now} aria-live="polite"><b>{current?.title}</b><span aria-hidden="true">·</span>{text(`Topic ${page + 1} of ${techs.length}`, `विषय ${page + 1} / ${techs.length}`)}</p>
     <ul ref={track} className={styles.track} aria-roledescription="carousel" aria-label={text("Interview questions by technology", "तकनीक के अनुसार इंटरव्यू प्रश्न")} {...holdProps}>
-      {techs.map((tech, i) => <InterviewSlide key={tech.id} tech={tech} index={i} total={techs.length} near={nearViewport && Math.abs(i - page) <= 1} text={text} tab={tabs[tech.id] ?? 0} onTab={tab => chooseTab(tech.id, tab)} preview={preview} />)}
+      {techs.map((tech, i) => <InterviewSlide key={tech.id} tech={tech} index={i} tone={(i + (preview ? day : 0)) % TONES} total={techs.length} near={nearViewport && Math.abs(i - page) <= 1} text={text} tab={tabs[tech.id] ?? 0} onTab={tab => chooseTab(tech.id, tab)} preview={preview} />)}
     </ul>
     <Dots pages={pages} page={page} running={running} goTo={goTo} label={n => text(`Show technology ${n}`, `तकनीक ${n} दिखाएँ`)} />
     {expanded && <DashboardLessons section="interview" />}
   </div></section>;
 }
 
-function InterviewSlide({ tech, index, total, near, text, tab, onTab, preview = false }: Readonly<{ tech: InterviewTech; index: number; total: number; near: boolean; text: Text; tab: number; onTab: (tab: number) => void; preview?: boolean }>) {
+function InterviewSlide({ tech, index, tone, total, near, text, tab, onTab, preview = false }: Readonly<{ tech: InterviewTech; index: number; tone: number; total: number; near: boolean; text: Text; tab: number; onTab: (tab: number) => void; preview?: boolean }>) {
   const ids = bankIds(tech);
   const [sets, setSets] = useState<Record<string, QuestionSet>>({});
   const [failed, setFailed] = useState(false);
@@ -87,7 +89,7 @@ function InterviewSlide({ tech, index, total, near, text, tab, onTab, preview = 
 
   const k = techKey(tech);
   const card = useContentItem(k, "technology");
-  return <li className={styles.slide} data-tone={index % TONES} aria-roledescription="slide" aria-label={`${index + 1} / ${total}: ${tech.title}`} {...card.props}>{card.toolbar}
+  return <li className={styles.slide} data-tone={tone} aria-roledescription="slide" aria-label={`${index + 1} / ${total}: ${tech.title}`} {...card.props}>{card.toolbar}
     <article className={styles.cover}>
       <CoverPicture src={learningImageUrl("topics", ["interview", tech.id])} alt={`Illustration of ${tech.title}`} icon={<Icon size={48} strokeWidth={1.3} aria-hidden="true" />}>
         <span className={styles.tag}><Icon size={12} aria-hidden="true" />{text("Interview prep", "इंटरव्यू")}</span>

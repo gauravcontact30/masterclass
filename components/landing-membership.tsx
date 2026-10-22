@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Bookmark, BookMarked, BookA, BookOpenText, CircleHelp, Code2, FileCode2, GraduationCap, ListOrdered, MessagesSquare, Search, Sparkles, Workflow, type LucideIcon } from "lucide-react";
+import { ArrowRight, Bookmark, BookMarked, BookA, BookOpenText, CircleHelp, Code2, Coffee, FileCode2, GraduationCap, ListOrdered, MessagesSquare, NotebookPen, Search, Sparkles, Workflow, type LucideIcon } from "lucide-react";
 import { ExpandedText } from "./expanded-text";
 import { useLanguage } from "./language-provider";
 import home from "./landing-home.module.css";
@@ -13,30 +13,31 @@ import { BilledNote, CurrencyPicker } from "./currency-picker";
 export type MembershipPrices = { monthly: number; yearly: number; enabled: boolean; currency?: Currency; currencies?: Currency[]; local?: Currency; inr?: { monthly: number; yearly: number } };
 type Area = { icon: LucideIcon; name: [string, string]; note: [string, string] };
 
-/** What the membership opens, in the dashboard's own names and sidebar icons, grouped by how people use it. */
+/** What the membership opens, in the Learning Dashboard's own groups, names and sidebar icons (components/workspace.tsx). */
 const GROUPS: { title: [string, string]; areas: Area[] }[] = [
-  { title: ["Every day", "हर दिन"], areas: [
+  { title: ["Dashboard home, every day", "डैशबोर्ड होम, हर दिन"], areas: [
     { icon: Sparkles, name: ["AI & agentic pulse", "AI और एजेंटिक हलचल"], note: ["A fresh card set across 33 technologies", "33 तकनीकों में रोज़ नया कार्ड सेट"] },
-    { icon: BookA, name: ["Word power", "शब्द शक्ति"], note: ["Twelve new words with audio and Hindi", "ऑडियो और हिन्दी सहित बारह नए शब्द"] },
-  ] },
-  { title: ["Practise", "अभ्यास"], areas: [
-    { icon: MessagesSquare, name: ["Interview prep", "इंटरव्यू की तैयारी"], note: ["Subjective and objective banks per technology", "हर तकनीक के विषयगत और वस्तुनिष्ठ प्रश्न"] },
-    { icon: Workflow, name: ["Workflow blueprints", "वर्कफ़्लो ब्लूप्रिंट"], note: ["System design and AI agents, step by step", "सिस्टम डिज़ाइन और AI एजेंट, चरण दर चरण"] },
+    { icon: BookA, name: ["Word power", "शब्द शक्ति"], note: ["New words every day with audio and Hindi", "ऑडियो और हिन्दी सहित हर दिन नए शब्द"] },
     { icon: Code2, name: ["Tech Topics", "टेक टॉपिक्स"], note: ["Technology comparisons with interview questions", "इंटरव्यू प्रश्नों सहित तकनीकों की तुलना"] },
-    { icon: Code2, name: ["Techy", "Techy"], note: ["Topics, code examples and puzzles", "विषय, कोड उदाहरण और पहेलियाँ"] },
-    { icon: CircleHelp, name: ["Quiz", "क्विज़"], note: ["Timed practice with explanations", "व्याख्या सहित समयबद्ध अभ्यास"] },
-  ] },
-  { title: ["Look it up", "खोजें"], areas: [
-    { icon: Search, name: ["Search with AI mode", "AI मोड के साथ खोज"], note: ["Answers from the notes, or from a model", "नोट्स से या मॉडल से उत्तर"] },
-    { icon: FileCode2, name: ["API Docs", "API Docs"], note: ["Every identifier, linked to its source", "हर पहचानकर्ता, स्रोत से जुड़ा"] },
-    { icon: BookMarked, name: ["Official Docs", "आधिकारिक डॉक्स"], note: ["Vendor documentation, summarised", "विक्रेता दस्तावेज़, संक्षेप में"] },
     { icon: BookOpenText, name: ["Technology docs", "तकनीकी डॉक्स"], note: ["Platform guides, projects, DSA and OOPs", "प्लेटफ़ॉर्म गाइड, परियोजनाएँ, DSA और OOPs"] },
-    { icon: BookOpenText, name: ["Lessons", "पाठ"], note: ["Published notes for every course", "हर कोर्स के प्रकाशित नोट्स"] },
   ] },
-  { title: ["Your own space", "आपकी अपनी जगह"], areas: [
-    { icon: ListOrdered, name: ["On The Go", "On The Go"], note: ["Short step-by-step walkthroughs", "छोटे चरण-दर-चरण पाठ"] },
+  { title: ["Learning", "लर्निंग"], areas: [
+    { icon: Search, name: ["Search with AI mode", "AI मोड के साथ खोज"], note: ["Answers from the notes, or from a model", "नोट्स से या मॉडल से उत्तर"] },
+    { icon: ListOrdered, name: ["On The Go", "On The Go"], note: ["Step-by-step build guides with every command", "हर कमांड के साथ चरण-दर-चरण गाइड"] },
+    { icon: NotebookPen, name: ["Notes", "नोट्स"], note: ["Revision notes for every technology", "हर तकनीक के रिवीज़न नोट्स"] },
+    { icon: BookA, name: ["Vocabulary", "शब्दावली"], note: ["Exam words with Hindi meanings and examples", "हिन्दी अर्थ और उदाहरण सहित परीक्षा शब्द"] },
+    { icon: Coffee, name: ["Coffee & Code", "Coffee & Code"], note: ["Short engineering articles: real code, then interview questions", "छोटे इंजीनियरिंग लेख: असली कोड, फिर इंटरव्यू प्रश्न"] },
     { icon: GraduationCap, name: ["Class Room", "क्लास रूम"], note: ["School and exam courses in one place", "स्कूल और परीक्षा कोर्स एक जगह"] },
-    { icon: Bookmark, name: ["Bookmarks", "बुकमार्क"], note: ["Save anything to revise later", "बाद में दोहराने के लिए सहेजें"] },
+    { icon: Bookmark, name: ["Bookmark", "बुकमार्क"], note: ["Save anything to revise later", "बाद में दोहराने के लिए सहेजें"] },
+  ] },
+  { title: ["Professional Learn", "Professional Learn"], areas: [
+    { icon: BookMarked, name: ["Official Docs", "आधिकारिक डॉक्स"], note: ["Vendor documentation, summarised", "विक्रेता दस्तावेज़, संक्षेप में"] },
+    { icon: Code2, name: ["Techy", "Techy"], note: ["Topics, code examples and puzzles", "विषय, कोड उदाहरण और पहेलियाँ"] },
+    { icon: FileCode2, name: ["API Docs", "API Docs"], note: ["Every identifier, linked to its source", "हर पहचानकर्ता, स्रोत से जुड़ा"] },
+    { icon: Workflow, name: ["Workflow", "वर्कफ़्लो"], note: ["System design and AI agent blueprints, step by step", "सिस्टम डिज़ाइन और AI एजेंट ब्लूप्रिंट, चरण दर चरण"] },
+    { icon: BookOpenText, name: ["Lessons", "पाठ"], note: ["Published lessons for every course", "हर कोर्स के प्रकाशित पाठ"] },
+    { icon: CircleHelp, name: ["Quiz", "क्विज़"], note: ["Timed practice with explanations", "व्याख्या सहित समयबद्ध अभ्यास"] },
+    { icon: MessagesSquare, name: ["Interview", "इंटरव्यू"], note: ["Subjective and objective banks per technology", "हर तकनीक के विषयगत और वस्तुनिष्ठ प्रश्न"] },
   ] },
 ];
 
@@ -56,7 +57,7 @@ export function LandingMembership({ prices, priceState, cycle, onCycle, onCurren
         <p className={frame.kicker}><GraduationCap size={14} aria-hidden="true" />{text("Membership", "सदस्यता")}<span>{text(`${areaCount} dashboard areas`, `${areaCount} डैशबोर्ड क्षेत्र`)}</span></p>
         <h2 id="membership-title"><ExpandedText text={text("Your goals. ", "आपके लक्ष्य। ")} /><em><ExpandedText text={text("One learning membership.", "एक अध्ययन सदस्यता।")} /></em></h2>
       </div>
-      <p className={frame.lede}><ExpandedText text={text("Every course and category in one plan. No course to choose and nothing locked behind a second tier: subscribe, and every area of the dashboard below opens in English and Hindi.", "हर कोर्स और श्रेणी एक ही योजना में। कोई कोर्स चुनना नहीं, कोई दूसरा स्तर नहीं: सदस्यता लें, और नीचे डैशबोर्ड का हर क्षेत्र अंग्रेज़ी और हिन्दी में खुल जाता है।")} /></p>
+      <p className={frame.lede}><ExpandedText text={text("Every course and category in one plan, exactly as the Learning Dashboard is laid out: the daily home, Learning (including every Coffee & Code article in full) and Professional Learn. No course to choose and nothing behind a second tier; it all opens in English and Hindi.", "हर कोर्स और श्रेणी एक ही योजना में, ठीक वैसे ही जैसे Learning Dashboard में है: रोज़ का होम, लर्निंग (हर Coffee & Code लेख पूरा) और Professional Learn। कोई कोर्स चुनना नहीं, कोई दूसरा स्तर नहीं; सब अंग्रेज़ी और हिन्दी में खुलता है।")} /></p>
     </header>
     <div className={styles.layout}>
       <article className={styles.plan} aria-label={text("Membership plan", "सदस्यता योजना")}>

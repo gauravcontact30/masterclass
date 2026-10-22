@@ -10,9 +10,14 @@ import { isUntrackedEmail, UNTRACKED_COOKIE } from "@/lib/server/tracking-exclus
  * Handles Arcjet security, Upstash rate limiting, Supabase session refresh,
  * route guards, and edge security/performance headers.
  */
+/** The same public data for every visitor, served from server-side caches: no session, no per-user state. Skipping the
+ *  checks below spares each request three network round trips and lets the CDN keep the route's own Cache-Control. */
+const PUBLIC_DATA = new Set(["/api/landing/news", "/api/landing/library"]);
+
 export default async function proxy(request: NextRequest) {
   const startTime = Date.now();
   const { pathname } = request.nextUrl;
+  if (PUBLIC_DATA.has(pathname) && request.method === "GET") return NextResponse.next();
 
   // 1. Arcjet Bot Detection & Security Shield
   const arcjetCheck = await protectWithArcjet(request);

@@ -6,12 +6,13 @@ import { spawn, spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 
 // Use package entry points directly so Windows needs no nested cmd/npx processes.
-// Webpack avoids the Turbopack HMR "cell no longer exists" failure seen locally.
-// Production builds still use Turbopack; npm run dev -- --turbopack can opt in.
+// Turbopack (Next 16's default) is the dev bundler: measured 2026-10-22 it compiled /sign-in in 0.8–3.5 s against
+// 27 s on webpack and held ~0.5 GB against webpack's 1.8–3.4 GB, and its disk cache makes restarts quick.
+// If the old Turbopack HMR "cell no longer exists" failure comes back, `npm run dev -- --webpack` opts out.
 const require = createRequire(import.meta.url);
 const win = process.platform === "win32";
 const args = process.argv.slice(2);
-const bundler = args.some(arg => ["--webpack", "--turbopack", "--turbo"].includes(arg)) ? [] : ["--webpack"];
+const bundler = args.some(arg => ["--webpack", "--turbopack", "--turbo"].includes(arg)) ? [] : ["--turbopack"];
 const next = spawn(process.execPath, [require.resolve("next/dist/bin/next"), "dev", ...bundler, ...args], { stdio: "inherit" });
 const worker = spawn(process.execPath, [require.resolve("tsx/cli"), "--conditions=react-server", "--env-file=.env", "scripts/dev-worker-loop.ts"], { stdio: "inherit" });
 

@@ -7,7 +7,13 @@ import styles from "./super-admin-overview-live.module.css";
 
 type Row = Record<string, unknown>;
 type Visit = { created_at: string; event: string; person?: string; email?: string | null; visitor_id: string; session_id: string; new_visitor?: boolean; path: string; title?: string | null; country?: string | null; city?: string | null; region?: string | null; device?: string | null; browser?: string | null; os?: string | null; duration_ms?: number | null; referrer_host?: string | null };
-type Live = { generatedAt: string; totals: { liveNow: number; liveSignedIn: number; pageViews: number; visitors: number; bounceRate: number | null; avgSessionSeconds: number | null }; hours: { hour: number; views: number }[]; recent: Visit[]; people?: Person[] };
+type Live = {
+  generatedAt: string;
+  totals: { liveNow: number; liveSignedIn: number; pageViews: number; visitors: number; bounceRate: number | null; avgSessionSeconds: number | null; people?: number; sessions?: number; signedInUsers?: number; newVisitors?: number; newAccounts?: number; pagesPerSession?: number | null; bots?: number };
+  hours: { hour: number; views: number }[]; recent: Visit[]; people?: Person[];
+  pages?: { path: string; views: number; visitors: number; avg_seconds: number | null }[]; referrers?: { referrer: string; views: number; visitors: number }[];
+  countries?: { country: string; visitors: number; views: number }[]; devices?: { device: string; visitors: number }[];
+};
 type Person = { person: string; sessions: number; engaged_seconds: number; first_seen: string };
 export type OverviewSnapshot = { generatedAt: string; events: Row[]; requests: { count: number; errors: number; p95: number | null }; health: { databaseMs: number; processUptime: number; processMemory: number; hostMemory: number; hostUsedMemory: number; cpuCores: number; cpuPercent?: number | null; environment?: string; nodeVersion?: string } };
 
@@ -31,6 +37,14 @@ const OPEN_MS = 30 * 60_000;
 const bytes = (value: number) => value >= 1 << 30 ? `${(value / (1 << 30)).toFixed(1)} GB` : `${Math.round(value / (1 << 20))} MB`;
 const uptime = (seconds: number) => seconds >= 86400 ? `${Math.floor(seconds / 86400)}d ${Math.floor((seconds % 86400) / 3600)}h` : seconds >= 3600 ? `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m` : `${Math.round(seconds / 60)}m`;
 const DEVICE_ICON: Record<string, LucideIcon> = { mobile: Smartphone, tablet: Tablet, desktop: Laptop };
+type TraceFilter = "all" | "client" | "server" | "slow";
+const TRACE_FILTERS: { id: TraceFilter; label: string; icon: LucideIcon }[] = [
+  { id: "all", label: "All", icon: Activity }, { id: "client", label: "4xx", icon: AlertTriangle }, { id: "server", label: "5xx", icon: Server }, { id: "slow", label: "Slow ≥1 s", icon: Clock },
+];
+/** The value below which `q` of the sorted durations fall. */
+const quantile = (sorted: number[], q: number) => sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] : null;
+const pct = (part: number, whole: number) => whole ? `${Math.round((part / whole) * 1000) / 10}%` : "—";
+const hourLabel = (hour: number) => `${String(hour).padStart(2, "0")}:00–${String((hour + 1) % 24).padStart(2, "0")}:00`;
 const statusTone = (status: number | null) => status == null ? "info" : status >= 500 ? "error" : status >= 400 ? "warn" : "ok";
 
 /**
@@ -43,7 +57,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   const [error, setError] = useState("");
   const [paused, setPaused] = useState(false);
   const [now, setNow] = useState(() => Date.now());
-  const [traceFilter, setTraceFilter] = useState<"all" | "errors" | "slow">("all");
+  const [traceFilter, setTraceFilter] = useState<TraceFilter>("all");
   const [visitPage, setVisitPage] = useState(1);
   const [tracePage, setTracePage] = useState(1);
   const [readPage, setReadPage] = useState(1);
@@ -118,7 +132,28 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   const requests = useMemo(() => (snapshot?.events ?? []).filter(e => e.kind === "request"), [snapshot]);
   const recent15 = useMemo(() => requests.filter(e => now - Date.parse(String(e.created_at)) < 15 * 60_000), [requests, now]);
   const errors15 = recent15.filter(e => Number(e.status) >= 500).length;
-  const traces = useMemo(() => requests.filter(e => traceFilter === "all" || (traceFilter === "errors" ? Number(e.status) >= 400 : Number(e.duration_ms) >= 1000)), [requests, traceFilter]);
+  const traces = useMemo(() => requests.filter(e => {
+    const status = Number(e.status), ms = Number(e.duration_ms);
+    return traceFilter === "all" || (traceFilter === "client" ? status >= 400 && status < 500 : traceFilter === "server" ? status >= 500 : ms >= 1000);
+  }), [requests, traceFilter]);
+  // What the loaded request sample says: status classes, latency spread and the busiest routes with their health.
+  const traceStats = useMemo(() => {
+    const ms = requests.map(e => Number(e.duration_ms) || 0).sort((a, b) => a - b);
+    const routes = new Map<string, { calls: number; errors: number; total: number; slowest: number; methods: Set<string> }>();
+    for (const e of requests) {
+      const route = String(e.resource ?? "—"), entry = routes.get(route) ?? { calls: 0, errors: 0, total: 0, slowest: 0, methods: new Set<string>() };
+      const d = Number(e.duration_ms) || 0;
+      entry.calls++; entry.total += d; entry.slowest = Math.max(entry.slowest, d); entry.methods.add(String(e.action ?? "—"));
+      if (Number(e.status) >= 400) entry.errors++;
+      routes.set(route, entry);
+    }
+    return {
+      client: requests.filter(e => Number(e.status) >= 400 && Number(e.status) < 500).length, server: requests.filter(e => Number(e.status) >= 500).length,
+      slow: ms.filter(d => d >= 1000).length, p50: quantile(ms, 0.5), p95: quantile(ms, 0.95), max: ms.at(-1) ?? null,
+      avg: ms.length ? Math.round(ms.reduce((a, b) => a + b, 0) / ms.length) : null,
+      routes: [...routes].map(([route, e]) => ({ route, ...e, avg: Math.round(e.total / e.calls) })).sort((a, b) => b.calls - a.calls || b.errors - a.errors).slice(0, 5),
+    };
+  }, [requests]);
   const slowest = Math.max(1, ...traces.map(e => Number(e.duration_ms) || 0));
   const visitRows = pageOf(visits, visitPage, STREAM_PAGE), traceRows = pageOf(traces, tracePage, TRACE_PAGE), readRows = pageOf(reading, readPage, READING_PAGE);
   const hours = live?.hours ?? [];
@@ -177,23 +212,52 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
 
       <article className={`${styles.panel} ${styles.wide}`} data-tone="lavender">
         <h3><Route size={16} aria-hidden="true" />Request tracing
-          <span className={styles.filters} role="group" aria-label="Trace filter">{(["all", "errors", "slow"] as const).map(f => <button key={f} type="button" aria-pressed={traceFilter === f} onClick={() => { setTraceFilter(f); setTracePage(1); }}>{f === "all" ? <Activity size={12} aria-hidden="true" /> : f === "errors" ? <AlertTriangle size={12} aria-hidden="true" /> : <Clock size={12} aria-hidden="true" />}{f === "all" ? "All" : f === "errors" ? "Errors" : "Slow ≥1 s"}</button>)}</span>
+          <span className={styles.filters} role="group" aria-label="Trace filter">{TRACE_FILTERS.map(f => <button key={f.id} type="button" aria-pressed={traceFilter === f.id} onClick={() => { setTraceFilter(f.id); setTracePage(1); }}><f.icon size={12} aria-hidden="true" />{f.label}</button>)}</span>
         </h3>
-        {traces.length ? <><div className={`${styles.listHead} ${styles.tracesHead}`} aria-hidden="true"><span>Method</span><span>Route</span><span>Status</span><span>Duration</span><span>When</span></div><ol className={styles.traces}>{traceRows.map((e, i) => { const status = e.status == null ? null : Number(e.status); const ms = Number(e.duration_ms) || 0; const id = (e.details as { request_id?: string } | null)?.request_id; return <li key={`${String(e.created_at)}-${i}`}>
+        <dl className={styles.traceStats}>
+          <div><dt>Requests</dt><dd>{n(snapshot?.requests.count)}</dd><small>in the reporting window</small></div>
+          <div data-tone={snapshot?.requests.errors ? "warn" : "ok"}><dt>Error rate</dt><dd>{pct(snapshot?.requests.errors ?? 0, snapshot?.requests.count ?? 0)}</dd><small>{n(snapshot?.requests.errors)} failed · {n(traceStats.client)} 4xx · {n(traceStats.server)} 5xx shown</small></div>
+          <div><dt>Latency p50 / p95</dt><dd>{traceStats.p50 == null ? "—" : `${n(traceStats.p50)} / ${n(snapshot?.requests.p95 == null ? traceStats.p95 : Math.round(snapshot.requests.p95))} ms`}</dd><small>avg {traceStats.avg == null ? "—" : `${n(traceStats.avg)} ms`}</small></div>
+          <div data-tone={traceStats.slow ? "warn" : "ok"}><dt>Slowest</dt><dd>{traceStats.max == null ? "—" : `${n(traceStats.max)} ms`}</dd><small>{n(traceStats.slow)} request{traceStats.slow === 1 ? "" : "s"} took 1 s or more</small></div>
+        </dl>
+        {traceStats.routes.length > 0 && <div className={styles.routes}>
+          <div className={`${styles.listHead} ${styles.routesHead}`} aria-hidden="true"><span>Busiest routes</span><span>Calls</span><span>Errors</span><span>Avg</span><span>Slowest</span></div>
+          <ul>{traceStats.routes.map(r => <li key={r.route}><code title={`${[...r.methods].join(", ")} ${r.route}`}><b>{[...r.methods].join("·")}</b> {r.route}</code><span>{n(r.calls)}</span><span data-tone={r.errors ? "warn" : "ok"}>{r.errors ? `${n(r.errors)} (${pct(r.errors, r.calls)})` : "0"}</span><span>{n(r.avg)} ms</span><span>{n(r.slowest)} ms</span></li>)}</ul>
+        </div>}
+        {traces.length ? <><div className={`${styles.listHead} ${styles.tracesHead}`} aria-hidden="true"><span>Method</span><span>Route</span><span>Status</span><span>Duration</span><span>When</span></div><ol className={styles.traces}>{traceRows.map((e, i) => { const status = e.status == null ? null : Number(e.status); const ms = Number(e.duration_ms) || 0; const details = e.details as { request_id?: string; code?: string } | null; const id = details?.request_id, code = details?.code; return <li key={`${String(e.created_at)}-${i}`}>
           <span className={styles.method}>{String(e.action ?? "—")}</span>
           <code className={styles.path} title={String(e.resource ?? "")}>{String(e.resource ?? "—")}</code>
           <span className={styles.status} data-tone={statusTone(status)}>{status ?? "—"}</span>
           <span className={styles.duration}><i style={{ width: `${Math.max(3, (ms / slowest) * 100)}%` }} data-slow={ms >= 1000 || undefined} /><small>{ms ? `${n(ms)} ms` : "—"}</small></span>
-          <time dateTime={String(e.created_at)} title={id ? `Request ID ${id}` : undefined}>{since(e.created_at, now)}</time>
+          <time dateTime={String(e.created_at)} title={`${new Date(String(e.created_at)).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST${id ? ` · request ${id}` : ""}${code ? ` · ${code}` : ""}`}>{since(e.created_at, now)}{(id || code) && <small>{code ?? `#${String(id).slice(0, 8)}`}</small>}</time>
         </li>; })}</ol></> : <p className={styles.empty}>{requests.length ? "No requests match this filter." : "No API requests recorded in this window."}</p>}
         <Pager page={Math.min(tracePage, pagesOf(traces, TRACE_PAGE))} pages={pagesOf(traces, TRACE_PAGE)} total={traces.length} size={TRACE_PAGE} onPage={setTracePage} />
       </article>
 
       <article className={styles.panel} data-tone="peach">
-        <h3><Zap size={16} aria-hidden="true" />Last 24 hours<span>page views by hour (IST)</span></h3>
+        <h3><Zap size={16} aria-hidden="true" />Last 24 hours<span>page views by hour (IST), bots excluded</span></h3>
         <div className={styles.spark} role="img" aria-label={`Hourly page views, peak ${n(peak)}`}>{Array.from({ length: 24 }, (_, hour) => { const views = hours.find(x => x.hour === hour)?.views ?? 0; return <span key={hour} style={{ height: `${Math.max(4, (views / peak) * 100)}%` }} data-now={new Date().getHours() === hour || undefined} title={`${String(hour).padStart(2, "0")}:00 — ${views} views`} />; })}</div>
         <div className={styles.sparkAxis}><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>
-        <dl className={styles.facts}><div><dt>Bounce rate</dt><dd>{live?.totals.bounceRate == null ? "—" : `${live.totals.bounceRate}%`}</dd></div><div><dt>Avg. session</dt><dd>{live?.totals.avgSessionSeconds == null ? "—" : `${Math.round(live.totals.avgSessionSeconds)} s`}</dd></div><div><dt>Sign-ins (24 h)</dt><dd>{n(new Set((live?.recent ?? []).filter(v => v.email).map(v => v.email)).size)}</dd></div></dl>
+        {(() => {
+          const t = live?.totals; const busiest = hours.reduce<{ hour: number; views: number } | null>((best, x) => !best || x.views > best.views ? x : best, null);
+          const mobile = (live?.devices ?? []).filter(d => /mobile|tablet/i.test(d.device)).reduce((sum, d) => sum + Number(d.visitors), 0);
+          const deviceTotal = (live?.devices ?? []).reduce((sum, d) => sum + Number(d.visitors), 0);
+          const page = live?.pages?.[0], source = live?.referrers?.[0], country = live?.countries?.find(c => c.country !== "Unknown");
+          const facts: [string, string, string?][] = [
+            ["Page views", n(t?.pageViews), `${n(t?.visitors)} unique visitors`],
+            ["Sessions", n(t?.sessions), t?.pagesPerSession == null ? undefined : `${t.pagesPerSession} pages per session`],
+            ["Avg. session", t?.avgSessionSeconds == null ? "—" : spent(t.avgSessionSeconds), t?.bounceRate == null ? undefined : `${t.bounceRate}% bounced after one page`],
+            ["New visitors", n(t?.newVisitors), t?.visitors ? `${pct(t.newVisitors ?? 0, t.visitors)} of visitors` : undefined],
+            ["Signed-in learners", n(t?.signedInUsers), `${n(t?.newAccounts)} new accounts`],
+            ["Peak hour (IST)", busiest?.views ? hourLabel(busiest.hour) : "—", busiest?.views ? `${n(busiest.views)} views` : undefined],
+            ["Busiest page", page?.path ?? "—", page ? `${n(page.views)} views · ${page.avg_seconds == null ? "no read time yet" : `${page.avg_seconds}s avg read`}` : undefined],
+            ["Top source", source?.referrer ?? "—", source ? `${n(source.visitors)} visitors` : undefined],
+            ["Top country", country ? countryName(country.country) || country.country : "—", country ? `${n(country.visitors)} visitors` : undefined],
+            ["Mobile & tablet", deviceTotal ? pct(mobile, deviceTotal) : "—", deviceTotal ? `${n(mobile)} of ${n(deviceTotal)} visitors` : undefined],
+            ["Bots filtered", n(t?.bots), "excluded from every figure"],
+          ];
+          return <dl className={styles.facts}>{facts.map(([label, value, note]) => <div key={label}><dt>{label}</dt><dd title={value}>{value}</dd>{note && <small>{note}</small>}</div>)}</dl>;
+        })()}
       </article>
 
       <article className={`${styles.panel} ${styles.full}`} data-tone="butter">
@@ -208,7 +272,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
         </dl> : <p className={styles.empty}>Health appears once the monitoring snapshot loads.</p>}
       </article>
     </div>
-    <p className={styles.note}><Globe2 size={13} aria-hidden="true" /> Visits come from the first-party page beacon (bots excluded, IPs masked); traces come from the API request log, which never stores query strings, bodies or credentials. <UserRound size={13} aria-hidden="true" /> Emails show only for signed-in learners.</p>
+    <p className={styles.note}><Globe2 size={13} aria-hidden="true" /> Request figures marked “shown” and the busiest routes come from the latest {n(requests.length)} logged requests; totals, error rate and p95 cover the whole window. Visits come from the first-party page beacon (bots excluded, IPs masked); traces come from the API request log, which never stores query strings, bodies or credentials. <UserRound size={13} aria-hidden="true" /> Emails show only for signed-in learners.</p>
   </section>;
 }
 

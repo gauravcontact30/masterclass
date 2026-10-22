@@ -32,8 +32,10 @@ const FOLLOW_UPS: [label: string, prompt: string][] = [
 ];
 const STORE = "study-buddy:v1";
 const MAX_KEPT = 40;
-/** The first piece of a reply must arrive within this; the whole reply within REPLY_MS. */
-const FIRST_BYTE_MS = 25000, REPLY_MS = 60000;
+/** Some line (the server pings every 5 s) must arrive within this; the whole reply within REPLY_MS. */
+const FIRST_BYTE_MS = 25000, REPLY_MS = 120000;
+/** Failures worth one silent retry when nothing was written yet: a cold or busy server usually answers the second time. */
+const RETRYABLE = new Set(["timeout", "tutor_unavailable", "service_error", "reply_interrupted"]);
 const ERRORS: Record<string, string> = {
   rate_limited: "You are asking quickly. Wait a minute, then try again.",
   tutor_unavailable: "Study Buddy is unavailable right now. Please try again shortly.",
@@ -137,7 +139,7 @@ export default function StudentChatPanel({ open, onOpenChange, prompt }: { open:
   }, [prompt]);
 
   /** Sends `content` after `base` (the conversation so far) and streams the answer into a new assistant message. */
-  async function ask(content: string, selectedMode = mode, base = messages) {
+  async function ask(content: string, selectedMode = mode, base = messages, attempt = 0) {
     const question = content.trim();
     if (!question || question.length > 6000 || requestRef.current) return;
     const controller = new AbortController(); requestRef.current = controller;
@@ -148,6 +150,7 @@ export default function StudentChatPanel({ open, onOpenChange, prompt }: { open:
     const update = (change: (message: Message) => Message) => setMessages(previous => previous.map((m, i) => i === previous.length - 1 && m.role === "assistant" ? change(m) : m));
     let firstByte = setTimeout(() => controller.abort("timeout"), FIRST_BYTE_MS);
     const whole = setTimeout(() => controller.abort("timeout"), REPLY_MS);
+    let wrote = false, again = false;
     try {
       const response = await fetch("/api/study-chat", {
         method: "POST", headers: { "Content-Type": "application/json" }, signal: controller.signal,
@@ -166,7 +169,7 @@ export default function StudentChatPanel({ open, onOpenChange, prompt }: { open:
           if (!line.trim()) continue;
           const event = JSON.parse(line) as StudyChatEvent;
           if (event.type === "meta") update(m => ({ ...m, sources: event.sources }));
-          else if (event.type === "delta") update(m => ({ ...m, content: m.content + event.text }));
+          else if (event.type === "delta") { wrote = true; update(m => ({ ...m, content: m.content + event.text })); }
           else if (event.type === "done") { finished = true; update(m => ({ ...m, content: event.answer, notes: event.mode === "notes", streaming: false })); }
           else if (event.type === "error") throw new Error(event.error);
         }
@@ -174,15 +177,18 @@ export default function StudentChatPanel({ open, onOpenChange, prompt }: { open:
       if (!finished) throw new Error("reply_interrupted");
     } catch (failure) {
       const reason = controller.signal.aborted ? controller.signal.reason : failure instanceof Error ? failure.message : "service_error";
+      // A network drop surfaces as a TypeError from fetch; it is retried like a server failure.
+      again = attempt === 0 && !wrote && (RETRYABLE.has(String(reason)) || (failure instanceof TypeError && !controller.signal.aborted));
       // Stop keeps whatever was written; a failure with nothing written removes the empty answer.
       setMessages(previous => {
         const last = previous.at(-1);
         if (last?.role === "assistant" && !last.content.trim()) return previous.slice(0, -1);
         return previous.map((m, i) => i === previous.length - 1 ? { ...m, streaming: false } : m);
       });
-      if (reason !== "stopped" && reason !== "closed") setError(reason === "timeout" ? "The reply took too long. Please retry." : ERRORS[String(reason)] ?? "Could not connect. Please try again.");
+      if (!again && reason !== "stopped" && reason !== "closed") setError(reason === "timeout" ? "The reply took too long. Please retry." : ERRORS[String(reason)] ?? "Could not connect. Please try again.");
     } finally {
       clearTimeout(firstByte); clearTimeout(whole); requestRef.current = null; setBusy(false);
+      if (again) void ask(question, selectedMode, base, attempt + 1);
     }
   }
   function submit(event: FormEvent) { event.preventDefault(); void ask(draft); }

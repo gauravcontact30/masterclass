@@ -1,5 +1,5 @@
 /**
- * Paints the sign-in / sign-up carousel photos (one per slide in components/auth-carousel.tsx) with
+ * Paints the sign-in / sign-up carousel photos (one per slide and page in components/auth-carousel.tsx; sign-up's carry a "signup-" prefix) with
  * openai/gpt-image-2 through the AI Gateway, and writes 1200×800 WebP to public/images/auth/<id>.webp. The gateway
  * allows 5 images a minute on this team, so requests are spaced and a rate-limited one waits a minute and retries.
  * Run: npx tsx --env-file=.env scripts/generate-auth-images.ts [id…]
@@ -14,6 +14,11 @@ const SCENES: Record<string, string> = {
   formats: "Close view over the shoulder of a young Indian college student reading a lesson on a tablet showing a clean diagram of boxes and arrows and colourful abstract code blocks (nothing readable), a highlighter and sticky notes beside it, a cup of chai.",
   languages: "Two Indian friends, a girl and a boy, studying together at a library table and smiling, one pointing at an open bilingual textbook with abstract English and Devanagari-like shapes (nothing readable), bookshelves warmly blurred behind them.",
   plans: "A confident young Indian professional in a bright modern co-working space looking at a laptop with a calm smile, a certificate-style card and a neat stack of books beside the laptop, a sense of achievement and progress, evening golden light.",
+  // Sign-up has its own four, so no photograph repeats between the two pages.
+  "signup-guide": "A young Indian woman in her early twenties sitting cross-legged on a sofa at home with a laptop on her knees, sketching a simple roadmap of circles joined by lines in a spiral notebook (nothing readable), a mug and fairy lights softly blurred behind, relaxed evening lamp light.",
+  "signup-formats": "A young Indian man with headphones around his neck at a standing desk by a large window, a monitor showing an abstract flowchart of rounded boxes and a second screen with colourful abstract blocks (nothing readable), a small succulent and a notepad, bright overcast daylight.",
+  "signup-languages": "An Indian grandmother and her teenage grandson sitting together at a kitchen table, both smiling at a tablet, the grandson explaining something with an open hand, steel tumblers and a fruit bowl nearby, warm afternoon sunlight through a curtained window.",
+  "signup-plans": "A young Indian woman in a smart kurta walking out of a glass office building with a laptop bag over her shoulder and a proud smile, holding a phone, city trees and soft bokeh behind her, golden hour.",
 };
 
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

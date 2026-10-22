@@ -4,9 +4,12 @@ import { db } from "@/lib/server/db";
 import { adminError } from "@/lib/server/admin-rpc";
 import { newUserLocations, type NewUser, type UserVisit } from "@/lib/new-user-locations";
 
-/** Accounts created in the window (newest 500) and where each one was first seen, for the new-user location cards. */
+/** Accounts created in the window (newest 500), where each one was first seen and how much they have used the site
+ *  since (time per day from the leave beacons), for the new-user location cards. */
 const USERS = 500;
-const BASE = "user_id,created_at,country,region,city";
+const BASE = "user_id,created_at,event,session_id,path,duration_ms,device,browser,os,referrer_host,country,region,city";
+/** PostgREST returns at most 1,000 rows per request, so each chunk of users is read a page at a time. */
+const PAGE = 1000, MAX_PAGES = 20;
 const CHUNK = 100;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -27,13 +30,18 @@ export async function GET(request: Request) {
     let coordinates = true;
     for (let start = 0; start < ids.length; start += CHUNK) {
       const chunk = ids.slice(start, start + CHUNK);
-      const read = (columns: string) => db().from("site_visits").select(columns).in("user_id", chunk).eq("event", "page_view").eq("is_bot", false)
-        .gte("created_at", since).order("created_at", { ascending: true }).limit(5000);
-      let result = await read(coordinates ? `${BASE},postal_code,latitude,longitude` : BASE);
-      // Before migration 0030 there are no postal code or coordinate columns; report without them.
-      if (result.error && coordinates && (result.error.code === "42703" || result.error.code === "PGRST204" || /column/i.test(result.error.message))) { coordinates = false; result = await read(BASE); }
-      if (result.error) adminError(result.error);
-      visits.push(...((result.data ?? []) as unknown as UserVisit[]));
+      // Views give location, sessions and pages; leave beacons carry the time spent on each page.
+      const read = (columns: string, page: number) => db().from("site_visits").select(columns).in("user_id", chunk).in("event", ["page_view", "page_leave"]).eq("is_bot", false)
+        .gte("created_at", since).order("created_at", { ascending: true }).order("id", { ascending: true }).range(page * PAGE, page * PAGE + PAGE - 1);
+      for (let page = 0; page < MAX_PAGES; page++) {
+        let result = await read(coordinates ? `${BASE},postal_code,latitude,longitude` : BASE, page);
+        // Before migration 0030 there are no postal code or coordinate columns; report without them.
+        if (result.error && coordinates && (result.error.code === "42703" || result.error.code === "PGRST204" || /column/i.test(result.error.message))) { coordinates = false; result = await read(BASE, page); }
+        if (result.error) adminError(result.error);
+        const rows = (result.data ?? []) as unknown as UserVisit[];
+        visits.push(...rows);
+        if (rows.length < PAGE) break;
+      }
     }
     return Response.json({ ...newUserLocations(users, visits), days, generatedAt, coordinates }, { headers: { "Cache-Control": "private, no-store" } });
   }, request);

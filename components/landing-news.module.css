@@ -1,0 +1,155 @@
+/* "Fresh in tech" carousel in the Claude Code colours: paper, ivory and clay, graphite type. Each slide's cover
+   card takes its own light tint; stories sit on white sheets with a hairline. Sheets 14px, chips 999px. */
+.news {
+  --nw-paper: #faf9f5;
+  --nw-ivory: #f0eee6;
+  --nw-rule: #dedcd1;
+  --nw-graphite: #141413;
+  --nw-text: #3d3d3a;
+  --nw-muted: #73726c;
+  --nw-clay: #c96442;
+  --nw-clay-deep: #b5522f;
+  --nw-tint: #f3dccd;
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  position: relative;
+  color: var(--nw-graphite);
+  background: var(--nw-paper);
+  border-block: 1px solid var(--nw-ivory);
+}
+.inner { width: min(1240px, calc(100% - 64px)); margin-inline: auto; padding-block: clamp(56px, 7vw, 104px); }
+
+.head { display: block; }
+/* Below the full-width heading: the slide on show on the left, the slideshow controls on the right. */
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 28px; }
+.eyebrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0; font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--nw-clay-deep); }
+.eyebrow span { padding: 3px 10px; border-radius: 999px; background: var(--nw-ivory); font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--nw-muted); }
+.news .head h2 { margin: 12px 0 0; max-width: none; font-weight: 700; font-size: clamp(32px, 3.6vw, 54px); line-height: 1.04; letter-spacing: -.025em; color: var(--nw-graphite); }
+.news .head .lede { max-width: none; margin: 14px 0 0; font-size: clamp(16px, 1.3vw, 19px); line-height: 1.5; color: var(--nw-text); text-wrap: pretty; }
+
+.controls { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.controls button { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid var(--nw-rule); border-radius: 999px; background: #fff; color: var(--nw-graphite); cursor: pointer; transition: background-color .2s ease, border-color .2s ease; }
+.controls button:hover { border-color: var(--nw-clay); background: var(--nw-tint); }
+.controls button:focus-visible, .news a:focus-visible { outline: 2px solid var(--nw-clay-deep); outline-offset: 2px; }
+.count { min-width: 64px; text-align: right; font-variant-numeric: tabular-nums; font-size: 14px; color: var(--nw-muted); }
+
+/* The slide on show, in place of a row of tabs. */
+.current { display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 8px 16px; border-radius: 999px; background: var(--nw-clay); color: #fff; font-size: 15px; font-weight: 600; }
+.progress { height: 3px; margin: 14px 0 26px; overflow: hidden; border-radius: 999px; background: var(--nw-ivory); }
+.progress span { display: block; height: 100%; background: var(--nw-clay); transform-origin: left; animation: fill linear both; }
+@keyframes fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+.slides { display: grid; }
+/* The landing page justifies every paragraph; in these narrow cards that opens wide gaps, so text sits ragged-right. */
+.news .slide p, .news .slide li { text-align: left; hyphens: manual; }
+.slide { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(20px, 3vw, 44px); align-items: stretch; animation: enter .5s var(--ease-out) both; }
+/* display:grid above beats the browser's own [hidden] rule; without this every slide would stay on screen. */
+.slide[hidden] { display: none; }
+@keyframes enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* Each tint sets a light fill and a deep ink of the same hue: the slide's cover card uses them, and so does every
+   story and question card, each on its own tint. */
+.slide[data-tone="peach"], .lead[data-tone="peach"], .more > li[data-tone="peach"], .questions > li[data-tone="peach"] { --cover: #f6e3d8; --cover-ink: #8f3f23; }
+.slide[data-tone="sage"], .lead[data-tone="sage"], .more > li[data-tone="sage"], .questions > li[data-tone="sage"] { --cover: #e6ecdf; --cover-ink: #3f5a35; }
+.slide[data-tone="sky"], .lead[data-tone="sky"], .more > li[data-tone="sky"], .questions > li[data-tone="sky"] { --cover: #e0ebf3; --cover-ink: #2c5677; }
+.slide[data-tone="lavender"], .lead[data-tone="lavender"], .more > li[data-tone="lavender"], .questions > li[data-tone="lavender"] { --cover: #ebe5f3; --cover-ink: #5a4683; }
+.slide[data-tone="butter"], .lead[data-tone="butter"], .more > li[data-tone="butter"], .questions > li[data-tone="butter"] { --cover: #f5ecd2; --cover-ink: #7a5d14; }
+
+.cover { display: flex; flex-direction: column; padding: 14px 14px 22px; border-radius: 14px; background: var(--cover, var(--nw-ivory)); color: var(--cover-ink, var(--nw-graphite)); }
+/* A fixed 16:9 frame for the 16:9 full-HD picture: shown whole, never stretched or cropped. */
+.picture { position: relative; flex: none; aspect-ratio: 16 / 9; display: grid; place-items: center; overflow: hidden; border-radius: 10px; background: color-mix(in srgb, var(--cover-ink, #8f3f23) 14%, #fff); }
+.picture img { object-fit: cover; }
+.pictureIcon { opacity: .55; }
+.picture:not([data-empty="true"]) .pictureIcon { display: none; }
+.kicker { position: absolute; top: 12px; left: 12px; display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: rgba(255, 255, 255, .92); color: var(--cover-ink, var(--nw-graphite)); font-size: 12px; font-weight: 600; }
+.news .cover h3 { margin: 18px 8px 0; font-weight: 700; font-size: clamp(22px, 2vw, 30px); line-height: 1.12; letter-spacing: -.015em; color: inherit; }
+.news .cover p { margin: 10px 8px 0; font-size: 15.5px; line-height: 1.5; color: var(--nw-text); }
+.topics { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 8px 0; padding: 0; list-style: none; }
+/* The index grows to fill the cover, so it ends level with the stories beside it. */
+.index { flex: 1 0 auto; margin: 0 8px; padding-top: 18px; }
+.topics + .index { margin-top: 18px; border-top: 1px solid color-mix(in srgb, var(--cover-ink, #000) 16%, transparent); }
+.news .index h5 { margin: 0; font-size: 12.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.index ol { display: grid; gap: 7px; margin: 10px 0 0; padding-left: 20px; }
+.index li { font-size: 14px; line-height: 1.4; color: var(--nw-text); }
+.index li::marker { font-weight: 700; color: var(--cover-ink, var(--nw-clay)); }
+.news .index p { margin: 12px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--nw-muted); }
+.topics li { padding: 3px 10px; border-radius: 999px; background: color-mix(in srgb, var(--cover-ink, #000) 10%, transparent); font-size: 12.5px; font-weight: 500; }
+
+.body { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+/* When the cover is the taller side, the lead story stretches so both panels end level. */
+.body > .lead, .body > .questions, .body > .empty { flex: 1 0 auto; }
+.lead { display: flex; flex-direction: column; }
+.lead .read { margin-top: auto; padding-top: 14px; align-self: flex-start; }
+.byline { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 13px; color: var(--nw-muted); }
+.source { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.byline time { flex: none; white-space: nowrap; }
+.byline > span:not(.logo) { font-weight: 600; color: var(--nw-text); }
+.byline > span:not(.logo) { color: var(--cover-ink, var(--nw-text)); }
+.byline time::before { content: "·"; margin-right: 8px; }
+
+.logo { display: inline-grid; flex: none; place-items: center; width: 24px; height: 24px; border-radius: 6px; background: #fff; box-shadow: inset 0 0 0 1px var(--nw-rule); }
+.logo svg { width: 14px; height: 14px; }
+.logo b { color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .02em; }
+
+.lead { padding: clamp(20px, 2.2vw, 30px); border: 1px solid color-mix(in srgb, var(--cover-ink, #000) 14%, transparent); border-radius: 14px; background: var(--cover, #fff); }
+.news .lead h4 { margin: 12px 0 0; font-weight: 700; font-size: clamp(20px, 1.8vw, 26px); line-height: 1.2; letter-spacing: -.01em; }
+.lead h4 a, .more a { color: var(--nw-graphite); text-decoration: none; }
+.lead h4 a:hover, .more a:hover { color: var(--nw-clay-deep); text-decoration: underline; text-underline-offset: 3px; }
+.news .lead p { margin: 10px 0 0; font-size: 16px; line-height: 1.55; color: var(--nw-text); text-wrap: pretty; }
+.read { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; color: var(--nw-clay-deep); text-decoration: none; }
+.read:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+.more { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.more li { display: flex; flex-direction: column; gap: 8px; padding: 16px; border: 1px solid color-mix(in srgb, var(--cover-ink, #000) 14%, transparent); border-radius: 12px; background: var(--cover, #fff); }
+.more a { display: inline; font-weight: 600; font-size: 15.5px; line-height: 1.3; }
+.news .more p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--nw-text); }
+
+.questions { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.questions > li { flex: 1 0 auto; }
+.questions > li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; padding: 16px 18px; border: 1px solid color-mix(in srgb, var(--cover-ink, #000) 14%, transparent); border-radius: 12px; background: var(--cover, #fff); }
+.qNumber { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 15px; color: var(--cover-ink, var(--nw-clay)); }
+.news .questions h4 { margin: 0; font-weight: 700; font-size: 16.5px; line-height: 1.35; }
+.news .questions p { margin: 6px 0 0; font-size: 14.5px; line-height: 1.5; color: var(--nw-text); }
+.qMeta { display: flex; align-items: center; gap: 10px 16px; flex-wrap: wrap; margin-top: 10px; font-size: 13px; color: var(--nw-muted); }
+.qMeta a { display: inline-flex; align-items: center; gap: 3px; color: var(--nw-muted); text-decoration: none; }
+.qMeta a:hover { color: var(--nw-clay-deep); text-decoration: underline; }
+.stars { display: inline-flex; gap: 1px; color: var(--nw-rule); }
+.stars svg[data-on="true"] { color: #d9a03f; fill: currentColor; }
+.companies { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.company { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px 2px 2px; border-radius: 999px; background: color-mix(in srgb, var(--cover-ink, #000) 9%, transparent); color: var(--nw-text); font-weight: 500; }
+.company .logo { width: 20px; height: 20px; border-radius: 999px; }
+.company .logo svg { width: 12px; height: 12px; }
+
+.empty { padding: 26px; border: 1px dashed var(--nw-rule); border-radius: 14px; background: var(--nw-ivory); }
+.news .empty p { margin: 0; font-size: 16px; line-height: 1.5; color: var(--nw-text); }
+.empty ul { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+.empty a { display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 999px; background: var(--nw-ivory); color: var(--nw-graphite); font-size: 14px; font-weight: 500; text-decoration: none; }
+.empty a:hover { background: var(--nw-tint); }
+
+/* What a learner takes from a story: key facts, why it matters, and one concept explained. */
+.facts { margin-top: 16px; padding-top: 14px; border-top: 1px solid color-mix(in srgb, var(--cover-ink, #000) 16%, transparent); }
+.news .facts h5 { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 13px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--cover-ink, var(--nw-clay-deep)); }
+.facts ul { display: grid; gap: 6px; margin: 8px 0 0; padding-left: 20px; }
+.facts li { font-size: 15px; line-height: 1.45; color: var(--nw-text); }
+.facts li::marker { color: var(--cover-ink, var(--nw-clay)); }
+.news .why, .news .concept { display: flex; align-items: flex-start; gap: 8px; margin: 12px 0 0; padding: 10px 12px; border-radius: 10px; font-size: 14px; line-height: 1.5; color: var(--nw-text); }
+.news .why { background: color-mix(in srgb, var(--cover-ink, #000) 7%, transparent); }
+.news .concept { background: color-mix(in srgb, var(--cover-ink, #000) 11%, transparent); box-shadow: inset 3px 0 0 var(--cover-ink, var(--nw-clay)); }
+.why svg, .concept svg { flex: none; margin-top: 3px; color: var(--cover-ink, var(--nw-clay)); }
+.why b, .concept b { color: var(--nw-graphite); }
+.more .why, .more .concept { margin-top: 2px; font-size: 13px; padding: 8px 10px; }
+
+.loading { display: grid; align-content: start; gap: 12px; flex: 1 0 auto; padding: 22px; border-radius: 14px; background: var(--nw-ivory); border: 1px solid var(--nw-rule); font-size: 15px; color: var(--nw-muted); }
+.loading span { height: 14px; border-radius: 6px; background: linear-gradient(90deg, var(--nw-rule), var(--nw-paper), var(--nw-rule)); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+.loading span:nth-child(2) { width: 85%; } .loading span:nth-child(3) { width: 60%; }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+@media (max-width: 899px) {
+  .inner { width: calc(100% - 32px); }
+  .slide { grid-template-columns: minmax(0, 1fr); }
+  .index { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .slide { animation: none; }
+  .progress span { animation: none; transform: scaleX(1); opacity: .35; }
+  .loading span { animation: none; }
+}

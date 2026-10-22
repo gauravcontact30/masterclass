@@ -5,9 +5,10 @@ import { TECH_DOCS } from "@/lib/tech-docs";
 import { COMPARISONS } from "@/lib/comparisons";
 import { COMPARISON_DOCS } from "@/lib/comparisons-official";
 
-/** Only what the one-panel previews show (first platform, first comparison), to keep the landing payload small. */
-export function previewTechDocs(data: OfficialTechDocs) {
-  const first = TECH_DOCS[0];
+/** Only what the one-panel previews show (one platform, first comparison), to keep the landing payload small.
+ *  `techId` is the platform shown, the first by default; the landing page passes today's (dailyTechDoc). */
+export function previewTechDocs(data: OfficialTechDocs, techId = TECH_DOCS[0].id) {
+  const first = TECH_DOCS.find(tech => tech.id === techId) ?? TECH_DOCS[0];
   const urls = [first.docs, ...first.materials.map(m => m.url), ...(COMPARISONS[0]?.techs ?? []).map(t => COMPARISON_DOCS[t.name]).filter(Boolean)];
   return slimTechDocs(data, { urls, articles: [first.id] });
 }

@@ -31,7 +31,7 @@ const BRAND = TECH_DOC_BRANDS;
 /** Subjects with no brand mark. */
 const SUBJECT_ICON: Record<string, LucideIcon> = { dsa: Binary, oops: Boxes };
 const CATEGORY_ICON: Record<TechDocCategory | "all", LucideIcon> = { all: LayoutGrid, frontend: MonitorSmartphone, backend: Server, enterprise: Building2, ai: Bot, fundamentals: Braces };
-/** The CS fundamentals the landing preview lists below the first platform's panel. */
+/** The CS fundamentals the landing preview lists below the featured platform's panel. */
 const FUNDAMENTALS = TECH_DOCS.filter(t => t.category === "fundamentals");
 /** Topic chips per subject in the landing preview; the dashboard shows every concept in full. */
 const PREVIEW_TOPICS = 6;
@@ -63,11 +63,13 @@ function BrandIcon({ tech, size = 28 }: { tech: TechDoc; size?: number }) {
  * Technology docs: Angular 22+, Vue 3.5, Salesforce API 68+, Node.js 26, OpenRouter and the Vercel AI Gateway.
  * A carousel (one platform per slide, autoplay every two minutes) with numbered pagination, suggestion search,
  * icon filters and a "More options" menu. Titles, summaries and section lists come from each official page.
- * `preview` (the landing page, or a learner without a membership) shows only the first platform's panel, a few
+ * `preview` (the landing page, or a learner without a membership) shows only the featured platform's panel, a few
  * topics of each CS fundamental (DSA, OOPs), and links on. `concepts` (from lib/tech-docs-concepts.ts, passed in by
  * the dashboard) adds the detailed concept notes to those subjects' slides.
  */
-export function LandingTechDocs({ official, preview = false, locked = false, concepts }: Readonly<{ official?: OfficialTechDocs | null; preview?: boolean; locked?: boolean; concepts?: Record<string, TechConcept[]> }>) {
+export function LandingTechDocs({ official, preview = false, locked = false, concepts, featured }: Readonly<{ official?: OfficialTechDocs | null; preview?: boolean; locked?: boolean; concepts?: Record<string, TechConcept[]>; featured?: string }>) {
+  // `featured`: the platform the preview shows (the landing page passes today's); the first by default.
+  const lead = TECH_DOCS.find(tech => tech.id === featured) ?? TECH_DOCS[0];
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
   const section = useContentItem("section:tech-docs", "section");
   const uid = useId();
@@ -84,7 +86,7 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
   const [held, setHeld] = useState(false);
   const [menu, setMenu] = useState(false);
   // The visible platform, by id: it stays put while filters change, and falls back to the first match.
-  const [activeId, setActiveId] = useState(TECH_DOCS[0].id);
+  const [activeId, setActiveId] = useState(lead.id);
   const [tabNavigation, setTabNavigation] = useState({ key: "", page: 0 });
   // Each platform remembers which page of its materials is open.
   const [materialPage, setMaterialPage] = useState<Record<string, number>>({});
@@ -96,7 +98,7 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
   const materialText = (m: TechMaterial) => { const p = page(m.url); return norm([m.title, m.summary, p?.title, p?.description, ...(p?.sections ?? []), ...m.topics].join(" ")); };
   const techText = (t: TechDoc) => norm([t.name, t.version, t.release, t.tagline, page(t.docs)?.description, ...t.aliases, ...t.features, ...(concepts?.[t.id] ?? []).map(c => c.title)].join(" "));
 
-  const slides = (preview ? TECH_DOCS.slice(0, 1) : TECH_DOCS)
+  const slides = (preview ? [lead] : TECH_DOCS)
     .filter(tech => category === "all" || tech.category === category)
     .map(tech => {
       const techHit = !terms.length || matches(techText(tech));

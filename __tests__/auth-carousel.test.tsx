@@ -74,17 +74,17 @@ test("the pause button stops rotation until the visitor presses play", () => {
   expect(screen.getByRole("button", { name: "Pause slideshow" })).toBeInTheDocument();
 });
 
-test("does not autoplay when the visitor prefers reduced motion", () => {
+test("autoplays every 5 seconds even when the visitor prefers reduced motion", () => {
   preferReducedMotion();
   render(<AuthStory />);
-  expect(screen.getByRole("button", { name: "Play slideshow" })).toBeInTheDocument();
-  advance(30000);
   expect(shownTitle()).toBe(FIRST);
-  expect(liveRegion()).toHaveAttribute("aria-live", "polite");
+  advance(4999);
+  expect(shownTitle()).toBe(FIRST);
+  advance(1);
+  expect(shownTitle()).toBe(SECOND);
 });
 
 test("dot navigation jumps straight to a slide and marks it current", () => {
-  preferReducedMotion();
   render(<AuthStory />);
   const dot = screen.getByRole("button", { name: "Go to slide 4" });
   fireEvent.click(dot);
@@ -105,4 +105,12 @@ test("every slide has its own photograph", () => {
  expect(sources).toHaveLength(4);
  expect(new Set(sources).size).toBe(4);
  sources.forEach(src => expect(decodeURIComponent(src)).toMatch(/\/images\/auth\/(guide|formats|languages|plans)\.webp/));
+});
+
+test("shows only the current slide's photograph, and sign-up never repeats a sign-in one", () => {
+  const photos = (container: HTMLElement) => [...container.querySelectorAll("[aria-roledescription=slide]")].map(slide => ({ hidden: (slide as HTMLElement).hidden, src: decodeURIComponent(slide.querySelector("img")!.getAttribute("src")!) }));
+  const signin = photos(render(<AuthStory />).container);
+  expect(signin.filter(p => !p.hidden)).toHaveLength(1);
+  const signup = photos(render(<AuthStory mode="signup" />).container);
+  expect(new Set([...signin, ...signup].map(p => p.src)).size).toBe(8);
 });
