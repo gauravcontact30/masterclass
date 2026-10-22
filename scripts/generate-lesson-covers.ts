@@ -3,7 +3,7 @@
  * openai/gpt-image-2 through the AI Gateway, then writes 1200×800 WebP to public/images/landing/lessons/<id>.webp
  * (the photo to public/images/landing/feature-coffee.webp, each Coffee & Code article's cover to
  * public/images/landing/coffee/<slug>.webp, the Notes & bookmarks carousel's to public/images/landing/notes/<id>.webp, the AI Search carousel's to
- * public/images/landing/search/<id>.webp). The gateway allows 5 images a minute on this team, so
+ * public/images/landing/search/<id>.webp, the Certifications carousel's to public/images/landing/certifications/<id>.webp). The gateway allows 5 images a minute on this team, so
  * requests are spaced and a rate-limited one waits a minute and retries.
  * Run: npx tsx --env-file=.env scripts/generate-lesson-covers.ts [id…]
  */
@@ -54,6 +54,15 @@ const SEARCH: Record<string, { subject: string; scene: string }> = {
   "history-kept": { subject: "search history kept and reused", scene: "A tidy vertical timeline of past question cards stacked like a softly glowing archive, one card being pulled out and lighting up instantly, a small clock beside it." },
   "two-languages": { subject: "asking in English or Hindi", scene: "Two speech bubbles, one with abstract Latin letter shapes and one with abstract Devanagari shapes (nothing readable), both flowing into one glowing search orb that returns a single answer card." },
 };
+// The Certifications carousel (components/landing-certifications.tsx); run with `cert:<id>` for one.
+const CERTIFICATIONS: Record<string, { subject: string; scene: string }> = {
+  "system-design": { subject: "a system design learning path", scene: "A large architecture blueprint unrolled on a desk turning into a glowing 3D model: a load balancer gate, three server towers, a cache layer and a replicated database pair, a ribboned certificate seal resting on the corner of the blueprint." },
+  "claude-code": { subject: "learning an AI coding assistant in the terminal", scene: "A sleek dark terminal window floating above a desk with abstract glowing code blocks (no readable text) and a warm terracotta spark of an AI helper editing them, a small ribboned certificate seal beside the keyboard." },
+  aws: { subject: "AWS cloud certifications", scene: "An isometric floating cloud city of compute, storage and database blocks in orange and slate tones, with three stacked glowing certificate badges (bronze, silver, gold tiers shown only by colour) rising above it like a ladder." },
+  n8n: { subject: "n8n workflow automation courses", scene: "A row of connected circular automation nodes on glowing pipes passing envelopes and data cards, ending in a ribboned completion badge, a trigger bell at the start, pink and slate tones." },
+  "agentic-ai": { subject: "agentic AI certifications", scene: "A friendly robot planner at a round table splitting a glowing goal orb into steps with tools (a magnifier, a wrench, a calendar) on a loop of arrows, a certificate scroll with a seal on the table." },
+  "langchain-python": { subject: "building AI agents in Python with LangChain, LangGraph, LangSmith and LangFlow", scene: "A python-green and blue workbench: glowing chain links joining modular blocks, a node graph with one edge looping back, a magnifying lens over trace bars, and a canvas of wired cards, a certificate seal in the corner." },
+};
 const COFFEE = "A cosy, modern developer cafe corner at morning light: a steaming ceramic coffee cup beside an open laptop showing colourful abstract code blocks (no readable text), a notebook with a hand-drawn architecture sketch, a croissant on a small plate, a young Indian developer smiling while reading, warm cream and terracotta palette. Photorealistic, cinematic editorial photograph, 35mm lens, gentle depth of field, premium and calm. Absolutely no text, letters, numbers, logos, watermarks or readable screens.";
 
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -78,11 +87,14 @@ async function main() {
   mkdirSync("public/images/landing/coffee", { recursive: true });
   mkdirSync("public/images/landing/notes", { recursive: true });
   mkdirSync("public/images/landing/search", { recursive: true });
+  mkdirSync("public/images/landing/certifications", { recursive: true });
   const ids = process.argv.slice(2).length ? process.argv.slice(2) : [...Object.keys(COVERS), "coffee"];
   const jobs = ids.map(id => id === "coffee"
     ? () => paint(COFFEE, "public/images/landing/feature-coffee.webp", [1600, 1200])
     : id.startsWith("search:")
     ? () => { const key = id.slice(7); return paint(learningScenePrompt(SEARCH[key]), `public/images/landing/search/${key}.webp`, [1200, 800]); }
+    : id.startsWith("cert:")
+    ? () => { const key = id.slice(5); return paint(learningScenePrompt(CERTIFICATIONS[key]), `public/images/landing/certifications/${key}.webp`, [1200, 800]); }
     : id.startsWith("notes:")
     ? () => { const key = id.slice(6); return paint(learningScenePrompt(NOTES[key]), `public/images/landing/notes/${key}.webp`, [1200, 800]); }
     : id.startsWith("coffee:")

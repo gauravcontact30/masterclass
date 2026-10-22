@@ -1,5 +1,5 @@
 /**
- * Paints the landing feature-section pictures (AI Search, Featured lessons, Notes & bookmarks) with
+ * Paints the landing feature-section pictures (AI Search, Featured lessons, Notes & bookmarks, Certifications) with
  * openai/gpt-image-2 through the AI Gateway, in the hero slides' style, then crops each to 1600×1200 WebP in
  * public/images/landing/feature-*.webp. Run: npx tsx --env-file=.env scripts/generate-feature-images.ts [id…]
  */
@@ -11,6 +11,7 @@ const STYLE = "Photorealistic, cinematic editorial photograph, shot on a full-fr
 const FEATURES: Record<string, string> = {
   search: "A curious young Indian developer at a bright minimalist desk leaning toward a laptop, a soft glowing orb of light and floating translucent answer cards rising from the screen like ideas taking shape (no readable text), a notebook with a hand-drawn question mark doodle and a cup of coffee, focused and delighted expression, subject on the left half.",
   lessons: "An overhead flat-lay of a beautifully organised study table: a tablet showing a colourful lesson cover illustration with a simple flow diagram of boxes and arrows (no readable text), printed interview question cards fanned out with coloured tabs, a terracotta pencil, sticky notes and a small plant, everything neatly arranged, creative and premium.",
+  certifications: "A proud young Indian developer at a bright desk holding up a framed certificate with a ribbon seal (no readable text), a laptop beside showing a colourful abstract learning roadmap of connected steps, a small stack of study books and a coffee cup, subject on the left half.",
   notes: "A young Indian woman revising at a cosy reading nook by a window at dusk, a neat notebook with colour-coded highlighted notes and star stickers in the margins, a row of paper bookmarks in different pastel colours in an open book, a phone beside her showing saved cards as colourful tiles (no readable text), warm lamp light, calm and confident mood, subject on the right half.",
 };
 

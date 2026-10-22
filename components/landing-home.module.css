@@ -50,7 +50,7 @@
 /* Every paragraph on the landing page is justified, hyphenated where the language allows (lang is set on Hindi). */
 .home :where(p) { text-align: justify; -webkit-hyphens: auto; hyphens: auto; }
 .srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-.inner { width: min(1240px, calc(100% - 64px)); margin-inline: auto; }
+.inner { width: min(var(--landing-max, 1240px), calc(100% - 64px)); margin-inline: auto; }
 
 /* Shared learning introductions: full-width copy, then a separate control row. */
 .home [data-learning-header] { display: flex; flex-direction: column; align-items: stretch; width: 100%; max-width: none; gap: 18px; }
@@ -71,7 +71,7 @@
 /* ---------- Navbar: transparent over the photographs, a paper bar once scrolled ---------- */
 .navbar { position: fixed; inset: 0 0 auto; z-index: 50; padding-top: env(safe-area-inset-top, 0px); color: #fff; background: transparent; border-bottom: 1px solid transparent; transition: background-color .35s ease, border-color .35s ease, box-shadow .35s ease, color .35s ease; }
 .navbar[data-solid] { color: var(--nb-graphite); background: rgba(255, 253, 248, .9); -webkit-backdrop-filter: saturate(1.5) blur(14px); backdrop-filter: saturate(1.5) blur(14px); border-bottom-color: var(--nb-rule); box-shadow: 0 10px 28px -24px rgba(143, 63, 35, .55); }
-.navbarInner { position: relative; width: min(1480px, calc(100% - 40px)); margin-inline: auto; height: var(--nav-h); display: flex; align-items: center; gap: 16px; }
+.navbarInner { position: relative; width: min(calc(var(--landing-max, 1240px) + 240px), calc(100% - 40px)); margin-inline: auto; height: var(--nav-h); display: flex; align-items: center; gap: 16px; }
 .home .brand { flex-shrink: 0; color: inherit; text-decoration: none; }
 .navbar:not([data-solid]) .brand :global(.brand-name) { color: #fff; }
 .navbar:not([data-solid]) .brand :global(.brand-name em) { color: var(--nb-highlight); }

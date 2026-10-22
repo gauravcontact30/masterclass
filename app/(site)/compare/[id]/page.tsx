@@ -4,6 +4,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cacheLife, cacheTag } from "next/cache";
 import { COMPARISONS, comparison, loadComparisonBank } from "@/lib/comparisons";
+import { byStars } from "@/lib/interview-questions";
+
+/** Difference questions a public comparison page shows; the rest are for members in the dashboard. */
+const PUBLIC_DIFFERENCES = 10;
 import { learningMetadata } from "@/lib/seo";
 import { LibraryIntro } from "@/components/public-learning/library-intro";
 import { QuestionList, faqData } from "@/components/public-learning/question-list";
@@ -44,12 +48,14 @@ async function ComparisonPage({ params }: Props) {
   const item = comparison((await params).id);
   if (!item) notFound();
   const set = await bank(item.id);
+  // The 10 most-asked here; every difference question with its answer is in the dashboard's Tech Topics section.
+  const shown = { ...set, subjective: byStars(set.subjective).slice(0, PUBLIC_DIFFERENCES) };
   const index = COMPARISONS.indexOf(item);
   const [previous, next] = [COMPARISONS[index - 1], COMPARISONS[index + 1]];
   return <>
     <LibraryIntro trail={[["Comparisons", "/compare"], [item.techs.map(tech => tech.name).join(" vs "), `/compare/${item.id}`]]} eyebrow={item.group}
       title={item.question} lead={item.summary} facts={[["Technologies", item.techs.length], ["Difference questions", set.subjective.length]]}
-      schema={set.subjective.length ? faqData(set) : undefined} />
+      schema={shown.subjective.length ? faqData(shown) : undefined} />
     <section className={styles.section} aria-labelledby="defs">
       <h2 id="defs">What each one is</h2>
       <div className={styles.cards}>{item.techs.map(tech => <article key={tech.name}><h3>{tech.name}</h3><p><strong>{tech.definition}</strong></p><p>{tech.description}</p></article>)}</div>
@@ -62,7 +68,8 @@ async function ComparisonPage({ params }: Props) {
         <tbody>{item.aspects.map(([aspect, ...values]) => <tr key={aspect}><th scope="row">{aspect}</th>{values.map((value, k) => <td key={k}>{value}</td>)}</tr>)}</tbody>
       </table></div>
     </section>
-    {set.subjective.length > 0 && <section className={styles.section} aria-labelledby="questions"><h2 id="questions">Difference questions and answers</h2><QuestionList set={set} idPrefix="q" level={3} /></section>}
+    {shown.subjective.length > 0 && <section className={styles.section} aria-labelledby="questions"><h2 id="questions">The {shown.subjective.length} most-asked difference questions</h2><QuestionList set={shown} idPrefix="q" level={3} />
+      {set.subjective.length > shown.subjective.length && <p className={styles.meta}><Link href={`/sign-in?redirect=${encodeURIComponent("/dashboard")}`}>See all {set.subjective.length} difference questions with answers in your dashboard →</Link></p>}</section>}
     <nav className={styles.next} aria-label="More comparisons">
       {previous ? <Link href={`/compare/${previous.id}`}>← {previous.techs.map(tech => tech.name).join(" vs ")}</Link> : <span />}
       {next && <Link href={`/compare/${next.id}`}>{next.techs.map(tech => tech.name).join(" vs ")} →</Link>}

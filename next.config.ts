@@ -12,6 +12,10 @@ const nextConfig: NextConfig = {
   // Without this, Next.js blocks that origin's /_next assets and HMR socket, the page never hydrates, and buttons
   // such as "Sign in" do nothing. Private ranges only; production ignores this setting.
   allowedDevOrigins: ["192.168.*.*", "10.*.*.*", ...Array.from({ length: 16 }, (_, i) => `172.${16 + i}.*.*`), "*.local"],
+  // Dev only: Next 16 forwards browser warnings and errors to the terminal by default. A browser autofill extension
+  // stamps `fdprocessedid` on every button, so each page load forwarded a ~160 KB hydration diff and flooded the
+  // terminal (9,000+ lines on 2026-10-22). Set NEXT_BROWSER_LOGS=1 to forward warnings and errors again.
+  logging: { browserToTerminal: process.env.NEXT_BROWSER_LOGS ? "warn" : false },
   compress: true,
   reactStrictMode: true,
   compiler: {

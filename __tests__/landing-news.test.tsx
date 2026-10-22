@@ -79,10 +79,24 @@ describe("LandingNews carousel", () => {
   // findBy* would advance the fake clock while it polls, and with it the slideshow; flushing the fetch keeps slide 1.
   const renderLoaded = async () => { render(<LandingNews />); await act(async () => { await Promise.resolve(); await Promise.resolve(); }); };
 
+  test("lists stories beyond the four cards as More headlines, with their concepts and the slide's basics", async () => {
+    const story = (n: number) => ({ title: `Story number ${n}`, summary: `Summary ${n}.`, source: "Anthropic", url: `https://www.anthropic.com/news/s${n}`, date: "2026-10-20", logo: null, points: [], why: null, concept: { term: `Term ${n}`, explain: `Explained ${n}.` } });
+    const many: LandingNewsData = { ...news, slides: news.slides.map(slide => slide.id === "ai-labs" ? { id: slide.id, kind: "news", fresh: true, stories: [1, 2, 3, 4, 5, 6].map(story) } : slide) };
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve(many) }) as unknown as typeof fetch;
+    await renderLoaded();
+    const slide = within(shown()[0]);
+    expect(slide.getByRole("link", { name: "Story number 4" })).toBeInTheDocument();
+    const headlines = slide.getByText("More headlines").parentElement as HTMLElement;
+    expect(within(headlines).getAllByRole("link").map(link => link.textContent)).toEqual(["Story number 5", "Story number 6"]);
+    expect(slide.getByText("Term 5")).toBeInTheDocument();
+    expect(slide.getByText("Learn the basics")).toBeInTheDocument();
+    expect(slide.getByText("Context window")).toBeInTheDocument();
+  });
+
   test("shows one slide at a time with its learning notes, and moves on every two minutes", async () => {
     await renderLoaded();
     expect(screen.getByText("It runs in the terminal.")).toBeInTheDocument();
-    expect(screen.getByText(/Agent loop/)).toBeInTheDocument();
+    expect(screen.getByText(/Learn: Agent loop/)).toBeInTheDocument();
     expect(within(shown()[0]).getByText("In this slide")).toBeInTheDocument();
     expect(screen.getByText("Updated 22 Oct, 8:50 am IST")).toBeInTheDocument();
     expect(shown()).toHaveLength(1);

@@ -79,6 +79,7 @@ export const DASHBOARD_PAGES: PageOption[] = [
   page("learning", "bookmark", "Bookmark", "saved favourites"),
   page("professional", "official-docs", "Official Docs", "documentation reference"), page("professional", "techy", "Techy", "technology"),
   page("professional", "api-docs", "API Docs", "reference endpoints"), page("professional", "workflow", "Workflow", "agents langchain"),
+  page("professional", "certifications", "Certifications", "exam certificate aws roadmap"),
   page("professional", "lessons", "Lessons", "course"), page("professional", "quiz", "Quiz", "test practice"),
   page("professional", "interview", "Interview", "questions answers"),
   page("exams", "civil-services", "Civil Services", "upsc ias govt"), page("exams", "ssc", "SSC & Recruitment", "cgl govt"),

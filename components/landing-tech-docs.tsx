@@ -2,6 +2,8 @@
 import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import { Fragment, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { TECH_DOC_BRANDS } from "@/lib/tech-doc-brands";
+import type { FreshDocTip } from "@/lib/landing-fresh-types";
+import { DailyCard } from "./landing-daily-card";
 import { Editable, useContentItem } from "./content-editing";
 import {
   ArrowUpRight, Binary, BookOpen, Bot, Boxes, Braces, Building2, Check, ChevronLeft, ChevronRight, Cloud, Code2, FileCode2, GraduationCap,
@@ -67,7 +69,7 @@ function BrandIcon({ tech, size = 28 }: { tech: TechDoc; size?: number }) {
  * topics of each CS fundamental (DSA, OOPs), and links on. `concepts` (from lib/tech-docs-concepts.ts, passed in by
  * the dashboard) adds the detailed concept notes to those subjects' slides.
  */
-export function LandingTechDocs({ official, preview = false, locked = false, concepts, featured }: Readonly<{ official?: OfficialTechDocs | null; preview?: boolean; locked?: boolean; concepts?: Record<string, TechConcept[]>; featured?: string }>) {
+export function LandingTechDocs({ official, preview = false, locked = false, concepts, featured, fresh = null }: Readonly<{ official?: OfficialTechDocs | null; preview?: boolean; locked?: boolean; concepts?: Record<string, TechConcept[]>; featured?: string; fresh?: FreshDocTip | null }>) {
   // `featured`: the platform the preview shows (the landing page passes today's); the first by default.
   const lead = TECH_DOCS.find(tech => tech.id === featured) ?? TECH_DOCS[0];
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
@@ -274,6 +276,12 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
       <p className={frame.lede} data-learning-intro>{text("Angular, Vue, React, TypeScript, PostgreSQL, Docker, Salesforce, Node.js, OpenRouter and AI Gateway, plus DSA and OOPs. Explore official guides and complete multi-file projects with setup instructions, annotated code and expected results.", "Angular 22, Vue 3.5, Salesforce API 68, Node.js 26, OpenRouter और Vercel AI Gateway: नीचे हर गाइड उसकी आधिकारिक वेबसाइट से ली गई है, और वर्तमान संस्करण आधिकारिक रजिस्ट्री से। साथ में हर इंटरव्यू के CS मूल विषय: DSA और OOPs, विषय-दर-विषय।")}</p>
       {total > 0 && <Controls text={text} playing={autoplay} onPlay={() => setAutoplay(value => !value)} page={current} pages={total} goTo={index => { const slide = slides[(index + total) % total]; if (slide) setActiveId(slide.tech.id); }} previous={text("Previous platform", "पिछला प्लेटफ़ॉर्म")} next={text("Next platform", "अगला प्लेटफ़ॉर्म")} />}
     </header>
+    {/* Today's AI-written tip for the featured platform (lib/server/landing-fresh.ts). */}
+    {preview && fresh && <DailyCard kicker={text(`Doc tip of the day · ${fresh.doc}`, `आज की डॉक टिप · ${fresh.doc}`)} title={fresh.title} image={fresh.image} icon={<BookOpen size={44} strokeWidth={1.3} />} day={fresh.day}>
+      <p>{fresh.summary}</p>
+      <ol>{fresh.steps.map((step, k) => <li key={k}>{step}</li>)}</ol>
+      {fresh.code && <pre><code>{fresh.code.code}</code></pre>}
+    </DailyCard>}
 
     {!preview && <div className={styles.toolbar}>
       <div className={styles.searchWrap}>

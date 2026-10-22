@@ -18,6 +18,7 @@ import { LandingNews } from "./landing-news";
 import { useReveal } from "./use-reveal";
 import { LearningSlot } from "./learning-slot";
 import type { LandingProPreview } from "@/lib/landing-pro-preview";
+import type { LandingFresh } from "@/lib/landing-fresh-types";
 import type { LandingLibrary } from "@/lib/landing-library";
 import type { DailyWord, LockedTeaser, PulseCard } from "@/lib/landing-daily-types";
 import home from "./landing-home.module.css";
@@ -49,6 +50,7 @@ const StudentReviews = dynamic(() => import("./student-reviews").then(m => m.Stu
 const LandingWorkflows = dynamic(() => import("./landing-workflows").then(m => m.LandingWorkflows));
 const LandingComparisons = dynamic(() => import("./landing-comparisons").then(m => m.LandingComparisons));
 const LandingTechDocs = dynamic(() => import("./landing-tech-docs").then(m => m.LandingTechDocs));
+const LandingCertifications = dynamic(() => import("./landing-certifications").then(m => m.LandingCertifications));
 const LandingCoffee = dynamic(() => import("./landing-coffee").then(m => m.LandingCoffee));
 const LandingApiDocs = dynamic(() => import("./landing-pro-sections").then(m => m.LandingApiDocs));
 const LandingTechy = dynamic(() => import("./landing-pro-sections").then(m => m.LandingTechy));
@@ -56,7 +58,7 @@ const LandingTechy = dynamic(() => import("./landing-pro-sections").then(m => m.
 /** `international`: other currencies are offered, so the page re-prices itself where the visitor is (it is cached in rupees). */
 export type LandingPrices = { monthly: number; yearly: number; enabled: boolean; currency?: Currency; currencies?: Currency[]; local?: Currency; inr?: { monthly: number; yearly: number }; international?: boolean };
 /** `today`: the India-calendar day number (istDay); the sections that turn over daily pick their content from it. */
-export function LandingPage({ pro, library, prices: initialPrices, daily, techDocs, copyrightYear, overrides, coffee, today = 0, featuredDoc }: { today?: number; featuredDoc?: string; overrides?: ContentOverrides; coffee?: BlogTeaser[]; copyrightYear?: number; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
+export function LandingPage({ pro, library, prices: initialPrices, daily, techDocs, copyrightYear, overrides, coffee, today = 0, featuredDoc, fresh = null }: { fresh?: LandingFresh | null; today?: number; featuredDoc?: string; overrides?: ContentOverrides; coffee?: BlogTeaser[]; copyrightYear?: number; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
   // Prices rendered on the server arrive in the HTML, so the plan card never paints "—" and then shifts; the fetch is only the fallback.
@@ -76,16 +78,17 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
     <main id="main-content" tabIndex={-1}>
     <h1 className={home.srOnly}>{text("MasterClass: school, exam and technology learning in English and Hindi", "MasterClass: अंग्रेज़ी और हिन्दी में स्कूल, परीक्षा और तकनीक की पढ़ाई")}</h1>
     {/* Order (2026-10-20): the promise (slider, what you get), something to try at once (Study Buddy), the highest-intent
-        sections (interview prep, the daily pulse, blueprints), a section each for AI Search, featured lessons and notes, proof of depth (library, comparisons,
+        sections (interview prep, the daily pulse, blueprints, certification paths), a section each for AI Search, featured lessons and notes, proof of depth (library, comparisons,
         docs), then social proof straight before the ask (reviews, membership). */}
     <LandingSlider technologies={library?.counts.technology} />
     <LearningSlot surface="landing" page="home" section="after-slider" className={styles.learningSlot} />
     <LandingNews />
-    <LandingPathFinder day={today} />
+    <LandingPathFinder day={today} fresh={fresh?.goals} />
     {library && <SubjectRibbon entries={library.entries} />}
-    <LandingInterview preview day={today} />
+    <LandingInterview preview day={today} fresh={fresh?.interview} />
     {daily && <LandingAiPulse cards={daily.pulse} total={daily.totals?.pulse} day={daily.day} locked={daily.locked?.pulse} preview />}
     <LandingWorkflows preview />
+    <LandingCertifications />
     {coffee && <LandingCoffee posts={coffee} />}
     <LearningSlot surface="landing" page="home" section="middle" className={styles.learningSlot} />
     <LandingFeatures latest={daily?.pulse[0] ? { title: daily.pulse[0].title, text: hi && daily.pulse[0].hiDefinition ? daily.pulse[0].hiDefinition : daily.pulse[0].definition, image: daily.pulse[0].image, day: daily.day } : null} />
@@ -107,8 +110,8 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
       </header>
       <LibraryLedger library={library} />
     </div></section>}
-    <LandingComparisons preview official={techDocs} />
-    <LandingTechDocs official={techDocs} preview featured={featuredDoc} />
+    <LandingComparisons preview official={techDocs} day={today} fresh={fresh?.difference} />
+    <LandingTechDocs official={techDocs} preview featured={featuredDoc} fresh={fresh?.doc} />
     {pro && <><LandingTechy data={pro.techy} /><LandingApiDocs data={pro.api} /></>}
     {daily && <LandingVocabulary words={daily.words} total={daily.totals?.words} day={daily.day} locked={daily.locked?.word} preview />}
     <StudentReviews />

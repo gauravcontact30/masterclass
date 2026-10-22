@@ -32,6 +32,7 @@ export function sidebarSuggestions(access: PreparationAccess, hi: boolean): Side
   const professional: SidebarSuggestion[] = [
     ["techy", "Techy", "interview answers quiz code examples corporate english"], ["api-docs", "API Docs", "api reference identifiers hooks functions classes"],
     ["workflow", "Workflow", "agentic ai single agent multi agent langchain langgraph langsmith deep agents integrations workflow supervisor"],
+    ["certifications", "Certifications", "certification certificate exam aws system design claude code n8n agentic ai langchain langgraph langsmith langflow roadmap"],
     ["lessons", "Lessons", "lessons articles syllabus reading"], ["quiz", "Quiz", "quiz test multiple choice score"],
     ["interview", "Interview", "interview questions company google meta amazon"], ["mentors", "Mentors", "mentor chat ai tutor ask"],
   ].map(([id, label, keywords]) => ({ id: `pro:${id}`, label, hint: "Professional Learn", scope: "professional" as const, href: `/dashboard/${id}`, keywords }));

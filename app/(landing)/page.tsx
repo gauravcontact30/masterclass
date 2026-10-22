@@ -4,6 +4,7 @@ import { JsonLd } from "@/components/json-ld";
 import { landingLibrary, previewLibrary } from "@/lib/landing-library";
 import { landingProPreview } from "@/lib/landing-pro-preview";
 import { istDay, landingDaily } from "@/lib/server/landing-daily";
+import { landingFresh } from "@/lib/server/landing-fresh";
 import { pickDaily } from "@/lib/daily-rotation";
 import { TECH_DOCS } from "@/lib/tech-docs";
 import { billingConfigured } from "@/lib/server/config";
@@ -34,6 +35,7 @@ export default async function Home() {
   // Cached for everyone, so it is priced in rupees; with international billing on, the page re-prices itself for the visitor.
   const prices = { monthly: Number(process.env.PRO_MONTHLY_PRICE_INR ?? 299), yearly: Number(process.env.PRO_YEARLY_PRICE_INR ?? 2999), enabled: billingConfigured(), currency: "INR" as const, international: internationalBilling() };
   // Super Admin content edits apply to the landing previews too; a save expires both this page and the overrides.
-  const [docs, overrides] = await Promise.all([officialTechDocs(), contentOverrides()]);
-  return <><JsonLd data={[websiteSchema(), organizationSchema()]} /><LandingPage copyrightYear={new Date().getFullYear()} pro={pro} library={previewLibrary(landingLibrary(pro), today)} prices={prices} daily={daily} techDocs={previewTechDocs(docs, featuredDoc)} featuredDoc={featuredDoc} today={today} overrides={overrides} coffee={blogTeasers(8, today)} /></>;
+  // Today's AI-written additions (lib/server/landing-fresh.ts); the nightly job publishes them with revalidateTag("landing").
+  const [docs, overrides, fresh] = await Promise.all([officialTechDocs(), contentOverrides(), landingFresh(today)]);
+  return <><JsonLd data={[websiteSchema(), organizationSchema()]} /><LandingPage copyrightYear={new Date().getFullYear()} pro={pro} library={previewLibrary(landingLibrary(pro), today)} prices={prices} daily={daily} techDocs={previewTechDocs(docs, featuredDoc)} featuredDoc={featuredDoc} fresh={fresh} today={today} overrides={overrides} coffee={blogTeasers(8, today)} /></>;
 }

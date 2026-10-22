@@ -26,7 +26,7 @@ describe("hero slider", () => {
     Object.defineProperty(document, "visibilityState", { configurable: true, value: "hidden" });
     fireEvent(document, new Event("visibilitychange"));
     act(() => { jest.advanceTimersByTime(14000); });
-    expect(active()).toHaveTextContent("Understand every chapter");
+    expect(active()).toHaveTextContent("Your campus for the skills");
     Object.defineProperty(document, "visibilityState", { configurable: true, value: "visible" });
     fireEvent(document, new Event("visibilitychange"));
     act(() => { jest.advanceTimersByTime(7000); });
@@ -36,10 +36,10 @@ describe("hero slider", () => {
   test("five full-bleed HD scenes, each with its own headline, image and actions", () => {
     render(<LandingSlider technologies={61} />);
     expect(slides()).toHaveLength(5);
-    expect(within(active()).getByRole("heading", { level: 2 })).toHaveTextContent("Understand every chapter, not just memorise it.");
-    expect(within(active()).getByRole("img")).toHaveAttribute("alt", expect.stringContaining("school student"));
+    expect(within(active()).getByRole("heading", { level: 2 })).toHaveTextContent("Your campus for the skills companies hire for.");
+    expect(within(active()).getByRole("img")).toHaveAttribute("alt", expect.stringContaining("www.masterclassbuddy.com"));
     expect(within(active()).getByRole("link", { name: /Start learning/ })).toHaveAttribute("href", "/sign-up");
-    expect(within(active()).getByRole("link", { name: "Explore school courses" })).toHaveAttribute("href", "/courses#cbse");
+    expect(within(active()).getByRole("link", { name: "Explore the free library" })).toHaveAttribute("href", "/library");
     // Hidden slides are inert, so their links can't be tabbed to.
     expect(slides().filter(slide => slide.hasAttribute("inert"))).toHaveLength(4);
   });
@@ -55,21 +55,21 @@ describe("hero slider", () => {
     act(() => { jest.advanceTimersByTime(7000); });
     expect(active()).toHaveTextContent("Crack your exam");
     fireEvent.click(screen.getByRole("button", { name: "Previous slide" }));
-    expect(active()).toHaveTextContent("Understand every chapter");
+    expect(active()).toHaveTextContent("Your campus for the skills");
     fireEvent.click(screen.getByRole("button", { name: "Previous slide" }));
-    expect(active()).toHaveTextContent("Turn every commute");
+    expect(active()).toHaveTextContent("From learning to certified");
     fireEvent.click(screen.getByRole("button", { name: "Next slide" }));
-    expect(active()).toHaveTextContent("Understand every chapter");
+    expect(active()).toHaveTextContent("Your campus for the skills");
     fireEvent.click(screen.getByRole("button", { name: "Pause slides" }));
     act(() => { jest.advanceTimersByTime(30000); });
-    expect(active()).toHaveTextContent("Understand every chapter");
+    expect(active()).toHaveTextContent("Your campus for the skills");
   });
 
   test("keyboard and swipe navigate, and reduced motion never autoplays", () => {
     mockMotion(true);
     render(<LandingSlider />);
     act(() => { jest.advanceTimersByTime(30000); });
-    expect(active()).toHaveTextContent("Understand every chapter");
+    expect(active()).toHaveTextContent("Your campus for the skills");
     const region = screen.getByRole("region", { name: "Learning with MasterClass" });
     fireEvent.keyDown(region, { key: "ArrowRight" });
     expect(active()).toHaveTextContent("Crack your exam");

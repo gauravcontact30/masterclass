@@ -65,7 +65,8 @@ export function cleanDiagram(diagram: z.infer<typeof draftSchema>["diagram"]): S
   return { title: clip(diagram.title, 80), nodes, edges };
 }
 
-async function paint(prompt: string): Promise<Buffer> {
+/** Paints one picture through the AI Gateway and returns it as a 1200-wide WebP (also used by lib/server/landing-fresh.ts). */
+export async function paint(prompt: string): Promise<Buffer> {
   const { image } = await generateImage({
     model: gateway.image(IMAGE_MODEL),
     prompt,
@@ -78,7 +79,8 @@ async function paint(prompt: string): Promise<Buffer> {
   return sharp(image.uint8Array).resize({ width: 1200, withoutEnlargement: true }).webp({ quality: 82 }).toBuffer();
 }
 
-async function store(path: string, webp: Buffer) {
+/** Uploads a WebP to the public learning-images bucket (created on first use) and returns its public URL. */
+export async function store(path: string, webp: Buffer) {
   const storage = db().storage;
   let { error } = await storage.from(LEARNING_IMAGE_BUCKET).upload(path, webp, { contentType: "image/webp", cacheControl: "31536000", upsert: true });
   if (error && /bucket not found/i.test(error.message)) {

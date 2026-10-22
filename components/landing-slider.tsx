@@ -21,11 +21,11 @@ type Slide = { id: string; src: string; focus: string; tone: "clay" | "sage" | "
 function slidesFor(technologies: number | undefined): Slide[] {
   const count = technologies ? String(technologies) : "60+";
   return [
-    { id: "school", src: "/images/landing/hero-school.webp", focus: "68% 45%", tone: "clay", tool: ["School · Class 6–12", "स्कूल · कक्षा 6–12"],
-      title: ["Understand every chapter, not just memorise it.", "हर अध्याय समझें, सिर्फ़ रटें नहीं।"],
-      body: ["Concept notes, solved NCERT answers and clear diagrams for CBSE, ICSE and state boards, in English or हिन्दी.", "CBSE, ICSE और राज्य बोर्ड के लिए अवधारणा नोट्स, हल किए NCERT उत्तर और स्पष्ट आरेख, English या हिन्दी में।"],
-      link: { label: ["Explore school courses", "स्कूल कोर्स देखें"], href: "/courses#cbse" },
-      alt: "A school student in uniform writing notes beside a laptop showing a cell diagram, in warm evening light" },
+    { id: "school", src: "/images/landing/hero-campus-2.webp", focus: "68% 45%", tone: "clay", tool: ["MasterClass Buddy campus", "MasterClass Buddy कैंपस"],
+      title: ["Your campus for the skills companies hire for.", "उन स्किल्स का कैंपस, जिनके लिए कंपनियाँ भर्ती करती हैं।"],
+      body: ["Step into one place for AI agents, cloud, system design and full-stack development, with interview prep, certification paths and real projects, in English or हिन्दी.", "AI एजेंट, क्लाउड, सिस्टम डिज़ाइन और फ़ुल-स्टैक डेवलपमेंट के लिए एक ही जगह, इंटरव्यू तैयारी, सर्टिफ़िकेशन रास्तों और असली प्रोजेक्ट्स के साथ, English या हिन्दी में।"],
+      link: { label: ["Explore the free library", "मुफ़्त लाइब्रेरी देखें"], href: "/library" },
+      alt: "A young professional with a leather laptop bag walking toward a campus building whose wall reads Master Class Buddy - www.masterclassbuddy.com, at golden morning light" },
     { id: "exams", src: "/images/landing/hero-exams.webp", focus: "66% 40%", tone: "sage", tool: ["Competitive exams", "प्रतियोगी परीक्षाएँ"],
       title: ["Crack your exam with timed, real-pattern practice.", "समयबद्ध, असली पैटर्न के अभ्यास से परीक्षा पास करें।"],
       body: ["SSC, banking, railways, defence, JEE and NEET: foundations, practice papers, full solutions and answer review.", "SSC, बैंकिंग, रेलवे, रक्षा, JEE और NEET: आधार, अभ्यास पत्र, पूरे हल और उत्तर समीक्षा।"],
@@ -41,11 +41,11 @@ function slidesFor(technologies: number | undefined): Slide[] {
       body: ["Real interview questions, tech comparisons, quizzes and a live code lab for your next role.", "आपकी अगली नौकरी के लिए असली इंटरव्यू प्रश्न, तकनीकी तुलना, क्विज़ और लाइव कोड लैब।"],
       link: { label: ["Practise interviews", "इंटरव्यू अभ्यास करें"], href: "#interview-prep" },
       alt: "Two young professionals practising a technical interview at a table, with a system diagram on a whiteboard behind them" },
-    { id: "anywhere", src: "/images/landing/hero-anywhere.webp", focus: "62% 35%", tone: "honey", tool: ["Learn anywhere", "कहीं भी सीखें"],
-      title: ["Turn every commute into a study session.", "हर सफ़र को पढ़ाई का समय बनाएँ।"],
-      body: ["Bite-size lessons, daily vocabulary and revision notes on your phone, with bookmarks that keep your place.", "फ़ोन पर छोटे पाठ, रोज़ की शब्दावली और रिवीज़न नोट्स, बुकमार्क के साथ जो आपकी जगह याद रखें।"],
-      link: { label: ["How it works", "यह कैसे काम करता है"], href: "#workflows" },
-      alt: "A student with wireless earbuds learning on a phone by a metro window at sunrise, the city skyline behind" },
+    { id: "anywhere", src: "/images/landing/hero-certified-2.webp", focus: "62% 35%", tone: "honey", tool: ["Certifications", "सर्टिफ़िकेशन"],
+      title: ["From learning to certified, on masterclassbuddy.com.", "masterclassbuddy.com पर सीखने से सर्टिफ़ाइड होने तक।"],
+      body: ["Follow step-by-step paths for Agentic AI, AWS, n8n, Claude Code and System Design, practise 100+ questions each with mock exams, and walk into your certification ready.", "Agentic AI, AWS, n8n, Claude Code और सिस्टम डिज़ाइन के चरण-दर-चरण रास्ते अपनाएँ, हर एक के 100+ प्रश्नों और मॉक परीक्षा से अभ्यास करें, और पूरी तैयारी के साथ सर्टिफ़िकेशन दें।"],
+      link: { label: ["See certification paths", "सर्टिफ़िकेशन रास्ते देखें"], href: "#certifications" },
+      alt: "Two young professionals at an office reception holding framed Master Class Buddy certificates of completion in Agentic AI, AWS and n8n, pointing at the masterclassbuddy.com homepage on a large iMac" },
   ];
 }
 

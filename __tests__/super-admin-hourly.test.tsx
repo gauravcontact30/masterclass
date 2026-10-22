@@ -34,3 +34,16 @@ test("historical dates do not display a current-hour indicator", async () => {
   expect(screen.queryByRole("button", { name: /^Current hour,/ })).not.toBeInTheDocument();
   expect(screen.queryByText("Current hour · in progress")).not.toBeInTheDocument();
 });
+
+test("the selected hour's card switches between page views, visitors, signed-in users and routes", async () => {
+  await act(async () => { render(<SuperAdminHourly />); });
+  const detail = within(screen.getByRole("region", { name: "Selected hour details" }));
+  expect(detail.getByRole("tab", { name: /Page views · sections & cards/ })).toHaveAttribute("aria-selected", "true");
+  expect(detail.getByText("No section clicks in this hour")).toBeInTheDocument();
+  fireEvent.click(detail.getByRole("tab", { name: /Unique visitors/ }));
+  expect(detail.getByText("No visitors in this hour yet.")).toBeInTheDocument();
+  fireEvent.click(detail.getByRole("tab", { name: /Signed-in users/ }));
+  expect(detail.getByText("No signed-in learners in this hour.")).toBeInTheDocument();
+  fireEvent.click(detail.getByRole("tab", { name: /Routes visited/ }));
+  expect(detail.getByText("No routes visited in this hour yet.")).toBeInTheDocument();
+});

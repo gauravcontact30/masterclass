@@ -2,6 +2,8 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState, type ReactNode } from "react";
 import { GraduationCap } from "lucide-react";
+import type { FreshQuestion } from "@/lib/landing-fresh-types";
+import { DailyCard, DailyChoice } from "./landing-daily-card";
 import { bankIds, INTERVIEW_TECHS, loadInterviewBank, type InterviewTech } from "@/lib/interview-bank";
 import type { QuestionSet } from "@/lib/interview-questions";
 import { learningImageUrl } from "@/lib/learning-image";
@@ -34,7 +36,7 @@ const techKey = (tech: InterviewTech) => contentKey("interview", tech.id);
  * slide every two minutes and holds while the reader hovers or reads. Questions load per slide, when it is near.
  * The landing preview (`day`, istDay) shows the next three technologies each day, and the slide tones move on with them.
  */
-export function LandingInterview({ expanded = false, preview = false, day = 0 }: Readonly<{ expanded?: boolean; preview?: boolean; day?: number }>) {
+export function LandingInterview({ expanded = false, preview = false, day = 0, fresh = null }: Readonly<{ expanded?: boolean; preview?: boolean; day?: number; fresh?: FreshQuestion | null }>) {
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
   // The landing page previews three technologies; /dashboard carries all of them with the navigator.
   const visible = useVisibleContent(INTERVIEW_TECHS, techKey);
@@ -58,6 +60,11 @@ export function LandingInterview({ expanded = false, preview = false, day = 0 }:
       </div>
       <Controls text={text} playing={playing} onPlay={() => setPlaying(p => !p)} page={page} pages={pages} goTo={goTo} previous={text("Previous technology", "पिछली तकनीक")} next={text("Next technology", "अगली तकनीक")} />
     </div>
+    {/* Today's AI-written question (lib/server/landing-fresh.ts), above the bank. */}
+    {preview && fresh && <DailyCard kicker={text(`Question of the day · ${fresh.tech}`, `आज का प्रश्न · ${fresh.tech}`)} title={fresh.question} image={fresh.image} icon={<GraduationCap size={44} strokeWidth={1.3} />} day={fresh.day}>
+      <details><summary>{text("Show the model answer", "मॉडल उत्तर देखें")}</summary><p>{fresh.answer}</p></details>
+      <DailyChoice question={fresh.objective.question} options={fresh.objective.options} answer={fresh.objective.answer} why={fresh.objective.why} reveal={text("Why:", "क्यों:")} />
+    </DailyCard>}
     {!preview && <InterviewTechNav techs={techs} current={page} onPick={goTo} tones={TONES} text={text} tab={tabs[current?.id] ?? 0} onTab={tab => chooseTab(current.id, tab)} />}
     <p className={styles.now} aria-live="polite"><b>{current?.title}</b><span aria-hidden="true">·</span>{text(`Topic ${page + 1} of ${techs.length}`, `विषय ${page + 1} / ${techs.length}`)}</p>
     <ul ref={track} className={styles.track} aria-roledescription="carousel" aria-label={text("Interview questions by technology", "तकनीक के अनुसार इंटरव्यू प्रश्न")} {...holdProps}>

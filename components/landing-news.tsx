@@ -3,8 +3,9 @@
 import { useEffect, useState, type FocusEvent } from "react";
 import { preload } from "react-dom";
 import { ArrowUpRight, Bot, GraduationCap, Lightbulb, ListChecks, Boxes, BrainCircuit, ChevronLeft, ChevronRight, Cloud, Code2, MessagesSquare, Newspaper, Pause, Play, Rocket, ShoppingCart, Sparkles, Star, TrendingUp, type LucideIcon } from "lucide-react";
-import { NEWS_SLIDES, type InterviewAsk, type LandingNews as LandingNewsData, type NewsLogo, type NewsSlideData, type NewsSlideId, type NewsSlideMeta, type NewsStory } from "@/lib/landing-news";
+import { NEWS_BASICS, NEWS_PER_SLIDE, NEWS_SLIDES, QUESTIONS_PER_SLIDE, type InterviewAsk, type LandingNews as LandingNewsData, type NewsLogo, type NewsSlideData, type NewsSlideId, type NewsSlideMeta, type NewsStory } from "@/lib/landing-news";
 import Image from "next/image";
+import Link from "next/link";
 import { useLanguage } from "./language-provider";
 import styles from "./landing-news.module.css";
 
@@ -118,8 +119,10 @@ export function LandingNews() {
             return <article key={meta.id} className={styles.slide} data-tone={TONES[i % TONES.length]} hidden={i !== index} aria-roledescription="slide" aria-label={`${i + 1} / ${total}: ${hi ? meta.hiTitle : meta.title}`}>
               <Cover meta={meta} hi={hi} eager={i === 0} data={data} />
               <div className={styles.body}>
-                {data?.kind === "news" && data.stories.length > 0 && <Stories stories={data.stories} hi={hi} slide={i} />}
-                {data?.kind === "questions" && data.questions.length > 0 && <Questions questions={data.questions} hi={hi} slide={i} />}
+                {data?.kind === "news" && data.stories.length > 0 && <Stories stories={data.stories.slice(0, NEWS_PER_SLIDE)} hi={hi} slide={i} />}
+                {data?.kind === "questions" && data.questions.length > 0 && <Questions questions={data.questions.slice(0, QUESTIONS_PER_SLIDE)} hi={hi} slide={i} />}
+                {data?.kind === "news" && data.stories.length > NEWS_PER_SLIDE && <Headlines stories={data.stories.slice(NEWS_PER_SLIDE)} hi={hi} />}
+                {data?.kind === "questions" && data.questions.length > QUESTIONS_PER_SLIDE && <AlsoAsked questions={data.questions.slice(QUESTIONS_PER_SLIDE)} hi={hi} />}
                 {!news && <div className={styles.loading} role="status">{hi ? "ताज़ा खबरें लोड हो रही हैं…" : "Loading this week's stories…"}<span /><span /><span /></div>}
                 {news && !(data?.kind === "news" ? data.stories.length : data?.kind === "questions" ? data.questions.length : 0) && <Newsrooms meta={meta} hi={hi} />}
               </div>
@@ -132,15 +135,27 @@ export function LandingNews() {
 }
 
 function Cover({ meta, hi, eager, data }: { meta: NewsSlideMeta; hi: boolean; eager: boolean; data?: NewsSlideData }) {
-  // The cover is as tall as the stories beside it, so its lower half indexes what the slide holds.
-  const items = data?.kind === "news" ? data.stories.map(story => story.title) : data?.kind === "questions" ? data.questions.map(ask => ask.question) : [];
-  const sources = data?.kind === "news" ? data.stories.map(story => story.source) : data?.kind === "questions" ? data.questions.flatMap(ask => ask.source ? [ask.source] : []) : [];
+  // The cover is as tall as the stories beside it, so its lower half indexes what the slide holds, sums it up,
+  // points to the official newsrooms and ends with where to go deeper on MasterClass Buddy.
+  // Titles only: each one is already a link on its own card beside the cover.
+  const items: { title: string; source: string | null; date: string | null; logo: NewsLogo | null }[] = data?.kind === "news"
+    ? data.stories.slice(0, NEWS_PER_SLIDE).map(story => ({ title: story.title, source: story.source, date: story.date, logo: story.logo }))
+    : data?.kind === "questions" ? data.questions.slice(0, QUESTIONS_PER_SLIDE).map(ask => ({ title: ask.question, source: ask.source, date: null, logo: ask.companies[0] ?? null })) : [];
+  const sources = [...new Set(items.flatMap(item => item.source ? [item.source] : []))];
+  const dates = items.flatMap(item => item.date ? [item.date] : []).sort();
+  const companies = data?.kind === "questions" ? [...new Set(data.questions.flatMap(ask => ask.companies.map(company => company.name)))] : [];
+  const glance: [string, string][] = items.length ? [
+    [String(items.length), meta.kind === "questions" ? (hi ? "प्रश्न" : "questions") : (hi ? "खबरें" : "stories")],
+    meta.kind === "questions" ? [String(companies.length || "—"), hi ? "कंपनियाँ" : "companies"] : [String(sources.length), hi ? "स्रोत" : "sources"],
+    dates.length ? [dates[0] === dates.at(-1) ? shortDate(dates[0]) : `${shortDate(dates[0])} – ${shortDate(dates.at(-1)!)}`, hi ? "तारीख़ें" : "dates"]
+      : [String(data?.kind === "questions" ? Math.round(data.questions.reduce((sum, ask) => sum + ask.rating, 0) / Math.max(1, data.questions.length) * 10) / 10 : "—"), hi ? "औसत रेटिंग" : "avg. asked"],
+  ] : [];
   const Icon = ICONS[meta.id];
   const [failed, setFailed] = useState(false);
   return <div className={styles.cover}>
-    {/* Full-HD 16:9 cover painted through the AI Gateway (scripts/generate-news-covers.ts), shown whole in a 16:9 frame. */}
+    {/* Painted through the AI Gateway: this 21-day set's own cover when it has one, else the standing cover (scripts/generate-news-covers.ts). */}
     <div className={styles.picture} data-empty={failed}>
-      {!failed && <Image src={`/images/news/${meta.id}.webp`} alt="" fill sizes="(max-width: 899px) calc(100vw - 60px), 480px" preload={eager} loading={eager ? undefined : "lazy"} onError={() => setFailed(true)} />}
+      {!failed && <Image src={data?.cover ?? `/images/news/${meta.id}.webp`} unoptimized={Boolean(data?.cover)} alt="" fill sizes="(max-width: 899px) calc(100vw - 60px), 480px" preload={eager} loading={eager ? undefined : "lazy"} onError={() => setFailed(true)} />}
       <Icon className={styles.pictureIcon} size={56} strokeWidth={1.2} aria-hidden="true" />
       <span className={styles.kicker}><Icon size={12} aria-hidden="true" />{meta.kind === "questions" ? (hi ? "इंटरव्यू" : "Interviews") : (hi ? "खबरें" : "News")}</span>
     </div>
@@ -148,10 +163,25 @@ function Cover({ meta, hi, eager, data }: { meta: NewsSlideMeta; hi: boolean; ea
     <p>{hi ? meta.hiBlurb : meta.blurb}</p>
     <ul className={styles.topics}>{meta.topics.map(topic => <li key={topic}>{topic}</li>)}</ul>
     {items.length > 0 && <div className={styles.index}>
+      <dl className={styles.glance} aria-label={hi ? "एक नज़र में" : "At a glance"}>{glance.map(([value, label]) => <div key={label}><dd>{value}</dd><dt>{label}</dt></div>)}</dl>
       <h5>{hi ? "इस स्लाइड में" : "In this slide"}</h5>
-      <ol>{items.map(item => <li key={item}>{item}</li>)}</ol>
-      {sources.length > 0 && <p>{hi ? "स्रोत" : "Sources"}: {[...new Set(sources)].join(" · ")}</p>}
+      <ol>{items.map(item => <li key={item.title}>
+        <span>{item.title}</span>
+        {(item.source || item.date) && <small>{item.logo && <Logo logo={item.logo} />}{[item.source, item.date ? shortDate(item.date) : null].filter(Boolean).join(" · ")}</small>}
+      </li>)}</ol>
     </div>}
+    {items.length > 0 && meta.newsrooms.some(room => !room.href.startsWith("#")) && <div className={styles.extra}>
+      <h5>{hi ? "आगे यहाँ पढ़ें" : "Read more at"}</h5>
+      <ul className={styles.rooms}>{meta.newsrooms.filter(room => !room.href.startsWith("#")).map(room => <li key={room.href}><a href={room.href} target="_blank" rel="noopener noreferrer"><Newspaper size={13} aria-hidden="true" />{room.label}<ArrowUpRight size={12} aria-hidden="true" /></a></li>)}</ul>
+    </div>}
+    <div className={`${styles.extra} ${styles.basics}`}>
+      <h5><Sparkles size={14} aria-hidden="true" />{hi ? "बुनियादी बातें समझें" : "Learn the basics"}</h5>
+      <dl>{NEWS_BASICS[meta.id].map(basic => <div key={basic.term}><dt>{basic.term}</dt><dd>{hi ? basic.hiExplain : basic.explain}</dd></div>)}</dl>
+    </div>
+    <div className={`${styles.extra} ${styles.deeper}`}>
+      <h5><GraduationCap size={14} aria-hidden="true" />{hi ? "MasterClass Buddy पर आगे सीखें" : "Keep learning on MasterClass Buddy"}</h5>
+      <ul>{meta.learn.map(link => <li key={link.href}><Link href={link.href}>{hi ? link.hiLabel : link.label}<ArrowUpRight size={13} aria-hidden="true" /></Link></li>)}</ul>
+    </div>
   </div>;
 }
 
@@ -191,6 +221,31 @@ function Stories({ stories, hi, slide }: { stories: NewsStory[]; hi: boolean; sl
       {story.concept && <Concept concept={story.concept} hi={hi} />}
     </li>)}</ul>}
   </>;
+}
+
+/** Stories beyond the slide's four cards: a compact two-column list, each linking to its source with its concept. */
+function Headlines({ stories, hi }: { stories: NewsStory[]; hi: boolean }) {
+  return <section className={styles.headlines} aria-label={hi ? "और सुर्ख़ियाँ" : "More headlines"}>
+    <h5><Newspaper size={14} aria-hidden="true" />{hi ? "और सुर्ख़ियाँ" : "More headlines"}</h5>
+    <ol>{stories.map(story => <li key={story.url}>
+      <small>{story.logo && <Logo logo={story.logo} />}{story.source} · <time dateTime={story.date}>{shortDate(story.date)}</time></small>
+      <a href={story.url} target="_blank" rel="noopener noreferrer">{story.title}</a>
+      <p>{story.summary}</p>
+      {story.concept && <p className={styles.headlineConcept}><GraduationCap size={13} aria-hidden="true" /><span><b>{story.concept.term}</b>: {story.concept.explain}</span></p>}
+    </li>)}</ol>
+  </section>;
+}
+
+/** Interview questions beyond the slide's five cards, with their short answers. */
+function AlsoAsked({ questions, hi }: { questions: InterviewAsk[]; hi: boolean }) {
+  return <section className={styles.headlines} aria-label={hi ? "ये भी पूछे गए" : "Also asked"}>
+    <h5><MessagesSquare size={14} aria-hidden="true" />{hi ? "ये भी पूछे गए" : "Also asked"}</h5>
+    <ol>{questions.map(ask => <li key={ask.question}>
+      {ask.url && <small>{ask.companies[0] && <Logo logo={ask.companies[0]} />}<a href={ask.url} target="_blank" rel="noopener noreferrer">{ask.source}</a></small>}
+      <span>{ask.question}</span>
+      <p>{ask.answer}</p>
+    </li>)}</ol>
+  </section>;
 }
 
 function Stars({ rating, hi }: { rating: number; hi: boolean }) {

@@ -1,21 +1,23 @@
 import "server-only";
 import { after } from "next/server";
 import { cacheGet, cacheSet } from "@/lib/redis";
+import { NEWS_COVER_SCENES, NEWS_COVER_STYLE } from "@/lib/news-covers";
 import {
   siAccenture, siAirbnb, siAnthropic, siApple, siAtlassian, siCisco, siClaude, siCloudflare, siDatabricks, siDeepmind, siGithub, siGoldmansachs,
   siGoogle, siGooglegemini, siHuggingface, siInfosys, siIntel, siLangchain, siMeta, siMistralai, siN8n, siNetflix, siNextdotjs, siNvidia, siPaypal,
   siPaytm, siPerplexity, siPhonepe, siRazorpay, siReact, siSamsung, siShopify, siSnowflake, siSpacex, siSpotify, siStripe, siSwiggy, siTata, siTesla,
   siUber, siVercel, siWipro, siX, siZoho, siZomato, type SimpleIcon,
 } from "simple-icons";
-import { NEWS_PER_SLIDE, NEWS_SLIDES, QUESTIONS_PER_SLIDE, type InterviewAsk, type LandingNews, type NewsLogo, type NewsSlideData, type NewsSlideId, type NewsStory } from "@/lib/landing-news";
+import { NEWS_EXTRA, NEWS_PER_SLIDE, NEWS_SLIDES, QUESTIONS_PER_SLIDE, type InterviewAsk, type LandingNews, type NewsLogo, type NewsSlideData, type NewsSlideId, type NewsStory } from "@/lib/landing-news";
 
 /*
  * Fills the landing page's "Fresh in tech" slides with this week's stories, searched live by Perplexity (sonar).
  * Every story must link to a page Perplexity actually searched: an item whose URL is not among the search results
  * is dropped rather than shown with a link that may not exist.
  * The finished set is kept in Redis, shared by every server instance and surviving deploys and restarts, so a visitor
- * never waits for the searches: a set older than three hours is still served at once while a fresh one is built in
- * the background, and a slide whose new search comes back empty keeps its previous stories.
+ * never waits for the searches. The set is rebuilt every 21 days by app/api/cron/news-refresh (refreshNews), which also
+ * paints each slide a new cover from its lead story; a slide whose new search comes back empty keeps its previous
+ * stories and cover.
  */
 const ENDPOINT = "https://api.perplexity.ai/chat/completions";
 // One search with the learning notes takes ~10 s, several at once take longer.
@@ -56,7 +58,7 @@ const BRIEFS: Record<NewsSlideId, string> = {
   "amazon-ai": "Amazon and artificial intelligence: Alexa+, Amazon Nova models, Amazon Bedrock, Rufus, Amazon's AI chips (Trainium) and its AI partnerships.",
   "questions-tech": "core software engineering topics: JavaScript, React, Node.js, system design, SQL and data structures",
   "questions-agentic": "agentic AI and LLM engineering: AI agents, RAG, tool calling, MCP, LangChain/LangGraph, evaluation and guardrails",
-  trending: "The biggest technology stories of the last three days across AI, AWS, Google, Microsoft, Amazon, OpenAI, Anthropic, Meta, Nvidia and Apple.",
+  trending: "The biggest technology stories of the last three weeks across AI, AWS, Google, Microsoft, Amazon, OpenAI, Anthropic, Meta, Nvidia and Apple.",
 };
 
 type SearchResult = { url: string; date?: string | null; title?: string };
@@ -156,10 +158,12 @@ export function verifiedStories(items: RawStory[], results: SearchResult[], now:
 }
 
 async function storiesFor(id: NewsSlideId, now: number): Promise<NewsStory[]> {
-  const prompt = (days: number) => `Find the ${NEWS_PER_SLIDE + 3} most important, distinct news stories published in the last ${days} days about: ${BRIEFS[id]}
+  // The first NEWS_PER_SLIDE are the slide's cards; the rest are listed under its cover as "More headlines".
+  const prompt = (days: number) => `Find the ${NEWS_PER_SLIDE + NEWS_EXTRA + 2} most important, distinct news stories published in the last ${days} days about: ${BRIEFS[id]}
 Today is ${new Date(now).toISOString().slice(0, 10)}. No two stories about the same event. For each give: title (a plain headline, at most 90 characters), summary (two short sentences, at most 220 characters: what happened and why it matters to developers), source (the publisher's name), url (copied exactly from your search results), date (publication date, YYYY-MM-DD), company (the main organisation, preferably one of: ${BRAND_NAMES.join(", ")}; otherwise its name, or "other"),
 points (three short key facts from the article, each at most 110 characters), why (one sentence, at most 180 characters, on why it matters to software engineers and learners) and concept (one technical term from the story a learner should know: term at most 40 characters, explain is a plain one-sentence explanation of at most 180 characters).`;
-  const tries: [number, "day" | "week" | "month"][] = id === "trending" ? [[3, "week"], [7, "week"]] : [[7, "week"], [30, "month"]];
+  // One refresh every 21 days covers those three weeks; a thin window widens to the month.
+  const tries: [number, "day" | "week" | "month"][] = [[21, "month"], [30, "month"]];
   let best: NewsStory[] = [];
   for (const [days, recency] of tries) {
     const reply = await ask(SYSTEM, prompt(days), STORY_SCHEMA, recency);
@@ -169,7 +173,7 @@ points (three short key facts from the article, each at most 110 characters), wh
     // The wider search only runs when the week was too thin to fill the slide at all.
     if (best.length >= 2) break;
   }
-  return best.slice(0, NEWS_PER_SLIDE);
+  return best.slice(0, NEWS_PER_SLIDE + NEWS_EXTRA);
 }
 
 const QUESTION_SCHEMA = { type: "object", properties: { items: { type: "array", items: { type: "object", properties: { question: { type: "string" }, answer: { type: "string" }, rating: { type: "integer" }, companies: { type: "array", items: { type: "string" } }, source: { type: "string" }, url: { type: "string" } }, required: ["question", "answer", "rating", "companies", "source", "url"] } } }, required: ["items"] };
@@ -189,11 +193,11 @@ export function verifiedQuestions(items: RawQuestion[], results: SearchResult[])
     const companies = url ? [...new Map((item.companies ?? []).map(brandLogo).filter((logo): logo is NewsLogo => Boolean(logo)).map(logo => [logo.name, logo])).values()].slice(0, 3) : [];
     out.push({ question, answer, rating: Math.min(5, Math.max(1, Math.round(Number(item.rating) || 3))), companies, url, source: url ? clip(item.source, 40) || hostOf(url) : null });
   }
-  return out.sort((a, b) => b.rating - a.rating).slice(0, QUESTIONS_PER_SLIDE);
+  return out.sort((a, b) => b.rating - a.rating).slice(0, QUESTIONS_PER_SLIDE + NEWS_EXTRA);
 }
 
 async function questionsFor(id: NewsSlideId): Promise<InterviewAsk[]> {
-  const prompt = `Find the ${QUESTIONS_PER_SLIDE + 2} interview questions about ${BRIEFS[id]} that candidates most often report being asked in recent technical interviews (2025 or 2026) at well-known companies, from interview reports such as Glassdoor, LeetCode Discuss, Blind, GeeksforGeeks interview experiences or engineering blogs.
+  const prompt = `Find the ${QUESTIONS_PER_SLIDE + NEWS_EXTRA + 2} interview questions about ${BRIEFS[id]} that candidates most often report being asked in recent technical interviews (2025 or 2026) at well-known companies, from interview reports such as Glassdoor, LeetCode Discuss, Blind, GeeksforGeeks interview experiences or engineering blogs.
 For each give: question; answer (a correct answer in at most two short sentences, at most 240 characters); rating (1 to 5, how often candidates report it, 5 = very common); companies (one to three companies the source says asked it, preferably named as in: ${BRAND_NAMES.join(", ")}; an empty list if the source names none); source (the site's name) and url (copied exactly from your search results).`;
   const reply = await ask(SYSTEM, prompt, QUESTION_SCHEMA, "year");
   return reply ? verifiedQuestions(parse<{ items: RawQuestion[] }>(reply.content)?.items ?? [], reply.results) : [];
@@ -215,8 +219,9 @@ async function searchSlide(id: NewsSlideId): Promise<NewsSlideData> {
 }
 
 const STORE_KEY = "landing:news:v2";
-/** How long a set counts as fresh, and how long Redis keeps one at all. */
-const FRESH_MS = 3 * 3600_000, KEEP_SECONDS = 3 * 24 * 3600;
+/** How long a set counts as fresh (the refresh cycle), and how long Redis keeps one at all. */
+export const NEWS_REFRESH_DAYS = 21;
+const FRESH_MS = NEWS_REFRESH_DAYS * 86_400_000, KEEP_SECONDS = 45 * 86_400;
 type StoredNews = LandingNews & { builtAt: number };
 let building: Promise<StoredNews> | null = null;
 
@@ -224,7 +229,8 @@ let building: Promise<StoredNews> | null = null;
 function rebuild(previous: StoredNews | null): Promise<StoredNews> {
   building ??= (async () => {
     const searched = await Promise.all(NEWS_SLIDES.map(slide => searchSlide(slide.id)));
-    const slides = searched.map(slide => slide.fresh ? slide : previous?.slides.find(old => old.id === slide.id) ?? slide);
+    // A new search starts without a cover (refreshNews paints one); an empty one keeps the old stories and cover.
+    const slides = searched.map(slide => slide.fresh ? { ...slide, cover: null } : previous?.slides.find(old => old.id === slide.id) ?? slide);
     const fresh = searched.some(slide => slide.fresh);
     const set: StoredNews = { slides, updatedAt: fresh ? new Date().toISOString() : previous?.updatedAt ?? null, builtAt: fresh ? Date.now() : previous?.builtAt ?? 0 };
     if (fresh) await cacheSet(STORE_KEY, set, KEEP_SECONDS);
@@ -238,6 +244,48 @@ export async function landingNews(): Promise<LandingNews> {
   const stored = await cacheGet<StoredNews>(STORE_KEY);
   const shown = ({ slides, updatedAt }: StoredNews): LandingNews => ({ slides, updatedAt });
   if (!stored?.slides?.length) return shown(await rebuild(null));
-  if (Date.now() - stored.builtAt > FRESH_MS || stored.slides.some(slide => !slide.fresh)) after(() => rebuild(stored).then(() => undefined));
+  // The cron refreshes on schedule; this only catches a set the cron missed by more than a day, or empty slides.
+  if (Date.now() - stored.builtAt > FRESH_MS + 86_400_000 || stored.slides.some(slide => !slide.fresh)) after(() => rebuild(stored).then(() => undefined));
   return shown(stored);
+}
+
+/** A cover for one slide: its standing scene, steered toward the lead story (shown with objects, never words). */
+function coverPrompt(slide: NewsSlideData) {
+  const lead = slide.kind === "news" ? slide.stories[0] : null;
+  const ask = slide.kind === "questions" ? slide.questions[0] : null;
+  const hint = lead ? `Also hint at this period's lead story, "${lead.title}" (${lead.summary}), through objects and actions only.`
+    : ask ? `Also hint at the most-asked question, "${ask.question}", through objects and actions only.` : "";
+  return `${NEWS_COVER_SCENES[slide.id] ?? ""} ${hint} ${NEWS_COVER_STYLE}`;
+}
+
+/**
+ * The 21-day refresh (app/api/cron/news-refresh): rebuilds the stories when the set is due (or `force`), then paints a
+ * new cover for every slide that has none yet, within `budgetMs` so the function never runs out of time; covers it
+ * does not reach are painted on the next run. Returns what it did.
+ */
+export async function refreshNews({ force = false, budgetMs = 200_000 }: { force?: boolean; budgetMs?: number } = {}) {
+  const started = Date.now();
+  let set = await cacheGet<StoredNews>(STORE_KEY);
+  const due = force || !set?.slides?.length || Date.now() - set.builtAt > FRESH_MS;
+  if (due) set = await rebuild(set);
+  if (!set?.slides?.length) return { rebuilt: due, covers: 0, pending: 0 };
+  const missing = set.slides.filter(slide => slide.fresh && !slide.cover);
+  // Loaded here, not at the top: the AI SDK and image tools are only needed on the refresh run.
+  const { paint, store } = await import("./learning-study-pack");
+  let covers = 0;
+  // Three at a time, started 13 s apart: the gateway allows five pictures a minute on this team.
+  const queue = [...missing];
+  await Promise.all([0, 1, 2].map(async lane => {
+    await new Promise(resolve => setTimeout(resolve, lane * 13_000));
+    for (let slide = queue.shift(); slide; slide = queue.shift()) {
+      if (Date.now() - started > budgetMs) return;
+      try {
+        const webp = await paint(coverPrompt(slide));
+        slide.cover = await store(`news/${set!.builtAt}/${slide.id}.webp`, webp);
+        covers++;
+      } catch (error) { console.warn(`news cover "${slide.id}" failed: ${String(error).slice(0, 200)}`); }
+    }
+  }));
+  if (covers) await cacheSet(STORE_KEY, set, KEEP_SECONDS);
+  return { rebuilt: due, covers, pending: set.slides.filter(slide => slide.fresh && !slide.cover).length };
 }

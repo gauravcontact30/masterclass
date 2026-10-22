@@ -6,27 +6,31 @@ import type { LearningPath, PathStage } from "@/lib/learning-path";
 import { PLAN_LENGTHS, stageSpans } from "@/lib/learning-path-stages";
 import { requestJson } from "@/lib/client";
 import { useLanguage } from "./language-provider";
+import type { FreshGoal } from "@/lib/landing-fresh-types";
 import { pickDaily, rotateDaily } from "@/lib/daily-rotation";
 import { stageWeeks } from "./learning-path-view";
 import home from "./landing-home.module.css";
 import styles from "./landing-path-finder.module.css";
 
-/** Ready-made goals; the first SHOWN are always visible, the rest behind "More ideas". */
+/** Ready-made goals, each named by its technology; the first SHOWN are always visible, the rest behind "More ideas".
+ *  Today's AI-written goals (lib/server/landing-fresh.ts) replace them when the nightly job has run. */
 const GOALS: [label: string, labelHi: string, goal: string, goalHi: string][] = [
-  ["Frontend job", "फ्रंटएंड नौकरी", "get a frontend developer job", "फ्रंटएंड डेवलपर की नौकरी पाना"],
-  ["AI agents", "AI एजेंट", "build AI agents with Python", "Python से AI एजेंट बनाना"],
-  ["Node.js backend", "Node.js बैकएंड", "become a backend developer with Node.js", "Node.js के साथ बैकएंड डेवलपर बनना"],
-  ["DevOps and AWS", "DevOps और AWS", "move into DevOps and AWS", "DevOps और AWS में जाना"],
-  ["Full-stack developer", "फ़ुल-स्टैक डेवलपर", "become a full-stack developer with React and Node.js", "React और Node.js से फ़ुल-स्टैक डेवलपर बनना"],
-  ["Data engineering", "डेटा इंजीनियरिंग", "start a career in data engineering with Python and SQL", "Python और SQL से डेटा इंजीनियरिंग में करियर शुरू करना"],
-  ["Test automation", "टेस्ट ऑटोमेशन", "become a QA automation engineer with Playwright", "Playwright से QA ऑटोमेशन इंजीनियर बनना"],
-  ["React interview", "React इंटरव्यू", "crack a React and Next.js interview", "React और Next.js इंटरव्यू पास करना"],
-  ["Python from zero", "शुरू से Python", "learn Python from scratch", "शुरू से Python सीखना"],
-  ["Cybersecurity basics", "साइबर सुरक्षा की बुनियाद", "learn cybersecurity basics for web apps", "वेब ऐप्स के लिए साइबर सुरक्षा की बुनियाद सीखना"],
-  ["Generative AI apps", "जनरेटिव AI ऐप", "build generative AI apps with LangChain and Claude", "LangChain और Claude से जनरेटिव AI ऐप बनाना"],
-  ["Mobile apps", "मोबाइल ऐप", "build mobile apps with Flutter", "Flutter से मोबाइल ऐप बनाना"],
+  ["Next.js", "Next.js", "get a frontend developer job with React and Next.js", "React और Next.js से फ्रंटएंड डेवलपर की नौकरी पाना"],
+  ["LangChain", "LangChain", "build AI agents with Python and LangChain", "Python और LangChain से AI एजेंट बनाना"],
+  ["Node.js", "Node.js", "become a backend developer with Node.js", "Node.js के साथ बैकएंड डेवलपर बनना"],
+  ["AWS", "AWS", "move into DevOps and AWS", "DevOps और AWS में जाना"],
+  ["TypeScript", "TypeScript", "become a full-stack developer with TypeScript, React and Node.js", "TypeScript, React और Node.js से फ़ुल-स्टैक डेवलपर बनना"],
+  ["SQL", "SQL", "start a career in data engineering with Python and SQL", "Python और SQL से डेटा इंजीनियरिंग में करियर शुरू करना"],
+  ["Playwright", "Playwright", "become a QA automation engineer with Playwright", "Playwright से QA ऑटोमेशन इंजीनियर बनना"],
+  ["React", "React", "crack a React interview", "React इंटरव्यू पास करना"],
+  ["Python", "Python", "learn Python from scratch", "शुरू से Python सीखना"],
+  ["OWASP security", "OWASP सुरक्षा", "learn web app security with the OWASP Top 10", "OWASP Top 10 से वेब ऐप सुरक्षा सीखना"],
+  ["Claude", "Claude", "build generative AI apps with Claude", "Claude से जनरेटिव AI ऐप बनाना"],
+  ["Flutter", "Flutter", "build mobile apps with Flutter", "Flutter से मोबाइल ऐप बनाना"],
 ];
 const SHOWN = 7;
+/** Light tints the pills cycle through (landing-path-finder.module.css). */
+const PILL_TINTS = 12;
 /** What each of the three stages is for; the model and the rules both plan to this shape. */
 const STAGES: { icon: LucideIcon; en: string; hi: string }[] = [
   { icon: Layers, en: "Foundation", hi: "बुनियाद" },
@@ -100,10 +104,10 @@ const noSubscribe = () => () => {};
  * on a route line. Before the first plan the cards show an example. Topic links go through sign-in, and "Start this
  * plan free" goes to sign-up. The example, the order of the ready-made goals and the colours change daily (`day`, istDay).
  */
-export function LandingPathFinder({ day = 0 }: { day?: number }) {
+export function LandingPathFinder({ day = 0, fresh }: { day?: number; fresh?: FreshGoal[] }) {
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
   const id = useId();
-  const sample = pickDaily(SAMPLES, day); const theme = pickDaily(THEMES, day); const goals = rotateDaily(GOALS, day);
+  const sample = pickDaily(SAMPLES, day); const theme = pickDaily(THEMES, day); const goals = fresh?.length ? fresh.map(goal => [goal.tech, goal.hiTech, goal.goal, goal.hiGoal] as (typeof GOALS)[number]) : rotateDaily(GOALS, day);
   // False in the server HTML: until React hydrates, a click would fall through to a native submit that reloads the page.
   const hydrated = useSyncExternalStore(noSubscribe, () => true, () => false);
   const [goal, setGoal] = useState("");
@@ -169,12 +173,13 @@ export function LandingPathFinder({ day = 0 }: { day?: number }) {
         <div className={styles.tries}>
           <span>{text("Or try", "या आज़माएँ")}</span>
           <ul id={`${id}-goals`}>
-            {(moreGoals ? goals : goals.slice(0, SHOWN)).map(([label, labelHi, en, hindi]) => {
+            {(moreGoals ? goals : goals.slice(0, SHOWN)).map(([label, labelHi, en, hindi], at) => {
               const value = hi ? hindi : en;
-              return <li key={label}><button type="button" aria-pressed={path?.goal === value} disabled={loading || !hydrated} onClick={() => void plan(value)}>{hi ? labelHi : label}</button></li>;
+              // Each pill its own light tint; the goal it plans is its tooltip.
+              return <li key={label}><button type="button" data-tint={at % PILL_TINTS} title={value} aria-pressed={path?.goal === value} disabled={loading || !hydrated} onClick={() => void plan(value)}>{hi ? labelHi : label}</button></li>;
             })}
             <li><button type="button" className={styles.more} aria-expanded={moreGoals} aria-controls={`${id}-goals`} onClick={() => setMoreGoals(open => !open)}>
-              {moreGoals ? text("Fewer ideas", "कम विचार") : text(`More ideas (${GOALS.length - SHOWN})`, `और विचार (${GOALS.length - SHOWN})`)}
+              {moreGoals ? text("Fewer ideas", "कम विचार") : text(`More ideas (${goals.length - SHOWN})`, `और विचार (${goals.length - SHOWN})`)}
             </button></li>
           </ul>
         </div>

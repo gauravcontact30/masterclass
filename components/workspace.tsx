@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DASHBOARD_ROUTES, type WorkspaceTab } from "@/lib/dashboard-routes";
 import { toast } from "sonner";
-import { ArrowUpRight,Bookmark,BookMarked,BookOpen,BookOpenText,Coffee,CircleHelp,Code2,ChevronRight,Compass,FileCode2,GraduationCap,Languages,Layers,Library as LibraryIcon,Link2,LogOut,MessagesSquare,ListOrdered,PanelLeftClose,PanelLeftOpen,Search,Sparkles,Sun,RefreshCw,Users,Workflow } from "lucide-react";
+import { ArrowUpRight,Award,Bookmark,BookMarked,BookOpen,BookOpenText,Coffee,CircleHelp,Code2,ChevronRight,Compass,FileCode2,GraduationCap,Languages,Layers,Library as LibraryIcon,Link2,LogOut,MessagesSquare,ListOrdered,PanelLeftClose,PanelLeftOpen,Search,Sparkles,Sun,RefreshCw,Users,Workflow } from "lucide-react";
 import type { DocumentRecord,GenerationRequest,Language,Progress,Technology,Tier,Topic } from "@/lib/domain";
 import dynamic from "next/dynamic";
 import { uniqueLibraryDocuments } from "@/lib/library";
@@ -58,7 +58,7 @@ function Identity({email,isSuperAdmin,onNavigate}:{email:string|null;isSuperAdmi
   </Popover>;}
 export type { WorkspaceTab } from "@/lib/dashboard-routes";
 // Professional learning sections render their own page content instead of the study catalog.
-const PRO_SECTIONS=[{id:"official-docs",label:"Official Docs",icon:BookMarked},{id:"techy",label:"Techy",icon:Code2},{id:"api-docs",label:"API Docs",icon:FileCode2},{id:"workflow",label:"Workflow",icon:Workflow},{id:"lessons",label:"Lessons",icon:BookOpenText},{id:"quiz",label:"Quiz",icon:CircleHelp},{id:"interview",label:"Interview",icon:MessagesSquare}] as const;
+const PRO_SECTIONS=[{id:"official-docs",label:"Official Docs",icon:BookMarked},{id:"techy",label:"Techy",icon:Code2},{id:"api-docs",label:"API Docs",icon:FileCode2},{id:"workflow",label:"Workflow",icon:Workflow},{id:"certifications",label:"Certifications",icon:Award},{id:"lessons",label:"Lessons",icon:BookOpenText},{id:"quiz",label:"Quiz",icon:CircleHelp},{id:"interview",label:"Interview",icon:MessagesSquare}] as const;
 /**
  * The catalogue is the same on every dashboard page, and each page mounts its own Workspace, so one request is shared
  * across navigations for a minute instead of refetching 40 KB on every click. Refresh asks for a fresh copy.

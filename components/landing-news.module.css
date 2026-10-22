@@ -16,7 +16,7 @@
   background: var(--nw-paper);
   border-block: 1px solid var(--nw-ivory);
 }
-.inner { width: min(1240px, calc(100% - 64px)); margin-inline: auto; padding-block: clamp(56px, 7vw, 104px); }
+.inner { width: min(var(--landing-max, 1240px), calc(100% - 64px)); margin-inline: auto; padding-block: clamp(56px, 7vw, 104px); }
 
 .head { display: block; }
 /* Below the full-width heading: the slide on show on the left, the slideshow controls on the right. */
@@ -65,11 +65,50 @@
 .news .cover p { margin: 10px 8px 0; font-size: 15.5px; line-height: 1.5; color: var(--nw-text); }
 .topics { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 8px 0; padding: 0; list-style: none; }
 /* The index grows to fill the cover, so it ends level with the stories beside it. */
-.index { flex: 1 0 auto; margin: 0 8px; padding-top: 18px; }
+.index { margin: 0 8px; padding-top: 18px; }
 .topics + .index { margin-top: 18px; border-top: 1px solid color-mix(in srgb, var(--cover-ink, #000) 16%, transparent); }
 .news .index h5 { margin: 0; font-size: 12.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
 .index ol { display: grid; gap: 7px; margin: 10px 0 0; padding-left: 20px; }
 .index li { font-size: 14px; line-height: 1.4; color: var(--nw-text); }
+.index li a, .index li > span { color: var(--nw-graphite); font-weight: 500; text-decoration: none; }
+.index li a:hover { color: var(--nw-clay-deep); text-decoration: underline; text-underline-offset: 3px; }
+.index li small { display: flex; align-items: center; gap: 6px; margin-top: 3px; font-size: 12px; color: var(--nw-muted); }
+.index li small .logo { width: 16px; height: 16px; }
+/* At a glance: three figures across the top of the index. */
+.glance { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0 0 16px; }
+.glance > div { display: flex; flex-direction: column-reverse; gap: 2px; padding: 10px 8px; border-radius: 10px; background: color-mix(in srgb, #fff 55%, transparent); text-align: center; }
+.glance dd { margin: 0; font-size: 17px; font-weight: 700; line-height: 1.15; color: var(--cover-ink, var(--nw-graphite)); font-variant-numeric: tabular-nums; }
+.glance dt { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--nw-muted); }
+/* Read more at, and Keep learning: the second sits at the foot of the cover, so the card always ends filled. */
+.extra { margin: 18px 8px 0; padding-top: 16px; border-top: 1px solid color-mix(in srgb, var(--cover-ink, #000) 16%, transparent); }
+.news .extra h5 { display: flex; align-items: center; gap: 6px; margin: 0 0 10px; font-size: 12.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.extra ul { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.extra a { display: inline-flex; align-items: center; gap: 5px; min-height: 32px; padding: 5px 11px; border-radius: 999px; background: color-mix(in srgb, #fff 62%, transparent); border: 1px solid color-mix(in srgb, var(--cover-ink, #000) 14%, transparent); font-size: 13px; font-weight: 600; color: var(--cover-ink, var(--nw-graphite)); text-decoration: none; }
+.extra a:hover { background: #fff; border-color: var(--cover-ink, var(--nw-clay)); }
+.extra a:focus-visible { outline: 2px solid var(--cover-ink, var(--nw-clay)); outline-offset: 2px; }
+/* More headlines / Also asked: the stories and questions beyond the cards, under them in the stories column. */
+.headlines { padding: 18px; border: 1px solid var(--nw-line, #e8e6dc); border-radius: 14px; background: var(--nw-ivory, #faf9f5); }
+.news .headlines h5 { display: flex; align-items: center; gap: 6px; margin: 0 0 12px; font-size: 12.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--nw-graphite); }
+.headlines ol { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.headlines li { display: flex; flex-direction: column; gap: 5px; padding: 12px 14px; border-radius: 10px; background: #fff; border: 1px solid var(--nw-line, #ece9df); }
+.headlines li > a, .headlines li > span { font-size: 14.5px; font-weight: 650; line-height: 1.35; color: var(--nw-graphite); text-decoration: none; }
+.headlines li > a:hover { color: var(--nw-clay-deep); text-decoration: underline; text-underline-offset: 3px; }
+.news .headlines p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--nw-text); }
+.headlines small { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--nw-muted); }
+.headlines small a { color: inherit; font-weight: 600; }
+.headlines small .logo { width: 16px; height: 16px; }
+.news .headlines .headlineConcept { display: flex; gap: 6px; margin-top: auto; padding-top: 6px; font-size: 12.5px; color: var(--nw-muted); }
+.headlineConcept svg { flex: none; margin-top: 2px; color: var(--nw-clay); }
+.headlineConcept b { color: var(--nw-graphite); }
+/* Learn the basics / Concepts in these stories: short explainers so a learner can follow the news. */
+.basics dl { display: grid; gap: 8px; margin: 0; }
+.basics dl > div { padding: 10px 12px; border-left: 3px solid var(--cover-ink, var(--nw-clay)); border-radius: 0 10px 10px 0; background: color-mix(in srgb, #fff 58%, transparent); }
+.basics dt { font-size: 13.5px; font-weight: 700; color: var(--cover-ink, var(--nw-graphite)); }
+.basics dd { margin: 3px 0 0; font-size: 13px; line-height: 1.45; color: var(--nw-text); }
+.deeper { margin-top: auto; }
+.index + .deeper, .topics + .deeper { margin-top: 18px; }
+.deeper ul { flex-direction: column; align-items: stretch; }
+.deeper a { display: flex; justify-content: space-between; border-radius: 10px; background: #fff; }
 .index li::marker { font-weight: 700; color: var(--cover-ink, var(--nw-clay)); }
 .news .index p { margin: 12px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--nw-muted); }
 .topics li { padding: 3px 10px; border-radius: 999px; background: color-mix(in srgb, var(--cover-ink, #000) 10%, transparent); font-size: 12.5px; font-weight: 500; }
@@ -137,6 +176,7 @@
 .why svg, .concept svg { flex: none; margin-top: 3px; color: var(--cover-ink, var(--nw-clay)); }
 .why b, .concept b { color: var(--nw-graphite); }
 .more .why, .more .concept { margin-top: 2px; font-size: 13px; padding: 8px 10px; }
+.more .concept { margin-top: auto; }
 
 .loading { display: grid; align-content: start; gap: 12px; flex: 1 0 auto; padding: 22px; border-radius: 14px; background: var(--nw-ivory); border: 1px solid var(--nw-rule); font-size: 15px; color: var(--nw-muted); }
 .loading span { height: 14px; border-radius: 6px; background: linear-gradient(90deg, var(--nw-rule), var(--nw-paper), var(--nw-rule)); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
@@ -146,7 +186,8 @@
 @media (max-width: 899px) {
   .inner { width: calc(100% - 32px); }
   .slide { grid-template-columns: minmax(0, 1fr); }
-  .index { display: none; }
+  .index ol { display: none; }
+  .index h5 { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .slide { animation: none; }

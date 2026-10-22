@@ -49,6 +49,23 @@
 .tries button:disabled { opacity: .5; cursor: progress; }
 .tries button[aria-pressed="true"] { border-color: var(--signal); background: var(--signal); color: var(--ink); font-weight: 650; }
 .tries button.more { border-style: dashed; color: var(--sage); }
+/* "Or try": every pill its own light tint with a matching ink (data-tint, set in the component). */
+.tries button[data-tint] { border-color: transparent; background: var(--pill); color: var(--pill-ink); font-weight: 600; }
+.tries button[data-tint]:hover:not(:disabled) { border-color: var(--pill-ink); background: var(--pill); filter: brightness(1.03); }
+.tries button[data-tint][aria-pressed="true"] { border-color: var(--signal); box-shadow: 0 0 0 2px var(--signal); background: var(--pill); color: var(--pill-ink); }
+.tries button[data-tint="0"] { --pill: #fde8e0; --pill-ink: #8f3f23; }
+.tries button[data-tint="1"] { --pill: #e3f1e6; --pill-ink: #2f5d3a; }
+.tries button[data-tint="2"] { --pill: #e3eefb; --pill-ink: #24507c; }
+.tries button[data-tint="3"] { --pill: #efe7fb; --pill-ink: #5a4683; }
+.tries button[data-tint="4"] { --pill: #fdf3d3; --pill-ink: #7a5d14; }
+.tries button[data-tint="5"] { --pill: #fbe4ee; --pill-ink: #8a2d55; }
+.tries button[data-tint="6"] { --pill: #ddf3f1; --pill-ink: #1f5f59; }
+.tries button[data-tint="7"] { --pill: #f3ecdf; --pill-ink: #6b5531; }
+.tries button[data-tint="8"] { --pill: #e8f0d8; --pill-ink: #4c5d1e; }
+.tries button[data-tint="9"] { --pill: #fde6d2; --pill-ink: #8a4317; }
+.tries button[data-tint="10"] { --pill: #e6e9fb; --pill-ink: #33418a; }
+.tries button[data-tint="11"] { --pill: #f9e3f7; --pill-ink: #7a2f76; }
+
 .length label:has(input:disabled) { cursor: progress; opacity: .6; }
 @media (max-width: 560px) { .controls { flex-direction: column; align-items: stretch; } .plan { justify-content: center; } .length { justify-content: space-between; } }
 

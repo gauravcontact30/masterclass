@@ -1,4 +1,7 @@
 "use client";
+import type { FreshDifference } from "@/lib/landing-fresh-types";
+import { pickDaily } from "@/lib/daily-rotation";
+import { DailyCard } from "./landing-daily-card";
 import dynamic from "next/dynamic";
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
@@ -38,14 +41,16 @@ const GROUP_ICON: Record<ComparisonGroup, LucideIcon> = {
  * and short description of each technology, an at-a-glance table and 40+ difference questions with answers.
  * Autoplay turns a slide every two minutes and holds while the reader hovers or reads; a picker jumps to any
  * comparison. Questions load per slide, when it is near. The same section runs on the landing page and /dashboard.
- * `preview` (the landing page, or a learner without a membership) shows only the first comparison and links on.
+ * `preview` (the landing page, or a learner without a membership) shows one comparison, today's (`day`), with its 10
+ * most-asked difference questions; the rest are in the dashboard's Tech Topics section. `fresh` is today's AI-written
+ * difference (lib/server/landing-fresh.ts), shown above it.
  */
-export function LandingComparisons({ expanded = false, preview = false, locked = false, official = null }: Readonly<{ expanded?: boolean; preview?: boolean; locked?: boolean; official?: OfficialTechDocs | null }>) {
+export function LandingComparisons({ expanded = false, preview = false, locked = false, official = null, day = 0, fresh = null }: Readonly<{ expanded?: boolean; preview?: boolean; locked?: boolean; official?: OfficialTechDocs | null; day?: number; fresh?: FreshDifference | null }>) {
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
   const items = useVisibleContent(COMPARISONS, compareKey);
   const section = useContentItem("section:tech-comparisons", "section");
   const { track, nearViewport, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(preview ? 1 : items.length, 1, AUTOPLAY_MS);
-  const shown = preview ? items.slice(0, 1) : items;
+  const shown = preview ? (items.length ? [pickDaily(items, day)] : []) : items;
   const groups = [...new Set(items.map(item => item.group))];
   const pickerPage = Math.floor(page / 5) + 1;
   const pickerStart = (pickerPage - 1) * 5;
@@ -75,8 +80,12 @@ export function LandingComparisons({ expanded = false, preview = false, locked =
       </button>; })}
     </nav>
     <div className={styles.pickerPager}><Pager page={pickerPage} pages={Math.ceil(items.length / 5)} total={items.length} size={5} onPage={next => goTo((next - 1) * 5)} /></div></>}
+    {preview && fresh && <DailyCard kicker={text("Difference of the day", "आज का अंतर")} title={fresh.title} image={fresh.image} icon={<GitCompareArrows size={44} strokeWidth={1.3} />} day={fresh.day}>
+      <p>{fresh.answer}</p>
+      <ul>{fresh.points.map((point, k) => <li key={k}>{point}</li>)}</ul>
+    </DailyCard>}
     <ul ref={track} className={interview.track} aria-roledescription="carousel" aria-label={text("Technology comparisons", "तकनीकी तुलनाएँ")} {...holdProps}>
-      {shown.map((item, i) => <ComparisonSlide key={item.id} item={item} index={i} total={items.length} near={nearViewport && Math.abs(i - page) <= 1} text={text} official={official} />)}
+      {shown.map((item, i) => <ComparisonSlide key={item.id} item={item} index={i} total={items.length} near={nearViewport && Math.abs(i - page) <= 1} text={text} official={official} preview={preview} />)}
     </ul>
     {!preview && <Dots pages={pages} page={page} running={running} goTo={goTo} label={n => text(`Show comparison ${n}`, `तुलना ${n} दिखाएँ`)} />}
     {preview && <DashboardMore href={locked ? "/dashboard/plans" : "/dashboard"} title={locked ? text(`Subscribe to open all ${items.length} comparisons`, `सभी ${items.length} तुलनाएँ खोलने के लिए सदस्यता लें`) : text(`See all ${items.length} comparisons`, `सभी ${items.length} तुलनाएँ देखें`)} detail={text("Every comparison, its picker, table and 40+ questions are in your dashboard.", "हर तुलना, उसका चयनकर्ता, तालिका और 40+ प्रश्न आपके डैशबोर्ड में हैं।")} />}
@@ -84,7 +93,10 @@ export function LandingComparisons({ expanded = false, preview = false, locked =
   </div></section>;
 }
 
-function ComparisonSlide({ item, index, total, near, text, official }: Readonly<{ item: Comparison; index: number; total: number; near: boolean; text: Text; official: OfficialTechDocs | null }>) {
+/** Difference questions the landing preview shows; the full set is in the dashboard. */
+const LANDING_DIFFERENCES = 10;
+
+function ComparisonSlide({ item, index, total, near, text, official, preview = false }: Readonly<{ item: Comparison; index: number; total: number; near: boolean; text: Text; official: OfficialTechDocs | null; preview?: boolean }>) {
   const [set, setSet] = useState<QuestionSet | null>(null);
   const [failed, setFailed] = useState(false);
   // The bank loads once, the first time the slide is on screen or next to it.
@@ -131,7 +143,9 @@ function ComparisonSlide({ item, index, total, near, text, official }: Readonly<
         </table></div>
       </div>
       {set && set.subjective.length > 0
-        ? <InterviewQuestions key={item.id} set={set} text={text} scroll heading={<h4>{text(`${set.subjective.length} difference questions`, `${set.subjective.length} अंतर प्रश्न`)}</h4>} />
+        ? <InterviewQuestions key={item.id} set={set} text={text} scroll limit={preview ? LANDING_DIFFERENCES : undefined} heading={<h4>{preview && set.subjective.length > LANDING_DIFFERENCES
+          ? text(`${LANDING_DIFFERENCES} of ${set.subjective.length} difference questions`, `${set.subjective.length} में से ${LANDING_DIFFERENCES} अंतर प्रश्न`)
+          : text(`${set.subjective.length} difference questions`, `${set.subjective.length} अंतर प्रश्न`)}</h4>} />
         : <div className={interview.loading} role="status">{failed ? text("These questions could not load. Check your connection and try again.", "ये प्रश्न लोड नहीं हो सके। कनेक्शन जाँचें और फिर कोशिश करें।") : set ? text("Questions for this comparison are being written.", "इस तुलना के प्रश्न तैयार किए जा रहे हैं।") : text("Loading the questions…", "प्रश्न लोड हो रहे हैं…")}</div>}
       <OfficialDocs item={item} official={official} text={text} />
       <Link className={styles.more} href={`/compare/${item.id}`}>{text("Read the full comparison", "पूरी तुलना पढ़ें")} →</Link>
