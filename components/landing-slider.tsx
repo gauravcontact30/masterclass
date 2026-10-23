@@ -8,7 +8,7 @@ import { useLanguage } from "./language-provider";
 import styles from "./landing-home.module.css";
 import { useVisiblePlayback } from "./use-visible-playback";
 
-const INTERVAL = 7000;
+const INTERVAL = 10000;
 type Pair = [string, string];
 type Slide = { id: string; src: string; focus: string; tone: "clay" | "sage" | "violet" | "sky" | "honey"; tool: Pair; title: Pair; body: Pair; link: { label: Pair; href: string }; alt: string };
 

@@ -216,8 +216,10 @@ async function pictureSet(name: string): Promise<PictureSet> {
   })));
   // The landing page's interview carousel (components/landing-interview.tsx): one picture per technology.
   if (name === "interview") return learningSet("topics", INTERVIEW_TECHS.map(tech => ({
-    name: tech.title, context: "Technical interview preparation", summary: tech.tagline,
-    points: [tech.tagline], label: `interview: ${tech.id}`, parts: ["interview", tech.id],
+    name: tech.title, context: "Technical interview preparation",
+    summary: tech.id === "tanstack-libraries" ? `${tech.tagline} A family of separate headless libraries for React apps; TanStack's own visual identity is a sunny tropical island with palm trees. Six huts, one per library tab, each with one unmistakable object: Query a fetch-and-cache jar refilling from a cloud, Router a signpost with branching paths, Start a rocket launch pad, Table a large data grid board, Form a clipboard with checkbox fields, DB and AI a database cylinder beside a small robot.` : tech.tagline,
+    // A tabbed technology (Key TanStack libraries) briefs each library, so the scene shows them, not a generic toolkit.
+    points: tech.tabs?.map(tab => `${tab.title}: ${tab.tagline}`) ?? [tech.tagline], label: `interview: ${tech.id}`, parts: ["interview", tech.id],
   })));
   // The Tech Topics comparisons (components/landing-comparisons.tsx): one picture per comparison, showing the
   // technologies side by side.

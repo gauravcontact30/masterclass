@@ -3,7 +3,8 @@
  * track in lib/certifications.ts, a lesson (overview, objectives, concepts, must-remember facts, an example,
  * pitfalls, a workflow and its service icons), a complete multi-file sample project (shown in the Apple-style editor)
  * and a question bank of objective (multiple choice) and subjective questions with answers: a first batch, then an
- * exam-style batch whose questions may carry a code snippet, at least 150 of each per track. Text comes from Claude through Vercel AI Gateway; each
+ * exam-style batch whose questions may carry a code snippet, at least 150 of each per track, and an exam revision pack
+ * (comparisons, answer cues, a worked scenario, memory aids, a cheat sheet and a self-check). Text comes from Claude through Vercel AI Gateway; each
  * step's picture is designed and judged by the card art director (scripts/card-art-director.ts) and painted with
  * openai/gpt-image-2, and only a picture scoring 4/5 or better with no text is kept.
  *
@@ -103,6 +104,26 @@ const projectSchema = z.object({
     code: z.string().describe("The complete file, correct for current versions, 10-70 lines, with brief comments on the key lines."),
   })).min(3).max(7),
 });
+const revisionSchema = z.object({
+  examFocus: z.string().describe("2-3 sentences: which exam domains or objectives this step maps to and how the real exams test it."),
+  compare: z.array(z.object({
+    a: z.string(), b: z.string(), difference: z.string().describe("The one difference that decides exam answers, 1-2 sentences."),
+    chooseA: z.string().describe("When to pick a, one sentence."), chooseB: z.string().describe("When to pick b, one sentence."),
+  })).min(2).max(5).describe("Look-alike options the exams make candidates choose between."),
+  cues: z.array(z.object({
+    cue: z.string().describe("A keyword or phrase seen in exam questions, e.g. 'lowest operational overhead'."),
+    pick: z.string().describe("What it points to."), why: z.string().describe("One sentence."),
+  })).min(5).max(8),
+  scenario: z.object({
+    situation: z.string().describe("A realistic exam-style scenario, 3-5 sentences, ending in the question."),
+    reasoning: z.array(z.string()).min(3).max(5).describe("How a strong candidate eliminates options, step by step."),
+    answer: z.string().describe("The best answer and why, 1-2 sentences."),
+  }),
+  memoryAids: z.array(z.string()).min(1).max(3).describe("Mnemonics or memory hooks for this step's lists and rules."),
+  cheatSheet: z.array(z.string()).min(8).max(12).describe("One-line revision points for the night before the exam."),
+  selfCheck: z.array(z.string()).min(4).max(6).describe("'I can…' statements: if the learner can do all of these, the step is exam-ready."),
+});
+type Revision = z.infer<typeof revisionSchema>;
 type Lesson = z.infer<ReturnType<typeof lessonSchema>>;
 type More = z.infer<ReturnType<typeof moreSchema>>;
 type Project = z.infer<typeof projectSchema>;
@@ -184,6 +205,14 @@ async function project(track: CertTrack, index: number, taught: Lesson) {
   ].join("\n\n"));
 }
 
+async function revision(track: CertTrack, index: number, taught: Lesson) {
+  return write<Revision>(`${track.id}-${index}-revision`, revisionSchema, [
+    trackBrief(track, index),
+    `The lesson taught: ${taught.concepts.map(concept => concept.term).join(", ")}. Key facts: ${taught.keyFacts.join(" ")} Traps: ${taught.pitfalls.join(" ")}`,
+    "Write the exam revision pack for this step: what a learner reads in the last days before the exam to clear it. Do not repeat the key facts word for word; add decision rules, comparisons and answer cues the lesson does not spell out.",
+  ].join("\n\n"));
+}
+
 // The gateway allows 5 pictures a minute on this team: start one every 13 seconds.
 let nextSlot = 0;
 const slot = async () => { const wait = Math.max(0, nextSlot - Date.now()); nextSlot = Math.max(nextSlot, Date.now()) + 13_000; await new Promise(resolve => setTimeout(resolve, wait)); };
@@ -247,7 +276,7 @@ async function main() {
   if (!imagesOnly) await pool(jobs, 4, async ({ track, index }) => {
     try {
       const taught = await lesson(track, index), asked = await questions(track, index, taught);
-      await Promise.all([more(track, index, taught, asked), project(track, index, taught)]);
+      await Promise.all([more(track, index, taught, asked), project(track, index, taught), revision(track, index, taught)]);
     } catch (error) { failures.push(`${track.id} step ${index + 1}: ${String(error).slice(0, 200)}`); }
   });
   if (!textOnly) await pool(jobs, 3, async ({ track, index }) => {
@@ -258,9 +287,10 @@ async function main() {
     const steps = track.steps.map((_, index) => {
       const taught = cached<Lesson>(`${track.id}-${index}-lesson`), asked = cached<Questions>(`${track.id}-${index}-questions`);
       const extra = cached<More>(`${track.id}-${index}-questions-2`), sample = cached<Project>(`${track.id}-${index}-project`);
+      const revise = cached<Revision>(`${track.id}-${index}-revision`);
       const file = `public/images/certifications/${track.id}/${index + 1}.webp`;
       return taught && asked && extra && sample ? {
-        ...taught, project: sample, image: existsSync(file) ? `/images/certifications/${track.id}/${index + 1}.webp` : null,
+        ...taught, project: sample, ...(revise ? { revision: revise } : {}), image: existsSync(file) ? `/images/certifications/${track.id}/${index + 1}.webp` : null,
         objective: [...shuffle(asked.objective), ...shuffle(extra.objective)], subjective: [...asked.subjective, ...extra.subjective],
       } : null;
     });

@@ -90,6 +90,28 @@ describe("Certifications", () => {
     expect(study.getByRole("figure", { name: "Code in this question" })).toBeInTheDocument();
   });
 
+  it("revises a step for the exam: choices, cues, a worked scenario, cheat sheet and a self-check", async () => {
+    const revised = content(7);
+    revised.steps[0] = { ...revised.steps[0], revision: {
+      examFocus: "Domain 2 scenario questions.", compare: [{ a: "S3", b: "EBS", difference: "Object vs block.", chooseA: "Static files.", chooseB: "A boot volume." }],
+      cues: [{ cue: "lowest operational overhead", pick: "A managed service", why: "No servers to run." }],
+      scenario: { situation: "A team needs durable storage.", reasoning: ["Drop EC2 disks."], answer: "Use S3." },
+      memoryAids: ["S3 = Simple Storage"], cheatSheet: ["Root needs MFA"], selfCheck: ["I can pick S3 or EBS", "I can secure root"],
+    } };
+    global.fetch = jest.fn(async () => ({ ok: true, status: 200, json: async () => revised })) as jest.Mock;
+    render(<Certifications initialTrack="aws" />);
+    await screen.findByText("Overview of step 1");
+    expect(within(screen.getByRole("tablist", { name: "Step 2 study material" })).queryByRole("tab", { name: /Exam revision/ })).toBeNull();
+    const study = within(screen.getByRole("tablist", { name: "Step 1 study material" }).parentElement as HTMLElement);
+    fireEvent.click(study.getByRole("tab", { name: /Exam revision/ }));
+    expect(study.getByRole("region", { name: "S3 or EBS" })).toHaveTextContent("Pick EBSA boot volume.");
+    expect(study.getByText("lowest operational overhead")).toBeInTheDocument();
+    expect(study.getByRole("region", { name: "Worked exam scenario" })).toHaveTextContent("Use S3.");
+    fireEvent.click(study.getByLabelText("I can pick S3 or EBS"));
+    fireEvent.click(study.getByLabelText("I can secure root"));
+    expect(study.getByText(/Step 1 is exam-ready/)).toBeInTheDocument();
+  });
+
   it("runs a scored mock exam across the track", async () => {
     global.fetch = jest.fn(async () => ({ ok: true, status: 200, json: async () => content(7) })) as jest.Mock;
     render(<Certifications initialTrack="aws" />);

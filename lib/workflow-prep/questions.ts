@@ -6,6 +6,7 @@ import type { QuestionSet } from "@/lib/interview-questions";
  * load as their own chunk when that blueprint's slide comes near, so opening the section stays light.
  */
 const MORE: Record<string, () => Promise<{ default: QuestionSet }>> = {
+  "food-delivery": () => import("./questions/food-delivery"),
   "url-shortener": () => import("./questions/url-shortener"),
   "rate-limiter": () => import("./questions/rate-limiter"),
   "cache-aside": () => import("./questions/cache-aside"),

@@ -1,16 +1,17 @@
 "use client";
 import Image from "next/image";
 import { createElement, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, ArrowRight, BookOpenCheck, Check, CheckCircle2, ChevronLeft, ChevronRight, Code2, Eye, EyeOff, GraduationCap, Lightbulb, ListChecks, MessageSquareText, RotateCcw, Sparkles, Target, Terminal, Timer, Trophy, Workflow, X } from "lucide-react";
+import { AlertTriangle, ArrowRight, BookOpenCheck, Brain, Scale, ScrollText, SearchCheck, Check, CheckCircle2, ChevronLeft, ChevronRight, Code2, Eye, EyeOff, GraduationCap, Lightbulb, ListChecks, MessageSquareText, RotateCcw, Sparkles, Target, Terminal, Timer, Trophy, Workflow, X } from "lucide-react";
 import { CERTIFICATION_BRANDS } from "@/lib/certification-brands";
-import type { Difficulty, ObjectiveQuestion, QuestionCode, StepContent, SubjectiveQuestion, TrackContent } from "@/lib/certification-content-types";
+import type { Difficulty, ObjectiveQuestion, QuestionCode, StepContent, StepRevision, SubjectiveQuestion, TrackContent } from "@/lib/certification-content-types";
 import { AwsServiceIcon } from "./aws-service-icon";
 import { CodeFiles } from "./code-files";
 import styles from "./certification-study.module.css";
 
 /*
  * The study material behind each step of the Certifications page: a lesson (overview, objectives, concepts,
- * must-remember facts, an example, pitfalls, a workflow, the services it uses and a picture), the step's objective
+ * must-remember facts, an example, pitfalls, a workflow, the services it uses and a picture), an exam revision pack
+ * (how the step is tested, look-alike choices, answer cues, a worked scenario, memory aids, a cheat sheet and a self-check), the step's objective
  * questions as a quiz and its subjective questions with model answers, and a mock exam drawn from the whole track.
  * The material is fetched per track from app/api/certifications/[track] when the track is opened.
  */
@@ -42,12 +43,13 @@ export function ServiceIcon({ id }: { id: string }) {
   return <span className={styles.service} title={brand.title}><span className={styles.serviceMark} style={{ color: `#${brand.hex}` }}><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="currentColor"><path d={brand.path} /></svg></span>{brand.title}</span>;
 }
 
-type StepTab = "lesson" | "objective" | "subjective";
+type StepTab = "lesson" | "revision" | "objective" | "subjective";
 
 export function StepStudy({ step, number }: { step: StepContent; number: number }) {
   const [tab, setTab] = useState<StepTab>("lesson");
   const tabs: { id: StepTab; label: string; icon: typeof BookOpenCheck; count?: number }[] = [
     { id: "lesson", label: "Lesson", icon: BookOpenCheck },
+    ...(step.revision ? [{ id: "revision" as const, label: "Exam revision", icon: ScrollText }] : []),
     { id: "objective", label: "Objective questions", icon: ListChecks, count: step.objective.length },
     { id: "subjective", label: "Subjective questions", icon: MessageSquareText, count: step.subjective.length },
   ];
@@ -57,6 +59,7 @@ export function StepStudy({ step, number }: { step: StepContent; number: number 
     </div>
     <div role="tabpanel" aria-label={tabs.find(item => item.id === tab)!.label}>
       {tab === "lesson" && <Lesson step={step} number={number} />}
+      {tab === "revision" && step.revision && <Revision revision={step.revision} number={number} />}
       {tab === "objective" && <ObjectiveList questions={step.objective} />}
       {tab === "subjective" && <SubjectiveList questions={step.subjective} />}
     </div>
@@ -124,6 +127,50 @@ function Lesson({ step, number }: { step: StepContent; number: number }) {
     </div>
 
     <Project step={step} />
+  </div>;
+}
+
+/** The last-days-before-the-exam pack: how the step is tested, then the choices, cues and rules that decide answers. */
+function Revision({ revision, number }: { revision: StepRevision; number: number }) {
+  const [ready, setReady] = useState<Set<number>>(new Set());
+  const toggle = (at: number) => setReady(current => { const next = new Set(current); if (next.has(at)) next.delete(at); else next.add(at); return next; });
+  return <div className={styles.lesson}>
+    <p className={styles.examFocus}><Target size={16} aria-hidden="true" /><span><b>How the exam tests step {number}.</b> {revision.examFocus}</span></p>
+
+    <h5 className={styles.label}><Scale size={14} aria-hidden="true" />Which one to choose</h5>
+    <div className={styles.compare}>{revision.compare.map((row, at) => <section key={at} aria-label={`${row.a} or ${row.b}`}>
+      <h6><span>{row.a}</span><i>vs</i><span>{row.b}</span></h6>
+      <p>{row.difference}</p>
+      <dl><div><dt>Pick {row.a}</dt><dd>{row.chooseA}</dd></div><div><dt>Pick {row.b}</dt><dd>{row.chooseB}</dd></div></dl>
+    </section>)}</div>
+
+    <h5 className={styles.label}><SearchCheck size={14} aria-hidden="true" />If the question says…</h5>
+    <ul className={styles.cues}>{revision.cues.map((cue, at) => <li key={at}><q>{cue.cue}</q><ArrowRight size={14} aria-hidden="true" /><span><b>{cue.pick}</b><small>{cue.why}</small></span></li>)}</ul>
+
+    <section className={styles.scenario} aria-label="Worked exam scenario">
+      <h5 className={styles.label}><GraduationCap size={14} aria-hidden="true" />Worked exam scenario</h5>
+      <p className={styles.situation}>{revision.scenario.situation}</p>
+      <ol>{revision.scenario.reasoning.map((line, at) => <li key={at}>{line}</li>)}</ol>
+      <p className={styles.verdict}><CheckCircle2 size={15} aria-hidden="true" /><span><b>Best answer.</b> {revision.scenario.answer}</span></p>
+    </section>
+
+    <div className={styles.columns}>
+      <section className={styles.cheat} aria-label="Cheat sheet">
+        <h5 className={styles.label}><ScrollText size={14} aria-hidden="true" />Cheat sheet for the night before</h5>
+        <ul>{revision.cheatSheet.map((line, at) => <li key={at}>{line}</li>)}</ul>
+      </section>
+      <div className={styles.stack}>
+        <section className={styles.aids} aria-label="Memory aids">
+          <h5 className={styles.label}><Brain size={14} aria-hidden="true" />Memory aids</h5>
+          <ul>{revision.memoryAids.map((line, at) => <li key={at}>{line}</li>)}</ul>
+        </section>
+        <section className={styles.ready} aria-label="Am I exam-ready?">
+          <h5 className={styles.label}><ListChecks size={14} aria-hidden="true" />Am I ready? {ready.size} of {revision.selfCheck.length}</h5>
+          <ul>{revision.selfCheck.map((line, at) => <li key={at}><label><input type="checkbox" checked={ready.has(at)} onChange={() => toggle(at)} />{line}</label></li>)}</ul>
+          {ready.size === revision.selfCheck.length && <p className={styles.readyNote}><Trophy size={14} aria-hidden="true" />Step {number} is exam-ready. Try its questions next.</p>}
+        </section>
+      </div>
+    </div>
   </div>;
 }
 

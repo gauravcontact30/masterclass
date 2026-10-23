@@ -2,6 +2,34 @@ import { o, s, type WorkflowPrep } from "./types";
 
 /** Full detail and the most-asked interview questions for the System Design blueprints. */
 export const SYSTEM_DESIGN_PREP: Record<string, WorkflowPrep> = {
+  "food-delivery": {
+    stack: ["API gateway (Kong, Envoy or AWS API Gateway)", "Order, payment, restaurant and dispatch microservices", "PostgreSQL with a transactional outbox", "Kafka (or Amazon MSK)", "Redis geo index (GEOADD / GEOSEARCH)", "WebSocket gateway for live tracking", "Payment gateway with webhooks (UPI, cards)", "Push (FCM / APNs) and SMS providers"],
+    decisions: [
+      "A saga orchestrated by the order service instead of one distributed transaction: each step (pay, accept, assign) has a compensating action such as refund or cancel.",
+      "A transactional outbox: the order row and its event are written in one database transaction and relayed to Kafka, so an event is never lost or sent for an order that was rolled back.",
+      "Idempotency keys on order creation and payment, so a retry after a timeout never creates two orders or charges twice.",
+      "Rider locations live in an in-memory geo index (Redis) with short TTLs, not in the orders database: they change every few seconds and only the latest point matters.",
+      "Kafka topics partitioned by order ID: events for one order are processed in sequence, while different orders scale across partitions.",
+    ],
+    pitfalls: [
+      "Calling payment, restaurant and dispatch synchronously in one request, so one slow partner times out the whole checkout.",
+      "Publishing to Kafka after the database commit without an outbox, losing events whenever the process crashes in between.",
+      "Treating the payment gateway's redirect as proof of payment instead of verifying its signed webhook or querying its status API.",
+      "Offering one order to many riders at once without a lock, so two riders arrive for the same food.",
+      "Writing every GPS ping to the primary database, which turns the busiest data into the most expensive writes.",
+    ],
+    metrics: ["Order confirmation p99 latency (target: about a second)", "Time to rider assignment (target: under a minute at peak)", "Payment success rate and duplicate-charge count (target: zero)", "Restaurant acceptance rate and time to accept", "On-time delivery rate: actual vs promised ETA"],
+    subjective: [
+      s(5, "Design a food delivery platform like Swiggy or Zomato: walk through what happens from 'Place order' to delivery.", "The app sends the order with an idempotency key to the API gateway, which routes it to the order service. That service validates prices and opening hours, writes the order and an outbox event in one transaction, and starts a saga: authorise payment, then publish OrderPaid to Kafka. The restaurant service gets it and the restaurant accepts with a prep time; dispatch queries a Redis geo index for nearby riders, scores them and offers the order with a timeout. Riders' GPS updates the index, and a tracking service pushes live ETA over WebSockets while notifications fire on each status change. Failures run compensations: refund if the restaurant rejects, re-offer if a rider declines."),
+      s(5, "How do you make sure a customer is never charged twice for one order?", "Send an idempotency key from the client on order creation and reuse it for the payment request, so retries return the same order and the same payment attempt. Store payment attempts with a unique constraint on that key, treat the gateway's signed webhook as the source of truth, and make the webhook handler idempotent because gateways retry. A daily reconciliation job compares the gateway's settlement report with your records and refunds any duplicates it finds."),
+      s(4, "How would you assign the best rider to an order at dinner peak?", "Keep live rider positions in a geo index (Redis GEOADD with short TTLs, or H3 cells). On OrderPaid, query riders within a radius of the restaurant, filter by status and vehicle, then score by pickup ETA, the restaurant's remaining prep time, current load and fairness. Offer to the top rider with a 20–30 second timeout and a lock on the order, re-offering to the next on decline. At peak, batch orders from the same restaurant and assign in short windows to optimise globally rather than greedily."),
+    ],
+    objective: [
+      o(5, "Which pattern guarantees an order's event reaches Kafka exactly when the order row is committed?", ["Transactional outbox", "Two-phase commit across Kafka and the database", "Publishing before the database write", "A cron job that scans all orders"], 0, "The event is written to an outbox table in the same transaction as the order, and a relay publishes it, so the two can never disagree."),
+      o(5, "A restaurant rejects an order after the customer has paid. In a saga, what should happen?", ["Run the compensating action: refund the payment and cancel the order", "Roll back a distributed transaction", "Leave the payment and retry the restaurant forever", "Ask the customer to call support"], 0, "Sagas undo completed steps with compensating actions; here that means an automatic refund."),
+      o(4, "Which Redis command finds riders within 3 km of a restaurant?", ["GEOSEARCH", "ZRANGE", "HGETALL", "LPUSH"], 0, "GEOSEARCH (the successor to GEORADIUS) queries members of a geo set by radius or box around a point."),
+    ],
+  },
   "url-shortener": {
     stack: ["Nginx / cloud load balancer", "Stateless app servers", "Redis cache", "Cassandra or DynamoDB", "Snowflake-style ID service", "CDN for redirects"],
     decisions: [

@@ -6,9 +6,15 @@ export type ObjectiveQuestion = { question: string; code?: QuestionCode; options
 export type SubjectiveQuestion = { question: string; code?: QuestionCode; answer: string; keyPoints: string[]; difficulty: Difficulty };
 /** A complete multi-file sample project for the step, shown file by file in the Apple-style editor. */
 export type StepProject = { title: string; summary: string; run: string; files: { path: string; code: string }[] };
+/** The step's exam revision pack: how it is tested, look-alike choices, answer cues, a worked scenario and a cheat sheet. */
+export type StepRevision = {
+  examFocus: string; compare: { a: string; b: string; difference: string; chooseA: string; chooseB: string }[];
+  cues: { cue: string; pick: string; why: string }[]; scenario: { situation: string; reasoning: string[]; answer: string };
+  memoryAids: string[]; cheatSheet: string[]; selfCheck: string[];
+};
 export type StepContent = {
   overview: string; objectives: string[]; concepts: { term: string; explanation: string }[]; keyFacts: string[];
-  example: { caption: string; language: string; code: string }; project?: StepProject; pitfalls: string[];
+  example: { caption: string; language: string; code: string }; project?: StepProject; revision?: StepRevision; pitfalls: string[];
   workflow: { title: string; steps: { label: string; detail: string }[] }; icons: string[]; image: string | null;
   objective: ObjectiveQuestion[]; subjective: SubjectiveQuestion[];
 };

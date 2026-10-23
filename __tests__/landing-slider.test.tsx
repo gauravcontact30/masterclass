@@ -29,7 +29,7 @@ describe("hero slider", () => {
     expect(active()).toHaveTextContent("Your campus for the skills");
     Object.defineProperty(document, "visibilityState", { configurable: true, value: "visible" });
     fireEvent(document, new Event("visibilitychange"));
-    act(() => { jest.advanceTimersByTime(7000); });
+    act(() => { jest.advanceTimersByTime(10000); });
     expect(active()).toHaveTextContent("Crack your exam");
   });
 
@@ -52,7 +52,10 @@ describe("hero slider", () => {
 
   test("autoplays; arrows step both ways and wrap; pause stops it", () => {
     render(<LandingSlider />);
-    act(() => { jest.advanceTimersByTime(7000); });
+    // Each slide holds for 10 seconds.
+    act(() => { jest.advanceTimersByTime(9900); });
+    expect(active()).toHaveTextContent("Your campus for the skills");
+    act(() => { jest.advanceTimersByTime(100); });
     expect(active()).toHaveTextContent("Crack your exam");
     fireEvent.click(screen.getByRole("button", { name: "Previous slide" }));
     expect(active()).toHaveTextContent("Your campus for the skills");

@@ -25,6 +25,39 @@ const n = (id: string, label: string, x: number, y: number, kind: WorkflowNodeKi
 
 export const WORKFLOWS: Workflow[] = [
   {
+    id: "food-delivery", group: "System Design", title: "Food delivery: order to doorstep",
+    summary: "One order crosses payments, the restaurant, rider dispatch and live tracking, and must never be lost, charged twice or left without a rider.",
+    industry: "Food delivery", problem: "At dinner peak, thousands of orders a minute must be paid, accepted by restaurants and matched to nearby riders, while customers watch every step live.",
+    outcome: "Orders confirm in about a second, riders are assigned within a minute, and a failed payment or a rejecting restaurant refunds automatically.",
+    nodes: [
+      n("client", "Customer app\ncart · address", 100, 190, "actor", 1), n("db", "Orders DB\n+ outbox table", 300, 62, "store"),
+      n("gw", "API gateway\nauth · rate limit", 300, 190, "service", 2), n("track", "Live tracking\nWebSockets", 300, 318, "service", 8),
+      n("pay", "Payment service\nidempotency key", 500, 62, "service", 4), n("order", "Order service\nsaga orchestrator", 500, 190, "service", 3),
+      n("geo", "Redis geo index\nrider locations", 500, 318, "store"), n("psp", "Payment gateway\nUPI · cards", 700, 62, "actor"),
+      n("bus", "Event bus\nKafka topics", 700, 190, "queue", 5), n("rider", "Rider app\nGPS every 4 s", 700, 318, "actor"),
+      n("rest", "Restaurant\npartner app", 900, 62, "actor", 6), n("dispatch", "Rider dispatch\nscore · offer", 900, 190, "service", 7),
+      n("notify", "Notifications\npush · SMS", 900, 318, "service"),
+    ],
+    edges: [
+      { from: "client", to: "gw", label: "POST /orders" }, { from: "gw", to: "order" }, { from: "order", to: "db", label: "order + event, 1 txn" },
+      { from: "order", to: "pay", label: "authorise" }, { from: "pay", to: "psp", label: "charge · webhook" }, { from: "order", to: "bus", label: "OrderPaid" },
+      { from: "bus", to: "rest", label: "accept · prep time" }, { from: "bus", to: "dispatch", label: "assign rider" },
+      { from: "dispatch", to: "geo", label: "GEOSEARCH nearby" }, { from: "dispatch", to: "rider", label: "offer, 30 s" },
+      { from: "rider", to: "geo", label: "GPS pings" }, { from: "track", to: "geo", label: "read position" },
+      { from: "dispatch", to: "notify", label: "status changes" }, { from: "track", to: "client", label: "live ETA", dashed: true },
+    ],
+    steps: [
+      "The customer places the order with cart, address and payment method; the app sends an idempotency key so a retry never creates a second order.",
+      "The API gateway authenticates the user, rate-limits per account and routes to the order service.",
+      "The order service re-checks prices and that the restaurant is open, then writes the order (PENDING) and an outbox event in one database transaction.",
+      "Payment is authorised through the gateway with the same idempotency key; the gateway's webhook confirms it, and a failure cancels the order (a saga compensation).",
+      "A relay publishes OrderPaid from the outbox to Kafka, partitioned by order ID, so each order's events stay in order.",
+      "The restaurant accepts and sets a preparation time; a rejection or a timeout triggers an automatic refund.",
+      "Dispatch finds nearby free riders with a Redis geo query, scores them by distance, ETA and current load, and offers the order with a timeout before re-offering.",
+      "Riders' GPS pings update the geo index; the tracking service pushes live position and ETA to the customer over WebSockets, and notifications fire on each status change.",
+    ],
+  },
+  {
     id: "url-shortener", group: "System Design", title: "URL shortener",
     summary: "How a link like sho.rt/abc123 is created once and resolved millions of times.",
     industry: "Marketing & SaaS", problem: "Links in SMS, print and QR codes must stay short and resolve instantly at huge read volume.", outcome: "Billions of redirects served from cache in milliseconds.",

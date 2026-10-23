@@ -2,8 +2,8 @@
 
 import { useEffect, useState, type FocusEvent } from "react";
 import { preload } from "react-dom";
-import { ArrowUpRight, Bot, GraduationCap, Lightbulb, ListChecks, Boxes, BrainCircuit, ChevronLeft, ChevronRight, Cloud, Code2, MessagesSquare, Newspaper, Pause, Play, Rocket, ShoppingCart, Sparkles, Star, TrendingUp, type LucideIcon } from "lucide-react";
-import { NEWS_BASICS, NEWS_PER_SLIDE, NEWS_SLIDES, QUESTIONS_PER_SLIDE, type InterviewAsk, type LandingNews as LandingNewsData, type NewsLogo, type NewsSlideData, type NewsSlideId, type NewsSlideMeta, type NewsStory } from "@/lib/landing-news";
+import { ArrowUpRight, Bot, Hammer, GraduationCap, Lightbulb, ListChecks, Boxes, BrainCircuit, ChevronLeft, ChevronRight, Cloud, Code2, MessagesSquare, Newspaper, Pause, Play, Rocket, ShoppingCart, Sparkles, Star, TrendingUp, type LucideIcon } from "lucide-react";
+import { NEWS_BASICS, NEWS_PER_SLIDE, NEWS_PRACTICE, NEWS_SLIDES, QUESTIONS_PER_SLIDE, type InterviewAsk, type LandingNews as LandingNewsData, type NewsLogo, type NewsSlideData, type NewsSlideId, type NewsSlideMeta, type NewsStory } from "@/lib/landing-news";
 import Image from "next/image";
 import Link from "next/link";
 import { useLanguage } from "./language-provider";
@@ -123,6 +123,7 @@ export function LandingNews() {
                 {data?.kind === "questions" && data.questions.length > 0 && <Questions questions={data.questions.slice(0, QUESTIONS_PER_SLIDE)} hi={hi} slide={i} />}
                 {data?.kind === "news" && data.stories.length > NEWS_PER_SLIDE && <Headlines stories={data.stories.slice(NEWS_PER_SLIDE)} hi={hi} />}
                 {data?.kind === "questions" && data.questions.length > QUESTIONS_PER_SLIDE && <AlsoAsked questions={data.questions.slice(QUESTIONS_PER_SLIDE)} hi={hi} />}
+                {news && <Practice id={meta.id} hi={hi} />}
                 {!news && <div className={styles.loading} role="status">{hi ? "ताज़ा खबरें लोड हो रही हैं…" : "Loading this week's stories…"}<span /><span /><span /></div>}
                 {news && !(data?.kind === "news" ? data.stories.length : data?.kind === "questions" ? data.questions.length : 0) && <Newsrooms meta={meta} hi={hi} />}
               </div>
@@ -217,6 +218,7 @@ function Stories({ stories, hi, slide }: { stories: NewsStory[]; hi: boolean; sl
       {byline(story)}
       <a href={story.url} target="_blank" rel="noopener noreferrer">{story.title}</a>
       <p>{story.summary}</p>
+      {story.points.length > 0 && <ul className={styles.points}>{story.points.slice(0, 2).map(point => <li key={point}>{point}</li>)}</ul>}
       {story.why && <p className={styles.why}><Lightbulb size={13} aria-hidden="true" /><span>{story.why}</span></p>}
       {story.concept && <Concept concept={story.concept} hi={hi} />}
     </li>)}</ul>}
@@ -232,6 +234,17 @@ function Headlines({ stories, hi }: { stories: NewsStory[]; hi: boolean }) {
       <a href={story.url} target="_blank" rel="noopener noreferrer">{story.title}</a>
       <p>{story.summary}</p>
       {story.concept && <p className={styles.headlineConcept}><GraduationCap size={13} aria-hidden="true" /><span><b>{story.concept.term}</b>: {story.concept.explain}</span></p>}
+    </li>)}</ol>
+  </section>;
+}
+
+/** Three hands-on tasks for the slide's subject, so the week's news ends in something to practise. */
+function Practice({ id, hi }: { id: NewsSlideId; hi: boolean }) {
+  return <section className={styles.practice} aria-label={hi ? "इस हफ़्ते आज़माएँ" : "Try this week"}>
+    <h5><Hammer size={14} aria-hidden="true" />{hi ? "इस हफ़्ते आज़माएँ" : "Try this week"}</h5>
+    <ol>{NEWS_PRACTICE[id].map((item, at) => <li key={item.title}>
+      <span className={styles.practiceNumber} aria-hidden="true">{at + 1}</span>
+      <div><b>{item.title}</b><p>{hi ? item.hiTask : item.task}</p></div>
     </li>)}</ol>
   </section>;
 }
